@@ -36,6 +36,38 @@ object PathUtil {
     }
 
     /**
+     * Converts a filesystem path into an initial SAF Document Uri for EXTRA_INITIAL_URI.
+     */
+    fun getInitialUriForPath(path: String): Uri? {
+        try {
+            val file = File(path)
+            if (!file.exists()) {
+                file.mkdirs()
+            }
+            val primaryPath = android.os.Environment.getExternalStorageDirectory().absolutePath
+            val canonical = file.canonicalPath
+            if (canonical.startsWith(primaryPath)) {
+                val relative = canonical.removePrefix(primaryPath).trimStart('/', '\\')
+                val docId = if (relative.isEmpty()) "primary:" else "primary:$relative"
+                return DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", docId)
+            }
+            val storagePrefix = "/storage/"
+            if (canonical.startsWith(storagePrefix)) {
+                val parts = canonical.removePrefix(storagePrefix).split(File.separatorChar)
+                if (parts.isNotEmpty()) {
+                    val volumeId = parts[0]
+                    if (volumeId != "emulated" && volumeId != "self") {
+                        val relative = parts.drop(1).joinToString("/")
+                        val docId = if (relative.isEmpty()) "$volumeId:" else "$volumeId:$relative"
+                        return DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", docId)
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+        return null
+    }
+
+    /**
      * Validates that a path is a valid, writable directory.
      * Creates the directory if it doesn't exist.
      */

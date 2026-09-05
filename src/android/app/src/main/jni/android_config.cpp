@@ -125,7 +125,7 @@ void AndroidConfig::ReadPathValues() {
 
     const auto save_dir_setting = ReadStringSetting(std::string("save_directory"));
     if (save_dir_setting.empty()) {
-        const auto default_save = std::filesystem::path(Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir)) / "user" / "save";
+        const auto default_save = std::filesystem::path(Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir));
         Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir, default_save.string());
     } else {
         Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir, save_dir_setting);

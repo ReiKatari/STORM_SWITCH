@@ -53,13 +53,21 @@ SPDX-License-Identifier: GPL-3.0-or-later
         <meta-data android:name="com.samsung.android.gamehub" android:value="true" />
         <meta-data android:name="com.samsung.android.game.game_package" android:value="true" />
         <meta-data android:name="com.samsung.android.game.game_mode" android:value="true" />
+        <meta-data android:name="com.samsung.android.game.app" android:value="true" />
+        <meta-data android:name="com.samsung.android.game.gos" android:value="true" />
         <meta-data android:name="com.xiaomi.gamecenter.sdk.service.enabled" android:value="true" />
+        <meta-data android:name="com.xiaomi.gamecenter.game" android:value="true" />
+        <meta-data android:name="com.xiaomi.gamecenter.booster" android:value="true" />
         <meta-data android:name="com.xiaomi.game.turbo" android:value="true" />
         <meta-data android:name="com.miui.gamebooster" android:value="true" />
         <meta-data android:name="com.asus.gamecenter.gamebooster" android:value="true" />
         <meta-data android:name="com.oneplus.gamespace.gamebooster" android:value="true" />
         <meta-data android:name="com.coloros.gamespace.gamebooster" android:value="true" />
+        <meta-data android:name="com.coloros.gamespace.game" android:value="true" />
         <meta-data android:name="com.oplus.games.gamebooster" android:value="true" />
+        <meta-data android:name="com.oplus.games.game" android:value="true" />
+        <meta-data android:name="com.oplus.gamespace.game" android:value="true" />
+        <meta-data android:name="com.oppo.gamespace.game" android:value="true" />
         <meta-data android:name="com.vivo.game.gamemode" android:value="true" />
         <meta-data android:name="com.huawei.game.turbo" android:value="true" />
         <meta-data android:name="com.huawei.android.game.assistant" android:value="true" />
@@ -70,12 +78,27 @@ SPDX-License-Identifier: GPL-3.0-or-later
             android:exported="true"
             android:theme="@style/Theme.Yuzu.Splash.Main">
             <intent-filter>
-                <action android:name="com.miui.gamecenter.GAME_BOOSTER_LAUNCH"/>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.GAME" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="com.miui.gamecenter.GAME_BOOSTER_LAUNCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.xiaomi.gamecenter.action.GAME_LAUNCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data android:name="isGame" android:value="true" />
+            <meta-data android:name="android.app.category.GAME" android:value="true" />
         </activity>
 
         <activity
@@ -113,6 +136,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
             </intent-filter>
             <intent-filter>
                 <action android:name="dev.storm_switch.LAUNCH_WITH_CUSTOM_CONFIG" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.miui.gamecenter.GAME_BOOSTER_LAUNCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.xiaomi.gamecenter.action.GAME_LAUNCH" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <meta-data android:name="android.app.category.GAME" android:value="true" />

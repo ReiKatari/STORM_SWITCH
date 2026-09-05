@@ -62,7 +62,8 @@ class GamesViewModel : ViewModel() {
     }
 
     fun setGames(games: List<Game>) {
-        val sortedList = games.sortedWith(
+        val deduplicated = GameHelper.deduplicateGames(games)
+        val sortedList = deduplicated.sortedWith(
             compareBy(
                 { it.title.lowercase(Locale.getDefault()) },
                 { it.path }

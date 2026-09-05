@@ -270,7 +270,15 @@ class SettingsFragment : Fragment() {
     }
 
     private fun showPathPickerDialog() {
-        directoryPickerLauncher.launch(null)
+        val pathSetting = settingsViewModel.clickedItem as? PathSetting
+        val targetPath = if (pathSetting != null) {
+            val cur = pathSetting.getCurrentPath()
+            if (cur.isNotBlank() && PathUtil.validateDirectory(cur)) cur else pathSetting.getDefaultPath()
+        } else {
+            DirectoryInitialization.userDirectory ?: ""
+        }
+        val initialUri = if (targetPath.isNotBlank()) PathUtil.getInitialUriForPath(targetPath) else null
+        directoryPickerLauncher.launch(initialUri)
     }
 
     private val directoryPickerLauncher = registerForActivityResult(

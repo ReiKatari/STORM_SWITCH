@@ -20,6 +20,7 @@ import org.yuzu.yuzu_emu.model.GameDir
 import org.yuzu.yuzu_emu.model.MinimalDocumentFile
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import java.util.Locale
 import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
 
 object GameHelper {
@@ -122,29 +123,7 @@ object GameHelper {
             NativeConfig.setGameDirs(gameDirs.toTypedArray())
         }
 
-        // Group games by file path so all distinct ROM dumps/versions are properly preserved and displayed
-        val uniqueGamesMap = linkedMapOf<String, Game>()
-        games.forEach { game ->
-            val key = game.path
-            val existing = uniqueGamesMap[key]
-            if (existing == null) {
-                uniqueGamesMap[key] = game
-            } else {
-                val existingVer = existing.version.removePrefix("v").removePrefix("V").trim()
-                val currentVer = game.version.removePrefix("v").removePrefix("V").trim()
-                val existingIntVer = existing.internalVersion.toLongOrNull() ?: 0L
-                val currentIntVer = game.internalVersion.toLongOrNull() ?: 0L
-
-                if (currentIntVer > existingIntVer) {
-                    uniqueGamesMap[key] = game
-                } else if (currentIntVer == existingIntVer && currentVer != "1.0.0" && existingVer == "1.0.0") {
-                    uniqueGamesMap[key] = game
-                } else if (game.addonCount > existing.addonCount) {
-                    uniqueGamesMap[key] = game
-                }
-            }
-        }
-        val finalGames = uniqueGamesMap.values.toList()
+        val finalGames = deduplicateGames(games)
 
         if (finalGames.isNotEmpty()) {
             // Cache list of games found on disk
@@ -165,6 +144,87 @@ object GameHelper {
 
         cachedGameList = finalGames.toMutableList()
         return finalGames
+    }
+
+    fun getGameDeduplicationKey(game: Game): String {
+        val pid = game.programIdHex.trim()
+        if (pid != "0" && pid.isNotEmpty()) {
+            return "PID_$pid"
+        }
+        val cleanTitle = cleanGameTitle(game.title).lowercase(Locale.ROOT).trim()
+        if (cleanTitle.isNotEmpty() && cleanTitle != "homebrew") {
+            return "TITLE_$cleanTitle"
+        }
+        return game.path
+    }
+
+    fun selectBetterGame(existing: Game, candidate: Game): Game {
+        // 1. Prefer non-update/patch container over an update dump
+        val existingIsUpdate = existing.path.contains("update", ignoreCase = true) ||
+            existing.path.contains("[upd", ignoreCase = true) ||
+            existing.path.contains("0100.*800", ignoreCase = true)
+        val candidateIsUpdate = candidate.path.contains("update", ignoreCase = true) ||
+            candidate.path.contains("[upd", ignoreCase = true) ||
+            candidate.path.contains("0100.*800", ignoreCase = true)
+        if (existingIsUpdate && !candidateIsUpdate) {
+            return candidate
+        }
+        if (!existingIsUpdate && candidateIsUpdate) {
+            return existing
+        }
+
+        // 2. Compare internal versions
+        val existingIntVer = existing.internalVersion.toLongOrNull() ?: 0L
+        val candidateIntVer = candidate.internalVersion.toLongOrNull() ?: 0L
+        if (candidateIntVer > existingIntVer) {
+            return candidate
+        } else if (candidateIntVer < existingIntVer) {
+            return existing
+        }
+
+        // 3. Compare display version if internal version is equal
+        val existingVer = existing.version.removePrefix("v").removePrefix("V").trim()
+        val candidateVer = candidate.version.removePrefix("v").removePrefix("V").trim()
+        if (candidateVer != "1.0.0" && existingVer == "1.0.0") {
+            return candidate
+        } else if (candidateVer == "1.0.0" && existingVer != "1.0.0") {
+            return existing
+        }
+
+        // 4. Compare DLC / Addon count
+        if (candidate.addonCount > existing.addonCount) {
+            return candidate
+        } else if (candidate.addonCount < existing.addonCount) {
+            return existing
+        }
+
+        // 5. Prefer .xci / .xcz cartridges over loose .nsp
+        val candidateIsXci = candidate.path.endsWith(".xci", ignoreCase = true) ||
+            candidate.path.endsWith(".xcz", ignoreCase = true)
+        val existingIsXci = existing.path.endsWith(".xci", ignoreCase = true) ||
+            existing.path.endsWith(".xcz", ignoreCase = true)
+        if (candidateIsXci && !existingIsXci) {
+            return candidate
+        }
+        if (!candidateIsXci && existingIsXci) {
+            return existing
+        }
+
+        return existing
+    }
+
+    fun deduplicateGames(games: List<Game>): List<Game> {
+        val uniqueGamesMap = linkedMapOf<String, Game>()
+        games.forEach { game ->
+            val key = getGameDeduplicationKey(game)
+            val existing = uniqueGamesMap[key]
+            if (existing == null) {
+                uniqueGamesMap[key] = game
+            } else {
+                uniqueGamesMap[key] = selectBetterGame(existing, game)
+            }
+        }
+        return uniqueGamesMap.values.toList()
     }
 
     fun restoreContentForGame(game: Game) {

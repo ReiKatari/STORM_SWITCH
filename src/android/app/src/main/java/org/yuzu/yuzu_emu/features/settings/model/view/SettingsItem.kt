@@ -66,11 +66,6 @@ abstract class SettingsItem(
                 return NativeLibrary.isFirmwareAvailable()
             }
 
-            if (setting.key in frameGenKeys &&
-                !(LosslessScalingHelper.isInstalled() && LosslessScalingHelper.isSupportedByGpu())
-            ) {
-                return false
-            }
 
             // A frame rate target moves the multiplier on its own
             if (setting.key == IntSetting.RENDERER_FRAME_GEN_MULTIPLIER.key &&

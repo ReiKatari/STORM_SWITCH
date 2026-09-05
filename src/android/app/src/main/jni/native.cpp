@@ -1011,10 +1011,18 @@ jdoubleArray Java_org_yuzu_yuzu_1emu_NativeLibrary_getPerfStats(JNIEnv* env, jcl
     jdoubleArray j_stats = env->NewDoubleArray(4);
 
     if (EmulationSession::GetInstance().IsRunning()) {
-        jconst results = EmulationSession::GetInstance().PerfStats();
+        const auto results = EmulationSession::GetInstance().PerfStats();
+
+        double system_fps = results.system_fps;
+        const double game_fps = results.average_game_fps;
+
+        if (Settings::values.frame_gen.GetValue()) {
+            const u32 mult = std::clamp<u32>(Settings::values.frame_gen_multiplier.GetValue(), 2, 4);
+            system_fps = (game_fps > 0.0 ? game_fps : system_fps) * static_cast<double>(mult);
+        }
 
         // Converting the structure into an array makes it easier to pass it to the frontend
-        double stats[4] = {results.system_fps, results.average_game_fps, results.frametime,
+        double stats[4] = {system_fps, game_fps, results.frametime,
                            results.emulation_speed};
 
         env->SetDoubleArrayRegion(j_stats, 0, 4, stats);
@@ -1289,11 +1297,7 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getVulkanApiVersion(JNIEnv* env, j
 }
 
 jboolean Java_org_yuzu_yuzu_1emu_NativeLibrary_supportsFrameGeneration(JNIEnv* env, jobject jobj) {
-    try {
-        return static_cast<jboolean>(GetVulkanMemoryModelSupport());
-    } catch (...) {
-        return static_cast<jboolean>(false);
-    }
+    return static_cast<jboolean>(true);
 }
 
 jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getGpuModel(JNIEnv* env, jobject jobj) {

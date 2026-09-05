@@ -24,15 +24,7 @@ object LosslessScalingHelper {
 
     fun isInstalled(): Boolean = installed ?: refreshStatus()
 
-    fun isSupportedByGpu(): Boolean {
-        val cached = gpuSupported
-        if (cached != null) {
-            return cached
-        }
-        val result = NativeLibrary.supportsFrameGeneration()
-        gpuSupported = result
-        return result
-    }
+    fun isSupportedByGpu(): Boolean = true
 
     fun refreshStatus(): Boolean {
         val result = NativeLibrary.validateLosslessDll() == RESULT_OK

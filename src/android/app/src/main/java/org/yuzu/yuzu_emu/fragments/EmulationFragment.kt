@@ -2042,7 +2042,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         }
         binding.showStatsOverlayText.setVisible(showPerfOverlay)
         if (showPerfOverlay) {
-            //val SYSTEM_FPS = 0
+            val SYSTEM_FPS = 0
             val FPS = 1
             val FRAMETIME = 2
             //val SPEED = 3
@@ -2055,10 +2055,16 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     sb.setLength(0)
 
                     val perfStats = NativeLibrary.getPerfStats()
+                    val systemFps = perfStats[SYSTEM_FPS]
                     val actualFps = perfStats[FPS]
+                    val isFrameGen = BooleanSetting.RENDERER_FRAME_GEN.getBoolean(needsGlobal)
 
                     if (BooleanSetting.SHOW_FPS.getBoolean(needsGlobal)) {
-                        var fpsText = String.format("FPS: %.1f", actualFps)
+                        val fpsText = if (isFrameGen && systemFps > 0.0) {
+                            String.format("FPS: %.1f (%.0f FG)", systemFps, actualFps)
+                        } else {
+                            String.format("FPS: %.1f", actualFps)
+                        }
                         sb.append(fpsText)
                     }
 

@@ -32,6 +32,7 @@ import org.yuzu.yuzu_emu.utils.NativeConfig
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
 import org.yuzu.yuzu_emu.utils.FullscreenHelper
 import androidx.fragment.app.FragmentActivity
+import java.io.File
 import org.yuzu.yuzu_emu.fragments.MessageDialogFragment
 
 class SettingsFragmentPresenter(
@@ -1314,6 +1315,11 @@ class SettingsFragmentPresenter(
     }
 
     private fun addCustomPathsSettings(sl: ArrayList<SettingsItem>) {
+        val rootDir = DirectoryInitialization.userDirectory
+            ?: File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH").absolutePath
+        val defaultNand = "$rootDir/nand"
+        val defaultSdmc = "$rootDir/sdmc"
+
         sl.apply {
             add(
                 PathSetting(
@@ -1321,8 +1327,15 @@ class SettingsFragmentPresenter(
                     descriptionId = R.string.custom_save_directory_description,
                     iconId = R.drawable.ic_save,
                     pathType = PathSetting.PathType.SAVE_DATA,
-                    defaultPathGetter = { NativeConfig.getDefaultSaveDir() },
-                    currentPathGetter = { NativeConfig.getSaveDir() },
+                    defaultPathGetter = { defaultNand },
+                    currentPathGetter = {
+                        val cur = NativeConfig.getSaveDir()
+                        if (cur.isBlank() || cur.endsWith("/nand/user/save") || cur.equals(NativeConfig.getDefaultSaveDir(), ignoreCase = true)) {
+                            defaultNand
+                        } else {
+                            cur
+                        }
+                    },
                     pathSetter = { path -> NativeConfig.setSaveDir(path) }
                 )
             )
@@ -1332,8 +1345,11 @@ class SettingsFragmentPresenter(
                     descriptionId = R.string.custom_nand_directory_description,
                     iconId = R.drawable.ic_folder_open,
                     pathType = PathSetting.PathType.NAND,
-                    defaultPathGetter = { DirectoryInitialization.userDirectory + "/nand" },
-                    currentPathGetter = { NativeConfig.getNandDir() },
+                    defaultPathGetter = { defaultNand },
+                    currentPathGetter = {
+                        val cur = NativeConfig.getNandDir()
+                        if (cur.isBlank()) defaultNand else cur
+                    },
                     pathSetter = { path -> NativeConfig.setNandDir(path) }
                 )
             )
@@ -1343,8 +1359,11 @@ class SettingsFragmentPresenter(
                     descriptionId = R.string.custom_sdmc_directory_description,
                     iconId = R.drawable.ic_folder_open,
                     pathType = PathSetting.PathType.SDMC,
-                    defaultPathGetter = { DirectoryInitialization.userDirectory + "/sdmc" },
-                    currentPathGetter = { NativeConfig.getSdmcDir() },
+                    defaultPathGetter = { defaultSdmc },
+                    currentPathGetter = {
+                        val cur = NativeConfig.getSdmcDir()
+                        if (cur.isBlank()) defaultSdmc else cur
+                    },
                     pathSetter = { path -> NativeConfig.setSdmcDir(path) }
                 )
             )
