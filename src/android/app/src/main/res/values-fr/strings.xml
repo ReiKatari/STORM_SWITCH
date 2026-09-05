@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
 
     <string name="app_disclaimer">Ce logiciel permet de jouer à des jeux de la console Nintendo Switch. Aucun titre ni clé de jeu n\'est inclus.<br /><br />Avant de commencer, veuillez localiser votre fichier <![CDATA[<b> prod.keys </b>]]> sur le stockage de votre appareil.<br /><br /><![CDATA[<a href=\"https://yuzu-mirror.github.io/help/quickstart\">En savoir plus</a>]]></string>
@@ -658,6 +658,7 @@
     <string name="driver_already_installed">Pilote déjà installé</string>
     <string name="installed_label">%1$s (Installé)</string>
     <string name="system_gpu_driver">Pilote du GPU du système</string>
+    <string name="menu_driver_use_global">Utiliser le pilote global</string>
     <string name="installing_driver">Installation du pilote...</string>
 
     <!-- GPU driver fetcher -->

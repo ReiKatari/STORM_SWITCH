@@ -84,10 +84,13 @@ object InputHandler {
             else -> return false
         }
 
-        var controllerData = androidControllers[event.device.controllerNumber]
+        val device = event.device
+        val controllerNumber = device?.controllerNumber ?: 0
+        var controllerData = androidControllers[controllerNumber]
         if (controllerData == null) {
             updateControllerData()
-            controllerData = androidControllers[event.device.controllerNumber] ?: return false
+            controllerData = androidControllers[controllerNumber]
+                ?: androidControllers.values.firstOrNull() ?: return false
         }
 
         NativeInput.onGamePadButtonEvent(
@@ -113,9 +116,15 @@ object InputHandler {
     }
 
     fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
-        val controllerData =
-            androidControllers[event.device.controllerNumber] ?: return false
-        event.device.motionRanges.forEach {
+        val device = event.device
+        val controllerNumber = device?.controllerNumber ?: 0
+        var controllerData = androidControllers[controllerNumber]
+        if (controllerData == null) {
+            updateControllerData()
+            controllerData = androidControllers[controllerNumber]
+                ?: androidControllers.values.firstOrNull() ?: return false
+        }
+        device?.motionRanges?.forEach {
             NativeInput.onGamePadAxisEvent(
                 controllerData.getGUID(),
                 controllerData.getPort(),

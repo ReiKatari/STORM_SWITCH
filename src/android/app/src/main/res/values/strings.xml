@@ -825,6 +825,7 @@
     <string name="apply_driver_confirm">Set \"%1$s\" as your active GPU driver?</string>
     <string name="active_driver">Active Driver</string>
     <string name="system_gpu_driver">System GPU driver</string>
+    <string name="menu_driver_use_global">Use global driver</string>
     <string name="installing_driver">Installing driver…</string>
 
     <!-- GPU driver fetcher -->
@@ -855,7 +856,7 @@
     <string name="preferences_graphics_description">Accuracy level, resolution, shader cache</string>
     <string name="quick_settings">Quick Settings</string>
     <string name="enable_quick_settings">Enable Quick Settings</string>
-    <string name="enable_quick_settings_description">Allow access to quick settings menu via swipe and menu button</string>
+    <string name="enable_quick_settings_description">Allow access to quick settings menu via two-finger upward swipe and menu button</string>
     <string name="preferences_audio">Audio</string>
     <string name="preferences_audio_description">Output engine, volume</string>
     <string name="preferences_controls">Controls</string>

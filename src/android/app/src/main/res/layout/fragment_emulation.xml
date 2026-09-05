@@ -136,6 +136,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
+                android:clickable="true"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:defaultFocusHighlightEnabled="false"
@@ -156,6 +157,8 @@
             android:id="@+id/overlay_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clickable="false"
+            android:focusable="false"
             android:fitsSystemWindows="false">
 
             <LinearLayout
@@ -216,9 +219,6 @@
                 style="@style/TextAppearance.Material3.BodySmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:maxLines="1"
-                android:ellipsize="none"
                 android:clickable="false"
                 android:focusable="false"
                 android:textColor="@android:color/white"

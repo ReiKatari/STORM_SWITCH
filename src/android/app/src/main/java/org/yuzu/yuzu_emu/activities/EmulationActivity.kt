@@ -967,12 +967,11 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                     touchDownTime = System.currentTimeMillis()
                     isTwoFingerGestureCandidate = false
 
-                    // show overlay immediately on touch and cancel timer when only auto-hide is enabled
+                    // show overlay immediately on touch and cancel timer when auto-hide is enabled
                     if (!emulationViewModel.drawerOpen.value &&
-                        BooleanSetting.ENABLE_INPUT_OVERLAY_AUTO_HIDE.getBoolean() &&
-                        !BooleanSetting.HIDE_OVERLAY_ON_CONTROLLER_INPUT.getBoolean()) {
+                        BooleanSetting.ENABLE_INPUT_OVERLAY_AUTO_HIDE.getBoolean()) {
                         fragment.handler.removeCallbacksAndMessages(null)
-                        fragment.toggleOverlay(true)
+                        fragment.handleScreenTap(false)
                     }
                 }
                 MotionEvent.ACTION_POINTER_DOWN -> {

@@ -468,21 +468,21 @@ object PerGameDrircGenerator {
         // Specific tailored options per game category:
         when (profileType) {
             GameProfileType.ZELDA -> {
-                optionsBuilder.append("\n            <!-- ZELDA SERIES RULES (Fixed 30-32+ FPS, No Missing Textures, Native ASTC, Intact Shrines) -->\n")
+                optionsBuilder.append("\n            <!-- ZELDA SERIES RULES (Fixed 30-32+ FPS, Full Hardware LRZ, Fast Clears, GMEM ASTC, Intact Shrines) -->\n")
                 optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_lrz\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_fast_clear\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_disable_lrz\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_fast_clear\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_gmem_pinning_zelda\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_direction_fix\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_botw_depth_refract_fix\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_botw_shrine_geometry_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_astc_hdr_gmem\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_fast_astc_decompress_gmem\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_astc_hdr_gmem\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_fast_astc_decompress_gmem\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_drop_tile_wfi\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_frame_time_smoothing\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_relaxed_frame_pacing\" value=\"false\" />\n")
@@ -491,7 +491,7 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_pso_fuzzy_match\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_subpass_fusion\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_subpass_fusion_v2\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"true\" />\n")
             }
             GameProfileType.DIABLO -> {
                 optionsBuilder.append("\n            <!-- DIABLO II & III RULES (Full D32 Precision, No Dropped Tiles, Maximum FPS Unlocked) -->\n")

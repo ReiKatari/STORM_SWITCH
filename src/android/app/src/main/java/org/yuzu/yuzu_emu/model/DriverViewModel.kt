@@ -168,7 +168,20 @@ class DriverViewModel : ViewModel() {
         }
     }
 
+    val isPerGame: Boolean
+        get() = activeGame != null || NativeConfig.isPerGameConfigLoaded()
+
     fun onDriverRemoved(removedPosition: Int, selectedPosition: Int) {
+        if (isPerGame) {
+            // Per-game settings must NEVER delete driver packages from storage or global settings.
+            // Reset this game's driver override to use the global driver instead.
+            StringSetting.DRIVER_PATH.global = true
+            updateDriverList()
+            updateName()
+            showClearButton(false)
+            return
+        }
+
         val driverIndex = removedPosition - 1
         if (driverIndex !in driverData.indices) {
             updateDriverList()
@@ -214,18 +227,20 @@ class DriverViewModel : ViewModel() {
                         GpuDriverHelper.installCustomDriver(globalDriverFile)
                     }
                 }
+
+                // Drivers are physically deleted from storage ONLY from global settings
+                driversToDelete.forEach {
+                    val driver = File(it)
+                    if (driver.exists()) {
+                        driver.delete()
+                    }
+                }
             } else {
                 NativeConfig.savePerGameConfig()
                 NativeConfig.unloadPerGameConfig()
                 NativeConfig.reloadGlobalConfig()
             }
 
-            driversToDelete.forEach {
-                val driver = File(it)
-                if (driver.exists()) {
-                    driver.delete()
-                }
-            }
             driversToDelete.clear()
         } finally {
             activeGame = null

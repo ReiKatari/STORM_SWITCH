@@ -34,12 +34,30 @@ class DriverAdapter(private val driverViewModel: DriverViewModel) :
                         driverViewModel.showClearButton(!StringSetting.DRIVER_PATH.global)
                     }
                 }
-                buttonDelete.setOnClickListener {
-                    removeSelectableItem(
-                        bindingAdapterPosition
-                    ) { removedPosition: Int, selectedPosition: Int ->
-                        driverViewModel.onDriverRemoved(removedPosition, selectedPosition)
-                        driverViewModel.showClearButton(!StringSetting.DRIVER_PATH.global)
+                if (driverViewModel.isPerGame) {
+                    val isCustomOverride = !StringSetting.DRIVER_PATH.global
+                    val useGlobalText = binding.root.context.getString(R.string.menu_driver_use_global)
+                    buttonDelete.setVisible(model.selected && isCustomOverride)
+                    buttonDelete.contentDescription = useGlobalText
+                    buttonDelete.tooltipText = useGlobalText
+                    buttonDelete.setOnClickListener {
+                        driverViewModel.onDriverRemoved(bindingAdapterPosition, 0)
+                        replaceList(driverViewModel.driverList.value)
+                    }
+                } else {
+                    val deleteText = binding.root.context.getString(R.string.delete)
+                    buttonDelete.contentDescription = deleteText
+                    buttonDelete.tooltipText = deleteText
+                    buttonDelete.setVisible(
+                        model.title != binding.root.context.getString(R.string.system_gpu_driver)
+                    )
+                    buttonDelete.setOnClickListener {
+                        removeSelectableItem(
+                            bindingAdapterPosition
+                        ) { removedPosition: Int, selectedPosition: Int ->
+                            driverViewModel.onDriverRemoved(removedPosition, selectedPosition)
+                            driverViewModel.showClearButton(!StringSetting.DRIVER_PATH.global)
+                        }
                     }
                 }
 
@@ -50,9 +68,6 @@ class DriverAdapter(private val driverViewModel: DriverViewModel) :
                 title.text = model.title
                 version.text = model.version
                 description.text = model.description
-                buttonDelete.setVisible(
-                    model.title != binding.root.context.getString(R.string.system_gpu_driver)
-                )
             }
         }
     }

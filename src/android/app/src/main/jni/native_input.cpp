@@ -257,16 +257,29 @@ void Java_org_yuzu_yuzu_1emu_features_input_NativeInput_onTouchReleased(JNIEnv* 
 void Java_org_yuzu_yuzu_1emu_features_input_NativeInput_onOverlayButtonEventImpl(
     JNIEnv* env, jobject j_obj, jint j_port, jint j_button_id, jint j_action) {
     if (EmulationSession::GetInstance().IsRunning()) {
-        EmulationSession::GetInstance().GetInputSubsystem().GetVirtualGamepad()->SetButtonState(
-            j_port, j_button_id, j_action == 1);
+        auto* vgamepad = EmulationSession::GetInstance().GetInputSubsystem().GetVirtualGamepad();
+        vgamepad->SetButtonState(j_port, j_button_id, j_action == 1);
+        // Ensure on-screen overlay inputs are mirrored to both Player 1 (port 0) and Handheld (port 8)
+        // so controls function seamlessly in Handheld, Docked, Tabletop, and Pro Controller styles.
+        if (j_port == 0) {
+            vgamepad->SetButtonState(8, j_button_id, j_action == 1);
+        } else if (j_port == 8) {
+            vgamepad->SetButtonState(0, j_button_id, j_action == 1);
+        }
     }
 }
 
 void Java_org_yuzu_yuzu_1emu_features_input_NativeInput_onOverlayJoystickEventImpl(
     JNIEnv* env, jobject j_obj, jint j_port, jint j_stick_id, jfloat j_x_axis, jfloat j_y_axis) {
     if (EmulationSession::GetInstance().IsRunning()) {
-        EmulationSession::GetInstance().GetInputSubsystem().GetVirtualGamepad()->SetStickPosition(
-            j_port, j_stick_id, j_x_axis, j_y_axis);
+        auto* vgamepad = EmulationSession::GetInstance().GetInputSubsystem().GetVirtualGamepad();
+        vgamepad->SetStickPosition(j_port, j_stick_id, j_x_axis, j_y_axis);
+        // Ensure on-screen joystick inputs are mirrored to both Player 1 (port 0) and Handheld (port 8)
+        if (j_port == 0) {
+            vgamepad->SetStickPosition(8, j_stick_id, j_x_axis, j_y_axis);
+        } else if (j_port == 8) {
+            vgamepad->SetStickPosition(0, j_stick_id, j_x_axis, j_y_axis);
+        }
     }
 }
 

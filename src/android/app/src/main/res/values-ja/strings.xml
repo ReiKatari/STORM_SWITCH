@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
 
     <string name="notice_notification_channel_name">通知とエラー</string>
@@ -464,6 +464,7 @@
     <!-- GPU driver installation -->
     <string name="select_gpu_driver_default">デフォルト</string>
     <string name="system_gpu_driver">システムのGPUドライバ</string>
+    <string name="menu_driver_use_global">グローバルドライバを使用</string>
     <string name="installing_driver">インストール中…</string>
 
     <!-- GPU driver fetcher -->

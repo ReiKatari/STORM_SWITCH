@@ -754,6 +754,7 @@
     <string name="apply_driver_confirm">Сделать \"%1$s\" используемым драйвером ГПУ?</string>
     <string name="active_driver">Используемый драйвер</string>
     <string name="system_gpu_driver">Системный драйвер ГПУ</string>
+    <string name="menu_driver_use_global">Использовать глобальный драйвер</string>
     <string name="installing_driver">Установка драйвера...</string>
 
     <!-- GPU driver fetcher -->
@@ -784,7 +785,7 @@
     <string name="preferences_graphics_description">Уровень точности, разрешение, кэш шейдеров</string>
     <string name="quick_settings">Быстрые настройки</string>
     <string name="enable_quick_settings">Включить быстрые настройки</string>
-    <string name="enable_quick_settings_description">Разрешить открывать меню быстрых настроек свайпом и кнопкой меню</string>
+    <string name="enable_quick_settings_description">Разрешить открывать меню быстрых настроек свайпом двумя пальцами снизу вверх и кнопкой меню</string>
     <string name="preferences_audio">Аудио</string>
     <string name="preferences_audio_description">Движок вывода, громкость</string>
     <string name="preferences_controls">Управление</string>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
 
     <string name="app_disclaimer">本软件可以运行Nintendo Switch游戏主机的游戏，但自身并不包含任何游戏或密钥。<br /><br />请于开始之前选定位于你的设备存储空间中的<![CDATA[<b>prod.keys</b>]]>。<br /><br /><![CDATA[<a href=\"https://yuzu-mirror.github.io/help/quickstart\">了解更多</a>]]></string>
@@ -704,6 +704,7 @@
     <string name="driver_already_installed">驱动已安装</string>
     <string name="installed_label">%1$s (安装成功)</string>
     <string name="system_gpu_driver">系统 GPU 驱动程序</string>
+    <string name="menu_driver_use_global">使用全局驱动程序</string>
     <string name="installing_driver">正在安装驱动程序…</string>
 
     <!-- GPU driver fetcher -->

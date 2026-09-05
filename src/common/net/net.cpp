@@ -217,24 +217,28 @@ std::optional<std::string> MakeRequest(const std::string& url, const std::string
         httplib::Result result = client->send(request);
 
         if (!result) {
-            LOG_ERROR(Common, "GET to {}{} returned null", url, path);
+            LOG_DEBUG(Common, "GET to {}{} returned null", url, path);
             return {};
         }
 
         const auto& response = result.value();
         if (response.status >= 400) {
-            LOG_ERROR(Common, "GET to {}{} returned error status code: {}", url, path,
-                      response.status);
+            if (response.status == 403 || response.status == 429 || response.status == 404) {
+                LOG_DEBUG(Common, "GET to {}{} returned status code: {}", url, path, response.status);
+            } else {
+                LOG_ERROR(Common, "GET to {}{} returned error status code: {}", url, path,
+                          response.status);
+            }
             return {};
         }
         if (!response.headers.contains("content-type")) {
-            LOG_ERROR(Common, "GET to {}{} returned no content", url, path);
+            LOG_DEBUG(Common, "GET to {}{} returned no content", url, path);
             return {};
         }
 
         return response.body;
     } catch (std::exception& e) {
-        LOG_ERROR(Common, "GET to {}{} failed during update check: {}", url, path, e.what());
+        LOG_DEBUG(Common, "GET to {}{} failed during update check: {}", url, path, e.what());
         return std::nullopt;
     }
 }
@@ -243,7 +247,7 @@ std::vector<Release> GetReleases() {
     const auto body = GetReleasesBody();
 
     if (!body) {
-        LOG_WARNING(Common, "Failed to get stable releases");
+        LOG_DEBUG(Common, "Failed to get stable releases");
         return {};
     }
 
@@ -258,7 +262,7 @@ std::optional<Release> GetLatestRelease() {
 
     const auto body = MakeRequest(url, releases_path);
     if (!body) {
-        LOG_WARNING(Common, "Failed to get latest release");
+        LOG_DEBUG(Common, "Failed to get latest release");
         return std::nullopt;
     }
 
