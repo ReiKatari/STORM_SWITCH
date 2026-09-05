@@ -4,6 +4,7 @@
 // SPDX-FileCopyrightText: 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <vector>
 #include "video_core/host1x/syncpoint_manager.h"
 
 namespace Tegra {
@@ -18,8 +19,9 @@ SyncpointManager::ActionHandle SyncpointManager::RegisterAction(
         return {};
     }
 
-    std::scoped_lock lk(guard);
+    std::unique_lock lk(guard);
     if (syncpoint.load(std::memory_order_relaxed) >= expected_value) {
+        lk.unlock();
         action();
         return {};
     }
@@ -77,16 +79,25 @@ void SyncpointManager::Increment(std::atomic<u32>& syncpoint, std::condition_var
                                  std::list<RegisteredAction>& action_storage) {
     auto new_value{syncpoint.fetch_add(1, std::memory_order_acq_rel) + 1};
 
-    std::scoped_lock lk(guard);
-    auto it = action_storage.begin();
-    while (it != action_storage.end()) {
-        if (it->expected_value > new_value) {
-            break;
+    std::vector<std::function<void()>> ready_actions;
+    {
+        std::scoped_lock lk(guard);
+        auto it = action_storage.begin();
+        while (it != action_storage.end()) {
+            if (it->expected_value > new_value) {
+                break;
+            }
+            ready_actions.push_back(std::move(it->action));
+            it = action_storage.erase(it);
         }
-        it->action();
-        it = action_storage.erase(it);
+        wait_cv.notify_all();
     }
-    wait_cv.notify_all();
+
+    for (auto& act : ready_actions) {
+        if (act) {
+            act();
+        }
+    }
 }
 
 void SyncpointManager::Wait(std::atomic<u32>& syncpoint, std::condition_variable& wait_cv,
