@@ -92,7 +92,14 @@ void DynarmicCallbacks32::ExceptionRaised(u32 pc, Dynarmic::A32::Exception excep
     switch (exception) {
     case Dynarmic::A32::Exception::NoExecuteFault:
         if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
-            LOG_WARNING(Core_ARM, "Ignoring execution fault at unmapped address {:#08x} per cpuopt_ignore_memory_aborts", pc);
+            const u32 lr = m_parent.m_jit->Regs()[14];
+            if (lr != 0 && lr != pc && m_memory.IsValidVirtualAddressRange(lr & ~1U, sizeof(u16))) {
+                LOG_WARNING(Core_ARM, "Ignoring execution fault at unmapped address {:#08x}, returning to LR {:#08x} per cpuopt_ignore_memory_aborts", pc, lr);
+                m_parent.m_jit->Regs()[15] = lr;
+                return;
+            }
+            LOG_CRITICAL(Core_ARM, "Cannot execute instruction at unmapped address {:#08x} (LR {:#08x})", pc, lr);
+            ReturnException(pc, PrefetchAbort);
             return;
         }
         LOG_CRITICAL(Core_ARM, "Cannot execute instruction at unmapped address {:#08x}", pc);
