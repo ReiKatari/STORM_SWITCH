@@ -125,8 +125,8 @@ void AndroidConfig::ReadPathValues() {
 
     const auto save_dir_setting = ReadStringSetting(std::string("save_directory"));
     if (save_dir_setting.empty()) {
-        Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir,
-            Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir));
+        const auto default_save = std::filesystem::path(Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir)) / "user" / "save";
+        Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir, default_save.string());
     } else {
         Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir, save_dir_setting);
     }
@@ -308,7 +308,8 @@ void AndroidConfig::SavePathValues() {
 
     // Save custom save directory
     const auto save_path = Common::FS::GetEdenPathString(Common::FS::EdenPath::SaveDir);
-    if (save_path == nand_path) {
+    const auto default_save = (std::filesystem::path(nand_path) / "user" / "save").string();
+    if (save_path.empty() || save_path == default_save || save_path == nand_path) {
         WriteStringSetting(std::string("save_directory"), std::string(""),
                            std::make_optional(std::string("")));
     } else {

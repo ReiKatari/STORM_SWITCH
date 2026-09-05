@@ -394,21 +394,21 @@ object PerGameDrircGenerator {
 
         // Common baseline options across all profiles:
         optionsBuilder.append("""
-            <!-- 1. Next-Gen Thermal Governor Floor & Power Optimization v5 -->
-            <option name="tu_thermal_governor_floor" value="true" />
-            <option name="tu_power_governor_floor" value="true" />
-            <option name="tu_perf_floor_clamp" value="true" />
-            <option name="tu_power_profile_balanced" value="true" />
-            <option name="tu_low_power_vulkan_pipeline" value="true" />
-            <option name="tu_dynamic_thermal_budget" value="true" />
-            <option name="tu_energy_aware_scheduling" value="true" />
+            <!-- 1. Max Performance Priority - All Thermal Floor / Dynamic Governors Disabled -->
+            <option name="tu_thermal_governor_floor" value="false" />
+            <option name="tu_power_governor_floor" value="false" />
+            <option name="tu_perf_floor_clamp" value="false" />
+            <option name="tu_power_profile_balanced" value="false" />
+            <option name="tu_low_power_vulkan_pipeline" value="false" />
+            <option name="tu_dynamic_thermal_budget" value="false" />
+            <option name="tu_energy_aware_scheduling" value="false" />
 
-            <!-- 2. Low-Latency Mailbox VSync & Dynamic Adaptive Frame Pacing -->
-            <option name="tu_adaptive_frame_pacing" value="true" />
-            <option name="tu_frame_time_smoothing" value="true" />
+            <!-- 2. Native Frame Pacing - All Artificial Downscaling & Smoothing Disabled -->
+            <option name="tu_adaptive_frame_pacing" value="false" />
+            <option name="tu_frame_time_smoothing" value="false" />
             <option name="tu_timeline_sync" value="true" />
-            <option name="tu_relaxed_frame_pacing" value="true" />
-            <option name="tu_mail_box_vsync_pacing" value="true" />
+            <option name="tu_relaxed_frame_pacing" value="false" />
+            <option name="tu_mail_box_vsync_pacing" value="false" />
 
             <!-- 3. Adreno 830 (Snapdragon 8 Elite) & A8xx Precision Architecture Tuning -->
             <option name="tu_a830_reg_size_96" value="true" />
@@ -428,16 +428,16 @@ object PerGameDrircGenerator {
             <option name="tu_ubwc_lossless_fastpath" value="true" />
             <option name="tu_disable_lossy_ubwc_depth" value="true" />
 
-            <!-- 5. Compute Flush Optimization & Binary-Search GMEM Allocator -->
+            <!-- 5. Compute Flush Optimization & Stable GMEM Allocator -->
             <option name="tu_compute_flush_bits_optimize" value="true" />
-            <option name="tu_optimal_gmem_tile_allocator" value="true" />
-            <option name="tu_lrz_preserve_across_cmdbuf" value="true" />
-            <option name="tu_drop_tile_wfi" value="true" />
+            <option name="tu_optimal_gmem_tile_allocator" value="false" />
+            <option name="tu_lrz_preserve_across_cmdbuf" value="false" />
+            <option name="tu_drop_tile_wfi" value="false" />
             <option name="tu_autotune_bypass_margin" value="true" />
 
-            <!-- 6. Zero-Overhead ASTC HDR Decompressor in GMEM & Direct WSI -->
-            <option name="tu_astc_hdr_gmem" value="true" />
-            <option name="tu_fast_astc_decompress_gmem" value="true" />
+            <!-- 6. Zero-Overhead ASTC & Direct Display WSI -->
+            <option name="tu_astc_hdr_gmem" value="false" />
+            <option name="tu_fast_astc_decompress_gmem" value="false" />
             <option name="tu_bindless_textures" value="true" />
             <option name="tu_zero_copy_subsampled_sampler" value="true" />
             <option name="tu_direct_surfaceflinger_blit" value="true" />
@@ -448,6 +448,7 @@ object PerGameDrircGenerator {
             <!-- 7. Subpass Fusion Guard: False for pure transparency & stability -->
             <option name="tu_subpass_fusion" value="false" />
             <option name="tu_subpass_fusion_v2" value="false" />
+            <option name="tu_tile_discard" value="false" />
 
             <!-- 8. Monolithic Pipeline Cache (4GB LZ4) & IR3 Optimization -->
             <option name="tu_suballocator_pool_512k" value="true" />
@@ -467,16 +468,25 @@ object PerGameDrircGenerator {
         // Specific tailored options per game category:
         when (profileType) {
             GameProfileType.ZELDA -> {
-                optionsBuilder.append("\n            <!-- ZELDA SERIES RULES (Fixed 30-32+ FPS, No Strobing, Full Text/Fonts, Crystal Water, Intact Shrines) -->\n")
+                optionsBuilder.append("\n            <!-- ZELDA SERIES RULES (Fixed 30-32+ FPS, No Missing Textures, Native ASTC, Intact Shrines) -->\n")
                 optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_disable_lrz\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_lrz_fast_clear\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_gmem_pinning_zelda\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_direction_fix\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_botw_depth_refract_fix\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_botw_shrine_geometry_fix\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_astc_hdr_gmem\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_fast_astc_decompress_gmem\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_drop_tile_wfi\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_frame_time_smoothing\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_relaxed_frame_pacing\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_ping_pong_command_submission\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_pso_fuzzy_match\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_subpass_fusion\" value=\"false\" />\n")
@@ -484,8 +494,8 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"false\" />\n")
             }
             GameProfileType.DIABLO -> {
-                optionsBuilder.append("\n            <!-- DIABLO II & III RULES (Flawless D32 Float Depth, Zero Strobing) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
+                optionsBuilder.append("\n            <!-- DIABLO II & III RULES (Full D32 Precision, No Dropped Tiles, Maximum FPS Unlocked) -->\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"true\" />\n")
@@ -494,6 +504,17 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_depth_bounds_test\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_frame_time_smoothing\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_relaxed_frame_pacing\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_canonical_pso_cache\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_pso_fuzzy_match\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_pso_dynamic_state_strip\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_subpass_fusion\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_subpass_fusion_v2\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"false\" />\n")
             }
             GameProfileType.STREETS_OF_RAGE_4 -> {
                 optionsBuilder.append("\n            <!-- STREETS OF RAGE 4 & 2D SPRITES (Pristine Pixel Art & Video Cutscenes) -->\n")
@@ -700,7 +721,7 @@ object PerGameDrircGenerator {
             }
             GameProfileType.UNIVERSAL_DEFAULT -> {
                 optionsBuilder.append("\n            <!-- UNIVERSAL STORM SWITCH DEFAULT ENGINE RULES -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"true\" />\n")

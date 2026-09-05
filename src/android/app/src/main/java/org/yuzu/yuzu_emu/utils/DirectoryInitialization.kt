@@ -111,7 +111,7 @@ object DirectoryInitialization {
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R || android.os.Environment.isExternalStorageManager()) {
                 val rootExternal = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH")
                 if (rootExternal.exists() || rootExternal.mkdirs()) {
-                    listOf("keys", "config", "config/custom", "load", "nand", "sdmc", "amiibo", "cheats", "gpu_drivers", "logs", "screenshots", "profiles").forEach { sub ->
+                    listOf("keys", "config", "config/custom", "load", "nand", "nand/user/save", "sdmc", "amiibo", "cheats", "gpu_drivers", "logs", "screenshots", "profiles").forEach { sub ->
                         File(rootExternal, sub).mkdirs()
                     }
                     val internalBaseDir = YuzuApplication.appContext.getExternalFilesDir(null) ?: YuzuApplication.appContext.filesDir
@@ -126,7 +126,7 @@ object DirectoryInitialization {
             if (!initialized) {
                 val baseDir = YuzuApplication.appContext.getExternalFilesDir(null) ?: YuzuApplication.appContext.filesDir
                 userPath = baseDir.canonicalPath
-                listOf("keys", "config", "config/custom", "load", "nand", "sdmc", "amiibo", "cheats", "gpu_drivers", "logs", "screenshots", "profiles").forEach { sub ->
+                listOf("keys", "config", "config/custom", "load", "nand", "nand/user/save", "sdmc", "amiibo", "cheats", "gpu_drivers", "logs", "screenshots", "profiles").forEach { sub ->
                     File(baseDir, sub).mkdirs()
                 }
                 NativeLibrary.setAppDirectory(userPath!!)

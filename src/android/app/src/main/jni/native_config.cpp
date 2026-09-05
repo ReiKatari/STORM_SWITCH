@@ -583,8 +583,8 @@ jstring Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getSaveDir(JNIEnv* env, jobje
 }
 
 jstring Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getDefaultSaveDir(JNIEnv* env, jobject obj) {
-    return Common::Android::ToJString(env,
-        Common::FS::GetEdenPathString(Common::FS::EdenPath::SaveDir));
+    const auto default_save = std::filesystem::path(Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir)) / "user" / "save";
+    return Common::Android::ToJString(env, default_save.string());
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setSaveDir(JNIEnv* env, jobject obj, jstring jpath) {

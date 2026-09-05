@@ -2165,10 +2165,24 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     binding.showStatsOverlayText.text = sb.toString()
 
                     // Auto-correction floating button: show ONLY if FPS < 30.0 and battery temp >= 40.0°C
-                    val shouldShowAutoCorrection = actualFps > 0.0 && actualFps < 30.0 && getBatteryTemperature() >= 40.0f
+                    val currentBatteryTemp = getBatteryTemperature()
+                    val shouldShowAutoCorrection = actualFps > 0.0 && actualFps < 30.0 && currentBatteryTemp >= 40.0f
                     val targetVisibility = if (shouldShowAutoCorrection) View.VISIBLE else View.GONE
                     if (binding.buttonFloatingAutoCorrection.visibility != targetVisibility) {
                         binding.buttonFloatingAutoCorrection.visibility = targetVisibility
+                    }
+
+                    // Emergency thermal protection: if chipset reaches critical temperature (>= 52.0°C),
+                    // trigger forced pause to allow the hardware to cool down safely, without ever throttling FPS during active gameplay.
+                    if (currentBatteryTemp >= 52.0f && this@EmulationFragment::emulationState.isInitialized && !emulationState.isPaused) {
+                        pauseEmulationAndCaptureFrame()
+                        context?.let { ctx ->
+                            android.widget.Toast.makeText(
+                                ctx,
+                                "🌡️ Экстренная пауза: нагрев чипсета ${String.format(java.util.Locale.US, "%.1f", currentBatteryTemp)}°C. Охлаждение устройства...",
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
                 perfStatsUpdateHandler.postDelayed(perfStatsRunnable!!, 800)
