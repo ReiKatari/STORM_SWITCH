@@ -119,8 +119,23 @@ void AppendCommaIfNotEmpty(std::string& to, std::string_view with) {
     }
 }
 
+bool HasAnyFilesRecursive(const VirtualDir& dir) {
+    if (dir == nullptr) {
+        return false;
+    }
+    if (!dir->GetFiles().empty()) {
+        return true;
+    }
+    for (const auto& subdir : dir->GetSubdirectories()) {
+        if (HasAnyFilesRecursive(subdir)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool IsDirValidAndNonEmpty(const VirtualDir& dir) {
-    return dir != nullptr && (!dir->GetFiles().empty() || !dir->GetSubdirectories().empty());
+    return HasAnyFilesRecursive(dir);
 }
 
 bool IsVersionedExternalUpdateDisabled(const std::vector<std::string>& disabled, u32 version) {
@@ -1144,11 +1159,17 @@ std::vector<Patch> PatchManager::GetPatches(VirtualFile update_raw) const {
                     AppendCommaIfNotEmpty(types, "LayeredExeFS");
             }
             if (Common::ToLower(mod->GetName()) == "romfs" || Common::ToLower(mod->GetName()) == "romfslite") {
-                AppendCommaIfNotEmpty(types, "LayeredFS");
+                if (IsDirValidAndNonEmpty(mod)) {
+                    AppendCommaIfNotEmpty(types, "LayeredFS");
+                }
             } else if (Common::ToLower(mod->GetName()) == "exefs") {
-                AppendCommaIfNotEmpty(types, "LayeredExeFS");
+                if (IsDirValidAndNonEmpty(mod)) {
+                    AppendCommaIfNotEmpty(types, "LayeredExeFS");
+                }
             } else if (Common::ToLower(mod->GetName()) == "cheats") {
-                AppendCommaIfNotEmpty(types, "Cheats");
+                if (IsDirValidAndNonEmpty(mod)) {
+                    AppendCommaIfNotEmpty(types, "Cheats");
+                }
             }
 
             if (IsDirValidAndNonEmpty(FindSubdirectoryCaseless(mod, "romfs")) ||

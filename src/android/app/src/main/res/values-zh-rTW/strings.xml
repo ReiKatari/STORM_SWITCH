@@ -509,7 +509,7 @@
     <string name="renderer_api">API</string>
     <string name="renderer_debug">圖形偵錯</string>
     <string name="renderer_debug_description">將圖形 API 設為慢速偵錯模式。</string>
-    <string name="fastmem">Fastmem</string>
+    <string name="fastmem">快速記憶體 (Fastmem)</string>
 
     <string name="log">日誌記錄</string>
     <string name="flush_by_line">按行寫入偵錯日誌</string>
@@ -672,7 +672,7 @@
     <string name="preferences_controls_description">控制器輸入配對</string>
     <string name="preferences_player">玩家 %d</string>
     <string name="preferences_debug">偵錯</string>
-    <string name="preferences_debug_description">CPU/GPU 偵錯、圖形 API 及 fastmem</string>
+    <string name="preferences_debug_description">CPU/GPU 偵錯、圖形 API 及快速記憶體 (Fastmem)</string>
     <!-- Game properties -->
     <string name="info">資訊</string>
     <string name="info_description">程式 ID、開發人員及版本資訊</string>

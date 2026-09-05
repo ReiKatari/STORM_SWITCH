@@ -45,6 +45,10 @@ nvhost_gpu::nvhost_gpu(Core::System& system_, EventInterface& events_interface_,
 }
 
 nvhost_gpu::~nvhost_gpu() {
+    if (error_notifier_handle != 0) {
+        nvmap.UnpinHandle(error_notifier_handle);
+        error_notifier_handle = 0;
+    }
     events_interface.FreeEvent(sm_exception_breakpoint_int_report_event);
     events_interface.FreeEvent(sm_exception_breakpoint_pause_report_event);
     events_interface.FreeEvent(error_notifier_event);
@@ -161,8 +165,16 @@ NvResult nvhost_gpu::ZCullBind(IoctlZCullBind& params) {
 }
 
 NvResult nvhost_gpu::SetErrorNotifier(IoctlSetErrorNotifier& params) {
-    LOG_WARNING(Service_NVDRV, "(STUBBED) called, offset={:X}, size={:X}, mem={:X}", params.offset,
-                params.size, params.mem);
+    LOG_INFO(Service_NVDRV, "called, offset={:X}, size={:X}, mem={:X}", params.offset,
+             params.size, params.mem);
+    if (error_notifier_handle != 0) {
+        nvmap.UnpinHandle(error_notifier_handle);
+        error_notifier_handle = 0;
+    }
+    if (params.mem != 0) {
+        nvmap.PinHandle(params.mem, false);
+        error_notifier_handle = params.mem;
+    }
     return NvResult::Success;
 }
 

@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
@@ -151,6 +152,28 @@ class GameBananaDialogFragment : DialogFragment() {
             val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.85).toInt()
             window.setLayout(width, height)
             window.setBackgroundDrawableResource(R.drawable.eden_dialog_background)
+
+            val customPanel = window.findViewById<View>(androidx.appcompat.R.id.customPanel)
+            if (customPanel != null) {
+                val params = customPanel.layoutParams
+                if (params is LinearLayout.LayoutParams) {
+                    params.weight = 1f
+                    params.height = 0
+                    customPanel.layoutParams = params
+                }
+            }
+
+            val buttonPanel = window.findViewById<View>(androidx.appcompat.R.id.buttonPanel)
+            if (buttonPanel != null) {
+                buttonPanel.setPadding(buttonPanel.paddingLeft, 0, buttonPanel.paddingRight, 0)
+                buttonPanel.minimumHeight = 0
+                val btnParams = buttonPanel.layoutParams
+                if (btnParams is ViewGroup.MarginLayoutParams) {
+                    btnParams.topMargin = 0
+                    btnParams.bottomMargin = 0
+                    buttonPanel.layoutParams = btnParams
+                }
+            }
         }
     }
 

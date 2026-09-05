@@ -3875,6 +3875,7 @@ object GameFixDatabase {
                 for ((k, v) in map) {
                     sb.append("$k = $v\n")
                     sb.append("$k\\use_global = false\n")
+                    sb.append("$k\\default = false\n")
                 }
                 sb.append("\n")
             }

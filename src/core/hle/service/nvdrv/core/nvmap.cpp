@@ -267,8 +267,10 @@ void NvMap::UnpinHandle(Handle::Id handle) {
         std::scoped_lock queueLock(unmap_queue_lock);
 
         // Add to the unmap queue allowing this handle's memory to be freed if needed
-        unmap_queue.push_back(handle_description);
-        handle_description->unmap_queue_entry = std::prev(unmap_queue.end());
+        if (!handle_description->unmap_queue_entry.has_value()) {
+            unmap_queue.push_back(handle_description);
+            handle_description->unmap_queue_entry = std::prev(unmap_queue.end());
+        }
     }
 }
 

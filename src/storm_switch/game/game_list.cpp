@@ -516,10 +516,10 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         shortcut_menu->addAction(tr("В меню приложений"));
 #endif
     context_menu.addSeparator();
-    QAction* mod_manager_action = context_menu.addAction(QIcon::fromTheme(QStringLiteral("applications-games")), tr("Менеджер модов..."));
-    QAction* cheats_action = context_menu.addAction(QIcon::fromTheme(QStringLiteral("applications-utilities")), tr("Чит-коды..."));
-    QAction* properties = context_menu.addAction(QIcon::fromTheme(QStringLiteral("configure")), tr("Свойства / Настройки игры..."));
-    QAction* reset_game_settings = context_menu.addAction(QIcon::fromTheme(QStringLiteral("edit-undo")), tr("🔄 Сбросить настройки игры на стандартные"));
+    QAction* mod_manager_action = context_menu.addAction(tr("🧩 Менеджер модов..."));
+    QAction* cheats_action = context_menu.addAction(tr("✨ Чит-коды..."));
+    QAction* properties = context_menu.addAction(tr("⚙️ Свойства / Настройки игры..."));
+    QAction* reset_game_settings = context_menu.addAction(tr("🔄 Сбросить настройки игры на стандартные"));
 
     favorite->setVisible(program_id != 0);
     favorite->setCheckable(true);

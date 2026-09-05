@@ -147,13 +147,15 @@ object GameHelper {
     }
 
     fun getGameDeduplicationKey(game: Game): String {
+        val ext = game.path.substringAfterLast('.', "").lowercase(Locale.ROOT)
+        val extSuffix = if (ext.isNotEmpty()) "_$ext" else ""
         val pid = game.programIdHex.trim()
         if (pid != "0" && pid.isNotEmpty()) {
-            return "PID_$pid"
+            return "PID_${pid}${extSuffix}"
         }
         val cleanTitle = cleanGameTitle(game.title).lowercase(Locale.ROOT).trim()
         if (cleanTitle.isNotEmpty() && cleanTitle != "homebrew") {
-            return "TITLE_$cleanTitle"
+            return "TITLE_${cleanTitle}${extSuffix}"
         }
         return game.path
     }

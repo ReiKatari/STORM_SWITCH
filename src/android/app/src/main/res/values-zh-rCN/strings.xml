@@ -553,7 +553,7 @@
     <string name="renderer_debug_description">将图形 API 设置为较慢的调试模式。</string>
     <string name="patch_old_qcom_drivers">BCn 纹理补丁</string>
     <string name="patch_old_qcom_drivers_description">在 Adreno GPU 上覆盖自动 BCn 纹理格式检测。通常根据 Android 版本自动检测（在 API 28 及以上启用）。</string>
-    <string name="fastmem">Fastmem</string>
+    <string name="fastmem">快速内存 (Fastmem)</string>
 
     <string name="log">日志记录</string>
     <string name="flush_by_line">按行刷新调试日志</string>
@@ -742,7 +742,7 @@
     <string name="preferences_controls_description">映射控制器键位输入</string>
     <string name="preferences_player">玩家 %d</string>
     <string name="preferences_debug">调试</string>
-    <string name="preferences_debug_description">CPU/GPU 调试、图形 API 以及 fastmem</string>
+    <string name="preferences_debug_description">CPU/GPU 调试、图形 API 以及快速内存 (Fastmem)</string>
     <string name="preferences_custom_paths">自定义路径</string>
     <string name="preferences_custom_paths_description">存档目录</string>
 

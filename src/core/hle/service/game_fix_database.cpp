@@ -3975,54 +3975,62 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             }
         };
 
-        auto apply_if_global = [](auto& setting, auto val) {
-            if (setting.UsingGlobal()) {
+        auto apply_setting = [](auto& setting, auto val) {
+            if constexpr (requires { setting.SetGlobal(false); }) {
                 setting.SetValue(val);
                 setting.SetGlobal(false);
+            } else {
+                setting.SetValue(val);
             }
         };
 
         for (const auto& [full_key, val] : profile->ini_settings) {
             if (full_key == "Renderer\\gpu_accuracy") {
-                apply_if_global(Settings::values.gpu_accuracy, static_cast<Settings::GpuAccuracy>(safe_stoi(val, 0)));
+                apply_setting(Settings::values.gpu_accuracy, static_cast<Settings::GpuAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\barrier_feedback_loops") {
-                apply_if_global(Settings::values.barrier_feedback_loops, val == "true" || val == "1");
+                apply_setting(Settings::values.barrier_feedback_loops, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_reactive_flushing") {
-                apply_if_global(Settings::values.use_reactive_flushing, val == "true" || val == "1");
+                apply_setting(Settings::values.use_reactive_flushing, val == "true" || val == "1");
             } else if (full_key == "Renderer\\astc_recompression") {
-                apply_if_global(Settings::values.astc_recompression, static_cast<Settings::AstcRecompression>(safe_stoi(val, 0)));
+                apply_setting(Settings::values.astc_recompression, static_cast<Settings::AstcRecompression>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\use_asynchronous_shaders") {
-                apply_if_global(Settings::values.use_asynchronous_shaders, val == "true" || val == "1");
+                apply_setting(Settings::values.use_asynchronous_shaders, val == "true" || val == "1");
             } else if (full_key == "Renderer\\max_anisotropy") {
-                apply_if_global(Settings::values.max_anisotropy, static_cast<Settings::AnisotropyMode>(safe_stoi(val, 0)));
+                apply_setting(Settings::values.max_anisotropy, static_cast<Settings::AnisotropyMode>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\resolution_setup") {
-                apply_if_global(Settings::values.resolution_setup, static_cast<Settings::ResolutionSetup>(safe_stoi(val, 2)));
+                apply_setting(Settings::values.resolution_setup, static_cast<Settings::ResolutionSetup>(safe_stoi(val, 2)));
             } else if (full_key == "Renderer\\fsr_sharpening_slider") {
-                apply_if_global(Settings::values.fsr_sharpening_slider, static_cast<u8>(safe_stoi(val, 0)));
+                apply_setting(Settings::values.fsr_sharpening_slider, static_cast<u8>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\use_fast_gpu_time") {
-                apply_if_global(Settings::values.gpu_clock, val == "true" || val == "1" ? Settings::GpuClock::Boost : Settings::GpuClock::Normal);
+                apply_setting(Settings::values.gpu_clock, val == "true" || val == "1" ? Settings::GpuClock::Boost : Settings::GpuClock::Normal);
             } else if (full_key == "Renderer\\dyna_state") {
-                apply_if_global(Settings::values.dyna_state, static_cast<Settings::ExtendedDynamicState>(safe_stoi(val, 0)));
+                apply_setting(Settings::values.dyna_state, static_cast<Settings::ExtendedDynamicState>(safe_stoi(val, 0)));
             } else if (full_key == "System\\airplane_mode") {
-                apply_if_global(Settings::values.airplane_mode, val == "true" || val == "1");
+                apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
-                apply_if_global(Settings::values.memory_layout_mode, static_cast<Settings::MemoryLayout>(safe_stoi(val, 0)));
+                apply_setting(Settings::values.memory_layout_mode, static_cast<Settings::MemoryLayout>(safe_stoi(val, 0)));
             } else if (full_key == "System\\use_docked_mode") {
-                apply_if_global(Settings::values.use_docked_mode, static_cast<Settings::ConsoleMode>(safe_stoi(val, 0)));
+                apply_setting(Settings::values.use_docked_mode, static_cast<Settings::ConsoleMode>(safe_stoi(val, 0)));
             } else if (full_key == "Cpu\\cpu_backend") {
-                apply_if_global(Settings::values.cpu_backend, static_cast<Settings::CpuBackend>(safe_stoi(val, 1)));
+                apply_setting(Settings::values.cpu_backend, static_cast<Settings::CpuBackend>(safe_stoi(val, 1)));
             } else if (full_key == "Cpu\\cpu_accuracy") {
-                apply_if_global(Settings::values.cpu_accuracy, static_cast<Settings::CpuAccuracy>(safe_stoi(val, 1)));
+                apply_setting(Settings::values.cpu_accuracy, static_cast<Settings::CpuAccuracy>(safe_stoi(val, 1)));
             } else if (full_key == "Cpu\\cpuopt_fastmem") {
-                apply_if_global(Settings::values.cpuopt_fastmem, val == "true" || val == "1");
+                apply_setting(Settings::values.cpuopt_fastmem, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_ignore_memory_aborts") {
+                apply_setting(Settings::values.cpuopt_ignore_memory_aborts, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_recompile_exclusives") {
+                apply_setting(Settings::values.cpuopt_recompile_exclusives, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_fastmem_exclusives") {
+                apply_setting(Settings::values.cpuopt_fastmem_exclusives, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_vulkan_driver_pipeline_cache") {
-                apply_if_global(Settings::values.use_vulkan_driver_pipeline_cache, val == "true" || val == "1");
+                apply_setting(Settings::values.use_vulkan_driver_pipeline_cache, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_disk_shader_cache") {
-                apply_if_global(Settings::values.use_disk_shader_cache, val == "true" || val == "1");
+                apply_setting(Settings::values.use_disk_shader_cache, val == "true" || val == "1");
             } else if (full_key == "Renderer\\enable_compute_pipelines") {
-                apply_if_global(Settings::values.enable_compute_pipelines, val == "true" || val == "1");
+                apply_setting(Settings::values.enable_compute_pipelines, val == "true" || val == "1");
             } else if (full_key == "System\\eco_thermal_mode") {
-                apply_if_global(Settings::values.eco_thermal_mode, val == "true" || val == "1");
+                apply_setting(Settings::values.eco_thermal_mode, val == "true" || val == "1");
             }
         }
         Settings::UpdateGPUAccuracy();

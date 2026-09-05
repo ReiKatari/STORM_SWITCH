@@ -599,7 +599,7 @@
     <string name="renderer_debug_description">Переводит графический API в режим медленной отладки.</string>
     <string name="patch_old_qcom_drivers">Исправление текстур BCn</string>
     <string name="patch_old_qcom_drivers_description">Переопределить автоматическое определение формата BCn-текстур на ГПУ Adreno. Обычно определяется автоматически на основе версии Android (включено начиная с API 28+).</string>
-    <string name="fastmem">Небезопасные оптимизации</string>
+    <string name="fastmem">Быстрая память (Fastmem)</string>
 
     <string name="log">Логирование</string>
     <string name="flush_by_line">Сброс логов по строкам</string>
@@ -792,7 +792,7 @@
     <string name="preferences_controls_description">Маппинг контроллера</string>
     <string name="preferences_player">Игрок %d</string>
     <string name="preferences_debug">Отладка</string>
-    <string name="preferences_debug_description">Отладка ЦП/ГПУ, графический API, fastmem</string>
+    <string name="preferences_debug_description">Отладка ЦП/ГПУ, графический API, быстрая память (Fastmem)</string>
     <string name="preferences_custom_paths">Пользовательские пути</string>
     <string name="preferences_custom_paths_description">Папка сохранений</string>
 

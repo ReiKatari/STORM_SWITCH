@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -105,6 +106,28 @@ class AmiiboDialogFragment : DialogFragment() {
             val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.85).toInt()
             window.setLayout(width, height)
             window.setBackgroundDrawableResource(R.drawable.eden_dialog_background)
+
+            val customPanel = window.findViewById<View>(androidx.appcompat.R.id.customPanel)
+            if (customPanel != null) {
+                val params = customPanel.layoutParams
+                if (params is LinearLayout.LayoutParams) {
+                    params.weight = 1f
+                    params.height = 0
+                    customPanel.layoutParams = params
+                }
+            }
+
+            val buttonPanel = window.findViewById<View>(androidx.appcompat.R.id.buttonPanel)
+            if (buttonPanel != null) {
+                buttonPanel.setPadding(buttonPanel.paddingLeft, 0, buttonPanel.paddingRight, 0)
+                buttonPanel.minimumHeight = 0
+                val btnParams = buttonPanel.layoutParams
+                if (btnParams is ViewGroup.MarginLayoutParams) {
+                    btnParams.topMargin = 0
+                    btnParams.bottomMargin = 0
+                    buttonPanel.layoutParams = btnParams
+                }
+            }
         }
     }
 

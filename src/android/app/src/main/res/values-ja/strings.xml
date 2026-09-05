@@ -393,7 +393,7 @@
     <string name="renderer_api">API</string>
     <string name="renderer_debug">グラフィックデバッグ</string>
     <string name="renderer_debug_description">グラフィックAPIを低速デバッグモードに設定します。</string>
-    <string name="fastmem">Fastmem</string>
+    <string name="fastmem">高速メモリ (Fastmem)</string>
 
     <string name="log">ロギング</string>
     <string name="flush_by_line">デバッグログを行ごとにフラッシュ</string>
@@ -493,6 +493,7 @@
     <string name="preferences_audio">サウンド</string>
     <string name="preferences_controls">操作</string>
     <string name="preferences_debug">デバッグ</string>
+    <string name="preferences_debug_description">CPU/GPUデバッグ、グラフィックAPI、高速メモリ (Fastmem)</string>
     <!-- Game properties -->
     <string name="info">情報</string>
     <string name="path">パス</string>

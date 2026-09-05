@@ -696,7 +696,7 @@
     <string name="preferences_controls_description">Mapper l\'entrée du contrôleur</string>
     <string name="preferences_player">Joueur %d</string>
     <string name="preferences_debug">Débogage</string>
-    <string name="preferences_debug_description">Débogage CPU/GPU, API graphique, fastmem</string>
+    <string name="preferences_debug_description">Débogage CPU/GPU, API graphique, Fastmem</string>
     <string name="preferences_custom_paths">Chemins personnalisés</string>
     <string name="preferences_custom_paths_description">Sauvegarder le répertoire des données</string>
 
