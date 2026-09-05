@@ -568,6 +568,17 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     bool has_gamepath = false;
     bool is_fullscreen = false;
 
+    auto is_known_option = [](const QString& arg) {
+        return arg == QStringLiteral("-f") ||
+               arg == QStringLiteral("-u") ||
+               arg == QStringLiteral("-g") ||
+               arg == QStringLiteral("-input-profile") ||
+               arg == QStringLiteral("-qlaunch") ||
+               arg == QStringLiteral("-hlaunch") ||
+               arg == QStringLiteral("-setup") ||
+               arg.startsWith(QStringLiteral("--"));
+    };
+
     // Preserves drag/drop functionality
     for (int i = 1; i < args.size(); ++i) {
         if (args[i] == QStringLiteral("-f")) {
@@ -599,7 +610,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
         } else if (args[i] == QStringLiteral("-g") && i < args.size() - 1) {
             // Launch game at path
             game_path = args[++i];
-            while (i + 1 < args.size() && !args[i + 1].startsWith(QStringLiteral("-"))) {
+            while (i + 1 < args.size() && !is_known_option(args[i + 1])) {
                 game_path += QStringLiteral(" ") + args[++i];
             }
             game_path.remove(QLatin1Char('\"'));
@@ -613,7 +624,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
             should_launch_hlaunch = true;
         } else if (args[i] == QStringLiteral("-setup")) {
             should_launch_setup = true;
-        } else if (!args[i].startsWith(QStringLiteral("-"))) {
+        } else if (!is_known_option(args[i])) {
             if (game_path.isEmpty()) {
                 game_path = args[i];
             } else {

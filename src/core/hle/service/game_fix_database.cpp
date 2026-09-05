@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "core/hle/service/game_fix_database.h"
@@ -77,7 +77,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Cronos: Before the Ashes",
         "• Некорректное темное изображение и сбои освещения UE4\n• Артефакты постобработки и размытия",
         "• Incorrect dark image and UE4 lighting corruption\n• Post-processing and motion blur artifacts",
-        "✓ Реактивная очистка: Отключено (исправление освещения UE4)\n✓ Точность GPU: Высокая (FP16 точность шейдеров)\n✓ Сжатие ASTC: Отключено\n✓ Barrier Feedback Loops: Включено",
+        "✓ Реактивная очистка: Отключено (исправление освещения UE4)\n✓ Точность ГПУ: Высокая (точность шейдеров FP16)\n✓ Сжатие ASTC: Отключено\n✓ Barrier Feedback Loops: Включено",
         "✓ Reactive Flushing: Disabled (Fixes UE4 lighting)\n✓ GPU Accuracy: High (FP16 shader precision)\n✓ ASTC Recompression: Uncompressed\n✓ Barrier Feedback Loops: Enabled",
         {
             {"Renderer\\use_reactive_flushing", "false"},
@@ -91,7 +91,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Outer Worlds",
         "• Некорректное изображение и черные ореолы вокруг объектов\n• Сбои TAA и темные артефакты геометрии UE4",
         "• Corrupted rendering and black halos around objects\n• TAA glitches and dark UE4 geometry artifacts",
-        "✓ Реактивная очистка: Отключено (исправление черных ореолов)\n✓ Точность GPU: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Barrier Feedback Loops: Включено\n✓ Память: 8GB DRAM",
+        "✓ Реактивная очистка: Отключено (исправление черных ореолов)\n✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Barrier Feedback Loops: Включено\n✓ Память: 8GB DRAM",
         "✓ Reactive Flushing: Disabled (Fixes black halos)\n✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Barrier Feedback Loops: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\use_reactive_flushing", "false"},
@@ -107,7 +107,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Elder Scrolls V: Skyrim",
         "• Некорректное изображение водной глади и искажения отражений\n• Артефакты сжатия снега и текстур ландшафта",
         "• Incorrect water rendering and reflection distortion\n• Snow and terrain texture compression artifacts",
-        "✓ Сжатие ASTC: Отключено (четкие текстуры снега и гор)\n✓ Реактивная очистка: Отключено (исправление отражений воды)\n✓ Точность GPU: Высокая",
+        "✓ Сжатие ASTC: Отключено (четкие текстуры снега и гор)\n✓ Реактивная очистка: Отключено (исправление отражений воды)\n✓ Точность ГПУ: Высокая",
         "✓ ASTC Recompression: Uncompressed (Crisp snow and terrain)\n✓ Reactive Flushing: Disabled (Fixes water reflections)\n✓ GPU Accuracy: High",
         {
             {"Renderer\\astc_recompression", "0"},
@@ -136,7 +136,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Breath of the Wild",
         "• Черный силуэт Линка из-за рассинхрона буфера освещения и трафарета\n• Белые вспышки и мерцание освещения/погоды\n• Пропадание текстур скал и земли при нехватке памяти\n• Бирюзовая сетка и артефакты Z-буфера в Святилищах",
         "• Link black silhouette caused by unsynced lighting and stencil buffers\n• White screen flashes and lighting flicker\n• Ground and terrain textures disappearing due to memory pressure\n• Shrine depth bias / cyan grid artifacts",
-        "✓ Точность GPU: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Отключено (устранение белой воды)\n✓ Сжатие ASTC: Среднее (BC3, устранение вытеснения текстур)\n✓ Быстрое время GPU: Включено (стабильные 30-32 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM (оптимально для текстур и стабильности)",
+        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Отключено (устранение белой воды)\n✓ Сжатие ASTC: Среднее (BC3, устранение вытеснения текстур)\n✓ Быстрое время ГПУ: Включено (стабильные 30-32 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM (оптимально для текстур и стабильности)",
         "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Disabled (Fixes white water)\n✓ ASTC Recompression: Medium (BC3, prevents texture dropping)\n✓ Fast GPU Time: Enabled (Stable 30-32 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM (Optimal stability)",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -153,7 +153,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Tears of the Kingdom",
         "• Черный силуэт персонажей и тени в Кавернах\n• Бирюзовая сетка и артефакты Z-буфера на водных поверхностях\n• Утечки VRAM в конструкторе Ультраруки",
         "• Character silhouette and shadow artifacts in Depths\n• Water surface and depth bias cyan grid artifacts\n• Ultrahand VRAM pressure",
-        "✓ Точность GPU: Высокая (исправление теней и освещения)\n✓ Реактивная очистка: Отключено\n✓ Сжатие ASTC: Отключено\n✓ Быстрое время GPU: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Реактивная очистка: Отключено\n✓ Сжатие ASTC: Отключено\n✓ Быстрое время ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High (Fixes character shadows and lighting)\n✓ Reactive Flushing: Disabled\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -170,7 +170,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Paper Mario: The Thousand-Year Door",
         "• Черный экран на катсценах в прологе\n• Сбои 2D-шрифтов диалогов и мерцание текстур",
         "• Black screen during prologue cutscenes\n• Corrupted battle text boxes and flickering textures",
-        "✓ Точность GPU: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Включено",
         "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -182,7 +182,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         0x0100B5B0112F8000ULL,
         "Hogwarts Legacy",
         "• Вылет из-за нехватки памяти при загрузке замка Хогвартс\n• Высокое потребление ОЗУ (>8.5 ГБ) на мобильных чипах",
-        "• Out of memory (OOM) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
+        "• Out of memory (нехватка памяти) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
         "✓ Разрешение: Handheld 0.75X + FSR 80%\n✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
         "✓ Resolution: Handheld 0.75X + FSR 80%\n✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
         {
@@ -196,7 +196,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         0x0100D1801648E000ULL,
         "Hogwarts Legacy",
         "• Вылет из-за нехватки памяти при загрузке замка Хогвартс\n• Высокое потребление ОЗУ (>8.5 ГБ) на мобильных чипах",
-        "• Out of memory (OOM) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
+        "• Out of memory (нехватка памяти) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
         "✓ Разрешение: Handheld 0.75X + FSR 80%\n✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
         "✓ Resolution: Handheld 0.75X + FSR 80%\n✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
         {
@@ -209,9 +209,9 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
         0x01002A801458A000ULL,
         "Diablo II: Resurrected",
-        "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",
-        "• Character load / continue game crash (OOM)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время GPU: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)",
+        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",
+        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts",
+        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)",
         "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)",
         {
             {"Core\\memory_layout_mode", "2"},
@@ -227,9 +227,9 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100916014D8C000ULL,
         "Diablo II: Resurrected",
-        "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",
-        "• Character load / continue game crash (OOM)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время GPU: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)",
+        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",
+        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts",
+        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)",
         "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)",
         {
             {"Core\\memory_layout_mode", "2"},
@@ -245,9 +245,9 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100726014352000ULL,
         "Diablo II: Resurrected",
-        "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",
-        "• Character load / continue game crash (OOM)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время GPU: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)",
+        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",
+        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts",
+        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)",
         "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)",
         {
             {"Core\\memory_layout_mode", "2"},
@@ -277,8 +277,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "LEGO Star Wars: The Skywalker Saga",
         "• Бесконечная загрузка на заставке\n• Зависание асинхронного таймера GPU при обращении к ресурсам\n• Блокировка сетевой телеметрии WB на Android",
         "• Infinite loading screen (TT Games loading indicator loop)\n• GPU async timer deadlock during asset initialization\n• WB telemetry network deadlock on Android",
-        "✓ Режим полёта: Включено (критично для запуска на Android!)\n✓ Быстрое время GPU: Отключено (устраняет вечную загрузку!)\n✓ Динамическое состояние: Базовое\n✓ Точность GPU: Высокая\n✓ Точность CPU: Точная\n✓ Реактивная очистка: Отключено\n✓ Память: 8GB DRAM",
-        "✓ Airplane Mode: Enabled (Critical for Android launch!)\n✓ Fast GPU Time: Disabled (Fixes infinite loading!)\n✓ Dynamic State: Basic (EDS1)\n✓ GPU Accuracy: High\n✓ CPU Accuracy: Accurate\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM",
+        "✓ Режим полёта: Включено (критично для запуска на Android!)\n✓ Быстрое время ГПУ: Отключено (устраняет вечную загрузку!)\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Точность ЦП: Точная\n✓ Реактивная очистка: Отключено\n✓ Память: 8GB DRAM",
+        "✓ Airplane Mode: Enabled (Critical for Android launch!)\n✓ Fast GPU Time: Disabled (Fixes infinite loading!)\n✓ Dynamic State: Basic\n✓ GPU Accuracy: High\n✓ CPU Accuracy: Accurate\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"System\\airplane_mode", "true"},
             {"System\\memory_layout_mode", "1"},
@@ -296,7 +296,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Red Dead Redemption",
         "• Хрипы и рассинхронизация звука в катсценах\n• Микрофризы физических потоков RAGE Engine",
         "• Audio crackling and desync in cutscenes\n• Micro-stutters in RAGE Engine physics threads",
-        "✓ Точность CPU: Точная\n✓ Аудио-буфер Cubeb: 80 ms\n✓ Синхронизация памяти: Отключено",
+        "✓ Точность ЦП: Точная\n✓ Аудио-буфер Cubeb: 80 ms\n✓ Синхронизация памяти: Отключено",
         "✓ CPU Accuracy: Accurate\n✓ Cubeb Audio Buffer: 80 ms\n✓ Sync Memory Ops: Disabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -308,7 +308,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Luigi's Mansion 3",
         "• Растягивание полигонов (взрывы геометрии)\n• Невидимый луч фонарика и зависания в лифте",
         "• Vertex explosion (stretched geometry)\n• Invisible flashlight beam and elevator freeze",
-        "✓ Расширенное динамическое состояние: Включено\n✓ Точность GPU: Высокая\n✓ Точность CPU: Точная",
+        "✓ Расширенное динамическое состояние: Включено\n✓ Точность ГПУ: Высокая\n✓ Точность ЦП: Точная",
         "✓ Extended Dynamic State: Enabled\n✓ GPU Accuracy: High\n✓ CPU Accuracy: Accurate",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -321,7 +321,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Bayonetta 3",
         "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний",
         "• Invisible character/enemy models on Snapdragon SoCs\n• Black screen after QTE sequences",
-        "✓ Контроль отсечения глубины: Включено\n✓ Точность GPU: Высокая",
+        "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Depth Clip Control: Enabled (STORM DRIVER)\n✓ GPU Accuracy: High",
         {
             {"Renderer\\gpu_accuracy", "1"}
@@ -366,7 +366,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokemon Legends: Arceus",
         "• Вытягивание полигонов травы и деревьев в небо\n• Сбои теней на аренах",
         "• Vertex explosion on trees and grass geometry\n• Shadow glitches during battle transitions",
-        "✓ Точность GPU: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Декодирование ASTC на GPU: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Декодирование ASTC на GPU: Включено",
         "✓ GPU Accuracy: High\n✓ Anisotropic Filtering: 16x\n✓ ASTC GPU Decode: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -470,7 +470,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario + Rabbids Sparks of Hope",
         "• Вылет движка Snowdrop при переходе в тактический бой",
         "• Snowdrop engine crash on tactical combat transition",
-        "✓ Точность DMA: Safe\n✓ Точность GPU: Высокая\n✓ Barrier Feedback Loops: Включено",
+        "✓ Точность DMA: Safe\n✓ Точность ГПУ: Высокая\n✓ Barrier Feedback Loops: Включено",
         "✓ DMA Accuracy: Safe\n✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled",
         {
             {"Renderer\\dma_accuracy", "1"},
@@ -496,7 +496,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Dark Souls: Remastered",
         "• Просадки кадровой частоты у костров и зацикливание звука баффов",
         "• Bonfire particle slowdown and weapon buff sound loop",
-        "✓ Точность CPU: Точная\n✓ Точность GPU: Высокая\n✓ Аудио-движок: Cubeb",
+        "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая\n✓ Аудио-движок: Cubeb",
         "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High\n✓ Audio Engine: Cubeb",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -508,7 +508,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты и пропадание звуковых дорожек",
         "• Frame drops and missing audio tracks on startup",
-        "✓ Аудио-движок: SDL2 / Cubeb\n✓ Быстрая память (Fastmem): Безопасный режим\n✓ Асинхронные шейдеры: Включено",
+        "✓ Аудио-движок: SDL2 / Cubeb\n✓ Быстрая память: Безопасный режим\n✓ Асинхронные шейдеры: Включено",
         "✓ Audio Engine: SDL2 / Cubeb\n✓ Fastmem: Safe Mode\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -520,7 +520,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты и пропадание звуковых дорожек",
         "• Frame drops and missing audio tracks on startup",
-        "✓ Аудио-движок: SDL2 / Cubeb\n✓ Быстрая память (Fastmem): Безопасный режим\n✓ Асинхронные шейдеры: Включено",
+        "✓ Аудио-движок: SDL2 / Cubeb\n✓ Быстрая память: Безопасный режим\n✓ Асинхронные шейдеры: Включено",
         "✓ Audio Engine: SDL2 / Cubeb\n✓ Fastmem: Safe Mode\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -532,7 +532,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты и пропадание звуковых дорожек",
         "• Frame drops and missing audio tracks on startup",
-        "✓ Аудио-движок: SDL2 / Cubeb\n✓ Быстрая память (Fastmem): Безопасный режим\n✓ Асинхронные шейдеры: Включено",
+        "✓ Аудио-движок: SDL2 / Cubeb\n✓ Быстрая память: Безопасный режим\n✓ Асинхронные шейдеры: Включено",
         "✓ Audio Engine: SDL2 / Cubeb\n✓ Fastmem: Safe Mode\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -544,7 +544,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario 3D World + Bowser's Fury",
         "• Оптимизация физики и анимаций персонажей\n• Микрофризы при компиляции шейдеров",
         "• Optimization for physics and character animations\n• Shader compilation stutter on character animations",
-        "✓ Конфигурация памяти: 4 ГБ DRAM\n✓ Точность GPU: Обычная (плавные 60 кадров/с)\n✓ Быстрое время GPU: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Конфигурация памяти: 4 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 кадров/с)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "0"},
@@ -559,7 +559,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Bros. Wonder",
         "• Вылет при переходе уровней и активации Чудо-цветка (нехватка стандартной памяти 4GB)\n• Микрофризы при компиляции анимаций персонажей",
         "• Crash on stage transitions and Wonder Flower effects (4GB memory limit)\n• Shader compilation stutter on character animations",
-        "✓ Конфигурация памяти: 6 ГБ DRAM (предотвращение переполнения памяти)\n✓ Точность GPU: Обычная (Normal 60 FPS)\n✓ Быстрое время GPU: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Конфигурация памяти: 6 ГБ DRAM (предотвращение переполнения памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents memory overflow)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -574,8 +574,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         0x0100C88011246000ULL,
         "Disco Elysium: The Final Cut",
         "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
-        "• Out of memory (OOM) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
+        "• Out of memory (нехватка памяти) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
+        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -591,8 +591,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         0x01008C300F7F0000ULL,
         "Disco Elysium: The Final Cut (WW)",
         "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
-        "• Out of memory (OOM) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
+        "• Out of memory (нехватка памяти) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
+        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -608,8 +608,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         0x0100E26014466000ULL,
         "Disco Elysium: The Final Cut (Asia)",
         "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
-        "• Out of memory (OOM) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
+        "• Out of memory (нехватка памяти) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
+        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -626,7 +626,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Batman: Arkham City",
         "• Просадки FPS при планировании над городом и микрофризы",
         "• FPS drops and micro-stutters while gliding across Arkham City",
-        "✓ Точность CPU: Точная\n✓ Память: 6GB DRAM\n✓ Динамическое состояние: Базовое",
+        "✓ Точность ЦП: Точная\n✓ Память: 6GB DRAM\n✓ Динамическое состояние: Базовое",
         "✓ CPU Accuracy: Accurate\n✓ Memory Layout: 6GB DRAM\n✓ Dynamic State: EDS1",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -639,7 +639,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Xenoblade Chronicles: Definitive Edition",
         "• Мерцание текстур открытого мира и артефакты облаков",
         "• Open world texture shimmering and cloud rendering artifacts",
-        "✓ Точность GPU: Высокая\n✓ Динамическое состояние: Расширенное\n✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: Расширенное\n✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM",
         "✓ GPU Accuracy: High\n✓ Dynamic State: EDS2\n✓ ASTC Recompression: BC3\n✓ Memory Layout: 6GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -654,7 +654,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Xenoblade Chronicles 2",
         "• Просадки кадровой частоты в густонаселенных локациях (Гула, Мор Ардайн)",
         "• Heavy frame drops in dense titan areas (Gormott, Mor Ardain)",
-        "✓ Динамическое состояние: Расширенное\n✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM\n✓ Быстрое время GPU: Включено",
+        "✓ Динамическое состояние: Расширенное\n✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM\n✓ Быстрое время ГПУ: Включено",
         "✓ Dynamic State: EDS2\n✓ ASTC Recompression: BC3\n✓ Memory Layout: 6GB DRAM\n✓ Fast GPU Time: Enabled",
         {
             {"Renderer\\dyna_state", "2"},
@@ -668,7 +668,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Xenoblade Chronicles 3",
         "• Утечки VRAM и микростаттеры в битвах с 7 персонажами",
         "• VRAM leaks and micro-stutters during full 7-character battle parties",
-        "✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM\n✓ Динамическое состояние: Расширенное\n✓ Точность GPU: Высокая",
+        "✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM\n✓ Динамическое состояние: Расширенное\n✓ Точность ГПУ: Высокая",
         "✓ ASTC Recompression: BC3\n✓ Memory Layout: 6GB DRAM\n✓ Dynamic State: EDS2\n✓ GPU Accuracy: High",
         {
             {"Renderer\\astc_recompression", "0"},
@@ -683,7 +683,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Witcher 3: Wild Hunt - Complete Edition",
         "• Вылеты по памяти и заикания физики в Новиграде и Туссенте",
         "• OOM crashes and physics stutter in Novigrad and Toussaint",
-        "✓ Память: 6GB DRAM\n✓ Точность GPU: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Быстрое время GPU: Включено\n✓ Реактивная очистка: Включено",
+        "✓ Память: 6GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -712,7 +712,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario + Rabbids: Kingdom Battle",
         "• Сильный пересвет и ослепляющий блум\n• Черные тени и артефакты освещения\n• Мерцание текстур персонажей",
         "• Severe overexposure and blinding bloom glow\n• Black shadows and lighting pass corruption\n• Character model flickering",
-        "✓ Точность GPU: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -727,7 +727,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario + Rabbids: Sparks of Hope",
         "• Сбои динамического освещения на планетах\n• Черные артефакты в катсценах и битвах\n• Просадки кадров",
         "• Planet lighting pass corruption\n• Black shadow artifacts during cutscenes and tactical battles\n• Frame drops",
-        "✓ Точность GPU: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -756,7 +756,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Odyssey",
         "• Мерцание 2D-рисунков на стенах\n• Артефакты дыма и тумана в Песчаном царстве",
         "• Flickering 2D wall drawings\n• Sand Kingdom smoke and fog rendering artifacts",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Сжатие ASTC: Отключено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Сжатие ASTC: Отключено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Anisotropic Filtering: 16x\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -783,7 +783,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Luigi's Mansion 3",
         "• Артефакты динамического света фонарика и теней\n• Падение FPS в комнатах с призраками",
         "• Dynamic flashlight beam artifacts\n• FPS drops in ghost-heavy rooms",
-        "✓ Точность GPU: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -797,7 +797,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Crossing: New Horizons",
         "• Размытие травы и мелких объектов\n• Мерцание теней в вечернее время",
         "• Blurry grass and ground textures\n• Evening shadow flicker",
-        "✓ Анизотропная фильтрация: 16x\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено",
+        "✓ Анизотропная фильтрация: 16x\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено",
         "✓ Anisotropic Filtering: 16x\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\max_anisotropy", "5"},
@@ -810,7 +810,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Persona 5 Royal",
         "• Мерцание 2D UI портретов и шрифтов\n• Просадки FPS в людных районах Токио",
         "• 2D UI portrait flicker and font artifacts\n• Heavy crowds FPS drops in Shibuya and Shinjuku",
-        "✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -862,7 +862,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokémon Legends: Arceus",
         "• Микрофризы при спавне диких покемонов в небе/траве\n• Артефакты освещения в разломах",
         "• Wild pokemon spawn micro-stutters\n• Space-time distortion lighting artifacts",
-        "✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -876,7 +876,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokémon Scarlet / Violet",
         "• Утечки VRAM в городах и на водных просторах\n• Падение FPS и замедление анимаций",
         "• Severe VRAM leaks in towns and lakes\n• Frame drops and slowed NPC animations",
-        "✓ Точность GPU: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -890,7 +890,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokémon Sword / Shield",
         "• Заикания в Диких землях при подгрузке погодных условий\n• Мерцание спецэффектов Dynamax",
         "• Wild Area weather transition stutters\n• Dynamax battle effect flickering",
-        "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность GPU: Высокая",
+        "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ GPU Accuracy: High",
         {
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -903,7 +903,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Kirby and the Forgotten Land",
         "• Зависание анимаций врагов на 30 FPS\n• Артефакты отражений луж",
         "• Distant enemy 30 FPS stutter\n• Puddle reflection distortion",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -916,7 +916,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Fire Emblem: Three Houses",
         "• Просадки FPS при масштабных битвах батальонов\n• Мерцание 2D портретов и меню",
         "• Battalion battle animation FPS drops\n• 2D UI portrait flickering",
-        "✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -929,7 +929,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Fire Emblem Engage",
         "• Сбои шейдеров свечения колец Emblem\n• Микрофризы в Сомниэле",
         "• Emblem ring glow shader artifacts\n• Somniel hub micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -943,7 +943,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Astral Chain",
         "• Падение кадров при цепных комбо-атаках легионов\n• Размытие динамических неоновых вывесок",
         "• Legion chain attack FPS drops\n• Blurry dynamic neon bloom reflections",
-        "✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время GPU: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -957,7 +957,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Shin Megami Tensei V: Vengeance",
         "• Нагрев и просадки кадров в песчаных бурях Даата\n• Черные тени демонов",
         "• Da'at sandstorm thermal throttle and FPS drops\n• Demon shadow corruption",
-        "✓ Точность GPU: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -984,7 +984,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Triangle Strategy",
         "• Пересвет HD-2D эффектов глубины резкости\n• Мерцание теней на изометрических картах",
         "• HD-2D depth-of-field overexposure\n• Isometric grid shadow flickering",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1010,7 +1010,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Red Dead Redemption",
         "• Сбои освещения на закате и рассвете\n• Просадки FPS в городах Блэкуотер и Армадилло",
         "• Sunrise/sunset volumetric lighting corruption\n• Blackwater town FPS drops",
-        "✓ Точность GPU: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1024,7 +1024,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Batman: Arkham Knight",
         "• Критические просадки FPS при езде на Бэтмобиле\n• Вылеты по нехватке VRAM в Готэме",
         "• Severe Batmobile driving FPS drops\n• Gotham City open-world OOM crashes",
-        "✓ Память: 8GB DRAM\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Высокая",
+        "✓ Память: 8GB DRAM\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Memory Layout: 8GB DRAM\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
         {
             {"System\\memory_layout_mode", "2"},
@@ -1038,7 +1038,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Batman: Arkham City",
         "• Мерцание снега и тумана над городом\n• Микрофризы при планировании с плащом",
         "• Snow particle and fog flickering\n• Glide traversal micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1064,7 +1064,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Spyro Reignited Trilogy",
         "• Заикания звука в катсценах\n• Мерцание теней на травяных холмах",
         "• Audio stutter in cutscenes\n• Shadow shimmering on grassy hills",
-        "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность GPU: Высокая",
+        "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ GPU Accuracy: High",
         {
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -1077,7 +1077,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Monster Hunter Generations Ultimate",
         "• Мерцание текстур монстров и эффектов крови\n• Просадки в мультиплеере",
         "• Monster skin texture flicker\n• Multiplayer combat frame drops",
-        "✓ Точность GPU: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Быстрая память: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Anisotropic Filtering: 16x\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1090,7 +1090,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Crisis Core: Final Fantasy VII Reunion",
         "• Статтеры при вращении рулетки DMW (Digital Mind Wave)\n• Сбои освещения в Мидгаре",
         "• DMW reel spinning stutter\n• Midgar volumetric lighting corruption",
-        "✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1104,7 +1104,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Witcher 3: Wild Hunt",
         "• Мерцание теней и воды в Новиграде\n• Просадки FPS в густых лесах Велена",
         "• Shadow and water flickering in Novigrad\n• Dense forest FPS drops in Velen",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1118,7 +1118,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Xenoblade Chronicles 3",
         "• Микростаттеры и утечки VRAM в масштабных битвах\n• Артефакты частиц Ouroboros",
         "• Battle scene micro-stutters and VRAM leaks\n• Ouroboros transformation particle artifacts",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1132,7 +1132,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Xenoblade Chronicles: Definitive Edition",
         "• Размытие текстур персонажей на расстоянии\n• Мерцание травяного покрова на равнинах Гуры",
         "• Distant character texture blur\n• Bionis Leg grass shimmering",
-        "✓ Точность GPU: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Anisotropic Filtering: 16x\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1145,7 +1145,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Monster Hunter Rise",
         "• Просадки FPS при битвах с Wyvern\n• Мерцание спецэффектов Wirebug",
         "• Wyvern combat FPS drops\n• Wirebug particle flickering",
-        "✓ Точность GPU: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1159,7 +1159,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "DOOM Eternal",
         "• Ослепляющие вспышки плазменных взрывов\n• Статтеры при добивании демонов (Glory Kill)",
         "• Blinding plasma explosion flashes\n• Glory kill execution micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1173,7 +1173,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "NieR:Automata The End of YoRHa Edition",
         "• Задержка отклика в секциях пулевого ада\n• Мерцание пустынного песка",
         "• Bullet-hell section frame pacing latency\n• Desert sand shimmer",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1226,7 +1226,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Link's Awakening",
         "• Просадки FPS при размытии глубины резкости (Tilt-Shift)\n• Заикания в деревне Мэйб",
         "• Tilt-shift depth of field severe frame drops\n• Mabe Village traversal stutters",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1240,7 +1240,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Echoes of Wisdom",
         "• Падения частоты кадров при создании копий предметов (Echoes)\n• Размытие воды",
         "• Echo creation frame drops\n• Water surface reflection distortion",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1254,7 +1254,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Bayonetta 2",
         "• Сбои динамического освещения и теней в катсценах\n• Просадки FPS при битвах с ангелами",
         "• Dynamic lighting and shadow glitches in cutscenes\n• Angel combat scene frame drops",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1267,7 +1267,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario RPG",
         "• Статтеры анимаций диалогов\n• Сбои синхронизации изометрического освещения",
         "• Dialogue animation stutters\n• Isometric lighting pass desync",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1280,7 +1280,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pikmin 4",
         "• Утечки памяти в открытых садах Unreal Engine 4\n• Микрофризы при спавне отряда Пикминов",
         "• Unreal Engine 4 open garden memory leaks\n• Pikmin squad spawn micro-stutters",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
@@ -1294,7 +1294,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Princess Peach: Showtime!",
         "• Просадки FPS при смене театральных декораций и костюмов\n• Мерцание теней сцены",
         "• Theater stage transition frame drops\n• Stage lighting shadow flicker",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
@@ -1308,7 +1308,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Luigi's Mansion 2 HD",
         "• Мерцание луча фонарика Dark-Light\n• Артефакты призрачных следов",
         "• Dark-Light flashlight beam flickering\n• Ghost trail rendering artifacts",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1319,7 +1319,7 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01000BC0000A0000ULL,
         "Hollow Knight",
-        "• Задержка ввода (input lag) в босс-файтах\n• Микростаттеры при смене комнат",
+        "• Задержка ввода (задержки ввода) в босс-файтах\n• Микростаттеры при смене комнат",
         "• Boss fight frame latency\n• Room transition compilation stutters",
         "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Сжатие ASTC: Отключено",
         "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed",
@@ -1347,7 +1347,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Sea of Stars",
         "• Размытие пиксель-арта\n• Рассинхронизация динамического освещения солнца/луны",
         "• Pixel art sprite blur\n• Sun/moon eclipse dynamic lighting desync",
-        "✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1360,7 +1360,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Octopath Traveler II",
         "• Пересвет и размытие глубины резкости в HD-2D\n• Микростаттеры при смене дня и ночи",
         "• HD-2D depth-of-field overexposure\n• Day/night transition micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1373,7 +1373,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Bravely Default II",
         "• Утечки памяти в Unreal Engine 4 на карте мира\n• Просадки FPS в битвах",
         "• Unreal Engine 4 overworld memory leaks\n• Battle start FPS drops",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
@@ -1399,7 +1399,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Outer Wilds",
         "• Просадки FPS при физическом расчете орбит планет\n• Утечки VRAM в туманностях",
         "• Solar system physics calculation slowdown\n• Space nebulae VRAM leaks",
-        "✓ Память: 8GB DRAM\n✓ Точность CPU: Точная\n✓ Асинхронные шейдеры: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ЦП: Точная\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Accurate\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
@@ -1412,7 +1412,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Subnautica",
         "• Задержка прогрузки чанков морского дна\n• Микрофризы при управлении батискафом",
         "• Ocean floor chunk loading delays\n• Seamoth traversal stutters",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
@@ -1426,7 +1426,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Ori and the Will of the Wisps",
         "• Просадки FPS при скоростном перемещении по локациям\n• Мерцание фонового света",
         "• Fast traversal frame drops\n• Volumetric light shimmering",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1440,7 +1440,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Alien: Isolation",
         "• Артефакты динамических теней на станции «Севастополь»\n• Шум отражений",
         "• Dynamic shadow artifacts in dark corridors\n• Specular reflection noise",
-        "✓ Точность GPU: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Anisotropic Filtering: 16x\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1454,7 +1454,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Metroid Dread",
         "• Микрофризы при скоростном скольжении Самус\n• Рассинхронизация счетчика кадров в катсценах E.M.M.I.",
         "• Samus speed booster micro-stutters\n• E.M.M.I. cutscene frame rate desync",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1468,7 +1468,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Donkey Kong Country: Tropical Freeze",
         "• Сбои полупрозрачности воды и шерсти Донки Конга\n• Микростаттеры при полетах на бочках",
         "• Water transparency and Kong fur shader glitches\n• Barrel blast transition micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1481,7 +1481,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Kirby's Return to Dream Land Deluxe",
         "• Размытие контуров сел-шейдинга персонажей\n• Просадки FPS при суперспособностях Кирби",
         "• Cel-shaded outline blurring\n• Super ability particle frame drops",
-        "✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1494,7 +1494,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Captain Toad: Treasure Tracker",
         "• Мерцание теней на трехмерных диорамах уровней\n• Артефакты глубины резкости",
         "• Shadow flickering on 3D diorama puzzles\n• Depth-of-field blur artifacts",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1507,7 +1507,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Yoshi's Crafted World",
         "• Утечки памяти в Unreal Engine 4 на картонных декорациях\n• Размытие текстур заднего плана",
         "• Unreal Engine 4 cardboard diorama VRAM leaks\n• Background blur texture shimmering",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
@@ -1520,7 +1520,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario Strikers: Battle League",
         "• Рассинхронизация анимации гиперударов (Hyper Strikes)\n• Статтеры при взрывах спецэффектов",
         "• Hyper Strike comic animation desync\n• Stadium particle burst stutters",
-        "✓ Точность CPU: Точная\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено",
+        "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено",
         "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -1533,7 +1533,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Bomberman R 2",
         "• Просадки FPS при массовых взрывах в режиме «Замок»\n• Рассинхронизация сетевого таймера и зависание на проверке серверов Konami",
         "• Castle mode multi-explosion slowdowns\n• Konami server handshake stall and local multiplayer sync latency",
-        "✓ Режим полёта: Включено (пропуск ожидания серверов Konami)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Высокая",
+        "✓ Режим полёта: Включено (пропуск ожидания серверов Konami)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Airplane Mode: Enabled (Bypasses Konami server check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
         {
             {"System\\airplane_mode", "true"},
@@ -1547,7 +1547,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Advance Wars 1+2: Re-Boot Camp",
         "• Задержки загрузки анимаций командиров (CO Powers)\n• Размытие 2D-спрайтов техники",
         "• CO Power full-screen anime animation delay\n• Tactical map sprite blur",
-        "✓ Точность GPU: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Быстрая память: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1573,7 +1573,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "No Man's Sky",
         "• Вылеты по нехватке памяти при входе в атмосферу планет\n• Артефакты процедурной генерации",
         "• Planetary entry OOM memory crashes\n• Procedural voxel terrain artifacting",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
@@ -1587,7 +1587,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Portal: Companion Collection",
         "• Сбои рекурсивного рендеринга порталов\n• Рассинхронизация физики кубов в Source Engine",
         "• Recursive portal view rendering glitches\n• Source Engine physics stutter",
-        "✓ Точность GPU: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1601,7 +1601,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Persona 4 Golden",
         "• Микростаттеры при перемещении по туманной Инабе\n• Рассинхронизация звука аниме-вставок",
         "• Foggy Inaba traversal micro-stutters\n• Anime video cutscene audio desync",
-        "✓ Быстрая память: Включено\n✓ Точность GPU: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Сжатие ASTC: Отключено",
+        "✓ Быстрая память: Включено\n✓ Точность ГПУ: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Сжатие ASTC: Отключено",
         "✓ Fastmem: Enabled\n✓ GPU Accuracy: High\n✓ Anisotropic Filtering: 16x\n✓ ASTC Recompression: Uncompressed",
         {
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -1615,7 +1615,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Persona 3 Portable",
         "• Размытие 2D-портретов и визуальной новеллы\n• Просадки FPS на верхних этажах Тартара",
         "• Visual novel 2D portrait blur\n• Tartarus upper floor frame drops",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1628,7 +1628,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Tunic",
         "• Сбои страниц руководства в изометрическом виде\n• Шум объемного освещения",
         "• Instruction manual overlay rendering glitches\n• Isometric volumetric light noise",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1654,7 +1654,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Cult of the Lamb",
         "• Просадки FPS при большом числе последователей в поселении\n• Сбои динамических теней",
         "• Cult camp high follower count slowdown\n• Ritual dynamic shadow flickering",
-        "✓ Быстрая память: Включено\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено",
+        "✓ Быстрая память: Включено\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено",
         "✓ Fastmem: Enabled\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -1667,7 +1667,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Unicorn Overlord",
         "• Рассинхронизация 2D-анимаций Vanillaware в масштабных битвах\n• Размытие шрифтов интерфейса",
         "• Vanillaware 2D battle animation desync\n• Tactical interface font blur",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Быстрая память: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Anisotropic Filtering: 16x\n✓ Fastmem: Enabled",
     },
     {
@@ -1675,7 +1675,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Skyward Sword HD",
         "• Артефакты меча и курсора при управлении движением\n• Размытие текстур облачного моря Небоземи",
         "• Motion control sword and pointer jitter\n• Skyloft cloud sea texture shimmering",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1688,7 +1688,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario 3D World + Bowser's Fury",
         "• Просадки FPS при появлении Яростного Боузера в открытом море\n• Мерцание шейдеров дождя и лавы",
         "• Bowser's Fury open sea stormy weather FPS drops\n• Rain splash and lava dynamic shader flickering",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -1702,7 +1702,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Party Jamboree",
         "• Микрофризы в мини-играх на 20 игроков Koopathlon\n• Рассинхронизация счетчика очков",
         "• 20-player Koopathlon minigame stutters\n• Live board score counter desync",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -1716,7 +1716,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario & Luigi: Brothership",
         "• Задержка отклика в совместных Brother Attacks\n• Просадки FPS на морских островах Конкордии",
         "• Brother Attacks timing lag\n• Concordia ocean sailing FPS dips",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1730,7 +1730,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Party",
         "• Микрозадержки анимаций кубиков и персонажей\n• Сбои полупрозрачности воды в речных сплавах",
         "• Dice roll animation micro-stutters\n• River Survival water transparency glitches",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1743,7 +1743,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario Party Superstars",
         "• Мерцание теней на классических досках N64\n• Размытие миниатюр правил мини-игр",
         "• Retro N64 board shadow flickering\n• Minigame instruction modal blur",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1756,7 +1756,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario Golf: Super Rush",
         "• Размытие сетки рельефа грина при прицеливании\n• Просадки FPS при массовом забеге Speed Golf",
         "• Green terrain grid blur\n• Speed Golf stamina sprint slowdown",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1769,7 +1769,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario Tennis Aces",
         "• Инпут-лаг в замедлении времени Zone Speed\n• Артефакты свечения ракетки при спец-ударах",
         "• Zone Speed slow-motion input lag\n• Special Shot racket glow artifacts",
-        "✓ Точность CPU: Высокая (Accurate)\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено",
+        "✓ Точность ЦП: Высокая\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено",
         "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -1782,7 +1782,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Splatoon 2",
         "• Мерцание отражений чернил на металлических поверхностях\n• Микрофризы в хабе площади Инкополиса",
         "• Metallic surface ink reflection flicker\n• Inkopolis Square hub micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1796,7 +1796,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Splatoon 3",
         "• Утечки памяти в хабе Плюхграда и в матчах Залива Самонид\n• Просадки FPS при обильном залитии карты краской и сетевые задержки лобби",
         "• Splatsville hub VRAM leaks\n• Salmon Run heavy ink coverage slowdown & match lobby delay",
-        "✓ Режим полёта: Включено (офлайн-кампания без сетевых задержек)\n✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
+        "✓ Режим полёта: Включено (офлайн-кампания без сетевых задержек)\n✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
         "✓ Airplane Mode: Enabled (Instant offline Hero mode)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -1811,7 +1811,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Paper Mario: The Origami King",
         "• Сбои отрисовки кольцевой арены в битвах\n• Артефакты конфетти и бумажных складок",
         "• Ring puzzle battle arena glitches\n• Confetti paper fold texture artifacts",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1824,7 +1824,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Hyrule Warriors: Age of Calamity",
         "• Тяжелые просадки FPS при массовом скоплении монстров на экране\n• Утечки VRAM в битвах Чудищ",
         "• Massive enemy swarm heavy slowdown\n• Divine Beast battle VRAM exhaustion",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -1838,7 +1838,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Hyrule Warriors: Definitive Edition",
         "• Размытие спецэффектов комбо Focus Spirit\n• Микрофризы при спавне отрядов офицеров",
         "• Focus Spirit attack bloom blur\n• Officer squad spawn micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1851,7 +1851,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Fire Emblem Warriors: Three Hopes",
         "• Падение производительности в масштабных боях на картах Фодлана\n• Артефакты теней полководцев",
         "• Large scale Fodlan battlefield FPS dips\n• Commander shadow map rendering errors",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -1864,7 +1864,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokemon Brilliant Diamond",
         "• Мерцание чиби-отражений в лужах и окнах Синно\n• Задержка открытия меню покедекса",
         "• Chibi puddle & window reflection flicker\n• Pokedex animation transition lag",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1878,7 +1878,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokemon Shining Pearl",
         "• Мерцание чиби-отражений в лужах и окнах Синно\n• Задержка открытия меню покедекса",
         "• Chibi puddle & window reflection flicker\n• Pokedex animation transition lag",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1892,7 +1892,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokemon Let's Go, Pikachu!",
         "• Задержка круга прицеливания при броске покебола\n• Мерцание травы на маршрутах Канто",
         "• Pokeball throw capture ring input lag\n• Kanto route grass shader flickering",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1905,7 +1905,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokemon Let's Go, Eevee!",
         "• Задержка круга прицеливания при броске покебола\n• Мерцание травы на маршрутах Канто",
         "• Pokeball throw capture ring input lag\n• Kanto route grass shader flickering",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -1918,7 +1918,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Shin Megami Tensei V",
         "• Просадки FPS на песчаных барханах пустыни Да'ат в Unreal Engine 4\n• Размытие магических заклинаний Нахобино",
         "• Da'at desert sand dunes UE4 slowdown\n• Nahobino Magatsuhi skill blur",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -1932,7 +1932,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Xenoblade Chronicles 2: Torna ~ The Golden Country",
         "• Утечки памяти на гигантских просторах Титана Торны\n• Размытие облачного покрова и листвы",
         "• Torna Titan open terrain VRAM leaks\n• Cloud sea and foliage shimmering",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -1946,7 +1946,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario 3D All-Stars",
         "• Мерцание текстур воды в Mario Sunshine\n• Рассинхронизация звуковых дорожек в Mario Galaxy",
         "• Sunshine water reflection texture flickering\n• Galaxy orchestrated audio drift",
-        "✓ Точность CPU: Высокая (Accurate)\n✓ Точность GPU: Высокая\n✓ Быстрая память: Включено",
+        "✓ Точность ЦП: Высокая\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено",
         "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -1972,7 +1972,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Ori and the Blind Forest: Definitive Edition",
         "• Сбои изометрических источников света в лесу Нибель\n• Микрофризы при скоростном Bash-прыжке",
         "• Nibel forest dynamic volumetric light glitches\n• High-speed Bash chain micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -2012,7 +2012,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Tales of Series (Berseria / Graces f / Symphonia)",
         "• Зависание на 0 FPS и черный экран при смене локаций\n• Рассинхронизация видео-переходов NVDEC",
         "• 0 FPS freeze and black screen on location transitions\n• NVDEC video transition desync",
-        "✓ Сжатие ASTC: Отключено (устраняет зависание при смене локаций)\n✓ Реактивная очистка: Включено\n✓ Эмуляция NVDEC: ГПУ видеоядро (NVDEC)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено",
+        "✓ Сжатие ASTC: Отключено (устраняет зависание при смене локаций)\n✓ Реактивная очистка: Включено\n✓ Эмуляция NVDEC: ГПУ видеоядро (NVDEC)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ ASTC Recompression: Uncompressed (Fixes location transition freeze!)\n✓ Reactive Flushing: Enabled\n✓ NVDEC Emulation: GPU Video Core\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\astc_recompression", "0"},
@@ -2028,7 +2028,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Astral Chain",
         "• Просадки FPS при вызове Легионов и комбо-атаках в Арке\n• Утечки VRAM при длительной игре",
         "• Legion summon and chain sync combo FPS drops\n• Long session VRAM exhaustion in the Ark",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -2042,7 +2042,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Fire Emblem: Three Houses",
         "• Утечки памяти при перемещении по монастырю Гаррег Мах\n• Просадки FPS на тактической сетке боев",
         "• Garreg Mach Monastery roaming memory leaks\n• Tactical grid battle FPS dips",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память (Fastmem): Включено",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -2056,7 +2056,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pikmin 3 Deluxe",
         "• Размытие текстур фруктов и сока\n• Мерцание теней в заданиях Олимара",
         "• Fruit texture and juice rendering blur\n• Olimar side-story shadow shimmering",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Анизотропная фильтрация: 16x\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -2070,7 +2070,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Kirby Star Allies",
         "• Рассинхронизация спецэффектов сердец дружбы Friend Heart\n• Микрофризы в битвах четверки героев",
         "• Friend Heart dynamic glow desync\n• 4-player team battle micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -2084,7 +2084,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokemon Sword & Shield",
         "• Просадки FPS при динамической смене погоды в Диких землях Галара\n• Мерцание свечения Гигантамакса",
         "• Galar Wild Area weather dynamic lighting drops\n• Dynamax aura rendering flicker",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -2098,7 +2098,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Smash Bros. Ultimate",
         "• Инпут-лаг и просадки кадров в боях на 8 игроков\n• Зависание катсцен и задержки проверки Духов онлайн",
         "• 8-fighter intense brawl input latency\n• Spirit Board online latency & cutscene sync pause",
-        "✓ Режим полёта: Включено (пропуск онлайн-опроса Духов)\n✓ Точность CPU: Точная (Accurate)\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск онлайн-опроса Духов)\n✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Bypasses Spirit Board network check)\n✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2113,7 +2113,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Dragon Quest XI S: Echoes of an Elusive Age",
         "• Микрофризы при быстрой скачке на лошади по королевству Гелиодор в UE4\n• Размытие волос и брони",
         "• Heliodor kingdom high-speed horse ride micro-stutters\n• Character hair and armor texture blur",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -2127,7 +2127,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "NieR:Automata The End of YoRHa Edition",
         "• Просадки FPS при скоростном полете на поде по Руинам Города\n• Артефакты частиц bullet-hell сфер",
         "• Ruined City flight unit sequence FPS drops\n• Bullet-hell glowing sphere particle artifacts",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -2142,7 +2142,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Bayonetta 1 & 2",
         "• Инпут-лаг в замедлении времени Witch Time\n• Пересвет эффектов Umbran Climax",
         "• Witch Time slow-motion input lag\n• Umbran Climax overexposed bloom",
-        "✓ Точность CPU: Точная (Accurate)\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -2156,7 +2156,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Persona 5 Royal",
         "• Рассинхронизация комикс-переходов и анимаций All-Out Attack\n• Микрофризы во Дворцах Метаверсума",
         "• All-Out Attack comic transition desync\n• Metaverse Palace shadow infiltration micro-stutters",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Сжатие ASTC: Отключено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Сжатие ASTC: Отключено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -2171,7 +2171,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Live A Live",
         "• Размытие пиксельных спрайтов при переходе между эпохами\n• Микрофризы в боях на шахматной сетке",
         "• HD-2D era chapter transition sprite blur\n• Grid battle attack sequence stutters",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -2185,7 +2185,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Tony Hawk's Pro Skater 1 + 2",
         "• Зависание на заставке и бесконечный спиннер авторизации Activision\n• Сетевой таймаут при старте",
         "• Infinite Activision authorization spinner on startup\n• Online handshake deadlock",
-        "✓ Режим полёта: Включено (пропуск онлайн-авторизации Activision)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ Режим полёта: Включено (пропуск онлайн-авторизации Activision)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
         "✓ Airplane Mode: Enabled (Bypasses Activision online login)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"System\\airplane_mode", "true"},
@@ -2199,7 +2199,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Crash Team Racing Nitro-Fueled",
         "• Зависание в главном меню при опросе серверов Pit Stop\n• Микрофризы анимаций подиума",
         "• Pit Stop server telemetry handshake freeze\n• Podium animation micro-stutters",
-        "✓ Режим полёта: Включено (пропуск серверов Pit Stop)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Режим полёта: Включено (пропуск серверов Pit Stop)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ Airplane Mode: Enabled (Bypasses Pit Stop online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
         {
             {"System\\airplane_mode", "true"},
@@ -2213,8 +2213,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mortal Kombat 1",
         "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены",
         "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время GPU: Отключено (устраняет deadlock UE4)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность CPU: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Обычная",
-        "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Disabled (Fixes UE4 deadlock)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время ГПУ: Отключено (устраняет зависание UE4)\n✓ Динамическое состояние: Базовое\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
+        "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Disabled (Fixes UE4 deadlock)\n✓ Dynamic State: Basic\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
@@ -2234,8 +2234,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mortal Kombat 1",
         "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены",
         "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время GPU: Отключено (устраняет deadlock UE4)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность CPU: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Обычная",
-        "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Disabled (Fixes UE4 deadlock)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время ГПУ: Отключено (устраняет зависание UE4)\n✓ Динамическое состояние: Базовое\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
+        "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Disabled (Fixes UE4 deadlock)\n✓ Dynamic State: Basic\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
@@ -2255,7 +2255,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mortal Kombat 11",
         "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити",
         "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes",
-        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2271,7 +2271,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Borderlands Legendary Collection (1, 2, TPS)",
         "• Задержка старта на 60+ секунд и зависание при сетевом опросе SHiFT\n• Просадки FPS при взрывах стихий",
         "• 60+ second boot freeze during SHiFT network ping\n• Elemental explosion particle slowdowns",
-        "✓ Режим полёта: Включено (мгновенный старт без ожидания SHiFT)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Высокая",
+        "✓ Режим полёта: Включено (мгновенный старт без ожидания SHiFT)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Airplane Mode: Enabled (Instant boot without SHiFT timeout)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
         {
             {"System\\airplane_mode", "true"},
@@ -2285,7 +2285,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Diablo III: Eternal Collection",
         "• Задержка и зависание на экране сезонов при проверке Battle.net\n• Микрофризы при спавне элитных паков",
         "• Battle.net seasonal handshake timeout freeze\n• Elite mob pack spawn stutter",
-        "✓ Режим полёта: Включено (пропуск серверов Battle.net)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Высокая",
+        "✓ Режим полёта: Включено (пропуск серверов Battle.net)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
         {
             {"System\\airplane_mode", "true"},
@@ -2299,7 +2299,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Demon Slayer: Kimetsu no Yaiba - The Hinokami Chronicles",
         "• Зависание на заставке при онлайн-верификации CyberConnect2\n• Просадки кадров в спецприемах дыхания",
         "• Title screen freeze during CyberConnect2 online verification loop\n• Breathing form ultimate attack FPS drops",
-        "✓ Режим полёта: Включено (пропуск онлайн-верификации)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск онлайн-верификации)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Skips online verification)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2314,7 +2314,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Monster Hunter Rise / Sunbreak",
         "• Микрофризы при опросе сетевого лобби Hunter Search\n• Утечки VRAM в локациях Джунглей и Цитадели",
         "• Hunter Search lobby broadcast micro-freezes\n• Jungle and Citadel VRAM leaks",
-        "✓ Режим полёта: Включено (устранение микрофризов Hunter Search)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (устранение микрофризов Hunter Search)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Fixes Hunter Search lobby lag)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2329,7 +2329,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Burnout Paradise Remastered",
         "• Зависание на заставке при обращении к серверам новостей EA Paradise City\n• Микрофризы в авариях",
         "• EA Paradise City news server connection freeze\n• Crash sequence micro-stutters",
-        "✓ Режим полёта: Включено (пропуск серверов EA)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Режим полёта: Включено (пропуск серверов EA)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
         "✓ Airplane Mode: Enabled (Bypasses EA online news)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"System\\airplane_mode", "true"},
@@ -2343,7 +2343,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Overcooked! All You Can Eat",
         "• Зависание на этапе инициализации Team17 Cross-Play сервисов на Android\n• Рассинхронизация физики кухни",
         "• Team17 Cross-Play service handshake freeze on Android\n• Kitchen item physics desync",
-        "✓ Режим полёта: Включено (пропуск Team17 Cross-Play)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск Team17 Cross-Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Bypasses Team17 Cross-Play)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2356,7 +2356,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Plants vs. Zombies: Battle for Neighborville",
         "• Зависание на стартовом экране из-за онлайн-требований Frostbite EA\n• Утечки памяти в хабе Беспечного парка",
         "• Frostbite EA online login requirement deadlock on title screen\n• Giddy Park hub memory leaks",
-        "✓ Режим полёта: Включено (пропуск онлайн-авторизации EA)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск онлайн-авторизации EA)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Bypasses EA online login requirement)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2370,7 +2370,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Risk of Rain 2",
         "• Сетевой таймаут PlayFab в главном меню\n• Просадки FPS при спавне сотен монстров на 5+ стадии",
         "• PlayFab matchmaking network timeout\n• High-stage horde particle slowdowns",
-        "✓ Режим полёта: Включено (пропуск PlayFab таймаутов)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Высокая",
+        "✓ Режим полёта: Включено (пропуск PlayFab таймаутов)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Airplane Mode: Enabled (Bypasses PlayFab timeout)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
         {
             {"System\\airplane_mode", "true"},
@@ -2384,7 +2384,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Minecraft Dungeons",
         "• Зацикливание авторизации учетной записи Microsoft / Xbox Live\n• Микрофризы процедурных подземелий",
         "• Microsoft / Xbox Live telemetry sign-in loop\n• Procedural dungeon generation stutters",
-        "✓ Режим полёта: Включено (пропуск авторизации Microsoft)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск авторизации Microsoft)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Bypasses Microsoft telemetry)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2397,7 +2397,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Dragon Ball FighterZ",
         "• Зависание на старте при поиске сетевого лобби Bandai Namco\n• Инпут-лаг в комбо",
         "• Bandai Namco online lobby connection loop on title screen\n• Combo input latency",
-        "✓ Режим полёта: Включено (пропуск сетевого лобби)\n✓ Точность CPU: Точная (Accurate)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск сетевого лобби)\n✓ Точность ЦП: Точная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Bypasses online lobby search)\n✓ CPU Accuracy: Accurate\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2411,7 +2411,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Dragon Ball Xenoverse 2",
         "• Зависание в городе Контон при опросе сетевых серверов\n• Просадки FPS в рейдах на 6 игроков",
         "• Conton City server polling freeze\n• 6-player raid boss FPS drops",
-        "✓ Режим полёта: Включено (пропуск сетевого сервера Контона)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ Режим полёта: Включено (пропуск сетевого сервера Контона)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
         "✓ Airplane Mode: Enabled (Bypasses Conton City server)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"System\\airplane_mode", "true"},
@@ -2423,9 +2423,9 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100B1A01B20A000ULL,
         "NBA 2K24 / 2K23",
-        "• Зависание на экране обновления ростеров (2K Sports server handshake)\n• Утечки памяти в режиме MyCAREER",
+        "• Зависание на экране обновления ростеров (пропуск серверов 2K Sports)\n• Утечки памяти в режиме MyCAREER",
         "• 2K Sports roster server handshake freeze\n• MyCAREER mode memory leaks",
-        "✓ Режим полёта: Включено (пропуск серверов 2K Sports)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск серверов 2K Sports)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Bypasses 2K server handshake)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2439,7 +2439,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Just Dance Series (2020-2024)",
         "• Зависание на заставке при подключении к Ubisoft Connect\n• Рассинхронизация видеопотока клипов",
         "• Ubisoft Connect server connection loop on boot\n• Video stream audio sync delay",
-        "✓ Режим полёта: Включено (пропуск серверов Ubisoft Connect)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск серверов Ubisoft Connect)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Bypasses Ubisoft Connect)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2452,7 +2452,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Clubhouse Games: 51 Worldwide Classics",
         "• Задержка и зависание при локальном сетевом поиске столов\n• Размытие текстур игровых досок",
         "• Local lobby discovery loop freeze on startup\n• Board texture and piece blur",
-        "✓ Режим полёта: Включено (мгновенная загрузка офлайн)\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (мгновенная загрузка офлайн)\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Instant offline boot)\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2466,7 +2466,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario Tennis Aces",
         "• Зависание на проверке онлайн-турниров при старте\n• Просадки FPS при Zone Shot спецэффектах",
         "• Tournament online leaderboard check hang\n• Zone Shot particle slowdowns",
-        "✓ Режим полёта: Включено (пропуск онлайн-проверки турниров)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Высокая",
+        "✓ Режим полёта: Включено (пропуск онлайн-проверки турниров)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Airplane Mode: Enabled (Skips tournament online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
         {
             {"System\\airplane_mode", "true"},
@@ -2480,7 +2480,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario Golf: Super Rush",
         "• Задержка и зависание при сетевом поиске ранговых матчей\n• Мерцание дальних флажков и травы",
         "• Ranked match network polling hang\n• Course grass and flag shadow flickering",
-        "✓ Режим полёта: Включено (мгновенный старт офлайн)\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (мгновенный старт офлайн)\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Instant offline start)\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2492,9 +2492,9 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01007E3019808000ULL,
         "Shin Megami Tensei V: Vengeance",
-        "• Вылеты из-за нехватки памяти (OOM) на открытых картах Да'ат в UE4\n• Розовые артефакты текстур",
+        "• Вылеты из-за нехватки памяти (нехватка памяти) на открытых картах Да'ат в UE4\n• Розовые артефакты текстур",
         "• Unreal Engine 4 Da'at open-world Out-Of-Memory crashes\n• Corrupted/pink ASTC texture tiles",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -2508,7 +2508,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Metroid Prime Remastered",
         "• Артефакты визора и HUD-интерфейса\n• Микрофризы при открытии переходных дверей между комнатами",
         "• Combat/Scan visor HUD graphical glitches\n• Room transition door loading stutters",
-        "✓ Точность GPU: Высокая\n✓ Сжатие ASTC: Отключено (исправление визора)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено (исправление визора)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed (Fixes visor artifacts)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -2522,7 +2522,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Crisis Core -Final Fantasy VII- Reunion",
         "• Микрозадержки при срабатывании барабана рулетки DMW в бою\n• Мерцание динамического освещения в UE4",
         "• DMW combat reel digital mind wave hitches\n• UE4 dynamic lighting and shadow flickering",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память (Fastmem): Включено",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -2536,7 +2536,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Octopath Traveler II",
         "• Размытие пиксель-арт спрайтов персонажей и HD-2D окружения\n• Швы на текстурах воды",
         "• HD-2D sprite blur and character outline softening\n• Water surface shader seam lines",
-        "✓ Точность GPU: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -2550,7 +2550,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Sonic Frontiers",
         "• Просадки FPS при разгоне на открытых островах Звездопада\n• Подгрузка геометрии рейлов и колец",
         "• Starfall Islands high-speed boost framerate drops\n• Rail and collectible geometry pop-in",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -2564,7 +2564,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Tactics Ogre: Reborn",
         "• Микрозадержки при исполнении спец-ударов и магии\n• Сглаживание пиксельных шрифтов диалогов",
         "• Finishing moves particle stutters\n• Retro dialogue font smoothing",
-        "✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -2577,7 +2577,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Dragon's Dogma: Dark Arisen",
         "• Зависание на старте при сетевой верификации серверов Пешек (Pawns)\n• Просадки FPS в битвах с химерами и грифонами",
         "• Pawn server network verification hang on boot\n• Chimera and Griffin boss particle slowdowns",
-        "✓ Режим полёта: Включено (пропуск серверов Пешек)\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Режим полёта: Включено (пропуск серверов Пешек)\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Airplane Mode: Enabled (Bypasses Pawn server checks)\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2591,7 +2591,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Warframe",
         "• Бесконечный цикл ожидания подключения к серверам при старте\n• Утечки памяти в реле",
         "• Infinite server login connection loop on title screen\n• Relay hub memory pressure",
-        "✓ Режим полёта: Включено (пропуск сетевого ожидания)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность GPU: Высокая\n✓ Быстрая память (Fastmem): Включено",
+        "✓ Режим полёта: Включено (пропуск сетевого ожидания)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено",
         "✓ Airplane Mode: Enabled (Bypasses network connection retry)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled",
         {
             {"System\\airplane_mode", "true"},
@@ -2605,7 +2605,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Brotato",
         "• Просадки FPS ниже 60 при спавне больших волн врагов и сотен пуль\n• Избыточная нагрузка на GPU при точности High",
         "• Framerate drops below 60 during large monster waves and bullet storms\n• Excessive GPU overhead with High GPU accuracy",
-        "✓ Точность CPU: Авто / Небезопасная (максимальная скорость для сотен мобов)\n✓ Точность GPU: Обычная (Normal, стабильные 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Отключено",
+        "✓ Точность ЦП: Авто / Небезопасная (максимальная скорость для сотен мобов)\n✓ Точность ГПУ: Обычная (стабильные 60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Отключено",
         "✓ CPU Accuracy: Auto / Unsafe (Maximum CPU throughput for 200+ mobs)\n✓ GPU Accuracy: Normal (Locked 60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
@@ -2621,8 +2621,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Vampire Survivors",
         "• Задержки физики и анимаций при заполнении экрана тысячами монстров",
         "• Physics and animation slowdowns during screen-filling enemy swarms",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2636,7 +2636,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Xenoblade Chronicles: Definitive Edition",
         "• Просадки FPS и утечки VRAM в открытых локациях (Bionis Leg)\n• Микрофризы при подгрузке текстур высокого разрешения",
         "• Framerate drops and VRAM pressure in large open zones (Bionis Leg)\n• Texture streaming micro-stutters",
-        "✓ Точность GPU: Обычная (Normal, стабильная производительность)\n✓ Сжатие ASTC: Отключено (чистые текстуры без задержек)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Обычная (стабильная производительность)\n✓ Сжатие ASTC: Отключено (чистые текстуры без задержек)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: Normal (Smooth performance)\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "0"},
@@ -2651,7 +2651,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Xenoblade Chronicles 2",
         "• Размытие динамического разрешения и нехватка VRAM в провинции Гормотт\n• Просадки частоты кадров в битвах",
         "• Dynamic resolution blur and VRAM memory buildup in Gormott\n• Combat framerate drops",
-        "✓ Точность GPU: Обычная (Normal)\n✓ Сжатие ASTC: Отключено\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Обычная\n✓ Сжатие ASTC: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: Normal\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "0"},
@@ -2666,7 +2666,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario RPG",
         "• Микрофризы при переходе между локациями и в диалогах\n• Сбои глубины теней персонажей",
         "• Micro-stutters during scene transitions and battle dialogs\n• Character shadow depth inaccuracies",
-        "✓ Точность GPU: Обычная (Normal)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
@@ -2679,7 +2679,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Princess Peach: Showtime!",
         "• Падение FPS на движке Unreal Engine 4 при трансформациях\n• Мерцание геометрии и теней",
         "• Framerate drops on Unreal Engine 4 during transformations\n• Geometry and shadow flickering",
-        "✓ Точность GPU: Обычная (Normal)\n✓ Память: 8GB DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Обычная\n✓ Память: 8GB DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: Normal\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
@@ -2693,7 +2693,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Luigi's Mansion 2 HD",
         "• Компиляционные задержки шейдеров в темных комнатах особняка\n• Мерцание динамического освещения фонарика",
         "• Shader compilation stutters in dark mansion corridors\n• Flashlight dynamic lighting flickering",
-        "✓ Точность GPU: Обычная (Normal)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
         "✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "0"},
@@ -2707,7 +2707,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "F-Zero 99",
         "• Зависание на стартовом экране при попытке подключения к серверам Nintendo\n• Бесконечная синхронизация онлайна",
         "• Hang on title screen attempting to connect to Nintendo servers\n• Infinite online network sync loop",
-        "✓ Режим полёта: Включено (пропуск сетевого зависания)\n✓ Точность CPU: Авто / Небезопасная (Unsafe JIT, 60 FPS)\n✓ Точность GPU: Обычная (Normal)",
+        "✓ Режим полёта: Включено (пропуск сетевого зависания)\n✓ Точность ЦП: Авто / Небезопасная (60 FPS)\n✓ Точность ГПУ: Обычная",
         "✓ Airplane Mode: Enabled (Bypasses network connection hang)\n✓ CPU Accuracy: Auto / Unsafe (60 FPS)\n✓ GPU Accuracy: Normal",
         {
             {"System\\airplane_mode", "true"},
@@ -2721,7 +2721,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario 3D All-Stars",
         "• Накладные расходы двойной эмуляции в Super Mario Sunshine и Super Mario Galaxy\n• Потрескивания звука при нехватке CPU",
         "• Double-emulation overhead in Super Mario Sunshine and Galaxy\n• Audio crackling from CPU thread starvation",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ CPU Accuracy: Auto / Unsafe (Maximum JIT performance)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
@@ -2735,7 +2735,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokemon Legends: Arceus",
         "• Микрофризы и просадки FPS при спавне диких Покемонов\n• Утечки памяти в деревне Джубилайф",
         "• Micro-stutters and framerate drops during wild Pokemon spawns\n• Memory pressure in Jubilife Village",
-        "✓ Точность GPU: Обычная (Normal, стабильные 30 FPS)\n✓ Память: 8GB DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Обычная (стабильные 30 FPS)\n✓ Память: 8GB DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: Normal (Smooth 30 FPS)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
@@ -2747,9 +2747,9 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100A3D008C5C000ULL,
         "Pokemon Scarlet",
-        "• Тяжелые утечки памяти в открытом мире Палдеи (>9 ГБ VRAM)\n• Падения FPS и рывки камеры",
+        "• Тяжелые утечки памяти в открытом мире Палдеи (>9 ГБ видеопамяти)\n• Падения FPS и рывки камеры",
         "• Massive open world memory leaks in Paldea (>9 GB VRAM)\n• Framerate drops and camera stuttering",
-        "✓ Точность GPU: Обычная (Normal)\n✓ Реактивная очистка: Отключено\n✓ Память: 8GB DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Обычная\n✓ Реактивная очистка: Отключено\n✓ Память: 8GB DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
@@ -2762,9 +2762,9 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01008F6008C5E000ULL,
         "Pokemon Violet",
-        "• Тяжелые утечки памяти в открытом мире Палдеи (>9 ГБ VRAM)\n• Падения FPS и рывки камеры",
+        "• Тяжелые утечки памяти в открытом мире Палдеи (>9 ГБ видеопамяти)\n• Падения FPS и рывки камеры",
         "• Massive open world memory leaks in Paldea (>9 GB VRAM)\n• Framerate drops and camera stuttering",
-        "✓ Точность GPU: Обычная (Normal)\n✓ Реактивная очистка: Отключено\n✓ Память: 8GB DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Точность ГПУ: Обычная\n✓ Реактивная очистка: Отключено\n✓ Память: 8GB DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
@@ -2779,8 +2779,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Diablo I + Hellfire (DevilutionX)",
         "• Порт DevilutionX для Diablo I и дополнения Hellfire\n• Поддержка MPQ (diabdat, hellfire, hfmonk, ru)\n• Оптимизация 2D Software/Hardware SDL2 рендера",
         "• DevilutionX port for Diablo I and Hellfire expansion\n• MPQ support (diabdat, hellfire, hfmonk, ru)\n• Optimized 2D SDL2 rendering",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2794,8 +2794,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Grand Theft Auto V (GTA V Homebrew Port)",
         "• Кастомный Homebrew-порт GTA V для Nintendo Switch\n• Поддержка RPF архивов, аудио и DLC-паков в romfs/\n• Высокое потребление VRAM и тяжелая геометрия Лос-Сантоса",
         "• GTA V Custom Homebrew Switch port\n• RPF archives, audio and DLC packs support in romfs/\n• Heavy Los Santos geometry and VRAM pressure",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal)\n✓ Сжатие ASTC: Отключено\n✓ Быстрая память (Fastmem): Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная\n✓ Сжатие ASTC: Отключено\n✓ Быстрая память: Включено",
+        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
@@ -2813,8 +2813,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Grand Theft Auto: San Andreas (re3-sa)",
         "• Порт открытого движка re3-sa для GTA San Andreas\n• Загрузка ресурсов main.scm, models, data, txd, dff\n• Стабильные 60 FPS на открытой карте штата Сан-Андреас",
         "• re3-sa open engine port for GTA San Andreas\n• main.scm, models, data, txd, dff assets loading\n• Locked 60 FPS across San Andreas",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2827,8 +2827,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Grand Theft Auto: Vice City (reVC)",
         "• Порт открытого движка reVC для GTA Vice City\n• Загрузка ресурсов gxt, audio, txd, dff\n• Стабильные 60 FPS в Вайс-Сити",
         "• reVC open engine port for GTA Vice City\n• gxt, audio, txd, dff assets loading\n• Locked 60 FPS in Vice City",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2841,8 +2841,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Grand Theft Auto III (re3)",
         "• Порт открытого движка re3 для GTA III\n• Загрузка ресурсов Либерти-Сити, коллизий и текстур\n• Стабильные 60 FPS",
         "• re3 open engine port for GTA III\n• Liberty City collision and texture streaming\n• Locked 60 FPS",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2855,8 +2855,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Half-Life 1 / Black Mesa Classic (Xash3D FWGS)",
         "• Движок Xash3D FWGS для Half-Life 1, Blue Shift, Opposing Force, Counter-Strike\n• Загрузка PAK/WAD ресурсов и GoldSrc карт\n• Максимальная производительность и отзывчивость управления",
         "• Xash3D FWGS engine for Half-Life 1, Blue Shift, Opposing Force, CS\n• PAK/WAD resources and GoldSrc maps loading\n• Maximum responsiveness and framerate",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2869,8 +2869,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "DOOM 1, 2, Final, Plutonia, TNT (GZDoom / PrBoom / Crispy)",
         "• Порты GZDoom, PrBoom, Crispy Doom для классической серии DOOM\n• Поддержка WAD файлов, DeHackEd патчей и модов Sigil/Plutonia/TNT\n• 60 FPS с чистым виброоткликом",
         "• GZDoom, PrBoom, Crispy Doom ports for classic DOOM series\n• WAD files, DeHackEd patches and Sigil/Plutonia/TNT mods\n• Smooth 60 FPS with rumble",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2883,8 +2883,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "DOOM 3 (dhewm3 Switch)",
         "• Порт dhewm3 (id Tech 4) для DOOM 3 и Resurrection of Evil\n• Поддержка динамического освещения и попиксельных теней id Tech 4\n• 8 ГБ DRAM для кэширования PK4",
         "• dhewm3 (id Tech 4) port for DOOM 3 and Resurrection of Evil\n• id Tech 4 dynamic lighting and per-pixel shadow rendering\n• 8GB DRAM for PK4 caching",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено",
+        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpu_accuracy", "1"},
@@ -2898,8 +2898,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Quake I / Quake II / Quake III (Quakespasm / Yamagi / ioquake3)",
         "• Порты движков Quakespasm (Quake 1), Yamagi Quake II, ioquake3\n• Загрузка PAK и PK3 файлов, GL-рендеринг\n• Идеальные 60 FPS с гироскопом",
         "• Quakespasm (Quake 1), Yamagi Quake II, ioquake3 ports\n• PAK and PK3 loading, hardware GL rendering\n• Locked 60 FPS with gyro support",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2912,8 +2912,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Duke Nukem 3D / Shadow Warrior / Blood (EDuke32 / VoidSW / NBlood)",
         "• Порты Build Engine (EDuke32, VoidSW, NBlood) для культовых 2.5D шутеров\n• Загрузка GRP и RFF ресурсов, вокселей и полигонального рендера\n• Стабильные 60 FPS",
         "• Build Engine ports (EDuke32, VoidSW, NBlood) for classic 2.5D shooters\n• GRP and RFF assets, voxels and polygonal render\n• Locked 60 FPS",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2926,8 +2926,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Return to Castle Wolfenstein / Wolf3D (iortcw / ECWolf)",
         "• Порты движков id Tech 3 (iortcw) и ECWolf для Wolfenstein 3D и RtCW\n• Поддержка PK3 и WL6 карт\n• 60 FPS с аппаратным освещением",
         "• id Tech 3 (iortcw) and ECWolf ports for Wolfenstein 3D and RtCW\n• PK3 and WL6 map support\n• Smooth 60 FPS with hardware lighting",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2940,8 +2940,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Fallout 1 & Fallout 2 (fallout-ce / fallout2-ce)",
         "• Порты Community Edition для Fallout 1 и Fallout 2\n• Загрузка master.dat, critter.dat и кастомных шрифтов\n• Стабильная работа мыши/тача и 60 FPS",
         "• Community Edition ports for Fallout 1 and Fallout 2\n• master.dat, critter.dat and custom fonts loading\n• Smooth touch/mouse input and 60 FPS",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2954,8 +2954,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Heroes of Might and Magic II & III (fheroes2 / VCMI Switch)",
         "• Порты движков fheroes2 и VCMI для Героев Меча и Магии II и III (In the Wake of Gods / Horn of the Abyss)\n• Загрузка LOD, AGG, SND ресурсов и модов",
         "• fheroes2 and VCMI ports for Heroes of Might and Magic II and III (WoG / HotA)\n• LOD, AGG, SND assets and mods loading",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2968,8 +2968,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Max Payne 1 (Max Payne Switch)",
         "• Нативный порт Max Payne для Nintendo Switch\n• Загрузка архивов RAS (x_data.ras, x_russian.ras)\n• Плавный Bullet-Time и 60 FPS",
         "• Native Max Payne port for Nintendo Switch\n• RAS archives loading (x_data.ras, x_english.ras)\n• Smooth Bullet-Time and locked 60 FPS",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -2982,8 +2982,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Elder Scrolls III: Morrowind (OpenMW Switch)",
         "• Порт современного 3D-движка OpenMW для TES III: Morrowind\n• Загрузка ESM, BSA, текстурных паков и модов\n• 8 ГБ DRAM для открытого мира Вварденфелла",
         "• OpenMW modern 3D engine port for TES III: Morrowind\n• ESM, BSA, texture packs and mods loading\n• 8GB DRAM for Vvardenfell open world",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal)\n✓ Быстрая память (Fastmem): Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено",
+        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpu_accuracy", "1"},
@@ -2997,8 +2997,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Star Wars: Jedi Outcast & Academy (OpenJK Switch)",
         "• Порт OpenJK для Star Wars Jedi Knight II: Jedi Outcast и Jedi Academy\n• Стабильные 60 FPS в дуэлях на световых мечах",
         "• OpenJK port for Star Wars Jedi Knight II: Jedi Outcast and Academy\n• Smooth 60 FPS in lightsaber duels",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3011,8 +3011,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "S.T.A.L.K.E.R.: Shadow of Chernobyl (OpenXRay Switch)",
         "• Порт движка X-Ray 1.6 (OpenXRay) для S.T.A.L.K.E.R.: Тень Чернобыля\n• Загрузка DB-архивов и gamedata\n• 8 ГБ DRAM для локаций Зоны",
         "• OpenXRay engine port for S.T.A.L.K.E.R.: Shadow of Chernobyl\n• DB archives and gamedata loading\n• 8GB DRAM for Zone locations",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal)\n✓ Быстрая память (Fastmem): Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено",
+        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpu_accuracy", "1"},
@@ -3026,8 +3026,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Sonic CD / Sonic 1 / Sonic 2 / Mania (RSDK Decompilation)",
         "• Порты Retro Engine (RSDKv3, RSDKv4, RSDKv5) для классических игр Sonic\n• Загрузка Data.rsdk и модов\n• Идеальные 60 FPS",
         "• Retro Engine (RSDKv3, RSDKv4, RSDKv5) decompilations for classic Sonic games\n• Data.rsdk and mods loading\n• Flawless 60 FPS",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3040,8 +3040,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario 64 (SM64-NX / Render96)",
         "• Порт SM64-NX и Render96 для Super Mario 64 с широкоформатным рендером и HD-моделями\n• Стабильные 60 FPS",
         "• SM64-NX and Render96 port for Super Mario 64 with widescreen and HD models\n• Locked 60 FPS",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3054,8 +3054,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Zelda: Ocarina of Time / Majora's Mask (Ship of Harkinian / 2S2H)",
         "• Порты Ship of Harkinian (OoT) и 2 Ship 2 Harkinian (MM)\n• Загрузка OTR архивов, поддержка 60 FPS, свободная камера и HD текстуры",
         "• Ship of Harkinian (OoT) and 2 Ship 2 Harkinian (MM) ports\n• OTR archives loading, 60 FPS support, free camera and HD textures",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3068,8 +3068,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Cave Story / Cave Story+ / AM2R (NXEngine-evo / AM2R)",
         "• Порты NXEngine-evo для Cave Story и нативный порт AM2R (Another Metroid 2 Remake)\n• Чистый 2D-рендеринг и 60 FPS",
         "• NXEngine-evo ports for Cave Story and native AM2R port\n• Crisp 2D rendering and 60 FPS",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3082,8 +3082,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Theme Hospital / Caesar III (CorsixTH / Julius / Augustus)",
         "• Порты CorsixTH (Theme Hospital) и Julius/Augustus (Caesar III)\n• Высокое разрешение и сенсорное управление",
         "• CorsixTH (Theme Hospital) and Julius/Augustus (Caesar III) ports\n• High resolution and touch controls",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3096,8 +3096,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Command & Conquer / Red Alert / Dune II (OpenRA / Dune Legacy)",
         "• Порты OpenRA (C&C, Red Alert, Dune 2000) и Dune Legacy (Dune II)\n• Быстрый расчет AI юнитов на Unsafe JIT",
         "• OpenRA (C&C, Red Alert, Dune 2000) and Dune Legacy (Dune II) ports\n• Fast RTS AI unit simulation on Unsafe JIT",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3110,8 +3110,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "RetroArch & Emulators (PPSSPP, Flycast, ScummVM, MelonDS, mGBA, DuckStation)",
         "• Мультисистемные эмуляторы и оболочки для запуска ретро-платформ на Switch\n• 8 ГБ DRAM для тяжелых ядер (Flycast, PPSSPP, DuckStation)\n• Максимальная скорость JIT компиляции",
         "• Multi-system emulators and frontends for retro platforms\n• 8GB DRAM for memory-heavy cores (Flycast, PPSSPP, DuckStation)\n• Maximum JIT compiler performance",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено",
+        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpu_accuracy", "1"},
@@ -3125,8 +3125,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Homebrew Utilities & Overlays (NX-Shell, DBI, Goldleaf, JKSV, Checkpoint, EdiZon, Tesla)",
         "• Системные Homebrew-утилиты Switch для управления сейвами, файлами и оверлеями\n• Мгновенный отклик файловой системы и стабильная работа",
         "• Switch Homebrew system utilities for saves, files and overlays\n• Instant filesystem responsiveness and stability",
-        "✓ Точность CPU: Авто / Небезопасная (Unsafe JIT)\n✓ Точность GPU: Обычная (Normal, 60 FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3139,7 +3139,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Grand Theft Auto V (GTA V Homebrew Port / PC Wrapper)",
         "• Высокие требования к памяти потоков и текстурам открытого мира Лос-Сантоса\n• Зависание сетевых сокетов и многопоточных вызовов IPC",
         "• High thread memory pressure and Los Santos open-world texture bandwidth\n• Network socket handshake and multithreaded IPC freezes",
-        "✓ Память: 8GB DRAM (критично для стабильной работы открытого мира)\n✓ Точность CPU: Авто / Небезопасная (Unsafe JIT, максимальный FPS)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим полёта: Включено (пропуск сетевых хуков)\n✓ Авто-заглушки: Включено",
+        "✓ Память: 8GB DRAM (критично для стабильной работы открытого мира)\n✓ Точность ЦП: Авто / Небезопасная (максимальный FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим полёта: Включено (пропуск сетевых хуков)\n✓ Авто-заглушки: Включено",
         "✓ Memory Layout: 8GB DRAM (Critical for open-world stability)\n✓ CPU Accuracy: Auto / Unsafe (Max FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled\n✓ Auto Stub: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
@@ -3157,8 +3157,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Grand Theft Auto: The Trilogy / GTA III / VC / SA (re3 / reVC / Homebrew Ports)",
         "• Просадки частоты кадров при рендере геометрии города\n• Рассинхронизация аудио-потоков радио",
         "• City geometry rendering framerate dips\n• Radio station audio stream desynchronization",
-        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность CPU: Авто / Unsafe JIT\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Memory Layout: 6GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Memory Layout: 6GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpu_accuracy", "1"},
@@ -3173,7 +3173,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Brotato",
         "• Просадки FPS при спавне волн врагов\n• Микрофризы расчёта физики снарядов",
         "• Framerate drops during massive horde waves\n• Projectile physics calculation micro-stutters",
-        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Обычная (Normal)",
+        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
         "✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
         {
             {"System\\memory_layout_mode", "1"},
@@ -3187,7 +3187,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Vampire Survivors",
         "• Микрофризы и просадки кадров на 25+ минуте при тысячах спрайтов на экране\n• Утечки памяти движка Phaser",
         "• Micro-stutters and framerate drops at 25+ min with thousands of sprites\n• Phaser engine memory leaks",
-        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Обычная (Normal)",
+        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
         "✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
         {
             {"System\\memory_layout_mode", "1"},
@@ -3201,7 +3201,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Dave the Diver",
         "• Просадки кадровой частоты во время ночной охоты и шторма\n• Утечки VRAM в суши-баре Bancho Sushi",
         "• Framerate drops during stormy dives and night hunting\n• VRAM memory spikes in Bancho Sushi restaurant",
-        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность GPU: Высокая (High)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
@@ -3215,7 +3215,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Metroid Dread",
         "• Микрофризы при входе в зоны E.M.M.I.\n• Сбои размытия в катсценах и шейдеров тепловизора",
         "• E.M.M.I. zone transition micro-stutters\n• Cutscene motion blur and thermal vision shader glitches",
-        "✓ Точность GPU: Высокая (High)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -3228,7 +3228,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "LEGO Star Wars: The Skywalker Saga",
         "• Падение FPS на открытых планетах (Корусант, Татуин)\n• Утечки видеопамяти при смене планет",
         "• Open-world planet performance drops (Coruscant, Tatooine)\n• Hyperdrive transition VRAM spikes",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Обычная (Normal)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
@@ -3242,7 +3242,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Signalis",
         "• Сбои кинематографичных ретро-шейдеров ЭЛТ и дизеринга\n• Зависание инвентаря",
         "• CRT retro-filter and dithering shader glitches\n• Inventory UI freeze",
-        "✓ Точность GPU: Высокая (High)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -3255,7 +3255,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Streets of Rage 4",
         "• Рассинхронизация кадров в битвах с боссами\n• Разрывы спрайтовой анимации",
         "• Boss fight frame pacing desync\n• Sprite animation tearing",
-        "✓ Точность GPU: Высокая (High)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время GPU: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорировать прерывания памяти: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -3270,7 +3270,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Streets of Rage 4",
         "• Рассинхронизация кадров в битвах с боссами\n• Разрывы спрайтовой анимации",
         "• Boss fight frame pacing desync\n• Sprite animation tearing",
-        "✓ Точность GPU: Высокая (High)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время GPU: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорировать прерывания памяти: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -3285,7 +3285,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Streets of Rage 4",
         "• Рассинхронизация кадров в битвах с боссами\n• Разрывы спрайтовой анимации",
         "• Boss fight frame pacing desync\n• Sprite animation tearing",
-        "✓ Точность GPU: Высокая (High)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время GPU: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорировать прерывания памяти: Включено",
+        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
         "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
@@ -3300,7 +3300,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Stardew Valley",
         "• Микрофризы при смене дней и сохранении на ферме\n• Просадки FPS во время дождя и фестивалей",
         "• Day transition and farm autosave micro-stutters\n• Rain particles and festival FPS drops",
-        "✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Обычная (Normal)",
+        "✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
         "✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
         {
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -3313,8 +3313,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Little Nightmares: Complete Edition",
         "• Вылеты на движке Unreal Engine 4 в Чреве\n• Сбои динамических теней фонарика",
         "• Unreal Engine 4 Maw transition crashes\n• Flashlight dynamic shadow artifacts",
-        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность GPU: Высокая (High)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic (EDS1)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: Базовое\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "1"},
@@ -3326,10 +3326,10 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010097100EDD6000ULL,
         "Little Nightmares II",
-        "• Вылеты из-за нехватки памяти (OOM) в Бледном городе\n• Артефакты тумана и объемного света",
-        "• Pale City memory pressure (OOM) crashes\n• Volumetric fog and lighting artifacts",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая (High)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic (EDS1)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "• Вылеты из-за нехватки памяти (нехватка памяти) в Бледном городе\n• Артефакты тумана и объемного света",
+        "• Pale City memory pressure (нехватка памяти) crashes\n• Volumetric fog and lighting artifacts",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: Базовое\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
             {"Renderer\\gpu_accuracy", "1"},
@@ -3343,8 +3343,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Little Nightmares III",
         "• Высокие требования к DRAM и шейдерам спирали\n• Сбои многопоточности Unreal Engine 5",
         "• High DRAM and Spiral shader complexity\n• Unreal Engine 5 multithreading synchronization",
-        "✓ Память: 8GB DRAM\n✓ Точность GPU: Высокая (High)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic (EDS1)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: Базовое\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\memory_layout_mode", "2"},
             {"Renderer\\gpu_accuracy", "1"},
@@ -3358,7 +3358,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Cadence of Hyrule: Crypt of the NecroDancer",
         "• Рассинхронизация ритмического аудио-движка\n• Задержка обработки ввода стрелок",
         "• Rhythm audio engine timing desynchronization\n• Beat input delay",
-        "✓ Аудио-движок: Cubeb\n✓ Точность CPU: Точная (Accurate)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Аудио-движок: Cubeb\n✓ Точность ЦП: Точная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Audio Engine: Cubeb\n✓ CPU Accuracy: Accurate\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -3371,7 +3371,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Crypt of the NecroDancer: Nintendo Switch Edition",
         "• Рассинхронизация такта ударов и музыки в подземелье\n• Задержка аудио-буфера",
         "• Beat synchronization jitter in procedural dungeons\n• Audio buffer latency",
-        "✓ Аудио-движок: Cubeb\n✓ Точность CPU: Точная (Accurate)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Аудио-движок: Cubeb\n✓ Точность ЦП: Точная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Audio Engine: Cubeb\n✓ CPU Accuracy: Accurate\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -3384,7 +3384,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Rift of the NecroDancer",
         "• Рассинхронизация дорожек ритм-битв в мини-играх\n• Инпут-лаг комбо",
         "• Rhythm lane timing desync during minigames\n• Combo input response latency",
-        "✓ Аудио-движок: Cubeb\n✓ Точность CPU: Точная (Accurate)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Аудио-движок: Cubeb\n✓ Точность ЦП: Точная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Audio Engine: Cubeb\n✓ CPU Accuracy: Accurate\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -3397,7 +3397,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Scott Pilgrim vs. The World: The Game - Complete Edition",
         "• Зависание на заставке Ubisoft Connect\n• Рассинхронизация спрайтов 4 игроков",
         "• Ubisoft Connect handshake freeze on boot\n• 4-player sprite synchronization jitter",
-        "✓ Режим полёта: Включено (пропуск сетевого опроса Ubisoft)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность GPU: Высокая (High)",
+        "✓ Режим полёта: Включено (пропуск сетевого опроса Ubisoft)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
         "✓ Airplane Mode: Enabled (Bypasses Ubisoft Connect)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
         {
             {"System\\airplane_mode", "true"},
@@ -3411,8 +3411,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Drill Core",
         "• Зависание при процедурной генерации буровых платформ\n• Утечки памяти при спавне сотен монстров",
         "• Procedural platform generation freeze\n• Swarm particle memory buildup",
-        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность GPU: Высокая (High)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic (EDS1)\n✓ Fastmem: Enabled\n✓ Auto Stub: Enabled",
+        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: Базовое\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic\n✓ Fastmem: Enabled\n✓ Auto Stub: Enabled",
         {
             {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "1"},

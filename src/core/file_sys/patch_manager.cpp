@@ -432,32 +432,49 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
 
     LOG_INFO(Loader, "Patching NSO for name={}, build_id={}", name, build_id);
 
+    auto out = nso;
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
-    if (load_dir == nullptr) {
-        LOG_ERROR(Loader, "Cannot load mods for invalid title_id={:016X}", title_id);
-        return nso;
+    if (load_dir != nullptr) {
+        auto patch_dirs = load_dir->GetSubdirectories();
+        std::sort(patch_dirs.begin(), patch_dirs.end(),
+                  [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+        const auto patches = CollectPatches(patch_dirs, build_id);
+
+        for (const auto& patch_file : patches) {
+            if (patch_file->GetExtension() == "ips") {
+                LOG_INFO(Loader, "    - Applying IPS patch from mod \"{}\"",
+                         patch_file->GetContainingDirectory()->GetParentDirectory()->GetName());
+                const auto patched = PatchIPS(std::make_shared<VectorVfsFile>(out), patch_file);
+                if (patched != nullptr)
+                    out = patched->ReadAllBytes();
+            } else if (patch_file->GetExtension() == "pchtxt") {
+                LOG_INFO(Loader, "    - Applying IPSwitch patch from mod \"{}\"",
+                         patch_file->GetContainingDirectory()->GetParentDirectory()->GetName());
+                const IPSwitchCompiler compiler{patch_file};
+                const auto patched = compiler.Apply(std::make_shared<VectorVfsFile>(out));
+                if (patched != nullptr)
+                    out = patched->ReadAllBytes();
+            }
+        }
+    } else {
+        LOG_WARNING(Loader, "Cannot load mods for title_id={:016X}", title_id);
     }
 
-    auto patch_dirs = load_dir->GetSubdirectories();
-    std::sort(patch_dirs.begin(), patch_dirs.end(),
-              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
-    const auto patches = CollectPatches(patch_dirs, build_id);
+    // Built-in game patches
+    if (name == "main" && build_id.starts_with("8817441976E32E94909A95F64405A99A092B43DC")) {
+        // Streets of Rage 4 (v1.0.9): Fix crash on null input device handling loop
+        // In pi_header: sizeof(NSOHeader) (0x100) + text offset 0x008C2F94 = 0x008C3094
+        constexpr std::size_t patch_offset = sizeof(Loader::NSOHeader) + 0x008C2F94;
+        constexpr u32 original_insn = 0xB40001C0; // cbz x0, 0x008C2FCC
+        constexpr u32 patched_insn  = 0xB4000720; // cbz x0, 0x008C3078
 
-    auto out = nso;
-    for (const auto& patch_file : patches) {
-        if (patch_file->GetExtension() == "ips") {
-            LOG_INFO(Loader, "    - Applying IPS patch from mod \"{}\"",
-                     patch_file->GetContainingDirectory()->GetParentDirectory()->GetName());
-            const auto patched = PatchIPS(std::make_shared<VectorVfsFile>(out), patch_file);
-            if (patched != nullptr)
-                out = patched->ReadAllBytes();
-        } else if (patch_file->GetExtension() == "pchtxt") {
-            LOG_INFO(Loader, "    - Applying IPSwitch patch from mod \"{}\"",
-                     patch_file->GetContainingDirectory()->GetParentDirectory()->GetName());
-            const IPSwitchCompiler compiler{patch_file};
-            const auto patched = compiler.Apply(std::make_shared<VectorVfsFile>(out));
-            if (patched != nullptr)
-                out = patched->ReadAllBytes();
+        if (out.size() >= patch_offset + sizeof(u32)) {
+            u32 current_insn = 0;
+            std::memcpy(&current_insn, out.data() + patch_offset, sizeof(u32));
+            if (current_insn == original_insn) {
+                LOG_INFO(Loader, "    - Applying built-in patch for Streets of Rage 4 v1.0.9 (null input device loop fix)");
+                std::memcpy(out.data() + patch_offset, &patched_insn, sizeof(u32));
+            }
         }
     }
 
@@ -474,6 +491,11 @@ bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) 
     const auto build_id = build_id_raw.substr(0, build_id_raw.find_last_not_of('0') + 1);
 
     LOG_INFO(Loader, "Querying NSO patch existence for build_id={}, name={}", build_id, name);
+
+    // Built-in game patches
+    if (name == "main" && build_id.starts_with("8817441976E32E94909A95F64405A99A092B43DC")) {
+        return true;
+    }
 
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
     if (load_dir == nullptr) {
