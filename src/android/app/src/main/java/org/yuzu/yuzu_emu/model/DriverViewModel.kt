@@ -244,8 +244,13 @@ class DriverViewModel : ViewModel() {
                 val selectedDriverMetadata = GpuDriverHelper.customDriverSettingData
                 val installedMetadata = GpuDriverHelper.installedCustomDriverData
 
+                org.yuzu.yuzu_emu.utils.Log.info(
+                    "[DriverViewModel] onLaunchGame for '${game?.title}': selected='$selectedDriverPath' (${selectedDriverMetadata.name}), installed='${installedMetadata.name}'"
+                )
+
                 if (selectedDriverPath.isEmpty() || selectedDriverMetadata.name == null) {
                     if (installedMetadata.name != null) {
+                        org.yuzu.yuzu_emu.utils.Log.info("[DriverViewModel] Reverting to default system driver")
                         GpuDriverHelper.installDefaultDriver()
                     } else {
                         GpuDriverHelper.initializeDriverParameters()
@@ -254,11 +259,14 @@ class DriverViewModel : ViewModel() {
                     val libName = installedMetadata.libraryName
                     val libFile = if (!libName.isNullOrEmpty()) File(GpuDriverHelper.driverInstallationPath, libName) else null
                     if (installedMetadata != selectedDriverMetadata || libFile == null || !libFile.exists()) {
+                        org.yuzu.yuzu_emu.utils.Log.info("[DriverViewModel] Installing custom driver: ${selectedDriverFile.name}")
                         GpuDriverHelper.installCustomDriver(selectedDriverFile)
                     } else {
+                        org.yuzu.yuzu_emu.utils.Log.info("[DriverViewModel] Driver already active: ${installedMetadata.name}")
                         GpuDriverHelper.initializeDriverParameters()
                     }
                 } else {
+                    org.yuzu.yuzu_emu.utils.Log.info("[DriverViewModel] Selected driver file missing, falling back to default")
                     GpuDriverHelper.installDefaultDriver()
                 }
 

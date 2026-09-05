@@ -96,18 +96,15 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         dialog?.window?.let { window ->
             val dm = resources.displayMetrics
             val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-            val isInGame = activity is org.yuzu.yuzu_emu.activities.EmulationActivity
-            val width = if (isInGame) {
+            val width = if (isLandscape) {
+                (dm.widthPixels * 0.96).toInt()
+            } else {
                 (dm.widthPixels * 0.95).toInt()
-            } else if (isLandscape) {
-                (dm.widthPixels * 0.88).toInt().coerceIn(550, 1100)
-            } else {
-                (dm.widthPixels * 0.94).toInt()
             }
-            val height = if (isInGame || isLandscape) {
-                (dm.heightPixels * 0.94).toInt().coerceIn(360, 900)
+            val height = if (isLandscape) {
+                (dm.heightPixels * 0.95).toInt()
             } else {
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                (dm.heightPixels * 0.88).toInt()
             }
             window.setLayout(width, height)
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

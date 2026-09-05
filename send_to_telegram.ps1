@@ -87,6 +87,14 @@ $filesToUpload = @(
     @{
         Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.3.2_Windows.zip"
         Caption = "💻 <b>STORM SWITCH 7.3.2 (Windows x64 Release Portable)</b>"
+    },
+    @{
+        Path = "E:\STORM EDEN 3\Files\STORM_DRIVER_2.0.3.zip"
+        Caption = "⚡ <b>STORM DRIVER 2.0.3 (Universal Turnip Driver)</b>"
+    },
+    @{
+        Path = "E:\STORM EDEN 3\Files\STORM_DRIVER_2.0.3_ZELDA.zip"
+        Caption = "🗡️ <b>STORM DRIVER 2.0.3 Zelda Edition (BotW & TotK Zero-Flicker Architecture)</b>"
     }
 )
 

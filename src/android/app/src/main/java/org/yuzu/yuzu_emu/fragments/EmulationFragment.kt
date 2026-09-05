@@ -2030,6 +2030,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     private fun updateShowStatsOverlay() {
         val showPerfOverlay = BooleanSetting.SHOW_PERFORMANCE_OVERLAY.getBoolean()
         binding.showStatsOverlayText.apply {
+            setSingleLine(true)
+            maxLines = 1
+            ellipsize = null
             setTextColor(
                 MaterialColors.getColor(
                     this,
@@ -2273,6 +2276,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     private fun updateSocOverlay() {
         val showSOCOverlay = BooleanSetting.SHOW_SOC_OVERLAY.getBoolean()
         binding.showSocOverlayText.apply {
+            setSingleLine(true)
+            maxLines = 1
+            ellipsize = null
             setTextColor(
                 MaterialColors.getColor(
                     this,
@@ -2286,8 +2292,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             val sb = StringBuilder()
             val appendWithPipe: (String) -> Unit = { text ->
                 if (text.isNotEmpty()) {
-                    if (sb.isNotEmpty()) sb.append(" | ")
-                    sb.append(text)
+                    if (sb.isNotEmpty()) sb.append("\u00A0|\u00A0")
+                    sb.append(text.replace(' ', '\u00A0'))
                 }
             }
             socUpdater = {
@@ -2340,6 +2346,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         appendWithPipe(fwVersion)
                     }
 
+                    val dm = resources.displayMetrics
+                    val widthDp = dm.widthPixels / dm.density
+                    val textSizeSp = if (widthDp < 600) 9.5f else if (widthDp < 750) 10.5f else 11.5f
+                    binding.showSocOverlayText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, textSizeSp)
                     binding.showSocOverlayText.text = sb.toString()
 
 
@@ -2368,6 +2378,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     private fun updateDeviceLoadOverlay() {
         val showLoadOverlay = BooleanSetting.SHOW_DEVICE_LOAD_OVERLAY.getBoolean()
         binding.showLoadOverlayText.apply {
+            setSingleLine(true)
+            maxLines = 1
+            ellipsize = null
             setTextColor(
                 MaterialColors.getColor(
                     this,
@@ -2499,14 +2512,14 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     val actualH = (baseH * scale).toInt()
 
                     // Build formatted string
-                    sb.append("📺 ${actualW}x${actualH} | ⚙️ ЦП: $cpuUsagePercent%")
+                    sb.append("📺\u00A0${actualW}x${actualH}\u00A0|\u00A0⚙️\u00A0ЦП:\u00A0$cpuUsagePercent%")
                     if (gpuUsagePercent >= 0) {
-                        sb.append(" | 🎮 ГПУ: $gpuUsagePercent%")
+                        sb.append("\u00A0|\u00A0🎮\u00A0ГПУ:\u00A0$gpuUsagePercent%")
                     }
                     if (ramText.isNotEmpty()) {
-                        sb.append(" | 💾 ОЗУ: $ramText")
+                        sb.append("\u00A0|\u00A0💾\u00A0ОЗУ:\u00A0${ramText.replace(' ', '\u00A0')}")
                     }
-                    sb.append(" | $tempIcon ${String.format(java.util.Locale.US, "%.1f°C", temp)}")
+                    sb.append("\u00A0|\u00A0$tempIcon\u00A0${String.format(java.util.Locale.US, "%.1f°C", temp)}")
 
                     // Position layout params: under SOC overlay if enabled, else Top-Right
                     val showSoc = BooleanSetting.SHOW_SOC_OVERLAY.getBoolean()
@@ -2531,6 +2544,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         binding.showLoadOverlayText.setBackgroundResource(0)
                     }
 
+                    val dm = resources.displayMetrics
+                    val widthDp = dm.widthPixels / dm.density
+                    val textSizeSp = if (widthDp < 600) 9.5f else if (widthDp < 750) 10.5f else 11.5f
+                    binding.showLoadOverlayText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, textSizeSp)
                     binding.showLoadOverlayText.text = sb.toString()
                 }
 
