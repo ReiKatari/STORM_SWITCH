@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "core/hle/service/game_fix_database.h"
@@ -3420,6 +3420,20 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
+    },
+    {
+        0x0100EC9010258000ULL,
+        "Streets of Rage 4",
+        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации",
+        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate",
+        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
+        {
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"}
+        }
     }
 };
 
@@ -3457,6 +3471,9 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         }
 
         // Custom keyword matching
+        if (game_lower.find("streets of rage") != std::string::npos && (lower.find("streets of rage") != std::string::npos || lower.find("sor4") != std::string::npos)) {
+            return &profile;
+        }
         if (game_lower.find("splintered fate") != std::string::npos && (lower.find("splintered fate") != std::string::npos || lower.find("tmnt") != std::string::npos || lower.find("ninja turtles") != std::string::npos)) {
             return &profile;
         }
@@ -3919,8 +3936,12 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
     return true;
 }
 
-void GameFixDatabase::SetDontAskAgain(u64 title_id, const std::string& config_file_path) {
+void GameFixDatabase::SetDontAskAgain(u64 title_id, const std::string& config_file_path, bool dont_ask) {
+    if (config_file_path.empty()) return;
     std::filesystem::path path(config_file_path);
+    if (!dont_ask && !std::filesystem::exists(path)) {
+        return;
+    }
     std::filesystem::create_directories(path.parent_path());
 
     std::unordered_map<std::string, std::unordered_map<std::string, std::string>> sections;
@@ -3944,7 +3965,16 @@ void GameFixDatabase::SetDontAskAgain(u64 title_id, const std::string& config_fi
         }
     }
 
-    sections["StormEden"]["storm_fix_dont_ask"] = "true";
+    if (dont_ask) {
+        sections["StormEden"]["storm_fix_dont_ask"] = "true";
+    } else {
+        if (sections.count("StormEden")) {
+            sections["StormEden"].erase("storm_fix_dont_ask");
+            if (sections["StormEden"].empty()) {
+                sections.erase("StormEden");
+            }
+        }
+    }
 
     std::ofstream out(path, std::ios::trunc);
     if (!out.is_open()) return;
@@ -3956,6 +3986,47 @@ void GameFixDatabase::SetDontAskAgain(u64 title_id, const std::string& config_fi
         }
         out << "\n";
     }
+}
+
+int GameFixDatabase::ResetAllDontAskAgain() {
+    int count = 0;
+    try {
+        std::filesystem::path custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
+        if (!std::filesystem::exists(custom_path)) return 0;
+
+        for (const auto& entry : std::filesystem::directory_iterator(custom_path)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".ini") {
+                std::ifstream in(entry.path());
+                if (!in.is_open()) continue;
+                std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+                in.close();
+
+                if (content.find("storm_fix_dont_ask") != std::string::npos) {
+                    std::istringstream stream(content);
+                    std::string line;
+                    std::string new_content;
+                    bool modified = false;
+                    while (std::getline(stream, line)) {
+                        if (line.find("storm_fix_dont_ask") != std::string::npos) {
+                            modified = true;
+                            continue;
+                        }
+                        new_content += line + "\n";
+                    }
+                    if (modified) {
+                        std::ofstream out(entry.path(), std::ios::trunc);
+                        if (out.is_open()) {
+                            out << new_content;
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+    } catch (...) {
+    }
+    LOG_INFO(Frontend, "Reset GameFix suppression on {} configuration files", count);
+    return count;
 }
 
 bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {

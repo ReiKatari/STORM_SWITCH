@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2014 Citra Emulator Project
@@ -274,6 +274,8 @@ private:
     void BootGame(const QString& filename, Service::AM::FrontendAppletParameters params,
                   StartGameType with_config = StartGameType::Normal);
     void BootGameFromList(const QString& filename, StartGameType with_config);
+    bool ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show = false);
+    void OnResetGameFixSuppression();
     void ShutdownGame();
 
     void SetDiscordEnabled(bool state);

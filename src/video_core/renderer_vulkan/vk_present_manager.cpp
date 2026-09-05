@@ -190,7 +190,9 @@ void PresentManager::Present(Frame* frame) {
     } else {
         scheduler.WaitWorker();
         CopyToSwapchain(frame);
+        std::scoped_lock fl{free_mutex};
         free_queue.push_back(frame);
+        free_cv.notify_one();
     }
 }
 
@@ -358,7 +360,9 @@ void PresentManager::SetImageCount() {
             std::clamp<size_t>((generations + 1) * queued_composites, swapchain.GetImageCount(),
                                MAX_FRAMES_IN_FLIGHT);
     } else {
-        image_count = std::min<size_t>(swapchain.GetImageCount(), MAX_FRAMES_IN_FLIGHT);
+        const size_t min_count = use_present_thread ? 4ULL : swapchain.GetImageCount();
+        const size_t target_count = use_present_thread ? (swapchain.GetImageCount() + 1) : swapchain.GetImageCount();
+        image_count = std::clamp<size_t>((std::max)(target_count, min_count), swapchain.GetImageCount(), MAX_FRAMES_IN_FLIGHT);
     }
 }
 

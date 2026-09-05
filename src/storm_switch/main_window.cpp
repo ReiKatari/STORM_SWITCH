@@ -2701,6 +2701,10 @@ void MainWindow::ConnectWidgetEvents() {
                 CheatsDialog dialog(this, *QtCommon::system, program_id, game_path);
                 dialog.exec();
             });
+    connect(game_list, &GameList::OpenGameFixRequested, this,
+            [this](u64 program_id, const QString& game_path) {
+                ShowGameFixDialog(program_id, game_path, true /* force_show */);
+            });
     connect(game_list, &GameList::OpenTransferableShaderCacheRequested, this,
             [this](u64 program_id) { QtCommon::Path::OpenShaderCache(program_id, this); });
     connect(game_list, &GameList::RemoveInstalledEntryRequested, this,
@@ -2885,6 +2889,9 @@ void MainWindow::ConnectMenuEvents() {
     connect_menu(ui->action_About, &MainWindow::OnAbout);
     connect_menu(ui->action_Eden_Dependencies, &MainWindow::OnEdenDependencies);
     connect_menu(ui->action_Data_Manager, &MainWindow::OnDataDialog);
+
+    auto* reset_gamefix_action = ui->menu_Tools->addAction(tr("🔄 Сбросить скрытые диалоги авто-исправлений..."));
+    connect_menu(reset_gamefix_action, &MainWindow::OnResetGameFixSuppression);
 }
 
 void MainWindow::UpdateMenuState() {
@@ -3150,6 +3157,292 @@ bool MainWindow::SelectAndSetCurrentUser(
     return true;
 }
 
+bool MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show) {
+    if (title_id == 0) {
+        static const QRegularExpression tid_regex(QStringLiteral(R"(([0-9a-fA-F]{16}))"));
+        const auto match = tid_regex.match(game_path);
+        if (match.hasMatch()) {
+            bool ok = false;
+            const u64 parsed = match.captured(1).toULongLong(&ok, 16);
+            if (ok && parsed != 0) {
+                title_id = parsed;
+            }
+        }
+    }
+
+    const auto* profile = Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, game_path.toStdString());
+    if (profile != nullptr && title_id == 0) {
+        title_id = profile->title_id;
+    }
+    if (profile == nullptr && title_id != 0) {
+        profile = Core::GameFixDatabase::GetProfile(title_id);
+    }
+
+    if (profile == nullptr) {
+        if (force_show) {
+            QMessageBox::information(this, tr("Оптимизация STORM SWITCH"),
+                tr("Для данной игры в базе GameFix нет специальных рекомендаций.\nИгра использует стандартные настройки эмулятора."));
+        }
+        return false;
+    }
+
+    QByteArray utf8_str = game_path.toUtf8();
+    const auto file_path_hash = Common::CityHash64(utf8_str.constData(), static_cast<std::size_t>(utf8_str.size()));
+    const auto specific_config = fmt::format("{:016X}_{:016X}", title_id, file_path_hash);
+    const auto legacy_config = fmt::format("{:016X}", title_id);
+
+    std::filesystem::path custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
+    std::string target_ini = (custom_path / (specific_config + ".ini")).string();
+    std::string check_ini = target_ini;
+    if (!std::filesystem::exists(check_ini) && std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
+        check_ini = (custom_path / (legacy_config + ".ini")).string();
+    }
+
+    bool dont_ask = false;
+    if (std::filesystem::exists(check_ini)) {
+        std::ifstream f(check_ini);
+        std::string l;
+        while (std::getline(f, l)) {
+            if (l.find("storm_fix_dont_ask=true") != std::string::npos || l.find("storm_fix_dont_ask = true") != std::string::npos) {
+                dont_ask = true;
+                break;
+            }
+        }
+    }
+
+    if (dont_ask && !force_show) {
+        return false;
+    }
+
+    QString clean_game_name = QString::fromStdString(profile->game_name);
+    clean_game_name.remove(QRegularExpression(QStringLiteral("\\s*\\((?:Alt|Rev|v|Build)[^)]*\\)"), QRegularExpression::CaseInsensitiveOption));
+    clean_game_name.remove(QRegularExpression(QStringLiteral("\\s*\\[[^\\]]*\\]")));
+    clean_game_name = clean_game_name.trimmed();
+
+    QDialog fixDialog(this);
+    fixDialog.setWindowTitle(tr("🔧 Оптимизация STORM SWITCH: %1").arg(clean_game_name));
+    fixDialog.setWindowFlags(fixDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    fixDialog.setMinimumWidth(540);
+
+    fixDialog.setStyleSheet(QStringLiteral(
+        "QDialog {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #151923, stop:1 #0B0E14);"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    border-radius: 12px;"
+        "}"
+        "QLabel { color: #E2E8F0; font-family: 'Segoe UI', sans-serif; }"
+    ));
+
+    auto* dlg_layout = new QVBoxLayout(&fixDialog);
+    dlg_layout->setContentsMargins(20, 20, 20, 20);
+    dlg_layout->setSpacing(12);
+
+    // 1. Header Card with Game Title
+    auto* headerCard = new QFrame(&fixDialog);
+    headerCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 210, 255, 0.12), stop:1 rgba(2, 132, 199, 0.04));"
+        "    border: 1px solid rgba(0, 210, 255, 0.28);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* headerLayout = new QHBoxLayout(headerCard);
+    headerLayout->setContentsMargins(12, 10, 12, 10);
+    headerLayout->setSpacing(10);
+
+    auto* gameIconLabel = new QLabel(headerCard);
+    gameIconLabel->setText(QStringLiteral("🎮"));
+    gameIconLabel->setStyleSheet(QStringLiteral("font-size: 20px; background: transparent; border: none;"));
+    headerLayout->addWidget(gameIconLabel);
+
+    auto* gameTitleLabel = new QLabel(clean_game_name, headerCard);
+    gameTitleLabel->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: bold; color: #FFFFFF; background: transparent; border: none;"));
+    headerLayout->addWidget(gameTitleLabel, 1);
+    dlg_layout->addWidget(headerCard);
+
+    // 2. Issues Card (Amber/Red Volumetric Card)
+    QString issues_formatted = QString::fromStdString(profile->issues_ru);
+    issues_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
+
+    auto* issueCard = new QFrame(&fixDialog);
+    issueCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(239, 68, 68, 0.08);"
+        "    border: 1px solid rgba(239, 68, 68, 0.35);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* issueLayout = new QVBoxLayout(issueCard);
+    issueLayout->setContentsMargins(14, 10, 14, 10);
+    issueLayout->setSpacing(6);
+
+    auto* issueHeader = new QLabel(QStringLiteral("⚠️ <b>Обнаружены известные проблемы в игре:</b>"), issueCard);
+    issueHeader->setStyleSheet(QStringLiteral("color: #F87171; font-size: 13px; background: transparent; border: none;"));
+    issueLayout->addWidget(issueHeader);
+
+    auto* issueText = new QLabel(issues_formatted, issueCard);
+    issueText->setTextFormat(Qt::RichText);
+    issueText->setWordWrap(true);
+    issueText->setStyleSheet(QStringLiteral("color: #FCA5A5; font-size: 12px; line-height: 1.4; background: transparent; border: none;"));
+    issueLayout->addWidget(issueText);
+    dlg_layout->addWidget(issueCard);
+
+    // 3. Recommended Fixes Card (Cyan/Neon Volumetric Card)
+    QString fixes_formatted = QString::fromStdString(profile->fixes_ru);
+    fixes_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
+
+    auto* fixCard = new QFrame(&fixDialog);
+    fixCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(0, 210, 255, 0.06);"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* fixLayout = new QVBoxLayout(fixCard);
+    fixLayout->setContentsMargins(14, 10, 14, 10);
+    fixLayout->setSpacing(6);
+
+    auto* fixHeader = new QLabel(QStringLiteral("⚡ <b>Рекомендуемые настройки STORM SWITCH:</b>"), fixCard);
+    fixHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 13px; background: transparent; border: none;"));
+    fixLayout->addWidget(fixHeader);
+
+    auto* fixText = new QLabel(fixes_formatted, fixCard);
+    fixText->setTextFormat(Qt::RichText);
+    fixText->setWordWrap(true);
+    fixText->setStyleSheet(QStringLiteral("color: #7DD3FC; font-size: 12px; line-height: 1.4; background: transparent; border: none;"));
+    fixLayout->addWidget(fixText);
+    dlg_layout->addWidget(fixCard);
+
+    // 4. Prompt text
+    auto* promptLabel = new QLabel(force_show ?
+        tr("Применить рекомендованные настройки к профилю игры?") :
+        tr("Применить оптимизированные настройки для этой игры и сохранить их?"), &fixDialog);
+    promptLabel->setAlignment(Qt::AlignCenter);
+    promptLabel->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 13px; color: #F8FAFC; margin-top: 4px; background: transparent; border: none;"));
+    dlg_layout->addWidget(promptLabel);
+
+    // 5. Stylized Checkbox (Rule 4: solid square with neon fill, no old checkmark)
+    auto* cb_layout = new QHBoxLayout();
+    cb_layout->setAlignment(Qt::AlignCenter);
+    auto* dont_ask_cb = new QCheckBox(tr("Больше не показывать для этой игры"), &fixDialog);
+    dont_ask_cb->setChecked(dont_ask);
+    dont_ask_cb->setStyleSheet(QStringLiteral(
+        "QCheckBox {"
+        "    color: #94A3B8;"
+        "    font-size: 12px;"
+        "    spacing: 8px;"
+        "    background: transparent;"
+        "    border: none;"
+        "}"
+        "QCheckBox::indicator {"
+        "    width: 16px;"
+        "    height: 16px;"
+        "    border-radius: 4px;"
+        "    border: 1px solid rgba(0, 210, 255, 0.45);"
+        "    background: rgba(15, 23, 42, 0.7);"
+        "}"
+        "QCheckBox::indicator:hover {"
+        "    border: 1px solid #00D2FF;"
+        "    background: rgba(0, 210, 255, 0.15);"
+        "}"
+        "QCheckBox::indicator:checked {"
+        "    background: #00D2FF;"
+        "    border: 1px solid #00F0FF;"
+        "}"
+    ));
+    cb_layout->addWidget(dont_ask_cb);
+    dlg_layout->addLayout(cb_layout);
+
+    // 6. Action buttons (Elevated 3D buttons)
+    auto* btn_layout = new QHBoxLayout();
+    btn_layout->setContentsMargins(0, 6, 0, 0);
+    btn_layout->setSpacing(12);
+    btn_layout->setAlignment(Qt::AlignCenter);
+
+    auto* applyBtn = new QPushButton(force_show ? tr("⚡ Применить оптимизации") : tr("⚡ Применить и запустить"), &fixDialog);
+    applyBtn->setObjectName(QStringLiteral("PrimaryDialogButton"));
+    applyBtn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
+        "    color: #050B14;"
+        "    font-weight: bold;"
+        "    font-size: 13px;"
+        "    padding: 8px 22px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid #00F0FF;"
+        "}"
+        "QPushButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #00D2FF);"
+        "}"
+        "QPushButton:pressed {"
+        "    background: #0284C7;"
+        "}"
+    ));
+
+    auto* skipBtn = new QPushButton(force_show ? tr("Закрыть") : tr("Запустить без изменений"), &fixDialog);
+    skipBtn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: rgba(30, 41, 59, 0.75);"
+        "    color: #CBD5E1;"
+        "    font-size: 13px;"
+        "    padding: 8px 20px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid rgba(148, 163, 184, 0.25);"
+        "}"
+        "QPushButton:hover {"
+        "    background: rgba(51, 65, 85, 0.9);"
+        "    border: 1px solid rgba(148, 163, 184, 0.45);"
+        "    color: #FFFFFF;"
+        "}"
+        "QPushButton:pressed {"
+        "    background: rgba(15, 23, 42, 0.9);"
+        "}"
+    ));
+
+    btn_layout->addWidget(applyBtn);
+    btn_layout->addWidget(skipBtn);
+    dlg_layout->addLayout(btn_layout);
+
+    bool applied = false;
+    connect(applyBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &applied] {
+        applied = true;
+        fixDialog.accept();
+    });
+    connect(skipBtn, &QPushButton::clicked, &fixDialog, [&fixDialog] {
+        fixDialog.reject();
+    });
+
+    fixDialog.exec();
+
+    const bool new_dont_ask = dont_ask_cb->isChecked();
+    Core::GameFixDatabase::SetDontAskAgain(title_id, target_ini, new_dont_ask);
+    Core::GameFixDatabase::SetDontAskAgain(title_id, (custom_path / (legacy_config + ".ini")).string(), new_dont_ask);
+
+    if (applied) {
+        Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, target_ini);
+        Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, (custom_path / (legacy_config + ".ini")).string());
+        Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+        if (force_show) {
+            QMessageBox::information(this, tr("Оптимизация STORM SWITCH"),
+                tr("Оптимизированные настройки успешно сохранены для игры: %1").arg(clean_game_name));
+        }
+        return true;
+    }
+    return false;
+}
+
+void MainWindow::OnResetGameFixSuppression() {
+    int count = Core::GameFixDatabase::ResetAllDontAskAgain();
+    if (count > 0) {
+        QMessageBox::information(this, tr("Авто-исправления STORM SWITCH"),
+            tr("Сброшено скрытых диалогов авто-исправлений: %1.\nПри следующем запуске оптимизированных игр диалог будет предложен снова.").arg(count));
+    } else {
+        QMessageBox::information(this, tr("Авто-исправления STORM SWITCH"),
+            tr("Нет скрытых диалогов авто-исправлений. Все диалоги уже активны."));
+    }
+}
+
 void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletParameters params,
                           StartGameType type) {
     LOG_INFO(Frontend, "STORM SWITCH starting...");
@@ -3198,9 +3491,8 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         }
     }
 
-    const auto* profile = Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString());
-    if (profile != nullptr && title_id == 0) {
-        title_id = profile->title_id;
+    if (type == StartGameType::Normal) {
+        ShowGameFixDialog(title_id, filename, false /* force_show */);
     }
 
     if (title_id != 0 && type == StartGameType::Normal) {
@@ -3210,235 +3502,6 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
         std::filesystem::path custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
         std::string target_ini = (custom_path / (specific_config + ".ini")).string();
-
-        if (profile != nullptr) {
-            bool dont_ask = false;
-            std::string check_ini = target_ini;
-            if (!std::filesystem::exists(check_ini) && std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
-                check_ini = (custom_path / (legacy_config + ".ini")).string();
-            }
-            if (std::filesystem::exists(check_ini)) {
-                std::ifstream f(check_ini);
-                std::string l;
-                while (std::getline(f, l)) {
-                    if (l.find("storm_fix_dont_ask=true") != std::string::npos || l.find("storm_fix_dont_ask = true") != std::string::npos) {
-                        dont_ask = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!dont_ask) {
-                QString clean_game_name = QString::fromStdString(profile->game_name);
-                clean_game_name.remove(QRegularExpression(QStringLiteral("\\s*\\((?:Alt|Rev|v|Build)[^)]*\\)"), QRegularExpression::CaseInsensitiveOption));
-                clean_game_name.remove(QRegularExpression(QStringLiteral("\\s*\\[[^\\]]*\\]")));
-                clean_game_name = clean_game_name.trimmed();
-
-                QDialog fixDialog(this);
-                fixDialog.setWindowTitle(tr("🔧 Оптимизация STORM SWITCH: %1").arg(clean_game_name));
-                fixDialog.setWindowFlags(fixDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-                fixDialog.setMinimumWidth(540);
-
-                fixDialog.setStyleSheet(QStringLiteral(
-                    "QDialog {"
-                    "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #151923, stop:1 #0B0E14);"
-                    "    border: 1px solid rgba(0, 210, 255, 0.35);"
-                    "    border-radius: 12px;"
-                    "}"
-                    "QLabel { color: #E2E8F0; font-family: 'Segoe UI', sans-serif; }"
-                ));
-
-                auto* dlg_layout = new QVBoxLayout(&fixDialog);
-                dlg_layout->setContentsMargins(20, 20, 20, 20);
-                dlg_layout->setSpacing(12);
-
-                // 1. Header Card with Game Title
-                auto* headerCard = new QFrame(&fixDialog);
-                headerCard->setStyleSheet(QStringLiteral(
-                    "QFrame {"
-                    "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 210, 255, 0.12), stop:1 rgba(2, 132, 199, 0.04));"
-                    "    border: 1px solid rgba(0, 210, 255, 0.28);"
-                    "    border-radius: 8px;"
-                    "}"
-                ));
-                auto* headerLayout = new QHBoxLayout(headerCard);
-                headerLayout->setContentsMargins(12, 10, 12, 10);
-                headerLayout->setSpacing(10);
-
-                auto* gameIconLabel = new QLabel(headerCard);
-                gameIconLabel->setText(QStringLiteral("🎮"));
-                gameIconLabel->setStyleSheet(QStringLiteral("font-size: 20px; background: transparent; border: none;"));
-                headerLayout->addWidget(gameIconLabel);
-
-                auto* gameTitleLabel = new QLabel(clean_game_name, headerCard);
-                gameTitleLabel->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: bold; color: #FFFFFF; background: transparent; border: none;"));
-                headerLayout->addWidget(gameTitleLabel, 1);
-                dlg_layout->addWidget(headerCard);
-
-                // 2. Issues Card (Amber/Red Volumetric Card)
-                QString issues_formatted = QString::fromStdString(profile->issues_ru);
-                issues_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
-
-                auto* issueCard = new QFrame(&fixDialog);
-                issueCard->setStyleSheet(QStringLiteral(
-                    "QFrame {"
-                    "    background: rgba(239, 68, 68, 0.08);"
-                    "    border: 1px solid rgba(239, 68, 68, 0.35);"
-                    "    border-radius: 8px;"
-                    "}"
-                ));
-                auto* issueLayout = new QVBoxLayout(issueCard);
-                issueLayout->setContentsMargins(14, 10, 14, 10);
-                issueLayout->setSpacing(6);
-
-                auto* issueHeader = new QLabel(QStringLiteral("⚠️ <b>Обнаружены известные проблемы в игре:</b>"), issueCard);
-                issueHeader->setStyleSheet(QStringLiteral("color: #F87171; font-size: 13px; background: transparent; border: none;"));
-                issueLayout->addWidget(issueHeader);
-
-                auto* issueText = new QLabel(issues_formatted, issueCard);
-                issueText->setTextFormat(Qt::RichText);
-                issueText->setWordWrap(true);
-                issueText->setStyleSheet(QStringLiteral("color: #FCA5A5; font-size: 12px; line-height: 1.4; background: transparent; border: none;"));
-                issueLayout->addWidget(issueText);
-                dlg_layout->addWidget(issueCard);
-
-                // 3. Recommended Fixes Card (Cyan/Neon Volumetric Card)
-                QString fixes_formatted = QString::fromStdString(profile->fixes_ru);
-                fixes_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
-
-                auto* fixCard = new QFrame(&fixDialog);
-                fixCard->setStyleSheet(QStringLiteral(
-                    "QFrame {"
-                    "    background: rgba(0, 210, 255, 0.06);"
-                    "    border: 1px solid rgba(0, 210, 255, 0.35);"
-                    "    border-radius: 8px;"
-                    "}"
-                ));
-                auto* fixLayout = new QVBoxLayout(fixCard);
-                fixLayout->setContentsMargins(14, 10, 14, 10);
-                fixLayout->setSpacing(6);
-
-                auto* fixHeader = new QLabel(QStringLiteral("⚡ <b>Рекомендуемые настройки STORM SWITCH:</b>"), fixCard);
-                fixHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 13px; background: transparent; border: none;"));
-                fixLayout->addWidget(fixHeader);
-
-                auto* fixText = new QLabel(fixes_formatted, fixCard);
-                fixText->setTextFormat(Qt::RichText);
-                fixText->setWordWrap(true);
-                fixText->setStyleSheet(QStringLiteral("color: #7DD3FC; font-size: 12px; line-height: 1.4; background: transparent; border: none;"));
-                fixLayout->addWidget(fixText);
-                dlg_layout->addWidget(fixCard);
-
-                // 4. Prompt text
-                auto* promptLabel = new QLabel(tr("Применить оптимизированные настройки для этой игры и сохранить их?"), &fixDialog);
-                promptLabel->setAlignment(Qt::AlignCenter);
-                promptLabel->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 13px; color: #F8FAFC; margin-top: 4px; background: transparent; border: none;"));
-                dlg_layout->addWidget(promptLabel);
-
-                // 5. Stylized Checkbox (Rule 4: solid square with neon fill, no old checkmark)
-                auto* cb_layout = new QHBoxLayout();
-                cb_layout->setAlignment(Qt::AlignCenter);
-                auto* dont_ask_cb = new QCheckBox(tr("Больше не показывать для этой игры"), &fixDialog);
-                dont_ask_cb->setStyleSheet(QStringLiteral(
-                    "QCheckBox {"
-                    "    color: #94A3B8;"
-                    "    font-size: 12px;"
-                    "    spacing: 8px;"
-                    "    background: transparent;"
-                    "    border: none;"
-                    "}"
-                    "QCheckBox::indicator {"
-                    "    width: 16px;"
-                    "    height: 16px;"
-                    "    border-radius: 4px;"
-                    "    border: 1px solid rgba(0, 210, 255, 0.45);"
-                    "    background: rgba(15, 23, 42, 0.7);"
-                    "}"
-                    "QCheckBox::indicator:hover {"
-                    "    border: 1px solid #00D2FF;"
-                    "    background: rgba(0, 210, 255, 0.15);"
-                    "}"
-                    "QCheckBox::indicator:checked {"
-                    "    background: #00D2FF;"
-                    "    border: 1px solid #00F0FF;"
-                    "}"
-                ));
-                cb_layout->addWidget(dont_ask_cb);
-                dlg_layout->addLayout(cb_layout);
-
-                // 6. Action buttons (Elevated 3D buttons)
-                auto* btn_layout = new QHBoxLayout();
-                btn_layout->setContentsMargins(0, 6, 0, 0);
-                btn_layout->setSpacing(12);
-                btn_layout->setAlignment(Qt::AlignCenter);
-
-                auto* applyBtn = new QPushButton(tr("⚡ Применить и запустить"), &fixDialog);
-                applyBtn->setObjectName(QStringLiteral("PrimaryDialogButton"));
-                applyBtn->setStyleSheet(QStringLiteral(
-                    "QPushButton {"
-                    "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
-                    "    color: #050B14;"
-                    "    font-weight: bold;"
-                    "    font-size: 13px;"
-                    "    padding: 8px 22px;"
-                    "    border-radius: 6px;"
-                    "    border: 1px solid #00F0FF;"
-                    "}"
-                    "QPushButton:hover {"
-                    "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #00D2FF);"
-                    "}"
-                    "QPushButton:pressed {"
-                    "    background: #0284C7;"
-                    "}"
-                ));
-
-                auto* skipBtn = new QPushButton(tr("Запустить без изменений"), &fixDialog);
-                skipBtn->setStyleSheet(QStringLiteral(
-                    "QPushButton {"
-                    "    background: rgba(30, 41, 59, 0.75);"
-                    "    color: #CBD5E1;"
-                    "    font-size: 13px;"
-                    "    padding: 8px 20px;"
-                    "    border-radius: 6px;"
-                    "    border: 1px solid rgba(148, 163, 184, 0.25);"
-                    "}"
-                    "QPushButton:hover {"
-                    "    background: rgba(51, 65, 85, 0.9);"
-                    "    border: 1px solid rgba(148, 163, 184, 0.45);"
-                    "    color: #FFFFFF;"
-                    "}"
-                    "QPushButton:pressed {"
-                    "    background: rgba(15, 23, 42, 0.9);"
-                    "}"
-                ));
-
-                btn_layout->addWidget(applyBtn);
-                btn_layout->addWidget(skipBtn);
-                dlg_layout->addLayout(btn_layout);
-
-                bool applied = false;
-                connect(applyBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &applied] {
-                    applied = true;
-                    fixDialog.accept();
-                });
-                connect(skipBtn, &QPushButton::clicked, &fixDialog, [&fixDialog] {
-                    fixDialog.reject();
-                });
-
-                fixDialog.exec();
-
-                if (dont_ask_cb->isChecked()) {
-                    Core::GameFixDatabase::SetDontAskAgain(title_id, target_ini);
-                    Core::GameFixDatabase::SetDontAskAgain(title_id, (custom_path / (legacy_config + ".ini")).string());
-                }
-
-                if (applied) {
-                    Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, target_ini);
-                    Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, (custom_path / (legacy_config + ".ini")).string());
-                    Core::GameFixDatabase::ApplyProfileDirectly(title_id);
-                }
-            }
-        }
 
         // Load per game settings
         std::string config_to_load = specific_config;
@@ -3456,7 +3519,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
                                  Core::GameFixDatabase::IsFixApplied(title_id, (custom_path / (legacy_config + ".ini")).string());
         if (fix_applied) {
             statusBar()->showMessage(tr("⚡ Оптимизации STORM SWITCH: Применено"), 8000);
-        } else if (profile != nullptr) {
+        } else if (Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString()) != nullptr) {
             statusBar()->showMessage(tr("⚠️ Оптимизации STORM SWITCH: Не применено"), 8000);
         }
     }
