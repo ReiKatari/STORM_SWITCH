@@ -3275,8 +3275,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Streets of Rage 4",
         "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации",
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Декодирование видео (NVDEC): Программное (ЦП)\n✓ Асинхронная презентация: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрое время ГПУ: Включено",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ NVDEC Video Emulation: CPU\n✓ Async Presentation: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fast GPU Time: Enabled",
+        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Декодирование видео (NVDEC): Программное (ЦП)\n✓ Барьеры ГПУ: По умолчанию\n✓ Асинхронная презентация: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрое время ГПУ: Включено",
+        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ NVDEC Video Emulation: CPU\n✓ GPU Fences: Default\n✓ Async Presentation: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fast GPU Time: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3286,6 +3286,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\vertex_input_dynamic_state", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         }
@@ -3296,8 +3297,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Streets of Rage 4",
         "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации",
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Декодирование видео (NVDEC): Программное (ЦП)\n✓ Асинхронная презентация: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрое время ГПУ: Включено",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ NVDEC Video Emulation: CPU\n✓ Async Presentation: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fast GPU Time: Enabled",
+        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Декодирование видео (NVDEC): Программное (ЦП)\n✓ Барьеры ГПУ: По умолчанию\n✓ Асинхронная презентация: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрое время ГПУ: Включено",
+        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ NVDEC Video Emulation: CPU\n✓ GPU Fences: Default\n✓ Async Presentation: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fast GPU Time: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3307,24 +3308,29 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\vertex_input_dynamic_state", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         }
     },
+    // AI: Не менять (на будущее) / DO NOT MODIFY
     {
         0x0100BA700E340000ULL,
         "Streets of Rage 4",
         "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации",
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрое время ГПУ: Включено",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fast GPU Time: Enabled",
+        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Декодирование видео (NVDEC): Программное (ЦП)\n✓ Барьеры ГПУ: По умолчанию\n✓ Асинхронная презентация: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрое время ГПУ: Включено",
+        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ NVDEC Video Emulation: CPU\n✓ GPU Fences: Default\n✓ Async Presentation: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fast GPU Time: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\dyna_state", "1"},
             {"Renderer\\vertex_input_dynamic_state", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         }
@@ -4104,6 +4110,8 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.vertex_input_dynamic_state, val == "true" || val == "1");
             } else if (full_key == "Renderer\\accelerate_astc") {
                 apply_setting(Settings::values.accelerate_astc, static_cast<Settings::AstcDecodeMode>(safe_stoi(val, 1)));
+            } else if (full_key == "Renderer\\gpu_fence_behavior") {
+                apply_setting(Settings::values.gpu_fence_behavior, static_cast<Settings::GpuFenceBehavior>(safe_stoi(val, 0)));
             } else if (full_key == "System\\airplane_mode") {
                 apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
