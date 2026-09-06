@@ -138,45 +138,13 @@ public:
         return master_semaphore->IsFree(tick);
     }
 
-    /// Waits for the given GPU tick, optionally pacing frames.
-    void Wait(u64 tick, double target_fps = 0.0) {
+    /// Waits for the given GPU tick.
+    void Wait(u64 tick, [[maybe_unused]] double target_fps = 0.0) {
         if (tick > 0) {
             if (tick >= master_semaphore->CurrentTick()) {
                 Flush();
             }
             master_semaphore->Wait(tick);
-        }
-        if (Settings::values.use_speed_limit.GetValue() && target_fps > 0.0) {
-            auto now = std::chrono::steady_clock::now();
-            if (last_target_fps != target_fps) {
-                frame_interval = std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(1.0 / target_fps));
-                max_frame_count = static_cast<int>(0.1 * target_fps);
-                last_target_fps = target_fps;
-                frame_counter = 0;
-                start_time = now;
-            }
-            frame_counter++;
-            auto target_time = start_time + frame_interval * frame_counter;
-            if (target_time >= now) {
-                auto sleep_time = target_time - now;
-                if (sleep_time > std::chrono::microseconds(100)) {
-                    std::this_thread::sleep_for(sleep_time - std::chrono::microseconds(50));
-                }
-                while (std::chrono::steady_clock::now() < target_time) {
-#if defined(ARCHITECTURE_x86_64)
-                    _mm_pause();
-#elif defined(ARCHITECTURE_arm64) && defined(_MSC_VER)
-                    __yield();
-#elif defined(ARCHITECTURE_arm64)
-                    asm volatile("yield");
-#else
-                    std::this_thread::yield();
-#endif
-                }
-            } else if (frame_counter > max_frame_count) {
-                frame_counter = 0;
-                start_time = now;
-            }
         }
     }
 
@@ -340,12 +308,6 @@ private:
     std::mutex queue_mutex;
     std::condition_variable_any event_cv;
     std::jthread worker_thread;
-
-    std::chrono::steady_clock::duration frame_interval{};
-    std::chrono::steady_clock::time_point start_time{};
-    double last_target_fps{};
-    u64 max_frame_count{};
-    u64 frame_counter{};
 };
 
 } // namespace Vulkan

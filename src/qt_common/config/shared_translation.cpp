@@ -34,32 +34,31 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
 
     // Applets
     INSERT(Settings, cabinet_applet_mode, tr("Кабинет Amiibo"), QString());
-    INSERT(Settings, controller_applet_mode, tr("Controller configuration"), QString());
-    INSERT(Settings, data_erase_applet_mode, tr("Data erase"), QString());
-    INSERT(Settings, error_applet_mode, tr("Error"), QString());
-    INSERT(Settings, net_connect_applet_mode, tr("Net connect"), QString());
-    INSERT(Settings, player_select_applet_mode, tr("Player select"), QString());
-    INSERT(Settings, swkbd_applet_mode, tr("Software keyboard"), QString());
+    INSERT(Settings, controller_applet_mode, tr("Конфигурация контроллеров"), QString());
+    INSERT(Settings, data_erase_applet_mode, tr("Удаление данных"), QString());
+    INSERT(Settings, error_applet_mode, tr("Сообщения об ошибках"), QString());
+    INSERT(Settings, net_connect_applet_mode, tr("Сетевое подключение"), QString());
+    INSERT(Settings, player_select_applet_mode, tr("Выбор игрока"), QString());
+    INSERT(Settings, swkbd_applet_mode, tr("Экранная клавиатура"), QString());
     INSERT(Settings, mii_edit_applet_mode, tr("Запуск апплета Mii"), QString());
     INSERT(Settings, web_applet_mode, tr("Встроенный браузер"), QString());
-    INSERT(Settings, shop_applet_mode, tr("Shop"), QString());
-    INSERT(Settings, photo_viewer_applet_mode, tr("Photo viewer"), QString());
-    INSERT(Settings, offline_web_applet_mode, tr("Offline web"), QString());
-    INSERT(Settings, login_share_applet_mode, tr("Login share"), QString());
-    INSERT(Settings, wifi_web_auth_applet_mode, tr("Wifi web auth"), QString());
-    INSERT(Settings, my_page_applet_mode, tr("My page"), QString());
-    INSERT(Settings, enable_overlay, tr("Enable Overlay Applet"),
-           tr("Enables Horizon\'s built-in overlay applet. Press and hold the home button for 1 "
-              "second to show it."));
+    INSERT(Settings, shop_applet_mode, tr("Магазин eShop"), QString());
+    INSERT(Settings, photo_viewer_applet_mode, tr("Просмотр фото"), QString());
+    INSERT(Settings, offline_web_applet_mode, tr("Автономный веб-браузер"), QString());
+    INSERT(Settings, login_share_applet_mode, tr("Авторизация и обмен данными"), QString());
+    INSERT(Settings, wifi_web_auth_applet_mode, tr("Веб-авторизация Wi-Fi"), QString());
+    INSERT(Settings, my_page_applet_mode, tr("Моя страница"), QString());
+    INSERT(Settings, enable_overlay, tr("Включить оверлей системных апплетов"),
+           tr("Включает встроенный оверлей Horizon. Зажмите кнопку Home на 1 секунду для отображения."));
 
     // Audio
     INSERT(Settings, sink_id, tr("Звуковой движок"), QString());
     INSERT(Settings, audio_output_device_id, tr("Устройство вывода звука"), QString());
-    INSERT(Settings, audio_input_device_id, tr("Input Device:"), QString());
-    INSERT(Settings, audio_muted, tr("Mute audio"), QString());
-    INSERT(Settings, volume, tr("Volume:"), QString());
+    INSERT(Settings, audio_input_device_id, tr("Устройство ввода звука:"), QString());
+    INSERT(Settings, audio_muted, tr("Отключить звук"), QString());
+    INSERT(Settings, volume, tr("Громкость:"), QString());
     INSERT(Settings, dump_audio_commands, QString(), QString());
-    INSERT(UISettings, mute_when_in_background, tr("Mute audio when in background"), QString());
+    INSERT(UISettings, mute_when_in_background, tr("Отключать звук в фоновом режиме"), QString());
 
     // Core
     INSERT(Settings, use_multi_core, tr("Многопоточная эмуляция ЦП"),
@@ -129,31 +128,31 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
 
     // Renderer
     INSERT(Settings, renderer_backend, tr("Графический API"), QString());
-    INSERT(Settings, vulkan_device, tr("Устройство:"), QString());
-    INSERT(Settings, resolution_setup, tr("Разрешение:"),
+    INSERT(Settings, vulkan_device, tr("Устройство вывода"), QString());
+    INSERT(Settings, resolution_setup, tr("Разрешение рендеринга"),
            tr("Разрешение внутреннего рендеринга 3D-графики.\n"
               "Повышение разрешения улучшает четкость изображения, но требует больше ресурсов видеокарты."));
-    INSERT(Settings, scaling_filter, tr("Фильтр масштабирования окон:"),
+    INSERT(Settings, scaling_filter, tr("Фильтр масштабирования"),
            tr("Алгоритм масштабирования низкого разрешения до разрешения экрана.\n"
               "FSR и SGSR обеспечивают наилучшую четкость."));
-    INSERT(Settings, fsr_sharpening_slider, tr("Резкость FSR:"),
+    INSERT(Settings, fsr_sharpening_slider, tr("Резкость FSR"),
            tr("Степень резкости алгоритма AMD FidelityFX Super Resolution (FSR)."));
-    INSERT(Settings, anti_aliasing, tr("Сглаживание:"),
+    INSERT(Settings, anti_aliasing, tr("Метод сглаживания"),
            tr("Устраняет неровности и ступенчатость на краях 3D-объектов."));
-    INSERT(Settings, fullscreen_mode, tr("Полноэкранный режим:"), QString());
-    INSERT(Settings, aspect_ratio, tr("Соотношение сторон:"), QString());
+    INSERT(Settings, fullscreen_mode, tr("Полноэкранный режим"), QString());
+    INSERT(Settings, aspect_ratio, tr("Соотношение сторон"), QString());
     INSERT(Settings, use_disk_shader_cache, tr("Дисковый кэш шейдеров"),
            tr("Сохраняет скомпилированные шейдеры на диск, устраняя задержки и фризы при повторных запусках игр."));
     INSERT(
         Settings, use_asynchronous_gpu_emulation, tr("Асинхронная эмуляция ГПУ"),
         tr("Выполняет задачи графического процессора в отдельном потоке, значительно повышая частоту кадров (FPS)."));
-    INSERT(Settings, nvdec_emulation, tr("Декодирование видео NVDEC:"),
+    INSERT(Settings, nvdec_emulation, tr("Декодирование видео NVDEC"),
            tr("Метод воспроизведения внутриигровых видеороликов (аппаратный ГПУ или ЦП)."));
     INSERT(Settings, accelerate_astc, tr("Метод декодирования ASTC"),
            tr("Метод декодирования сжатых текстур ASTC.\n"
               "ГПУ — быстрое аппаратное декодирование на видеокарте.\n"
               "ЦП Асинхронно — фоновое декодирование на процессоре для устранения статтеров."));
-    INSERT(Settings, astc_recompression, tr("Пересжатие ASTC:"),
+    INSERT(Settings, astc_recompression, tr("Пересжатие текстур ASTC"),
            tr("Сжимает текстуры в более компактные форматы (BC1-BC5), снижая потребление видеопамяти (VRAM)."));
     INSERT(Settings, eco_frame_pacing, tr("Эко-выравнивание кадров"),
            tr("Устраняет холостую загрузку ядер ЦП в циклах ожидания кадра и снижает нагрев устройства при стабильных 60 FPS."));
@@ -181,9 +180,9 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
     INSERT(
         Settings, renderer_force_max_clock, tr("Принудительная максимальная частота"),
         tr("Принудительно удерживает графический процессор Adreno на максимальных тактовых частотах."));
-    INSERT(Settings, max_anisotropy, tr("Анизотропная фильтрация:"),
+    INSERT(Settings, max_anisotropy, tr("Анизотропная фильтрация"),
            tr("Улучшает четкость текстур, расположенных под острым углом к камере."));
-    INSERT(Settings, gpu_accuracy, tr("Точность ГПУ:"),
+    INSERT(Settings, gpu_accuracy, tr("Точность ГПУ"),
            tr("Уровень точности вычислений графического процессора.\n"
               "Обычная — обеспечивает высокую производительность.\n"
               "Высокая — необходима для устранения визуальных артефактов в некоторых играх."));
@@ -230,13 +229,13 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
     INSERT(Settings, enable_compute_pipelines, tr("Включить вычислительные пайплайны (только Intel Vulkan)"),
            tr("Специальная настройка совместимости для встроенной графики Intel."));
     INSERT(
-        Settings, use_reactive_flushing, tr("Включить реактивный сброс памяти"),
+        Settings, use_reactive_flushing, tr("Реактивный сброс памяти"),
         tr("Использует реактивную синхронизацию памяти вместо предиктивной для более точного соответствия оригиналу."));
     INSERT(Settings, use_video_framerate, tr("Синхронизация с частотой кадров видео"),
            tr("Воспроизводит внутриигровые ролики с оригинальной скоростью даже при разблокированном фреймрейте (FPS)."));
     INSERT(Settings, barrier_feedback_loops, tr("Барьеры обратной связи"),
            tr("Улучшает отрисовку эффектов прозрачности, зеркал и отражений в ряде игр."));
-    INSERT(Settings, enable_buffer_history, tr("Включить историю буферов"),
+    INSERT(Settings, enable_buffer_history, tr("История буферов"),
            tr("Сохраняет предыдущие состояния буферов, повышая стабильность отрисовки пост-эффектов."));
     INSERT(Settings, fix_bloom_effects, tr("Исправление эффектов свечения"),
            tr("Устраняет избыточное размытие, пересветы и графические искажения свечения."));

@@ -436,7 +436,7 @@ void ConfigurePerGameAddons::LoadConfiguration() {
                 version_display = QStringLiteral("1.0.0");
             }
         } else if (patch.type == FileSys::PatchType::Mod) {
-            name = tr("Модификация #%1").arg(mod_counter++);
+            name = tr("Модификация");
             QString mod_display = QString::fromStdString(patch.name);
             if (mod_display.compare(QStringLiteral("romfs"), Qt::CaseInsensitive) == 0) {
                 mod_display = tr("Вшитый RomFS (LayeredFS)");

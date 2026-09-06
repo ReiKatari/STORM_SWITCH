@@ -281,7 +281,7 @@ function(fetch_package)
     endif()
 
     if (NOT DEFINED ARG_HASH)
-        fatal("fetch_package: HASH is required")
+        set(ARG_HASH "LOCAL_CACHED_HASH")
     endif()
 
     if (NOT DEFINED ARG_PATH)
@@ -296,6 +296,9 @@ function(fetch_package)
     needs_refetch(${ARG_PATH} "${ARG_PATCH_KEY}" CACHE_INVALID)
 
     if (ARG_FORCE OR CACHE_INVALID)
+        if (ARG_HASH STREQUAL "LOCAL_CACHED_HASH")
+            fatal("fetch_package: Cached package ${ARG_PATH} is missing or invalid, and no hash defined to download")
+        endif()
         file(REMOVE_RECURSE ${ARG_PATH})
     else()
         return()
@@ -1054,18 +1057,31 @@ function(AddCIPackage)
         set(sha512sum_file
             "${CMAKE_CURRENT_BINARY_DIR}/.cpmutil_${ARTIFACT}_sha512sum")
 
-        file(DOWNLOAD "${sha512sum_url}" "${sha512sum_file}"
-            STATUS sha512sum_status)
-        list(GET sha512sum_status 0 sha512sum_error)
+        get_cache_path(${ARTIFACT_PACKAGE} "${ARTIFACT_VERSION}-${pkgname}" _cached_pkg_path)
+        set(sha512sum_hash "")
+        if (EXISTS "${_cached_pkg_path}")
+            # Package is already cached locally, skip downloading sha512sum
+            set(sha512sum_hash "LOCAL_CACHED_HASH")
+        else()
+            file(DOWNLOAD "${sha512sum_url}" "${sha512sum_file}"
+                STATUS sha512sum_status)
+            list(GET sha512sum_status 0 sha512sum_error)
 
-        if(sha512sum_error)
-            message(FATAL_ERROR "[CPMUtil] Failed to download sha512sum "
-                "for ${ARTIFACT_NAME} from ${sha512sum_url}")
+            if(sha512sum_error)
+                message(WARNING "[CPMUtil] Failed to download sha512sum "
+                    "for ${ARTIFACT_NAME} from ${sha512sum_url}")
+            else()
+                file(READ "${sha512sum_file}" sha512sum_hash)
+                string(STRIP "${sha512sum_hash}" sha512sum_hash)
+                file(REMOVE "${sha512sum_file}")
+            endif()
         endif()
 
-        file(READ "${sha512sum_file}" sha512sum_hash)
-        string(STRIP "${sha512sum_hash}" sha512sum_hash)
-        file(REMOVE "${sha512sum_file}")
+        if (sha512sum_hash)
+            set(_pkg_hash_arg HASH ${sha512sum_hash})
+        else()
+            set(_pkg_hash_arg)
+        endif()
 
         AddPackage(
             NAME ${ARTIFACT_PACKAGE}
@@ -1073,7 +1089,7 @@ function(AddCIPackage)
             VERSION "v${ARTIFACT_VERSION}"
             ARTIFACT ${ARTIFACT}
             CUSTOM_KEY "${ARTIFACT_VERSION}-${pkgname}"
-            HASH ${sha512sum_hash}
+            ${_pkg_hash_arg}
             FORCE_BUNDLED_PACKAGE ON
             ${EXTRA_ARGS})
 

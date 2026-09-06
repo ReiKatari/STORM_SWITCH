@@ -983,8 +983,13 @@ Result Module::Interface::InitializeApplicationInfoBase() {
         return Account::ResultInvalidApplication;
     }
 
-    LOG_WARNING(Service_ACC, "ApplicationInfo init required");
-    // TODO(ogniK): Actual initialization here
+    application_info.launch_property = launch_property;
+    if (application_info.launch_property.title_id == 0) {
+        application_info.launch_property.title_id = system.GetApplicationProcessProgramID();
+    }
+
+    LOG_INFO(Service_ACC, "ApplicationInfo initialized for title_id={:016X}, type={}",
+             application_info.launch_property.title_id, static_cast<u32>(application_info.application_type));
 
     return ResultSuccess;
 }

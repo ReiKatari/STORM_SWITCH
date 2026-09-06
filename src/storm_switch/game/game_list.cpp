@@ -383,6 +383,9 @@ void GameList::UpdateIconSizes() {
 }
 
 void GameList::ValidateEntry(const QModelIndex& item) {
+    if (system.IsPoweredOn()) {
+        return;
+    }
     const auto selected = item.sibling(item.row(), 0);
 
     switch (selected.data(GameListItem::TypeRole).value<GameListItemType>()) {

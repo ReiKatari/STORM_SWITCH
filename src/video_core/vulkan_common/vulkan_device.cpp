@@ -1283,16 +1283,14 @@ bool Device::GetSuitability(bool requires_swapchain) {
         features.extended_dynamic_state3.extendedDynamicState3ColorBlendEquation = false;
     }
 
-    // Disable VertexInputDynamicState on old Intel (< 27.20.100.0) and NVIDIA (< 580.119) Windows drivers
+    // Disable VertexInputDynamicState on Intel (< 27.20.100.0) and all NVIDIA Windows drivers (causes nvgpucomp64 crash)
     if (extensions.vertex_input_dynamic_state) {
         bool is_broken = false;
         if (driver_id == VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS) {
             const u32 version = (properties.properties.driverVersion << 3) >> 3;
             is_broken = version < VK_MAKE_API_VERSION(0, 27, 20, 100);
         } else if (driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY) {
-            const u32 major = (properties.properties.driverVersion >> 22) & 0x3ff;
-            const u32 minor = (properties.properties.driverVersion >> 14) & 0xff;
-            is_broken = (major < 580) || (major == 580 && minor < 119);
+            is_broken = true;
         }
         if (is_broken) {
             LOG_WARNING(Render_Vulkan, "Disabling broken VK_EXT_vertex_input_dynamic_state");

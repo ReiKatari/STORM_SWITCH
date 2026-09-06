@@ -274,7 +274,11 @@ struct FileBackend final : public Backend {
         }
 #endif
         bytes_written += file->WriteSpan(std::span<const char>{message.begin(), message.end()});
-        file->Flush();
+
+        // Option to log each line rather than 4k buffers
+        if (Settings::values.log_flush_line.GetValue()) {
+            file->Flush();
+        }
 
         using namespace Common::Literals;
         // Prevent logs from exceeding a set maximum size in the event that log entries are spammed.

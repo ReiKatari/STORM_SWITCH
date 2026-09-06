@@ -604,7 +604,11 @@ struct Values {
                                              true,
                                              true};
     SwitchableSetting<bool> smart_shader_throttle{linkage,
+#ifdef __ANDROID__
                                                   true,
+#else
+                                                  false,
+#endif
                                                   "smart_shader_throttle",
                                                   Category::RendererAdvanced,
                                                   Specialization::Default,
@@ -726,11 +730,7 @@ struct Values {
                                                 Specialization::Scalar};
 
     SwitchableSetting<bool> vertex_input_dynamic_state{linkage,
-#ifdef __ANDROID__
                                                        false,
-#else
-                                                       true,
-#endif
                                                        "vertex_input_dynamic_state", Category::RendererExtensions};
 
     Setting<bool> renderer_debug{linkage, false, "debug", Category::RendererDebug};

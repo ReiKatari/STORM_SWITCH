@@ -165,16 +165,8 @@ NvResult nvhost_gpu::ZCullBind(IoctlZCullBind& params) {
 }
 
 NvResult nvhost_gpu::SetErrorNotifier(IoctlSetErrorNotifier& params) {
-    LOG_INFO(Service_NVDRV, "called, offset={:X}, size={:X}, mem={:X}", params.offset,
-             params.size, params.mem);
-    if (error_notifier_handle != 0) {
-        nvmap.UnpinHandle(error_notifier_handle);
-        error_notifier_handle = 0;
-    }
-    if (params.mem != 0) {
-        nvmap.PinHandle(params.mem, false);
-        error_notifier_handle = params.mem;
-    }
+    LOG_WARNING(Service_NVDRV, "(STUBBED) called, offset={:X}, size={:X}, mem={:X}", params.offset,
+                params.size, params.mem);
     return NvResult::Success;
 }
 

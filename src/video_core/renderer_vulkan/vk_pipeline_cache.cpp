@@ -323,7 +323,7 @@ size_t GetTotalPipelineWorkers() {
         // Reserve at least 2 cores for guest CPU and GPU threads to prevent thermal spikes and micro-stutter
         return std::clamp<size_t>(max_core_threads > 2 ? max_core_threads - 2 : 1, 1ULL, 8ULL);
     }
-    return max_core_threads;
+    return std::max<size_t>(hardware_threads, 1ULL);
 #endif
 }
 
@@ -362,7 +362,13 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
       use_asynchronous_shaders{Settings::values.use_asynchronous_shaders.GetValue()},
       use_vulkan_pipeline_cache{Settings::values.use_vulkan_driver_pipeline_cache.GetValue()},
       workers(device.HasBrokenParallelShaderCompiling() ? 1ULL : GetTotalPipelineWorkers(),
-              "VkPipelineBuilder", {}, Common::ThreadPlacement::Background),
+              "VkPipelineBuilder", {},
+#ifdef __ANDROID__
+              Common::ThreadPlacement::Background
+#else
+              Common::ThreadPlacement::Default
+#endif
+              ),
       serialization_thread(1, "VkPipelineSerialization", {},
                            Common::ThreadPlacement::Background) {
     const auto& float_control{device.FloatControlProperties()};
@@ -589,13 +595,26 @@ ComputePipeline* PipelineCache::CurrentComputePipeline() {
         .shared_memory_size = qmd.shared_alloc,
         .workgroup_size{qmd.block_dim_x, qmd.block_dim_y, qmd.block_dim_z},
     };
-    const auto [pair, is_new]{compute_cache.try_emplace(key)};
-    auto& pipeline{pair->second};
-    if (!is_new) {
-        return pipeline.get();
+    {
+        std::scoped_lock lock{cache_mutex};
+        auto it = compute_cache.find(key);
+        if (it != compute_cache.end()) {
+            return it->second.get();
+        }
     }
-    pipeline = CreateComputePipeline(key, shader);
-    return pipeline.get();
+    auto pipeline = CreateComputePipeline(key, shader);
+    if (!pipeline) {
+        return nullptr;
+    }
+    ComputePipeline* raw_pipeline = pipeline.get();
+    {
+        std::scoped_lock lock{cache_mutex};
+        auto [it, is_new] = compute_cache.try_emplace(key, std::move(pipeline));
+        if (!is_new) {
+            raw_pipeline = it->second.get();
+        }
+    }
+    return raw_pipeline;
 }
 
 void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading,
@@ -617,34 +636,42 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
             LoadVulkanPipelineCache(vulkan_pipeline_cache_filename, CACHE_VERSION);
     }
 
-    struct {
+    struct LoadingState {
         std::mutex mutex;
         size_t total{};
         size_t built{};
-        bool has_loaded{};
+        std::atomic_bool has_loaded{false};
         std::unique_ptr<PipelineStatistics> statistics;
-    } state;
+    };
+    auto state = std::make_shared<LoadingState>();
 
     if (device.IsKhrPipelineExecutablePropertiesEnabled()) {
-        state.statistics = std::make_unique<PipelineStatistics>(device);
+        state->statistics = std::make_unique<PipelineStatistics>(device);
     }
     const auto load_compute{[&](std::ifstream& file, FileEnvironment env) {
         ComputePipelineCacheKey key;
         file.read(reinterpret_cast<char*>(&key), sizeof(key));
 
-        workers.QueueWork([this, key, env_ = std::move(env), &state, &callback]() mutable {
+        workers.QueueWork([this, key, env_ = std::move(env), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
             ShaderPools pools;
-            auto pipeline{CreateComputePipeline(pools, key, env_, state.statistics.get(), false)};
-            std::scoped_lock lock{state.mutex};
-            if (pipeline) {
-                compute_cache.emplace(key, std::move(pipeline));
+            auto auto_state = state_weak.lock();
+            PipelineStatistics* stats = auto_state ? auto_state->statistics.get() : nullptr;
+            auto pipeline{CreateComputePipeline(pools, key, env_, stats, false)};
+            {
+                std::scoped_lock lock{cache_mutex};
+                if (pipeline) {
+                    compute_cache.emplace(key, std::move(pipeline));
+                }
             }
-            ++state.built;
-            if (state.has_loaded) {
-                callback(VideoCore::LoadCallbackStage::Build, state.built, state.total);
+            if (auto_state) {
+                std::scoped_lock lock{auto_state->mutex};
+                ++auto_state->built;
+                if (auto_state->has_loaded.load(std::memory_order_acquire)) {
+                    callback(VideoCore::LoadCallbackStage::Build, auto_state->built, auto_state->total);
+                }
             }
         });
-        ++state.total;
+        ++state->total;
     }};
     const auto load_graphics{[&](std::ifstream& file, std::vector<FileEnvironment> envs) {
         GraphicsPipelineCacheKey key;
@@ -678,49 +705,60 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
             return;
         }
 
-        workers.QueueWork([this, key, envs_ = std::move(envs), &state, &callback]() mutable {
+        workers.QueueWork([this, key, envs_ = std::move(envs), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
             ShaderPools pools;
             boost::container::static_vector<Shader::Environment*, 5> env_ptrs;
             for (auto& env : envs_) {
                 env_ptrs.push_back(&env);
             }
-            auto pipeline{CreateGraphicsPipeline(pools, key, MakeSpan(env_ptrs),
-                                                 state.statistics.get(), false)};
+            auto auto_state = state_weak.lock();
+            PipelineStatistics* stats = auto_state ? auto_state->statistics.get() : nullptr;
+            auto pipeline{CreateGraphicsPipeline(pools, key, MakeSpan(env_ptrs), stats, false)};
 
-            std::scoped_lock lock{state.mutex};
-            if (pipeline) {
-                graphics_cache.emplace(key, std::move(pipeline));
+            {
+                std::scoped_lock lock{cache_mutex};
+                if (pipeline) {
+                    graphics_cache.emplace(key, std::move(pipeline));
+                }
             }
-            ++state.built;
-            if (state.has_loaded) {
-                callback(VideoCore::LoadCallbackStage::Build, state.built, state.total);
+            if (auto_state) {
+                std::scoped_lock lock{auto_state->mutex};
+                ++auto_state->built;
+                if (auto_state->has_loaded.load(std::memory_order_acquire)) {
+                    callback(VideoCore::LoadCallbackStage::Build, auto_state->built, auto_state->total);
+                }
             }
         });
-        ++state.total;
+        ++state->total;
     }};
     VideoCommon::LoadPipelines(stop_loading, pipeline_cache_filename, CACHE_VERSION, load_compute,
                                load_graphics);
 
-    LOG_INFO(Render_Vulkan, "Total Pipeline Count: {}", state.total);
+    LOG_INFO(Render_Vulkan, "Total Pipeline Count: {}", state->total);
 
-    std::unique_lock lock{state.mutex};
-    callback(VideoCore::LoadCallbackStage::Build, 0, state.total);
-    state.has_loaded = true;
-    lock.unlock();
+    {
+        std::unique_lock lock{state->mutex};
+        callback(VideoCore::LoadCallbackStage::Build, state->built, state->total);
+        state->has_loaded.store(true, std::memory_order_release);
+    }
 
     workers.WaitForRequests(stop_loading);
 
+    callback(VideoCore::LoadCallbackStage::Build, state->total, state->total);
+
     if (use_vulkan_pipeline_cache) {
-        SerializeVulkanPipelineCache(vulkan_pipeline_cache_filename, vulkan_pipeline_cache,
-                                     CACHE_VERSION);
-        size_t size = 0;
-        vulkan_pipeline_cache.Read(&size, nullptr);
-        last_cache_size.store(size, std::memory_order_relaxed);
-        last_flush = std::chrono::steady_clock::now();
+        serialization_thread.QueueWork([this]() {
+            SerializeVulkanPipelineCache(vulkan_pipeline_cache_filename, vulkan_pipeline_cache,
+                                         CACHE_VERSION);
+            size_t size = 0;
+            vulkan_pipeline_cache.Read(&size, nullptr);
+            last_cache_size.store(size, std::memory_order_relaxed);
+            last_flush = std::chrono::steady_clock::now();
+        });
     }
 
-    if (state.statistics) {
-        state.statistics->Report();
+    if (state->statistics) {
+        state->statistics->Report();
     }
 }
 
@@ -754,18 +792,33 @@ void PipelineCache::QueueVulkanPipelineCacheFlush() {
 }
 
 GraphicsPipeline* PipelineCache::CurrentGraphicsPipelineSlowPath() {
-    const auto [pair, is_new]{graphics_cache.try_emplace(graphics_key)};
-    auto& pipeline{pair->second};
-    if (is_new) {
-        pipeline = CreateGraphicsPipeline();
+    {
+        std::scoped_lock lock{cache_mutex};
+        auto it = graphics_cache.find(graphics_key);
+        if (it != graphics_cache.end()) {
+            if (current_pipeline) {
+                current_pipeline->AddTransition(it->second.get());
+            }
+            current_pipeline = it->second.get();
+            return BuiltPipeline(current_pipeline);
+        }
     }
+    auto pipeline = CreateGraphicsPipeline();
     if (!pipeline) {
         return nullptr;
     }
-    if (current_pipeline) {
-        current_pipeline->AddTransition(pipeline.get());
+    GraphicsPipeline* raw_pipeline = pipeline.get();
+    {
+        std::scoped_lock lock{cache_mutex};
+        auto [it, is_new] = graphics_cache.try_emplace(graphics_key, std::move(pipeline));
+        if (!is_new) {
+            raw_pipeline = it->second.get();
+        }
     }
-    current_pipeline = pipeline.get();
+    if (current_pipeline) {
+        current_pipeline->AddTransition(raw_pipeline);
+    }
+    current_pipeline = raw_pipeline;
     return BuiltPipeline(current_pipeline);
 }
 

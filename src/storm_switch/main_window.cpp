@@ -703,11 +703,18 @@ void MainWindow::AmiiboSettingsRequestExit() {
 
 void MainWindow::ControllerSelectorReconfigureControllers(
     const Core::Frontend::ControllerParameters& parameters) {
+    const bool was_fullscreen = isFullScreen();
+    if (was_fullscreen) {
+        showNormal();
+    }
     controller_applet =
         new QtControllerSelectorDialog(this, parameters, input_subsystem.get(), *QtCommon::system);
     SCOPE_EXIT {
         controller_applet->deleteLater();
         controller_applet = nullptr;
+        if (was_fullscreen) {
+            showFullScreen();
+        }
     };
 
     controller_applet->setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint |
@@ -734,10 +741,17 @@ void MainWindow::ControllerSelectorRequestExit() {
 
 void MainWindow::ProfileSelectorSelectProfile(
     const Core::Frontend::ProfileSelectParameters& parameters) {
+    const bool was_fullscreen = isFullScreen();
+    if (was_fullscreen) {
+        showNormal();
+    }
     profile_select_applet = new QtProfileSelectionDialog(*QtCommon::system, this, parameters);
     SCOPE_EXIT {
         profile_select_applet->deleteLater();
         profile_select_applet = nullptr;
+        if (was_fullscreen) {
+            showFullScreen();
+        }
     };
 
     profile_select_applet->setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint |
@@ -3445,7 +3459,14 @@ void MainWindow::OnResetGameFixSuppression() {
 
 void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletParameters params,
                           StartGameType type) {
+    if (emulation_running || (QtCommon::emu_thread && QtCommon::emu_thread->isRunning()) || QtCommon::system->IsPoweredOn()) {
+        LOG_WARNING(Frontend, "Emulation is already running or powering on. Ignoring BootGame request.");
+        return;
+    }
+
     LOG_INFO(Frontend, "STORM SWITCH starting...");
+
+    game_list->setDisabled(true);
 
     if (params.program_id == 0 ||
         params.program_id > static_cast<u64>(Service::AM::AppletProgramId::MaxProgramId)) {
@@ -3513,6 +3534,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         QtConfig per_game_config(config_to_load, Config::ConfigType::PerGameConfig);
         QtCommon::system->HIDCore().ReloadInputDevices();
         QtCommon::system->ApplySettings();
+        Core::GameFixDatabase::ApplyProfileDirectly(title_id);
         UpdateStatusButtons();
 
         const bool fix_applied = Core::GameFixDatabase::IsFixApplied(title_id, target_ini) ||
@@ -3534,6 +3556,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
             .purpose = Service::AM::Frontend::UserSelectionPurpose::General,
         };
         if (SelectAndSetCurrentUser(parameters) == false) {
+            game_list->setEnabled(true);
             return;
         }
     }
@@ -3544,6 +3567,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     user_flag_cmd_line = false;
 
     if (!LoadROM(filename, params)) {
+        game_list->setEnabled(true);
         return;
     }
 
@@ -3936,6 +3960,9 @@ void MainWindow::UpdateRecentFiles() {
 }
 
 void MainWindow::OnGameListLoadFile(QString game_path, u64 program_id) {
+    if (emulation_running || (QtCommon::emu_thread && QtCommon::emu_thread->isRunning()) || QtCommon::system->IsPoweredOn()) {
+        return;
+    }
     auto params = ApplicationAppletParameters();
     params.program_id = program_id;
 
