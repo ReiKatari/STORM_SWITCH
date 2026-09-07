@@ -132,4 +132,21 @@ NvFence SyncpointManager::GetSyncpointFence(u32 id) {
     };
 }
 
+void SyncpointManager::FlushSyncpoint(u32 id) {
+    if (id >= SyncpointCount) {
+        return;
+    }
+    auto& syncpoint = syncpoints.at(id);
+    if (!syncpoint.reserved) {
+        return;
+    }
+    const u32 max_val = syncpoint.counter_max.load();
+    u32 cur_host_val = host1x.GetSyncpointManager().GetHostSyncpointValue(id);
+    while (cur_host_val < max_val) {
+        host1x.GetSyncpointManager().IncrementHost(id);
+        cur_host_val = host1x.GetSyncpointManager().GetHostSyncpointValue(id);
+    }
+    syncpoint.counter_min.store(max_val);
+}
+
 } // namespace Service::Nvidia::NvCore

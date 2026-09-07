@@ -1673,13 +1673,19 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_res = Settings::values.resolution_setup.GetValue();
         const std::vector<std::pair<Settings::ResolutionSetup, QString>> res_options = {
+            {Settings::ResolutionSetup::Res1_4X, tr("0.25X")},
             {Settings::ResolutionSetup::Res1_2X, tr("0.5X")},
             {Settings::ResolutionSetup::Res3_4X, tr("0.75X")},
             {Settings::ResolutionSetup::Res1X, tr("1X")},
+            {Settings::ResolutionSetup::Res5_4X, tr("1.25X")},
             {Settings::ResolutionSetup::Res3_2X, tr("1.5X")},
             {Settings::ResolutionSetup::Res2X, tr("2X")},
             {Settings::ResolutionSetup::Res3X, tr("3X")},
             {Settings::ResolutionSetup::Res4X, tr("4X")},
+            {Settings::ResolutionSetup::Res5X, tr("5X")},
+            {Settings::ResolutionSetup::Res6X, tr("6X")},
+            {Settings::ResolutionSetup::Res7X, tr("7X")},
+            {Settings::ResolutionSetup::Res8X, tr("8X")},
         };
         for (const auto& opt : res_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1823,7 +1829,7 @@ void MainWindow::InitializeWidgets() {
             {Settings::NvdecEmulation::Gpu, tr("ГПУ")},
             {Settings::NvdecEmulation::Hybrid, tr("Гибридный")},
             {Settings::NvdecEmulation::Cpu, tr("ЦП")},
-            {Settings::NvdecEmulation::Off, tr("Выключено")},
+            {Settings::NvdecEmulation::Off, tr("Отключено")},
         };
         for (const auto& opt : nvdec_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1857,6 +1863,7 @@ void MainWindow::InitializeWidgets() {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
                 Settings::values.cpu_accuracy.SetValue(opt.first);
                 UpdateCpuAccuracyText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_cpu);
@@ -1875,11 +1882,13 @@ void MainWindow::InitializeWidgets() {
     connect(disk_cache_button, &QPushButton::clicked, this, [this] {
         Settings::values.use_disk_shader_cache.SetValue(!Settings::values.use_disk_shader_cache.GetValue());
         UpdateDiskCacheText();
+        ApplyDynamicSettingChange();
     });
     disk_cache_button->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(disk_cache_button, &QPushButton::customContextMenuRequested, [this] {
         Settings::values.use_disk_shader_cache.SetValue(!Settings::values.use_disk_shader_cache.GetValue());
         UpdateDiskCacheText();
+        ApplyDynamicSettingChange();
     });
 
     // Setup Fullscreen button
@@ -5334,6 +5343,7 @@ void MainWindow::OnToggleDockedMode() {
 
     Settings::values.use_docked_mode.SetValue(is_docked ? Settings::ConsoleMode::Handheld
                                                         : Settings::ConsoleMode::Docked);
+    ApplyDynamicSettingChange();
     UpdateDockedButton();
     OnDockedModeChanged(is_docked, !is_docked, *QtCommon::system);
 }
@@ -5348,12 +5358,13 @@ void MainWindow::OnToggleGpuAccuracy() {
         break;
     }
 
-    QtCommon::system->ApplySettings();
+    ApplyDynamicSettingChange();
     UpdateGPUAccuracyButton();
 }
 
 void MainWindow::OnMute() {
     Settings::values.audio_muted.SetValue(!Settings::values.audio_muted.GetValue());
+    ApplyDynamicSettingChange();
     UpdateVolumeUI();
     UpdateMuteButton();
 }
@@ -5369,6 +5380,7 @@ void MainWindow::OnDecreaseVolume() {
         step = 1;
     }
     Settings::values.volume.SetValue((std::max)(current_volume - step, 0));
+    ApplyDynamicSettingChange();
     UpdateVolumeUI();
     UpdateMuteButton();
 }
@@ -5384,6 +5396,7 @@ void MainWindow::OnIncreaseVolume() {
         step = 1;
     }
     Settings::values.volume.SetValue(current_volume + step);
+    ApplyDynamicSettingChange();
     UpdateVolumeUI();
     UpdateMuteButton();
 }
@@ -5395,6 +5408,7 @@ void MainWindow::OnToggleAdaptingFilter() {
         filter = Settings::EnumMetadata<Settings::ScalingFilter>::GetFirst();
     Settings::values.scaling_filter.SetValue(filter);
     filter_status_button->setChecked(true);
+    ApplyDynamicSettingChange();
     UpdateFilterText();
 }
 
@@ -5427,6 +5441,7 @@ void MainWindow::OnToggleGraphicsAPI() {
     }
     Settings::values.renderer_backend.SetValue(api);
     renderer_status_button->setChecked(api == Settings::RendererBackend::Vulkan);
+    ApplyDynamicSettingChange();
     UpdateAPIText();
 }
 
@@ -5593,12 +5608,18 @@ void MainWindow::OpenPerGameConfiguration(u64 title_id, const std::string& file_
     const bool is_powered_on = QtCommon::system->IsPoweredOn();
     Settings::RestoreGlobalState(is_powered_on);
     QtCommon::system->HIDCore().ReloadInputDevices();
+    if (is_powered_on) {
+        Settings::UpdateGPUAccuracy();
+        Settings::UpdateRescalingInfo();
+        QtCommon::system->ApplySettings();
+    }
 
     UISettings::values.configuration_applied = false;
 
     if (!is_powered_on) {
         config->SaveAllValues();
     }
+    UpdateStatusButtons();
 }
 
 void MainWindow::OnLoadAmiibo() {
@@ -6288,10 +6309,20 @@ void MainWindow::ApplyDynamicSettingChange() {
     Settings::UpdateRescalingInfo();
     if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
         QtCommon::system->ApplySettings();
+        const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
+        if (title_id != 0) {
+            const auto custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
+            const auto specific_config = fmt::format("{:016X}", title_id);
+            if (std::filesystem::exists(custom_path / (specific_config + ".ini"))) {
+                QtConfig per_game_config(specific_config, Config::ConfigType::PerGameConfig);
+                per_game_config.SaveAllValues();
+            }
+        }
     }
     if (config) {
         config->SaveAllValues();
     }
+    UpdateStatusButtons();
 }
 
 QString MainWindow::CleanDisplayString(const QString& str) {
@@ -7011,6 +7042,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = decode_menu->addAction(opt.second, [this, opt] {
                 Settings::values.accelerate_astc.SetValue(opt.first);
                 UpdateAstcDecodeText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_dec);
@@ -7028,6 +7060,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = recomp_menu->addAction(opt.second, [this, opt] {
                 Settings::values.astc_recompression.SetValue(opt.first);
                 UpdateAstcRecompressText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_rec);
@@ -7044,6 +7077,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = api_menu->addAction(pair.second, [this, pair] {
                 Settings::values.renderer_backend.SetValue(pair.first);
                 UpdateAPIText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(pair.first == cur_api);
@@ -7055,6 +7089,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = gpu_acc_menu->addAction(pair.second, [this, pair] {
                 Settings::values.gpu_accuracy.SetValue(pair.first);
                 UpdateGPUAccuracyButton();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(pair.first == cur_gpu_acc);
@@ -7071,6 +7106,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = cpu_acc_menu->addAction(opt.second, [this, opt] {
                 Settings::values.cpu_accuracy.SetValue(opt.first);
                 UpdateCpuAccuracyText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_cpu);
@@ -7088,6 +7124,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = vsync_menu->addAction(opt.second, [this, opt] {
                 Settings::values.vsync_mode.SetValue(opt.first);
                 UpdateVSyncText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_vsync);
@@ -7099,12 +7136,13 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             {Settings::NvdecEmulation::Gpu, tr("ГПУ")},
             {Settings::NvdecEmulation::Hybrid, tr("Гибридный")},
             {Settings::NvdecEmulation::Cpu, tr("ЦП")},
-            {Settings::NvdecEmulation::Off, tr("Выключено")},
+            {Settings::NvdecEmulation::Off, tr("Отключено")},
         };
         for (const auto& opt : nvdec_options) {
             auto* act = nvdec_menu->addAction(opt.second, [this, opt] {
                 Settings::values.nvdec_emulation.SetValue(opt.first);
                 UpdateNvdecText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_nvdec);
@@ -7122,6 +7160,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = dma_menu->addAction(item.second, [this, item] {
                 Settings::values.dma_accuracy.SetValue(item.first);
                 UpdateDmaText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(item.first == cur_dma);
@@ -7140,6 +7179,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = fence_menu->addAction(item.second, [this, item] {
                 Settings::values.gpu_fence_behavior.SetValue(item.first);
                 UpdateGpuFenceText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(item.first == cur_fence);
@@ -7152,18 +7192,25 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         auto* res_menu = context_menu.addMenu(tr("📐 Разрешение"));
         const auto cur_res = Settings::values.resolution_setup.GetValue();
         const std::vector<std::pair<Settings::ResolutionSetup, QString>> res_options = {
+            {Settings::ResolutionSetup::Res1_4X, tr("0.25X")},
             {Settings::ResolutionSetup::Res1_2X, tr("0.5X")},
             {Settings::ResolutionSetup::Res3_4X, tr("0.75X")},
             {Settings::ResolutionSetup::Res1X, tr("1X")},
+            {Settings::ResolutionSetup::Res5_4X, tr("1.25X")},
             {Settings::ResolutionSetup::Res3_2X, tr("1.5X")},
             {Settings::ResolutionSetup::Res2X, tr("2X")},
             {Settings::ResolutionSetup::Res3X, tr("3X")},
             {Settings::ResolutionSetup::Res4X, tr("4X")},
+            {Settings::ResolutionSetup::Res5X, tr("5X")},
+            {Settings::ResolutionSetup::Res6X, tr("6X")},
+            {Settings::ResolutionSetup::Res7X, tr("7X")},
+            {Settings::ResolutionSetup::Res8X, tr("8X")},
         };
         for (const auto& opt : res_options) {
             auto* act = res_menu->addAction(opt.second, [this, opt] {
                 Settings::values.resolution_setup.SetValue(opt.first);
                 UpdateResScaleText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_res);
@@ -7180,6 +7227,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = vram_menu->addAction(opt.second, [this, opt] {
                 Settings::values.vram_usage_mode.SetValue(opt.first);
                 UpdateVramText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_vram);
@@ -7202,6 +7250,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = aniso_menu->addAction(opt.second, [this, opt] {
                 Settings::values.max_anisotropy.SetValue(opt.first);
                 UpdateAnisotropyText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_aniso);
@@ -7213,6 +7262,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = aa_menu->addAction(pair.second, [this, pair] {
                 Settings::values.anti_aliasing.SetValue(pair.first);
                 UpdateAAText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(pair.first == cur_aa);
@@ -7224,6 +7274,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             auto* act = filter_menu->addAction(pair.second, [this, pair] {
                 Settings::values.scaling_filter.SetValue(pair.first);
                 UpdateFilterText();
+                ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(pair.first == cur_filter);
@@ -7232,6 +7283,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         auto* disk_act = context_menu.addAction(tr("💽 Кэш шейдеров на диске"), [this] {
             Settings::values.use_disk_shader_cache.SetValue(!Settings::values.use_disk_shader_cache.GetValue());
             UpdateDiskCacheText();
+            ApplyDynamicSettingChange();
         });
         disk_act->setCheckable(true);
         disk_act->setChecked(Settings::values.use_disk_shader_cache.GetValue());
@@ -7257,30 +7309,36 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(100);
             UpdateSpeedLimitText();
+            ApplyDynamicSettingChange();
         });
         speed_menu->addAction(tr("150%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(150);
             UpdateSpeedLimitText();
+            ApplyDynamicSettingChange();
         });
         speed_menu->addAction(tr("200%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(200);
             UpdateSpeedLimitText();
+            ApplyDynamicSettingChange();
         });
         speed_menu->addAction(tr("300%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(300);
             UpdateSpeedLimitText();
+            ApplyDynamicSettingChange();
         });
         speed_menu->addAction(tr("Без лимита скорости"), [this] {
             Settings::values.use_speed_limit.SetValue(false);
             UpdateSpeedLimitText();
+            ApplyDynamicSettingChange();
         });
 
         auto* airplane_act = context_menu.addAction(tr("✈️ Режим полёта"), [this] {
             Settings::values.airplane_mode.SetValue(!Settings::values.airplane_mode.GetValue());
             UpdateAirplaneModeButton();
+            ApplyDynamicSettingChange();
         });
         airplane_act->setCheckable(true);
         airplane_act->setChecked(Settings::values.airplane_mode.GetValue());

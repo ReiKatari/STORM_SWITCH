@@ -35,6 +35,63 @@
 #include <android/api-level.h>
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#include <dxgi.h>
+
+namespace Vulkan {
+
+std::string GetGpuMarketingName(u32 vendor_id, u32 device_id) {
+    HMODULE h_dxgi = LoadLibraryA("dxgi.dll");
+    if (!h_dxgi) {
+        return {};
+    }
+    using PFN_CreateDXGIFactory1 = HRESULT(WINAPI*)(REFIID, void**);
+    auto pfn_CreateDXGIFactory1 = reinterpret_cast<PFN_CreateDXGIFactory1>(
+        reinterpret_cast<void*>(GetProcAddress(h_dxgi, "CreateDXGIFactory1")));
+    if (!pfn_CreateDXGIFactory1) {
+        FreeLibrary(h_dxgi);
+        return {};
+    }
+
+    IDXGIFactory1* factory = nullptr;
+    if (FAILED(pfn_CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&factory))) || !factory) {
+        FreeLibrary(h_dxgi);
+        return {};
+    }
+
+    std::string result;
+    UINT i = 0;
+    IDXGIAdapter1* adapter = nullptr;
+    while (factory->EnumAdapters1(i++, &adapter) != DXGI_ERROR_NOT_FOUND) {
+        DXGI_ADAPTER_DESC1 desc{};
+        if (SUCCEEDED(adapter->GetDesc1(&desc))) {
+            if (desc.VendorId == vendor_id && desc.DeviceId == device_id) {
+                int size_needed = WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, nullptr, 0, nullptr, nullptr);
+                if (size_needed > 1) {
+                    result.resize(size_needed - 1);
+                    WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, result.data(), size_needed, nullptr, nullptr);
+                }
+                adapter->Release();
+                break;
+            }
+        }
+        adapter->Release();
+    }
+    factory->Release();
+    FreeLibrary(h_dxgi);
+    return result;
+}
+
+} // namespace Vulkan
+#else
+namespace Vulkan {
+std::string GetGpuMarketingName([[maybe_unused]] u32 vendor_id, [[maybe_unused]] u32 device_id) {
+    return {};
+}
+} // namespace Vulkan
+#endif
+
 namespace Vulkan {
 using namespace Common::Literals;
 namespace {
@@ -1020,6 +1077,15 @@ bool Device::GetSuitability(bool requires_swapchain) {
 
     // Configure properties.
     properties.properties = physical.GetProperties();
+#ifdef _WIN32
+    if (std::string_view(properties.properties.deviceName).find("Graphics Device") != std::string_view::npos ||
+        properties.properties.deviceName[0] == '\0') {
+        const std::string marketing_name = GetGpuMarketingName(properties.properties.vendorID, properties.properties.deviceID);
+        if (!marketing_name.empty()) {
+            strncpy_s(properties.properties.deviceName, marketing_name.c_str(), sizeof(properties.properties.deviceName) - 1);
+        }
+    }
+#endif
 
     // Set instance version.
     instance_version = properties.properties.apiVersion;
@@ -1238,6 +1304,11 @@ bool Device::GetSuitability(bool requires_swapchain) {
 
     // Store base properties
     properties.properties = properties2.properties;
+    const std::string marketing_name2 = GetGpuMarketingName(properties.properties.vendorID, properties.properties.deviceID);
+    if (!marketing_name2.empty()) {
+        std::memset(properties.properties.deviceName, 0, sizeof(properties.properties.deviceName));
+        std::strncpy(properties.properties.deviceName, marketing_name2.c_str(), sizeof(properties.properties.deviceName) - 1);
+    }
 
     // Unload extensions if feature support is insufficient.
     RemoveUnsuitableExtensions();

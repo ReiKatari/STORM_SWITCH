@@ -414,10 +414,10 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                           }});
     translations->insert({Settings::EnumMetadata<Settings::NvdecEmulation>::Index(),
                           {
-                              PAIR(NvdecEmulation, Off, tr("Без видео")),
-                              PAIR(NvdecEmulation, Cpu, tr("Декодирование видео на ЦП")),
-                              PAIR(NvdecEmulation, Gpu, tr("Декодирование видео на ГПУ")),
-                              PAIR(NvdecEmulation, Hybrid, tr("Гибридное декодирование видео")),
+                              PAIR(NvdecEmulation, Off, tr("Отключено")),
+                              PAIR(NvdecEmulation, Cpu, tr("ЦП")),
+                              PAIR(NvdecEmulation, Gpu, tr("ГПУ")),
+                              PAIR(NvdecEmulation, Hybrid, tr("Гибридный")),
                           }});
     translations->insert(
         {Settings::EnumMetadata<Settings::ResolutionSetup>::Index(),

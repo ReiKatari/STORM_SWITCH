@@ -204,6 +204,10 @@ VK_DEFINE_HANDLE(VmaAllocator)
 
 namespace Vulkan {
 
+#ifdef _WIN32
+std::string GetGpuMarketingName(u32 vendor_id, u32 device_id);
+#endif
+
 class NsightAftermathTracker;
 
 /// Format usage descriptor.

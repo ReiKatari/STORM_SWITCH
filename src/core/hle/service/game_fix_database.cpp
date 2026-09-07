@@ -4073,8 +4073,8 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
 
         auto apply_setting = [](auto& setting, auto val) {
             if constexpr (requires { setting.SetGlobal(false); }) {
-                setting.SetValue(val);
                 setting.SetGlobal(false);
+                setting.SetValue(val);
             } else {
                 setting.SetValue(val);
             }

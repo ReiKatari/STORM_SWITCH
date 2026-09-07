@@ -90,6 +90,7 @@ void nvhost_nvdec::OnOpen(NvCore::SessionId session_id, DeviceFD fd) {
 void nvhost_nvdec::OnClose(DeviceFD fd) {
     LOG_INFO(Service_NVDRV, "NVDEC video stream ended");
     host1x.StopDevice(fd, Tegra::Host1x::ChannelType::NvDec);
+    syncpoint_manager.FlushSyncpoint(channel_syncpoint);
     auto it = sessions.find(fd);
     if (it != sessions.end()) {
         if (const auto* session = core.GetSession(it->second);

@@ -47,7 +47,17 @@ void PopulateRecords(std::vector<Record>& records, QWindow* window) try {
     records.reserve(physical_devices.size());
     for (const VkPhysicalDevice device : physical_devices) {
         const auto physical_device = vk::PhysicalDevice(device, dld);
-        std::string name = physical_device.GetProperties().deviceName;
+        const auto props = physical_device.GetProperties();
+        std::string name = props.deviceName;
+
+#ifdef _WIN32
+        if (name.find("Graphics Device") != std::string::npos || name.empty()) {
+            const std::string marketing_name = Vulkan::GetGpuMarketingName(props.vendorID, props.deviceID);
+            if (!marketing_name.empty()) {
+                name = marketing_name;
+            }
+        }
+#endif
 
         const std::vector<VkPresentModeKHR> present_modes =
             physical_device.GetSurfacePresentModesKHR(*surface);

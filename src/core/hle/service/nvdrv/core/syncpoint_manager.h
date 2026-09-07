@@ -85,6 +85,11 @@ public:
     void FreeSyncpoint(u32 id);
 
     /**
+     * @brief Flushes any remaining increments for this syncpoint to Host1x up to its maximum value.
+     */
+    void FlushSyncpoint(u32 id);
+
+    /**
      * @return A fence that will be signalled once this syncpoint hits its maximum value
      */
     NvFence GetSyncpointFence(u32 id);

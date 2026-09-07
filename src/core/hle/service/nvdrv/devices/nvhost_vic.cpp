@@ -74,6 +74,7 @@ void nvhost_vic::OnOpen(NvCore::SessionId session_id, DeviceFD fd) {
 
 void nvhost_vic::OnClose(DeviceFD fd) {
     host1x.StopDevice(fd, Tegra::Host1x::ChannelType::VIC);
+    syncpoint_manager.FlushSyncpoint(channel_syncpoint);
     sessions.erase(fd);
 }
 
