@@ -29,6 +29,16 @@ static ankerl::unordered_dense::map<std::string, RomMetadata> m_rom_metadata_cac
 static ankerl::unordered_dense::map<u64, int> m_aoc_count_cache;
 static bool m_aoc_cache_valid = false;
 
+static bool IsBaseVersion(std::string_view ver) {
+    while (!ver.empty() && (ver.front() == 'v' || ver.front() == 'V' || std::isspace(static_cast<unsigned char>(ver.front())))) {
+        ver.remove_prefix(1);
+    }
+    while (!ver.empty() && std::isspace(static_cast<unsigned char>(ver.back()))) {
+        ver.remove_suffix(1);
+    }
+    return ver.empty() || ver == "0" || ver == "1.0" || ver == "1.0.0" || ver == "1.0.0.0";
+}
+
 static RomMetadata CacheRomMetadata(const std::string& path) {
     auto& instance = EmulationSession::GetInstance();
     const auto file = Core::GetGameFileFromPath(instance.System().GetFilesystem(), path);
@@ -64,47 +74,136 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
             internal_ver = instance.System().GetContentProvider().GetEntryVersion(base_tid).value_or(0);
         }
 
-        // 2. Resolve developer and display version from Control Metadata (Update NACP / Embedded NACP)
-        if (control.first != nullptr && !control.first->GetVersionString().empty()) {
-            entry.developer = control.first->GetDeveloperName();
-            entry.version = control.first->GetVersionString();
-        } else if (has_embedded_nacp && !nacp.GetVersionString().empty()) {
-            entry.developer = nacp.GetDeveloperName();
-            entry.version = nacp.GetVersionString();
-        } else {
-            entry.developer = "";
-            entry.version = "1.0.0";
+        // 2. Try highest priority Update patch from PatchManager / ContentProvider (including bundled container updates)
+        FileSys::VirtualFile update_raw_file;
+        loader->ReadUpdateRaw(update_raw_file);
+        const auto all_patches = pm.GetPatches(update_raw_file);
+        for (const auto& p : all_patches) {
+            if (p.type == FileSys::PatchType::Update && p.enabled && !p.version.empty() && p.version != "PACKED") {
+                entry.version = p.version;
+                if (p.numeric_version > 0 && internal_ver == 0) {
+                    internal_ver = p.numeric_version;
+                }
+                break;
+            }
         }
 
-        // Clean version string: remove leading 'v' / 'V'
+        // 3. Fallback to Control Metadata (Update NACP / Embedded NACP) if version is still base version
+        if (IsBaseVersion(entry.version)) {
+            if (control.first != nullptr && !control.first->GetVersionString().empty()) {
+                entry.version = control.first->GetVersionString();
+            }
+        }
+        if (IsBaseVersion(entry.version)) {
+            if (has_embedded_nacp && !nacp.GetVersionString().empty()) {
+                entry.version = nacp.GetVersionString();
+            }
+        }
+
+        // Resolve developer name
+        if (control.first != nullptr && !control.first->GetDeveloperName().empty()) {
+            entry.developer = control.first->GetDeveloperName();
+        } else if (has_embedded_nacp && !nacp.GetDeveloperName().empty()) {
+            entry.developer = nacp.GetDeveloperName();
+        } else {
+            entry.developer = "";
+        }
+
+        // Clean version string: remove leading 'v' / 'V' and whitespace
         while (entry.version.starts_with('v') || entry.version.starts_with('V')) {
             entry.version = entry.version.substr(1);
         }
-        if (entry.version.empty()) {
-            entry.version = "1.0.0";
+        while (!entry.version.empty() && (entry.version.front() == ' ' || entry.version.front() == '\t')) {
+            entry.version.erase(entry.version.begin());
+        }
+        while (!entry.version.empty() && (entry.version.back() == ' ' || entry.version.back() == '\t')) {
+            entry.version.pop_back();
         }
 
-        // 3. Format display version from internal numeric version if default 1.0.0
-        if (entry.version == "1.0.0" && internal_ver > 0) {
+        // 4. Try extracting paired or standalone version from path / filename (e.g. "(1.0.9 - 458752 - ...)")
+        if (IsBaseVersion(entry.version)) {
+            auto url_decode = [](std::string_view in) -> std::string {
+                std::string out;
+                out.reserve(in.size());
+                for (std::size_t i = 0; i < in.size(); ++i) {
+                    if (in[i] == '%' && i + 2 < in.size()) {
+                        int val = 0;
+                        if (std::sscanf(std::string(in.substr(i + 1, 2)).c_str(), "%x", &val) == 1) {
+                            out += static_cast<char>(val);
+                            i += 2;
+                            continue;
+                        }
+                    } else if (in[i] == '+') {
+                        out += ' ';
+                        continue;
+                    }
+                    out += in[i];
+                }
+                return out;
+            };
+
+            const std::string decoded_path = url_decode(path);
+            const std::vector<std::string_view> search_strings = {decoded_path, path};
+
+            static const std::regex pair_regex(R"(\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+))");
+            static const std::regex full_regex(R"((?:[\(\[\s_]v?|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?!\s*(?:GB|MB|KB|TB|ГБ|МБ|КБ|Б|B)\b))");
+            static const std::regex vnum_regex(R"(\[v([0-9]+)\])");
+
+            for (const auto& s : search_strings) {
+                std::cmatch pair_match;
+                if (std::regex_search(s.data(), s.data() + s.size(), pair_match, pair_regex)) {
+                    entry.version = pair_match[1].str();
+                    if (internal_ver == 0) {
+                        try {
+                            internal_ver = std::stoul(pair_match[2].str());
+                        } catch (...) {}
+                    }
+                    break;
+                }
+                std::cmatch full_match;
+                if (std::regex_search(s.data(), s.data() + s.size(), full_match, full_regex)) {
+                    const std::string cand = full_match[1].str();
+                    if (!IsBaseVersion(cand)) {
+                        entry.version = cand;
+                        break;
+                    }
+                }
+                std::cmatch vnum_match;
+                if (std::regex_search(s.data(), s.data() + s.size(), vnum_match, vnum_regex)) {
+                    if (internal_ver == 0) {
+                        try {
+                            internal_ver = std::stoul(vnum_match[1].str());
+                        } catch (...) {}
+                    }
+                }
+            }
+        }
+
+        // 5. Format display version from internal numeric version if still base version
+        if (IsBaseVersion(entry.version) && internal_ver > 0) {
             u32 update_num = internal_ver / 65536;
             if (update_num > 0) {
                 entry.version = fmt::format("1.0.{}", update_num);
             } else {
                 u32 major = (internal_ver >> 16) & 0xFF;
                 u32 minor = (internal_ver >> 8) & 0xFF;
-                u32 patch = internal_ver & 0xFF;
-                entry.version = fmt::format("{}.{}.{}", major, minor, patch);
+                u32 patch_val = internal_ver & 0xFF;
+                entry.version = fmt::format("{}.{}.{}", major, minor, patch_val);
             }
         }
 
-        // 4. If internal_ver is 0 but display version is known (e.g. 1.0.10), calculate accurate internal version
-        if (internal_ver == 0 && !entry.version.empty() && entry.version != "1.0.0" && entry.version != "1.0") {
-            int major = 1, minor = 0, patch = 0;
-            if (std::sscanf(entry.version.c_str(), "%d.%d.%d", &major, &minor, &patch) >= 2) {
-                if (major == 1 && minor == 0 && patch > 0) {
-                    internal_ver = static_cast<u32>(patch * 65536);
+        if (entry.version.empty()) {
+            entry.version = "1.0.0";
+        }
+
+        // 6. If internal_ver is 0 but display version is known (e.g. 1.0.9), calculate accurate internal version
+        if (internal_ver == 0 && !IsBaseVersion(entry.version)) {
+            int major = 1, minor = 0, patch_val = 0;
+            if (std::sscanf(entry.version.c_str(), "%d.%d.%d", &major, &minor, &patch_val) >= 2) {
+                if (major == 1 && minor == 0 && patch_val > 0) {
+                    internal_ver = static_cast<u32>(patch_val * 65536);
                 } else if (major >= 1) {
-                    internal_ver = static_cast<u32>((major - 1) * 655360 + minor * 65536 + patch);
+                    internal_ver = static_cast<u32>((major - 1) * 655360 + minor * 65536 + patch_val);
                 }
             }
         }

@@ -64,7 +64,8 @@ object GameHelper {
             val stored = preferences.getStringSet(KEY_GAMES, emptySet()) ?: emptySet()
             for (item in stored) {
                 try {
-                    cachedGameList.add(Json.decodeFromString(item))
+                    val game = Json.decodeFromString<Game>(item)
+                    cachedGameList.add(upgradeGameVersionIfNeeded(game))
                 } catch (_: Exception) {}
             }
         }
@@ -187,9 +188,9 @@ object GameHelper {
         // 3. Compare display version if internal version is equal
         val existingVer = existing.version.removePrefix("v").removePrefix("V").trim()
         val candidateVer = candidate.version.removePrefix("v").removePrefix("V").trim()
-        if (candidateVer != "1.0.0" && existingVer == "1.0.0") {
+        if (!isBaseVersion(candidateVer) && isBaseVersion(existingVer)) {
             return candidate
-        } else if (candidateVer == "1.0.0" && existingVer != "1.0.0") {
+        } else if (isBaseVersion(candidateVer) && !isBaseVersion(existingVer)) {
             return existing
         }
 
@@ -416,38 +417,17 @@ object GameHelper {
         }
 
         val rawVersion = GameMetadata.getVersion(filePath, false)
-        var cleanVersion = rawVersion.trim().removePrefix("v").removePrefix("V").ifEmpty { "1.0.0" }
-        var rawInternalVersion = GameMetadata.getInternalVersion(filePath).trim().removePrefix("v").removePrefix("V")
-        var cleanInternalVersion = rawInternalVersion.ifEmpty { "0" }
+        val rawInternalVersion = GameMetadata.getInternalVersion(filePath)
 
-        // If version is default 1.0.0 or internal version is 0, extract paired or standalone version from filename
-        val decodedFilename = runCatching { Uri.decode(filePath) }.getOrDefault(filePath)
-        val pairMatch = Regex("""\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)""", RegexOption.IGNORE_CASE).find(decodedFilename)
-        if (pairMatch != null) {
-            val pVer = pairMatch.groupValues[1].trim()
-            val pIntVer = pairMatch.groupValues[2].trim()
-            if (pVer.isNotEmpty() && (cleanVersion == "1.0.0" || cleanVersion.isEmpty())) {
-                cleanVersion = pVer
-            }
-            if (pIntVer.isNotEmpty() && (cleanInternalVersion == "0" || cleanInternalVersion.isEmpty())) {
-                cleanInternalVersion = pIntVer
-            }
-        } else if (cleanVersion == "1.0.0" || cleanVersion.isEmpty()) {
-            val fullMatch = Regex("""(?:[\(\[\s_]v?|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?!\s*(?:GB|MB|KB|TB|ГБ|МБ|КБ|Б|B)\b)""", RegexOption.IGNORE_CASE).find(decodedFilename)
-            if (fullMatch != null) {
-                val parsedVer = fullMatch.groupValues[1].trim()
-                if (parsedVer.isNotEmpty() && parsedVer != "1.0.0") {
-                    cleanVersion = parsedVer
-                }
-            }
-        }
+        val decodedFilename = runCatching { Uri.decode(filename) }.getOrDefault(filename)
+        val decodedFilePath = runCatching { Uri.decode(filePath) }.getOrDefault(filePath)
+        val candidateNames = listOf(filename, decodedFilename, decodedFilePath, filePath)
 
-        if (cleanInternalVersion.isEmpty() || cleanInternalVersion == "0") {
-            val match = Regex("[\\[\\(_]v?(\\d{5,})[\\]\\)]", RegexOption.IGNORE_CASE).find(decodedFilename)
-            if (match != null) {
-                cleanInternalVersion = match.groupValues[1]
-            }
-        }
+        val (cleanVersion, cleanInternalVersion) = resolveVersionFromNames(
+            candidateNames,
+            rawVersion,
+            rawInternalVersion
+        )
 
         val addonCount = GameMetadata.getAddonCount(filePath)
         val finalAddonCount = if (addonCount > 0) {
@@ -478,5 +458,102 @@ object GameHelper {
         }
 
         return newGame
+    }
+
+    fun isBaseVersion(ver: String): Boolean {
+        val v = ver.trim().removePrefix("v").removePrefix("V").trim()
+        return v.isEmpty() || v == "0" || v == "1.0" || v == "1.0.0" || v == "1.0.0.0"
+    }
+
+    fun resolveVersionFromNames(
+        names: List<String>,
+        currentVersion: String,
+        currentInternalVersion: String
+    ): Pair<String, String> {
+        var cleanVersion = currentVersion.trim().removePrefix("v").removePrefix("V").trim()
+        var cleanInternalVersion = currentInternalVersion.trim().removePrefix("v").removePrefix("V").trim()
+
+        if (isBaseVersion(cleanVersion)) {
+            for (name in names) {
+                if (name.isEmpty()) continue
+                // 1. Paired version: e.g. "(1.0.9 - 458752 - 0100EC9010258000)"
+                val pairMatch = Regex("""\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)""", RegexOption.IGNORE_CASE).find(name)
+                if (pairMatch != null) {
+                    val pVer = pairMatch.groupValues[1].trim()
+                    val pIntVer = pairMatch.groupValues[2].trim()
+                    if (pVer.isNotEmpty() && !isBaseVersion(pVer)) {
+                        cleanVersion = pVer
+                    }
+                    if (pIntVer.isNotEmpty() && (cleanInternalVersion == "0" || cleanInternalVersion.isEmpty())) {
+                        cleanInternalVersion = pIntVer
+                    }
+                    break
+                }
+
+                // 2. Standalone version: e.g. "1.0.9"
+                val fullMatch = Regex("""(?:[\(\[\s_]v?|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?!\s*(?:GB|MB|KB|TB|ГБ|МБ|КБ|Б|B)\b)""", RegexOption.IGNORE_CASE).find(name)
+                if (fullMatch != null) {
+                    val parsedVer = fullMatch.groupValues[1].trim()
+                    if (!isBaseVersion(parsedVer)) {
+                        cleanVersion = parsedVer
+                        break
+                    }
+                }
+            }
+        }
+
+        if (cleanInternalVersion.isEmpty() || cleanInternalVersion == "0") {
+            for (name in names) {
+                if (name.isEmpty()) continue
+                val match = Regex("""[\\[\\(_]v?(\\d{5,})[\\]\\)]""", RegexOption.IGNORE_CASE).find(name)
+                if (match != null) {
+                    cleanInternalVersion = match.groupValues[1]
+                    break
+                }
+            }
+        }
+
+        if (isBaseVersion(cleanVersion) && cleanInternalVersion.isNotEmpty() && cleanInternalVersion != "0") {
+            val numVer = cleanInternalVersion.toLongOrNull() ?: 0L
+            if (numVer > 0L) {
+                val upd = numVer / 65536L
+                if (upd > 0L) {
+                    cleanVersion = "1.0.$upd"
+                }
+            }
+        }
+
+        if (cleanVersion.isEmpty()) {
+            cleanVersion = "1.0.0"
+        }
+        if (cleanInternalVersion.isEmpty()) {
+            cleanInternalVersion = "0"
+        }
+
+        return Pair(cleanVersion, cleanInternalVersion)
+    }
+
+    fun upgradeGameVersionIfNeeded(game: Game): Game {
+        if (!isBaseVersion(game.version) && game.internalVersion.isNotEmpty() && game.internalVersion != "0") {
+            return game
+        }
+        val filename = try {
+            FileUtil.getFilename(game.path.toUri())
+        } catch (_: Exception) {
+            ""
+        }
+        val decodedFilename = runCatching { Uri.decode(filename) }.getOrDefault(filename)
+        val decodedFilePath = runCatching { Uri.decode(game.path) }.getOrDefault(game.path)
+        val candidateNames = listOf(filename, decodedFilename, decodedFilePath, game.path)
+
+        val (upgradedVersion, upgradedInternalVersion) = resolveVersionFromNames(
+            candidateNames,
+            game.version,
+            game.internalVersion
+        )
+
+        game.version = upgradedVersion
+        game.internalVersion = upgradedInternalVersion
+        return game
     }
 }

@@ -25,6 +25,7 @@ import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.FragmentGameInfoBinding
 import org.yuzu.yuzu_emu.model.GameVerificationResult
 import org.yuzu.yuzu_emu.model.HomeViewModel
+import org.yuzu.yuzu_emu.utils.GameHelper
 import org.yuzu.yuzu_emu.utils.GameMetadata
 import org.yuzu.yuzu_emu.utils.ViewUtils.setVisible
 import org.yuzu.yuzu_emu.utils.ViewUtils.updateMargins
@@ -44,7 +45,12 @@ class GameInfoFragment : Fragment() {
         reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
 
         // Check for an up-to-date version string
-        args.game.version = GameMetadata.getVersion(args.game.path, true)
+        val newVer = GameMetadata.getVersion(args.game.path, true)
+        if (newVer.isNotEmpty() && !GameHelper.isBaseVersion(newVer)) {
+            args.game.version = newVer
+        } else if (GameHelper.isBaseVersion(args.game.version) && newVer.isNotEmpty()) {
+            args.game.version = newVer
+        }
     }
 
     override fun onCreateView(
