@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "core/hle/service/game_fix_database.h"
+#include <algorithm>
+#include <cctype>
+#include <filesystem>
 #include <fstream>
+#include <memory>
+#include <mutex>
 #include <sstream>
+#include "common/cityhash.h"
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
@@ -3537,25 +3543,442 @@ static const std::vector<GameFixProfile> s_profiles = {
     }
 };
 
+static const std::unordered_map<std::string, std::string> s_baseline_ini = {
+    {"Cpu\\cpu_accuracy", "0"},
+    {"Renderer\\gpu_accuracy", "0"},
+    {"Renderer\\nvdec_emulation", "1"},
+    {"Renderer\\async_presentation", "false"},
+    {"Renderer\\use_asynchronous_shaders", "true"},
+    {"Renderer\\use_fast_gpu_time", "true"},
+    {"Renderer\\sync_memory_operations", "false"},
+    {"Renderer\\use_reactive_flushing", "false"},
+    {"Renderer\\use_video_framerate", "false"},
+    {"Renderer\\eco_frame_pacing", "false"},
+    {"Renderer\\dma_accuracy", "0"},
+    {"Renderer\\gpu_fence_behavior", "0"},
+    {"Renderer\\astc_recompression", "0"},
+    {"Cpu\\cpuopt_fastmem", "true"},
+    {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+    {"System\\airplane_mode", "true"},
+    {"Services\\airplane_mode", "true"},
+    {"Network\\airplane_mode", "true"},
+    {"System\\memory_layout_mode", "0"},
+    {"Core\\memory_layout_mode", "0"}
+};
+
+static std::string GetSetting(const std::unordered_map<std::string, std::string>& settings, const std::string& key, const std::string& def) {
+    auto it = settings.find(key);
+    if (it != settings.end()) {
+        return it->second;
+    }
+    return def;
+}
+
+static std::string BuildFixesRu(const std::unordered_map<std::string, std::string>& settings) {
+    std::string out;
+
+    // 1. Авто-настройки (производительность)
+    out += "⚡ <b>Авто-настройки (производительность):</b>\n";
+
+    const auto cpu_acc = GetSetting(settings, "Cpu\\cpu_accuracy", "0");
+    if (cpu_acc == "1") {
+        out += "✓ Точность ЦП: Точный (повышенная точность инструкций для исключения рассинхронизации)\n";
+    } else {
+        out += "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n";
+    }
+
+    const auto gpu_acc = GetSetting(settings, "Renderer\\gpu_accuracy", "0");
+    if (gpu_acc == "1") {
+        out += "✓ Точность ГПУ: Высокая (повышенная точность шейдеров FP16 для устранения графических артефактов)\n";
+    } else if (gpu_acc == "2") {
+        out += "✓ Точность ГПУ: Экстремальная (максимальная точность графических расчетов)\n";
+    } else {
+        out += "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n";
+    }
+
+    const auto fastmem = GetSetting(settings, "Cpu\\cpuopt_fastmem", "true");
+    if (fastmem == "false" || fastmem == "0") {
+        out += "✓ Эмуляция Host MMU (fastmem): Отключено (программный контроль адресного пространства)\n";
+    } else {
+        out += "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильной кадровой частоты)\n";
+    }
+
+    const auto fast_gpu = GetSetting(settings, "Renderer\\use_fast_gpu_time", "true");
+    if (fast_gpu == "false" || fast_gpu == "0") {
+        out += "✓ Тайминги ГПУ: Стандартный (строгое соответствие оригинальной частоте кадров Switch)\n";
+    } else {
+        out += "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для максимальной плавности)\n";
+    }
+
+    const auto dma = GetSetting(settings, "Renderer\\dma_accuracy", "0");
+    if (dma == "1") {
+        out += "✓ Точность DMA: Точная (побайтная эмуляция каналов DMA для специфических игр)\n";
+    } else {
+        out += "✓ Точность DMA: Быстрая (мгновенная прямая передача данных без задержек шины)\n";
+    }
+
+    out += "\n";
+
+    // 2. Авто-коррекция (графический конвейер)
+    out += "🛠️ <b>Авто-коррекция (графический конвейер):</b>\n";
+
+    const auto async_shaders = GetSetting(settings, "Renderer\\use_asynchronous_shaders", "true");
+    if (async_shaders == "false" || async_shaders == "0") {
+        out += "✓ Асинхронная компиляция шейдеров: Отключено (синхронная загрузка конвейеров для предотвращения сбоев старта)\n";
+    } else {
+        out += "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n";
+    }
+
+    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "1");
+    if (nvdec == "2") {
+        out += "✓ Декодирование видео NVDEC: ГПУ (аппаратное ускорение видеопотока видеокартой)\n";
+    } else if (nvdec == "0") {
+        out += "✓ Декодирование видео NVDEC: Отключено (пропуск видеопотоков)\n";
+    } else {
+        out += "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание видеороликов)\n";
+    }
+
+    const auto fences = GetSetting(settings, "Renderer\\gpu_fence_behavior", "0");
+    if (fences == "1") {
+        out += "✓ Барьеры ГПУ: Ослабленные (повышенная пропускная способность конвейера)\n";
+    } else if (fences == "2") {
+        out += "✓ Барьеры ГПУ: Строгие (гарантированная изоляция проходов рендеринга)\n";
+    } else {
+        out += "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n";
+    }
+
+    const auto async_pres = GetSetting(settings, "Renderer\\async_presentation", "false");
+    if (async_pres == "true" || async_pres == "1") {
+        out += "✓ Асинхронный вывод: Включено (раздельный поток кадровой презентации для снижения инпут-лага)\n";
+    } else {
+        out += "✓ Асинхронный вывод: Отключено (устраняет дедлок потока Vulkan и зацикливание видеоряда меню)\n";
+    }
+
+    const auto sync_mem = GetSetting(settings, "Renderer\\sync_memory_operations", "false");
+    if (sync_mem == "true" || sync_mem == "1") {
+        out += "✓ Синхронизация операций памяти: Включено (полная синхронизация модификаций текстур в видеопамяти)\n";
+    } else {
+        out += "✓ Синхронизация операций памяти: Отключено (устраняет задержки ожидания копирования текстурных буферов)\n";
+    }
+
+    const auto react_flush = GetSetting(settings, "Renderer\\use_reactive_flushing", "false");
+    if (react_flush == "true" || react_flush == "1") {
+        out += "✓ Реактивный сброс памяти: Включено (своевременный сброс модифицированных видеобуферов)\n";
+    } else {
+        out += "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей и артефакты)\n";
+    }
+
+    const auto astc = GetSetting(settings, "Renderer\\astc_recompression", "0");
+    if (astc == "1") {
+        out += "✓ Пересжатие текстур ASTC: BC1 (базовое сжатие текстур для экономии видеопамяти)\n";
+    } else if (astc == "2") {
+        out += "✓ Пересжатие текстур ASTC: BC3 (высококачественное сжатие текстур с альфа-каналом)\n";
+    } else {
+        out += "✓ Пересжатие текстур ASTC: Без сжатия (устраняет графические артефакты и пропадание текстур)\n";
+    }
+
+    const auto loops = GetSetting(settings, "Renderer\\barrier_feedback_loops", "false");
+    if (loops == "true" || loops == "1") {
+        out += "✓ Обратная связь барьеров: Включено (устранение темных ореолов и сбоев постобработки)\n";
+    }
+
+    out += "\n";
+
+    // 3. Авто-исправление (стабильность и сеть)
+    out += "🛡️ <b>Авто-исправление (стабильность и сеть):</b>\n";
+
+    const auto ign_aborts = GetSetting(settings, "Cpu\\cpuopt_ignore_memory_aborts", "true");
+    if (ign_aborts == "false" || ign_aborts == "0") {
+        out += "✓ Игнорировать прерывания памяти: Отключено (стандартная обработка исключений памяти)\n";
+    } else {
+        out += "✓ Игнорировать прерывания памяти: Включено (защита от падений и аварийных вылетов при обращениях за границы буфера)\n";
+    }
+
+    const auto airplane = GetSetting(settings, "System\\airplane_mode", "true");
+    if (airplane == "false" || airplane == "0") {
+        out += "✓ Режим «В самолете»: Отключено (активные сетевые интерфейсы)\n";
+    } else {
+        out += "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов и ожидание серверов)\n";
+    }
+
+    const auto mem_layout = GetSetting(settings, "System\\memory_layout_mode", GetSetting(settings, "Core\\memory_layout_mode", "0"));
+    if (mem_layout == "2") {
+        out += "✓ Память DRAM: Экстремальная 8 ГБ (критично для стабильности и предотвращения нехватки памяти движка)";
+    } else if (mem_layout == "1") {
+        out += "✓ Память DRAM: Расширенная 6 ГБ (устраняет вылеты при длительной игре и утечках памяти)";
+    } else {
+        out += "✓ Память DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch без лишнего расхода ОЗУ)";
+    }
+
+    return out;
+}
+
+static std::string BuildFixesEn(const std::unordered_map<std::string, std::string>& settings) {
+    std::string out;
+
+    // 1. Auto Settings (Performance)
+    out += "⚡ <b>Auto Settings (Performance):</b>\n";
+
+    const auto cpu_acc = GetSetting(settings, "Cpu\\cpu_accuracy", "0");
+    if (cpu_acc == "1") {
+        out += "✓ CPU Accuracy: Accurate (enhanced instruction precision to prevent desync)\n";
+    } else {
+        out += "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n";
+    }
+
+    const auto gpu_acc = GetSetting(settings, "Renderer\\gpu_accuracy", "0");
+    if (gpu_acc == "1") {
+        out += "✓ GPU Accuracy: High (FP16 shader precision fixing visual artifacts)\n";
+    } else if (gpu_acc == "2") {
+        out += "✓ GPU Accuracy: Extreme (maximum graphical precision)\n";
+    } else {
+        out += "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n";
+    }
+
+    const auto fastmem = GetSetting(settings, "Cpu\\cpuopt_fastmem", "true");
+    if (fastmem == "false" || fastmem == "0") {
+        out += "✓ Host MMU Emulation (Fastmem): Disabled (software address space validation)\n";
+    } else {
+        out += "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable framerate)\n";
+    }
+
+    const auto fast_gpu = GetSetting(settings, "Renderer\\use_fast_gpu_time", "true");
+    if (fast_gpu == "false" || fast_gpu == "0") {
+        out += "✓ GPU Timings: Normal (strict original Switch framerate timing)\n";
+    } else {
+        out += "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)\n";
+    }
+
+    const auto dma = GetSetting(settings, "Renderer\\dma_accuracy", "0");
+    if (dma == "1") {
+        out += "✓ DMA Accuracy: Accurate (byte-accurate DMA channels for timing-sensitive games)\n";
+    } else {
+        out += "✓ DMA Accuracy: Fast (instant direct memory transfer without bus stalls)\n";
+    }
+
+    out += "\n";
+
+    // 2. Auto Correction (Graphics Pipeline)
+    out += "🛠️ <b>Auto Correction (Graphics Pipeline):</b>\n";
+
+    const auto async_shaders = GetSetting(settings, "Renderer\\use_asynchronous_shaders", "true");
+    if (async_shaders == "false" || async_shaders == "0") {
+        out += "✓ Asynchronous Shaders: Disabled (synchronous pipeline compilation preventing boot crashes)\n";
+    } else {
+        out += "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n";
+    }
+
+    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "1");
+    if (nvdec == "2") {
+        out += "✓ NVDEC Video Emulation: GPU (hardware video acceleration by graphics card)\n";
+    } else if (nvdec == "0") {
+        out += "✓ NVDEC Video Emulation: Disabled (video stream playback bypassed)\n";
+    } else {
+        out += "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents video freezes)\n";
+    }
+
+    const auto fences = GetSetting(settings, "Renderer\\gpu_fence_behavior", "0");
+    if (fences == "1") {
+        out += "✓ GPU Fences: Relaxed (higher pipeline throughput)\n";
+    } else if (fences == "2") {
+        out += "✓ GPU Fences: Strict (guaranteed isolation between render passes)\n";
+    } else {
+        out += "✓ GPU Fences: Default (standard command order without pipeline stalls)\n";
+    }
+
+    const auto async_pres = GetSetting(settings, "Renderer\\async_presentation", "false");
+    if (async_pres == "true" || async_pres == "1") {
+        out += "✓ Async Presentation: Enabled (decoupled presentation thread for lower input latency)\n";
+    } else {
+        out += "✓ Async Presentation: Disabled (prevents Vulkan presentation thread deadlock and loop)\n";
+    }
+
+    const auto sync_mem = GetSetting(settings, "Renderer\\sync_memory_operations", "false");
+    if (sync_mem == "true" || sync_mem == "1") {
+        out += "✓ Sync Memory Operations: Enabled (full synchronization of GPU memory modifications)\n";
+    } else {
+        out += "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n";
+    }
+
+    const auto react_flush = GetSetting(settings, "Renderer\\use_reactive_flushing", "false");
+    if (react_flush == "true" || react_flush == "1") {
+        out += "✓ Reactive Flushing: Enabled (prompt flushing of modified render targets)\n";
+    } else {
+        out += "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n";
+    }
+
+    const auto astc = GetSetting(settings, "Renderer\\astc_recompression", "0");
+    if (astc == "1") {
+        out += "✓ ASTC Recompression: BC1 (basic texture recompression to conserve VRAM)\n";
+    } else if (astc == "2") {
+        out += "✓ ASTC Recompression: BC3 (high quality texture recompression with alpha channel)\n";
+    } else {
+        out += "✓ ASTC Recompression: Uncompressed (eliminates texture glitches and missing assets)\n";
+    }
+
+    const auto loops = GetSetting(settings, "Renderer\\barrier_feedback_loops", "false");
+    if (loops == "true" || loops == "1") {
+        out += "✓ Barrier Feedback Loops: Enabled (fixes dark halos and post-processing bugs)\n";
+    }
+
+    out += "\n";
+
+    // 3. Auto Fix (Stability and Network)
+    out += "🛡️ <b>Auto Fix (Stability and Network):</b>\n";
+
+    const auto ign_aborts = GetSetting(settings, "Cpu\\cpuopt_ignore_memory_aborts", "true");
+    if (ign_aborts == "false" || ign_aborts == "0") {
+        out += "✓ Ignore Memory Aborts: Disabled (standard memory abort handling)\n";
+    } else {
+        out += "✓ Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n";
+    }
+
+    const auto airplane = GetSetting(settings, "System\\airplane_mode", "true");
+    if (airplane == "false" || airplane == "0") {
+        out += "✓ Airplane Mode: Disabled (active network interfaces)\n";
+    } else {
+        out += "✓ Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)\n";
+    }
+
+    const auto mem_layout = GetSetting(settings, "System\\memory_layout_mode", GetSetting(settings, "Core\\memory_layout_mode", "0"));
+    if (mem_layout == "2") {
+        out += "✓ DRAM Memory Layout: 8GB Extreme (critical to prevent out-of-memory engine crashes)";
+    } else if (mem_layout == "1") {
+        out += "✓ DRAM Memory Layout: 6GB Expanded (prevents crashes during prolonged gameplay and memory leaks)";
+    } else {
+        out += "✓ DRAM Memory Layout: 4GB Standard (original Switch console memory layout)";
+    }
+
+    return out;
+}
+
+static GameFixProfile CreateEnrichedProfile(const GameFixProfile& base, u64 target_title_id = 0) {
+    GameFixProfile enriched;
+    enriched.title_id = target_title_id != 0 ? target_title_id : base.title_id;
+    enriched.game_name = base.game_name;
+    enriched.issues_ru = base.issues_ru;
+    enriched.issues_en = base.issues_en;
+
+    enriched.ini_settings = s_baseline_ini;
+    for (const auto& [k, v] : base.ini_settings) {
+        enriched.ini_settings[k] = v;
+    }
+
+    enriched.fixes_ru = BuildFixesRu(enriched.ini_settings);
+    enriched.fixes_en = BuildFixesEn(enriched.ini_settings);
+    return enriched;
+}
+
+static GameFixProfile CreateUniversalProfile(u64 title_id, const std::string& name_hint = "") {
+    GameFixProfile universal;
+    universal.title_id = title_id;
+    if (!name_hint.empty()) {
+        universal.game_name = name_hint;
+    } else if (title_id != 0) {
+        universal.game_name = fmt::format("Игра {:016X}", title_id);
+    } else {
+        universal.game_name = "Пользовательская игра";
+    }
+
+    universal.issues_ru =
+        "• Микрофризы при компиляции шейдеров во время игрового процесса\n"
+        "• Зависание вступительных видеороликов при аппаратном декодировании NVDEC\n"
+        "• Сбои и задержки сетевых сервисов при поиске серверов\n"
+        "• Риск аварийного завершения эмулятора при обращениях за границы буфера памяти";
+
+    universal.issues_en =
+        "• Ingame stuttering caused by on-demand shader compilation\n"
+        "• Intro and cutscene freezes with hardware NVDEC decoding\n"
+        "• Network socket stalls during server connection attempts\n"
+        "• Risk of emulator crash on out-of-bounds guest memory accesses";
+
+    universal.ini_settings = s_baseline_ini;
+    universal.fixes_ru = BuildFixesRu(universal.ini_settings);
+    universal.fixes_en = BuildFixesEn(universal.ini_settings);
+    return universal;
+}
+
+static std::mutex s_profile_mutex;
+static std::unordered_map<u64, std::unique_ptr<GameFixProfile>> s_enriched_cache;
+
 const GameFixProfile* GameFixDatabase::GetProfile(u64 title_id) {
     if (title_id == 0) return nullptr;
-    // Check exact title ID or base title ID (mask out DLC/update bits)
+
+    std::lock_guard lock(s_profile_mutex);
+
+    auto it = s_enriched_cache.find(title_id);
+    if (it != s_enriched_cache.end()) {
+        return it->second.get();
+    }
+
     const u64 base_title_id = title_id & ~0x1FFFULL;
+    auto it_base = s_enriched_cache.find(base_title_id);
+    if (it_base != s_enriched_cache.end()) {
+        return it_base->second.get();
+    }
+
+    // Check s_profiles
     for (const auto& profile : s_profiles) {
         if (profile.title_id == title_id || (profile.title_id & ~0x1FFFULL) == base_title_id) {
-            return &profile;
+            auto enriched = std::make_unique<GameFixProfile>(CreateEnrichedProfile(profile, title_id));
+            auto* ptr = enriched.get();
+            s_enriched_cache[title_id] = std::move(enriched);
+            return ptr;
         }
     }
-    return nullptr;
+
+    // Unprofiled game: synthesize universal profile dynamically!
+    auto universal = std::make_unique<GameFixProfile>(CreateUniversalProfile(title_id));
+    auto* ptr = universal.get();
+    s_enriched_cache[title_id] = std::move(universal);
+    return ptr;
 }
 
 const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, const std::string& name_or_path) {
     if (title_id != 0) {
         const auto* p = GetProfile(title_id);
+        if (p && !name_or_path.empty() && p->game_name.rfind("Игра ", 0) == 0) {
+            std::lock_guard lock(s_profile_mutex);
+            auto it = s_enriched_cache.find(title_id);
+            if (it != s_enriched_cache.end()) {
+                std::filesystem::path fp(name_or_path);
+                std::string clean = fp.stem().string();
+                auto brk = clean.find('[');
+                if (brk != std::string::npos) clean = clean.substr(0, brk);
+                auto par = clean.find('(');
+                if (par != std::string::npos) clean = clean.substr(0, par);
+                while (!clean.empty() && (clean.back() == ' ' || clean.back() == '_' || clean.back() == '-')) clean.pop_back();
+                if (!clean.empty()) {
+                    it->second->game_name = clean;
+                }
+            }
+        }
         if (p) return p;
     }
 
     if (name_or_path.empty()) return nullptr;
+
+    // Check if name_or_path contains a 16-character hex Title ID
+    for (size_t i = 0; i + 16 <= name_or_path.size(); ++i) {
+        if ((i == 0 || !std::isxdigit(static_cast<unsigned char>(name_or_path[i - 1]))) &&
+            (i + 16 == name_or_path.size() || !std::isxdigit(static_cast<unsigned char>(name_or_path[i + 16])))) {
+            bool all_hex = true;
+            for (size_t j = 0; j < 16; ++j) {
+                if (!std::isxdigit(static_cast<unsigned char>(name_or_path[i + j]))) {
+                    all_hex = false;
+                    break;
+                }
+            }
+            if (all_hex) {
+                try {
+                    u64 parsed = std::stoull(name_or_path.substr(i, 16), nullptr, 16);
+                    if (parsed != 0) {
+                        return GetProfile(parsed);
+                    }
+                } catch (...) {}
+            }
+        }
+    }
 
     std::string lower = name_or_path;
     std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
@@ -3567,401 +3990,422 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         // Check full game name or title hex in string
         std::string hex_id = fmt::format("{:016x}", profile.title_id);
         if (lower.find(hex_id) != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
 
         // Custom keyword matching
         if (game_lower.find("streets of rage") != std::string::npos && (lower.find("streets of rage") != std::string::npos || lower.find("sor4") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("splintered fate") != std::string::npos && (lower.find("splintered fate") != std::string::npos || lower.find("tmnt") != std::string::npos || lower.find("ninja turtles") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("breath of the wild") != std::string::npos && (lower.find("breath of the wild") != std::string::npos || lower.find("botw") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("tears of the kingdom") != std::string::npos && (lower.find("tears of the kingdom") != std::string::npos || lower.find("totk") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("mario odyssey") != std::string::npos && (lower.find("odyssey") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("rabbids") != std::string::npos && (lower.find("rabbids") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("sonic frontiers") != std::string::npos && (lower.find("frontiers") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("witcher") != std::string::npos && (lower.find("witcher") != std::string::npos || lower.find("wild hunt") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("pikmin") != std::string::npos && lower.find("pikmin") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("peach") != std::string::npos && lower.find("peach") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("hollow knight") != std::string::npos && (lower.find("hollow knight") != std::string::npos || lower.find("hollow_knight") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("hades") != std::string::npos && lower.find("hades") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("dead cells") != std::string::npos && (lower.find("dead cells") != std::string::npos || lower.find("dead_cells") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("outer wilds") != std::string::npos && lower.find("outer wilds") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("subnautica") != std::string::npos && lower.find("subnautica") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("alien") != std::string::npos && lower.find("alien") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("metroid dread") != std::string::npos && (lower.find("dread") != std::string::npos || lower.find("metroid") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("tropical freeze") != std::string::npos && (lower.find("tropical freeze") != std::string::npos || lower.find("donkey kong") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("dream land") != std::string::npos && (lower.find("dream land") != std::string::npos || lower.find("kirby") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("captain toad") != std::string::npos && (lower.find("captain toad") != std::string::npos || lower.find("treasure tracker") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("crafted world") != std::string::npos && (lower.find("crafted world") != std::string::npos || lower.find("yoshi") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("strikers") != std::string::npos && (lower.find("strikers") != std::string::npos || lower.find("battle league") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("bomberman") != std::string::npos && (lower.find("bomberman") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("advance wars") != std::string::npos && (lower.find("advance wars") != std::string::npos || lower.find("re-boot") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("warioware") != std::string::npos && (lower.find("warioware") != std::string::npos || lower.find("move it") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("no man's sky") != std::string::npos && (lower.find("no man") != std::string::npos || lower.find("nms") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("portal") != std::string::npos && (lower.find("portal") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("persona 4") != std::string::npos && (lower.find("persona 4") != std::string::npos || lower.find("p4g") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("persona 3") != std::string::npos && (lower.find("persona 3") != std::string::npos || lower.find("p3p") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("tunic") != std::string::npos && (lower.find("tunic") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("dave the diver") != std::string::npos && (lower.find("dave the diver") != std::string::npos || lower.find("dave_the_diver") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("cult of the lamb") != std::string::npos && (lower.find("cult of the lamb") != std::string::npos || lower.find("cult_of_the_lamb") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("unicorn overlord") != std::string::npos && (lower.find("unicorn overlord") != std::string::npos || lower.find("unicorn_overlord") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("skyward sword") != std::string::npos && (lower.find("skyward sword") != std::string::npos || lower.find("skyward_sword") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("bowser's fury") != std::string::npos && (lower.find("bowser") != std::string::npos || lower.find("3d world") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("jamboree") != std::string::npos && lower.find("jamboree") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("brothership") != std::string::npos && (lower.find("brothership") != std::string::npos || lower.find("mario & luigi") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("splatoon") != std::string::npos && lower.find("splatoon") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("origami king") != std::string::npos && (lower.find("origami") != std::string::npos || lower.find("paper mario") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("age of calamity") != std::string::npos && (lower.find("calamity") != std::string::npos || lower.find("hyrule warriors") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("cuphead") != std::string::npos && lower.find("cuphead") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("blind forest") != std::string::npos && (lower.find("blind forest") != std::string::npos || lower.find("ori") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("slay the spire") != std::string::npos && (lower.find("slay the spire") != std::string::npos || lower.find("slay_the_spire") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("into the breach") != std::string::npos && (lower.find("into the breach") != std::string::npos || lower.find("into_the_breach") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("tales of") != std::string::npos && (lower.find("tales") != std::string::npos || lower.find("berseria") != std::string::npos || lower.find("symphonia") != std::string::npos || lower.find("vesperia") != std::string::npos || lower.find("graces") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("astral chain") != std::string::npos && (lower.find("astral chain") != std::string::npos || lower.find("astral_chain") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("three houses") != std::string::npos && (lower.find("three houses") != std::string::npos || lower.find("fe3h") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("smash bros") != std::string::npos && (lower.find("smash") != std::string::npos || lower.find("ssbu") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("dragon quest") != std::string::npos && (lower.find("dragon quest") != std::string::npos || lower.find("dq11") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("nier") != std::string::npos && (lower.find("nier") != std::string::npos || lower.find("automata") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("bayonetta") != std::string::npos && lower.find("bayonetta") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("persona 5") != std::string::npos && (lower.find("persona 5") != std::string::npos || lower.find("p5r") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("live a live") != std::string::npos && (lower.find("live a live") != std::string::npos || lower.find("live_a_live") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("tony hawk") != std::string::npos && (lower.find("tony hawk") != std::string::npos || lower.find("thps") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("nitro-fueled") != std::string::npos && (lower.find("nitro") != std::string::npos || lower.find("ctr") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if ((game_lower.find("mortal kombat 1") != std::string::npos || game_lower.find("mk1") != std::string::npos) && (lower.find("mortal kombat 1") != std::string::npos || lower.find("mk1") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("mortal kombat") != std::string::npos && (lower.find("mortal kombat") != std::string::npos || lower.find("mk11") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("gothic") != std::string::npos && lower.find("gothic") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("prince of persia") != std::string::npos && (lower.find("prince") != std::string::npos || lower.find("lost crown") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("echoes of wisdom") != std::string::npos && (lower.find("echoes") != std::string::npos || lower.find("wisdom") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("luigi's mansion 3") != std::string::npos && (lower.find("mansion 3") != std::string::npos || lower.find("lm3") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("no man's sky") != std::string::npos && (lower.find("no man") != std::string::npos || lower.find("nms") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("batman") != std::string::npos && (lower.find("batman") != std::string::npos || lower.find("arkham") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("kingdom come") != std::string::npos && (lower.find("kingdom come") != std::string::npos || lower.find("kcd") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("tomb raider") != std::string::npos && lower.find("tomb raider") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("borderlands") != std::string::npos && lower.find("borderlands") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("diablo iii") != std::string::npos && (lower.find("diablo iii") != std::string::npos || lower.find("diablo 3") != std::string::npos || lower.find("d3") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("demon slayer") != std::string::npos && (lower.find("demon slayer") != std::string::npos || lower.find("hinokami") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if ((game_lower.find("gta v") != std::string::npos || game_lower.find("gta 5") != std::string::npos) && (lower.find("gta v") != std::string::npos || lower.find("gta 5") != std::string::npos || lower.find("gtav") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if ((game_lower.find("gta") != std::string::npos || game_lower.find("grand theft auto") != std::string::npos) && (lower.find("gta") != std::string::npos || lower.find("grand theft auto") != std::string::npos || lower.find("san andreas") != std::string::npos || lower.find("vice city") != std::string::npos || lower.find("re3") != std::string::npos || lower.find("revc") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("monster hunter") != std::string::npos && (lower.find("monster hunter") != std::string::npos || lower.find("mhr") != std::string::npos || lower.find("sunbreak") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("burnout paradise") != std::string::npos && (lower.find("burnout") != std::string::npos || lower.find("paradise") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("overcooked") != std::string::npos && lower.find("overcooked") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("neighborville") != std::string::npos && (lower.find("neighborville") != std::string::npos || lower.find("pvz") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("risk of rain") != std::string::npos && (lower.find("risk of rain") != std::string::npos || lower.find("ror2") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("minecraft dungeons") != std::string::npos && (lower.find("dungeons") != std::string::npos || lower.find("mcd") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("dragon ball fighterz") != std::string::npos && (lower.find("fighterz") != std::string::npos || lower.find("dbfz") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("xenoverse 2") != std::string::npos && (lower.find("xenoverse") != std::string::npos || lower.find("dbxv2") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("nba 2k") != std::string::npos && lower.find("nba 2k") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("just dance") != std::string::npos && lower.find("just dance") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("51 worldwide") != std::string::npos && (lower.find("clubhouse") != std::string::npos || lower.find("51 worldwide") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("tennis aces") != std::string::npos && (lower.find("tennis aces") != std::string::npos || lower.find("mario tennis") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("super rush") != std::string::npos && (lower.find("super rush") != std::string::npos || lower.find("mario golf") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("shin megami tensei") != std::string::npos && (lower.find("megami tensei") != std::string::npos || lower.find("smt5") != std::string::npos || lower.find("smtv") != std::string::npos || lower.find("vengeance") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("metroid prime") != std::string::npos && (lower.find("metroid prime") != std::string::npos || lower.find("prime remastered") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("crisis core") != std::string::npos && (lower.find("crisis core") != std::string::npos || lower.find("ffvii") != std::string::npos || lower.find("reunion") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("octopath traveler") != std::string::npos && (lower.find("octopath") != std::string::npos || lower.find("octopath2") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("sonic frontiers") != std::string::npos && (lower.find("sonic frontiers") != std::string::npos || lower.find("frontiers") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("tactics ogre") != std::string::npos && (lower.find("tactics ogre") != std::string::npos || lower.find("reborn") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("dragon's dogma") != std::string::npos && (lower.find("dragon's dogma") != std::string::npos || lower.find("dragons dogma") != std::string::npos || lower.find("dark arisen") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("warframe") != std::string::npos && lower.find("warframe") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("brotato") != std::string::npos && lower.find("brotato") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("vampire survivors") != std::string::npos && (lower.find("vampire") != std::string::npos || lower.find("survivors") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("xenoblade") != std::string::npos && (lower.find("xenoblade") != std::string::npos || lower.find("xcde") != std::string::npos || lower.find("xc2") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("mario rpg") != std::string::npos && (lower.find("mario rpg") != std::string::npos || lower.find("super mario rpg") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("showtime") != std::string::npos && (lower.find("showtime") != std::string::npos || lower.find("princess peach") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("luigi's mansion 2") != std::string::npos && (lower.find("mansion 2") != std::string::npos || lower.find("dark moon") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("f-zero") != std::string::npos && (lower.find("f-zero") != std::string::npos || lower.find("fzero") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("3d all-stars") != std::string::npos && (lower.find("all-stars") != std::string::npos || lower.find("all stars") != std::string::npos || lower.find("sunshine") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("arceus") != std::string::npos && (lower.find("arceus") != std::string::npos || lower.find("legends") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("scarlet") != std::string::npos && lower.find("scarlet") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("violet") != std::string::npos && lower.find("violet") != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("devilutionx") != std::string::npos && (lower.find("devilutionx") != std::string::npos || lower.find("diablo") != std::string::npos || lower.find("hellfire") != std::string::npos || lower.find("diabdat") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("gta v") != std::string::npos && (lower.find("gta v") != std::string::npos || lower.find("gta 5") != std::string::npos || lower.find("0100b00b51230000") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("re3-sa") != std::string::npos && (lower.find("re3-sa") != std::string::npos || lower.find("san andreas") != std::string::npos || lower.find("gtasa") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("revc") != std::string::npos && (lower.find("revc") != std::string::npos || lower.find("vice city") != std::string::npos || lower.find("gtavc") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("re3") != std::string::npos && (lower.find("re3") != std::string::npos || lower.find("gta 3") != std::string::npos || lower.find("gta iii") != std::string::npos || lower.find("gta3") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("xash3d") != std::string::npos && (lower.find("xash3d") != std::string::npos || lower.find("half-life") != std::string::npos || lower.find("halflife") != std::string::npos || lower.find("valve.wad") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("gzdoom") != std::string::npos && (lower.find("gzdoom") != std::string::npos || lower.find("prboom") != std::string::npos || lower.find("crispy") != std::string::npos || lower.find("doom.wad") != std::string::npos || lower.find("doom2.wad") != std::string::npos || lower.find("plutonia") != std::string::npos || lower.find("sigil") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("dhewm3") != std::string::npos && (lower.find("dhewm3") != std::string::npos || lower.find("doom 3") != std::string::npos || lower.find("doom3") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("quakespasm") != std::string::npos && (lower.find("quake") != std::string::npos || lower.find("quakespasm") != std::string::npos || lower.find("yamagi") != std::string::npos || lower.find("ioquake3") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("eduke32") != std::string::npos && (lower.find("duke") != std::string::npos || lower.find("duke3d") != std::string::npos || lower.find("voidsw") != std::string::npos || lower.find("shadow warrior") != std::string::npos || lower.find("nblood") != std::string::npos || lower.find("blood.rff") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("iortcw") != std::string::npos && (lower.find("iortcw") != std::string::npos || lower.find("ecwolf") != std::string::npos || lower.find("wolfenstein") != std::string::npos || lower.find("wolf3d") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("fallout-ce") != std::string::npos && (lower.find("fallout") != std::string::npos || lower.find("fallout-ce") != std::string::npos || lower.find("fallout2-ce") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("fheroes2") != std::string::npos && (lower.find("heroes") != std::string::npos || lower.find("fheroes2") != std::string::npos || lower.find("vcmi") != std::string::npos || lower.find("homm") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("max payne") != std::string::npos && (lower.find("max payne") != std::string::npos || lower.find("maxpayne") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("openmw") != std::string::npos && (lower.find("openmw") != std::string::npos || lower.find("morrowind") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("openjk") != std::string::npos && (lower.find("openjk") != std::string::npos || lower.find("jedi outcast") != std::string::npos || lower.find("jedi academy") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("openxray") != std::string::npos && (lower.find("openxray") != std::string::npos || lower.find("stalker") != std::string::npos || lower.find("s.t.a.l.k.e.r") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("rsdk") != std::string::npos && (lower.find("rsdk") != std::string::npos || lower.find("sonic cd") != std::string::npos || lower.find("data.rsdk") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("sm64-nx") != std::string::npos && (lower.find("sm64") != std::string::npos || lower.find("render96") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("ship of harkinian") != std::string::npos && (lower.find("harkinian") != std::string::npos || lower.find("soh") != std::string::npos || lower.find("2s2h") != std::string::npos || lower.find("ocarina of time") != std::string::npos || lower.find("majora") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("nxengine") != std::string::npos && (lower.find("nxengine") != std::string::npos || lower.find("cave story") != std::string::npos || lower.find("am2r") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("corsixth") != std::string::npos && (lower.find("corsixth") != std::string::npos || lower.find("theme hospital") != std::string::npos || lower.find("julius") != std::string::npos || lower.find("augustus") != std::string::npos || lower.find("caesar") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("openra") != std::string::npos && (lower.find("openra") != std::string::npos || lower.find("dune legacy") != std::string::npos || lower.find("command & conquer") != std::string::npos || lower.find("red alert") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("retroarch") != std::string::npos && (lower.find("retroarch") != std::string::npos || lower.find("ppsspp") != std::string::npos || lower.find("flycast") != std::string::npos || lower.find("scummvm") != std::string::npos || lower.find("melonds") != std::string::npos || lower.find("mgba") != std::string::npos || lower.find("duckstation") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
         if (game_lower.find("homebrew utilities") != std::string::npos && (lower.find("nx-shell") != std::string::npos || lower.find("dbi") != std::string::npos || lower.find("goldleaf") != std::string::npos || lower.find("jksv") != std::string::npos || lower.find("checkpoint") != std::string::npos || lower.find("edizon") != std::string::npos || lower.find("awoo") != std::string::npos || lower.find("tesla") != std::string::npos)) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
 
         if (lower.find(game_lower) != std::string::npos) {
-            return &profile;
+            return GetProfile(profile.title_id);
         }
     }
-    return nullptr;
+
+    // Dynamic universal profile for unprofiled game
+    std::filesystem::path fp(name_or_path);
+    std::string clean_name = fp.stem().string();
+    auto brk = clean_name.find('[');
+    if (brk != std::string::npos) clean_name = clean_name.substr(0, brk);
+    auto par = clean_name.find('(');
+    if (par != std::string::npos) clean_name = clean_name.substr(0, par);
+    while (!clean_name.empty() && (clean_name.back() == ' ' || clean_name.back() == '_' || clean_name.back() == '-')) clean_name.pop_back();
+    if (clean_name.empty()) clean_name = "Пользовательская игра";
+
+    u64 pseudo_tid = Common::CityHash64(name_or_path.data(), name_or_path.size());
+    std::lock_guard lock(s_profile_mutex);
+    auto it = s_enriched_cache.find(pseudo_tid);
+    if (it != s_enriched_cache.end()) {
+        return it->second.get();
+    }
+
+    auto universal = std::make_unique<GameFixProfile>(CreateUniversalProfile(pseudo_tid, clean_name));
+    auto* ptr = universal.get();
+    s_enriched_cache[pseudo_tid] = std::move(universal);
+    return ptr;
 }
 
 bool GameFixDatabase::HasProfile(u64 title_id) {
-    return GetProfile(title_id) != nullptr;
+    return title_id != 0;
 }
 
 const std::vector<GameFixProfile>& GameFixDatabase::GetAllProfiles() {
