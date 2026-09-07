@@ -69,20 +69,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.3.9.apk"
-        Caption = "📱 <b>STORM SWITCH 7.3.9 (Mainline Release - Android 14+)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.0.apk"
+        Caption = "📱 <b>STORM SWITCH 7.4.0 (Mainline Release - Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.3.9_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 7.3.9 (Legacy Release - Android 10-13)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.0_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 7.4.0 (Legacy Release - Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.3.9_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 7.3.9 (SDK27 Release - Android 8.1-9)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.0_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 7.4.0 (SDK27 Release - Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.3.9_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 7.3.9 (Windows x64 Release Portable)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.0_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 7.4.0 (Windows x64 Release Portable)</b>"
     },
     @{
         Path = "E:\STORM EDEN 3\Files\STORM_DRIVER_2.0.5.zip"
