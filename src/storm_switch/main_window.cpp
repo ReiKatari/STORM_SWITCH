@@ -1374,21 +1374,22 @@ void MainWindow::InitializeWidgets() {
     UpdateAspectText();
     auto show_aspect_menu = [this]() {
         QMenu context_menu(this);
-        const auto cur_aspect = static_cast<u32>(Settings::values.aspect_ratio.GetValue());
-        const auto combo_map = ConfigurationShared::ComboboxEnumeration(this);
-        const auto it = combo_map->find(Settings::EnumMetadata<Settings::AspectRatio>::Index());
-        if (it != combo_map->end()) {
-            for (const auto& item : it->second) {
-                const u32 val = item.first;
-                const QString name = item.second;
-                auto* act = context_menu.addAction(name, [this, val] {
-                    Settings::values.aspect_ratio.SetValue(static_cast<Settings::AspectRatio>(val));
-                    UpdateAspectText();
-                    ApplyDynamicSettingChange();
-                });
-                act->setCheckable(true);
-                act->setChecked(val == cur_aspect);
-            }
+        const auto cur_aspect = Settings::values.aspect_ratio.GetValue();
+        const std::vector<std::pair<Settings::AspectRatio, QString>> items = {
+            {Settings::AspectRatio::R16_9, QStringLiteral("16:9")},
+            {Settings::AspectRatio::R4_3, QStringLiteral("4:3")},
+            {Settings::AspectRatio::R21_9, QStringLiteral("21:9")},
+            {Settings::AspectRatio::R16_10, QStringLiteral("16:10")},
+            {Settings::AspectRatio::Stretch, tr("Растянуть на весь экран")},
+        };
+        for (const auto& item : items) {
+            auto* act = context_menu.addAction(item.second, [this, item] {
+                Settings::values.aspect_ratio.SetValue(item.first);
+                UpdateAspectText();
+                ApplyDynamicSettingChange();
+            });
+            act->setCheckable(true);
+            act->setChecked(item.first == cur_aspect);
         }
         ShowMenuAtWidget(context_menu, aspect_ratio_button);
     };
@@ -6744,22 +6745,29 @@ void MainWindow::UpdateVolumeUI() {
 
 void MainWindow::UpdateAspectText() {
     if (!aspect_ratio_button) return;
-    QString val_text = QStringLiteral("16:9");
-    const auto combo_map = ConfigurationShared::ComboboxEnumeration(this);
-    const auto it = combo_map->find(Settings::EnumMetadata<Settings::AspectRatio>::Index());
-    if (it != combo_map->end()) {
-        const u32 val = static_cast<u32>(Settings::values.aspect_ratio.GetValue());
-        for (const auto& item : it->second) {
-            if (item.first == val) {
-                val_text = CleanDisplayString(item.second);
-                if (val_text.contains(QStringLiteral("Растянуть")) || val_text.contains(QStringLiteral("Stretch"))) {
-                    val_text = tr("Растянуть");
-                }
-                break;
-            }
-        }
+    QString val_text;
+    switch (Settings::values.aspect_ratio.GetValue()) {
+    case Settings::AspectRatio::R16_9:
+        val_text = QStringLiteral("16:9");
+        break;
+    case Settings::AspectRatio::R4_3:
+        val_text = QStringLiteral("4:3");
+        break;
+    case Settings::AspectRatio::R21_9:
+        val_text = QStringLiteral("21:9");
+        break;
+    case Settings::AspectRatio::R16_10:
+        val_text = QStringLiteral("16:10");
+        break;
+    case Settings::AspectRatio::Stretch:
+        val_text = tr("Растянуть");
+        break;
+    default:
+        val_text = QStringLiteral("16:9");
+        break;
     }
     aspect_ratio_button->setText(tr("СООТНОШЕНИЕ:\n%1").arg(val_text));
+    aspect_ratio_button->setToolTip(tr("Соотношение сторон экрана"));
 }
 
 void MainWindow::UpdateDmaText() {

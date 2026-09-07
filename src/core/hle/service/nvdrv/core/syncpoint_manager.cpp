@@ -142,9 +142,14 @@ void SyncpointManager::FlushSyncpoint(u32 id) {
     }
     const u32 max_val = syncpoint.counter_max.load();
     u32 cur_host_val = host1x.GetSyncpointManager().GetHostSyncpointValue(id);
-    while (cur_host_val < max_val) {
+    while (static_cast<s32>(max_val - cur_host_val) > 0) {
         host1x.GetSyncpointManager().IncrementHost(id);
         cur_host_val = host1x.GetSyncpointManager().GetHostSyncpointValue(id);
+    }
+    u32 cur_guest_val = host1x.GetSyncpointManager().GetGuestSyncpointValue(id);
+    while (static_cast<s32>(max_val - cur_guest_val) > 0) {
+        host1x.GetSyncpointManager().IncrementGuest(id);
+        cur_guest_val = host1x.GetSyncpointManager().GetGuestSyncpointValue(id);
     }
     syncpoint.counter_min.store(max_val);
 }
