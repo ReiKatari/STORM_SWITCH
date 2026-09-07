@@ -364,9 +364,7 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     scheduler.Flush(*frame->render_ready);
 
     present_manager.Present(frame);
-    if (Settings::values.frame_gen.GetValue()) {
-        scheduler.DispatchWork();
-    }
+    scheduler.DispatchWork();
 
     gpu.RendererFrameEndNotify();
     rasterizer.TickFrame();
