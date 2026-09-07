@@ -3313,6 +3313,184 @@ void MainWindow::OnApplyAutoCorrection() {
         return;
     }
 
+    QDialog corrDialog(this);
+    corrDialog.setWindowTitle(tr("🛠️ Авто-коррекция графического конвейера"));
+    corrDialog.setWindowFlags(corrDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    corrDialog.setMinimumWidth(640);
+    corrDialog.resize(680, 520);
+    corrDialog.setStyleSheet(QStringLiteral(
+        "QDialog {"
+        "    background: #0B111A;"
+        "    color: #F0F6FC;"
+        "    border: 1px solid rgba(255, 145, 0, 0.45);"
+        "    border-radius: 10px;"
+        "}"
+        "QLabel { color: #E2E8F0; font-family: 'Segoe UI', sans-serif; }"
+    ));
+
+    auto* dlg_layout = new QVBoxLayout(&corrDialog);
+    dlg_layout->setContentsMargins(20, 18, 20, 18);
+    dlg_layout->setSpacing(12);
+
+    // Header Card
+    auto* headerCard = new QFrame(&corrDialog);
+    headerCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(255, 145, 0, 0.15), stop:1 rgba(255, 61, 0, 0.05));"
+        "    border: 1px solid rgba(255, 145, 0, 0.35);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* headerLayout = new QHBoxLayout(headerCard);
+    headerLayout->setContentsMargins(14, 10, 14, 10);
+    headerLayout->setSpacing(12);
+
+    auto* iconLabel = new QLabel(QStringLiteral("🛠️"), headerCard);
+    iconLabel->setStyleSheet(QStringLiteral("font-size: 26px; background: transparent; border: none;"));
+    headerLayout->addWidget(iconLabel);
+
+    auto* titleLayout = new QVBoxLayout();
+    auto* titleLabel = new QLabel(tr("<b>Авто-коррекция графического конвейера (в реальном времени)</b>"), headerCard);
+    titleLabel->setStyleSheet(QStringLiteral("font-size: 14px; color: #FFFFFF; background: transparent; border: none;"));
+    auto* subtitleLabel = new QLabel(m_auto_correction_applied ?
+        tr("Текущее состояние: <b style='color: #00E676;'>Активна (конвейер оптимизирован)</b>") :
+        tr("Текущее состояние: <b style='color: #FFAB40;'>Рекомендована оптимизация при падении FPS</b>"), headerCard);
+    subtitleLabel->setStyleSheet(QStringLiteral("font-size: 12px; color: #94A3B8; background: transparent; border: none;"));
+    titleLayout->addWidget(titleLabel);
+    titleLayout->addWidget(subtitleLabel);
+    headerLayout->addLayout(titleLayout, 1);
+    dlg_layout->addWidget(headerCard);
+
+    // Parameters Card with Technical Descriptions
+    auto* paramsCard = new QFrame(&corrDialog);
+    paramsCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(15, 23, 42, 0.70);"
+        "    border: 1px solid rgba(255, 145, 0, 0.25);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* pLayout = new QVBoxLayout(paramsCard);
+    pLayout->setContentsMargins(14, 12, 14, 12);
+    pLayout->setSpacing(6);
+
+    auto* pTitle = new QLabel(tr("🛠️ <b>Параметры адаптивной коррекции конвейера:</b>"), paramsCard);
+    pTitle->setStyleSheet(QStringLiteral("color: #FFAB40; font-size: 12.5px; font-weight: bold; background: transparent; border: none;"));
+    pLayout->addWidget(pTitle);
+
+    QStringList corr_items = {
+        tr("✓ <b>Разрешение рендеринга</b>: 0.75X / 0.5X (динамическое снижение разрешения разгружает ГПУ и шейдерные блоки)"),
+        tr("✓ <b>Точность ГПУ</b>: Быстрый (Low) (высокая скорость рендеринга без задержек видеокарты)"),
+        tr("✓ <b>Пересжатие текстур ASTC</b>: BC3 (аппаратное пересжатие с альфа-каналом снижает нагрузку на видеопамять)"),
+        tr("✓ <b>Декодирование ASTC</b>: ЦП (асинхронное декодирование силами процессора разгружает видеочип)"),
+        tr("✓ <b>Асинхронная компиляция шейдеров</b>: Включено (фоновая сборка шейдеров исключает внутриигровые микрофризы)"),
+        tr("✓ <b>Асинхронный вывод</b>: Включено (устраняет дедлоки потока Vulkan и лаг кадрового буфера)"),
+        tr("✓ <b>Масштабирование</b>: AMD FSR (апскейлинг с резкостью 85% сохраняет высокую четкость картинки)"),
+        tr("✓ <b>Энергоэффективный Frame Pacing</b>: Включено (сглаживание микролагов и выравнивание времени кадра)")
+    };
+
+    QString p_text;
+    for (const auto& item : corr_items) {
+        p_text += QStringLiteral("%1<br>").arg(item);
+    }
+    auto* pLabel = new QLabel(p_text, paramsCard);
+    pLabel->setTextFormat(Qt::RichText);
+    pLabel->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.45; background: transparent; border: none;"));
+    pLayout->addWidget(pLabel);
+    dlg_layout->addWidget(paramsCard);
+
+    // Prompt Label
+    auto* promptLabel = new QLabel(m_auto_correction_applied ?
+        tr("Восстановить исходные параметры графического конвейера этой игровой сессии?") :
+        tr("Применить авто-коррекцию к графическому конвейеру текущей игры?"), &corrDialog);
+    promptLabel->setAlignment(Qt::AlignCenter);
+    promptLabel->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 12.5px; color: #F8FAFC; margin-top: 4px; background: transparent; border: none;"));
+    dlg_layout->addWidget(promptLabel);
+
+    // Buttons Layout
+    auto* btn_layout = new QHBoxLayout();
+    btn_layout->setSpacing(12);
+    btn_layout->setAlignment(Qt::AlignCenter);
+
+    QPushButton* actionBtn = nullptr;
+    if (m_auto_correction_applied) {
+        actionBtn = new QPushButton(tr("🔄 Восстановить исходные параметры"), &corrDialog);
+        actionBtn->setStyleSheet(QStringLiteral(
+            "QPushButton {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
+            "    color: #050B14;"
+            "    font-weight: bold;"
+            "    font-size: 12.5px;"
+            "    padding: 8px 18px;"
+            "    border-radius: 6px;"
+            "    border: 1px solid #00F0FF;"
+            "}"
+            "QPushButton:hover {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #00D2FF);"
+            "}"
+            "QPushButton:pressed {"
+            "    background: #0284C7;"
+            "}"
+        ));
+    } else {
+        actionBtn = new QPushButton(tr("🛠️ Применить авто-коррекцию"), &corrDialog);
+        actionBtn->setStyleSheet(QStringLiteral(
+            "QPushButton {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FF9100, stop:1 #FF3D00);"
+            "    color: #FFFFFF;"
+            "    font-weight: bold;"
+            "    font-size: 12.5px;"
+            "    padding: 8px 18px;"
+            "    border-radius: 6px;"
+            "    border: 1px solid #FFAB40;"
+            "}"
+            "QPushButton:hover {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FFA726, stop:1 #FF5722);"
+            "    border-color: #FFD180;"
+            "}"
+            "QPushButton:pressed {"
+            "    background: #D84315;"
+            "}"
+        ));
+    }
+
+    auto* cancelBtn = new QPushButton(m_auto_correction_applied ? tr("Закрыть") : tr("Отмена"), &corrDialog);
+    cancelBtn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: rgba(30, 41, 59, 0.75);"
+        "    color: #CBD5E1;"
+        "    font-size: 12.5px;"
+        "    padding: 8px 16px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid rgba(148, 163, 184, 0.25);"
+        "}"
+        "QPushButton:hover {"
+        "    background: rgba(51, 65, 85, 0.9);"
+        "    border: 1px solid rgba(148, 163, 184, 0.45);"
+        "    color: #FFFFFF;"
+        "}"
+        "QPushButton:pressed {"
+        "    background: rgba(15, 23, 42, 0.9);"
+        "}"
+    ));
+
+    btn_layout->addWidget(actionBtn);
+    btn_layout->addWidget(cancelBtn);
+    dlg_layout->addLayout(btn_layout);
+
+    bool perform_action = false;
+    connect(actionBtn, &QPushButton::clicked, &corrDialog, [&corrDialog, &perform_action] {
+        perform_action = true;
+        corrDialog.accept();
+    });
+    connect(cancelBtn, &QPushButton::clicked, &corrDialog, &QDialog::reject);
+
+    corrDialog.exec();
+
+    if (!perform_action) {
+        return;
+    }
+
     if (m_auto_correction_applied) {
         RestoreSessionSettings();
         m_auto_correction_applied = false;
@@ -3556,14 +3734,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     issueLayout->addWidget(issueText);
     scrollLayout->addWidget(issueCard);
 
-    // 3. Recommended Fixes Card (Cyan/Neon Volumetric Card with 3 distinct categories)
+    // 3. Recommended Fixes Card (Cyan/Neon Volumetric Card with Auto-Fix parameters only)
     QString fixes_formatted = QString::fromStdString(profile->fixes_ru);
-    fixes_formatted.replace(QStringLiteral("⚡ <b>Авто-настройки (производительность):</b>"),
-        QStringLiteral("<div style='color: #38BDF8; font-weight: bold; font-size: 13px; margin-top: 4px; margin-bottom: 4px;'>⚡ Авто-настройки (производительность):</div>"));
-    fixes_formatted.replace(QStringLiteral("🛠️ <b>Авто-коррекция (графический конвейер):</b>"),
-        QStringLiteral("<div style='color: #00D2FF; font-weight: bold; font-size: 13px; margin-top: 10px; margin-bottom: 4px;'>🛠️ Авто-коррекция (графический конвейер):</div>"));
-    fixes_formatted.replace(QStringLiteral("🛡️ <b>Авто-исправление (стабильность и сеть):</b>"),
-        QStringLiteral("<div style='color: #34D399; font-weight: bold; font-size: 13px; margin-top: 10px; margin-bottom: 4px;'>🛡️ Авто-исправление (стабильность и сеть):</div>"));
     fixes_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
 
     auto* fixCard = new QFrame(scrollWidget);
@@ -3578,7 +3750,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     fixLayout->setContentsMargins(14, 10, 14, 10);
     fixLayout->setSpacing(6);
 
-    auto* fixHeader = new QLabel(QStringLiteral("🛡️ <b>Авто-исправление (параметры совместимости):</b>"), fixCard);
+    auto* fixHeader = new QLabel(QStringLiteral("🛡️ <b>Параметры авто-исправления (совместимость и стабильность):</b>"), fixCard);
     fixHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 13px; background: transparent; border: none;"));
     fixLayout->addWidget(fixHeader);
 

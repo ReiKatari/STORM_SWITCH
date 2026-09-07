@@ -3577,116 +3577,6 @@ static std::string GetSetting(const std::unordered_map<std::string, std::string>
 static std::string BuildFixesRu(const std::unordered_map<std::string, std::string>& settings) {
     std::string out;
 
-    // 1. Авто-настройки (производительность)
-    out += "⚡ <b>Авто-настройки (производительность):</b>\n";
-
-    const auto cpu_acc = GetSetting(settings, "Cpu\\cpu_accuracy", "0");
-    if (cpu_acc == "1") {
-        out += "✓ Точность ЦП: Точный (повышенная точность инструкций для исключения рассинхронизации)\n";
-    } else {
-        out += "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n";
-    }
-
-    const auto gpu_acc = GetSetting(settings, "Renderer\\gpu_accuracy", "0");
-    if (gpu_acc == "1") {
-        out += "✓ Точность ГПУ: Высокая (повышенная точность шейдеров FP16 для устранения графических артефактов)\n";
-    } else if (gpu_acc == "2") {
-        out += "✓ Точность ГПУ: Экстремальная (максимальная точность графических расчетов)\n";
-    } else {
-        out += "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n";
-    }
-
-    const auto fastmem = GetSetting(settings, "Cpu\\cpuopt_fastmem", "true");
-    if (fastmem == "false" || fastmem == "0") {
-        out += "✓ Эмуляция Host MMU (fastmem): Отключено (программный контроль адресного пространства)\n";
-    } else {
-        out += "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильной кадровой частоты)\n";
-    }
-
-    const auto fast_gpu = GetSetting(settings, "Renderer\\use_fast_gpu_time", "true");
-    if (fast_gpu == "false" || fast_gpu == "0") {
-        out += "✓ Тайминги ГПУ: Стандартный (строгое соответствие оригинальной частоте кадров Switch)\n";
-    } else {
-        out += "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для максимальной плавности)\n";
-    }
-
-    const auto dma = GetSetting(settings, "Renderer\\dma_accuracy", "0");
-    if (dma == "1") {
-        out += "✓ Точность DMA: Точная (побайтная эмуляция каналов DMA для специфических игр)\n";
-    } else {
-        out += "✓ Точность DMA: Быстрая (мгновенная прямая передача данных без задержек шины)\n";
-    }
-
-    out += "\n";
-
-    // 2. Авто-коррекция (графический конвейер)
-    out += "🛠️ <b>Авто-коррекция (графический конвейер):</b>\n";
-
-    const auto async_shaders = GetSetting(settings, "Renderer\\use_asynchronous_shaders", "true");
-    if (async_shaders == "false" || async_shaders == "0") {
-        out += "✓ Асинхронная компиляция шейдеров: Отключено (синхронная загрузка конвейеров для предотвращения сбоев старта)\n";
-    } else {
-        out += "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n";
-    }
-
-    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "1");
-    if (nvdec == "2") {
-        out += "✓ Декодирование видео NVDEC: ГПУ (аппаратное ускорение видеопотока видеокартой)\n";
-    } else if (nvdec == "0") {
-        out += "✓ Декодирование видео NVDEC: Отключено (пропуск видеопотоков)\n";
-    } else {
-        out += "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание видеороликов)\n";
-    }
-
-    const auto fences = GetSetting(settings, "Renderer\\gpu_fence_behavior", "0");
-    if (fences == "1") {
-        out += "✓ Барьеры ГПУ: Ослабленные (повышенная пропускная способность конвейера)\n";
-    } else if (fences == "2") {
-        out += "✓ Барьеры ГПУ: Строгие (гарантированная изоляция проходов рендеринга)\n";
-    } else {
-        out += "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n";
-    }
-
-    const auto async_pres = GetSetting(settings, "Renderer\\async_presentation", "false");
-    if (async_pres == "true" || async_pres == "1") {
-        out += "✓ Асинхронный вывод: Включено (раздельный поток кадровой презентации для снижения инпут-лага)\n";
-    } else {
-        out += "✓ Асинхронный вывод: Отключено (устраняет дедлок потока Vulkan и зацикливание видеоряда меню)\n";
-    }
-
-    const auto sync_mem = GetSetting(settings, "Renderer\\sync_memory_operations", "false");
-    if (sync_mem == "true" || sync_mem == "1") {
-        out += "✓ Синхронизация операций памяти: Включено (полная синхронизация модификаций текстур в видеопамяти)\n";
-    } else {
-        out += "✓ Синхронизация операций памяти: Отключено (устраняет задержки ожидания копирования текстурных буферов)\n";
-    }
-
-    const auto react_flush = GetSetting(settings, "Renderer\\use_reactive_flushing", "false");
-    if (react_flush == "true" || react_flush == "1") {
-        out += "✓ Реактивный сброс памяти: Включено (своевременный сброс модифицированных видеобуферов)\n";
-    } else {
-        out += "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей и артефакты)\n";
-    }
-
-    const auto astc = GetSetting(settings, "Renderer\\astc_recompression", "0");
-    if (astc == "1") {
-        out += "✓ Пересжатие текстур ASTC: BC1 (базовое сжатие текстур для экономии видеопамяти)\n";
-    } else if (astc == "2") {
-        out += "✓ Пересжатие текстур ASTC: BC3 (высококачественное сжатие текстур с альфа-каналом)\n";
-    } else {
-        out += "✓ Пересжатие текстур ASTC: Без сжатия (устраняет графические артефакты и пропадание текстур)\n";
-    }
-
-    const auto loops = GetSetting(settings, "Renderer\\barrier_feedback_loops", "false");
-    if (loops == "true" || loops == "1") {
-        out += "✓ Обратная связь барьеров: Включено (устранение темных ореолов и сбоев постобработки)\n";
-    }
-
-    out += "\n";
-
-    // 3. Авто-исправление (стабильность и сеть)
-    out += "🛡️ <b>Авто-исправление (стабильность и сеть):</b>\n";
-
     const auto ign_aborts = GetSetting(settings, "Cpu\\cpuopt_ignore_memory_aborts", "true");
     if (ign_aborts == "false" || ign_aborts == "0") {
         out += "✓ Игнорировать прерывания памяти: Отключено (стандартная обработка исключений памяти)\n";
@@ -3703,11 +3593,60 @@ static std::string BuildFixesRu(const std::unordered_map<std::string, std::strin
 
     const auto mem_layout = GetSetting(settings, "System\\memory_layout_mode", GetSetting(settings, "Core\\memory_layout_mode", "0"));
     if (mem_layout == "2") {
-        out += "✓ Память DRAM: Экстремальная 8 ГБ (критично для стабильности и предотвращения нехватки памяти движка)";
+        out += "✓ Память DRAM: Экстремальная 8 ГБ (критично для стабильности и предотвращения вылетов Out of Memory движка)\n";
     } else if (mem_layout == "1") {
-        out += "✓ Память DRAM: Расширенная 6 ГБ (устраняет вылеты при длительной игре и утечках памяти)";
+        out += "✓ Память DRAM: Расширенная 6 ГБ (устраняет вылеты при длительной игре и утечках памяти)\n";
     } else {
-        out += "✓ Память DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch без лишнего расхода ОЗУ)";
+        out += "✓ Память DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch без лишнего расхода ОЗУ)\n";
+    }
+
+    // Specific game compatibility overrides
+    const auto loops = GetSetting(settings, "Renderer\\barrier_feedback_loops", "");
+    if (loops == "true" || loops == "1") {
+        out += "✓ Обратная связь барьеров ГПУ: Включено (устранение темных ореолов и графических сбоев постобработки в игре)\n";
+    }
+
+    const auto gpu_acc = GetSetting(settings, "Renderer\\gpu_accuracy", "");
+    if (gpu_acc == "1") {
+        out += "✓ Точность ГПУ: Высокая (устранение визуальных дефектов, полос и искажения геометрии в данной игре)\n";
+    } else if (gpu_acc == "2") {
+        out += "✓ Точность ГПУ: Экстремальная (максимальная точность расчетов для устранения сбоев рендеринга)\n";
+    }
+
+    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "");
+    if (nvdec == "1") {
+        out += "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание внутриигровых видеороликов)\n";
+    } else if (nvdec == "0") {
+        out += "✓ Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n";
+    }
+
+    const auto cpu_acc = GetSetting(settings, "Cpu\\cpu_accuracy", "");
+    if (cpu_acc == "1") {
+        out += "✓ Точность ЦП: Точный (повышенная точность инструкций для исключения рассинхронизации логики)\n";
+    }
+
+    const auto fastmem = GetSetting(settings, "Cpu\\cpuopt_fastmem", "");
+    if (fastmem == "false" || fastmem == "0") {
+        out += "✓ Эмуляция Host MMU (fastmem): Отключено (программный контроль памяти для устранения падений в игре)\n";
+    }
+
+    const auto async_shaders = GetSetting(settings, "Renderer\\use_asynchronous_shaders", "");
+    if (async_shaders == "false" || async_shaders == "0") {
+        out += "✓ Асинхронная компиляция шейдеров: Отключено (синхронная сборка во избежание сбоев старта игры)\n";
+    }
+
+    const auto sync_mem = GetSetting(settings, "Renderer\\sync_memory_operations", "");
+    if (sync_mem == "true" || sync_mem == "1") {
+        out += "✓ Синхронизация операций памяти: Включено (полная синхронизация модификаций текстур в видеопамяти)\n";
+    }
+
+    const auto react_flush = GetSetting(settings, "Renderer\\use_reactive_flushing", "");
+    if (react_flush == "true" || react_flush == "1") {
+        out += "✓ Реактивный сброс памяти: Включено (своевременный сброс модифицированных видеобуферов)\n";
+    }
+
+    while (!out.empty() && (out.back() == '\n' || out.back() == '\r')) {
+        out.pop_back();
     }
 
     return out;
@@ -3715,116 +3654,6 @@ static std::string BuildFixesRu(const std::unordered_map<std::string, std::strin
 
 static std::string BuildFixesEn(const std::unordered_map<std::string, std::string>& settings) {
     std::string out;
-
-    // 1. Auto Settings (Performance)
-    out += "⚡ <b>Auto Settings (Performance):</b>\n";
-
-    const auto cpu_acc = GetSetting(settings, "Cpu\\cpu_accuracy", "0");
-    if (cpu_acc == "1") {
-        out += "✓ CPU Accuracy: Accurate (enhanced instruction precision to prevent desync)\n";
-    } else {
-        out += "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n";
-    }
-
-    const auto gpu_acc = GetSetting(settings, "Renderer\\gpu_accuracy", "0");
-    if (gpu_acc == "1") {
-        out += "✓ GPU Accuracy: High (FP16 shader precision fixing visual artifacts)\n";
-    } else if (gpu_acc == "2") {
-        out += "✓ GPU Accuracy: Extreme (maximum graphical precision)\n";
-    } else {
-        out += "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n";
-    }
-
-    const auto fastmem = GetSetting(settings, "Cpu\\cpuopt_fastmem", "true");
-    if (fastmem == "false" || fastmem == "0") {
-        out += "✓ Host MMU Emulation (Fastmem): Disabled (software address space validation)\n";
-    } else {
-        out += "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable framerate)\n";
-    }
-
-    const auto fast_gpu = GetSetting(settings, "Renderer\\use_fast_gpu_time", "true");
-    if (fast_gpu == "false" || fast_gpu == "0") {
-        out += "✓ GPU Timings: Normal (strict original Switch framerate timing)\n";
-    } else {
-        out += "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)\n";
-    }
-
-    const auto dma = GetSetting(settings, "Renderer\\dma_accuracy", "0");
-    if (dma == "1") {
-        out += "✓ DMA Accuracy: Accurate (byte-accurate DMA channels for timing-sensitive games)\n";
-    } else {
-        out += "✓ DMA Accuracy: Fast (instant direct memory transfer without bus stalls)\n";
-    }
-
-    out += "\n";
-
-    // 2. Auto Correction (Graphics Pipeline)
-    out += "🛠️ <b>Auto Correction (Graphics Pipeline):</b>\n";
-
-    const auto async_shaders = GetSetting(settings, "Renderer\\use_asynchronous_shaders", "true");
-    if (async_shaders == "false" || async_shaders == "0") {
-        out += "✓ Asynchronous Shaders: Disabled (synchronous pipeline compilation preventing boot crashes)\n";
-    } else {
-        out += "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n";
-    }
-
-    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "1");
-    if (nvdec == "2") {
-        out += "✓ NVDEC Video Emulation: GPU (hardware video acceleration by graphics card)\n";
-    } else if (nvdec == "0") {
-        out += "✓ NVDEC Video Emulation: Disabled (video stream playback bypassed)\n";
-    } else {
-        out += "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents video freezes)\n";
-    }
-
-    const auto fences = GetSetting(settings, "Renderer\\gpu_fence_behavior", "0");
-    if (fences == "1") {
-        out += "✓ GPU Fences: Relaxed (higher pipeline throughput)\n";
-    } else if (fences == "2") {
-        out += "✓ GPU Fences: Strict (guaranteed isolation between render passes)\n";
-    } else {
-        out += "✓ GPU Fences: Default (standard command order without pipeline stalls)\n";
-    }
-
-    const auto async_pres = GetSetting(settings, "Renderer\\async_presentation", "false");
-    if (async_pres == "true" || async_pres == "1") {
-        out += "✓ Async Presentation: Enabled (decoupled presentation thread for lower input latency)\n";
-    } else {
-        out += "✓ Async Presentation: Disabled (prevents Vulkan presentation thread deadlock and loop)\n";
-    }
-
-    const auto sync_mem = GetSetting(settings, "Renderer\\sync_memory_operations", "false");
-    if (sync_mem == "true" || sync_mem == "1") {
-        out += "✓ Sync Memory Operations: Enabled (full synchronization of GPU memory modifications)\n";
-    } else {
-        out += "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n";
-    }
-
-    const auto react_flush = GetSetting(settings, "Renderer\\use_reactive_flushing", "false");
-    if (react_flush == "true" || react_flush == "1") {
-        out += "✓ Reactive Flushing: Enabled (prompt flushing of modified render targets)\n";
-    } else {
-        out += "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n";
-    }
-
-    const auto astc = GetSetting(settings, "Renderer\\astc_recompression", "0");
-    if (astc == "1") {
-        out += "✓ ASTC Recompression: BC1 (basic texture recompression to conserve VRAM)\n";
-    } else if (astc == "2") {
-        out += "✓ ASTC Recompression: BC3 (high quality texture recompression with alpha channel)\n";
-    } else {
-        out += "✓ ASTC Recompression: Uncompressed (eliminates texture glitches and missing assets)\n";
-    }
-
-    const auto loops = GetSetting(settings, "Renderer\\barrier_feedback_loops", "false");
-    if (loops == "true" || loops == "1") {
-        out += "✓ Barrier Feedback Loops: Enabled (fixes dark halos and post-processing bugs)\n";
-    }
-
-    out += "\n";
-
-    // 3. Auto Fix (Stability and Network)
-    out += "🛡️ <b>Auto Fix (Stability and Network):</b>\n";
 
     const auto ign_aborts = GetSetting(settings, "Cpu\\cpuopt_ignore_memory_aborts", "true");
     if (ign_aborts == "false" || ign_aborts == "0") {
@@ -3842,11 +3671,59 @@ static std::string BuildFixesEn(const std::unordered_map<std::string, std::strin
 
     const auto mem_layout = GetSetting(settings, "System\\memory_layout_mode", GetSetting(settings, "Core\\memory_layout_mode", "0"));
     if (mem_layout == "2") {
-        out += "✓ DRAM Memory Layout: 8GB Extreme (critical to prevent out-of-memory engine crashes)";
+        out += "✓ DRAM Memory Layout: 8GB Extreme (critical to prevent out-of-memory engine crashes)\n";
     } else if (mem_layout == "1") {
-        out += "✓ DRAM Memory Layout: 6GB Expanded (prevents crashes during prolonged gameplay and memory leaks)";
+        out += "✓ DRAM Memory Layout: 6GB Expanded (prevents crashes during prolonged gameplay and memory leaks)\n";
     } else {
-        out += "✓ DRAM Memory Layout: 4GB Standard (original Switch console memory layout)";
+        out += "✓ DRAM Memory Layout: 4GB Standard (original Switch console memory layout without extra RAM overhead)\n";
+    }
+
+    const auto loops = GetSetting(settings, "Renderer\\barrier_feedback_loops", "");
+    if (loops == "true" || loops == "1") {
+        out += "✓ GPU Barrier Feedback Loops: Enabled (fixes dark halos and post-processing visual bugs)\n";
+    }
+
+    const auto gpu_acc = GetSetting(settings, "Renderer\\gpu_accuracy", "");
+    if (gpu_acc == "1") {
+        out += "✓ GPU Accuracy: High (eliminates visual defects and geometry artifacts in this game)\n";
+    } else if (gpu_acc == "2") {
+        out += "✓ GPU Accuracy: Extreme (maximum calculation precision to eliminate rendering glitches)\n";
+    }
+
+    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "");
+    if (nvdec == "1") {
+        out += "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents in-game video cutscenes from freezing)\n";
+    } else if (nvdec == "0") {
+        out += "✓ NVDEC Video Emulation: Disabled (video stream playback bypassed)\n";
+    }
+
+    const auto cpu_acc = GetSetting(settings, "Cpu\\cpu_accuracy", "");
+    if (cpu_acc == "1") {
+        out += "✓ CPU Accuracy: Accurate (enhanced instruction precision to prevent logic desynchronization)\n";
+    }
+
+    const auto fastmem = GetSetting(settings, "Cpu\\cpuopt_fastmem", "");
+    if (fastmem == "false" || fastmem == "0") {
+        out += "✓ Host MMU Emulation (Fastmem): Disabled (software memory control to eliminate crashes)\n";
+    }
+
+    const auto async_shaders = GetSetting(settings, "Renderer\\use_asynchronous_shaders", "");
+    if (async_shaders == "false" || async_shaders == "0") {
+        out += "✓ Asynchronous Shaders: Disabled (synchronous pipeline compilation preventing boot crashes)\n";
+    }
+
+    const auto sync_mem = GetSetting(settings, "Renderer\\sync_memory_operations", "");
+    if (sync_mem == "true" || sync_mem == "1") {
+        out += "✓ Sync Memory Operations: Enabled (full synchronization of GPU memory modifications)\n";
+    }
+
+    const auto react_flush = GetSetting(settings, "Renderer\\use_reactive_flushing", "");
+    if (react_flush == "true" || react_flush == "1") {
+        out += "✓ Reactive Flushing: Enabled (prompt flushing of modified render targets)\n";
+    }
+
+    while (!out.empty() && (out.back() == '\n' || out.back() == '\r')) {
+        out.pop_back();
     }
 
     return out;

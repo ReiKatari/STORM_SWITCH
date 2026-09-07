@@ -441,14 +441,14 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
         Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
 
-        applied_list << tr("Разрешение рендеринга: 2X (1440p/2160p)");
-        applied_list << tr("Точность ГПУ: Высокая");
-        applied_list << tr("Сжатие ASTC: Без сжатия");
-        applied_list << tr("Декодирование ASTC: ГПУ");
-        applied_list << tr("Сглаживание: SMAA");
-        applied_list << tr("Масштабирование: AMD FSR (Резкость: 85%)");
-        applied_list << tr("Анизотропная фильтрация: 16x");
-        applied_list << tr("Режим консоли: В док-станции");
+        applied_list << tr("Разрешение рендеринга: 2X (1440p/2160p) (максимальная детализация и четкость геометрии для мощных видеокарт)");
+        applied_list << tr("Точность ГПУ: Высокая (повышенная точность FP16 для исключения визуальных артефактов)");
+        applied_list << tr("Пересжатие текстур ASTC: Без сжатия (оригинальное бескомпромиссное качество текстур)");
+        applied_list << tr("Декодирование ASTC: ГПУ (аппаратная распаковка видеокартой для минимальной задержки)");
+        applied_list << tr("Сглаживание: SMAA (высококачественное субпиксельное сглаживание без замыливания)");
+        applied_list << tr("Масштабирование: AMD FSR (пространственный апскейлинг с резкостью 85% для идеальной картинки)");
+        applied_list << tr("Анизотропная фильтрация: 16x (максимальная четкость текстур на наклонных поверхностях)");
+        applied_list << tr("Режим консоли: В док-станции (максимальные тактовые частоты ЦП/ГПУ и повышенное разрешение)");
     } else if (tier == ProfileTier::Eco) {
         tier_name = tr("Энергосбережение и портативность (Eco)");
 
@@ -470,13 +470,15 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
         Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Handheld);
 
-        applied_list << (on_battery ? tr("Разрешение рендеринга: 0.5X (360p/540p)") : tr("Разрешение рендеринга: 0.75X (540p/810p)"));
-        applied_list << tr("Точность ГПУ: Быстрая (Low)");
-        applied_list << tr("Сжатие ASTC: BC3 (Среднее качество)");
-        applied_list << tr("Декодирование ASTC: ЦП");
-        applied_list << tr("Эко-выравнивание кадров: Включено");
-        applied_list << tr("Масштабирование: Билинейное");
-        applied_list << tr("Режим консоли: Портативный (Handheld)");
+        applied_list << (on_battery ?
+            tr("Разрешение рендеринга: 0.5X (360p/540p) (снижение разрешения для экономии заряда батареи)") :
+            tr("Разрешение рендеринга: 0.75X (540p/810p) (пониженное разрешение для слабых ГПУ и снижения нагрева)"));
+        applied_list << tr("Точность ГПУ: Быстрая (Low) (высокая скорость рендеринга и максимальная разгрузка видеокарты)");
+        applied_list << tr("Пересжатие текстур ASTC: BC3 (аппаратное пересжатие с альфа-каналом снижает расход видеопамяти)");
+        applied_list << tr("Декодирование ASTC: ЦП (декодирование силами процессора для разгрузки видеочипа)");
+        applied_list << tr("Эко-выравнивание кадров: Включено (устранение микролагов и холостой нагрузки ЦП)");
+        applied_list << tr("Масштабирование: Билинейное (минимальная нагрузка на вычислительные блоки ГПУ)");
+        applied_list << tr("Режим консоли: В портативном режиме (сниженное энергопотребление и продление работы от батареи)");
     } else {
         tier_name = tr("Сбалансированный (Balanced 60 FPS)");
 
@@ -499,20 +501,21 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
         Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
 
-        applied_list << tr("Разрешение рендеринга: 1X (720p/1080p)");
-        applied_list << tr("Точность ГПУ: Быстрая (Low)");
-        applied_list << tr("Сжатие ASTC: Без сжатия");
-        applied_list << tr("Декодирование ASTC: ЦП Асинхронно");
-        applied_list << tr("Сглаживание: FXAA");
-        applied_list << tr("Масштабирование: AMD FSR (Резкость: 80%)");
-        applied_list << tr("Анизотропная фильтрация: Автоматически");
-        applied_list << tr("Режим консоли: В док-станции");
+        applied_list << tr("Разрешение рендеринга: 1X (720p/1080p) (нативное разрешение Switch для оптимального баланса скорости и качества)");
+        applied_list << tr("Точность ГПУ: Быстрая (Low) (высокая скорость рендеринга без избыточной нагрузки на видеокарту)");
+        applied_list << tr("Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур без артефактов)");
+        applied_list << tr("Декодирование ASTC: ЦП асинхронно (фоновое декодирование процессором без задержек ГПУ)");
+        applied_list << tr("Сглаживание: FXAA (быстрое сглаживание краев геометрии с минимальным расходом ресурсов)");
+        applied_list << tr("Масштабирование: AMD FSR (пространственный апскейлинг с резкостью 80% для четкости)");
+        applied_list << tr("Анизотропная фильтрация: Автоматически (адаптивная фильтрация текстур)");
+        applied_list << tr("Режим консоли: В док-станции (стандартный режим полной производительности)");
     }
 
-    applied_list << tr("Асинхронная компиляция шейдеров: Включено");
-    applied_list << tr("Асинхронный вывод: Включено");
-    applied_list << tr("Быстрая память (Fastmem): Включено");
-    applied_list << tr("Игнорирование прерываний памяти: Включено");
+    applied_list << tr("Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для максимального FPS)");
+    applied_list << tr("Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)");
+    applied_list << tr("Асинхронная компиляция шейдеров: Включено (фоновая сборка конвейеров исключает внутриигровые микрофризы)");
+    applied_list << tr("Асинхронный вывод: Включено (устраняет дедлоки потока Vulkan и зацикливание видеоряда)");
+    applied_list << tr("Игнорирование прерываний памяти: Включено (защита от падений и аварийных вылетов при обращениях за границы буфера)");
 
     ReloadAllTabs();
 
@@ -616,7 +619,7 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
     sLayout->setContentsMargins(12, 10, 12, 10);
     sLayout->setSpacing(4);
 
-    auto* sTitle = new QLabel(tr("⚙️ <b>Применённые параметры (ОБЩИЕ для всех игр):</b>"), settingsCard);
+    auto* sTitle = new QLabel(tr("⚙️ <b>Параметры авто-настроек (производительность оборудования):</b>"), settingsCard);
     sTitle->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 12px; background: transparent; border: none;"));
     sLayout->addWidget(sTitle);
 
