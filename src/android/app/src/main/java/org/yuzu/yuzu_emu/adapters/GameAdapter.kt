@@ -161,16 +161,28 @@ class GameAdapter(private val activity: AppCompatActivity) :
 
         private fun formatVersion(model: Game): String {
             val v = model.version.trim().removePrefix("v").removePrefix("V")
-            return if (v.isNotEmpty()) v else "1.0.0"
+            return if (v.isNotEmpty()) "v$v" else "v1.0.0"
         }
 
-        private fun formatInternalVersion(model: Game): String {
+        private fun bindBadgeInternalVersion(badge: android.widget.TextView?, model: Game) {
+            if (badge == null) return
             val iv = model.internalVersion.trim().removePrefix("v").removePrefix("V")
-            return if (iv.isNotEmpty()) iv else "0"
+            if (iv.isNotEmpty() && iv != "0") {
+                badge.visibility = android.view.View.VISIBLE
+                badge.text = "(v$iv)"
+            } else {
+                badge.visibility = android.view.View.GONE
+            }
         }
 
-        private fun formatAddons(model: Game): String {
-            return "Дополнений: ${model.addonCount}"
+        private fun bindBadgeAddons(badge: android.widget.TextView?, model: Game) {
+            if (badge == null) return
+            if (model.addonCount > 0) {
+                badge.visibility = android.view.View.VISIBLE
+                badge.text = "Дополнений: ${model.addonCount}"
+            } else {
+                badge.visibility = android.view.View.GONE
+            }
         }
 
         private fun bindListView(model: Game) {
@@ -188,8 +200,8 @@ class GameAdapter(private val activity: AppCompatActivity) :
             }
             listBinding.textGameDeveloper.text = devText
             listBinding.badgeGameVersion.text = formatVersion(model)
-            listBinding.badgeGameInternalVersion.text = formatInternalVersion(model)
-            listBinding.textGameAddons.text = formatAddons(model)
+            bindBadgeInternalVersion(listBinding.badgeGameInternalVersion, model)
+            bindBadgeAddons(listBinding.textGameAddons, model)
 
             listBinding.cardGameList.setOnClickListener { onClick(model) }
             listBinding.cardGameList.setOnLongClickListener { onLongClick(model) }
@@ -208,8 +220,8 @@ class GameAdapter(private val activity: AppCompatActivity) :
             gridBinding.badgeGameExtension.text = model.extension
             gridBinding.textGameTitle.text = model.title.replace("[\\t\\n\\r]+".toRegex(), " ")
             gridBinding.badgeGameVersion.text = formatVersion(model)
-            gridBinding.badgeGameInternalVersion.text = formatInternalVersion(model)
-            gridBinding.badgeGameAddons.text = formatAddons(model)
+            bindBadgeInternalVersion(gridBinding.badgeGameInternalVersion, model)
+            bindBadgeAddons(gridBinding.badgeGameAddons, model)
 
             gridBinding.cardGameGrid.setOnClickListener { onClick(model) }
             gridBinding.cardGameGrid.setOnLongClickListener { onLongClick(model) }
@@ -228,8 +240,8 @@ class GameAdapter(private val activity: AppCompatActivity) :
             gridCompactBinding.badgeGameExtension.text = model.extension
             gridCompactBinding.textGameTitleCompact.text = model.title.replace("[\\t\\n\\r]+".toRegex(), " ")
             gridCompactBinding.badgeGameVersion.text = formatVersion(model)
-            gridCompactBinding.badgeGameInternalVersion.text = formatInternalVersion(model)
-            gridCompactBinding.textGameAddonsCompact.text = formatAddons(model)
+            bindBadgeInternalVersion(gridCompactBinding.badgeGameInternalVersion, model)
+            bindBadgeAddons(gridCompactBinding.textGameAddonsCompact, model)
 
             gridCompactBinding.cardGameGridCompact.setOnClickListener { onClick(model) }
             gridCompactBinding.cardGameGridCompact.setOnLongClickListener { onLongClick(model) }
@@ -247,8 +259,8 @@ class GameAdapter(private val activity: AppCompatActivity) :
 
             carouselBinding.badgeGameExtension?.text = model.extension
             carouselBinding.badgeGameVersion?.text = formatVersion(model)
-            carouselBinding.badgeGameInternalVersion?.text = formatInternalVersion(model)
-            carouselBinding.badgeGameAddons?.text = formatAddons(model)
+            bindBadgeInternalVersion(carouselBinding.badgeGameInternalVersion, model)
+            bindBadgeAddons(carouselBinding.badgeGameAddons, model)
 
             carouselBinding.textGameTitle.text = model.title.replace("[\\t\\n\\r]+".toRegex(), " ")
             carouselBinding.textGameTitle.marquee()

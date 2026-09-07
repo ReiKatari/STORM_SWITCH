@@ -462,7 +462,7 @@ object GameHelper {
 
     fun isBaseVersion(ver: String): Boolean {
         val v = ver.trim().removePrefix("v").removePrefix("V").trim()
-        return v.isEmpty() || v == "0" || v == "1.0" || v == "1.0.0" || v == "1.0.0.0"
+        return v.isEmpty() || v == "0" || v == "1.0" || v == "1.0.0" || v == "1.0.0.0" || v.startsWith("0.")
     }
 
     fun resolveVersionFromNames(
@@ -474,10 +474,11 @@ object GameHelper {
         var cleanInternalVersion = currentInternalVersion.trim().removePrefix("v").removePrefix("V").trim()
 
         if (isBaseVersion(cleanVersion)) {
-            for (name in names) {
-                if (name.isEmpty()) continue
-                // 1. Paired version: e.g. "(1.0.9 - 458752 - 0100EC9010258000)"
-                val pairMatch = Regex("""\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)""", RegexOption.IGNORE_CASE).find(name)
+            for (rawName in names) {
+                if (rawName.isEmpty()) continue
+                val name = rawName.substringAfterLast('/').substringAfterLast('\\')
+                // 1. Paired version: e.g. "(1.0.9 - 458752)"
+                val pairMatch = Regex("""\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)\)""", RegexOption.IGNORE_CASE).find(name)
                 if (pairMatch != null) {
                     val pVer = pairMatch.groupValues[1].trim()
                     val pIntVer = pairMatch.groupValues[2].trim()
@@ -485,15 +486,18 @@ object GameHelper {
                         cleanVersion = pVer
                     }
                     if (pIntVer.isNotEmpty() && (cleanInternalVersion == "0" || cleanInternalVersion.isEmpty())) {
-                        cleanInternalVersion = pIntVer
+                        val num = pIntVer.toLongOrNull() ?: 0L
+                        if (num in 1..4294967295L) {
+                            cleanInternalVersion = pIntVer
+                        }
                     }
                     break
                 }
 
-                // 2. Standalone version: e.g. "1.0.9"
-                val fullMatch = Regex("""(?:[\(\[\s_]v?|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?!\s*(?:GB|MB|KB|TB|ГБ|МБ|КБ|Б|B)\b)""", RegexOption.IGNORE_CASE).find(name)
-                if (fullMatch != null) {
-                    val parsedVer = fullMatch.groupValues[1].trim()
+                // 2. Bracketed version: e.g. "[1.0.9]" or "(v1.0.9)"
+                val bracketMatch = Regex("""[\[\(]v?([0-9]+\.[0-9]+(?:\.[0-9]+)*)[\]\)]""", RegexOption.IGNORE_CASE).find(name)
+                if (bracketMatch != null) {
+                    val parsedVer = bracketMatch.groupValues[1].trim()
                     if (!isBaseVersion(parsedVer)) {
                         cleanVersion = parsedVer
                         break
@@ -503,12 +507,17 @@ object GameHelper {
         }
 
         if (cleanInternalVersion.isEmpty() || cleanInternalVersion == "0") {
-            for (name in names) {
-                if (name.isEmpty()) continue
-                val match = Regex("""[\\[\\(_]v?(\\d{5,})[\\]\\)]""", RegexOption.IGNORE_CASE).find(name)
+            for (rawName in names) {
+                if (rawName.isEmpty()) continue
+                val name = rawName.substringAfterLast('/').substringAfterLast('\\')
+                // Require 'v' prefix explicitly like [v65536], [v131072] to prevent matching 16-hex Title IDs!
+                val match = Regex("""[\[\(]v(\d{1,10})[\]\)]""", RegexOption.IGNORE_CASE).find(name)
                 if (match != null) {
-                    cleanInternalVersion = match.groupValues[1]
-                    break
+                    val num = match.groupValues[1].toLongOrNull() ?: 0L
+                    if (num in 1..4294967295L) {
+                        cleanInternalVersion = match.groupValues[1]
+                        break
+                    }
                 }
             }
         }

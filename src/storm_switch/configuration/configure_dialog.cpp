@@ -6,6 +6,17 @@
 
 #include <memory>
 #include <QTabBar>
+#include <QGraphicsDropShadowEffect>
+#include <QMessageBox>
+#include <QScreen>
+#include <QGuiApplication>
+#include <QScrollArea>
+#include "common/cpu_features.h"
+#include "common/memory_detect.h"
+#ifdef _WIN32
+#include <windows.h>
+#include <dxgi.h>
+#endif
 #include "common/logging.h"
 #include "common/settings.h"
 #include "common/settings_enums.h"
@@ -63,7 +74,8 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
       network_tab{std::make_unique<ConfigureNetwork>(system_, this)},
       profile_tab{std::make_unique<ConfigureProfileManager>(system_, this)},
       system_tab{std::make_unique<ConfigureSystem>(system_, nullptr, *builder, this)},
-      web_tab{std::make_unique<ConfigureWeb>(this)} {
+      web_tab{std::make_unique<ConfigureWeb>(this)},
+      vk_records{vk_device_records} {
     Settings::SetConfiguringGlobal(true);
 
     ui->setupUi(this);
@@ -112,6 +124,34 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         connect(apply_button, &QAbstractButton::clicked, this,
                 &ConfigureDialog::HandleApplyButtonClicked);
     }
+
+    QPushButton* auto_settings_btn = ui->buttonBox->addButton(tr("⚡ Авто-настройки"), QDialogButtonBox::ActionRole);
+    auto_settings_btn->setObjectName(QStringLiteral("AutoSettingsButton"));
+    auto_settings_btn->setCursor(Qt::PointingHandCursor);
+    auto_settings_btn->setStyleSheet(QStringLiteral(
+        "QPushButton#AutoSettingsButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
+        "    color: #050B14;"
+        "    font-weight: bold;"
+        "    font-size: 12px;"
+        "    padding: 6px 16px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid #00F0FF;"
+        "}"
+        "QPushButton#AutoSettingsButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #00D2FF);"
+        "    color: #FFFFFF;"
+        "}"
+        "QPushButton#AutoSettingsButton:pressed {"
+        "    background: #0284C7;"
+        "}"
+    ));
+    auto* shadow = new QGraphicsDropShadowEffect(auto_settings_btn);
+    shadow->setBlurRadius(10);
+    shadow->setOffset(0, 2);
+    shadow->setColor(QColor(0, 210, 255, 120));
+    auto_settings_btn->setGraphicsEffect(shadow);
+    connect(auto_settings_btn, &QPushButton::clicked, this, &ConfigureDialog::OnAutoSettingsClicked);
 
     adjustSize();
     ui->selectorList->setCurrentRow(0);
@@ -252,4 +292,369 @@ void ConfigureDialog::UpdateVisibleTabs() {
         LOG_DEBUG(Frontend, "{}", tab->accessibleName().toStdString());
         ui->tabWidget->addTab(tab, tr(tab->accessibleName().toUtf8().constData()));
     }
+}
+
+void ConfigureDialog::OnAutoSettingsClicked() {
+    DetectHardwareAndApplyAutoSettings();
+}
+
+void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
+    // 1. CPU detection
+    QString cpu_name;
+#ifdef ARCHITECTURE_x86_64
+    if (std::strlen(Common::g_cpu_caps.cpu_string) > 0) {
+        cpu_name = QString::fromUtf8(Common::g_cpu_caps.cpu_string).trimmed();
+    }
+#endif
+    const int thread_count = static_cast<int>(std::thread::hardware_concurrency());
+    const int core_count = Common::GetProcessorCount().value_or(thread_count > 2 ? thread_count / 2 : thread_count);
+    if (cpu_name.isEmpty()) {
+        cpu_name = tr("Процессор (%1 ядер, %2 потоков)").arg(core_count).arg(thread_count);
+    }
+
+    // 2. RAM detection
+    u64 total_ram_bytes = Common::GetMemInfo().TotalPhysicalMemory;
+    u64 avail_ram_bytes = 0;
+#ifdef _WIN32
+    MEMORYSTATUSEX mem_status;
+    mem_status.dwLength = sizeof(mem_status);
+    if (GlobalMemoryStatusEx(&mem_status)) {
+        total_ram_bytes = mem_status.ullTotalPhys;
+        avail_ram_bytes = mem_status.ullAvailPhys;
+    }
+#endif
+    double total_ram_gb = static_cast<double>(total_ram_bytes) / (1024.0 * 1024.0 * 1024.0);
+    double avail_ram_gb = static_cast<double>(avail_ram_bytes) / (1024.0 * 1024.0 * 1024.0);
+
+    // 3. GPU and VRAM detection
+    QString gpu_name = tr("Не определено");
+    u64 vram_bytes = 0;
+    if (!vk_records.empty()) {
+        int dev_idx = Settings::values.vulkan_device.GetValue();
+        if (dev_idx >= 0 && static_cast<size_t>(dev_idx) < vk_records.size()) {
+            gpu_name = QString::fromStdString(vk_records[dev_idx].name);
+        } else {
+            gpu_name = QString::fromStdString(vk_records[0].name);
+        }
+    }
+
+#ifdef _WIN32
+    HMODULE hDxgi = LoadLibraryA("dxgi.dll");
+    if (hDxgi) {
+        typedef HRESULT (WINAPI *pfnCreateDXGIFactory1)(REFIID, void**);
+        auto pCreate = reinterpret_cast<pfnCreateDXGIFactory1>(GetProcAddress(hDxgi, "CreateDXGIFactory1"));
+        if (pCreate) {
+            IDXGIFactory1* pFactory = nullptr;
+            if (SUCCEEDED(pCreate(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&pFactory)))) {
+                IDXGIAdapter1* pAdapter = nullptr;
+                for (UINT i = 0; pFactory->EnumAdapters1(i, &pAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
+                    DXGI_ADAPTER_DESC1 desc;
+                    if (SUCCEEDED(pAdapter->GetDesc1(&desc))) {
+                        QString adapter_name = QString::fromWCharArray(desc.Description);
+                        if (gpu_name.contains(adapter_name, Qt::CaseInsensitive) || adapter_name.contains(gpu_name, Qt::CaseInsensitive) || i == 0) {
+                            if (desc.DedicatedVideoMemory > vram_bytes) {
+                                vram_bytes = desc.DedicatedVideoMemory;
+                                if (gpu_name == tr("Не определено")) {
+                                    gpu_name = adapter_name;
+                                }
+                            }
+                        }
+                    }
+                    pAdapter->Release();
+                }
+                pFactory->Release();
+            }
+        }
+        FreeLibrary(hDxgi);
+    }
+#endif
+    double vram_gb = static_cast<double>(vram_bytes) / (1024.0 * 1024.0 * 1024.0);
+
+    // 4. Screen detection
+    QScreen* screen = QGuiApplication::primaryScreen();
+    QSize screen_res = screen ? screen->size() : QSize(1920, 1080);
+    int refresh_rate = screen ? static_cast<int>(std::round(screen->refreshRate())) : 60;
+
+    // 5. Power status
+    QString power_text = tr("Питание от сети");
+    bool on_battery = false;
+#ifdef _WIN32
+    SYSTEM_POWER_STATUS power_status;
+    if (GetSystemPowerStatus(&power_status)) {
+        if (power_status.ACLineStatus == 0) {
+            on_battery = true;
+            power_text = tr("Работа от батареи (%1%)").arg(static_cast<int>(power_status.BatteryLifePercent));
+        } else if (power_status.BatteryFlag & 128) {
+            power_text = tr("Стационарный ПК (сеть 220V)");
+        } else {
+            power_text = tr("Ноутбук от сети (зарядка %1%)").arg(static_cast<int>(power_status.BatteryLifePercent));
+        }
+    }
+#endif
+
+    // 6. Optimal profile tier determination
+    enum class ProfileTier {
+        Eco,
+        Balanced,
+        Enthusiast
+    };
+
+    ProfileTier tier = ProfileTier::Balanced;
+    const bool is_integrated = gpu_name.contains(QStringLiteral("Intel"), Qt::CaseInsensitive) ||
+                               (gpu_name.contains(QStringLiteral("Vega"), Qt::CaseInsensitive) && vram_gb < 2.0) ||
+                               (gpu_name.contains(QStringLiteral("Radeon Graphics"), Qt::CaseInsensitive) && vram_gb < 2.0);
+
+    if (on_battery || is_integrated || core_count <= 4 || total_ram_gb < 7.5) {
+        tier = ProfileTier::Eco;
+    } else if (vram_gb >= 7.5 || (vram_gb >= 5.5 && (gpu_name.contains(QStringLiteral("RTX"), Qt::CaseInsensitive) || gpu_name.contains(QStringLiteral("RX"), Qt::CaseInsensitive)))) {
+        if (core_count >= 6 && total_ram_gb >= 15.0) {
+            tier = ProfileTier::Enthusiast;
+        } else {
+            tier = ProfileTier::Balanced;
+        }
+    } else {
+        tier = ProfileTier::Balanced;
+    }
+
+    QString tier_name;
+    QStringList applied_list;
+
+    if (tier == ProfileTier::Enthusiast) {
+        tier_name = tr("Максимальное качество (Enthusiast)");
+
+        Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res2X);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
+        Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Gpu);
+        Settings::values.use_asynchronous_shaders.SetValue(true);
+        Settings::values.async_presentation.SetValue(true);
+        Settings::values.use_reactive_flushing.SetValue(true);
+        Settings::values.sync_memory_operations.SetValue(true);
+        Settings::values.gpu_clock.SetValue(Settings::GpuClock::Boost);
+        Settings::values.eco_frame_pacing.SetValue(false);
+        Settings::values.max_anisotropy.SetValue(Settings::AnisotropyMode::X16);
+        Settings::values.anti_aliasing.SetValue(Settings::AntiAliasing::Smaa);
+        Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Fsr);
+        Settings::values.fsr_sharpening_slider.SetValue(85);
+        Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
+        Settings::values.cpuopt_fastmem.SetValue(true);
+        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+        Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
+
+        applied_list << tr("Разрешение рендеринга: 2X (1440p/2160p)");
+        applied_list << tr("Точность ГПУ: Высокая");
+        applied_list << tr("Сжатие ASTC: Без сжатия");
+        applied_list << tr("Декодирование ASTC: ГПУ");
+        applied_list << tr("Сглаживание: SMAA");
+        applied_list << tr("Масштабирование: AMD FSR (Резкость: 85%)");
+        applied_list << tr("Анизотропная фильтрация: 16x");
+        applied_list << tr("Режим консоли: В док-станции");
+    } else if (tier == ProfileTier::Eco) {
+        tier_name = tr("Энергосбережение и портативность (Eco)");
+
+        Settings::values.resolution_setup.SetValue(on_battery ? Settings::ResolutionSetup::Res1_2X : Settings::ResolutionSetup::Res3_4X);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
+        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Bc3);
+        Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Cpu);
+        Settings::values.use_asynchronous_shaders.SetValue(true);
+        Settings::values.async_presentation.SetValue(true);
+        Settings::values.use_reactive_flushing.SetValue(false);
+        Settings::values.sync_memory_operations.SetValue(false);
+        Settings::values.gpu_clock.SetValue(Settings::GpuClock::Boost);
+        Settings::values.eco_frame_pacing.SetValue(true);
+        Settings::values.max_anisotropy.SetValue(Settings::AnisotropyMode::Default);
+        Settings::values.anti_aliasing.SetValue(Settings::AntiAliasing::None);
+        Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Bilinear);
+        Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
+        Settings::values.cpuopt_fastmem.SetValue(true);
+        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+        Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Handheld);
+
+        applied_list << (on_battery ? tr("Разрешение рендеринга: 0.5X (360p/540p)") : tr("Разрешение рендеринга: 0.75X (540p/810p)"));
+        applied_list << tr("Точность ГПУ: Быстрая (Low)");
+        applied_list << tr("Сжатие ASTC: BC3 (Среднее качество)");
+        applied_list << tr("Декодирование ASTC: ЦП");
+        applied_list << tr("Эко-выравнивание кадров: Включено");
+        applied_list << tr("Масштабирование: Билинейное");
+        applied_list << tr("Режим консоли: Портативный (Handheld)");
+    } else {
+        tier_name = tr("Сбалансированный (Balanced 60 FPS)");
+
+        Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1X);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
+        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
+        Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::CpuAsynchronous);
+        Settings::values.use_asynchronous_shaders.SetValue(true);
+        Settings::values.async_presentation.SetValue(true);
+        Settings::values.use_reactive_flushing.SetValue(false);
+        Settings::values.sync_memory_operations.SetValue(false);
+        Settings::values.gpu_clock.SetValue(Settings::GpuClock::Boost);
+        Settings::values.eco_frame_pacing.SetValue(false);
+        Settings::values.max_anisotropy.SetValue(Settings::AnisotropyMode::Automatic);
+        Settings::values.anti_aliasing.SetValue(Settings::AntiAliasing::Fxaa);
+        Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Fsr);
+        Settings::values.fsr_sharpening_slider.SetValue(80);
+        Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
+        Settings::values.cpuopt_fastmem.SetValue(true);
+        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+        Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
+
+        applied_list << tr("Разрешение рендеринга: 1X (720p/1080p)");
+        applied_list << tr("Точность ГПУ: Быстрая (Low)");
+        applied_list << tr("Сжатие ASTC: Без сжатия");
+        applied_list << tr("Декодирование ASTC: ЦП Асинхронно");
+        applied_list << tr("Сглаживание: FXAA");
+        applied_list << tr("Масштабирование: AMD FSR (Резкость: 80%)");
+        applied_list << tr("Анизотропная фильтрация: Автоматически");
+        applied_list << tr("Режим консоли: В док-станции");
+    }
+
+    applied_list << tr("Асинхронная компиляция шейдеров: Включено");
+    applied_list << tr("Асинхронный вывод: Включено");
+    applied_list << tr("Быстрая память (Fastmem): Включено");
+    applied_list << tr("Игнорирование прерываний памяти: Включено");
+
+    ReloadAllTabs();
+
+    // Display stylized modal summary dialog
+    QDialog reportDialog(this);
+    reportDialog.setWindowTitle(tr("⚡ Авто-настройки системы"));
+    reportDialog.setMinimumWidth(560);
+    reportDialog.setModal(true);
+    reportDialog.setStyleSheet(QStringLiteral(
+        "QDialog {"
+        "    background: #0B111A;"
+        "    color: #F0F6FC;"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    border-radius: 10px;"
+        "}"
+        "QLabel { color: #E2E8F0; font-family: 'Segoe UI', sans-serif; }"
+    ));
+
+    auto* dlg_layout = new QVBoxLayout(&reportDialog);
+    dlg_layout->setContentsMargins(18, 16, 18, 16);
+    dlg_layout->setSpacing(12);
+
+    auto* headerCard = new QFrame(&reportDialog);
+    headerCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 210, 255, 0.15), stop:1 rgba(2, 132, 199, 0.05));"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* headerLayout = new QHBoxLayout(headerCard);
+    headerLayout->setContentsMargins(12, 10, 12, 10);
+    headerLayout->setSpacing(10);
+
+    auto* iconLabel = new QLabel(QStringLiteral("⚡"), headerCard);
+    iconLabel->setStyleSheet(QStringLiteral("font-size: 24px; background: transparent; border: none;"));
+    headerLayout->addWidget(iconLabel);
+
+    auto* titleLayout = new QVBoxLayout();
+    auto* titleLabel = new QLabel(tr("<b>Авто-настройки успешно рассчитаны и применены</b>"), headerCard);
+    titleLabel->setStyleSheet(QStringLiteral("font-size: 14px; color: #FFFFFF; background: transparent; border: none;"));
+    auto* subtitleLabel = new QLabel(tr("Профиль: <b style='color: #00D2FF;'>%1</b>").arg(tier_name), headerCard);
+    subtitleLabel->setStyleSheet(QStringLiteral("font-size: 12px; color: #94A3B8; background: transparent; border: none;"));
+    titleLayout->addWidget(titleLabel);
+    titleLayout->addWidget(subtitleLabel);
+    headerLayout->addLayout(titleLayout, 1);
+    dlg_layout->addWidget(headerCard);
+
+    // Hardware Card
+    auto* hwCard = new QFrame(&reportDialog);
+    hwCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(15, 23, 42, 0.65);"
+        "    border: 1px solid rgba(148, 163, 184, 0.20);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* hwLayout = new QVBoxLayout(hwCard);
+    hwLayout->setContentsMargins(12, 10, 12, 10);
+    hwLayout->setSpacing(4);
+
+    auto* hwTitle = new QLabel(tr("🖥️ <b>Характеристики обнаруженного оборудования:</b>"), hwCard);
+    hwTitle->setStyleSheet(QStringLiteral("color: #38BDF8; font-size: 12px; background: transparent; border: none;"));
+    hwLayout->addWidget(hwTitle);
+
+    QString vram_str = vram_bytes > 0 ? QStringLiteral(" (%1 ГБ VRAM)").arg(vram_gb, 0, 'f', 1) : QString();
+    QString hw_text = QStringLiteral(
+        "• <b>ЦП:</b> %1 (%2 ядер / %3 потоков)<br>"
+        "• <b>ГПУ:</b> %4%5<br>"
+        "• <b>ОЗУ:</b> %6 ГБ (доступно: %7 ГБ)<br>"
+        "• <b>Экран:</b> %8x%9 @ %10 Гц<br>"
+        "• <b>Питание:</b> %11"
+    ).arg(cpu_name)
+     .arg(core_count)
+     .arg(thread_count)
+     .arg(gpu_name)
+     .arg(vram_str)
+     .arg(total_ram_gb, 0, 'f', 1)
+     .arg(avail_ram_gb, 0, 'f', 1)
+     .arg(screen_res.width())
+     .arg(screen_res.height())
+     .arg(refresh_rate)
+     .arg(power_text);
+
+    auto* hwLabel = new QLabel(hw_text, hwCard);
+    hwLabel->setTextFormat(Qt::RichText);
+    hwLabel->setStyleSheet(QStringLiteral("color: #CBD5E1; font-size: 11.5px; line-height: 1.4; background: transparent; border: none;"));
+    hwLayout->addWidget(hwLabel);
+    dlg_layout->addWidget(hwCard);
+
+    // Settings Card
+    auto* settingsCard = new QFrame(&reportDialog);
+    settingsCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(0, 210, 255, 0.05);"
+        "    border: 1px solid rgba(0, 210, 255, 0.25);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* sLayout = new QVBoxLayout(settingsCard);
+    sLayout->setContentsMargins(12, 10, 12, 10);
+    sLayout->setSpacing(4);
+
+    auto* sTitle = new QLabel(tr("⚙️ <b>Применённые параметры (ОБЩИЕ для всех игр):</b>"), settingsCard);
+    sTitle->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 12px; background: transparent; border: none;"));
+    sLayout->addWidget(sTitle);
+
+    QString s_text;
+    for (const auto& item : applied_list) {
+        s_text += QStringLiteral("✓ %1<br>").arg(item);
+    }
+    auto* sLabel = new QLabel(s_text, settingsCard);
+    sLabel->setTextFormat(Qt::RichText);
+    sLabel->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.4; background: transparent; border: none;"));
+    sLayout->addWidget(sLabel);
+    dlg_layout->addWidget(settingsCard);
+
+    auto* okBtn = new QPushButton(tr("Готово"), &reportDialog);
+    okBtn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
+        "    color: #050B14;"
+        "    font-weight: bold;"
+        "    font-size: 13px;"
+        "    padding: 8px 24px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid #00F0FF;"
+        "}"
+        "QPushButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #00D2FF);"
+        "    color: #FFFFFF;"
+        "}"
+        "QPushButton:pressed {"
+        "    background: #0284C7;"
+        "}"
+    ));
+    connect(okBtn, &QPushButton::clicked, &reportDialog, &QDialog::accept);
+
+    auto* btn_layout = new QHBoxLayout();
+    btn_layout->setAlignment(Qt::AlignCenter);
+    btn_layout->addWidget(okBtn);
+    dlg_layout->addLayout(btn_layout);
+
+    reportDialog.exec();
 }

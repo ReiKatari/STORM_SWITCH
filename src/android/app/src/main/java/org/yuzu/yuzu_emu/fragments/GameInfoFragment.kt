@@ -44,12 +44,17 @@ class GameInfoFragment : Fragment() {
         returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
         reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
 
-        // Check for an up-to-date version string
+        // Ensure containers and updates are mounted before checking metadata
+        GameHelper.restoreContentForGame(args.game)
         val newVer = GameMetadata.getVersion(args.game.path, true)
+        val newIntVer = GameMetadata.getInternalVersion(args.game.path)
         if (newVer.isNotEmpty() && !GameHelper.isBaseVersion(newVer)) {
             args.game.version = newVer
         } else if (GameHelper.isBaseVersion(args.game.version) && newVer.isNotEmpty()) {
             args.game.version = newVer
+        }
+        if (newIntVer.isNotEmpty() && newIntVer != "0") {
+            args.game.internalVersion = newIntVer
         }
     }
 
@@ -93,10 +98,18 @@ class GameInfoFragment : Fragment() {
                 developer.setVisible(false)
             }
 
+            val cleanVer = args.game.version.trim().removePrefix("v").removePrefix("V").ifEmpty { "1.0.0" }
+            val cleanIntVer = args.game.internalVersion.trim().removePrefix("v").removePrefix("V")
+            val fullVersionText = if (cleanIntVer.isNotEmpty() && cleanIntVer != "0") {
+                "$cleanVer (v$cleanIntVer)"
+            } else {
+                cleanVer
+            }
+
             version.setHint(R.string.version)
-            versionField.setText(args.game.version)
+            versionField.setText(fullVersionText)
             versionField.setOnClickListener {
-                copyToClipboard(getString(R.string.version), args.game.version)
+                copyToClipboard(getString(R.string.version), fullVersionText)
             }
 
             buttonCopy.setOnClickListener {
@@ -105,7 +118,7 @@ class GameInfoFragment : Fragment() {
                     ${getString(R.string.path)} - $pathString
                     ${getString(R.string.program_id)} - ${args.game.programIdHex}
                     ${getString(R.string.developer)} - ${args.game.developer}
-                    ${getString(R.string.version)} - ${args.game.version}
+                    ${getString(R.string.version)} - $fullVersionText
                 """.trimIndent()
                 copyToClipboard(args.game.title, details)
             }

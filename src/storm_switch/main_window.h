@@ -286,6 +286,8 @@ private:
     GameFixDialogResult ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show = false);
     void OnResetGameFixSuppression();
     void OnAutoTuneSettings();
+    void OnApplyAutoCorrection();
+    void RestoreSessionSettings();
     void ShutdownGame();
 
     void SetDiscordEnabled(bool state);
@@ -546,6 +548,41 @@ private:
     GameListPlaceholder* game_list_placeholder = nullptr;
 
     std::vector<VkDeviceInfo::Record> vk_device_records;
+
+    struct StormSessionBackup {
+        bool is_active{false};
+        std::pair<Settings::ResolutionSetup, bool> resolution_setup;
+        std::pair<Settings::GpuAccuracy, bool> gpu_accuracy;
+        std::pair<Settings::AstcRecompression, bool> astc_recompression;
+        std::pair<Settings::AstcDecodeMode, bool> accelerate_astc;
+        std::pair<bool, bool> use_asynchronous_shaders;
+        std::pair<bool, bool> async_presentation;
+        std::pair<bool, bool> use_reactive_flushing;
+        std::pair<bool, bool> sync_memory_operations;
+        std::pair<Settings::GpuClock, bool> gpu_clock;
+        std::pair<bool, bool> eco_frame_pacing;
+        std::pair<Settings::AnisotropyMode, bool> max_anisotropy;
+        std::pair<Settings::AntiAliasing, bool> anti_aliasing;
+        std::pair<Settings::ScalingFilter, bool> scaling_filter;
+        std::pair<int, bool> fsr_sharpening_slider;
+        std::pair<Settings::NvdecEmulation, bool> nvdec_emulation;
+        std::pair<Settings::DmaAccuracy, bool> dma_accuracy;
+        std::pair<Settings::CpuAccuracy, bool> cpu_accuracy;
+        std::pair<bool, bool> cpuopt_fastmem;
+        std::pair<bool, bool> cpuopt_ignore_memory_aborts;
+        std::pair<bool, bool> cpuopt_recompile_exclusives;
+        std::pair<bool, bool> cpuopt_fastmem_exclusives;
+        std::pair<bool, bool> airplane_mode;
+        std::pair<Settings::MemoryLayout, bool> memory_layout_mode;
+        std::pair<Settings::ConsoleMode, bool> use_docked_mode;
+
+        void Capture();
+        void Restore();
+    };
+
+    StormSessionBackup m_session_backup;
+    QPushButton* auto_correction_button = nullptr;
+    bool m_auto_correction_applied = false;
 
     // Status bar elements
     QLabel* message_label = nullptr;

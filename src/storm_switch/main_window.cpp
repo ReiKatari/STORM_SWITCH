@@ -1115,6 +1115,32 @@ void MainWindow::InitializeWidgets() {
         statusBar()->addPermanentWidget(label);
     }
 
+    auto_correction_button = new QPushButton(tr("🛠️ Авто-коррекция"));
+    auto_correction_button->setObjectName(QStringLiteral("AutoCorrectionButton"));
+    auto_correction_button->setToolTip(tr("Обнаружена повышенная нагрузка или просадки FPS. Нажмите для динамической авто-коррекции"));
+    auto_correction_button->setFocusPolicy(Qt::NoFocus);
+    auto_correction_button->setVisible(false);
+    auto_correction_button->setStyleSheet(QStringLiteral(
+        "QPushButton#AutoCorrectionButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FF9100, stop:1 #FF3D00);"
+        "    color: #FFFFFF;"
+        "    font-weight: bold;"
+        "    font-size: 7.5pt;"
+        "    padding: 2px 8px;"
+        "    border-radius: 4px;"
+        "    border: 1px solid #FFAB40;"
+        "}"
+        "QPushButton#AutoCorrectionButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FFA726, stop:1 #FF5722);"
+        "    border-color: #FFD180;"
+        "}"
+        "QPushButton#AutoCorrectionButton:pressed {"
+        "    background: #D84315;"
+        "}"
+    ));
+    connect(auto_correction_button, &QPushButton::clicked, this, &MainWindow::OnApplyAutoCorrection);
+    statusBar()->addPermanentWidget(auto_correction_button);
+
     firmware_label = new QLabel();
     firmware_label->setObjectName(QStringLiteral("FirmwareLabel"));
     firmware_label->setVisible(false);
@@ -3203,6 +3229,160 @@ bool MainWindow::SelectAndSetCurrentUser(
     return true;
 }
 
+void MainWindow::StormSessionBackup::Capture() {
+    auto capture_switchable = [](const auto& setting) {
+        return std::make_pair(setting.GetValue(true), setting.UsingGlobal());
+    };
+    resolution_setup = capture_switchable(Settings::values.resolution_setup);
+    gpu_accuracy = capture_switchable(Settings::values.gpu_accuracy);
+    astc_recompression = capture_switchable(Settings::values.astc_recompression);
+    accelerate_astc = capture_switchable(Settings::values.accelerate_astc);
+    use_asynchronous_shaders = capture_switchable(Settings::values.use_asynchronous_shaders);
+    async_presentation = capture_switchable(Settings::values.async_presentation);
+    use_reactive_flushing = capture_switchable(Settings::values.use_reactive_flushing);
+    sync_memory_operations = capture_switchable(Settings::values.sync_memory_operations);
+    gpu_clock = capture_switchable(Settings::values.gpu_clock);
+    eco_frame_pacing = capture_switchable(Settings::values.eco_frame_pacing);
+    max_anisotropy = capture_switchable(Settings::values.max_anisotropy);
+    anti_aliasing = capture_switchable(Settings::values.anti_aliasing);
+    scaling_filter = capture_switchable(Settings::values.scaling_filter);
+    fsr_sharpening_slider = capture_switchable(Settings::values.fsr_sharpening_slider);
+    nvdec_emulation = capture_switchable(Settings::values.nvdec_emulation);
+    dma_accuracy = capture_switchable(Settings::values.dma_accuracy);
+    cpu_accuracy = capture_switchable(Settings::values.cpu_accuracy);
+    cpuopt_fastmem = capture_switchable(Settings::values.cpuopt_fastmem);
+    cpuopt_ignore_memory_aborts = capture_switchable(Settings::values.cpuopt_ignore_memory_aborts);
+    cpuopt_recompile_exclusives = capture_switchable(Settings::values.cpuopt_recompile_exclusives);
+    cpuopt_fastmem_exclusives = capture_switchable(Settings::values.cpuopt_fastmem_exclusives);
+    airplane_mode = capture_switchable(Settings::values.airplane_mode);
+    memory_layout_mode = capture_switchable(Settings::values.memory_layout_mode);
+    use_docked_mode = capture_switchable(Settings::values.use_docked_mode);
+    is_active = true;
+}
+
+void MainWindow::StormSessionBackup::Restore() {
+    if (!is_active) return;
+    auto restore_switchable = [](auto& setting, const auto& pair) {
+        setting.SetGlobal(pair.second);
+        setting.SetValue(pair.first);
+    };
+    restore_switchable(Settings::values.resolution_setup, resolution_setup);
+    restore_switchable(Settings::values.gpu_accuracy, gpu_accuracy);
+    restore_switchable(Settings::values.astc_recompression, astc_recompression);
+    restore_switchable(Settings::values.accelerate_astc, accelerate_astc);
+    restore_switchable(Settings::values.use_asynchronous_shaders, use_asynchronous_shaders);
+    restore_switchable(Settings::values.async_presentation, async_presentation);
+    restore_switchable(Settings::values.use_reactive_flushing, use_reactive_flushing);
+    restore_switchable(Settings::values.sync_memory_operations, sync_memory_operations);
+    restore_switchable(Settings::values.gpu_clock, gpu_clock);
+    restore_switchable(Settings::values.eco_frame_pacing, eco_frame_pacing);
+    restore_switchable(Settings::values.max_anisotropy, max_anisotropy);
+    restore_switchable(Settings::values.anti_aliasing, anti_aliasing);
+    restore_switchable(Settings::values.scaling_filter, scaling_filter);
+    restore_switchable(Settings::values.fsr_sharpening_slider, fsr_sharpening_slider);
+    restore_switchable(Settings::values.nvdec_emulation, nvdec_emulation);
+    restore_switchable(Settings::values.dma_accuracy, dma_accuracy);
+    restore_switchable(Settings::values.cpu_accuracy, cpu_accuracy);
+    restore_switchable(Settings::values.cpuopt_fastmem, cpuopt_fastmem);
+    restore_switchable(Settings::values.cpuopt_ignore_memory_aborts, cpuopt_ignore_memory_aborts);
+    restore_switchable(Settings::values.cpuopt_recompile_exclusives, cpuopt_recompile_exclusives);
+    restore_switchable(Settings::values.cpuopt_fastmem_exclusives, cpuopt_fastmem_exclusives);
+    restore_switchable(Settings::values.airplane_mode, airplane_mode);
+    restore_switchable(Settings::values.memory_layout_mode, memory_layout_mode);
+    restore_switchable(Settings::values.use_docked_mode, use_docked_mode);
+
+    Settings::UpdateGPUAccuracy();
+    Settings::UpdateRescalingInfo();
+    is_active = false;
+}
+
+void MainWindow::RestoreSessionSettings() {
+    if (m_session_backup.is_active) {
+        m_session_backup.Restore();
+        Settings::RestoreGlobalState(false);
+        if (config) {
+            config->ReloadAllValues();
+        }
+        UpdateStatusButtons();
+        ConfigurationShared::ReloadAllActiveWidgets();
+    }
+}
+
+void MainWindow::OnApplyAutoCorrection() {
+    if (!emulation_running || !QtCommon::system || !QtCommon::system->IsPoweredOn()) {
+        return;
+    }
+
+    if (m_auto_correction_applied) {
+        RestoreSessionSettings();
+        m_auto_correction_applied = false;
+        if (auto_correction_button) {
+            auto_correction_button->setText(tr("🛠️ Авто-коррекция"));
+            auto_correction_button->setStyleSheet(QStringLiteral(
+                "QPushButton#AutoCorrectionButton {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FF9100, stop:1 #FF3D00);"
+                "    color: #FFFFFF;"
+                "    font-weight: bold;"
+                "    font-size: 7.5pt;"
+                "    padding: 2px 8px;"
+                "    border-radius: 4px;"
+                "    border: 1px solid #FFAB40;"
+                "}"
+                "QPushButton#AutoCorrectionButton:hover {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FFA726, stop:1 #FF5722);"
+                "    border-color: #FFD180;"
+                "}"
+                "QPushButton#AutoCorrectionButton:pressed {"
+                "    background: #D84315;"
+                "}"
+            ));
+        }
+        statusBar()->showMessage(tr("🛠️ Авто-коррекция: Восстановлены исходные параметры сессии"), 6000);
+        return;
+    }
+
+    auto current_res = Settings::values.resolution_setup.GetValue();
+    if (current_res >= Settings::ResolutionSetup::Res2X) {
+        Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1X);
+    } else if (current_res >= Settings::ResolutionSetup::Res1X) {
+        Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res3_4X);
+    } else {
+        Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1_2X);
+    }
+
+    Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
+    Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Bc3);
+    Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Cpu);
+    Settings::values.use_asynchronous_shaders.SetValue(true);
+    Settings::values.async_presentation.SetValue(true);
+    Settings::values.eco_frame_pacing.SetValue(true);
+    Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Fsr);
+    Settings::values.fsr_sharpening_slider.SetValue(85);
+
+    ApplyDynamicSettingChange();
+    m_auto_correction_applied = true;
+
+    if (auto_correction_button) {
+        auto_correction_button->setText(tr("🛠️ Авто-коррекция: Активна"));
+        auto_correction_button->setStyleSheet(QStringLiteral(
+            "QPushButton#AutoCorrectionButton {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00E676, stop:1 #00B0FF);"
+            "    color: #050B14;"
+            "    font-weight: bold;"
+            "    font-size: 7.5pt;"
+            "    padding: 2px 8px;"
+            "    border-radius: 4px;"
+            "    border: 1px solid #00F0FF;"
+            "}"
+            "QPushButton#AutoCorrectionButton:hover {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #69F0AE, stop:1 #40C4FF);"
+            "}"
+        ));
+    }
+
+    statusBar()->showMessage(tr("🛠️ Авто-коррекция: Конвейер оптимизирован в реальном времени (0.75X/0.5X, Быстрый ГПУ, BC3 ASTC)"), 8000);
+}
+
 MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show) {
     if (title_id == 0) {
         static const QRegularExpression tid_regex(QStringLiteral(R"(([0-9a-fA-F]{16}))"));
@@ -3266,7 +3446,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     }
 
     QDialog fixDialog(this);
-    fixDialog.setWindowTitle(tr("🔧 Авто-настройки, авто-коррекция и авто-исправление: %1").arg(clean_game_name));
+    fixDialog.setWindowTitle(tr("🛡️ Авто-исправление: %1").arg(clean_game_name));
     fixDialog.setWindowFlags(fixDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
     fixDialog.setMinimumWidth(680);
     fixDialog.resize(720, 620);
@@ -3298,7 +3478,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     headerLayout->setSpacing(12);
 
     auto* gameIconLabel = new QLabel(headerCard);
-    gameIconLabel->setText(QStringLiteral("🎮"));
+    gameIconLabel->setText(QStringLiteral("🛡️"));
     gameIconLabel->setStyleSheet(QStringLiteral("font-size: 22px; background: transparent; border: none;"));
     headerLayout->addWidget(gameIconLabel);
 
@@ -3398,7 +3578,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     fixLayout->setContentsMargins(14, 10, 14, 10);
     fixLayout->setSpacing(6);
 
-    auto* fixHeader = new QLabel(QStringLiteral("⚡ <b>Авто-настройки, авто-коррекция и авто-исправление:</b>"), fixCard);
+    auto* fixHeader = new QLabel(QStringLiteral("🛡️ <b>Авто-исправление (параметры совместимости):</b>"), fixCard);
     fixHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 13px; background: transparent; border: none;"));
     fixLayout->addWidget(fixHeader);
 
@@ -3414,8 +3594,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
     // 4. Prompt text
     auto* promptLabel = new QLabel(force_show ?
-        tr("Применить рекомендованные настройки к профилю игры?") :
-        tr("Применить оптимизированные настройки для этой игры и сохранить их?"), &fixDialog);
+        tr("Применить параметры авто-исправления к профилю игры?") :
+        tr("Применить параметры авто-исправления для этой игры перед запуском?"), &fixDialog);
     promptLabel->setAlignment(Qt::AlignCenter);
     promptLabel->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 13px; color: #F8FAFC; margin-top: 4px; background: transparent; border: none;"));
     dlg_layout->addWidget(promptLabel);
@@ -3458,7 +3638,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     btn_layout->setSpacing(12);
     btn_layout->setAlignment(Qt::AlignCenter);
 
-    auto* applyBtn = new QPushButton(force_show ? tr("⚡ Применить для этой игры") : tr("⚡ Применить и запустить"), &fixDialog);
+    auto* applyBtn = new QPushButton(force_show ? tr("🛡️ Применить для этой игры") : tr("🛡️ Применить и запустить"), &fixDialog);
     applyBtn->setObjectName(QStringLiteral("PrimaryDialogButton"));
     applyBtn->setStyleSheet(QStringLiteral(
         "QPushButton {"
@@ -3560,8 +3740,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, (custom_path / (legacy_config + ".ini")).string());
         Core::GameFixDatabase::ApplyProfileDirectly(title_id);
         if (force_show) {
-            QMessageBox::information(this, tr("Авто-настройки, авто-коррекция и авто-исправление"),
-                tr("Оптимизированные настройки успешно сохранены для игры: %1").arg(clean_game_name));
+            QMessageBox::information(this, tr("🛡️ Авто-исправление"),
+                tr("Параметры авто-исправления успешно сохранены для игры: %1").arg(clean_game_name));
         }
         return GameFixDialogResult::ApplyAndLaunch;
     }
@@ -3868,6 +4048,9 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     game_list->SaveInterfaceLayout();
     config->SaveAllValues();
 
+    m_session_backup.Capture();
+    m_auto_correction_applied = false;
+
     u64 title_id{0};
     if (params.program_id != 0) {
         title_id = params.program_id;
@@ -3906,6 +4089,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
         if (fix_result == GameFixDialogResult::Cancel) {
             LOG_INFO(Frontend, "Запуск игры отменен пользователем в диалоге авто-исправлений");
+            m_session_backup.is_active = false;
             game_list->setDisabled(false);
             return;
         }
@@ -3934,9 +4118,9 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
                                  Core::GameFixDatabase::IsFixApplied(title_id, (custom_path / (legacy_config + ".ini")).string());
         if (fix_applied) {
             Core::GameFixDatabase::ApplyProfileDirectly(title_id);
-            statusBar()->showMessage(tr("⚡ Авто-настройки, авто-коррекция и авто-исправление: Применено"), 8000);
+            statusBar()->showMessage(tr("🛡️ Авто-исправление: Применено"), 8000);
         } else if (Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString()) != nullptr) {
-            statusBar()->showMessage(tr("⚠️ Авто-настройки, авто-коррекция и авто-исправление: Не применено"), 8000);
+            statusBar()->showMessage(tr("⚠️ Авто-исправление: Не применено"), 8000);
         }
         UpdateStatusButtons();
     }
@@ -3951,6 +4135,8 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
             .purpose = Service::AM::Frontend::UserSelectionPurpose::General,
         };
         if (SelectAndSetCurrentUser(parameters) == false) {
+            RestoreSessionSettings();
+            m_session_backup.is_active = false;
             game_list->setEnabled(true);
             return;
         }
@@ -3962,6 +4148,8 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     user_flag_cmd_line = false;
 
     if (!LoadROM(filename, params)) {
+        RestoreSessionSettings();
+        m_session_backup.is_active = false;
         game_list->setEnabled(true);
         return;
     }
@@ -4280,6 +4468,29 @@ void MainWindow::OnEmulationStopped() {
     emu_speed_label->setVisible(false);
     game_fps_label->setVisible(false);
     emu_frametime_label->setVisible(false);
+    if (auto_correction_button) {
+        auto_correction_button->setVisible(false);
+        auto_correction_button->setText(tr("🛠️ Авто-коррекция"));
+        auto_correction_button->setStyleSheet(QStringLiteral(
+            "QPushButton#AutoCorrectionButton {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FF9100, stop:1 #FF3D00);"
+            "    color: #FFFFFF;"
+            "    font-weight: bold;"
+            "    font-size: 7.5pt;"
+            "    padding: 2px 8px;"
+            "    border-radius: 4px;"
+            "    border: 1px solid #FFAB40;"
+            "}"
+            "QPushButton#AutoCorrectionButton:hover {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FFA726, stop:1 #FF5722);"
+            "    border-color: #FFD180;"
+            "}"
+            "QPushButton#AutoCorrectionButton:pressed {"
+            "    background: #D84315;"
+            "}"
+        ));
+    }
+    m_auto_correction_applied = false;
     renderer_status_button->setEnabled(!UISettings::values.has_broken_vulkan);
     refresh_button->setEnabled(true);
 
@@ -4295,6 +4506,7 @@ void MainWindow::OnEmulationStopped() {
     // Enable game list
     game_list->setEnabled(true);
 
+    RestoreSessionSettings();
     Settings::RestoreGlobalState(false);
     config = std::make_unique<QtConfig>();
     config->ReloadAllValues();
@@ -6695,6 +6907,17 @@ void MainWindow::UpdateStatusBar() {
     emu_speed_label->setVisible(!Settings::values.use_multi_core.GetValue());
     game_fps_label->setVisible(true);
     emu_frametime_label->setVisible(true);
+
+    if (auto_correction_button) {
+        if (m_auto_correction_applied) {
+            auto_correction_button->setVisible(true);
+        } else {
+            const bool performance_drop = (display_fps > 0.0 && display_fps < 25.0) ||
+                                          (results.frametime > 0.042) ||
+                                          (results.emulation_speed > 0.0 && results.emulation_speed < 0.78);
+            auto_correction_button->setVisible(performance_drop);
+        }
+    }
 }
 
 void MainWindow::ApplyDynamicSettingChange() {
@@ -8069,6 +8292,8 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     // Shutdown session if the emu thread is active...
     if (QtCommon::emu_thread != nullptr)
         ShutdownGame();
+
+    RestoreSessionSettings();
 
     render_window->close();
     multiplayer_state->Close();
