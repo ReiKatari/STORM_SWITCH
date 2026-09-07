@@ -477,8 +477,8 @@ object GameHelper {
             for (rawName in names) {
                 if (rawName.isEmpty()) continue
                 val name = rawName.substringAfterLast('/').substringAfterLast('\\')
-                // 1. Paired version: e.g. "(1.0.9 - 458752)"
-                val pairMatch = Regex("""\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)\)""", RegexOption.IGNORE_CASE).find(name)
+                // 1. Paired version: e.g. "(1.0.9 - 458752 - 0100EC9010258000)" or "(1.0.9 - 458752)" or "[1.0.9 - 458752]"
+                val pairMatch = Regex("""[\[\(]([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)(?:\s*-\s*[0-9A-Fa-f]+)?[\]\)]""", RegexOption.IGNORE_CASE).find(name)
                 if (pairMatch != null) {
                     val pVer = pairMatch.groupValues[1].trim()
                     val pIntVer = pairMatch.groupValues[2].trim()
@@ -510,8 +510,8 @@ object GameHelper {
             for (rawName in names) {
                 if (rawName.isEmpty()) continue
                 val name = rawName.substringAfterLast('/').substringAfterLast('\\')
-                // Require 'v' prefix explicitly like [v65536], [v131072] to prevent matching 16-hex Title IDs!
-                val match = Regex("""[\[\(]v(\d{1,10})[\]\)]""", RegexOption.IGNORE_CASE).find(name)
+                // Require 5-9 digits to prevent matching 16-hex Title IDs!
+                val match = Regex("""[\[\(]v?(\d{5,9})[\]\)]""", RegexOption.IGNORE_CASE).find(name)
                 if (match != null) {
                     val num = match.groupValues[1].toLongOrNull() ?: 0L
                     if (num in 1..4294967295L) {

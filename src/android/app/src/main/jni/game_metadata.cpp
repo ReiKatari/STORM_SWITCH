@@ -146,9 +146,9 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
 
             const std::string fn = get_filename_only(decoded_path);
 
-            static const std::regex pair_regex(R"(\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)\))");
+            static const std::regex pair_regex(R"([\(\[]([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)(?:\s*-\s*[0-9A-Fa-f]+)?[\)\]])");
             static const std::regex bracket_ver_regex(R"([\[\(]v?([0-9]+\.[0-9]+(?:\.[0-9]+)*)[\]\)])");
-            static const std::regex vnum_regex(R"([\[\(]v([0-9]{1,10})[\]\)])");
+            static const std::regex vnum_regex(R"([\[\(]v?([0-9]{5,9})[\]\)])");
 
             std::smatch pair_match;
             if (std::regex_search(fn, pair_match, pair_regex)) {
