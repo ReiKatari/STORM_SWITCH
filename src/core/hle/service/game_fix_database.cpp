@@ -3415,6 +3415,56 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Network\\airplane_mode", "true"}
         }
     },
+    // AI: Не менять (на будущее) / DO NOT MODIFY
+    {
+        0x0100C60010228000ULL,
+        "Streets of Rage 4",
+        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
+        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
+        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
+        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
+        "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание видеороликов)\n"
+        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
+        "✓ Асинхронный вывод: Отключено (устраняет дедлок потока Vulkan и зацикливание видеоряда меню)\n"
+        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
+        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
+        "✓ Синхронизация операций памяти: Отключено (устраняет задержки ожидания копирования текстурных буферов)\n"
+        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
+        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
+        "✓ Игнорировать прерывания памяти: Включено (защита от падений и аварийных вылетов при обращениях за границы буфера)\n"
+        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
+        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
+        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents video freezes)\n"
+        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
+        "✓ Async Presentation: Disabled (prevents Vulkan thread deadlock and menu loop)\n"
+        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
+        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
+        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
+        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
+        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
+        "✓ Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n"
+        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
+        {
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\async_presentation", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_video_framerate", "false"},
+            {"Renderer\\eco_frame_pacing", "false"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"}
+        }
+    },
     {
         0x0100E65002BB8000ULL,
         "Stardew Valley",
