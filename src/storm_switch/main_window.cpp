@@ -67,6 +67,7 @@
 #include "applets/qt_web_browser.h"
 
 #include "configuration/configure_dialog.h"
+#include "configuration/shared_widget.h"
 #include "configuration/configure_input.h"
 #include "configuration/configure_per_game.h"
 #include "configuration/configure_tas.h"
@@ -87,6 +88,7 @@
 
 #include <QActionGroup>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QDir>
@@ -389,9 +391,19 @@ inline static bool isDarkMode() {
 }
 #endif // _WIN32
 
+static MainWindow* s_main_window_instance = nullptr;
+
+MainWindow* MainWindow::GetInstance() {
+    return s_main_window_instance;
+}
+
 MainWindow::MainWindow(bool has_broken_vulkan)
     : ui{std::make_unique<Ui::MainWindow>()},
       input_subsystem{std::make_shared<InputCommon::InputSubsystem>()}, user_data_migrator{this} {
+    s_main_window_instance = this;
+    ConfigurationShared::SetGlobalSettingChangeCallback([this]() {
+        this->OnDynamicSettingChangedFromUI();
+    });
     QtCommon::Init(this);
 
     Common::FS::CreateEdenPaths();
@@ -549,6 +561,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     // so now we have to make this completely unnecessary call
     // to prevent the UI from blowing up.
     UpdateUITheme();
+    UpdateStatusButtons();
 
     QTimer::singleShot(2500, this, [this] {
         OnCheckUpdates(false);
@@ -660,6 +673,10 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 }
 
 MainWindow::~MainWindow() {
+    ConfigurationShared::SetGlobalSettingChangeCallback(nullptr);
+    if (s_main_window_instance == this) {
+        s_main_window_instance = nullptr;
+    }
     // will get automatically deleted otherwise
     if (render_window->parent() == nullptr) {
         delete render_window;
@@ -2094,6 +2111,7 @@ void MainWindow::InitializeWidgets() {
     connect(statusBar(), &QStatusBar::customContextMenuRequested, this, &MainWindow::ShowFooterCustomizeMenu);
 
     LoadFooterSettings();
+    UpdateStatusButtons();
 
     statusBar()->setVisible(true);
     setStyleSheet(QStringLiteral("QStatusBar::item{border: none;}"));
@@ -2915,6 +2933,9 @@ void MainWindow::ConnectMenuEvents() {
 
     auto* reset_gamefix_action = ui->menu_Tools->addAction(tr("🔄 Сбросить скрытые диалоги авто-исправлений..."));
     connect_menu(reset_gamefix_action, &MainWindow::OnResetGameFixSuppression);
+
+    auto* autotune_action = ui->menu_Tools->addAction(tr("⚡ Авто-настройки производительности..."));
+    connect_menu(autotune_action, &MainWindow::OnAutoTuneSettings);
 }
 
 void MainWindow::UpdateMenuState() {
@@ -3180,7 +3201,7 @@ bool MainWindow::SelectAndSetCurrentUser(
     return true;
 }
 
-bool MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show) {
+MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show) {
     if (title_id == 0) {
         static const QRegularExpression tid_regex(QStringLiteral(R"(([0-9a-fA-F]{16}))"));
         const auto match = tid_regex.match(game_path);
@@ -3206,7 +3227,7 @@ bool MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool 
             QMessageBox::information(this, tr("Оптимизация STORM SWITCH"),
                 tr("Для данной игры в базе GameFix нет специальных рекомендаций.\nИгра использует стандартные настройки эмулятора."));
         }
-        return false;
+        return GameFixDialogResult::LaunchWithoutChanges;
     }
 
     QByteArray utf8_str = game_path.toUtf8();
@@ -3233,8 +3254,9 @@ bool MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool 
         }
     }
 
-    if (dont_ask && !force_show) {
-        return false;
+    const bool fix_applied = Core::GameFixDatabase::IsFixApplied(title_id, check_ini);
+    if (dont_ask && fix_applied && !force_show) {
+        return GameFixDialogResult::ApplyAndLaunch;
     }
 
     QString clean_game_name = QString::fromStdString(profile->game_name);
@@ -3391,7 +3413,7 @@ bool MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool 
         "    color: #050B14;"
         "    font-weight: bold;"
         "    font-size: 13px;"
-        "    padding: 8px 22px;"
+        "    padding: 8px 18px;"
         "    border-radius: 6px;"
         "    border: 1px solid #00F0FF;"
         "}"
@@ -3409,7 +3431,7 @@ bool MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool 
         "    background: rgba(30, 41, 59, 0.75);"
         "    color: #CBD5E1;"
         "    font-size: 13px;"
-        "    padding: 8px 20px;"
+        "    padding: 8px 16px;"
         "    border-radius: 6px;"
         "    border: 1px solid rgba(148, 163, 184, 0.25);"
         "}"
@@ -3423,26 +3445,64 @@ bool MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool 
         "}"
     ));
 
+    QPushButton* cancelBtn = nullptr;
+    if (!force_show) {
+        cancelBtn = new QPushButton(tr("Отменить"), &fixDialog);
+        cancelBtn->setStyleSheet(QStringLiteral(
+            "QPushButton {"
+            "    background: rgba(46, 16, 20, 0.75);"
+            "    color: #FCA5A5;"
+            "    font-size: 13px;"
+            "    padding: 8px 16px;"
+            "    border-radius: 6px;"
+            "    border: 1px solid rgba(239, 68, 68, 0.35);"
+            "}"
+            "QPushButton:hover {"
+            "    background: rgba(239, 68, 68, 0.85);"
+            "    border: 1px solid #FF5252;"
+            "    color: #FFFFFF;"
+            "}"
+            "QPushButton:pressed {"
+            "    background: #991B1B;"
+            "}"
+        ));
+    }
+
     btn_layout->addWidget(applyBtn);
     btn_layout->addWidget(skipBtn);
+    if (cancelBtn) {
+        btn_layout->addWidget(cancelBtn);
+    }
     dlg_layout->addLayout(btn_layout);
 
-    bool applied = false;
-    connect(applyBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &applied] {
-        applied = true;
+    GameFixDialogResult action = GameFixDialogResult::Cancel;
+
+    connect(applyBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
+        action = GameFixDialogResult::ApplyAndLaunch;
         fixDialog.accept();
     });
-    connect(skipBtn, &QPushButton::clicked, &fixDialog, [&fixDialog] {
-        fixDialog.reject();
+    connect(skipBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
+        action = GameFixDialogResult::LaunchWithoutChanges;
+        fixDialog.accept();
     });
+    if (cancelBtn) {
+        connect(cancelBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
+            action = GameFixDialogResult::Cancel;
+            fixDialog.reject();
+        });
+    }
 
     fixDialog.exec();
+
+    if (action == GameFixDialogResult::Cancel) {
+        return GameFixDialogResult::Cancel;
+    }
 
     const bool new_dont_ask = dont_ask_cb->isChecked();
     Core::GameFixDatabase::SetDontAskAgain(title_id, target_ini, new_dont_ask);
     Core::GameFixDatabase::SetDontAskAgain(title_id, (custom_path / (legacy_config + ".ini")).string(), new_dont_ask);
 
-    if (applied) {
+    if (action == GameFixDialogResult::ApplyAndLaunch) {
         Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, target_ini);
         Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, (custom_path / (legacy_config + ".ini")).string());
         Core::GameFixDatabase::ApplyProfileDirectly(title_id);
@@ -3450,9 +3510,9 @@ bool MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool 
             QMessageBox::information(this, tr("Оптимизация STORM SWITCH"),
                 tr("Оптимизированные настройки успешно сохранены для игры: %1").arg(clean_game_name));
         }
-        return true;
+        return GameFixDialogResult::ApplyAndLaunch;
     }
-    return false;
+    return GameFixDialogResult::LaunchWithoutChanges;
 }
 
 void MainWindow::OnResetGameFixSuppression() {
@@ -3463,6 +3523,274 @@ void MainWindow::OnResetGameFixSuppression() {
     } else {
         QMessageBox::information(this, tr("Авто-исправления STORM SWITCH"),
             tr("Нет скрытых диалогов авто-исправлений. Все диалоги уже активны."));
+    }
+}
+
+void MainWindow::OnAutoTuneSettings() {
+    QDialog tuneDialog(this);
+    tuneDialog.setWindowTitle(tr("Авто-настройки STORM SWITCH"));
+    tuneDialog.setMinimumWidth(560);
+    tuneDialog.setModal(true);
+    tuneDialog.setStyleSheet(QStringLiteral(
+        "QDialog {"
+        "    background: #0B111A;"
+        "    color: #F0F6FC;"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    border-radius: 10px;"
+        "}"
+    ));
+
+    auto* layout = new QVBoxLayout(&tuneDialog);
+    layout->setContentsMargins(18, 16, 18, 16);
+    layout->setSpacing(12);
+
+    auto* headerCard = new QFrame(&tuneDialog);
+    headerCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 210, 255, 0.12), stop:1 rgba(2, 132, 199, 0.04));"
+        "    border: 1px solid rgba(0, 210, 255, 0.28);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* headerLayout = new QHBoxLayout(headerCard);
+    headerLayout->setContentsMargins(12, 10, 12, 10);
+    headerLayout->setSpacing(10);
+
+    auto* iconLabel = new QLabel(QStringLiteral("⚡"), headerCard);
+    iconLabel->setStyleSheet(QStringLiteral("font-size: 22px; background: transparent; border: none;"));
+    headerLayout->addWidget(iconLabel);
+
+    auto* titleLabel = new QLabel(
+        tr("<b>Глобальные авто-настройки производительности</b><br>"
+           "<span style='color: #94A3B8; font-size: 11px;'>Настройки применяются ко всем играм по умолчанию (ОБЩИЕ параметры).</span>"),
+        headerCard);
+    titleLabel->setStyleSheet(QStringLiteral("font-size: 13px; color: #FFFFFF; background: transparent; border: none;"));
+    headerLayout->addWidget(titleLabel, 1);
+    layout->addWidget(headerCard);
+
+    auto* profileCombo = new QComboBox(&tuneDialog);
+    profileCombo->addItem(tr("1. Низкий / Энергосбережение (0.75X, Быстрый ГПУ, BC3 сжатие)"), QStringLiteral("low"));
+    profileCombo->addItem(tr("2. Сбалансированный (1X, Быстрый ГПУ, FSR, 60 FPS)"), QStringLiteral("balanced"));
+    profileCombo->addItem(tr("3. Максимальное качество (2X, Высокая точность ГПУ, SMAA, 16x)"), QStringLiteral("high"));
+    profileCombo->setCurrentIndex(1);
+    profileCombo->setStyleSheet(QStringLiteral(
+        "QComboBox {"
+        "    background: #151D2A;"
+        "    color: #00D2FF;"
+        "    border: 1px solid rgba(0, 210, 255, 0.4);"
+        "    border-radius: 6px;"
+        "    padding: 8px 12px;"
+        "    font-weight: bold;"
+        "    font-size: 13px;"
+        "}"
+        "QComboBox QAbstractItemView {"
+        "    background: #151D2A;"
+        "    color: #F0F6FC;"
+        "    selection-background-color: rgba(0, 210, 255, 0.3);"
+        "    border: 1px solid #00D2FF;"
+        "}"
+    ));
+    layout->addWidget(profileCombo);
+
+    auto* detailsCard = new QFrame(&tuneDialog);
+    detailsCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(0, 210, 255, 0.05);"
+        "    border: 1px solid rgba(0, 210, 255, 0.25);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* detailsLayout = new QVBoxLayout(detailsCard);
+    detailsLayout->setContentsMargins(12, 10, 12, 10);
+    detailsLayout->setSpacing(6);
+
+    auto* detailsHeader = new QLabel(tr("⚡ <b>Параметры выбранного профиля:</b>"), detailsCard);
+    detailsHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 12px; background: transparent; border: none;"));
+    detailsLayout->addWidget(detailsHeader);
+
+    auto* detailsText = new QLabel(detailsCard);
+    detailsText->setTextFormat(Qt::RichText);
+    detailsText->setWordWrap(true);
+    detailsText->setStyleSheet(QStringLiteral("color: #93C5FD; font-size: 11.5px; line-height: 1.45; background: transparent; border: none;"));
+    detailsLayout->addWidget(detailsText);
+    layout->addWidget(detailsCard);
+
+    auto update_details = [detailsText](int index) {
+        if (index == 0) {
+            detailsText->setText(
+                QStringLiteral("✓ <b>Разрешение рендеринга</b>: 0.5X (360p/540p) (масштабирование базового разрешения для оптимизации нагрузки на видеокарту)<br>"
+                               "✓ <b>Точность ГПУ</b>: Быстрый (баланс скорости и точности графического процессора)<br>"
+                               "✓ <b>Пересжатие текстур ASTC</b>: BC3 (Среднее качество) (сжатие текстур для экономии видеопамяти VRAM на слабых ГПУ)<br>"
+                               "✓ <b>Метод декодирования ASTC</b>: ГПУ (аппаратное декодирование текстур на графическом процессоре)<br>"
+                               "✓ <b>Асинхронная компиляция шейдеров</b>: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)<br>"
+                               "✓ <b>Асинхронный вывод</b>: Включено (отдельный поток вывода кадров для снижения задержек ввода)<br>"
+                               "✓ <b>Реактивный сброс памяти</b>: Отключено (управление точностью сброса кэшированных поверхностей)<br>"
+                               "✓ <b>Синхронизация операций памяти</b>: Отключено (синхронизация потоков памяти между процессором и видеокартой)<br>"
+                               "✓ <b>Тайминги ГПУ</b>: Ускоренный (ускоренная синхронизация таймингов кадров для высокого FPS)<br>"
+                               "✓ <b>Эко-выравнивание кадров</b>: Включено (устранение холостой нагрузки ядер ЦП в ожидании кадров)<br>"
+                               "✓ <b>Анизотропная фильтрация</b>: По умолчанию (четкость текстур под острым углом к камере)<br>"
+                               "✓ <b>Метод сглаживания</b>: Отключено (устранение ступенчатости и неровностей краев 3D-геометрии)<br>"
+                               "✓ <b>Фильтр масштабирования</b>: Билинейный (алгоритм интерполяции и повышения четкости картинки)<br>"
+                               "✓ <b>Точность ЦП</b>: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)<br>"
+                               "✓ <b>Эмуляция Host MMU (fastmem)</b>: Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)<br>"
+                               "✓ <b>Игнорировать прерывания памяти</b>: Включено (защита от аварийных вылетов при обращениях за границы буфера)<br>"
+                               "✓ <b>Режим док-станции</b>: Портативный (переключение разрешения и графического профиля консоли)"));
+        } else if (index == 2) {
+            detailsText->setText(
+                QStringLiteral("✓ <b>Разрешение рендеринга</b>: 2X (1440p/2160p) (масштабирование базового разрешения для оптимизации нагрузки на видеокарту)<br>"
+                               "✓ <b>Точность ГПУ</b>: Высокая точность (баланс скорости и точности графического процессора)<br>"
+                               "✓ <b>Пересжатие текстур ASTC</b>: Без сжатия (сжатие текстур для экономии видеопамяти VRAM на слабых ГПУ)<br>"
+                               "✓ <b>Метод декодирования ASTC</b>: ЦП Асинхронно (распределение декодирования текстур между ЦП и ГПУ)<br>"
+                               "✓ <b>Асинхронная компиляция шейдеров</b>: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)<br>"
+                               "✓ <b>Асинхронный вывод</b>: Включено (отдельный поток вывода кадров для снижения задержек ввода)<br>"
+                               "✓ <b>Реактивный сброс памяти</b>: Включено (управление точностью сброса кэшированных поверхностей)<br>"
+                               "✓ <b>Синхронизация операций памяти</b>: Включено (синхронизация потоков памяти между процессором и видеокартой)<br>"
+                               "✓ <b>Тайминги ГПУ</b>: Ускоренный (ускоренная синхронизация таймингов кадров для высокого FPS)<br>"
+                               "✓ <b>Эко-выравнивание кадров</b>: Отключено (устранение холостой нагрузки ядер ЦП в ожидании кадров)<br>"
+                               "✓ <b>Анизотропная фильтрация</b>: 16x (четкость текстур под острым углом к камере)<br>"
+                               "✓ <b>Метод сглаживания</b>: SMAA (устранение ступенчатости и неровностей краев 3D-геометрии)<br>"
+                               "✓ <b>Фильтр масштабирования</b>: AMD FidelityFX Super Resolution (алгоритм интерполяции и повышения четкости картинки)<br>"
+                               "✓ <b>Резкость FSR</b>: 85 (уровень резкости алгоритма AMD FSR для четкости деталей)<br>"
+                               "✓ <b>Точность ЦП</b>: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)<br>"
+                               "✓ <b>Эмуляция Host MMU (fastmem)</b>: Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)<br>"
+                               "✓ <b>Игнорировать прерывания памяти</b>: Включено (защита от аварийных вылетов при обращениях за границы буфера)<br>"
+                               "✓ <b>Режим док-станции</b>: В док-станции (переключение разрешения и графического профиля консоли)"));
+        } else {
+            detailsText->setText(
+                QStringLiteral("✓ <b>Разрешение рендеринга</b>: 1X (720p/1080p) (масштабирование базового разрешения для оптимизации нагрузки на видеокарту)<br>"
+                               "✓ <b>Точность ГПУ</b>: Быстрый (баланс скорости и точности графического процессора)<br>"
+                               "✓ <b>Пересжатие текстур ASTC</b>: Без сжатия (сжатие текстур для экономии видеопамяти VRAM на слабых ГПУ)<br>"
+                               "✓ <b>Метод декодирования ASTC</b>: ЦП (распределение декодирования текстур между ЦП и ГПУ)<br>"
+                               "✓ <b>Асинхронная компиляция шейдеров</b>: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)<br>"
+                               "✓ <b>Асинхронный вывод</b>: Включено (отдельный поток вывода кадров для снижения задержек ввода)<br>"
+                               "✓ <b>Реактивный сброс памяти</b>: Отключено (управление точностью сброса кэшированных поверхностей)<br>"
+                               "✓ <b>Синхронизация операций памяти</b>: Отключено (синхронизация потоков памяти между процессором и видеокартой)<br>"
+                               "✓ <b>Тайминги ГПУ</b>: Ускоренный (ускоренная синхронизация таймингов кадров для высокого FPS)<br>"
+                               "✓ <b>Эко-выравнивание кадров</b>: Отключено (устранение холостой нагрузки ядер ЦП в ожидании кадров)<br>"
+                               "✓ <b>Анизотропная фильтрация</b>: По умолчанию (четкость текстур под острым углом к камере)<br>"
+                               "✓ <b>Метод сглаживания</b>: FXAA (устранение ступенчатости и неровностей краев 3D-геометрии)<br>"
+                               "✓ <b>Фильтр масштабирования</b>: AMD FidelityFX Super Resolution (алгоритм интерполяции и повышения четкости картинки)<br>"
+                               "✓ <b>Резкость FSR</b>: 80 (уровень резкости алгоритма AMD FSR для четкости деталей)<br>"
+                               "✓ <b>Точность ЦП</b>: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)<br>"
+                               "✓ <b>Эмуляция Host MMU (fastmem)</b>: Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)<br>"
+                               "✓ <b>Игнорировать прерывания памяти</b>: Включено (защита от аварийных вылетов при обращениях за границы буфера)<br>"
+                               "✓ <b>Режим док-станции</b>: В док-станции (переключение разрешения и графического профиля консоли)"));
+        }
+    };
+
+    update_details(profileCombo->currentIndex());
+    connect(profileCombo, &QComboBox::currentIndexChanged, &tuneDialog, update_details);
+
+    auto* btnLayout = new QHBoxLayout();
+    btnLayout->setSpacing(12);
+
+    auto* applyBtn = new QPushButton(tr("Применить"), &tuneDialog);
+    applyBtn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
+        "    color: #050B14;"
+        "    font-weight: bold;"
+        "    font-size: 13px;"
+        "    padding: 8px 20px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid #00F0FF;"
+        "}"
+        "QPushButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #0284C7);"
+        "    color: #FFFFFF;"
+        "}"
+    ));
+
+    auto* cancelBtn = new QPushButton(tr("Отменить"), &tuneDialog);
+    cancelBtn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: rgba(46, 16, 20, 0.75);"
+        "    color: #FCA5A5;"
+        "    font-size: 13px;"
+        "    padding: 8px 20px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid rgba(239, 68, 68, 0.35);"
+        "}"
+        "QPushButton:hover {"
+        "    background: rgba(239, 68, 68, 0.85);"
+        "    color: #FFFFFF;"
+        "}"
+    ));
+
+    btnLayout->addWidget(applyBtn);
+    btnLayout->addWidget(cancelBtn);
+    layout->addLayout(btnLayout);
+
+    connect(applyBtn, &QPushButton::clicked, &tuneDialog, &QDialog::accept);
+    connect(cancelBtn, &QPushButton::clicked, &tuneDialog, &QDialog::reject);
+
+    if (tuneDialog.exec() == QDialog::Accepted) {
+        int idx = profileCombo->currentIndex();
+        if (idx == 0) {
+            Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1_2X);
+            Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
+            Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Bc3);
+            Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Cpu);
+            Settings::values.use_asynchronous_shaders.SetValue(true);
+            Settings::values.async_presentation.SetValue(true);
+            Settings::values.use_reactive_flushing.SetValue(false);
+            Settings::values.sync_memory_operations.SetValue(false);
+            Settings::values.gpu_clock.SetValue(Settings::GpuClock::Boost);
+            Settings::values.eco_frame_pacing.SetValue(true);
+            Settings::values.max_anisotropy.SetValue(Settings::AnisotropyMode::Automatic);
+            Settings::values.anti_aliasing.SetValue(Settings::AntiAliasing::None);
+            Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Bilinear);
+            Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
+            Settings::values.cpuopt_fastmem.SetValue(true);
+            Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+            Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Handheld);
+        } else if (idx == 2) {
+            Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res2X);
+            Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+            Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
+            Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Gpu);
+            Settings::values.use_asynchronous_shaders.SetValue(true);
+            Settings::values.async_presentation.SetValue(true);
+            Settings::values.use_reactive_flushing.SetValue(true);
+            Settings::values.sync_memory_operations.SetValue(true);
+            Settings::values.gpu_clock.SetValue(Settings::GpuClock::Boost);
+            Settings::values.eco_frame_pacing.SetValue(false);
+            Settings::values.max_anisotropy.SetValue(Settings::AnisotropyMode::X16);
+            Settings::values.anti_aliasing.SetValue(Settings::AntiAliasing::Smaa);
+            Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Fsr);
+            Settings::values.fsr_sharpening_slider.SetValue(85);
+            Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
+            Settings::values.cpuopt_fastmem.SetValue(true);
+            Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+            Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
+        } else {
+            Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1X);
+            Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
+            Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
+            Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::CpuAsynchronous);
+            Settings::values.use_asynchronous_shaders.SetValue(true);
+            Settings::values.async_presentation.SetValue(true);
+            Settings::values.use_reactive_flushing.SetValue(false);
+            Settings::values.sync_memory_operations.SetValue(false);
+            Settings::values.gpu_clock.SetValue(Settings::GpuClock::Boost);
+            Settings::values.eco_frame_pacing.SetValue(false);
+            Settings::values.max_anisotropy.SetValue(Settings::AnisotropyMode::Automatic);
+            Settings::values.anti_aliasing.SetValue(Settings::AntiAliasing::Fxaa);
+            Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Fsr);
+            Settings::values.fsr_sharpening_slider.SetValue(80);
+            Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
+            Settings::values.cpuopt_fastmem.SetValue(true);
+            Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+            Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
+        }
+
+        config->SaveAllValues();
+        QtCommon::system->ApplySettings();
+        UpdateStatusButtons();
+        const QString profileName = profileCombo->currentText();
+        statusBar()->showMessage(tr("⚡ Авто-настройки STORM SWITCH успешно применены: %1").arg(profileName), 8000);
+        QMessageBox::information(this, tr("Авто-настройки STORM SWITCH"),
+            tr("Общие параметры производительности успешно применены и сохранены:\n%1").arg(profileName));
     }
 }
 
@@ -3522,7 +3850,12 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     }
 
     if (type == StartGameType::Normal) {
-        ShowGameFixDialog(title_id, filename, false /* force_show */);
+        const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
+        if (fix_result == GameFixDialogResult::Cancel) {
+            LOG_INFO(Frontend, "Запуск игры отменен пользователем в диалоге авто-исправлений");
+            game_list->setDisabled(false);
+            return;
+        }
     }
 
     if (title_id != 0 && type == StartGameType::Normal) {
@@ -3543,16 +3876,16 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         QtConfig per_game_config(config_to_load, Config::ConfigType::PerGameConfig);
         QtCommon::system->HIDCore().ReloadInputDevices();
         QtCommon::system->ApplySettings();
-        Core::GameFixDatabase::ApplyProfileDirectly(title_id);
-        UpdateStatusButtons();
 
         const bool fix_applied = Core::GameFixDatabase::IsFixApplied(title_id, target_ini) ||
                                  Core::GameFixDatabase::IsFixApplied(title_id, (custom_path / (legacy_config + ".ini")).string());
         if (fix_applied) {
+            Core::GameFixDatabase::ApplyProfileDirectly(title_id);
             statusBar()->showMessage(tr("⚡ Оптимизации STORM SWITCH: Применено"), 8000);
         } else if (Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString()) != nullptr) {
             statusBar()->showMessage(tr("⚠️ Оптимизации STORM SWITCH: Не применено"), 8000);
         }
+        UpdateStatusButtons();
     }
 
     Settings::LogSettings();
@@ -5153,6 +5486,13 @@ void MainWindow::OnConfigure() {
             [this](const QString&) { UpdateUITheme(); });
     connect(&configure_dialog, &ConfigureDialog::ExternalContentDirsChanged, this,
             &MainWindow::OnGameListRefresh);
+    connect(&configure_dialog, &ConfigureDialog::ConfigurationApplied, this,
+            [this]() {
+                UpdateStatusButtons();
+                if (config) {
+                    config->SaveAllValues();
+                }
+            });
 
     const auto result = configure_dialog.exec();
     if (result != QDialog::Accepted && !UISettings::values.configuration_applied &&
@@ -6321,6 +6661,16 @@ void MainWindow::ApplyDynamicSettingChange() {
     }
     if (config) {
         config->SaveAllValues();
+    }
+    UpdateStatusButtons();
+    ConfigurationShared::ReloadAllActiveWidgets();
+}
+
+void MainWindow::OnDynamicSettingChangedFromUI() {
+    Settings::UpdateGPUAccuracy();
+    Settings::UpdateRescalingInfo();
+    if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+        QtCommon::system->ApplySettings();
     }
     UpdateStatusButtons();
 }

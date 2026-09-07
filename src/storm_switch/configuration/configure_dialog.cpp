@@ -31,6 +31,7 @@
 #include "storm_switch/configuration/configure_system.h"
 #include "storm_switch/configuration/configure_ui.h"
 #include "storm_switch/configuration/configure_web.h"
+#include "storm_switch/configuration/shared_widget.h"
 #include "storm_switch/hotkeys.h"
 
 ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
@@ -117,11 +118,26 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
 
     // Selects the leftmost button on the bottom bar (Cancel as of writing)
     ui->buttonBox->setFocus();
+
+    ConfigurationShared::RegisterReloadCallback(reinterpret_cast<uintptr_t>(this), [this]() {
+        ReloadAllTabs();
+    });
 }
 
-ConfigureDialog::~ConfigureDialog() = default;
+ConfigureDialog::~ConfigureDialog() {
+    ConfigurationShared::UnregisterReloadCallback(reinterpret_cast<uintptr_t>(this));
+}
 
-void ConfigureDialog::SetConfiguration() {}
+void ConfigureDialog::ReloadAllTabs() {
+    ConfigurationShared::ReloadAllActiveWidgets();
+    if (graphics_tab) {
+        graphics_tab->SetConfiguration();
+    }
+}
+
+void ConfigureDialog::SetConfiguration() {
+    ReloadAllTabs();
+}
 
 void ConfigureDialog::ApplyConfiguration() {
     general_tab->ApplyConfiguration();
@@ -168,6 +184,7 @@ void ConfigureDialog::RetranslateUI() {
 void ConfigureDialog::HandleApplyButtonClicked() {
     UISettings::values.configuration_applied = true;
     ApplyConfiguration();
+    emit ConfigurationApplied();
 }
 
 Q_DECLARE_METATYPE(QList<QWidget*>);

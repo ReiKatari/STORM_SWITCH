@@ -56,6 +56,7 @@ public:
     ~ConfigureDialog() override;
 
     void ApplyConfiguration();
+    void ReloadAllTabs();
 
 private slots:
     void OnLanguageChanged(const QString& locale);
@@ -65,6 +66,7 @@ signals:
     void LanguageChanged(const QString& locale);
     void ThemeChanged(const QString& theme);
     void ExternalContentDirsChanged();
+    void ConfigurationApplied();
 
 private:
     void changeEvent(QEvent* event) override;

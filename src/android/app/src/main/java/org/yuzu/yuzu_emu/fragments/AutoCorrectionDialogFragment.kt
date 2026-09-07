@@ -80,8 +80,9 @@ class AutoCorrectionDialogFragment : DialogFragment() {
 
                 if (NativeConfig.isPerGameConfigLoaded()) {
                     NativeConfig.savePerGameConfig()
+                } else {
+                    NativeConfig.saveGlobalConfig()
                 }
-                NativeConfig.saveGlobalConfig()
 
                 prefs.edit().putBoolean(prefKey, true).apply()
                 Toast.makeText(requireContext(), getString(R.string.auto_correction_applied_toast), Toast.LENGTH_SHORT).show()
@@ -103,8 +104,9 @@ class AutoCorrectionDialogFragment : DialogFragment() {
 
                 if (NativeConfig.isPerGameConfigLoaded()) {
                     NativeConfig.savePerGameConfig()
+                } else {
+                    NativeConfig.saveGlobalConfig()
                 }
-                NativeConfig.saveGlobalConfig()
 
                 prefs.edit().putBoolean(prefKey, false).apply()
                 Toast.makeText(requireContext(), getString(R.string.auto_correction_reset_toast), Toast.LENGTH_SHORT).show()

@@ -463,7 +463,22 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
 
     // Streets of Rage 4 (v1.0.9): Build ID 8817441976E32E94909A95F64405A99A092B43DC
     if (name == "main" && build_id.starts_with("8817441976E32E94909A95F64405A99A092B43DC")) {
-        // Intro video null-buffer guard: prevent IndexOutOfRangeException on frame 4
+        // 1. Fix crash on null input device handling loop
+        // In pi_header: sizeof(NSOHeader) (0x100) + text offset 0x008C2F94 = 0x008C3094
+        constexpr std::size_t input_patch_offset = sizeof(Loader::NSOHeader) + 0x008C2F94;
+        constexpr u32 original_input_insn = 0xB40001C0; // cbz x0, 0x008C2FCC
+        constexpr u32 patched_input_insn  = 0xB4000720; // cbz x0, 0x008C3078
+
+        if (out.size() >= input_patch_offset + sizeof(u32)) {
+            u32 current_insn = 0;
+            std::memcpy(&current_insn, out.data() + input_patch_offset, sizeof(u32));
+            if (current_insn == original_input_insn) {
+                LOG_INFO(Loader, "Streets of Rage 4: Applied null input device loop fix at 0x008C2F94 (cbz x0 -> 0x008C3078)");
+                std::memcpy(out.data() + input_patch_offset, &patched_input_insn, sizeof(u32));
+            }
+        }
+
+        // 2. Intro video null-buffer guard: prevent IndexOutOfRangeException on frame 4
         constexpr size_t buffer_patch_offset = sizeof(Loader::NSOHeader) + 0x008C0048;
         if (out.size() >= buffer_patch_offset + sizeof(u32)) {
             u32 current_insn = 0;

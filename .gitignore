@@ -73,7 +73,9 @@ vulkansdk*.exe
 *.pfx
 *.cer
 *.key
+*token*
 deepseek_key.txt
+tg_token.txt
 google-credentials.json
 installer/Output/
 *.tmp*
@@ -88,5 +90,6 @@ installer/Output/
 Assembling/
 Files/
 tools/
+!tools/storm_autotuner.py
 
 

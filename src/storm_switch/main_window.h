@@ -166,6 +166,9 @@ class MainWindow : public QMainWindow {
     static const int max_recent_files_item = 10;
 
 public:
+    static MainWindow* GetInstance();
+    void OnDynamicSettingChangedFromUI();
+    void UpdateStatusButtons();
     void filterBarSetChecked(bool state);
     void UpdateUITheme();
     explicit MainWindow(bool has_broken_vulkan);
@@ -274,8 +277,15 @@ private:
     void BootGame(const QString& filename, Service::AM::FrontendAppletParameters params,
                   StartGameType with_config = StartGameType::Normal);
     void BootGameFromList(const QString& filename, StartGameType with_config);
-    bool ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show = false);
+    enum class GameFixDialogResult {
+        ApplyAndLaunch,
+        LaunchWithoutChanges,
+        Cancel,
+    };
+
+    GameFixDialogResult ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show = false);
     void OnResetGameFixSuppression();
+    void OnAutoTuneSettings();
     void ShutdownGame();
 
     void SetDiscordEnabled(bool state);
@@ -483,7 +493,6 @@ private:
     void UpdateVolumeUI();
     void UpdateStatusBar();
     void UpdateGPUAccuracyButton();
-    void UpdateStatusButtons();
     void UpdateUISettings();
     void UpdateInputDrivers();
     void HideMouseCursor();

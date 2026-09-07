@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2016 Citra Emulator Project
@@ -82,6 +82,7 @@ ConfigureGraphics::ConfigureGraphics(
     connect(api_combobox, qOverload<int>(&QComboBox::activated), this, [this] {
         UpdateAPILayout();
         PopulateVSyncModeSelection(false);
+        ConfigurationShared::NotifyGlobalSettingChanged();
     });
     connect(vulkan_device_combobox, qOverload<int>(&QComboBox::activated), this,
             [this](int device) {
@@ -201,7 +202,19 @@ void ConfigureGraphics::UpdateDeviceSelection(int device) {
 
 ConfigureGraphics::~ConfigureGraphics() = default;
 
-void ConfigureGraphics::SetConfiguration() {}
+void ConfigureGraphics::SetConfiguration() {
+    if (api_combobox) {
+        const auto backend = Settings::values.renderer_backend.GetValue();
+        const int index = FindIndex(Settings::EnumMetadata<Settings::RendererBackend>::Index(), static_cast<int>(backend));
+        if (index >= 0 && index < api_combobox->count()) {
+            const bool blocked = api_combobox->blockSignals(true);
+            api_combobox->setCurrentIndex(index);
+            api_combobox->blockSignals(blocked);
+        }
+    }
+    UpdateAPILayout();
+    PopulateVSyncModeSelection(true);
+}
 
 void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     QLayout* api_layout = ui->api_widget->layout();
@@ -258,6 +271,18 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         } else if (setting->Id() == Settings::values.vsync_mode.Id()) {
             // Keep track of vsync_mode's combobox so we can populate it
             vsync_mode_combobox = widget->combobox;
+            vsync_mode_combobox->connect(
+                vsync_mode_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                [this](int) {
+                    if (vsync_mode_combobox && vsync_mode_combobox->currentIndex() >= 0 &&
+                        static_cast<size_t>(vsync_mode_combobox->currentIndex()) <
+                            vsync_mode_combobox_enum_map.size()) {
+                        if (Settings::IsConfiguringGlobal() && Settings::values.vsync_mode.UsingGlobal()) {
+                            UpdateVsyncSetting();
+                            ConfigurationShared::NotifyGlobalSettingChanged();
+                        }
+                    }
+                });
 
             // Since vsync is populated at runtime, we have to manually set up the button for
             // restoring the global setting.

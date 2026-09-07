@@ -3263,15 +3263,37 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100EC9010258000ULL,
         "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации",
-        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Декодирование видео (NVDEC): ГПУ (Аппаратное)\n✓ Барьеры ГПУ: По умолчанию\n✓ Асинхронная презентация: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Синхронизация памяти DMA: Отключено\n✓ Реактивный сброс: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрое время ГПУ: Включено",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ NVDEC Video Emulation: GPU\n✓ GPU Fences: Default\n✓ Async Presentation: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fast GPU Time: Enabled",
+        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
+        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
+        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
+        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
+        "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание видеороликов)\n"
+        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
+        "✓ Асинхронный вывод: Отключено (устраняет дедлок потока Vulkan и зацикливание видеоряда меню)\n"
+        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
+        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
+        "✓ Синхронизация операций памяти: Отключено (устраняет задержки ожидания копирования текстурных буферов)\n"
+        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
+        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
+        "✓ Игнорировать прерывания памяти: Включено (защита от падений и аварийных вылетов при обращениях за границы буфера)\n"
+        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
+        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
+        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents video freezes)\n"
+        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
+        "✓ Async Presentation: Disabled (prevents Vulkan thread deadlock and menu loop)\n"
+        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
+        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
+        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
+        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
+        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
+        "✓ Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n"
+        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "2"},
-            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\sync_memory_operations", "false"},
@@ -3281,22 +3303,47 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"}
         }
     },
     // AI: Не менять (на будущее) / DO NOT MODIFY
     {
         0x010085800E33E000ULL,
         "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации",
-        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Декодирование видео (NVDEC): ГПУ (Аппаратное)\n✓ Барьеры ГПУ: По умолчанию\n✓ Асинхронная презентация: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Синхронизация памяти DMA: Отключено\n✓ Реактивный сброс: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрое время ГПУ: Включено",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ NVDEC Video Emulation: GPU\n✓ GPU Fences: Default\n✓ Async Presentation: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fast GPU Time: Enabled",
+        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
+        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
+        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
+        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
+        "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание видеороликов)\n"
+        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
+        "✓ Асинхронный вывод: Отключено (устраняет дедлок потока Vulkan и зацикливание видеоряда меню)\n"
+        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
+        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
+        "✓ Синхронизация операций памяти: Отключено (устраняет задержки ожидания копирования текстурных буферов)\n"
+        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
+        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
+        "✓ Игнорировать прерывания памяти: Включено (защита от падений и аварийных вылетов при обращениях за границы буфера)\n"
+        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
+        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
+        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents video freezes)\n"
+        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
+        "✓ Async Presentation: Disabled (prevents Vulkan thread deadlock and menu loop)\n"
+        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
+        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
+        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
+        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
+        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
+        "✓ Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n"
+        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "2"},
-            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\sync_memory_operations", "false"},
@@ -3306,22 +3353,47 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"}
         }
     },
     // AI: Не менять (на будущее) / DO NOT MODIFY
     {
         0x0100BA700E340000ULL,
         "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации",
-        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (Dynarmic JIT)\n✓ Точность ГПУ: Обычная\n✓ Декодирование видео (NVDEC): ГПУ (Аппаратное)\n✓ Барьеры ГПУ: По умолчанию\n✓ Асинхронная презентация: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Синхронизация памяти DMA: Отключено\n✓ Реактивный сброс: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрое время ГПУ: Включено",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ GPU Accuracy: Normal\n✓ NVDEC Video Emulation: GPU\n✓ GPU Fences: Default\n✓ Async Presentation: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fast GPU Time: Enabled",
+        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
+        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
+        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
+        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
+        "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание видеороликов)\n"
+        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
+        "✓ Асинхронный вывод: Отключено (устраняет дедлок потока Vulkan и зацикливание видеоряда меню)\n"
+        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
+        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
+        "✓ Синхронизация операций памяти: Отключено (устраняет задержки ожидания копирования текстурных буферов)\n"
+        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
+        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
+        "✓ Игнорировать прерывания памяти: Включено (защита от падений и аварийных вылетов при обращениях за границы буфера)\n"
+        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
+        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
+        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents video freezes)\n"
+        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
+        "✓ Async Presentation: Disabled (prevents Vulkan thread deadlock and menu loop)\n"
+        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
+        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
+        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
+        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
+        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
+        "✓ Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n"
+        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "2"},
-            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\sync_memory_operations", "false"},
@@ -3331,7 +3403,10 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"}
         }
     },
     {
@@ -3941,6 +4016,17 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
                 sections["System"][key + "\\use_global"] = "false";
                 sections["System"][key + "\\default"] = "false";
             }
+            if (key == "airplane_mode") {
+                sections["System"][key] = val;
+                sections["System"][key + "\\use_global"] = "false";
+                sections["System"][key + "\\default"] = "false";
+                sections["Services"][key] = val;
+                sections["Services"][key + "\\use_global"] = "false";
+                sections["Services"][key + "\\default"] = "false";
+                sections["Network"][key] = val;
+                sections["Network"][key + "\\use_global"] = "false";
+                sections["Network"][key + "\\default"] = "false";
+            }
         }
     }
     sections["StormEden"]["storm_fix_applied"] = "true";
@@ -4097,8 +4183,14 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.resolution_setup, static_cast<Settings::ResolutionSetup>(safe_stoi(val, 2)));
             } else if (full_key == "Renderer\\fsr_sharpening_slider") {
                 apply_setting(Settings::values.fsr_sharpening_slider, static_cast<u8>(safe_stoi(val, 0)));
-            } else if (full_key == "Renderer\\use_fast_gpu_time") {
-                apply_setting(Settings::values.gpu_clock, val == "true" || val == "1" ? Settings::GpuClock::Boost : Settings::GpuClock::Normal);
+            } else if (full_key == "Renderer\\use_fast_gpu_time" || full_key == "Renderer\\gpu_clock") {
+                if (val == "true" || val == "1") {
+                    apply_setting(Settings::values.gpu_clock, Settings::GpuClock::Boost);
+                } else if (val == "2") {
+                    apply_setting(Settings::values.gpu_clock, Settings::GpuClock::Overclock);
+                } else {
+                    apply_setting(Settings::values.gpu_clock, Settings::GpuClock::Normal);
+                }
             } else if (full_key == "Renderer\\dyna_state") {
                 apply_setting(Settings::values.dyna_state, static_cast<Settings::ExtendedDynamicState>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\nvdec_emulation") {
@@ -4111,7 +4203,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.accelerate_astc, static_cast<Settings::AstcDecodeMode>(safe_stoi(val, 1)));
             } else if (full_key == "Renderer\\gpu_fence_behavior") {
                 apply_setting(Settings::values.gpu_fence_behavior, static_cast<Settings::GpuFenceBehavior>(safe_stoi(val, 0)));
-            } else if (full_key == "System\\airplane_mode") {
+            } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {
                 apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
                 apply_setting(Settings::values.memory_layout_mode, static_cast<Settings::MemoryLayout>(safe_stoi(val, 0)));
@@ -4145,6 +4237,8 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.dma_accuracy, static_cast<Settings::DmaAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "System\\eco_thermal_mode") {
                 apply_setting(Settings::values.eco_thermal_mode, val == "true" || val == "1");
+            } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {
+                apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
             }
         }
         Settings::UpdateGPUAccuracy();
@@ -4168,15 +4262,46 @@ bool GameFixDatabase::IsFixApplied(u64 title_id, const std::string& config_file_
     if (!file.is_open()) {
         return false;
     }
-    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    for (const auto& [key, val] : profile->ini_settings) {
-        auto sep = key.find('\\');
-        std::string raw_key = (sep != std::string::npos) ? key.substr(sep + 1) : key;
-        if (content.find(raw_key) != std::string::npos) {
-            return true;
+
+    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> sections;
+    std::string line;
+    std::string current_section;
+    while (std::getline(file, line)) {
+        line = Common::FS::SanitizePath(line);
+        if (line.empty() || line[0] == '#' || line[0] == ';') continue;
+        if (line.front() == '[' && line.back() == ']') {
+            current_section = line.substr(1, line.size() - 2);
+        } else {
+            auto eq = line.find('=');
+            if (eq != std::string::npos && !current_section.empty()) {
+                auto key = line.substr(0, eq);
+                auto val = line.substr(eq + 1);
+                sections[current_section][key] = val;
+            }
         }
     }
-    return false;
+
+    if (sections["StormEden"]["storm_fix_applied"] != "true") {
+        return false;
+    }
+
+    for (const auto& [full_key, expected_val] : profile->ini_settings) {
+        auto slash = full_key.find('\\');
+        if (slash == std::string::npos) continue;
+        std::string sec = full_key.substr(0, slash);
+        std::string key = full_key.substr(slash + 1);
+
+        if (!sections.count(sec) || !sections[sec].count(key)) {
+            return false;
+        }
+        if (sections[sec][key] != expected_val) {
+            return false;
+        }
+        if (sections[sec][key + "\\use_global"] == "true") {
+            return false;
+        }
+    }
+    return true;
 }
 
 } // namespace Core

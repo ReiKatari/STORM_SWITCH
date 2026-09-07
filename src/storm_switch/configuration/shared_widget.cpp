@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
@@ -10,6 +10,7 @@
 #include <limits>
 #include <typeindex>
 #include <typeinfo>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -49,6 +50,41 @@
 #include "qt_common/qt_compat.h"
 
 namespace ConfigurationShared {
+
+static SettingChangeCallback s_setting_change_cb = nullptr;
+static std::vector<Widget*> s_active_widgets;
+static std::unordered_map<uintptr_t, std::function<void()>> s_reload_callbacks;
+
+void SetGlobalSettingChangeCallback(SettingChangeCallback cb) {
+    s_setting_change_cb = std::move(cb);
+}
+
+void NotifyGlobalSettingChanged() {
+    if (s_setting_change_cb) {
+        s_setting_change_cb();
+    }
+}
+
+void RegisterReloadCallback(uintptr_t id, std::function<void()> cb) {
+    s_reload_callbacks[id] = std::move(cb);
+}
+
+void UnregisterReloadCallback(uintptr_t id) {
+    s_reload_callbacks.erase(id);
+}
+
+void ReloadAllActiveWidgets() {
+    for (auto* w : s_active_widgets) {
+        if (w) {
+            w->ReloadFromSetting();
+        }
+    }
+    for (const auto& [id, cb] : s_reload_callbacks) {
+        if (cb) {
+            cb();
+        }
+    }
+}
 
 static int restore_button_count = 0;
 
@@ -121,6 +157,19 @@ QWidget* Widget::CreateCheckBox(Settings::BasicSetting* bool_setting, const QStr
                                                                          : Qt::Unchecked);
     };
 
+    reload_func = [this, bool_setting]() {
+        const bool blocked = checkbox->blockSignals(true);
+        checkbox->setCheckState(bool_setting->ToString() == "true" ? Qt::Checked : Qt::Unchecked);
+        checkbox->blockSignals(blocked);
+    };
+
+    checkbox->connect(checkbox, &QCheckBox::stateChanged, [serializer, bool_setting](int) {
+        if (Settings::IsConfiguringGlobal() && bool_setting->UsingGlobal()) {
+            bool_setting->LoadString(serializer());
+            NotifyGlobalSettingChanged();
+        }
+    });
+
     if (!Settings::IsConfiguringGlobal()) {
         checkbox->connect(checkbox, &QCheckBox::clicked, [touch]() { touch(); });
     }
@@ -161,13 +210,30 @@ QWidget* Widget::CreateCombobox(std::function<std::string()>& serializer,
 
     serializer = [this, enumeration]() {
         int current = combobox->currentIndex();
-        return std::to_string(enumeration->at(current).first);
+        if (current >= 0 && current < static_cast<int>(enumeration->size())) {
+            return std::to_string(enumeration->at(current).first);
+        }
+        return std::string{};
     };
 
     restore_func = [this, find_index]() {
         const u32 global_value = std::strtoul(RelevantDefault(setting).c_str(), nullptr, 0);
         combobox->setCurrentIndex(find_index(global_value));
     };
+
+    reload_func = [this, find_index]() {
+        const u32 current_setting_value = std::strtoul(setting.ToString().c_str(), nullptr, 0);
+        const bool blocked = combobox->blockSignals(true);
+        combobox->setCurrentIndex(find_index(current_setting_value));
+        combobox->blockSignals(blocked);
+    };
+
+    combobox->connect(combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this, serializer](int) {
+        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+            setting.LoadString(serializer());
+            NotifyGlobalSettingChanged();
+        }
+    });
 
     if (!Settings::IsConfiguringGlobal()) {
         combobox->connect(combobox, QOverload<int>::of(&QComboBox::activated),
@@ -227,6 +293,20 @@ QWidget* Widget::CreateRadioGroup(std::function<std::string()>& serializer,
         set_index(global_value);
     };
 
+    reload_func = [this, set_index]() {
+        const u32 val = std::strtoul(setting.ToString().c_str(), nullptr, 0);
+        set_index(val);
+    };
+
+    for (const auto& [id, button] : radio_buttons) {
+        button->connect(button, &QRadioButton::toggled, [this, serializer](bool checked) {
+            if (checked && Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+                setting.LoadString(serializer());
+                NotifyGlobalSettingChanged();
+            }
+        });
+    }
+
     if (!Settings::IsConfiguringGlobal()) {
         for (const auto& [id, button] : radio_buttons)
             button->connect(button, &QAbstractButton::clicked, [touch]() { touch(); });
@@ -252,6 +332,19 @@ QWidget* Widget::CreateLineEdit(std::function<std::string()>& serializer,
         line_edit->setText(QString::fromStdString(RelevantDefault(setting)));
     };
 
+    reload_func = [this]() {
+        const bool blocked = line_edit->blockSignals(true);
+        line_edit->setText(QString::fromStdString(setting.ToString()));
+        line_edit->blockSignals(blocked);
+    };
+
+    line_edit->connect(line_edit, &QLineEdit::editingFinished, [this, serializer]() {
+        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+            setting.LoadString(serializer());
+            NotifyGlobalSettingChanged();
+        }
+    });
+
     if (!Settings::IsConfiguringGlobal()) {
         line_edit->connect(line_edit, &QLineEdit::textChanged, [touch]() { touch(); });
     }
@@ -262,7 +355,8 @@ QWidget* Widget::CreateLineEdit(std::function<std::string()>& serializer,
 static void CreateIntSlider(Settings::BasicSetting& setting, bool reversed, float multiplier,
                             QLabel* feedback, const QString& use_format, QSlider* slider,
                             std::function<std::string()>& serializer,
-                            std::function<void()>& restore_func) {
+                            std::function<void()>& restore_func,
+                            std::function<void()>& reload_func) {
     const int max_val = std::strtol(setting.MaxVal().c_str(), nullptr, 0);
 
     const auto update_feedback = [=](int value) {
@@ -281,12 +375,25 @@ static void CreateIntSlider(Settings::BasicSetting& setting, bool reversed, floa
     restore_func = [slider, &setting]() {
         slider->setValue(std::strtol(RelevantDefault(setting).c_str(), nullptr, 0));
     };
+    reload_func = [slider, &setting]() {
+        const bool blocked = slider->blockSignals(true);
+        slider->setValue(std::strtol(setting.ToString().c_str(), nullptr, 0));
+        slider->blockSignals(blocked);
+    };
+
+    slider->connect(slider, &QAbstractSlider::valueChanged, [&setting, serializer](int) {
+        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+            setting.LoadString(serializer());
+            NotifyGlobalSettingChanged();
+        }
+    });
 }
 
 static void CreateFloatSlider(Settings::BasicSetting& setting, bool reversed, float multiplier,
                               QLabel* feedback, const QString& use_format, QSlider* slider,
                               std::function<std::string()>& serializer,
-                              std::function<void()>& restore_func) {
+                              std::function<void()>& restore_func,
+                              std::function<void()>& reload_func) {
     const float max_val = std::strtof(setting.MaxVal().c_str(), nullptr);
     const float min_val = std::strtof(setting.MinVal().c_str(), nullptr);
     const float use_multiplier =
@@ -310,6 +417,18 @@ static void CreateFloatSlider(Settings::BasicSetting& setting, bool reversed, fl
     restore_func = [slider, &setting, use_multiplier]() {
         slider->setValue(std::strtof(RelevantDefault(setting).c_str(), nullptr) * use_multiplier);
     };
+    reload_func = [slider, &setting, use_multiplier]() {
+        const bool blocked = slider->blockSignals(true);
+        slider->setValue(std::strtof(setting.ToString().c_str(), nullptr) * use_multiplier);
+        slider->blockSignals(blocked);
+    };
+
+    slider->connect(slider, &QAbstractSlider::valueChanged, [&setting, serializer](int) {
+        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+            setting.LoadString(serializer());
+            NotifyGlobalSettingChanged();
+        }
+    });
 }
 
 QWidget* Widget::CreateSlider(bool reversed, float multiplier, const QString& given_suffix,
@@ -341,10 +460,10 @@ QWidget* Widget::CreateSlider(bool reversed, float multiplier, const QString& gi
 
     if (setting.IsIntegral()) {
         CreateIntSlider(setting, reversed, multiplier, feedback, use_format, slider, serializer,
-                        restore_func);
+                        restore_func, reload_func);
     } else {
         CreateFloatSlider(setting, reversed, multiplier, feedback, use_format, slider, serializer,
-                          restore_func);
+                          restore_func, reload_func);
     }
 
     slider->setInvertedAppearance(reversed);
@@ -379,6 +498,19 @@ QWidget* Widget::CreateSpinBox(const QString& given_suffix,
         spinbox->setValue(value);
     };
 
+    reload_func = [this]() {
+        const bool blocked = spinbox->blockSignals(true);
+        spinbox->setValue(std::strtol(setting.ToString().c_str(), nullptr, 0));
+        spinbox->blockSignals(blocked);
+    };
+
+    spinbox->connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), [this, serializer](int) {
+        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+            setting.LoadString(serializer());
+            NotifyGlobalSettingChanged();
+        }
+    });
+
     if (!Settings::IsConfiguringGlobal()) {
         spinbox->connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), [this, touch]() {
             if (spinbox->value() != std::strtol(setting.ToStringGlobal().c_str(), nullptr, 0)) {
@@ -412,6 +544,20 @@ QWidget* Widget::CreateDoubleSpinBox(const QString& given_suffix,
         auto value{std::strtod(RelevantDefault(setting).c_str(), nullptr)};
         double_spinbox->setValue(value);
     };
+
+    reload_func = [this]() {
+        const bool blocked = double_spinbox->blockSignals(true);
+        double_spinbox->setValue(std::strtod(setting.ToString().c_str(), nullptr));
+        double_spinbox->blockSignals(blocked);
+    };
+
+    double_spinbox->connect(
+        double_spinbox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this, serializer](double) {
+            if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+                setting.LoadString(serializer());
+                NotifyGlobalSettingChanged();
+            }
+        });
 
     if (!Settings::IsConfiguringGlobal()) {
         double_spinbox->connect(
@@ -709,7 +855,15 @@ bool Widget::Valid() const {
     return created;
 }
 
-Widget::~Widget() = default;
+Widget::~Widget() {
+    std::erase(s_active_widgets, this);
+}
+
+void Widget::ReloadFromSetting() {
+    if (reload_func) {
+        reload_func();
+    }
+}
 
 Widget::Widget(Settings::BasicSetting* setting_, const TranslationMap& translations_,
                const ComboboxTranslationMap& combobox_translations_, QWidget* parent_,
@@ -719,6 +873,8 @@ Widget::Widget(Settings::BasicSetting* setting_, const TranslationMap& translati
     : QWidget(parent_), parent{parent_}, translations{translations_},
       combobox_enumerations{combobox_translations_}, setting{*setting_}, apply_funcs{apply_funcs_},
       runtime_lock{runtime_lock_} {
+    s_active_widgets.push_back(this);
+
     if (!Settings::IsConfiguringGlobal() && !setting.Switchable()) {
         LOG_DEBUG(Frontend, "\"{}\" is not switchable, skipping...", setting.GetLabel());
         return;

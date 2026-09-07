@@ -35,6 +35,13 @@ class BasicSetting;
 
 namespace ConfigurationShared {
 
+using SettingChangeCallback = std::function<void()>;
+void SetGlobalSettingChangeCallback(SettingChangeCallback cb);
+void NotifyGlobalSettingChanged();
+void ReloadAllActiveWidgets();
+void RegisterReloadCallback(uintptr_t id, std::function<void()> cb);
+void UnregisterReloadCallback(uintptr_t id);
+
 enum class RequestType {
     Default,
     ComboBox,
@@ -95,6 +102,8 @@ public:
      */
     [[nodiscard]] static QPushButton* CreateRestoreGlobalButton(bool using_global, QWidget* parent);
 
+    void ReloadFromSetting();
+
     // Direct handles to sub components created
     QPushButton* restore_button{}; ///< Restore button for custom configurations
     QLineEdit* line_edit{};        ///< QLineEdit, used for LineEdit and HexEdit
@@ -105,6 +114,7 @@ public:
     QComboBox* combobox{};
     QDateTimeEdit* date_time_edit{};
     std::vector<std::pair<u32, QRadioButton*>> radio_buttons{};
+    std::function<void()> reload_func{};
 
 private:
     void SetupComponent(const QString& label, std::function<void()>& load_func, bool managed,
