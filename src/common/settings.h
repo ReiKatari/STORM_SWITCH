@@ -306,10 +306,10 @@ struct Values {
     SwitchableSetting<bool> cpuopt_fastmem{linkage, true, "cpuopt_fastmem", Category::CpuDebug};
     SwitchableSetting<bool> cpuopt_fastmem_exclusives{linkage, true, "cpuopt_fastmem_exclusives",
                                                       Category::CpuDebug};
-    Setting<bool> cpuopt_recompile_exclusives{linkage, true, "cpuopt_recompile_exclusives",
-                                              Category::CpuDebug};
-    Setting<bool> cpuopt_ignore_memory_aborts{linkage, true, "cpuopt_ignore_memory_aborts",
-                                              Category::CpuDebug};
+    SwitchableSetting<bool> cpuopt_recompile_exclusives{linkage, true, "cpuopt_recompile_exclusives",
+                                                        Category::CpuDebug};
+    SwitchableSetting<bool> cpuopt_ignore_memory_aborts{linkage, true, "cpuopt_ignore_memory_aborts",
+                                                        Category::CpuDebug};
 
     SwitchableSetting<bool> cpuopt_unsafe_host_mmu{linkage,
 #if !defined(__APPLE__) && !defined(__linux__) && !defined(__ANDROID__) && !defined(_WIN32)
