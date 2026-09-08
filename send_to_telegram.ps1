@@ -1,4 +1,4 @@
-$tokenFile = "e:\STORM EDEN 3\tg_token.txt"
+﻿$tokenFile = "e:\STORM EDEN 3\tg_token.txt"
 if (Test-Path $tokenFile) {
     $token = (Get-Content $tokenFile -Raw).Trim()
 } elseif ($env:TELEGRAM_BOT_TOKEN) {
