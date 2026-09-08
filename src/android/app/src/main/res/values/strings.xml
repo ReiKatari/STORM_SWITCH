@@ -863,9 +863,10 @@
     <string name="preferences_system_description">Docked mode, region, language</string>
     <string name="preferences_graphics">Graphics</string>
     <string name="preferences_graphics_description">Accuracy level, resolution, shader cache</string>
-    <string name="quick_settings">Quick Settings</string>
-    <string name="enable_quick_settings">Enable quick settings</string>
-    <string name="enable_quick_settings_description">Allow access to quick settings menu via three-finger upward swipe from bottom edge and menu button</string>
+    <string name="quick_settings">Quick settings (3-finger swipe up)</string>
+    <string name="enable_quick_settings">Quick settings (3-finger swipe up)</string>
+    <string name="enable_quick_settings_description">Access quick settings during gameplay via three-finger upward swipe or in-game menu</string>
+    <string name="quick_settings_gesture_hint">💡 Quick settings: 3-finger swipe up</string>
     <string name="preferences_audio">Audio</string>
     <string name="preferences_audio_description">Output engine, volume</string>
     <string name="preferences_controls">Controls</string>

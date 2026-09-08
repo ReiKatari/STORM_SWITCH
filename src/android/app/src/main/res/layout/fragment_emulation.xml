@@ -193,7 +193,7 @@
                     android:fontFamily="sans-serif-medium"
                     android:textSize="15sp"
                     android:textColor="#00F0FF"
-                    android:text="❄️ Игра на паузе — идёт охлаждение устройства" />
+                    android:text="❄️ Игра на паузе - идёт охлаждение устройства" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/paused_cooling_temp"

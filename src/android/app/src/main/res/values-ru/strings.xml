@@ -115,15 +115,15 @@
     <string name="nvdec_emulation_hybrid">Гибридный</string>
 
     <!-- Auto-Correction and Thermal Cooling -->
-    <string name="auto_correction_title">Автокоррекция</string>
+    <string name="auto_correction_title">Авто-коррекция</string>
     <string name="auto_correction_description">Динамическая термо-коррекция и прирост FPS при перегреве и просадках</string>
     <string name="auto_correction_dialog_title">Термо-коррекция и разгон FPS</string>
     <string name="auto_correction_dialog_subtitle">Динамическое охлаждение и оптимизация производительности</string>
-    <string name="auto_correction_status_active">Автокоррекция активна (охлаждение включено)</string>
+    <string name="auto_correction_status_active">Авто-коррекция активна (охлаждение включено)</string>
     <string name="auto_correction_status_inactive">Обнаружен нагрев выше 40°C или просадка FPS ниже 30</string>
     <string name="auto_correction_issues_title">Факторы нагрева и просадки кадров</string>
     <string name="auto_correction_recommendations_title">Рекомендуемые параметры охлаждения и FPS</string>
-    <string name="auto_correction_apply">Применить автокоррекцию (снизить нагрев и поднять FPS)</string>
+    <string name="auto_correction_apply">Применить авто-коррекцию (снизить нагрев и поднять FPS)</string>
     <string name="auto_correction_reset">Сбросить к исходным</string>
     <string name="auto_correction_applied_toast">Профиль охлаждения и разгона FPS успешно применен</string>
     <string name="auto_correction_reset_toast">Настройки возвращены к стандартным значениям</string>
@@ -783,9 +783,10 @@
     <string name="preferences_system_description">Режим дока, регион, язык</string>
     <string name="preferences_graphics">Графика</string>
     <string name="preferences_graphics_description">Уровень точности, разрешение, кэш шейдеров</string>
-    <string name="quick_settings">Быстрые настройки</string>
-    <string name="enable_quick_settings">Включить быстрые настройки</string>
-    <string name="enable_quick_settings_description">Разрешить открывать меню быстрых настроек свайпом тремя пальцами от нижнего края экрана и кнопкой меню</string>
+    <string name="quick_settings">Быстрые настройки (свайп 3 пальцами вверх)</string>
+    <string name="enable_quick_settings">Быстрые настройки (свайп 3 пальцами вверх)</string>
+    <string name="enable_quick_settings_description">Быстрый вызов панели настроек во время игры свайпом тремя пальцами вверх по экрану или через меню</string>
+    <string name="quick_settings_gesture_hint">💡 Быстрые настройки: свайп 3 пальцами вверх</string>
     <string name="preferences_audio">Аудио</string>
     <string name="preferences_audio_description">Движок вывода, громкость</string>
     <string name="preferences_controls">Управление</string>

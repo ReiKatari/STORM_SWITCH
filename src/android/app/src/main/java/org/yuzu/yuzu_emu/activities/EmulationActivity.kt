@@ -1005,33 +1005,42 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                         threeFingerStartX1 = event.getX(1)
                         threeFingerStartX2 = event.getX(2)
                         threeFingerStartTime = System.currentTimeMillis()
-                        // Strictly all three fingers must start in the bottom 60dp region
-                        isThreeFingerGestureCandidate = (threeFingerStartY0 >= bottomThreshold &&
-                                                         threeFingerStartY1 >= bottomThreshold &&
-                                                         threeFingerStartY2 >= bottomThreshold)
+                        isThreeFingerGestureCandidate = true
                     }
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    if (isThreeFingerGestureCandidate && event.pointerCount >= 3 && BooleanSetting.ENABLE_QUICK_SETTINGS.getBoolean()) {
-                        val deltaY0 = threeFingerStartY0 - event.getY(0)
-                        val deltaY1 = threeFingerStartY1 - event.getY(1)
-                        val deltaY2 = threeFingerStartY2 - event.getY(2)
-                        val deltaX0 = Math.abs(event.getX(0) - threeFingerStartX0)
-                        val deltaX1 = Math.abs(event.getX(1) - threeFingerStartX1)
-                        val deltaX2 = Math.abs(event.getX(2) - threeFingerStartX2)
-                        val elapsed = System.currentTimeMillis() - threeFingerStartTime
+                    if (event.pointerCount >= 3 && BooleanSetting.ENABLE_QUICK_SETTINGS.getBoolean()) {
+                        if (!isThreeFingerGestureCandidate || threeFingerStartTime == 0L) {
+                            threeFingerStartY0 = event.getY(0)
+                            threeFingerStartY1 = event.getY(1)
+                            threeFingerStartY2 = event.getY(2)
+                            threeFingerStartX0 = event.getX(0)
+                            threeFingerStartX1 = event.getX(1)
+                            threeFingerStartX2 = event.getX(2)
+                            threeFingerStartTime = System.currentTimeMillis()
+                            isThreeFingerGestureCandidate = true
+                        } else {
+                            val deltaY0 = threeFingerStartY0 - event.getY(0)
+                            val deltaY1 = threeFingerStartY1 - event.getY(1)
+                            val deltaY2 = threeFingerStartY2 - event.getY(2)
+                            val deltaX0 = Math.abs(event.getX(0) - threeFingerStartX0)
+                            val deltaX1 = Math.abs(event.getX(1) - threeFingerStartX1)
+                            val deltaX2 = Math.abs(event.getX(2) - threeFingerStartX2)
+                            val elapsed = System.currentTimeMillis() - threeFingerStartTime
 
-                        // Upward swipe strictly requiring ALL 3 fingers to swipe up simultaneously
-                        val minSwipeDistance = 35 * dm.density
-                        val maxHorizontalDrift = 150 * dm.density
+                            // Upward swipe requiring all 3 fingers to swipe up
+                            val minSwipeDistance = 28 * dm.density
+                            val maxHorizontalDrift = 180 * dm.density
 
-                        if (deltaY0 > minSwipeDistance && deltaY1 > minSwipeDistance && deltaY2 > minSwipeDistance &&
-                            deltaX0 < maxHorizontalDrift && deltaX1 < maxHorizontalDrift && deltaX2 < maxHorizontalDrift &&
-                            elapsed < 1000) {
-                            if (!fragment.isQuickSettingsOpen() && !emulationViewModel.drawerOpen.value) {
-                                fragment.openQuickSettingsMenu()
-                                isThreeFingerGestureCandidate = false
-                                return true
+                            if (deltaY0 > minSwipeDistance && deltaY1 > minSwipeDistance && deltaY2 > minSwipeDistance &&
+                                deltaX0 < maxHorizontalDrift && deltaX1 < maxHorizontalDrift && deltaX2 < maxHorizontalDrift &&
+                                elapsed in 50..1500) {
+                                if (!fragment.isQuickSettingsOpen() && !emulationViewModel.drawerOpen.value) {
+                                    fragment.openQuickSettingsMenu()
+                                    isThreeFingerGestureCandidate = false
+                                    threeFingerStartTime = 0L
+                                    return true
+                                }
                             }
                         }
                     }
@@ -1039,10 +1048,12 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                 MotionEvent.ACTION_POINTER_UP -> {
                     if (event.pointerCount <= 3) {
                         isThreeFingerGestureCandidate = false
+                        threeFingerStartTime = 0L
                     }
                 }
                 MotionEvent.ACTION_UP -> {
                     isThreeFingerGestureCandidate = false
+                    threeFingerStartTime = 0L
                     if (!emulationViewModel.drawerOpen.value) {
                         val touchDuration = System.currentTimeMillis() - touchDownTime
 

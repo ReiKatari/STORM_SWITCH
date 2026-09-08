@@ -39,29 +39,30 @@ function Send-TGDocument($filePath, $caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 7.5.0 (Eden Nightly Defaults, MK11 and Zelda Water Fixes, Full OEM Game Mode, Overlay Cleanup)</b> — <i>Комплексное обновление эмулятора Nintendo Switch: эталонные настройки Eden Nightly с оптимизированными энергоэффективными параметрами по умолчанию, устранение артефактов полигонов в Mortal Kombat 11, прозрачная вода в The Legend of Zelda: Breath of the Wild и Tears of the Kingdom, надежный запуск Streets of Rage 4, восстановление поддержки Android Game Mode для всех OEM-производителей и очистка дубликатов оверлея.</i>
+⚡ <b>Релиз STORM SWITCH 7.5.1 (Streets of Rage 4 Fix, MK11 Stage Rendering, Zelda Magic Stability, Cooling Pause and Gesture Enhancements)</b> — <i>Комплексное обновление эмулятора Nintendo Switch: полное устранение зависаний и вылетов в Streets of Rage 4, исправление рендеринга арен и задников в Mortal Kombat 11, устранение мерцания магии и рун в The Legend of Zelda, улучшенный экран паузы и охлаждения без искажения пропорций кадра и надёжный жест вызова быстрых настроек.</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения и улучшения:</b>
 
-⚙️ <b>Эталонные настройки Eden Nightly и оптимизация по умолчанию:</b>
-• Внедрены новые оптимизированные параметры по умолчанию: гибридное декодирование NVDEC и ASTC, включенный эко-режим и охлаждение, энергоэффективный фреймпейсинг, адаптивный контроль компиляции шейдеров, привязка потоков ЦП, кэш конвейеров Vulkan, очистка видеопамяти (VRAM GC), раннее освобождение фенсов, оптимизация вывода SPIR-V, пропуск кадров, асинхронная эмуляция GPU и асинхронная презентация.
-• Синхронизированы все авто-настройки, профили калибровки и пресеты производительности.
+🥊 <b>Streets of Rage 4 (Windows и Android):</b>
+• Полностью устранены зависания на заставке на Windows и вылеты на Android. Удален поврежденный машинный патч NSO, препятствовавший корректной передаче управления игровому движку после видеоролика.
 
-🗡️ <b>Графика в The Legend of Zelda (BotW и TotK):</b>
-• <b>Прозрачная вода:</b> исправлена ошибка непрозрачной белой воды в реках и святилищах за счет отключения агрессивной BC3-компрессии текстур ASTC (установлен несжатый режим для идеальной прозрачности альфа-канала).
-• Высокая скорость и отсутствие артефактов Z-буфера.
+🥋 <b>Mortal Kombat 11 (Android Turnip):</b>
+• Исправлен сбой рендеринга задников и арены («зеленая стена»): отключен деструктивный параметр tu_tile_discard в per-game drirc, добавлены барьеры синхронизации очередей A8xx и сохранение LRZ между командными буферами, применены параметры графики Normal GPU accuracy.
 
-🥋 <b>Mortal Kombat 11:</b>
-• Полностью устранены растяжения вершин и разрывы полигонов на лицах и моделях бойцов благодаря установке высокой точности GPU (High), быстрой эмуляции времени GPU и стандартной раскладке 4 ГБ DRAM.
+🗡️ <b>The Legend of Zelda: Breath of the Wild и Tears of the Kingdom:</b>
+• Устранено мерцание и стробирование при активации рун и магии (Ультрарука, Автосборка, Магнезис, Стазис) благодаря реактивной очистке буферов глубины, с сохранением идеальной прозрачности воды.
 
-🥊 <b>Streets of Rage 4:</b>
-• Сохранен проверенный NSO-патч машинного кода по смещению 0x008C0048, гарантирующий стабильный запуск вступительной заставки без зависаний.
+❄️ <b>Экран паузы и охлаждение:</b>
+• Кадр паузы теперь сохраняет оригинальные пропорции экрана (FIT_XY при растяжении) без искажений и черных полос по бокам.
+• При постановке на паузу нагрузка на чипсет и частоты процессора/видеоядра переводятся в глубокий режим покоя (GameManager MODE_NONE) для максимально быстрого остывания устройства.
+• В заголовке паузы скорректирована пунктуация: <code>❄️ Игра на паузе - идёт охлаждение устройства</code>.
 
-📱 <b>Android: Game Mode и очистка интерфейса:</b>
-• Восстановлена полноценная интеграция со службами оптимизации игр Samsung (GOS, GameHub, GameBooster), Xiaomi (Game Turbo), ASUS ROG, OnePlus, Oppo, Vivo и Huawei.
-• Удалены дублирующиеся пункты переключения контроллера из внутриигрового меню настроек экранных кнопок.
+⚙️ <b>Быстрые настройки и навигация:</b>
+• Жест вызова быстрых настроек (свайп 3 пальцами вверх) переработан для безотказного срабатывания в ландшафтном режиме на любых смартфонах.
+• В левое боковое меню и шапку добавлены наглядные подсказки о быстром вызове настроек жестом.
+• Терминология обновлена: «Авто-коррекция» с дефисом.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 <i>Все исполняемые файлы, инсталляторы и архивы собраны, подписаны цифровой подписью и готовы к работе.</i>
@@ -73,20 +74,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.0.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.0 (Mainline Release - Android 14+)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.1.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.1 (Mainline Release - Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.0_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.0 (Legacy Release - Android 10-13)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.1_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.1 (Legacy Release - Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.0_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.0 (SDK27 Release - Android 8.1-9)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.1_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.1 (SDK27 Release - Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.0_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 7.5.0 (Windows x64 Release Portable)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.1_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 7.5.1 (Windows x64 Release Portable)</b>"
     }
 )
 
@@ -98,4 +99,4 @@ foreach ($f in $filesToUpload) {
     }
 }
 
-Write-Host "`nRelease 7.5.0 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 7.5.1 deployment to Telegram completed successfully!"

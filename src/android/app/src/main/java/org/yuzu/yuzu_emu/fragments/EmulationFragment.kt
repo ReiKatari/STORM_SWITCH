@@ -9,6 +9,8 @@ package org.yuzu.yuzu_emu.fragments
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.AlertDialog
+import android.app.GameManager
+import android.app.GameState
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -33,6 +35,7 @@ import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -1540,6 +1543,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     private fun pauseEmulationAndCaptureFrame() {
         emulationState.pause()
         updatePauseMenuEntry(true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try {
+                val gameManager = context?.getSystemService(GameManager::class.java)
+                gameManager?.setGameState(GameState(false, GameState.MODE_NONE))
+            } catch (_: Throwable) {}
+        }
         capturePausedFrameFromCore()
         updatePausedFrameVisibility()
     }
@@ -1587,6 +1596,18 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         }
 
         val bitmap = if (showPausedUi) pausedFrameBitmap else null
+        if (bitmap != null) {
+            val isStretch = try {
+                IntSetting.RENDERER_ASPECT_RATIO.getInt() == 4
+            } catch (_: Throwable) {
+                false
+            }
+            b.pausedFrameImage.scaleType = if (isStretch) {
+                ImageView.ScaleType.FIT_XY
+            } else {
+                ImageView.ScaleType.FIT_CENTER
+            }
+        }
         b.pausedFrameImage.setImageBitmap(bitmap)
         b.pausedFrameImage.setVisible(bitmap != null)
     }
@@ -1608,6 +1629,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     private fun resumeEmulationFromUi() {
         clearPausedFrame()
         emulationState.resume()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try {
+                val gameManager = context?.getSystemService(GameManager::class.java)
+                gameManager?.setGameState(GameState(false, GameState.MODE_GAMEPLAY_UNINTERRUPTIBLE))
+            } catch (_: Throwable) {}
+        }
         updatePauseMenuEntry(emulationState.isPaused)
         updatePausedFrameVisibility()
     }

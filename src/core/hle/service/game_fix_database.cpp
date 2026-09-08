@@ -142,11 +142,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Breath of the Wild",
         "• Черный силуэт Линка из-за рассинхрона буфера освещения и трафарета\n• Белые вспышки и мерцание освещения/погоды\n• Пропадание текстур скал и земли при нехватке памяти\n• Бирюзовая сетка и артефакты Z-буфера в Святилищах",
         "• Link black silhouette caused by unsynced lighting and stencil buffers\n• White screen flashes and lighting flicker\n• Ground and terrain textures disappearing due to memory pressure\n• Shrine depth bias / cyan grid artifacts",
-        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Отключено (устранение белой воды)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Включено (стабильные 30-32 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM (оптимально для текстур и стабильности)",
-        "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Disabled (Fixes white water)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Enabled (Stable 30-32 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM (Optimal stability)",
+        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Включено (стабильные 30-32 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM (оптимально для текстур и стабильности)",
+        "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Enabled (Stable 30-32 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM (Optimal stability)",
         {
             {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\astc_recompression", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -159,11 +159,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Tears of the Kingdom",
         "• Черный силуэт персонажей и тени в Кавернах\n• Бирюзовая сетка и артефакты Z-буфера на водных поверхностях\n• Утечки VRAM в конструкторе Ультраруки",
         "• Character silhouette and shadow artifacts in Depths\n• Water surface and depth bias cyan grid artifacts\n• Ultrahand VRAM pressure",
-        "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Реактивная очистка: Отключено\n✓ Сжатие ASTC: Отключено\n✓ Быстрое время ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
-        "✓ GPU Accuracy: High (Fixes character shadows and lighting)\n✓ Reactive Flushing: Disabled\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Реактивная очистка: Включено (устранение мерцания магии Ультраруки и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода)\n✓ Быстрое время ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ GPU Accuracy: High (Fixes character shadows and lighting)\n✓ Reactive Flushing: Enabled (Fixes Ultrahand and rune magic flickering)\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\astc_recompression", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -212,7 +212,28 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\memory_layout_mode", "2"}
         }
     },
+    {
+        0x0100B1100C4D0000ULL,
+        "Mortal Kombat 11",
+        "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити\n• Отсутствие русского языка при авто-определении",
+        "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes\n• Missing Russian language on auto-detection",
+        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Обычная (исправление прорисовки сцен и задников)\n✓ Синхронизация операций памяти: Отключено (стабильный рендеринг геометрии)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (чистые детальные текстуры)\n✓ Язык: Русский\n✓ Регион: Европа\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: Normal (Fixes stage and background rendering)\n✓ Sync Memory Operations: Disabled (clean geometry rendering)\n✓ Fast GPU Time: Enabled (stable 60 FPS)\n✓ ASTC Recompression: Uncompressed\n✓ Language: Russian\n✓ Region: Europe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"System\\language_index", "10"},
+            {"System\\region_index", "2"},
+            {"System\\airplane_mode", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"}
+        }
+    },
+    {
         0x01002A801458A000ULL,
         "Diablo II: Resurrected",
         "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",

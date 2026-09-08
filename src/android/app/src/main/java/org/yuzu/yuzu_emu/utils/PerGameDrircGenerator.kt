@@ -693,9 +693,11 @@ object PerGameDrircGenerator {
             }
             GameProfileType.MORTAL_KOMBAT_11 -> {
                 optionsBuilder.append("\n            <!-- MORTAL KOMBAT 11 (Stable 60 FPS Pacing, Clean Normal Accuracy, Zero Corruptions) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_a8xx_concurrent_queue_barrier_fix\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
             }
             GameProfileType.ASSASSINS_CREED -> {
                 optionsBuilder.append("\n            <!-- ASSASSIN'S CREED SERIES (Ubisoft AnvilNext Ocean & Shadows Integrity) -->\n")

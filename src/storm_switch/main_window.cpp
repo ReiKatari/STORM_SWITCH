@@ -4305,6 +4305,10 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         }
     }
 
+    if (params.program_id == 0 && title_id != 0) {
+        params.program_id = title_id;
+    }
+
     if (type == StartGameType::Normal) {
         const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
         if (fix_result == GameFixDialogResult::Cancel) {

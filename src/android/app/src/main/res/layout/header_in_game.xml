@@ -73,6 +73,16 @@
 
             </LinearLayout>
 
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/quick_settings_hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="#00F0FF"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/quick_settings_gesture_hint" />
+
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
