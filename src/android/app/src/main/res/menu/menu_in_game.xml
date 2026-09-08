@@ -48,6 +48,12 @@
             android:title="@string/auto_correction_title" />
 
         <item
+            android:id="@+id/menu_toggle_quick_settings"
+            android:checkable="true"
+            android:icon="@drawable/ic_settings_outline"
+            android:title="@string/enable_quick_settings" />
+
+        <item
             android:id="@+id/menu_quick_settings"
             android:icon="@drawable/ic_settings"
             android:title="@string/quick_settings" />

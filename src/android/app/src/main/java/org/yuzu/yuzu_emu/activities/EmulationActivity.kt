@@ -946,12 +946,14 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         }
     }
 
-    private var twoFingerStartY0 = 0f
-    private var twoFingerStartY1 = 0f
-    private var twoFingerStartX0 = 0f
-    private var twoFingerStartX1 = 0f
-    private var twoFingerStartTime = 0L
-    private var isTwoFingerGestureCandidate = false
+    private var threeFingerStartY0 = 0f
+    private var threeFingerStartY1 = 0f
+    private var threeFingerStartY2 = 0f
+    private var threeFingerStartX0 = 0f
+    private var threeFingerStartX1 = 0f
+    private var threeFingerStartX2 = 0f
+    private var threeFingerStartTime = 0L
+    private var isThreeFingerGestureCandidate = false
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
@@ -960,12 +962,12 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         emulationFragment?.let { fragment ->
             val dm = resources.displayMetrics
             val screenHeight = dm.heightPixels.toFloat()
-            val bottomThreshold = (screenHeight - (160 * dm.density)).coerceAtLeast(screenHeight * 0.75f)
+            val bottomThreshold = screenHeight - (60 * dm.density)
 
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     touchDownTime = System.currentTimeMillis()
-                    isTwoFingerGestureCandidate = false
+                    isThreeFingerGestureCandidate = false
 
                     // show overlay immediately on touch and cancel timer when auto-hide is enabled
                     if (!emulationViewModel.drawerOpen.value &&
@@ -975,47 +977,52 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                     }
                 }
                 MotionEvent.ACTION_POINTER_DOWN -> {
-                    if (event.pointerCount >= 2) {
-                        twoFingerStartY0 = event.getY(0)
-                        twoFingerStartY1 = event.getY(1)
-                        twoFingerStartX0 = event.getX(0)
-                        twoFingerStartX1 = event.getX(1)
-                        twoFingerStartTime = System.currentTimeMillis()
-                        // Both or either finger starts in the bottom region
-                        val avgY = (twoFingerStartY0 + twoFingerStartY1) / 2f
-                        isTwoFingerGestureCandidate = (avgY >= bottomThreshold || twoFingerStartY0 >= bottomThreshold || twoFingerStartY1 >= bottomThreshold)
+                    if (event.pointerCount >= 3 && BooleanSetting.ENABLE_QUICK_SETTINGS.getBoolean()) {
+                        threeFingerStartY0 = event.getY(0)
+                        threeFingerStartY1 = event.getY(1)
+                        threeFingerStartY2 = event.getY(2)
+                        threeFingerStartX0 = event.getX(0)
+                        threeFingerStartX1 = event.getX(1)
+                        threeFingerStartX2 = event.getX(2)
+                        threeFingerStartTime = System.currentTimeMillis()
+                        // Strictly all three fingers must start in the bottom 60dp region
+                        isThreeFingerGestureCandidate = (threeFingerStartY0 >= bottomThreshold &&
+                                                         threeFingerStartY1 >= bottomThreshold &&
+                                                         threeFingerStartY2 >= bottomThreshold)
                     }
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    if (isTwoFingerGestureCandidate && event.pointerCount >= 2) {
-                        val deltaY0 = twoFingerStartY0 - event.getY(0)
-                        val deltaY1 = twoFingerStartY1 - event.getY(1)
-                        val deltaX0 = Math.abs(event.getX(0) - twoFingerStartX0)
-                        val deltaX1 = Math.abs(event.getX(1) - twoFingerStartX1)
-                        val elapsed = System.currentTimeMillis() - twoFingerStartTime
+                    if (isThreeFingerGestureCandidate && event.pointerCount >= 3 && BooleanSetting.ENABLE_QUICK_SETTINGS.getBoolean()) {
+                        val deltaY0 = threeFingerStartY0 - event.getY(0)
+                        val deltaY1 = threeFingerStartY1 - event.getY(1)
+                        val deltaY2 = threeFingerStartY2 - event.getY(2)
+                        val deltaX0 = Math.abs(event.getX(0) - threeFingerStartX0)
+                        val deltaX1 = Math.abs(event.getX(1) - threeFingerStartX1)
+                        val deltaX2 = Math.abs(event.getX(2) - threeFingerStartX2)
+                        val elapsed = System.currentTimeMillis() - threeFingerStartTime
 
-                        // Upward swipe strictly requiring BOTH fingers to swipe up simultaneously
+                        // Upward swipe strictly requiring ALL 3 fingers to swipe up simultaneously
                         val minSwipeDistance = 35 * dm.density
                         val maxHorizontalDrift = 150 * dm.density
 
-                        if (deltaY0 > minSwipeDistance && deltaY1 > minSwipeDistance &&
-                            deltaX0 < maxHorizontalDrift && deltaX1 < maxHorizontalDrift &&
+                        if (deltaY0 > minSwipeDistance && deltaY1 > minSwipeDistance && deltaY2 > minSwipeDistance &&
+                            deltaX0 < maxHorizontalDrift && deltaX1 < maxHorizontalDrift && deltaX2 < maxHorizontalDrift &&
                             elapsed < 1000) {
                             if (!fragment.isQuickSettingsOpen() && !emulationViewModel.drawerOpen.value) {
                                 fragment.openQuickSettingsMenu()
-                                isTwoFingerGestureCandidate = false
+                                isThreeFingerGestureCandidate = false
                                 return true
                             }
                         }
                     }
                 }
                 MotionEvent.ACTION_POINTER_UP -> {
-                    if (event.pointerCount <= 2) {
-                        isTwoFingerGestureCandidate = false
+                    if (event.pointerCount <= 3) {
+                        isThreeFingerGestureCandidate = false
                     }
                 }
                 MotionEvent.ACTION_UP -> {
-                    isTwoFingerGestureCandidate = false
+                    isThreeFingerGestureCandidate = false
                     if (!emulationViewModel.drawerOpen.value) {
                         val touchDuration = System.currentTimeMillis() - touchDownTime
 
@@ -1028,7 +1035,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                     }
                 }
                 MotionEvent.ACTION_CANCEL -> {
-                    isTwoFingerGestureCandidate = false
+                    isThreeFingerGestureCandidate = false
                 }
             }
         }

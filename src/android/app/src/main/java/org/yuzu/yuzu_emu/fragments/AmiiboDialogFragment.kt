@@ -93,7 +93,6 @@ class AmiiboDialogFragment : DialogFragment() {
         return MaterialAlertDialogBuilder(requireActivity())
             .setTitle(dialogTitle)
             .setView(binding.root)
-            .setNegativeButton(R.string.close, null)
             .create()
     }
 
@@ -118,16 +117,7 @@ class AmiiboDialogFragment : DialogFragment() {
             }
 
             val buttonPanel = window.findViewById<View>(androidx.appcompat.R.id.buttonPanel)
-            if (buttonPanel != null) {
-                buttonPanel.setPadding(buttonPanel.paddingLeft, 0, buttonPanel.paddingRight, 0)
-                buttonPanel.minimumHeight = 0
-                val btnParams = buttonPanel.layoutParams
-                if (btnParams is ViewGroup.MarginLayoutParams) {
-                    btnParams.topMargin = 0
-                    btnParams.bottomMargin = 0
-                    buttonPanel.layoutParams = btnParams
-                }
-            }
+            buttonPanel?.visibility = View.GONE
         }
     }
 
@@ -136,6 +126,10 @@ class AmiiboDialogFragment : DialogFragment() {
         val spanCount = if (isLandscape) 2 else 1
         binding.listAmiibo.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), spanCount)
         binding.listAmiibo.adapter = AmiiboAdapter()
+
+        binding.buttonClose.setOnClickListener {
+            dismiss()
+        }
 
         binding.buttonRefresh.setOnClickListener {
             loadDatabase(true)
@@ -284,8 +278,9 @@ class AmiiboDialogFragment : DialogFragment() {
         }
 
         binding.textEmptyAmiibo.isVisible = displayedAmiibos.isEmpty()
-        binding.textStatus.text = getString(R.string.amiibo_count_format, filteredAmiibos.size, allAmiibos.size)
-        binding.textPageIndicator.text = "$currentPage / $totalPages"
+        val pagePrefix = getString(R.string.page_format, currentPage)
+        binding.textStatus.text = "$pagePrefix / $totalPages"
+        binding.textPageIndicator.text = "$currentPage"
 
         binding.buttonFirstPage.isEnabled = currentPage > 1
         binding.buttonPrevPage.isEnabled = currentPage > 1

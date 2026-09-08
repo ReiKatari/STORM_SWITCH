@@ -3626,8 +3626,9 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     QDialog fixDialog(this);
     fixDialog.setWindowTitle(tr("🛡️ Авто-исправление: %1").arg(clean_game_name));
     fixDialog.setWindowFlags(fixDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    fixDialog.setMinimumWidth(680);
-    fixDialog.resize(720, 620);
+    fixDialog.setMinimumWidth(600);
+    fixDialog.setMaximumWidth(660);
+    fixDialog.resize(620, 440);
 
     fixDialog.setStyleSheet(QStringLiteral(
         "QDialog {"
@@ -3639,8 +3640,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     ));
 
     auto* dlg_layout = new QVBoxLayout(&fixDialog);
-    dlg_layout->setContentsMargins(20, 20, 20, 20);
-    dlg_layout->setSpacing(12);
+    dlg_layout->setContentsMargins(14, 12, 14, 12);
+    dlg_layout->setSpacing(8);
 
     // 1. Header Card with Game Title
     auto* headerCard = new QFrame(&fixDialog);
@@ -3652,12 +3653,12 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         "}"
     ));
     auto* headerLayout = new QHBoxLayout(headerCard);
-    headerLayout->setContentsMargins(14, 10, 14, 10);
-    headerLayout->setSpacing(12);
+    headerLayout->setContentsMargins(12, 8, 12, 8);
+    headerLayout->setSpacing(10);
 
     auto* gameIconLabel = new QLabel(headerCard);
     gameIconLabel->setText(QStringLiteral("🛡️"));
-    gameIconLabel->setStyleSheet(QStringLiteral("font-size: 22px; background: transparent; border: none;"));
+    gameIconLabel->setStyleSheet(QStringLiteral("font-size: 20px; background: transparent; border: none;"));
     headerLayout->addWidget(gameIconLabel);
 
     auto* titleContainer = new QVBoxLayout();
@@ -3665,7 +3666,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     titleContainer->setSpacing(2);
 
     auto* gameTitleLabel = new QLabel(clean_game_name, headerCard);
-    gameTitleLabel->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: bold; color: #FFFFFF; background: transparent; border: none;"));
+    gameTitleLabel->setStyleSheet(QStringLiteral("font-size: 14px; font-weight: bold; color: #FFFFFF; background: transparent; border: none;"));
     titleContainer->addWidget(gameTitleLabel);
 
     if (title_id != 0) {
@@ -3704,8 +3705,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     auto* scrollWidget = new QWidget();
     scrollWidget->setStyleSheet(QStringLiteral("background: transparent;"));
     auto* scrollLayout = new QVBoxLayout(scrollWidget);
-    scrollLayout->setContentsMargins(0, 0, 8, 0);
-    scrollLayout->setSpacing(12);
+    scrollLayout->setContentsMargins(0, 0, 6, 0);
+    scrollLayout->setSpacing(8);
 
     // 2. Issues Card (Amber/Red Volumetric Card)
     QString issues_formatted = QString::fromStdString(profile->issues_ru);
@@ -3720,17 +3721,17 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         "}"
     ));
     auto* issueLayout = new QVBoxLayout(issueCard);
-    issueLayout->setContentsMargins(14, 10, 14, 10);
-    issueLayout->setSpacing(6);
+    issueLayout->setContentsMargins(12, 8, 12, 8);
+    issueLayout->setSpacing(4);
 
     auto* issueHeader = new QLabel(QStringLiteral("⚠️ <b>Обнаружены известные проблемы в игре:</b>"), issueCard);
-    issueHeader->setStyleSheet(QStringLiteral("color: #F87171; font-size: 13px; background: transparent; border: none;"));
+    issueHeader->setStyleSheet(QStringLiteral("color: #F87171; font-size: 12.5px; background: transparent; border: none;"));
     issueLayout->addWidget(issueHeader);
 
     auto* issueText = new QLabel(issues_formatted, issueCard);
     issueText->setTextFormat(Qt::RichText);
     issueText->setWordWrap(true);
-    issueText->setStyleSheet(QStringLiteral("color: #FCA5A5; font-size: 12px; line-height: 1.4; background: transparent; border: none;"));
+    issueText->setStyleSheet(QStringLiteral("color: #FCA5A5; font-size: 11.5px; line-height: 1.35; background: transparent; border: none;"));
     issueLayout->addWidget(issueText);
     scrollLayout->addWidget(issueCard);
 
@@ -3747,19 +3748,21 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         "}"
     ));
     auto* fixLayout = new QVBoxLayout(fixCard);
-    fixLayout->setContentsMargins(14, 10, 14, 10);
-    fixLayout->setSpacing(6);
+    fixLayout->setContentsMargins(12, 8, 12, 8);
+    fixLayout->setSpacing(4);
 
     auto* fixHeader = new QLabel(QStringLiteral("🛡️ <b>Параметры авто-исправления (совместимость и стабильность):</b>"), fixCard);
-    fixHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 13px; background: transparent; border: none;"));
+    fixHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 12.5px; background: transparent; border: none;"));
     fixLayout->addWidget(fixHeader);
 
     auto* fixText = new QLabel(fixes_formatted, fixCard);
     fixText->setTextFormat(Qt::RichText);
     fixText->setWordWrap(true);
-    fixText->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 12px; line-height: 1.45; background: transparent; border: none;"));
+    fixText->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.4; background: transparent; border: none;"));
     fixLayout->addWidget(fixText);
     scrollLayout->addWidget(fixCard);
+
+    scrollLayout->addStretch(1);
 
     scrollArea->setWidget(scrollWidget);
     dlg_layout->addWidget(scrollArea, 1);
@@ -3769,7 +3772,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         tr("Применить параметры авто-исправления к профилю игры?") :
         tr("Применить параметры авто-исправления для этой игры перед запуском?"), &fixDialog);
     promptLabel->setAlignment(Qt::AlignCenter);
-    promptLabel->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 13px; color: #F8FAFC; margin-top: 4px; background: transparent; border: none;"));
+    promptLabel->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 12px; color: #F8FAFC; margin-top: 2px; background: transparent; border: none;"));
     dlg_layout->addWidget(promptLabel);
 
     // 5. Stylized Checkbox (Rule 4: solid square with neon fill, no old checkmark)
@@ -3780,14 +3783,14 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     dont_ask_cb->setStyleSheet(QStringLiteral(
         "QCheckBox {"
         "    color: #94A3B8;"
-        "    font-size: 12px;"
+        "    font-size: 11.5px;"
         "    spacing: 8px;"
         "    background: transparent;"
         "    border: none;"
         "}"
         "QCheckBox::indicator {"
-        "    width: 16px;"
-        "    height: 16px;"
+        "    width: 15px;"
+        "    height: 15px;"
         "    border-radius: 4px;"
         "    border: 1px solid rgba(0, 210, 255, 0.45);"
         "    background: rgba(15, 23, 42, 0.7);"
@@ -3806,8 +3809,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
     // 6. Action buttons (Elevated 3D buttons)
     auto* btn_layout = new QHBoxLayout();
-    btn_layout->setContentsMargins(0, 6, 0, 0);
-    btn_layout->setSpacing(12);
+    btn_layout->setContentsMargins(0, 2, 0, 0);
+    btn_layout->setSpacing(10);
     btn_layout->setAlignment(Qt::AlignCenter);
 
     auto* applyBtn = new QPushButton(force_show ? tr("🛡️ Применить для этой игры") : tr("🛡️ Применить и запустить"), &fixDialog);
@@ -3817,8 +3820,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
         "    color: #050B14;"
         "    font-weight: bold;"
-        "    font-size: 13px;"
-        "    padding: 8px 18px;"
+        "    font-size: 12.5px;"
+        "    padding: 7px 16px;"
         "    border-radius: 6px;"
         "    border: 1px solid #00F0FF;"
         "}"
@@ -3835,8 +3838,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         "QPushButton {"
         "    background: rgba(30, 41, 59, 0.75);"
         "    color: #CBD5E1;"
-        "    font-size: 13px;"
-        "    padding: 8px 16px;"
+        "    font-size: 12.5px;"
+        "    padding: 7px 14px;"
         "    border-radius: 6px;"
         "    border: 1px solid rgba(148, 163, 184, 0.25);"
         "}"
@@ -3857,8 +3860,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
             "QPushButton {"
             "    background: rgba(46, 16, 20, 0.75);"
             "    color: #FCA5A5;"
-            "    font-size: 13px;"
-            "    padding: 8px 16px;"
+            "    font-size: 12.5px;"
+            "    padding: 7px 14px;"
             "    border-radius: 6px;"
             "    border: 1px solid rgba(239, 68, 68, 0.35);"
             "}"
@@ -3895,6 +3898,11 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
             action = GameFixDialogResult::Cancel;
             fixDialog.reject();
         });
+    }
+
+    fixDialog.adjustSize();
+    if (fixDialog.height() > 560) {
+        fixDialog.resize(fixDialog.width(), 560);
     }
 
     fixDialog.exec();

@@ -46,6 +46,7 @@ class GameInfoFragment : Fragment() {
 
         // Ensure containers and updates are mounted before checking metadata
         GameHelper.restoreContentForGame(args.game)
+        GameHelper.upgradeGameVersionIfNeeded(args.game)
         val newVer = GameMetadata.getVersion(args.game.path, true)
         val newIntVer = GameMetadata.getInternalVersion(args.game.path)
         if (newVer.isNotEmpty() && !GameHelper.isBaseVersion(newVer)) {
@@ -56,6 +57,7 @@ class GameInfoFragment : Fragment() {
         if (newIntVer.isNotEmpty() && newIntVer != "0") {
             args.game.internalVersion = newIntVer
         }
+        GameHelper.upgradeGameVersionIfNeeded(args.game)
     }
 
     override fun onCreateView(

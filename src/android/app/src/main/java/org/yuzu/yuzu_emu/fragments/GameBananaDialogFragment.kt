@@ -139,7 +139,6 @@ class GameBananaDialogFragment : DialogFragment() {
         return MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.gamebanana_mods) + " - " + (game?.title ?: ""))
             .setView(binding.root)
-            .setNegativeButton(R.string.close, null)
             .create()
     }
 
@@ -164,16 +163,7 @@ class GameBananaDialogFragment : DialogFragment() {
             }
 
             val buttonPanel = window.findViewById<View>(androidx.appcompat.R.id.buttonPanel)
-            if (buttonPanel != null) {
-                buttonPanel.setPadding(buttonPanel.paddingLeft, 0, buttonPanel.paddingRight, 0)
-                buttonPanel.minimumHeight = 0
-                val btnParams = buttonPanel.layoutParams
-                if (btnParams is ViewGroup.MarginLayoutParams) {
-                    btnParams.topMargin = 0
-                    btnParams.bottomMargin = 0
-                    buttonPanel.layoutParams = btnParams
-                }
-            }
+            buttonPanel?.visibility = View.GONE
         }
     }
 
@@ -182,6 +172,10 @@ class GameBananaDialogFragment : DialogFragment() {
         val spanCount = if (isLandscape) 2 else 1
         binding.listMods.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), spanCount)
         binding.listMods.adapter = GameBananaModAdapter()
+
+        binding.buttonClose.setOnClickListener {
+            dismiss()
+        }
 
         // Sort spinner
         val sortOptions = arrayOf(
@@ -253,7 +247,8 @@ class GameBananaDialogFragment : DialogFragment() {
 
         binding.progressLoading.isVisible = true
         binding.textEmptyMods.isVisible = false
-        binding.textPageIndicator.text = getString(R.string.page_format, currentPage)
+        binding.textStatus.text = getString(R.string.page_format, currentPage)
+        binding.textPageIndicator.text = "$currentPage"
         binding.buttonFirstPage.isEnabled = (currentPage > 1)
         binding.buttonPrevPage.isEnabled = (currentPage > 1)
 

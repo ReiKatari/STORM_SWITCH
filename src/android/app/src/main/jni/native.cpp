@@ -122,6 +122,10 @@ std::unique_ptr<PlayTime::PlayTimeManager> play_time_manager;
 
 EmulationSession::EmulationSession() {
     m_vfs = std::make_shared<FileSys::RealVfsFilesystem>();
+    m_system.SetFilesystem(m_vfs);
+    m_manual_provider = std::make_unique<FileSys::ManualContentProvider>();
+    m_system.RegisterContentProvider(FileSys::ContentProviderUnionSlot::FrontendManual,
+                                     m_manual_provider.get());
 }
 
 EmulationSession& EmulationSession::GetInstance() {
@@ -137,6 +141,11 @@ Core::System& EmulationSession::System() {
 }
 
 FileSys::ManualContentProvider* EmulationSession::GetContentProvider() {
+    if (!m_manual_provider) {
+        m_manual_provider = std::make_unique<FileSys::ManualContentProvider>();
+        m_system.RegisterContentProvider(FileSys::ContentProviderUnionSlot::FrontendManual,
+                                         m_manual_provider.get());
+    }
     return m_manual_provider.get();
 }
 

@@ -328,14 +328,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 Log.info("[EmulationFragment] Using clean global config for ${gameToUse.title}")
             }
 
-            if (intentGame != null) {
-                runCatching { GameHelper.restoreContentForGame(gameToUse) }
-                    .onFailure {
-                        Log.warning(
-                            "[EmulationFragment] Failed to restore content for intent launch: ${it.message}"
-                        )
-                    }
-            }
+            runCatching { GameHelper.restoreContentForGame(gameToUse) }
+                .onFailure {
+                    Log.warning(
+                        "[EmulationFragment] Failed to restore content for game: ${it.message}"
+                    )
+                }
         } catch (e: Exception) {
             Log.error("[EmulationFragment] Error loading configuration: ${e.message}")
             Log.info("[EmulationFragment] Falling back to global settings")
@@ -711,6 +709,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 binding.inGameMenu.requestFocus()
                 emulationViewModel.setDrawerOpen(true)
                 updateQuickOverlayMenuEntry(BooleanSetting.SHOW_INPUT_OVERLAY.getBoolean())
+                val qsEnabled = BooleanSetting.ENABLE_QUICK_SETTINGS.getBoolean()
+                binding.inGameMenu.menu.findItem(R.id.menu_toggle_quick_settings)?.isChecked = qsEnabled
+                binding.inGameMenu.menu.findItem(R.id.menu_quick_settings)?.isVisible = qsEnabled
                 val behavior = BottomSheetBehavior.from(binding.quickSettingsSheet)
                 if (behavior.state != BottomSheetBehavior.STATE_HIDDEN) {
                     behavior.state = BottomSheetBehavior.STATE_HIDDEN
@@ -730,8 +731,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
         updateGameTitle()
 
-        binding.inGameMenu.menu.findItem(R.id.menu_quick_settings)?.isVisible =
-            BooleanSetting.ENABLE_QUICK_SETTINGS.getBoolean()
+        val isQuickSettingsEnabled = BooleanSetting.ENABLE_QUICK_SETTINGS.getBoolean()
+        binding.inGameMenu.menu.findItem(R.id.menu_toggle_quick_settings)?.isChecked = isQuickSettingsEnabled
+        binding.inGameMenu.menu.findItem(R.id.menu_quick_settings)?.isVisible = isQuickSettingsEnabled
 
         gameTranslatorManager = org.yuzu.yuzu_emu.translator.GameTranslatorManager(
             requireContext(),
@@ -836,6 +838,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         AutoCorrectionDialogFragment.newInstance(currentGame)
                             .show(childFragmentManager, AutoCorrectionDialogFragment.TAG)
                     }
+                    true
+                }
+
+                R.id.menu_toggle_quick_settings -> {
+                    val newState = !BooleanSetting.ENABLE_QUICK_SETTINGS.getBoolean()
+                    BooleanSetting.ENABLE_QUICK_SETTINGS.setBoolean(newState)
+                    NativeConfig.saveGlobalConfig()
+                    it.isChecked = newState
+                    binding.inGameMenu.menu.findItem(R.id.menu_quick_settings)?.isVisible = newState
                     true
                 }
 

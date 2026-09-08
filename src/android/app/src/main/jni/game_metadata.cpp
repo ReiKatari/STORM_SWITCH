@@ -43,6 +43,9 @@ static bool IsBaseVersion(std::string_view ver) {
 static RomMetadata CacheRomMetadata(const std::string& path) {
     auto& instance = EmulationSession::GetInstance();
     const auto file = Core::GetGameFileFromPath(instance.System().GetFilesystem(), path);
+    if (file && instance.GetContentProvider()) {
+        instance.GetContentProvider()->AddEntriesFromContainer(file);
+    }
     if (auto loader = Loader::GetLoader(instance.System(), file, 0, 0); loader) {
         RomMetadata entry;
         loader->ReadTitle(entry.title);
@@ -147,34 +150,39 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
             const std::string fn = get_filename_only(decoded_path);
 
             static const std::regex pair_regex(R"([\(\[]([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)(?:\s*-\s*[0-9A-Fa-f]+)?[\)\]])");
-            static const std::regex bracket_ver_regex(R"([\[\(]v?([0-9]+\.[0-9]+(?:\.[0-9]+)*)[\]\)])");
-            static const std::regex vnum_regex(R"([\[\(]v?([0-9]{5,9})[\]\)])");
+            static const std::regex bracket_ver_regex(R"([\[\(](?:v|ver|upd|update)?\s*([0-9]+\.[0-9]+(?:\.[0-9]+)*)[\]\)])", std::regex::icase);
+            static const std::regex vnum_regex(R"([\[\(](?:v|ver|upd|update)?\s*([0-9]{5,9})[\]\)])", std::regex::icase);
 
-            std::smatch pair_match;
-            if (std::regex_search(fn, pair_match, pair_regex)) {
-                entry.version = pair_match[1].str();
-                if (internal_ver == 0) {
-                    try {
-                        internal_ver = std::stoul(pair_match[2].str());
-                    } catch (...) {}
+            for (std::sregex_iterator it(fn.begin(), fn.end(), pair_regex), end_it; it != end_it; ++it) {
+                const std::string cand_ver = (*it)[1].str();
+                if (!IsBaseVersion(cand_ver)) {
+                    entry.version = cand_ver;
+                    if (internal_ver == 0) {
+                        try {
+                            internal_ver = std::stoul((*it)[2].str());
+                        } catch (...) {}
+                    }
+                    break;
                 }
-            } else {
-                std::smatch b_match;
-                if (std::regex_search(fn, b_match, bracket_ver_regex)) {
-                    const std::string cand = b_match[1].str();
+            }
+
+            if (IsBaseVersion(entry.version)) {
+                for (std::sregex_iterator it(fn.begin(), fn.end(), bracket_ver_regex), end_it; it != end_it; ++it) {
+                    const std::string cand = (*it)[1].str();
                     if (!IsBaseVersion(cand)) {
                         entry.version = cand;
+                        break;
                     }
                 }
             }
 
             if (internal_ver == 0) {
-                std::smatch vnum_match;
-                if (std::regex_search(fn, vnum_match, vnum_regex)) {
+                for (std::sregex_iterator it(fn.begin(), fn.end(), vnum_regex), end_it; it != end_it; ++it) {
                     try {
-                        unsigned long v = std::stoul(vnum_match[1].str());
+                        unsigned long v = std::stoul((*it)[1].str());
                         if (v > 0 && v <= 4294967295UL) {
                             internal_ver = static_cast<u32>(v);
+                            break;
                         }
                     } catch (...) {}
                 }

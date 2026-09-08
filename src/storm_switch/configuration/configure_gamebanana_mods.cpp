@@ -282,15 +282,20 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
 
     // 4. Bottom Pagination Bar
     auto* bottom_bar = new QHBoxLayout;
+    bottom_bar->setContentsMargins(4, 2, 4, 2);
+
+    page_label = new QLabel(tr("Страница 1"), this);
+    page_label->setStyleSheet(QStringLiteral("font-weight: bold; padding: 0 4px; color: #38bdf8; font-size: 11.5px;"));
+    bottom_bar->addWidget(page_label);
+    bottom_bar->addStretch(1);
+
     first_page_btn = new QPushButton(tr("⏮️ Первая"), this);
     prev_page_btn = new QPushButton(tr("◀ Назад"), this);
-    page_label = new QLabel(tr("Страница 1"), this);
-    page_label->setStyleSheet(QStringLiteral("font-weight: bold; padding: 0 12px; color: #38bdf8; font-size: 12px;"));
     next_page_btn = new QPushButton(tr("Вперед ▶"), this);
 
-    first_page_btn->setStyleSheet(QStringLiteral("padding: 4px 12px; font-weight: bold;"));
-    prev_page_btn->setStyleSheet(QStringLiteral("padding: 4px 12px; font-weight: bold;"));
-    next_page_btn->setStyleSheet(QStringLiteral("padding: 4px 12px; font-weight: bold;"));
+    first_page_btn->setStyleSheet(QStringLiteral("padding: 3px 10px; font-weight: bold;"));
+    prev_page_btn->setStyleSheet(QStringLiteral("padding: 3px 10px; font-weight: bold;"));
+    next_page_btn->setStyleSheet(QStringLiteral("padding: 3px 10px; font-weight: bold;"));
 
     first_page_btn->setEnabled(false);
     prev_page_btn->setEnabled(false);
@@ -298,7 +303,6 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
 
     bottom_bar->addWidget(first_page_btn);
     bottom_bar->addWidget(prev_page_btn);
-    bottom_bar->addWidget(page_label);
     bottom_bar->addWidget(next_page_btn);
     bottom_bar->addStretch(1);
 

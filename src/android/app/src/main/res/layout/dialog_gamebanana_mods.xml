@@ -134,62 +134,107 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:layout_marginTop="2dp"
-        android:layout_marginBottom="1dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_first_page"
-            style="@style/EdenButton.Outlined"
-            android:layout_width="32dp"
-            android:layout_height="28dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"
-            android:text="&lt;&lt;"
-            android:textSize="10sp"
-            android:enabled="false"
-            android:insetTop="0dp"
-            android:insetBottom="0dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_prev_page"
-            style="@style/EdenButton.Outlined"
-            android:layout_width="32dp"
-            android:layout_height="28dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:layout_marginStart="4dp"
-            android:padding="0dp"
-            android:text="&lt;"
-            android:textSize="10sp"
-            android:enabled="false"
-            android:insetTop="0dp"
-            android:insetBottom="0dp" />
+        android:layout_marginBottom="1dp"
+        android:paddingHorizontal="4dp">
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/text_page_indicator"
+            android:id="@+id/text_status"
             style="@style/SynthwaveText.Body"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="start|center_vertical"
+            android:textSize="11sp"
+            android:alpha="0.8"
+            android:singleLine="true"
+            android:ellipsize="end"
+            tools:text="Страница 1" />
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:text="@string/page_1"
-            android:textColor="?attr/colorPrimary"
-            android:textStyle="bold"
-            android:textSize="11sp" />
+            android:orientation="horizontal"
+            android:gravity="center">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_next_page"
-            style="@style/EdenButton.Outlined"
-            android:layout_width="32dp"
-            android:layout_height="28dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"
-            android:text="&gt;"
-            android:textSize="10sp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_first_page"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="&lt;&lt;"
+                android:textSize="10sp"
+                android:enabled="false"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_prev_page"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:layout_marginStart="4dp"
+                android:padding="0dp"
+                android:text="&lt;"
+                android:textSize="10sp"
+                android:enabled="false"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/text_page_indicator"
+                style="@style/SynthwaveText.Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:text="@string/page_1"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold"
+                android:textSize="11sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_next_page"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="&gt;"
+                android:textSize="10sp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end|center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_close"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="@string/close"
+                android:textSize="10sp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

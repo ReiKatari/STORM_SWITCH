@@ -169,6 +169,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:gravity="start|center_vertical"
             android:textSize="11sp"
             android:alpha="0.8"
             android:singleLine="true"
@@ -179,7 +180,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_first_page"
@@ -230,6 +231,29 @@
                 android:minHeight="0dp"
                 android:padding="0dp"
                 android:text="&gt;"
+                android:textSize="10sp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end|center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_close"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="@string/close"
                 android:textSize="10sp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp" />

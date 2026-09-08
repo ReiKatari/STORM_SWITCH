@@ -785,7 +785,7 @@
     <string name="preferences_graphics_description">Уровень точности, разрешение, кэш шейдеров</string>
     <string name="quick_settings">Быстрые настройки</string>
     <string name="enable_quick_settings">Включить быстрые настройки</string>
-    <string name="enable_quick_settings_description">Разрешить открывать меню быстрых настроек свайпом двумя пальцами снизу вверх и кнопкой меню</string>
+    <string name="enable_quick_settings_description">Разрешить открывать меню быстрых настроек свайпом тремя пальцами от нижнего края экрана и кнопкой меню</string>
     <string name="preferences_audio">Аудио</string>
     <string name="preferences_audio_description">Движок вывода, громкость</string>
     <string name="preferences_controls">Управление</string>
