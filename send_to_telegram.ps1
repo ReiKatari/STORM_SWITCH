@@ -1,4 +1,4 @@
-﻿$tokenFile = "e:\STORM EDEN 3\tg_token.txt"
+$tokenFile = "e:\STORM EDEN 3\tg_token.txt"
 if (Test-Path $tokenFile) {
     $token = (Get-Content $tokenFile -Raw).Trim()
 } elseif ($env:TELEGRAM_BOT_TOKEN) {
@@ -39,35 +39,28 @@ function Send-TGDocument($filePath, $caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 7.4.8 (Mortal Kombat 1 and 11 Fixes, Game Mode, SoR4 Boot Fix, Library Multi-Extension Support, Clean Versioning)</b> — <i>Комплексное обновление эмулятора Nintendo Switch: устранение графических артефактов и падения FPS в Mortal Kombat 1, полная поддержка русского языка и оптимизация Mortal Kombat 11, восстановление запуска Streets of Rage 4, полноценная интеграция Game Mode на Android, исправление отображения игр с разными расширениями (NSP и NSZ) и чистое отображение версий.</i>
+⚡ <b>Релиз STORM SWITCH 7.4.9 (Game Minimize Freeze Fix, Cooling Screen, MK11 Eden Nightly Profile, SoR4 Video Fix, Uzuy MMJR Game Mode)</b> — <i>Масштабное обновление эмулятора Nintendo Switch: полное устранение зависания при сворачивании игры, возвращение экрана охлаждения устройства и авто-паузы при нагреве, идеальная графика и 60 FPS в Mortal Kombat 11 по спецификации Eden Nightly с сохранением русского языка, восстановление запуска видеозаставки Streets of Rage 4, каноническая системная интеграция Android Game Mode по стандарту Uzuy MMJR.</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения и улучшения:</b>
 
-🥋 <b>Mortal Kombat 1 (устранение графических багов и локаута 30 FPS):</b>
-• <b>Ликвидация застывающего шлейфа дыма и спецэффектов:</b> в драйверном профиле Turnip отключен агрессивный сброс тайлов GMEM (tu_tile_discard = false) и включено межкамандное сохранение LRZ (tu_lrz_preserve_across_cmdbuf = true). Промежуточные буферы частиц UE4 больше не повреждаются и дым/сетка Сайракса и Миротворца корректно рассеиваются.
-• <b>Стабильные 60 FPS:</b> включены быстрое время ГПУ (fast_gpu_time = true) и синхронизация операций памяти (sync_memory_operations = true), что исключает срабатывание динамического делителя частоты кадров движка Unreal Engine 4 и просадку до 30 FPS.
-• <b>Точность буфера глубины D24:</b> альтернативный Title ID MK1 добавлен в список NEEDS_D24 для идеального скейлинга смещения глубины (depth bias) без z-файтинга.
+❄️ <b>Сворачивание игры, экран охлаждения и авто-пауза при нагреве:</b>
+• <b>Ликвидация зависания при сворачивании (onPause / onStop):</b> в нативном слое Vulkan внедрено гарантированное уведомление об уничтожении поверхности окна (SurfaceChanged(nullptr)), что полностью предотвращает дедлоки драйвера Adreno/Turnip при потере дескриптора ANativeWindow.
+• <b>Полноценный экран охлаждения:</b> при постановке игры на паузу или сворачивании безусловно отображается стилизованный блок охлаждения устройства с актуальной температурой аккумулятора, целевым порогом охлаждения (до 35°C), индикатором снятия нагрузки на чипсет (&lt; 1 Вт) и кнопкой мгновенного продолжения игры.
+• <b>Экстренная защита от перегрева:</b> порог автоматической защитной паузы приведен к реалистичному аппаратному значению 44.0°C (вместо недостижимых 52°C), обеспечивая своевременное охлаждение без троттлинга ОС Android и с сохранением игрового процесса.
 
-🥋 <b>Mortal Kombat 11 (русский язык, производительность и стабильность):</b>
-• <b>100% отображение русского языка:</b> в системном сервисе IReadOnlyApplicationControlDataInterface обеспечен безусловный приоритет настроенного пользователем русского языка без нежелательного отката на английский fallback. В профиль MK11 прописан язык (Russian, индекс 10) и регион (Europe, индекс 2).
-• <b>Устранение графических глитчей и тормозов:</b> Title ID MK11 добавлен в NEEDS_D24, профиль дополнен синхронизацией памяти и ускоренным таймингом GPU для стабильных 55–60 FPS на Turnip.
+🥋 <b>Mortal Kombat 11 (полное соответствие спецификации Eden Nightly):</b>
+• <b>Устранение графических багов и артефактов:</b> Title ID MK11 исключен из списка NEEDS_D24, благодаря чему отключено ошибочное масштабирование глубины D24, разрушавшее тени и геометрию персонажей.
+• <b>Возврат стабильных 55–60 FPS на Turnip:</b> удалена ресурсоемкая принудительная синхронизация операций памяти (sync_memory_operations), вызывавшая микрофризы и срезавшая FPS до 15–20. В драйверном генераторе Turnip выделен отдельный профиль с разрешенным сбросом тайлов (tu_tile_discard = true).
+• <b>100% русский язык:</b> сохранен европейский регион (индекс 2) и русский язык интерфейса (индекс 10) с защитой от сброса на fallback.
 
-🥊 <b>Streets of Rage 4 (полное устранение краша на старте):</b>
-• Удален небезопасный бинарный патч машинного кода в менеджере патчей NSO, приводивший к нарушению регистров и мгновенному аварийному завершению (SIGSEGV) на ARM64 NCE и JIT-компиляторе Dynarmic. Игра запускается и работает стабильно с аппаратным и программным декодером NVDEC.
+🥊 <b>Streets of Rage 4 (исправление вылета начальной заставки):</b>
+• Восстановлен проверенный безопасный NSO-патч машинного кода по смещению 0x008C0048 (cbz x23) для исполняемого файла игры (Build ID 8817441976E32E94909A95F64405A99A092B43DC), предотвращающий сбой IndexOutOfRangeException на 4-м кадре вступительного видеоролика при аппаратном декодировании NVDEC.
 
-📱 <b>Библиотека игр Android: поддержка всех форматов файлов:</b>
-• Исправлен алгоритм дедупликации библиотеки: формирование уникального идентификатора теперь опирается на фактическое расширение (NSP, NSZ, XCI, XCZ). Игры, имеющиеся в коллекции одновременно в разных форматах (например, The Legend of Zelda: Breath of the Wild в NSP и NSZ), отображаются параллельно без принудительного сокрытия.
-
-🎮 <b>Полноценный системный Game Mode на Android:</b>
-• Приведен к строгому стандарту AOSP манифест конфигурации Game Mode (game_mode_config.xml) без конфликтующих дубликатов атрибутов, что восстановило работу игрового профиля на Android 14 и 15.
-• Внедрено динамическое переключение игрового состояния GameManager (setGameState): режим MODE_GAMEPLAY_UNINTERRUPTIBLE активируется не только при старте, но и при каждом возвращении в игру (onResume), а при сворачивании безопасно переходит в MODE_NONE (onPause).
-• Добавлены метаданные и категории для Samsung Game Booster, Xiaomi Game Turbo, OnePlus Gamespace и Asus Armoury Crate.
-
-🏷️ <b>Чистое отображение версий в интерфейсе:</b>
-• В карточках списков и сетки игр версия теперь отображается в чистом виде (например, 1.0.1 вместо v1.0.1).
-• Внутренний номер версии Switch выводится без префикса «v» и без круглых скобок (например, 222222 вместо (v222222)).
+🎮 <b>Каноническая интеграция системного Android Game Mode (как в Uzuy MMJR):</b>
+• Манифест AndroidManifest.xml полностью очищен от конфликтующих вендорных метаданных, ломавших парсинг службами Samsung GOS, Xiaomi Game Turbo и OnePlus Gamespace.
+• Применена эталонная конфигурация game_mode_config.xml и объединенный интент лаунчера, обеспечивающие стопроцентное системное распознавание эмулятора как игры в Android 13, 14 и 15.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 <i>Все исполняемые файлы, инсталляторы и архивы собраны, подписаны цифровой подписью и готовы к работе.</i>
@@ -79,24 +72,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.8.apk"
-        Caption = "📱 <b>STORM SWITCH 7.4.8 (Mainline Release - Android 14+)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.9.apk"
+        Caption = "📱 <b>STORM SWITCH 7.4.9 (Mainline Release - Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.8_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 7.4.8 (Legacy Release - Android 10-13)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.9_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 7.4.9 (Legacy Release - Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.8_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 7.4.8 (SDK27 Release - Android 8.1-9)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.9_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 7.4.9 (SDK27 Release - Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.8_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 7.4.8 (Windows x64 Release Portable)</b>"
-    },
-    @{
-        Path = "E:\STORM EDEN 3\Files\STORM_DRIVER_2.0.5.zip"
-        Caption = "🏎️ <b>STORM DRIVER 2.0.5 (Mesa Turnip Driver for Adreno 6xx/7xx/8xx)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.4.9_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 7.4.9 (Windows x64 Release Portable)</b>"
     }
 )
 
@@ -108,4 +97,4 @@ foreach ($f in $filesToUpload) {
     }
 }
 
-Write-Host "`nRelease 7.4.8 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 7.4.9 deployment to Telegram completed successfully!"

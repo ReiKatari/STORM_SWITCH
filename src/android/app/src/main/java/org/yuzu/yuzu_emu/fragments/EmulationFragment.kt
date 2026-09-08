@@ -774,6 +774,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 resumeEmulationFromUi()
             }
         }
+        binding.pausedFrameImage.setOnClickListener {
+            if (this::emulationState.isInitialized && emulationState.isPaused) {
+                resumeEmulationFromUi()
+            }
+        }
 
         binding.inGameMenu.menu.findItem(R.id.menu_lock_drawer).apply {
             val lockMode = IntSetting.LOCK_DRAWER.getInt()
@@ -1576,9 +1581,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         val b = _binding ?: return
         val showPausedUi = this::emulationState.isInitialized && emulationState.isPaused
         val tempC = getBatteryTemperature()
-        val isDeviceHot = tempC >= 43.0f
-        b.pausedCoolingContainer.setVisible(showPausedUi && isDeviceHot)
-        if (showPausedUi && isDeviceHot) {
+        b.pausedCoolingContainer.setVisible(showPausedUi)
+        if (showPausedUi) {
             updateCoolingTemperatureText(tempC)
         }
 
@@ -1591,7 +1595,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         val b = _binding ?: return
         try {
             if (tempC > 0f) {
-                val targetTemp = kotlin.math.max(38.0f, tempC - 4.0f)
+                val targetTemp = kotlin.math.max(35.0f, tempC - 4.0f)
                 b.pausedCoolingTemp.text = "🌡️ Температура: ${String.format(java.util.Locale.US, "%.1f", tempC)}°C ➔ Цель: ${String.format(java.util.Locale.US, "%.1f", targetTemp)}°C"
             } else {
                 b.pausedCoolingTemp.text = "🌡️ Идёт охлаждение чипсета"
@@ -1970,6 +1974,16 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         super.onPause()
     }
 
+    override fun onStop() {
+        if (this::emulationState.isInitialized) {
+            if (emulationState.isRunning && emulationActivity?.isInPictureInPictureMode != true) {
+                emulationState.pause()
+                updatePauseMenuEntry(true)
+            }
+        }
+        super.onStop()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         amiiboLoadJob?.cancel()
@@ -2189,9 +2203,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         binding.buttonFloatingAutoCorrection.visibility = targetVisibility
                     }
 
-                    // Emergency thermal protection: if chipset reaches critical temperature (>= 52.0°C),
+                    // Emergency thermal protection: if battery/chipset reaches critical temperature (>= 44.0°C),
                     // trigger forced pause to allow the hardware to cool down safely, without ever throttling FPS during active gameplay.
-                    if (currentBatteryTemp >= 52.0f && this@EmulationFragment::emulationState.isInitialized && !emulationState.isPaused) {
+                    if (currentBatteryTemp >= 44.0f && this@EmulationFragment::emulationState.isInitialized && !emulationState.isPaused) {
                         pauseEmulationAndCaptureFrame()
                         context?.let { ctx ->
                             android.widget.Toast.makeText(
@@ -3249,9 +3263,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 }
 
                 State.PAUSED -> {
+                    NativeLibrary.surfaceChanged(currentSurface)
                     Log.debug(
                         "[EmulationFragment] Surface restored while emulation paused; " +
-                            "waiting for explicit resume."
+                            "native surface updated, waiting for explicit resume."
                     )
                 }
 

@@ -750,6 +750,7 @@ void Java_org_yuzu_yuzu_1emu_NativeLibrary_surfaceDestroyed(JNIEnv* env, jobject
         ANativeWindow_release(native_window);
     }
     EmulationSession::GetInstance().SetNativeWindow(nullptr);
+    EmulationSession::GetInstance().SurfaceChanged();
 }
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_setAppDirectory(JNIEnv* env, jobject instance,

@@ -32,6 +32,7 @@ object PerGameDrircGenerator {
         DOOM_ETERNAL,
         BORDERLANDS,
         MORTAL_KOMBAT_1,
+        MORTAL_KOMBAT_11,
         ASSASSINS_CREED,
         EA_SPORTS,
         ALAN_WAKE,
@@ -281,17 +282,27 @@ object PerGameDrircGenerator {
             return GameProfileType.BORDERLANDS
         }
 
-        // 17. Mortal Kombat & Batman Arkham Series (Heavy UE4 Custom Pipelines)
+        // 17. Mortal Kombat 11 (Dedicated High-FPS Profile: clean 55-60 FPS on Turnip)
+        if (cleanId.startsWith("0100B1100C4D0") ||
+            cleanTitle.contains("mortal kombat 11") ||
+            cleanTitle.contains("mk11") ||
+            cleanTitle.contains("mk 11")
+        ) {
+            return GameProfileType.MORTAL_KOMBAT_11
+        }
+
+        // 18. Mortal Kombat 1 & Batman Arkham Series (Heavy UE4 Custom Pipelines)
         if (cleanId.startsWith("01006560184E6") || // MK 1
             cleanId.startsWith("0100D2800D5C2") ||
-            cleanId.startsWith("0100B1100C4D0") || // MK 11
             cleanId.startsWith("010063B017DAE") || // Arkham Knight
             cleanId.startsWith("010023A017E94") ||
             cleanId.startsWith("01003AE017DB0") || // Arkham City
             cleanId.startsWith("01001D4017DA8") || // Arkham Asylum
             cleanId.startsWith("01000B0012E4E") || // Cronos
             cleanId.startsWith("010055700C30A") || // Outer Worlds
-            cleanTitle.contains("mortal kombat") ||
+            cleanTitle.contains("mortal kombat 1") ||
+            cleanTitle.contains("mk1") ||
+            cleanTitle.contains("mk 1") ||
             cleanTitle.contains("arkham") ||
             cleanTitle.contains("batman")
         ) {
@@ -670,7 +681,7 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
             }
             GameProfileType.MORTAL_KOMBAT_1 -> {
-                optionsBuilder.append("\n            <!-- MORTAL KOMBAT & BATMAN ARKHAM (Heavy UE4 Custom Pipelines) -->\n")
+                optionsBuilder.append("\n            <!-- MORTAL KOMBAT 1 & BATMAN ARKHAM (Heavy UE4 Custom Pipelines) -->\n")
                 optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
@@ -679,6 +690,12 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
+            }
+            GameProfileType.MORTAL_KOMBAT_11 -> {
+                optionsBuilder.append("\n            <!-- MORTAL KOMBAT 11 (Stable 60 FPS Pacing, Clean Normal Accuracy, Zero Corruptions) -->\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
             }
             GameProfileType.ASSASSINS_CREED -> {
                 optionsBuilder.append("\n            <!-- ASSASSIN'S CREED SERIES (Ubisoft AnvilNext Ocean & Shadows Integrity) -->\n")

@@ -2290,19 +2290,17 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mortal Kombat 11",
         "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити\n• Отсутствие русского языка при авто-определении",
         "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes\n• Missing Russian language on auto-detection",
-        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Обычная (высокий фреймрейт 60 FPS на Turnip)\n✓ Быстрое время ГПУ: Включено (стабильный тайминг)\n✓ Синхронизация памяти: Включено (устранение графических багов)\n✓ Язык: Русский\n✓ Регион: Европа\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: Normal (high 60 FPS on Turnip)\n✓ Fast GPU Time: Enabled\n✓ Sync Memory Operations: Enabled (eliminates glitches)\n✓ Language: Russian\n✓ Region: Europe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Обычная (высокий фреймрейт 60 FPS на Turnip)\n✓ Язык: Русский\n✓ Регион: Европа\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: Normal (high 60 FPS on Turnip)\n✓ Language: Russian\n✓ Region: Europe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\airplane_mode", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Core\\memory_layout_mode", "0"},
             {"System\\memory_layout_mode", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\language_index", "10"},
             {"System\\region_index", "2"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"}
+            {"System\\airplane_mode", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
     {
