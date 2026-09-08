@@ -27,13 +27,13 @@ Get-ChildItem -Path 'e:\STORM EDEN 3\Assembling' -Recurse | Unblock-File -ErrorA
 Get-ChildItem -Path 'e:\STORM EDEN 3\Files' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 Get-ChildItem -Path 'e:\STORM EDEN 3' -File | Unblock-File -ErrorAction SilentlyContinue
 
-Write-Host "Creating Windows 7.5.2 release zip..."
+Write-Host "Creating Windows 7.5.3 release zip..."
 $stageDir = 'e:\STORM EDEN 3\build\stage_zip'
 if (Test-Path $stageDir) { Remove-Item $stageDir -Recurse -Force }
 New-Item -ItemType Directory -Path "$stageDir\user\config", "$stageDir\user\load", "$stageDir\user\nand", "$stageDir\user\sdmc", "$stageDir\user\cache" -Force | Out-Null
 Copy-Item 'e:\STORM EDEN 3\Assembling\STORM_SWITCH*.exe' $stageDir\ -Force
 
-$zipPath = 'e:\STORM EDEN 3\Files\STORM_SWITCH_7.5.2_Windows.zip'
+$zipPath = 'e:\STORM EDEN 3\Files\STORM_SWITCH_7.5.3_Windows.zip'
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 
 & 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPath "$stageDir\*" -mx=9

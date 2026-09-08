@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.YuzuApplication
+import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
 import java.io.File
 
 object LosslessScalingHelper {
@@ -56,6 +57,8 @@ object LosslessScalingHelper {
         val result = NativeLibrary.prepareLosslessDll()
         if (result != RESULT_OK) {
             NativeLibrary.removeLosslessDll()
+        } else {
+            BooleanSetting.RENDERER_FRAME_GEN.setBoolean(true)
         }
         refreshStatus()
         return result
@@ -63,6 +66,9 @@ object LosslessScalingHelper {
 
     fun remove(): Boolean {
         val removed = NativeLibrary.removeLosslessDll()
+        if (removed) {
+            BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
+        }
         refreshStatus()
         return removed
     }

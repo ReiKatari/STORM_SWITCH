@@ -248,6 +248,17 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Использует алгоритм масштабирования предыдущих версий эмулятора.\n"
               "Устраняет полосы на видеокартах AMD/Intel и мерцание серых текстур в Luigi's Mansion 3."));
 
+    INSERT(Settings, early_release_fences, tr("Раннее освобождение фенсов"),
+           tr("Предотвращает зависания на 0 FPS в играх (Ori 2, DKCR:HD, Subnautica Below Zero), снижая задержку ожидания кадра."));
+    INSERT(Settings, optimize_spirv_output, tr("Оптимизация вывода SPIR-V"),
+           tr("Выполняет оптимизацию сгенерированного кода шейдеров через spirv-opt, снижая нагрузку на драйвер и устраняя микрофризы."));
+    INSERT(Settings, use_fast_gpu_time, tr("Быстрое время ГПУ"),
+           tr("Ускоряет обработку временных меток и запросов таймингов ГПУ, уменьшая задержки конвейера рендеринга."));
+    INSERT(Settings, enable_frame_skipping, tr("Пропуск кадров"),
+           tr("Автоматически пропускает рендеринг промежуточных кадров при высоких нагрузках, поддерживая стабильную скорость игры."));
+    INSERT(Settings, enable_frame_interpolation, tr("Интерполяция кадров"),
+           tr("Интерполирует промежуточные кадры для повышения плавности анимации."));
+
     // Renderer (Extensions)
     INSERT(Settings, dyna_state, tr("Расширенное динамическое состояние"),
            tr("Управляет набором расширений Extended Dynamic State в Vulkan.\n"

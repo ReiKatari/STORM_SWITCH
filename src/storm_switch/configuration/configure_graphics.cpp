@@ -329,6 +329,8 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         graphics_layout.addWidget(widget);
     }
 
+    UpdateResolutionItems();
+
     for (auto widget : hold_api) {
         api_grid_layout->addWidget(widget);
     }
@@ -451,6 +453,32 @@ void ConfigureGraphics::changeEvent(QEvent* event) {
 
 void ConfigureGraphics::RetranslateUI() {
     ui->retranslateUi(this);
+    UpdateResolutionItems();
+}
+
+void ConfigureGraphics::UpdateResolutionItems() {
+    if (!resolution_combobox) {
+        return;
+    }
+    const bool is_docked = Settings::values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked;
+    const std::vector<QString> res_texts = {
+        is_docked ? tr("0.25X (270p)") : tr("0.25X (180p)"),
+        is_docked ? tr("0.5X (540p)") : tr("0.5X (360p)"),
+        is_docked ? tr("0.75X (810p)") : tr("0.75X (540p)"),
+        is_docked ? tr("1X (1080p)") : tr("1X (720p)"),
+        is_docked ? tr("1.25X (1350p)") : tr("1.25X (900p)"),
+        is_docked ? tr("1.5X (1620p)") : tr("1.5X (1080p)"),
+        is_docked ? tr("2X (2160p / 4K)") : tr("2X (1440p / 2K)"),
+        is_docked ? tr("3X (3240p / 6K)") : tr("3X (2160p / 4K)"),
+        is_docked ? tr("4X (4320p / 8K)") : tr("4X (2880p)"),
+        is_docked ? tr("5X (5400p)") : tr("5X (3600p)"),
+        is_docked ? tr("6X (6480p)") : tr("6X (4320p)"),
+        is_docked ? tr("7X (7560p)") : tr("7X (5040p)"),
+        is_docked ? tr("8X (8640p)") : tr("8X (5760p)"),
+    };
+    for (int i = 0; i < resolution_combobox->count() && i < static_cast<int>(res_texts.size()); ++i) {
+        resolution_combobox->setItemText(i, res_texts[i]);
+    }
 }
 
 void ConfigureGraphics::UpdateBackgroundColorButton(QColor color) {

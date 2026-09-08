@@ -1423,4 +1423,12 @@
     <string name="enable_overlay_description">Active l\'applet de superposition intégrée. Maintenez le bouton Home pendant 1 seconde pour l\'afficher.</string>
     <string name="profile_delete_confirm_message">Êtes-vous sûr de vouloir supprimer %1$s ? Toutes les données de sauvegarde seront effacées.</string>
     <string name="profile_delete_current_user_message">Êtes-vous sûr de vouloir supprimer %1$s ? Il s\'agit de l\'utilisateur actif.</string>
+    <string name="renderer_early_release_fences">Libération anticipée des fences</string>
+    <string name="renderer_early_release_fences_description">Empêche les blocages à 0 FPS dans des jeux comme Ori 2, DKCR:HD, Subnautica Below Zero en minimisant la latence d\'attente d\'image.</string>
+    <string name="renderer_optimize_spirv_output">Optimiser la sortie SPIR-V</string>
+    <string name="renderer_optimize_spirv_output_description">Passe les shaders par spirv-opt pour réduire la charge de compilation des pilotes, éliminer les saccades et limiter la chauffe.</string>
+    <string name="enable_frame_skipping">Activer le saut d\'images</string>
+    <string name="enable_frame_skipping_description">Ignore les images intermédiaires non critiques lors des baisses de framerate afin de préserver la fluidité et la vitesse de jeu.</string>
+    <string name="enable_frame_interpolation">Activer l\'interpolation d\'images</string>
+    <string name="enable_frame_interpolation_description">Améliore la fluidité en interpolant des images intermédiaires entre chaque trame.</string>
 </resources>

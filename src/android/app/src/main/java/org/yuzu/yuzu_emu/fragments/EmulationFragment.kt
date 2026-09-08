@@ -1295,11 +1295,16 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             quickSettings.addDivider(container)
 
             // --- Graphics & Resolution Section ---
+            val resChoices = if (BooleanSetting.USE_DOCKED_MODE.getBoolean()) {
+                R.array.rendererResolutionNamesDocked
+            } else {
+                R.array.rendererResolutionNamesHandheld
+            }
             quickSettings.addIntSetting(
                 R.string.renderer_resolution,
                 container,
                 IntSetting.RENDERER_RESOLUTION,
-                R.array.rendererResolutionNames,
+                resChoices,
                 R.array.rendererResolutionValues
             )
 
@@ -2113,9 +2118,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                     if (BooleanSetting.SHOW_FPS.getBoolean(needsGlobal)) {
                         val fpsText = if (isFrameGen && systemFps > 0.0) {
-                            String.format("FPS: %.1f (%.0f FG)", systemFps, actualFps)
+                            String.format("%.0f FPS (%.0f FPS)", actualFps, systemFps)
                         } else {
-                            String.format("FPS: %.1f", actualFps)
+                            String.format("%.0f FPS", actualFps)
                         }
                         sb.append(fpsText)
                     }

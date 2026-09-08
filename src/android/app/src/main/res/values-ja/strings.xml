@@ -1252,4 +1252,12 @@
     <string name="license_adreno_tools_link">https://github.com/bylaws/adreno-tools</string>
     <string name="license_adreno_tools_copyright">Copyright bylaws</string>
     <string name="license_adreno_tools_text">MIT License</string>
+    <string name="renderer_early_release_fences">フェンスの早期解放</string>
+    <string name="renderer_early_release_fences_description">フレーム待機遅延を最小限に抑え、Ori 2、DKCR:HD、Subnautica Below Zero などのゲームで 0 FPS フリーズを防止します。</string>
+    <string name="renderer_optimize_spirv_output">SPIR-V 出力の最適化</string>
+    <string name="renderer_optimize_spirv_output_description">spirv-opt を通じてシェーダーを最適化し、ドライバのコンパイル負荷を軽減してスタッターを解消し、発熱を抑えます。</string>
+    <string name="enable_frame_skipping">フレームスキップの有効化</string>
+    <string name="enable_frame_skipping_description">負荷時に重要度の低いフレームをスキップし、ゲーム速度を維持して発熱を抑制します。</string>
+    <string name="enable_frame_interpolation">フレーム補間の有効化</string>
+    <string name="enable_frame_interpolation_description">連続するフレーム間に中間フレームを生成・補間して、映像の滑らかさを向上させます。</string>
 </resources>

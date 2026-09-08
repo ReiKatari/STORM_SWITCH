@@ -4,7 +4,10 @@
 package org.yuzu.yuzu_emu.features.settings.ui.viewholder
 
 import android.view.View
+import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.ListItemSettingBinding
+import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
+import org.yuzu.yuzu_emu.features.settings.model.IntSetting
 import org.yuzu.yuzu_emu.features.settings.model.view.IntSingleChoiceSetting
 import org.yuzu.yuzu_emu.features.settings.model.view.SettingsItem
 import org.yuzu.yuzu_emu.features.settings.model.view.SingleChoiceSetting
@@ -26,10 +29,19 @@ class SingleChoiceViewHolder(val binding: ListItemSettingBinding, adapter: Setti
         when (item) {
             is SingleChoiceSetting -> {
                 val resMgr = binding.textSettingValue.context.resources
+                val choicesId = if (item.setting == IntSetting.RENDERER_RESOLUTION) {
+                    if (BooleanSetting.USE_DOCKED_MODE.getBoolean()) {
+                        R.array.rendererResolutionNamesDocked
+                    } else {
+                        R.array.rendererResolutionNamesHandheld
+                    }
+                } else {
+                    item.choicesId
+                }
                 val values = resMgr.getIntArray(item.valuesId)
                 for (i in values.indices) {
                     if (values[i] == item.getSelectedValue()) {
-                        binding.textSettingValue.text = resMgr.getStringArray(item.choicesId)[i]
+                        binding.textSettingValue.text = resMgr.getStringArray(choicesId)[i]
                         break
                     }
                 }

@@ -25,6 +25,7 @@
 #include "configuration/addon/mod_select_dialog.h"
 #include "core/core.h"
 #include "core/file_sys/patch_manager.h"
+#include "core/file_sys/submission_package.h"
 #include "core/loader/loader.h"
 #include "frontend_common/mod_manager.h"
 #include "qt_common/abstract/frontend.h"
@@ -54,8 +55,8 @@ ConfigurePerGameAddons::ConfigurePerGameAddons(Core::System& system_, QWidget* p
     tree_view->setContextMenuPolicy(Qt::CustomContextMenu);
 
     item_model->insertColumns(0, 2);
-    item_model->setHeaderData(0, Qt::Horizontal, tr("ТИП / ЭЛЕМЕНТ"));
-    item_model->setHeaderData(1, Qt::Horizontal, tr("ВЕРСИЯ / НАЗВАНИЕ ДОПОЛНЕНИЯ"));
+    item_model->setHeaderData(0, Qt::Horizontal, tr("Тип / элемент"));
+    item_model->setHeaderData(1, Qt::Horizontal, tr("Версия / название дополнения"));
 
     tree_view->header()->setStretchLastSection(true);
     tree_view->header()->setMinimumSectionSize(160);
@@ -336,6 +337,7 @@ void ConfigurePerGameAddons::LoadConfiguration() {
 
     bool update_added = false;
     int mod_counter = 1;
+    int dlc_count_added = 0;
 
     // Ensure TitleDB is loaded
     TitleDB::TitleDatabase::Instance().WaitLoaded(std::chrono::milliseconds(3000));
@@ -389,6 +391,7 @@ void ConfigurePerGameAddons::LoadConfiguration() {
                 auto* const name_item = new QStandardItem{dlc_title};
                 list_items.push_back(QList<QStandardItem*>{first_item, name_item});
                 item_model->appendRow(list_items.back());
+                dlc_count_added++;
             }
             continue;
         }
@@ -492,6 +495,75 @@ void ConfigurePerGameAddons::LoadConfiguration() {
         list_items.push_back(QList<QStandardItem*>{
             first_item, new QStandardItem{version_display}});
         item_model->appendRow(list_items.back());
+    }
+
+    // Fallback: check embedded DLCs in NSP container or filename tags if patches contained no DLCs
+    if (dlc_count_added == 0 && file != nullptr) {
+        std::set<u64> seen_dlc_tids;
+        const auto nsp = std::make_shared<FileSys::NSP>(file);
+        if (nsp && nsp->GetStatus() == Loader::ResultStatus::Success) {
+            for (const auto& [nca_tid, nca_map] : nsp->GetNCAs()) {
+                if (((nca_tid & 0xFFFFFFFFFFFFF000) == (title_id & 0xFFFFFFFFFFFFF000) ||
+                     (nca_tid >= title_id + 1 && nca_tid < title_id + 0x2000)) &&
+                    nca_tid != title_id && (nca_tid & 0x800) == 0) {
+                    seen_dlc_tids.insert(nca_tid);
+                }
+            }
+        }
+
+        static const QRegularExpression fn_dlc_tag{QStringLiteral(R"((?:\+|\b)([0-9]+)D(?:LC)?(?:\b|\)))"), QRegularExpression::CaseInsensitiveOption};
+        const auto dm = fn_dlc_tag.match(QString::fromStdString(file->GetName()));
+        if (dm.hasMatch() && dm.hasCaptured(1)) {
+            const int tag_count = dm.captured(1).toInt();
+            for (int i = 1; i <= tag_count; ++i) {
+                const u64 generated_tid = (title_id & 0xFFFFFFFFFFFFF000) | (0x1000 + i);
+                seen_dlc_tids.insert(generated_tid);
+            }
+        }
+
+        const auto tdb_dlcs = TitleDB::TitleDatabase::Instance().GetDlcs(title_id);
+        int dlc_seq = 0;
+        for (u64 dlc_tid : seen_dlc_tids) {
+            dlc_seq++;
+            auto* const first_item = new QStandardItem;
+            first_item->setText(tr("Дополнение #%1").arg(dlc_seq));
+            first_item->setCheckable(true);
+            first_item->setData(static_cast<quint32>(dlc_seq), DLC_INDEX);
+
+            QString dlc_title;
+            auto opt_entry = TitleDB::TitleDatabase::Instance().Lookup(dlc_tid);
+            if (opt_entry.has_value() && !opt_entry->name.empty()) {
+                dlc_title = QString::fromStdString(opt_entry->name).trimmed();
+            }
+            if (dlc_title.isEmpty() || dlc_title.startsWith(QStringLiteral("Дополнение #"))) {
+                for (const auto& d : tdb_dlcs) {
+                    const std::string d_hex = fmt::format("{:016X}", dlc_tid);
+                    if (d.id == d_hex && !d.name.empty()) {
+                        dlc_title = QString::fromStdString(d.name).trimmed();
+                        break;
+                    }
+                }
+                if ((dlc_title.isEmpty() || dlc_title.startsWith(QStringLiteral("Дополнение #"))) && dlc_seq > 0 && dlc_seq <= static_cast<int>(tdb_dlcs.size())) {
+                    if (!tdb_dlcs[dlc_seq - 1].name.empty()) {
+                        dlc_title = QString::fromStdString(tdb_dlcs[dlc_seq - 1].name).trimmed();
+                    }
+                }
+            }
+            if (dlc_title.isEmpty()) {
+                dlc_title = tr("Дополнение #%1").arg(dlc_seq);
+            }
+
+            const std::string dlc_key = fmt::format("DLC@{}", dlc_seq);
+            const std::string dlc_tid_key = fmt::format("DLC@{:016X}", dlc_tid);
+            bool dlc_disabled = (std::find(disabled.begin(), disabled.end(), "DLC") != disabled.end()) ||
+                                 (std::find(disabled.begin(), disabled.end(), dlc_key) != disabled.end()) ||
+                                 (std::find(disabled.begin(), disabled.end(), dlc_tid_key) != disabled.end());
+            first_item->setCheckState(dlc_disabled ? Qt::Unchecked : Qt::Checked);
+
+            auto* const name_item = new QStandardItem{dlc_title};
+            list_items.push_back(QList<QStandardItem*>{first_item, name_item});
+            item_model->appendRow(list_items.back());
+        }
     }
 
     if (!update_added && (!game_version_str.isEmpty() && game_version_str != QStringLiteral("1.0.0") && game_version_str != QStringLiteral("0"))) {

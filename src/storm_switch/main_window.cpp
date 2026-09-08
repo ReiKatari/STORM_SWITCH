@@ -1717,20 +1717,21 @@ void MainWindow::InitializeWidgets() {
     auto show_res_menu = [this]() {
         QMenu context_menu(this);
         const auto cur_res = Settings::values.resolution_setup.GetValue();
+        const bool is_docked = Settings::values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked;
         const std::vector<std::pair<Settings::ResolutionSetup, QString>> res_options = {
-            {Settings::ResolutionSetup::Res1_4X, tr("0.25X")},
-            {Settings::ResolutionSetup::Res1_2X, tr("0.5X")},
-            {Settings::ResolutionSetup::Res3_4X, tr("0.75X")},
-            {Settings::ResolutionSetup::Res1X, tr("1X")},
-            {Settings::ResolutionSetup::Res5_4X, tr("1.25X")},
-            {Settings::ResolutionSetup::Res3_2X, tr("1.5X")},
-            {Settings::ResolutionSetup::Res2X, tr("2X")},
-            {Settings::ResolutionSetup::Res3X, tr("3X")},
-            {Settings::ResolutionSetup::Res4X, tr("4X")},
-            {Settings::ResolutionSetup::Res5X, tr("5X")},
-            {Settings::ResolutionSetup::Res6X, tr("6X")},
-            {Settings::ResolutionSetup::Res7X, tr("7X")},
-            {Settings::ResolutionSetup::Res8X, tr("8X")},
+            {Settings::ResolutionSetup::Res1_4X, is_docked ? tr("0.25X (270p)") : tr("0.25X (180p)")},
+            {Settings::ResolutionSetup::Res1_2X, is_docked ? tr("0.5X (540p)") : tr("0.5X (360p)")},
+            {Settings::ResolutionSetup::Res3_4X, is_docked ? tr("0.75X (810p)") : tr("0.75X (540p)")},
+            {Settings::ResolutionSetup::Res1X, is_docked ? tr("1X (1080p)") : tr("1X (720p)")},
+            {Settings::ResolutionSetup::Res5_4X, is_docked ? tr("1.25X (1350p)") : tr("1.25X (900p)")},
+            {Settings::ResolutionSetup::Res3_2X, is_docked ? tr("1.5X (1620p)") : tr("1.5X (1080p)")},
+            {Settings::ResolutionSetup::Res2X, is_docked ? tr("2X (2160p / 4K)") : tr("2X (1440p / 2K)")},
+            {Settings::ResolutionSetup::Res3X, is_docked ? tr("3X (3240p / 6K)") : tr("3X (2160p / 4K)")},
+            {Settings::ResolutionSetup::Res4X, is_docked ? tr("4X (4320p / 8K)") : tr("4X (2880p)")},
+            {Settings::ResolutionSetup::Res5X, is_docked ? tr("5X (5400p)") : tr("5X (3600p)")},
+            {Settings::ResolutionSetup::Res6X, is_docked ? tr("6X (6480p)") : tr("6X (4320p)")},
+            {Settings::ResolutionSetup::Res7X, is_docked ? tr("7X (7560p)") : tr("7X (5040p)")},
+            {Settings::ResolutionSetup::Res8X, is_docked ? tr("8X (8640p)") : tr("8X (5760p)")},
         };
         for (const auto& opt : res_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -6174,6 +6175,7 @@ void MainWindow::OnToggleDockedMode() {
                                                         : Settings::ConsoleMode::Docked);
     ApplyDynamicSettingChange();
     UpdateDockedButton();
+    UpdateResScaleText();
     OnDockedModeChanged(is_docked, !is_docked, *QtCommon::system);
 }
 
@@ -7420,21 +7422,22 @@ void MainWindow::UpdateAstcRecompressText() {
 
 void MainWindow::UpdateResScaleText() {
     if (!res_scale_button) return;
+    const bool is_docked = Settings::values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked;
     QString val_text = QStringLiteral("1X");
     switch (Settings::values.resolution_setup.GetValue()) {
-    case Settings::ResolutionSetup::Res1_4X: val_text = QStringLiteral("0.25X"); break;
-    case Settings::ResolutionSetup::Res1_2X: val_text = QStringLiteral("0.5X"); break;
-    case Settings::ResolutionSetup::Res3_4X: val_text = QStringLiteral("0.75X"); break;
-    case Settings::ResolutionSetup::Res1X: val_text = QStringLiteral("1X"); break;
-    case Settings::ResolutionSetup::Res5_4X: val_text = QStringLiteral("1.25X"); break;
-    case Settings::ResolutionSetup::Res3_2X: val_text = QStringLiteral("1.5X"); break;
-    case Settings::ResolutionSetup::Res2X: val_text = QStringLiteral("2X"); break;
-    case Settings::ResolutionSetup::Res3X: val_text = QStringLiteral("3X"); break;
-    case Settings::ResolutionSetup::Res4X: val_text = QStringLiteral("4X"); break;
-    case Settings::ResolutionSetup::Res5X: val_text = QStringLiteral("5X"); break;
-    case Settings::ResolutionSetup::Res6X: val_text = QStringLiteral("6X"); break;
-    case Settings::ResolutionSetup::Res7X: val_text = QStringLiteral("7X"); break;
-    case Settings::ResolutionSetup::Res8X: val_text = QStringLiteral("8X"); break;
+    case Settings::ResolutionSetup::Res1_4X: val_text = is_docked ? QStringLiteral("0.25X (270p)") : QStringLiteral("0.25X (180p)"); break;
+    case Settings::ResolutionSetup::Res1_2X: val_text = is_docked ? QStringLiteral("0.5X (540p)") : QStringLiteral("0.5X (360p)"); break;
+    case Settings::ResolutionSetup::Res3_4X: val_text = is_docked ? QStringLiteral("0.75X (810p)") : QStringLiteral("0.75X (540p)"); break;
+    case Settings::ResolutionSetup::Res1X: val_text = is_docked ? QStringLiteral("1X (1080p)") : QStringLiteral("1X (720p)"); break;
+    case Settings::ResolutionSetup::Res5_4X: val_text = is_docked ? QStringLiteral("1.25X (1350p)") : QStringLiteral("1.25X (900p)"); break;
+    case Settings::ResolutionSetup::Res3_2X: val_text = is_docked ? QStringLiteral("1.5X (1620p)") : QStringLiteral("1.5X (1080p)"); break;
+    case Settings::ResolutionSetup::Res2X: val_text = is_docked ? QStringLiteral("2X (4K)") : QStringLiteral("2X (2K)"); break;
+    case Settings::ResolutionSetup::Res3X: val_text = is_docked ? QStringLiteral("3X (6K)") : QStringLiteral("3X (4K)"); break;
+    case Settings::ResolutionSetup::Res4X: val_text = is_docked ? QStringLiteral("4X (8K)") : QStringLiteral("4X (2880p)"); break;
+    case Settings::ResolutionSetup::Res5X: val_text = is_docked ? QStringLiteral("5X (5400p)") : QStringLiteral("5X (3600p)"); break;
+    case Settings::ResolutionSetup::Res6X: val_text = is_docked ? QStringLiteral("6X (6480p)") : QStringLiteral("6X (4320p)"); break;
+    case Settings::ResolutionSetup::Res7X: val_text = is_docked ? QStringLiteral("7X (7560p)") : QStringLiteral("7X (5040p)"); break;
+    case Settings::ResolutionSetup::Res8X: val_text = is_docked ? QStringLiteral("8X (8640p)") : QStringLiteral("8X (5760p)"); break;
     default: break;
     }
     res_scale_button->setText(tr("МАСШТАБ:\n%1").arg(val_text));
@@ -7560,12 +7563,27 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
         }
 
         if (!cur_path.empty()) {
-            static const QRegularExpression fn_dlc_tag{QStringLiteral(R"(\+([0-9]+)D\b)"), QRegularExpression::CaseInsensitiveOption};
+            static const QRegularExpression fn_dlc_tag{QStringLiteral(R"((\+|\b)([0-9]+)D(?:LC)?(?:\b|\)))"), QRegularExpression::CaseInsensitiveOption};
             const auto dm = fn_dlc_tag.match(QString::fromStdString(cur_path));
-            if (dm.hasMatch() && dm.hasCaptured(1)) {
-                const int tag_count = dm.captured(1).toInt();
+            if (dm.hasMatch() && dm.hasCaptured(2)) {
+                const int tag_count = dm.captured(2).toInt();
                 for (int i = 1; i <= tag_count; ++i) {
                     seen_dlc_ids.insert((cur_tid & 0xFFFFFFFFFFFFF000) | (0x1000 + i));
+                }
+            }
+            if (seen_dlc_ids.empty() && QtCommon::vfs) {
+                const auto game_vfs = Core::GetGameFileFromPath(QtCommon::vfs, cur_path);
+                if (game_vfs) {
+                    const auto nsp = std::make_shared<FileSys::NSP>(game_vfs);
+                    if (nsp && nsp->GetStatus() == Loader::ResultStatus::Success) {
+                        for (const auto& [nca_tid, nca_map] : nsp->GetNCAs()) {
+                            if (((nca_tid & 0xFFFFFFFFFFFFF000) == (cur_tid & 0xFFFFFFFFFFFFF000) ||
+                                 (nca_tid >= cur_tid + 1 && nca_tid < cur_tid + 0x2000)) &&
+                                nca_tid != cur_tid && (nca_tid & 0x800) == 0) {
+                                seen_dlc_ids.insert(nca_tid);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -8048,20 +8066,21 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
 
         auto* res_menu = context_menu.addMenu(tr("📐 Разрешение"));
         const auto cur_res = Settings::values.resolution_setup.GetValue();
+        const bool is_docked = Settings::values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked;
         const std::vector<std::pair<Settings::ResolutionSetup, QString>> res_options = {
-            {Settings::ResolutionSetup::Res1_4X, tr("0.25X")},
-            {Settings::ResolutionSetup::Res1_2X, tr("0.5X")},
-            {Settings::ResolutionSetup::Res3_4X, tr("0.75X")},
-            {Settings::ResolutionSetup::Res1X, tr("1X")},
-            {Settings::ResolutionSetup::Res5_4X, tr("1.25X")},
-            {Settings::ResolutionSetup::Res3_2X, tr("1.5X")},
-            {Settings::ResolutionSetup::Res2X, tr("2X")},
-            {Settings::ResolutionSetup::Res3X, tr("3X")},
-            {Settings::ResolutionSetup::Res4X, tr("4X")},
-            {Settings::ResolutionSetup::Res5X, tr("5X")},
-            {Settings::ResolutionSetup::Res6X, tr("6X")},
-            {Settings::ResolutionSetup::Res7X, tr("7X")},
-            {Settings::ResolutionSetup::Res8X, tr("8X")},
+            {Settings::ResolutionSetup::Res1_4X, is_docked ? tr("0.25X (270p)") : tr("0.25X (180p)")},
+            {Settings::ResolutionSetup::Res1_2X, is_docked ? tr("0.5X (540p)") : tr("0.5X (360p)")},
+            {Settings::ResolutionSetup::Res3_4X, is_docked ? tr("0.75X (810p)") : tr("0.75X (540p)")},
+            {Settings::ResolutionSetup::Res1X, is_docked ? tr("1X (1080p)") : tr("1X (720p)")},
+            {Settings::ResolutionSetup::Res5_4X, is_docked ? tr("1.25X (1350p)") : tr("1.25X (900p)")},
+            {Settings::ResolutionSetup::Res3_2X, is_docked ? tr("1.5X (1620p)") : tr("1.5X (1080p)")},
+            {Settings::ResolutionSetup::Res2X, is_docked ? tr("2X (2160p / 4K)") : tr("2X (1440p / 2K)")},
+            {Settings::ResolutionSetup::Res3X, is_docked ? tr("3X (3240p / 6K)") : tr("3X (2160p / 4K)")},
+            {Settings::ResolutionSetup::Res4X, is_docked ? tr("4X (4320p / 8K)") : tr("4X (2880p)")},
+            {Settings::ResolutionSetup::Res5X, is_docked ? tr("5X (5400p)") : tr("5X (3600p)")},
+            {Settings::ResolutionSetup::Res6X, is_docked ? tr("6X (6480p)") : tr("6X (4320p)")},
+            {Settings::ResolutionSetup::Res7X, is_docked ? tr("7X (7560p)") : tr("7X (5040p)")},
+            {Settings::ResolutionSetup::Res8X, is_docked ? tr("8X (8640p)") : tr("8X (5760p)")},
         };
         for (const auto& opt : res_options) {
             auto* act = res_menu->addAction(opt.second, [this, opt] {
@@ -8761,6 +8780,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
         QString ver;
         QString internal_ver;
         QString status;
+        int type_priority{0}; // 0 = Update, 1 = DLC, 2 = Mod
+        u64 raw_tid{0};
     };
     std::vector<RowItem> rows;
 
@@ -8868,6 +8889,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                 QStringLiteral("1.0.0"),
                 QString::number(dlc_ver),
                 tr("✓ В файле / Активно"),
+                1,
+                entry.title_id,
             });
         }
     }
@@ -8894,6 +8917,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                         QStringLiteral("1.0.0"),
                         QStringLiteral("0"),
                         tr("✓ В файле / Активно"),
+                        1,
+                        generated_tid,
                     });
                 }
             }
@@ -8915,6 +8940,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                 update_ver_str,
                 update_num > 0 ? QString::number(update_num) : update_internal_ver_str,
                 p.enabled ? tr("✓ В файле / Активно") : tr("Отключено"),
+                0,
+                p.title_id,
             });
         } else if (p.type == FileSys::PatchType::Mod) {
             total_mods++;
@@ -8926,6 +8953,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                 QStringLiteral("-"),
                 QStringLiteral("-"),
                 p.enabled ? tr("✓ Установлен") : tr("Отключен"),
+                2,
+                p.title_id,
             });
         }
     }
@@ -8954,6 +8983,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                                 update_ver_str,
                                 update_internal_ver_str,
                                 tr("✓ В файле / Активно"),
+                                0,
+                                nca_tid,
                             });
                         }
                     }
@@ -8976,6 +9007,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                                 QStringLiteral("1.0.0"),
                                 QStringLiteral("0"),
                                 tr("✓ В файле / Активно"),
+                                1,
+                                nca_tid,
                             });
                         }
                     }
@@ -8984,7 +9017,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
         }
 
         // Check filename tag +1U or (1G+1U)
-        static const QRegularExpression fn_u_tag{QStringLiteral(R"(\+([0-9]+)U\b)"), QRegularExpression::CaseInsensitiveOption};
+        static const QRegularExpression fn_u_tag{QStringLiteral(R"((?:\+|\b)([0-9]+)U(?:\b|\)))"), QRegularExpression::CaseInsensitiveOption};
         const auto um = fn_u_tag.match(QString::fromStdString(m_current_addons_game_path));
         if (um.hasMatch() && seen_update_ids.empty()) {
             const u64 upd_tid = FileSys::GetUpdateTitleID(title_id);
@@ -9002,11 +9035,13 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                 update_ver_str,
                 update_internal_ver_str,
                 tr("✓ В файле / Активно"),
+                0,
+                upd_tid,
             });
         }
 
-        // Check filename tags like +1D, +2D, (1G+1U+1D)
-        static const QRegularExpression fn_dlc_tag{QStringLiteral(R"(\+([0-9]+)D\b)"), QRegularExpression::CaseInsensitiveOption};
+        // Check filename tags like +1D, +2D, (1G+1U+1D), (1G+3D)
+        static const QRegularExpression fn_dlc_tag{QStringLiteral(R"((?:\+|\b)([0-9]+)D(?:LC)?(?:\b|\)))"), QRegularExpression::CaseInsensitiveOption};
         const auto dm = fn_dlc_tag.match(QString::fromStdString(m_current_addons_game_path));
         if (dm.hasMatch() && dm.hasCaptured(1)) {
             const int tag_count = dm.captured(1).toInt();
@@ -9027,6 +9062,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                         QStringLiteral("1.0.0"),
                         QStringLiteral("0"),
                         tr("✓ В файле / Активно"),
+                        1,
+                        generated_tid,
                     });
                 }
             }
@@ -9112,10 +9149,37 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
         .arg(update_ver_str, QString::number(total_dlcs), QString::number(tinfoil_dlc_count), QString::number(total_mods));
     copy_lines << QStringLiteral("------------------------------------------------------------");
 
+    // Sort rows: Updates (0) -> DLCs (1, sorted by raw_tid) -> Mods (2, sorted by name)
+    std::stable_sort(rows.begin(), rows.end(), [](const RowItem& a, const RowItem& b) {
+        if (a.type_priority != b.type_priority) {
+            return a.type_priority < b.type_priority;
+        }
+        if (a.type_priority == 1) {
+            return a.raw_tid < b.raw_tid;
+        }
+        if (a.type_priority == 2) {
+            return a.name < b.name;
+        }
+        return a.raw_tid < b.raw_tid;
+    });
+
+    // Re-number generic DLC names sequentially if needed
+    int dlc_seq = 0;
+    for (auto& r : rows) {
+        if (r.type_priority == 1) {
+            dlc_seq++;
+            static const QRegularExpression generic_dlc_re{QStringLiteral(R"(^Дополнение\s*#\d+)")};
+            if (generic_dlc_re.match(r.name).hasMatch()) {
+                r.name = tr("Дополнение #%1").arg(dlc_seq);
+            }
+        }
+    }
+
     for (const auto& r : rows) {
         table->insertRow(row_idx);
 
-        auto* item0 = new QTableWidgetItem(QString::number(row_idx + 1));
+        auto* item0 = new QTableWidgetItem();
+        item0->setData(Qt::EditRole, row_idx + 1);
         item0->setTextAlignment(Qt::AlignCenter);
         table->setItem(row_idx, 0, item0);
 
@@ -9157,6 +9221,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
         copy_lines << QStringLiteral("============================================================");
         copy_lines << QStringLiteral("Всего элементов: %1").arg(row_idx);
     }
+
+    table->setSortingEnabled(true);
 
     connect(search_box, &QLineEdit::textChanged, [table](const QString& text) {
         for (int r = 0; r < table->rowCount(); ++r) {

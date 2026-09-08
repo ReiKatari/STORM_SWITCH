@@ -1190,6 +1190,28 @@
     <string name="resolution_three" translatable="false">3X (2160p/3240p) (Slow)</string>
     <string name="resolution_four" translatable="false">4X (2880p/4320p) (Slow)</string>
 
+    <!-- Resolutions - Docked -->
+    <string name="resolution_quarter_docked" translatable="false">0.25X (270p)</string>
+    <string name="resolution_half_docked" translatable="false">0.5X (540p)</string>
+    <string name="resolution_three_quarter_docked" translatable="false">0.75X (810p)</string>
+    <string name="resolution_one_docked" translatable="false">1X (1080p)</string>
+    <string name="resolution_five_quarter_docked" translatable="false">1.25X (1350p)</string>
+    <string name="resolution_three_half_docked" translatable="false">1.5X (1620p)</string>
+    <string name="resolution_two_docked" translatable="false">2X (2160p / 4K) (Slow)</string>
+    <string name="resolution_three_docked" translatable="false">3X (3240p / 6K) (Slow)</string>
+    <string name="resolution_four_docked" translatable="false">4X (4320p / 8K) (Slow)</string>
+
+    <!-- Resolutions - Handheld -->
+    <string name="resolution_quarter_handheld" translatable="false">0.25X (180p)</string>
+    <string name="resolution_half_handheld" translatable="false">0.5X (360p)</string>
+    <string name="resolution_three_quarter_handheld" translatable="false">0.75X (540p)</string>
+    <string name="resolution_one_handheld" translatable="false">1X (720p)</string>
+    <string name="resolution_five_quarter_handheld" translatable="false">1.25X (900p)</string>
+    <string name="resolution_three_half_handheld" translatable="false">1.5X (1080p)</string>
+    <string name="resolution_two_handheld" translatable="false">2X (1440p / 2K) (Slow)</string>
+    <string name="resolution_three_handheld" translatable="false">3X (2160p / 4K) (Slow)</string>
+    <string name="resolution_four_handheld" translatable="false">4X (2880p) (Slow)</string>
+
     <!-- Renderer VSync -->
     <string name="renderer_vsync_immediate">Immediate (Off)</string>
     <string name="renderer_vsync_mailbox">Mailbox</string>

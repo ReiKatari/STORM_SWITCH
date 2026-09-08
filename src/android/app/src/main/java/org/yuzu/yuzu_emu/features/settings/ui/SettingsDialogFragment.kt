@@ -30,6 +30,7 @@ import org.yuzu.yuzu_emu.databinding.DialogSliderBinding
 import org.yuzu.yuzu_emu.databinding.DialogSpinboxBinding
 import org.yuzu.yuzu_emu.features.input.NativeInput
 import org.yuzu.yuzu_emu.features.input.model.AnalogDirection
+import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
 import org.yuzu.yuzu_emu.features.settings.model.IntSetting
 import org.yuzu.yuzu_emu.features.settings.model.view.AnalogInputSetting
 import org.yuzu.yuzu_emu.features.settings.model.view.ButtonInputSetting
@@ -128,10 +129,19 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
             SettingsItem.TYPE_SINGLE_CHOICE -> {
                 val item = settingsViewModel.clickedItem as SingleChoiceSetting
                 val value = getSelectionForSingleChoiceValue(item)
+                val choicesId = if (item.setting == IntSetting.RENDERER_RESOLUTION) {
+                    if (BooleanSetting.USE_DOCKED_MODE.getBoolean()) {
+                        R.array.rendererResolutionNamesDocked
+                    } else {
+                        R.array.rendererResolutionNamesHandheld
+                    }
+                } else {
+                    item.choicesId
+                }
 
                 MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                     .setTitle(item.title)
-                    .setSingleChoiceItems(item.choicesId, value, this)
+                    .setSingleChoiceItems(choicesId, value, this)
                     .create()
             }
 

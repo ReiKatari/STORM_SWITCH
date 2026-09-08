@@ -1427,4 +1427,12 @@
     <string name="addons_overview">附加组件与模组</string>
     <string name="addons_overview_description">管理已安装的更新补丁、DLC 与自定义模组</string>
     <string name="game_version_label">版本 %1$s</string>
+    <string name="renderer_early_release_fences">提前释放栅栏</string>
+    <string name="renderer_early_release_fences_description">通过减少帧等待延迟，防止《奥日2》、《大金刚国度：热带寒流HD》、《深海迷航：冰点之下》等游戏中出现 0 FPS 卡死。</string>
+    <string name="renderer_optimize_spirv_output">优化 SPIR-V 输出</string>
+    <string name="renderer_optimize_spirv_output_description">使用 spirv-opt 优化着色器代码，减少驱动编译开销，消除微卡顿并降低发热。</string>
+    <string name="enable_frame_skipping">启用跳帧</string>
+    <string name="enable_frame_skipping_description">在渲染负载过高时跳过非关键帧，维持稳定的游戏运行速度并减少发热。</string>
+    <string name="enable_frame_interpolation">启用帧插值</string>
+    <string name="enable_frame_interpolation_description">通过在连续帧之间进行插值，平滑动画过渡，提升视觉流畅度。</string>
 </resources>

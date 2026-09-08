@@ -1417,4 +1417,12 @@ Wirklich fortfahren?</string>
     <string name="profile_image_load_error">Bild konnte nicht geladen werden: %1$s</string>
     <string name="profile_image_save_error">Bild konnte nicht gespeichert werden: %1$s</string>
     <string name="error">Fehler</string>
+    <string name="renderer_early_release_fences">Fences frühzeitig freigeben</string>
+    <string name="renderer_early_release_fences_description">Verhindert 0-FPS-Hänger in Spielen (Ori 2, DKCR:HD, Subnautica Below Zero), indem die Frame-Wartezeit minimiert wird.</string>
+    <string name="renderer_optimize_spirv_output">SPIR-V-Ausgabe optimieren</string>
+    <string name="renderer_optimize_spirv_output_description">Leitet Shader durch spirv-opt, um Treiber-Kompilieraufwand zu reduzieren, Ruckeln zu vermeiden und das Gerät kühler zu halten.</string>
+    <string name="enable_frame_skipping">Frame-Skipping aktivieren</string>
+    <string name="enable_frame_skipping_description">Überspringt unkritische Zwischenbilder bei Leistungseinbrüchen, um Spielgeschwindigkeit und flüssiges Gameplay beizubehalten.</string>
+    <string name="enable_frame_interpolation">Frame-Interpolation aktivieren</string>
+    <string name="enable_frame_interpolation_description">Glättet Übergänge zwischen aufeinanderfolgenden Bildern durch Bild-Interpolation.</string>
 </resources>

@@ -206,7 +206,7 @@ bool IsBaseVersion(const QString& ver) {
            v == QStringLiteral("1.0.0") || v == QStringLiteral("1.0.0.0");
 }
 
-QString FormatAddonsColumnText(const QString& patch_versions, const QString& base_version = QStringLiteral("1.0.0")) {
+QString FormatAddonsColumnText(const QString& patch_versions, const QString& base_version = QStringLiteral("1.0.0"), const std::string& path = {}) {
     QString version_num = base_version.trimmed();
     while (version_num.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
         version_num.remove(0, 1);
@@ -239,6 +239,15 @@ QString FormatAddonsColumnText(const QString& patch_versions, const QString& bas
             } else {
                 dlc_count += 1;
             }
+        }
+    }
+
+    // Check stitched game filename tags like (1G+3D) or +3D or +3DLC if no DLC detected from patches
+    if (dlc_count == 0 && !path.empty()) {
+        static const QRegularExpression fn_dlc_tag{QStringLiteral(R"((?:\+|\b)([0-9]+)D(?:LC)?(?:\b|\)))"), QRegularExpression::CaseInsensitiveOption};
+        const auto dm = fn_dlc_tag.match(QString::fromStdString(path));
+        if (dm.hasMatch() && dm.hasCaptured(1)) {
+            dlc_count = dm.captured(1).toInt();
         }
     }
 
@@ -361,7 +370,7 @@ QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::stri
         file_version = QStringLiteral("1.0.0");
     }
 
-    QString addons_text = FormatAddonsColumnText(patch_versions, file_version);
+    QString addons_text = FormatAddonsColumnText(patch_versions, file_version, path);
 
     return QList<QStandardItem*>{
         new GameListItemPath(FormatGameName(path), icon, QString::fromStdString(name),

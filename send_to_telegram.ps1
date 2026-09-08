@@ -39,23 +39,30 @@ function Send-TGDocument($filePath, $caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 7.5.2 (Streets of Rage 4 Core Fix, Dynarmic JIT Safety, Hybrid NVDEC and Full Per-Game Profile Sync)</b> — <i>Масштабное обновление эмулятора Nintendo Switch: полное устранение зависаний и вылетов в Streets of Rage 4 на Windows и Android, защита JIT-компилятора Dynarmic от повреждения регистров, перевод профилей на эталонный гибридный NVDEC и синхронизация операций памяти.</i>
+⚡ <b>Релиз STORM SWITCH 7.5.3 (Lossless Frame Generation, Docked Resolution Scale, Stitched Addons Detection and Full 6-Language Sync)</b> — <i>Крупное обновление эмулятора Nintendo Switch: автоматическая активация и двойной счетчик FPS для генерации кадров на Android, динамическое отображение разрешений с учетом Док-режима на Windows и Android, структурированный Менеджер дополнений с поддержкой вшитых DLC в файлах игр, устранение оверхеда трассировки Vulkan и 100% локализация на 6 языков.</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения и улучшения:</b>
 
-🥊 <b>Streets of Rage 4 (полное исправление на Windows и Android):</b>
-• Устранен конфликт параметров авто-исправления: профили всех 4 Title ID переведены на гибридный NVDEC (Hybrid NVDEC), гарантирующий аппаратное ускорение видеороликов через GPU с надежным резервированием на CPU.
-• Включена синхронизация операций памяти (Sync Memory Operations), что полностью ликвидировало разбалансировку счетчиков буферов nvmap (Pin count imbalance detected) и преждевременное открепление поверхностей при закрытии видеопотока.
-• Включен асинхронный вывод Vulkan (Async Presentation), исключающий дедлок конвейера и подвисание кадров на стартовой заставке.
-• Отключен деструктивный флаг игнорирования прерываний памяти (cpuopt_ignore_memory_aborts = false), приводивший к искажению регистров JIT и падению Userspace PANIC на смещении 0x008C0120.
+🌀 <b>Генерация кадров (Lossless Frame Generation) на Android:</b>
+• Автоматическое включение генерации кадров при установке файла Lossless.dll без необходимости ручного поиска параметров.
+• Обновлен внутриигровой оверлей FPS: теперь наглядно отображаются как нативный FPS игры, так и результирующий FPS с генерацией кадров в скобках, например: <code>15 FPS (30 FPS)</code>.
 
-🛡️ <b>Ядро ARM (Dynarmic 64 JIT):</b>
-• В обработчике NoExecuteFault добавлена строгая проверка ненулевого программного счетчика (pc != 0), предотвращающая попытки фиктивного возврата в LR с обнулением регистров при вызовах нулевых указателей функций.
+🖥️ <b>Динамическое отображение разрешения (Windows и Android):</b>
+• При включенном Док-режиме отображается реальное ТВ-разрешение с учетом множителя масштабирования (база 1080p, 2X = 2160p / 4K, 3X = 3240p / 6K, 4X = 4320p / 8K).
+• При портативном режиме отображаются нативные разрешения (база 720p, 2X = 1440p / 2K, 3X = 2160p / 4K, 4X = 2880p).
+• Мгновенное обновление значений на панели состояния и в меню настроек при переключении док-станции.
 
-🥋 <b>Mortal Kombat 11 и The Legend of Zelda:</b>
-• Подтверждена и зафиксирована стабильная работа исправлений: профили реактивного сброса памяти (Reactive Flushing) для Zelda BotW/TotK и исключение сброса тайлов (tu_tile_discard = false) для Mortal Kombat 11 функционируют как на уровне ядра, так и в базе авто-исправлений.
+📦 <b>Менеджер дополнений и распознавание вшитых DLC (Stitched Games):</b>
+• В окне «Менеджер дополнений» реализована строгая группировка и сортировка: Обновления игры -> Официальные DLC по Title ID -> Пользовательские моды, сквозная нумерация 1..N и интерактивная сортировка по клику на заголовки.
+• В играх со вшитыми дополнениями (например, <code>(1G+3D)</code>) обеспечено безошибочное распознавание количества DLC в 5-й колонке списка игр и в окне «Свойства игры».
+
+⚡ <b>Оптимизация Vulkan и устранение скрытой нагрузки:</b>
+• По умолчанию отключено логирование вызовов Vulkan (gpu_log_vulkan_calls = false), устраняющее избыточный оверхед кольцевого буфера и высвобождающее ресурсы процессора.
+
+🌐 <b>100% локализация на 6 основных языков:</b>
+• Полная поддержка русского, английского, немецкого, французского, китайского и японского языков для расширенных настроек графики и подсказок.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 <i>Все исполняемые файлы, инсталляторы и архивы собраны, подписаны цифровой подписью и готовы к работе.</i>
@@ -67,20 +74,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.2.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.2 (Mainline Release - Android 14+)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.3.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.3 (Mainline Release - Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.2_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.2 (Legacy Release - Android 10-13)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.3_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.3 (Legacy Release - Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.2_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.2 (SDK27 Release - Android 8.1-9)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.3_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.3 (SDK27 Release - Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.2_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 7.5.2 (Windows x64 Release Portable)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.3_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 7.5.3 (Windows x64 Release Portable)</b>"
     }
 )
 
@@ -92,4 +99,4 @@ foreach ($f in $filesToUpload) {
     }
 }
 
-Write-Host "`nRelease 7.5.2 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 7.5.3 deployment to Telegram completed successfully!"

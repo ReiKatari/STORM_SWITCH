@@ -184,6 +184,30 @@
         <item>@string/resolution_four</item>
     </string-array>
 
+    <string-array name="rendererResolutionNamesDocked">
+        <item>@string/resolution_quarter_docked</item>
+        <item>@string/resolution_half_docked</item>
+        <item>@string/resolution_three_quarter_docked</item>
+        <item>@string/resolution_one_docked</item>
+        <item>@string/resolution_five_quarter_docked</item>
+        <item>@string/resolution_three_half_docked</item>
+        <item>@string/resolution_two_docked</item>
+        <item>@string/resolution_three_docked</item>
+        <item>@string/resolution_four_docked</item>
+    </string-array>
+
+    <string-array name="rendererResolutionNamesHandheld">
+        <item>@string/resolution_quarter_handheld</item>
+        <item>@string/resolution_half_handheld</item>
+        <item>@string/resolution_three_quarter_handheld</item>
+        <item>@string/resolution_one_handheld</item>
+        <item>@string/resolution_five_quarter_handheld</item>
+        <item>@string/resolution_three_half_handheld</item>
+        <item>@string/resolution_two_handheld</item>
+        <item>@string/resolution_three_handheld</item>
+        <item>@string/resolution_four_handheld</item>
+    </string-array>
+
     <string-array name="frameGenMultiplierNames">
         <item>@string/frame_gen_multiplier_2x</item>
         <item>@string/frame_gen_multiplier_3x</item>

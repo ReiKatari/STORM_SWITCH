@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2016 Citra Emulator Project
@@ -71,6 +71,7 @@ private:
     void UpdateBackgroundColorButton(QColor color);
     void UpdateAPILayout();
     void UpdateDeviceSelection(int device);
+    void UpdateResolutionItems();
 
     void RetrieveVulkanDevices();
 
