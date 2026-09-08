@@ -42,9 +42,10 @@ static bool IsBaseVersion(std::string_view ver) {
 
 static RomMetadata CacheRomMetadata(const std::string& path) {
     auto& instance = EmulationSession::GetInstance();
+    auto* content_provider = instance.GetContentProvider();
     const auto file = Core::GetGameFileFromPath(instance.System().GetFilesystem(), path);
-    if (file && instance.GetContentProvider()) {
-        instance.GetContentProvider()->AddEntriesFromContainer(file);
+    if (file && content_provider) {
+        content_provider->AddEntriesFromContainer(file);
     }
     if (auto loader = Loader::GetLoader(instance.System(), file, 0, 0); loader) {
         RomMetadata entry;

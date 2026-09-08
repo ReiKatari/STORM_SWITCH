@@ -549,6 +549,17 @@ struct Values {
     SwitchableSetting<bool> renderer_force_max_clock{linkage, false, "force_max_clock",
                                                      Category::RendererAdvanced};
 
+    SwitchableSetting<bool> early_release_fences{linkage, false, "early_release_fences",
+                                                 Category::RendererAdvanced};
+    SwitchableSetting<int> optimize_spirv_output{linkage, 0, "optimize_spirv_output",
+                                                 Category::RendererAdvanced};
+    SwitchableSetting<bool> use_fast_gpu_time{linkage, true, "use_fast_gpu_time",
+                                              Category::RendererAdvanced};
+    SwitchableSetting<bool> enable_frame_skipping{linkage, false, "enable_frame_skipping",
+                                                  Category::RendererAdvanced};
+    SwitchableSetting<bool> enable_frame_interpolation{linkage, false, "enable_frame_interpolation",
+                                                       Category::RendererAdvanced};
+
     SwitchableSetting<bool> use_disk_shader_cache{linkage, true, "use_disk_shader_cache",
                                                   Category::RendererAdvanced};
 

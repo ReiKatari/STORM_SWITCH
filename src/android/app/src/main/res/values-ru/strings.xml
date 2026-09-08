@@ -1575,4 +1575,12 @@
     <string name="app_language_hebrew">Иврит</string>
     <string name="app_language_serbian">Сербский</string>
     <string name="app_language_thai">Тайский</string>
+    <string name="renderer_early_release_fences">Раннее освобождение фенсов</string>
+    <string name="renderer_early_release_fences_description">Предотвращает зависания на 0 FPS в играх (Ori 2, DKCR:HD, Subnautica Below Zero), снижая задержку ожидания кадра.</string>
+    <string name="renderer_optimize_spirv_output">Оптимизация вывода SPIR-V</string>
+    <string name="renderer_optimize_spirv_output_description">Оптимизирует байт-код шейдеров через spirv-opt, снижая нагрузку на компилятор Turnip, устраняя микрофризы и нагрев SoC.</string>
+    <string name="enable_frame_skipping">Пропуск кадров</string>
+    <string name="enable_frame_skipping_description">Пропускает отрисовку промежуточных кадров при просадках, удерживая скорость игры и снижая нагрев устройства.</string>
+    <string name="enable_frame_interpolation">Интерполяция кадров</string>
+    <string name="enable_frame_interpolation_description">Сглаживает переходы между последовательными кадрами для плавного отображения.</string>
 </resources>

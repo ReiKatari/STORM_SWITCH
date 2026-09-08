@@ -14,6 +14,9 @@ import androidx.preference.PreferenceManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -187,24 +190,42 @@ class GameTranslatorManager(
             return
         }
 
-        // Translate blocks with in-memory caching
-        val translatedBlocks = mutableListOf<TranslatedTextBlock>()
-        for (block in detectedBlocks) {
-            val text = block.originalText.trim()
-            val cacheKey = "$text|$sourceLang|$targetLang|${engineType.preferenceValue}"
-            val cached = translationCache[cacheKey]
-            val translated = if (cached != null) {
-                cached
-            } else {
-                val result = engine.translate(text, sourceLang, targetLang)
-                if (result.isNotBlank() && result != text) {
-                    translationCache[cacheKey] = result
+        // Translate blocks with parallel asynchronous execution and in-memory caching
+        val translatedBlocks = coroutineScope {
+            detectedBlocks.map { block ->
+                async(Dispatchers.IO) {
+                    val rawText = block.originalText.trim()
+                    val cleanedText = rawText
+                        .replace(Regex("""(\w+)-\s*\n\s*(\w+)"""), "$1$2")
+                        .replace(Regex("""\s*\n\s*"""), " ")
+                        .replace(Regex("""\s{2,}"""), " ")
+                        .trim()
+
+                    if (cleanedText.isBlank()) {
+                        block.translatedText = ""
+                        return@async block
+                    }
+
+                    val cacheKey = "$cleanedText|$sourceLang|$targetLang|${engineType.preferenceValue}"
+                    val cached = translationCache[cacheKey]
+                    val translated = if (cached != null) {
+                        cached
+                    } else {
+                        val result = try {
+                            engine.translate(cleanedText, sourceLang, targetLang)
+                        } catch (_: Throwable) {
+                            cleanedText
+                        }
+                        if (result.isNotBlank() && result != cleanedText) {
+                            translationCache[cacheKey] = result
+                        }
+                        result
+                    }
+                    block.translatedText = translated
+                    block
                 }
-                result
-            }
-            block.translatedText = translated
-            translatedBlocks.add(block)
-        }
+            }.awaitAll()
+        }.filter { it.translatedText.isNotBlank() }
 
         withContext(Dispatchers.Main) {
             overlayView?.apply {

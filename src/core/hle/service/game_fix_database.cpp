@@ -2288,13 +2288,13 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mortal Kombat 11",
         "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити",
         "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes",
-        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Обычная (высокий фреймрейт 60 FPS на Turnip)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: Normal (high 60 FPS on Turnip)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "2"},
-            {"System\\memory_layout_mode", "2"},
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }

@@ -601,6 +601,15 @@
     <string name="use_optimized_vertex_buffers">Optimized Vertex Buffers</string>
     <string name="use_optimized_vertex_buffers_description">Enables optimized vertex buffer binding for improved performance. Requires Mesa 26.0+ Turnip drivers/ QCOM drivers. Will crash on older Turnip drivers (25.3 and below).</string>
 
+    <string name="renderer_early_release_fences">Release Fences Early</string>
+    <string name="renderer_early_release_fences_description">Prevents 0 FPS deadlocks in games like Ori 2, DKCR:HD, Subnautica Below Zero by minimizing frame wait latency.</string>
+    <string name="renderer_optimize_spirv_output">Optimize SPIR-V Output</string>
+    <string name="renderer_optimize_spirv_output_description">Passes shaders through spirv-opt to reduce driver compile overhead, eliminate stutter, and keep SoC cooler.</string>
+    <string name="enable_frame_skipping">Enable Frame Skipping</string>
+    <string name="enable_frame_skipping_description">Skips intermediate non-critical frames during rendering dips, maintaining smooth gameplay speed and lower temperatures.</string>
+    <string name="enable_frame_interpolation">Enable Frame Interpolation</string>
+    <string name="enable_frame_interpolation_description">Smooths out frame transitions by interpolating consecutive frames.</string>
+
     <string name="hacks">Hacks</string>
 
     <string name="fast_gpu_time">GPU Clocks</string>

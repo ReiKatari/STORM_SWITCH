@@ -246,10 +246,14 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         startForegroundService(foregroundService)
 
         // Android 12+ (API 31+) GameManager API: declare GAMEPLAY mode
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val gameManager = getSystemService(GameManager::class.java)
-                gameManager?.setGameState(GameState(false, GameState.MODE_GAMEPLAY_INTERRUPTIBLE))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    gameManager?.setGameState(GameState(false, GameState.MODE_GAMEPLAY_UNINTERRUPTIBLE))
+                }
+                val mode = gameManager?.gameMode ?: 0
+                Log.info("[EmulationActivity] Android OS Game Mode active: $mode")
             } catch (t: Throwable) {
                 Log.warning("[EmulationActivity] GameManager API error: ${t.message}")
             }

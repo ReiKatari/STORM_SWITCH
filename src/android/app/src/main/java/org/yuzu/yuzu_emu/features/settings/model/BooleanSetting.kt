@@ -105,7 +105,12 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     CPU_AFFINITY_PINNING("cpu_affinity_pinning"),
     VULKAN_PIPELINE_CACHE("vulkan_pipeline_cache"),
     VRAM_GARBAGE_COLLECTION("vram_garbage_collection"),
-    EXT_CONTENT_FROM_GAME_DIRS("ext_content_from_game_dirs");
+    EXT_CONTENT_FROM_GAME_DIRS("ext_content_from_game_dirs"),
+
+    RENDERER_EARLY_RELEASE_FENCES("early_release_fences"),
+    ENABLE_FAST_GPU_TIME("use_fast_gpu_time"),
+    ENABLE_FRAME_SKIPPING("enable_frame_skipping"),
+    ENABLE_FRAME_INTERPOLATION("enable_frame_interpolation");
 
 //  external fun isFrameSkippingEnabled(): Boolean
     external fun isFrameInterpolationEnabled(): Boolean

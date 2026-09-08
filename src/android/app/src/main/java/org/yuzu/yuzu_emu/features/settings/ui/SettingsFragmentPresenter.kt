@@ -363,6 +363,9 @@ class SettingsFragmentPresenter(
             add(BooleanSetting.CPU_AFFINITY_PINNING.key)
             add(BooleanSetting.VULKAN_PIPELINE_CACHE.key)
             add(BooleanSetting.VRAM_GARBAGE_COLLECTION.key)
+            add(BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.key)
+            add(IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.key)
+            add(BooleanSetting.ENABLE_FRAME_SKIPPING.key)
 
             add(HeaderSetting(R.string.hacks))
 

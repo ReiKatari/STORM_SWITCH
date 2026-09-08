@@ -59,6 +59,7 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     FAST_CPU_TIME("fast_cpu_time"),
     CPU_TICKS("cpu_ticks"),
     FAST_GPU_TIME("fast_gpu_time"),
+    RENDERER_OPTIMIZE_SPIRV_OUTPUT("optimize_spirv_output"),
     GPU_UNSWIZZLE_TEXTURE_SIZE("gpu_unswizzle_texture_size"),
     GPU_UNSWIZZLE_STREAM_SIZE("gpu_unswizzle_stream_size"),
     GPU_UNSWIZZLE_CHUNK_SIZE("gpu_unswizzle_chunk_size"),

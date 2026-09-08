@@ -4,8 +4,12 @@
 package org.yuzu.yuzu_emu.translator.tts
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.os.Build
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import androidx.preference.PreferenceManager
 import java.util.Locale
@@ -18,8 +22,43 @@ class GameTtsManager(private val context: Context) {
     private var pendingSpeakText: String? = null
     private var pendingCharacterHint: String = ""
 
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+    private var audioFocusRequest: AudioFocusRequest? = null
+
     init {
         initTts()
+    }
+
+    private fun requestAudioDucking() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (audioFocusRequest == null) {
+                    val playbackAttributes = AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build()
+                    audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                        .setAudioAttributes(playbackAttributes)
+                        .setAcceptsDelayedFocusGain(false)
+                        .build()
+                }
+                audioFocusRequest?.let { audioManager?.requestAudioFocus(it) }
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager?.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+            }
+        } catch (_: Throwable) {}
+    }
+
+    private fun abandonAudioDucking() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                audioFocusRequest?.let { audioManager?.abandonAudioFocusRequest(it) }
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager?.abandonAudioFocus(null)
+            }
+        } catch (_: Throwable) {}
     }
 
     private fun initTts() {
@@ -31,6 +70,18 @@ class GameTtsManager(private val context: Context) {
                     try {
                         availableVoices = engine.voices?.toList() ?: emptyList()
                     } catch (_: Throwable) {}
+
+                    engine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                        override fun onStart(utteranceId: String?) {
+                            requestAudioDucking()
+                        }
+                        override fun onDone(utteranceId: String?) {
+                            abandonAudioDucking()
+                        }
+                        override fun onError(utteranceId: String?) {
+                            abandonAudioDucking()
+                        }
+                    })
                 }
                 pendingSpeakText?.let { text ->
                     val hint = pendingCharacterHint
@@ -93,10 +144,12 @@ class GameTtsManager(private val context: Context) {
 
     fun stop() {
         tts?.stop()
+        abandonAudioDucking()
     }
 
     fun shutdown() {
         tts?.stop()
+        abandonAudioDucking()
         tts?.shutdown()
         tts = null
         isInitialized = false
@@ -109,7 +162,7 @@ class GameTtsManager(private val context: Context) {
         try {
             val matchingVoices = availableVoices.filter { 
                 it.locale.language.equals(currentLocale.language, ignoreCase = true)
-            }
+            }.sortedWith(compareByDescending<Voice> { it.quality }.thenBy { it.isNetworkConnectionRequired })
             if (matchingVoices.isNotEmpty()) {
                 val selectedVoice = when (gender) {
                     VoiceGender.FEMALE -> matchingVoices.firstOrNull { 

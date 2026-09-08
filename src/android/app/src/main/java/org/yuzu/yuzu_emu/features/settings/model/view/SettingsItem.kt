@@ -1227,6 +1227,36 @@ abstract class SettingsItem(
                     descriptionId = R.string.vram_garbage_collection_description
                 )
             )
+            put(
+                SwitchSetting(
+                    BooleanSetting.RENDERER_EARLY_RELEASE_FENCES,
+                    titleId = R.string.renderer_early_release_fences,
+                    descriptionId = R.string.renderer_early_release_fences_description
+                )
+            )
+            put(
+                SingleChoiceSetting(
+                    IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT,
+                    titleId = R.string.renderer_optimize_spirv_output,
+                    descriptionId = R.string.renderer_optimize_spirv_output_description,
+                    choicesId = R.array.optimizeSpirvOutputEntries,
+                    valuesId = R.array.optimizeSpirvOutputValues
+                )
+            )
+            put(
+                SwitchSetting(
+                    BooleanSetting.ENABLE_FRAME_SKIPPING,
+                    titleId = R.string.enable_frame_skipping,
+                    descriptionId = R.string.enable_frame_skipping_description
+                )
+            )
+            put(
+                SwitchSetting(
+                    BooleanSetting.ENABLE_FRAME_INTERPOLATION,
+                    titleId = R.string.enable_frame_interpolation,
+                    descriptionId = R.string.enable_frame_interpolation_description
+                )
+            )
         }
     }
 }

@@ -797,6 +797,9 @@ void System::SetFilesystem(FileSys::VirtualFilesystem vfs) {
 }
 
 FileSys::VirtualFilesystem System::GetFilesystem() const {
+    if (!impl->virtual_filesystem) {
+        impl->virtual_filesystem = std::make_shared<FileSys::RealVfsFilesystem>();
+    }
     return impl->virtual_filesystem;
 }
 
@@ -892,18 +895,30 @@ void System::SetContentProvider(std::unique_ptr<FileSys::ContentProviderUnion> p
 }
 
 FileSys::ContentProvider& System::GetContentProvider() {
+    if (!impl->content_provider) {
+        impl->content_provider = std::make_unique<FileSys::ContentProviderUnion>();
+    }
     return *impl->content_provider;
 }
 
 const FileSys::ContentProvider& System::GetContentProvider() const {
+    if (!impl->content_provider) {
+        impl->content_provider = std::make_unique<FileSys::ContentProviderUnion>();
+    }
     return *impl->content_provider;
 }
 
 FileSys::ContentProviderUnion& System::GetContentProviderUnion() {
+    if (!impl->content_provider) {
+        impl->content_provider = std::make_unique<FileSys::ContentProviderUnion>();
+    }
     return *impl->content_provider;
 }
 
 const FileSys::ContentProviderUnion& System::GetContentProviderUnion() const {
+    if (!impl->content_provider) {
+        impl->content_provider = std::make_unique<FileSys::ContentProviderUnion>();
+    }
     return *impl->content_provider;
 }
 
@@ -917,6 +932,9 @@ const Service::FileSystem::FileSystemController& System::GetFileSystemController
 
 void System::RegisterContentProvider(FileSys::ContentProviderUnionSlot slot,
                                      FileSys::ContentProvider* provider) {
+    if (!impl->content_provider) {
+        impl->content_provider = std::make_unique<FileSys::ContentProviderUnion>();
+    }
     impl->content_provider->SetSlot(slot, provider);
 }
 
