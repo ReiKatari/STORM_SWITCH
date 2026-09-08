@@ -103,6 +103,7 @@ private:
     std::unique_ptr<ConfigureWeb> web_tab;
 
     std::vector<VkDeviceInfo::Record>& vk_records;
+    bool m_is_changing_language{false};
 
     void OnAutoSettingsClicked();
     void DetectHardwareAndApplyAutoSettings();

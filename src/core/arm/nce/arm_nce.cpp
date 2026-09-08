@@ -119,11 +119,24 @@ bool ArmNce::HandleFailedGuestFault(GuestContext* guest_ctx, void* raw_info, voi
     // We can't handle the access, so determine why we crashed.
     const bool is_prefetch_abort = host_ctx.pc == reinterpret_cast<u64>(info->si_addr);
 
-    // For data aborts or when ignoring memory aborts, skip the instruction and return to guest code.
-    // This allows games (such as Streets of Rage 4, ANIMAL WELL, etc.) to continue without crashing on NCE.
-    if (!is_prefetch_abort || Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
-        host_ctx.pc += 4;
-        return true;
+    // For data aborts or when ignoring memory aborts, handle gracefully.
+    // For data aborts, skip the faulting instruction (pc += 4).
+    // For prefetch aborts (e.g. calling null function pointer in Streets of Rage 4),
+    // safely return to LR (link register) instead of crashing into unmapped pc + 4.
+    if (!is_prefetch_abort) {
+        if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
+            host_ctx.pc += 4;
+            return true;
+        }
+    } else if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
+        const u64 lr = host_ctx.regs[30];
+        auto& memory = guest_ctx->parent->m_running_thread->GetOwnerProcess()->GetMemory();
+        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc && memory.IsValidVirtualAddressRange(lr, sizeof(u32))) {
+            host_ctx.regs[0] = 0;
+            host_ctx.regs[1] = 0;
+            host_ctx.pc = lr;
+            return true;
+        }
     }
 
     // Set appropriate halt reason.

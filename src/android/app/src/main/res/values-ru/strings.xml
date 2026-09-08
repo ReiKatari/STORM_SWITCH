@@ -783,8 +783,8 @@
     <string name="preferences_system_description">Режим дока, регион, язык</string>
     <string name="preferences_graphics">Графика</string>
     <string name="preferences_graphics_description">Уровень точности, разрешение, кэш шейдеров</string>
-    <string name="quick_settings">Быстрые настройки (свайп 3 пальцами вверх)</string>
-    <string name="enable_quick_settings">Быстрые настройки (свайп 3 пальцами вверх)</string>
+    <string name="quick_settings">Быстрые настройки</string>
+    <string name="enable_quick_settings">Быстрые настройки</string>
     <string name="enable_quick_settings_description">Быстрый вызов панели настроек во время игры свайпом тремя пальцами вверх по экрану или через меню</string>
     <string name="quick_settings_gesture_hint">💡 Быстрые настройки: свайп 3 пальцами вверх</string>
     <string name="preferences_audio">Аудио</string>

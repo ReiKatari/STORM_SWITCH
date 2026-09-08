@@ -4746,6 +4746,9 @@ void MainWindow::OnEmulationStopped() {
     UpdateSpeedLimitText();
     UpdateNvdecText();
     UpdateDockedButton();
+    m_is_stopping_emulation = false;
+    // Update game list to show new play time
+    game_list->PopulateAsync(UISettings::values.game_dirs);
 }
 
 void MainWindow::ShutdownGame() {
@@ -5616,15 +5619,20 @@ void MainWindow::OnPauseContinueGame() {
 }
 
 void MainWindow::OnStopGame() {
+    if (m_is_stopping_emulation || !emulation_running) {
+        return;
+    }
+    disconnect(render_window, &GRenderWindow::Closed, this, &MainWindow::OnStopGame);
     if (ConfirmShutdownGame()) {
+        m_is_stopping_emulation = true;
         play_time_manager->Stop();
-        // Update game list to show new play time
-        game_list->PopulateAsync(UISettings::values.game_dirs);
         if (OnShutdownBegin()) {
             OnShutdownBeginDialog();
         } else {
             OnEmulationStopped();
         }
+    } else {
+        connect(render_window, &GRenderWindow::Closed, this, &MainWindow::OnStopGame);
     }
 }
 
@@ -9443,18 +9451,26 @@ void MainWindow::LoadTranslation() {
 }
 
 void MainWindow::OnLanguageChanged(const QString& locale) {
-    if (UISettings::values.language.GetValue() != std::string("en"))
+    if (UISettings::values.language.GetValue() != std::string("en")) {
         qApp->removeTranslator(&translator);
-
-    QList<QAction*> actions = game_size_actions->actions();
-    for (size_t i = 0; i < default_game_icon_sizes.size(); i++) {
-        actions.at(i)->setText(GetTranslatedGameIconSize(i));
     }
 
     UISettings::values.language = locale.toStdString();
     LoadTranslation();
+
+    if (game_size_actions) {
+        QList<QAction*> actions = game_size_actions->actions();
+        for (size_t i = 0; i < default_game_icon_sizes.size() && i < static_cast<size_t>(actions.size()); i++) {
+            if (actions.at(static_cast<int>(i))) {
+                actions.at(static_cast<int>(i))->setText(GetTranslatedGameIconSize(i));
+            }
+        }
+    }
+
     ui->retranslateUi(this);
-    multiplayer_state->retranslateUi();
+    if (multiplayer_state) {
+        multiplayer_state->retranslateUi();
+    }
     UpdateWindowTitle();
 }
 

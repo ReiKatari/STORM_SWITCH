@@ -638,6 +638,7 @@ private:
 
     // Whether emulation is currently running in yuzu.
     bool emulation_running = false;
+    bool m_is_stopping_emulation = false;
     // The path to the game currently running
     QString current_game_path;
     // Whether a user was set on the command line (skips UserSelector if it's forced to show up)

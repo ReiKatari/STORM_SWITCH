@@ -177,10 +177,16 @@ void ConfigureUi::RequestGameListUpdate() {
 }
 
 void ConfigureUi::SetConfiguration() {
-    ui->theme_combobox->setCurrentIndex(
-        ui->theme_combobox->findData(QString::fromStdString(UISettings::values.theme)));
-    ui->language_combobox->setCurrentIndex(ui->language_combobox->findData(
-        QString::fromStdString(UISettings::values.language.GetValue())));
+    {
+        const QSignalBlocker blocker(ui->theme_combobox);
+        ui->theme_combobox->setCurrentIndex(
+            ui->theme_combobox->findData(QString::fromStdString(UISettings::values.theme)));
+    }
+    {
+        const QSignalBlocker blocker(ui->language_combobox);
+        ui->language_combobox->setCurrentIndex(ui->language_combobox->findData(
+            QString::fromStdString(UISettings::values.language.GetValue())));
+    }
     ui->show_add_ons->setChecked(UISettings::values.show_add_ons.GetValue());
     ui->show_size->setChecked(UISettings::values.show_size.GetValue());
     ui->show_types->setChecked(UISettings::values.show_types.GetValue());

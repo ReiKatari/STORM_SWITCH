@@ -3322,7 +3322,7 @@ static const std::vector<GameFixProfile> s_profiles = {
     },
     // AI: Не менять (на будущее) / DO NOT MODIFY
     {
-        0x0100EC9010258000ULL,
+        0x0100AC300919A000ULL,
         "Streets of Rage 4",
         "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
@@ -3336,7 +3336,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
         "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
         "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
-        "✓ Игнорировать прерывания памяти: Отключено (стабильное выполнение функций Dynarmic без искажения регистров)\n"
+        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
@@ -3348,7 +3348,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
         "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
         "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
-        "✓ Ignore Memory Aborts: Disabled (clean Dynarmic execution without register corruption)\n"
+        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
         "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -3364,7 +3364,57 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"}
+        }
+    },
+    // AI: Не менять (на будущее) / DO NOT MODIFY
+    {
+        0x0100EC9010258000ULL,
+        "Streets of Rage 4",
+        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
+        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
+        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
+        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
+        "✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП исключает рассинхронизацию буферов)\n"
+        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
+        "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
+        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
+        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
+        "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
+        "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
+        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
+        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
+        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
+        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
+        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
+        "✓ NVDEC Video Emulation: Hybrid (GPU decoding with CPU fallback prevents buffer desync)\n"
+        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
+        "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
+        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
+        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
+        "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
+        "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
+        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
+        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
+        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
+        {
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\use_video_framerate", "false"},
+            {"Renderer\\eco_frame_pacing", "false"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"System\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
             {"Network\\airplane_mode", "true"}
@@ -3386,7 +3436,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
         "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
         "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
-        "✓ Игнорировать прерывания памяти: Отключено (стабильное выполнение функций Dynarmic без искажения регистров)\n"
+        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
@@ -3398,7 +3448,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
         "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
         "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
-        "✓ Ignore Memory Aborts: Disabled (clean Dynarmic execution without register corruption)\n"
+        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
         "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -3414,7 +3464,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"System\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
             {"Network\\airplane_mode", "true"}
@@ -3436,7 +3486,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
         "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
         "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
-        "✓ Игнорировать прерывания памяти: Отключено (стабильное выполнение функций Dynarmic без искажения регистров)\n"
+        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
@@ -3448,7 +3498,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
         "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
         "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
-        "✓ Ignore Memory Aborts: Disabled (clean Dynarmic execution without register corruption)\n"
+        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
         "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -3464,7 +3514,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"System\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
             {"Network\\airplane_mode", "true"}
@@ -3486,7 +3536,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
         "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
         "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
-        "✓ Игнорировать прерывания памяти: Отключено (стабильное выполнение функций Dynarmic без искажения регистров)\n"
+        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
@@ -3498,7 +3548,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
         "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
         "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
-        "✓ Ignore Memory Aborts: Disabled (clean Dynarmic execution without register corruption)\n"
+        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
         "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
         {
             {"Cpu\\cpu_accuracy", "0"},
@@ -3514,7 +3564,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"System\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
             {"Network\\airplane_mode", "true"}

@@ -263,6 +263,10 @@ void ConfigureDialog::PopulateSelectionList() {
 }
 
 void ConfigureDialog::OnLanguageChanged(const QString& locale) {
+    if (m_is_changing_language) {
+        return;
+    }
+    m_is_changing_language = true;
     emit LanguageChanged(locale);
     //  Reloading the game list is needed to force retranslation.
     UISettings::values.is_game_list_reload_pending = true;
@@ -270,6 +274,7 @@ void ConfigureDialog::OnLanguageChanged(const QString& locale) {
     ApplyConfiguration();
     RetranslateUI();
     SetConfiguration();
+    m_is_changing_language = false;
 }
 
 void ConfigureDialog::OnThemeChanged(const QString& theme) {
@@ -284,9 +289,27 @@ void ConfigureDialog::UpdateVisibleTabs() {
 
     [[maybe_unused]] const QSignalBlocker blocker(ui->tabWidget);
 
-    ui->tabWidget->clear();
-
     const auto tabs = qvariant_cast<QList<QWidget*>>(items[0]->data(Qt::UserRole));
+
+    // Check if current tabs match the requested list to avoid destructive clear() on active widgets
+    bool tabs_match = (ui->tabWidget->count() == tabs.size());
+    if (tabs_match) {
+        for (int i = 0; i < tabs.size(); ++i) {
+            if (ui->tabWidget->widget(i) != tabs[i]) {
+                tabs_match = false;
+                break;
+            }
+        }
+    }
+
+    if (tabs_match) {
+        for (int i = 0; i < tabs.size(); ++i) {
+            ui->tabWidget->setTabText(i, tr(tabs[i]->accessibleName().toUtf8().constData()));
+        }
+        return;
+    }
+
+    ui->tabWidget->clear();
 
     for (auto* const tab : tabs) {
         LOG_DEBUG(Frontend, "{}", tab->accessibleName().toStdString());

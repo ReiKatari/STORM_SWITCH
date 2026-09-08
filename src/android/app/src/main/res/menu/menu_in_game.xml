@@ -50,12 +50,12 @@
         <item
             android:id="@+id/menu_toggle_quick_settings"
             android:checkable="true"
-            android:icon="@drawable/ic_settings_outline"
+            android:icon="@drawable/ic_tune"
             android:title="@string/enable_quick_settings" />
 
         <item
             android:id="@+id/menu_quick_settings"
-            android:icon="@drawable/ic_settings"
+            android:icon="@drawable/ic_tune"
             android:title="@string/quick_settings" />
 
         <item
