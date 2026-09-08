@@ -2239,18 +2239,19 @@ object GameFixDatabase {
                 "Renderer\\max_anisotropy" to "5"
             )
         ),
-                GameFixProfile(
+        GameFixProfile(
             0x01006560184E6000L,
             "Mortal Kombat 1",
-            "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены",
-            "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes",
-            "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Тайминги ГПУ: Отключено (устраняет deadlock UE4)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Disabled (Fixes UE4 deadlock)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+            "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены\n• Просадка FPS и графические артефакты спецэффектов/дыма",
+            "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes\n• Particle and smoke effect artifacts",
+            "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS в бою)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
+            "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Enabled (stable 60 FPS in combat)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\dyna_state" to "1",
                 "Cpu\\cpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -2263,15 +2264,16 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100D2800D5C2000L,
             "Mortal Kombat 1",
-            "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены",
-            "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes",
-            "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Тайминги ГПУ: Отключено (устраняет deadlock UE4)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Disabled (Fixes UE4 deadlock)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+            "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены\n• Просадка FPS и графические артефакты спецэффектов/дыма",
+            "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes\n• Particle and smoke effect artifacts",
+            "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS в бою)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
+            "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Enabled (stable 60 FPS in combat)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\dyna_state" to "1",
                 "Cpu\\cpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -2284,15 +2286,19 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100B1100C4D0000L,
             "Mortal Kombat 11",
-            "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити",
-            "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes",
-            "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Обычная (высокий фреймрейт 60 FPS на Turnip)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-            "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: Normal (high 60 FPS on Turnip)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+            "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити\n• Отсутствие русского языка при авто-определении",
+            "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes\n• Missing Russian language on auto-detection",
+            "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Обычная (высокий фреймрейт 60 FPS на Turnip)\n✓ Быстрое время ГПУ: Включено (стабильный тайминг)\n✓ Синхронизация памяти: Включено (устранение графических багов)\n✓ Язык: Русский\n✓ Регион: Европа\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+            "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: Normal (high 60 FPS on Turnip)\n✓ Fast GPU Time: Enabled\n✓ Sync Memory Operations: Enabled (eliminates glitches)\n✓ Language: Russian\n✓ Region: Europe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\sync_memory_operations" to "true",
+                "System\\language_index" to "10",
+                "System\\region_index" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )

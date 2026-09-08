@@ -221,7 +221,8 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationDesiredLanguage(
 
     // Check if user's desired language is supported directly
     const auto desired_flag = GetSupportedLanguageFlag(*application_language);
-    if (supported_languages == 0 || (supported_languages & desired_flag) == desired_flag) {
+    if (supported_languages == 0 || (supported_languages & desired_flag) == desired_flag ||
+        *application_language == ApplicationLanguage::Russian) {
         *out_desired_language = *application_language;
         LOG_INFO(Service_NS, "Using user configured application language: {}", *application_language);
         R_SUCCEED();

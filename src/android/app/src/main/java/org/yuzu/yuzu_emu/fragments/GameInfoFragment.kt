@@ -103,7 +103,7 @@ class GameInfoFragment : Fragment() {
             val cleanVer = args.game.version.trim().removePrefix("v").removePrefix("V").ifEmpty { "1.0.0" }
             val cleanIntVer = args.game.internalVersion.trim().removePrefix("v").removePrefix("V")
             val fullVersionText = if (cleanIntVer.isNotEmpty() && cleanIntVer != "0") {
-                "$cleanVer (v$cleanIntVer)"
+                "$cleanVer ($cleanIntVer)"
             } else {
                 cleanVer
             }

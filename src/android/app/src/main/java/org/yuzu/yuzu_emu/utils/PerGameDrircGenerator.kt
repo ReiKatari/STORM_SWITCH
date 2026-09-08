@@ -671,7 +671,8 @@ object PerGameDrircGenerator {
             }
             GameProfileType.MORTAL_KOMBAT_1 -> {
                 optionsBuilder.append("\n            <!-- MORTAL KOMBAT & BATMAN ARKHAM (Heavy UE4 Custom Pipelines) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_a8xx_concurrent_queue_barrier_fix\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")

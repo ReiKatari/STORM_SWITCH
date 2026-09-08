@@ -51,6 +51,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         android:enableOnBackInvokedCallback="true">
 
         <meta-data android:name="com.samsung.android.gamehub" android:value="true" />
+        <meta-data android:name="com.samsung.android.game.identify" android:value="true" />
         <meta-data android:name="com.samsung.android.game.game_package" android:value="true" />
         <meta-data android:name="com.samsung.android.game.game_mode" android:value="true" />
         <meta-data android:name="com.samsung.android.game.app" android:value="true" />
@@ -135,6 +136,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
             </intent-filter>
             <meta-data android:name="android.app.category.GAME" android:value="true" />
             <meta-data android:name="isGame" android:value="true" />
+            <meta-data android:name="com.samsung.android.game.gamemode" android:value="true" />
+            <meta-data android:name="com.samsung.android.game.gamebooster" android:value="true" />
+            <meta-data android:name="com.samsung.android.game.app" android:value="true" />
             <meta-data android:name="android.nfc.action.TECH_DISCOVERED" android:resource="@xml/nfc_tech_filter" />
         </activity>
 

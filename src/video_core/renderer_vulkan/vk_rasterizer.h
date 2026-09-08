@@ -160,7 +160,8 @@ private:
         0x01005AF00BA7A000ULL, // Metroid Dread (Alt)
         0x0100121014688000ULL, // Metroid Prime Remastered
         0x01006560184E6000ULL, // Mortal Kombat 1
-        0x010097F018538000ULL, // Dave the Diver
+        0x0100D2800D5C2000ULL, // Mortal Kombat 1 (Alt)
+        0x0100B1100C4D0000ULL, // Mortal Kombat 11
         0x01002EF01A316000ULL, // Brotato
         0x010089A0197E4000ULL, // Vampire Survivors
         0x0100307018934000ULL, // Signalis

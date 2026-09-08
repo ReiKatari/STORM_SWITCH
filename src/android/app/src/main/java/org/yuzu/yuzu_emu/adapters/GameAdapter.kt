@@ -161,7 +161,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
 
         private fun formatVersion(model: Game): String {
             val v = model.version.trim().removePrefix("v").removePrefix("V")
-            return if (v.isNotEmpty()) "v$v" else "v1.0.0"
+            return if (v.isNotEmpty()) v else "1.0.0"
         }
 
         private fun bindBadgeInternalVersion(badge: android.widget.TextView?, model: Game) {
@@ -169,7 +169,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
             val iv = model.internalVersion.trim().removePrefix("v").removePrefix("V")
             if (iv.isNotEmpty() && iv != "0") {
                 badge.visibility = android.view.View.VISIBLE
-                badge.text = "(v$iv)"
+                badge.text = iv
             } else {
                 badge.visibility = android.view.View.GONE
             }

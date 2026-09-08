@@ -323,6 +323,16 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
 
     override fun onResume() {
         super.onResume()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try {
+                val gameManager = getSystemService(GameManager::class.java)
+                gameManager?.setGameState(GameState(false, GameState.MODE_GAMEPLAY_UNINTERRUPTIBLE))
+                val mode = gameManager?.gameMode ?: 0
+                Log.info("[EmulationActivity] Resumed - Android OS Game Mode: $mode")
+            } catch (t: Throwable) {
+                Log.warning("[EmulationActivity] GameManager setGameState error: ${t.message}")
+            }
+        }
         startThermalMonitor()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
@@ -339,6 +349,12 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
     }
 
     override fun onPause() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try {
+                val gameManager = getSystemService(GameManager::class.java)
+                gameManager?.setGameState(GameState(false, GameState.MODE_NONE))
+            } catch (_: Throwable) {}
+        }
         thermalJob?.cancel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             window.setSustainedPerformanceMode(false)
