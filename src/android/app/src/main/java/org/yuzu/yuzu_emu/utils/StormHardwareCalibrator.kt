@@ -198,10 +198,10 @@ object StormHardwareCalibrator {
             IntSetting.FSR_SHARPENING_SLIDER.setInt(85)
         }
 
-        // ASTC Decode: GPU (1) for all modern GPUs, CPU (0) only on budget low-ram Mali
-        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(if (profile.tier == HardwareTier.BUDGET && profile.isMali) 0 else 1)
+        // ASTC Decode: Hybrid (3) by default
+        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3)
         IntSetting.ASTC_RECOMPRESSION.setInt(0) // Uncompressed for 100% texture fidelity
-        IntSetting.RENDERER_NVDEC_EMULATION.setInt(2) // GPU
+        IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
         IntSetting.DMA_ACCURACY.setInt(1) // Normal
 
         // VRAM Usage Mode: Normal (1) for Flagships/High-midrange, Conservative (0) for Low RAM/Dimensity 9400
@@ -237,7 +237,10 @@ object StormHardwareCalibrator {
 
         // 4. Renderer Booleans
         BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
-        BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(profile.isAdreno830)
+        BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
+        BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(true)
+        IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.setInt(1)
+        BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(true)
         BooleanSetting.RENDERER_USE_DISK_SHADER_CACHE.setBoolean(true)
         BooleanSetting.FASTMEM.setBoolean(true)
         BooleanSetting.FASTMEM_EXCLUSIVES.setBoolean(profile.tier != HardwareTier.BUDGET)
@@ -256,12 +259,12 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FRAME_GEN_FLOW_SCALE_AUTO.setBoolean(true)
 
         // 6. Thermal & Pacing Flags
-        BooleanSetting.ECO_THERMAL_MODE.setBoolean(profile.isDimensity9400)
-        BooleanSetting.ECO_FRAME_PACING.setBoolean(profile.isDimensity9400)
-        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(profile.isDimensity9400 || profile.tier == HardwareTier.FLAGSHIP_ELITE)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
+        BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
+        BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
+        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
-        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(profile.totalRamGb < 8.0)
+        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
     }
 
     /**
@@ -281,9 +284,9 @@ object StormHardwareCalibrator {
         if (profile.isDimensity9400) {
             IntSetting.FSR_SHARPENING_SLIDER.setInt(80)
         }
-        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(if (profile.tier == HardwareTier.BUDGET && profile.isMali) 0 else 1)
+        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3) // Hybrid
         IntSetting.ASTC_RECOMPRESSION.setInt(0)
-        IntSetting.RENDERER_NVDEC_EMULATION.setInt(2)
+        IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
         IntSetting.MAX_ANISOTROPY.setInt(0)
         IntSetting.CPU_BACKEND.setInt(1)
         IntSetting.CPU_ACCURACY.setInt(0)
@@ -294,6 +297,9 @@ object StormHardwareCalibrator {
 
         BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
         BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
+        BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(true)
+        IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.setInt(1)
+        BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(true)
         BooleanSetting.RENDERER_USE_DISK_SHADER_CACHE.setBoolean(true)
         BooleanSetting.FASTMEM.setBoolean(true)
         BooleanSetting.FASTMEM_EXCLUSIVES.setBoolean(true)
@@ -308,12 +314,12 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FRAME_GEN_FP16.setBoolean(true)
         BooleanSetting.RENDERER_FRAME_GEN_FLOW_SCALE_AUTO.setBoolean(true)
 
-        BooleanSetting.ECO_THERMAL_MODE.setBoolean(profile.isDimensity9400)
-        BooleanSetting.ECO_FRAME_PACING.setBoolean(profile.isDimensity9400)
-        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(profile.isDimensity9400)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
+        BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
+        BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
+        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
-        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(profile.totalRamGb < 8.0)
+        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
     }
 
     /**
@@ -333,9 +339,9 @@ object StormHardwareCalibrator {
         if (profile.isDimensity9400) {
             IntSetting.FSR_SHARPENING_SLIDER.setInt(85)
         }
-        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1)
+        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3) // Hybrid
         IntSetting.ASTC_RECOMPRESSION.setInt(0)
-        IntSetting.RENDERER_NVDEC_EMULATION.setInt(2)
+        IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
         IntSetting.MAX_ANISOTROPY.setInt(0)
         IntSetting.CPU_BACKEND.setInt(1)
         IntSetting.CPU_ACCURACY.setInt(0)
@@ -346,7 +352,10 @@ object StormHardwareCalibrator {
         IntSetting.ANDROID_PIPELINE_WORKERS.setInt(workers)
 
         BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
-        BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(profile.isAdreno830)
+        BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
+        BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(true)
+        IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.setInt(1)
+        BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(true)
         BooleanSetting.RENDERER_USE_DISK_SHADER_CACHE.setBoolean(true)
         BooleanSetting.FASTMEM.setBoolean(true)
         BooleanSetting.FASTMEM_EXCLUSIVES.setBoolean(true)
@@ -361,12 +370,12 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FRAME_GEN_FP16.setBoolean(true)
         BooleanSetting.RENDERER_FRAME_GEN_FLOW_SCALE_AUTO.setBoolean(true)
 
-        BooleanSetting.ECO_THERMAL_MODE.setBoolean(profile.isDimensity9400)
-        BooleanSetting.ECO_FRAME_PACING.setBoolean(profile.isDimensity9400)
-        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(profile.isDimensity9400 || profile.tier >= HardwareTier.FLAGSHIP)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
+        BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
+        BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
+        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
-        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(profile.totalRamGb < 8.0)
+        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
     }
 
     /**
@@ -384,9 +393,9 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_ANTI_ALIASING.setInt(if (profile.tier >= HardwareTier.FLAGSHIP) 2 else 1) // SMAA or FXAA
         IntSetting.RENDERER_SCALING_FILTER.setInt(6) // AMD FSR
         IntSetting.FSR_SHARPENING_SLIDER.setInt(90)
-        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1)
+        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3) // Hybrid
         IntSetting.ASTC_RECOMPRESSION.setInt(0)
-        IntSetting.RENDERER_NVDEC_EMULATION.setInt(2)
+        IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
         IntSetting.MAX_ANISOTROPY.setInt(if (profile.tier >= HardwareTier.FLAGSHIP) 4 else 2) // 16x or 4x
         IntSetting.CPU_BACKEND.setInt(1)
         IntSetting.CPU_ACCURACY.setInt(if (profile.isDimensity9400) 0 else 1) // Accurate or Auto
@@ -398,6 +407,9 @@ object StormHardwareCalibrator {
 
         BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
         BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
+        BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(true)
+        IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.setInt(1)
+        BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(true)
         BooleanSetting.RENDERER_USE_DISK_SHADER_CACHE.setBoolean(true)
         BooleanSetting.FASTMEM.setBoolean(true)
         BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(true)

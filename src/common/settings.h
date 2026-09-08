@@ -508,7 +508,7 @@ struct Values {
                                                            "vram_usage_mode",
                                                            Category::RendererAdvanced};
 
-    SwitchableSetting<NvdecEmulation> nvdec_emulation{linkage, NvdecEmulation::Gpu,
+    SwitchableSetting<NvdecEmulation> nvdec_emulation{linkage, NvdecEmulation::Hybrid,
                                                       "nvdec_emulation", Category::RendererAdvanced};
 
     SwitchableSetting<AnisotropyMode, true> max_anisotropy{linkage,
@@ -516,7 +516,7 @@ struct Values {
                                                            "max_anisotropy",
                                                            Category::RendererAdvanced};
     SwitchableSetting<AstcDecodeMode, true> accelerate_astc{linkage,
-                                                            AstcDecodeMode::Gpu,
+                                                            AstcDecodeMode::Hybrid,
                                                             "accelerate_astc",
                                                             Category::RendererAdvanced};
 
@@ -549,13 +549,13 @@ struct Values {
     SwitchableSetting<bool> renderer_force_max_clock{linkage, false, "force_max_clock",
                                                      Category::RendererAdvanced};
 
-    SwitchableSetting<bool> early_release_fences{linkage, false, "early_release_fences",
+    SwitchableSetting<bool> early_release_fences{linkage, true, "early_release_fences",
                                                  Category::RendererAdvanced};
-    SwitchableSetting<int> optimize_spirv_output{linkage, 0, "optimize_spirv_output",
+    SwitchableSetting<int> optimize_spirv_output{linkage, 1, "optimize_spirv_output",
                                                  Category::RendererAdvanced};
     SwitchableSetting<bool> use_fast_gpu_time{linkage, true, "use_fast_gpu_time",
                                               Category::RendererAdvanced};
-    SwitchableSetting<bool> enable_frame_skipping{linkage, false, "enable_frame_skipping",
+    SwitchableSetting<bool> enable_frame_skipping{linkage, true, "enable_frame_skipping",
                                                   Category::RendererAdvanced};
     SwitchableSetting<bool> enable_frame_interpolation{linkage, false, "enable_frame_interpolation",
                                                        Category::RendererAdvanced};
@@ -601,7 +601,7 @@ struct Values {
 
     // Optimization & Thermal / Memory Features
     SwitchableSetting<bool> eco_thermal_mode{linkage,
-                                             false,
+                                             true,
                                              "eco_thermal_mode",
                                              Category::System,
                                              Specialization::Default,
@@ -615,11 +615,7 @@ struct Values {
                                              true,
                                              true};
     SwitchableSetting<bool> smart_shader_throttle{linkage,
-#ifdef __ANDROID__
                                                   true,
-#else
-                                                  false,
-#endif
                                                   "smart_shader_throttle",
                                                   Category::RendererAdvanced,
                                                   Specialization::Default,

@@ -75,6 +75,16 @@ class AutoCorrectionDialogFragment : DialogFragment() {
                 BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
                 BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
                 BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
+                BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
+                BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
+                BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
+                BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(true)
+                IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.setInt(1)
+                BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(true)
+                BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
+                BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
+                IntSetting.RENDERER_NVDEC_EMULATION.setInt(3)
+                IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3)
                 BooleanSetting.RENDERER_FORCE_MAX_CLOCK.setBoolean(false)
                 IntSetting.MAX_ANISOTROPY.setInt(1) // 1X
 
@@ -97,10 +107,20 @@ class AutoCorrectionDialogFragment : DialogFragment() {
                 // Reset thermal cooling profile to standard values
                 IntSetting.RENDERER_RESOLUTION.setInt(3) // 1.0X (720p / 1080p)
                 IntSetting.ASTC_RECOMPRESSION.setInt(0) // Uncompressed
-                BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(true)
-                BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
-                BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
-                BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
+                BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(false)
+                BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
+                BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
+                BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
+                BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
+                BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
+                BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
+                BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(true)
+                IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.setInt(1)
+                BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(true)
+                BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
+                BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
+                IntSetting.RENDERER_NVDEC_EMULATION.setInt(3)
+                IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3)
 
                 if (NativeConfig.isPerGameConfigLoaded()) {
                     NativeConfig.savePerGameConfig()

@@ -37,10 +37,6 @@
         android:id="@+id/menu_toggle_controls"
         android:title="@string/emulation_toggle_controls" />
 
-    <item
-        android:id="@+id/menu_show_overlay"
-        android:title="@string/emulation_show_overlay"
-        android:checkable="true" />
 
     <item
         android:id="@+id/menu_rel_stick_center"
