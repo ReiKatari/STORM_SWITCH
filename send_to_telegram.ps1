@@ -1,6 +1,9 @@
-﻿$tokenFile = "e:\STORM EDEN 3\tg_token.txt"
+﻿$ErrorActionPreference = "Stop"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+$tokenFile = "e:\STORM EDEN 3\tg_token.txt"
 if (Test-Path $tokenFile) {
-    $token = (Get-Content $tokenFile -Raw).Trim()
+    $token = (Get-Content $tokenFile -Raw -Encoding UTF8).Trim()
 } elseif ($env:TELEGRAM_BOT_TOKEN) {
     $token = $env:TELEGRAM_BOT_TOKEN.Trim()
 } else {
@@ -10,32 +13,46 @@ if (Test-Path $tokenFile) {
 
 $chatId = "-5389146045"
 
-function Send-TGMessage($text) {
+$httpClient = [System.Net.Http.HttpClient]::new()
+$httpClient.Timeout = [System.TimeSpan]::FromMinutes(15)
+
+function Send-TGMessage([string]$text) {
+    Write-Host "1. Sending release announcement..."
     $url = "https://api.telegram.org/bot$token/sendMessage"
-    $body = @{
+    $payload = @{
         chat_id = $chatId
         text = $text
         parse_mode = "HTML"
         disable_web_page_preview = $true
     } | ConvertTo-Json -Compress
-    
-    $headers = @{ "Content-Type" = "application/json; charset=utf-8" }
-    $res = Invoke-RestMethod -Uri $url -Method Post -Body ([System.Text.Encoding]::UTF8.GetBytes($body)) -Headers $headers
-    Write-Host "Message Sent: $($res.ok)"
+
+    $content = [System.Net.Http.StringContent]::new($payload, [System.Text.Encoding]::UTF8, "application/json")
+    $response = $httpClient.PostAsync($url, $content).GetAwaiter().GetResult()
+    $resStr = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+    Write-Host "Announcement Sent: $resStr"
 }
 
-function Send-TGDocument($filePath, $caption) {
-    Write-Host "Sending $filePath via curl..."
-    $url = "https://api.telegram.org/bot$token/sendDocument"
+function Send-TGDocument([string]$filePath, [string]$caption) {
     $fileName = [System.IO.Path]::GetFileName($filePath)
-    
-    & curl.exe -s -X POST $url `
-        -F "chat_id=$chatId" `
-        -F "parse_mode=HTML" `
-        -F "caption=$caption" `
-        -F "document=@$filePath"
-        
-    Write-Host "`nUploaded $fileName successfully!"
+    Write-Host "Sending $fileName via HttpClient (100% UTF-8)..."
+    $url = "https://api.telegram.org/bot$token/sendDocument"
+
+    $form = [System.Net.Http.MultipartFormDataContent]::new()
+    $form.Add([System.Net.Http.StringContent]::new($chatId, [System.Text.Encoding]::UTF8), "chat_id")
+    $form.Add([System.Net.Http.StringContent]::new("HTML", [System.Text.Encoding]::UTF8), "parse_mode")
+    $form.Add([System.Net.Http.StringContent]::new($caption, [System.Text.Encoding]::UTF8), "caption")
+
+    $fileStream = [System.IO.File]::OpenRead($filePath)
+    $fileContent = [System.Net.Http.StreamContent]::new($fileStream)
+    $fileContent.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::Parse("application/octet-stream")
+    $form.Add($fileContent, "document", $fileName)
+
+    $response = $httpClient.PostAsync($url, $form).GetAwaiter().GetResult()
+    $resStr = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+    $fileStream.Close()
+    $fileStream.Dispose()
+
+    Write-Host "Uploaded $fileName successfully: $resStr`n"
 }
 
 $announcement = @"
@@ -68,26 +85,25 @@ $announcement = @"
 📦 <i>Все исполняемые файлы, инсталляторы и архивы собраны, подписаны цифровой подписью и готовы к работе.</i>
 "@
 
-Write-Host "1. Sending release announcement..."
 Send-TGMessage $announcement
 
-Write-Host "2. Uploading release files to Telegram..."
+Write-Host "2. Uploading release files to Telegram (Main APK first)..."
 $filesToUpload = @(
     @{
         Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.3.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.3 (Mainline Release - Android 14+)</b>"
+        Caption = "📱 <b>STORM SWITCH 7.5.3 (Основная версия — Android 14+)</b>"
     },
     @{
         Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.3_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.3 (Legacy Release - Android 10-13)</b>"
+        Caption = "📱 <b>STORM SWITCH 7.5.3 (Версия Legacy — Android 10-13)</b>"
     },
     @{
         Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.3_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.3 (SDK27 Release - Android 8.1-9)</b>"
+        Caption = "📱 <b>STORM SWITCH 7.5.3 (Версия SDK27 — Android 8.1-9)</b>"
     },
     @{
         Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.3_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 7.5.3 (Windows x64 Release Portable)</b>"
+        Caption = "💻 <b>STORM SWITCH 7.5.3 (Портативная версия для Windows x64)</b>"
     }
 )
 
@@ -99,4 +115,5 @@ foreach ($f in $filesToUpload) {
     }
 }
 
+$httpClient.Dispose()
 Write-Host "`nRelease 7.5.3 deployment to Telegram completed successfully!"
