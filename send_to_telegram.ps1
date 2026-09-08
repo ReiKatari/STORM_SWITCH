@@ -39,30 +39,23 @@ function Send-TGDocument($filePath, $caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 7.5.1 (Streets of Rage 4 Fix, MK11 Stage Rendering, Zelda Magic Stability, Cooling Pause and Gesture Enhancements)</b> — <i>Комплексное обновление эмулятора Nintendo Switch: полное устранение зависаний и вылетов в Streets of Rage 4, исправление рендеринга арен и задников в Mortal Kombat 11, устранение мерцания магии и рун в The Legend of Zelda, улучшенный экран паузы и охлаждения без искажения пропорций кадра и надёжный жест вызова быстрых настроек.</i>
+⚡ <b>Релиз STORM SWITCH 7.5.2 (Streets of Rage 4 Core Fix, Dynarmic JIT Safety, Hybrid NVDEC and Full Per-Game Profile Sync)</b> — <i>Масштабное обновление эмулятора Nintendo Switch: полное устранение зависаний и вылетов в Streets of Rage 4 на Windows и Android, защита JIT-компилятора Dynarmic от повреждения регистров, перевод профилей на эталонный гибридный NVDEC и синхронизация операций памяти.</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения и улучшения:</b>
 
-🥊 <b>Streets of Rage 4 (Windows и Android):</b>
-• Полностью устранены зависания на заставке на Windows и вылеты на Android. Удален поврежденный машинный патч NSO, препятствовавший корректной передаче управления игровому движку после видеоролика.
+🥊 <b>Streets of Rage 4 (полное исправление на Windows и Android):</b>
+• Устранен конфликт параметров авто-исправления: профили всех 4 Title ID переведены на гибридный NVDEC (Hybrid NVDEC), гарантирующий аппаратное ускорение видеороликов через GPU с надежным резервированием на CPU.
+• Включена синхронизация операций памяти (Sync Memory Operations), что полностью ликвидировало разбалансировку счетчиков буферов nvmap (Pin count imbalance detected) и преждевременное открепление поверхностей при закрытии видеопотока.
+• Включен асинхронный вывод Vulkan (Async Presentation), исключающий дедлок конвейера и подвисание кадров на стартовой заставке.
+• Отключен деструктивный флаг игнорирования прерываний памяти (cpuopt_ignore_memory_aborts = false), приводивший к искажению регистров JIT и падению Userspace PANIC на смещении 0x008C0120.
 
-🥋 <b>Mortal Kombat 11 (Android Turnip):</b>
-• Исправлен сбой рендеринга задников и арены («зеленая стена»): отключен деструктивный параметр tu_tile_discard в per-game drirc, добавлены барьеры синхронизации очередей A8xx и сохранение LRZ между командными буферами, применены параметры графики Normal GPU accuracy.
+🛡️ <b>Ядро ARM (Dynarmic 64 JIT):</b>
+• В обработчике NoExecuteFault добавлена строгая проверка ненулевого программного счетчика (pc != 0), предотвращающая попытки фиктивного возврата в LR с обнулением регистров при вызовах нулевых указателей функций.
 
-🗡️ <b>The Legend of Zelda: Breath of the Wild и Tears of the Kingdom:</b>
-• Устранено мерцание и стробирование при активации рун и магии (Ультрарука, Автосборка, Магнезис, Стазис) благодаря реактивной очистке буферов глубины, с сохранением идеальной прозрачности воды.
-
-❄️ <b>Экран паузы и охлаждение:</b>
-• Кадр паузы теперь сохраняет оригинальные пропорции экрана (FIT_XY при растяжении) без искажений и черных полос по бокам.
-• При постановке на паузу нагрузка на чипсет и частоты процессора/видеоядра переводятся в глубокий режим покоя (GameManager MODE_NONE) для максимально быстрого остывания устройства.
-• В заголовке паузы скорректирована пунктуация: <code>❄️ Игра на паузе - идёт охлаждение устройства</code>.
-
-⚙️ <b>Быстрые настройки и навигация:</b>
-• Жест вызова быстрых настроек (свайп 3 пальцами вверх) переработан для безотказного срабатывания в ландшафтном режиме на любых смартфонах.
-• В левое боковое меню и шапку добавлены наглядные подсказки о быстром вызове настроек жестом.
-• Терминология обновлена: «Авто-коррекция» с дефисом.
+🥋 <b>Mortal Kombat 11 и The Legend of Zelda:</b>
+• Подтверждена и зафиксирована стабильная работа исправлений: профили реактивного сброса памяти (Reactive Flushing) для Zelda BotW/TotK и исключение сброса тайлов (tu_tile_discard = false) для Mortal Kombat 11 функционируют как на уровне ядра, так и в базе авто-исправлений.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 <i>Все исполняемые файлы, инсталляторы и архивы собраны, подписаны цифровой подписью и готовы к работе.</i>
@@ -74,20 +67,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.1.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.1 (Mainline Release - Android 14+)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.2.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.2 (Mainline Release - Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.1_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.1 (Legacy Release - Android 10-13)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.2_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.2 (Legacy Release - Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.1_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.1 (SDK27 Release - Android 8.1-9)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.2_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.2 (SDK27 Release - Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.1_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 7.5.1 (Windows x64 Release Portable)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.2_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 7.5.2 (Windows x64 Release Portable)</b>"
     }
 )
 
@@ -99,4 +92,4 @@ foreach ($f in $filesToUpload) {
     }
 }
 
-Write-Host "`nRelease 7.5.1 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 7.5.2 deployment to Telegram completed successfully!"
