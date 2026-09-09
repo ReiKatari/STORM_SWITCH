@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Net.Http
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
