@@ -470,7 +470,7 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
     ));
 
     if (is_sor4) {
-        // 1. Fix crash on null input device handling loop:
+        // Fix crash on null input device handling loop:
         // In pi_header: sizeof(NSOHeader) (0x100) + text offset 0x008C2F94 = 0x008C3094
         constexpr std::size_t input_patch_offset = sizeof(Loader::NSOHeader) + 0x008C2F94;
         constexpr u32 original_input_insn = 0xB40001C0; // cbz x0, 0x008C2FCC
@@ -482,18 +482,6 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
             if (current_insn == original_input_insn) {
                 LOG_INFO(Loader, "Streets of Rage 4: Applied null input device loop fix at 0x008C2F94 (cbz x0 -> 0x008C3078)");
                 std::memcpy(out.data() + input_patch_offset, &patched_input_insn, sizeof(u32));
-            }
-        }
-
-        // 2. Intro video null-buffer guard: prevent IndexOutOfRangeException / abort on frame 4
-        constexpr size_t buffer_patch_offset = sizeof(Loader::NSOHeader) + 0x008C0048;
-        if (out.size() >= buffer_patch_offset + sizeof(u32)) {
-            u32 current_insn = 0;
-            std::memcpy(&current_insn, out.data() + buffer_patch_offset, sizeof(u32));
-            if (current_insn == 0xB4000D78) { // cbz x24, 0x008C01F4
-                const u32 safe_insn = 0xB4000D77; // cbz x23, 0x008C01F4
-                std::memcpy(out.data() + buffer_patch_offset, &safe_insn, sizeof(u32));
-                LOG_INFO(Loader, "Streets of Rage 4: Applied safe null-buffer check at 0x008C0048 (cbz x23 -> 0x008C01F4)");
             }
         }
     }
