@@ -516,7 +516,7 @@ struct Values {
                                                            "max_anisotropy",
                                                            Category::RendererAdvanced};
     SwitchableSetting<AstcDecodeMode, true> accelerate_astc{linkage,
-                                                            AstcDecodeMode::Hybrid,
+                                                            AstcDecodeMode::Gpu,
                                                             "accelerate_astc",
                                                             Category::RendererAdvanced};
 

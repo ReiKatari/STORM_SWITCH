@@ -35,6 +35,7 @@ import org.yuzu.yuzu_emu.fragments.EmulationFragment
 import org.yuzu.yuzu_emu.utils.CrashHandler
 import org.yuzu.yuzu_emu.utils.CustomSettingsHandler
 import org.yuzu.yuzu_emu.utils.SamsungGameBoosterHelper
+import org.yuzu.yuzu_emu.utils.UniversalGameModeManager
 import android.util.Rational
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -274,12 +275,12 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             }
         }
 
-        // Samsung Game Booster & Game Tools system integration
+        // Universal Game Booster & Game Mode system integration
         try {
             val game = getLaunchGame()
-            SamsungGameBoosterHelper.onGameStart(this, game?.title)
+            UniversalGameModeManager.onGameStart(this, game?.title)
         } catch (t: Throwable) {
-            Log.warning("[EmulationActivity] Samsung Game Booster start notification error: ${t.message}")
+            Log.warning("[EmulationActivity] Universal Game Mode start notification error: ${t.message}")
         }
 
         // Set minimal post processing for lowest display latency (Gaming Mode)
@@ -365,7 +366,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         }
         try {
             val game = getLaunchGame()
-            SamsungGameBoosterHelper.onGameResume(this, game?.title)
+            UniversalGameModeManager.onGameResume(this, game?.title)
         } catch (_: Throwable) {}
         nfcReader.startScanning()
         startMotionSensorListener()
@@ -383,7 +384,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             } catch (_: Throwable) {}
         }
         try {
-            SamsungGameBoosterHelper.onGamePause(this)
+            UniversalGameModeManager.onGamePause(this)
         } catch (_: Throwable) {}
         thermalJob?.cancel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -401,7 +402,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             org.yuzu.yuzu_emu.model.GameFixDatabase.cleanupSession(game)
         } catch (_: Throwable) {}
         try {
-            SamsungGameBoosterHelper.onGameStop(this)
+            UniversalGameModeManager.onGameStop(this)
         } catch (_: Throwable) {}
         super.onDestroy()
         try {

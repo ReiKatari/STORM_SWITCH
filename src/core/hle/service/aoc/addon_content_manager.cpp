@@ -34,17 +34,30 @@ static bool CheckAOCTitleIDMatchesBase(u64 title_id, u64 base) {
 static std::vector<u64> AccumulateAOCTitleIDs(Core::System& system) {
     std::vector<u64> add_on_content;
     const auto& rcu = system.GetContentProvider();
-    const auto list =
+    const auto list_data =
         rcu.ListEntriesFilter(FileSys::TitleType::AOC, FileSys::ContentRecordType::Data);
-    std::transform(list.begin(), list.end(), std::back_inserter(add_on_content),
+    std::transform(list_data.begin(), list_data.end(), std::back_inserter(add_on_content),
                    [](const FileSys::ContentProviderEntry& rce) { return rce.title_id; });
+
+    const auto list_prog =
+        rcu.ListEntriesFilter(FileSys::TitleType::AOC, FileSys::ContentRecordType::Program);
+    std::transform(list_prog.begin(), list_prog.end(), std::back_inserter(add_on_content),
+                   [](const FileSys::ContentProviderEntry& rce) { return rce.title_id; });
+
+    std::sort(add_on_content.begin(), add_on_content.end());
+    add_on_content.erase(std::unique(add_on_content.begin(), add_on_content.end()),
+                         add_on_content.end());
+
     add_on_content.erase(
         std::remove_if(
             add_on_content.begin(), add_on_content.end(),
             [&rcu](u64 tid) {
-                const auto entry = rcu.GetEntry(tid, FileSys::ContentRecordType::Data);
+                auto entry = rcu.GetEntry(tid, FileSys::ContentRecordType::Data);
                 if (entry == nullptr) {
-                    LOG_WARNING(Service_AOC, "DLC title_id={:016X} has no Data entry in ContentProvider, ignoring", tid);
+                    entry = rcu.GetEntry(tid, FileSys::ContentRecordType::Program);
+                }
+                if (entry == nullptr) {
+                    LOG_WARNING(Service_AOC, "DLC title_id={:016X} has no Data or Program entry in ContentProvider, ignoring", tid);
                     return true;
                 }
                 if (entry->GetStatus() != Loader::ResultStatus::Success) {
@@ -135,6 +148,8 @@ Result IAddOnContentManager::ListAddOnContentByApplicationId(
 
             out.push_back(static_cast<u32>(FileSys::GetAOCID(content_id)));
         }
+        std::sort(out.begin(), out.end());
+        out.erase(std::unique(out.begin(), out.end()), out.end());
     }
 
     R_UNLESS(out.size() >= offset, ResultUnknown);
@@ -225,6 +240,8 @@ Result IAddOnContentManager::ListAddOnContent(Out<u32> out_count,
 
             out.push_back(static_cast<u32>(FileSys::GetAOCID(content_id)));
         }
+        std::sort(out.begin(), out.end());
+        out.erase(std::unique(out.begin(), out.end()), out.end());
     }
 
     R_UNLESS(out.size() >= offset, ResultUnknown);

@@ -92,21 +92,47 @@ VirtualFile RomFSFactory::Open(u64 title_id, StorageId storage, ContentRecordTyp
 
 std::shared_ptr<NCA> RomFSFactory::GetEntry(u64 title_id, StorageId storage,
                                             ContentRecordType type) const {
+    std::shared_ptr<NCA> res = nullptr;
     switch (storage) {
     case StorageId::None:
-        return content_provider.GetEntry(title_id, type);
+        res = content_provider.GetEntry(title_id, type);
+        break;
     case StorageId::NandSystem:
-        return filesystem_controller.GetSystemNANDContents()->GetEntry(title_id, type);
+        if (auto* nand = filesystem_controller.GetSystemNANDContents()) {
+            res = nand->GetEntry(title_id, type);
+        }
+        break;
     case StorageId::NandUser:
-        return filesystem_controller.GetUserNANDContents()->GetEntry(title_id, type);
+        if (auto* nand = filesystem_controller.GetUserNANDContents()) {
+            res = nand->GetEntry(title_id, type);
+        }
+        break;
     case StorageId::SdCard:
-        return filesystem_controller.GetSDMCContents()->GetEntry(title_id, type);
+        if (auto* sdmc = filesystem_controller.GetSDMCContents()) {
+            res = sdmc->GetEntry(title_id, type);
+        }
+        break;
     case StorageId::Host:
     case StorageId::GameCard:
     default:
-        UNIMPLEMENTED_MSG("Unimplemented storage_id={:02X}", static_cast<u8>(storage));
-        return nullptr;
+        break;
     }
+
+    // Fallback: If not found in the specified storage, check content_provider (e.g. NSP/XCI)
+    if (res == nullptr) {
+        res = content_provider.GetEntry(title_id, type);
+    }
+
+    // Secondary fallback: check alternative content record type (Data <-> Program)
+    if (res == nullptr) {
+        if (type == ContentRecordType::Data) {
+            res = content_provider.GetEntry(title_id, ContentRecordType::Program);
+        } else if (type == ContentRecordType::Program) {
+            res = content_provider.GetEntry(title_id, ContentRecordType::Data);
+        }
+    }
+
+    return res;
 }
 
 } // namespace FileSys

@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Net.Http
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -57,27 +57,35 @@ function Send-TGDocument([string]$filePath, [string]$caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 7.5.8 (Streets of Rage 4 60 FPS, Launch Crash Fix, Samsung Game Booster and DLC Restore)</b> — <i>Экстренное обновление эмулятора Nintendo Switch: полное исправление вылетов при запуске игр на Android, плавные 60 FPS в Streets of Rage 4 с корректным переходом к игре, универсальная поддержка Samsung Game Booster для всех смартфонов, восстановление доступа к DLC без RomFS и строгая иерархическая сортировка дополнений.</i>
+⚡ <b>Релиз STORM SWITCH 7.5.9 (Streets of Rage 4 60 FPS, AC Rogue DLC Unlock, Multi-Vendor Game Booster и Maximum Performance)</b> — <i>Комплексное обновление эмулятора Nintendo Switch: полное устранение вылета и зависания Streets of Rage 4 на экране загрузки со звёздочкой, обеспечение плавных 60 FPS, исправление доступа к дополнению «Изгой» (Rogue) в меню Assassin's Creed: The Rebel Collection, универсальная поддержка игровых режимов всех вендоров смартфонов и ликвидация экстремальных задержек кадров (0 FPS / 200 мс).</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения и улучшения:</b>
 
-👊 <b>Streets of Rage 4 (60 FPS и пропуск заставок):</b>
-• <b>Устранение зависаний видео и 0 FPS</b>: удален поврежденный NSO-патч инструкций ARM64 и перенастроена эмуляция NVDEC (отключена), что позволяет мгновенно и чисто миновать вступительные видеоролики без дедлоков и падений частоты кадров.
-• <b>Плавный геймплей</b>: стабильные 60 FPS в игровом процессе на всех региональных версиях игры.
+👊 <b>Streets of Rage 4 (исправление экрана загрузки и 60 FPS):</b>
+• <b>Устранение зависания и вылета на звёздочке</b>: восстановлены и оптимизированы встроенные бинарные инструкции ARM64 в коде NSO, обходящие зацикливание при опросе устройств ввода и предотвращающие аварийное завершение при показе вращающейся звёздочки автосохранения.
+• <b>Чистый пропуск роликов и 60 FPS</b>: автоматический бесконфликтный пропуск вступительных видеороликов сразу к титульному экрану и стабильная частота 60 кадров в секунду без дедлоков потока Vulkan.
 
-📱 <b>Исправление запуска игр на Android:</b>
-• <b>Устранение аварийного завершения</b>: ликвидирован вылет при старте любой игры в версии 7.5.7, вызванный десериализацией Parcelable в Bundle на современных версиях Android.
-• <b>Безопасная очистка ресурсов</b>: добавлены защитные блоки перехвата исключений при завершении сессии эмуляции.
+🗡️ <b>Assassin's Creed: The Rebel Collection — доступ к DLC «Изгой» (Rogue):</b>
+• <b>Монтирование внешних дополнений RomFS</b>: реализован надежный механизм резервного поиска (fallback) в диспетчере RomFSFactory и FSP-SRV, благодаря которому установленные DLC из NSP и XCI архивов корректно открываются для гостевого процесса.
+• <b>Полноценный доступ в меню</b>: игра безошибочно находит и монтирует файлы дополнения «Изгой» весом 7.15 ГБ, убирая предупреждение о необходимости загрузки из eShop и открывая доступ к сюжетной кампании.
+• <b>Сортировка индексов DLC</b>: упорядочивание списков дополнений исключает смещение идентификаторов контента.
 
-🔋 <b>Универсальный Samsung Game Booster:</b>
-• <b>Поддержка всех моделей и версий One UI</b>: обеспечена надежная работа Game Booster, Game Tools и Game Plugins на всех устройствах Samsung без сбоев безопасности SecurityException.
-• <b>Безопасные системные вызовы</b>: исключены некорректные вызовы внутренних интерфейсов Knox, задействован стандартный Android 12+ GameManager API с безопасными широковещательными событиями.
+🔋 <b>Универсальная поддержка Game Booster и игровых режимов Android:</b>
+• <b>Мульти-вендорная интеграция</b>: реализован UniversalGameModeManager с адресной поддержкой игровых центров всех ведущих производителей смартфонов:
+  — <b>Samsung</b>: Game Booster, Game Tools, Game Optimizing Service (GOS) и Gaming Hub.
+  — <b>Xiaomi / POCO / Redmi</b>: Game Turbo и системная служба Joyose.
+  — <b>OnePlus / OPPO / Realme</b>: ColorOS Game Space, HyperBoost и OPlus Games.
+  — <b>Vivo / iQOO</b>: Ultra Game Mode и Multi-Turbo.
+  — <b>ASUS ROG / Zenfone</b>: Armoury Crate и ROG GameCenter.
+  — <b>Huawei / Honor</b>: Game Suite и Game Assistant.
+• <b>AOSP Game Mode</b>: полная интеграция с Android 12+ / 13+ / 14+ / 15+ GameManager и GameState API, активация Sustained Performance Mode и минимальной задержки постобработки дисплея.
+• <b>Широковещательные фильтры</b>: расширен манифест приложения для полной видимости системных пакетов на современных версиях Android.
 
-📦 <b>Восстановление доступа к DLC и порядок дополнений:</b>
-• <b>Доступность DLC без RomFS</b>: снято ограничение нулевого размера RomFS в диспетчере контента, благодаря чему игры (например, Assassin's Creed Rebel Collection) корректно видят все лицензионные дополнения и языковые пакеты внутри самой игры.
-• <b>Идеальный порядок дополнений</b>: в интерфейсе Windows и Android сначала строго отображаются обновления (Update), затем дополнения строго по порядковому номеру (#1, #2, #3...), и в конце пользовательские модификации (Mods).
+⚡ <b>Устранение экстремальных задержек и просадок производительности:</b>
+• <b>Аппаратное декодирование ASTC на ГПУ</b>: перевод декодирования сжатых текстур ASTC на вычислительные шейдеры видеокарты (Compute Shaders) по умолчанию вместо ресурсоемкого декодирования на ЦП.
+• <b>Устранение задержки 200 мс</b>: отключены избыточные барьеры синхронизации памяти и агрессивная реактивная очистка, приводившие к замиранию конвейера рендеринга и падению до 0 FPS.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 <i>Все исполняемые файлы, инсталляторы и архивы собраны, проверены и готовы к работе.</i>
@@ -88,20 +96,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram (Main APK first)..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.8.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.8 (Основная версия — Android 14+)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.9.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.9 (Основная версия — Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.8_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.8 (Версия Legacy — Android 10-13)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.9_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.9 (Версия Legacy — Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.8_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.8 (Версия SDK27 — Android 8.1-9)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.9_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.9 (Версия SDK27 — Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.8_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 7.5.8 (Портативная версия для Windows x64)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.9_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 7.5.9 (Портативная версия для Windows x64)</b>"
     }
 )
 
@@ -114,4 +122,4 @@ foreach ($f in $filesToUpload) {
 }
 
 $httpClient.Dispose()
-Write-Host "`nRelease 7.5.8 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 7.5.9 deployment to Telegram completed successfully!"

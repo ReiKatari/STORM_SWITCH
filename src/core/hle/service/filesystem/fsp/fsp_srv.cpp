@@ -491,7 +491,14 @@ Result FSP_SRV::OpenDataStorageByDataId(OutInterface<IStorage> out_interface,
     LOG_INFO(Service_FS, "OpenDataStorageByDataId: called with storage_id={:02X}, unknown={:08X}, title_id={:016X}",
              static_cast<u8>(storage_id), unknown, title_id);
 
-    auto data = romfs_controller->OpenRomFS(title_id, storage_id, FileSys::ContentRecordType::Data);
+    auto record_type = FileSys::ContentRecordType::Data;
+    auto data = romfs_controller->OpenRomFS(title_id, storage_id, record_type);
+    if (!data) {
+        data = romfs_controller->OpenRomFS(title_id, storage_id, FileSys::ContentRecordType::Program);
+        if (data) {
+            record_type = FileSys::ContentRecordType::Program;
+        }
+    }
 
     if (!data) {
         const auto archive = FileSys::SystemArchive::SynthesizeSystemArchive(title_id);
@@ -510,8 +517,8 @@ Result FSP_SRV::OpenDataStorageByDataId(OutInterface<IStorage> out_interface,
     const FileSys::PatchManager pm{title_id, fsc, content_provider};
 
     auto base =
-        romfs_controller->OpenBaseNca(title_id, storage_id, FileSys::ContentRecordType::Data);
-    auto patched = pm.PatchRomFS(base.get(), std::move(data), FileSys::ContentRecordType::Data);
+        romfs_controller->OpenBaseNca(title_id, storage_id, record_type);
+    auto patched = pm.PatchRomFS(base.get(), std::move(data), record_type);
     if (!patched) {
         LOG_WARNING(Service_FS, "PatchRomFS returned nullptr for data storage title_id={:016X}", title_id);
         R_RETURN(FileSys::ResultTargetNotFound);

@@ -34,10 +34,28 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 
     <queries>
+        <!-- Samsung Game Booster & Game Tools -->
         <package android:name="com.samsung.android.game.gos" />
         <package android:name="com.samsung.android.game.gametools" />
         <package android:name="com.samsung.android.game.gamehome" />
         <package android:name="com.samsung.android.game.gamehub" />
+        <!-- Xiaomi / POCO / Redmi (Game Turbo & Joyose) -->
+        <package android:name="com.xiaomi.joyose" />
+        <package android:name="com.miui.securitycenter" />
+        <package android:name="com.xiaomi.gamecenter.sdk.service" />
+        <!-- OnePlus / OPPO / Realme (HyperBoost & ColorOS Game Space) -->
+        <package android:name="com.oplus.games" />
+        <package android:name="com.coloros.gamespace" />
+        <package android:name="com.heytap.gamecenter" />
+        <!-- Vivo / iQOO (Ultra Game Mode & Multi-Turbo) -->
+        <package android:name="com.vivo.game" />
+        <package android:name="com.vivo.gamewatch" />
+        <!-- ASUS ROG / Zenfone (Armoury Crate) -->
+        <package android:name="com.asus.armourygamecenter" />
+        <package android:name="com.asus.gamecenter" />
+        <!-- Huawei / Honor (Game Suite & Game Assistant) -->
+        <package android:name="com.huawei.gamebox" />
+        <package android:name="com.huawei.gameassistant" />
         <intent>
             <action android:name="com.samsung.android.game.action.GAME_START" />
         </intent>
@@ -52,6 +70,30 @@ SPDX-License-Identifier: GPL-3.0-or-later
         </intent>
         <intent>
             <action android:name="com.samsung.android.game.gametools.ACTION_START_GAME" />
+        </intent>
+        <intent>
+            <action android:name="miui.intent.action.GAME_START" />
+        </intent>
+        <intent>
+            <action android:name="miui.intent.action.GAME_STOP" />
+        </intent>
+        <intent>
+            <action android:name="com.oplus.games.action.GAME_START" />
+        </intent>
+        <intent>
+            <action android:name="com.oplus.games.action.GAME_STOP" />
+        </intent>
+        <intent>
+            <action android:name="com.vivo.game.action.GAME_START" />
+        </intent>
+        <intent>
+            <action android:name="com.vivo.game.action.GAME_STOP" />
+        </intent>
+        <intent>
+            <action android:name="com.asus.gamecenter.action.GAME_START" />
+        </intent>
+        <intent>
+            <action android:name="com.asus.gamecenter.action.GAME_STOP" />
         </intent>
     </queries>
 
