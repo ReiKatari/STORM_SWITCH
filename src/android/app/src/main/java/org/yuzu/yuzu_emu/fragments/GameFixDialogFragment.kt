@@ -98,6 +98,10 @@ class GameFixDialogFragment : DialogFragment() {
             cb?.invoke(false)
         }
 
+        binding.btnCancelGameFix.setOnClickListener {
+            dismissAllowingStateLoss()
+        }
+
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(binding.root)
             .create()

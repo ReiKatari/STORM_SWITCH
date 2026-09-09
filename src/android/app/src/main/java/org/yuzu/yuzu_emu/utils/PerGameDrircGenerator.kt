@@ -484,7 +484,7 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_disable_lrz\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_lrz_fast_clear\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_gmem_pinning_zelda\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_direction_fix\" value=\"true\" />\n")
@@ -502,7 +502,7 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_pso_fuzzy_match\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_subpass_fusion\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_subpass_fusion_v2\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"false\" />\n")
             }
             GameProfileType.DIABLO -> {
                 optionsBuilder.append("\n            <!-- DIABLO II & III RULES (Full D32 Precision, No Dropped Tiles, Maximum FPS Unlocked) -->\n")
@@ -683,7 +683,7 @@ object PerGameDrircGenerator {
             GameProfileType.MORTAL_KOMBAT_1 -> {
                 optionsBuilder.append("\n            <!-- MORTAL KOMBAT 1 & BATMAN ARKHAM (Heavy UE4 Custom Pipelines) -->\n")
                 optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_a8xx_concurrent_queue_barrier_fix\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
@@ -697,7 +697,7 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_a8xx_concurrent_queue_barrier_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
             }
             GameProfileType.ASSASSINS_CREED -> {
                 optionsBuilder.append("\n            <!-- ASSASSIN'S CREED SERIES (Ubisoft AnvilNext Ocean & Shadows Integrity) -->\n")

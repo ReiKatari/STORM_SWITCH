@@ -142,8 +142,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Breath of the Wild",
         "• Черный силуэт Линка из-за рассинхрона буфера освещения и трафарета\n• Белые вспышки и мерцание освещения/погоды\n• Пропадание текстур скал и земли при нехватке памяти\n• Бирюзовая сетка и артефакты Z-буфера в Святилищах",
         "• Link black silhouette caused by unsynced lighting and stencil buffers\n• White screen flashes and lighting flicker\n• Ground and terrain textures disappearing due to memory pressure\n• Shrine depth bias / cyan grid artifacts",
-        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Отключено (устраняет пропадание текстур и сбои в док-режиме)\n✓ Синхронизация памяти: Включено (стабильный рендеринг текстур)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM (оптимально для текстур и стабильности)",
-        "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Disabled (Fixes texture corruption and artifacts in docked mode)\n✓ Sync Memory Operations: Enabled (Stable texture rendering)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM (Optimal stability)",
+        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Отключено (устраняет пропадание текстур и сбои в док-режиме)\n✓ Синхронизация памяти: Включено (стабильный рендеринг текстур)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 4 ГБ DRAM (устраняет падение сквозь землю и сбои физики Havok)",
+        "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Disabled (Fixes texture corruption and artifacts in docked mode)\n✓ Sync Memory Operations: Enabled (Stable texture rendering)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 4GB DRAM (Prevents falling through terrain and Havok physics glitches)",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
@@ -152,7 +152,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\sync_memory_operations", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -211,27 +211,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\resolution_setup", "1"},
             {"Renderer\\fsr_sharpening_slider", "80"},
             {"System\\memory_layout_mode", "2"}
-        }
-    },
-    {
-        0x0100B1100C4D0000ULL,
-        "Mortal Kombat 11",
-        "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити\n• Отсутствие русского языка при авто-определении",
-        "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes\n• Missing Russian language on auto-detection",
-        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Обычная (исправление прорисовки сцен и задников)\n✓ Синхронизация операций памяти: Отключено (стабильный рендеринг геометрии)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (чистые детальные текстуры)\n✓ Язык: Русский\n✓ Регион: Европа\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: Normal (Fixes stage and background rendering)\n✓ Sync Memory Operations: Disabled (clean geometry rendering)\n✓ Fast GPU Time: Enabled (stable 60 FPS)\n✓ ASTC Recompression: Uncompressed\n✓ Language: Russian\n✓ Region: Europe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\language_index", "10"},
-            {"System\\region_index", "2"},
-            {"System\\airplane_mode", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
     {
@@ -2266,50 +2245,73 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
         0x01006560184E6000ULL,
         "Mortal Kombat 1",
-        "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены\n• Просадка FPS и графические артефакты спецэффектов/дыма",
-        "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes\n• Particle and smoke effect artifacts",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS в бою)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Динамическое состояние: Базовое\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-        "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Enabled (stable 60 FPS in combat)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Dynamic State: Basic\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+        "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены\n• Просадка FPS и графические артефакты спецэффектов/дыма\n• Пропадание текстур персонажей и окружения при длительной игре",
+        "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes\n• Particle and smoke effect artifacts\n• Character and environment texture streaming dropouts",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS в бою)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Реактивная очистка: Включено (стабильный кэш текстур UE4)\n✓ Динамическое состояние: Базовое\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая (предотвращает исчезновение текстур)",
+        "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Enabled (stable 60 FPS in combat)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Reactive Flushing: Enabled (stable UE4 texture cache)\n✓ Dynamic State: Basic\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High (prevents texture streaming loss)",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\dyna_state", "1"},
             {"Cpu\\cpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"System\\use_docked_mode", "0"}
         }
     },
     {
         0x0100D2800D5C2000ULL,
         "Mortal Kombat 1",
-        "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены\n• Просадка FPS и графические артефакты спецэффектов/дыма",
-        "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes\n• Particle and smoke effect artifacts",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS в бою)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Динамическое состояние: Базовое\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-        "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Enabled (stable 60 FPS in combat)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Dynamic State: Basic\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+        "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены\n• Просадка FPS и графические артефакты спецэффектов/дыма\n• Пропадание текстур персонажей и окружения при длительной игре",
+        "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes\n• Particle and smoke effect artifacts\n• Character and environment texture streaming dropouts",
+        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS в бою)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Реактивная очистка: Включено (стабильный кэш текстур UE4)\n✓ Динамическое состояние: Базовое\n✓ Точность ЦП: Авто (безопасные мониторы потоков)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая (предотвращает исчезновение текстур)",
+        "✓ Memory Layout: 8GB DRAM\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fast GPU Time: Enabled (stable 60 FPS in combat)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Reactive Flushing: Enabled (stable UE4 texture cache)\n✓ Dynamic State: Basic\n✓ CPU Accuracy: Auto (Safe thread monitors)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High (prevents texture streaming loss)",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\dyna_state", "1"},
             {"Cpu\\cpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"System\\use_docked_mode", "0"}
         }
     },
     {
         0x0100B1100C4D0000ULL,
         "Mortal Kombat 11",
+        "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити\n• Отсутствие русского языка при авто-определении",
+        "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes\n• Missing Russian language on auto-detection",
+        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Высокая (устранение растяжения полигонов и артефактов геометрии)\n✓ Синхронизация операций памяти: Включено (устранение сбоев текстур)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (чистые детальные текстуры)\n✓ Язык: Русский\n✓ Регион: Европа\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: High (eliminates polygon stretching and geometry glitches)\n✓ Sync Memory Operations: Enabled (fixes texture corruption)\n✓ Fast GPU Time: Enabled (stable 60 FPS)\n✓ ASTC Recompression: Uncompressed\n✓ Language: Russian\n✓ Region: Europe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"System\\language_index", "10"},
+            {"System\\region_index", "2"},
+            {"System\\airplane_mode", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"}
+        }
+    },
+    {
+        0x0100F2200C984000ULL,
+        "Mortal Kombat 11 Ultimate",
         "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити\n• Отсутствие русского языка при авто-определении",
         "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes\n• Missing Russian language on auto-detection",
         "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Высокая (устранение растяжения полигонов и артефактов геометрии)\n✓ Синхронизация операций памяти: Включено (устранение сбоев текстур)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (чистые детальные текстуры)\n✓ Язык: Русский\n✓ Регион: Европа\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
@@ -3331,23 +3333,23 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
         "✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП исключает рассинхронизацию буферов)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
+        "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
         "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
-        "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
+        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
+        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
         "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
         "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Hybrid (GPU decoding with CPU fallback prevents buffer desync)\n"
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
+        "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
         "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
-        "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
+        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
+        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
         "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
         "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
         "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
@@ -3355,11 +3357,11 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_video_framerate", "false"},
             {"Renderer\\eco_frame_pacing", "false"},
             {"Renderer\\dma_accuracy", "0"},
@@ -3381,11 +3383,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
         "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
+        "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
         "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
-        "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
+        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
+        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
         "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
         "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
@@ -3393,11 +3395,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
         "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
+        "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
         "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
-        "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
+        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
+        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
         "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
         "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
         "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
@@ -3405,11 +3407,11 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_video_framerate", "false"},
             {"Renderer\\eco_frame_pacing", "false"},
             {"Renderer\\dma_accuracy", "0"},
@@ -3431,11 +3433,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
         "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
+        "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
         "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
-        "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
+        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
+        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
         "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
         "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
@@ -3443,11 +3445,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
         "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
+        "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
         "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
-        "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
+        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
+        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
         "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
         "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
         "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
@@ -3455,11 +3457,11 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_video_framerate", "false"},
             {"Renderer\\eco_frame_pacing", "false"},
             {"Renderer\\dma_accuracy", "0"},
@@ -3481,11 +3483,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
         "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
+        "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
         "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
-        "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
+        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
+        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
         "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
         "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
@@ -3493,11 +3495,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
         "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
+        "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
         "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
-        "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
+        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
+        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
         "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
         "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
         "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
@@ -3505,11 +3507,11 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_video_framerate", "false"},
             {"Renderer\\eco_frame_pacing", "false"},
             {"Renderer\\dma_accuracy", "0"},
@@ -3531,11 +3533,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
         "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
+        "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
         "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Включено (синхронизация буферов видеопамяти исключает разбалансировку счетчиков nvmap)\n"
-        "✓ Реактивный сброс памяти: Включено (эталонная очистка поверхностей рендеринга Eden Nightly)\n"
+        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
+        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
         "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
         "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
@@ -3543,11 +3545,11 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
         "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
+        "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
         "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Enabled (video buffer synchronization eliminates nvmap pin imbalance)\n"
-        "✓ Reactive Flushing: Enabled (Eden Nightly standard render surface cache management)\n"
+        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
+        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
         "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
         "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
         "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
@@ -3555,11 +3557,11 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_video_framerate", "false"},
             {"Renderer\\eco_frame_pacing", "false"},
             {"Renderer\\dma_accuracy", "0"},

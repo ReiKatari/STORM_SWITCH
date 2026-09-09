@@ -34,6 +34,7 @@ import androidx.navigation.NavOptions
 import org.yuzu.yuzu_emu.fragments.EmulationFragment
 import org.yuzu.yuzu_emu.utils.CrashHandler
 import org.yuzu.yuzu_emu.utils.CustomSettingsHandler
+import org.yuzu.yuzu_emu.utils.SamsungGameBoosterHelper
 import android.util.Rational
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -259,6 +260,14 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             }
         }
 
+        // Samsung Game Booster & Game Tools system integration
+        try {
+            val game = intent.getParcelableExtra<org.yuzu.yuzu_emu.model.Game>(EXTRA_SELECTED_GAME)
+            SamsungGameBoosterHelper.onGameStart(this, game?.title)
+        } catch (t: Throwable) {
+            Log.warning("[EmulationActivity] Samsung Game Booster start notification error: ${t.message}")
+        }
+
         // Set minimal post processing for lowest display latency (Gaming Mode)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.setPreferMinimalPostProcessing(true)
@@ -340,6 +349,10 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                 window.setSustainedPerformanceMode(true)
             }
         }
+        try {
+            val game = intent.getParcelableExtra<Game>(EXTRA_SELECTED_GAME)
+            SamsungGameBoosterHelper.onGameResume(this, game?.title)
+        } catch (_: Throwable) {}
         nfcReader.startScanning()
         startMotionSensorListener()
         InputHandler.updateControllerData()
@@ -355,6 +368,9 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                 gameManager?.setGameState(GameState(false, GameState.MODE_NONE))
             } catch (_: Throwable) {}
         }
+        try {
+            SamsungGameBoosterHelper.onGamePause(this)
+        } catch (_: Throwable) {}
         thermalJob?.cancel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             window.setSustainedPerformanceMode(false)
@@ -368,6 +384,9 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         mainHandler.removeCallbacks(romSwapStopTimeoutRunnable)
         val game = intent.getParcelableExtra<Game>(EXTRA_SELECTED_GAME)
         org.yuzu.yuzu_emu.model.GameFixDatabase.cleanupSession(game)
+        try {
+            SamsungGameBoosterHelper.onGameStop(this)
+        } catch (_: Throwable) {}
         super.onDestroy()
         inputManager.unregisterInputDeviceListener(this)
         stopForegroundService(this)

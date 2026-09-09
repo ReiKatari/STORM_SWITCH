@@ -1621,7 +1621,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         val b = _binding ?: return
         try {
             if (tempC > 0f) {
-                val targetTemp = kotlin.math.max(35.0f, tempC - 4.0f)
+                val targetTemp = (tempC - 3.0f).coerceAtMost(tempC - 1.0f).coerceAtLeast(20.0f)
                 b.pausedCoolingTemp.text = "🌡️ Температура: ${String.format(java.util.Locale.US, "%.1f", tempC)}°C ➔ Цель: ${String.format(java.util.Locale.US, "%.1f", targetTemp)}°C"
             } else {
                 b.pausedCoolingTemp.text = "🌡️ Идёт охлаждение чипсета"
@@ -1913,28 +1913,29 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
         binding.drawerLayout.close()
 
-        val options = arrayOf(
-            getString(R.string.amiibo_database_title),
-            getString(R.string.amiibo_pick_file)
-        )
+        val dialogBinding = org.yuzu.yuzu_emu.databinding.DialogAmiiboSelectionBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogBinding.root)
+            .create()
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.amiibo)
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> {
-                        AmiiboDialogFragment.newInstance(isEmulating = true)
-                            .show(parentFragmentManager, AmiiboDialogFragment.TAG)
-                    }
-                    1 -> {
-                        isAmiiboPickerOpen = true
-                        loadAmiiboLauncher.launch(AMIIBO_MIME_TYPES)
-                    }
-                }
-            }
-            .setNegativeButton(R.string.close, null)
-            .show()
+        dialogBinding.cardAmiiboDatabase.setOnClickListener {
+            dialog.dismiss()
+            AmiiboDialogFragment.newInstance(isEmulating = true)
+                .show(parentFragmentManager, AmiiboDialogFragment.TAG)
+        }
 
+        dialogBinding.cardAmiiboFile.setOnClickListener {
+            dialog.dismiss()
+            isAmiiboPickerOpen = true
+            loadAmiiboLauncher.launch(AMIIBO_MIME_TYPES)
+        }
+
+        dialogBinding.btnCancelAmiibo.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
         return true
     }
 

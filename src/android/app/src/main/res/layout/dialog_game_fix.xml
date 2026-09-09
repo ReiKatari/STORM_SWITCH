@@ -220,6 +220,17 @@
                     android:text="@string/game_fix_skip_and_launch"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="13sp"
+                    app:cornerRadius="12dp"
+                    android:layout_marginBottom="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_cancel_game_fix"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:text="@string/cancel"
+                    android:textColor="?attr/colorError"
+                    android:textSize="13sp"
                     app:cornerRadius="12dp" />
 
             </LinearLayout>

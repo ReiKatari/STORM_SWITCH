@@ -33,6 +33,28 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 
+    <queries>
+        <package android:name="com.samsung.android.game.gos" />
+        <package android:name="com.samsung.android.game.gametools" />
+        <package android:name="com.samsung.android.game.gamehome" />
+        <package android:name="com.samsung.android.game.gamehub" />
+        <intent>
+            <action android:name="com.samsung.android.game.action.GAME_START" />
+        </intent>
+        <intent>
+            <action android:name="com.samsung.android.game.action.GAME_STOP" />
+        </intent>
+        <intent>
+            <action android:name="com.samsung.android.game.action.GAME_PAUSE" />
+        </intent>
+        <intent>
+            <action android:name="com.samsung.android.game.action.GAME_RESUME" />
+        </intent>
+        <intent>
+            <action android:name="com.samsung.android.game.gametools.ACTION_START_GAME" />
+        </intent>
+    </queries>
+
     <application
         android:name="org.yuzu.yuzu_emu.YuzuApplication"
         android:label="${appNameBase}${appNameSuffix}"
@@ -54,6 +76,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
         <meta-data android:name="com.samsung.android.game.identify" android:value="true" />
         <meta-data android:name="com.samsung.android.game.game_package" android:value="true" />
         <meta-data android:name="com.samsung.android.game.game_mode" android:value="true" />
+        <meta-data android:name="com.samsung.android.game.gamemode" android:value="true" />
+        <meta-data android:name="com.samsung.android.game.gamebooster" android:value="true" />
         <meta-data android:name="com.samsung.android.game.app" android:value="true" />
         <meta-data android:name="com.samsung.android.game.gos" android:value="true" />
         <meta-data android:name="com.samsung.android.game.gameboostercategory" android:value="game" />
