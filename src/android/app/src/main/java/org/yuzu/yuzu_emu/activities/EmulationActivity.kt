@@ -167,7 +167,21 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         super.attachBaseContext(YuzuApplication.applyLanguage(base))
     }
 
+    private fun getLaunchGame(): Game? {
+        return try {
+            intent.extras?.classLoader = Game::class.java.classLoader
+            BundleCompat.getParcelable(intent.extras ?: Bundle(), "game", Game::class.java)
+                ?: BundleCompat.getParcelable(intent.extras ?: Bundle(), EXTRA_SELECTED_GAME, Game::class.java)
+                ?: processSessionGame
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        try {
+            intent.extras?.classLoader = Game::class.java.classLoader
+        } catch (_: Throwable) {}
         Log.gameLaunched = true
         CrashHandler.exportLiveLog(this)
         ThemeHelper.setTheme(this)
@@ -262,7 +276,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
 
         // Samsung Game Booster & Game Tools system integration
         try {
-            val game = intent.getParcelableExtra<org.yuzu.yuzu_emu.model.Game>(EXTRA_SELECTED_GAME)
+            val game = getLaunchGame()
             SamsungGameBoosterHelper.onGameStart(this, game?.title)
         } catch (t: Throwable) {
             Log.warning("[EmulationActivity] Samsung Game Booster start notification error: ${t.message}")
@@ -350,7 +364,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             }
         }
         try {
-            val game = intent.getParcelableExtra<Game>(EXTRA_SELECTED_GAME)
+            val game = getLaunchGame()
             SamsungGameBoosterHelper.onGameResume(this, game?.title)
         } catch (_: Throwable) {}
         nfcReader.startScanning()
@@ -382,16 +396,20 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
 
     override fun onDestroy() {
         mainHandler.removeCallbacks(romSwapStopTimeoutRunnable)
-        val game = intent.getParcelableExtra<Game>(EXTRA_SELECTED_GAME)
-        org.yuzu.yuzu_emu.model.GameFixDatabase.cleanupSession(game)
+        try {
+            val game = getLaunchGame()
+            org.yuzu.yuzu_emu.model.GameFixDatabase.cleanupSession(game)
+        } catch (_: Throwable) {}
         try {
             SamsungGameBoosterHelper.onGameStop(this)
         } catch (_: Throwable) {}
         super.onDestroy()
-        inputManager.unregisterInputDeviceListener(this)
-        stopForegroundService(this)
-        NativeLibrary.playTimeManagerStop()
-        CrashHandler.exportLiveLog(this)
+        try {
+            inputManager.unregisterInputDeviceListener(this)
+            stopForegroundService(this)
+            NativeLibrary.playTimeManagerStop()
+            CrashHandler.exportLiveLog(this)
+        } catch (_: Throwable) {}
     }
 
     override fun onUserLeaveHint() {

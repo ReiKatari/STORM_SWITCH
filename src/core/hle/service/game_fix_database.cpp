@@ -3331,7 +3331,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
         "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП исключает рассинхронизацию буферов)\n"
+        "✓ Декодирование видео NVDEC: Отключено (пропуск вступительных роликов сразу на титульный экран без дедлоков)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
         "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
@@ -3343,7 +3343,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
+        "✓ NVDEC Video Emulation: Disabled (skips intro cutscenes directly to title screen without deadlocks)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
         "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
@@ -3356,7 +3356,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "0"},
             {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
@@ -3381,7 +3381,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
         "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
+        "✓ Декодирование видео NVDEC: Отключено (пропуск вступительных роликов сразу на титульный экран без дедлоков)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
         "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
@@ -3393,7 +3393,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
+        "✓ NVDEC Video Emulation: Disabled (skips intro cutscenes directly to title screen without deadlocks)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
         "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
@@ -3406,7 +3406,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "0"},
             {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
@@ -3431,7 +3431,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
         "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
+        "✓ Декодирование видео NVDEC: Отключено (пропуск вступительных роликов сразу на титульный экран без дедлоков)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
         "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
@@ -3443,7 +3443,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
+        "✓ NVDEC Video Emulation: Disabled (skips intro cutscenes directly to title screen without deadlocks)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
         "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
@@ -3456,7 +3456,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "0"},
             {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
@@ -3481,7 +3481,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
         "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
+        "✓ Декодирование видео NVDEC: Отключено (пропуск вступительных роликов сразу на титульный экран без дедлоков)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
         "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
@@ -3493,7 +3493,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
+        "✓ NVDEC Video Emulation: Disabled (skips intro cutscenes directly to title screen without deadlocks)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
         "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
@@ -3506,7 +3506,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "0"},
             {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
@@ -3531,7 +3531,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
         "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
+        "✓ Декодирование видео NVDEC: Отключено (пропуск вступительных роликов сразу на титульный экран без дедлоков)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
         "✓ Асинхронный вывод: Отключено (устраняет дедлок презентации Vulkan на вступительных роликах и меню)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
@@ -3543,7 +3543,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
+        "✓ NVDEC Video Emulation: Disabled (skips intro cutscenes directly to title screen without deadlocks)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
         "✓ Async Presentation: Disabled (prevents Vulkan presentation deadlock on intro videos and menu)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
@@ -3556,7 +3556,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "0"},
             {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},

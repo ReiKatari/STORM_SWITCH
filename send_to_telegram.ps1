@@ -1,4 +1,5 @@
 $ErrorActionPreference = "Stop"
+Add-Type -AssemblyName System.Net.Http
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 $tokenFile = "e:\STORM EDEN 3\tg_token.txt"
@@ -56,32 +57,27 @@ function Send-TGDocument([string]$filePath, [string]$caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 7.5.7 (SoR4 Gameplay Fix, Graphics Restore and Samsung Game Booster)</b> — <i>Крупное обновление эмулятора Nintendo Switch: полное исправление Streets of Rage 4 в геймплее, восстановление графики и текстур в Mortal Kombat 1, Mortal Kombat 11 и Zelda BotW, полная системная интеграция с Samsung Game Booster и ускорение загрузки списка игр.</i>
+⚡ <b>Релиз STORM SWITCH 7.5.8 (Streets of Rage 4 60 FPS, Launch Crash Fix, Samsung Game Booster and DLC Restore)</b> — <i>Экстренное обновление эмулятора Nintendo Switch: полное исправление вылетов при запуске игр на Android, плавные 60 FPS в Streets of Rage 4 с корректным переходом к игре, универсальная поддержка Samsung Game Booster для всех смартфонов, восстановление доступа к DLC без RomFS и строгая иерархическая сортировка дополнений.</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения и улучшения:</b>
 
-👊 <b>Streets of Rage 4 (Windows и Android):</b>
-• <b>Стабильный игровой процесс</b>: исправлены зависания на заставках и в меню. Обеспечена плавная работа вплоть до полного прохождения уровней без сбоев.
-• <b>Корректировка профилей</b>: перевод NVDEC на программное декодирование FFmpeg на ЦП, отключение дедлоков асинхронного вывода и избыточной синхронизации памяти.
+👊 <b>Streets of Rage 4 (60 FPS и пропуск заставок):</b>
+• <b>Устранение зависаний видео и 0 FPS</b>: удален поврежденный NSO-патч инструкций ARM64 и перенастроена эмуляция NVDEC (отключена), что позволяет мгновенно и чисто миновать вступительные видеоролики без дедлоков и падений частоты кадров.
+• <b>Плавный геймплей</b>: стабильные 60 FPS в игровом процессе на всех региональных версиях игры.
 
-🎮 <b>Mortal Kombat 1 и Mortal Kombat 11:</b>
-• <b>Mortal Kombat 1</b>: устранено исчезновение и деградация текстур костюмов и окружения через включение реактивной очистки кэша и высокую точность ГПУ.
-• <b>Mortal Kombat 11</b>: полностью исправлены розовый фон и пропадание полигонов персонажей, вызванные регрессией точности.
+📱 <b>Исправление запуска игр на Android:</b>
+• <b>Устранение аварийного завершения</b>: ликвидирован вылет при старте любой игры в версии 7.5.7, вызванный десериализацией Parcelable в Bundle на современных версиях Android.
+• <b>Безопасная очистка ресурсов</b>: добавлены защитные блоки перехвата исключений при завершении сессии эмуляции.
 
-🗡 <b>The Legend of Zelda: Breath of the Wild:</b>
-• <b>Исправление физики и ландшафта</b>: строго зафиксирован пул 4 ГБ DRAM, исключающий проваливание Линка сквозь землю и рассинхрон Havok Physics.
-• <b>Устранение черных текстур земли</b>: отключен агрессивный префетч шейдеров и сброс LRZ между буферами команд на Adreno 830.
+🔋 <b>Универсальный Samsung Game Booster:</b>
+• <b>Поддержка всех моделей и версий One UI</b>: обеспечена надежная работа Game Booster, Game Tools и Game Plugins на всех устройствах Samsung без сбоев безопасности SecurityException.
+• <b>Безопасные системные вызовы</b>: исключены некорректные вызовы внутренних интерфейсов Knox, задействован стандартный Android 12+ GameManager API с безопасными широковещательными событиями.
 
-❄️ <b>Охлаждение и пауза:</b>
-• <b>Корректный расчет температуры</b>: целевая температура при паузе теперь строго минимум на 1°C ниже текущей температуры устройства.
-
-✨ <b>Новые возможности и интерфейс:</b>
-• <b>Диалог выбора Amiibo (Android)</b>: красивое контекстное окно в едином стиле всех 8 тем с выбором между онлайн-базой Amiibo и локальным .bin файлом.
-• <b>Кнопка «Отмена» в окне авто-исправлений</b>: возможность прервать запуск игры прямо из диалога подтверждения.
-• <b>Интеграция с Samsung Game Booster</b>: поддержка Samsung GOS, Game Tools, Game Home и Android 12+ GameManager для максимальной игровой производительности.
-• <b>Мгновенная загрузка списка игр (Windows)</b>: кэширование версий файлов и дополнений сократило время сканирования библиотек в разы.
+📦 <b>Восстановление доступа к DLC и порядок дополнений:</b>
+• <b>Доступность DLC без RomFS</b>: снято ограничение нулевого размера RomFS в диспетчере контента, благодаря чему игры (например, Assassin's Creed Rebel Collection) корректно видят все лицензионные дополнения и языковые пакеты внутри самой игры.
+• <b>Идеальный порядок дополнений</b>: в интерфейсе Windows и Android сначала строго отображаются обновления (Update), затем дополнения строго по порядковому номеру (#1, #2, #3...), и в конце пользовательские модификации (Mods).
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 <i>Все исполняемые файлы, инсталляторы и архивы собраны, проверены и готовы к работе.</i>
@@ -92,25 +88,25 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram (Main APK first)..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.7.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.7 (Основная версия — Android 14+)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.8.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.8 (Основная версия — Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.7_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.7 (Версия Legacy — Android 10-13)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.8_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.8 (Версия Legacy — Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.7_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.7 (Версия SDK27 — Android 8.1-9)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.8_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.8 (Версия SDK27 — Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.7_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 7.5.7 (Портативная версия для Windows x64)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.8_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 7.5.8 (Портативная версия для Windows x64)</b>"
     }
 )
 
 foreach ($f in $filesToUpload) {
-    if (Test-Path $f.Path) {
+    if (Test-Path -LiteralPath $f.Path) {
         Send-TGDocument $f.Path $f.Caption
     } else {
         Write-Warning "File not found: $($f.Path)"
@@ -118,4 +114,4 @@ foreach ($f in $filesToUpload) {
 }
 
 $httpClient.Dispose()
-Write-Host "`nRelease 7.5.7 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 7.5.8 deployment to Telegram completed successfully!"

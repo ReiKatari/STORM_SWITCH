@@ -67,7 +67,16 @@ class AddonViewModel : ViewModel() {
                 } ?: return@launch
 
                 val patchList = patches.toMutableList()
-                patchList.sortBy { it.name }
+                patchList.sortWith(compareBy<Patch> { patch ->
+                    when (PatchType.from(patch.type)) {
+                        PatchType.Update -> 0
+                        PatchType.DLC -> 1
+                        PatchType.Mod -> 2
+                    }
+                }.thenBy { patch ->
+                    val match = Regex("""\d+""").find(patch.name)
+                    match?.value?.toLongOrNull() ?: Long.MAX_VALUE
+                }.thenBy { it.name })
 
                 // Ensure only one update is enabled
                 ensureSingleUpdateEnabled(patchList)

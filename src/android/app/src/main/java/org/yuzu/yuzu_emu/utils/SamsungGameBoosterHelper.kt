@@ -20,6 +20,12 @@ object SamsungGameBoosterHelper {
                Build.BRAND.contains("samsung", ignoreCase = true)
     }
 
+    private fun safeSendBroadcast(context: Context, intent: Intent) {
+        try {
+            context.sendBroadcast(intent)
+        } catch (_: Throwable) {}
+    }
+
     /**
      * Notify Samsung Game Booster and Android OS that active gameplay has started.
      */
@@ -28,6 +34,7 @@ object SamsungGameBoosterHelper {
         val title = gameTitle ?: "Nintendo Switch Game"
 
         // 1. Android OS Game Manager (API 33+ GameState, API 31+ GameManager)
+        // Samsung Game Booster (GOS) natively monitors GameManager across all modern One UI devices
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val gameManager = context.getSystemService(GameManager::class.java)
@@ -39,45 +46,37 @@ object SamsungGameBoosterHelper {
             }
         }
 
-        // 2. Samsung Game Booster / GOS broadcasts & intents
-        try {
-            // Intent for com.samsung.android.game.action.GAME_START
-            val startIntent = Intent("com.samsung.android.game.action.GAME_START").apply {
-                putExtra("package_name", packageName)
-                putExtra("packageName", packageName)
-                putExtra("game_name", title)
-                putExtra("game_title", title)
-                putExtra("is_game", true)
-                putExtra("game_type", 1)
-            }
-            context.sendBroadcast(startIntent)
-
-            // Direct intent to com.samsung.android.game.gametools
-            val toolsIntent = Intent("com.samsung.android.game.gametools.ACTION_START_GAME").apply {
-                setPackage("com.samsung.android.game.gametools")
-                putExtra("package_name", packageName)
-                putExtra("game_title", title)
-            }
-            context.sendBroadcast(toolsIntent)
-
-            // Direct intent to com.samsung.android.game.gos
-            val gosIntent = Intent("com.samsung.android.game.action.GAME_FOREGROUND").apply {
-                setPackage("com.samsung.android.game.gos")
-                putExtra("package_name", packageName)
-                putExtra("game_title", title)
-            }
-            context.sendBroadcast(gosIntent)
-
-            // 3. Samsung Knox / SemGameManager reflection if available
+        // 2. Samsung-specific broadcasts (safely dispatched only on Samsung devices)
+        if (isSamsungDevice()) {
             try {
-                val semGameManagerClass = Class.forName("com.samsung.android.game.SemGameManager")
-                val initMethod = semGameManagerClass.getMethod("initGame", Context::class.java)
-                initMethod.invoke(null, context)
-            } catch (_: Throwable) {}
+                val startIntent = Intent("com.samsung.android.game.action.GAME_START").apply {
+                    putExtra("package_name", packageName)
+                    putExtra("packageName", packageName)
+                    putExtra("game_name", title)
+                    putExtra("game_title", title)
+                    putExtra("is_game", true)
+                    putExtra("game_type", 1)
+                }
+                safeSendBroadcast(context, startIntent)
 
-            Log.info("[SamsungGameBoosterHelper] Game start broadcast dispatched for $title ($packageName)")
-        } catch (e: Throwable) {
-            Log.warning("[SamsungGameBoosterHelper] Error dispatching game start: ${e.message}")
+                val toolsIntent = Intent("com.samsung.android.game.gametools.ACTION_START_GAME").apply {
+                    setPackage("com.samsung.android.game.gametools")
+                    putExtra("package_name", packageName)
+                    putExtra("game_title", title)
+                }
+                safeSendBroadcast(context, toolsIntent)
+
+                val gosIntent = Intent("com.samsung.android.game.action.GAME_FOREGROUND").apply {
+                    setPackage("com.samsung.android.game.gos")
+                    putExtra("package_name", packageName)
+                    putExtra("game_title", title)
+                }
+                safeSendBroadcast(context, gosIntent)
+
+                Log.info("[SamsungGameBoosterHelper] Game start signaled for $title ($packageName)")
+            } catch (e: Throwable) {
+                Log.warning("[SamsungGameBoosterHelper] Error dispatching game start: ${e.message}")
+            }
         }
     }
 
@@ -95,19 +94,19 @@ object SamsungGameBoosterHelper {
             } catch (_: Throwable) {}
         }
 
-        try {
+        if (isSamsungDevice()) {
             val resumeIntent = Intent("com.samsung.android.game.action.GAME_RESUME").apply {
                 putExtra("package_name", packageName)
                 putExtra("game_name", title)
             }
-            context.sendBroadcast(resumeIntent)
+            safeSendBroadcast(context, resumeIntent)
 
             val toolsIntent = Intent("com.samsung.android.game.gametools.ACTION_GAME_RESUME").apply {
                 setPackage("com.samsung.android.game.gametools")
                 putExtra("package_name", packageName)
             }
-            context.sendBroadcast(toolsIntent)
-        } catch (_: Throwable) {}
+            safeSendBroadcast(context, toolsIntent)
+        }
     }
 
     /**
@@ -123,18 +122,18 @@ object SamsungGameBoosterHelper {
             } catch (_: Throwable) {}
         }
 
-        try {
+        if (isSamsungDevice()) {
             val pauseIntent = Intent("com.samsung.android.game.action.GAME_PAUSE").apply {
                 putExtra("package_name", packageName)
             }
-            context.sendBroadcast(pauseIntent)
+            safeSendBroadcast(context, pauseIntent)
 
             val toolsIntent = Intent("com.samsung.android.game.gametools.ACTION_GAME_PAUSE").apply {
                 setPackage("com.samsung.android.game.gametools")
                 putExtra("package_name", packageName)
             }
-            context.sendBroadcast(toolsIntent)
-        } catch (_: Throwable) {}
+            safeSendBroadcast(context, toolsIntent)
+        }
     }
 
     /**
@@ -150,17 +149,17 @@ object SamsungGameBoosterHelper {
             } catch (_: Throwable) {}
         }
 
-        try {
+        if (isSamsungDevice()) {
             val stopIntent = Intent("com.samsung.android.game.action.GAME_STOP").apply {
                 putExtra("package_name", packageName)
             }
-            context.sendBroadcast(stopIntent)
+            safeSendBroadcast(context, stopIntent)
 
             val toolsIntent = Intent("com.samsung.android.game.gametools.ACTION_GAME_STOP").apply {
                 setPackage("com.samsung.android.game.gametools")
                 putExtra("package_name", packageName)
             }
-            context.sendBroadcast(toolsIntent)
-        } catch (_: Throwable) {}
+            safeSendBroadcast(context, toolsIntent)
+        }
     }
 }

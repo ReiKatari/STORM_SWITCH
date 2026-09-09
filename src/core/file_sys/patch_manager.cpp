@@ -460,32 +460,6 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
         LOG_WARNING(Loader, "Cannot load mods for title_id={:016X}", title_id);
     }
 
-
-
-    // Built-in game patches for Streets of Rage 4 (All Title IDs and Build ID 8817441976E32E94909A95F64405A99A092B43DC)
-    const bool is_sor4 = (name == "main" && (
-        title_id == 0x0100EC9010258000ULL ||
-        title_id == 0x0100AC300919A000ULL ||
-        title_id == 0x010085800E33E000ULL ||
-        title_id == 0x0100BA700E340000ULL ||
-        title_id == 0x0100C60010228000ULL ||
-        build_id.starts_with("8817441976E32E94909A95F64405A99A092B43DC")
-    ));
-
-    if (is_sor4) {
-        // Intro video null-buffer guard: prevent IndexOutOfRangeException / abort on frame 4
-        constexpr size_t buffer_patch_offset = sizeof(Loader::NSOHeader) + 0x008C0048;
-        if (out.size() >= buffer_patch_offset + sizeof(u32)) {
-            u32 current_insn = 0;
-            std::memcpy(&current_insn, out.data() + buffer_patch_offset, sizeof(u32));
-            if (current_insn == 0xB4000D78) { // cbz x24, 0x008C01F4
-                const u32 safe_insn = 0xB4000D77; // cbz x23, 0x008C01F4
-                std::memcpy(out.data() + buffer_patch_offset, &safe_insn, sizeof(u32));
-                LOG_INFO(Loader, "Streets of Rage 4: Applied safe null-buffer check at 0x008C0048 (cbz x23 -> 0x008C01F4)");
-            }
-        }
-    }
-
     if (out.size() < sizeof(Loader::NSOHeader)) {
         return nso;
     }
@@ -497,18 +471,6 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
 bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) const {
     const auto build_id_raw = Common::HexToString(build_id_);
     const auto build_id = build_id_raw.substr(0, build_id_raw.find_last_not_of('0') + 1);
-
-    // Built-in game patches for Streets of Rage 4
-    if (name == "main" && (
-        title_id == 0x0100EC9010258000ULL ||
-        title_id == 0x0100AC300919A000ULL ||
-        title_id == 0x010085800E33E000ULL ||
-        title_id == 0x0100BA700E340000ULL ||
-        title_id == 0x0100C60010228000ULL ||
-        build_id.starts_with("8817441976E32E94909A95F64405A99A092B43DC"))) {
-        LOG_INFO(Loader, "Streets of Rage 4: Built-in NSO patch active for name={}, build_id={}, title_id={:016X}", name, build_id, title_id);
-        return true;
-    }
 
     LOG_INFO(Loader, "Querying NSO patch existence for build_id={}, name={}", build_id, name);
 

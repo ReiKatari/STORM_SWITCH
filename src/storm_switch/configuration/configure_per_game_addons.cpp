@@ -339,6 +339,10 @@ void ConfigurePerGameAddons::LoadConfiguration() {
     int mod_counter = 1;
     int dlc_count_added = 0;
 
+    std::vector<QList<QStandardItem*>> update_rows;
+    std::vector<std::pair<u32, QList<QStandardItem*>>> dlc_rows;
+    std::vector<QList<QStandardItem*>> mod_rows;
+
     // Ensure TitleDB is loaded
     TitleDB::TitleDatabase::Instance().WaitLoaded(std::chrono::milliseconds(3000));
 
@@ -389,8 +393,7 @@ void ConfigurePerGameAddons::LoadConfiguration() {
                 first_item->setCheckState(dlc_disabled ? Qt::Unchecked : Qt::Checked);
 
                 auto* const name_item = new QStandardItem{dlc_title};
-                list_items.push_back(QList<QStandardItem*>{first_item, name_item});
-                item_model->appendRow(list_items.back());
+                dlc_rows.push_back({dlc_num > 0 ? dlc_num : 1, QList<QStandardItem*>{first_item, name_item}});
                 dlc_count_added++;
             }
             continue;
@@ -484,17 +487,17 @@ void ConfigurePerGameAddons::LoadConfiguration() {
         }
 
         bool should_enable = !patch_disabled;
+        first_item->setCheckState(should_enable ? Qt::Checked : Qt::Unchecked);
 
         if (patch.type == FileSys::PatchType::Update) {
             update_items.push_back(first_item);
             update_added = true;
+            update_rows.push_back(QList<QStandardItem*>{
+                first_item, new QStandardItem{version_display}});
+        } else {
+            mod_rows.push_back(QList<QStandardItem*>{
+                first_item, new QStandardItem{version_display}});
         }
-
-        first_item->setCheckState(should_enable ? Qt::Checked : Qt::Unchecked);
-
-        list_items.push_back(QList<QStandardItem*>{
-            first_item, new QStandardItem{version_display}});
-        item_model->appendRow(list_items.back());
     }
 
     // Fallback: check embedded DLCs in NSP container or filename tags if patches contained no DLCs
@@ -561,8 +564,7 @@ void ConfigurePerGameAddons::LoadConfiguration() {
             first_item->setCheckState(dlc_disabled ? Qt::Unchecked : Qt::Checked);
 
             auto* const name_item = new QStandardItem{dlc_title};
-            list_items.push_back(QList<QStandardItem*>{first_item, name_item});
-            item_model->appendRow(list_items.back());
+            dlc_rows.push_back({static_cast<u32>(dlc_seq), QList<QStandardItem*>{first_item, name_item}});
         }
     }
 
@@ -575,10 +577,28 @@ void ConfigurePerGameAddons::LoadConfiguration() {
         first_item->setCheckState(patch_disabled ? Qt::Unchecked : Qt::Checked);
 
         auto* const name_item = new QStandardItem{game_version_str};
-        list_items.push_back(QList<QStandardItem*>{first_item, name_item});
-        item_model->appendRow(list_items.back());
         update_items.push_back(first_item);
+        update_rows.push_back(QList<QStandardItem*>{first_item, name_item});
         update_added = true;
+    }
+
+    // Sort DLCs strictly in numerical order (#1, #2, #3...)
+    std::stable_sort(dlc_rows.begin(), dlc_rows.end(), [](const auto& a, const auto& b) {
+        return a.first < b.first;
+    });
+
+    // Append in strict hierarchical order: Update first, then DLCs in numerical order, then Mods
+    for (auto& row : update_rows) {
+        list_items.push_back(std::move(row));
+        item_model->appendRow(list_items.back());
+    }
+    for (auto& pair : dlc_rows) {
+        list_items.push_back(std::move(pair.second));
+        item_model->appendRow(list_items.back());
+    }
+    for (auto& row : mod_rows) {
+        list_items.push_back(std::move(row));
+        item_model->appendRow(list_items.back());
     }
 
     tree_view->resizeColumnToContents(0);
