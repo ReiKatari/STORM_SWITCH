@@ -202,7 +202,7 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
     bool checked_external = false;
     bool checked_manual = false;
 
-    const auto* content_union = static_cast<const ContentProviderUnion*>(&content_provider);
+    const auto* content_union = content_provider.AsContentProviderUnion();
     const auto update_tid = GetUpdateTitleID(title_id);
 
     if (content_union) {
@@ -766,7 +766,7 @@ VirtualFile PatchManager::PatchRomFS(const NCA* base_nca, VirtualFile base_romfs
         bool checked_external = false;
         bool checked_manual = false;
 
-        const auto* content_union = static_cast<const ContentProviderUnion*>(&content_provider);
+        const auto* content_union = content_provider.AsContentProviderUnion();
         if (content_union) {
             // First, check ExternalContentProvider
             const auto* external_provider = content_union->GetExternalProvider();
@@ -914,7 +914,7 @@ std::vector<Patch> PatchManager::GetPatches(VirtualFile update_raw) const {
 
     std::vector<Patch> external_update_patches;
 
-    const auto* content_union = static_cast<const ContentProviderUnion*>(&content_provider);
+    const auto* content_union = content_provider.AsContentProviderUnion();
 
     if (content_union) {
         // First, check ExternalContentProvider for updates

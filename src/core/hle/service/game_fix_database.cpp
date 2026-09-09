@@ -142,13 +142,14 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Breath of the Wild",
         "• Черный силуэт Линка из-за рассинхрона буфера освещения и трафарета\n• Белые вспышки и мерцание освещения/погоды\n• Пропадание текстур скал и земли при нехватке памяти\n• Бирюзовая сетка и артефакты Z-буфера в Святилищах",
         "• Link black silhouette caused by unsynced lighting and stencil buffers\n• White screen flashes and lighting flicker\n• Ground and terrain textures disappearing due to memory pressure\n• Shrine depth bias / cyan grid artifacts",
-        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Включено (стабильные 30-32 FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM (оптимально для текстур и стабильности)",
-        "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Enabled (Stable 30-32 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM (Optimal stability)",
+        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Отключено (устраняет пропадание текстур и сбои в док-режиме)\n✓ Синхронизация памяти: Включено (стабильный рендеринг текстур)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM (оптимально для текстур и стабильности)",
+        "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Disabled (Fixes texture corruption and artifacts in docked mode)\n✓ Sync Memory Operations: Enabled (Stable texture rendering)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM (Optimal stability)",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\sync_memory_operations", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\memory_layout_mode", "1"}
@@ -3353,7 +3354,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
@@ -3378,7 +3379,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
         "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП исключает рассинхронизацию буферов)\n"
+        "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
         "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
@@ -3390,7 +3391,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Hybrid (GPU decoding with CPU fallback prevents buffer desync)\n"
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
         "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
@@ -3403,7 +3404,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
@@ -3428,7 +3429,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
         "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП исключает рассинхронизацию буферов)\n"
+        "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
         "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
@@ -3440,7 +3441,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Hybrid (GPU decoding with CPU fallback prevents buffer desync)\n"
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
         "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
@@ -3453,7 +3454,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
@@ -3478,7 +3479,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
         "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП исключает рассинхронизацию буферов)\n"
+        "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
         "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
@@ -3490,7 +3491,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Hybrid (GPU decoding with CPU fallback prevents buffer desync)\n"
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
         "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
@@ -3503,7 +3504,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
@@ -3528,7 +3529,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
         "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
         "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП исключает рассинхронизацию буферов)\n"
+        "✓ Декодирование видео NVDEC: Программный на ЦП (декодирование видеопотоков на ЦП через FFmpeg исключает зависания Vulkan)\n"
         "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
         "✓ Асинхронный вывод: Включено (плавная презентация кадров Vulkan без дедлоков на заставках)\n"
         "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
@@ -3540,7 +3541,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
         "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
         "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Hybrid (GPU decoding with CPU fallback prevents buffer desync)\n"
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents Vulkan driver hang)\n"
         "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
         "✓ Async Presentation: Enabled (smooth Vulkan presentation without intro deadlocks)\n"
         "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
@@ -3553,7 +3554,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},

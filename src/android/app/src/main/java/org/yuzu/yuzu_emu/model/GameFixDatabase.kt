@@ -26,6 +26,78 @@ object GameFixDatabase {
 
     private val profiles = listOf(
         GameFixProfile(
+            0x01007EF00011E000L,
+            "The Legend of Zelda: Breath of the Wild",
+            "• Черный силуэт Линка из-за рассинхрона буфера освещения и трафарета\n• Белые вспышки и мерцание освещения/погоды\n• Пропадание текстур скал и земли в док-режиме\n• Бирюзовая сетка и артефакты Z-буфера в Святилищах",
+            "• Link black silhouette caused by unsynced lighting and stencil buffers\n• White screen flashes and lighting flicker\n• Ground and terrain textures disappearing in docked mode\n• Shrine depth bias / cyan grid artifacts",
+            "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (чистые оригинальные текстуры)\n✓ Быстрое время ГПУ: Отключено (устраняет пропадание текстур и сбои в док-режиме)\n✓ Синхронизация памяти: Включено (стабильный рендеринг текстур)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM",
+            "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled (Fixes texture corruption and artifacts in docked mode)\n✓ Sync Memory Operations: Enabled (Stable texture rendering)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\sync_memory_operations" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100EC9010258000L,
+            "Streets of Rage 4",
+            "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
+            "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
+            "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Программный на ЦП (исключает зависания Vulkan)\n✓ Асинхронный вывод: Включено\n✓ Режим «В самолете»: Включено\n✓ Игнорировать прерывания памяти: Включено (защита от вылета при нулевом указателе)\n✓ Синхронизация памяти: Включено",
+            "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents driver hang)\n✓ Async Presentation: Enabled\n✓ Airplane Mode: Enabled\n✓ Ignore Memory Aborts: Enabled (prevents null pointer crashes)\n✓ Sync Memory Operations: Enabled",
+            mapOf(
+                "Cpu\\cpu_accuracy" to "0",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_video_framerate" to "false",
+                "Renderer\\eco_frame_pacing" to "false",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100AC300919A000L,
+            "Streets of Rage 4 (US/World)",
+            "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
+            "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
+            "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Программный на ЦП (исключает зависания Vulkan)\n✓ Асинхронный вывод: Включено\n✓ Режим «В самолете»: Включено\n✓ Игнорировать прерывания памяти: Включено (защита от вылета при нулевом указателе)\n✓ Синхронизация памяти: Включено",
+            "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: CPU (software FFmpeg video decoding prevents driver hang)\n✓ Async Presentation: Enabled\n✓ Airplane Mode: Enabled\n✓ Ignore Memory Aborts: Enabled (prevents null pointer crashes)\n✓ Sync Memory Operations: Enabled",
+            mapOf(
+                "Cpu\\cpu_accuracy" to "0",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_video_framerate" to "false",
+                "Renderer\\eco_frame_pacing" to "false",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
             0x01005B101DC84000L,
             "EA SPORTS FC 25",
             "• Зависание при старте игры / черный экран на заставке EA\n• Нехватка памяти Frostbite Engine (вылет при загрузке стадиона)\n• Зависание на сетевой аутентификации",

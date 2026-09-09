@@ -73,9 +73,15 @@ bool operator<(const ContentProviderEntry& lhs, const ContentProviderEntry& rhs)
 bool operator==(const ContentProviderEntry& lhs, const ContentProviderEntry& rhs);
 bool operator!=(const ContentProviderEntry& lhs, const ContentProviderEntry& rhs);
 
+class ContentProviderUnion;
+
 class ContentProvider {
 public:
     virtual ~ContentProvider();
+
+    [[nodiscard]] virtual const ContentProviderUnion* AsContentProviderUnion() const {
+        return nullptr;
+    }
 
     virtual void Refresh() = 0;
 
@@ -229,6 +235,10 @@ enum class ContentProviderUnionSlot {
 class ContentProviderUnion : public ContentProvider {
 public:
     ~ContentProviderUnion() override;
+
+    [[nodiscard]] const ContentProviderUnion* AsContentProviderUnion() const override {
+        return this;
+    }
 
     void SetSlot(ContentProviderUnionSlot slot, ContentProvider* provider);
     void Refresh() override;

@@ -15,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.yuzu.yuzu_emu.R
@@ -80,7 +81,12 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
             dismiss()
         }
 
-        binding.listOverlayThemes.layoutManager = LinearLayoutManager(requireContext())
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        binding.listOverlayThemes.layoutManager = if (isLandscape) {
+            GridLayoutManager(requireContext(), 2)
+        } else {
+            LinearLayoutManager(requireContext())
+        }
         binding.listOverlayThemes.adapter = adapter
 
         val initialPosition = themes.indexOfFirst { it.id == currentThemeId }.coerceAtLeast(0)
@@ -92,17 +98,8 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
         dialog?.window?.let { window ->
             val dm = resources.displayMetrics
             val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-            val isInGame = activity is org.yuzu.yuzu_emu.activities.EmulationActivity
-            val width = if (isInGame || isLandscape) {
-                (dm.widthPixels * 0.85).toInt().coerceIn(480, 850)
-            } else {
-                (dm.widthPixels * 0.94).toInt()
-            }
-            val height = if (isInGame || isLandscape) {
-                (dm.heightPixels * 0.88).toInt().coerceIn(360, 800)
-            } else {
-                (dm.heightPixels * 0.75).toInt()
-            }
+            val width = if (isLandscape) (dm.widthPixels * 0.92).toInt() else (dm.widthPixels * 0.95).toInt()
+            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.85).toInt()
             window.setLayout(width, height)
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             window.setGravity(Gravity.CENTER)

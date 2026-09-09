@@ -5,6 +5,8 @@ echo ===================================================
 echo STORM SWITCH - Automated Build and Packaging Script
 echo ===================================================
 
+taskkill /F /IM STORM_SWITCH.exe /IM STORM_SWITCH-cli.exe /IM STORM_SWITCH-room.exe 2>nul
+
 call "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" amd64
 if errorlevel 1 (
     echo [ERROR] Failed to set up Visual Studio environment.
@@ -26,8 +28,8 @@ cd /d "%BUILD_DIR%"
 echo [1/3] Running CMake configuration...
 "%CMAKE%" -G "Ninja" -DCMAKE_MAKE_PROGRAM="%NINJA%" ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DGIT_TAG="7.5.4" ^
-    -DGIT_RELEASE="7.5.4" ^
+    -DGIT_TAG="7.5.5" ^
+    -DGIT_RELEASE="7.5.5" ^
     -DENABLE_QT=ON ^
     -DENABLE_QT_TRANSLATION=ON ^
     -DYUZU_USE_BUNDLED_QT=ON ^

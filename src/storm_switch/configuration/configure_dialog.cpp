@@ -252,6 +252,7 @@ void ConfigureDialog::PopulateSelectionList() {
     list_font.setBold(true);
     ui->selectorList->setFont(list_font);
 
+    [[maybe_unused]] const QSignalBlocker blocker(ui->selectorList);
     ui->selectorList->clear();
     for (const auto& entry : items) {
         auto* const item = new QListWidgetItem(entry.first);
@@ -270,10 +271,7 @@ void ConfigureDialog::OnLanguageChanged(const QString& locale) {
     emit LanguageChanged(locale);
     //  Reloading the game list is needed to force retranslation.
     UISettings::values.is_game_list_reload_pending = true;
-    // first apply the configuration, and then restore the display
-    ApplyConfiguration();
     RetranslateUI();
-    SetConfiguration();
     m_is_changing_language = false;
 }
 

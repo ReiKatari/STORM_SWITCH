@@ -219,16 +219,13 @@ void ConfigureUi::RetranslateUI() {
     ui->retranslateUi(this);
 
     for (int i = 0; i < ui->folder_icon_size_combobox->count(); i++) {
-        ui->folder_icon_size_combobox->setItemText(
-            i, GetTranslatedFolderIconSize(static_cast<size_t>(i)));
+        if (static_cast<size_t>(i) < default_folder_icon_sizes.size()) {
+            ui->folder_icon_size_combobox->setItemText(
+                i, GetTranslatedFolderIconSize(static_cast<size_t>(i)));
+        }
     }
 
-    for (int i = 0; i < ui->row_1_text_combobox->count(); i++) {
-        const QString name = GetTranslatedRowTextName(static_cast<size_t>(i));
-
-        ui->row_1_text_combobox->setItemText(i, name);
-        ui->row_2_text_combobox->setItemText(i, name);
-    }
+    InitializeRowComboBoxes();
 }
 
 void ConfigureUi::InitializeLanguageComboBox() {
