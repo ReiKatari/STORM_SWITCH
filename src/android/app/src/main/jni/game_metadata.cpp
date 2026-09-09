@@ -24,6 +24,7 @@ struct RomMetadata {
     int addon_count{0};
     std::vector<u8> icon;
     bool isHomebrew{false};
+    bool is_base_game{false};
 };
 static ankerl::unordered_dense::map<std::string, RomMetadata> m_rom_metadata_cache;
 static ankerl::unordered_dense::map<u64, int> m_aoc_count_cache;
@@ -250,8 +251,10 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
         if (loader->GetFileType() == Loader::FileType::NRO) {
             auto loader_nro = reinterpret_cast<Loader::AppLoader_NRO*>(loader.get());
             entry.isHomebrew = loader_nro->IsHomebrew();
+            entry.is_base_game = true;
         } else {
             entry.isHomebrew = false;
+            entry.is_base_game = Loader::IsBootableGameContainer(file);
         }
         m_rom_metadata_cache[path] = entry;
         return entry;
@@ -327,10 +330,7 @@ jstring Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getProgramId(JNIEnv* env, job
 
 jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_isBaseGame(JNIEnv* env, jobject obj, jstring jpath) {
     const auto meta = GetRomMetadata(Common::Android::GetJString(env, jpath));
-    if (meta.isHomebrew) {
-        return jboolean(true);
-    }
-    return jboolean(meta.raw_program_id != 0 && meta.raw_program_id == meta.programId);
+    return jboolean(meta.is_base_game);
 }
 
 jstring Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getDeveloper(JNIEnv* env, jobject obj, jstring jpath) {

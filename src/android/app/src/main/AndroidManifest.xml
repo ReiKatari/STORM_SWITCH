@@ -33,70 +33,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 
-    <queries>
-        <!-- Samsung Game Booster & Game Tools -->
-        <package android:name="com.samsung.android.game.gos" />
-        <package android:name="com.samsung.android.game.gametools" />
-        <package android:name="com.samsung.android.game.gamehome" />
-        <package android:name="com.samsung.android.game.gamehub" />
-        <!-- Xiaomi / POCO / Redmi (Game Turbo & Joyose) -->
-        <package android:name="com.xiaomi.joyose" />
-        <package android:name="com.miui.securitycenter" />
-        <package android:name="com.xiaomi.gamecenter.sdk.service" />
-        <!-- OnePlus / OPPO / Realme (HyperBoost & ColorOS Game Space) -->
-        <package android:name="com.oplus.games" />
-        <package android:name="com.coloros.gamespace" />
-        <package android:name="com.heytap.gamecenter" />
-        <!-- Vivo / iQOO (Ultra Game Mode & Multi-Turbo) -->
-        <package android:name="com.vivo.game" />
-        <package android:name="com.vivo.gamewatch" />
-        <!-- ASUS ROG / Zenfone (Armoury Crate) -->
-        <package android:name="com.asus.armourygamecenter" />
-        <package android:name="com.asus.gamecenter" />
-        <!-- Huawei / Honor (Game Suite & Game Assistant) -->
-        <package android:name="com.huawei.gamebox" />
-        <package android:name="com.huawei.gameassistant" />
-        <intent>
-            <action android:name="com.samsung.android.game.action.GAME_START" />
-        </intent>
-        <intent>
-            <action android:name="com.samsung.android.game.action.GAME_STOP" />
-        </intent>
-        <intent>
-            <action android:name="com.samsung.android.game.action.GAME_PAUSE" />
-        </intent>
-        <intent>
-            <action android:name="com.samsung.android.game.action.GAME_RESUME" />
-        </intent>
-        <intent>
-            <action android:name="com.samsung.android.game.gametools.ACTION_START_GAME" />
-        </intent>
-        <intent>
-            <action android:name="miui.intent.action.GAME_START" />
-        </intent>
-        <intent>
-            <action android:name="miui.intent.action.GAME_STOP" />
-        </intent>
-        <intent>
-            <action android:name="com.oplus.games.action.GAME_START" />
-        </intent>
-        <intent>
-            <action android:name="com.oplus.games.action.GAME_STOP" />
-        </intent>
-        <intent>
-            <action android:name="com.vivo.game.action.GAME_START" />
-        </intent>
-        <intent>
-            <action android:name="com.vivo.game.action.GAME_STOP" />
-        </intent>
-        <intent>
-            <action android:name="com.asus.gamecenter.action.GAME_START" />
-        </intent>
-        <intent>
-            <action android:name="com.asus.gamecenter.action.GAME_STOP" />
-        </intent>
-    </queries>
-
     <application
         android:name="org.yuzu.yuzu_emu.YuzuApplication"
         android:label="${appNameBase}${appNameSuffix}"
@@ -114,31 +50,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
         tools:targetApi="33"
         android:enableOnBackInvokedCallback="true">
 
-        <meta-data android:name="com.samsung.android.gamehub" android:value="true" />
-        <meta-data android:name="com.samsung.android.game.identify" android:value="true" />
-        <meta-data android:name="com.samsung.android.game.game_package" android:value="true" />
-        <meta-data android:name="com.samsung.android.game.game_mode" android:value="true" />
-        <meta-data android:name="com.samsung.android.game.gamemode" android:value="true" />
-        <meta-data android:name="com.samsung.android.game.gamebooster" android:value="true" />
-        <meta-data android:name="com.samsung.android.game.app" android:value="true" />
-        <meta-data android:name="com.samsung.android.game.gos" android:value="true" />
-        <meta-data android:name="com.samsung.android.game.gameboostercategory" android:value="game" />
-        <meta-data android:name="com.xiaomi.gamecenter.sdk.service.enabled" android:value="true" />
-        <meta-data android:name="com.xiaomi.gamecenter.game" android:value="true" />
-        <meta-data android:name="com.xiaomi.gamecenter.booster" android:value="true" />
-        <meta-data android:name="com.xiaomi.game.turbo" android:value="true" />
-        <meta-data android:name="com.miui.gamebooster" android:value="true" />
-        <meta-data android:name="com.asus.gamecenter.gamebooster" android:value="true" />
-        <meta-data android:name="com.oneplus.gamespace.gamebooster" android:value="true" />
-        <meta-data android:name="com.coloros.gamespace.gamebooster" android:value="true" />
-        <meta-data android:name="com.coloros.gamespace.game" android:value="true" />
-        <meta-data android:name="com.oplus.games.gamebooster" android:value="true" />
-        <meta-data android:name="com.oplus.games.game" android:value="true" />
-        <meta-data android:name="com.oplus.gamespace.game" android:value="true" />
-        <meta-data android:name="com.oppo.gamespace.game" android:value="true" />
-        <meta-data android:name="com.vivo.game.gamemode" android:value="true" />
-        <meta-data android:name="com.huawei.game.turbo" android:value="true" />
-        <meta-data android:name="com.huawei.android.game.assistant" android:value="true" />
         <meta-data android:name="android.game_mode_config" android:resource="@xml/game_mode_config" />
 
         <activity
@@ -151,17 +62,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 <category android:name="android.intent.category.GAME" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="com.miui.gamecenter.GAME_BOOSTER_LAUNCH" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.xiaomi.gamecenter.action.GAME_LAUNCH" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <meta-data android:name="isGame" android:value="true" />
-            <meta-data android:name="android.app.category.GAME" android:value="true" />
-            <meta-data android:name="com.samsung.android.game.gameboostercategory" android:value="game" />
         </activity>
 
         <activity
@@ -196,15 +96,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 <action android:name="dev.storm_switch.LAUNCH_WITH_CUSTOM_CONFIG" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            <meta-data android:name="android.app.category.GAME" android:value="true" />
-            <meta-data android:name="isGame" android:value="true" />
-            <meta-data android:name="com.samsung.android.game.identify" android:value="true" />
-            <meta-data android:name="com.samsung.android.game.game_package" android:value="true" />
-            <meta-data android:name="com.samsung.android.game.gamemode" android:value="true" />
-            <meta-data android:name="com.samsung.android.game.gamebooster" android:value="true" />
-            <meta-data android:name="com.samsung.android.game.gameboostercategory" android:value="game" />
-            <meta-data android:name="com.samsung.android.game.app" android:value="true" />
-            <meta-data android:name="com.samsung.android.game.gos" android:value="true" />
             <meta-data android:name="android.nfc.action.TECH_DISCOVERED" android:resource="@xml/nfc_tech_filter" />
         </activity>
 

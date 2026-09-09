@@ -65,7 +65,9 @@ object GameHelper {
             for (item in stored) {
                 try {
                     val game = Json.decodeFromString<Game>(item)
-                    cachedGameList.add(upgradeGameVersionIfNeeded(game))
+                    if (!isUpdateOrDlcPath(game.path) && !isUpdateOrDlcPath(game.title)) {
+                        cachedGameList.add(upgradeGameVersionIfNeeded(game))
+                    }
                 } catch (_: Exception) {}
             }
         }
@@ -377,12 +379,35 @@ object GameHelper {
         return clean.ifEmpty { rawTitle }
     }
 
+    fun isUpdateOrDlcPath(str: String): Boolean {
+        val lower = str.lowercase(Locale.ROOT)
+        if (lower.contains("[upd") || lower.contains("(upd") ||
+            lower.contains("[update") || lower.contains("(update") ||
+            lower.contains("[dlc") || lower.contains("(dlc") ||
+            lower.contains("[patch") || lower.contains("(patch")) {
+            return true
+        }
+        val match = Regex("\\[0100[0-9a-f]{8}[0-9a-f]{3}800\\]", RegexOption.IGNORE_CASE).find(lower)
+        if (match != null) {
+            return true
+        }
+        return false
+    }
+
     fun getGame(
         uri: Uri,
         addedToLibrary: Boolean = false,
         registerFilesystemProvider: Boolean = true
     ): Game? {
         val filePath = uri.toString()
+        val filename = FileUtil.getFilename(uri)
+
+        if (addedToLibrary && isUpdateOrDlcPath(filename)) {
+            // If the filename clearly designates an update/DLC, double-check if it has base content
+            if (!GameMetadata.isBaseGame(filePath)) {
+                return null
+            }
+        }
         if (!GameMetadata.getIsValid(filePath)) {
             return null
         }
@@ -396,7 +421,6 @@ object GameHelper {
         }
 
         val nacpTitle = GameMetadata.getTitle(filePath).trim()
-        val filename = FileUtil.getFilename(uri)
         val useFilename = BooleanSetting.SHOW_FILENAME_AS_TITLE.getBoolean()
         val name = if (useFilename) {
             cleanGameTitle(filename)

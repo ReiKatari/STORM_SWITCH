@@ -70,7 +70,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.uzuy.uzuy_emu"
+        applicationId = "dev.storm_switch"
         minSdk = 24
         targetSdk = 36
         versionName = getGitVersion()
@@ -229,7 +229,7 @@ android {
             minSdk = 26
             manifestPlaceholders += mapOf("appNameBase" to "STORM SWITCH Legacy")
             resValue("string", "app_name_suffixed", "STORM SWITCH Legacy")
-            applicationId = "org.uzuy.uzuy_emu"
+            applicationId = "dev.storm_switch.legacy"
 
             externalNativeBuild {
                 cmake {
@@ -253,7 +253,7 @@ android {
             minSdk = 27
             manifestPlaceholders += mapOf("appNameBase" to "STORM SWITCH SDK27")
             resValue("string", "app_name_suffixed", "STORM SWITCH SDK27")
-            applicationId = "org.uzuy.uzuy_emu"
+            applicationId = "dev.storm_switch.sdk27"
 
             externalNativeBuild {
                 cmake {

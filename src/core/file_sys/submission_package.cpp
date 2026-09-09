@@ -500,7 +500,9 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                         auto next_nca = matched_cand_nca;
                         if (next_nca->GetType() == NCAContentType::Program) {
                             program_status[next_nca->GetTitleId()] = next_nca->GetStatus();
-                            program_ids.insert(next_nca->GetTitleId() & 0xFFFFFFFFFFFFF000);
+                            if ((next_nca->GetTitleId() & 0xFFFULL) == 0) {
+                                program_ids.insert(next_nca->GetTitleId());
+                            }
                         }
 
                         if (next_nca->GetStatus() != Loader::ResultStatus::Success &&
@@ -543,7 +545,9 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
 
                 if (next_nca->GetType() == NCAContentType::Program) {
                     program_status[next_nca->GetTitleId()] = next_nca->GetStatus();
-                    program_ids.insert(next_nca->GetTitleId() & 0xFFFFFFFFFFFFF000);
+                    if ((next_nca->GetTitleId() & 0xFFFULL) == 0) {
+                        program_ids.insert(next_nca->GetTitleId());
+                    }
                 }
 
                 if (next_nca->GetStatus() != Loader::ResultStatus::Success &&
