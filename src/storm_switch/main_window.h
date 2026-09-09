@@ -702,6 +702,8 @@ private:
     FloatingTranslateButton* floating_translate_button{nullptr};
     GameTranslator* m_game_translator{nullptr};
     InGameNotificationOverlay* in_game_notification{nullptr};
+    QAction* reset_gamefix_action{nullptr};
+    QAction* autotune_action{nullptr};
 
 protected:
     void dropEvent(QDropEvent* event) override;

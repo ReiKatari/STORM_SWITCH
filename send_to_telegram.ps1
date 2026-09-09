@@ -56,31 +56,20 @@ function Send-TGDocument([string]$filePath, [string]$caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 7.5.5 (Zelda BotW Docked Fix, Game Booster, Streets of Rage 4 and UI Enhancements)</b> — <i>Масштабное обновление эмулятора Nintendo Switch: исправление текстур и графических артефактов в The Legend of Zelda: BotW в док-режиме, полноценная интеграция с Samsung Game Booster и системным игровым режимом на Android, эталонные габариты окна выбора стиля сенсорного управления, устранение сбоя запуска Streets of Rage 4 со сшитыми NSP и вылета при смене языка на Windows.</i>
+⚡ <b>Релиз STORM SWITCH 7.5.6 (Streets of Rage 4 Fix and Tools Menu Polish)</b> — <i>Экстренное обновление эмулятора Nintendo Switch: полное восстановление встроенных NSO-патчей для Streets of Rage 4 на Windows и Android, устраняющих зависание и падение при старте игры, а также безупречное выравнивание векторных иконок в меню «Инструменты» на Windows.</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения и улучшения:</b>
 
-🗡️ <b>The Legend of Zelda: Breath of the Wild (Android и Windows):</b>
-• <b>Док-режим и динамическое разрешение (DRS)</b>: устранено пропадание текстур земли, скал и появление черных дыр/пустот при работе в разрешении 900p (1600×900) и масштабировании.
-• <b>Устранение артефактов в движении</b>: ликвидированы визуальные сбои при выходе из Святилищ и перемещении персонажа благодаря точной синхронизации таймингов ГПУ и буферов видеопамяти.
-• <b>Профиль авто-исправления</b>: оптимизированы параметры точности ГПУ, несжатый ASTC, синхронизация памяти и реактивный сброс поверхностей.
+👊 <b>Streets of Rage 4 (Windows и Android):</b>
+• <b>Восстановление встроенных NSO-патчей</b>: в ядро PatchManager возвращены патчи для обхода зависания в цикле опроса контроллеров (0x008C2F94) и проверки нулевого буфера видеопотока (0x008C0048).
+• <b>Устранение падения на старте</b>: игра гарантированно проходит вступительные ролики и меню без сбоев IndexOutOfRangeException и черного экрана.
+• <b>Профили GameFixDatabase</b>: расширена поддержка базы авто-исправлений для всех региональных версий игры (0100EC9010258000, 0100AC300919A000, 010085800E33E000, 0100BA700E340000, 0100C60010228000).
 
-🎮 <b>Samsung Game Booster и системный игровой режим (Android):</b>
-• <b>Полная системная интеграция</b>: в манифест внедрена категория <code>android.intent.category.GAME</code> и метаданные <code>com.samsung.android.game.gameboostercategory</code> для активного процесса <code>EmulationActivity</code>.
-• <b>Samsung One UI and Game Dashboard</b>: система гарантированно определяет эмулятор как игру во время игровой сессии, активируя аппаратные профили максимальной производительности.
-
-🎨 <b>Стиль сенсорного управления (Android):</b>
-• <b>Эталонные размеры диалога</b>: окно выбора стиля сенсорного контроллера приведено в полное соответствие с габаритами Менеджера чит-кодов (92% ширины и высоты экрана в альбомной ориентации).
-• <b>Сетка в 2 колонки</b>: для широких дисплеев карточки стилей теперь отображаются в удобной двухколоночной сетке без стесненного скролла.
-
-👊 <b>Устранение падения Streets of Rage 4:</b>
-• <b>Безопасный PatchManager</b>: устранен вылет при открытии многокомпонентных сшитых NSP-пакетов игры за счет безопасного динамического приведения типов контент-провайдеров.
-• <b>Стабильный NVDEC</b>: переключение на программное декодирование на ЦП через FFmpeg исключает зависания вступительных роликов.
-
-💻 <b>Стабильность интерфейса Windows:</b>
-• <b>Смена языка без вылетов</b>: устранено падение при переключении языка в «Параметры -> Интерфейс -> Язык приложения» за счет корректной инициализации списков и блокировки фоновых событий.
+🎨 <b>Интерфейс меню «Инструменты» (Windows):</b>
+• <b>Эталонное выравнивание иконок</b>: пункты «Сбросить скрытые диалоги авто-исправлений...» и «Авто-настройки производительности...» переведены на векторные иконки в общем столбце пиктограмм.
+• <b>Чистая типографика</b>: эмодзи удалены из названий пунктов, обеспечивая идеальную геометрию и отступы в меню.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 <i>Все исполняемые файлы, инсталляторы и архивы собраны, проверены и готовы к работе.</i>
@@ -91,20 +80,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram (Main APK first)..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.5.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.5 (Основная версия — Android 14+)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.6.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.6 (Основная версия — Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.5_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.5 (Версия Legacy — Android 10-13)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.6_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.6 (Версия Legacy — Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.5_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 7.5.5 (Версия SDK27 — Android 8.1-9)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.6_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 7.5.6 (Версия SDK27 — Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.5_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 7.5.5 (Портативная версия для Windows x64)</b>"
+        Path = "E:\STORM EDEN 3\Files\STORM_SWITCH_7.5.6_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 7.5.6 (Портативная версия для Windows x64)</b>"
     }
 )
 
@@ -117,4 +106,4 @@ foreach ($f in $filesToUpload) {
 }
 
 $httpClient.Dispose()
-Write-Host "`nRelease 7.5.5 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 7.5.6 deployment to Telegram completed successfully!"

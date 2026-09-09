@@ -2541,6 +2541,16 @@ void MainWindow::SetupMenuIcons() {
     apply_action(ui->action_TAS_Reset, QStringLiteral("restart"), col_amber);
     apply_action(ui->action_Configure_Tas, QStringLiteral("gear"), col_grey);
 
+    if (!reset_gamefix_action) {
+        reset_gamefix_action = ui->menu_Tools->addAction(tr("Сбросить скрытые диалоги авто-исправлений..."));
+    }
+    apply_action(reset_gamefix_action, QStringLiteral("restart"), col_cyan);
+
+    if (!autotune_action) {
+        autotune_action = ui->menu_Tools->addAction(tr("Авто-настройки производительности..."));
+    }
+    apply_action(autotune_action, QStringLiteral("lightning"), col_amber);
+
     // Multiplayer Menu
     apply_action(ui->action_View_Lobby, QStringLiteral("globe"), col_cyan);
     apply_action(ui->action_Start_Room, QStringLiteral("plus"), col_green);
@@ -2960,11 +2970,13 @@ void MainWindow::ConnectMenuEvents() {
     connect_menu(ui->action_Eden_Dependencies, &MainWindow::OnEdenDependencies);
     connect_menu(ui->action_Data_Manager, &MainWindow::OnDataDialog);
 
-    auto* reset_gamefix_action = ui->menu_Tools->addAction(tr("🔄 Сбросить скрытые диалоги авто-исправлений..."));
-    connect_menu(reset_gamefix_action, &MainWindow::OnResetGameFixSuppression);
+    if (reset_gamefix_action) {
+        connect_menu(reset_gamefix_action, &MainWindow::OnResetGameFixSuppression);
+    }
 
-    auto* autotune_action = ui->menu_Tools->addAction(tr("⚡ Авто-настройки производительности..."));
-    connect_menu(autotune_action, &MainWindow::OnAutoTuneSettings);
+    if (autotune_action) {
+        connect_menu(autotune_action, &MainWindow::OnAutoTuneSettings);
+    }
 }
 
 void MainWindow::UpdateMenuState() {
@@ -9468,6 +9480,12 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
     }
 
     ui->retranslateUi(this);
+    if (reset_gamefix_action) {
+        reset_gamefix_action->setText(tr("Сбросить скрытые диалоги авто-исправлений..."));
+    }
+    if (autotune_action) {
+        autotune_action->setText(tr("Авто-настройки производительности..."));
+    }
     if (multiplayer_state) {
         multiplayer_state->retranslateUi();
     }
