@@ -19,7 +19,7 @@ if (!(Test-Path $vswhere)) {
     exit 1
 }
 
-$vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+$vs = & $vswhere -latest -prerelease -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 
 if (-not $vs) {
     Write-Error "load-msvc-env.ps1: Visual Studio (with Desktop development with C++) not found"

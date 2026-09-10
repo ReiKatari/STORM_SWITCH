@@ -58,57 +58,93 @@
                     android:id="@+id/text_game_version"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/badge_pill_background"
+                    android:background="@drawable/badge_pill_cyan"
                     android:paddingHorizontal="6dp"
-                    android:paddingVertical="1dp"
+                    android:paddingVertical="2dp"
                     android:textColor="#00D2FF"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     android:textStyle="bold"
-                    tools:text="v1.0.9" />
+                    tools:text="1.0.10" />
+
+                <TextView
+                    android:id="@+id/text_internal_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/badge_pill_purple"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:textColor="#C084FC"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    tools:text="655360" />
 
                 <TextView
                     android:id="@+id/text_game_size"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:textColor="#94A3B8"
-                    android:textSize="12sp"
-                    tools:text="15.8 GB" />
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/badge_pill_amber"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:textColor="#FBBF24"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    tools:text="37,63 MB" />
 
                 <TextView
                     android:id="@+id/text_game_langs"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/badge_pill_blue"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:textColor="#38BDF8"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:textColor="#38BDF8"
-                    android:textSize="11sp"
-                    tools:text="RU, EN" />
+                    tools:text="RUS" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/text_game_serial"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="3dp"
                 android:fontFamily="monospace"
                 android:textColor="#64748B"
                 android:textSize="10sp"
                 tools:text="01001B700A654000" />
         </LinearLayout>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_game_action"
+            style="@style/EdenButton.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:cornerRadius="8dp"
+            app:elevation="3dp"
+            app:iconSize="14dp"
+            app:iconGravity="textStart"
+            app:iconPadding="4dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#38BDF8"
+            tools:text="Скачать" />
+
         <TextView
             android:id="@+id/text_download_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp"
-            android:textColor="#00FF66"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            tools:text="✅ Скачано" />
+            android:visibility="gone" />
 
     </LinearLayout>
 

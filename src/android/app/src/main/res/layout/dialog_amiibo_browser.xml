@@ -63,50 +63,118 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <LinearLayout
+    <!-- View Switcher Tabs: Catalog vs Installed -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_tab_switcher"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="3dp">
+        android:layout_marginBottom="6dp"
+        app:cardBackgroundColor="#131926"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="1dp"
+        app:strokeColor="#25354C"
+        app:strokeWidth="1.5dp">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/layout_search"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:id="@+id/layout_tab_switcher"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            app:boxCornerRadiusBottomEnd="8dp"
-            app:boxCornerRadiusBottomStart="8dp"
-            app:boxCornerRadiusTopEnd="8dp"
-            app:boxCornerRadiusTopStart="8dp"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
+            android:orientation="horizontal"
+            android:padding="3dp">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/input_search"
-                android:layout_width="match_parent"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_tab_catalog"
+                style="@style/EdenButton.Primary"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="3dp"
+                android:text="@string/amiibo_tab_catalog"
+                android:textSize="11sp"
+                app:cornerRadius="8dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="#00D2FF"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_tab_installed"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:text="@string/amiibo_tab_installed"
+                android:textSize="11sp"
+                app:cornerRadius="8dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="#25354C"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ========================================== -->
+    <!-- 1. Catalog Container                       -->
+    <!-- ========================================== -->
+    <LinearLayout
+        android:id="@+id/layout_catalog_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="3dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layout_search"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="@string/search_amiibo_hint"
-                android:imeOptions="actionSearch"
-                android:inputType="text"
-                android:maxLines="1"
-                android:paddingVertical="8dp"
-                android:textSize="12sp" />
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                app:boxCornerRadiusBottomEnd="8dp"
+                app:boxCornerRadiusBottomStart="8dp"
+                app:boxCornerRadiusTopEnd="8dp"
+                app:boxCornerRadiusTopStart="8dp"
+                app:boxStrokeColor="#00D2FF"
+                app:boxStrokeWidth="1.5dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:hintTextColor="#00D2FF">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/search_amiibo_hint"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:paddingVertical="8dp"
+                    android:textSize="12sp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_refresh"
-            style="@style/EdenButton.Outlined"
-            android:layout_width="wrap_content"
-            android:layout_height="38dp"
-            android:text="@string/refresh"
-            android:textSize="11sp"
-            android:paddingHorizontal="10dp" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_refresh"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:text="@string/refresh"
+                android:textSize="11sp"
+                app:cornerRadius="8dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="#00D2FF"
+                android:paddingHorizontal="10dp" />
+
+        </LinearLayout>
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -255,6 +323,98 @@
                 android:paddingVertical="0dp"
                 android:text="@string/close"
                 android:textSize="10sp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ========================================== -->
+    <!-- 2. Installed Amiibo Container              -->
+    <!-- ========================================== -->
+    <LinearLayout
+        android:id="@+id/layout_installed_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_installed_amiibo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                tools:listitem="@layout/list_item_installed_amiibo" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/text_empty_installed"
+                style="@style/SynthwaveText.Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/no_installed_amiibo_found"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="4dp"
+            android:paddingHorizontal="4dp">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/text_installed_status"
+                style="@style/SynthwaveText.Body"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:alpha="0.8"
+                tools:text="Установлено: 12 Amiibo" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_refresh_installed"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="10dp"
+                android:text="@string/refresh"
+                android:textSize="10sp"
+                android:layout_marginEnd="6dp"
+                app:cornerRadius="6dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#00D2FF"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_close_installed"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="10dp"
+                android:text="@string/close"
+                android:textSize="10sp"
+                app:cornerRadius="6dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#25354C"
                 android:insetTop="0dp"
                 android:insetBottom="0dp" />
 

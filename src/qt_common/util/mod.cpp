@@ -151,6 +151,10 @@ const QString ExtractMod(const QString& path) {
         seven_zip_path = app_dir + QStringLiteral("/7z.exe");
     } else if (QFile::exists(app_dir + QStringLiteral("/7za.exe"))) {
         seven_zip_path = app_dir + QStringLiteral("/7za.exe");
+    } else if (QFile::exists(QDir::currentPath() + QStringLiteral("/7z.exe"))) {
+        seven_zip_path = QDir::currentPath() + QStringLiteral("/7z.exe");
+    } else if (QFile::exists(QDir::currentPath() + QStringLiteral("/Assembling/7z.exe"))) {
+        seven_zip_path = QDir::currentPath() + QStringLiteral("/Assembling/7z.exe");
     } else if (QFile::exists(QStringLiteral("C:/Program Files/7-Zip/7z.exe"))) {
         seven_zip_path = QStringLiteral("C:/Program Files/7-Zip/7z.exe");
     } else if (QFile::exists(QStringLiteral("C:/Program Files (x86)/7-Zip/7z.exe"))) {
@@ -167,9 +171,18 @@ const QString ExtractMod(const QString& path) {
         }
     }
 
+    const QString native_archive = QDir::toNativeSeparators(path);
+    const QString native_out_dir = QDir::toNativeSeparators(qCacheDir);
+
     if (!seven_zip_path.isEmpty()) {
         QProcess proc;
-        proc.start(seven_zip_path, {QStringLiteral("x"), path, QStringLiteral("-o%1").arg(qCacheDir), QStringLiteral("-y"), QStringLiteral("-aoa")});
+        proc.start(seven_zip_path, {
+            QStringLiteral("x"),
+            native_archive,
+            QStringLiteral("-o%1").arg(native_out_dir),
+            QStringLiteral("-y"),
+            QStringLiteral("-aoa")
+        });
         if (proc.waitForFinished(120000) && proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0) {
             if (!fs::is_empty(tmp, ec)) {
                 return qCacheDir;
@@ -305,24 +318,30 @@ bool OrganizeModStructure(const std::filesystem::path& source_dir, const std::fi
     if (!found_romfs.empty()) {
         const auto dst_romfs = target_dir / "romfs";
         fs::create_directories(dst_romfs, ec);
-        fs::copy(found_romfs, dst_romfs,
-                 fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
+        for (const auto& entry : fs::directory_iterator(found_romfs, ec)) {
+            fs::copy(entry.path(), dst_romfs / entry.path().filename(),
+                     fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
+        }
         organized = true;
     }
 
     if (!found_exefs.empty()) {
         const auto dst_exefs = target_dir / "exefs";
         fs::create_directories(dst_exefs, ec);
-        fs::copy(found_exefs, dst_exefs,
-                 fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
+        for (const auto& entry : fs::directory_iterator(found_exefs, ec)) {
+            fs::copy(entry.path(), dst_exefs / entry.path().filename(),
+                     fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
+        }
         organized = true;
     }
 
     if (!found_cheats.empty()) {
         const auto dst_cheats = target_dir / "cheats";
         fs::create_directories(dst_cheats, ec);
-        fs::copy(found_cheats, dst_cheats,
-                 fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
+        for (const auto& entry : fs::directory_iterator(found_cheats, ec)) {
+            fs::copy(entry.path(), dst_cheats / entry.path().filename(),
+                     fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
+        }
         organized = true;
     }
 

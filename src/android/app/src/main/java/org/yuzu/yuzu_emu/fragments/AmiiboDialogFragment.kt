@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,9 +28,18 @@ import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.DialogAmiiboBrowserBinding
 import org.yuzu.yuzu_emu.databinding.ListItemAmiiboBinding
+import org.yuzu.yuzu_emu.databinding.ListItemInstalledAmiiboBinding
 import org.yuzu.yuzu_emu.utils.AmiiboEntry
 import org.yuzu.yuzu_emu.utils.AmiiboHelper
+import org.yuzu.yuzu_emu.utils.DirectoryInitialization
+import java.io.File
 import java.io.InputStream
+
+data class InstalledAmiibo(
+    val file: File,
+    val name: String,
+    val sizeBytes: Long
+)
 
 class AmiiboDialogFragment : DialogFragment() {
 
@@ -39,6 +49,8 @@ class AmiiboDialogFragment : DialogFragment() {
     private var allAmiibos = listOf<AmiiboEntry>()
     private var filteredAmiibos = listOf<AmiiboEntry>()
     private var displayedAmiibos = mutableListOf<AmiiboEntry>()
+    private val installedAmiiboList = mutableListOf<InstalledAmiibo>()
+    private var isInstalledView: Boolean = false
     private var selectedSeries: String = ""
     private var isEmulating: Boolean = false
     private var gameTitle: String = ""
@@ -179,6 +191,26 @@ class AmiiboDialogFragment : DialogFragment() {
                 updatePage()
             }
         }
+
+        binding.buttonTabCatalog.setOnClickListener {
+            switchToCatalogTab()
+        }
+
+        binding.buttonTabInstalled.setOnClickListener {
+            switchToInstalledTab()
+        }
+
+        binding.buttonRefreshInstalled.setOnClickListener {
+            loadInstalledAmiibos()
+        }
+
+        binding.buttonCloseInstalled.setOnClickListener {
+            dismiss()
+        }
+
+        val installedSpanCount = if (isLandscape) 2 else 1
+        binding.listInstalledAmiibo.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), installedSpanCount)
+        binding.listInstalledAmiibo.adapter = InstalledAmiiboAdapter()
     }
 
     private fun updateActiveAmiiboStatus() {
@@ -388,5 +420,140 @@ class AmiiboDialogFragment : DialogFragment() {
         }
 
         override fun getItemCount(): Int = displayedAmiibos.size
+    }
+
+    private fun switchToCatalogTab() {
+        isInstalledView = false
+        binding.layoutCatalogContainer.isVisible = true
+        binding.layoutInstalledContainer.isVisible = false
+
+        binding.buttonTabCatalog.setBackgroundColor(android.graphics.Color.parseColor("#00D2FF"))
+        binding.buttonTabCatalog.setTextColor(android.graphics.Color.parseColor("#0A0E17"))
+        binding.buttonTabCatalog.strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#00D2FF"))
+
+        binding.buttonTabInstalled.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        binding.buttonTabInstalled.setTextColor(android.graphics.Color.parseColor("#94A3B8"))
+        binding.buttonTabInstalled.strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#25354C"))
+    }
+
+    private fun switchToInstalledTab() {
+        isInstalledView = true
+        binding.layoutCatalogContainer.isVisible = false
+        binding.layoutInstalledContainer.isVisible = true
+
+        binding.buttonTabInstalled.setBackgroundColor(android.graphics.Color.parseColor("#00D2FF"))
+        binding.buttonTabInstalled.setTextColor(android.graphics.Color.parseColor("#0A0E17"))
+        binding.buttonTabInstalled.strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#00D2FF"))
+
+        binding.buttonTabCatalog.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        binding.buttonTabCatalog.setTextColor(android.graphics.Color.parseColor("#94A3B8"))
+        binding.buttonTabCatalog.strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#25354C"))
+
+        loadInstalledAmiibos()
+    }
+
+    private fun loadInstalledAmiibos() {
+        lifecycleScope.launch {
+            val list = withContext(Dispatchers.IO) {
+                val amiiboDir = File(DirectoryInitialization.userDirectory, "amiibo")
+                if (!amiiboDir.exists() || !amiiboDir.isDirectory) {
+                    emptyList()
+                } else {
+                    val files = amiiboDir.listFiles { file ->
+                        file.isFile && file.name.endsWith(".bin", ignoreCase = true)
+                    } ?: emptyArray()
+                    files.sortedBy { it.name.lowercase() }.map { file ->
+                        InstalledAmiibo(
+                            file = file,
+                            name = file.nameWithoutExtension,
+                            sizeBytes = file.length()
+                        )
+                    }
+                }
+            }
+
+            installedAmiiboList.clear()
+            installedAmiiboList.addAll(list)
+
+            binding.listInstalledAmiibo.adapter?.notifyDataSetChanged()
+            binding.textEmptyInstalled.isVisible = installedAmiiboList.isEmpty()
+            val countText = if (installedAmiiboList.size == 1) "1 Amiibo" else "${installedAmiiboList.size} Amiibo"
+            binding.textInstalledStatus.text = "Всего: $countText"
+        }
+    }
+
+    private inner class InstalledAmiiboAdapter : RecyclerView.Adapter<InstalledAmiiboAdapter.ViewHolder>() {
+
+        inner class ViewHolder(val itemBinding: ListItemInstalledAmiiboBinding) :
+            RecyclerView.ViewHolder(itemBinding.root)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val itemBinding = ListItemInstalledAmiiboBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+            return ViewHolder(itemBinding)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val item = installedAmiiboList[position]
+            val b = holder.itemBinding
+
+            b.textInstalledAmiiboName.text = item.name
+            b.textInstalledAmiiboInfo.text = "NTAG215 • ${item.sizeBytes} Б"
+
+            b.buttonInjectInstalled.setOnClickListener {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val success = try {
+                        val bytes = item.file.readBytes()
+                        NativeLibrary.loadAmiibo(bytes) == 0
+                    } catch (_: Exception) {
+                        false
+                    }
+                    withContext(Dispatchers.Main) {
+                        if (success) {
+                            AmiiboHelper.activeAmiiboName = item.name
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.amiibo_injected_success, item.name),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            if (isEmulating) {
+                                dismiss()
+                            } else {
+                                updateActiveAmiiboStatus()
+                            }
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.amiibo_injected_fail),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            }
+
+            b.buttonDeleteInstalled.setOnClickListener {
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.delete)
+                    .setMessage(item.file.name)
+                    .setPositiveButton(R.string.delete) { _, _ ->
+                        try {
+                            item.file.delete()
+                        } catch (_: Exception) {}
+                        loadInstalledAmiibos()
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+            }
+
+            holder.itemView.setOnClickListener {
+                b.buttonInjectInstalled.performClick()
+            }
+        }
+
+        override fun getItemCount(): Int = installedAmiiboList.size
     }
 }

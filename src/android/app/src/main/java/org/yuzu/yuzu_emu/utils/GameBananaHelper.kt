@@ -15,6 +15,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.utils.FileUtil.copyFilesTo
+import org.apache.commons.compress.archivers.sevenz.SevenZFile
+import com.github.junrar.Junrar
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URLEncoder
@@ -474,7 +476,7 @@ object GameBananaHelper {
                 val tempExtractDir = File(game.addonDir, "temp_extract_${System.currentTimeMillis()}")
                 tempExtractDir.mkdirs()
                 try {
-                    FileUtil.unzipToInternalStorage(tempFile.absolutePath, tempExtractDir)
+                    extractArchive(tempFile, tempExtractDir)
                     organizeModStructure(tempExtractDir, targetDir)
                 } finally {
                     tempExtractDir.deleteRecursively()
@@ -496,10 +498,85 @@ object GameBananaHelper {
                 tempFile.copyTo(File(romfs, file.filename), overwrite = true)
                 tempFile.delete()
             }
+
+            val hasFiles = targetDir.walkTopDown().any { it.isFile }
+            if (!hasFiles) {
+                targetDir.deleteRecursively()
+                return@withContext false
+            }
             true
         } catch (e: Exception) {
             e.printStackTrace()
             false
+        }
+    }
+
+    fun extractArchive(archiveFile: File, destDir: File) {
+        val lowerName = archiveFile.name.lowercase()
+        var extracted = false
+
+        if (lowerName.endsWith(".7z")) {
+            try {
+                extract7z(archiveFile, destDir)
+                extracted = true
+            } catch (e: Exception) {
+                Log.error("[GameBananaHelper] 7z extraction failed: ${e.message}")
+            }
+        } else if (lowerName.endsWith(".rar")) {
+            try {
+                Junrar.extract(archiveFile, destDir)
+                extracted = true
+            } catch (e: Exception) {
+                Log.error("[GameBananaHelper] RAR extraction failed: ${e.message}")
+            }
+        } else {
+            try {
+                FileUtil.unzipToInternalStorage(archiveFile.absolutePath, destDir)
+                extracted = true
+            } catch (e: Exception) {
+                Log.error("[GameBananaHelper] Zip extraction failed: ${e.message}")
+            }
+        }
+
+        if (!extracted) {
+            try {
+                extract7z(archiveFile, destDir)
+                extracted = true
+            } catch (_: Exception) {}
+        }
+        if (!extracted) {
+            try {
+                Junrar.extract(archiveFile, destDir)
+                extracted = true
+            } catch (_: Exception) {}
+        }
+        if (!extracted) {
+            FileUtil.unzipToInternalStorage(archiveFile.absolutePath, destDir)
+        }
+    }
+
+    private fun extract7z(archiveFile: File, destDir: File) {
+        SevenZFile(archiveFile).use { sevenZ ->
+            var entry = sevenZ.nextEntry
+            while (entry != null) {
+                val cleanName = entry.name.replace('\\', '/').trimStart('/')
+                if (cleanName.isNotEmpty()) {
+                    val outFile = File(destDir, cleanName)
+                    if (entry.isDirectory) {
+                        outFile.mkdirs()
+                    } else {
+                        outFile.parentFile?.mkdirs()
+                        FileOutputStream(outFile).use { fos ->
+                            val buf = ByteArray(8192)
+                            var len: Int
+                            while (sevenZ.read(buf).also { len = it } > 0) {
+                                fos.write(buf, 0, len)
+                            }
+                        }
+                    }
+                }
+                entry = sevenZ.nextEntry
+            }
         }
     }
 
@@ -552,7 +629,7 @@ object GameBananaHelper {
                 val tempExtractDir = File(game.addonDir, "temp_extract_manual_${System.currentTimeMillis()}")
                 tempExtractDir.mkdirs()
                 try {
-                    FileUtil.unzipToInternalStorage(tempFile.absolutePath, tempExtractDir)
+                    extractArchive(tempFile, tempExtractDir)
                     organizeModStructure(tempExtractDir, targetDir)
                 } finally {
                     tempExtractDir.deleteRecursively()
@@ -573,6 +650,12 @@ object GameBananaHelper {
                 romfs.mkdirs()
                 tempFile.copyTo(File(romfs, fileName), overwrite = true)
                 tempFile.delete()
+            }
+
+            val hasFiles = targetDir.walkTopDown().any { it.isFile }
+            if (!hasFiles) {
+                targetDir.deleteRecursively()
+                return@withContext Pair(false, "No valid mod files could be extracted")
             }
 
             Pair(true, finalModName)

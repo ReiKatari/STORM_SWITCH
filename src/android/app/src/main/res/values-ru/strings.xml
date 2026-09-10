@@ -1265,8 +1265,10 @@
     <string name="percent">%1$d %%</string>
 
     <!-- Amiibo Manager -->
-    <string name="amiibo">Браузер Amiibo</string>
     <string name="amiibo_database_title">Онлайн-база Amiibo</string>
+    <string name="amiibo_tab_catalog">Онлайн-база</string>
+    <string name="amiibo_tab_installed">Установленные</string>
+    <string name="no_installed_amiibo_found">Установленные Amiibo не найдены</string>
     <string name="amiibo_database_description">Каталог, генерация и быстрая загрузка виртуальных Amiibo в эмуляцию</string>
     <string name="search_amiibo_hint">Поиск по имени, персонажу или ID...</string>
     <string name="all_series">Все серии</string>

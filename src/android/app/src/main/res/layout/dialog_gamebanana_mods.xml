@@ -9,39 +9,57 @@
     android:padding="4dp">
 
     <!-- View Switcher Tabs: Online vs Installed -->
-    <LinearLayout
-        android:id="@+id/layout_tab_switcher"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_tab_switcher"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginBottom="4dp">
+        android:layout_marginBottom="6dp"
+        app:cardBackgroundColor="#131926"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="1dp"
+        app:strokeColor="#25354C"
+        app:strokeWidth="1.5dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_tab_online"
-            style="@style/EdenButton.Primary"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:text="@string/gamebanana_tab_online"
-            android:textSize="11sp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp" />
+        <LinearLayout
+            android:id="@+id/layout_tab_switcher"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="3dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_tab_installed"
-            style="@style/EdenButton.Outlined"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:layout_marginStart="4dp"
-            android:text="@string/gamebanana_tab_installed"
-            android:textSize="11sp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_tab_online"
+                style="@style/EdenButton.Primary"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="3dp"
+                android:text="@string/gamebanana_tab_online"
+                android:textSize="11sp"
+                app:cornerRadius="8dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="#00D2FF"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
 
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_tab_installed"
+                style="@style/EdenButton.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:text="@string/gamebanana_tab_installed"
+                android:textSize="11sp"
+                app:cornerRadius="8dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="#25354C"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- ========================================== -->
     <!-- 1. Online GameBanana Catalog Container      -->
@@ -66,15 +84,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="4dp"
+                android:layout_marginEnd="6dp"
                 app:endIconMode="clear_text"
                 app:startIconDrawable="@drawable/ic_search"
                 app:boxCornerRadiusBottomEnd="8dp"
                 app:boxCornerRadiusBottomStart="8dp"
                 app:boxCornerRadiusTopEnd="8dp"
                 app:boxCornerRadiusTopStart="8dp"
-                app:boxStrokeColor="?attr/colorPrimary"
-                app:hintTextColor="?attr/colorPrimary">
+                app:boxStrokeColor="#00D2FF"
+                app:boxStrokeWidth="1.5dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:hintTextColor="#00D2FF">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/input_search"
@@ -96,6 +116,9 @@
                 android:layout_height="38dp"
                 android:text="@string/search"
                 android:textSize="11sp"
+                app:cornerRadius="8dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="#00D2FF"
                 android:paddingHorizontal="12dp" />
 
         </LinearLayout>

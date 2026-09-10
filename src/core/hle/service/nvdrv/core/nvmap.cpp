@@ -258,7 +258,7 @@ void NvMap::UnpinHandle(Handle::Id handle) {
 
     std::scoped_lock lock(handle_description->mutex);
     if (handle_description->pins <= 0) {
-        LOG_WARNING(Service_NVDRV, "Pin count imbalance detected!");
+        LOG_DEBUG(Service_NVDRV, "Pin count already zero for handle {:x}", handle);
         handle_description->pins = 0;
         return;
     }

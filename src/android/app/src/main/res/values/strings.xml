@@ -1981,6 +1981,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- Amiibo Manager -->
     <string name="amiibo">Amiibo</string>
     <string name="amiibo_database_title">Online Amiibo Database</string>
+    <string name="amiibo_tab_catalog">Catalog</string>
+    <string name="amiibo_tab_installed">Installed</string>
+    <string name="no_installed_amiibo_found">No installed Amiibos found</string>
     <string name="amiibo_for_game_title">Amiibo: %1$s</string>
     <string name="amiibo_database_description">Browse, generate, and quickly inject virtual Amiibos into games</string>
     <string name="search_amiibo_hint">Search by Amiibo name, character, or ID...</string>

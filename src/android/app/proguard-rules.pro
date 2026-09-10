@@ -33,3 +33,6 @@
 -dontwarn java.beans.Introspector
 -dontwarn java.beans.VetoableChangeListener
 -dontwarn java.beans.VetoableChangeSupport
+-dontwarn org.slf4j.**
+-dontwarn org.apache.commons.compress.**
+-dontwarn com.github.junrar.**

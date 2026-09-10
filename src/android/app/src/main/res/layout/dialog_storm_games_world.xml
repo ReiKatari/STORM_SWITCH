@@ -9,6 +9,7 @@
 
     <!-- Top Bar -->
     <LinearLayout
+        android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#111827"
@@ -158,14 +159,75 @@
                         android:textStyle="bold"
                         tools:text="Diablo III: Eternal Collection" />
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/detail_game_version"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/badge_pill_cyan"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp"
+                            android:textColor="#00D2FF"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            tools:text="1.0.10" />
+
+                        <TextView
+                            android:id="@+id/detail_internal_version"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:background="@drawable/badge_pill_purple"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp"
+                            android:textColor="#C084FC"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            tools:text="655360" />
+
+                        <TextView
+                            android:id="@+id/detail_game_size"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:background="@drawable/badge_pill_amber"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp"
+                            android:textColor="#FBBF24"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            tools:text="37,63 MB" />
+
+                        <TextView
+                            android:id="@+id/detail_game_langs"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:background="@drawable/badge_pill_blue"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp"
+                            android:textColor="#38BDF8"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            tools:text="RUS" />
+                    </LinearLayout>
+
                     <TextView
                         android:id="@+id/detail_game_meta"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
+                        android:visibility="gone"
                         android:textColor="#38BDF8"
-                        android:textSize="12sp"
-                        tools:text="Версия: 1.0.9 • Размер: 15.8 ГБ" />
+                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/detail_game_id"

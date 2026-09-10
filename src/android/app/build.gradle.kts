@@ -379,6 +379,11 @@ dependencies {
     implementation("androidx.compose.ui:ui-text-android:1.7.8")
     implementation("net.swiftzer.semver:semver:2.0.0")
 
+    // Multi-format archive extraction (7z, rar, zip, tar)
+    implementation("org.apache.commons:commons-compress:1.26.1")
+    implementation("org.tukaani:xz:1.9")
+    implementation("com.github.junrar:junrar:7.5.5")
+
     // Google ML Kit Text Recognition (OCR) for Auto-Translator
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation("com.google.mlkit:text-recognition-japanese:16.0.1")
@@ -411,7 +416,7 @@ fun getGitVersion(): String {
             return ver
         }
     }
-    return "8.0.4"
+    return "8.0.5"
 }
 
 

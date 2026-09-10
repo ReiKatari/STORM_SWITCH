@@ -154,6 +154,33 @@
             android:layout_height="wrap_content" />
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/storm_world_button"
+            style="@style/EdenCard"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@android:color/transparent"
+            app:cardCornerRadius="18dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            android:padding="6dp">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_website"
+                app:tint="?attr/colorPrimary"
+                android:contentDescription="@string/storm_games_world" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <Space
+            android:layout_width="8dp"
+            android:layout_height="wrap_content" />
+
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/settings_button"
             style="@style/EdenCard"
             android:layout_width="36dp"

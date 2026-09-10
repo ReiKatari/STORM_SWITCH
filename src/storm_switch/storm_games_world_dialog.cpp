@@ -401,7 +401,7 @@ void StormGamesWorldDialog::OnFetchCatalog() {
     refresh_btn->setEnabled(false);
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/index")));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.4 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.5 (Windows x64)"));
 
     if (catalog_reply) {
         catalog_reply->abort();
@@ -598,7 +598,7 @@ void StormGamesWorldDialog::FetchGameDetails(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games?id=%1").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.4 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.5 (Windows x64)"));
     details_reply = network_mgr.get(req);
     connect(details_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnGameDetailsReplyFinished);
 }
@@ -631,7 +631,7 @@ void StormGamesWorldDialog::FetchRealExtension(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.4 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.5 (Windows x64)"));
     head_reply = network_mgr.head(req);
     connect(head_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnHeadReplyFinished);
 }
@@ -860,7 +860,7 @@ void StormGamesWorldDialog::OnStartDownload() {
 
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game.id));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.4 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.5 (Windows x64)"));
 
     is_downloading = true;
     current_download_game_id = game.id;

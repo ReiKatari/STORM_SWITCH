@@ -134,11 +134,17 @@ class LogViewerDialogFragment : DialogFragment() {
         dialog?.window?.let { window ->
             val dm = resources.displayMetrics
             val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt().coerceIn(650, 1650) else (dm.widthPixels * 0.96).toInt()
-            val height = if (isLandscape) (dm.heightPixels * 0.94).toInt().coerceIn(400, 1000) else (dm.heightPixels * 0.92).toInt()
+            val width = if (isLandscape) (dm.widthPixels * 0.92).toInt() else (dm.widthPixels * 0.95).toInt()
+            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.85).toInt()
             window.setLayout(width, height)
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             window.setGravity(android.view.Gravity.CENTER)
+
+            val lp = window.attributes
+            lp.width = width
+            lp.height = height
+            lp.gravity = android.view.Gravity.CENTER
+            window.attributes = lp
         }
     }
 

@@ -242,7 +242,8 @@ void ConfigurePerGameAddons::InstallModFolder() {
         QtCommon::Frontend::Information(tr("Mod Install Succeeded"),
                                         tr("Successfully installed mod «%1».").arg(name));
     } else {
-        InstallModPath(path);
+        QtCommon::Frontend::Critical(tr("Mod Install Failed"),
+                                     tr("Could not recognize or organize mod files in %1").arg(path));
     }
 }
 
