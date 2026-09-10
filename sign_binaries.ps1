@@ -4,6 +4,9 @@ Start-Sleep -Milliseconds 500
 $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe'
 $sha1 = '10C44A100C93E316872A1BEF4D46269EA9C52269'
 
+Write-Host "Copying freshly compiled 8.0.6 binaries from build\bin to Assembling..."
+Copy-Item 'e:\STORM EDEN 3\build\bin\STORM_SWITCH*.exe' 'e:\STORM EDEN 3\Assembling\' -Force
+
 Write-Host "Signing Assembling executables..."
 $targetExes = @(
     'e:\STORM EDEN 3\Assembling\STORM_SWITCH.exe',
