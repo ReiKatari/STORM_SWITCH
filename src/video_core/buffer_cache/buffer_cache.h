@@ -1465,6 +1465,11 @@ void BufferCache<P>::WaitForGpuFenceIfNeeded(Buffer& buffer) {
             const u64 gpu_tick_delay = gpu_fence_strict ? 0 : 3;
             const u64 buffer_tick = buffer.getWriteTick();
             const u64 gpu_tick = runtime.KnownGpuTick();
+            // Skip fence wait during startup phase (gpu_tick == 0) to prevent
+            // deadlock when massive buffer allocations block the GPU pipeline
+            if (gpu_tick == 0) {
+                return;
+            }
             if (buffer_tick > gpu_tick + gpu_tick_delay) {
                 runtime.Wait(buffer_tick);
             }

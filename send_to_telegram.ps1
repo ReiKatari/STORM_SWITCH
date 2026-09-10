@@ -57,26 +57,30 @@ function Send-TGDocument([string]$filePath, [string]$caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 8.0.7 (Восстановление графики TotK и Animal Well, защита от краша авто-настроек и чистка профилей)</b> — <i>Комплексное обновление эмулятора Nintendo Switch для Windows x64 и Android: исправление черных силуэтов персонажей в The Legend of Zelda: Tears of the Kingdom, ликвидация искажений рендеринга и сканлайнов в Animal Well, устранение падения при нажатии «Авто-настройки», точная синхронизация барьеров GPU и полная оптимизация кастомных профилей.</i>
+⚡ <b>Релиз STORM SWITCH 8.0.8 (Исправление вылетов Zelda, оптимизация Snapdragon 700, фикс Animal Well)</b> — <i>Устранение критических вылетов при запуске всех игр серии The Legend of Zelda, глубокая оптимизация производительности для Snapdragon 700 серии (Adreno 6xx), исправление артефактов рендеринга Animal Well, динамическая версия Android.</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения и улучшения:</b>
 
-🗡️ <b>The Legend of Zelda: Tears of the Kingdom:</b>
-• <b>Восстановление шейдеров персонажей</b>: исправлена передача данных обратного чтения буферов GPU (<code>enable_gpu_buffer_readback</code>), благодаря чему устранены черные силуэты Линка, Зельды и спутников.
-• <b>Ликвидация мерцания в святилищах</b>: активировано точное поведение барьеров синхронизации GPU (<code>gpu_fence_behavior: Accurate</code>), стабилизирующее конвейер рендеринга.
-• <b>Устранение артефактов в кавернах</b>: оптимизирована реактивная очистка буферов (Reactive Flushing) и выделение 8 ГБ DRAM.
+🗡️ <b>The Legend of Zelda — исправление вылетов при запуске:</b>
+• <b>Tears of the Kingdom</b>: устранён дедлок GPU при запуске — удалены проблемные настройки <code>gpu_fence_behavior</code> и <code>enable_gpu_buffer_readback</code>, которые вызывали зависание конвейера GPU до обработки первых тиков.
+• <b>Breath of the Wild</b>: удалена настройка <code>sync_memory_operations</code>, предназначенная для UE4, которая ломала DMA-синхронизацию движка Nintendo.
+• <b>Link's Awakening и Echoes of Wisdom</b>: исправлен режим памяти с 8 ГБ на 4 ГБ — игры, рассчитанные на 4 ГБ Switch, вызывали повреждение кучи при эмуляции 8 ГБ.
+• <b>Echoes of Wisdom</b>: исправлен Title ID игры, из-за чего авто-исправления не применялись.
+• <b>buffer_cache.h</b>: добавлена защита от дедлока при массивных аллокациях буферов на этапе запуска игры (guard при <code>gpu_tick == 0</code>).
 
-🐸 <b>Animal Well и 2D-игры:</b>
-• <b>Устранение разделения экрана</b>: ликвидирован баг с разделением экрана пополам на засвеченную и темную половины. Возвращена полноценная обработка расширенных динамических состояний (EDS 2/3) и корректное наложение CRT-сканлайнов.
-• <b>Стабильные 60 FPS</b>: оптимизирована адресация памяти Host MMU (Fastmem) и отключен синхронный readback для предотвращения задержек PCIe 200 мс (4 FPS).
+📱 <b>Snapdragon 700 серии — глубокая оптимизация:</b>
+• <b>Adreno 6xx (616-642L)</b>: принудительно отключены EDS и VIDS в драйвере Vulkan — аппаратные CP-регистры Adreno 6xx вызывали краши при любом уровне Extended Dynamic State.
+• <b>Все 4 пресета</b> (Стандарт, Быстрый, Нормальный, Точный): оптимизированы разрешение (0.5X-0.75X), VRAM, количество шейдерных потоков (2 вместо 4 для 2 Kryo Gold ядер), AA, анизотропия и режим памяти для Adreno 6xx.
+• <b>Снижение нагрева</b>: ограничение 2 потоков компиляции шейдеров устраняет перегрев и микрофризы на устройствах с 2 производительными ядрами.
 
-⚡ <b>Исправление стабильности интерфейса:</b>
-• <b>Защита от краша «Авто-настройки»</b>: устранена бесконечная рекурсия и переполнение стека при нажатии кнопки автоподбора параметров в окне конфигурации (ConfigureDialog).
+🎮 <b>Animal Well — исправление рендеринга:</b>
+• <b>EDS3 по умолчанию</b>: устранены синие/фиолетовые полосы на NVIDIA Maxwell — глобальный параметр <code>dyna_state</code> переключён с EDS1 на EDS3.
+• <b>Принудительный EDS3</b>: добавлен во все Title ID Animal Well в базе авто-исправлений.
 
-🧹 <b>Санитария конфигураций и совместимость:</b>
-• <b>Глубокая чистка профилей игр</b>: удалены замусоренные промежуточные файлы конфигураций. Оптимизированы профили для <i>Diablo II: Resurrected</i> (8 ГБ DRAM, стабильная загрузка персонажей), <i>Streets of Rage 4</i> (декодирование видеороликов NVDEC), <i>Super Mario Bros. Wonder</i> (устранение взрывов геометрии в Мире 4).
+📱 <b>Android — динамическая версия:</b>
+• <b>Исправлен хардкод версии</b>: overlay-строка эмуляции теперь отображает актуальную версию вместо устаревшей <code>8.0.3</code>.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 <i>Все бинарные файлы подписаны официальным сертификатом SHA-256, проверены и готовы к работе.</i>
@@ -87,20 +91,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram (Main APK first)..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.7.apk"
-        Caption = "📱 <b>STORM SWITCH 8.0.7 (Основная версия — Android 14+)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.8.apk"
+        Caption = "📱 <b>STORM SWITCH 8.0.8 (Основная версия — Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.7_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 8.0.7 (Версия Legacy — Android 10-13)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.8_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 8.0.8 (Версия Legacy — Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.7_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 8.0.7 (Версия SDK27 — Android 8.1-9)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.8_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 8.0.8 (Версия SDK27 — Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.7_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 8.0.7 (Портативная версия для Windows x64)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.8_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 8.0.8 (Портативная версия для Windows x64)</b>"
     }
 )
 
@@ -113,4 +117,4 @@ foreach ($f in $filesToUpload) {
 }
 
 $httpClient.Dispose()
-Write-Host "`nRelease 8.0.7 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 8.0.8 deployment to Telegram completed successfully!"

@@ -81,11 +81,16 @@ object StormHardwareCalibrator {
         val isTensor = hw.contains("tensor") || hw.contains("zuma") || hw.contains("gs201") || hw.contains("gs101")
         val isMali = !isAdreno
 
+        // Distinguish Snapdragon 700 series (Adreno 6xx) from Snapdragon 800 series (Adreno 6xx)
+        // SD865/888 have Adreno 650/660 but are flagship-class; SD700 has Adreno 616-642L with weak 2+6 CPU
+        val isSnapdragon8xxA6xx = isAdreno6xx && (hw.contains("8350") || hw.contains("8250") || socModel.contains("8350") || socModel.contains("8250"))
+        val isSnapdragon7xxA6xx = isAdreno6xx && !isSnapdragon8xxA6xx
+
         val tier = when {
             isAdreno830 || (totalRamGb >= 14.0 && (isAdreno7xx || isDimensity9400)) -> HardwareTier.FLAGSHIP_ELITE
-            totalRamGb >= 11.0 || isAdreno7xx || isDimensity9400 || isDimensity9300Or9200 -> HardwareTier.FLAGSHIP
-            totalRamGb >= 7.5 || isExynosOrXclipse || hw.contains("8350") || hw.contains("8250") -> HardwareTier.HIGH_MIDRANGE
-            totalRamGb >= 5.5 || isTensor -> HardwareTier.MIDRANGE
+            (totalRamGb >= 11.0 && !isSnapdragon7xxA6xx) || isAdreno7xx || isDimensity9400 || isDimensity9300Or9200 -> HardwareTier.FLAGSHIP
+            isSnapdragon8xxA6xx || (totalRamGb >= 7.5 && !isSnapdragon7xxA6xx) || isExynosOrXclipse -> HardwareTier.HIGH_MIDRANGE
+            totalRamGb >= 5.5 || isTensor || isSnapdragon7xxA6xx -> HardwareTier.MIDRANGE
             else -> HardwareTier.BUDGET
         }
 
@@ -96,6 +101,12 @@ object StormHardwareCalibrator {
             hw.contains("8450") || hw.contains("8475") || socModel.contains("8450") -> "Qualcomm Snapdragon 8 Gen 1 / 8+ Gen 1 (SM8450 / Adreno 730)"
             hw.contains("8350") || socModel.contains("8350") -> "Qualcomm Snapdragon 888 (SM8350 / Adreno 660)"
             hw.contains("8250") || socModel.contains("8250") -> "Qualcomm Snapdragon 865 / 870 (SM8250 / Adreno 650)"
+            hw.contains("7325") || socModel.contains("7325") -> "Qualcomm Snapdragon 778G / 782G (SM7325 / Adreno 642L)"
+            hw.contains("7350") || socModel.contains("7350") -> "Qualcomm Snapdragon 780G (SM7350 / Adreno 642)"
+            hw.contains("7250") || socModel.contains("7250") -> "Qualcomm Snapdragon 765G / 768G (SM7250 / Adreno 620)"
+            hw.contains("7225") || socModel.contains("7225") -> "Qualcomm Snapdragon 750G (SM7225 / Adreno 619)"
+            hw.contains("7150") || socModel.contains("7150") -> "Qualcomm Snapdragon 730 / 732G (SM7150 / Adreno 618)"
+            hw.contains("7125") || socModel.contains("7125") -> "Qualcomm Snapdragon 720G (SM7125 / Adreno 618)"
             isDimensity9400 -> "MediaTek Dimensity 9400 (MT6991 / Immortalis-G925)"
             isDimensity9300Or9200 -> "MediaTek Dimensity 9300 / 9200 (Immortalis GPU)"
             isExynosOrXclipse -> "Samsung Exynos (AMD Xclipse RDNA GPU)"
@@ -183,8 +194,8 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_BACKEND.setInt(1) // Vulkan
         IntSetting.RENDERER_ACCURACY.setInt(0) // Normal
 
-        // Resolution: 1.0X (3) for Flagship/Adreno/Dimensity 9400, 0.75X (2) for budget Mali/Tensor
-        val defaultRes = if (profile.tier == HardwareTier.BUDGET || (profile.isMali && !profile.isDimensity9400 && profile.totalRamGb < 8.0)) 2 else 3
+        // Resolution: 1.0X (3) for Flagship/Adreno 7xx+/Dimensity 9400, 0.75X (2) for Adreno 6xx and budget Mali/Tensor
+        val defaultRes = if (profile.isAdreno6xx || profile.tier == HardwareTier.BUDGET || (profile.isMali && !profile.isDimensity9400 && profile.totalRamGb < 8.0)) 2 else 3
         IntSetting.RENDERER_RESOLUTION.setInt(defaultRes)
 
         // VSync: Mailbox (2) for Adreno 830/750 (silky smooth, lowest input latency), FIFO (0) for others
@@ -204,15 +215,15 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
         IntSetting.DMA_ACCURACY.setInt(1) // Normal
 
-        // VRAM Usage Mode: Normal (1) for Flagships/High-midrange, Conservative (0) for Low RAM/Dimensity 9400
-        IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.tier >= HardwareTier.HIGH_MIDRANGE && !profile.isDimensity9400) 1 else 0)
+        // VRAM Usage Mode: Normal (1) for Flagships/High-midrange, Conservative (0) for Low RAM/Dimensity 9400/Adreno 6xx
+        IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.tier >= HardwareTier.HIGH_MIDRANGE && !profile.isDimensity9400 && !profile.isAdreno6xx) 1 else 0)
 
         // GPU Fence Behavior: Balanced (1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(1)
         IntSetting.MAX_ANISOTROPY.setInt(0) // Automatic
 
-        // Dynamic State: Enabled (1) on Adreno, Disabled (0) on Mali / Immortalis / Xclipse
-        IntSetting.RENDERER_DYNA_STATE.setInt(if (profile.isAdreno) 1 else 0)
+        // Dynamic State: Disabled (0) on Adreno 6xx / Mali / Immortalis / Xclipse, Enabled EDS1 (1) on Adreno 7xx/8xx
+        IntSetting.RENDERER_DYNA_STATE.setInt(if (profile.isAdreno && !profile.isAdreno6xx) 1 else 0)
 
         // 2. CPU / System Defaults
         // Form factor adaptation: Tablets use Docked mode (better thermals & screen), Smartphones use Handheld
@@ -223,9 +234,9 @@ object StormHardwareCalibrator {
         // Memory Layout: 6GB (1) if RAM >= 11GB on Adreno, 4GB (0) for others
         IntSetting.MEMORY_LAYOUT.setInt(if (profile.tier >= HardwareTier.FLAGSHIP && profile.isAdreno && profile.totalRamGb >= 11.0) 1 else 0)
 
-        // Pipeline workers: 2 for Dimensity 9400 (avoids all-big-core heat), 4 for 8 Elite, 3-4 for others
+        // Pipeline workers: 2 for Dimensity 9400/Adreno 6xx (avoids overloading limited perf cores), 4 for 8 Elite, 3-4 for others
         val optimalWorkers = when {
-            profile.isDimensity9400 -> 2
+            profile.isDimensity9400 || profile.isAdreno6xx -> 2
             profile.isAdreno830 -> 4
             else -> (profile.cpuCores - 2).coerceIn(2, 4)
         }
@@ -251,7 +262,7 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FORCE_MAX_CLOCK.setBoolean(false)
         BooleanSetting.ENABLE_BUFFER_HISTORY.setBoolean(false)
         BooleanSetting.ENABLE_GPU_BUFFER_READBACK.setBoolean(false)
-        BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(profile.isAdreno)
+        BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(profile.isAdreno && !profile.isAdreno6xx)
 
         // 5. Frame Gen Defaults
         BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
@@ -272,8 +283,8 @@ object StormHardwareCalibrator {
      */
     private fun applyDeviceFastPreset(profile: DeviceHardwareProfile) {
         IntSetting.RENDERER_BACKEND.setInt(1)
-        // 1X for Snapdragon 8 Elite, 0.75X for others, 0.5X for budget
-        val res = if (profile.isAdreno830) 3 else if (profile.tier >= HardwareTier.MIDRANGE) 2 else 1
+        // 1X for Snapdragon 8 Elite, 0.75X for midrange+, 0.5X for budget and Adreno 6xx (limited fillrate)
+        val res = if (profile.isAdreno830) 3 else if (profile.tier >= HardwareTier.MIDRANGE && !profile.isAdreno6xx) 2 else 1
         IntSetting.RENDERER_RESOLUTION.setInt(res)
         IntSetting.RENDERER_ACCURACY.setInt(0)
         IntSetting.DMA_ACCURACY.setInt(1)
@@ -285,14 +296,15 @@ object StormHardwareCalibrator {
             IntSetting.FSR_SHARPENING_SLIDER.setInt(80)
         }
         IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3) // Hybrid
-        IntSetting.ASTC_RECOMPRESSION.setInt(0)
+        // ASTC Recompression: BC3 (2) for Adreno 6xx to save 50% texture memory on LPDDR4X bus
+        IntSetting.ASTC_RECOMPRESSION.setInt(if (profile.isAdreno6xx) 2 else 0)
         IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
         IntSetting.MAX_ANISOTROPY.setInt(0)
         IntSetting.CPU_BACKEND.setInt(1)
         IntSetting.CPU_ACCURACY.setInt(0)
         IntSetting.MEMORY_LAYOUT.setInt(0) // 4GB
         BooleanSetting.USE_DOCKED_MODE.setBoolean(false) // Handheld for speed/efficiency
-        IntSetting.RENDERER_DYNA_STATE.setInt(if (profile.isAdreno) 1 else 0)
+        IntSetting.RENDERER_DYNA_STATE.setInt(if (profile.isAdreno && !profile.isAdreno6xx) 1 else 0)
         IntSetting.ANDROID_PIPELINE_WORKERS.setInt(2)
 
         BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
@@ -310,7 +322,7 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FORCE_MAX_CLOCK.setBoolean(false)
         BooleanSetting.ENABLE_BUFFER_HISTORY.setBoolean(false)
         BooleanSetting.ENABLE_GPU_BUFFER_READBACK.setBoolean(false)
-        BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(profile.isAdreno)
+        BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(profile.isAdreno && !profile.isAdreno6xx)
         BooleanSetting.RENDERER_FRAME_GEN_FP16.setBoolean(true)
         BooleanSetting.RENDERER_FRAME_GEN_FLOW_SCALE_AUTO.setBoolean(true)
 
@@ -327,12 +339,12 @@ object StormHardwareCalibrator {
      */
     private fun applyDeviceNormalPreset(profile: DeviceHardwareProfile) {
         IntSetting.RENDERER_BACKEND.setInt(1)
-        val res = if (profile.isDimensity9400 || (profile.tier == HardwareTier.BUDGET)) 2 else 3
+        val res = if (profile.isDimensity9400 || profile.isAdreno6xx || (profile.tier == HardwareTier.BUDGET)) 2 else 3
         IntSetting.RENDERER_RESOLUTION.setInt(res)
         IntSetting.RENDERER_ACCURACY.setInt(0)
         IntSetting.DMA_ACCURACY.setInt(1)
         IntSetting.RENDERER_VSYNC.setInt(if (profile.isAdreno830 || (profile.isAdreno && profile.tier >= HardwareTier.FLAGSHIP)) 2 else 0)
-        IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.totalRamGb < 8.0 || profile.isDimensity9400) 0 else 1)
+        IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.totalRamGb < 8.0 || profile.isDimensity9400 || profile.isAdreno6xx) 0 else 1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(1) // Balanced
         IntSetting.RENDERER_ANTI_ALIASING.setInt(0)
         IntSetting.RENDERER_SCALING_FILTER.setInt(if (profile.isDimensity9400) 6 else 0)
@@ -347,8 +359,8 @@ object StormHardwareCalibrator {
         IntSetting.CPU_ACCURACY.setInt(0)
         IntSetting.MEMORY_LAYOUT.setInt(if (profile.tier >= HardwareTier.FLAGSHIP && profile.totalRamGb >= 11.0 && !profile.isDimensity9400) 1 else 0)
         BooleanSetting.USE_DOCKED_MODE.setBoolean(profile.isTablet)
-        IntSetting.RENDERER_DYNA_STATE.setInt(if (profile.isAdreno) 1 else 0)
-        val workers = if (profile.isDimensity9400) 2 else if (profile.isAdreno830) 4 else (profile.cpuCores - 2).coerceIn(2, 4)
+        IntSetting.RENDERER_DYNA_STATE.setInt(if (profile.isAdreno && !profile.isAdreno6xx) 1 else 0)
+        val workers = if (profile.isDimensity9400 || profile.isAdreno6xx) 2 else if (profile.isAdreno830) 4 else (profile.cpuCores - 2).coerceIn(2, 4)
         IntSetting.ANDROID_PIPELINE_WORKERS.setInt(workers)
 
         BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
@@ -366,7 +378,7 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FORCE_MAX_CLOCK.setBoolean(false)
         BooleanSetting.ENABLE_BUFFER_HISTORY.setBoolean(false)
         BooleanSetting.ENABLE_GPU_BUFFER_READBACK.setBoolean(false)
-        BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(profile.isAdreno)
+        BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(profile.isAdreno && !profile.isAdreno6xx)
         BooleanSetting.RENDERER_FRAME_GEN_FP16.setBoolean(true)
         BooleanSetting.RENDERER_FRAME_GEN_FLOW_SCALE_AUTO.setBoolean(true)
 
@@ -383,26 +395,26 @@ object StormHardwareCalibrator {
      */
     private fun applyDeviceAccuratePreset(profile: DeviceHardwareProfile) {
         IntSetting.RENDERER_BACKEND.setInt(1)
-        // 1.5X for Flagship Adreno, 1X for others
-        val res = if (profile.tier >= HardwareTier.FLAGSHIP && profile.isAdreno) 5 else 3
+        // 1.5X for Flagship Adreno 7xx+, 0.75X for Adreno 6xx, 1X for others
+        val res = if (profile.isAdreno6xx) 2 else if (profile.tier >= HardwareTier.FLAGSHIP && profile.isAdreno) 5 else 3
         IntSetting.RENDERER_RESOLUTION.setInt(res)
         IntSetting.RENDERER_ACCURACY.setInt(if (profile.isAdreno830) 2 else if (profile.isDimensity9400) 0 else 1)
         IntSetting.DMA_ACCURACY.setInt(3) // Safe
-        IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.tier >= HardwareTier.FLAGSHIP && !profile.isDimensity9400) 2 else 1)
+        IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP && !profile.isDimensity9400) 2 else 1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(0) // Strict
-        IntSetting.RENDERER_ANTI_ALIASING.setInt(if (profile.tier >= HardwareTier.FLAGSHIP) 2 else 1) // SMAA or FXAA
+        IntSetting.RENDERER_ANTI_ALIASING.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP) 2 else 1)
         IntSetting.RENDERER_SCALING_FILTER.setInt(6) // AMD FSR
         IntSetting.FSR_SHARPENING_SLIDER.setInt(90)
         IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3) // Hybrid
         IntSetting.ASTC_RECOMPRESSION.setInt(0)
         IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
-        IntSetting.MAX_ANISOTROPY.setInt(if (profile.tier >= HardwareTier.FLAGSHIP) 4 else 2) // 16x or 4x
+        IntSetting.MAX_ANISOTROPY.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP) 4 else 2)
         IntSetting.CPU_BACKEND.setInt(1)
         IntSetting.CPU_ACCURACY.setInt(if (profile.isDimensity9400) 0 else 1) // Accurate or Auto
-        IntSetting.MEMORY_LAYOUT.setInt(if (profile.tier >= HardwareTier.FLAGSHIP && profile.totalRamGb >= 11.0) 2 else 1)
-        BooleanSetting.USE_DOCKED_MODE.setBoolean(profile.tier >= HardwareTier.FLAGSHIP && !profile.isDimensity9400)
-        IntSetting.RENDERER_DYNA_STATE.setInt(if (profile.isAdreno) 1 else 0)
-        val workers = if (profile.isDimensity9400) 3 else (profile.cpuCores - 2).coerceIn(3, 4)
+        IntSetting.MEMORY_LAYOUT.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP && profile.totalRamGb >= 11.0) 2 else 1)
+        BooleanSetting.USE_DOCKED_MODE.setBoolean(profile.tier >= HardwareTier.FLAGSHIP && !profile.isDimensity9400 && !profile.isAdreno6xx)
+        IntSetting.RENDERER_DYNA_STATE.setInt(if (profile.isAdreno && !profile.isAdreno6xx) 1 else 0)
+        val workers = if (profile.isDimensity9400) 3 else if (profile.isAdreno6xx) 2 else (profile.cpuCores - 2).coerceIn(3, 4)
         IntSetting.ANDROID_PIPELINE_WORKERS.setInt(workers)
 
         BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
@@ -419,7 +431,7 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FORCE_MAX_CLOCK.setBoolean(false)
         BooleanSetting.ENABLE_BUFFER_HISTORY.setBoolean(true)
         BooleanSetting.ENABLE_GPU_BUFFER_READBACK.setBoolean(false)
-        BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(profile.isAdreno)
+        BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(profile.isAdreno && !profile.isAdreno6xx)
 
         BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
         BooleanSetting.ECO_FRAME_PACING.setBoolean(true)

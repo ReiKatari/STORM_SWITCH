@@ -685,7 +685,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         fwVersion = NativeLibrary.firmwareVersion()
 
         val buildVersion = NativeLibrary.getBuildVersion()
-        buildId = "STORM SWITCH 8.0.3"
+        buildId = "STORM SWITCH $buildVersion"
         val driverTitle = driverViewModel.selectedDriverTitle.value
         driverInUse = if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
 

@@ -726,9 +726,24 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         properties.properties.limits.maxVertexInputBindings = 32;
     }
 
+    // Detect Adreno 6xx GPUs (Snapdragon 700/600/800 series with Adreno 6xx)
+    const std::string_view dev_name{properties.properties.deviceName};
+    const bool is_adreno_6xx = (is_turnip || is_qualcomm) &&
+        (dev_name.find("Adreno (TM) 6") != std::string_view::npos ||
+         dev_name.find("Adreno 6") != std::string_view::npos ||
+         dev_name.find("FD6") != std::string_view::npos ||
+         dev_name.find("adreno 6") != std::string_view::npos);
+
     const auto dyna_state = Settings::values.dyna_state.GetValue();
     auto effective_dyna_state = dyna_state;
-    if ((is_turnip || is_qualcomm) && effective_dyna_state == Settings::ExtendedDynamicState::EDS3) {
+
+    if (is_adreno_6xx) {
+        // Adreno 6xx hardware command processor registers have severe issues with
+        // ExtendedDynamicState — vertex glitches, pipeline hangs, VK_ERROR_DEVICE_LOST.
+        // Force EDS completely disabled for stability on Snapdragon 700 series.
+        LOG_INFO(Render_Vulkan, "Adreno 6xx auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
+        effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
+    } else if ((is_turnip || is_qualcomm) && effective_dyna_state == Settings::ExtendedDynamicState::EDS3) {
         LOG_INFO(Render_Vulkan, "Adreno/Turnip auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability and prevent hangs on Homebrew/Adreno 830");
         effective_dyna_state = Settings::ExtendedDynamicState::EDS1;
     }
@@ -767,8 +782,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         break;
     }
 
-    // VK_EXT_vertex_input_dynamic_state
-    if (!Settings::values.vertex_input_dynamic_state.GetValue()) {
+    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 6xx (driver crashes on dynamic vertex buffer binding)
+    if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_6xx) {
         RemoveExtensionFeature(extensions.vertex_input_dynamic_state, features.vertex_input_dynamic_state, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
     }
 

@@ -142,14 +142,13 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Breath of the Wild",
         "• Черный силуэт Линка из-за рассинхрона буфера освещения и трафарета\n• Белые вспышки и мерцание освещения/погоды\n• Пропадание текстур скал и земли при нехватке памяти\n• Бирюзовая сетка и артефакты Z-буфера в Святилищах",
         "• Link black silhouette caused by unsynced lighting and stencil buffers\n• White screen flashes and lighting flicker\n• Ground and terrain textures disappearing due to memory pressure\n• Shrine depth bias / cyan grid artifacts",
-        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Отключено (устраняет пропадание текстур и сбои в док-режиме)\n✓ Синхронизация памяти: Включено (стабильный рендеринг текстур)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 4 ГБ DRAM (устраняет падение сквозь землю и сбои физики Havok)",
-        "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Disabled (Fixes texture corruption and artifacts in docked mode)\n✓ Sync Memory Operations: Enabled (Stable texture rendering)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 4GB DRAM (Prevents falling through terrain and Havok physics glitches)",
+        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Отключено (устраняет пропадание текстур и сбои в док-режиме)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 4 ГБ DRAM (устраняет падение сквозь землю и сбои физики Havok)",
+        "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Disabled (Fixes texture corruption and artifacts in docked mode)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 4GB DRAM (Prevents falling through terrain and Havok physics glitches)",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\sync_memory_operations", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\memory_layout_mode", "0"}
@@ -160,12 +159,10 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Tears of the Kingdom",
         "• Черный силуэт персонажей и тени в Кавернах\n• Бирюзовая сетка и артефакты Z-буфера на водных поверхностях\n• Утечки VRAM в конструкторе Ультраруки",
         "• Character silhouette and shadow artifacts in Depths\n• Water surface and depth bias cyan grid artifacts\n• Ultrahand VRAM pressure",
-        "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Поведение барьеров ГПУ: Точное (устранение мерцания в святилищах)\n✓ Обратное чтение буферов ГПУ: Включено (правильные текстуры персонажей)\n✓ Реактивная очистка: Включено (устранение мерцания магии Ультраруки и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода)\n✓ Быстрое время ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
-        "✓ GPU Accuracy: High (Fixes character shadows and lighting)\n✓ GPU Fence Behavior: Accurate (Fixes shrine flickering)\n✓ GPU Buffer Readback: Enabled (Accurate character textures)\n✓ Reactive Flushing: Enabled (Fixes Ultrahand and rune magic flickering)\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Реактивная очистка: Включено (устранение мерцания магии Ультраруки и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода)\n✓ Быстрое время ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ GPU Accuracy: High (Fixes character shadows and lighting)\n✓ Reactive Flushing: Enabled (Fixes Ultrahand and rune magic flickering)\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\gpu_fence_behavior", "1"},
-            {"Renderer\\enable_gpu_buffer_readback", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\astc_recompression", "0"},
@@ -285,6 +282,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\dyna_state", "3"},
             {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
@@ -301,6 +299,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\dyna_state", "3"},
             {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
@@ -317,6 +316,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\dyna_state", "3"},
             {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
@@ -1343,27 +1343,27 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Link's Awakening",
         "• Просадки FPS при размытии глубины резкости (Tilt-Shift)\n• Заикания в деревне Мэйб",
         "• Tilt-shift depth of field severe frame drops\n• Mabe Village traversal stutters",
-        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
-        "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 4 ГБ DRAM",
+        "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 4GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"System\\memory_layout_mode", "2"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
-        0x01008CF01BAEC000ULL,
+        0x01008CF01BAAC000ULL,
         "The Legend of Zelda: Echoes of Wisdom",
         "• Падения частоты кадров при создании копий предметов (Echoes)\n• Размытие воды",
         "• Echo creation frame drops\n• Water surface reflection distortion",
-        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
-        "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 4 ГБ DRAM",
+        "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 4GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"System\\memory_layout_mode", "2"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {

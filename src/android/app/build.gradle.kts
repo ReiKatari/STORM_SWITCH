@@ -417,7 +417,7 @@ fun getGitVersion(): String {
             return ver
         }
     }
-    return "8.0.7"
+    return "8.0.8"
 }
 
 
