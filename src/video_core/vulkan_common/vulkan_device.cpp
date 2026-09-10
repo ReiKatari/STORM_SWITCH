@@ -1409,7 +1409,8 @@ void Device::RemoveUnsuitableExtensions() {
     if (extensions.custom_border_color) {
         extensions.custom_border_color =
             features.custom_border_color.customBorderColors &&
-            features.custom_border_color.customBorderColorWithoutFormat;
+            features.custom_border_color.customBorderColorWithoutFormat &&
+            GetDriverID() != VK_DRIVER_ID_QUALCOMM_PROPRIETARY; // Qualcomm proprietary driver has broken custom border color sampler interpolation
     }
     RemoveExtensionFeatureIfUnsuitable(extensions.custom_border_color, features.custom_border_color,
                                        VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);

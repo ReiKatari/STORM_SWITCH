@@ -83,14 +83,18 @@ ISelfController::ISelfController(Core::System& system_, std::shared_ptr<Applet> 
 }
 
 ISelfController::~ISelfController() {
-    std::scoped_lock lk{m_applet->lock};
-    m_applet->display_layer_manager.Finalize();
+    if (m_applet) {
+        std::scoped_lock lk{m_applet->lock};
+        m_applet->display_layer_manager.Finalize();
+    }
 }
 
 Result ISelfController::Exit() {
     LOG_DEBUG(Service_AM, "called");
 
-    m_applet->process->Terminate();
+    if (m_applet && m_applet->process) {
+        m_applet->process->Terminate();
+    }
 
     R_SUCCEED();
 }
@@ -98,11 +102,17 @@ Result ISelfController::Exit() {
 Result ISelfController::LockExit() {
     LOG_DEBUG(Service_AM, "called");
 
+    if (!m_applet) {
+        R_SUCCEED();
+    }
+
     std::scoped_lock lk{m_applet->lock};
 
     if (m_applet->lifecycle_manager.GetExitRequested()) {
         // With exit already requested, ignore and terminate immediately.
-        m_applet->process->Terminate();
+        if (m_applet->process) {
+            m_applet->process->Terminate();
+        }
     } else {
         // Otherwise, set exit lock state.
         m_applet->exit_locked = true;

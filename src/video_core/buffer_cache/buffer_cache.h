@@ -578,6 +578,14 @@ template <class P>
 void BufferCache<P>::CommitAsyncFlushesHigh() {
     AccumulateFlushes();
 
+    // Throttling: if we have too many pending async buffers in flight, wait and pop
+    // to prevent runaway VRAM consumption and OOM crashes during heavy scenes
+    static constexpr size_t MAX_PENDING_ASYNC_BUFFERS = 3;
+    while (async_buffers.size() >= MAX_PENDING_ASYNC_BUFFERS && ShouldWaitAsyncFlushes()) {
+        runtime.Finish();
+        PopAsyncBuffers();
+    }
+
     if (committed_gpu_modified_ranges.empty()) {
         async_buffers.emplace_back(std::optional<Async_Buffer>{});
         return;

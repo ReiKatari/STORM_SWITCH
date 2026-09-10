@@ -82,7 +82,7 @@ Result NPad::Activate(u64 aruid) {
     auto* data = applet_resource_holder.applet_resource->GetAruidData(aruid);
     const auto aruid_index = applet_resource_holder.applet_resource->GetIndexFromAruid(aruid);
 
-    if (data == nullptr || !data->flag.is_assigned) {
+    if (data == nullptr || !data->flag.is_assigned || data->shared_memory_format == nullptr) {
         return ResultSuccess;
     }
 
@@ -498,7 +498,7 @@ void NPad::OnUpdate(Kernel::KernelCore& kernel, const Core::Timing::CoreTiming& 
         const auto aruid = data->aruid;
         npad_resource.IsSupportedNpadStyleSet(is_set, aruid);
         // Wait until style is defined
-        if (!is_set) {
+        if (!is_set || data->shared_memory_format == nullptr) {
             continue;
         }
 
