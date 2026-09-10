@@ -34,6 +34,8 @@ public:
     static bool IsFixApplied(u64 title_id, const std::string& config_file_path);
     static void SetDontAskAgain(u64 title_id, const std::string& config_file_path, bool dont_ask = true);
     static int ResetAllDontAskAgain();
+    static void SetFixesEnabled(bool enabled);
+    static bool AreFixesEnabled();
 };
 
 } // namespace Core

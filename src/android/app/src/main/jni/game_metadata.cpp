@@ -71,6 +71,10 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
         const auto control = pm.GetControlMetadata();
         const auto game_version = pm.GetGameVersion();
 
+        if (control.second != nullptr && control.second->GetSize() > 0) {
+            entry.icon = control.second->ReadAllBytes();
+        }
+
         // 1. Resolve internal numeric version directly from ContentProvider (Update TID / Base TID / PM)
         u32 internal_ver = instance.System().GetContentProvider().GetEntryVersion(update_tid).value_or(0);
         if (internal_ver == 0 && game_version.has_value() && *game_version > 0) {

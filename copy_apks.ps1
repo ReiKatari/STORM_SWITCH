@@ -2,24 +2,33 @@ $mainline = 'e:\STORM EDEN 3\src\src\android\app\build\outputs\apk\mainline\rele
 $legacy = 'e:\STORM EDEN 3\src\src\android\app\build\outputs\apk\legacy\release\app-legacy-release.apk'
 $sdk27 = 'e:\STORM EDEN 3\src\src\android\app\build\outputs\apk\sdk27\release\app-sdk27-release.apk'
 
-Write-Host "Copying APKs with STORM_SWITCH_8.0.0 naming..."
+Write-Host "Copying APKs with STORM_SWITCH_8.0.4 naming..."
 if (Test-Path $mainline) {
-    Copy-Item $mainline 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.0.apk' -Force
-    Copy-Item $mainline 'e:\STORM EDEN 3\STORM_SWITCH_8.0.0.apk' -Force
+    Copy-Item $mainline 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.4.apk' -Force
+    Copy-Item $mainline 'e:\STORM EDEN 3\STORM_SWITCH_8.0.4.apk' -Force
+    Copy-Item $mainline 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.4.apk' -Force
+    Copy-Item $mainline 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.4.apk' -Force
 }
 
 if (Test-Path $legacy) {
-    Copy-Item $legacy 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.0_LEGACY.apk' -Force
-    Copy-Item $legacy 'e:\STORM EDEN 3\STORM_SWITCH_8.0.0_LEGACY.apk' -Force
+    Copy-Item $legacy 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.4_LEGACY.apk' -Force
+    Copy-Item $legacy 'e:\STORM EDEN 3\STORM_SWITCH_8.0.4_LEGACY.apk' -Force
+    Copy-Item $legacy 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.4_LEGACY.apk' -Force
+    Copy-Item $legacy 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.4_LEGACY.apk' -Force
 }
 
 if (Test-Path $sdk27) {
-    Copy-Item $sdk27 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.0_SDK27.apk' -Force
-    Copy-Item $sdk27 'e:\STORM EDEN 3\STORM_SWITCH_8.0.0_SDK27.apk' -Force
+    Copy-Item $sdk27 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.4_SDK27.apk' -Force
+    Copy-Item $sdk27 'e:\STORM EDEN 3\STORM_SWITCH_8.0.4_SDK27.apk' -Force
+    Copy-Item $sdk27 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.4_SDK27.apk' -Force
+    Copy-Item $sdk27 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.4_SDK27.apk' -Force
 }
 
 Get-ChildItem -Path 'e:\STORM EDEN 3\Files' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 Get-ChildItem -Path 'e:\STORM EDEN 3\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 Get-ChildItem -Path 'e:\STORM EDEN 3' -File | Unblock-File -ErrorAction SilentlyContinue
+Get-ChildItem -Path 'e:\STORM SWITCH 3\Files' -Recurse | Unblock-File -ErrorAction SilentlyContinue
+Get-ChildItem -Path 'e:\STORM SWITCH 3\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
+Get-ChildItem -Path 'e:\STORM SWITCH 3' -File | Unblock-File -ErrorAction SilentlyContinue
 
 Write-Host "APKs copied and all files unblocked successfully!"

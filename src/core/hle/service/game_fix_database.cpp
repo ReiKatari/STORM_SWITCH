@@ -4617,6 +4617,16 @@ int GameFixDatabase::ResetAllDontAskAgain() {
     return count;
 }
 
+static bool s_fixes_enabled = true;
+
+void GameFixDatabase::SetFixesEnabled(bool enabled) {
+    s_fixes_enabled = enabled;
+}
+
+bool GameFixDatabase::AreFixesEnabled() {
+    return s_fixes_enabled;
+}
+
 bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
     try {
         const auto* profile = GetProfile(title_id);
@@ -4635,7 +4645,14 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
         };
 
         auto apply_setting = [](auto& setting, auto val) {
-            if constexpr (requires { setting.SetGlobal(false); }) {
+            if constexpr (requires { setting.UsingGlobal(); }) {
+                // If user has set an explicit custom per-game value, preserve it!
+                if (!setting.UsingGlobal()) {
+                    return;
+                }
+                setting.SetGlobal(false);
+                setting.SetValue(val);
+            } else if constexpr (requires { setting.SetGlobal(false); }) {
                 setting.SetGlobal(false);
                 setting.SetValue(val);
             } else {

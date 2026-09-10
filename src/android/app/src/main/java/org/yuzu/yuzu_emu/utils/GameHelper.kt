@@ -128,6 +128,25 @@ object GameHelper {
 
         val finalGames = deduplicateGames(games)
 
+        // Preserve higher addon counts and non-base versions from cached metadata
+        if (cachedGameList.isNotEmpty()) {
+            val cachedMap = cachedGameList.associateBy { it.programIdHex.uppercase(Locale.ROOT) }
+            finalGames.forEach { game ->
+                val cached = cachedMap[game.programIdHex.uppercase(Locale.ROOT)]
+                if (cached != null) {
+                    if (cached.addonCount > game.addonCount) {
+                        game.addonCount = cached.addonCount
+                    }
+                    val currentVer = game.version.removePrefix("v").removePrefix("V").trim()
+                    val cachedVer = cached.version.removePrefix("v").removePrefix("V").trim()
+                    if (isBaseVersion(currentVer) && !isBaseVersion(cachedVer)) {
+                        game.version = cached.version
+                        game.internalVersion = cached.internalVersion
+                    }
+                }
+            }
+        }
+
         if (finalGames.isNotEmpty()) {
             // Cache list of games found on disk
             val serializedGames = mutableSetOf<String>()
@@ -150,12 +169,12 @@ object GameHelper {
     }
 
     fun getGameDeduplicationKey(game: Game): String {
-        val ext = game.extension.uppercase(Locale.ROOT)
-        val extSuffix = if (ext.isNotEmpty()) "_$ext" else ""
         val pid = game.programIdHex.trim()
         if (pid != "0" && pid.isNotEmpty()) {
-            return "PID_${pid}${extSuffix}"
+            return "PID_${pid.uppercase(Locale.ROOT)}"
         }
+        val ext = game.extension.uppercase(Locale.ROOT)
+        val extSuffix = if (ext.isNotEmpty()) "_$ext" else ""
         val cleanTitle = cleanGameTitle(game.title).lowercase(Locale.ROOT).trim()
         if (cleanTitle.isNotEmpty() && cleanTitle != "homebrew") {
             return "TITLE_${cleanTitle}${extSuffix}"
@@ -237,7 +256,7 @@ object GameHelper {
 
         val mountedContainerUris = mutableSetOf<String>()
         mountExternalContentDirectories(mountedContainerUris)
-        mountGameFolderContent(Uri.parse(game.path), mountedContainerUris)
+        mountGameFolderContent(Uri.parse(game.path), mountedContainerUris, force = true)
         NativeLibrary.addFileToFilesystemProvider(game.path)
     }
 
@@ -319,8 +338,8 @@ object GameHelper {
         }
     }
 
-    private fun mountGameFolderContent(gameUri: Uri, mountedContainerUris: MutableSet<String>) {
-        if (!BooleanSetting.EXT_CONTENT_FROM_GAME_DIRS.getBoolean()) {
+    private fun mountGameFolderContent(gameUri: Uri, mountedContainerUris: MutableSet<String>, force: Boolean = false) {
+        if (!force && !BooleanSetting.EXT_CONTENT_FROM_GAME_DIRS.getBoolean()) {
             return
         }
         if (gameUri.scheme == "content") {

@@ -325,7 +325,9 @@ struct System::Impl {
 
         if (params.program_id != 0) {
             Settings::SetCurrentProgramID(params.program_id);
-            Core::GameFixDatabase::ApplyProfileDirectly(params.program_id);
+            if (Core::GameFixDatabase::AreFixesEnabled()) {
+                Core::GameFixDatabase::ApplyProfileDirectly(params.program_id);
+            }
         }
 
         InitializeKernel(system);

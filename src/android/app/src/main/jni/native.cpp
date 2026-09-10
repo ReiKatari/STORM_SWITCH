@@ -58,6 +58,7 @@ extern "C" {
 #include "core/cpu_manager.h"
 #include "core/crypto/key_manager.h"
 #include "core/file_sys/card_image.h"
+#include "core/hle/service/game_fix_database.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/control_metadata.h"
 #include "core/file_sys/fs_filesystem.h"
@@ -2385,6 +2386,19 @@ JNIEXPORT jbyteArray JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_getDefaultAcc
             reinterpret_cast<const jbyte*>(Core::Constants::ACCOUNT_BACKUP_JPEG.data()));
     }
     return result;
+}
+
+JNIEXPORT void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_setGameFixesEnabled(
+        JNIEnv* env,
+        [[maybe_unused]] jobject obj,
+        jboolean enabled) {
+    Core::GameFixDatabase::SetFixesEnabled(enabled);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_areGameFixesEnabled(
+        JNIEnv* env,
+        [[maybe_unused]] jobject obj) {
+    return Core::GameFixDatabase::AreFixesEnabled();
 }
 
 } // extern "C"

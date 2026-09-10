@@ -3967,6 +3967,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     Core::GameFixDatabase::SetDontAskAgain(title_id, (custom_path / (legacy_config + ".ini")).string(), new_dont_ask);
 
     if (action == GameFixDialogResult::ApplyAndLaunch) {
+        Core::GameFixDatabase::SetFixesEnabled(true);
         Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, target_ini);
         Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, (custom_path / (legacy_config + ".ini")).string());
         Core::GameFixDatabase::ApplyProfileDirectly(title_id);
@@ -3976,6 +3977,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         }
         return GameFixDialogResult::ApplyAndLaunch;
     }
+    Core::GameFixDatabase::SetFixesEnabled(false);
     return GameFixDialogResult::LaunchWithoutChanges;
 }
 

@@ -28,8 +28,14 @@ import org.yuzu.yuzu_emu.features.settings.model.AbstractByteSetting
 
 class QuickSettings(val emulationFragment: EmulationFragment) {
     private fun saveSettings() {
-        if (emulationFragment.shouldUseCustom) {
+        val currentGame = emulationFragment.game
+        if (currentGame != null) {
+            if (!emulationFragment.shouldUseCustom) {
+                emulationFragment.shouldUseCustom = true
+                org.yuzu.yuzu_emu.features.settings.utils.SettingsFile.loadCustomConfig(currentGame)
+            }
             NativeConfig.savePerGameConfig()
+            org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
         } else {
             NativeConfig.saveGlobalConfig()
         }
@@ -266,4 +272,4 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         btn.setOnClickListener { onClick() }
         container.addView(itemView)
     }
-}
+}

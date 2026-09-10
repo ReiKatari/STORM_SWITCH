@@ -138,7 +138,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     private val args by navArgs<EmulationFragmentArgs>()
 
-    private var game: Game? = null
+    var game: Game? = null
 
     private val emulationViewModel: EmulationViewModel by activityViewModels()
     private val driverViewModel: DriverViewModel by activityViewModels()
@@ -311,17 +311,19 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             val isUserCustom = GameFixDatabase.isUserCustomConfig(gameToUse)
             val isFixRequested = (gameToUse == args.game && args.custom) || GameFixDatabase.isSessionFixActive(gameToUse)
 
-            if (isUserCustom) {
-                // Respect user manual per-game settings 100%
-                shouldUseCustom = true
-                SettingsFile.loadCustomConfig(gameToUse)
-                Log.info("[EmulationFragment] Loaded user manual per-game config for ${gameToUse.title}")
-            } else if (isFixRequested && GameFixDatabase.hasFix(gameToUse)) {
-                // Apply temporary GameFix profile for this session
+            NativeLibrary.setGameFixesEnabled(isFixRequested)
+
+            if (isFixRequested && GameFixDatabase.hasFix(gameToUse)) {
+                // Apply/merge GameFix profile (non-destructive if user already has custom config)
                 shouldUseCustom = true
                 GameFixDatabase.applyFix(gameToUse)
                 SettingsFile.loadCustomConfig(gameToUse)
-                Log.info("[EmulationFragment] Loaded temporary GameFix profile for ${gameToUse.title}")
+                Log.info("[EmulationFragment] Loaded GameFix profile for ${gameToUse.title} (custom config present: $isUserCustom)")
+            } else if (isUserCustom) {
+                // Launch without fixes, but respect user manual per-game settings
+                shouldUseCustom = true
+                SettingsFile.loadCustomConfig(gameToUse)
+                Log.info("[EmulationFragment] Loaded user manual per-game config (no fixes) for ${gameToUse.title}")
             } else {
                 // Clean launch: remove any temporary fix file and use global config
                 shouldUseCustom = false
@@ -994,9 +996,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     }
                 } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                     isQuickSettingsMenuOpen = false
-                    if (shouldUseCustom) {
-                        NativeConfig.unloadPerGameConfig()
-                    }
                 }
             }
 
@@ -1591,13 +1590,41 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         }
     }
 
+    private var coolingTimerRunnable: Runnable? = null
+
+    private fun startCoolingTimer() {
+        stopCoolingTimer()
+        val runnable = object : Runnable {
+            override fun run() {
+                if (_binding != null && this@EmulationFragment::emulationState.isInitialized && emulationState.isPaused) {
+                    updateCoolingTemperatureText()
+                    handler.postDelayed(this, 1000L)
+                }
+            }
+        }
+        coolingTimerRunnable = runnable
+        updateCoolingTemperatureText()
+        handler.postDelayed(runnable, 1000L)
+    }
+
+    private fun stopCoolingTimer() {
+        coolingTimerRunnable?.let { handler.removeCallbacks(it) }
+        coolingTimerRunnable = null
+    }
+
     private fun updatePausedFrameVisibility() {
         val b = _binding ?: return
         val showPausedUi = this::emulationState.isInitialized && emulationState.isPaused
-        val tempC = getBatteryTemperature()
         b.pausedCoolingContainer.setVisible(showPausedUi)
         if (showPausedUi) {
-            updateCoolingTemperatureText(tempC)
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    activity?.window?.setSustainedPerformanceMode(false)
+                }
+            } catch (_: Throwable) {}
+            startCoolingTimer()
+        } else {
+            stopCoolingTimer()
         }
 
         val bitmap = if (showPausedUi) pausedFrameBitmap else null
@@ -1621,8 +1648,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         val b = _binding ?: return
         try {
             if (tempC > 0f) {
-                val targetTemp = (tempC - 3.0f).coerceAtMost(tempC - 1.0f).coerceAtLeast(20.0f)
-                b.pausedCoolingTemp.text = "🌡️ Температура: ${String.format(java.util.Locale.US, "%.1f", tempC)}°C ➔ Цель: ${String.format(java.util.Locale.US, "%.1f", targetTemp)}°C"
+                val targetTemp = (tempC - 3.0f).coerceAtMost(tempC - 1.0f).coerceAtLeast(35.0f)
+                if (tempC <= targetTemp) {
+                    b.pausedCoolingTemp.text = "✅ Охлаждение завершено: ${String.format(java.util.Locale.US, "%.1f", tempC)}°C"
+                } else {
+                    b.pausedCoolingTemp.text = "🌡️ Температура: ${String.format(java.util.Locale.US, "%.1f", tempC)}°C ➔ Цель: ${String.format(java.util.Locale.US, "%.1f", targetTemp)}°C"
+                }
             } else {
                 b.pausedCoolingTemp.text = "🌡️ Идёт охлаждение чипсета"
             }
@@ -1632,6 +1663,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     }
 
     private fun resumeEmulationFromUi() {
+        stopCoolingTimer()
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                activity?.window?.setSustainedPerformanceMode(true)
+            }
+        } catch (_: Throwable) {}
         clearPausedFrame()
         emulationState.resume()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -2024,6 +2061,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         perfStatsRunnable?.let { perfStatsUpdateHandler.removeCallbacks(it) }
         socRunnable?.let { socUpdateHandler.removeCallbacks(it) }
         loadStatsRunnable?.let { loadStatsUpdateHandler.removeCallbacks(it) }
+        stopCoolingTimer()
         handler.removeCallbacksAndMessages(null)
         clearPausedFrame()
         gameTranslatorManager?.onDestroy()
@@ -2119,9 +2157,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                     if (BooleanSetting.SHOW_FPS.getBoolean(needsGlobal)) {
                         val fpsText = if (isFrameGen && systemFps > 0.0) {
-                            String.format("FPS: %.0f (%.0f)", actualFps, systemFps)
+                            String.format(java.util.Locale.US, "⚡ FPS: %.0f (%.0f)", actualFps, systemFps)
                         } else {
-                            String.format("FPS: %.0f", actualFps)
+                            String.format(java.util.Locale.US, "⚡ FPS: %.0f", actualFps)
                         }
                         sb.append(fpsText)
                     }

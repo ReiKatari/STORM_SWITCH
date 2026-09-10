@@ -316,9 +316,9 @@ class GamesFragment : Fragment() {
         // Setup STORM GAMES WORLD button
         binding.stormWorldButton?.setOnClickListener {
             try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://stormgamesworld.ru/"))
-                startActivity(intent)
-            } catch (_: Exception) {
+                val dialog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.newInstance()
+                dialog.show(parentFragmentManager, org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.TAG)
+            } catch (e: Exception) {
                 Toast.makeText(requireContext(), R.string.storm_games_world, Toast.LENGTH_SHORT).show()
             }
         }

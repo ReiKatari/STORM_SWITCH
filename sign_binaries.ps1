@@ -18,28 +18,35 @@ Remove-Item 'e:\STORM EDEN 3\storm_eden*' -Force -ErrorAction SilentlyContinue
 foreach ($exe in $targetExes) {
     if (Test-Path $exe) {
         & $signtool sign /fd SHA256 /sha1 $sha1 $exe
-        $dest = Join-Path 'e:\STORM EDEN 3' (Split-Path $exe -Leaf)
-        Copy-Item $exe $dest -Force
+        $leaf = Split-Path $exe -Leaf
+        Copy-Item $exe (Join-Path 'e:\STORM EDEN 3' $leaf) -Force
+        Copy-Item $exe (Join-Path 'e:\STORM SWITCH 3\Assembling' $leaf) -Force
+        Copy-Item $exe (Join-Path 'e:\STORM SWITCH 3' $leaf) -Force
     }
 }
 
 Get-ChildItem -Path 'e:\STORM EDEN 3\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 Get-ChildItem -Path 'e:\STORM EDEN 3\Files' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 Get-ChildItem -Path 'e:\STORM EDEN 3' -File | Unblock-File -ErrorAction SilentlyContinue
+Get-ChildItem -Path 'e:\STORM SWITCH 3\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
+Get-ChildItem -Path 'e:\STORM SWITCH 3\Files' -Recurse | Unblock-File -ErrorAction SilentlyContinue
+Get-ChildItem -Path 'e:\STORM SWITCH 3' -File | Unblock-File -ErrorAction SilentlyContinue
 
-Write-Host "Creating Windows 8.0.0 release zip..."
+Write-Host "Creating Windows 8.0.4 release zip..."
 $stageDir = 'e:\STORM EDEN 3\build\stage_zip'
 if (Test-Path $stageDir) { Remove-Item $stageDir -Recurse -Force }
 New-Item -ItemType Directory -Path "$stageDir\user\config", "$stageDir\user\load", "$stageDir\user\nand", "$stageDir\user\sdmc", "$stageDir\user\cache" -Force | Out-Null
 Copy-Item 'e:\STORM EDEN 3\Assembling\STORM_SWITCH*.exe' $stageDir\ -Force
 
-$zipPath = 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.0_Windows.zip'
+$zipPath = 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.4_Windows.zip'
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 
 & 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPath "$stageDir\*" -mx=9
 
-Copy-Item $zipPath 'e:\STORM EDEN 3\STORM_SWITCH_8.0.0_Windows.zip' -Force
+Copy-Item $zipPath 'e:\STORM EDEN 3\STORM_SWITCH_8.0.4_Windows.zip' -Force
+Copy-Item $zipPath 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.4_Windows.zip' -Force
+Copy-Item $zipPath 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.4_Windows.zip' -Force
 
 Remove-Item $stageDir -Recurse -Force
 
-Write-Host "All executables signed, packaged to 8.0.0 zip and copied to root/Files!"
+Write-Host "All executables signed, packaged to 8.0.4 zip and copied to root/Files!"
