@@ -1688,7 +1688,8 @@ void BufferCache<P>::ImmediateUploadMemory([[maybe_unused]] Buffer& buffer,
                 if (immediate_buffer.empty()) {
                     immediate_buffer = ImmediateBuffer(largest_copy);
                 }
-                if (Settings::values.enable_gpu_buffer_readback.GetValue()) {
+                if (Settings::values.enable_gpu_buffer_readback.GetValue() &&
+                    IsRegionGpuModified(device_addr, copy.size)) {
                     DownloadBufferMemory(buffer, device_addr, copy.size);
                 }
                 device_memory.ReadBlockUnsafe(device_addr, immediate_buffer.data(), copy.size);
@@ -1709,7 +1710,8 @@ void BufferCache<P>::MappedUploadMemory([[maybe_unused]] Buffer& buffer,
         for (BufferCopy& copy : copies) {
             u8* const src_pointer = staging_pointer.data() + copy.src_offset;
             const DAddr device_addr = buffer.CpuAddr() + copy.dst_offset;
-            if (Settings::values.enable_gpu_buffer_readback.GetValue()) {
+            if (Settings::values.enable_gpu_buffer_readback.GetValue() &&
+                IsRegionGpuModified(device_addr, copy.size)) {
                 DownloadBufferMemory(buffer, device_addr, copy.size);
             }
             device_memory.ReadBlockUnsafe(device_addr, src_pointer, copy.size);

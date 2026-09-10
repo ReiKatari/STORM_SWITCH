@@ -17,8 +17,11 @@ import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.utils.FileUtil.copyFilesTo
 import org.apache.commons.compress.archivers.sevenz.SevenZFile
 import com.github.junrar.Junrar
+import net.sf.sevenzipjbinding.SevenZip
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.RandomAccessFile
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
@@ -340,49 +343,72 @@ object GameBananaHelper {
     }
 
     fun organizeModStructure(sourceDir: File, targetDir: File) {
-        // Step 1: Unwrap any outer wrapper directories
-        var effectiveRoot = unwrapSingleFolder(sourceDir)
-
-        // Step 2: Check for atmosphere/contents/<TitleID> or contents/<TitleID>
-        val contentsDir = findSubdirIgnoreCase(effectiveRoot, "contents")
-        if (contentsDir != null && contentsDir.isDirectory) {
-            val titleDirs = contentsDir.listFiles()?.filter { it.isDirectory }
-            if (!titleDirs.isNullOrEmpty()) {
-                effectiveRoot = titleDirs[0]
-            }
-        }
-
         var organized = false
 
-        // Check for romfs
-        val romfsDir = findSubdirIgnoreCase(effectiveRoot, "romfs") ?: findSubdirIgnoreCase(effectiveRoot, "romfslite")
-        if (romfsDir != null && romfsDir.isDirectory) {
+        // 1. Search for ANY romfs or romfslite or romfs_ext directory anywhere in sourceDir
+        val romfsDirs = sourceDir.walkTopDown().filter {
+            it.isDirectory && (it.name.equals("romfs", ignoreCase = true) ||
+                it.name.equals("romfslite", ignoreCase = true) ||
+                it.name.equals("romfs_ext", ignoreCase = true))
+        }.toList()
+
+        if (romfsDirs.isNotEmpty()) {
             val targetRomfs = File(targetDir, "romfs")
             targetRomfs.mkdirs()
-            romfsDir.copyRecursively(targetRomfs, overwrite = true)
+            romfsDirs.forEach { rDir ->
+                rDir.listFiles()?.forEach { child ->
+                    if (child.isDirectory) {
+                        child.copyRecursively(File(targetRomfs, child.name), overwrite = true)
+                    } else if (child.isFile) {
+                        child.copyTo(File(targetRomfs, child.name), overwrite = true)
+                    }
+                }
+            }
             organized = true
         }
 
-        // Check for exefs
-        val exefsDir = findSubdirIgnoreCase(effectiveRoot, "exefs")
-        if (exefsDir != null && exefsDir.isDirectory) {
+        // 2. Search for ANY exefs directory anywhere in sourceDir
+        val exefsDirs = sourceDir.walkTopDown().filter {
+            it.isDirectory && it.name.equals("exefs", ignoreCase = true)
+        }.toList()
+
+        if (exefsDirs.isNotEmpty()) {
             val targetExefs = File(targetDir, "exefs")
             targetExefs.mkdirs()
-            exefsDir.copyRecursively(targetExefs, overwrite = true)
+            exefsDirs.forEach { eDir ->
+                eDir.listFiles()?.forEach { child ->
+                    if (child.isDirectory) {
+                        child.copyRecursively(File(targetExefs, child.name), overwrite = true)
+                    } else if (child.isFile) {
+                        child.copyTo(File(targetExefs, child.name), overwrite = true)
+                    }
+                }
+            }
             organized = true
         }
 
-        // Check for cheats
-        val cheatsDir = findSubdirIgnoreCase(effectiveRoot, "cheats")
-        if (cheatsDir != null && cheatsDir.isDirectory) {
+        // 3. Search for ANY cheats directory anywhere in sourceDir
+        val cheatsDirs = sourceDir.walkTopDown().filter {
+            it.isDirectory && it.name.equals("cheats", ignoreCase = true)
+        }.toList()
+
+        if (cheatsDirs.isNotEmpty()) {
             val targetCheats = File(targetDir, "cheats")
             targetCheats.mkdirs()
-            cheatsDir.copyRecursively(targetCheats, overwrite = true)
+            cheatsDirs.forEach { cDir ->
+                cDir.listFiles()?.forEach { child ->
+                    if (child.isDirectory) {
+                        child.copyRecursively(File(targetCheats, child.name), overwrite = true)
+                    } else if (child.isFile) {
+                        child.copyTo(File(targetCheats, child.name), overwrite = true)
+                    }
+                }
+            }
             organized = true
         }
 
-        // Check for .ips or .pchtxt patch files
-        val patchFiles = effectiveRoot.walkTopDown().filter {
+        // 4. Search for .ips or .pchtxt patch files anywhere in sourceDir
+        val patchFiles = sourceDir.walkTopDown().filter {
             it.isFile && (it.extension.equals("ips", ignoreCase = true) || it.extension.equals("pchtxt", ignoreCase = true))
         }.toList()
 
@@ -395,8 +421,8 @@ object GameBananaHelper {
             organized = true
         }
 
-        // Check for cheat .txt files (16 hex character filename like 01007EF00011E000.txt or build ID)
-        val cheatTxtFiles = effectiveRoot.walkTopDown().filter {
+        // 5. Search for cheat .txt files (16 hex character filename like 01007EF00011E000.txt or build ID)
+        val cheatTxtFiles = sourceDir.walkTopDown().filter {
             it.isFile && it.extension.equals("txt", ignoreCase = true) &&
                 (it.nameWithoutExtension.matches(Regex("^[0-9a-fA-F]{16}$")) || it.parentFile?.name.equals("cheats", ignoreCase = true))
         }.toList()
@@ -410,12 +436,17 @@ object GameBananaHelper {
             organized = true
         }
 
-        // If no standard directory structure was detected, wrap bare files/folders into romfs
+        // 6. If no standard directory structure was detected, unwrap root and wrap bare files/folders into romfs
         if (!organized) {
+            val effectiveRoot = unwrapSingleFolder(sourceDir)
             val targetRomfs = File(targetDir, "romfs")
             targetRomfs.mkdirs()
             effectiveRoot.listFiles()?.forEach { child ->
-                val isMeta = child.isFile && (child.name.startsWith("readme", true) || child.name.startsWith("license", true) || child.name.endsWith(".md", true))
+                val isMeta = child.isFile && (child.name.startsWith("readme", true) ||
+                    child.name.startsWith("license", true) ||
+                    child.name.endsWith(".md", true) ||
+                    child.name.endsWith(".txt", true) ||
+                    child.name.endsWith(".nfo", true))
                 if (!isMeta) {
                     if (child.isDirectory) {
                         child.copyRecursively(File(targetRomfs, child.name), overwrite = true)
@@ -555,7 +586,59 @@ object GameBananaHelper {
         }
     }
 
+    @Volatile
+    private var sevenZipInitialized = false
+
+    private fun ensureSevenZipInit() {
+        if (!sevenZipInitialized) {
+            synchronized(this) {
+                if (!sevenZipInitialized) {
+                    try {
+                        System.loadLibrary("7-Zip-JBinding")
+                        SevenZip.initLoadedLibraries()
+                        sevenZipInitialized = true
+                    } catch (t: Throwable) {
+                        Log.error("[GameBananaHelper] SevenZip native init failed: ${t.message}")
+                    }
+                }
+            }
+        }
+    }
+
     private fun extract7z(archiveFile: File, destDir: File) {
+        ensureSevenZipInit()
+        if (sevenZipInitialized) {
+            try {
+                val raf = RandomAccessFile(archiveFile, "r")
+                val inStream = RandomAccessFileInStream(raf)
+                val inArchive = SevenZip.openInArchive(null, inStream)
+                val simpleArchive = inArchive.simpleInterface
+                for (item in simpleArchive.archiveItems) {
+                    val rawPath = item.path?.replace('\\', '/')?.trimStart('/') ?: continue
+                    if (rawPath.isEmpty()) continue
+                    val outFile = File(destDir, rawPath)
+                    if (item.isFolder) {
+                        outFile.mkdirs()
+                    } else {
+                        outFile.parentFile?.mkdirs()
+                        FileOutputStream(outFile).use { fos ->
+                            item.extractSlow { data ->
+                                fos.write(data)
+                                data.size
+                            }
+                        }
+                    }
+                }
+                simpleArchive.close()
+                inArchive.close()
+                inStream.close()
+                raf.close()
+                return
+            } catch (e: Exception) {
+                Log.error("[GameBananaHelper] SevenZip-JBinding failed, falling back to SevenZFile: ${e.message}")
+            }
+        }
+
         SevenZFile(archiveFile).use { sevenZ ->
             var entry = sevenZ.nextEntry
             while (entry != null) {

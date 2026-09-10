@@ -216,10 +216,10 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01002A801458A000ULL,
         "Diablo II: Resurrected",
-        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",
-        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)",
-        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)",
+        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
+        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
+        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет 4 FPS / 200 ms)",
+        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS / 200 ms)",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
@@ -228,16 +228,17 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "false"}
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"}
         }
     },
     {
         0x0100916014D8C000ULL,
         "Diablo II: Resurrected",
-        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",
-        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)",
-        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)",
+        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
+        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
+        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет 4 FPS / 200 ms)",
+        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS / 200 ms)",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
@@ -246,16 +247,17 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "false"}
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"}
         }
     },
     {
         0x0100726014352000ULL,
         "Diablo II: Resurrected",
-        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты",
-        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)",
-        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)",
+        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
+        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
+        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет 4 FPS / 200 ms)",
+        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS / 200 ms)",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
@@ -264,7 +266,122 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "false"}
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"}
+        }
+    },
+    {
+        0x010020D01AD24000ULL,
+        "Animal Well",
+        "• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Графические артефакты ступенчатого рендеринга и искажение освещения",
+        "• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Staircase scanline rendering and broken lighting buffer",
+        "✓ Точность ГПУ: Высокая (восстановление правильного освещения)\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Тайминги ГПУ: Отключено\n✓ Хак масштабирования: Отключено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Accuracy: High (restores proper lighting and scanlines)\n✓ GPU Buffer Readback: Disabled (restores 60 FPS)\n✓ Fast GPU Time: Disabled\n✓ Rescale Hack: Disabled\n✓ Asynchronous Shaders: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\rescale_hack", "false"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "false"}
+        }
+    },
+    {
+        0x0100650017170000ULL,
+        "Animal Well",
+        "• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Графические артефакты ступенчатого рендеринга и искажение освещения",
+        "• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Staircase scanline rendering and broken lighting buffer",
+        "✓ Точность ГПУ: Высокая (восстановление правильного освещения)\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Тайминги ГПУ: Отключено\n✓ Хак масштабирования: Отключено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Accuracy: High (restores proper lighting and scanlines)\n✓ GPU Buffer Readback: Disabled (restores 60 FPS)\n✓ Fast GPU Time: Disabled\n✓ Rescale Hack: Disabled\n✓ Asynchronous Shaders: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\rescale_hack", "false"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "false"}
+        }
+    },
+    {
+        0x0100C9E01B854000ULL,
+        "Animal Well",
+        "• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Графические артефакты ступенчатого рендеринга и искажение освещения",
+        "• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Staircase scanline rendering and broken lighting buffer",
+        "✓ Точность ГПУ: Высокая (восстановление правильного освещения)\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Тайминги ГПУ: Отключено\n✓ Хак масштабирования: Отключено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Accuracy: High (restores proper lighting and scanlines)\n✓ GPU Buffer Readback: Disabled (restores 60 FPS)\n✓ Fast GPU Time: Disabled\n✓ Rescale Hack: Disabled\n✓ Asynchronous Shaders: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\rescale_hack", "false"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "false"}
+        }
+    },
+    {
+        0x0100AC300919A000ULL,
+        "Streets of Rage 4",
+        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Рассинхронизация буфера презентации",
+        "• Intro NVDEC video stream freeze\n• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Presentation buffer desync and low framerate",
+        "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Включено\n✓ Асинхронный вывод: Включено\n✓ Режим «В самолете»: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Синхронизация памяти: Отключено",
+        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: Enabled\n✓ Async Presentation: Enabled\n✓ Airplane Mode: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ Sync Memory Operations: Disabled",
+        {
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"}
+        }
+    },
+    {
+        0x0100EC9010258000ULL,
+        "Streets of Rage 4",
+        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Рассинхронизация буфера презентации",
+        "• Intro NVDEC video stream freeze\n• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Presentation buffer desync and low framerate",
+        "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Включено\n✓ Асинхронный вывод: Включено\n✓ Режим «В самолете»: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Синхронизация памяти: Отключено",
+        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: Enabled\n✓ Async Presentation: Enabled\n✓ Airplane Mode: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ Sync Memory Operations: Disabled",
+        {
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"}
+        }
+    },
+    {
+        0x010085800E33E000ULL,
+        "Streets of Rage 4",
+        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Рассинхронизация буфера презентации",
+        "• Intro NVDEC video stream freeze\n• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Presentation buffer desync and low framerate",
+        "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Включено\n✓ Асинхронный вывод: Включено\n✓ Режим «В самолете»: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Синхронизация памяти: Отключено",
+        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: Enabled\n✓ Async Presentation: Enabled\n✓ Airplane Mode: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ Sync Memory Operations: Disabled",
+        {
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"}
         }
     },
     {

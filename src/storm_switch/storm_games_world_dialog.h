@@ -117,6 +117,7 @@ private:
     QLabel* title_label{nullptr};
     QLabel* tid_label{nullptr};
     QLabel* version_badge{nullptr};
+    QLabel* internal_version_badge{nullptr};
     QLabel* size_badge{nullptr};
     QLabel* lang_badge{nullptr};
     QComboBox* version_combo{nullptr};

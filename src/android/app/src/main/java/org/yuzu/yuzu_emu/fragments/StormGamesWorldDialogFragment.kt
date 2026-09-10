@@ -81,52 +81,52 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         .readTimeout(60, TimeUnit.SECONDS)
         .build()
 
-    private val SWITCH_CDN_ICONS = mapOf(
-        "01007EF00011E000" to "https://img-eshop.cdn.nintendo.net/i/4b53da7ca4b118fe37c8b8040609b84dc63214d6131c51592486de9bf29ef29c.jpg",
-        "01002FC00412C000" to "https://img-eshop.cdn.nintendo.net/i/bf7b71eb6ac6eae6bc9cf6e49b275b6e933622e88e32550a4929b2d1c82a6dd0.jpg",
-        "0100E65002BB8000" to "https://img-eshop.cdn.nintendo.net/i/5f00bc8a8440171d41735d4d8960d2d3f476c9e64c9910ead8bff53b9654385f.jpg",
-        "0100CEA007D08000" to "https://img-eshop.cdn.nintendo.net/i/37eab904acbc030394ebf0f5e0856c83c6870fc077c71b0e253321be8a92a511.jpg",
-        "0100AC300919A000" to "https://img-eshop.cdn.nintendo.net/i/29f552314dc9a0d628a06c3cb80844b9c87ea63ac333fb63d117f827e5d4b8db.jpg",
-        "01007F600B134000" to "https://img-eshop.cdn.nintendo.net/i/bb542985ad06d20f09e302414d0d02942ebccb71cd44f5c889b2165bbfa01ee9.jpg",
-        "01001B300B9BE000" to "https://img-eshop.cdn.nintendo.net/i/5850dd84fdb585d3d76947209daf6df8acedb3c822e3674b41ed864e055ab073.jpg",
-        "0100F2200C984000" to "https://img-eshop.cdn.nintendo.net/i/7f63d6a81a6b979cc9fb28f52bd1ddb7510aca8ae43c8dfe6fd62b1a5b03968a.jpg",
-        "010042D00D900000" to "https://img-eshop.cdn.nintendo.net/i/c3153c6369c02e79063886b0adce635b3dd3acc2b0b84b3aba2e5b7fb9c29d50.jpg",
-        "010044700DEB0000" to "https://img-eshop.cdn.nintendo.net/i/244a80c16d8c248f606fbfd9550a3f073903d29b268316686c3586757995145f.jpg",
-        "01006BB00C6F0000" to "https://img-eshop.cdn.nintendo.net/i/50f8839e28d06296e7e0eea8ba061b89a227743bb7d5c61ffebf5aa0646d9ea5.jpg",
-        "01000B900D8B0000" to "https://img-eshop.cdn.nintendo.net/i/7d5dcf746e8c647b967ec8dde69f7c4f5dd0935957f707cd09bec98346a83ab2.jpg",
-        "010097100EDD6000" to "https://img-eshop.cdn.nintendo.net/i/02e4efea58daaf58ba022c711c3b79b6d3dff69e0cbc9926f019c0b3043361e2.jpg",
-        "0100EC9010258000" to "https://img-eshop.cdn.nintendo.net/i/664d1fb5429b3dbf0943244d40bb8d68fe4ec17a0f5a7fa55ab037ec8c2b59b5.jpg",
-        "01002DA013484000" to "https://img-eshop.cdn.nintendo.net/i/0ce5f0940911eab2cc34eb41b121e84c9d00081d02b816585851f9f1819bb256.jpg",
-        "0100670014482000" to "https://img-eshop.cdn.nintendo.net/i/f1bcd4eac7a70fe9dc33b172ec5135e97cd7ed5beba3b2fb23f110cab7634b44.jpg",
-        "0100726014352000" to "https://img-eshop.cdn.nintendo.net/i/eedca17878b20f750e6150c371c5a5d210484eb125c5d1042c366d11616b5c36.jpg",
-        "010093801237C000" to "https://img-eshop.cdn.nintendo.net/i/37e0b0a38fc81f8cd10c2a0721747dc919a1662ac7ec19c20d107603b99cbed1.jpg",
-        "01006560184E6000" to "https://img-eshop.cdn.nintendo.net/i/e9090ef9b0c7f88185541a74884611bff8898388feca779548cf21791333f2ef.jpg",
-        "0100307018934000" to "https://img-eshop.cdn.nintendo.net/i/ca56cc14f1cb24dbdb2d110d614ae36a7a415b83890cc335a9f7a28af1a2b5a6.jpg",
-        "010089A0197E4000" to "https://img-eshop.cdn.nintendo.net/i/d08e3b85e22e18030afb75a13239933b37158bc603a1f6b6bb9d12a4d1c55eb7.jpg",
-        "010097F018538000" to "https://img-eshop.cdn.nintendo.net/i/eb29eeb114f357c2c5b5ec09cbf7dfe5909079ec48369bdf5ea71ece1bd56772.jpg",
-        "01002EF01A316000" to "https://img-eshop.cdn.nintendo.net/i/e580976bf46d50465e5a333d6caa66db38f4132e64bc525cfecfa6299e71176b.jpg",
-        "010066101A55A000" to "https://img-eshop.cdn.nintendo.net/i/e513b44913974d42d6820bb92d91e07303f0ae6218f49e4873ff423ddcb2a86b.jpg",
-        "0100F2C0115B6000" to "https://img-eshop.cdn.nintendo.net/i/404244f33a9808ec62bcb41c6a0d659fac887cb3ee376e3e42c91ab28548e06f.jpg",
-        "0100BDA01AABC000" to "https://img-eshop.cdn.nintendo.net/i/d3ee8bbe25eba57c4d04b22589ef1c8fe8157381380be14880c94339ce67cc30.jpg",
-        "010020D01AD24000" to "https://img-eshop.cdn.nintendo.net/i/d3bbbb4de0b03636dd547272d502deabe1f77a8a4ba4143591c8575d0af35a37.jpg",
-        "010015100B514000" to "https://img-eshop.cdn.nintendo.net/i/0680f7ea84f9d434ff7b0f73f23f86c35b0c8e8f8ed6733b831e42762289eca7.jpg",
-        "0100BAC01E57E000" to "https://img-eshop.cdn.nintendo.net/i/ae24a7b74e26a1d24f66895d3d2f11b2ae9573f607ba45cb99c10396f412b995.jpg",
-        "01005CF01E784000" to "https://img-eshop.cdn.nintendo.net/i/a439d1cb1e81700d962b1cb25b7ee2efff8c450c82ae4959d8a832a20448f54a.jpg",
-        "01005EC01E6A4000" to "https://img-eshop.cdn.nintendo.net/i/a439d1cb1e81700d962b1cb25b7ee2efff8c450c82ae4959d8a832a20448f54a.jpg",
-        "010057901E9E6000" to "https://img-eshop.cdn.nintendo.net/i/62a42fe044c56b93aad399068b82c89f4dd861d33a82ba61c92b730f20dd6be3.jpg",
-        "01008CF01BAAC000" to "https://img-eshop.cdn.nintendo.net/i/4c72018535cd7b3efaf0f9a02fb5a54fa00e4b843f142a45e0aa900bef517c67.jpg",
-        "010059D020C26000" to "https://img-eshop.cdn.nintendo.net/i/92e171e19f7896269d3b57236141a4dcab874eb7080a34c69082d643962d17b7.jpg",
-        "0100D59022590000" to "https://img-eshop.cdn.nintendo.net/i/ffd0c05f5754a29f9ff0c6500b3399c7a8dac6dab455634c4668580dd7607974.jpg",
-        "0100C6A0235D4000" to "https://img-eshop.cdn.nintendo.net/i/996e6300fe6ebc896a707f16ea6b341eeff0bd089f7a070b12398b68124f83c8.jpg",
-        "010094D023A28000" to "https://img-eshop.cdn.nintendo.net/i/0d794a22aa99f33a9d443b1a776e71a934f06520dcec52e3011af922eea75dcf.jpg",
-        "010063301BD50000" to "https://img-eshop.cdn.nintendo.net/i/be3e65dea8c7bac88660cdd55d331af2434959e172d6174b302d259bfb022c69.jpg",
-        "010040502453E000" to "https://img-eshop.cdn.nintendo.net/i/72d61bf1246ef96fb916b55777023c66e8906df78f8ae8db16425eafedfbf08e.jpg",
-        "01008BA02525A000" to "https://img-eshop.cdn.nintendo.net/i/bfc720168c2244f1ceaa0a7bc1e3e57bfe9b3862d5fa3acfbd816e08e9e82dc0.jpg",
-        "0100B11027658000" to "https://img-eshop.cdn.nintendo.net/i/48d225712ec56a0b0b87cf332b70c9ce8584415507063ddc62ac77b8bb11996f.jpg",
-        "0100CA400E300000" to "https://img-eshop.cdn.nintendo.net/i/cabdadca35545f14e0b34a18ae8e4657dc4f9fd71f58c7ffd5aad2decd65af6d.jpg",
-        "010026800E304000" to "https://img-eshop.cdn.nintendo.net/i/c208f110ff193d568799a2fc2bcb04b096ecfe9f1ba6f91f0a94c257ffde3b67.jpg",
-        "010022201229A000" to "https://img-eshop.cdn.nintendo.net/i/5b8022601f719dc8e51a32852065029c85b12fa1b4f6d60bf03f2148d7618dc4.jpg",
-        "01006C900CC60000" to "https://img-eshop.cdn.nintendo.net/i/37e0b0a38fc81f8cd10c2a0721747dc919a1662ac7ec19c20d107603b99cbed1.jpg"
+private val SWITCH_CDN_ICONS = mapOf(
+        "01000B900D8B0000" to "https://img-eshop.cdn.nintendo.net/i/1972ebb4a507e7d83c7d4592ae4702ebdc5bf3738659644bc29c243b144782ee.jpg", // Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda
+        "010015100B514000" to "https://img-eshop.cdn.nintendo.net/i/bf2fca7eed5ad7ec96d03025907ea52c3efe168e02c8be96e868d8430a247a57.jpg", // Super Mario Bros. Wonder
+        "01001B300B9BE000" to "https://img-eshop.cdn.nintendo.net/i/bf924a38ce1da69413bdba496afad2ef562f73ea5273621c09cac878ab7ad0b5.jpg", // Diablo III: Eternal Collection
+        "010020D01AD24000" to "https://img-eshop.cdn.nintendo.net/i/4519ab30d1b40a67a3ea3caa03cf792575954a15ecb1639f0e6b9eb9df169f37.jpg", // Animal Well
+        "010022201229A000" to "https://img-eshop.cdn.nintendo.net/i/2035f3f0fc956dc61d691a2d3234974d6416f8175a9fc0989bfb8e6cf9477c92.jpg", // Super Robot Wars 30
+        "010026800E304000" to "https://img-eshop.cdn.nintendo.net/i/7a48b73ce4dbcacbf25a4103ffad0f4414bcefc0a39d94ebcdc28f66e2e09f7d.jpg", // Super Robot Wars X
+        "01002DA013484000" to "https://img-eshop.cdn.nintendo.net/i/7e575dbcd62ff138066bd6276afda8770f8c91c80ea99d13ab7480aed91b1ae1.jpg", // The Legend of Zelda: Skyward Sword HD
+        "01002EF01A316000" to "https://img-eshop.cdn.nintendo.net/i/a00f56c54d8caf6c59f544d699b4ef42ae59e8960da3d1c2df49e3286a68e71c.jpg", // Brotato
+        "01002FC00412C000" to "https://img-eshop.cdn.nintendo.net/i/765c5c93eaa0adc70d13b5ff3af3ed3a940cbf537a8de576e67d2c8622b19040.jpg", // Little Nightmares
+        "0100307018934000" to "https://img-eshop.cdn.nintendo.net/i/e030ea7fe3a0ffa10b8fa371feba97ab92f94b2457c5baaf3e5e5ec77b4c3821.jpg", // Signalis
+        "010040502453E000" to "https://img-eshop.cdn.nintendo.net/i/352a5f0b19d037318d3c3add59f8e22ad19dd15715d425e59f47ce7223c0de62.jpg", // Vampire Crawlers
+        "010042D00D900000" to "https://img-eshop.cdn.nintendo.net/i/6849b7cca03fea9c8363524f31faaae42a196ddc8fe011a480e001858b36f53a.jpg", // LEGO Star Wars: The Skywalker Saga
+        "010044700DEB0000" to "https://img-eshop.cdn.nintendo.net/i/66b639f88213ebf50af4a9eaca2da8c64a24a7314a0c80d587fec466df74d8b9.jpg", // Assassin’s Creed: The Rebel Collection
+        "010057901E9E6000" to "https://img-eshop.cdn.nintendo.net/i/2e0cb59b4cd9d4443ae36bf1a94490d0ce08c38058c6e7a0d48befc1fecfeaaf.jpg", // Underling Uprising
+        "010059D020C26000" to "https://img-eshop.cdn.nintendo.net/i/2d8f509b557453409619dbde88b0346d6a6f2a1bb6a3cb62fd9cea8c8925ba1f.jpg", // Marvel Cosmic Invasion
+        "01005CF01E784000" to "https://img-eshop.cdn.nintendo.net/i/50d96f21074d590ba0572b7e8d10947cec190f600aa898ab3af540039f36fe6f.jpg", // Teenage Mutant Ninja Turtles: Splintered Fate
+        "01005EC01E6A4000" to "https://img-eshop.cdn.nintendo.net/i/c94866c17a79c2c8ec8816df7db3433d88f19b880969af491ebe51dc14d4a590.jpg", // The Art of Dave the Diver: Digital Artbook
+        "010063301BD50000" to "https://img-eshop.cdn.nintendo.net/i/d3fe8a7a991e1408e635b8f7c356c0e49213f8818cf456faf6a7d5256e9001e8.jpg", // Super Robot Wars Y
+        "01006560184E6000" to "https://img-eshop.cdn.nintendo.net/i/f73a31a4c276dce115550ed9eda3ea813606b5e4ac53fae9f39d48f8f45099e1.jpg", // Mortal Kombat 1
+        "010066101A55A000" to "https://img-eshop.cdn.nintendo.net/i/f8e6ecd237605ae5a839257a87190858bfebfa8f3b735eb73692a1e665699c80.jpg", // Little Nightmares III
+        "0100670014482000" to "https://img-eshop.cdn.nintendo.net/i/aeab72bcb6fb6c79c32bddec987764f6e47c3e90cd32642a84de75f631b4eed0.jpg", // Assassin's Creed: The Ezio Collection
+        "01006BB00C6F0000" to "https://img-eshop.cdn.nintendo.net/i/b0b0b2d150830b70b5bb259cdabefe21d2009b55cbd58854cf6a897587249054.jpg", // The Legend of Zelda: Link's Awakening
+        "01006C900CC60000" to "https://img-eshop.cdn.nintendo.net/i/fc9a60cfb3a86cc0fbb45cc5377cd3d4ae1fa5dd05ebd8be991480992c809d46.jpg", // Super Robot Wars T
+        "0100726014352000" to "https://img-eshop.cdn.nintendo.net/i/3555961fefd935624036664963fdcc3b4409d223802a52eb30040b3a84d256bc.jpg", // Diablo II: Resurrected
+        "01007EF00011E000" to "https://img-eshop.cdn.nintendo.net/i/d3c210e61e8487200fc4c344987243a60257838187a69a6a81c42d7447d5d192.jpg", // The Legend of Zelda: Breath of the Wild
+        "01007F600B134000" to "https://img-eshop.cdn.nintendo.net/i/b7c8b605f109a0f090fd4231a33c87eaf91ff1bb3a1b6fe94b9057a822162a6d.jpg", // Assassin's Creed III: Remastered
+        "010089A0197E4000" to "https://img-eshop.cdn.nintendo.net/i/98bd188f34a48db53c83b6789993d167924a21f47d83fe3801e75d33a30b3d1c.jpg", // Vampire Survivors
+        "01008BA02525A000" to "https://img-eshop.cdn.nintendo.net/i/6f498743317e0689bd8812450e41c80551f7eee1a68ef56aed4f6e93ac1aa56e.jpg", // Dispatch
+        "01008CF01BAAC000" to "https://img-eshop.cdn.nintendo.net/i/2dc088f59a77a690046661216ae33948dc72dfe91675cf19d7d7ac757856bfc1.jpg", // The Legend of Zelda: Echoes of Wisdom
+        "010093801237C000" to "https://img-eshop.cdn.nintendo.net/i/924b1b82bc75719dba325773795096359df9e6b4be0de77efa90b0e3039c6fff.jpg", // Metroid Dread
+        "010094D023A28000" to "https://img-eshop.cdn.nintendo.net/i/e8fd1fe443c9e3b6a0768377247b978402ee04eb226d57d5ac8819d11a5bdcc5.jpg", // Drill Core
+        "010097100EDD6000" to "https://img-eshop.cdn.nintendo.net/i/4dfb37171bdd954247af39a826e7bb700a52ae7c14b9fd5baa17c9a5be6aa965.jpg", // Little Nightmares II
+        "010097F018538000" to "https://img-eshop.cdn.nintendo.net/i/c94866c17a79c2c8ec8816df7db3433d88f19b880969af491ebe51dc14d4a590.jpg", // Dave the Diver
+        "0100AC300919A000" to "https://img-eshop.cdn.nintendo.net/i/05233ea213c6659cdadf4fcb592704c1c8f5ca76160b4d6673e67e5a67c0d11b.jpg", // Firewatch
+        "0100B11027658000" to "https://img-eshop.cdn.nintendo.net/i/416666806a9808eb88e926d83098b30ccd956326b766f171f0b9cb99b58d0147.jpg", // Defender of the Crown: The Legend Returns
+        "0100BAC01E57E000" to "https://img-eshop.cdn.nintendo.net/i/da8bf3f6e66a4914ceefa21f84462e4a1c0678e6a6f6a32831be0ad059a4b84d.jpg", // Ys X: Nordics
+        "0100BDA01AABC000" to "https://img-eshop.cdn.nintendo.net/i/20b1474cd664e5e945f4e94bc7d36f9a7dee3e51929613f9d7875365a3a99bb0.jpg", // Rift of the NecroDancer
+        "0100C6A0235D4000" to "https://img-eshop.cdn.nintendo.net/i/f4b0e53362b1df1880b54010fb4427780b5756f696164c38bab1d0f857ed8be0.jpg", // Devil Jam
+        "0100CA400E300000" to "https://img-eshop.cdn.nintendo.net/i/77cf808ec79894dca98a64d9c0b281f3b513992f84897967f8e115891d4cd91f.jpg", // Super Robot Wars V
+        "0100CEA007D08000" to "https://img-eshop.cdn.nintendo.net/i/eae2eb74652a1f82b3c8a0fd9dee68260ab4274509076df52330d784e80e8ac9.jpg", // Crypt of the NecroDancer
+        "0100D59022590000" to "https://img-eshop.cdn.nintendo.net/i/4f61d9a29f29a2be5e070f8ff69c801224a7c5bd1656b6a4c17bc98c93f861bb.jpg", // Scott Pilgrim EX
+        "0100E65002BB8000" to "https://img-eshop.cdn.nintendo.net/i/2c2d14a11ac7ee9439cfc88449360d238db52cedd921ac31309eea04053c08e7.jpg", // Stardew Valley
+        "0100EC9010258000" to "https://img-eshop.cdn.nintendo.net/i/79be0825e04a14281c9b4ea2360ec609d63197d329bd19370f4ba0c7476659ad.jpg", // Streets of Rage 4
+        "0100F2200C984000" to "https://img-eshop.cdn.nintendo.net/i/a24c3bf5c318afdf67b92dd4de87e2202738262ff4db62d3f2d10c4126a48f67.jpg", // Mortal Kombat 11
+        "0100F2C0115B6000" to "https://img-eshop.cdn.nintendo.net/i/4b53da7ca4b118fe37c8b8040609b84dc63214d6131c51592486de9bf29ef29c.jpg" // The Legend of Zelda: Tears of the Kingdom
     )
 
     private fun loadCoverForGame(item: StormWorldGameItem, imageView: android.widget.ImageView) {
@@ -135,7 +135,12 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             org.yuzu.yuzu_emu.utils.GameIconUtils.loadGameIcon(localGame, imageView)
             return
         }
-        val url = if (item.cover.isNotBlank() && item.cover.startsWith("http")) item.cover else SWITCH_CDN_ICONS[item.serialId.uppercase(Locale.ROOT)]
+        val tid = item.serialId.uppercase(Locale.ROOT)
+        val url = if (item.cover.isNotBlank() && item.cover.startsWith("http")) {
+            item.cover
+        } else {
+            SWITCH_CDN_ICONS[tid] ?: if (tid.length == 16) "https://raw.githubusercontent.com/blawar/titledb/master/icons/$tid.jpg" else null
+        }
         if (!url.isNullOrBlank()) {
             imageView.load(url) {
                 crossfade(true)
@@ -240,7 +245,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.0.5 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.0.6 (Android)")
                     .build()
 
                 val resp = httpClient.newCall(req).execute()
@@ -403,13 +408,21 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         binding.detailSaveFolder.text = "📁 Каталог: $targetDir"
 
         if (game.isDownloaded) {
-            binding.btnStartDownload.text = "Уже скачано"
+            binding.btnStartDownload.text = "Скачано"
             binding.btnStartDownload.setIconResource(R.drawable.ic_check)
             binding.btnStartDownload.isEnabled = false
+            binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+            binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+            binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
+            binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
         } else {
             binding.btnStartDownload.text = "Скачать игру"
             binding.btnStartDownload.setIconResource(R.drawable.ic_install)
             binding.btnStartDownload.isEnabled = !isDownloading
+            binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
+            binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
+            binding.btnStartDownload.setTextColor(0xFF94A3B8.toInt())
+            binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
         }
 
         fetchGameDetails(game)
@@ -420,7 +433,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.0.5 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.0.6 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -437,7 +450,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.0.5 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.0.6 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -529,7 +542,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
                 val req = Request.Builder()
                     .url(downloadUrl)
-                    .header("User-Agent", "STORM_SWITCH/8.0.5 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.0.6 (Android)")
                     .build()
 
                 val call = httpClient.newCall(req)
@@ -602,8 +615,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     game.isDownloaded = true
                     if (_binding != null) {
                         binding.layoutDownloadProgress.isVisible = false
-                        binding.btnStartDownload.text = "Уже скачано"
+                        binding.btnStartDownload.text = "Скачано"
+                        binding.btnStartDownload.setIconResource(R.drawable.ic_check)
                         binding.btnStartDownload.isEnabled = false
+                        binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+                        binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+                        binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
+                        binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
                         binding.recyclerGames.adapter?.notifyDataSetChanged()
                     }
                     Toast.makeText(requireContext(), "✅ Игра успешно скачана: ${game.finalTitle.ifEmpty { game.title }}", Toast.LENGTH_LONG).show()
@@ -620,7 +638,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     activeDownloadCall = null
                     if (_binding != null) {
                         binding.layoutDownloadProgress.isVisible = false
+                        binding.btnStartDownload.text = "Скачать игру"
+                        binding.btnStartDownload.setIconResource(R.drawable.ic_install)
                         binding.btnStartDownload.isEnabled = true
+                        binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
+                        binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
+                        binding.btnStartDownload.setTextColor(0xFF94A3B8.toInt())
+                        binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
                     }
                     if (e.message != "Socket closed" && e.message != "Canceled") {
                         Log.error("[StormGamesWorld] Download failed: ${e.message}")
@@ -637,7 +661,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         activeDownloadCall = null
         isDownloading = false
         binding.layoutDownloadProgress.isVisible = false
+        binding.btnStartDownload.text = "Скачать игру"
+        binding.btnStartDownload.setIconResource(R.drawable.ic_install)
         binding.btnStartDownload.isEnabled = true
+        binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
+        binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
+        binding.btnStartDownload.setTextColor(0xFF94A3B8.toInt())
+        binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
         Toast.makeText(requireContext(), "Загрузка отменена", Toast.LENGTH_SHORT).show()
     }
 
@@ -681,12 +711,18 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 holder.b.btnGameAction.text = "Скачано"
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_check)
                 holder.b.btnGameAction.isEnabled = false
-                holder.b.btnGameAction.strokeColor = android.content.res.ColorStateList.valueOf(0xFF00FF66.toInt())
+                holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+                holder.b.btnGameAction.strokeColor = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+                holder.b.btnGameAction.setTextColor(0xFFFFFFFF.toInt())
+                holder.b.btnGameAction.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
             } else {
                 holder.b.btnGameAction.text = "Скачать"
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_install)
                 holder.b.btnGameAction.isEnabled = !isDownloading
-                holder.b.btnGameAction.strokeColor = android.content.res.ColorStateList.valueOf(0xFF38BDF8.toInt())
+                holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
+                holder.b.btnGameAction.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
+                holder.b.btnGameAction.setTextColor(0xFF94A3B8.toInt())
+                holder.b.btnGameAction.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
             }
 
             holder.b.btnGameAction.setOnClickListener {

@@ -3,6 +3,7 @@
 
 #include <fmt/ranges.h>
 #include "common/fs/path_util.h"
+#include "common/string_util.h"
 #include "core/file_sys/bis_factory.h"
 #include "core/file_sys/registered_cache.h"
 #include "core/file_sys/vfs/vfs.h"
@@ -55,12 +56,28 @@ VirtualDir BISFactory::GetModificationLoadRoot(u64 title_id) const {
     // LayeredFS doesn't work on updates and title id-less homebrew
     if (title_id == 0 || (title_id & 0xFFF) == 0x800)
         return nullptr;
+    if (load_root) {
+        const auto tid_upper = fmt::format("{:016X}", title_id);
+        for (const auto& sub : load_root->GetSubdirectories()) {
+            if (Common::ToUpper(sub->GetName()) == tid_upper) {
+                return sub;
+            }
+        }
+    }
     return GetOrCreateDirectoryRelative(load_root, fmt::format("/{:016X}", title_id));
 }
 
 VirtualDir BISFactory::GetModificationDumpRoot(u64 title_id) const {
     if (title_id == 0)
         return nullptr;
+    if (dump_root) {
+        const auto tid_upper = fmt::format("{:016X}", title_id);
+        for (const auto& sub : dump_root->GetSubdirectories()) {
+            if (Common::ToUpper(sub->GetName()) == tid_upper) {
+                return sub;
+            }
+        }
+    }
     return GetOrCreateDirectoryRelative(dump_root, fmt::format("/{:016X}", title_id));
 }
 

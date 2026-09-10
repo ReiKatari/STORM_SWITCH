@@ -32,7 +32,7 @@ Get-ChildItem -Path 'e:\STORM SWITCH 3\Assembling' -Recurse | Unblock-File -Erro
 Get-ChildItem -Path 'e:\STORM SWITCH 3\Files' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 Get-ChildItem -Path 'e:\STORM SWITCH 3' -File | Unblock-File -ErrorAction SilentlyContinue
 
-Write-Host "Creating Windows 8.0.5 release zip..."
+Write-Host "Creating Windows 8.0.6 release zip..."
 $stageDir = 'e:\STORM EDEN 3\build\stage_zip'
 if (Test-Path $stageDir) { Remove-Item $stageDir -Recurse -Force }
 New-Item -ItemType Directory -Path "$stageDir\user\config", "$stageDir\user\load", "$stageDir\user\nand", "$stageDir\user\sdmc", "$stageDir\user\cache" -Force | Out-Null
@@ -40,15 +40,15 @@ Copy-Item 'e:\STORM EDEN 3\Assembling\STORM_SWITCH*.exe' $stageDir\ -Force
 Copy-Item 'e:\STORM EDEN 3\Assembling\7z.exe' $stageDir\ -Force -ErrorAction SilentlyContinue
 Copy-Item 'e:\STORM EDEN 3\Assembling\7z.dll' $stageDir\ -Force -ErrorAction SilentlyContinue
 
-$zipPath = 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.5_Windows.zip'
+$zipPath = 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.6_Windows.zip'
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 
 & 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPath "$stageDir\*" -mx=9
 
-Copy-Item $zipPath 'e:\STORM EDEN 3\STORM_SWITCH_8.0.5_Windows.zip' -Force
-Copy-Item $zipPath 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.5_Windows.zip' -Force
-Copy-Item $zipPath 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.5_Windows.zip' -Force
+Copy-Item $zipPath 'e:\STORM EDEN 3\STORM_SWITCH_8.0.6_Windows.zip' -Force
+Copy-Item $zipPath 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.6_Windows.zip' -Force
+Copy-Item $zipPath 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.6_Windows.zip' -Force
 
 Remove-Item $stageDir -Recurse -Force
 
-Write-Host "All executables signed, packaged to 8.0.5 zip and copied to root/Files!"
+Write-Host "All executables signed, packaged to 8.0.6 zip and copied to root/Files!"

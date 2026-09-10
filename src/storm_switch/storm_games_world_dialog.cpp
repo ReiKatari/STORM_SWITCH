@@ -133,8 +133,8 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
 
 void StormGamesWorldDialog::SetupUI() {
     setWindowTitle(tr("🌐 STORM SWITCH — Каталог и менеджер игр STORM GAMES WORLD"));
-    resize(1240, 760);
-    setMinimumSize(1080, 680);
+    resize(1380, 800);
+    setMinimumSize(1160, 680);
 
     auto* root_layout = new QVBoxLayout(this);
     root_layout->setContentsMargins(12, 12, 12, 12);
@@ -252,12 +252,16 @@ void StormGamesWorldDialog::SetupUI() {
     version_badge->setStyleSheet(QStringLiteral("background: rgba(0, 210, 255, 0.15); border: 1px solid #00D2FF; border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
     badges_layout->addWidget(version_badge);
 
+    internal_version_badge = new QLabel(tr("Сборка: —"), details_panel);
+    internal_version_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.15); border: 1px solid #A855F7; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold; font-family: monospace;"));
+    badges_layout->addWidget(internal_version_badge);
+
     size_badge = new QLabel(tr("Размер: —"), details_panel);
     size_badge->setStyleSheet(QStringLiteral("background: rgba(0, 255, 102, 0.15); border: 1px solid #00FF66; border-radius: 4px; padding: 2px 8px; color: #00FF66; font-size: 11px; font-weight: bold;"));
     badges_layout->addWidget(size_badge);
 
     lang_badge = new QLabel(tr("Язык: —"), details_panel);
-    lang_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.15); border: 1px solid #A855F7; border-radius: 4px; padding: 2px 8px; color: #A855F7; font-size: 11px; font-weight: bold;"));
+    lang_badge->setStyleSheet(QStringLiteral("background: rgba(245, 158, 11, 0.15); border: 1px solid #F59E0B; border-radius: 4px; padding: 2px 8px; color: #F59E0B; font-size: 11px; font-weight: bold;"));
     badges_layout->addWidget(lang_badge);
 
     badges_layout->addStretch(1);
@@ -340,6 +344,7 @@ void StormGamesWorldDialog::SetupUI() {
     splitter->addWidget(details_panel);
     splitter->setStretchFactor(0, 5);
     splitter->setStretchFactor(1, 4);
+    splitter->setSizes({740, 640});
 
     root_layout->addWidget(splitter, 1);
 
@@ -401,7 +406,7 @@ void StormGamesWorldDialog::OnFetchCatalog() {
     refresh_btn->setEnabled(false);
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/index")));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.5 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.6 (Windows x64)"));
 
     if (catalog_reply) {
         catalog_reply->abort();
@@ -560,10 +565,56 @@ void StormGamesWorldDialog::OnGameSelectionChanged() {
     }
 }
 
+static QString ExtractInternalVersion(const QString& title, const QString& version_str) {
+    // 1. Look for explicit [v655360] or (655360) or [655360] in title
+    static const QRegularExpression re_title(QStringLiteral(R"([\[\(vV]?(\d{5,8})[\]\)]?)"));
+    QRegularExpressionMatchIterator it = re_title.globalMatch(title);
+    while (it.hasNext()) {
+        const QRegularExpressionMatch match = it.next();
+        const QString num = match.captured(1);
+        if (num.length() >= 5 && num.length() <= 8) {
+            return num;
+        }
+    }
+
+    // 2. Compute from version_str e.g. "1.0.10" or "v1.2.3"
+    QString clean_v = version_str;
+    if (clean_v.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+        clean_v.remove(0, 1);
+    }
+    const QStringList parts = clean_v.trimmed().split(QLatin1Char('.'));
+    if (parts.size() >= 3) {
+        bool ok1 = false, ok2 = false, ok3 = false;
+        const int major = parts[0].toInt(&ok1);
+        const int minor = parts[1].toInt(&ok2);
+        const int patch = parts[2].toInt(&ok3);
+        if (ok1 && ok2 && ok3) {
+            quint32 internal_ver = ((quint32)std::max(0, major - 1) * 655360) +
+                                   ((quint32)minor * 655360) +
+                                   ((quint32)patch * 65536);
+            if (internal_ver == 0 && (major > 1 || minor > 0 || patch > 0)) {
+                internal_ver = static_cast<quint32>(patch) * 65536;
+            }
+            return QString::number(internal_ver);
+        }
+    } else if (parts.size() == 2) {
+        bool ok1 = false, ok2 = false;
+        const int major = parts[0].toInt(&ok1);
+        const int minor = parts[1].toInt(&ok2);
+        if (ok1 && ok2) {
+            const quint32 internal_ver = ((quint32)std::max(0, major - 1) * 655360) + ((quint32)minor * 65536);
+            return QString::number(internal_ver);
+        }
+    }
+    return QStringLiteral("0");
+}
+
 void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
     title_label->setText(game.final_title.isEmpty() ? game.title : game.final_title);
     tid_label->setText(tr("Title ID: %1").arg(game.serial_id.isEmpty() ? tr("Не указан") : game.serial_id));
     version_badge->setText(tr("Версия: %1").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version));
+    const QString int_ver = ExtractInternalVersion(game.title, game.version);
+    internal_version_badge->setText(tr("Сборка: %1").arg(int_ver));
     size_badge->setText(tr("Размер: %1").arg(game.size.isEmpty() ? tr("Неизвестно") : game.size));
     lang_badge->setText(tr("Язык: %1").arg(game.text_langs.isEmpty() ? tr("Multi") : game.text_langs.join(QStringLiteral(", "))));
 
@@ -598,7 +649,7 @@ void StormGamesWorldDialog::FetchGameDetails(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games?id=%1").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.5 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.6 (Windows x64)"));
     details_reply = network_mgr.get(req);
     connect(details_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnGameDetailsReplyFinished);
 }
@@ -631,7 +682,7 @@ void StormGamesWorldDialog::FetchRealExtension(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.5 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.6 (Windows x64)"));
     head_reply = network_mgr.head(req);
     connect(head_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnHeadReplyFinished);
 }
@@ -860,7 +911,7 @@ void StormGamesWorldDialog::OnStartDownload() {
 
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game.id));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.5 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.6 (Windows x64)"));
 
     is_downloading = true;
     current_download_game_id = game.id;

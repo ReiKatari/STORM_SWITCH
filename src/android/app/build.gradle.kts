@@ -380,6 +380,7 @@ dependencies {
     implementation("net.swiftzer.semver:semver:2.0.0")
 
     // Multi-format archive extraction (7z, rar, zip, tar)
+    implementation(files("libs/sevenzipjbinding-4android.aar"))
     implementation("org.apache.commons:commons-compress:1.26.1")
     implementation("org.tukaani:xz:1.9")
     implementation("com.github.junrar:junrar:7.5.5")
@@ -416,7 +417,7 @@ fun getGitVersion(): String {
             return ver
         }
     }
-    return "8.0.5"
+    return "8.0.6"
 }
 
 

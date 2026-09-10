@@ -57,32 +57,29 @@ function Send-TGDocument([string]$filePath, [string]$caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 8.0.5 (Поддержка архивов модов .7z и .rar, менеджер установленных Amiibo, редизайн STORM GAMES WORLD и стабильность SoR4)</b> — <i>Масштабное обновление эмулятора Nintendo Switch для платформ Windows x64 и Android: полноценная распаковка модов .7z и .rar, встроенный менеджер локальных дампов Amiibo, глубокий визуальный редизайн каталога STORM GAMES WORLD с официальными обложками и информативными плашками, расширенный журнал логов и исправление стабильности видеодекодера NVDEC.</i>
+⚡ <b>Релиз STORM SWITCH 8.0.6 (Ликвидация фризов 4 FPS, нативная распаковка модов .7z, обновление каталога STORM GAMES WORLD и совместимость)</b> — <i>Комплексное обновление эмулятора Nintendo Switch для Windows x64 и Android: устранение критической задержки видеопамяти 200 мс и падения до 4 FPS, исправление графических артефактов в Animal Well, нативная распаковка 7-Zip (GameBanana) с поддержкой сложных фильтров BCJ2, регистрация AOC-команды 50 и обновленный интерфейс STORM GAMES WORLD.</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения и улучшения:</b>
 
-📦 <b>Универсальная распаковка модов .7z и .rar (Windows и Android):</b>
-• <b>Windows</b>: встроенная распаковка архивов <code>.7z</code> и <code>.rar</code> модов GameBanana через портативный движок 7-Zip. Устранена ошибка повторного вложения каталогов <code>romfs/romfs</code>, предотвращено копирование нераспакованных архивов в папку модов.
-• <b>Android</b>: прямая поддержка распаковки архивов <code>.7z</code>, <code>.rar</code> и <code>.zip</code> на базе библиотек Commons Compress, XZ и Junrar с проверкой целостности файлов и обновленным интерфейсом с огранкой переключателей и поля поиска.
+🎮 <b>Устранение просадки 4 FPS и статтеров видеопамяти (Windows):</b>
+• <b>Оптимизация чтения буферов GPU</b>: обратное чтение буферов видеопамяти теперь вызывается только для реально модифицированных видеокартой областей памяти (<code>IsRegionGpuModified</code>), что устранило 200-миллисекундные задержки синхронизации PCIe в <i>Animal Well</i>, <i>Streets of Rage 4</i> и <i>Diablo II: Resurrected</i>.
+• <b>Глобальное отключение readback по умолчанию</b>: параметр <code>enable_gpu_buffer_readback</code> переведен в <code>false</code> по умолчанию во всех конфигурациях для максимальной отзывчивости рендеринга.
+• <b>Исправление графики Animal Well</b>: включена высокая точность GPU (High Accuracy) и отключен рескейл, что ликвидировало артефакты ступенчатых полос и затемнения буфера освещения.
 
-👾 <b>Менеджер установленных Amiibo (Android):</b>
-• <b>Вкладка «Установленные»</b>: внедрена удобная панель переключения между онлайн-каталогом и локальными Amiibo.
-• <b>Управление дампами .bin</b>: мгновенный просмотр сохраненных дампов NTAG215 с точным размером, быстрая загрузка выбранной фигурки в активную игру и удаление ненужных файлов прямо из интерфейса.
+🧩 <b>Нативная распаковка модов .7z и реорганизация LayeredFS (Android):</b>
+• <b>Интеграция 7-Zip-JBinding-4Android</b>: внедрен нативный движок декомпрессии архивов 7-Zip, поддерживающий многопоточные фильтры BCJ2 (ранее приводившие к ошибке <i>«Multi input/output stream coders are not yet supported»</i> в Pure Java).
+• <b>Умное определение структуры модов</b>: любые архивы модов с GameBanana (включая структуры с <code>atmosphere/contents/&lt;TitleID&gt;/...</code>) автоматически очищаются от лишних вложенных папок и монтируются напрямую в корневые директории <code>romfs</code>, <code>exefs</code> и <code>cheats</code>.
+• <b>Регистронезависимый поиск Title ID</b>: обеспечена корректная загрузка модов независимо от регистра идентификатора игры на файловой системе Linux/Android.
 
-📱 <b>Редизайн и улучшения STORM GAMES WORLD на Android:</b>
-• <b>Корректный отступ под системную шторку</b>: заголовок и панель диалога опущены под системный статус-бар и вырез экрана (Display Cutout) для исключения наложения часов и значков системы.
-• <b>Поддержка альбомного режима</b>: кнопка быстрого перехода в STORM GAMES WORLD добавлена на главный экран при горизонтальной ориентации.
-• <b>Восстановление официальных обложек</b>: реализован автоматический поиск и загрузка обложек из CDN Nintendo eShop с резервным отображением локальных иконок установленных игр.
-• <b>Информативные плашки и 3D-кнопки</b>: убран префикс «v» из версий, добавлены стильные неоновые плашки внутренней версии (например, <code>655360</code>), размера файла и языка игры, а также объемная кнопка «Скачать» / «Скачано».
+🌐 <b>Интерфейс STORM GAMES WORLD (Windows и Android):</b>
+• <b>Окно каталога на Windows</b>: расширены базовые габариты окна (1380×800) и списков игр, добавлена фиолетовая плашка внутреннего номера сборки (например, <code>655360</code>).
+• <b>Верифицированные обложки игр (Android)</b>: обновлена таблица соответствий официального CDN Nintendo eShop на базе TitleDB — устранены некорректные и смещенные обложки (Brotato, Dave the Diver, Cadence of Hyrule и др.).
+• <b>Обновленные стили кнопок</b>: изумрудная заливка (<code>#10B981</code>) с отметкой «Скачано» для загруженных проектов и нейтральный контурный стиль (<code>#334155</code>) с надписью «Скачать» для доступных игр.
 
-📋 <b>Расширенный журнал работы (Логи):</b>
-• Окно логов на Android увеличено в ширину и высоту до точных пропорций окон онлайн-базы Amiibo и чит-кодов для удобного чтения длинных сообщений и трассировок.
-
-🎮 <b>Стабильность видеодекодера NVDEC (Streets of Rage 4):</b>
-• Корректная обработка тайм-аута отправки кадров <code>SetSubmitTimeout</code> без падений эмулятора.
-• Защита от обращения к нулевым дескрипторам буферов в <code>UnmapBuffer</code> и устранение спама предупреждений NVMAP.
+⚙️ <b>Сервисы системы Nintendo Switch:</b>
+• <b>AOC Service 13.0.0+</b>: зарегистрирована команда 50 (<code>CheckAddOnContentMountStatus</code>) в диспетчере дополнительного контента (AddOnContentManager).
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 <i>Все бинарные файлы подписаны официальным сертификатом SHA-256, проверены и готовы к работе.</i>
@@ -93,20 +90,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram (Main APK first)..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.5.apk"
-        Caption = "📱 <b>STORM SWITCH 8.0.5 (Основная версия — Android 14+)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.6.apk"
+        Caption = "📱 <b>STORM SWITCH 8.0.6 (Основная версия — Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.5_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 8.0.5 (Версия Legacy — Android 10-13)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.6_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 8.0.6 (Версия Legacy — Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.5_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 8.0.5 (Версия SDK27 — Android 8.1-9)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.6_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 8.0.6 (Версия SDK27 — Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.5_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 8.0.5 (Портативная версия для Windows x64)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.6_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 8.0.6 (Портативная версия для Windows x64)</b>"
     }
 )
 
@@ -119,4 +116,4 @@ foreach ($f in $filesToUpload) {
 }
 
 $httpClient.Dispose()
-Write-Host "`nRelease 8.0.5 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 8.0.6 deployment to Telegram completed successfully!"
