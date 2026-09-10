@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <QDateTime>
@@ -8,6 +9,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QJsonArray>
@@ -797,21 +799,49 @@ void ConfigureGameBananaMods::DownloadAndInstallMod(const GameBananaFile& file_i
 
         status_label->setText(tr("Распаковка и установка мода..."));
 
-        // Extract and install
-        const QString extracted = QtCommon::Mod::ExtractMod(QString::fromStdString(Common::FS::PathToUTF8String(temp_file_path)));
-        QString clean_mod_name = mod_name;
+        const QString temp_file_str = QString::fromStdString(Common::FS::PathToUTF8String(temp_file_path));
+        const QString extracted = QtCommon::Mod::ExtractMod(temp_file_str);
+
+        // Remove temporary archive file
+        std::error_code ec;
+        std::filesystem::remove(temp_file_path, ec);
+
+        if (extracted.isEmpty()) {
+            status_label->setStyleSheet(QStringLiteral("color: #ff5252; font-weight: bold;"));
+            status_label->setText(tr("❌ Ошибка распаковки архива мода!"));
+            return;
+        }
+
+        QString clean_mod_name = mod_name.trimmed();
         if (clean_mod_name.isEmpty()) {
             clean_mod_name = QFileInfo(file_info.name).baseName();
         }
-
-        if (!extracted.isEmpty()) {
-            const auto mod_folders = QtCommon::Mod::GetModFolders(extracted, clean_mod_name);
-            for (const auto& mod_path : mod_folders) {
-                FrontendCommon::InstallMod(mod_path.toStdString(), title_id, true);
-            }
-        } else {
-            FrontendCommon::InstallMod(Common::FS::PathToUTF8String(temp_file_path), title_id, true);
+        clean_mod_name = clean_mod_name.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")), QStringLiteral("_")).trimmed();
+        if (clean_mod_name.isEmpty()) {
+            clean_mod_name = QStringLiteral("GameBananaMod");
         }
+
+        const auto load_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::LoadDir) / fmt::format("{:016X}", title_id);
+        const auto target_mod_dir = load_dir / clean_mod_name.toStdString();
+
+        const bool organized = QtCommon::Mod::OrganizeModStructure(
+            std::filesystem::path(extracted.toStdString()),
+            target_mod_dir);
+
+        // Remove temporary extraction folder
+        std::filesystem::remove_all(std::filesystem::path(extracted.toStdString()), ec);
+
+        if (!organized) {
+            status_label->setStyleSheet(QStringLiteral("color: #ff5252; font-weight: bold;"));
+            status_label->setText(tr("❌ Не удалось структурировать файлы мода!"));
+            QMessageBox::warning(this, tr("Ошибка установки"),
+                                 tr("Не удалось распознать структуру файлов мода «%1».").arg(clean_mod_name));
+            return;
+        }
+
+        // Enable the mod in settings if it was disabled
+        auto& disabled = Settings::values.disabled_addons[title_id];
+        disabled.erase(std::remove(disabled.begin(), disabled.end(), clean_mod_name.toStdString()), disabled.end());
 
         status_label->setStyleSheet(QStringLiteral("color: #00e676; font-weight: bold;"));
         status_label->setText(tr("✅ Мод '%1' успешно установлен и активирован!").arg(clean_mod_name));

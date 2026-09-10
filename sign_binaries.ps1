@@ -37,6 +37,8 @@ $stageDir = 'e:\STORM EDEN 3\build\stage_zip'
 if (Test-Path $stageDir) { Remove-Item $stageDir -Recurse -Force }
 New-Item -ItemType Directory -Path "$stageDir\user\config", "$stageDir\user\load", "$stageDir\user\nand", "$stageDir\user\sdmc", "$stageDir\user\cache" -Force | Out-Null
 Copy-Item 'e:\STORM EDEN 3\Assembling\STORM_SWITCH*.exe' $stageDir\ -Force
+Copy-Item 'e:\STORM EDEN 3\Assembling\7z.exe' $stageDir\ -Force -ErrorAction SilentlyContinue
+Copy-Item 'e:\STORM EDEN 3\Assembling\7z.dll' $stageDir\ -Force -ErrorAction SilentlyContinue
 
 $zipPath = 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.4_Windows.zip'
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }

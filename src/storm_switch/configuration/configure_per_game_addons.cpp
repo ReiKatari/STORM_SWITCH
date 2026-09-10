@@ -14,6 +14,7 @@
 #include <QHeaderView>
 #include <QMenu>
 #include <QStandardItemModel>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QString>
 #include <QTimer>
@@ -213,22 +214,86 @@ void ConfigurePerGameAddons::InstallModFolder() {
         return;
     }
 
-    InstallModPath(path);
+    const QString default_name = QDir(path).dirName();
+    QString name = QtCommon::Frontend::GetTextInput(
+        tr("Mod Name"), tr("What should this mod be called?"), default_name);
+    if (name.isEmpty()) {
+        name = default_name;
+    }
+    name = name.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")), QStringLiteral("_")).trimmed();
+    if (name.isEmpty()) {
+        name = QStringLiteral("CustomMod");
+    }
+
+    const auto load_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::LoadDir) / fmt::format("{:016X}", title_id);
+    const auto target_mod_dir = load_dir / name.toStdString();
+
+    const bool organized = QtCommon::Mod::OrganizeModStructure(
+        std::filesystem::path(path.toStdString()),
+        target_mod_dir);
+
+    if (organized) {
+        auto& disabled = Settings::values.disabled_addons[title_id];
+        disabled.erase(std::remove(disabled.begin(), disabled.end(), name.toStdString()), disabled.end());
+        item_model->removeRows(0, item_model->rowCount());
+        list_items.clear();
+        LoadConfiguration();
+        UISettings::values.is_game_list_reload_pending.exchange(true);
+        QtCommon::Frontend::Information(tr("Mod Install Succeeded"),
+                                        tr("Successfully installed mod «%1».").arg(name));
+    } else {
+        InstallModPath(path);
+    }
 }
 
 void ConfigurePerGameAddons::InstallModZip() {
-    // TODO(crueter): use GetOpenFileName to allow select multiple ZIPs
     const auto path = QtCommon::Frontend::GetOpenFileName(
-        tr("Zipped Mod Location"),
+        tr("Mod Archive Location"),
         QStandardPaths::writableLocation(QStandardPaths::DownloadLocation),
-        tr("Zipped Archives (*.zip)"));
+        tr("Mod Archives (*.zip *.7z *.rar *.tar *.tar.gz *.tar.xz *.tgz *.bz2);;All Files (*.*)"));
     if (path.isEmpty()) {
         return;
     }
 
     const QString extracted = QtCommon::Mod::ExtractMod(path);
-    if (!extracted.isEmpty())
-        InstallModPath(extracted, QFileInfo(path).baseName());
+    if (extracted.isEmpty()) {
+        return;
+    }
+
+    const QString default_name = QFileInfo(path).baseName();
+    QString name = QtCommon::Frontend::GetTextInput(
+        tr("Mod Name"), tr("What should this mod be called?"), default_name);
+    if (name.isEmpty()) {
+        name = default_name;
+    }
+    name = name.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")), QStringLiteral("_")).trimmed();
+    if (name.isEmpty()) {
+        name = QStringLiteral("CustomMod");
+    }
+
+    const auto load_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::LoadDir) / fmt::format("{:016X}", title_id);
+    const auto target_mod_dir = load_dir / name.toStdString();
+
+    const bool organized = QtCommon::Mod::OrganizeModStructure(
+        std::filesystem::path(extracted.toStdString()),
+        target_mod_dir);
+
+    std::error_code ec;
+    std::filesystem::remove_all(std::filesystem::path(extracted.toStdString()), ec);
+
+    if (organized) {
+        auto& disabled = Settings::values.disabled_addons[title_id];
+        disabled.erase(std::remove(disabled.begin(), disabled.end(), name.toStdString()), disabled.end());
+        item_model->removeRows(0, item_model->rowCount());
+        list_items.clear();
+        LoadConfiguration();
+        UISettings::values.is_game_list_reload_pending.exchange(true);
+        QtCommon::Frontend::Information(tr("Mod Install Succeeded"),
+                                        tr("Successfully installed mod «%1».").arg(name));
+    } else {
+        QtCommon::Frontend::Critical(tr("Mod Install Failed"),
+                                     tr("Could not recognize or organize mod files in %1").arg(path));
+    }
 }
 
 void ConfigurePerGameAddons::AddonDeleteRequested(QList<QModelIndex> selected) {
