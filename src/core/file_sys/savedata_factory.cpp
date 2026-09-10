@@ -120,7 +120,12 @@ VirtualDir SaveDataFactory::Open(SaveDataSpaceId space, const SaveDataAttribute&
 }
 
 VirtualDir SaveDataFactory::GetSaveDataSpaceDirectory(SaveDataSpaceId space) const {
-    return dir->GetDirectoryRelative(GetSaveDataSpaceIdPath(space));
+    const auto path = GetSaveDataSpaceIdPath(space);
+    auto space_dir = dir->GetDirectoryRelative(path);
+    if (space_dir == nullptr) {
+        space_dir = dir->CreateDirectoryRelative(path);
+    }
+    return space_dir;
 }
 
 std::string SaveDataFactory::GetSaveDataSpaceIdPath(SaveDataSpaceId space) {

@@ -479,11 +479,14 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100152000022000ULL,
         "Mario Kart 8 Deluxe",
-        "• Отсутствие голов у персонажей Mii на трассах",
-        "• Invisible/missing heads on Mii characters",
-        "✓ Требуется Firmware 18.0.0+ и системные файлы Mii\n✓ Сжатие ASTC: Отключено",
-        "✓ Firmware 18.0.0+ and Mii system files required\n✓ ASTC Recompression: Uncompressed",
+        "• Отсутствие голов у персонажей Mii на трассах\n• Вылет при переходе между режимами и загрузке трасс\n• Нехватка памяти при длительных сессиях",
+        "• Invisible/missing heads on Mii characters\n• Crash during mode transitions and track loading\n• Memory pressure during extended sessions",
+        "✓ Требуется Firmware 18.0.0+ и системные файлы Mii\n✓ Сжатие ASTC: Отключено\n✓ Реактивный сброс: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
+        "✓ Firmware 18.0.0+ and Mii system files required\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 6GB DRAM",
         {
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\astc_recompression", "0"}
         }
     },
@@ -923,7 +926,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x01000A10041EA000ULL,
+        0x01005CA01580E000ULL,
         "Persona 5 Royal",
         "• Мерцание 2D UI портретов и шрифтов\n• Просадки FPS в людных районах Токио",
         "• 2D UI portrait flicker and font artifacts\n• Heavy crowds FPS drops in Shibuya and Shinjuku",
@@ -1843,7 +1846,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x01000A10041EA000ULL,
+        0x010036B0034E4000ULL,
         "Super Mario Party",
         "• Микрозадержки анимаций кубиков и персонажей\n• Сбои полупрозрачности воды в речных сплавах",
         "• Dice roll animation micro-stutters\n• River Survival water transparency glitches",
@@ -1856,7 +1859,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x01006BB00C6F0000ULL,
+        0x01006FE013472000ULL,
         "Mario Party Superstars",
         "• Мерцание теней на классических досках N64\n• Размытие миниатюр правил мини-игр",
         "• Retro N64 board shadow flickering\n• Minigame instruction modal blur",
@@ -1924,7 +1927,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x01004D300C5AE000ULL,
+        0x0100A3900C3E2000ULL,
         "Paper Mario: The Origami King",
         "• Сбои отрисовки кольцевой арены в битвах\n• Артефакты конфетти и бумажных складок",
         "• Ring puzzle battle arena glitches\n• Confetti paper fold texture artifacts",
@@ -2018,7 +2021,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x0100152000022000ULL,
+        0x0100151003A36000ULL,
         "Pokemon Let's Go, Eevee!",
         "• Задержка круга прицеливания при броске покебола\n• Мерцание травы на маршрутах Канто",
         "• Pokeball throw capture ring input lag\n• Kanto route grass shader flickering",
@@ -2426,14 +2429,48 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
+        0x01001B300B9BE000ULL,
+        "Diablo III: Eternal Collection",
+        "• Задержка и зависание на экране сезонов при проверке Battle.net\n• Микрофризы при спавне элитных паков",
+        "• Battle.net seasonal handshake timeout freeze\n• Elite mob pack spawn stutter",
+        "✓ Режим полёта: Включено (пропуск серверов Battle.net)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
+        "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
+        {
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\gpu_accuracy", "1"}
+        }
+    },
+    {
+        0x010032F00C04A000ULL,
+        "Diablo III: Eternal Collection (Japan)",
+        "• Задержка и зависание на экране сезонов при проверке Battle.net\n• Микрофризы при спавне элитных паков",
+        "• Battle.net seasonal handshake timeout freeze\n• Elite mob pack spawn stutter",
+        "✓ Режим полёта: Включено (пропуск серверов Battle.net)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
+        "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
+        {
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\gpu_accuracy", "1"}
+        }
+    },
+    {
         0x01001B700A654000ULL,
         "Diablo III: Eternal Collection",
         "• Задержка и зависание на экране сезонов при проверке Battle.net\n• Микрофризы при спавне элитных паков",
         "• Battle.net seasonal handshake timeout freeze\n• Elite mob pack spawn stutter",
-        "✓ Режим полёта: Включено (пропуск серверов Battle.net)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
-        "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
+        "✓ Режим полёта: Включено (пропуск серверов Battle.net)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
+        "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
         {
             {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\gpu_accuracy", "1"}
@@ -3778,20 +3815,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dyna_state", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
-        }
-    },
-    {
-        0x0100152000022000ULL,
-        "Mario Kart 8 Deluxe",
-        "• Вылет при переходе между режимами и загрузке трасс\n• Нехватка памяти при длительных сессиях онлайн",
-        "• Crash during mode transitions and track loading\n• Memory pressure during extended online sessions",
-        "",
-        "",
-        {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\astc_recompression", "0"}
         }
     },
     {

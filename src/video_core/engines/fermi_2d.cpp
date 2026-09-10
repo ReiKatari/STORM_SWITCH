@@ -71,7 +71,11 @@ void Fermi2D::Blit() {
         LOG_WARNING(HW_GPU, "Fermi2D Blit: Destination layer is not zero ({})", regs.dst.layer);
     }
     if (regs.src.depth != 1 && regs.src.depth != 0) {
-        LOG_WARNING(HW_GPU, "Fermi2D Blit: Source depth is not one (depth={})", regs.src.depth);
+        static bool warned_depth = false;
+        if (!warned_depth) {
+            warned_depth = true;
+            LOG_WARNING(HW_GPU, "Fermi2D Blit: Source depth is not one (depth={})", regs.src.depth);
+        }
     }
     if (regs.clip_enable != 0) {
         LOG_WARNING(HW_GPU, "Fermi2D Blit: Clipped blit enabled");

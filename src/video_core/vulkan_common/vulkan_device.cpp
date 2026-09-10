@@ -588,7 +588,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
                                VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME);
         features.shader_atomic_int64.shaderBufferInt64Atomics = false;
         features.shader_atomic_int64.shaderSharedInt64Atomics = false;
-        features.features.shaderInt64 = false;
+        // Do NOT disable features.features.shaderInt64 — Adreno 6xx/7xx/8xx supports 64-bit integer
+        // arithmetic natively, which is required for SPIR-V global memory address calculations in BotW!
         LOG_INFO(Render_Vulkan, "Qualcomm drivers have broken shader float controls.");
         RemoveExtension(extensions.shader_float_controls, VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
         LOG_INFO(Render_Vulkan, "Qualcomm drivers have broken workgroup memory explicit layout.");

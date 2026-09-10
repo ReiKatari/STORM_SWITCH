@@ -68,6 +68,10 @@ void ISaveDataInfoReader::FindAllSaves(FileSys::SaveDataSpaceId space) {
     const auto result = save_data_controller->OpenSaveDataSpace(&save_root, space);
 
     if (result != ResultSuccess || save_root == nullptr) {
+        if (space == FileSys::SaveDataSpaceId::Temporary) {
+            // Temporary/cache storage directory can be legitimately empty on initial run
+            return;
+        }
         LOG_ERROR(Service_FS, "The save root for the space_id={:02X} was invalid!", space);
         return;
     }

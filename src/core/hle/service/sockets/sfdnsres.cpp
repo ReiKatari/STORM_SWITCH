@@ -202,10 +202,10 @@ static std::pair<u32, GetAddrInfoError> GetHostByNameRequestImpl(HLERequestConte
     const std::string host = Common::StringFromBuffer(host_buffer);
     // For now, ignore options, which are in input buffer 1 for GetHostByNameRequestWithOptions.
 
-    // Prevent resolution of Nintendo servers
+    // Prevent resolution of Nintendo servers and telemetry
     if (IsBlockedHost(host)) {
-        LOG_WARNING(Network, "Resolution of hostname {} requested, returning EAI_AGAIN", host);
-        return {0, GetAddrInfoError::AGAIN};
+        LOG_WARNING(Network, "Resolution of hostname {} requested, returning EAI_NODATA", host);
+        return {0, GetAddrInfoError::NODATA};
     }
 
     auto res_v = Network::GetAddressInfo(host, /*service*/ std::nullopt);

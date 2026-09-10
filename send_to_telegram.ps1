@@ -57,27 +57,27 @@ function Send-TGDocument([string]$filePath, [string]$caption) {
 }
 
 $announcement = @"
-⚡ <b>Релиз STORM SWITCH 8.0.9 и STORM DRIVER 3.0.1</b> — <i>Глубокая актуализация всех авто-исправлений, ликвидация вылетов и утечек памяти, системные улучшения из Eden Nightly, дросселирование асинхронных сбросов буферов и обновленный универсальный графический драйвер.</i>
+⚡ <b>Релиз STORM SWITCH 8.1.0 и STORM DRIVER 3.0.1</b> — <i>Масштабное исправление критических вылетов (Mortal Kombat 1/11, Diablo III, Zelda BotW), восстановление правильных Title ID в базе данных, устранение зависаний сетевой телеметрии и оптимизация графического конвейера Vulkan.</i>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-🚀 <b>Ключевые изменения и улучшения STORM SWITCH 8.0.9:</b>
+🚀 <b>Ключевые изменения и улучшения STORM SWITCH 8.1.0:</b>
 
-🎯 <b>Глубокий аудит и актуализация базы авто-исправлений (252 игры):</b>
-• <b>Оптимизация памяти (DRAM)</b>: устранён избыточный режим 8 ГБ DRAM для платформеров и нетребовательных игр (Little Nightmares II и III, Yoshi's Crafted World, Bravely Default II, Princess Peach: Showtime!, Alien: Isolation возвращены на 4 ГБ; Need for Speed, Sonic Frontiers, Pokémon, Astral Chain, Luigi's Mansion 3, Pikmin 4, Red Dead Redemption переведены на оптимальные 6 ГБ). Это ликвидирует OOM-вылеты на мобильных устройствах с 6-8 ГБ RAM.
-• <b>Обновлён baseline</b>: по умолчанию активированы вычислительные конвейеры (compute pipelines), кэш конвейеров драйвера Vulkan, дисковый кэш шейдеров и чтение буферов GPU.
-• <b>Новые игровые профили</b>: добавлены выделенные авто-исправления для Mario Kart 8 Deluxe, Super Mario Party Jamboree, Pikmin 4, Luigi's Mansion 2 HD, Sid Meier's Civilization VII и Persona 5 Royal.
+🎯 <b>Полный аудит и исправление Title ID в базе авто-исправлений:</b>
+• <b>Diablo III: Eternal Collection</b>: добавлены реальные Title ID для глобальной (<code>01001B300B9BE000</code>) и японской (<code>010032F00C04A000</code>) версий с преднастроенными профилями (режим полёта, 6 ГБ DRAM, асинхронные шейдеры, fastmem).
+• <b>Ликвидация конфликтов и дубликатов Title ID</b>: исправлены некорректные идентификаторы для Super Mario Party (<code>010036B0034E4000</code>), Mario Party Superstars (<code>01006FE013472000</code>), Paper Mario: The Origami King (<code>0100A3900C3E2000</code>), Pokémon: Let's Go, Eevee! (<code>0100151003A36000</code>) и Persona 5 Royal (<code>01005CA01580E000</code>).
+• <b>Mario Kart 8 Deluxe</b>: объединён профиль с оптимальным режимом 6 ГБ DRAM и реактивной очисткой памяти.
 
-🛡️ <b>Устранение критических сбоев и системные улучшения:</b>
-• <b>Pikmin 4 и HID NPad</b>: устранено падение по нулевому указателю (nullptr dereference) при подключении/отключении контроллеров и смене профилей ввода в моменты, когда разделяемая память ещё не сопоставлена.
-• <b>Служба AM и управление жизненным циклом</b>: добавлены защитные проверки процесса и апплета в <code>ISelfController</code>, ликвидирующие вылеты и use-after-free при выходе из игр и переключении режимов.
-• <b>Буферный кэш (In-flight flush throttling)</b>: внедрён контроль очереди асинхронных сбросов видеопамяти — при накоплении отложенных буферов движок завершает операцию, предотвращая раздувание VRAM и заикания (stutters).
-• <b>Qualcomm Adreno Sampler Precision</b>: исправлена некорректная интерполяция кастомных цветов границы текстур в проприетарном драйвере Qualcomm, устраняющая чёрный экран в Persona 5 Royal.
+🛡️ <b>Устранение критических сбоев и зависаний:</b>
+• <b>Mortal Kombat 1 и 11 (SaveDataSpaceId::Temporary)</b>: устранено падение при запуске из-за отсутствия директории временного кэш-хранилища (space_id=03). Реализовано автоматическое создание папки и безопасное чтение временных данных.
+• <b>Diablo III (Battle.net Telemetry)</b>: устранены 11-секундные задержки и зависание на экране сезонов. Заблокированные хосты телеметрии теперь мгновенно возвращают NODATA вместо цикла EAI_AGAIN.
+• <b>Diablo III (Fermi2D Blit)</b>: предупреждение о несоответствии глубины буфера переведено в однократный лог, что устранило микрофризы от спама в консоль.
+• <b>Zelda: Breath of the Wild (Qualcomm Adreno)</b>: восстановлена аппаратная поддержка <code>shaderInt64</code> для графических процессоров Adreno, предотвращая сбои компиляции глобальной памяти и графические артефакты в святилищах и открытом мире.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 🚀 <b>Ключевые изменения STORM DRIVER 3.0.1 (Universal Edition):</b>
-• <b>Subpass Fusion v2</b>: активировано интеллектуальное объединение проходов рендеринга с защитой глубины и трафарета (+15-20% прироста эффективности).
+• <b>Subpass Fusion v2</b>: интеллектуальное объединение проходов рендеринга с защитой глубины и трафарета (+15-20% прироста эффективности).
 • <b>Sparse Buffer Pages</b>: улучшена адресация виртуальных страниц буферов памяти для крупных AAA-проектов.
 • <b>14 выделенных профилей</b>: индивидуальная настройка движка для Zelda BotW/TotK, Hogwarts Legacy, Persona 5 Royal, Mario Kart 8 Deluxe, Pokémon, Batman, Witcher 3, No Man's Sky, GTA V, DOOM Eternal, Xenoblade Chronicles 3, Diablo II и Streets of Rage 4.
 
@@ -90,20 +90,20 @@ Send-TGMessage $announcement
 Write-Host "2. Uploading release files to Telegram (Main APK first)..."
 $filesToUpload = @(
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.9.apk"
-        Caption = "📱 <b>STORM SWITCH 8.0.9 (Основная версия — Android 14+)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.1.0.apk"
+        Caption = "📱 <b>STORM SWITCH 8.1.0 (Основная версия — Android 14+)</b>"
     },
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.9_LEGACY.apk"
-        Caption = "📱 <b>STORM SWITCH 8.0.9 (Версия Legacy — Android 10-13)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.1.0_LEGACY.apk"
+        Caption = "📱 <b>STORM SWITCH 8.1.0 (Версия Legacy — Android 10-13)</b>"
     },
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.9_SDK27.apk"
-        Caption = "📱 <b>STORM SWITCH 8.0.9 (Версия SDK27 — Android 8.1-9)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.1.0_SDK27.apk"
+        Caption = "📱 <b>STORM SWITCH 8.1.0 (Версия SDK27 — Android 8.1-9)</b>"
     },
     @{
-        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.9_Windows.zip"
-        Caption = "💻 <b>STORM SWITCH 8.0.9 (Портативная версия для Windows x64)</b>"
+        Path = "E:\STORM SWITCH 3\Files\STORM_SWITCH_8.1.0_Windows.zip"
+        Caption = "💻 <b>STORM SWITCH 8.1.0 (Портативная версия для Windows x64)</b>"
     },
     @{
         Path = "E:\STORM SWITCH 3\Files\STORM_DRIVER_3.0.1.zip"
@@ -120,4 +120,5 @@ foreach ($f in $filesToUpload) {
 }
 
 $httpClient.Dispose()
-Write-Host "`nRelease 8.0.9 deployment to Telegram completed successfully!"
+Write-Host "`nRelease 8.1.0 deployment to Telegram completed successfully!"
+
