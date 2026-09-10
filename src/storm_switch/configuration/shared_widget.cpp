@@ -74,6 +74,11 @@ void UnregisterReloadCallback(uintptr_t id) {
 }
 
 void ReloadAllActiveWidgets() {
+    static bool s_is_reloading = false;
+    if (s_is_reloading) {
+        return;
+    }
+    s_is_reloading = true;
     for (auto* w : s_active_widgets) {
         if (w) {
             w->ReloadFromSetting();
@@ -84,6 +89,7 @@ void ReloadAllActiveWidgets() {
             cb();
         }
     }
+    s_is_reloading = false;
 }
 
 static int restore_button_count = 0;

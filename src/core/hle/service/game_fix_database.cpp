@@ -160,10 +160,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Zelda: Tears of the Kingdom",
         "• Черный силуэт персонажей и тени в Кавернах\n• Бирюзовая сетка и артефакты Z-буфера на водных поверхностях\n• Утечки VRAM в конструкторе Ультраруки",
         "• Character silhouette and shadow artifacts in Depths\n• Water surface and depth bias cyan grid artifacts\n• Ultrahand VRAM pressure",
-        "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Реактивная очистка: Включено (устранение мерцания магии Ультраруки и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода)\n✓ Быстрое время ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
-        "✓ GPU Accuracy: High (Fixes character shadows and lighting)\n✓ Reactive Flushing: Enabled (Fixes Ultrahand and rune magic flickering)\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
+        "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Поведение барьеров ГПУ: Точное (устранение мерцания в святилищах)\n✓ Обратное чтение буферов ГПУ: Включено (правильные текстуры персонажей)\n✓ Реактивная очистка: Включено (устранение мерцания магии Ультраруки и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода)\n✓ Быстрое время ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ GPU Accuracy: High (Fixes character shadows and lighting)\n✓ GPU Fence Behavior: Accurate (Fixes shrine flickering)\n✓ GPU Buffer Readback: Enabled (Accurate character textures)\n✓ Reactive Flushing: Enabled (Fixes Ultrahand and rune magic flickering)\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\gpu_fence_behavior", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\astc_recompression", "0"},
@@ -275,15 +277,15 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Графические артефакты ступенчатого рендеринга и искажение освещения",
         "• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Staircase scanline rendering and broken lighting buffer",
-        "✓ Точность ГПУ: Высокая (восстановление правильного освещения)\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Тайминги ГПУ: Отключено\n✓ Хак масштабирования: Отключено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Accuracy: High (restores proper lighting and scanlines)\n✓ GPU Buffer Readback: Disabled (restores 60 FPS)\n✓ Fast GPU Time: Disabled\n✓ Rescale Hack: Disabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS и корректный рендеринг 2D-шейдеров)\n✓ Обратное чтение буферов ГПУ: Отключено (устранение фризов 4 FPS / 200 ms)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS and correct 2D shader rendering)\n✓ GPU Buffer Readback: Disabled (Eliminates 4 FPS / 200 ms stalls)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
         {
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\rescale_hack", "false"},
-            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "false"}
+            {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
     {
@@ -291,15 +293,15 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Графические артефакты ступенчатого рендеринга и искажение освещения",
         "• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Staircase scanline rendering and broken lighting buffer",
-        "✓ Точность ГПУ: Высокая (восстановление правильного освещения)\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Тайминги ГПУ: Отключено\n✓ Хак масштабирования: Отключено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Accuracy: High (restores proper lighting and scanlines)\n✓ GPU Buffer Readback: Disabled (restores 60 FPS)\n✓ Fast GPU Time: Disabled\n✓ Rescale Hack: Disabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS и корректный рендеринг 2D-шейдеров)\n✓ Обратное чтение буферов ГПУ: Отключено (устранение фризов 4 FPS / 200 ms)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS and correct 2D shader rendering)\n✓ GPU Buffer Readback: Disabled (Eliminates 4 FPS / 200 ms stalls)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
         {
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\rescale_hack", "false"},
-            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "false"}
+            {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
     {
@@ -307,15 +309,15 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Графические артефакты ступенчатого рендеринга и искажение освещения",
         "• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Staircase scanline rendering and broken lighting buffer",
-        "✓ Точность ГПУ: Высокая (восстановление правильного освещения)\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Тайминги ГПУ: Отключено\n✓ Хак масштабирования: Отключено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Accuracy: High (restores proper lighting and scanlines)\n✓ GPU Buffer Readback: Disabled (restores 60 FPS)\n✓ Fast GPU Time: Disabled\n✓ Rescale Hack: Disabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS и корректный рендеринг 2D-шейдеров)\n✓ Обратное чтение буферов ГПУ: Отключено (устранение фризов 4 FPS / 200 ms)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS and correct 2D shader rendering)\n✓ GPU Buffer Readback: Disabled (Eliminates 4 FPS / 200 ms stalls)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
         {
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\rescale_hack", "false"},
-            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "false"}
+            {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
     {
@@ -652,42 +654,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpu_backend", "0"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\gpu_accuracy", "1"}
-        }
-    },
-    {
-        0x0100650017170000ULL,
-        "Animal Well",
-        "• Просадки кадровой частоты и пропадание звуковых дорожек",
-        "• Frame drops and missing audio tracks on startup",
-        "✓ Аудио-движок: SDL2 / Cubeb\n✓ Быстрая память: Безопасный режим\n✓ Асинхронные шейдеры: Включено",
-        "✓ Audio Engine: SDL2 / Cubeb\n✓ Fastmem: Safe Mode\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "false"}
-        }
-    },
-    {
-        0x010020D01AD24000ULL,
-        "Animal Well",
-        "• Просадки кадровой частоты и пропадание звуковых дорожек",
-        "• Frame drops and missing audio tracks on startup",
-        "✓ Аудио-движок: SDL2 / Cubeb\n✓ Быстрая память: Безопасный режим\n✓ Асинхронные шейдеры: Включено",
-        "✓ Audio Engine: SDL2 / Cubeb\n✓ Fastmem: Safe Mode\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "false"}
-        }
-    },
-    {
-        0x0100C9E01B854000ULL,
-        "Animal Well",
-        "• Просадки кадровой частоты и пропадание звуковых дорожек",
-        "• Frame drops and missing audio tracks on startup",
-        "✓ Аудио-движок: SDL2 / Cubeb\n✓ Быстрая память: Безопасный режим\n✓ Асинхронные шейдеры: Включено",
-        "✓ Audio Engine: SDL2 / Cubeb\n✓ Fastmem: Safe Mode\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "false"}
         }
     },
     {

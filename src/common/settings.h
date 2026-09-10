@@ -686,7 +686,7 @@ struct Values {
     SwitchableSetting<bool> rescale_hack{linkage, false, "rescale_hack",
                                          Category::RendererHacks};
     SwitchableSetting<bool> enable_gpu_buffer_readback{linkage,
-                                                       false,
+                                                       true,
                                                        "enable_gpu_buffer_readback",
                                                        Category::RendererAdvanced,
                                                        Specialization::Default,

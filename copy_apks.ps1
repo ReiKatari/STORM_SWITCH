@@ -2,26 +2,26 @@ $mainline = 'e:\STORM EDEN 3\src\src\android\app\build\outputs\apk\mainline\rele
 $legacy = 'e:\STORM EDEN 3\src\src\android\app\build\outputs\apk\legacy\release\app-legacy-release.apk'
 $sdk27 = 'e:\STORM EDEN 3\src\src\android\app\build\outputs\apk\sdk27\release\app-sdk27-release.apk'
 
-Write-Host "Copying APKs with STORM_SWITCH_8.0.6 naming..."
+Write-Host "Copying APKs with STORM_SWITCH_8.0.7 naming..."
 if (Test-Path $mainline) {
-    Copy-Item $mainline 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.6.apk' -Force
-    Copy-Item $mainline 'e:\STORM EDEN 3\STORM_SWITCH_8.0.6.apk' -Force
-    Copy-Item $mainline 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.6.apk' -Force
-    Copy-Item $mainline 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.6.apk' -Force
+    Copy-Item $mainline 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.7.apk' -Force
+    Copy-Item $mainline 'e:\STORM EDEN 3\STORM_SWITCH_8.0.7.apk' -Force
+    Copy-Item $mainline 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.7.apk' -Force
+    Copy-Item $mainline 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.7.apk' -Force
 }
 
 if (Test-Path $legacy) {
-    Copy-Item $legacy 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.6_LEGACY.apk' -Force
-    Copy-Item $legacy 'e:\STORM EDEN 3\STORM_SWITCH_8.0.6_LEGACY.apk' -Force
-    Copy-Item $legacy 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.6_LEGACY.apk' -Force
-    Copy-Item $legacy 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.6_LEGACY.apk' -Force
+    Copy-Item $legacy 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.7_LEGACY.apk' -Force
+    Copy-Item $legacy 'e:\STORM EDEN 3\STORM_SWITCH_8.0.7_LEGACY.apk' -Force
+    Copy-Item $legacy 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.7_LEGACY.apk' -Force
+    Copy-Item $legacy 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.7_LEGACY.apk' -Force
 }
 
 if (Test-Path $sdk27) {
-    Copy-Item $sdk27 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.6_SDK27.apk' -Force
-    Copy-Item $sdk27 'e:\STORM EDEN 3\STORM_SWITCH_8.0.6_SDK27.apk' -Force
-    Copy-Item $sdk27 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.6_SDK27.apk' -Force
-    Copy-Item $sdk27 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.6_SDK27.apk' -Force
+    Copy-Item $sdk27 'e:\STORM EDEN 3\Files\STORM_SWITCH_8.0.7_SDK27.apk' -Force
+    Copy-Item $sdk27 'e:\STORM EDEN 3\STORM_SWITCH_8.0.7_SDK27.apk' -Force
+    Copy-Item $sdk27 'e:\STORM SWITCH 3\Files\STORM_SWITCH_8.0.7_SDK27.apk' -Force
+    Copy-Item $sdk27 'e:\STORM SWITCH 3\STORM_SWITCH_8.0.7_SDK27.apk' -Force
 }
 
 Get-ChildItem -Path 'e:\STORM EDEN 3\Files' -Recurse | Unblock-File -ErrorAction SilentlyContinue

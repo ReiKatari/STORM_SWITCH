@@ -160,7 +160,9 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     ui->buttonBox->setFocus();
 
     ConfigurationShared::RegisterReloadCallback(reinterpret_cast<uintptr_t>(this), [this]() {
-        ReloadAllTabs();
+        if (graphics_tab) {
+            graphics_tab->SetConfiguration();
+        }
     });
 }
 
@@ -169,10 +171,16 @@ ConfigureDialog::~ConfigureDialog() {
 }
 
 void ConfigureDialog::ReloadAllTabs() {
+    static bool s_in_reload = false;
+    if (s_in_reload) {
+        return;
+    }
+    s_in_reload = true;
     ConfigurationShared::ReloadAllActiveWidgets();
     if (graphics_tab) {
         graphics_tab->SetConfiguration();
     }
+    s_in_reload = false;
 }
 
 void ConfigureDialog::SetConfiguration() {
