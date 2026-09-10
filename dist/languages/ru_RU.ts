@@ -6635,7 +6635,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="25" />
       <source>Eden Web Service</source>
-      <translation>Веб-сервис Eden</translation>
+      <translation>Веб-сервис STORM SWITCH</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="33" />

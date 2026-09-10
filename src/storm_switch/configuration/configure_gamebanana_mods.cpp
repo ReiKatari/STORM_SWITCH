@@ -27,6 +27,8 @@
 #include "qt_common/util/mod.h"
 #include "storm_switch/configuration/configure_gamebanana_mods.h"
 #include "storm_switch/configuration/configure_per_game_addons.h"
+#include "common/settings.h"
+#include "qt_common/config/uisettings.h"
 
 static QString FormatNumber(qint64 num) {
     if (num < 0) return QString::number(num);
@@ -121,7 +123,42 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
         "background-color: #1e293b; color: #f8fafc; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px;"));
     main_layout->addWidget(game_header_label);
 
-    // 2. Search & Controls Bar
+    // 2. View Switcher Bar (Online Catalog vs Installed Mods)
+    auto* switcher_layout = new QHBoxLayout;
+    switcher_layout->setSpacing(8);
+
+    tab_online_btn = new QPushButton(tr("🌐 Каталог GameBanana"), this);
+    tab_online_btn->setCheckable(true);
+    tab_online_btn->setChecked(true);
+    tab_online_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background-color: #00f2fe; color: #000000; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+        "QPushButton:hover { background-color: #38bdf8; }"
+    ));
+
+    tab_installed_btn = new QPushButton(tr("💾 Установленные моды"), this);
+    tab_installed_btn->setCheckable(true);
+    tab_installed_btn->setChecked(false);
+    tab_installed_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background-color: #1e293b; color: #f8fafc; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+        "QPushButton:hover { background-color: #334155; }"
+    ));
+
+    switcher_layout->addWidget(tab_online_btn);
+    switcher_layout->addWidget(tab_installed_btn);
+    switcher_layout->addStretch(1);
+    main_layout->addLayout(switcher_layout);
+
+    view_stack = new QStackedWidget(this);
+
+    // ==========================================
+    // --- Page 0: Online Catalog ---
+    // ==========================================
+    online_page = new QWidget(this);
+    auto* online_layout = new QVBoxLayout(online_page);
+    online_layout->setContentsMargins(0, 0, 0, 0);
+    online_layout->setSpacing(6);
+
+    // Search & Controls Bar
     auto* controls_layout = new QHBoxLayout;
     controls_layout->setSpacing(6);
 
@@ -145,9 +182,9 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     refresh_btn = new QPushButton(tr("🔄 Обновить"), this);
     controls_layout->addWidget(refresh_btn);
 
-    main_layout->addLayout(controls_layout);
+    online_layout->addLayout(controls_layout);
 
-    // 3. Main Splitter (Left: Mod List, Right: Mod Details & Install)
+    // Main Splitter (Left: Mod List, Right: Mod Details & Install)
     auto* splitter = new QSplitter(Qt::Horizontal, this);
 
     // Left Pane
@@ -278,9 +315,9 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
 
     splitter->addWidget(details_widget);
     details_widget->setVisible(false);
-    main_layout->addWidget(splitter, 1);
+    online_layout->addWidget(splitter, 1);
 
-    // 4. Bottom Pagination Bar
+    // Bottom Pagination Bar
     auto* bottom_bar = new QHBoxLayout;
     bottom_bar->setContentsMargins(4, 2, 4, 2);
 
@@ -306,7 +343,66 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     bottom_bar->addWidget(next_page_btn);
     bottom_bar->addStretch(1);
 
-    main_layout->addLayout(bottom_bar);
+    online_layout->addLayout(bottom_bar);
+
+    // ==========================================
+    // --- Page 1: Installed Mods ---
+    // ==========================================
+    installed_page = new QWidget(this);
+    auto* installed_layout = new QVBoxLayout(installed_page);
+    installed_layout->setContentsMargins(0, 0, 0, 0);
+    installed_layout->setSpacing(6);
+
+    auto* installed_top_bar = new QHBoxLayout;
+    installed_status_label = new QLabel(this);
+    installed_status_label->setStyleSheet(QStringLiteral("color: #38bdf8; font-weight: bold; font-size: 12px;"));
+    installed_top_bar->addWidget(installed_status_label, 1);
+
+    refresh_installed_btn = new QPushButton(tr("🔄 Обновить"), this);
+    refresh_installed_btn->setStyleSheet(QStringLiteral("font-weight: bold; padding: 5px 12px;"));
+    installed_top_bar->addWidget(refresh_installed_btn);
+
+    open_installed_folder_btn = new QPushButton(tr("📁 Папка модов"), this);
+    open_installed_folder_btn->setStyleSheet(QStringLiteral("padding: 5px 12px;"));
+    installed_top_bar->addWidget(open_installed_folder_btn);
+
+    delete_mod_btn = new QPushButton(tr("🗑️ Удалить выбранный"), this);
+    delete_mod_btn->setStyleSheet(QStringLiteral("background-color: #dc2626; color: white; font-weight: bold; padding: 5px 14px; border-radius: 4px;"));
+    installed_top_bar->addWidget(delete_mod_btn);
+
+    installed_layout->addLayout(installed_top_bar);
+
+    installed_tree = new QTreeWidget(this);
+    installed_tree->setHeaderLabels({tr("НАЗВАНИЕ МОДА"), tr("СТАТУС"), tr("РАЗМЕР"), tr("ПУТЬ К ПАПКЕ")});
+    installed_tree->setAlternatingRowColors(true);
+    installed_tree->setRootIsDecorated(false);
+    for (int i = 0; i < 4; ++i) {
+        installed_tree->headerItem()->setTextAlignment(i, Qt::AlignCenter);
+    }
+    installed_tree->header()->setStretchLastSection(true);
+    installed_tree->header()->setSectionResizeMode(0, QHeaderView::Interactive);
+    installed_tree->header()->resizeSection(0, 380);
+    installed_tree->header()->setSectionResizeMode(1, QHeaderView::Interactive);
+    installed_tree->header()->resizeSection(1, 160);
+    installed_tree->header()->setSectionResizeMode(2, QHeaderView::Interactive);
+    installed_tree->header()->resizeSection(2, 140);
+    installed_layout->addWidget(installed_tree, 1);
+
+    view_stack->addWidget(online_page);
+    view_stack->addWidget(installed_page);
+    main_layout->addWidget(view_stack, 1);
+
+    // Connect switcher and installed buttons
+    connect(tab_online_btn, &QPushButton::clicked, this, [this]() { OnSwitchView(0); });
+    connect(tab_installed_btn, &QPushButton::clicked, this, [this]() { OnSwitchView(1); });
+    connect(refresh_installed_btn, &QPushButton::clicked, this, &ConfigureGameBananaMods::RefreshInstalledMods);
+    connect(open_installed_folder_btn, &QPushButton::clicked, this, [this]() {
+        const auto load_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::LoadDir) / fmt::format("{:016X}", title_id);
+        std::filesystem::create_directories(load_dir);
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(Common::FS::PathToUTF8String(load_dir))));
+    });
+    connect(delete_mod_btn, &QPushButton::clicked, this, &ConfigureGameBananaMods::OnDeleteSelectedInstalledMod);
+    connect(installed_tree, &QTreeWidget::itemChanged, this, &ConfigureGameBananaMods::OnInstalledItemChanged);
 
     // Connect signals
     connect(search_btn, &QPushButton::clicked, this, &ConfigureGameBananaMods::OnSearchClicked);
@@ -720,9 +816,184 @@ void ConfigureGameBananaMods::DownloadAndInstallMod(const GameBananaFile& file_i
         status_label->setStyleSheet(QStringLiteral("color: #00e676; font-weight: bold;"));
         status_label->setText(tr("✅ Мод '%1' успешно установлен и активирован!").arg(clean_mod_name));
 
+        RefreshInstalledMods();
+
         QMessageBox::information(this, tr("Установка завершена"),
                                  tr("Мод «%1» успешно скачан, внедрен в игру и активирован в параметрах!").arg(clean_mod_name));
 
         emit ModInstalled();
     });
+}
+
+void ConfigureGameBananaMods::OnSwitchView(int view_index) {
+    if (view_index == 0) {
+        tab_online_btn->setChecked(true);
+        tab_installed_btn->setChecked(false);
+        tab_online_btn->setStyleSheet(QStringLiteral(
+            "QPushButton { background-color: #00f2fe; color: #000000; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+            "QPushButton:hover { background-color: #38bdf8; }"
+        ));
+        tab_installed_btn->setStyleSheet(QStringLiteral(
+            "QPushButton { background-color: #1e293b; color: #f8fafc; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+            "QPushButton:hover { background-color: #334155; }"
+        ));
+        view_stack->setCurrentIndex(0);
+    } else {
+        tab_online_btn->setChecked(false);
+        tab_installed_btn->setChecked(true);
+        tab_installed_btn->setStyleSheet(QStringLiteral(
+            "QPushButton { background-color: #00f2fe; color: #000000; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+            "QPushButton:hover { background-color: #38bdf8; }"
+        ));
+        tab_online_btn->setStyleSheet(QStringLiteral(
+            "QPushButton { background-color: #1e293b; color: #f8fafc; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+            "QPushButton:hover { background-color: #334155; }"
+        ));
+        view_stack->setCurrentIndex(1);
+        RefreshInstalledMods();
+    }
+}
+
+void ConfigureGameBananaMods::RefreshInstalledMods() {
+    installed_tree->blockSignals(true);
+    installed_tree->clear();
+
+    const auto load_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::LoadDir) / fmt::format("{:016X}", title_id);
+    const auto& disabled_entries = Settings::values.disabled_addons[title_id];
+
+    int total_count = 0;
+    int enabled_count = 0;
+
+    if (std::filesystem::exists(load_dir) && std::filesystem::is_directory(load_dir)) {
+        for (const auto& entry : std::filesystem::directory_iterator(load_dir)) {
+            if (!entry.is_directory()) continue;
+
+            const QString mod_name = QString::fromStdString(entry.path().filename().string());
+            if (mod_name.isEmpty()) continue;
+
+            total_count++;
+
+            const std::string mod_str = mod_name.toStdString();
+            const bool is_disabled = std::ranges::find(disabled_entries, mod_str) != disabled_entries.end();
+            const bool is_enabled = !is_disabled;
+            if (is_enabled) {
+                enabled_count++;
+            }
+
+            u64 total_size = 0;
+            std::error_code ec;
+            for (const auto& f : std::filesystem::recursive_directory_iterator(entry.path(), ec)) {
+                if (f.is_regular_file()) {
+                    total_size += f.file_size(ec);
+                }
+            }
+            const double size_mb = static_cast<double>(total_size) / (1024.0 * 1024.0);
+            QString size_str;
+            if (size_mb >= 1.0) {
+                size_str = QStringLiteral("%1 МБ").arg(QString::number(size_mb, 'f', 1));
+            } else {
+                size_str = QStringLiteral("%1 КБ").arg(QString::number(static_cast<double>(total_size) / 1024.0, 'f', 0));
+            }
+
+            auto* tree_item = new QTreeWidgetItem(installed_tree);
+            tree_item->setText(0, mod_name);
+            tree_item->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
+            tree_item->setCheckState(0, is_enabled ? Qt::Checked : Qt::Unchecked);
+            tree_item->setData(0, Qt::UserRole, mod_name);
+
+            if (is_enabled) {
+                tree_item->setText(1, tr("✅ ВКЛЮЧЕН"));
+                tree_item->setForeground(1, QColor(QStringLiteral("#00f2fe")));
+            } else {
+                tree_item->setText(1, tr("⚪ ОТКЛЮЧЕН"));
+                tree_item->setForeground(1, QColor(QStringLiteral("#718096")));
+            }
+            tree_item->setTextAlignment(1, Qt::AlignCenter);
+
+            tree_item->setText(2, size_str);
+            tree_item->setForeground(2, QColor(QStringLiteral("#38bdf8")));
+            tree_item->setTextAlignment(2, Qt::AlignCenter);
+
+            tree_item->setText(3, QString::fromStdString(entry.path().string()));
+            tree_item->setForeground(3, QColor(QStringLiteral("#a0aec0")));
+            tree_item->setTextAlignment(3, Qt::AlignLeft | Qt::AlignVCenter);
+        }
+    }
+
+    if (total_count == 0) {
+        installed_status_label->setText(tr("Установленные моды для этой игры не найдены. Выберите нужные моды во вкладке «Каталог GameBanana»."));
+    } else {
+        installed_status_label->setText(tr("Всего модов: <b>%1</b> &nbsp;|&nbsp; Включено: <b style='color:#00f2fe;'>%2</b> &nbsp;|&nbsp; Отключено: <b style='color:#ff5252;'>%3</b>")
+            .arg(total_count).arg(enabled_count).arg(total_count - enabled_count));
+    }
+
+    installed_tree->blockSignals(false);
+}
+
+void ConfigureGameBananaMods::OnInstalledItemChanged(QTreeWidgetItem* item, int column) {
+    if (column != 0 || !item) return;
+
+    const QString mod_name = item->data(0, Qt::UserRole).toString();
+    if (mod_name.isEmpty()) return;
+
+    const bool is_checked = (item->checkState(0) == Qt::Checked);
+    const std::string mod_str = mod_name.toStdString();
+    auto& disabled_entries = Settings::values.disabled_addons[title_id];
+
+    if (is_checked) {
+        std::erase(disabled_entries, mod_str);
+        item->setText(1, tr("✅ ВКЛЮЧЕН"));
+        item->setForeground(1, QColor(QStringLiteral("#00f2fe")));
+    } else {
+        if (std::ranges::find(disabled_entries, mod_str) == disabled_entries.end()) {
+            disabled_entries.push_back(mod_str);
+        }
+        item->setText(1, tr("⚪ ОТКЛЮЧЕН"));
+        item->setForeground(1, QColor(QStringLiteral("#718096")));
+    }
+
+    int total_count = installed_tree->topLevelItemCount();
+    int enabled_count = 0;
+    for (int i = 0; i < total_count; ++i) {
+        if (installed_tree->topLevelItem(i)->checkState(0) == Qt::Checked) {
+            enabled_count++;
+        }
+    }
+    installed_status_label->setText(tr("Всего модов: <b>%1</b> &nbsp;|&nbsp; Включено: <b style='color:#00f2fe;'>%2</b> &nbsp;|&nbsp; Отключено: <b style='color:#ff5252;'>%3</b>")
+        .arg(total_count).arg(enabled_count).arg(total_count - enabled_count));
+
+    UISettings::values.is_game_list_reload_pending.exchange(true);
+}
+
+void ConfigureGameBananaMods::OnDeleteSelectedInstalledMod() {
+    auto* item = installed_tree->currentItem();
+    if (!item) {
+        QMessageBox::information(this, tr("Удаление мода"), tr("Пожалуйста, выберите мод из списка для удаления."));
+        return;
+    }
+
+    const QString mod_name = item->data(0, Qt::UserRole).toString();
+    if (mod_name.isEmpty()) return;
+
+    const auto ret = QMessageBox::question(
+        this, tr("Удаление мода"),
+        tr("Вы действительно хотите полностью удалить мод «%1» с диска?\nЭто действие нельзя отменить.").arg(mod_name),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+
+    if (ret != QMessageBox::Yes) {
+        return;
+    }
+
+    const auto mod_path = Common::FS::GetEdenPath(Common::FS::EdenPath::LoadDir) / fmt::format("{:016X}", title_id) / mod_name.toStdString();
+    std::error_code ec;
+    std::filesystem::remove_all(mod_path, ec);
+
+    auto& disabled_entries = Settings::values.disabled_addons[title_id];
+    std::erase(disabled_entries, mod_name.toStdString());
+
+    RefreshInstalledMods();
+    emit ModInstalled();
+    UISettings::values.is_game_list_reload_pending.exchange(true);
+
+    QMessageBox::information(this, tr("Мод удален"), tr("Мод «%1» успешно удален.").arg(mod_name));
 }

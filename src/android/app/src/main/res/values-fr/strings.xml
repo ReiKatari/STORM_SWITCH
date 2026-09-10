@@ -1431,4 +1431,12 @@
     <string name="enable_frame_skipping_description">Ignore les images intermédiaires non critiques lors des baisses de framerate afin de préserver la fluidité et la vitesse de jeu.</string>
     <string name="enable_frame_interpolation">Activer l\'interpolation d\'images</string>
     <string name="enable_frame_interpolation_description">Améliore la fluidité en interpolant des images intermédiaires entre chaque trame.</string>
+    <string name="storm_games_world">STORM GAMES WORLD</string>
+    <string name="storm_games_world_description">Catalogue et téléchargement de jeux Nintendo Switch</string>
+    <string name="gamebanana_tab_online">🌐 Catalogue GameBanana</string>
+    <string name="gamebanana_tab_installed">💾 Installés</string>
+    <string name="gamebanana_no_installed_mods">Aucun mod installé pour ce jeu</string>
+    <string name="gamebanana_installed_stats">Total : %1$d | Activés : %2$d | Désactivés : %3$d</string>
+    <string name="gamebanana_delete_mod_confirm">Voulez-vous vraiment supprimer le mod « %1$s » ?</string>
+    <string name="gamebanana_mod_deleted">Mod « %1$s » supprimé</string>
 </resources>

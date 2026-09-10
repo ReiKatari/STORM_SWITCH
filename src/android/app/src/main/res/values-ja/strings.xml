@@ -1260,4 +1260,12 @@
     <string name="enable_frame_skipping_description">負荷時に重要度の低いフレームをスキップし、ゲーム速度を維持して発熱を抑制します。</string>
     <string name="enable_frame_interpolation">フレーム補間の有効化</string>
     <string name="enable_frame_interpolation_description">連続するフレーム間に中間フレームを生成・補間して、映像の滑らかさを向上させます。</string>
+    <string name="storm_games_world">STORM GAMES WORLD</string>
+    <string name="storm_games_world_description">Nintendo Switch ゲームカタログとダウンロード</string>
+    <string name="gamebanana_tab_online">🌐 GameBanana カタログ</string>
+    <string name="gamebanana_tab_installed">💾 インストール済み</string>
+    <string name="gamebanana_no_installed_mods">このゲームのModはインストールされていません</string>
+    <string name="gamebanana_installed_stats">合計: %1$d | 有効: %2$d | 無効: %3$d</string>
+    <string name="gamebanana_delete_mod_confirm">Mod「%1$s」を削除してもよろしいですか？</string>
+    <string name="gamebanana_mod_deleted">Mod「%1$s」を削除しました</string>
 </resources>

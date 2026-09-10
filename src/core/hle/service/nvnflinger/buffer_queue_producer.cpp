@@ -44,7 +44,7 @@ Status BufferQueueProducer::RequestBuffer(s32 slot, std::shared_ptr<GraphicBuffe
     std::scoped_lock lock{core->mutex};
 
     if (core->is_abandoned) {
-        LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+        LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
         return Status::NoInit;
     }
     if (slot < 0 || slot >= BufferQueueDefs::NUM_BUFFER_SLOTS) {
@@ -72,7 +72,7 @@ Status BufferQueueProducer::SetBufferCount(s32 buffer_count) {
         core->WaitWhileAllocatingLocked();
 
         if (core->is_abandoned) {
-            LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+            LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
             return Status::NoInit;
         }
 
@@ -129,7 +129,8 @@ Status BufferQueueProducer::WaitForFreeSlotThenRelock(bool async, s32* found, St
 
     while (try_again) {
         if (core->is_abandoned) {
-            LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+            LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
+            *found = BufferQueueCore::INVALID_BUFFER_SLOT;
             return Status::NoInit;
         }
 
@@ -302,7 +303,7 @@ Status BufferQueueProducer::DequeueBuffer(s32* out_slot, Fence* out_fence, bool 
             std::scoped_lock lock{core->mutex};
 
             if (core->is_abandoned) {
-                LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+                LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
                 return Status::NoInit;
             }
 
@@ -327,7 +328,7 @@ Status BufferQueueProducer::DetachBuffer(s32 slot) {
     std::scoped_lock lock{core->mutex};
 
     if (core->is_abandoned) {
-        LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+        LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
         return Status::NoInit;
     }
 
@@ -364,7 +365,7 @@ Status BufferQueueProducer::DetachNextBuffer(std::shared_ptr<GraphicBuffer>* out
     core->WaitWhileAllocatingLocked();
 
     if (core->is_abandoned) {
-        LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+        LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
         return Status::NoInit;
     }
 
@@ -465,7 +466,7 @@ Status BufferQueueProducer::QueueBuffer(s32 slot, const QueueBufferInput& input,
         std::scoped_lock lock{core->mutex};
 
         if (core->is_abandoned) {
-            LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+            LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
             return Status::NoInit;
         }
 
@@ -557,7 +558,7 @@ void BufferQueueProducer::CancelBuffer(s32 slot, const Fence& fence) {
     std::scoped_lock lock{core->mutex};
 
     if (core->is_abandoned) {
-        LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+        LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
         return;
     }
 
@@ -588,7 +589,7 @@ Status BufferQueueProducer::Query(NativeWindow what, s32* out_value) {
     }
 
     if (core->is_abandoned) {
-        LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+        LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
         return Status::NoInit;
     }
 
@@ -639,7 +640,7 @@ Status BufferQueueProducer::Connect(const std::shared_ptr<IProducerListener>& li
               producer_controlled_by_app);
 
     if (core->is_abandoned) {
-        LOG_ERROR(Service_Nvnflinger, "BufferQueue has been abandoned");
+        LOG_DEBUG(Service_Nvnflinger, "BufferQueue has been abandoned");
         return Status::NoInit;
     }
 

@@ -1435,4 +1435,12 @@
     <string name="enable_frame_skipping_description">在渲染负载过高时跳过非关键帧，维持稳定的游戏运行速度并减少发热。</string>
     <string name="enable_frame_interpolation">启用帧插值</string>
     <string name="enable_frame_interpolation_description">通过在连续帧之间进行插值，平滑动画过渡，提升视觉流畅度。</string>
+    <string name="storm_games_world">STORM GAMES WORLD</string>
+    <string name="storm_games_world_description">Nintendo Switch 游戏目录与下载</string>
+    <string name="gamebanana_tab_online">🌐 GameBanana 目录</string>
+    <string name="gamebanana_tab_installed">💾 已安装</string>
+    <string name="gamebanana_no_installed_mods">此游戏尚未安装任何模组</string>
+    <string name="gamebanana_installed_stats">总计：%1$d | 已启用：%2$d | 已禁用：%3$d</string>
+    <string name="gamebanana_delete_mod_confirm">您确定要删除模组“%1$s”吗？</string>
+    <string name="gamebanana_mod_deleted">模组“%1$s”已删除</string>
 </resources>

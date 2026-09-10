@@ -818,12 +818,14 @@ GameListPlaceholder::GameListPlaceholder(MainWindow* parent) : QWidget{parent} {
     layout->setAlignment(Qt::AlignCenter);
     image->setPixmap(QIcon::fromTheme(QStringLiteral("plus_folder")).pixmap(200));
 
-    RetranslateUI();
     QFont font = text->font();
-    font.setPointSize(20);
+    font.setPointSize(18);
+    font.setBold(true);
     text->setFont(font);
     text->setAlignment(Qt::AlignHCenter);
     image->setAlignment(Qt::AlignHCenter);
+
+    RetranslateUI();
 
     layout->addWidget(image);
     layout->addWidget(text);

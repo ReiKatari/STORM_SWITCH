@@ -6,6 +6,7 @@ package org.yuzu.yuzu_emu.fragments
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.DocumentsContract
@@ -100,6 +101,21 @@ class HomeSettingsFragment : Fragment() {
                     {
                         AutoOptimizationDialogFragment.newInstance()
                             .show(parentFragmentManager, AutoOptimizationDialogFragment.TAG)
+                    }
+                )
+            )
+            add(
+                HomeSetting(
+                    R.string.storm_games_world,
+                    R.string.storm_games_world_description,
+                    R.drawable.ic_website,
+                    {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://stormgamesworld.ru/"))
+                            startActivity(intent)
+                        } catch (_: Exception) {
+                            Toast.makeText(requireContext(), R.string.storm_games_world, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 )
             )

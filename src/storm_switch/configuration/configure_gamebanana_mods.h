@@ -13,6 +13,7 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QSplitter>
+#include <QStackedWidget>
 #include <QTextBrowser>
 #include <QTreeWidget>
 #include <QWidget>
@@ -66,6 +67,10 @@ private slots:
     void OnPrevPage();
     void OnNextPage();
     void OnFirstPage();
+    void OnSwitchView(int view_index);
+    void RefreshInstalledMods();
+    void OnInstalledItemChanged(QTreeWidgetItem* item, int column);
+    void OnDeleteSelectedInstalledMod();
 
 private:
     void SearchMods(const QString& query = {}, int page = 1);
@@ -86,6 +91,12 @@ private:
     QNetworkReply* download_reply{nullptr};
 
     // UI
+    QStackedWidget* view_stack{nullptr};
+    QPushButton* tab_online_btn{nullptr};
+    QPushButton* tab_installed_btn{nullptr};
+
+    // Online Page
+    QWidget* online_page{nullptr};
     QLineEdit* search_input{nullptr};
     QPushButton* search_btn{nullptr};
     QComboBox* sort_combo{nullptr};
@@ -103,6 +114,14 @@ private:
     QProgressBar* progress_bar{nullptr};
     QLabel* status_label{nullptr};
     QLabel* game_header_label{nullptr};
+
+    // Installed Page
+    QWidget* installed_page{nullptr};
+    QTreeWidget* installed_tree{nullptr};
+    QLabel* installed_status_label{nullptr};
+    QPushButton* refresh_installed_btn{nullptr};
+    QPushButton* open_installed_folder_btn{nullptr};
+    QPushButton* delete_mod_btn{nullptr};
 
     std::vector<GameBananaModItem> current_mods;
     std::vector<GameBananaFile> current_files;

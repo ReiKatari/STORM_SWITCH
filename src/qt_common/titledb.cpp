@@ -118,6 +118,8 @@ void TitleDatabase::LoadDataSync() {
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::KeysDir) / "titles.json");
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "titledb.json");
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "titles.json");
+    candidate_paths.push_back("E:/STORM SWITCH BOX/tools/nscb/zconfig/DB/nutdb.json");
+    candidate_paths.push_back("E:/STORM SWITCH BOX/tools/nscb/zconfig/DB/titledb.json");
 
     std::filesystem::path found_path;
     for (const auto& p : candidate_paths) {
@@ -227,6 +229,13 @@ void TitleDatabase::LoadDataSync() {
                 } else if (val["version"].is_number()) {
                     entry.version = std::to_string(val["version"].get<u64>());
                 }
+            }
+
+            if (val.contains("iconUrl") && !val["iconUrl"].is_null() && val["iconUrl"].is_string()) {
+                entry.icon_url = val["iconUrl"].get<std::string>();
+            }
+            if (val.contains("bannerUrl") && !val["bannerUrl"].is_null() && val["bannerUrl"].is_string()) {
+                entry.banner_url = val["bannerUrl"].get<std::string>();
             }
 
             if (tid_val != 0) {

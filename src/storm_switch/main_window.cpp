@@ -48,6 +48,8 @@
 #include "data_dialog.h"
 #include "deps_dialog.h"
 #include "install_dialog.h"
+#include "storm_switch/storm_games_world_dialog.h"
+#include "storm_switch/log_viewer_dialog.h"
 #include "translator/floating_translate_button.h"
 #include "translator/game_translator.h"
 #include "in_game_notification.h"
@@ -2425,6 +2427,11 @@ static QIcon CreateVectorMenuIcon(const QString& icon_type, const QColor& accent
         f.setBold(true);
         painter.setFont(f);
         painter.drawText(QRect(0, 0, 18, 18), Qt::AlignCenter, QStringLiteral("i"));
+    } else if (icon_type == QStringLiteral("download")) {
+        painter.drawLine(9, 3, 9, 12);
+        painter.drawLine(6, 9, 9, 12);
+        painter.drawLine(12, 9, 9, 12);
+        painter.drawLine(4, 15, 14, 15);
     } else {
         painter.drawRect(5, 5, 8, 8);
     }
@@ -2550,6 +2557,20 @@ void MainWindow::SetupMenuIcons() {
         autotune_action = ui->menu_Tools->addAction(tr("Авто-настройки производительности..."));
     }
     apply_action(autotune_action, QStringLiteral("lightning"), col_amber);
+
+    if (!storm_games_world_action) {
+        storm_games_world_action = new QAction(tr("Каталог и менеджер игр STORM GAMES WORLD..."), this);
+        storm_games_world_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+G")));
+        ui->menu_Tools->addAction(storm_games_world_action);
+    }
+    apply_action(storm_games_world_action, QStringLiteral("download"), col_green);
+
+    if (!log_viewer_action) {
+        log_viewer_action = new QAction(tr("Журнал работы (Логи)..."), this);
+        log_viewer_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+L")));
+        ui->menu_Tools->addAction(log_viewer_action);
+    }
+    apply_action(log_viewer_action, QStringLiteral("book"), col_blue);
 
     // Multiplayer Menu
     apply_action(ui->action_View_Lobby, QStringLiteral("globe"), col_cyan);
@@ -2976,6 +2997,13 @@ void MainWindow::ConnectMenuEvents() {
 
     if (autotune_action) {
         connect_menu(autotune_action, &MainWindow::OnAutoTuneSettings);
+    }
+
+    if (storm_games_world_action) {
+        connect_menu(storm_games_world_action, &MainWindow::OnOpenStormGamesWorld);
+    }
+    if (log_viewer_action) {
+        connect_menu(log_viewer_action, &MainWindow::OnOpenLogViewer);
     }
 }
 
@@ -4258,6 +4286,16 @@ void MainWindow::OnAutoTuneSettings() {
         QMessageBox::information(this, tr("Авто-настройки STORM SWITCH"),
             tr("Общие параметры производительности успешно применены и сохранены:\n%1").arg(profileName));
     }
+}
+
+void MainWindow::OnOpenStormGamesWorld() {
+    StormGamesWorldDialog dialog(this);
+    dialog.exec();
+}
+
+void MainWindow::OnOpenLogViewer() {
+    LogViewerDialog dialog(this);
+    dialog.exec();
 }
 
 void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletParameters params,
@@ -6763,7 +6801,7 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
                 dlg.exec();
             } else if (manual_check) {
                 QMessageBox::information(this, tr("STORM SWITCH — Обновления"),
-                                         tr("У вас установлена последняя актуальная версия STORM SWITCH (v%1).\nОбновлений не найдено.").arg(current_ver));
+                                         tr("У вас установлена последняя актуальная версия STORM SWITCH (%1).\nОбновлений не найдено.").arg(current_ver));
             }
         };
 
@@ -7136,7 +7174,7 @@ void MainWindow::UpdateStatusBar() {
         display_fps = 0.0;
     }
 
-    QString fpsText = tr("Игра: %1 FPS").arg(std::round(display_fps), 0, 'f', 0);
+    QString fpsText = tr("🎮 %1 FPS").arg(std::round(display_fps), 0, 'f', 0);
     if (!m_fpsSuffix.isEmpty())
         fpsText = fpsText % QStringLiteral(" (%1)").arg(m_fpsSuffix);
 
@@ -7145,7 +7183,7 @@ void MainWindow::UpdateStatusBar() {
         "QLabel { background-color: rgba(0, 229, 255, 0.10); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.30); "
         "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
 
-    emu_frametime_label->setText(tr("Кадр: %1 мс").arg(results.frametime * 1000.0, 0, 'f', 2));
+    emu_frametime_label->setText(tr("⏱️ %1 мс").arg(results.frametime * 1000.0, 0, 'f', 2));
     emu_frametime_label->setStyleSheet(QStringLiteral(
         "QLabel { background-color: rgba(255, 202, 40, 0.10); color: #ffca28; border: 1px solid rgba(255, 202, 40, 0.30); "
         "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
@@ -9485,6 +9523,12 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
     }
     if (autotune_action) {
         autotune_action->setText(tr("Авто-настройки производительности..."));
+    }
+    if (storm_games_world_action) {
+        storm_games_world_action->setText(tr("Каталог и менеджер игр STORM GAMES WORLD..."));
+    }
+    if (log_viewer_action) {
+        log_viewer_action->setText(tr("Журнал работы (Логи)..."));
     }
     if (multiplayer_state) {
         multiplayer_state->retranslateUi();

@@ -12,7 +12,7 @@ if (YUZU_USE_BUNDLED_QT AND LINUX)
     set(CMAKE_BUILD_RPATH "${CMAKE_BINARY_DIR}/bin/lib/")
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 
 add_executable(yuzu
     Info.plist
@@ -212,6 +212,10 @@ add_executable(yuzu
     in_game_notification.h
     set_play_time_dialog.cpp
     set_play_time_dialog.h
+    storm_games_world_dialog.cpp
+    storm_games_world_dialog.h
+    log_viewer_dialog.cpp
+    log_viewer_dialog.h
     util/clickable_label.cpp
     util/clickable_label.h
     util/controller_navigation.cpp

@@ -7,6 +7,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -310,6 +311,16 @@ class GamesFragment : Fragment() {
         // Setup filter button
         binding.filterButton.setOnClickListener { view ->
             showFilterMenu(view)
+        }
+
+        // Setup STORM GAMES WORLD button
+        binding.stormWorldButton?.setOnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://stormgamesworld.ru/"))
+                startActivity(intent)
+            } catch (_: Exception) {
+                Toast.makeText(requireContext(), R.string.storm_games_world, Toast.LENGTH_SHORT).show()
+            }
         }
 
         // Setup settings button

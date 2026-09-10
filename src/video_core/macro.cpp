@@ -447,8 +447,10 @@ void MacroInterpreterImpl::Execute(Core::System& system, Engines::Maxwell3D& max
         keep_executing = Step(system, maxwell3d, false);
     }
 
-    // Assert the the macro used all the input parameters
-    ASSERT(next_parameter_index == parameters.size());
+    // Check if the macro used all the input parameters
+    if (next_parameter_index != parameters.size()) {
+        LOG_DEBUG(HW_GPU, "Macro did not use all parameters: used {} / {}", next_parameter_index, parameters.size());
+    }
 }
 
 /// Resets the execution engine state, zeroing registers, etc.
@@ -690,7 +692,10 @@ u32 MacroInterpreterImpl::Read(Engines::Maxwell3D& maxwell3d, u32 method) const 
 
 /// Returns the next parameter in the parameter queue.
 u32 MacroInterpreterImpl::FetchParameter() {
-    ASSERT(next_parameter_index < parameters.size());
+    if (next_parameter_index >= parameters.size()) {
+        LOG_DEBUG(HW_GPU, "Macro parameter underflow: index {} >= size {}", next_parameter_index, parameters.size());
+        return 0;
+    }
     return parameters[next_parameter_index++];
 }
 

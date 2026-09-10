@@ -286,6 +286,8 @@ private:
     GameFixDialogResult ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show = false);
     void OnResetGameFixSuppression();
     void OnAutoTuneSettings();
+    void OnOpenStormGamesWorld();
+    void OnOpenLogViewer();
     void OnApplyAutoCorrection();
     void RestoreSessionSettings();
     void ShutdownGame();
@@ -704,6 +706,8 @@ private:
     InGameNotificationOverlay* in_game_notification{nullptr};
     QAction* reset_gamefix_action{nullptr};
     QAction* autotune_action{nullptr};
+    QAction* storm_games_world_action{nullptr};
+    QAction* log_viewer_action{nullptr};
 
 protected:
     void dropEvent(QDropEvent* event) override;

@@ -257,6 +257,43 @@ AppLoader_NSP::LoadResult AppLoader_NSP::Load(Kernel::KProcess& process, Core::S
                                                          std::move(update_raw));
     }
 
+    // Register all embedded NCAs (DLCs, updates) from this NSP container into the FrontendManual provider
+    if (nsp) {
+        auto* manual_provider = const_cast<FileSys::ContentProvider*>(
+            system.GetContentProviderUnion().GetSlotProvider(FileSys::ContentProviderUnionSlot::FrontendManual));
+        auto* manual = static_cast<FileSys::ManualContentProvider*>(manual_provider);
+        if (manual) {
+            for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
+                if (!nca_item || nca_item->GetBaseFile() == nullptr) {
+                    continue;
+                }
+                const u64 nca_tid = nca_item->GetTitleId();
+                if (nca_tid == 0) {
+                    continue;
+                }
+                const auto nca_type = nca_item->GetType();
+                FileSys::ContentRecordType rec_type = FileSys::ContentRecordType::Data;
+                if (nca_type == FileSys::NCAContentType::Program) {
+                    rec_type = FileSys::ContentRecordType::Program;
+                } else if (nca_type == FileSys::NCAContentType::Control) {
+                    rec_type = FileSys::ContentRecordType::Control;
+                } else if (nca_type == FileSys::NCAContentType::Meta) {
+                    rec_type = FileSys::ContentRecordType::Meta;
+                }
+
+                FileSys::TitleType t_type = FileSys::TitleType::AOC;
+                if (nca_item->IsUpdate() || (nca_tid & 0x800) != 0) {
+                    t_type = FileSys::TitleType::Update;
+                } else if (FileSys::GetBaseTitleID(nca_tid) == nca_tid) {
+                    t_type = FileSys::TitleType::Application;
+                }
+
+                manual->AddEntry(t_type, rec_type, nca_tid, nca_item->GetBaseFile());
+                LOG_INFO(Loader, "Registered container NCA into ManualContentProvider: tid={:016X}, type={}, rec_type={}",
+                         nca_tid, static_cast<int>(t_type), static_cast<int>(rec_type));
+            }
+        }
+    }
 
     is_loaded = true;
     return result;

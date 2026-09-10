@@ -65,6 +65,8 @@ ConfigurePerGameAddons::ConfigurePerGameAddons(Core::System& system_, QWidget* p
 
     ui->folder->setText(tr("📁 Установить мод из папки..."));
     ui->zip->setText(tr("📦 Установить мод из архива (ZIP)..."));
+    ui->folder->setVisible(false);
+    ui->zip->setVisible(false);
 
     // We must register all custom types with the Qt Automoc system so that we are able to use it
     // with signals/slots. In this case, QList falls under the umbrella of custom types.
@@ -442,16 +444,7 @@ void ConfigurePerGameAddons::LoadConfiguration() {
                 version_display = QStringLiteral("1.0.0");
             }
         } else if (patch.type == FileSys::PatchType::Mod) {
-            name = tr("Модификация");
-            QString mod_display = QString::fromStdString(patch.name);
-            if (mod_display.compare(QStringLiteral("romfs"), Qt::CaseInsensitive) == 0) {
-                mod_display = tr("Вшитый RomFS (LayeredFS)");
-            } else if (mod_display.compare(QStringLiteral("exefs"), Qt::CaseInsensitive) == 0) {
-                mod_display = tr("Вшитый ExeFS (LayeredExeFS)");
-            } else if (!patch.version.empty() && patch.version != "Cheats" && !mod_display.contains(QString::fromStdString(patch.version))) {
-                mod_display = QStringLiteral("%1 (%2)").arg(mod_display, QString::fromStdString(patch.version));
-            }
-            version_display = mod_display;
+            continue;
         }
 
         auto* const first_item = new QStandardItem;
@@ -462,13 +455,8 @@ void ConfigurePerGameAddons::LoadConfiguration() {
                                         patch.source == FileSys::PatchSource::External &&
                                         patch.numeric_version != 0;
 
-        const bool is_mod = patch.type == FileSys::PatchType::Mod;
-
         if (is_external_update) {
             first_item->setData(static_cast<quint32>(patch.numeric_version), NUMERIC_VERSION);
-        } else if (is_mod) {
-            first_item->setData(QString::fromStdString(patch.location), PATCH_LOCATION);
-            first_item->setData(QString::fromStdString(patch.name), PATCH_NAME);
         }
 
         bool patch_disabled = false;
@@ -493,9 +481,6 @@ void ConfigurePerGameAddons::LoadConfiguration() {
             update_items.push_back(first_item);
             update_added = true;
             update_rows.push_back(QList<QStandardItem*>{
-                first_item, new QStandardItem{version_display}});
-        } else {
-            mod_rows.push_back(QList<QStandardItem*>{
                 first_item, new QStandardItem{version_display}});
         }
     }
@@ -594,10 +579,6 @@ void ConfigurePerGameAddons::LoadConfiguration() {
     }
     for (auto& pair : dlc_rows) {
         list_items.push_back(std::move(pair.second));
-        item_model->appendRow(list_items.back());
-    }
-    for (auto& row : mod_rows) {
-        list_items.push_back(std::move(row));
         item_model->appendRow(list_items.back());
     }
 

@@ -22,9 +22,11 @@ public:
     QAbstractButton* clickedButton() const;
 
 private:
+    void ApplyStormStyles();
+
     QLabel* m_text;
     QVBoxLayout* m_boxes;
     QHBoxLayout* m_buttons;
 
-    QAbstractButton* m_clickedButton;
+    QAbstractButton* m_clickedButton{nullptr};
 };

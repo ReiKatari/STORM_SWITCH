@@ -683,7 +683,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         fwVersion = NativeLibrary.firmwareVersion()
 
         val buildVersion = NativeLibrary.getBuildVersion()
-        buildId = buildVersion.split("-").getOrNull(0) ?: ""
+        buildId = "STORM SWITCH 8.0.3"
         val driverTitle = driverViewModel.selectedDriverTitle.value
         driverInUse = if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
 
@@ -2119,9 +2119,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                     if (BooleanSetting.SHOW_FPS.getBoolean(needsGlobal)) {
                         val fpsText = if (isFrameGen && systemFps > 0.0) {
-                            String.format("%.0f FPS (%.0f FPS)", actualFps, systemFps)
+                            String.format("FPS: %.0f (%.0f)", actualFps, systemFps)
                         } else {
-                            String.format("%.0f FPS", actualFps)
+                            String.format("FPS: %.0f", actualFps)
                         }
                         sb.append(fpsText)
                     }

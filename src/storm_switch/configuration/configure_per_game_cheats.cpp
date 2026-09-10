@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QVBoxLayout>
@@ -271,7 +271,7 @@ void ConfigurePerGameCheats::PopulateCheatTree() {
 
         auto* tree_item = new QTreeWidgetItem(tree_widget);
         tree_item->setText(0, item.name.toUpper());
-        tree_item->setTextAlignment(0, Qt::AlignCenter);
+        tree_item->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
         tree_item->setCheckState(0, item.enabled ? Qt::Checked : Qt::Unchecked);
         tree_item->setData(0, Qt::UserRole, i);
 
@@ -297,7 +297,7 @@ void ConfigurePerGameCheats::PopulateCheatTree() {
         }
         tree_item->setText(3, preview_code);
         tree_item->setForeground(3, QColor(QStringLiteral("#a0aec0")));
-        tree_item->setTextAlignment(3, Qt::AlignCenter);
+        tree_item->setTextAlignment(3, Qt::AlignLeft | Qt::AlignVCenter);
     }
 
     if (cheat_items.isEmpty()) {

@@ -8,6 +8,7 @@
 #include "common/fs/file.h"
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
+#include "common/logging.h"
 #include "common/settings.h"
 #include "video_core/renderer_vulkan/present/frame_gen.h"
 #include "video_core/renderer_vulkan/present/util.h"
@@ -222,50 +223,62 @@ void FrameGen::Process(const Device& device, Frame* frame, VkFormat format,
         return;
     }
 
-    if (!shaders) {
-        shaders.emplace(device);
-        if (!shaders->IsValid()) {
-            unavailable = true;
-            return;
+    try {
+        if (!shaders) {
+            shaders.emplace(device);
+            if (!shaders->IsValid()) {
+                unavailable = true;
+                return;
+            }
         }
-    }
 
-    peak_guest_extent.width = std::max(peak_guest_extent.width, guest_extent.width);
-    peak_guest_extent.height = std::max(peak_guest_extent.height, guest_extent.height);
+        peak_guest_extent.width = std::max(peak_guest_extent.width, guest_extent.width);
+        peak_guest_extent.height = std::max(peak_guest_extent.height, guest_extent.height);
 
-    const VkExtent2D extent{.width = frame->width, .height = frame->height};
-    const f32 flow_scale = ConfiguredFlowScale(device, peak_guest_extent, extent);
-    if (!chain || built_extent.width != extent.width || built_extent.height != extent.height ||
-        built_format != format || built_flow_scale != flow_scale) {
-        Rebuild(device, extent, format, flow_scale);
-    }
-
-    const u64 count = frame_count++;
-    last_count = count;
-    last_generations = plan.generations;
-
-    const bool warm = plan.warm && count + 1 >= LSFG_REQUIRED_FRAMES;
-    warm_streak = warm ? warm_streak + 1 : 0;
-    generated = warm && warm_streak >= LSFG_RECURRENCE_FRAMES && plan.generations > 0;
-
-    scheduler.RequestOutsideRenderPassOperationContext();
-    scheduler.Record([this, source = *frame->image, extent, count,
-                      dispatch = warm](vk::CommandBuffer cmdbuf) {
-        if (!chain) {
-            return;
+        const VkExtent2D extent{.width = frame->width, .height = frame->height};
+        const f32 flow_scale = ConfiguredFlowScale(device, peak_guest_extent, extent);
+        if (!chain || built_extent.width != extent.width || built_extent.height != extent.height ||
+            built_format != format || built_flow_scale != flow_scale) {
+            Rebuild(device, extent, format, flow_scale);
         }
-        CopyPresentedFrame(cmdbuf, source, chain->Input(count), extent);
-        if (dispatch) {
-            chain->DispatchShared(cmdbuf, count);
-        }
-    });
 
-    const bool dump_requested = generated && Settings::values.frame_gen_dump_flow.GetValue();
-    if (!dump_requested) {
-        dumped = false;
-    } else if (!dumped) {
-        DumpDebugImages(count);
-        dumped = true;
+        const u64 count = frame_count++;
+        last_count = count;
+        last_generations = plan.generations;
+
+        const bool warm = plan.warm && count + 1 >= LSFG_REQUIRED_FRAMES;
+        warm_streak = warm ? warm_streak + 1 : 0;
+        generated = warm && warm_streak >= LSFG_RECURRENCE_FRAMES && plan.generations > 0;
+
+        scheduler.RequestOutsideRenderPassOperationContext();
+        scheduler.Record([this, source = *frame->image, extent, count,
+                          dispatch = warm](vk::CommandBuffer cmdbuf) {
+            if (!chain) {
+                return;
+            }
+            CopyPresentedFrame(cmdbuf, source, chain->Input(count), extent);
+            if (dispatch) {
+                chain->DispatchShared(cmdbuf, count);
+            }
+        });
+
+        const bool dump_requested = generated && Settings::values.frame_gen_dump_flow.GetValue();
+        if (!dump_requested) {
+            dumped = false;
+        } else if (!dumped) {
+            DumpDebugImages(count);
+            dumped = true;
+        }
+    } catch (const std::exception& ex) {
+        LOG_ERROR(Render_Vulkan, "FrameGen::Process failed: {}", ex.what());
+        unavailable = true;
+        chain.reset();
+        generated = false;
+    } catch (...) {
+        LOG_ERROR(Render_Vulkan, "FrameGen::Process failed with unknown exception");
+        unavailable = true;
+        chain.reset();
+        generated = false;
     }
 }
 
@@ -286,18 +299,30 @@ void FrameGen::GenerateInto(const Device& device, Frame* destination, size_t gen
     if (!destination || !destination->storage_view || !destination->image || !chain) {
         return;
     }
-    chain->SetTarget(device, last_generations, generation, destination->index,
-                     *destination->storage_view);
+    try {
+        chain->SetTarget(device, last_generations, generation, destination->index,
+                         *destination->storage_view);
 
-    const VkExtent2D extent{.width = destination->width, .height = destination->height};
+        const VkExtent2D extent{.width = destination->width, .height = destination->height};
 
-    scheduler.RequestOutsideRenderPassOperationContext();
-    scheduler.Record([this, count = last_count, generation_count = last_generations, generation,
-                      target = destination->index, image = *destination->image,
-                      extent](vk::CommandBuffer cmdbuf) {
-        chain->DispatchGeneration(cmdbuf, count, generation_count, generation, target, image,
-                                  extent);
-    });
+        scheduler.RequestOutsideRenderPassOperationContext();
+        scheduler.Record([this, count = last_count, generation_count = last_generations, generation,
+                          target = destination->index, image = *destination->image,
+                          extent](vk::CommandBuffer cmdbuf) {
+            if (chain) {
+                chain->DispatchGeneration(cmdbuf, count, generation_count, generation, target, image,
+                                          extent);
+            }
+        });
+    } catch (const std::exception& ex) {
+        LOG_ERROR(Render_Vulkan, "FrameGen::GenerateInto failed: {}", ex.what());
+        unavailable = true;
+        chain.reset();
+    } catch (...) {
+        LOG_ERROR(Render_Vulkan, "FrameGen::GenerateInto failed with unknown exception");
+        unavailable = true;
+        chain.reset();
+    }
 }
 
 void FrameGen::Rebuild(const Device& device, VkExtent2D extent, VkFormat format, f32 flow_scale) {

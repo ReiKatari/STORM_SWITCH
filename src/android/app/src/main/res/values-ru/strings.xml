@@ -1584,4 +1584,12 @@
     <string name="enable_frame_skipping_description">Пропускает отрисовку промежуточных кадров при просадках, удерживая скорость игры и снижая нагрев устройства.</string>
     <string name="enable_frame_interpolation">Интерполяция кадров</string>
     <string name="enable_frame_interpolation_description">Сглаживает переходы между последовательными кадрами для плавного отображения.</string>
+    <string name="storm_games_world">STORM GAMES WORLD</string>
+    <string name="storm_games_world_description">Каталог и менеджер игр Nintendo Switch</string>
+    <string name="gamebanana_tab_online">🌐 Каталог GameBanana</string>
+    <string name="gamebanana_tab_installed">💾 Установленные</string>
+    <string name="gamebanana_no_installed_mods">Для этой игры нет установленных модов</string>
+    <string name="gamebanana_installed_stats">Всего: %1$d | Включено: %2$d | Отключено: %3$d</string>
+    <string name="gamebanana_delete_mod_confirm">Вы действительно хотите удалить мод «%1$s»?</string>
+    <string name="gamebanana_mod_deleted">Мод «%1$s» удален</string>
 </resources>

@@ -12,6 +12,7 @@
 
 #include "common/assert.h"
 #include "common/common_types.h"
+#include "common/logging.h"
 #include "shader_recompiler/exception.h"
 #include "shader_recompiler/frontend/maxwell/decode.h"
 #include "shader_recompiler/frontend/maxwell/opcodes.h"
@@ -46,7 +47,7 @@ Opcode Decode(u64 insn) {
         return Opcode::name;
 #include "maxwell.inc"
 #undef INST
-    ASSERT_MSG(false, "Invalid insn {:#016x}", insn);
+    LOG_DEBUG(HW_GPU, "Invalid insn {:#016x}, substituting with NOP", insn);
     return Opcode::NOP;
 }
 

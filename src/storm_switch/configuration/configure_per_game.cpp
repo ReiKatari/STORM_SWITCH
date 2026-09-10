@@ -103,7 +103,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
 
     ui->setupUi(this);
 
-    ui->tabWidget->addTab(addons_tab.get(), tr("Дополнения и моды"));
+    ui->tabWidget->addTab(addons_tab.get(), tr("Дополнения"));
     ui->tabWidget->addTab(gamebanana_tab.get(), tr("🍌 Моды GameBanana"));
     ui->tabWidget->addTab(amiibo_tab.get(), tr("🕹️ Amiibo"));
     ui->tabWidget->addTab(cheats_tab.get(), tr("⚡ Чит-коды"));

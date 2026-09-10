@@ -23,10 +23,21 @@ LsfgShaders::LsfgShaders(const Device& device) {
         return;
     }
 
-    for (const auto& [id, words] : code) {
-        modules.emplace(id, CreateWrappedShaderModule(device, words));
+    try {
+        for (const auto& [id, words] : code) {
+            auto module = CreateWrappedShaderModule(device, words);
+            if (!*module) {
+                modules.clear();
+                valid = false;
+                return;
+            }
+            modules.emplace(id, std::move(module));
+        }
+        valid = true;
+    } catch (...) {
+        modules.clear();
+        valid = false;
     }
-    valid = true;
 }
 
 VkShaderModule LsfgShaders::Get(u32 shader_id) const {

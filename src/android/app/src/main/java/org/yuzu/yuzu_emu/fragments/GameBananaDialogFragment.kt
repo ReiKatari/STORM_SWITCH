@@ -19,17 +19,23 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.DialogGamebananaModsBinding
+import org.yuzu.yuzu_emu.databinding.ListItemAddonBinding
 import org.yuzu.yuzu_emu.databinding.ListItemGamebananaModBinding
 import org.yuzu.yuzu_emu.model.Game
+import org.yuzu.yuzu_emu.model.Patch
+import org.yuzu.yuzu_emu.model.PatchType
 import org.yuzu.yuzu_emu.utils.GameBananaFile
 import org.yuzu.yuzu_emu.utils.GameBananaHelper
 import org.yuzu.yuzu_emu.utils.GameBananaMod
+import org.yuzu.yuzu_emu.utils.NativeConfig
 
 class GameBananaDialogFragment : DialogFragment() {
 
@@ -39,6 +45,8 @@ class GameBananaDialogFragment : DialogFragment() {
     private var game: Game? = null
     private var onModsUpdated: (() -> Unit)? = null
     private val modsList = mutableListOf<GameBananaMod>()
+    private val installedModsList = mutableListOf<Patch>()
+    private var isInstalledView = false
 
     private var currentPage: Int = 1
     private var currentSortIndex: Int = 0
@@ -63,6 +71,7 @@ class GameBananaDialogFragment : DialogFragment() {
                         Toast.LENGTH_LONG
                     ).show()
                     onModsUpdated?.invoke()
+                    loadInstalledMods()
                 } else {
                     Toast.makeText(
                         requireContext(),
@@ -93,6 +102,7 @@ class GameBananaDialogFragment : DialogFragment() {
                         Toast.LENGTH_LONG
                     ).show()
                     onModsUpdated?.invoke()
+                    loadInstalledMods()
                 } else {
                     Toast.makeText(
                         requireContext(),
@@ -221,6 +231,29 @@ class GameBananaDialogFragment : DialogFragment() {
         binding.buttonNextPage.setOnClickListener {
             performSearch(currentPage + 1)
         }
+
+        binding.buttonTabOnline.setOnClickListener {
+            switchToOnlineTab()
+        }
+
+        binding.buttonTabInstalled.setOnClickListener {
+            switchToInstalledTab()
+        }
+
+        binding.buttonCloseInstalled.setOnClickListener {
+            dismiss()
+        }
+
+        binding.buttonRefreshInstalled.setOnClickListener {
+            loadInstalledMods()
+        }
+
+        binding.buttonManualInstallInstalled.setOnClickListener {
+            binding.buttonManualInstall.performClick()
+        }
+
+        binding.listInstalledMods.layoutManager = LinearLayoutManager(requireContext())
+        binding.listInstalledMods.adapter = InstalledModAdapter()
 
         binding.buttonManualInstall.setOnClickListener {
             val options = arrayOf(
@@ -421,6 +454,7 @@ class GameBananaDialogFragment : DialogFragment() {
                     Toast.LENGTH_LONG
                 ).show()
                 onModsUpdated?.invoke()
+                loadInstalledMods()
             } else {
                 Toast.makeText(
                     requireContext(),
@@ -473,6 +507,156 @@ class GameBananaDialogFragment : DialogFragment() {
                     showModDetailsDialog(mod)
                 }
             }
+        }
+    }
+
+    private fun switchToOnlineTab() {
+        isInstalledView = false
+        binding.layoutOnlineContainer.isVisible = true
+        binding.layoutInstalledContainer.isVisible = false
+        try {
+            binding.buttonTabOnline.setBackgroundColor(
+                MaterialColors.getColor(binding.buttonTabOnline, com.google.android.material.R.attr.colorPrimary)
+            )
+            binding.buttonTabOnline.setTextColor(
+                MaterialColors.getColor(binding.buttonTabOnline, com.google.android.material.R.attr.colorOnPrimary)
+            )
+            binding.buttonTabInstalled.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            binding.buttonTabInstalled.setTextColor(
+                MaterialColors.getColor(binding.buttonTabInstalled, com.google.android.material.R.attr.colorPrimary)
+            )
+        } catch (_: Exception) {}
+    }
+
+    private fun switchToInstalledTab() {
+        isInstalledView = true
+        binding.layoutOnlineContainer.isVisible = false
+        binding.layoutInstalledContainer.isVisible = true
+        try {
+            binding.buttonTabInstalled.setBackgroundColor(
+                MaterialColors.getColor(binding.buttonTabInstalled, com.google.android.material.R.attr.colorPrimary)
+            )
+            binding.buttonTabInstalled.setTextColor(
+                MaterialColors.getColor(binding.buttonTabInstalled, com.google.android.material.R.attr.colorOnPrimary)
+            )
+            binding.buttonTabOnline.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            binding.buttonTabOnline.setTextColor(
+                MaterialColors.getColor(binding.buttonTabOnline, com.google.android.material.R.attr.colorPrimary)
+            )
+        } catch (_: Exception) {}
+        loadInstalledMods()
+    }
+
+    private fun loadInstalledMods() {
+        val g = game ?: return
+        lifecycleScope.launch {
+            val patches = withContext(Dispatchers.IO) {
+                NativeLibrary.getPatchesForFile(g.path, g.programId)
+            } ?: emptyArray()
+
+            val mods = patches.filter { PatchType.from(it.type) == PatchType.Mod }
+            installedModsList.clear()
+            installedModsList.addAll(mods)
+
+            binding.listInstalledMods.adapter?.notifyDataSetChanged()
+            binding.textEmptyInstalled.isVisible = installedModsList.isEmpty()
+
+            val enabledCount = installedModsList.count { it.enabled }
+            val disabledCount = installedModsList.size - enabledCount
+            if (installedModsList.isEmpty()) {
+                binding.textInstalledStatus.text = getString(R.string.gamebanana_no_installed_mods)
+            } else {
+                binding.textInstalledStatus.text = getString(
+                    R.string.gamebanana_installed_stats,
+                    installedModsList.size,
+                    enabledCount,
+                    disabledCount
+                )
+            }
+        }
+    }
+
+    private inner class InstalledModAdapter :
+        RecyclerView.Adapter<InstalledModAdapter.InstalledModViewHolder>() {
+
+        inner class InstalledModViewHolder(val itemBinding: ListItemAddonBinding) :
+            RecyclerView.ViewHolder(itemBinding.root)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InstalledModViewHolder {
+            val view = ListItemAddonBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+            return InstalledModViewHolder(view)
+        }
+
+        override fun getItemCount(): Int = installedModsList.size
+
+        override fun onBindViewHolder(holder: InstalledModViewHolder, position: Int) {
+            val patch = installedModsList[position]
+            holder.itemBinding.title.text = patch.name
+            val hasVer = patch.version.isNotEmpty() && patch.version != "0"
+            holder.itemBinding.version.text = if (hasVer) "v${patch.version}" else ""
+            holder.itemBinding.version.isVisible = hasVer
+
+            holder.itemBinding.addonSwitch.setOnCheckedChangeListener(null)
+            holder.itemBinding.addonSwitch.isChecked = patch.enabled
+
+            holder.itemBinding.addonSwitch.setOnCheckedChangeListener { _, isChecked ->
+                patch.enabled = isChecked
+                saveAddonsState()
+                val enabledCount = installedModsList.count { it.enabled }
+                val disabledCount = installedModsList.size - enabledCount
+                binding.textInstalledStatus.text = getString(
+                    R.string.gamebanana_installed_stats,
+                    installedModsList.size,
+                    enabledCount,
+                    disabledCount
+                )
+                onModsUpdated?.invoke()
+            }
+
+            holder.itemBinding.addonCard.setOnClickListener {
+                holder.itemBinding.addonSwitch.toggle()
+            }
+
+            holder.itemBinding.deleteCard.isVisible = patch.isRemovable
+            holder.itemBinding.buttonDelete.setOnClickListener {
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.delete)
+                    .setMessage(getString(R.string.gamebanana_delete_mod_confirm, patch.name))
+                    .setPositiveButton(R.string.delete) { _, _ ->
+                        NativeLibrary.removeMod(patch.programId, patch.name)
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.gamebanana_mod_deleted, patch.name),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        loadInstalledMods()
+                        onModsUpdated?.invoke()
+                    }
+                    .setNegativeButton(R.string.close, null)
+                    .show()
+            }
+        }
+
+        private fun saveAddonsState() {
+            val g = game ?: return
+            val currentPatches = NativeLibrary.getPatchesForFile(g.path, g.programId) ?: return
+            val disabledAddons = mutableListOf<String>()
+            for (p in currentPatches) {
+                if (PatchType.from(p.type) == PatchType.Mod) {
+                    val matching = installedModsList.find { it.name == p.name }
+                    if (matching != null && !matching.enabled) {
+                        disabledAddons.add(p.name)
+                    }
+                } else if (!p.enabled) {
+                    disabledAddons.add(p.name)
+                }
+            }
+            NativeConfig.setDisabledAddons(g.programId, disabledAddons.toTypedArray())
+            NativeConfig.saveGlobalConfig()
         }
     }
 

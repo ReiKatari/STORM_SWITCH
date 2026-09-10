@@ -2138,5 +2138,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="profile_share_title">Share Settings Profile</string>
     <string name="profile_import_success">Profile \"%1$s\" imported successfully!</string>
     <string name="profile_import_failed">Failed to import profile. Invalid file format.</string>
+    <string name="storm_games_world">STORM GAMES WORLD</string>
+    <string name="storm_games_world_description">Nintendo Switch games catalog and downloads</string>
+    <string name="gamebanana_tab_online">🌐 GameBanana catalog</string>
+    <string name="gamebanana_tab_installed">💾 Installed</string>
+    <string name="gamebanana_no_installed_mods">No mods installed for this game</string>
+    <string name="gamebanana_installed_stats">Total: %1$d | Enabled: %2$d | Disabled: %3$d</string>
+    <string name="gamebanana_delete_mod_confirm">Are you sure you want to delete mod "%1$s"?</string>
+    <string name="gamebanana_mod_deleted">Mod "%1$s" deleted</string>
 </resources>
 

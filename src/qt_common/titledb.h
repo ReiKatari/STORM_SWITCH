@@ -23,6 +23,8 @@ struct Entry {
     std::string description;
     std::string version;
     std::string release_date;
+    std::string icon_url;
+    std::string banner_url;
 };
 
 class TitleDatabase {

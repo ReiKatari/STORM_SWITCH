@@ -9,6 +9,7 @@
 #include <vector>
 #include <queue>
 
+#include "common/logging.h"
 #include "common/settings.h"
 #include "shader_recompiler/exception.h"
 #include "shader_recompiler/frontend/ir/basic_block.h"
@@ -65,7 +66,12 @@ void CollectInterpolationInfo(Environment& env, IR::Program& program) {
                 continue;
             }
             if (imap && imap != value) {
-                throw NotImplementedException("Per component interpolation");
+                LOG_WARNING(HW_GPU, "Per component interpolation conflict on generic {} ({} vs {}), selecting dominant mode",
+                            index, static_cast<int>(*imap), static_cast<int>(value));
+                if (value == PixelImap::Perspective) {
+                    imap = PixelImap::Perspective;
+                }
+                continue;
             }
             imap = value;
         }

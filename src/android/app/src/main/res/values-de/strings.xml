@@ -1425,4 +1425,12 @@ Wirklich fortfahren?</string>
     <string name="enable_frame_skipping_description">Überspringt unkritische Zwischenbilder bei Leistungseinbrüchen, um Spielgeschwindigkeit und flüssiges Gameplay beizubehalten.</string>
     <string name="enable_frame_interpolation">Frame-Interpolation aktivieren</string>
     <string name="enable_frame_interpolation_description">Glättet Übergänge zwischen aufeinanderfolgenden Bildern durch Bild-Interpolation.</string>
+    <string name="storm_games_world">STORM GAMES WORLD</string>
+    <string name="storm_games_world_description">Nintendo Switch Spielekatalog und Downloads</string>
+    <string name="gamebanana_tab_online">🌐 GameBanana-Katalog</string>
+    <string name="gamebanana_tab_installed">💾 Installiert</string>
+    <string name="gamebanana_no_installed_mods">Keine Mods für dieses Spiel installiert</string>
+    <string name="gamebanana_installed_stats">Gesamt: %1$d | Aktiviert: %2$d | Deaktiviert: %3$d</string>
+    <string name="gamebanana_delete_mod_confirm">Möchten Sie den Mod "%1$s" wirklich löschen?</string>
+    <string name="gamebanana_mod_deleted">Mod "%1$s" gelöscht</string>
 </resources>

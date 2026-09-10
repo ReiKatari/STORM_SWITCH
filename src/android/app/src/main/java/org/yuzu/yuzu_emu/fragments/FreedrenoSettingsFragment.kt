@@ -164,7 +164,6 @@ class FreedrenoSettingsFragment : Fragment() {
             NativeFreedrenoConfig.clearAllFreedrenoEnv()
             if (isPerGameConfig) {
                 NativeFreedrenoConfig.deletePerGameConfig(game!!.programIdHex)
-                NativeFreedrenoConfig.savePerGameConfig(game!!.programIdHex)
             } else {
                 NativeFreedrenoConfig.saveFreedrenoConfig()
             }

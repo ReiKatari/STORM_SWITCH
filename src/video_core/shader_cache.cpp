@@ -67,8 +67,8 @@ bool ShaderCache::RefreshStages(std::array<u64, 6>& unique_hashes) {
         const std::optional<VAddr> cpu_shader_addr{gpu_memory->GpuToCpuAddress(shader_addr)};
         if (!cpu_shader_addr) {
             LOG_ERROR(HW_GPU, "Invalid GPU address for shader {:#016x}", shader_addr);
-            last_shaders_valid = false;
-            return false;
+            unique_hashes[index] = 0;
+            continue;
         }
         const ShaderInfo* shader_info{TryGet(*cpu_shader_addr)};
         if (!shader_info) {
