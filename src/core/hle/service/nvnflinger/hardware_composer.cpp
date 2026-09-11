@@ -23,22 +23,28 @@ s32 NormalizeSwapInterval(f32* out_speed_scale, s32 swap_interval) {
     if (swap_interval <= 0) {
         // As an extension, treat nonpositive swap interval as speed multiplier.
         if (out_speed_scale) {
-            *out_speed_scale = 2.f * static_cast<f32>(1 - swap_interval);
+            *out_speed_scale = std::max(1.0f, 2.f * static_cast<f32>(1 - swap_interval));
         }
 
-        swap_interval = 1;
+        return 1;
     }
 
-    if (swap_interval >= 5) {
-        // As an extension, treat high swap interval as precise speed control.
+    if (swap_interval >= 50) {
+        // As an extension, treat high swap interval as precise speed control percentage.
         if (out_speed_scale) {
-            *out_speed_scale = static_cast<f32>(swap_interval) / 100.f;
+            *out_speed_scale = std::max(1.0f, static_cast<f32>(swap_interval) / 100.f);
         }
 
-        swap_interval = 1;
+        return 1;
     }
 
-    return swap_interval;
+    // For standard game intervals (1..49): never allow guest to throttle emulation below 100%!
+    if (out_speed_scale) {
+        *out_speed_scale = 1.0f;
+    }
+
+    // Clamp game swap interval to 1..4 (60 to 15 FPS), preventing any permanent lock below 15 FPS
+    return std::clamp(swap_interval, 1, 4);
 }
 
 } // namespace
@@ -68,25 +74,8 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
     for (auto& layer : display.stack.layers) {
         auto consumer_id = layer->consumer_id;
 
-        bool should_try_acquire = true;
-        if (!layer->is_overlay) {
-            auto fb_it = m_framebuffers.find(consumer_id);
-            if (fb_it != m_framebuffers.end() && fb_it->second.is_acquired) {
-                const u64 frames_since_last_acquire = m_frame_number - fb_it->second.last_acquire_frame;
-                const s32 expected_interval = NormalizeSwapInterval(nullptr, fb_it->second.item.swap_interval);
-
-                if (frames_since_last_acquire < static_cast<u64>(expected_interval)) {
-                    should_try_acquire = false;
-                }
-            }
-        }
-
         // Try to fetch the framebuffer (either new or stale).
-        const auto result = should_try_acquire
-            ? this->CacheFramebufferLocked(*layer, consumer_id)
-            : (m_framebuffers.find(consumer_id) != m_framebuffers.end() && m_framebuffers[consumer_id].is_acquired
-                ? CacheStatus::CachedBufferReused
-                : CacheStatus::NoBufferAvailable);
+        const auto result = this->CacheFramebufferLocked(*layer, consumer_id);
 
         // If we failed, skip this layer.
         if (result == CacheStatus::NoBufferAvailable) {
@@ -162,10 +151,6 @@ void HardwareComposer::ReleaseFramebuffersLocked(Display& display) {
 
         const auto layer = display.stack.FindLayer(layer_id);
         if (!layer) {
-            continue;
-        }
-
-        if (!layer->is_overlay && framebuffer.release_frame_number > m_frame_number) {
             continue;
         }
 

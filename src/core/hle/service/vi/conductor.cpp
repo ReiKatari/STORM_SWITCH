@@ -106,7 +106,8 @@ s64 Conductor::GetNextTicks() const {
         if (settings.use_speed_limit.GetValue()) {
             // Scales the speed based on speed_limit setting on MC. SC is handled by
             // SpeedLimiter::DoSpeedLimiting.
-            speed_scale = 100.f / Settings::SpeedLimit();
+            const auto speed_limit = Settings::SpeedLimit();
+            speed_scale = speed_limit > 0 ? (100.f / static_cast<f32>(speed_limit)) : 1.f;
         } else {
             // Run at unlocked framerate.
             speed_scale = 0.01f;
@@ -114,15 +115,22 @@ s64 Conductor::GetNextTicks() const {
     }
 
     // Adjust by speed limit determined during composition.
-    speed_scale /= m_compose_speed_scale;
+    if (m_compose_speed_scale > 0.05f) {
+        speed_scale /= m_compose_speed_scale;
+    }
 
     if (m_system.GetNVDECActive() && settings.use_video_framerate.GetValue()) {
         // Run at intended presentation rate during video playback.
         speed_scale = 1.f;
     }
 
-    const f32 effective_fps = 60.f / static_cast<f32>(m_swap_interval);
-    return static_cast<s64>(speed_scale * (1000000000.f / effective_fps));
+    const s32 safe_swap_interval = std::clamp(m_swap_interval, 1, 4);
+    const f32 effective_fps = 60.f / static_cast<f32>(safe_swap_interval);
+    const s64 ticks = static_cast<s64>(speed_scale * (1000000000.f / effective_fps));
+
+    // Hard-clamp tick interval: never allow VSync composition to exceed 33.3ms (minimum 30 FPS compositing)
+    // and lower bound to 1ms (up to 1000 FPS unlocked)
+    return std::clamp<s64>(ticks, 1'000'000, 33'333'333);
 }
 
 s64 Conductor::GetFramePeriodNs() const {
@@ -131,19 +139,23 @@ s64 Conductor::GetFramePeriodNs() const {
     bool unlocked = false;
     if (settings.use_multi_core.GetValue()) {
         if (settings.use_speed_limit.GetValue()) {
-            speed_scale = 100.f / Settings::SpeedLimit();
+            const auto speed_limit = Settings::SpeedLimit();
+            speed_scale = speed_limit > 0 ? (100.f / static_cast<f32>(speed_limit)) : 1.f;
         } else {
             unlocked = true;
         }
     }
-    speed_scale /= m_compose_speed_scale;
+    if (m_compose_speed_scale > 0.05f) {
+        speed_scale /= m_compose_speed_scale;
+    }
 
-    const f32 effective_fps = 60.f / static_cast<f32>(m_swap_interval);
+    const s32 safe_swap_interval = std::clamp(m_swap_interval, 1, 4);
+    const f32 effective_fps = 60.f / static_cast<f32>(safe_swap_interval);
     s64 period = static_cast<s64>(speed_scale * (1000000000.f / effective_fps));
     if (unlocked) {
         period /= UNLOCKED_TARGET_DIVISOR;
     }
-    return std::clamp<s64>(period, 1'000'000, 100'000'000);
+    return std::clamp<s64>(period, 1'000'000, 33'333'333);
 }
 
 } // namespace Service::VI

@@ -4226,16 +4226,17 @@ void MainWindow::OnAutoTuneSettings() {
             Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
             Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Handheld);
         } else if (idx == 2) {
-            Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res2X);
-            Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+            Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1X);
+            Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
             Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
             Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Hybrid);
             Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Hybrid);
             Settings::values.use_asynchronous_shaders.SetValue(true);
             Settings::values.use_asynchronous_gpu_emulation.SetValue(true);
             Settings::values.async_presentation.SetValue(true);
-            Settings::values.use_reactive_flushing.SetValue(true);
-            Settings::values.sync_memory_operations.SetValue(true);
+            Settings::values.use_reactive_flushing.SetValue(false);
+            Settings::values.sync_memory_operations.SetValue(false);
+            Settings::values.enable_gpu_buffer_readback.SetValue(false);
             Settings::values.gpu_clock.SetValue(Settings::GpuClock::Boost);
             Settings::values.eco_thermal_mode.SetValue(true);
             Settings::values.eco_frame_pacing.SetValue(true);

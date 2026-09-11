@@ -451,8 +451,8 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
     if (tier == ProfileTier::Enthusiast) {
         tier_name = tr("Максимальное качество (Enthusiast)");
 
-        Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res2X);
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+        Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1X);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
         Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
         Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Hybrid);
         Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Hybrid);
@@ -461,6 +461,7 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         Settings::values.async_presentation.SetValue(true);
         Settings::values.use_reactive_flushing.SetValue(false);
         Settings::values.sync_memory_operations.SetValue(false);
+        Settings::values.enable_gpu_buffer_readback.SetValue(false);
         Settings::values.gpu_clock.SetValue(Settings::GpuClock::Boost);
         Settings::values.eco_thermal_mode.SetValue(true);
         Settings::values.eco_frame_pacing.SetValue(true);
@@ -480,8 +481,8 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
         Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
 
-        applied_list << tr("Разрешение рендеринга: 2X (1440p/2160p) (максимальная детализация и четкость геометрии для мощных видеокарт)");
-        applied_list << tr("Точность ГПУ: Высокая (повышенная точность FP16 для исключения визуальных артефактов)");
+        applied_list << tr("Разрешение рендеринга: 1X (720p/1080p) (нативное разрешение Switch для оптимального баланса скорости и стабильности)");
+        applied_list << tr("Точность ГПУ: Быстрая (Low) (высокая скорость рендеринга без микрозадержек видеокарты)");
         applied_list << tr("Пересжатие текстур ASTC: Без сжатия (оригинальное бескомпромиссное качество текстур)");
         applied_list << tr("Декодирование ASTC: Гибридный (оптимальная аппаратная и программная распаковка)");
         applied_list << tr("Сглаживание: SMAA (высококачественное субпиксельное сглаживание без замыливания)");
