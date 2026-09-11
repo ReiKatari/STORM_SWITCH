@@ -42,14 +42,7 @@ namespace Tegra {
 
 namespace {
 constexpr u64 GpuClockMultiplier(Settings::GpuClock clock) {
-    switch (clock) {
-    case Settings::GpuClock::Boost:
-        return 256;
-    case Settings::GpuClock::Overclock:
-        return 512;
-    default:
-        return 1;
-    }
+    return 1;
 }
 } // Anonymous namespace
 

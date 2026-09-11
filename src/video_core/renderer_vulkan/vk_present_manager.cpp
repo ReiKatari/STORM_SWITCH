@@ -185,14 +185,7 @@ Frame* PresentManager::GetRenderFrame() {
     free_queue.pop_front();
 
     // Wait for the presentation to be finished so all frame resources are free
-    if (!Settings::values.early_release_fences.GetValue()) {
-        frame->present_done.Wait();
-    } else {
-        // Early release fences: avoid redundant fence waits if already signaled by GPU
-        if (frame->present_done.GetStatus() == VK_NOT_READY) {
-            frame->present_done.Wait(1'000'000);
-        }
-    }
+    frame->present_done.Wait();
     frame->present_done.Reset();
 
     return frame;

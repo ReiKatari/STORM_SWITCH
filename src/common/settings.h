@@ -549,11 +549,11 @@ struct Values {
     SwitchableSetting<bool> renderer_force_max_clock{linkage, false, "force_max_clock",
                                                      Category::RendererAdvanced};
 
-    SwitchableSetting<bool> early_release_fences{linkage, true, "early_release_fences",
+    SwitchableSetting<bool> early_release_fences{linkage, false, "early_release_fences",
                                                  Category::RendererAdvanced};
     SwitchableSetting<int> optimize_spirv_output{linkage, 1, "optimize_spirv_output",
                                                  Category::RendererAdvanced};
-    SwitchableSetting<bool> use_fast_gpu_time{linkage, true, "use_fast_gpu_time",
+    SwitchableSetting<bool> use_fast_gpu_time{linkage, false, "use_fast_gpu_time",
                                               Category::RendererAdvanced};
     SwitchableSetting<bool> enable_frame_skipping{linkage, true, "enable_frame_skipping",
                                                   Category::RendererAdvanced};
@@ -643,7 +643,7 @@ struct Values {
 
     // Renderer Hacks //
     SwitchableSetting<GpuClock> gpu_clock{linkage,
-                                          GpuClock::Boost,
+                                          GpuClock::Normal,
                                           "fast_gpu_time",
                                           Category::System,
                                           Specialization::Default,
