@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QApplication>
@@ -56,6 +56,7 @@
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "core/core.h"
+#include "qt_common/config/uisettings.h"
 #include "storm_switch/translator/game_translator.h"
 
 // ============================================================================
@@ -620,7 +621,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
 
     m_show_hud_check = new QCheckBox(tr("Показывать плавающие субтитры (HUD)"), tab_hud);
     m_enable_floating_btn_check = new QCheckBox(tr("Отображать плавающую кнопку перевода поверх игры"), tab_hud);
-    m_enable_floating_btn_check->setChecked(true);
+    m_enable_floating_btn_check->setChecked(false);
     m_hud_opacity_slider = new QSlider(Qt::Horizontal, tab_hud);
     m_hud_opacity_slider->setRange(10, 100);
     m_hud_opacity_slider->setValue(75);
@@ -1259,7 +1260,11 @@ void GameTranslator::LoadSettings() {
                 m_tts_rate_slider->setValue(root[QStringLiteral("rate")].toInt());
             }
             if (root.contains(QStringLiteral("enable_floating_button")) && m_enable_floating_btn_check) {
-                m_enable_floating_btn_check->setChecked(root[QStringLiteral("enable_floating_button")].toBool());
+                const bool val = root[QStringLiteral("enable_floating_button")].toBool();
+                m_enable_floating_btn_check->setChecked(val);
+                UISettings::values.enable_floating_translate_button.SetValue(val);
+            } else if (m_enable_floating_btn_check) {
+                m_enable_floating_btn_check->setChecked(UISettings::values.enable_floating_translate_button.GetValue());
             }
 
             // Per-game ROI zones
@@ -1301,7 +1306,9 @@ void GameTranslator::SaveSettings() {
     root[QStringLiteral("volume")] = m_tts_volume_slider->value();
     root[QStringLiteral("rate")] = m_tts_rate_slider->value();
     if (m_enable_floating_btn_check) {
-        root[QStringLiteral("enable_floating_button")] = m_enable_floating_btn_check->isChecked();
+        const bool val = m_enable_floating_btn_check->isChecked();
+        root[QStringLiteral("enable_floating_button")] = val;
+        UISettings::values.enable_floating_translate_button.SetValue(val);
     }
 
     if (m_save_per_game_check->isChecked()) {

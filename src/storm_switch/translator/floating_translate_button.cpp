@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QAction>
@@ -17,6 +17,7 @@
 #include <filesystem>
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
+#include "qt_common/config/uisettings.h"
 #include "storm_switch/translator/floating_translate_button.h"
 
 FloatingTranslateButton::FloatingTranslateButton(QWidget* parent)
@@ -196,6 +197,7 @@ void FloatingTranslateButton::contextMenuEvent(QContextMenuEvent* event) {
     connect(act_hud, &QAction::triggered, this, &FloatingTranslateButton::ToggleHUDRequested);
     connect(act_hide, &QAction::triggered, this, [this]() {
         SetVisibleState(false);
+        UISettings::values.enable_floating_translate_button.SetValue(false);
         std::filesystem::path config_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir);
         std::filesystem::path config_path = config_dir / "translator.json";
         std::error_code ec;

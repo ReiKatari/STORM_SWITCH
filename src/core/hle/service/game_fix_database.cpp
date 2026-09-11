@@ -4204,6 +4204,38 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "0"},
             {"System\\memory_layout_mode", "0"}
         }
+    },
+    {
+        0x010020D01AD24000ULL,
+        "Animal Well",
+        "• Просадка частоты кадров до 4-6 FPS и задержка вывода 200 мс после 5 минут игры\n• Накопление буферов и задержки синхронизации при переходе между локациями",
+        "• Framerate drops to 4-6 FPS and 200 ms latency after 5 minutes of gameplay\n• Buffer accumulation and synchronization latency across room transitions",
+        "✓ Сборщик мусора VRAM: Отключено (устранение задержек 200 мс)\n✓ Асинхронный вывод кадров: Включено\n✓ Ранний сброс барьеров кадра: Включено\n✓ Быстрая память: Включено\n✓ Режим памяти: 4 ГБ DRAM",
+        "✓ VRAM Garbage Collection: Disabled (Eliminates 200ms stalls)\n✓ Async Presentation: Enabled\n✓ Early Release Fences: Enabled\n✓ Fastmem: Enabled\n✓ Memory Mode: 4GB DRAM",
+        {
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\early_release_fences", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_video_framerate", "false"},
+            {"Renderer\\eco_frame_pacing", "false"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
+        }
     }
 };
 

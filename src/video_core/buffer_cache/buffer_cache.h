@@ -100,7 +100,9 @@ void BufferCache<P>::TickFrame() {
     if (runtime.CanReportMemoryUsage()) {
         total_used_memory = runtime.GetDeviceMemoryUsage();
     }
-    if (total_used_memory >= minimum_memory) {
+    const bool vram_gc = Settings::values.vram_garbage_collection.GetValue();
+    const u64 gc_threshold = vram_gc ? minimum_memory : critical_memory;
+    if (total_used_memory >= gc_threshold) {
         RunGarbageCollector();
     }
     ++frame_tick;

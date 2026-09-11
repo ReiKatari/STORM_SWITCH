@@ -1767,11 +1767,8 @@ void Device::CollectPhysicalMemoryInfo() {
             const size_t conservative_memory = 4_GiB;
             const size_t scaler_memory = 512_MiB * Settings::values.resolution_info.ScaleUp(1);
             device_access_memory = std::min<u64>(device_access_memory, conservative_memory + scaler_memory);
-        } else if (Settings::values.vram_usage_mode.GetValue() == Settings::VramUsageMode::Normal) {
-            const size_t normal_memory = 6_GiB;
-            const size_t scaler_memory = 1_GiB * Settings::values.resolution_info.ScaleUp(1);
-            device_access_memory = std::min<u64>(device_access_memory, normal_memory + scaler_memory);
         }
+        // In Normal and Aggressive modes for discrete GPUs, full dedicated memory (minus OS reserve) is utilized
     }
 }
 

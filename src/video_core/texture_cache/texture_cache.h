@@ -70,7 +70,9 @@ TextureCache<P>::TextureCache(Runtime& runtime_, Tegra::MaxwellDeviceMemoryManag
         critical_memory = static_cast<u64>(
             (std::max)((std::min)(device_local_memory - min_vacancy_critical, min_spacing_critical),
                      DEFAULT_CRITICAL_MEMORY));
-        minimum_memory = static_cast<u64>((device_local_memory - mem_threshold) / 2);
+        minimum_memory = static_cast<u64>(
+            (std::max)((std::min)(device_local_memory - min_vacancy_expected, min_spacing_expected),
+                     DEFAULT_EXPECTED_MEMORY));
     } else {
         expected_memory = DEFAULT_EXPECTED_MEMORY + 512_MiB;
         critical_memory = DEFAULT_CRITICAL_MEMORY + 1_GiB;
@@ -127,7 +129,7 @@ void TextureCache<P>::RunGarbageCollector() {
         ticks_to_destroy = aggressive_mode ? 30ULL : (high_priority_mode ? 90ULL : (vram_gc ? 120ULL : 180ULL));
         num_iterations = aggressive_mode ? 40 : (high_priority_mode ? 20 : (vram_gc ? 15 : 10));
     };
-    const auto Cleanup = [this, &num_iterations, &high_priority_mode, &aggressive_mode, &sync_downloads](ImageId image_id) {
+    const auto Cleanup = [this, &num_iterations, &high_priority_mode, &aggressive_mode, &sync_downloads, vram_gc](ImageId image_id) {
         if (num_iterations == 0) {
             return true;
         }
@@ -138,6 +140,9 @@ void TextureCache<P>::RunGarbageCollector() {
         }
         const bool must_download = image.IsSafeDownload() && False(image.flags & ImageFlagBits::BadOverlap);
         if ((!aggressive_mode && True(image.flags & ImageFlagBits::CostlyLoad)) || (!high_priority_mode && must_download)) {
+            return false;
+        }
+        if (must_download && !vram_gc) {
             return false;
         }
         if (must_download) {
@@ -180,7 +185,8 @@ void TextureCache<P>::TickFrame() {
         total_used_memory = runtime.GetDeviceMemoryUsage();
     }
     const bool vram_gc = Settings::values.vram_garbage_collection.GetValue();
-    if (total_used_memory > (vram_gc ? (minimum_memory * 3 / 4) : minimum_memory)) {
+    const u64 gc_threshold = vram_gc ? (minimum_memory * 3 / 4) : critical_memory;
+    if (total_used_memory > gc_threshold) {
         RunGarbageCollector();
     }
     sentenced_images.Tick();
