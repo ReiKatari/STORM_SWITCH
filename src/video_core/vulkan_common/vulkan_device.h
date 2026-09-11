@@ -939,6 +939,10 @@ FN_MAX_LIMIT_LIST
         return device_access_memory;
     }
 
+    u64 GetDevicePhysicalMemory() const {
+        return device_physical_memory;
+    }
+
     bool CanReportMemoryUsage() const {
         return extensions.memory_budget;
     }
@@ -1228,6 +1232,7 @@ private:
     bool supports_conditional_barriers{};      ///< Allows barriers in conditional control flow.
     mutable std::atomic<size_t> custom_border_color_samplers_used{};
     u64 device_access_memory{};                ///< Total size of device local memory in bytes.
+    u64 device_physical_memory{};              ///< Total physical size of GPU local VRAM in bytes.
     u32 sets_per_pool{};                       ///< Sets per Description Pool
     NvidiaArchitecture nvidia_arch{NvidiaArchitecture::Arch_AmpereOrNewer};
 

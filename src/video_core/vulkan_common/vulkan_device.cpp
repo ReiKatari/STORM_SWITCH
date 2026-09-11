@@ -1720,7 +1720,7 @@ void Device::CollectPhysicalMemoryInfo() {
     const size_t num_properties = mem_properties.memoryHeapCount;
     device_access_memory = 0;
     u64 device_initial_usage = 0;
-    [[maybe_unused]] u64 local_memory = 0;
+    device_physical_memory = 0;
     for (size_t element = 0; element < num_properties; ++element) {
         const bool is_heap_local =
             (mem_properties.memoryHeaps[element].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0;
@@ -1729,13 +1729,17 @@ void Device::CollectPhysicalMemoryInfo() {
         }
         valid_heap_memory.push_back(element);
         if (is_heap_local) {
-            local_memory += mem_properties.memoryHeaps[element].size;
+            device_physical_memory += mem_properties.memoryHeaps[element].size;
         }
         if (extensions.memory_budget) {
             device_initial_usage += budget.heapUsage[element];
-            device_access_memory += budget.heapBudget[element];
-            continue;
+            // On integrated devices (mobile/iGPU), use dynamic heapBudget to avoid system LMK kills.
+            if (is_integrated) {
+                device_access_memory += budget.heapBudget[element];
+                continue;
+            }
         }
+        // On discrete GPUs (such as NVIDIA GeForce RTX 3080 Ti 20GB), utilize full physical device local VRAM!
         device_access_memory += mem_properties.memoryHeaps[element].size;
     }
     if (is_integrated) {
@@ -1761,14 +1765,16 @@ void Device::CollectPhysicalMemoryInfo() {
             device_access_memory = 4_GiB;
         }
     } else {
-        const u64 reserve_memory = std::min<u64>(device_access_memory / 8, 1_GiB);
-        device_access_memory -= reserve_memory;
         if (Settings::values.vram_usage_mode.GetValue() == Settings::VramUsageMode::Conservative) {
             const size_t conservative_memory = 4_GiB;
             const size_t scaler_memory = 512_MiB * Settings::values.resolution_info.ScaleUp(1);
             device_access_memory = std::min<u64>(device_access_memory, conservative_memory + scaler_memory);
+        } else if (Settings::values.vram_usage_mode.GetValue() == Settings::VramUsageMode::Normal) {
+            // On discrete GPUs in Normal mode, reserve a small buffer (max 1 GiB) for Windows DWM and OS compositor, unlocking the rest of the VRAM (e.g. 19 GiB on a 20GB card)
+            const u64 reserve_memory = std::min<u64>(device_access_memory / 16, 1_GiB);
+            device_access_memory -= reserve_memory;
         }
-        // In Normal and Aggressive modes for discrete GPUs, full dedicated memory (minus OS reserve) is utilized
+        // In Aggressive mode for discrete GPUs, 100% of physical dedicated VRAM is utilized without deductions!
     }
 }
 

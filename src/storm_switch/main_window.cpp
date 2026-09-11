@@ -7407,6 +7407,7 @@ void MainWindow::UpdateVramText() {
         break;
     }
     vram_mode_button->setText(tr("VRAM:\n%1").arg(val_text));
+    vram_mode_button->setToolTip(tr("Режим использования видеопамяти (VRAM)\n• Экономный: жесткое ограничение VRAM\n• Нормальный: полное выделение физической VRAM с резервом для ОС\n• Агрессивный: 100% мощности и физической памяти видеокарты без ограничений"));
 }
 
 void MainWindow::UpdateAnisotropyText() {

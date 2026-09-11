@@ -381,11 +381,13 @@ void RendererVulkan::Report() const {
 
     const std::string extensions = BuildCommaSeparatedExtensions(device.GetAvailableExtensions());
 
+    const auto physical_vram = static_cast<f64>(device.GetDevicePhysicalMemory()) / f64{1_GiB};
     const auto available_vram = static_cast<f64>(device.GetDeviceLocalMemory()) / f64{1_GiB};
 
     LOG_INFO(Render_Vulkan, "Driver: {}", driver_name);
     LOG_INFO(Render_Vulkan, "Device: {}", model_name);
     LOG_INFO(Render_Vulkan, "Vulkan: {}", api_version);
+    LOG_INFO(Render_Vulkan, "Physical VRAM: {:.2f} GiB", physical_vram);
     LOG_INFO(Render_Vulkan, "Available VRAM: {:.2f} GiB", available_vram);
 }
 
