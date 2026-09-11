@@ -906,12 +906,13 @@ void Config::ReadSettingGeneric(Settings::BasicSetting* const setting) {
 
     bool use_global = true;
     if (setting->Switchable() && !global) {
-        use_global = ReadBooleanSetting(std::string(key).append("\\use_global"), std::make_optional(true));
+        const bool key_in_ini = config->GetValue(GetSection().c_str(), key.c_str(), nullptr) != nullptr;
+        use_global = ReadBooleanSetting(std::string(key).append("\\use_global"), std::make_optional(!key_in_ini));
         setting->SetGlobal(use_global);
     }
 
     if (global || !use_global) {
-        const bool is_default = ReadBooleanSetting(std::string(key).append("\\default"), std::make_optional(true));
+        const bool is_default = ReadBooleanSetting(std::string(key).append("\\default"), std::make_optional(false));
         if (!is_default) {
             setting->LoadString(ReadStringSetting(key, default_value));
         } else {

@@ -768,8 +768,6 @@ void Initialize(JavaVM* vm, JNIEnv *env) {
 extern "C" {
 #endif
 
-extern jint SDL_JNI_OnLoad(JavaVM *vm, void *reserved);
-
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env;
     if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION) != JNI_OK) {
@@ -777,8 +775,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
 
     Common::Android::Initialize(vm, env);
-
-    SDL_JNI_OnLoad(vm, reserved);
 
     return JNI_VERSION;
 }

@@ -3830,7 +3830,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     auto* cb_layout = new QHBoxLayout();
     cb_layout->setAlignment(Qt::AlignCenter);
     auto* dont_ask_cb = new QCheckBox(tr("Больше не показывать для этой игры"), &fixDialog);
-    dont_ask_cb->setChecked(dont_ask);
+    dont_ask_cb->setChecked(false);
     dont_ask_cb->setStyleSheet(QStringLiteral(
         "QCheckBox {"
         "    color: #94A3B8;"
@@ -4393,8 +4393,9 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
         const bool fix_applied = Core::GameFixDatabase::IsFixApplied(title_id, target_ini) ||
                                  Core::GameFixDatabase::IsFixApplied(title_id, (custom_path / (legacy_config + ".ini")).string());
-        if (fix_applied) {
+        if (fix_applied || Core::GameFixDatabase::AreFixesEnabled()) {
             Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+            QtCommon::system->ApplySettings();
             statusBar()->showMessage(tr("🛡️ Авто-исправление: Применено"), 8000);
         } else if (Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString()) != nullptr) {
             statusBar()->showMessage(tr("⚠️ Авто-исправление: Не применено"), 8000);

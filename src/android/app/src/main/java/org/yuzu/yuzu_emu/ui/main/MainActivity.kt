@@ -71,36 +71,6 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
     private val CHECKED_DECRYPTION = "CheckedDecryption"
     private var checkedDecryption = false
 
-    private val requestStoragePermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (android.os.Environment.isExternalStorageManager()) {
-                DirectoryInitialization.initializeSharedStorage()
-            }
-        }
-    }
-
-    private fun checkAllFilesAccessPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!android.os.Environment.isExternalStorageManager()) {
-                try {
-                    val intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                        data = Uri.fromParts("package", packageName, null)
-                    }
-                    requestStoragePermissionLauncher.launch(intent)
-                } catch (_: Exception) {
-                    try {
-                        val intent = Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                        requestStoragePermissionLauncher.launch(intent)
-                    } catch (_: Exception) {}
-                }
-            } else {
-                DirectoryInitialization.initializeSharedStorage()
-            }
-        }
-    }
-
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(YuzuApplication.applyLanguage(base))
         CrashHandler.install(base)
@@ -122,8 +92,6 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         }
 
         super.onCreate(savedInstanceState)
-
-        checkAllFilesAccessPermission()
 
         try {
             NativeLibrary.initMultiplayer()

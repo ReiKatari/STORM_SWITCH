@@ -68,6 +68,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.yuzu.yuzu_emu.HomeNavigationDirections
@@ -144,7 +145,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     private val driverViewModel: DriverViewModel by activityViewModels()
 
     private var isInFoldableLayout = false
-    private var emulationStarted = false
 
     private lateinit var gpuModel: String
     private lateinit var fwVersion: String
@@ -507,8 +507,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                                     // For intent launches, check if surface is ready and start emulation
                                     binding.root.post {
-                                        if (binding.surfaceEmulation.holder.surface?.isValid == true && !emulationStarted) {
-                                            emulationStarted = true
+                                        if (binding.surfaceEmulation.holder.surface?.isValid == true) {
                                             emulationState.newSurface(
                                                 binding.surfaceEmulation.holder.surface
                                             )
@@ -2790,32 +2789,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         Log.debug("[EmulationFragment] Surface changed. Resolution: " + width + "x" + height)
-        if (!emulationStarted) {
-            emulationStarted = true
-
-            // Wait for driver initialization to complete for ALL launches before passing surface
-            if (!driverViewModel.isInteractionAllowed.value) {
-                Log.info("[EmulationFragment] Waiting for driver initialization to complete")
-                lifecycleScope.launch {
-                    driverViewModel.isInteractionAllowed.collect { allowed ->
-                        if (allowed && holder.surface.isValid) {
-                            emulationState.newSurface(holder.surface)
-                        }
-                    }
-                }
-                return
-            }
-
+        lifecycleScope.launch {
+            driverViewModel.isInteractionAllowed.first { it }
             if (holder.surface.isValid) {
                 emulationState.newSurface(holder.surface)
-            } else {
-                Log.warning("[EmulationFragment] surfaceChanged: holder.surface is not valid yet")
             }
-        } else {
-            // Surface changed due to rotation/config change
-            // Only update surface reference, don't trigger state changes
-            if (holder.surface.isValid) {
-                emulationState.updateSurfaceReference(holder.surface)
+        }
+        synchronized(emulationState) {
+            if (emulationState.isRunning) {
+                NativeLibrary.surfaceChanged(holder.surface)
             }
         }
         updatePausedFrameVisibility()
@@ -2825,7 +2807,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         if (this::emulationState.isInitialized && !hasNewerEmulationFragment()) {
             emulationState.clearSurface()
         }
-        emulationStarted = false
         sessionStartTime = 0L
     }
 

@@ -567,7 +567,7 @@ struct Values {
         linkage, true, "use_vulkan_driver_pipeline_cache", Category::RendererAdvanced,
         Specialization::Default};
 
-    SwitchableSetting<bool> enable_compute_pipelines{linkage, false, "enable_compute_pipelines",
+    SwitchableSetting<bool> enable_compute_pipelines{linkage, true, "enable_compute_pipelines",
                                                      Category::RendererAdvanced};
 
     SwitchableSetting<bool> use_video_framerate{linkage, false, "use_video_framerate",
@@ -686,7 +686,7 @@ struct Values {
     SwitchableSetting<bool> rescale_hack{linkage, false, "rescale_hack",
                                          Category::RendererHacks};
     SwitchableSetting<bool> enable_gpu_buffer_readback{linkage,
-                                                       true,
+                                                       false,
                                                        "enable_gpu_buffer_readback",
                                                        Category::RendererAdvanced,
                                                        Specialization::Default,

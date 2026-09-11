@@ -274,16 +274,28 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Графические артефакты ступенчатого рендеринга и искажение освещения",
         "• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Staircase scanline rendering and broken lighting buffer",
-        "✓ Точность ГПУ: Обычная (плавные 60 FPS и корректный рендеринг 2D-шейдеров)\n✓ Обратное чтение буферов ГПУ: Отключено (устранение фризов 4 FPS / 200 ms)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Accuracy: Normal (Smooth 60 FPS and correct 2D shader rendering)\n✓ GPU Buffer Readback: Disabled (Eliminates 4 FPS / 200 ms stalls)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS и корректный рендеринг 2D-шейдеров)\n✓ Разрешение: Родное 1X (720p/1080p, чистый CRT)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без растягивания)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено (устранение фризов 4 FPS / 200 ms)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS and correct 2D shader rendering)\n✓ Resolution: Native 1X (720p/1080p clean CRT)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled (Eliminates 4 FPS / 200 ms stalls)\n✓ Dynamic State: Basic (EDS 1)\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\dyna_state", "3"},
-            {"Cpu\\cpuopt_fastmem", "true"}
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\aspect_ratio", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -291,16 +303,28 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Графические артефакты ступенчатого рендеринга и искажение освещения",
         "• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Staircase scanline rendering and broken lighting buffer",
-        "✓ Точность ГПУ: Обычная (плавные 60 FPS и корректный рендеринг 2D-шейдеров)\n✓ Обратное чтение буферов ГПУ: Отключено (устранение фризов 4 FPS / 200 ms)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Accuracy: Normal (Smooth 60 FPS and correct 2D shader rendering)\n✓ GPU Buffer Readback: Disabled (Eliminates 4 FPS / 200 ms stalls)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS и корректный рендеринг 2D-шейдеров)\n✓ Разрешение: Родное 1X (720p/1080p, чистый CRT)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без растягивания)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено (устранение фризов 4 FPS / 200 ms)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS and correct 2D shader rendering)\n✓ Resolution: Native 1X (720p/1080p clean CRT)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled (Eliminates 4 FPS / 200 ms stalls)\n✓ Dynamic State: Basic (EDS 1)\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\dyna_state", "3"},
-            {"Cpu\\cpuopt_fastmem", "true"}
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\aspect_ratio", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -308,16 +332,28 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Графические артефакты ступенчатого рендеринга и искажение освещения",
         "• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Staircase scanline rendering and broken lighting buffer",
-        "✓ Точность ГПУ: Обычная (плавные 60 FPS и корректный рендеринг 2D-шейдеров)\n✓ Обратное чтение буферов ГПУ: Отключено (устранение фризов 4 FPS / 200 ms)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Accuracy: Normal (Smooth 60 FPS and correct 2D shader rendering)\n✓ GPU Buffer Readback: Disabled (Eliminates 4 FPS / 200 ms stalls)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS и корректный рендеринг 2D-шейдеров)\n✓ Разрешение: Родное 1X (720p/1080p, чистый CRT)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без растягивания)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено (устранение фризов 4 FPS / 200 ms)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS and correct 2D shader rendering)\n✓ Resolution: Native 1X (720p/1080p clean CRT)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled (Eliminates 4 FPS / 200 ms stalls)\n✓ Dynamic State: Basic (EDS 1)\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\dyna_state", "3"},
-            {"Cpu\\cpuopt_fastmem", "true"}
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\aspect_ratio", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -3884,6 +3920,60 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
         }
+    },
+    {
+        0x010015100B514000ULL,
+        "Metroid Prime Remastered",
+        "• Задержки компиляции шейдеров при открытии дверей и в комнатах лавы\n• Микрофризы при быстрой смене оружия",
+        "• Shader compilation stutter during door transitions and lava chambers\n• Beam switching hitching",
+        "✓ Точность ГПУ: Обычная\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ GPU Accuracy: Normal\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed",
+        {
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Renderer\\astc_recompression", "0"}
+        }
+    },
+    {
+        0x010044700DEB0000ULL,
+        "Crash Bandicoot 4: It's About Time",
+        "• Случайные вылеты из-за сбоев разыменования нулевых указателей в анимациях\n• Просадки FPS на уровнях с водой",
+        "• Random crash from null pointer memory access in complex animations\n• FPS drops on water-heavy levels",
+        "✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Точность ГПУ: Обычная\n✓ Асинхронные шейдеры: Включено\n✓ Режим полёта: Включено",
+        "✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ GPU Accuracy: Normal\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
+        {
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"System\\airplane_mode", "true"}
+        }
+    },
+    {
+        0x0100670014482000ULL,
+        "Assassin's Creed: The Ezio Collection",
+        "• Просадки кадровой частоты (4-15 FPS) из-за обратного чтения буферов видеопамяти\n• Мерцание теней на зданиях Венеции и Флоренции",
+        "• Severe framerate drops (4-15 FPS) caused by GPU buffer readback\n• Shadow flickering on buildings in Venice and Florence",
+        "✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"System\\airplane_mode", "true"}
+        }
     }
 };
 
@@ -4653,7 +4743,9 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
         std::string line;
         std::string current_section;
         while (std::getline(file, line)) {
-            line = Common::FS::SanitizePath(line);
+            while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\t')) {
+                line.pop_back();
+            }
             if (line.empty() || line[0] == '#' || line[0] == ';') continue;
             if (line.front() == '[' && line.back() == ']') {
                 current_section = line.substr(1, line.size() - 2);
@@ -4730,7 +4822,9 @@ void GameFixDatabase::SetDontAskAgain(u64 title_id, const std::string& config_fi
         std::string line;
         std::string current_section;
         while (std::getline(file, line)) {
-            line = Common::FS::SanitizePath(line);
+            while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\t')) {
+                line.pop_back();
+            }
             if (line.empty() || line[0] == '#' || line[0] == ';') continue;
             if (line.front() == '[' && line.back() == ']') {
                 current_section = line.substr(1, line.size() - 2);
@@ -4837,19 +4931,8 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
         };
 
         auto apply_setting = [](auto& setting, auto val) {
-            if constexpr (requires { setting.UsingGlobal(); }) {
-                // If user has set an explicit custom per-game value, preserve it!
-                if (!setting.UsingGlobal()) {
-                    return;
-                }
-                setting.SetGlobal(false);
-                setting.SetValue(val);
-            } else if constexpr (requires { setting.SetGlobal(false); }) {
-                setting.SetGlobal(false);
-                setting.SetValue(val);
-            } else {
-                setting.SetValue(val);
-            }
+            setting.SetGlobal(false);
+            setting.SetValue(val);
         };
 
         for (const auto& [full_key, val] : profile->ini_settings) {
@@ -4866,9 +4949,17 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\max_anisotropy") {
                 apply_setting(Settings::values.max_anisotropy, static_cast<Settings::AnisotropyMode>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\resolution_setup") {
-                apply_setting(Settings::values.resolution_setup, static_cast<Settings::ResolutionSetup>(safe_stoi(val, 2)));
+                apply_setting(Settings::values.resolution_setup, static_cast<Settings::ResolutionSetup>(safe_stoi(val, 3)));
+            } else if (full_key == "Renderer\\aspect_ratio") {
+                apply_setting(Settings::values.aspect_ratio, static_cast<Settings::AspectRatio>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\fsr_sharpening_slider") {
                 apply_setting(Settings::values.fsr_sharpening_slider, static_cast<u8>(safe_stoi(val, 0)));
+            } else if (full_key == "Renderer\\scaling_filter") {
+                apply_setting(Settings::values.scaling_filter, static_cast<Settings::ScalingFilter>(safe_stoi(val, 0)));
+            } else if (full_key == "Renderer\\anti_aliasing") {
+                apply_setting(Settings::values.anti_aliasing, static_cast<Settings::AntiAliasing>(safe_stoi(val, 0)));
+            } else if (full_key == "Renderer\\enable_gpu_buffer_readback") {
+                apply_setting(Settings::values.enable_gpu_buffer_readback, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_fast_gpu_time" || full_key == "Renderer\\gpu_clock") {
                 if (val == "true" || val == "1") {
                     apply_setting(Settings::values.gpu_clock, Settings::GpuClock::Boost);
@@ -4953,7 +5044,9 @@ bool GameFixDatabase::IsFixApplied(u64 title_id, const std::string& config_file_
     std::string line;
     std::string current_section;
     while (std::getline(file, line)) {
-        line = Common::FS::SanitizePath(line);
+        while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\t')) {
+            line.pop_back();
+        }
         if (line.empty() || line[0] == '#' || line[0] == ';') continue;
         if (line.front() == '[' && line.back() == ']') {
             current_section = line.substr(1, line.size() - 2);
@@ -4978,7 +5071,7 @@ bool GameFixDatabase::IsFixApplied(u64 title_id, const std::string& config_file_
         std::string key = full_key.substr(slash + 1);
 
         if (!sections.count(sec) || !sections[sec].count(key)) {
-            return false;
+            continue;
         }
         if (sections[sec][key] != expected_val) {
             return false;

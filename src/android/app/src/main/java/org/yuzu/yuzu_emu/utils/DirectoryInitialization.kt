@@ -39,104 +39,17 @@ object DirectoryInitialization {
             return userPath
         }
 
-    fun initializeSharedStorage() {
-        try {
-            val rootExternal = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH")
-            if (rootExternal.exists() || rootExternal.mkdirs()) {
-                listOf("keys", "config", "config/custom", "load", "nand", "nand/user/save", "sdmc", "amiibo", "Amiibo", "cheats", "gpu_drivers", "logs", "screenshots", "profiles").forEach { sub ->
-                    File(rootExternal, sub).mkdirs()
-                }
-                val internalBaseDir = YuzuApplication.appContext.getExternalFilesDir(null) ?: YuzuApplication.appContext.filesDir
-                migrateDirectoryIfMissing(internalBaseDir, rootExternal)
-                migrateFromLegacyDirectories(rootExternal)
-
-                val newPath = rootExternal.canonicalPath
-                if (userPath != newPath && !NativeLibrary.isRunning()) {
-                    userPath = newPath
-                    NativeLibrary.setAppDirectory(userPath!!)
-                    NativeConfig.initializeGlobalConfig()
-                    NativeLibrary.reloadProfiles()
-                }
-            }
-        } catch (_: Throwable) {}
-    }
-
-    private fun migrateDirectoryIfMissing(sourceDir: File, targetDir: File) {
-        try {
-            if (!sourceDir.exists() || sourceDir.canonicalPath == targetDir.canonicalPath) {
-                return
-            }
-            val subdirs = listOf("keys", "config", "load", "nand", "sdmc", "amiibo", "cheats", "gpu_drivers", "profiles")
-            for (sub in subdirs) {
-                val srcSub = File(sourceDir, sub)
-                val dstSub = File(targetDir, sub)
-                if (srcSub.exists() && srcSub.isDirectory) {
-                    dstSub.mkdirs()
-                    srcSub.listFiles()?.forEach { file ->
-                        val targetFile = File(dstSub, file.name)
-                        if (!targetFile.exists()) {
-                            try {
-                                if (file.isDirectory) {
-                                    file.copyRecursively(targetFile, overwrite = false)
-                                } else {
-                                    file.copyTo(targetFile, overwrite = false)
-                                }
-                            } catch (_: Throwable) {}
-                        }
-                    }
-                }
-            }
-        } catch (_: Throwable) {}
-    }
-
-    private fun migrateFromLegacyDirectories(targetDir: File) {
-        try {
-            val legacyCandidates = listOf(
-                File(android.os.Environment.getExternalStorageDirectory(), "STORM EDEN"),
-                File(android.os.Environment.getExternalStorageDirectory(), "Eden"),
-                File("/data/user/0/dev.storm_eden/files"),
-                File("/data/user/0/org.yuzu.yuzu_emu/files")
-            )
-            for (legacyDir in legacyCandidates) {
-                if (legacyDir.exists() && legacyDir.isDirectory) {
-                    migrateDirectoryIfMissing(legacyDir, targetDir)
-                }
-            }
-        } catch (_: Throwable) {}
-    }
-
     private fun initializeInternalStorage() {
         try {
-            var initialized = false
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R || android.os.Environment.isExternalStorageManager()) {
-                val rootExternal = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH")
-                if (rootExternal.exists() || rootExternal.mkdirs()) {
-                    listOf("keys", "config", "config/custom", "load", "nand", "nand/user/save", "sdmc", "amiibo", "cheats", "gpu_drivers", "logs", "screenshots", "profiles").forEach { sub ->
-                        File(rootExternal, sub).mkdirs()
-                    }
-                    val internalBaseDir = YuzuApplication.appContext.getExternalFilesDir(null) ?: YuzuApplication.appContext.filesDir
-                    migrateDirectoryIfMissing(internalBaseDir, rootExternal)
-                    migrateFromLegacyDirectories(rootExternal)
-
-                    userPath = rootExternal.canonicalPath
-                    NativeLibrary.setAppDirectory(userPath!!)
-                    initialized = true
-                }
-            }
-            if (!initialized) {
-                val baseDir = YuzuApplication.appContext.getExternalFilesDir(null) ?: YuzuApplication.appContext.filesDir
-                userPath = baseDir.canonicalPath
-                listOf("keys", "config", "config/custom", "load", "nand", "nand/user/save", "sdmc", "amiibo", "cheats", "gpu_drivers", "logs", "screenshots", "profiles").forEach { sub ->
-                    File(baseDir, sub).mkdirs()
-                }
-                NativeLibrary.setAppDirectory(userPath!!)
-            }
-        } catch (e: Throwable) {
+            val baseDir = YuzuApplication.appContext.getExternalFilesDir(null) ?: YuzuApplication.appContext.filesDir
+            userPath = baseDir.canonicalPath
+            NativeLibrary.setAppDirectory(userPath!!)
+        } catch (e: Exception) {
             CrashHandler.logError(YuzuApplication.appContext, "DirectoryInitialization.initializeInternalStorage", e)
             try {
                 userPath = YuzuApplication.appContext.filesDir.absolutePath
                 NativeLibrary.setAppDirectory(userPath!!)
-            } catch (ignored: Throwable) {}
+            } catch (ignored: Exception) {}
         }
     }
 
