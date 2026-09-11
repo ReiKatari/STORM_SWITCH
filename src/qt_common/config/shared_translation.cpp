@@ -214,14 +214,10 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
 
     INSERT(Settings, use_vulkan_driver_pipeline_cache, tr("Использовать кэш пайплайнов драйвера Vulkan"),
            tr("Задействует внутренний кэш драйвера видеокарты для ускорения повторного запуска игр."));
-    INSERT(Settings, vulkan_pipeline_cache, tr("Кэш конвейеров Vulkan"),
-           tr("Предкомпиляция и сохранение бинарного кэша конвейеров Vulkan на накопителе для полного устранения внутриигровых статтеров и микрофризов при компиляции шейдеров."));
     INSERT(Settings, vram_garbage_collection, tr("Очистка виртуальной памяти"),
            tr("Периодическая фоновая очистка неиспользуемых текстурных буферов и кэша ASTC для предотвращения утечек видеопамяти и лагов."));
     INSERT(Settings, enable_hdr10, tr("Поддержка HDR10"),
            tr("Включает цветовое пространство HDR10 (BT.2020 PQ / ST2084) для совместимых HDR-мониторов и OLED-дисплеев, обеспечивая глубокие цвета и расширенный динамический диапазон."));
-    INSERT(Settings, frame_generation, tr("Генерация кадров"),
-           tr("Интерполяция промежуточных кадров на этапе вывода Vulkan для увеличения плавности с 30 FPS до 60/120 FPS на мониторах с высокой частотой обновления."));
     INSERT(Settings, frame_gen_fp16, tr("Вычисления FP16"),
            tr("Использовать 16-битные вычисления FP16 для генерации кадров."));
     INSERT(Settings, frame_gen_flow_scale_auto, tr("Авто-масштаб потока"),
@@ -256,8 +252,6 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Ускоряет обработку временных меток и запросов таймингов ГПУ, уменьшая задержки конвейера рендеринга."));
     INSERT(Settings, enable_frame_skipping, tr("Пропуск кадров"),
            tr("Автоматически пропускает рендеринг промежуточных кадров при высоких нагрузках, поддерживая стабильную скорость игры."));
-    INSERT(Settings, enable_frame_interpolation, tr("Интерполяция кадров"),
-           tr("Интерполирует промежуточные кадры для повышения плавности анимации."));
 
     // Renderer (Extensions)
     INSERT(Settings, dyna_state, tr("Расширенное динамическое состояние"),

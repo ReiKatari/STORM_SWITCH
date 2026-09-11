@@ -141,9 +141,9 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                             if (tempC > maxTemp) maxTemp = tempC
                         }
                     }
-                    // Activate thermal throttle when device exceeds 48°C
-                    // Deactivate when device cools below 42°C (hysteresis to avoid flip-flopping)
-                    val shouldThrottle = if (isThermalThrottled) maxTemp >= 42 else maxTemp >= 48
+                    // Activate thermal throttle when device exceeds 56°C
+                    // Deactivate when device cools below 50°C (hysteresis to avoid flip-flopping)
+                    val shouldThrottle = if (isThermalThrottled) maxTemp >= 50 else maxTemp >= 56
                     if (shouldThrottle != isThermalThrottled) {
                         isThermalThrottled = shouldThrottle
                         NativeLibrary.setThermalThrottle(shouldThrottle)

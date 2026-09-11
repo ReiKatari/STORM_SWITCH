@@ -142,6 +142,11 @@ class DriverViewModel : ViewModel() {
                 GpuDriverHelper.installCustomDriver(driverFile)
             }
         }
+        if (activeGame == null) {
+            NativeConfig.saveGlobalConfig()
+        } else {
+            NativeConfig.savePerGameConfig()
+        }
         previousDriverPath = newDriverPath
         updateName()
     }

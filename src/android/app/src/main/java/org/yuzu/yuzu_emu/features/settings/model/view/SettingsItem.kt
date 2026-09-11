@@ -1250,13 +1250,6 @@ abstract class SettingsItem(
                     descriptionId = R.string.enable_frame_skipping_description
                 )
             )
-            put(
-                SwitchSetting(
-                    BooleanSetting.ENABLE_FRAME_INTERPOLATION,
-                    titleId = R.string.enable_frame_interpolation,
-                    descriptionId = R.string.enable_frame_interpolation_description
-                )
-            )
         }
     }
 }

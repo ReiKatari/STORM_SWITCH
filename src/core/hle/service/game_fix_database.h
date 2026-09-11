@@ -21,6 +21,9 @@ struct GameFixProfile {
     
     // Per-game config parameters
     std::unordered_map<std::string, std::string> ini_settings;
+
+    // Alternative Title IDs (regional releases, aliases)
+    std::vector<u64> alt_title_ids{};
 };
 
 class GameFixDatabase {

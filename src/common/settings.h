@@ -557,8 +557,6 @@ struct Values {
                                               Category::RendererAdvanced};
     SwitchableSetting<bool> enable_frame_skipping{linkage, true, "enable_frame_skipping",
                                                   Category::RendererAdvanced};
-    SwitchableSetting<bool> enable_frame_interpolation{linkage, false, "enable_frame_interpolation",
-                                                       Category::RendererAdvanced};
 
     SwitchableSetting<bool> use_disk_shader_cache{linkage, true, "use_disk_shader_cache",
                                                   Category::RendererAdvanced};
@@ -628,13 +626,6 @@ struct Values {
                                                  Specialization::Default,
                                                  true,
                                                  true};
-    SwitchableSetting<bool> vulkan_pipeline_cache{linkage,
-                                                  true,
-                                                  "vulkan_pipeline_cache",
-                                                  Category::RendererAdvanced,
-                                                  Specialization::Default,
-                                                  true,
-                                                  true};
     SwitchableSetting<bool> vram_garbage_collection{linkage,
                                                     false,
                                                     "vram_garbage_collection",
@@ -649,13 +640,6 @@ struct Values {
                                          Specialization::Default,
                                          true,
                                          true};
-    SwitchableSetting<bool> frame_generation{linkage,
-                                             false,
-                                             "frame_generation",
-                                             Category::RendererAdvanced,
-                                             Specialization::Default,
-                                             true,
-                                             true};
 
     // Renderer Hacks //
     SwitchableSetting<GpuClock> gpu_clock{linkage,

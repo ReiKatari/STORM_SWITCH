@@ -3580,7 +3580,7 @@ void MainWindow::OnApplyAutoCorrection() {
     Settings::values.eco_frame_pacing.SetValue(true);
     Settings::values.smart_shader_throttle.SetValue(true);
     Settings::values.cpu_affinity_pinning.SetValue(true);
-    Settings::values.vulkan_pipeline_cache.SetValue(true);
+    Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
     Settings::values.vram_garbage_collection.SetValue(false);
     Settings::values.early_release_fences.SetValue(true);
     Settings::values.use_reactive_flushing.SetValue(false);
@@ -4213,7 +4213,7 @@ void MainWindow::OnAutoTuneSettings() {
             Settings::values.eco_frame_pacing.SetValue(true);
             Settings::values.smart_shader_throttle.SetValue(true);
             Settings::values.cpu_affinity_pinning.SetValue(true);
-            Settings::values.vulkan_pipeline_cache.SetValue(true);
+            Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
             Settings::values.vram_garbage_collection.SetValue(false);
             Settings::values.early_release_fences.SetValue(true);
             Settings::values.optimize_spirv_output.SetValue(1);
@@ -4242,7 +4242,7 @@ void MainWindow::OnAutoTuneSettings() {
             Settings::values.eco_frame_pacing.SetValue(true);
             Settings::values.smart_shader_throttle.SetValue(true);
             Settings::values.cpu_affinity_pinning.SetValue(true);
-            Settings::values.vulkan_pipeline_cache.SetValue(true);
+            Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
             Settings::values.vram_garbage_collection.SetValue(false);
             Settings::values.early_release_fences.SetValue(true);
             Settings::values.optimize_spirv_output.SetValue(1);
@@ -4271,7 +4271,7 @@ void MainWindow::OnAutoTuneSettings() {
             Settings::values.eco_frame_pacing.SetValue(true);
             Settings::values.smart_shader_throttle.SetValue(true);
             Settings::values.cpu_affinity_pinning.SetValue(true);
-            Settings::values.vulkan_pipeline_cache.SetValue(true);
+            Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
             Settings::values.vram_garbage_collection.SetValue(false);
             Settings::values.early_release_fences.SetValue(true);
             Settings::values.optimize_spirv_output.SetValue(1);
@@ -7183,7 +7183,15 @@ void MainWindow::UpdateStatusBar() {
         display_fps = 0.0;
     }
 
-    QString fpsText = tr("🎮 %1 FPS").arg(std::round(display_fps), 0, 'f', 0);
+    QString fpsText;
+    if (Settings::values.frame_gen.GetValue()) {
+        const u32 mult = std::clamp<u32>(Settings::values.frame_gen_multiplier.GetValue(), 2, 4);
+        const double base_fps = results.average_game_fps > 0.0 ? results.average_game_fps : (display_fps / mult);
+        const double gen_fps = base_fps * mult;
+        fpsText = tr("🎮 %1 FPS [LSFG %2X -> %3 FPS]").arg(std::round(base_fps), 0, 'f', 0).arg(mult).arg(std::round(gen_fps), 0, 'f', 0);
+    } else {
+        fpsText = tr("🎮 %1 FPS").arg(std::round(display_fps), 0, 'f', 0);
+    }
     if (!m_fpsSuffix.isEmpty())
         fpsText = fpsText % QStringLiteral(" (%1)").arg(m_fpsSuffix);
 

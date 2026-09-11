@@ -467,7 +467,7 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         Settings::values.eco_frame_pacing.SetValue(true);
         Settings::values.smart_shader_throttle.SetValue(true);
         Settings::values.cpu_affinity_pinning.SetValue(true);
-        Settings::values.vulkan_pipeline_cache.SetValue(true);
+        Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
         Settings::values.vram_garbage_collection.SetValue(false);
         Settings::values.early_release_fences.SetValue(true);
         Settings::values.optimize_spirv_output.SetValue(1);
@@ -507,7 +507,7 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         Settings::values.eco_frame_pacing.SetValue(true);
         Settings::values.smart_shader_throttle.SetValue(true);
         Settings::values.cpu_affinity_pinning.SetValue(true);
-        Settings::values.vulkan_pipeline_cache.SetValue(true);
+        Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
         Settings::values.vram_garbage_collection.SetValue(false);
         Settings::values.early_release_fences.SetValue(true);
         Settings::values.optimize_spirv_output.SetValue(1);
@@ -547,7 +547,7 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         Settings::values.eco_frame_pacing.SetValue(true);
         Settings::values.smart_shader_throttle.SetValue(true);
         Settings::values.cpu_affinity_pinning.SetValue(true);
-        Settings::values.vulkan_pipeline_cache.SetValue(true);
+        Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
         Settings::values.vram_garbage_collection.SetValue(false);
         Settings::values.early_release_fences.SetValue(true);
         Settings::values.optimize_spirv_output.SetValue(1);

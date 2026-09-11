@@ -4,6 +4,7 @@
 #include "core/hle/service/game_fix_database.h"
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -134,7 +135,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\astc_recompression", "0"}
-        }
+        },
+        {0x0100B5B0112F8000ULL, 0x0100D1801648E000ULL}
     },
 
     {
@@ -185,34 +187,6 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x0100B5B0112F8000ULL,
-        "Hogwarts Legacy",
-        "• Вылет из-за нехватки памяти при загрузке замка Хогвартс\n• Высокое потребление ОЗУ (>8.5 ГБ) на мобильных чипах",
-        "• Out of memory (нехватка памяти) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
-        "✓ Разрешение: Handheld 0.75X + FSR 80%\n✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
-        "✓ Resolution: Handheld 0.75X + FSR 80%\n✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
-        {
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\resolution_setup", "1"},
-            {"Renderer\\fsr_sharpening_slider", "80"},
-            {"System\\memory_layout_mode", "2"}
-        }
-    },
-    {
-        0x0100D1801648E000ULL,
-        "Hogwarts Legacy",
-        "• Вылет из-за нехватки памяти при загрузке замка Хогвартс\n• Высокое потребление ОЗУ (>8.5 ГБ) на мобильных чипах",
-        "• Out of memory (нехватка памяти) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
-        "✓ Разрешение: Handheld 0.75X + FSR 80%\n✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
-        "✓ Resolution: Handheld 0.75X + FSR 80%\n✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
-        {
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\resolution_setup", "1"},
-            {"Renderer\\fsr_sharpening_slider", "80"},
-            {"System\\memory_layout_mode", "2"}
-        }
-    },
-    {
         0x01002A801458A000ULL,
         "Diablo II: Resurrected",
         "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
@@ -229,45 +203,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "false"},
             {"Renderer\\enable_gpu_buffer_readback", "false"}
-        }
-    },
-    {
-        0x0100916014D8C000ULL,
-        "Diablo II: Resurrected",
-        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
-        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет 4 FPS / 200 ms)",
-        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS / 200 ms)",
-        {
-            {"Core\\memory_layout_mode", "2"},
-            {"System\\memory_layout_mode", "2"},
-            {"System\\airplane_mode", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "false"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"}
-        }
-    },
-    {
-        0x0100726014352000ULL,
-        "Diablo II: Resurrected",
-        "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
-        "• Character load / continue game crash (нехватка памяти)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет 4 FPS / 200 ms)",
-        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS / 200 ms)",
-        {
-            {"Core\\memory_layout_mode", "2"},
-            {"System\\memory_layout_mode", "2"},
-            {"System\\airplane_mode", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "false"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"}
-        }
+        },
+        {0x0100916014D8C000ULL, 0x0100726014352000ULL}
     },
     {
         0x010020D01AD24000ULL,
@@ -394,51 +331,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"System\\airplane_mode", "true"}
-        }
-    },
-    {
-        0x0100EC9010258000ULL,
-        "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Рассинхронизация буфера презентации",
-        "• Intro NVDEC video stream freeze\n• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Включено\n✓ Асинхронный вывод: Включено\n✓ Режим «В самолете»: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Синхронизация памяти: Отключено",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: Enabled\n✓ Async Presentation: Enabled\n✓ Airplane Mode: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ Sync Memory Operations: Disabled",
-        {
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"}
-        }
-    },
-    {
-        0x010085800E33E000ULL,
-        "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Рассинхронизация буфера презентации",
-        "• Intro NVDEC video stream freeze\n• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Включено\n✓ Асинхронный вывод: Включено\n✓ Режим «В самолете»: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Синхронизация памяти: Отключено",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: Enabled\n✓ Async Presentation: Enabled\n✓ Airplane Mode: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ Sync Memory Operations: Disabled",
-        {
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"}
-        }
+        },
+        {0x0100EC9010258000ULL, 0x010085800E33E000ULL, 0x01000BD011936000ULL, 0x0100F7A011938000ULL, 0x0100BA700E340000ULL}
     },
     {
         0x0100C6000EEA8000ULL,
@@ -664,15 +558,19 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010056D015DB6000ULL,
         "Sonic Frontiers",
-        "• Падение FPS и вылет в открытых зонах островов",
-        "• Frame drops and OOM crash in open-zone islands",
-        "✓ Разрешение: Handheld 0.75X + FSR 80%\n✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM",
-        "✓ Resolution: Handheld 0.75X + FSR 80%\n✓ ASTC Recompression: BC1\n✓ Memory Layout: 6GB DRAM",
+        "• Просадки FPS и размытие текстур в открытых зонах островов\n• Мерцание теней Cyberspace и подгрузка геометрии",
+        "• Open-zone framerate drops and blurry grass textures\n• Cyberspace shadow flickering and geometry pop-in",
+        "✓ Память: 6GB DRAM\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Сжатие ASTC: Отключено",
+        "✓ Memory Layout: 6GB DRAM\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x\n✓ ASTC Recompression: Uncompressed",
         {
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\resolution_setup", "1"},
-            {"System\\memory_layout_mode", "1"}
-        }
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Renderer\\max_anisotropy", "5"},
+            {"Renderer\\astc_recompression", "0"}
+        },
+        {0x01004C90141A4000ULL, 0x0100508013AE0000ULL}
     },
     {
         0x01004AB00A260000ULL,
@@ -1015,20 +913,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\airplane_mode", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\memory_layout_mode", "2"}
-        }
-    },
-    {
-        0x01004C90141A4000ULL,
-        "Sonic Frontiers",
-        "• Просадки FPS и размытие текстур травы в открытых зонах\n• Мерцание теней Cyberspace",
-        "• Heavy open-zone frame drops and blurry grass textures\n• Cyberspace shadow flickering",
-        "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Память: 6GB DRAM",
-        "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x\n✓ Memory Layout: 6GB DRAM",
-        {
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\max_anisotropy", "5"},
-            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -2496,39 +2380,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\gpu_accuracy", "1"}
-        }
-    },
-    {
-        0x010032F00C04A000ULL,
-        "Diablo III: Eternal Collection (Japan)",
-        "• Задержка и зависание на экране сезонов при проверке Battle.net\n• Микрофризы при спавне элитных паков",
-        "• Battle.net seasonal handshake timeout freeze\n• Elite mob pack spawn stutter",
-        "✓ Режим полёта: Включено (пропуск серверов Battle.net)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
-        "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
-        {
-            {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\gpu_accuracy", "1"}
-        }
-    },
-    {
-        0x01001B700A654000ULL,
-        "Diablo III: Eternal Collection",
-        "• Задержка и зависание на экране сезонов при проверке Battle.net\n• Микрофризы при спавне элитных паков",
-        "• Battle.net seasonal handshake timeout freeze\n• Elite mob pack spawn stutter",
-        "✓ Режим полёта: Включено (пропуск серверов Battle.net)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
-        "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
-        {
-            {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\gpu_accuracy", "1"}
-        }
+        },
+        {0x010032F00C04A000ULL, 0x01001B700A654000ULL}
     },
     {
         0x01005E4017C7A000ULL,
@@ -2777,20 +2630,6 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\astc_recompression", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"}
-        }
-    },
-    {
-        0x0100508013AE0000ULL,
-        "Sonic Frontiers",
-        "• Просадки FPS при разгоне на открытых островах Звездопада\n• Подгрузка геометрии рейлов и колец",
-        "• Starfall Islands high-speed boost framerate drops\n• Rail and collectible geometry pop-in",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"System\\memory_layout_mode", "1"},
-            {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -3497,256 +3336,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         }
     },
-    // AI: Не менять (на будущее) / DO NOT MODIFY
-    {
-        0x0100AC300919A000ULL,
-        "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
-        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
-        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
-        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Включено (аппаратное воспроизведение видео-заставок и катсцен в 60 FPS)\n"
-        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (устраняет микрофризы презентации Vulkan на вступительных роликах и меню)\n"
-        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
-        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
-        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
-        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
-        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
-        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
-        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
-        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Enabled (hardware-accelerated playback of intro cutscenes at 60 FPS)\n"
-        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (eliminates presentation micro-stutters during intro videos and menu)\n"
-        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
-        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
-        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
-        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
-        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
-        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
-        {
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\use_video_framerate", "false"},
-            {"Renderer\\eco_frame_pacing", "false"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"},
-            {"Network\\airplane_mode", "true"}
-        }
-    },
-    // AI: Не менять (на будущее) / DO NOT MODIFY
-    {
-        0x0100EC9010258000ULL,
-        "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
-        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
-        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
-        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Включено (аппаратное воспроизведение видео-заставок и катсцен в 60 FPS)\n"
-        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (устраняет микрофризы презентации Vulkan на вступительных роликах и меню)\n"
-        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
-        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
-        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
-        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
-        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
-        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
-        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
-        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Enabled (hardware-accelerated playback of intro cutscenes at 60 FPS)\n"
-        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (eliminates presentation micro-stutters during intro videos and menu)\n"
-        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
-        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
-        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
-        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
-        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
-        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
-        {
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\use_video_framerate", "false"},
-            {"Renderer\\eco_frame_pacing", "false"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"},
-            {"Network\\airplane_mode", "true"}
-        }
-    },
-    // AI: Не менять (на будущее) / DO NOT MODIFY
-    {
-        0x010085800E33E000ULL,
-        "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
-        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
-        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
-        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Включено (аппаратное воспроизведение видео-заставок и катсцен в 60 FPS)\n"
-        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (устраняет микрофризы презентации Vulkan на вступительных роликах и меню)\n"
-        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
-        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
-        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
-        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
-        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
-        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
-        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
-        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Enabled (hardware-accelerated playback of intro cutscenes at 60 FPS)\n"
-        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (eliminates presentation micro-stutters during intro videos and menu)\n"
-        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
-        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
-        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
-        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
-        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
-        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
-        {
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\use_video_framerate", "false"},
-            {"Renderer\\eco_frame_pacing", "false"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"},
-            {"Network\\airplane_mode", "true"}
-        }
-    },
-    // AI: Не менять (на будущее) / DO NOT MODIFY
-    {
-        0x0100BA700E340000ULL,
-        "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
-        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
-        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
-        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Включено (аппаратное воспроизведение видео-заставок и катсцен в 60 FPS)\n"
-        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (устраняет микрофризы презентации Vulkan на вступительных роликах и меню)\n"
-        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
-        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
-        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
-        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
-        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
-        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
-        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
-        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Enabled (hardware-accelerated playback of intro cutscenes at 60 FPS)\n"
-        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (eliminates presentation micro-stutters during intro videos and menu)\n"
-        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
-        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
-        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
-        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
-        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
-        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
-        {
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\use_video_framerate", "false"},
-            {"Renderer\\eco_frame_pacing", "false"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"},
-            {"Network\\airplane_mode", "true"}
-        }
-    },
-    // AI: Не менять (на будущее) / DO NOT MODIFY
-    {
-        0x0100C60010228000ULL,
-        "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты и рассинхронизация буфера презентации\n• Зависание сетевых сокетов в главном меню",
-        "• Intro NVDEC video stream freeze\n• Presentation buffer desync and low framerate\n• Network socket freeze in main menu",
-        "✓ Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)\n"
-        "✓ Точность ГПУ: Быстрый (высокая скорость рендеринга без лишней нагрузки на видеокарту)\n"
-        "✓ Декодирование видео NVDEC: Включено (аппаратное воспроизведение видео-заставок и катсцен в 60 FPS)\n"
-        "✓ Барьеры ГПУ: По умолчанию (стандартный порядок выполнения команд без сбоев конвейера)\n"
-        "✓ Асинхронный вывод: Включено (устраняет микрофризы презентации Vulkan на вступительных роликах и меню)\n"
-        "✓ Режим «В самолете»: Включено (предотвращает зависание сетевых сокетов при поиске матчей в меню)\n"
-        "✓ Асинхронная компиляция шейдеров: Включено (фоновая компиляция шейдеров исключает внутриигровые микрофризы)\n"
-        "✓ Синхронизация операций памяти: Отключено (устраняет задержки копирования буферов видеопамяти)\n"
-        "✓ Реактивный сброс памяти: Отключено (исключает ложный сброс кэшированных поверхностей)\n"
-        "✓ Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для стабильных 60 FPS)\n"
-        "✓ Игнорировать прерывания памяти: Включено (защита от падений и безопасный возврат в LR при вызове нулевых указателей)\n"
-        "✓ Тайминги ГПУ: Ускоренный (ускоренная синхронизация таймингов кадров для плавного рендеринга)",
-        "✓ CPU Accuracy: Auto (maximum speed and compatibility of Dynarmic JIT)\n"
-        "✓ GPU Accuracy: Normal (high rendering speed without extra GPU load)\n"
-        "✓ NVDEC Video Emulation: Enabled (hardware-accelerated playback of intro cutscenes at 60 FPS)\n"
-        "✓ GPU Fences: Default (standard command order without pipeline stalls)\n"
-        "✓ Async Presentation: Enabled (eliminates presentation micro-stutters during intro videos and menu)\n"
-        "✓ Airplane Mode: Enabled (prevents network socket freeze during matchmaking search in menus)\n"
-        "✓ Asynchronous Shaders: Enabled (background compilation eliminates ingame stuttering)\n"
-        "✓ Sync Memory Operations: Disabled (eliminates texture buffer copy wait latencies)\n"
-        "✓ Reactive Flushing: Disabled (prevents redundant eviction of cached render surfaces)\n"
-        "✓ Host MMU Emulation (Fastmem): Enabled (direct virtual memory mapping for stable 60 FPS)\n"
-        "✓ Ignore Memory Aborts: Enabled (prevents crashes with safe return to LR on null pointer calls)\n"
-        "✓ GPU Timings: Boost (accelerated frame timing synchronization for smooth rendering)",
-        {
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\use_video_framerate", "false"},
-            {"Renderer\\eco_frame_pacing", "false"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"},
-            {"Network\\airplane_mode", "true"}
-        }
-    },
     {
         0x0100E65002BB8000ULL,
         "Stardew Valley",
@@ -4446,6 +4035,7 @@ static std::string BuildFixesEn(const std::unordered_map<std::string, std::strin
 static GameFixProfile CreateEnrichedProfile(const GameFixProfile& base, u64 target_title_id = 0) {
     GameFixProfile enriched;
     enriched.title_id = target_title_id != 0 ? target_title_id : base.title_id;
+    enriched.alt_title_ids = base.alt_title_ids;
     enriched.game_name = base.game_name;
     enriched.issues_ru = base.issues_ru;
     enriched.issues_en = base.issues_en;
@@ -4510,7 +4100,16 @@ const GameFixProfile* GameFixDatabase::GetProfile(u64 title_id) {
 
     // Check s_profiles
     for (const auto& profile : s_profiles) {
-        if (profile.title_id == title_id || (profile.title_id & ~0x1FFFULL) == base_title_id) {
+        bool matches = (profile.title_id == title_id || (profile.title_id & ~0x1FFFULL) == base_title_id);
+        if (!matches) {
+            for (u64 alt : profile.alt_title_ids) {
+                if (alt == title_id || (alt & ~0x1FFFULL) == base_title_id) {
+                    matches = true;
+                    break;
+                }
+            }
+        }
+        if (matches) {
             auto enriched = std::make_unique<GameFixProfile>(CreateEnrichedProfile(profile, title_id));
             auto* ptr = enriched.get();
             s_enriched_cache[title_id] = std::move(enriched);
@@ -5046,10 +4645,20 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
             sections[sec][key + "\\use_global"] = "false";
             sections[sec][key + "\\default"] = "false";
             if (key == "memory_layout_mode") {
-                sections["Core"][key] = val;
+                std::string mem_val = val;
+#ifdef __ANDROID__
+                int mode = 0;
+                if (!mem_val.empty()) {
+                    mode = std::atoi(mem_val.c_str());
+                }
+                if (mode >= 2) {
+                    mem_val = "1";
+                }
+#endif
+                sections["Core"][key] = mem_val;
                 sections["Core"][key + "\\use_global"] = "false";
                 sections["Core"][key + "\\default"] = "false";
-                sections["System"][key] = val;
+                sections["System"][key] = mem_val;
                 sections["System"][key + "\\use_global"] = "false";
                 sections["System"][key + "\\default"] = "false";
             }
@@ -5259,7 +4868,13 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {
                 apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
-                apply_setting(Settings::values.memory_layout_mode, static_cast<Settings::MemoryLayout>(safe_stoi(val, 0)));
+                int mode = safe_stoi(val, 0);
+#ifdef __ANDROID__
+                if (mode >= 2) {
+                    mode = 1;
+                }
+#endif
+                apply_setting(Settings::values.memory_layout_mode, static_cast<Settings::MemoryLayout>(mode));
             } else if (full_key == "System\\use_docked_mode") {
                 apply_setting(Settings::values.use_docked_mode, static_cast<Settings::ConsoleMode>(safe_stoi(val, 0)));
             } else if (full_key == "Cpu\\cpu_backend") {

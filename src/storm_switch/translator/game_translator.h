@@ -9,6 +9,7 @@
 #include <QImage>
 #include <QString>
 #include <QRect>
+#include <QHash>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QTimer>
@@ -144,6 +145,7 @@ private:
     Core::System& m_system;
     QNetworkAccessManager* m_network_mgr{nullptr};
     QImage m_captured_frame;
+    QHash<QString, QString> m_translation_cache;
 
     // Tabs
     QTabWidget* m_tab_widget{nullptr};

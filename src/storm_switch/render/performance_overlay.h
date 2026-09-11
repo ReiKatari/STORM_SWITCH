@@ -16,11 +16,8 @@ namespace Ui {
 class PerformanceOverlay;
 }
 
-class QLineSeries;
-class QChart;
-class QChartView;
-class QValueAxis;
 class MainWindow;
+class FpsGraphWidget;
 
 class PerformanceOverlay : public QWidget {
     Q_OBJECT
@@ -49,24 +46,18 @@ private:
     QPoint m_offset{25, 75};
 
     // frametime
-    const size_t NUM_FRAMETIME_SAMPLES = 300;
+    static constexpr size_t NUM_FRAMETIME_SAMPLES = 300;
     std::deque<double> m_frametimeSamples;
 
     // fps
-    const size_t NUM_FPS_SAMPLES = 120;
-    qreal m_xPos = 0;
+    static constexpr size_t NUM_FPS_SAMPLES = 120;
     std::deque<double> m_fpsSamples;
-    std::deque<QPointF> m_fpsPoints;
 
     // drag
     QPoint m_drag_start_pos;
 
-    // fps chart
-    QLineSeries* m_fpsSeries = nullptr;
-    QChart* m_fpsChart = nullptr;
-    QChartView* m_fpsChartView = nullptr;
-    QValueAxis* m_fpsX = nullptr;
-    QValueAxis* m_fpsY = nullptr;
+    // custom lightweight fps graph widget
+    FpsGraphWidget* m_fpsGraph = nullptr;
 
 signals:
     void closed();

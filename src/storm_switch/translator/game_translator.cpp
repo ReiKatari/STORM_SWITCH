@@ -42,6 +42,8 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QVBoxLayout>
+#include <QtConcurrentRun>
+#include <QFutureWatcher>
 
 #include <filesystem>
 #include <fmt/format.h>
@@ -838,37 +840,54 @@ void GameTranslator::TranslateFrame(const QImage& frame) {
 void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
     m_status_label->setText(tr("🔍 Распознавание текста на экране..."));
 
-    // Crop image if zones are defined
-    QImage process_image = frame;
     auto zones = m_roi_preview->GetZones();
-    if (!zones.empty()) {
-        QRect merged = zones[0];
-        for (size_t i = 1; i < zones.size(); ++i) {
-            merged = merged.united(zones[i]);
-        }
-        merged = merged.intersected(QRect(0, 0, frame.width(), frame.height()));
-        if (!merged.isEmpty()) {
-            process_image = frame.copy(merged);
-        }
-    }
-
-    // Convert to JPEG for transmission
-    QByteArray image_bytes;
-    QBuffer buffer(&image_bytes);
-    buffer.open(QIODevice::WriteOnly);
-    process_image.scaled(1280, 720, Qt::KeepAspectRatio, Qt::SmoothTransformation).save(&buffer, "JPG", 85);
-
-    // Call OCR or Vision API
     QString src_lang = m_src_lang_combo->currentData().toString();
     QString tgt_lang = m_tgt_lang_combo->currentData().toString();
+    QString current_text = m_original_edit->toPlainText();
 
-    // Call translation endpoint
-    PerformOnlineTranslation(m_original_edit->toPlainText(), src_lang, tgt_lang);
+    auto* watcher = new QFutureWatcher<void>(this);
+    connect(watcher, &QFutureWatcher<void>::finished, this, [this, watcher, current_text, src_lang, tgt_lang]() {
+        watcher->deleteLater();
+        PerformOnlineTranslation(current_text, src_lang, tgt_lang);
+    });
+
+    QFuture<void> future = QtConcurrent::run([frame, zones]() {
+        QImage process_image = frame;
+        if (!zones.empty()) {
+            QRect merged = zones[0];
+            for (size_t i = 1; i < zones.size(); ++i) {
+                merged = merged.united(zones[i]);
+            }
+            merged = merged.intersected(QRect(0, 0, frame.width(), frame.height()));
+            if (!merged.isEmpty()) {
+                process_image = frame.copy(merged);
+            }
+        }
+        QByteArray image_bytes;
+        QBuffer buffer(&image_bytes);
+        buffer.open(QIODevice::WriteOnly);
+        process_image.scaled(1280, 720, Qt::KeepAspectRatio, Qt::SmoothTransformation).save(&buffer, "JPG", 85);
+    });
+    watcher->setFuture(future);
 }
 
 void GameTranslator::PerformOnlineTranslation(const QString& text, const QString& src_lang, const QString& tgt_lang) {
-    if (text.trimmed().isEmpty()) {
+    const QString trimmed_text = text.trimmed();
+    if (trimmed_text.isEmpty()) {
         m_status_label->setText(tr("Готов"));
+        return;
+    }
+
+    const QString cache_key = QStringLiteral("%1:%2:%3").arg(src_lang, tgt_lang, trimmed_text);
+    if (m_translation_cache.contains(cache_key)) {
+        const QString translated_result = m_translation_cache.value(cache_key);
+        m_translated_edit->setText(translated_result);
+        m_hud_overlay->SetSubtitleText(translated_result);
+        m_status_label->setText(tr("✅ Перевод (кэш)"));
+
+        if (m_auto_speak_check->isChecked()) {
+            SpeakText(translated_result);
+        }
         return;
     }
 
@@ -880,14 +899,14 @@ void GameTranslator::PerformOnlineTranslation(const QString& text, const QString
     query.addQueryItem(QStringLiteral("sl"), src_lang.isEmpty() ? QStringLiteral("auto") : src_lang);
     query.addQueryItem(QStringLiteral("tl"), tgt_lang.isEmpty() ? QStringLiteral("ru") : tgt_lang);
     query.addQueryItem(QStringLiteral("dt"), QStringLiteral("t"));
-    query.addQueryItem(QStringLiteral("q"), text);
+    query.addQueryItem(QStringLiteral("q"), trimmed_text);
     url.setQuery(query);
 
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"));
 
     QNetworkReply* reply = m_network_mgr->get(req);
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, cache_key]() {
         reply->deleteLater();
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray data = reply->readAll();
@@ -901,6 +920,7 @@ void GameTranslator::PerformOnlineTranslation(const QString& text, const QString
                             translated_result += item.toArray()[0].toString();
                         }
                     }
+                    m_translation_cache.insert(cache_key, translated_result);
                     m_translated_edit->setText(translated_result);
                     m_hud_overlay->SetSubtitleText(translated_result);
                     m_status_label->setText(tr("✅ Перевод завершён"));

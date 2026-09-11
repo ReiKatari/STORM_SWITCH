@@ -3,6 +3,7 @@
 
 package org.yuzu.yuzu_emu.utils
 
+import android.os.Environment
 import androidx.preference.PreferenceManager
 import java.io.File
 import java.io.IOException
@@ -40,6 +41,30 @@ object DirectoryInitialization {
         }
 
     private fun initializeInternalStorage() {
+        try {
+            val stormExternalDir = File(Environment.getExternalStorageDirectory(), "STORM SWITCH")
+            if (stormExternalDir.exists() || stormExternalDir.mkdirs()) {
+                val subdirs = arrayOf(
+                    "config",
+                    "load",
+                    "nand",
+                    "sdmc",
+                    "cache",
+                    "amiibo",
+                    "crash_reports",
+                    "screenshots"
+                )
+                for (subdir in subdirs) {
+                    File(stormExternalDir, subdir).mkdirs()
+                }
+                userPath = stormExternalDir.canonicalPath
+                NativeLibrary.setAppDirectory(userPath!!)
+                return
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("STORM_SWITCH", "Failed to initialize /sdcard/STORM SWITCH/: ${e.message}")
+        }
+
         try {
             val baseDir = YuzuApplication.appContext.getExternalFilesDir(null) ?: YuzuApplication.appContext.filesDir
             userPath = baseDir.canonicalPath

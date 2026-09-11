@@ -101,6 +101,7 @@ import org.yuzu.yuzu_emu.utils.GameIconUtils
 import org.yuzu.yuzu_emu.utils.GpuDriverHelper
 import org.yuzu.yuzu_emu.utils.InputHandler
 import org.yuzu.yuzu_emu.utils.Log
+import org.yuzu.yuzu_emu.utils.LosslessScalingHelper
 import org.yuzu.yuzu_emu.utils.NativeConfig
 import org.yuzu.yuzu_emu.utils.NativeFreedrenoConfig
 import org.yuzu.yuzu_emu.utils.ViewUtils
@@ -2156,7 +2157,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                     if (BooleanSetting.SHOW_FPS.getBoolean(needsGlobal)) {
                         val fpsText = if (isFrameGen && systemFps > 0.0) {
-                            String.format(java.util.Locale.US, "⚡ FPS: %.0f (%.0f)", actualFps, systemFps)
+                            val mult = IntSetting.RENDERER_FRAME_GEN_MULTIPLIER.getInt(needsGlobal).coerceIn(2, 4)
+                            val tag = if (LosslessScalingHelper.isInstalled()) "LSFG ${mult}X" else "FG ${mult}X"
+                            String.format(java.util.Locale.US, "⚡ FPS: %.0f [%s -> %.0f]", actualFps, tag, systemFps)
                         } else {
                             String.format(java.util.Locale.US, "⚡ FPS: %.0f", actualFps)
                         }
