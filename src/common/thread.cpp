@@ -654,6 +654,13 @@ __attribute__((target("waitpkg,mwaitx")))
 #endif
 bool Event::WaitFor(const std::chrono::nanoseconds time) {
 #ifdef _WIN32
+    if (!Common::g_wall_clock.IsNative()) {
+        std::unique_lock lk{mutex};
+        if (!condvar.wait_for(lk, time, [this] { return is_set.load(); }))
+            return false;
+        is_set = false;
+        return true;
+    }
     auto const start = Common::X64::FencedRDTSC();
     auto const& caps = Common::g_cpu_caps;
     [[maybe_unused]] auto const end = start + Common::g_wall_clock.NsToTicks(time);
@@ -704,9 +711,11 @@ bool Event::WaitFor(const std::chrono::nanoseconds time) {
         while (!is_set.load() && end > _rdtsc())
             Common::Windows::SleepForOneTick();
 #endif
-        if (is_set.load())
+        if (is_set.load()) {
             Reset();
-        return true;
+            return true;
+        }
+        return false;
     }
 #else
     std::unique_lock lk{mutex};
@@ -722,9 +731,11 @@ bool Event::WaitFor(const std::chrono::nanoseconds time) {
     auto const end = Common::g_wall_clock.GetTimeNS() + time;
     while (!is_set.load() && end > Common::g_wall_clock.GetTimeNS())
         Common::Windows::SleepForOneTick();
-    if (is_set.load())
+    if (is_set.load()) {
         Reset();
-    return true;
+        return true;
+    }
+    return false;
 #else
     std::unique_lock lk{mutex};
     if (!condvar.wait_for(lk, time, [this] { return is_set.load(); }))

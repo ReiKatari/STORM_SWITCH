@@ -215,6 +215,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\async_presentation", "true"},
@@ -250,6 +251,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\async_presentation", "true"},
@@ -286,6 +288,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\async_presentation", "true"},
@@ -3625,81 +3628,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"},
             {"System\\airplane_mode", "true"}
-        }
-    },
-    {
-        0x010020D01AD24000ULL,
-        "Animal Well",
-        "• Просадки FPS до 4-6 к/с и фреймтайм 200 мс из-за сборщика мусора VRAM и синхронного вызова Finish\n• Прерывания буфера памяти при физических взаимодействиях",
-        "• FPS drop to 4-6 and 200 ms frametime caused by VRAM garbage collection and synchronous Finish calls\n• Guest memory aborts during particle interactions",
-        "✓ Сборщик мусора VRAM: Отключено (стабильные 60 FPS без фризов)\n✓ Асинхронный вывод кадров: Включено\n✓ Поведение барьеров ГПУ: Точное (0)\n✓ Точность DMA: Быстрая\n✓ Реактивный сброс памяти: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
-        "✓ VRAM Garbage Collection: Disabled (Stable 60 FPS without stutters)\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Accurate (0)\n✓ DMA Accuracy: Fast\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
-        {
-            {"Renderer\\vram_garbage_collection", "false"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
-        }
-    },
-    {
-        0x0100650017170000ULL,
-        "Animal Well",
-        "• Просадки FPS до 4-6 к/с и фреймтайм 200 мс из-за сборщика мусора VRAM и синхронного вызова Finish\n• Прерывания буфера памяти при физических взаимодействиях",
-        "• FPS drop to 4-6 and 200 ms frametime caused by VRAM garbage collection and synchronous Finish calls\n• Guest memory aborts during particle interactions",
-        "✓ Сборщик мусора VRAM: Отключено (стабильные 60 FPS без фризов)\n✓ Асинхронный вывод кадров: Включено\n✓ Поведение барьеров ГПУ: Точное (0)\n✓ Точность DMA: Быстрая\n✓ Реактивный сброс памяти: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
-        "✓ VRAM Garbage Collection: Disabled (Stable 60 FPS without stutters)\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Accurate (0)\n✓ DMA Accuracy: Fast\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
-        {
-            {"Renderer\\vram_garbage_collection", "false"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
-        }
-    },
-    {
-        0x0100C9E01B854000ULL,
-        "Animal Well",
-        "• Просадки FPS до 4-6 к/с и фреймтайм 200 мс из-за сборщика мусора VRAM и синхронного вызова Finish\n• Прерывания буфера памяти при физических взаимодействиях",
-        "• FPS drop to 4-6 and 200 ms frametime caused by VRAM garbage collection and synchronous Finish calls\n• Guest memory aborts during particle interactions",
-        "✓ Сборщик мусора VRAM: Отключено (стабильные 60 FPS без фризов)\n✓ Асинхронный вывод кадров: Включено\n✓ Поведение барьеров ГПУ: Точное (0)\n✓ Точность DMA: Быстрая\n✓ Реактивный сброс памяти: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
-        "✓ VRAM Garbage Collection: Disabled (Stable 60 FPS without stutters)\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Accurate (0)\n✓ DMA Accuracy: Fast\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
-        {
-            {"Renderer\\vram_garbage_collection", "false"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
         }
     }
 };

@@ -213,16 +213,20 @@ const CPUCaps g_cpu_caps = [] {
         caps.tsc_crystal_ratio_denominator = cpu_id[0];
         caps.tsc_crystal_ratio_numerator = cpu_id[1];
         caps.crystal_frequency = cpu_id[2];
-        // Some CPU models might not return a crystal frequency.
+        // Some CPU models might not return a crystal frequency (e.g. Intel 6th-9th Gen desktop ECX=0).
         // The CPU model can be detected to use the values from turbostat
         // https://github.com/torvalds/linux/blob/master/tools/power/x86/turbostat/turbostat.c#L5569
         // but it's easier to just estimate the TSC tick rate for these cases.
-        if (caps.tsc_crystal_ratio_denominator) {
+        if (caps.tsc_crystal_ratio_denominator && caps.crystal_frequency != 0) {
             caps.tsc_frequency = u64(caps.crystal_frequency)
                 * caps.tsc_crystal_ratio_numerator / caps.tsc_crystal_ratio_denominator;
         } else {
             caps.tsc_frequency = X64::EstimateRDTSCFrequency();
         }
+    }
+
+    if (caps.tsc_frequency == 0) {
+        caps.tsc_frequency = X64::EstimateRDTSCFrequency();
     }
 
     if (max_std_fn >= 0x16) {

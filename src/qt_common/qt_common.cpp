@@ -257,6 +257,8 @@ void Init(QWidget* root) {
         }
     }
     LOG_INFO(Frontend, "Host CPU: {}", cpu_string);
+    LOG_INFO(Frontend, "Host TSC Frequency: {:.2f} GHz (Invariant: {})",
+             caps.tsc_frequency / 1'000'000'000.0, caps.invariant_tsc);
     if (std::optional<int> processor_core = Common::GetProcessorCount()) {
         LOG_INFO(Frontend, "Host CPU Cores: {}", *processor_core);
     }
