@@ -573,7 +573,16 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                         ncas[cnmt.GetTitleID()][{cnmt.GetType(), rec.type}] = std::move(next_nca);
                     }
                 } else {
-                    ncas[cnmt.GetTitleID()][{cnmt.GetType(), rec.type}] = std::move(next_nca);
+                    const u64 target_tid = (next_nca->GetTitleId() != 0)
+                                               ? next_nca->GetTitleId()
+                                               : cnmt.GetTitleID();
+                    auto& target_map = ncas[target_tid];
+                    auto existing = target_map.find({cnmt.GetType(), rec.type});
+
+                    if (existing != target_map.end() && rec.type == ContentRecordType::Program) {
+                        continue;
+                    }
+                    target_map[{cnmt.GetType(), rec.type}] = std::move(next_nca);
                 }
             }
         }

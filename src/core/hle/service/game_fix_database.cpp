@@ -3956,7 +3956,7 @@ static const std::vector<GameFixProfile> s_profiles = {
     },
     {
         0x010044700DEB0000ULL,
-        "Crash Bandicoot 4: It's About Time",
+        "Assassin's Creed: The Rebel Collection",
         "• Случайные вылеты из-за сбоев разыменования нулевых указателей в анимациях\n• Просадки FPS на уровнях с водой",
         "• Random crash from null pointer memory access in complex animations\n• FPS drops on water-heavy levels",
         "✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Точность ГПУ: Обычная\n✓ Асинхронные шейдеры: Включено\n✓ Режим полёта: Включено",
