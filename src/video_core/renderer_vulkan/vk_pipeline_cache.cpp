@@ -62,10 +62,21 @@ using VideoCommon::FileEnvironment;
 using VideoCommon::GenericEnvironment;
 using VideoCommon::GraphicsEnvironment;
 
-constexpr u32 CACHE_VERSION = 18;
+constexpr u32 CACHE_VERSION = 19;
 constexpr size_t VULKAN_CACHE_FLUSH_PIPELINES = 128;
 constexpr size_t VULKAN_CACHE_FLUSH_MIN_SECONDS = 30;
 constexpr std::array<char, 8> VULKAN_CACHE_MAGIC_NUMBER{'y', 'u', 'z', 'u', 'v', 'k', 'c', 'h'};
+
+#pragma pack(push, 1)
+struct VulkanDriverPipelineCacheHeader {
+    std::array<char, 8> magic_number;
+    u32 cache_version;
+    u32 vendor_id;
+    u32 device_id;
+    u32 driver_version;
+    std::array<u8, VK_UUID_SIZE> pipeline_cache_uuid;
+};
+#pragma pack(pop)
 
 template <typename Container>
 auto MakeSpan(Container& container) {
@@ -1082,8 +1093,19 @@ void PipelineCache::SerializeVulkanPipelineCache(const std::filesystem::path& fi
                   Common::FS::PathToUTF8String(filename));
         return;
     }
-    file.write(VULKAN_CACHE_MAGIC_NUMBER.data(), VULKAN_CACHE_MAGIC_NUMBER.size())
-        .write(reinterpret_cast<const char*>(&cache_version), sizeof(cache_version));
+
+    VulkanDriverPipelineCacheHeader header{
+        .magic_number = VULKAN_CACHE_MAGIC_NUMBER,
+        .cache_version = cache_version,
+        .vendor_id = device.GetVendorId(),
+        .device_id = device.GetDeviceId(),
+        .driver_version = device.GetDriverVersion(),
+        .pipeline_cache_uuid = {},
+    };
+    const auto current_uuid = device.GetPipelineCacheUUID();
+    std::memcpy(header.pipeline_cache_uuid.data(), current_uuid.data(), VK_UUID_SIZE);
+
+    file.write(reinterpret_cast<const char*>(&header), sizeof(header));
 
     size_t cache_size = 0;
     std::vector<char> cache_data;
@@ -1125,37 +1147,91 @@ vk::PipelineCache PipelineCache::LoadVulkanPipelineCache(const std::filesystem::
         const auto end{file.tellg()};
         file.seekg(0, std::ios::beg);
 
-        std::array<char, 8> magic_number;
-        u32 cache_version;
-        file.read(magic_number.data(), magic_number.size())
-            .read(reinterpret_cast<char*>(&cache_version), sizeof(cache_version));
-        if (magic_number != VULKAN_CACHE_MAGIC_NUMBER || cache_version != expected_cache_version) {
+        if (static_cast<size_t>(end) < sizeof(VulkanDriverPipelineCacheHeader)) {
+            file.close();
+            LOG_WARNING(Common_Filesystem,
+                        "Vulkan driver pipeline cache is empty or truncated ({:d} bytes), automatically purging: {}",
+                        static_cast<size_t>(end), Common::FS::PathToUTF8String(filename));
+            Common::FS::RemoveFile(filename);
+            return create_pipeline_cache(0, nullptr);
+        }
+
+        VulkanDriverPipelineCacheHeader header{};
+        file.read(reinterpret_cast<char*>(&header), sizeof(header));
+
+        if (header.magic_number != VULKAN_CACHE_MAGIC_NUMBER || header.cache_version != expected_cache_version) {
             file.close();
             if (Common::FS::RemoveFile(filename)) {
-                if (magic_number != VULKAN_CACHE_MAGIC_NUMBER) {
-                    LOG_ERROR(Common_Filesystem, "Invalid Vulkan driver pipeline cache file");
+                if (header.magic_number != VULKAN_CACHE_MAGIC_NUMBER) {
+                    LOG_ERROR(Common_Filesystem, "Invalid/corrupted Vulkan driver pipeline cache file, purged: {}",
+                              Common::FS::PathToUTF8String(filename));
                 }
-                if (cache_version != expected_cache_version) {
-                    LOG_INFO(Common_Filesystem, "Deleting old Vulkan driver pipeline cache");
+                if (header.cache_version != expected_cache_version) {
+                    LOG_INFO(Common_Filesystem, "Deleting outdated Vulkan driver pipeline cache (v{:d} vs expected v{:d}): {}",
+                             header.cache_version, expected_cache_version, Common::FS::PathToUTF8String(filename));
                 }
-            } else {
-                LOG_ERROR(Common_Filesystem,
-                          "Invalid Vulkan pipeline cache file and failed to delete it in \"{}\"",
-                          Common::FS::PathToUTF8String(filename));
             }
             return create_pipeline_cache(0, nullptr);
         }
 
-        static constexpr size_t header_size = magic_number.size() + sizeof(cache_version);
-        const size_t cache_size = static_cast<size_t>(end) - header_size;
+        // Validate driver and GPU hardware identity
+        const auto current_uuid = device.GetPipelineCacheUUID();
+        const bool hardware_mismatch = header.vendor_id != device.GetVendorId() ||
+                                       header.device_id != device.GetDeviceId() ||
+                                       header.driver_version != device.GetDriverVersion() ||
+                                       std::memcmp(header.pipeline_cache_uuid.data(), current_uuid.data(), VK_UUID_SIZE) != 0;
+
+        if (hardware_mismatch) {
+            file.close();
+            LOG_INFO(Render_Vulkan,
+                     "Driver or GPU change detected (saved driver: 0x{:X}, current driver: 0x{:X}). Automatically purging obsolete Vulkan driver pipeline cache: {}",
+                     header.driver_version, device.GetDriverVersion(), Common::FS::PathToUTF8String(filename));
+            Common::FS::RemoveFile(filename);
+            return create_pipeline_cache(0, nullptr);
+        }
+
+        const size_t cache_size = static_cast<size_t>(end) - sizeof(VulkanDriverPipelineCacheHeader);
+        if (cache_size == 0) {
+            return create_pipeline_cache(0, nullptr);
+        }
+
+        // Validate driver's internal header if payload present
+        if (cache_size < sizeof(VkPipelineCacheHeaderVersionOne)) {
+            file.close();
+            LOG_WARNING(Render_Vulkan, "Driver pipeline cache payload is incomplete ({} bytes), purging: {}",
+                        cache_size, Common::FS::PathToUTF8String(filename));
+            Common::FS::RemoveFile(filename);
+            return create_pipeline_cache(0, nullptr);
+        }
+
         std::vector<char> cache_data(cache_size);
         file.read(cache_data.data(), cache_size);
 
-        LOG_INFO(Render_Vulkan,
-                 "Loaded Vulkan driver pipeline cache: ", Common::FS::PathToUTF8String(filename));
+        const auto* vk_header = reinterpret_cast<const VkPipelineCacheHeaderVersionOne*>(cache_data.data());
+        if (vk_header->headerVersion != VK_PIPELINE_CACHE_HEADER_VERSION_ONE ||
+            vk_header->vendorID != device.GetVendorId() ||
+            vk_header->deviceID != device.GetDeviceId() ||
+            std::memcmp(vk_header->pipelineCacheUUID, current_uuid.data(), VK_UUID_SIZE) != 0) {
+            file.close();
+            LOG_INFO(Render_Vulkan,
+                     "Internal Vulkan pipeline cache header mismatch (driver update). Automatically purging: {}",
+                     Common::FS::PathToUTF8String(filename));
+            Common::FS::RemoveFile(filename);
+            return create_pipeline_cache(0, nullptr);
+        }
+
+        LOG_INFO(Render_Vulkan, "Loaded valid Vulkan driver pipeline cache ({} bytes): {}",
+                 cache_size, Common::FS::PathToUTF8String(filename));
 
         try {
-            return create_pipeline_cache(cache_size, cache_data.data());
+            auto cache = create_pipeline_cache(cache_size, cache_data.data());
+            if (!cache) {
+                LOG_WARNING(Render_Vulkan, "vkCreatePipelineCache returned null, purging: {}",
+                            Common::FS::PathToUTF8String(filename));
+                Common::FS::RemoveFile(filename);
+                return create_pipeline_cache(0, nullptr);
+            }
+            return cache;
         } catch (const std::exception& e) {
             LOG_WARNING(Render_Vulkan, "Failed to load corrupted Vulkan driver pipeline cache ({}), purging: {}",
                         e.what(), Common::FS::PathToUTF8String(filename));

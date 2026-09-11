@@ -309,6 +309,21 @@ public:
         return properties.properties.driverVersion;
     }
 
+    /// Returns the vendor ID.
+    u32 GetVendorId() const {
+        return properties.properties.vendorID;
+    }
+
+    /// Returns the device ID.
+    u32 GetDeviceId() const {
+        return properties.properties.deviceID;
+    }
+
+    /// Returns the pipeline cache UUID.
+    std::span<const u8, VK_UUID_SIZE> GetPipelineCacheUUID() const {
+        return properties.properties.pipelineCacheUUID;
+    }
+
     /// Returns the device name.
     std::string_view GetModelName() const {
         return properties.properties.deviceName;

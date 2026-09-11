@@ -93,19 +93,24 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
     }
 
     if (Settings::values.drs_resolution_lock) {
-        // Clamp viewport to at least native Switch resolution (1280x720 handheld)
-        const float min_width = 1280.0f * scale;
-        const float min_height = 720.0f * scale;
-        if (width > 0 && width < min_width) {
-            const float center_x = x + width * 0.5f;
-            width = min_width;
-            x = center_x - width * 0.5f;
-        }
-        if (height > 0 && std::abs(height) < min_height) {
-            const float sign = height < 0 ? -1.0f : 1.0f;
-            const float center_y = y + height * 0.5f;
-            height = sign * min_height;
-            y = center_y - height * 0.5f;
+        // Only apply DRS resolution lock if the target framebuffer is actually at least 720p.
+        // Never distort games or passes with small native framebuffers (e.g. 320x180 in Animal Well, shadow maps, LUTs).
+        const float target_fb_w = conv(static_cast<f32>(regs.surface_clip.width));
+        const float target_fb_h = conv(static_cast<f32>(regs.surface_clip.height));
+        if (target_fb_w >= 1200.0f && target_fb_h >= 680.0f) {
+            const float min_width = 1280.0f * scale;
+            const float min_height = 720.0f * scale;
+            if (width > 0 && width < min_width) {
+                const float center_x = x + width * 0.5f;
+                width = min_width;
+                x = center_x - width * 0.5f;
+            }
+            if (height > 0 && std::abs(height) < min_height) {
+                const float sign = height < 0 ? -1.0f : 1.0f;
+                const float center_y = y + height * 0.5f;
+                height = sign * min_height;
+                y = center_y - height * 0.5f;
+            }
         }
     }
 

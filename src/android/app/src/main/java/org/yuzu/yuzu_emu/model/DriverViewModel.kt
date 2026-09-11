@@ -119,12 +119,14 @@ class DriverViewModel : ViewModel() {
         }
 
         if (!skipShaderWipe && newDriverPath != previousDriverPath) {
-            activeGame?.let {
-                wipeGameShaders(it)
+            if (activeGame != null) {
+                wipeGameShaders(activeGame!!)
+            } else {
+                wipeAllShaders()
+            }
 
-                if (!BooleanSetting.DONT_SHOW_DRIVER_SHADER_WARNING.getBoolean(needsGlobal = true)) {
-                    _shouldShowDriverShaderDialog.value = true
-                }
+            if (!BooleanSetting.DONT_SHOW_DRIVER_SHADER_WARNING.getBoolean(needsGlobal = true)) {
+                _shouldShowDriverShaderDialog.value = true
             }
         }
 
@@ -163,6 +165,34 @@ class DriverViewModel : ViewModel() {
                 )
                 if (shaderDir.exists()) {
                     shaderDir.deleteRecursively()
+                }
+                val cacheDir = YuzuApplication.appContext.cacheDir
+                if (cacheDir != null) {
+                    val vulkanCache = File(cacheDir, "vulkan_pipelines.bin")
+                    if (vulkanCache.exists()) {
+                        vulkanCache.delete()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun wipeAllShaders() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val externalFilesDir = YuzuApplication.appContext.getExternalFilesDir(null)
+                if (externalFilesDir != null) {
+                    val shaderDir = File(externalFilesDir.absolutePath + "/shader")
+                    if (shaderDir.exists()) {
+                        shaderDir.deleteRecursively()
+                    }
+                }
+                val cacheDir = YuzuApplication.appContext.cacheDir
+                if (cacheDir != null) {
+                    val vulkanCache = File(cacheDir, "vulkan_pipelines.bin")
+                    if (vulkanCache.exists()) {
+                        vulkanCache.delete()
+                    }
                 }
             }
         }
