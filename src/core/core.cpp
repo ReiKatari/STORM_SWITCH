@@ -313,6 +313,10 @@ struct System::Impl {
     }
 
     SystemResultStatus Load(System& system, Frontend::EmuWindow& emu_window, const std::string& filepath, Service::AM::FrontendAppletParameters& params) {
+        if (params.launch_type == Service::AM::LaunchType::FrontendInitiated) {
+            fs_controller.InitTempStorage();
+        }
+
         const auto file = GetGameFileFromPath(virtual_filesystem, filepath);
 
         // Pre-identify program_id before system initialization to configure memory layout

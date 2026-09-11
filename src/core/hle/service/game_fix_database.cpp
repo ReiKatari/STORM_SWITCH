@@ -3911,7 +3911,7 @@ static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     {"Renderer\\enable_compute_pipelines", "true"},
     {"Renderer\\use_vulkan_driver_pipeline_cache", "true"},
     {"Renderer\\use_disk_shader_cache", "true"},
-    {"Renderer\\enable_gpu_buffer_readback", "true"}
+    {"Renderer\\enable_gpu_buffer_readback", "false"}
 };
 
 static std::string GetSetting(const std::unordered_map<std::string, std::string>& settings, const std::string& key, const std::string& def) {

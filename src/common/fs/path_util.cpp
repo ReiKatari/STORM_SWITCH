@@ -187,11 +187,7 @@ public:
         GenerateEdenPath(EdenPath::LosslessDir, eden_path / LOSSLESS_DIR);
         GenerateEdenPath(EdenPath::NANDDir, eden_path / NAND_DIR);
         GenerateEdenPath(EdenPath::PlayTimeDir, eden_path / PLAY_TIME_DIR);
-#ifdef __ANDROID__
         GenerateEdenPath(EdenPath::SaveDir, eden_path / NAND_DIR);
-#else
-        GenerateEdenPath(EdenPath::SaveDir, eden_path / NAND_DIR / "user" / "save");
-#endif
         GenerateEdenPath(EdenPath::ScreenshotsDir, eden_path / SCREENSHOTS_DIR);
         GenerateEdenPath(EdenPath::SDMCDir, eden_path / SDMC_DIR);
         GenerateEdenPath(EdenPath::TASDir, eden_path / TAS_DIR);

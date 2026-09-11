@@ -303,6 +303,13 @@ android {
         resValue("string", "app_name_suffixed", "$currentName$suffix")
         resValue("string", "app_name", "STORM SWITCH$suffix")
     }
+
+    sourceSets {
+        named("main") {
+            java.srcDir("${edenDir}/externals/generated/sdl/java")
+            kotlin.srcDir("${edenDir}/externals/generated/sdl/java")
+        }
+    }
 }
 
 idea {
@@ -417,7 +424,7 @@ fun getGitVersion(): String {
             return ver
         }
     }
-    return "8.1.0"
+    return "8.1.1"
 }
 
 

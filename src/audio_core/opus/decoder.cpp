@@ -26,12 +26,16 @@ OpusDecoder::OpusDecoder(Core::System& system_, HardwareOpus& hardware_opus_)
     : system{system_}, hardware_opus{hardware_opus_} {}
 
 OpusDecoder::~OpusDecoder() {
+    hardware_opus.UnregisterDecoder(this);
     if (decode_object_initialized) {
         hardware_opus.ShutdownDecodeObject(shared_buffer.data(), shared_buffer.size());
     }
 }
 
 Result OpusDecoder::Initialize(const OpusParametersEx& params, Kernel::KTransferMemory* transfer_memory, u64 transfer_memory_size) {
+    R_TRY(hardware_opus.RegisterDecoder(this));
+    bool registered = true;
+
     auto frame_size{params.use_large_frame_size ? 5760 : 1920};
     shared_buffer.resize(transfer_memory_size);
     shared_memory_mapped = true;
@@ -44,6 +48,9 @@ Result OpusDecoder::Initialize(const OpusParametersEx& params, Kernel::KTransfer
     in_data = {out_data.data() - in_data_size, in_data_size};
 
     ON_RESULT_FAILURE {
+        if (registered) {
+            hardware_opus.UnregisterDecoder(this);
+        }
         if (shared_memory_mapped) {
             shared_memory_mapped = false;
             ASSERT(R_SUCCEEDED(hardware_opus.UnmapMemory(shared_buffer.data(), shared_buffer.size())));
@@ -61,6 +68,9 @@ Result OpusDecoder::Initialize(const OpusParametersEx& params, Kernel::KTransfer
 }
 
 Result OpusDecoder::Initialize(const OpusMultiStreamParametersEx& params, Kernel::KTransferMemory* transfer_memory, u64 transfer_memory_size) {
+    R_TRY(hardware_opus.RegisterDecoder(this));
+    bool registered = true;
+
     auto frame_size{params.use_large_frame_size ? 5760 : 1920};
     shared_buffer.resize(transfer_memory_size, 0);
     shared_memory_mapped = true;
@@ -73,6 +83,9 @@ Result OpusDecoder::Initialize(const OpusMultiStreamParametersEx& params, Kernel
     in_data = {out_data.data() - in_data_size, in_data_size};
 
     ON_RESULT_FAILURE {
+        if (registered) {
+            hardware_opus.UnregisterDecoder(this);
+        }
         if (shared_memory_mapped) {
             shared_memory_mapped = false;
             ASSERT(R_SUCCEEDED(hardware_opus.UnmapMemory(shared_buffer.data(), shared_buffer.size())));

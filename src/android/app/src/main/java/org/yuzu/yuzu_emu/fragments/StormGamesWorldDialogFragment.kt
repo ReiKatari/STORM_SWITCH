@@ -31,6 +31,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.DialogStormGamesWorldBinding
+import org.yuzu.yuzu_emu.databinding.DialogStormWorldDlcListBinding
+import org.yuzu.yuzu_emu.databinding.ListItemStormWorldDlcBinding
 import org.yuzu.yuzu_emu.databinding.ListItemStormWorldGameBinding
 import org.yuzu.yuzu_emu.model.GamesViewModel
 import org.yuzu.yuzu_emu.utils.FileUtil
@@ -42,6 +44,12 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+
+data class StormWorldDlcItem(
+    val id: String,
+    val name: String,
+    val description: String = ""
+)
 
 data class StormWorldGameItem(
     val id: Int,
@@ -59,7 +67,9 @@ data class StormWorldGameItem(
     var description: String = "",
     var fileSizeBytes: Long = 0L,
     var realExtension: String = ".nsp",
-    var isDownloaded: Boolean = false
+    var isDownloaded: Boolean = false,
+    var dlcCount: Int = 0,
+    val dlcs: MutableList<StormWorldDlcItem> = mutableListOf()
 )
 
 class StormGamesWorldDialogFragment : DialogFragment() {
@@ -289,6 +299,9 @@ private val SWITCH_CDN_ICONS = mapOf(
                             if (serialId.isEmpty()) serialId = match.groupValues[3].trim()
                         }
 
+                        val dlcMatch = Regex("""(?:\+|[\(\[])(\d+)D(?:\)|\]|\+)""", RegexOption.IGNORE_CASE).find(rawFinalTitle)
+                        val dlcNum = dlcMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+
                         parsed.add(
                             StormWorldGameItem(
                                 id = obj.optInt("id"),
@@ -302,7 +315,8 @@ private val SWITCH_CDN_ICONS = mapOf(
                                 fileExists = fileExists,
                                 hasFile = hasFile,
                                 regions = regList,
-                                textLangs = langList
+                                textLangs = langList,
+                                dlcCount = dlcNum
                             )
                         )
                     }
@@ -400,6 +414,18 @@ private val SWITCH_CDN_ICONS = mapOf(
         val langsStr = if (game.textLangs.isNotEmpty()) game.textLangs.joinToString(", ") else "Multi"
         binding.detailGameLangs.text = langsStr
         binding.detailGameId.text = if (game.serialId.isNotEmpty()) "ID: ${game.serialId}" else ""
+
+        if (game.dlcCount > 0) {
+            binding.detailGameDlc.isVisible = true
+            binding.detailGameDlc.text = "+${game.dlcCount} DLC"
+            binding.detailGameDlc.setOnClickListener {
+                showDlcDialog(game)
+            }
+        } else {
+            binding.detailGameDlc.isVisible = false
+            binding.detailGameDlc.setOnClickListener(null)
+        }
+
         binding.detailGameDescription.text = "Загрузка информации..."
 
         loadCoverForGame(game, binding.detailGameCover)
@@ -433,7 +459,7 @@ private val SWITCH_CDN_ICONS = mapOf(
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.0.7 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.1.1 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -445,12 +471,27 @@ private val SWITCH_CDN_ICONS = mapOf(
                 game.description = desc
                 game.fileSizeBytes = bytes
 
+                val dlcsArr = obj.optJSONArray("dlcs")
+                if (dlcsArr != null) {
+                    game.dlcs.clear()
+                    for (d in 0 until dlcsArr.length()) {
+                        val dObj = dlcsArr.optJSONObject(d) ?: continue
+                        val dlcId = dObj.optString("id", "")
+                        val dlcName = dObj.optString("name", "Дополнение ${d + 1}")
+                        val dlcDesc = dObj.optString("description", "")
+                        game.dlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
+                    }
+                    if (game.dlcs.isNotEmpty()) {
+                        game.dlcCount = game.dlcs.size
+                    }
+                }
+
                 // Also check HEAD Content-Disposition to detect real extension (.nsz / .xci / .nsp)
                 try {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.0.7 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.1.1 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -462,6 +503,13 @@ private val SWITCH_CDN_ICONS = mapOf(
                 withContext(Dispatchers.Main) {
                     if (_binding == null || selectedGame?.id != game.id) return@withContext
                     binding.detailGameDescription.text = if (desc.isNotEmpty()) desc else "Описание отсутствует"
+                    if (game.dlcCount > 0) {
+                        binding.detailGameDlc.isVisible = true
+                        binding.detailGameDlc.text = "+${game.dlcCount} DLC"
+                        binding.detailGameDlc.setOnClickListener {
+                            showDlcDialog(game)
+                        }
+                    }
                 }
             } catch (_: Exception) {
                 withContext(Dispatchers.Main) {
@@ -705,6 +753,17 @@ private val SWITCH_CDN_ICONS = mapOf(
             holder.b.textGameLangs.text = if (item.textLangs.isNotEmpty()) item.textLangs.joinToString(", ") else "Multi"
             holder.b.textGameSerial.text = item.serialId
 
+            if (item.dlcCount > 0) {
+                holder.b.textGameDlc.isVisible = true
+                holder.b.textGameDlc.text = "+${item.dlcCount} DLC"
+                holder.b.textGameDlc.setOnClickListener {
+                    showDlcDialog(item)
+                }
+            } else {
+                holder.b.textGameDlc.isVisible = false
+                holder.b.textGameDlc.setOnClickListener(null)
+            }
+
             loadCoverForGame(item, holder.b.imageGameCover)
 
             if (item.isDownloaded) {
@@ -743,6 +802,144 @@ private val SWITCH_CDN_ICONS = mapOf(
         }
 
         override fun getItemCount(): Int = filteredGames.size
+    }
+
+    private fun showDlcDialog(game: StormWorldGameItem) {
+        val dialog = Dialog(requireContext())
+        val dialogBinding = DialogStormWorldDlcListBinding.inflate(layoutInflater)
+        dialog.setContentView(dialogBinding.root)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        val dispTitle = if (game.title.isNotBlank()) game.title else game.finalTitle
+        dialogBinding.textDlcDialogGameTitle.text = dispTitle
+        dialogBinding.textDlcDialogBadge.text = "${game.dlcCount} DLC"
+
+        val dlcList = mutableListOf<StormWorldDlcItem>()
+        dlcList.addAll(game.dlcs)
+
+        val adapter = DlcAdapter(dlcList)
+        dialogBinding.recyclerDlcItems.layoutManager = LinearLayoutManager(requireContext())
+        dialogBinding.recyclerDlcItems.adapter = adapter
+
+        if (dlcList.isEmpty() && game.dlcCount > 0) {
+            dialogBinding.progressDlcLoading.isVisible = true
+            dialogBinding.textDlcEmpty.isVisible = false
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val req = Request.Builder()
+                        .url("https://stormgamesworld.ru/api/games?id=${game.id}")
+                        .header("User-Agent", "STORM_SWITCH/8.1.1 (Android)")
+                        .build()
+                    val resp = httpClient.newCall(req).execute()
+                    val body = resp.body?.string().orEmpty()
+                    val obj = JSONObject(body)
+                    val dlcsArr = obj.optJSONArray("dlcs")
+
+                    val fetchedDlcs = mutableListOf<StormWorldDlcItem>()
+                    if (dlcsArr != null && dlcsArr.length() > 0) {
+                        for (d in 0 until dlcsArr.length()) {
+                            val dObj = dlcsArr.optJSONObject(d) ?: continue
+                            val dlcId = dObj.optString("id", "")
+                            val dlcName = dObj.optString("name", "Дополнение ${d + 1}")
+                            val dlcDesc = dObj.optString("description", "")
+                            fetchedDlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
+                        }
+                    }
+
+                    if (fetchedDlcs.isEmpty() && game.dlcCount > 0) {
+                        for (i in 1..game.dlcCount) {
+                            fetchedDlcs.add(
+                                StormWorldDlcItem(
+                                    id = "",
+                                    name = "Официальное дополнение #$i",
+                                    description = "Контент из расширенного издания игры"
+                                )
+                            )
+                        }
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        if (!dialog.isShowing) return@withContext
+                        game.dlcs.clear()
+                        game.dlcs.addAll(fetchedDlcs)
+                        if (game.dlcs.isNotEmpty()) {
+                            game.dlcCount = game.dlcs.size
+                            dialogBinding.textDlcDialogBadge.text = "${game.dlcCount} DLC"
+                        }
+                        dlcList.clear()
+                        dlcList.addAll(game.dlcs)
+                        adapter.notifyDataSetChanged()
+                        dialogBinding.progressDlcLoading.isVisible = false
+                        dialogBinding.textDlcEmpty.isVisible = dlcList.isEmpty()
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        if (!dialog.isShowing) return@withContext
+                        if (dlcList.isEmpty() && game.dlcCount > 0) {
+                            for (i in 1..game.dlcCount) {
+                                dlcList.add(
+                                    StormWorldDlcItem(
+                                        id = "",
+                                        name = "Официальное дополнение #$i",
+                                        description = "Входит в состав данного релиза"
+                                    )
+                                )
+                            }
+                            adapter.notifyDataSetChanged()
+                        }
+                        dialogBinding.progressDlcLoading.isVisible = false
+                        dialogBinding.textDlcEmpty.isVisible = dlcList.isEmpty()
+                    }
+                }
+            }
+        } else {
+            dialogBinding.progressDlcLoading.isVisible = false
+            dialogBinding.textDlcEmpty.isVisible = dlcList.isEmpty()
+        }
+
+        dialogBinding.btnCloseDlcDialog.setOnClickListener { dialog.dismiss() }
+        dialogBinding.btnOkDlcDialog.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
+
+    private inner class DlcAdapter(
+        private val items: List<StormWorldDlcItem>
+    ) : RecyclerView.Adapter<DlcAdapter.ViewHolder>() {
+
+        inner class ViewHolder(val b: ListItemStormWorldDlcBinding) : RecyclerView.ViewHolder(b.root)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val b = ListItemStormWorldDlcBinding.inflate(layoutInflater, parent, false)
+            return ViewHolder(b)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val item = items[position]
+            holder.b.textDlcIndex.text = "#${position + 1}"
+            holder.b.textDlcName.text = item.name
+
+            if (item.description.isNotBlank()) {
+                holder.b.textDlcDescription.isVisible = true
+                holder.b.textDlcDescription.text = item.description
+            } else {
+                holder.b.textDlcDescription.isVisible = false
+            }
+
+            if (item.id.isNotBlank()) {
+                holder.b.textDlcId.isVisible = true
+                holder.b.textDlcId.text = "ID: ${item.id}"
+            } else {
+                holder.b.textDlcId.isVisible = false
+            }
+        }
+
+        override fun getItemCount(): Int = items.size
     }
 
     companion object {

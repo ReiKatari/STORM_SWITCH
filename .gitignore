@@ -64,7 +64,6 @@ artifacts
 vulkansdk*.exe
 *.tar.zst
 
-
 # STORM SOFT Security & Large File Shield
 .env
 .env.*
@@ -92,4 +91,5 @@ Files/
 tools/
 !tools/storm_autotuner.py
 
-
+# Build-time generated external sources
+externals/generated
