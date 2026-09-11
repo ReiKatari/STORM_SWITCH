@@ -3957,10 +3957,10 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010044700DEB0000ULL,
         "Assassin's Creed: The Rebel Collection",
-        "• Случайные вылеты из-за сбоев разыменования нулевых указателей в анимациях\n• Просадки FPS на уровнях с водой",
-        "• Random crash from null pointer memory access in complex animations\n• FPS drops on water-heavy levels",
-        "✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Точность ГПУ: Обычная\n✓ Асинхронные шейдеры: Включено\n✓ Режим полёта: Включено",
-        "✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ GPU Accuracy: Normal\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
+        "• Случайные вылеты из-за сбоев разыменования нулевых указателей в анимациях\n• Просадки FPS до 4-6 к/с на уровнях с водой и при синхронном выводе кадров",
+        "• Random crash from null pointer memory access in complex animations\n• FPS drops to 4-6 on water-heavy levels and during synchronous presentation",
+        "✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Быстрое освобождение барьеров: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ Early Release Fences: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -3971,6 +3971,14 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\early_release_fences", "true"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
             {"System\\airplane_mode", "true"}
         }
     },
@@ -3979,13 +3987,46 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Assassin's Creed: The Ezio Collection",
         "• Просадки кадровой частоты (4-15 FPS) из-за обратного чтения буферов видеопамяти\n• Мерцание теней на зданиях Венеции и Флоренции",
         "• Severe framerate drops (4-15 FPS) caused by GPU buffer readback\n• Shadow flickering on buildings in Venice and Florence",
-        "✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Асинхронный вывод кадров: Включено\n✓ Сборщик мусора VRAM: Отключено\n✓ Быстрое освобождение барьеров: Включено\n✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ Async Presentation: Enabled\n✓ VRAM Garbage Collection: Disabled\n✓ Early Release Fences: Enabled\n✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\early_release_fences", "true"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"System\\airplane_mode", "true"}
+        }
+    },
+    {
+        0x01007F600B134000ULL,
+        "Assassin's Creed III Remastered",
+        "• Просадки FPS до 4-6 к/с при рендеринге снега и воды в Бостоне\n• Задержки кадра из-за синхронного вывода в буфер дисплея",
+        "• FPS drops to 4-6 in snow and water rendering in Boston\n• Presentation stalls due to synchronous swapchain output",
+        "✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Быстрое освобождение барьеров: Включено\n✓ Точность ГПУ: Обычная\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ Early Release Fences: Enabled\n✓ GPU Accuracy: Normal\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\early_release_fences", "true"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -4074,7 +4115,7 @@ static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     {"Cpu\\cpu_accuracy", "0"},
     {"Renderer\\gpu_accuracy", "0"},
     {"Renderer\\nvdec_emulation", "1"},
-    {"Renderer\\async_presentation", "false"},
+    {"Renderer\\async_presentation", "true"},
     {"Renderer\\use_asynchronous_shaders", "true"},
     {"Renderer\\use_fast_gpu_time", "true"},
     {"Renderer\\sync_memory_operations", "false"},
@@ -4095,7 +4136,8 @@ static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     {"Renderer\\use_vulkan_driver_pipeline_cache", "true"},
     {"Renderer\\use_disk_shader_cache", "true"},
     {"Renderer\\enable_gpu_buffer_readback", "false"},
-    {"Renderer\\vram_garbage_collection", "false"}
+    {"Renderer\\vram_garbage_collection", "false"},
+    {"Renderer\\early_release_fences", "true"}
 };
 
 static std::string GetSetting(const std::unordered_map<std::string, std::string>& settings, const std::string& key, const std::string& def) {
@@ -5116,6 +5158,10 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.eco_frame_pacing, val == "true" || val == "1");
             } else if (full_key == "Renderer\\dma_accuracy") {
                 apply_setting(Settings::values.dma_accuracy, static_cast<Settings::DmaAccuracy>(safe_stoi(val, 0)));
+            } else if (full_key == "Renderer\\vram_garbage_collection") {
+                apply_setting(Settings::values.vram_garbage_collection, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\early_release_fences") {
+                apply_setting(Settings::values.early_release_fences, val == "true" || val == "1");
             } else if (full_key == "System\\eco_thermal_mode") {
                 apply_setting(Settings::values.eco_thermal_mode, val == "true" || val == "1");
             } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {

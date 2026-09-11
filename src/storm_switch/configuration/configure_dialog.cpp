@@ -459,8 +459,8 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         Settings::values.use_asynchronous_shaders.SetValue(true);
         Settings::values.use_asynchronous_gpu_emulation.SetValue(true);
         Settings::values.async_presentation.SetValue(true);
-        Settings::values.use_reactive_flushing.SetValue(true);
-        Settings::values.sync_memory_operations.SetValue(true);
+        Settings::values.use_reactive_flushing.SetValue(false);
+        Settings::values.sync_memory_operations.SetValue(false);
         Settings::values.gpu_clock.SetValue(Settings::GpuClock::Boost);
         Settings::values.eco_thermal_mode.SetValue(true);
         Settings::values.eco_frame_pacing.SetValue(true);

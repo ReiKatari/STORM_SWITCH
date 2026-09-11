@@ -3936,10 +3936,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x010044700DEB0000L,
             "Assassin's Creed: The Rebel Collection",
-            "• Случайные вылеты из-за сбоев разыменования нулевых указателей в анимациях\n• Просадки FPS на уровнях с водой",
-            "• Random crash from null pointer memory access in complex animations\n• FPS drops on water-heavy levels",
-            "✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Точность ГПУ: Обычная\n✓ Асинхронные шейдеры: Включено\n✓ Режим полёта: Включено",
-            "✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ GPU Accuracy: Normal\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
+            "• Случайные вылеты из-за сбоев разыменования нулевых указателей в анимациях\n• Просадки FPS до 4-6 к/с на уровнях с водой и при синхронном выводе кадров",
+            "• Random crash from null pointer memory access in complex animations\n• FPS drops to 4-6 on water-heavy levels and during synchronous presentation",
+            "✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Быстрое освобождение барьеров: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+            "✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ Early Release Fences: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -3949,7 +3949,16 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\astc_recompression" to "0"
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "System\\airplane_mode" to "true"
             )
         ),
         GameFixProfile(
@@ -3957,17 +3966,51 @@ object GameFixDatabase {
             "Assassin's Creed: The Ezio Collection",
             "• Просадки кадровой частоты (4-15 FPS) из-за обратного чтения буферов видеопамяти\n• Мерцание теней на зданиях Венеции и Флоренции",
             "• Severe framerate drops (4-15 FPS) caused by GPU buffer readback\n• Shadow flickering on buildings in Venice and Florence",
-            "✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-            "✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+            "✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Асинхронный вывод кадров: Включено\n✓ Сборщик мусора VRAM: Отключено\n✓ Быстрое освобождение барьеров: Включено\n✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+            "✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ Async Presentation: Enabled\n✓ VRAM Garbage Collection: Disabled\n✓ Early Release Fences: Enabled\n✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\astc_recompression" to "0"
+                "Renderer\\astc_recompression" to "0",
+                "System\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01007F600B134000L,
+            "Assassin's Creed III Remastered",
+            "• Просадки FPS до 4-6 к/с при рендеринге снега и воды в Бостоне\n• Задержки кадра из-за синхронного вывода в буфер дисплея",
+            "• FPS drops to 4-6 in snow and water rendering in Boston\n• Presentation stalls due to synchronous swapchain output",
+            "✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Быстрое освобождение барьеров: Включено\n✓ Точность ГПУ: Обычная\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+            "✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ Early Release Fences: Enabled\n✓ GPU Accuracy: Normal\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "System\\airplane_mode" to "true"
             )
         ),
         GameFixProfile(

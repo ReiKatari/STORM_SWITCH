@@ -3583,6 +3583,11 @@ void MainWindow::OnApplyAutoCorrection() {
     Settings::values.vulkan_pipeline_cache.SetValue(true);
     Settings::values.vram_garbage_collection.SetValue(false);
     Settings::values.early_release_fences.SetValue(true);
+    Settings::values.use_reactive_flushing.SetValue(false);
+    Settings::values.sync_memory_operations.SetValue(false);
+    Settings::values.enable_gpu_buffer_readback.SetValue(false);
+    Settings::values.dma_accuracy.SetValue(Settings::DmaAccuracy::Default);
+    Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Accurate);
     Settings::values.optimize_spirv_output.SetValue(1);
     Settings::values.enable_frame_skipping.SetValue(true);
     Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Fsr);
