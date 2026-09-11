@@ -765,7 +765,7 @@ struct Values {
                                                      Language::Russian,
                                                      "language_index",
                                                      Category::System};
-    SwitchableSetting<Region, true> region_index{linkage, Region::Usa, "region_index", Category::System};
+    SwitchableSetting<Region, true> region_index{linkage, Region::Europe, "region_index", Category::System};
     SwitchableSetting<TimeZone, true> time_zone_index{linkage, TimeZone::Auto, "time_zone_index", Category::System};
     Setting<u32> serial_battery{linkage, 0, "serial_battery", Category::Debugging};
     Setting<u32> serial_unit{linkage, 0, "serial_unit", Category::Debugging};

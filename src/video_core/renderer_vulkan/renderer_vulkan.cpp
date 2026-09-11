@@ -203,6 +203,7 @@ try
 
 RendererVulkan::~RendererVulkan() {
     scheduler.RegisterOnSubmit([] {});
+    present_manager.WaitPresent();
     void(device.GetLogical().WaitIdle());
 }
 

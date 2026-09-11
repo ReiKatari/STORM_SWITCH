@@ -161,7 +161,18 @@ PresentManager::PresentManager(const vk::Instance& instance_,
     }
 }
 
-PresentManager::~PresentManager() = default;
+PresentManager::~PresentManager() {
+    if (use_present_thread) {
+        present_thread.request_stop();
+        {
+            std::unique_lock lock{queue_mutex};
+            frame_cv.notify_all();
+        }
+        if (present_thread.joinable()) {
+            present_thread.join();
+        }
+    }
+}
 
 Frame* PresentManager::GetRenderFrame() {
 
@@ -179,7 +190,7 @@ Frame* PresentManager::GetRenderFrame() {
     } else {
         // Early release fences: avoid redundant fence waits if already signaled by GPU
         if (frame->present_done.GetStatus() == VK_NOT_READY) {
-            frame->present_done.Wait();
+            frame->present_done.Wait(1'000'000);
         }
     }
     frame->present_done.Reset();

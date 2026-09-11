@@ -3409,13 +3409,15 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Brotato",
         "• Просадки FPS при спавне волн врагов\n• Микрофризы расчёта физики снарядов",
         "• Framerate drops during massive horde waves\n• Projectile physics calculation micro-stutters",
-        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-        "✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+        "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная\n✓ Язык: Русский (Регион Европа)",
+        "✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal\n✓ Language: Russian (Region Europe)",
         {
             {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\gpu_accuracy", "0"}
+            {"Renderer\\gpu_accuracy", "0"},
+            {"System\\language_index", "10"},
+            {"System\\region_index", "2"}
         }
     },
     {
@@ -5294,6 +5296,10 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.eco_thermal_mode, val == "true" || val == "1");
             } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {
                 apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
+            } else if (full_key == "System\\language_index") {
+                apply_setting(Settings::values.language_index, static_cast<Settings::Language>(safe_stoi(val, static_cast<int>(Settings::Language::Russian))));
+            } else if (full_key == "System\\region_index") {
+                apply_setting(Settings::values.region_index, static_cast<Settings::Region>(safe_stoi(val, static_cast<int>(Settings::Region::Europe))));
             }
         }
         Settings::UpdateGPUAccuracy();
