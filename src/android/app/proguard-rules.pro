@@ -20,9 +20,6 @@
 -keep class org.yuzu.yuzu_emu.utils.** { *; }
 -keep class kotlin.Pair { *; }
 
--keep class org.libsdl.app.** { *; }
--keepclassmembers class org.libsdl.app.** { *; }
-
 # Suppress warnings for R8
 -dontwarn org.bouncycastle.jsse.BCSSLParameters
 -dontwarn org.bouncycastle.jsse.BCSSLSocket

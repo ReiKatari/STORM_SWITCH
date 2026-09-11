@@ -167,11 +167,6 @@ else()
         set(BUILD_SHARED_LIBS ON)
     endif()
     AddJsonPackage(sdl3-ci)
-
-    # copy sdl java sources for consumption by Gradle
-    if (ANDROID)
-        file(COPY ${SDL3_SOURCE_DIR}/java DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/generated/sdl)
-    endif()
 endif()
 
 # Normalize SDL3 link target across package variants.
