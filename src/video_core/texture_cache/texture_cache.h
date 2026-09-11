@@ -120,13 +120,14 @@ void TextureCache<P>::RunGarbageCollector() {
     bool aggressive_mode = false;
     u64 ticks_to_destroy = 0;
     size_t num_iterations = 0;
+    size_t sync_downloads = 0;
     const auto Configure = [&](bool allow_aggressive) {
-        high_priority_mode = (total_used_memory >= expected_memory) || vram_gc;
+        high_priority_mode = total_used_memory >= expected_memory;
         aggressive_mode = allow_aggressive && total_used_memory >= critical_memory;
-        ticks_to_destroy = aggressive_mode ? 30ULL : (vram_gc ? 60ULL : (high_priority_mode ? 90ULL : 180ULL));
-        num_iterations = aggressive_mode ? 40 : (vram_gc ? 30 : (high_priority_mode ? 20 : 10));
+        ticks_to_destroy = aggressive_mode ? 30ULL : (high_priority_mode ? 90ULL : (vram_gc ? 120ULL : 180ULL));
+        num_iterations = aggressive_mode ? 40 : (high_priority_mode ? 20 : (vram_gc ? 15 : 10));
     };
-    const auto Cleanup = [this, &num_iterations, &high_priority_mode, &aggressive_mode](ImageId image_id) {
+    const auto Cleanup = [this, &num_iterations, &high_priority_mode, &aggressive_mode, &sync_downloads](ImageId image_id) {
         if (num_iterations == 0) {
             return true;
         }
@@ -140,6 +141,10 @@ void TextureCache<P>::RunGarbageCollector() {
             return false;
         }
         if (must_download) {
+            if (sync_downloads >= 2) {
+                return false;
+            }
+            ++sync_downloads;
             auto map = runtime.DownloadStagingBuffer(image.unswizzled_size_bytes);
             const auto copies = FixSmallVectorADL(FullDownloadCopies(image.info));
             image.DownloadMemory(map, copies);

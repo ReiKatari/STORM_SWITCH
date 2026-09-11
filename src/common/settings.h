@@ -636,7 +636,7 @@ struct Values {
                                                   true,
                                                   true};
     SwitchableSetting<bool> vram_garbage_collection{linkage,
-                                                    true,
+                                                    false,
                                                     "vram_garbage_collection",
                                                     Category::RendererAdvanced,
                                                     Specialization::Default,

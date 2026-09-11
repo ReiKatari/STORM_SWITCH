@@ -3581,7 +3581,7 @@ void MainWindow::OnApplyAutoCorrection() {
     Settings::values.smart_shader_throttle.SetValue(true);
     Settings::values.cpu_affinity_pinning.SetValue(true);
     Settings::values.vulkan_pipeline_cache.SetValue(true);
-    Settings::values.vram_garbage_collection.SetValue(true);
+    Settings::values.vram_garbage_collection.SetValue(false);
     Settings::values.early_release_fences.SetValue(true);
     Settings::values.optimize_spirv_output.SetValue(1);
     Settings::values.enable_frame_skipping.SetValue(true);
@@ -4209,7 +4209,7 @@ void MainWindow::OnAutoTuneSettings() {
             Settings::values.smart_shader_throttle.SetValue(true);
             Settings::values.cpu_affinity_pinning.SetValue(true);
             Settings::values.vulkan_pipeline_cache.SetValue(true);
-            Settings::values.vram_garbage_collection.SetValue(true);
+            Settings::values.vram_garbage_collection.SetValue(false);
             Settings::values.early_release_fences.SetValue(true);
             Settings::values.optimize_spirv_output.SetValue(1);
             Settings::values.enable_frame_skipping.SetValue(true);
@@ -4237,7 +4237,7 @@ void MainWindow::OnAutoTuneSettings() {
             Settings::values.smart_shader_throttle.SetValue(true);
             Settings::values.cpu_affinity_pinning.SetValue(true);
             Settings::values.vulkan_pipeline_cache.SetValue(true);
-            Settings::values.vram_garbage_collection.SetValue(true);
+            Settings::values.vram_garbage_collection.SetValue(false);
             Settings::values.early_release_fences.SetValue(true);
             Settings::values.optimize_spirv_output.SetValue(1);
             Settings::values.enable_frame_skipping.SetValue(true);
@@ -4266,7 +4266,7 @@ void MainWindow::OnAutoTuneSettings() {
             Settings::values.smart_shader_throttle.SetValue(true);
             Settings::values.cpu_affinity_pinning.SetValue(true);
             Settings::values.vulkan_pipeline_cache.SetValue(true);
-            Settings::values.vram_garbage_collection.SetValue(true);
+            Settings::values.vram_garbage_collection.SetValue(false);
             Settings::values.early_release_fences.SetValue(true);
             Settings::values.optimize_spirv_output.SetValue(1);
             Settings::values.enable_frame_skipping.SetValue(true);

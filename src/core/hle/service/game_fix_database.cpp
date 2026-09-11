@@ -3992,6 +3992,81 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"System\\airplane_mode", "true"}
         }
+    },
+    {
+        0x010020D01AD24000ULL,
+        "Animal Well",
+        "• Просадки FPS до 4-6 к/с и фреймтайм 200 мс из-за сборщика мусора VRAM и синхронного вызова Finish\n• Прерывания буфера памяти при физических взаимодействиях",
+        "• FPS drop to 4-6 and 200 ms frametime caused by VRAM garbage collection and synchronous Finish calls\n• Guest memory aborts during particle interactions",
+        "✓ Сборщик мусора VRAM: Отключено (стабильные 60 FPS без фризов)\n✓ Асинхронный вывод кадров: Включено\n✓ Поведение барьеров ГПУ: Точное (0)\n✓ Точность DMA: Быстрая\n✓ Реактивный сброс памяти: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
+        "✓ VRAM Garbage Collection: Disabled (Stable 60 FPS without stutters)\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Accurate (0)\n✓ DMA Accuracy: Fast\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
+        }
+    },
+    {
+        0x0100650017170000ULL,
+        "Animal Well",
+        "• Просадки FPS до 4-6 к/с и фреймтайм 200 мс из-за сборщика мусора VRAM и синхронного вызова Finish\n• Прерывания буфера памяти при физических взаимодействиях",
+        "• FPS drop to 4-6 and 200 ms frametime caused by VRAM garbage collection and synchronous Finish calls\n• Guest memory aborts during particle interactions",
+        "✓ Сборщик мусора VRAM: Отключено (стабильные 60 FPS без фризов)\n✓ Асинхронный вывод кадров: Включено\n✓ Поведение барьеров ГПУ: Точное (0)\n✓ Точность DMA: Быстрая\n✓ Реактивный сброс памяти: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
+        "✓ VRAM Garbage Collection: Disabled (Stable 60 FPS without stutters)\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Accurate (0)\n✓ DMA Accuracy: Fast\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
+        }
+    },
+    {
+        0x0100C9E01B854000ULL,
+        "Animal Well",
+        "• Просадки FPS до 4-6 к/с и фреймтайм 200 мс из-за сборщика мусора VRAM и синхронного вызова Finish\n• Прерывания буфера памяти при физических взаимодействиях",
+        "• FPS drop to 4-6 and 200 ms frametime caused by VRAM garbage collection and synchronous Finish calls\n• Guest memory aborts during particle interactions",
+        "✓ Сборщик мусора VRAM: Отключено (стабильные 60 FPS без фризов)\n✓ Асинхронный вывод кадров: Включено\n✓ Поведение барьеров ГПУ: Точное (0)\n✓ Точность DMA: Быстрая\n✓ Реактивный сброс памяти: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
+        "✓ VRAM Garbage Collection: Disabled (Stable 60 FPS without stutters)\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Accurate (0)\n✓ DMA Accuracy: Fast\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
+        }
     }
 };
 
@@ -4019,7 +4094,8 @@ static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     {"Renderer\\enable_compute_pipelines", "true"},
     {"Renderer\\use_vulkan_driver_pipeline_cache", "true"},
     {"Renderer\\use_disk_shader_cache", "true"},
-    {"Renderer\\enable_gpu_buffer_readback", "false"}
+    {"Renderer\\enable_gpu_buffer_readback", "false"},
+    {"Renderer\\vram_garbage_collection", "false"}
 };
 
 static std::string GetSetting(const std::unordered_map<std::string, std::string>& settings, const std::string& key, const std::string& def) {
@@ -4101,6 +4177,11 @@ static std::string BuildFixesRu(const std::unordered_map<std::string, std::strin
         out += "✓ Реактивный сброс памяти: Включено (своевременный сброс модифицированных видеобуферов)\n";
     }
 
+    const auto vram_gc = GetSetting(settings, "Renderer\\vram_garbage_collection", "");
+    if (vram_gc == "false" || vram_gc == "0") {
+        out += "✓ Сборщик мусора VRAM: Отключено (устраняет просадки FPS и задержки 200 мс)\n";
+    }
+
     while (!out.empty() && (out.back() == '\n' || out.back() == '\r')) {
         out.pop_back();
     }
@@ -4176,6 +4257,11 @@ static std::string BuildFixesEn(const std::unordered_map<std::string, std::strin
     const auto react_flush = GetSetting(settings, "Renderer\\use_reactive_flushing", "");
     if (react_flush == "true" || react_flush == "1") {
         out += "✓ Reactive Flushing: Enabled (prompt flushing of modified render targets)\n";
+    }
+
+    const auto vram_gc = GetSetting(settings, "Renderer\\vram_garbage_collection", "");
+    if (vram_gc == "false" || vram_gc == "0") {
+        out += "✓ VRAM Garbage Collection: Disabled (Eliminates FPS drops and 200ms queue stalls)\n";
     }
 
     while (!out.empty() && (out.back() == '\n' || out.back() == '\r')) {

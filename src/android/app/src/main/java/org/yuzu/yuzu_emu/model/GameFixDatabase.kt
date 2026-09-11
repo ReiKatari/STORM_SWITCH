@@ -3969,6 +3969,81 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0"
             )
+        ),
+        GameFixProfile(
+            0x010020D01AD24000L,
+            "Animal Well",
+            "• Просадки FPS до 4-6 к/с и фреймтайм 200 мс из-за сборщика мусора VRAM и синхронного вызова Finish\n• Прерывания буфера памяти при физических взаимодействиях",
+            "• FPS drop to 4-6 and 200 ms frametime caused by VRAM garbage collection and synchronous Finish calls\n• Guest memory aborts during particle interactions",
+            "✓ Сборщик мусора VRAM: Отключено (стабильные 60 FPS без фризов)\n✓ Асинхронный вывод кадров: Включено\n✓ Поведение барьеров ГПУ: Точное (0)\n✓ Точность DMA: Быстрая\n✓ Реактивный сброс памяти: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
+            "✓ VRAM Garbage Collection: Disabled (Stable 60 FPS without stutters)\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Accurate (0)\n✓ DMA Accuracy: Fast\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+            mapOf(
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpu_accuracy" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x0100650017170000L,
+            "Animal Well",
+            "• Просадки FPS до 4-6 к/с и фреймтайм 200 мс из-за сборщика мусора VRAM и синхронного вызова Finish\n• Прерывания буфера памяти при физических взаимодействиях",
+            "• FPS drop to 4-6 and 200 ms frametime caused by VRAM garbage collection and synchronous Finish calls\n• Guest memory aborts during particle interactions",
+            "✓ Сборщик мусора VRAM: Отключено (стабильные 60 FPS без фризов)\n✓ Асинхронный вывод кадров: Включено\n✓ Поведение барьеров ГПУ: Точное (0)\n✓ Точность DMA: Быстрая\n✓ Реактивный сброс памяти: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
+            "✓ VRAM Garbage Collection: Disabled (Stable 60 FPS without stutters)\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Accurate (0)\n✓ DMA Accuracy: Fast\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+            mapOf(
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpu_accuracy" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x0100C9E01B854000L,
+            "Animal Well",
+            "• Просадки FPS до 4-6 к/с и фреймтайм 200 мс из-за сборщика мусора VRAM и синхронного вызова Finish\n• Прерывания буфера памяти при физических взаимодействиях",
+            "• FPS drop to 4-6 and 200 ms frametime caused by VRAM garbage collection and synchronous Finish calls\n• Guest memory aborts during particle interactions",
+            "✓ Сборщик мусора VRAM: Отключено (стабильные 60 FPS без фризов)\n✓ Асинхронный вывод кадров: Включено\n✓ Поведение барьеров ГПУ: Точное (0)\n✓ Точность DMA: Быстрая\n✓ Реактивный сброс памяти: Отключено\n✓ Быстрая память: Включено\n✓ Игнорировать прерывания памяти: Включено",
+            "✓ VRAM Garbage Collection: Disabled (Stable 60 FPS without stutters)\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Accurate (0)\n✓ DMA Accuracy: Fast\n✓ Reactive Flushing: Disabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+            mapOf(
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpu_accuracy" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0"
+            )
         )
     )
 
@@ -4249,6 +4324,7 @@ object GameFixDatabase {
                 nameLower.contains("openra") -> listOf("openra", "dune legacy", "command & conquer", "red alert", "0100000000000091")
                 nameLower.contains("retroarch") -> listOf("retroarch", "ppsspp", "flycast", "scummvm", "melonds", "mgba", "duckstation", "0100000000001000")
                 nameLower.contains("homebrew utilities") -> listOf("nx-shell", "dbi", "goldleaf", "jksv", "checkpoint", "edizon", "awoo", "tesla", "0100000000003000")
+                nameLower.contains("animal well") -> listOf("animal well", "animal_well", "010020d01ad24000", "0100650017170000", "0100c9e01b854000")
                 else -> listOf(nameLower)
             }
             keywords.any { cleanTitle.contains(it) || cleanPath.contains(it) }
