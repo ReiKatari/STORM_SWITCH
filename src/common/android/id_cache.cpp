@@ -602,51 +602,6 @@ static void InstallNativeCrashHandler() {
     sigaction(SIGFPE, &sa, nullptr);
     sigaction(SIGSYS, &sa, nullptr);
 }
-
-static jclass FindClassSafe(JNIEnv* env, const char* name) {
-    jclass local = env->FindClass(name);
-    if (env->ExceptionCheck() || !local) {
-        __android_log_print(ANDROID_LOG_ERROR, "STORM_EDEN_CRASH", "[JNI] FindClass FAILED for: %s", name);
-        env->ExceptionClear();
-        return nullptr;
-    }
-    jclass global = reinterpret_cast<jclass>(env->NewGlobalRef(local));
-    env->DeleteLocalRef(local);
-    return global;
-}
-
-static jmethodID GetMethodIDSafe(JNIEnv* env, jclass clazz, const char* name, const char* sig) {
-    if (!clazz) return nullptr;
-    jmethodID id = env->GetMethodID(clazz, name, sig);
-    if (env->ExceptionCheck() || !id) {
-        __android_log_print(ANDROID_LOG_ERROR, "STORM_EDEN_CRASH", "[JNI] GetMethodID FAILED for: %s %s", name, sig);
-        env->ExceptionClear();
-        return nullptr;
-    }
-    return id;
-}
-
-static jmethodID GetStaticMethodIDSafe(JNIEnv* env, jclass clazz, const char* name, const char* sig) {
-    if (!clazz) return nullptr;
-    jmethodID id = env->GetStaticMethodID(clazz, name, sig);
-    if (env->ExceptionCheck() || !id) {
-        __android_log_print(ANDROID_LOG_ERROR, "STORM_EDEN_CRASH", "[JNI] GetStaticMethodID FAILED for: %s %s", name, sig);
-        env->ExceptionClear();
-        return nullptr;
-    }
-    return id;
-}
-
-static jfieldID GetFieldIDSafe(JNIEnv* env, jclass clazz, const char* name, const char* sig) {
-    if (!clazz) return nullptr;
-    jfieldID id = env->GetFieldID(clazz, name, sig);
-    if (env->ExceptionCheck() || !id) {
-        __android_log_print(ANDROID_LOG_ERROR, "STORM_EDEN_CRASH", "[JNI] GetFieldID FAILED for: %s %s", name, sig);
-        env->ExceptionClear();
-        return nullptr;
-    }
-    return id;
-}
 #endif
 
     void JNI_OnUnload(JavaVM *vm, void *reserved) {
