@@ -52,7 +52,6 @@ object NativeLibrary {
     init {
         try {
             System.loadLibrary("yuzu-android")
-            initJvm()
         } catch (ex: Throwable) {
             org.yuzu.yuzu_emu.utils.CrashHandler.recordException(
                 Thread.currentThread(),
@@ -378,7 +377,6 @@ object NativeLibrary {
         NetPlayManager.clearChat()
     }
 
-    external fun initJvm()
     external fun initMultiplayer()
 
     @Keep

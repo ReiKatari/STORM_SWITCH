@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Call
@@ -85,10 +86,14 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     private var activeDownloadCall: Call? = null
     private var isDownloading = false
+    private var isPaused = false
+    private var isCancelled = false
 
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
 
 private val SWITCH_CDN_ICONS = mapOf(
@@ -236,7 +241,13 @@ private val SWITCH_CDN_ICONS = mapOf(
 
         binding.btnStartDownload.setOnClickListener {
             val game = selectedGame ?: return@setOnClickListener
+            isCancelled = false
+            isPaused = false
             startDownload(game)
+        }
+
+        binding.btnPauseDownload.setOnClickListener {
+            togglePauseDownload()
         }
 
         binding.btnCancelDownload.setOnClickListener {
@@ -255,7 +266,7 @@ private val SWITCH_CDN_ICONS = mapOf(
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.0.7 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.1.2 (Android)")
                     .build()
 
                 val resp = httpClient.newCall(req).execute()
@@ -459,7 +470,7 @@ private val SWITCH_CDN_ICONS = mapOf(
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.1.1 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.1.2 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -491,7 +502,7 @@ private val SWITCH_CDN_ICONS = mapOf(
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.1.1 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.1.2 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -531,134 +542,271 @@ private val SWITCH_CDN_ICONS = mapOf(
         return defaultDir.name
     }
 
+    private fun togglePauseDownload() {
+        if (!isDownloading && !isPaused) return
+
+        if (!isPaused) {
+            isPaused = true
+            activeDownloadCall?.cancel()
+            binding.btnPauseDownload.text = "Продолжить"
+            binding.textDownloadStats.text = "⏸ Загрузка приостановлена"
+            binding.btnStartDownload.isEnabled = true
+            binding.btnStartDownload.text = "Возобновить"
+        } else {
+            isPaused = false
+            binding.btnPauseDownload.text = "Пауза"
+            val game = selectedGame ?: return
+            startDownload(game)
+        }
+    }
+
     private fun startDownload(game: StormWorldGameItem) {
         if (isDownloading) return
 
         isDownloading = true
+        isCancelled = false
+        isPaused = false
         binding.btnStartDownload.isEnabled = false
         binding.layoutDownloadProgress.isVisible = true
         binding.progressDownload.isIndeterminate = true
+        binding.btnPauseDownload.text = "Пауза"
         binding.textDownloadStats.text = "Подключение к серверу загрузки..."
 
         lifecycleScope.launch(Dispatchers.IO) {
-            var outputStream: OutputStream? = null
-            var targetDocFile: DocumentFile? = null
-            var targetNormalFile: File? = null
+            val cleanTitle = (if (game.finalTitle.isNotEmpty()) game.finalTitle else game.title)
+                .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                .trim()
+            val baseFilename = if (cleanTitle.endsWith(".nsp", ignoreCase = true) ||
+                cleanTitle.endsWith(".xci", ignoreCase = true) ||
+                cleanTitle.endsWith(".nsz", ignoreCase = true)) {
+                cleanTitle
+            } else {
+                "$cleanTitle${game.realExtension}"
+            }
+            val partFilename = "$baseFilename.part"
 
-            try {
-                val cleanTitle = (if (game.finalTitle.isNotEmpty()) game.finalTitle else game.title)
-                    .replace(Regex("[\\\\/:*?\"<>|]"), "_")
-                    .trim()
-                val filename = if (cleanTitle.endsWith(".nsp", ignoreCase = true) ||
-                    cleanTitle.endsWith(".xci", ignoreCase = true) ||
-                    cleanTitle.endsWith(".nsz", ignoreCase = true)) {
-                    cleanTitle
+            val gameDirs = NativeConfig.getGameDirs()
+            val firstDir = gameDirs.firstOrNull()
+            var isSaf = false
+            var targetFolder: File? = null
+            var safTree: DocumentFile? = null
+            var targetDocPart: DocumentFile? = null
+            var targetNormalPart: File? = null
+
+            if (firstDir != null) {
+                val dirUri = Uri.parse(firstDir.uriString)
+                if (dirUri.scheme == "content") {
+                    isSaf = true
+                    safTree = DocumentFile.fromTreeUri(requireContext(), dirUri)
                 } else {
-                    "$cleanTitle${game.realExtension}"
+                    val p = dirUri.path ?: firstDir.uriString
+                    targetFolder = File(p)
+                    if (!targetFolder.exists()) targetFolder.mkdirs()
                 }
+            }
+            if (!isSaf && targetFolder == null) {
+                targetFolder = File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    "STORM_SWITCH_GAMES"
+                )
+                if (!targetFolder.exists()) targetFolder.mkdirs()
+            }
 
-                val gameDirs = NativeConfig.getGameDirs()
-                val firstDir = gameDirs.firstOrNull()
+            var retryCount = 0
+            val maxRetries = 5
+            var completed = false
 
-                if (firstDir != null) {
-                    val dirUri = Uri.parse(firstDir.uriString)
-                    if (dirUri.scheme == "content") {
-                        val tree = DocumentFile.fromTreeUri(requireContext(), dirUri)
-                        targetDocFile = tree?.createFile("application/octet-stream", filename)
-                        if (targetDocFile != null) {
-                            outputStream = requireContext().contentResolver.openOutputStream(targetDocFile.uri)
-                        }
-                    } else {
-                        val p = dirUri.path ?: firstDir.uriString
-                        val folder = File(p)
-                        if (!folder.exists()) folder.mkdirs()
-                        targetNormalFile = File(folder, filename)
-                        outputStream = FileOutputStream(targetNormalFile)
-                    }
-                }
+            while (retryCount <= maxRetries && !isCancelled && !isPaused && !completed) {
+                var outputStream: OutputStream? = null
+                var inputStream: InputStream? = null
 
-                if (outputStream == null) {
-                    val defaultFolder = File(
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                        "STORM_SWITCH_GAMES"
-                    )
-                    if (!defaultFolder.exists()) defaultFolder.mkdirs()
-                    targetNormalFile = File(defaultFolder, filename)
-                    outputStream = FileOutputStream(targetNormalFile)
-                }
+                try {
+                    var existingBytes = 0L
 
-                val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
-                val req = Request.Builder()
-                    .url(downloadUrl)
-                    .header("User-Agent", "STORM_SWITCH/8.0.7 (Android)")
-                    .build()
-
-                val call = httpClient.newCall(req)
-                activeDownloadCall = call
-                val resp = call.execute()
-
-                if (!resp.isSuccessful) {
-                    throw RuntimeException("HTTP ${resp.code}: ${resp.message}")
-                }
-
-                val body = resp.body ?: throw RuntimeException("Empty response body")
-                val totalBytes = if (body.contentLength() > 0) body.contentLength() else game.fileSizeBytes
-                val inputStream: InputStream = body.byteStream()
-
-                val buffer = ByteArray(64 * 1024)
-                var bytesRead: Int
-                var totalRead = 0L
-                var lastUpdateTime = System.currentTimeMillis()
-                var bytesSinceLastUpdate = 0L
-                var currentSpeedMbps = 0.0
-
-                withContext(Dispatchers.Main) {
-                    binding.progressDownload.isIndeterminate = false
-                }
-
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    outputStream.write(buffer, 0, bytesRead)
-                    totalRead += bytesRead
-                    bytesSinceLastUpdate += bytesRead
-
-                    val now = System.currentTimeMillis()
-                    val delta = now - lastUpdateTime
-                    if (delta >= 600) {
-                        currentSpeedMbps = (bytesSinceLastUpdate.toDouble() / (1024.0 * 1024.0)) / (delta.toDouble() / 1000.0)
-                        bytesSinceLastUpdate = 0L
-                        lastUpdateTime = now
-
-                        val pct = if (totalBytes > 0) ((totalRead * 100) / totalBytes).toInt() else 0
-                        val recMb = totalRead.toDouble() / (1024.0 * 1024.0)
-                        val totMb = if (totalBytes > 0) totalBytes.toDouble() / (1024.0 * 1024.0) else 0.0
-                        val remMb = (totMb - recMb).coerceAtLeast(0.0)
-                        val etaSec = if (currentSpeedMbps > 0.05) (remMb / currentSpeedMbps).toInt() else 0
-
-                        val statsText = if (totMb > 0) {
-                            String.format(
-                                Locale.US,
-                                "%.1f МБ из %.1f МБ (%.0f%%) • %.2f МБ/с • Ост: %02d:%02d",
-                                recMb, totMb, pct.toDouble(), currentSpeedMbps, etaSec / 60, etaSec % 60
-                            )
+                    if (isSaf && safTree != null) {
+                        targetDocPart = safTree.findFile(partFilename)
+                        if (targetDocPart != null && targetDocPart.exists()) {
+                            existingBytes = targetDocPart.length()
+                            outputStream = requireContext().contentResolver.openOutputStream(targetDocPart.uri, "wa")
                         } else {
-                            String.format(Locale.US, "%.1f МБ • %.2f МБ/с", recMb, currentSpeedMbps)
+                            targetDocPart = safTree.createFile("application/octet-stream", partFilename)
+                            if (targetDocPart != null) {
+                                outputStream = requireContext().contentResolver.openOutputStream(targetDocPart.uri, "w")
+                            }
                         }
+                    } else if (targetFolder != null) {
+                        targetNormalPart = File(targetFolder, partFilename)
+                        if (targetNormalPart.exists()) {
+                            existingBytes = targetNormalPart.length()
+                        }
+                        outputStream = FileOutputStream(targetNormalPart, true)
+                    }
 
-                        withContext(Dispatchers.Main) {
-                            if (_binding != null) {
-                                binding.progressDownload.progress = pct
-                                binding.textDownloadStats.text = statsText
+                    if (outputStream == null) {
+                        throw RuntimeException("Не удалось открыть файл для записи")
+                    }
+
+                    val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
+                    val reqBuilder = Request.Builder()
+                        .url(downloadUrl)
+                        .header("User-Agent", "STORM_SWITCH/8.1.2 (Android)")
+
+                    if (existingBytes > 0L) {
+                        reqBuilder.header("Range", "bytes=$existingBytes-")
+                    }
+
+                    val req = reqBuilder.build()
+                    val call = httpClient.newCall(req)
+                    activeDownloadCall = call
+
+                    withContext(Dispatchers.Main) {
+                        if (_binding != null) {
+                            if (retryCount > 0) {
+                                binding.textDownloadStats.text = "Восстановление соединения (попытка $retryCount из $maxRetries)..."
+                            } else if (existingBytes > 0L) {
+                                val mb = existingBytes / (1024 * 1024)
+                                binding.textDownloadStats.text = "Возобновление загрузки с ${mb} МБ..."
+                            } else {
+                                binding.textDownloadStats.text = "Подключение к серверу загрузки..."
                             }
                         }
                     }
-                }
 
-                outputStream.flush()
-                outputStream.close()
-                outputStream = null
+                    val resp = call.execute()
+
+                    if (resp.code == 416) {
+                        outputStream.close()
+                        completed = true
+                        break
+                    }
+
+                    if (!resp.isSuccessful) {
+                        throw RuntimeException("HTTP ${resp.code}: ${resp.message}")
+                    }
+
+                    val body = resp.body ?: throw RuntimeException("Пустой ответ сервера")
+                    val isPartial = (resp.code == 206)
+
+                    if (existingBytes > 0L && !isPartial) {
+                        outputStream.close()
+                        if (isSaf && targetDocPart != null) {
+                            outputStream = requireContext().contentResolver.openOutputStream(targetDocPart.uri, "w")
+                        } else if (targetNormalPart != null) {
+                            outputStream = FileOutputStream(targetNormalPart, false)
+                        }
+                        existingBytes = 0L
+                    }
+
+                    val streamLen = body.contentLength()
+                    val totalBytes = if (isPartial) {
+                        existingBytes + (if (streamLen > 0) streamLen else 0L)
+                    } else {
+                        if (streamLen > 0) streamLen else game.fileSizeBytes
+                    }
+
+                    inputStream = body.byteStream()
+                    val buffer = ByteArray(256 * 1024)
+                    var bytesRead: Int
+                    var totalRead = existingBytes
+                    var lastUpdateTime = System.currentTimeMillis()
+                    var bytesSinceLastUpdate = 0L
+                    var currentSpeedMbps = 0.0
+
+                    withContext(Dispatchers.Main) {
+                        if (_binding != null) {
+                            binding.progressDownload.isIndeterminate = false
+                        }
+                    }
+
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        if (isPaused || isCancelled) break
+
+                        outputStream!!.write(buffer, 0, bytesRead)
+                        totalRead += bytesRead
+                        bytesSinceLastUpdate += bytesRead
+
+                        val now = System.currentTimeMillis()
+                        val delta = now - lastUpdateTime
+                        if (delta >= 500) {
+                            currentSpeedMbps = (bytesSinceLastUpdate.toDouble() / (1024.0 * 1024.0)) / (delta.toDouble() / 1000.0)
+                            bytesSinceLastUpdate = 0L
+                            lastUpdateTime = now
+
+                            val pct = if (totalBytes > 0) ((totalRead * 100) / totalBytes).toInt() else 0
+                            val recMb = totalRead.toDouble() / (1024.0 * 1024.0)
+                            val totMb = if (totalBytes > 0) totalBytes.toDouble() / (1024.0 * 1024.0) else 0.0
+                            val remMb = (totMb - recMb).coerceAtLeast(0.0)
+                            val etaSec = if (currentSpeedMbps > 0.05) (remMb / currentSpeedMbps).toInt() else 0
+
+                            val statsText = if (totMb > 0) {
+                                String.format(
+                                    Locale.US,
+                                    "%.1f МБ из %.1f МБ (%d%%) • %.2f МБ/с • Ост: %02d:%02d",
+                                    recMb, totMb, pct, currentSpeedMbps, etaSec / 60, etaSec % 60
+                                )
+                            } else {
+                                String.format(Locale.US, "%.1f МБ • %.2f МБ/с", recMb, currentSpeedMbps)
+                            }
+
+                            withContext(Dispatchers.Main) {
+                                if (_binding != null) {
+                                    binding.progressDownload.progress = pct
+                                    binding.textDownloadStats.text = statsText
+                                }
+                            }
+                        }
+                    }
+
+                    outputStream?.flush()
+
+                    if (!isPaused && !isCancelled) {
+                        completed = true
+                        break
+                    }
+
+                } catch (e: Exception) {
+                    if (isPaused || isCancelled) {
+                        break
+                    }
+                    Log.error("[StormGamesWorld] Download interrupted: ${e.message}")
+                    retryCount++
+                    if (retryCount <= maxRetries) {
+                        withContext(Dispatchers.Main) {
+                            if (_binding != null) {
+                                binding.textDownloadStats.text = "Обрыв соединения (${e.localizedMessage ?: "Сбой"}). Повтор $retryCount из $maxRetries..."
+                            }
+                        }
+                        delay(retryCount * 1500L)
+                    } else {
+                        throw e
+                    }
+                } finally {
+                    try { inputStream?.close() } catch (_: Exception) {}
+                    try { outputStream?.flush() } catch (_: Exception) {}
+                    try { outputStream?.close() } catch (_: Exception) {}
+                }
+            }
+
+            if (completed) {
+                try {
+                    if (isSaf && safTree != null && targetDocPart != null) {
+                        val existingFinal = safTree.findFile(baseFilename)
+                        if (existingFinal != null && existingFinal.exists()) {
+                            existingFinal.delete()
+                        }
+                        targetDocPart.renameTo(baseFilename)
+                    } else if (targetNormalPart != null) {
+                        val finalFile = File(targetNormalPart.parentFile, baseFilename)
+                        if (finalFile.exists()) finalFile.delete()
+                        targetNormalPart.renameTo(finalFile)
+                    }
+                } catch (e: Exception) {
+                    Log.error("[StormGamesWorld] Rename error: ${e.message}")
+                }
 
                 withContext(Dispatchers.Main) {
                     isDownloading = false
+                    isPaused = false
                     activeDownloadCall = null
                     game.isDownloaded = true
                     if (_binding != null) {
@@ -675,36 +823,35 @@ private val SWITCH_CDN_ICONS = mapOf(
                     Toast.makeText(requireContext(), "✅ Игра успешно скачана: ${game.finalTitle.ifEmpty { game.title }}", Toast.LENGTH_LONG).show()
                     gamesViewModel.reloadGames(directoriesChanged = true)
                 }
-
-            } catch (e: Exception) {
-                try { outputStream?.close() } catch (_: Exception) {}
-                try { targetDocFile?.delete() } catch (_: Exception) {}
-                try { targetNormalFile?.delete() } catch (_: Exception) {}
-
+            } else if (isPaused) {
                 withContext(Dispatchers.Main) {
                     isDownloading = false
                     activeDownloadCall = null
                     if (_binding != null) {
-                        binding.layoutDownloadProgress.isVisible = false
-                        binding.btnStartDownload.text = "Скачать игру"
-                        binding.btnStartDownload.setIconResource(R.drawable.ic_install)
+                        binding.btnPauseDownload.text = "Продолжить"
                         binding.btnStartDownload.isEnabled = true
-                        binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
-                        binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
-                        binding.btnStartDownload.setTextColor(0xFF94A3B8.toInt())
-                        binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
+                        binding.btnStartDownload.text = "Возобновить"
                     }
-                    if (e.message != "Socket closed" && e.message != "Canceled") {
-                        Log.error("[StormGamesWorld] Download failed: ${e.message}")
-                        Toast.makeText(requireContext(), "Ошибка загрузки: ${e.localizedMessage ?: "Сбой сети"}", Toast.LENGTH_SHORT).show()
+                }
+            } else if (!isCancelled) {
+                withContext(Dispatchers.Main) {
+                    isDownloading = false
+                    activeDownloadCall = null
+                    if (_binding != null) {
+                        binding.btnStartDownload.isEnabled = true
+                        binding.btnStartDownload.text = "Продолжить скачивание"
+                        binding.textDownloadStats.text = "Загрузка прервана. Нажмите «Продолжить скачивание»."
                     }
+                    Toast.makeText(requireContext(), "Загрузка прервана. Прогресс сохранён — можно докачать!", Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
 
     private fun cancelDownload() {
-        if (!isDownloading) return
+        if (!isDownloading && !isPaused) return
+        isCancelled = true
+        isPaused = false
         activeDownloadCall?.cancel()
         activeDownloadCall = null
         isDownloading = false
@@ -716,11 +863,13 @@ private val SWITCH_CDN_ICONS = mapOf(
         binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
         binding.btnStartDownload.setTextColor(0xFF94A3B8.toInt())
         binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
-        Toast.makeText(requireContext(), "Загрузка отменена", Toast.LENGTH_SHORT).show()
+        binding.btnPauseDownload.text = "Пауза"
+        Toast.makeText(requireContext(), "Загрузка отменена (прогресс сохранён)", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {
         if (isDownloading) {
+            isPaused = true
             activeDownloadCall?.cancel()
             activeDownloadCall = null
         }

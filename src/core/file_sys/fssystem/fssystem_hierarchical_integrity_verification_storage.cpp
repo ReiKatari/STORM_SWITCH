@@ -121,6 +121,7 @@ size_t HierarchicalIntegrityVerificationStorage::Read(u8* buffer, size_t size,
 }
 
 size_t HierarchicalIntegrityVerificationStorage::GetSize() const {
+    ASSERT(m_data_size >= 0);
     return m_data_size;
 }
 
