@@ -41,6 +41,9 @@
 
 #include "qt_common/game_list/model.h"
 #include "qt_common/game_list/worker.h"
+#include "qt_common/titledb.h"
+
+#include <regex>
 
 namespace {
 
@@ -659,6 +662,10 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
             cache_it->second.mtime == file_info.mtime_val) {
             const auto& cached = cache_it->second;
             if (!cached.is_bootable) {
+                static const std::regex base_id_pattern(R"([0-9a-fA-F]{13}000)");
+                if (std::regex_search(file_info.physical_name, base_id_pattern)) {
+                    uncached_files.push_back(file_info);
+                }
                 continue;
             }
 
@@ -764,6 +771,25 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 }
             }
 
+            // Fallback: extract base Title ID from filename if container loader couldn't resolve it
+            if (!has_base_game) {
+                static const std::regex base_id_pattern(R"([0-9a-fA-F]{13}000)");
+                std::smatch match;
+                if (std::regex_search(file_info.physical_name, match, base_id_pattern)) {
+                    try {
+                        const u64 parsed_id = std::stoull(match.str(), nullptr, 16);
+                        if (parsed_id != 0) {
+                            program_id = parsed_id;
+                            has_base_game = true;
+                            auto specialized_loader = Loader::GetLoader(system, file, program_id);
+                            if (specialized_loader) {
+                                loader = std::move(specialized_loader);
+                            }
+                        }
+                    } catch (...) {}
+                }
+            }
+
             // Register in provider if NCA or container with external content enabled
             if (file_type == Loader::FileType::NCA) {
                 if (program_id != 0) {
@@ -812,10 +838,26 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                     }
                 }
                 if (name.empty() || name == " ") {
-                    const std::string filename_str =
-                        std::filesystem::path(file_info.physical_name).stem().string();
-                    if (!filename_str.empty()) {
-                        name = filename_str;
+                    const auto opt_entry = TitleDB::TitleDatabase::Instance().Lookup(id);
+                    if (opt_entry && !opt_entry->name.empty()) {
+                        name = opt_entry->name;
+                    } else {
+                        const std::string filename_str =
+                            std::filesystem::path(file_info.physical_name).stem().string();
+                        if (!filename_str.empty()) {
+                            name = filename_str;
+                        }
+                    }
+                }
+
+                if (icon.empty()) {
+                    const auto icon_file_path = Common::FS::PathToUTF8String(
+                        Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" /
+                        fmt::format("{:016X}.jpeg", id));
+                    QFile ifile(QString::fromStdString(icon_file_path));
+                    if (ifile.open(QFile::ReadOnly)) {
+                        const auto qdata = ifile.readAll();
+                        icon.assign(qdata.begin(), qdata.end());
                     }
                 }
 

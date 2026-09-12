@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "common/settings.h"
 #include "common/string_util.h"
 #include "common/swap.h"
 #include "core/core.h"
@@ -30,15 +29,15 @@ SFDNSRES::SFDNSRES(Core::System& system_) : ServiceFramework{system_, "sfdnsres"
         {4, nullptr, "GetHostStringErrorRequest"},
         {5, &SFDNSRES::GetGaiStringErrorRequest, "GetGaiStringErrorRequest"},
         {6, &SFDNSRES::GetAddrInfoRequest, "GetAddrInfoRequest"},
-        {7, &SFDNSRES::GetNameInfoRequest, "GetNameInfoRequest"},
-        {8, &SFDNSRES::RequestCancelHandleRequest, "RequestCancelHandleRequest"},
-        {9, &SFDNSRES::CancelRequest, "CancelRequest"},
+        {7, nullptr, "GetNameInfoRequest"},
+        {8, nullptr, "RequestCancelHandleRequest"},
+        {9, nullptr, "CancelRequest"},
         {10, &SFDNSRES::GetHostByNameRequestWithOptions, "GetHostByNameRequestWithOptions"},
-        {11, &SFDNSRES::GetHostByAddrRequestWithOptions, "GetHostByAddrRequestWithOptions"},
+        {11, nullptr, "GetHostByAddrRequestWithOptions"},
         {12, &SFDNSRES::GetAddrInfoRequestWithOptions, "GetAddrInfoRequestWithOptions"},
-        {13, &SFDNSRES::GetNameInfoRequestWithOptions, "GetNameInfoRequestWithOptions"},
+        {13, nullptr, "GetNameInfoRequestWithOptions"},
         {14, &SFDNSRES::ResolverSetOptionRequest, "ResolverSetOptionRequest"},
-        {15, &SFDNSRES::ResolverGetOptionRequest, "ResolverGetOptionRequest"},
+        {15, nullptr, "ResolverGetOptionRequest"},
     };
     RegisterHandlers(functions);
 }
@@ -203,10 +202,6 @@ static std::pair<u32, GetAddrInfoError> GetHostByNameRequestImpl(HLERequestConte
     const std::string host = Common::StringFromBuffer(host_buffer);
     // For now, ignore options, which are in input buffer 1 for GetHostByNameRequestWithOptions.
 
-    if (Settings::values.airplane_mode.GetValue()) {
-        return {0, GetAddrInfoError::NODATA};
-    }
-
     // Prevent resolution of Nintendo servers and telemetry
     if (IsBlockedHost(host)) {
         LOG_DEBUG(Network, "Resolution of hostname {} requested, returning EAI_NODATA", host);
@@ -323,10 +318,6 @@ static std::pair<u32, GetAddrInfoError> GetAddrInfoRequestImpl(HLERequestContext
     const auto host_buffer = ctx.ReadBuffer(0);
     const std::string host = Common::StringFromBuffer(host_buffer);
 
-    if (Settings::values.airplane_mode.GetValue()) {
-        return {0, GetAddrInfoError::NODATA};
-    }
-
     // Prevent resolution of Nintendo servers
     if (IsBlockedHost(host)) {
         LOG_DEBUG(Network, "Resolution of hostname {} requested, returning EAI_AGAIN", host);
@@ -414,55 +405,5 @@ void SFDNSRES::ResolverSetOptionRequest(HLERequestContext& ctx) {
 
     rb.Push(ResultSuccess);
     rb.Push<s32>(0); // bsd errno
-}
-
-void SFDNSRES::GetNameInfoRequest(HLERequestContext& ctx) {
-    LOG_DEBUG(Service, "(STUBBED) called");
-    IPC::ResponseBuilder rb{ctx, 5};
-    rb.Push(ResultSuccess);
-    rb.Push<u32>(0);
-    rb.Push<u32>(0);
-    rb.Push<s32>(0);
-    rb.Push<s32>(0);
-}
-
-void SFDNSRES::GetNameInfoRequestWithOptions(HLERequestContext& ctx) {
-    LOG_DEBUG(Service, "(STUBBED) called");
-    IPC::ResponseBuilder rb{ctx, 6};
-    rb.Push(ResultSuccess);
-    rb.Push<u32>(0);
-    rb.Push<u32>(0);
-    rb.Push<s32>(0);
-    rb.Push<s32>(0);
-    rb.Push<s32>(0);
-}
-
-void SFDNSRES::RequestCancelHandleRequest(HLERequestContext& ctx) {
-    LOG_DEBUG(Service, "(STUBBED) called");
-    IPC::ResponseBuilder rb{ctx, 3};
-    rb.Push(ResultSuccess);
-    rb.Push<u32>(1);
-}
-
-void SFDNSRES::CancelRequest(HLERequestContext& ctx) {
-    LOG_DEBUG(Service, "(STUBBED) called");
-    IPC::ResponseBuilder rb{ctx, 2};
-    rb.Push(ResultSuccess);
-}
-
-void SFDNSRES::GetHostByAddrRequestWithOptions(HLERequestContext& ctx) {
-    LOG_DEBUG(Service, "(STUBBED) called");
-    IPC::ResponseBuilder rb{ctx, 5};
-    rb.Push(ResultSuccess);
-    rb.Push<u32>(0);
-    rb.Push<s32>(0);
-    rb.Push<s32>(0);
-}
-
-void SFDNSRES::ResolverGetOptionRequest(HLERequestContext& ctx) {
-    LOG_DEBUG(Service, "(STUBBED) called");
-    IPC::ResponseBuilder rb{ctx, 3};
-    rb.Push(ResultSuccess);
-    rb.Push<s32>(0);
 }
 } // namespace Service::Sockets

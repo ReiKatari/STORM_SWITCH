@@ -3612,8 +3612,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Assassin's Creed: The Rebel Collection",
         "• Случайные вылеты и исчезновение моделей персонажей из-за нехватки видеопамяти и отсутствия обратного чтения буферов ГПУ\n• Мерцание текстур и падение FPS на уровнях с водой",
         "• Random crashes and character model popping due to memory limits and disabled GPU buffer readback\n• Texture flickering and FPS drops on water-heavy levels",
-        "✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Реактивный сброс: Включено\n✓ Синхронизация операций памяти: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Buffer Readback: Enabled\n✓ Reactive Flushing: Enabled\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Реактивный сброс: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Buffer Readback: Enabled\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -3628,11 +3628,10 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\enable_gpu_buffer_readback", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\gpu_fence_behavior", "3"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"System\\airplane_mode", "true"}
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"}
         }
     },
     {
@@ -3657,8 +3656,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"System\\airplane_mode", "true"}
+            {"Renderer\\astc_recompression", "0"}
         }
     },
     {
@@ -3666,10 +3664,10 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Assassin's Creed III Remastered",
         "• Просадки FPS до 4-6 к/с при рендеринге снега и воды в Бостоне\n• Задержки кадра из-за синхронного вывода в буфер дисплея",
         "• FPS drops to 4-6 in snow and water rendering in Boston\n• Presentation stalls due to synchronous swapchain output",
-        "✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Быстрое освобождение барьеров: Включено\n✓ Точность ГПУ: Обычная\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ Early Release Fences: Enabled\n✓ GPU Accuracy: Normal\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -3678,13 +3676,12 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\early_release_fences", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"System\\airplane_mode", "true"}
+            {"Renderer\\astc_recompression", "0"}
         }
     }
 };

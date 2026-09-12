@@ -4,6 +4,7 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <regex>
 #include <vector>
 
 #include "common/common_types.h"
@@ -39,7 +40,28 @@ AppLoader_NSP::AppLoader_NSP(FileSys::VirtualFile file_,
     } else {
         // In multi-content / 1G+1U containers, prefer the Update Control NCA (TitleID with bit 0x800)
         // so that the title, version (e.g. 1.0.10 / 655360), and icon reflect the latest content.
-        const u64 base_tid = FileSys::GetBaseTitleID(nsp->GetProgramTitleID());
+        u64 base_tid = FileSys::GetBaseTitleID(nsp->GetProgramTitleID());
+        if (base_tid == 0) {
+            for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
+                if (nca_item && nca_item->GetTitleId() != 0) {
+                    const u64 cand = FileSys::GetBaseTitleID(nca_item->GetTitleId());
+                    if (cand != 0) {
+                        base_tid = cand;
+                        break;
+                    }
+                }
+            }
+        }
+        if (base_tid == 0 && file_) {
+            std::regex id_regex(R"([0-9a-fA-F]{13}000)");
+            std::smatch match;
+            const std::string fname = file_->GetName();
+            if (std::regex_search(fname, match, id_regex)) {
+                try {
+                    base_tid = std::stoull(match.str(), nullptr, 16);
+                } catch (...) {}
+            }
+        }
         const u64 update_tid = FileSys::GetUpdateTitleID(base_tid);
 
         auto control_nca = nsp->GetNCA(update_tid, FileSys::ContentRecordType::Control);
@@ -63,14 +85,16 @@ AppLoader_NSP::AppLoader_NSP(FileSys::VirtualFile file_,
 
         if (control_nca != nullptr && control_nca->GetStatus() == ResultStatus::Success) {
             std::tie(nacp_file, icon_file) = [&content_provider, &control_nca, &fsc, base_tid] {
-                const FileSys::PatchManager pm{base_tid, fsc, content_provider};
+                const u64 target_tid = (base_tid != 0) ? base_tid : FileSys::GetBaseTitleID(control_nca->GetTitleId());
+                const FileSys::PatchManager pm{target_tid, fsc, content_provider};
                 return pm.ParseControlNCA(*control_nca);
             }();
         }
 
-
-
         auto program_file = nsp->GetNCAFile(nsp->GetProgramTitleID(), FileSys::ContentRecordType::Program);
+        if (program_file == nullptr && base_tid != 0) {
+            program_file = nsp->GetNCAFile(base_tid, FileSys::ContentRecordType::Program);
+        }
         if (program_file == nullptr) {
             for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
                 if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
@@ -426,6 +450,34 @@ std::shared_ptr<FileSys::NCA> AppLoader_NSP::GetNCA() const {
 ResultStatus AppLoader_NSP::ReadProgramId(u64& out_program_id) {
     out_program_id = nsp->GetProgramTitleID();
     if (out_program_id == 0) {
+        for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
+            if (nca_item && nca_item->GetTitleId() != 0 &&
+                (nca_item->GetTitleId() & 0x800) == 0 &&
+                (nca_item->GetTitleId() & 0xFFF) == 0) {
+                out_program_id = nca_item->GetTitleId();
+                return ResultStatus::Success;
+            }
+        }
+        for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
+            if (nca_item && nca_item->GetTitleId() != 0) {
+                const u64 cand = FileSys::GetBaseTitleID(nca_item->GetTitleId());
+                if (cand != 0) {
+                    out_program_id = cand;
+                    return ResultStatus::Success;
+                }
+            }
+        }
+        if (file) {
+            std::regex id_regex(R"([0-9a-fA-F]{13}000)");
+            std::smatch match;
+            const std::string fname = file->GetName();
+            if (std::regex_search(fname, match, id_regex)) {
+                try {
+                    out_program_id = std::stoull(match.str(), nullptr, 16);
+                    return ResultStatus::Success;
+                } catch (...) {}
+            }
+        }
         return ResultStatus::ErrorNotInitialized;
     }
     return ResultStatus::Success;
@@ -433,6 +485,12 @@ ResultStatus AppLoader_NSP::ReadProgramId(u64& out_program_id) {
 
 ResultStatus AppLoader_NSP::ReadProgramIds(std::vector<u64>& out_program_ids) {
     out_program_ids = nsp->GetProgramTitleIDs();
+    if (out_program_ids.empty()) {
+        u64 pid = 0;
+        if (ReadProgramId(pid) == ResultStatus::Success && pid != 0) {
+            out_program_ids.push_back(pid);
+        }
+    }
     return ResultStatus::Success;
 }
 
