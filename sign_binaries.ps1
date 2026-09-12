@@ -29,23 +29,23 @@ Get-ChildItem -Path 'E:\STORM SWITCH 4\Assembling' -Recurse | Unblock-File -Erro
 Write-Host "Creating Windows 8.2.0 release zip..."
 $stageDir = 'E:\STORM SWITCH 4\Build\build_ninja\stage_zip'
 if (Test-Path $stageDir) { Remove-Item $stageDir -Recurse -Force }
-New-Item -ItemType Directory -Path "$stageDir\user\config", "$stageDir\user\load", "$stageDir\user\nand", "$stageDir\user\sdmc", "$stageDir\user\cache" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageDir\user" -Force | Out-Null
 
-Copy-Item 'E:\STORM SWITCH 4\Assembling\user\config\qt-config.ini' "$stageDir\user\config\" -Force -ErrorAction SilentlyContinue
-if (Test-Path 'E:\STORM SWITCH 4\Assembling\user\config\custom') {
-    Copy-Item 'E:\STORM SWITCH 4\Assembling\user\config\custom' "$stageDir\user\config\" -Recurse -Force
-}
 Copy-Item 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH*.exe' $stageDir\ -Force
 Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.exe' $stageDir\ -Force -ErrorAction SilentlyContinue
 Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.dll' $stageDir\ -Force -ErrorAction SilentlyContinue
 Copy-Item 'E:\STORM SWITCH 4\Assembling\*.dll' $stageDir\ -Force -ErrorAction SilentlyContinue
 
-$zipPath = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.0_Windows.zip'
-if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+$zipPathPrimary = 'E:\STORM SWITCH 4\Files\STORM SWITCH 8.2.0.zip'
+$zipPathWin = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.0_Windows.zip'
+if (Test-Path $zipPathPrimary) { Remove-Item $zipPathPrimary -Force }
+if (Test-Path $zipPathWin) { Remove-Item $zipPathWin -Force }
 
-& 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPath "$stageDir\*" -mx=9
+& 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathPrimary "$stageDir\*" -mx=9
+Copy-Item $zipPathPrimary $zipPathWin -Force
 
-Unblock-File $zipPath
+Unblock-File $zipPathPrimary
+Unblock-File $zipPathWin
 Remove-Item $stageDir -Recurse -Force
 
 Write-Host "All executables signed, packaged to 8.2.0 Windows zip in E:\STORM SWITCH 4\Files!"

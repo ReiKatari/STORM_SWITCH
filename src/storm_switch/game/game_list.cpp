@@ -110,6 +110,47 @@ GameList::GameList(FileSys::VirtualFilesystem vfs_, FileSys::ManualContentProvid
     connect(item_model, &GameListModel::SaveConfig, this, &GameList::SaveConfig);
     connect(item_model, &GameListModel::PopulatingStarted, this, &GameList::OnPopulate);
 
+    connect(item_model, &QAbstractItemModel::rowsInserted, this,
+            [this](const QModelIndex& parent, int first, int last) {
+                if (m_isTreeMode && tree_view) {
+                    if (!parent.isValid()) {
+                        for (int r = first; r <= last; ++r) {
+                            const auto child_idx = item_model->index(r, 0, parent);
+                            const int dir_index = child_idx.data(GameListDir::GameDirRole).toInt();
+                            bool expand_dir = true;
+                            if (dir_index >= 0 && dir_index < UISettings::values.game_dirs.size()) {
+                                expand_dir = UISettings::values.game_dirs[dir_index].expanded;
+                            }
+                            if (expand_dir) {
+                                tree_view->expand(child_idx);
+                            }
+                        }
+                    } else {
+                        const int dir_index = parent.data(GameListDir::GameDirRole).toInt();
+                        bool expand_dir = true;
+                        if (dir_index >= 0 && dir_index < UISettings::values.game_dirs.size()) {
+                            expand_dir = UISettings::values.game_dirs[dir_index].expanded;
+                        }
+                        if (expand_dir && !tree_view->isExpanded(parent)) {
+                            tree_view->expand(parent);
+                        }
+                    }
+                }
+
+                if (search_field && search_field->filterText().isEmpty()) {
+                    int total = 0;
+                    for (int i = 0; i < item_model->rowCount(); ++i) {
+                        const auto* item = item_model->item(i, 0);
+                        if (item) {
+                            total += item->rowCount();
+                        }
+                    }
+                    if (total > 0) {
+                        search_field->setFilterResult(total, total);
+                    }
+                }
+            });
+
     // TODO: impl on grid/carousel
     connect(tree_view, &GameTree::FilterResultReady, search_field,
             [this](int visible, int total) { search_field->setFilterResult(visible, total); });
@@ -156,7 +197,9 @@ bool GameList::IsEmpty() const {
 }
 
 void GameList::OnPopulate() {
-    m_currentView->setEnabled(false);
+    if (m_currentView) {
+        m_currentView->setEnabled(true);
+    }
 
     switch (game_list_mode) {
     case Settings::GameListMode::TreeView:

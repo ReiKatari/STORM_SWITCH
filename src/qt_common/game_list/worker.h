@@ -74,13 +74,7 @@ private:
 private:
     void AddTitlesToGameList(GameListDir* parent_dir);
 
-    enum class ScanTarget {
-        FillManualContentProvider,
-        PopulateGameList,
-    };
-
-    void ScanFileSystem(ScanTarget target, const std::string& dir_path, bool deep_scan,
-                        GameListDir* parent_dir);
+    void ScanDirectory(const std::string& dir_path, bool deep_scan, GameListDir* parent_dir);
 
     std::shared_ptr<FileSys::VfsFilesystem> vfs;
     FileSys::ManualContentProvider* provider;
