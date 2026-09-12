@@ -7270,7 +7270,8 @@ void MainWindow::UpdateStatusBar() {
 void MainWindow::ApplyDynamicSettingChange() {
     Settings::UpdateGPUAccuracy();
     Settings::UpdateRescalingInfo();
-    if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+    const bool is_running = QtCommon::system && QtCommon::system->IsPoweredOn();
+    if (is_running) {
         QtCommon::system->ApplySettings();
         const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
         if (title_id != 0) {
@@ -7281,9 +7282,10 @@ void MainWindow::ApplyDynamicSettingChange() {
                 per_game_config.SaveAllValues();
             }
         }
-    }
-    if (config) {
-        config->SaveAllValues();
+    } else {
+        if (config) {
+            config->SaveAllValues();
+        }
     }
     UpdateStatusButtons();
     ConfigurationShared::ReloadAllActiveWidgets();
