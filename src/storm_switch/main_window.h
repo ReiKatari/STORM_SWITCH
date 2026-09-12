@@ -590,6 +590,14 @@ private:
         std::pair<Settings::AspectRatio, bool> aspect_ratio;
         std::pair<Settings::VramUsageMode, bool> vram_usage_mode;
         std::pair<bool, bool> enable_frame_skipping;
+        std::pair<bool, bool> frame_gen;
+        std::pair<bool, bool> vram_budget_governor;
+        std::pair<bool, bool> storm_lowend_turbo;
+        std::pair<bool, bool> storm_thermal_governor;
+        std::pair<bool, bool> renderer_force_max_clock;
+        std::pair<bool, bool> skip_cpu_inner_invalidation;
+        std::pair<Settings::CpuClock, bool> cpu_clock;
+        std::pair<bool, bool> use_custom_cpu_ticks;
 
         void Capture();
         void Restore();

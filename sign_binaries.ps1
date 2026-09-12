@@ -4,7 +4,7 @@ Start-Sleep -Milliseconds 500
 $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe'
 $sha1 = '10C44A100C93E316872A1BEF4D46269EA9C52269'
 
-Write-Host "Copying freshly compiled 8.2.1 binaries from build_ninja\bin to Assembling..."
+Write-Host "Copying freshly compiled 8.2.5 binaries from build_ninja\bin to Assembling..."
 Copy-Item 'E:\STORM SWITCH 4\Build\build_ninja\bin\STORM_SWITCH*.exe' 'E:\STORM SWITCH 4\Assembling\' -Force
 
 Write-Host "Signing Assembling executables..."
@@ -26,26 +26,49 @@ Copy-Item "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Redist\MSVC\1
 
 Get-ChildItem -Path 'E:\STORM SWITCH 4\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 
-Write-Host "Creating Windows 8.2.1 release zip..."
-$stageDir = 'E:\STORM SWITCH 4\Build\build_ninja\stage_zip'
-if (Test-Path $stageDir) { Remove-Item $stageDir -Recurse -Force }
-New-Item -ItemType Directory -Path "$stageDir\user" -Force | Out-Null
+Write-Host "Creating Windows 11 release zip (compiled files + empty user folder)..."
+$stageWin11 = 'E:\STORM SWITCH 4\Build\build_ninja\stage_win11'
+if (Test-Path $stageWin11) { Remove-Item $stageWin11 -Recurse -Force }
+New-Item -ItemType Directory -Path "$stageWin11\user\config" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin11\user\keys" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin11\user\nand" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin11\user\load" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin11\user\screenshots" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin11\user\sdmc" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin11\user\shader" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin11\user\cache" -Force | Out-Null
 
-Copy-Item 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH*.exe' $stageDir\ -Force
-Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.exe' $stageDir\ -Force -ErrorAction SilentlyContinue
-Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.dll' $stageDir\ -Force -ErrorAction SilentlyContinue
-Copy-Item 'E:\STORM SWITCH 4\Assembling\*.dll' $stageDir\ -Force -ErrorAction SilentlyContinue
+Copy-Item 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH*.exe' $stageWin11\ -Force
+Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.exe' $stageWin11\ -Force -ErrorAction SilentlyContinue
+Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.dll' $stageWin11\ -Force -ErrorAction SilentlyContinue
 
-$zipPathPrimary = 'E:\STORM SWITCH 4\Files\STORM SWITCH 8.2.1.zip'
-$zipPathWin = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.1_Windows.zip'
-if (Test-Path $zipPathPrimary) { Remove-Item $zipPathPrimary -Force }
-if (Test-Path $zipPathWin) { Remove-Item $zipPathWin -Force }
+$zipPathWin11 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.5_Windows11.zip'
+if (Test-Path $zipPathWin11) { Remove-Item $zipPathWin11 -Force }
+& 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathWin11 "$stageWin11\*" -mx=9
+Unblock-File $zipPathWin11
+Remove-Item $stageWin11 -Recurse -Force
 
-& 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathPrimary "$stageDir\*" -mx=9
-Copy-Item $zipPathPrimary $zipPathWin -Force
+Write-Host "Creating Windows 10 release zip (compiled files + empty user folder + all .dlls)..."
+$stageWin10 = 'E:\STORM SWITCH 4\Build\build_ninja\stage_win10'
+if (Test-Path $stageWin10) { Remove-Item $stageWin10 -Recurse -Force }
+New-Item -ItemType Directory -Path "$stageWin10\user\config" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin10\user\keys" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin10\user\nand" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin10\user\load" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin10\user\screenshots" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin10\user\sdmc" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin10\user\shader" -Force | Out-Null
+New-Item -ItemType Directory -Path "$stageWin10\user\cache" -Force | Out-Null
 
-Unblock-File $zipPathPrimary
-Unblock-File $zipPathWin
-Remove-Item $stageDir -Recurse -Force
+Copy-Item 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH*.exe' $stageWin10\ -Force
+Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.exe' $stageWin10\ -Force -ErrorAction SilentlyContinue
+Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.dll' $stageWin10\ -Force -ErrorAction SilentlyContinue
+Copy-Item 'E:\STORM SWITCH 4\Assembling\*.dll' $stageWin10\ -Force -ErrorAction SilentlyContinue
 
-Write-Host "All executables signed, packaged to 8.2.1 Windows zip in E:\STORM SWITCH 4\Files!"
+$zipPathWin10 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.5_Windows10.zip'
+if (Test-Path $zipPathWin10) { Remove-Item $zipPathWin10 -Force }
+& 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathWin10 "$stageWin10\*" -mx=9
+Unblock-File $zipPathWin10
+Remove-Item $stageWin10 -Recurse -Force
+
+Write-Host "All Windows 8.2.5 executables signed and packaged successfully into E:\STORM SWITCH 4\Files!"

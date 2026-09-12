@@ -4,6 +4,8 @@
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <chrono>
+#include <thread>
 #include "common/settings.h"
 #include "common/thread.h"
 #include "core/frontend/emu_window.h"
@@ -331,6 +333,7 @@ void PresentManager::PresentThread(std::stop_token token) {
     Common::SetCurrentThreadName("VulkanPresent");
     Common::SetCurrentThreadPriority(Common::ThreadPriority::High);
     Common::SetCurrentThreadToPerformanceCores();
+    auto last_frame_time = std::chrono::steady_clock::now();
     while (!token.stop_requested()) {
         std::unique_lock lock{queue_mutex};
         // Wait for presentation frames
@@ -340,6 +343,16 @@ void PresentManager::PresentThread(std::stop_token token) {
             Frame* frame = present_queue.front();
             present_queue.pop_front();
             frame_cv.notify_one();
+
+            // Eco Frame Pacing & Storm Thermal Governor
+            if (Settings::values.eco_frame_pacing.GetValue() || Settings::values.storm_thermal_governor.GetValue()) {
+                const auto now = std::chrono::steady_clock::now();
+                const auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(now - last_frame_time).count();
+                if (elapsed_us < 8000 && Settings::values.storm_thermal_governor.GetValue()) {
+                    std::this_thread::yield();
+                }
+                last_frame_time = std::chrono::steady_clock::now();
+            }
 
             // By exchanging the lock ownership we take the swapchain lock
             // before the queue lock goes out of scope. This way the swapchain

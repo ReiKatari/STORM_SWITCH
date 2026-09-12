@@ -640,6 +640,27 @@ struct Values {
                                          Specialization::Default,
                                          true,
                                          true};
+    SwitchableSetting<bool> vram_budget_governor{linkage,
+                                                 true,
+                                                 "vram_budget_governor",
+                                                 Category::RendererAdvanced,
+                                                 Specialization::Default,
+                                                 true,
+                                                 true};
+    SwitchableSetting<bool> storm_lowend_turbo{linkage,
+                                               false,
+                                               "storm_lowend_turbo",
+                                               Category::System,
+                                               Specialization::Default,
+                                               true,
+                                               true};
+    SwitchableSetting<bool> storm_thermal_governor{linkage,
+                                                  true,
+                                                  "storm_thermal_governor",
+                                                  Category::System,
+                                                  Specialization::Default,
+                                                  true,
+                                                  true};
 
     // Renderer Hacks //
     SwitchableSetting<GpuClock> gpu_clock{linkage,

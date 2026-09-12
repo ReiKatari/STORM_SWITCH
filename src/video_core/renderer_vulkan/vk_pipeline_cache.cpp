@@ -330,6 +330,9 @@ size_t GetTotalPipelineWorkers() {
     }
     return count;
 #else
+    if (Settings::values.storm_lowend_turbo.GetValue()) {
+        return 1ULL;
+    }
     if (Settings::values.smart_shader_throttle.GetValue() || Settings::values.eco_thermal_mode.GetValue()) {
         // Reserve at least 2 cores for guest CPU and GPU threads to prevent thermal spikes and micro-stutter
         return std::clamp<size_t>(max_core_threads > 2 ? max_core_threads - 2 : 1, 1ULL, 8ULL);

@@ -413,6 +413,46 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     Common::FS::CreateEdenPaths();
     this->config = std::make_unique<QtConfig>();
 
+    // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.2.5";
+    if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
+        LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
+                 UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
+
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Normal);
+        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
+        Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Cpu);
+        Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Gpu);
+        Settings::values.use_asynchronous_shaders.SetValue(true);
+        Settings::values.use_asynchronous_gpu_emulation.SetValue(true);
+        Settings::values.async_presentation.SetValue(true);
+        Settings::values.eco_thermal_mode.SetValue(true);
+        Settings::values.eco_frame_pacing.SetValue(true);
+        Settings::values.smart_shader_throttle.SetValue(true);
+        Settings::values.cpu_affinity_pinning.SetValue(true);
+        Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
+        Settings::values.vram_garbage_collection.SetValue(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.use_reactive_flushing.SetValue(true);
+        Settings::values.sync_memory_operations.SetValue(false);
+        Settings::values.enable_gpu_buffer_readback.SetValue(false);
+        Settings::values.dma_accuracy.SetValue(Settings::DmaAccuracy::Default);
+        Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
+        Settings::values.barrier_feedback_loops.SetValue(true);
+        Settings::values.drs_resolution_lock.SetValue(false);
+        Settings::values.vram_usage_mode.SetValue(Settings::VramUsageMode::Normal);
+        Settings::values.vram_budget_governor.SetValue(true);
+        Settings::values.storm_lowend_turbo.SetValue(false);
+        Settings::values.storm_thermal_governor.SetValue(true);
+        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+        Settings::values.cpuopt_fastmem.SetValue(true);
+        Settings::values.skip_cpu_inner_invalidation.SetValue(false);
+        Settings::values.renderer_force_max_clock.SetValue(false);
+
+        UISettings::values.config_version.SetValue(std::string(CURRENT_BUILD_VERSION));
+        config->SaveAllValues();
+    }
+
     if (user_data_migrator.migrated) {
         // Sort-of hack whereby we only move the old dir if it's a subfolder of the user dir
 
@@ -3332,6 +3372,14 @@ void MainWindow::StormSessionBackup::Capture() {
     aspect_ratio = capture_switchable(Settings::values.aspect_ratio);
     vram_usage_mode = capture_switchable(Settings::values.vram_usage_mode);
     enable_frame_skipping = capture_switchable(Settings::values.enable_frame_skipping);
+    frame_gen = capture_switchable(Settings::values.frame_gen);
+    vram_budget_governor = capture_switchable(Settings::values.vram_budget_governor);
+    storm_lowend_turbo = capture_switchable(Settings::values.storm_lowend_turbo);
+    storm_thermal_governor = capture_switchable(Settings::values.storm_thermal_governor);
+    renderer_force_max_clock = capture_switchable(Settings::values.renderer_force_max_clock);
+    skip_cpu_inner_invalidation = capture_switchable(Settings::values.skip_cpu_inner_invalidation);
+    cpu_clock = capture_switchable(Settings::values.cpu_clock);
+    use_custom_cpu_ticks = capture_switchable(Settings::values.use_custom_cpu_ticks);
     is_active = true;
 }
 
@@ -3375,6 +3423,14 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.aspect_ratio, aspect_ratio);
     restore_switchable(Settings::values.vram_usage_mode, vram_usage_mode);
     restore_switchable(Settings::values.enable_frame_skipping, enable_frame_skipping);
+    restore_switchable(Settings::values.frame_gen, frame_gen);
+    restore_switchable(Settings::values.vram_budget_governor, vram_budget_governor);
+    restore_switchable(Settings::values.storm_lowend_turbo, storm_lowend_turbo);
+    restore_switchable(Settings::values.storm_thermal_governor, storm_thermal_governor);
+    restore_switchable(Settings::values.renderer_force_max_clock, renderer_force_max_clock);
+    restore_switchable(Settings::values.skip_cpu_inner_invalidation, skip_cpu_inner_invalidation);
+    restore_switchable(Settings::values.cpu_clock, cpu_clock);
+    restore_switchable(Settings::values.use_custom_cpu_ticks, use_custom_cpu_ticks);
 
     Settings::UpdateGPUAccuracy();
     Settings::UpdateRescalingInfo();
@@ -4330,7 +4386,9 @@ void MainWindow::OnAutoTuneSettings() {
             Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
         }
 
-        config->SaveAllValues();
+        if (!emulation_running) {
+            config->SaveAllValues();
+        }
         QtCommon::system->ApplySettings();
         UpdateStatusButtons();
         const QString profileName = profileCombo->currentText();

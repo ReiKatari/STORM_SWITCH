@@ -124,10 +124,14 @@ void TextureCache<P>::RunGarbageCollector() {
     size_t num_iterations = 0;
     size_t sync_downloads = 0;
     const auto Configure = [&](bool allow_aggressive) {
-        high_priority_mode = total_used_memory >= expected_memory;
-        aggressive_mode = allow_aggressive && total_used_memory >= critical_memory;
-        ticks_to_destroy = aggressive_mode ? 30ULL : (high_priority_mode ? 90ULL : (vram_gc ? 120ULL : 180ULL));
-        num_iterations = aggressive_mode ? 40 : (high_priority_mode ? 20 : (vram_gc ? 15 : 10));
+        const bool budget_gov = Settings::values.vram_budget_governor.GetValue();
+        const bool lowend_turbo = Settings::values.storm_lowend_turbo.GetValue();
+        const size_t target_expected = budget_gov ? (expected_memory * 85 / 100) : expected_memory;
+        const size_t target_critical = budget_gov ? (critical_memory * 90 / 100) : critical_memory;
+        high_priority_mode = total_used_memory >= target_expected;
+        aggressive_mode = allow_aggressive && (total_used_memory >= target_critical || lowend_turbo);
+        ticks_to_destroy = aggressive_mode ? 30ULL : (high_priority_mode ? 90ULL : ((vram_gc || lowend_turbo) ? 120ULL : 180ULL));
+        num_iterations = aggressive_mode ? 40 : (high_priority_mode ? 20 : ((vram_gc || lowend_turbo) ? 15 : 10));
     };
     const auto Cleanup = [this, &num_iterations, &high_priority_mode, &aggressive_mode, &sync_downloads, vram_gc](ImageId image_id) {
         if (num_iterations == 0) {
@@ -185,7 +189,11 @@ void TextureCache<P>::TickFrame() {
         total_used_memory = runtime.GetDeviceMemoryUsage();
     }
     const bool vram_gc = Settings::values.vram_garbage_collection.GetValue();
-    const u64 gc_threshold = vram_gc ? (minimum_memory * 3 / 4) : critical_memory;
+    const bool budget_gov = Settings::values.vram_budget_governor.GetValue();
+    u64 gc_threshold = vram_gc ? (minimum_memory * 3 / 4) : critical_memory;
+    if (budget_gov) {
+        gc_threshold = std::min<u64>(gc_threshold, static_cast<u64>(critical_memory * 85 / 100));
+    }
     if (total_used_memory > gc_threshold) {
         RunGarbageCollector();
     }
