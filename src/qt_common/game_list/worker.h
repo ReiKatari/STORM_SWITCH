@@ -10,6 +10,8 @@
 #include <deque>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <QList>
 #include <QObject>
@@ -92,6 +94,25 @@ private:
     std::deque<std::function<void(GameListModel*)>> queued_events;
     std::atomic_bool stop_requested = false;
     Common::Event processing_completed;
+
+    struct CachedGameMetadata {
+        u64 file_size = 0;
+        u64 mtime = 0;
+        u64 program_id = 0;
+        std::string name;
+        std::string file_type_string;
+        std::string patch_versions;
+        std::string file_version;
+        std::string addons_text;
+        bool is_bootable = false;
+    };
+
+    void LoadMetadataCache();
+    void SaveMetadataCache();
+
+    std::unordered_map<std::string, CachedGameMetadata> metadata_cache;
+    std::unordered_set<std::string> emitted_entries;
+    bool metadata_cache_dirty = false;
 
     Core::System& system;
 };

@@ -411,7 +411,10 @@ private slots:
     void OnVerifyInstalledContents();
     void OnInstallFirmware();
     void OnInstallFirmwareFromZIP();
+    void OnInstallFirmwareOnline();
     void OnInstallDecryptionKeys();
+    void OnInstallKeysOnline();
+    void ShowFirmwareContextMenu();
     void OnCheckUpdates(bool manual_check = true);
     void OnAbout();
     void OnEdenDependencies();

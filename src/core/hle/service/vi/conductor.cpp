@@ -124,8 +124,13 @@ s64 Conductor::GetNextTicks() const {
         speed_scale = 1.f;
     }
 
-    const f32 effective_fps = 60.f / static_cast<f32>(m_swap_interval);
-    return static_cast<s64>(speed_scale * (1000000000.f / effective_fps));
+    const s32 safe_swap_interval = std::clamp(m_swap_interval, 1, 4);
+    const f32 effective_fps = 60.f / static_cast<f32>(safe_swap_interval);
+    const s64 ticks = static_cast<s64>(speed_scale * (1000000000.f / effective_fps));
+
+    // Hard-clamp tick interval: never allow VSync composition to exceed 33.3ms (minimum 30 FPS compositing)
+    // and lower bound to 1ms (up to 1000 FPS unlocked)
+    return std::clamp<s64>(ticks, 1'000'000, 33'333'333);
 }
 
 s64 Conductor::GetFramePeriodNs() const {
@@ -144,12 +149,13 @@ s64 Conductor::GetFramePeriodNs() const {
         speed_scale /= m_compose_speed_scale;
     }
 
-    const f32 effective_fps = 60.f / static_cast<f32>(m_swap_interval);
+    const s32 safe_swap_interval = std::clamp(m_swap_interval, 1, 4);
+    const f32 effective_fps = 60.f / static_cast<f32>(safe_swap_interval);
     s64 period = static_cast<s64>(speed_scale * (1000000000.f / effective_fps));
     if (unlocked) {
         period /= UNLOCKED_TARGET_DIVISOR;
     }
-    return std::clamp<s64>(period, 1'000'000, 100'000'000);
+    return std::clamp<s64>(period, 1'000'000, 33'333'333);
 }
 
 } // namespace Service::VI

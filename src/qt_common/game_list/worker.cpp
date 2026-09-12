@@ -13,6 +13,10 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 #include <QSettings>
 
 #include "common/cityhash.h"
@@ -259,11 +263,31 @@ QString FormatAddonsColumnText(const QString& patch_versions, const QString& bas
     return result;
 }
 
+QList<QStandardItem*> MakeCachedGameListEntry(
+    const std::string& path, const std::string& name, const std::size_t size,
+    const std::vector<u8>& icon, const QString& file_type_string, u64 program_id,
+    const PlayTime::PlayTimeManager& play_time_manager,
+    const QString& patch_versions, const QString& file_version, const QString& addons_text) {
+    const u64 play_time = play_time_manager.GetPlayTime(program_id);
+    return QList<QStandardItem*>{
+        new GameListItemPath(FormatGameName(path), icon, QString::fromStdString(name),
+                             file_type_string, program_id, play_time, patch_versions, size, file_version),
+        new GameListItemCentered(file_type_string),
+        new GameListItemSize(size),
+        new GameListItemPlayTime(play_time),
+        new GameListItem(addons_text),
+    };
+}
+
 QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::string& name,
                                         const std::size_t size, const std::vector<u8>& icon,
                                         Loader::AppLoader& loader, u64 program_id,
                                         const PlayTime::PlayTimeManager& play_time_manager,
-                                        const FileSys::PatchManager& patch) {
+                                        const FileSys::PatchManager& patch,
+                                        QString* out_file_type = nullptr,
+                                        QString* out_patch_versions = nullptr,
+                                        QString* out_file_version = nullptr,
+                                        QString* out_addons_text = nullptr) {
     auto const file_type = loader.GetFileType();
     QString file_type_string = QString::fromStdString(Loader::GetFileTypeString(file_type));
     const auto ext = Common::ToLower(std::string(Common::FS::GetExtensionFromFilename(path)));
@@ -279,8 +303,6 @@ QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::stri
         cache_key, "pv.txt", [&patch, &loader] {
             return FormatPatchNameVersions(patch, loader, loader.IsRomFSUpdatable());
         });
-
-    u64 play_time = play_time_manager.GetPlayTime(program_id);
 
     // Determine the exact version for this specific file directly from metadata (cached)
     QString file_version = GetGameListCachedObject(
@@ -381,14 +403,21 @@ QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::stri
             return FormatAddonsColumnText(patch_versions, file_version, path);
         });
 
-    return QList<QStandardItem*>{
-        new GameListItemPath(FormatGameName(path), icon, QString::fromStdString(name),
-                             file_type_string, program_id, play_time, patch_versions, size, file_version),
-        new GameListItemCentered(file_type_string),
-        new GameListItemSize(size),
-        new GameListItemPlayTime(play_time),
-        new GameListItem(addons_text),
-    };
+    if (out_file_type) {
+        *out_file_type = file_type_string;
+    }
+    if (out_patch_versions) {
+        *out_patch_versions = patch_versions;
+    }
+    if (out_file_version) {
+        *out_file_version = file_version;
+    }
+    if (out_addons_text) {
+        *out_addons_text = addons_text;
+    }
+
+    return MakeCachedGameListEntry(path, name, size, icon, file_type_string, program_id,
+                                   play_time_manager, patch_versions, file_version, addons_text);
 }
 } // Anonymous namespace
 
@@ -408,6 +437,68 @@ GameListWorker::~GameListWorker() {
     this->disconnect();
     stop_requested.store(true);
     processing_completed.Wait();
+}
+
+void GameListWorker::LoadMetadataCache() {
+    metadata_cache.clear();
+    emitted_entries.clear();
+    metadata_cache_dirty = false;
+    if (!UISettings::values.cache_game_list) {
+        return;
+    }
+    const auto cache_path = Common::FS::PathToUTF8String(
+        Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" / "file_metadata_cache.json");
+    QFile file(QString::fromStdString(cache_path));
+    if (!file.open(QFile::ReadOnly)) {
+        return;
+    }
+    const auto doc = QJsonDocument::fromJson(file.readAll());
+    if (!doc.isObject()) {
+        return;
+    }
+    const auto root = doc.object();
+    for (auto it = root.begin(); it != root.end(); ++it) {
+        const auto obj = it.value().toObject();
+        CachedGameMetadata meta;
+        meta.file_size = static_cast<u64>(obj.value(QStringLiteral("size")).toVariant().toULongLong());
+        meta.mtime = static_cast<u64>(obj.value(QStringLiteral("mtime")).toVariant().toULongLong());
+        meta.program_id = obj.value(QStringLiteral("id")).toString().toULongLong(nullptr, 16);
+        meta.name = obj.value(QStringLiteral("name")).toString().toStdString();
+        meta.file_type_string = obj.value(QStringLiteral("type")).toString().toStdString();
+        meta.patch_versions = obj.value(QStringLiteral("patches")).toString().toStdString();
+        meta.file_version = obj.value(QStringLiteral("version")).toString().toStdString();
+        meta.addons_text = obj.value(QStringLiteral("addons")).toString().toStdString();
+        meta.is_bootable = obj.value(QStringLiteral("bootable")).toBool(true);
+        metadata_cache.emplace(it.key().toStdString(), std::move(meta));
+    }
+}
+
+void GameListWorker::SaveMetadataCache() {
+    if (!UISettings::values.cache_game_list || !metadata_cache_dirty) {
+        return;
+    }
+    const auto cache_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list";
+    void(Common::FS::CreateParentDirs(cache_dir / "file_metadata_cache.json"));
+    const auto cache_path = Common::FS::PathToUTF8String(cache_dir / "file_metadata_cache.json");
+    QJsonObject root;
+    for (const auto& [path, meta] : metadata_cache) {
+        QJsonObject obj;
+        obj.insert(QStringLiteral("size"), static_cast<qint64>(meta.file_size));
+        obj.insert(QStringLiteral("mtime"), static_cast<qint64>(meta.mtime));
+        obj.insert(QStringLiteral("id"), QStringLiteral("%1").arg(meta.program_id, 16, 16, QLatin1Char('0')).toUpper());
+        obj.insert(QStringLiteral("name"), QString::fromStdString(meta.name));
+        obj.insert(QStringLiteral("type"), QString::fromStdString(meta.file_type_string));
+        obj.insert(QStringLiteral("patches"), QString::fromStdString(meta.patch_versions));
+        obj.insert(QStringLiteral("version"), QString::fromStdString(meta.file_version));
+        obj.insert(QStringLiteral("addons"), QString::fromStdString(meta.addons_text));
+        obj.insert(QStringLiteral("bootable"), meta.is_bootable);
+        root.insert(QString::fromStdString(path), obj);
+    }
+    QFile file(QString::fromStdString(cache_path));
+    if (file.open(QFile::WriteOnly)) {
+        file.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
+        metadata_cache_dirty = false;
+    }
 }
 
 void GameListWorker::ProcessEvents(GameListModel* model) {
@@ -520,6 +611,50 @@ void GameListWorker::ScanFileSystem(ScanTarget target, const std::string& dir_pa
                     return true;
                 }
 
+                std::error_code ec;
+                const auto last_write = std::filesystem::last_write_time(path, ec);
+                const u64 mtime_val = ec ? 0 : static_cast<u64>(last_write.time_since_epoch().count());
+                const u64 file_sz = Common::FS::GetSize(path);
+                if (file_sz == 0) {
+                    return true;
+                }
+
+                // Fast path: Persistent metadata index cache
+                const auto cache_it = metadata_cache.find(physical_name);
+                if (cache_it != metadata_cache.end() && cache_it->second.file_size == file_sz &&
+                    cache_it->second.mtime == mtime_val) {
+                    const auto& cached = cache_it->second;
+                    if (!cached.is_bootable) {
+                        return true;
+                    }
+                    if (!emitted_entries.contains(physical_name) && cached.program_id != 0 && (cached.program_id & 0xFFF) == 0) {
+                        std::vector<u8> icon_bytes;
+                        const auto icon_file_path = Common::FS::PathToUTF8String(
+                            Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" /
+                            fmt::format("{:016X}.jpeg", cached.program_id));
+                        QFile ifile(QString::fromStdString(icon_file_path));
+                        if (ifile.open(QFile::ReadOnly)) {
+                            const auto qdata = ifile.readAll();
+                            icon_bytes.assign(qdata.begin(), qdata.end());
+                        }
+
+                        auto entry = MakeCachedGameListEntry(
+                            physical_name, cached.name, cached.file_size, icon_bytes,
+                            QString::fromStdString(cached.file_type_string), cached.program_id,
+                            play_time_manager, QString::fromStdString(cached.patch_versions),
+                            QString::fromStdString(cached.file_version), QString::fromStdString(cached.addons_text));
+
+                        RecordEvent([=](GameListModel* model) { model->AddEntry(entry, parent_dir); });
+                        emitted_entries.insert(physical_name);
+                    }
+                    return true;
+                }
+
+                // If already emitted in Pass 1, skip opening in Pass 2
+                if (emitted_entries.contains(physical_name)) {
+                    return true;
+                }
+
                 const auto file = vfs->OpenFile(physical_name, FileSys::OpenMode::Read);
                 if (!file || file->GetSize() == 0) {
                     return true;
@@ -539,6 +674,12 @@ void GameListWorker::ScanFileSystem(ScanTarget target, const std::string& dir_pa
                     (file_type == Loader::FileType::XCI || file_type == Loader::FileType::XCZ ||
                      file_type == Loader::FileType::NSP || file_type == Loader::FileType::NSZ)) {
                     if (!Loader::IsBootableGameContainer(file, file_type)) {
+                        CachedGameMetadata meta;
+                        meta.file_size = file_sz;
+                        meta.mtime = mtime_val;
+                        meta.is_bootable = false;
+                        metadata_cache[physical_name] = std::move(meta);
+                        metadata_cache_dirty = true;
                         return true;
                     }
                 }
@@ -560,7 +701,7 @@ void GameListWorker::ScanFileSystem(ScanTarget target, const std::string& dir_pa
                     std::vector<u64> program_ids;
                     loader->ReadProgramIds(program_ids);
 
-                    const auto addEntry = [this, physical_name,
+                    const auto addEntry = [this, physical_name, file_sz, mtime_val,
                                            parent_dir](std::unique_ptr<Loader::AppLoader>& app_loader,
                                                        const u64 id) {
                         if (id == 0 || (id & 0xFFF) != 0) {
@@ -591,9 +732,25 @@ void GameListWorker::ScanFileSystem(ScanTarget target, const std::string& dir_pa
                             }
                         }
 
+                        QString file_type_str, pv_str, fv_str, addons_str;
                         auto entry = MakeGameListEntry(
-                            physical_name, name, Common::FS::GetSize(physical_name), icon, *app_loader,
-                            id, play_time_manager, patch);
+                            physical_name, name, file_sz, icon, *app_loader,
+                            id, play_time_manager, patch,
+                            &file_type_str, &pv_str, &fv_str, &addons_str);
+
+                        CachedGameMetadata meta;
+                        meta.file_size = file_sz;
+                        meta.mtime = mtime_val;
+                        meta.program_id = id;
+                        meta.name = name;
+                        meta.file_type_string = file_type_str.toStdString();
+                        meta.patch_versions = pv_str.toStdString();
+                        meta.file_version = fv_str.toStdString();
+                        meta.addons_text = addons_str.toStdString();
+                        meta.is_bootable = true;
+                        metadata_cache[physical_name] = std::move(meta);
+                        metadata_cache_dirty = true;
+                        emitted_entries.insert(physical_name);
 
                         RecordEvent([=](GameListModel* model) { model->AddEntry(entry, parent_dir); });
                     };
@@ -655,6 +812,7 @@ void GameListWorker::ScanFileSystem(ScanTarget target, const std::string& dir_pa
 void GameListWorker::run() {
     watch_list.clear();
     provider->ClearAllEntries();
+    LoadMetadataCache();
 
     const auto DirEntryReady = [&](GameListDir* game_list_dir) {
         RecordEvent([=](GameListModel* model) { model->AddDirEntry(game_list_dir); });
@@ -700,6 +858,7 @@ void GameListWorker::run() {
         }
     }
 
+    SaveMetadataCache();
     RecordEvent([this](GameListModel* model) { model->DonePopulating(watch_list); });
     processing_completed.Set();
 }

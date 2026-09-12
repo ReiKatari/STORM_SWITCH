@@ -704,18 +704,11 @@ bool Event::WaitFor(const std::chrono::nanoseconds time) {
                 return true;
         }
     } else {
-#ifdef _MSC_VER
-        while (!is_set.load() && end > __rdtsc())
-            Common::Windows::SleepForOneTick();
-#else
-        while (!is_set.load() && end > _rdtsc())
-            Common::Windows::SleepForOneTick();
-#endif
-        if (is_set.load()) {
-            Reset();
-            return true;
-        }
-        return false;
+        std::unique_lock lk{mutex};
+        if (!condvar.wait_for(lk, time, [this] { return is_set.load(); }))
+            return false;
+        is_set = false;
+        return true;
     }
 #else
     std::unique_lock lk{mutex};

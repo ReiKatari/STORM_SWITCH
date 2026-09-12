@@ -215,9 +215,11 @@
      <property name="title">
       <string>Install &amp;Firmware</string>
      </property>
-     <addaction name="action_Firmware_From_Folder"/>
+     <addaction name="action_Firmware_Online"/>
      <addaction name="action_Firmware_From_ZIP"/>
+     <addaction name="action_Firmware_From_Folder"/>
     </widget>
+    <addaction name="action_Install_Keys_Online"/>
     <addaction name="action_Install_Keys"/>
     <addaction name="menuInstall_Firmware"/>
     <addaction name="action_Verify_installed_contents"/>
@@ -542,6 +544,11 @@
     <string>Install Decryption &amp;Keys</string>
    </property>
   </action>
+  <action name="action_Install_Keys_Online">
+   <property name="text">
+    <string>Онлайн-установка ключей из сети...</string>
+   </property>
+  </action>
   <action name="action_Launch_QLaunch">
    <property name="text">
     <string>&amp;QLaunch</string>
@@ -590,6 +597,11 @@
   <action name="action_Firmware_From_ZIP">
    <property name="text">
     <string>Из архива (ZIP)</string>
+   </property>
+  </action>
+  <action name="action_Firmware_Online">
+   <property name="text">
+    <string>Онлайн-установка прошивки из сети...</string>
    </property>
   </action>
   <action name="action_Eden_Dependencies">

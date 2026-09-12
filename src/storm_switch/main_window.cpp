@@ -53,6 +53,7 @@
 #include "translator/floating_translate_button.h"
 #include "translator/game_translator.h"
 #include "in_game_notification.h"
+#include "online_tools_dialog.h"
 
 #include "bootmanager.h"
 #include "loading_screen.h"
@@ -1148,6 +1149,23 @@ void MainWindow::InitializeWidgets() {
     firmware_label->setVisible(false);
     firmware_label->setContentsMargins(4, 0, 4, 0);
     firmware_label->setFocusPolicy(Qt::NoFocus);
+    firmware_label->setCursor(Qt::PointingHandCursor);
+
+    class FirmwareLabelClickFilter : public QObject {
+    public:
+        explicit FirmwareLabelClickFilter(MainWindow* mw) : QObject(mw), m_mw(mw) {}
+    protected:
+        bool eventFilter(QObject* obj, QEvent* ev) override {
+            if (ev->type() == QEvent::MouseButtonPress) {
+                m_mw->ShowFirmwareContextMenu();
+                return true;
+            }
+            return QObject::eventFilter(obj, ev);
+        }
+    private:
+        MainWindow* m_mw;
+    };
+    firmware_label->installEventFilter(new FirmwareLabelClickFilter(this));
     statusBar()->addPermanentWidget(firmware_label);
 
     statusBar()->addPermanentWidget(multiplayer_state->GetStatusText(), 0);
@@ -2518,8 +2536,10 @@ void MainWindow::SetupMenuIcons() {
     apply_action(ui->action_Show_Performance_Overlay, QStringLiteral("chart"), col_amber);
 
     // Tools Menu
+    apply_action(ui->action_Install_Keys_Online, QStringLiteral("key"), col_cyan);
     apply_action(ui->action_Install_Keys, QStringLiteral("key"), col_amber);
     apply_menu(ui->menuInstall_Firmware, QStringLiteral("nand"), col_purple);
+    apply_action(ui->action_Firmware_Online, QStringLiteral("network"), col_cyan);
     apply_action(ui->action_Firmware_From_Folder, QStringLiteral("folder"), col_yellow);
     apply_action(ui->action_Firmware_From_ZIP, QStringLiteral("save"), col_blue);
     apply_action(ui->action_Verify_installed_contents, QStringLiteral("verify"), col_green);
@@ -2983,8 +3003,10 @@ void MainWindow::ConnectMenuEvents() {
     connect_menu(ui->action_Log_Folder, &MainWindow::OnOpenLogFolder);
 
     connect_menu(ui->action_Verify_installed_contents, &MainWindow::OnVerifyInstalledContents);
+    connect_menu(ui->action_Firmware_Online, &MainWindow::OnInstallFirmwareOnline);
     connect_menu(ui->action_Firmware_From_Folder, &MainWindow::OnInstallFirmware);
     connect_menu(ui->action_Firmware_From_ZIP, &MainWindow::OnInstallFirmwareFromZIP);
+    connect_menu(ui->action_Install_Keys_Online, &MainWindow::OnInstallKeysOnline);
     connect_menu(ui->action_Install_Keys, &MainWindow::OnInstallDecryptionKeys);
     connect_menu(ui->action_Check_Updates, [this] { OnCheckUpdates(true); });
     connect_menu(ui->action_About, &MainWindow::OnAbout);
@@ -3029,8 +3051,10 @@ void MainWindow::UpdateMenuState() {
         action->setEnabled(emulation_running);
     }
 
+    ui->action_Firmware_Online->setEnabled(!emulation_running);
     ui->action_Firmware_From_Folder->setEnabled(!emulation_running);
     ui->action_Firmware_From_ZIP->setEnabled(!emulation_running);
+    ui->action_Install_Keys_Online->setEnabled(!emulation_running);
     ui->action_Install_Keys->setEnabled(!emulation_running);
 
     for (QAction* action : applet_actions) {
@@ -3587,7 +3611,7 @@ void MainWindow::OnApplyAutoCorrection() {
     Settings::values.sync_memory_operations.SetValue(false);
     Settings::values.enable_gpu_buffer_readback.SetValue(false);
     Settings::values.dma_accuracy.SetValue(Settings::DmaAccuracy::Default);
-    Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Accurate);
+    Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
     Settings::values.optimize_spirv_output.SetValue(1);
     Settings::values.enable_frame_skipping.SetValue(true);
     Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Fsr);
@@ -6698,6 +6722,17 @@ void MainWindow::OnInstallFirmwareFromZIP() {
     OnCheckFirmwareDecryption();
 }
 
+void MainWindow::OnInstallFirmwareOnline() {
+    if (QtCommon::emu_thread != nullptr && QtCommon::emu_thread->IsRunning())
+        return;
+
+    OnlineToolsDialog dialog(this, *QtCommon::system, OnlineToolType::Firmware);
+    if (dialog.exec() == QDialog::Accepted) {
+        OnCheckFirmwareDecryption();
+        game_list->PopulateAsync(UISettings::values.game_dirs);
+    }
+}
+
 // TODO(crueter): QtCommon this: game list populate can be a signal?
 void MainWindow::OnInstallDecryptionKeys() {
     // Don't do this while emulation is running.
@@ -6708,6 +6743,17 @@ void MainWindow::OnInstallDecryptionKeys() {
 
     game_list->PopulateAsync(UISettings::values.game_dirs);
     OnCheckFirmwareDecryption();
+}
+
+void MainWindow::OnInstallKeysOnline() {
+    if (QtCommon::emu_thread != nullptr && QtCommon::emu_thread->IsRunning())
+        return;
+
+    OnlineToolsDialog dialog(this, *QtCommon::system, OnlineToolType::Keys);
+    if (dialog.exec() == QDialog::Accepted) {
+        OnCheckFirmwareDecryption();
+        game_list->PopulateAsync(UISettings::values.game_dirs);
+    }
 }
 
 void MainWindow::OnCheckUpdates(bool manual_check) {
@@ -8311,9 +8357,13 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         auto* header_act = context_menu.addAction(tr("🛠️ Системные компоненты"));
         header_act->setEnabled(false);
         context_menu.addSeparator();
-        context_menu.addAction(tr("📦 Установить прошивку из папки..."), this, &MainWindow::OnInstallFirmware);
+        context_menu.addAction(tr("🌐 Онлайн-установка прошивки из сети..."), this, &MainWindow::OnInstallFirmwareOnline);
         context_menu.addAction(tr("📦 Установить прошивку из ZIP..."), this, &MainWindow::OnInstallFirmwareFromZIP);
-        context_menu.addAction(tr("🔑 Установить ключи (prod.keys)..."), this, &MainWindow::OnInstallDecryptionKeys);
+        context_menu.addAction(tr("📁 Установить прошивку из папки..."), this, &MainWindow::OnInstallFirmware);
+        context_menu.addSeparator();
+        context_menu.addAction(tr("🔑 Онлайн-установка ключей из сети..."), this, &MainWindow::OnInstallKeysOnline);
+        context_menu.addAction(tr("🔑 Установить ключи из файла (prod.keys)..."), this, &MainWindow::OnInstallDecryptionKeys);
+        context_menu.addSeparator();
         context_menu.addAction(tr("📁 Открыть папку NAND..."), this, &MainWindow::OnOpenNANDFolder);
     } else if (title == tr("СЕТЬ")) {
         auto* header_act = context_menu.addAction(tr("🌐 Сетевые функции"));
@@ -8407,17 +8457,41 @@ void MainWindow::OnMouseActivity() {
 
 void MainWindow::OnCheckFirmwareDecryption() {
     if (!ContentManager::AreKeysPresent()) {
-        const auto res = QtCommon::Frontend::Warning(
-            tr("Derivation Components Missing"),
-            tr("Decryption keys are missing. Install them now?"),
-            QtCommon::Frontend::StandardButton::Yes | QtCommon::Frontend::StandardButton::No);
+        QMessageBox msg(this);
+        msg.setWindowTitle(tr("Отсутствуют ключи дешифрования"));
+        msg.setText(tr("Ключи шифрования (prod.keys) не найдены.\nЖелаете загрузить и установить актуальные ключи онлайн?"));
+        msg.setIcon(QMessageBox::Question);
+        auto* online_btn = msg.addButton(tr("🌐 Установить онлайн"), QMessageBox::ActionRole);
+        auto* file_btn = msg.addButton(tr("📁 Выбрать файл"), QMessageBox::ActionRole);
+        msg.addButton(tr("Позже"), QMessageBox::RejectRole);
+        msg.exec();
 
-        if (res == QtCommon::Frontend::StandardButton::Yes)
+        if (msg.clickedButton() == online_btn) {
+            OnInstallKeysOnline();
+        } else if (msg.clickedButton() == file_btn) {
             OnInstallDecryptionKeys();
+        }
     }
 
     SetFirmwareVersion();
     UpdateMenuState();
+}
+
+void MainWindow::ShowFirmwareContextMenu() {
+    QMenu context_menu(this);
+    auto* header = context_menu.addAction(tr("🛠️ Прошивка и ключи Nintendo Switch"));
+    header->setEnabled(false);
+    context_menu.addSeparator();
+    context_menu.addAction(tr("🌐 Онлайн-установка прошивки из сети..."), this, &MainWindow::OnInstallFirmwareOnline);
+    context_menu.addAction(tr("📦 Установить прошивку из ZIP..."), this, &MainWindow::OnInstallFirmwareFromZIP);
+    context_menu.addAction(tr("📁 Установить прошивку из папки..."), this, &MainWindow::OnInstallFirmware);
+    context_menu.addSeparator();
+    context_menu.addAction(tr("🔑 Онлайн-установка ключей из сети..."), this, &MainWindow::OnInstallKeysOnline);
+    context_menu.addAction(tr("🔑 Установить ключи из файла (prod.keys)..."), this, &MainWindow::OnInstallDecryptionKeys);
+    context_menu.addSeparator();
+    context_menu.addAction(tr("📁 Открыть папку NAND..."), this, &MainWindow::OnOpenNANDFolder);
+
+    context_menu.exec(QCursor::pos());
 }
 
 #ifdef __unix__

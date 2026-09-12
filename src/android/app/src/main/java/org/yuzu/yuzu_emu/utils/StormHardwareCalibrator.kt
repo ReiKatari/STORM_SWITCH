@@ -200,7 +200,6 @@ object StormHardwareCalibrator {
 
         // VSync: Mailbox (2) for Adreno 830/750 (silky smooth, lowest input latency), FIFO (0) for others
         IntSetting.RENDERER_VSYNC.setInt(if (profile.isAdreno830 || (profile.isAdreno && profile.tier == HardwareTier.FLAGSHIP_ELITE)) 2 else 0)
-        IntSetting.RENDERER_ASPECT_RATIO.setInt(0) // 16:9
         IntSetting.RENDERER_ANTI_ALIASING.setInt(0) // None
 
         // Scaling filter: FSR (6) on Dimensity 9400 / Mali, Bilinear (0) on Adreno

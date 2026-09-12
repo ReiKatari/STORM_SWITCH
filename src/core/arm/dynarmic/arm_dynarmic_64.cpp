@@ -111,9 +111,9 @@ void DynarmicCallbacks64::InstructionCacheOperationRaised(Dynarmic::A64::Instruc
         break;
     }
     case Dynarmic::A64::InstructionCacheOperation::InvalidateAllToPoU:
+    case Dynarmic::A64::InstructionCacheOperation::InvalidateAllToPoUInnerSharable:
         m_parent.ClearInstructionCache();
         break;
-    case Dynarmic::A64::InstructionCacheOperation::InvalidateAllToPoUInnerSharable:
     default:
         LOG_DEBUG(Core_ARM, "Unprocesseed instruction cache operation: {}", op);
         break;
@@ -460,10 +460,12 @@ void ArmDynarmic64::SignalInterrupt(Kernel::KThread* thread) {
 }
 
 void ArmDynarmic64::ClearInstructionCache() {
+    m_cb->last_code_addr = u64(-1);
     m_jit->ClearCache();
 }
 
 void ArmDynarmic64::InvalidateCacheRange(u64 addr, std::size_t size) {
+    m_cb->last_code_addr = u64(-1);
     m_jit->InvalidateCacheRange(addr, size);
 }
 

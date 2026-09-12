@@ -374,6 +374,11 @@ void PresentManager::SetImageCount() {
         const size_t min_count = use_present_thread ? 4ULL : swapchain.GetImageCount();
         const size_t target_count = use_present_thread ? (swapchain.GetImageCount() + 1) : swapchain.GetImageCount();
         image_count = std::clamp<size_t>((std::max)(target_count, min_count), swapchain.GetImageCount(), MAX_FRAMES_IN_FLIGHT);
+#ifdef __ANDROID__
+        if (use_present_thread && Settings::values.vsync_mode.GetValue() == Settings::VSyncMode::Mailbox) {
+            image_count = (std::min)<size_t>(image_count, 2);
+        }
+#endif
     }
 }
 

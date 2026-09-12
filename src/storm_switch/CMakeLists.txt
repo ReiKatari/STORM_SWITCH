@@ -257,6 +257,7 @@ add_executable(yuzu
     game/carousel.h game/carousel.cpp
     translator/game_translator.h translator/game_translator.cpp
     translator/floating_translate_button.h translator/floating_translate_button.cpp
+    online_tools_dialog.h online_tools_dialog.cpp
 )
 
 set_target_properties(yuzu PROPERTIES OUTPUT_NAME "STORM_SWITCH")

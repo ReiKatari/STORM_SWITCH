@@ -6,6 +6,8 @@
 #include "qt_common/util/game.h"
 
 #include "common/fs/fs.h"
+#include "common/fs/path_util.h"
+#include "core/crypto/key_manager.h"
 #include "core/hle/service/acc/profile_manager.h"
 #include "frontend_common/content_manager.h"
 #include "frontend_common/data_manager.h"
@@ -257,6 +259,57 @@ void InstallKeys() {
         QtCommon::Frontend::Critical(tr("Decryption Keys install failed"), resMsg);
         break;
     }
+}
+
+bool InstallKeysFromZip(const QString& zip_location) {
+    namespace fs = std::filesystem;
+    fs::path tmp{fs::temp_directory_path() / "storm_eden" / "keys_extracted"};
+    std::error_code ec;
+    fs::remove_all(tmp, ec);
+    if (!fs::create_directories(tmp, ec)) {
+        return false;
+    }
+
+    QString qCacheDir = QString::fromStdString(tmp.string());
+    QFile zip(zip_location);
+    QStringList result = JlCompress::extractDir(&zip, qCacheDir);
+    if (result.isEmpty()) {
+        fs::remove_all(tmp, ec);
+        return false;
+    }
+
+    const auto keys_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::KeysDir);
+    if (!fs::exists(keys_dir)) {
+        fs::create_directories(keys_dir, ec);
+    }
+
+    bool prod_found = false;
+    for (const auto& entry : fs::recursive_directory_iterator(tmp, ec)) {
+        if (entry.is_regular_file()) {
+            const auto filename = entry.path().filename().string();
+            if (filename == "prod.keys") {
+                fs::copy_file(entry.path(), keys_dir / "prod.keys", fs::copy_options::overwrite_existing, ec);
+                prod_found = true;
+            } else if (filename == "title.keys") {
+                fs::copy_file(entry.path(), keys_dir / "title.keys", fs::copy_options::overwrite_existing, ec);
+            } else if (filename == "key_retail.bin") {
+                fs::copy_file(entry.path(), keys_dir / "key_retail.bin", fs::copy_options::overwrite_existing, ec);
+            }
+        }
+    }
+
+    fs::remove_all(tmp, ec);
+
+    if (!prod_found) {
+        return false;
+    }
+
+    Core::Crypto::KeyManager::Instance().ReloadKeys();
+    if (system) {
+        system->GetFileSystemController().CreateFactories(*QtCommon::vfs);
+    }
+
+    return ContentManager::AreKeysPresent();
 }
 
 void VerifyInstalledContents() {

@@ -83,14 +83,7 @@ void ThreadManager::InvalidateRegion(DAddr addr, u64 size) {
 
 void ThreadManager::FlushAndInvalidateRegion(DAddr addr, u64 size, bool is_async) {
     if (Settings::IsGPULevelHigh()) {
-        if (!is_async) {
-            PushCommand(FlushRegionCommand(addr, size), false, is_async);
-        } else {
-            auto& gpu = system.GPU();
-            const u64 fence = gpu.RequestFlush(addr, size);
-            TickGPU(is_async);
-            gpu.WaitForSyncOperation(fence);
-        }
+        PushCommand(FlushRegionCommand(addr, size), false, is_async);
     }
     rasterizer->OnCacheInvalidation(addr, size);
 }
