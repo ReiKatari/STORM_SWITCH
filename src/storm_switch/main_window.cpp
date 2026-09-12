@@ -419,7 +419,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
 
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Normal);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
         Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
         Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Cpu);
         Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Gpu);
