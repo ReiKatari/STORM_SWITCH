@@ -245,12 +245,12 @@ const CPUCaps g_cpu_caps = [] {
 #if defined(ARCHITECTURE_x86_64)
 WallClock::WallClock(bool invariant_, u64 rdtsc_frequency_) noexcept
     : rdtsc_frequency{rdtsc_frequency_}
-    , ns_rdtsc_factor{invariant_ ? GetFixedPoint64Factor(NsRatio::den, rdtsc_frequency_) : 0}
-    , us_rdtsc_factor{invariant_ ? GetFixedPoint64Factor(UsRatio::den, rdtsc_frequency_) : 0}
-    , ms_rdtsc_factor{invariant_ ? GetFixedPoint64Factor(MsRatio::den, rdtsc_frequency_) : 0}
-    , rdtsc_ns_factor{invariant_ ? GetFixedPoint64Factor(rdtsc_frequency_, NsRatio::den) : 1}
-    , cntpct_rdtsc_factor{invariant_ ? GetFixedPoint64Factor(CNTFRQ, rdtsc_frequency_) : 0}
-    , gputick_rdtsc_factor{invariant_ ? GetFixedPoint64Factor(GPUTickFreq, rdtsc_frequency_) : 0}
+    , ns_rdtsc_factor{invariant_ && rdtsc_frequency_ ? GetFixedPoint64Factor(NsRatio::den, rdtsc_frequency_) : 0}
+    , us_rdtsc_factor{invariant_ && rdtsc_frequency_ ? GetFixedPoint64Factor(UsRatio::den, rdtsc_frequency_) : 0}
+    , ms_rdtsc_factor{invariant_ && rdtsc_frequency_ ? GetFixedPoint64Factor(MsRatio::den, rdtsc_frequency_) : 0}
+    , rdtsc_ns_factor{0}
+    , cntpct_rdtsc_factor{invariant_ && rdtsc_frequency_ ? GetFixedPoint64Factor(CNTFRQ, rdtsc_frequency_) : 0}
+    , gputick_rdtsc_factor{invariant_ && rdtsc_frequency_ ? GetFixedPoint64Factor(GPUTickFreq, rdtsc_frequency_) : 0}
     , invariant{invariant_}
 {}
 
@@ -295,7 +295,10 @@ bool WallClock::IsNative() const {
 }
 
 u64 WallClock::NsToTicks(std::chrono::nanoseconds ns) const {
-    return invariant ? MultiplyHigh(ns.count(), rdtsc_ns_factor) : ns.count();
+    if (!invariant || rdtsc_frequency == 0) {
+        return ns.count();
+    }
+    return MultiplyAndDivide64(ns.count(), rdtsc_frequency, NsRatio::den);
 }
 #elif defined(HAS_NCE)
 namespace {

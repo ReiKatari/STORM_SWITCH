@@ -55,6 +55,12 @@ namespace Common {
 }
 
 [[nodiscard]] static inline u64 GetFixedPoint64Factor(u64 numerator, u64 divisor) {
+    if (divisor == 0) {
+        return 0;
+    }
+    if (numerator >= divisor) {
+        return (std::numeric_limits<u64>::max)();
+    }
 #ifdef __SIZEOF_INT128__
     const auto base = static_cast<unsigned __int128>(numerator) << 64ULL;
     return static_cast<u64>(base / divisor);
