@@ -7277,7 +7277,7 @@ void MainWindow::ApplyDynamicSettingChange() {
             const auto custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
             const auto specific_config = fmt::format("{:016X}", title_id);
             if (std::filesystem::exists(custom_path / (specific_config + ".ini"))) {
-                QtConfig per_game_config(specific_config, Config::ConfigType::PerGameConfig);
+                QtConfig per_game_config(specific_config, Config::ConfigType::PerGameConfig, false);
                 per_game_config.SaveAllValues();
             }
         }
@@ -8212,6 +8212,25 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_res);
+        }
+
+        auto* aspect_menu = context_menu.addMenu(tr("📐 Соотношение сторон"));
+        const auto cur_aspect = Settings::values.aspect_ratio.GetValue();
+        const std::vector<std::pair<Settings::AspectRatio, QString>> aspect_options = {
+            {Settings::AspectRatio::R16_9, QStringLiteral("16:9")},
+            {Settings::AspectRatio::R4_3, QStringLiteral("4:3")},
+            {Settings::AspectRatio::R21_9, QStringLiteral("21:9")},
+            {Settings::AspectRatio::R16_10, QStringLiteral("16:10")},
+            {Settings::AspectRatio::Stretch, tr("Растянуть на весь экран")},
+        };
+        for (const auto& opt : aspect_options) {
+            auto* act = aspect_menu->addAction(opt.second, [this, opt] {
+                Settings::values.aspect_ratio.SetValue(opt.first);
+                UpdateAspectText();
+                ApplyDynamicSettingChange();
+            });
+            act->setCheckable(true);
+            act->setChecked(opt.first == cur_aspect);
         }
 
         auto* vram_menu = context_menu.addMenu(tr("💾 Видеопамять"));

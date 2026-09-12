@@ -24,12 +24,12 @@ namespace {
 
 using namespace Service::AM::Frontend;
 
-constexpr float BASE_HEADER_FONT_SIZE = 26.0f;
-constexpr float BASE_SUB_FONT_SIZE = 18.0f;
-constexpr float BASE_EDITOR_FONT_SIZE = 30.0f;
-constexpr float BASE_CHAR_BUTTON_FONT_SIZE = 26.0f;
-constexpr float BASE_LABEL_BUTTON_FONT_SIZE = 18.0f;
-constexpr float BASE_ICON_BUTTON_SIZE = 38.0f;
+constexpr float BASE_HEADER_FONT_SIZE = 34.0f;
+constexpr float BASE_SUB_FONT_SIZE = 22.0f;
+constexpr float BASE_EDITOR_FONT_SIZE = 44.0f;
+constexpr float BASE_CHAR_BUTTON_FONT_SIZE = 38.0f;
+constexpr float BASE_LABEL_BUTTON_FONT_SIZE = 24.0f;
+constexpr float BASE_ICON_BUTTON_SIZE = 48.0f;
 [[maybe_unused]] constexpr float BASE_WIDTH = 1280.0f;
 constexpr float BASE_HEIGHT = 720.0f;
 
@@ -651,10 +651,10 @@ void QtSoftwareKeyboardDialog::RescaleKeyboardElements(float width, float height
     QFont sub_font(QStringLiteral("Segoe UI"), sub_font_size, QFont::Normal);
     QFont editor_font(QStringLiteral("Segoe UI"), editor_font_size, QFont::Bold);
     QFont char_button_font(QStringLiteral("Segoe UI"), char_button_font_size, QFont::Bold);
-    QFont label_button_font(QStringLiteral("Segoe UI"), label_button_font_size, QFont::DemiBold);
+    QFont label_button_font(QStringLiteral("Segoe UI"), label_button_font_size, QFont::Bold);
 
-    ui->line_edit_osk->setMinimumHeight(static_cast<int>(52 * scale_factor));
-    ui->text_edit_osk->setMinimumHeight(static_cast<int>(80 * scale_factor));
+    ui->line_edit_osk->setMinimumHeight(static_cast<int>(60 * scale_factor));
+    ui->text_edit_osk->setMinimumHeight(static_cast<int>(90 * scale_factor));
 
     ui->label_header->setFont(header_font);
     ui->label_sub->setFont(sub_font);

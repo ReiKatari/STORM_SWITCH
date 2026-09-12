@@ -51,7 +51,9 @@ protected:
     explicit Config(ConfigType config_type = ConfigType::GlobalConfig);
 
     void Initialize(const std::string& config_name = "config");
+    void Initialize(const std::string& config_name, bool reload);
     void Initialize(std::optional<std::string> config_path);
+    void Initialize(std::optional<std::string> config_path, bool reload);
 
     void WriteToIni() const;
 

@@ -844,7 +844,7 @@ void IGeneralService::GetScanDataV3(HLERequestContext& ctx) {
 }
 
 void IGeneralService::GetCurrentIpAddress(HLERequestContext& ctx) {
-    LOG_WARNING(Service_NIFM, "(STUBBED) called");
+    LOG_DEBUG(Service_NIFM, "(STUBBED) called");
 
     auto ipv4 = Network::GetHostIPv4Address();
     if (!ipv4) {

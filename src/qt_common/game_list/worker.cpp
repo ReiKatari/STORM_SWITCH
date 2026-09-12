@@ -673,6 +673,34 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                     const auto qdata = ifile.readAll();
                     icon_bytes.assign(qdata.begin(), qdata.end());
                 }
+                if (icon_bytes.empty()) {
+                    try {
+                        const auto fallback_file = vfs->OpenFile(file_info.physical_name, FileSys::OpenMode::Read);
+                        if (fallback_file) {
+                            auto fallback_loader = Loader::GetLoader(system, fallback_file, cached.program_id);
+                            if (!fallback_loader) {
+                                fallback_loader = Loader::GetLoader(system, fallback_file);
+                            }
+                            if (fallback_loader) {
+                                fallback_loader->ReadIcon(icon_bytes);
+                                if (icon_bytes.empty()) {
+                                    const FileSys::PatchManager p{cached.program_id, system.GetFileSystemController(), system.GetContentProvider()};
+                                    const auto ctrl = p.GetControlMetadata();
+                                    if (ctrl.second != nullptr) {
+                                        icon_bytes = ctrl.second->ReadAllBytes();
+                                    }
+                                }
+                                if (!icon_bytes.empty()) {
+                                    void(Common::FS::CreateParentDirs(icon_file_path));
+                                    QFile out_icon(QString::fromStdString(icon_file_path));
+                                    if (out_icon.open(QFile::WriteOnly)) {
+                                        out_icon.write(reinterpret_cast<const char*>(icon_bytes.data()), icon_bytes.size());
+                                    }
+                                }
+                            }
+                        }
+                    } catch (...) {}
+                }
 
                 auto entry = MakeCachedGameListEntry(
                     file_info.physical_name, cached.name, cached.file_size, icon_bytes,
@@ -788,6 +816,17 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                         std::filesystem::path(file_info.physical_name).stem().string();
                     if (!filename_str.empty()) {
                         name = filename_str;
+                    }
+                }
+
+                if (!icon.empty()) {
+                    const auto icon_file_path = Common::FS::PathToUTF8String(
+                        Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" /
+                        fmt::format("{:016X}.jpeg", id));
+                    void(Common::FS::CreateParentDirs(icon_file_path));
+                    QFile ifile(QString::fromStdString(icon_file_path));
+                    if (ifile.open(QFile::WriteOnly)) {
+                        ifile.write(reinterpret_cast<const char*>(icon.data()), icon.size());
                     }
                 }
 

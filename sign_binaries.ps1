@@ -4,7 +4,7 @@ Start-Sleep -Milliseconds 500
 $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe'
 $sha1 = '10C44A100C93E316872A1BEF4D46269EA9C52269'
 
-Write-Host "Copying freshly compiled 8.2.0 binaries from build_ninja\bin to Assembling..."
+Write-Host "Copying freshly compiled 8.2.1 binaries from build_ninja\bin to Assembling..."
 Copy-Item 'E:\STORM SWITCH 4\Build\build_ninja\bin\STORM_SWITCH*.exe' 'E:\STORM SWITCH 4\Assembling\' -Force
 
 Write-Host "Signing Assembling executables..."
@@ -26,7 +26,7 @@ Copy-Item "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Redist\MSVC\1
 
 Get-ChildItem -Path 'E:\STORM SWITCH 4\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 
-Write-Host "Creating Windows 8.2.0 release zip..."
+Write-Host "Creating Windows 8.2.1 release zip..."
 $stageDir = 'E:\STORM SWITCH 4\Build\build_ninja\stage_zip'
 if (Test-Path $stageDir) { Remove-Item $stageDir -Recurse -Force }
 New-Item -ItemType Directory -Path "$stageDir\user" -Force | Out-Null
@@ -36,8 +36,8 @@ Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.exe' $stageDir\ -Force -ErrorAction S
 Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.dll' $stageDir\ -Force -ErrorAction SilentlyContinue
 Copy-Item 'E:\STORM SWITCH 4\Assembling\*.dll' $stageDir\ -Force -ErrorAction SilentlyContinue
 
-$zipPathPrimary = 'E:\STORM SWITCH 4\Files\STORM SWITCH 8.2.0.zip'
-$zipPathWin = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.0_Windows.zip'
+$zipPathPrimary = 'E:\STORM SWITCH 4\Files\STORM SWITCH 8.2.1.zip'
+$zipPathWin = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.1_Windows.zip'
 if (Test-Path $zipPathPrimary) { Remove-Item $zipPathPrimary -Force }
 if (Test-Path $zipPathWin) { Remove-Item $zipPathWin -Force }
 
@@ -48,4 +48,4 @@ Unblock-File $zipPathPrimary
 Unblock-File $zipPathWin
 Remove-Item $stageDir -Recurse -Force
 
-Write-Host "All executables signed, packaged to 8.2.0 Windows zip in E:\STORM SWITCH 4\Files!"
+Write-Host "All executables signed, packaged to 8.2.1 Windows zip in E:\STORM SWITCH 4\Files!"

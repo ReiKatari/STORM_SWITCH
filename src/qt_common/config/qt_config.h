@@ -14,6 +14,9 @@ class QtConfig final : public Config {
 public:
     explicit QtConfig(const std::string& config_name = "qt-config",
                       ConfigType config_type = ConfigType::GlobalConfig);
+    explicit QtConfig(const std::string& config_name,
+                      ConfigType config_type,
+                      bool reload);
     ~QtConfig() override;
 
     void ReloadAllValues() override;
