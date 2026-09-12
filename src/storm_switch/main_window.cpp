@@ -3322,6 +3322,16 @@ void MainWindow::StormSessionBackup::Capture() {
     airplane_mode = capture_switchable(Settings::values.airplane_mode);
     memory_layout_mode = capture_switchable(Settings::values.memory_layout_mode);
     use_docked_mode = capture_switchable(Settings::values.use_docked_mode);
+    enable_gpu_buffer_readback = capture_switchable(Settings::values.enable_gpu_buffer_readback);
+    early_release_fences = capture_switchable(Settings::values.early_release_fences);
+    gpu_fence_behavior = capture_switchable(Settings::values.gpu_fence_behavior);
+    barrier_feedback_loops = capture_switchable(Settings::values.barrier_feedback_loops);
+    smart_shader_throttle = capture_switchable(Settings::values.smart_shader_throttle);
+    vram_garbage_collection = capture_switchable(Settings::values.vram_garbage_collection);
+    drs_resolution_lock = capture_switchable(Settings::values.drs_resolution_lock);
+    aspect_ratio = capture_switchable(Settings::values.aspect_ratio);
+    vram_usage_mode = capture_switchable(Settings::values.vram_usage_mode);
+    enable_frame_skipping = capture_switchable(Settings::values.enable_frame_skipping);
     is_active = true;
 }
 
@@ -3355,6 +3365,16 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.airplane_mode, airplane_mode);
     restore_switchable(Settings::values.memory_layout_mode, memory_layout_mode);
     restore_switchable(Settings::values.use_docked_mode, use_docked_mode);
+    restore_switchable(Settings::values.enable_gpu_buffer_readback, enable_gpu_buffer_readback);
+    restore_switchable(Settings::values.early_release_fences, early_release_fences);
+    restore_switchable(Settings::values.gpu_fence_behavior, gpu_fence_behavior);
+    restore_switchable(Settings::values.barrier_feedback_loops, barrier_feedback_loops);
+    restore_switchable(Settings::values.smart_shader_throttle, smart_shader_throttle);
+    restore_switchable(Settings::values.vram_garbage_collection, vram_garbage_collection);
+    restore_switchable(Settings::values.drs_resolution_lock, drs_resolution_lock);
+    restore_switchable(Settings::values.aspect_ratio, aspect_ratio);
+    restore_switchable(Settings::values.vram_usage_mode, vram_usage_mode);
+    restore_switchable(Settings::values.enable_frame_skipping, enable_frame_skipping);
 
     Settings::UpdateGPUAccuracy();
     Settings::UpdateRescalingInfo();

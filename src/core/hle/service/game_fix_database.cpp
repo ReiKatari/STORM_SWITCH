@@ -4500,7 +4500,12 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
         if (slash != std::string::npos) {
             auto sec = full_key.substr(0, slash);
             auto key = full_key.substr(slash + 1);
-            sections[sec][key] = val;
+            std::string sanitized_val = val;
+            if (sec == "Renderer" && key == "enable_gpu_buffer_readback" && (val == "true" || val == "1")) {
+                LOG_WARNING(Frontend, "GameFixDatabase: Sanitized enable_gpu_buffer_readback to false for {:#016x}", title_id);
+                sanitized_val = "false";
+            }
+            sections[sec][key] = sanitized_val;
             sections[sec][key + "\\use_global"] = "false";
             sections[sec][key + "\\default"] = "false";
             if (key == "memory_layout_mode") {
@@ -4703,7 +4708,14 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\anti_aliasing") {
                 apply_setting(Settings::values.anti_aliasing, static_cast<Settings::AntiAliasing>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\enable_gpu_buffer_readback") {
-                apply_setting(Settings::values.enable_gpu_buffer_readback, val == "true" || val == "1");
+                if (val == "true" || val == "1") {
+                    LOG_WARNING(Frontend, "GameFixDatabase: Sanitized enable_gpu_buffer_readback to false for {:#016x} to protect 60 FPS", title_id);
+                }
+                apply_setting(Settings::values.enable_gpu_buffer_readback, false);
+            } else if (full_key == "Renderer\\early_release_fences") {
+                apply_setting(Settings::values.early_release_fences, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\sync_memory_operations") {
+                apply_setting(Settings::values.sync_memory_operations, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_fast_gpu_time" || full_key == "Renderer\\gpu_clock") {
                 if (val == "true" || val == "1") {
                     apply_setting(Settings::values.gpu_clock, Settings::GpuClock::Boost);
@@ -4723,7 +4735,12 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\accelerate_astc") {
                 apply_setting(Settings::values.accelerate_astc, static_cast<Settings::AstcDecodeMode>(safe_stoi(val, 1)));
             } else if (full_key == "Renderer\\gpu_fence_behavior") {
-                apply_setting(Settings::values.gpu_fence_behavior, static_cast<Settings::GpuFenceBehavior>(safe_stoi(val, 0)));
+                auto fence_val = static_cast<Settings::GpuFenceBehavior>(safe_stoi(val, 0));
+                if (fence_val >= Settings::GpuFenceBehavior::Accurate && Settings::values.sync_memory_operations.GetValue()) {
+                    LOG_WARNING(Frontend, "GameFixDatabase: Clamped gpu_fence_behavior to Default (0) on {:#016x} to prevent deadlock", title_id);
+                    fence_val = Settings::GpuFenceBehavior::Default;
+                }
+                apply_setting(Settings::values.gpu_fence_behavior, fence_val);
             } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {
                 apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {

@@ -580,6 +580,16 @@ private:
         std::pair<bool, bool> airplane_mode;
         std::pair<Settings::MemoryLayout, bool> memory_layout_mode;
         std::pair<Settings::ConsoleMode, bool> use_docked_mode;
+        std::pair<bool, bool> enable_gpu_buffer_readback;
+        std::pair<bool, bool> early_release_fences;
+        std::pair<Settings::GpuFenceBehavior, bool> gpu_fence_behavior;
+        std::pair<bool, bool> barrier_feedback_loops;
+        std::pair<bool, bool> smart_shader_throttle;
+        std::pair<bool, bool> vram_garbage_collection;
+        std::pair<bool, bool> drs_resolution_lock;
+        std::pair<Settings::AspectRatio, bool> aspect_ratio;
+        std::pair<Settings::VramUsageMode, bool> vram_usage_mode;
+        std::pair<bool, bool> enable_frame_skipping;
 
         void Capture();
         void Restore();
