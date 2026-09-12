@@ -286,17 +286,20 @@ bool HardwareContext::InitializeWithType(AVHWDeviceType type) {
 
 DecoderContext::DecoderContext(const Decoder& decoder) : m_decoder{decoder} {
     m_codec_context = avcodec_alloc_context3(m_decoder.GetCodec());
+    av_opt_set(m_codec_context->priv_data, "tune", "zerolatency", 0);
     const auto nvdec_mode = Settings::values.nvdec_emulation.GetValue();
     if (nvdec_mode == Settings::NvdecEmulation::Hybrid || nvdec_mode == Settings::NvdecEmulation::Cpu) {
-        // Utilize multiple CPU cores with both frame and slice threading
+        // Utilize multiple CPU cores for slice decoding without introducing frame buffering latency
         const int cpu_threads = std::clamp(static_cast<int>(std::thread::hardware_concurrency()), 2, 8);
         m_codec_context->thread_count = cpu_threads;
-        m_codec_context->thread_type = FF_THREAD_FRAME | FF_THREAD_SLICE;
+        m_codec_context->thread_type = FF_THREAD_SLICE;
     } else {
         const int cpu_threads = std::clamp(static_cast<int>(std::thread::hardware_concurrency()), 2, 4);
         m_codec_context->thread_count = cpu_threads;
-        m_codec_context->thread_type = FF_THREAD_FRAME | FF_THREAD_SLICE;
+        m_codec_context->thread_type = FF_THREAD_SLICE;
     }
+    m_codec_context->thread_type &= ~FF_THREAD_FRAME;
+    m_codec_context->flags |= AV_CODEC_FLAG_LOW_DELAY;
     m_codec_context->flags2 |= AV_CODEC_FLAG2_FAST;
 }
 

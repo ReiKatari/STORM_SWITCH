@@ -72,8 +72,12 @@ VirtualDir SaveDataFactory::Open(SaveDataSpaceId space, const SaveDataAttribute&
     const auto save_directory = GetFullPath(program_id, dir, space, meta.type, meta.program_id,
                                             meta.user_id, meta.system_save_data_id);
 
+    auto HasContent = [](const VirtualDir& d) -> bool {
+        return d != nullptr && (!d->GetFiles().empty() || !d->GetSubdirectories().empty());
+    };
+
     auto out = dir->GetDirectoryRelative(save_directory);
-    if (out != nullptr && !out->GetFiles().empty()) {
+    if (HasContent(out)) {
         return out;
     }
 
@@ -84,7 +88,7 @@ VirtualDir SaveDataFactory::Open(SaveDataSpaceId space, const SaveDataAttribute&
         const auto base_save_directory = GetFullPath(base_tid, dir, space, meta.type, base_tid,
                                                     meta.user_id, meta.system_save_data_id);
         auto base_out = dir->GetDirectoryRelative(base_save_directory);
-        if (base_out != nullptr && !base_out->GetFiles().empty()) {
+        if (HasContent(base_out)) {
             LOG_INFO(Service_FS, "Found existing save data using base title ID: {}", base_save_directory);
             return base_out;
         }
@@ -99,7 +103,7 @@ VirtualDir SaveDataFactory::Open(SaveDataSpaceId space, const SaveDataAttribute&
                 for (u64 cand_id : {raw_tid, base_tid}) {
                     if (cand_id == 0) continue;
                     const std::string cand_name = fmt::format("{:016X}", cand_id);
-                    if (const auto cand_dir = user_sub->GetSubdirectory(cand_name); cand_dir != nullptr && !cand_dir->GetFiles().empty()) {
+                    if (const auto cand_dir = user_sub->GetSubdirectory(cand_name); HasContent(cand_dir)) {
                         LOG_INFO(Service_FS, "Found existing save data in user directory: {}/{}", user_sub->GetName(), cand_name);
                         return cand_dir;
                     }

@@ -153,6 +153,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Core\\memory_layout_mode", "0"},
             {"System\\memory_layout_mode", "0"}
         }
     },
@@ -317,27 +318,29 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x0100AC300919A000ULL,
+        0x0100EC9010258000ULL,
         "Streets of Rage 4",
         "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Рассинхронизация буфера презентации",
         "• Intro NVDEC video stream freeze\n• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Включено\n✓ Асинхронный вывод: Включено\n✓ Режим «В самолете»: Включено\n✓ Игнорировать прерывания памяти: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)\n✓ Синхронизация памяти: Отключено",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: Enabled\n✓ Async Presentation: Enabled\n✓ Airplane Mode: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)\n✓ Sync Memory Operations: Disabled",
+        "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП)\n✓ Асинхронный вывод: Включено\n✓ Синхронизация операций памяти: Включено (устраняет разбалансировку буферов nvmap)\n✓ Реактивный сброс памяти: Включено (стабильный кэш поверхностей)\n✓ Режим «В самолете»: Включено\n✓ Быстрая память: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)",
+        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: Hybrid (GPU decoding with CPU fallback)\n✓ Async Presentation: Enabled\n✓ Sync Memory Operations: Enabled (fixes nvmap buffer desync)\n✓ Reactive Flushing: Enabled\n✓ Airplane Mode: Enabled\n✓ Fastmem: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)",
         {
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "3"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"}
+            {"Cpu\\cpuopt_ignore_memory_aborts", "false"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         },
-        {0x0100EC9010258000ULL, 0x010085800E33E000ULL, 0x01000BD011936000ULL, 0x0100F7A011938000ULL, 0x0100BA700E340000ULL}
+        {0x010085800E33E000ULL, 0x01000BD011936000ULL, 0x0100F7A011938000ULL, 0x0100BA700E340000ULL, 0x0100C60010228000ULL, 0x0100AC300919A000ULL}
     },
     {
         0x0100C6000EEA8000ULL,
@@ -2271,49 +2274,29 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\max_anisotropy", "5"}
         }
     },
-        {
+    {
         0x01006560184E6000ULL,
         "Mortal Kombat 1",
-        "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены\n• Просадка FPS и графические артефакты спецэффектов/дыма\n• Пропадание текстур персонажей и окружения при длительной игре",
-        "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes\n• Particle and smoke effect artifacts\n• Character and environment texture streaming dropouts",
-        "✓ Конфигурация памяти: 6 ГБ DRAM (стабильный запуск без исчерпания памяти)\n✓ Точность ЦП: Авто (устраняет зависание при запуске)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS в бою)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Реактивная очистка: Включено (стабильный кэш текстур UE4)\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая (предотвращает исчезновение текстур)",
-        "✓ Memory Layout: 6GB DRAM (stable startup without OOM)\n✓ CPU Accuracy: Auto (fixes startup boot freeze)\n✓ Fast GPU Time: Enabled (stable 60 FPS in combat)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Reactive Flushing: Enabled (stable UE4 texture cache)\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High (prevents texture streaming loss)",
+        "• Мгновенный вылет при запуске (UE4 TaskGraph / атомики)\n• Зависание на заставке WB Games и вылет по нехватке памяти (OOM)\n• Сбои Extended Dynamic State в шейдерах арены\n• Пропадание текстур персонажей и окружения при длительной игре",
+        "• Instant crash on launch (UE4 TaskGraph / atomics)\n• WB Games intro freeze and Out of Memory crash\n• Extended Dynamic State arena shader crashes\n• Character and environment texture streaming dropouts",
+        "✓ Конфигурация памяти: 8 ГБ DRAM (критично для предотвращения вылета!)\n✓ Быстрое время ГПУ: Отключено (устраняет deadlock UE4)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Точный (безопасные мониторы потоков TaskGraph)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Реактивная очистка: Включено (стабильный кэш текстур UE4)\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
+        "✓ Memory Layout: 8GB DRAM (Critical to prevent OOM crash!)\n✓ Fast GPU Time: Disabled (Fixes UE4 deadlock)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Accurate (Safe TaskGraph thread monitors)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Reactive Flushing: Enabled (stable UE4 texture cache)\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
-            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Cpu\\cpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"System\\use_docked_mode", "0"}
-        }
-    },
-    {
-        0x0100D2800D5C2000ULL,
-        "Mortal Kombat 1",
-        "• Зависание на заставке WB Games при онлайн-синхронизации\n• Сбои Extended Dynamic State в шейдерах арены\n• Просадка FPS и графические артефакты спецэффектов/дыма\n• Пропадание текстур персонажей и окружения при длительной игре",
-        "• WB Games intro online sync freeze\n• Extended Dynamic State arena shader crashes\n• Particle and smoke effect artifacts\n• Character and environment texture streaming dropouts",
-        "✓ Конфигурация памяти: 6 ГБ DRAM (стабильный запуск без исчерпания памяти)\n✓ Точность ЦП: Авто (устраняет зависание при запуске)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS в бою)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Реактивная очистка: Включено (стабильный кэш текстур UE4)\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая (предотвращает исчезновение текстур)",
-        "✓ Memory Layout: 6GB DRAM (stable startup without OOM)\n✓ CPU Accuracy: Auto (fixes startup boot freeze)\n✓ Fast GPU Time: Enabled (stable 60 FPS in combat)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Reactive Flushing: Enabled (stable UE4 texture cache)\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High (prevents texture streaming loss)",
-        {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
-            {"System\\airplane_mode", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\gpu_accuracy", "1"},
-            {"System\\use_docked_mode", "0"}
-        }
+        },
+        {0x0100D2800D5C2000ULL}
     },
     {
         0x0100B1100C4D0000ULL,
