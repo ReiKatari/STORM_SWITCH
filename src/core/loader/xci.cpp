@@ -9,6 +9,7 @@
 #include "common/common_types.h"
 #include "core/core.h"
 #include "core/file_sys/card_image.h"
+#include "core/file_sys/common_funcs.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/control_metadata.h"
 #include "core/file_sys/patch_manager.h"
@@ -28,20 +29,32 @@ AppLoader_XCI::AppLoader_XCI(FileSys::VirtualFile file_,
                              std::size_t program_index)
     : AppLoader(file_), xci(std::make_unique<FileSys::XCI>(file_, program_id, program_index)),
       nca_loader(std::make_unique<AppLoader_NCA>(xci->GetProgramNCAFile())) {
-    if (xci->GetStatus() != ResultStatus::Success) {
-        return;
+
+    u64 target_program_id = program_id;
+    if (target_program_id == 0 && xci) {
+        target_program_id = xci->GetProgramTitleID();
     }
 
-    const auto control_nca = xci->GetNCAByType(FileSys::NCAContentType::Control);
+    const auto control_nca = xci ? xci->GetNCAByType(FileSys::NCAContentType::Control) : nullptr;
     if (control_nca != nullptr && control_nca->GetStatus() == ResultStatus::Success) {
-        std::tie(nacp_file, icon_file) = [this, &content_provider, &control_nca, &fsc] {
-            const FileSys::PatchManager pm{xci->GetProgramTitleID(), fsc, content_provider};
+        std::tie(nacp_file, icon_file) = [&content_provider, &control_nca, &fsc, target_program_id] {
+            const FileSys::PatchManager pm{target_program_id, fsc, content_provider};
             return pm.ParseControlNCA(*control_nca);
         }();
-    } else if (xci->GetSecurePartitionNSP() != nullptr) {
-        const auto nca_file = xci->GetSecurePartitionNSP()->GetNCA(xci->GetProgramTitleID(), FileSys::ContentRecordType::Control);
+    } else if (xci && xci->GetSecurePartitionNSP() != nullptr) {
+        auto nca_file = xci->GetSecurePartitionNSP()->GetNCA(target_program_id, FileSys::ContentRecordType::Control);
+        if (nca_file == nullptr || nca_file->GetStatus() != ResultStatus::Success) {
+            for (const auto& nca_item : xci->GetSecurePartitionNSP()->GetNCAsCollapsed()) {
+                if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Control &&
+                    nca_item->GetStatus() == ResultStatus::Success) {
+                    nca_file = nca_item;
+                    break;
+                }
+            }
+        }
         if (nca_file != nullptr && nca_file->GetStatus() == ResultStatus::Success) {
-            const FileSys::PatchManager pm{xci->GetProgramTitleID(), fsc, content_provider};
+            const u64 pm_id = target_program_id != 0 ? target_program_id : FileSys::GetBaseTitleID(nca_file->GetTitleId());
+            const FileSys::PatchManager pm{pm_id, fsc, content_provider};
             std::tie(nacp_file, icon_file) = pm.ParseControlNCA(*nca_file);
         }
     }
@@ -52,17 +65,25 @@ AppLoader_XCI::~AppLoader_XCI() = default;
 FileType AppLoader_XCI::IdentifyType(const FileSys::VirtualFile& xci_file) {
     const FileSys::XCI xci(xci_file);
 
-    if (xci.GetStatus() != ResultStatus::Success) {
-        return FileType::Error;
-    }
-
     const bool is_xcz = xci_file && (xci_file->GetName().ends_with(".xcz") || xci_file->GetName().ends_with(".XCZ"));
     const FileType return_type = is_xcz ? FileType::XCZ : FileType::XCI;
 
-    // Identify XCI as a valid container even when it does not include a bootable Program NCA.
-    // Bootability is handled by AppLoader_XCI::Load().
-    if (xci.GetSecurePartitionNSP() != nullptr) {
+    if (xci.GetStatus() == ResultStatus::Success || xci.GetSecurePartitionNSP() != nullptr) {
         return return_type;
+    }
+
+    if (xci_file != nullptr) {
+        std::array<u8, 0x200> magic_buf{};
+        if (xci_file->Read(magic_buf.data(), magic_buf.size(), 0) >= 0x104) {
+            u32 direct_magic = 0;
+            std::memcpy(&direct_magic, magic_buf.data(), sizeof(u32));
+            u32 head_magic = 0;
+            std::memcpy(&head_magic, magic_buf.data() + 0x100, sizeof(u32));
+            if (direct_magic == Common::MakeMagic('H', 'E', 'A', 'D') ||
+                head_magic == Common::MakeMagic('H', 'E', 'A', 'D')) {
+                return return_type;
+            }
+        }
     }
 
     return FileType::Error;
@@ -241,7 +262,7 @@ ResultStatus AppLoader_XCI::ReadProgramId(u64& out_program_id) {
     if (nca_loader && nca_loader->ReadProgramId(out_program_id) == ResultStatus::Success && out_program_id != 0) {
         return ResultStatus::Success;
     }
-    if (xci && xci->GetStatus() == ResultStatus::Success) {
+    if (xci) {
         out_program_id = xci->GetProgramTitleID();
         if (out_program_id != 0) {
             return ResultStatus::Success;
@@ -251,15 +272,43 @@ ResultStatus AppLoader_XCI::ReadProgramId(u64& out_program_id) {
             out_program_id = ids[0];
             return ResultStatus::Success;
         }
+        if (xci->GetSecurePartitionNSP() != nullptr) {
+            for (const auto& nca_item : xci->GetSecurePartitionNSP()->GetNCAsCollapsed()) {
+                if (nca_item && nca_item->GetTitleId() != 0) {
+                    if ((nca_item->GetTitleId() & 0x800) == 0 && nca_item->GetType() == FileSys::NCAContentType::Program) {
+                        out_program_id = nca_item->GetTitleId();
+                        return ResultStatus::Success;
+                    }
+                }
+            }
+            for (const auto& nca_item : xci->GetSecurePartitionNSP()->GetNCAsCollapsed()) {
+                if (nca_item && nca_item->GetTitleId() != 0) {
+                    out_program_id = FileSys::GetBaseTitleID(nca_item->GetTitleId());
+                    if (out_program_id != 0) {
+                        return ResultStatus::Success;
+                    }
+                }
+            }
+        }
     }
     return ResultStatus::ErrorXCIMissingProgramNCA;
 }
 
 ResultStatus AppLoader_XCI::ReadProgramIds(std::vector<u64>& out_program_ids) {
-    if (xci && xci->GetStatus() == ResultStatus::Success) {
+    if (xci) {
         out_program_ids = xci->GetProgramTitleIDs();
         if (!out_program_ids.empty()) {
             return ResultStatus::Success;
+        }
+        if (xci->GetSecurePartitionNSP() != nullptr) {
+            for (const auto& nca_item : xci->GetSecurePartitionNSP()->GetNCAsCollapsed()) {
+                if (nca_item && nca_item->GetTitleId() != 0) {
+                    out_program_ids.push_back(nca_item->GetTitleId());
+                }
+            }
+            if (!out_program_ids.empty()) {
+                return ResultStatus::Success;
+            }
         }
     }
     if (nca_loader) {

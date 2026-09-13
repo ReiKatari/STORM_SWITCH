@@ -454,7 +454,9 @@ void QtConfig::SaveHidbusValues() {
 void QtConfig::SaveQtControlValues() {
     BeginGroup(Settings::TranslateCategory(Settings::Category::Controls));
 
-    Settings::values.players.SetGlobal(!IsCustomConfig());
+    if (!IsCustomConfig()) {
+        Settings::values.players.SetGlobal(true);
+    }
     for (std::size_t p = 0; p < Settings::values.players.GetValue().size(); ++p) {
         SaveQtPlayerValues(p);
     }

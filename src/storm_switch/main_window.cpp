@@ -414,7 +414,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.2.7";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.3.0";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
@@ -4493,14 +4493,30 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         std::filesystem::path custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
         std::string target_ini = (custom_path / (specific_config + ".ini")).string();
 
-        // Load per game settings
+        // Load per game settings if custom configuration file exists
         std::string config_to_load = specific_config;
-        if (!std::filesystem::exists(custom_path / (specific_config + ".ini")) &&
-            std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
+        bool has_custom_ini = std::filesystem::exists(custom_path / (specific_config + ".ini"));
+        if (!has_custom_ini && std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
             config_to_load = legacy_config;
+            has_custom_ini = true;
         }
 
-        QtConfig per_game_config(config_to_load, Config::ConfigType::PerGameConfig);
+        if (has_custom_ini) {
+            QtConfig per_game_config(config_to_load, Config::ConfigType::PerGameConfig);
+        }
+
+        // Always guarantee global player control bindings are preserved unless a custom profile was explicitly set
+        bool has_custom_profile = false;
+        for (const auto& player : Settings::values.players.GetValue()) {
+            if (!player.profile_name.empty()) {
+                has_custom_profile = true;
+                break;
+            }
+        }
+        if (!has_custom_profile) {
+            Settings::values.players.SetGlobal(true);
+        }
+
         QtCommon::system->HIDCore().ReloadInputDevices();
         QtCommon::system->ApplySettings();
 
@@ -4899,8 +4915,9 @@ void MainWindow::OnEmulationStopped() {
 
     RestoreSessionSettings();
     Settings::RestoreGlobalState(false);
-    config = std::make_unique<QtConfig>();
-    config->ReloadAllValues();
+    if (config) {
+        config->ReloadAllValues();
+    }
     QtCommon::system->HIDCore().ReloadInputDevices();
     UpdateStatusButtons();
     UpdateGPUAccuracyButton();
@@ -6035,10 +6052,11 @@ void MainWindow::ToggleWindowMode() {
         // Render in a separate window...
         ui->horizontalLayout->removeWidget(render_window);
         render_window->setParent(nullptr);
-        render_window->setFocusPolicy(Qt::NoFocus);
+        render_window->setFocusPolicy(Qt::StrongFocus);
         if (emulation_running) {
             render_window->setVisible(true);
             render_window->RestoreGeometry();
+            render_window->setFocus();
             game_list->show();
         }
     }
@@ -8973,11 +8991,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
         if (tdb.has_value() && !tdb->name.empty()) {
             QString name_str = QString::fromStdString(tdb->name).trimmed();
             QString cleaned = clean_item_name(name_str);
-            if (cleaned.isEmpty()) cleaned = name_str;
-            if (!cleaned.isEmpty() && !cleaned.startsWith(QStringLiteral("Дополнение #"))) {
-                return QStringLiteral("Дополнение #%1: %2").arg(num_to_show).arg(cleaned);
-            }
-            if (!name_str.isEmpty()) return name_str;
+            if (!cleaned.isEmpty()) return cleaned;
+            return name_str;
         }
 
         const std::string d_hex = fmt::format("{:016X}", dlc_tid);
@@ -8985,10 +9000,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
             if (d.id == d_hex && !d.name.empty()) {
                 QString name_str = QString::fromStdString(d.name).trimmed();
                 QString cleaned = clean_item_name(name_str);
-                if (cleaned.isEmpty()) cleaned = name_str;
-                if (!cleaned.isEmpty() && !cleaned.startsWith(QStringLiteral("Дополнение #"))) {
-                    return QStringLiteral("Дополнение #%1: %2").arg(num_to_show).arg(cleaned);
-                }
+                if (!cleaned.isEmpty()) return cleaned;
                 return name_str;
             }
         }
@@ -8998,19 +9010,14 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
             if (!d.name.empty()) {
                 QString name_str = QString::fromStdString(d.name).trimmed();
                 QString cleaned = clean_item_name(name_str);
-                if (cleaned.isEmpty()) cleaned = name_str;
-                if (!cleaned.isEmpty() && !cleaned.startsWith(QStringLiteral("Дополнение #"))) {
-                    return QStringLiteral("Дополнение #%1: %2").arg(num_to_show).arg(cleaned);
-                }
+                if (!cleaned.isEmpty()) return cleaned;
                 return name_str;
             }
         }
 
         if (!nacp_fallback.trimmed().isEmpty()) {
             const QString cleaned = clean_item_name(nacp_fallback);
-            if (!cleaned.isEmpty() && !cleaned.startsWith(QStringLiteral("Дополнение #"))) {
-                return QStringLiteral("Дополнение #%1: %2").arg(num_to_show).arg(cleaned);
-            }
+            if (!cleaned.isEmpty()) return cleaned;
             return nacp_fallback;
         }
 
@@ -9209,6 +9216,12 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                 p.title_id,
             });
         } else if (p.type == FileSys::PatchType::Mod) {
+            const std::string lower_name = Common::ToLower(p.name);
+            if (lower_name == "sdmc" || lower_name == "romfs" ||
+                lower_name.find("sdmc") != std::string::npos ||
+                lower_name.find("romfs") != std::string::npos) {
+                continue;
+            }
             total_mods++;
             rows.push_back({
                 tr("Мод"),
@@ -9335,6 +9348,41 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
         }
     }
 
+    // 4. Add missing DLCs from TitleDB / Tinfoil that are not present in the game file
+    for (size_t i = 0; i < tdb_dlcs.size(); ++i) {
+        const auto& dlc_entry = tdb_dlcs[i];
+        u64 dlc_tid = 0;
+        try {
+            dlc_tid = std::stoull(dlc_entry.id, nullptr, 16);
+        } catch (...) {
+            dlc_tid = (title_id & 0xFFFFFFFFFFFFF000) | (0x1000 + i + 1);
+        }
+
+        if (seen_dlc_ids.find(dlc_tid) == seen_dlc_ids.end()) {
+            QString name_str = QString::fromStdString(dlc_entry.name).trimmed();
+            QString cleaned = clean_item_name(name_str);
+            if (cleaned.isEmpty()) cleaned = name_str;
+            if (cleaned.isEmpty()) cleaned = tr("Дополнение #%1").arg(i + 1);
+
+            QString desc_str = QString::fromStdString(dlc_entry.description).trimmed();
+            if (desc_str.isEmpty() || (base_tdb.has_value() && desc_str == QString::fromStdString(base_tdb->description).trimmed())) {
+                desc_str = tr("Официальный загружаемый контент (DLC). Отсутствует в файлах игры.");
+            }
+
+            rows.push_back({
+                tr("Дополнение"),
+                QString::fromStdString(fmt::format("{:016X}", dlc_tid)),
+                cleaned,
+                desc_str,
+                QStringLiteral("—"),
+                QStringLiteral("—"),
+                tr("Отсутствует"),
+                1,
+                dlc_tid,
+            });
+        }
+    }
+
     auto format_dlc_count_ru = [](int count) -> QString {
         const int mod10 = count % 10;
         const int mod100 = count % 100;
@@ -9363,7 +9411,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
     auto* badges_label = new QLabel(tr(
         "<span style='background:#1b2438; color:#94a3b8; padding:4px 9px; border-radius:5px; font-weight:bold;'>ID: %1</span> &nbsp; "
         "<span style='background:#143324; color:#00e676; padding:4px 9px; border-radius:5px; font-weight:bold;'>📦 Дополнений в файле: %2</span> &nbsp; "
-        "<span style='background:#142738; color:#00e5ff; padding:4px 9px; border-radius:5px; font-weight:bold;'>🗃️ В базе Tinfoil: %3</span> &nbsp; "
+        "<span style='background:#142738; color:#00e5ff; padding:4px 9px; border-radius:5px; font-weight:bold;'>🗃️ Всего в базе Tinfoil: %3</span> &nbsp; "
         "<span style='background:#2d2915; color:#ffca28; padding:4px 9px; border-radius:5px; font-weight:bold;'>🆙 Версия игры: %4</span> &nbsp; "
         "<span style='background:#2e183a; color:#e040fb; padding:4px 9px; border-radius:5px; font-weight:bold;'>⚡ Модов: %5</span>")
         .arg(tid_str, QString::number(total_dlcs), tinfoil_badge_text, update_ver_str, QString::number(total_mods)), header_card);
@@ -9428,18 +9476,6 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
         return a.raw_tid < b.raw_tid;
     });
 
-    // Re-number generic DLC names sequentially if needed
-    int dlc_seq = 0;
-    for (auto& r : rows) {
-        if (r.type_priority == 1) {
-            dlc_seq++;
-            static const QRegularExpression generic_dlc_re{QStringLiteral(R"(^Дополнение\s*#\d+)")};
-            if (generic_dlc_re.match(r.name).hasMatch()) {
-                r.name = tr("Дополнение #%1").arg(dlc_seq);
-            }
-        }
-    }
-
     for (const auto& r : rows) {
         table->insertRow(row_idx);
 
@@ -9450,14 +9486,24 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         auto* item1 = new QTableWidgetItem(r.type);
         item1->setTextAlignment(Qt::AlignCenter);
+        if (r.type == tr("Обновление")) {
+            item1->setForeground(QColor("#ffca28"));
+        } else if (r.type == tr("Дополнение")) {
+            item1->setForeground(QColor("#00e5ff"));
+        } else if (r.type == tr("Мод")) {
+            item1->setForeground(QColor("#e040fb"));
+        }
         table->setItem(row_idx, 1, item1);
 
         auto* item2 = new QTableWidgetItem(r.tid);
         item2->setTextAlignment(Qt::AlignCenter);
         table->setItem(row_idx, 2, item2);
 
-        table->setItem(row_idx, 3, new QTableWidgetItem(r.name));
-        table->setItem(row_idx, 4, new QTableWidgetItem(r.desc));
+        auto* item3 = new QTableWidgetItem(r.name);
+        table->setItem(row_idx, 3, item3);
+
+        auto* item4 = new QTableWidgetItem(r.desc);
+        table->setItem(row_idx, 4, item4);
 
         auto* item5 = new QTableWidgetItem(r.ver);
         item5->setTextAlignment(Qt::AlignCenter);
@@ -9469,6 +9515,22 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         auto* item7 = new QTableWidgetItem(r.status);
         item7->setTextAlignment(Qt::AlignCenter);
+        if (r.status == tr("Отсутствует")) {
+            item7->setText(tr("❌ Отсутствует"));
+            item7->setForeground(QColor("#ef4444"));
+            item3->setForeground(QColor("#94a3b8"));
+            item0->setForeground(QColor("#64748b"));
+            item1->setForeground(QColor("#64748b"));
+            item2->setForeground(QColor("#64748b"));
+            item4->setForeground(QColor("#64748b"));
+            item5->setForeground(QColor("#64748b"));
+            item6->setForeground(QColor("#64748b"));
+        } else if (r.status.contains(QStringLiteral("✓"))) {
+            item7->setForeground(QColor("#00e676"));
+            QFont f = item7->font();
+            f.setBold(true);
+            item7->setFont(f);
+        }
         table->setItem(row_idx, 7, item7);
 
         copy_lines << QStringLiteral("%1. [%2] %3 — %4 | %5 | Версия: %6 (Внутр: %7) | %8")

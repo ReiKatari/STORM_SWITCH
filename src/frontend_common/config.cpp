@@ -227,7 +227,9 @@ void Config::ReadControlValues() {
 
     ReadCategory(Settings::Category::Controls);
 
-    Settings::values.players.SetGlobal(!IsCustomConfig());
+    if (!IsCustomConfig()) {
+        Settings::values.players.SetGlobal(true);
+    }
     for (std::size_t p = 0; p < Settings::values.players.GetValue().size(); ++p) {
         ReadPlayerValues(p);
     }
@@ -1065,13 +1067,20 @@ void Config::EndArray() {
         size = array_stack.back().size;
     }
 
-    // Write out the size to config
+    // Write out the size to config if changed
+    const std::string size_str = ToString(size);
     if (key_stack.size() == 1 && array_stack.back().name.empty()) {
         // Edge-case where the first array created doesn't have a name
-        config->SetValue(GetSection().c_str(), std::string("size").c_str(), ToString(size).c_str());
+        const char* cur = config->GetValue(GetSection().c_str(), "size", nullptr);
+        if (!cur || size_str != cur) {
+            config->SetValue(GetSection().c_str(), "size", size_str.c_str());
+        }
     } else {
         auto const key = GetFullKey(std::string("size"), true);
-        config->SetValue(GetSection().c_str(), key.c_str(), ToString(size).c_str());
+        const char* cur = config->GetValue(GetSection().c_str(), key.c_str(), nullptr);
+        if (!cur || size_str != cur) {
+            config->SetValue(GetSection().c_str(), key.c_str(), size_str.c_str());
+        }
     }
 
     array_stack.pop_back();

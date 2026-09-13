@@ -55,16 +55,14 @@ std::shared_ptr<FileSys::NSP> OpenContainerAsNsp(FileSys::VirtualFile file, File
 
     if (type == FileType::XCI || type == FileType::XCZ) {
         FileSys::XCI xci{file, program_id, program_index};
-        if (xci.GetStatus() != ResultStatus::Success) {
-            return nullptr;
-        }
-
         auto secure_nsp = xci.GetSecurePartitionNSP();
-        if (secure_nsp == nullptr || secure_nsp->GetStatus() != ResultStatus::Success) {
-            return nullptr;
+        if (secure_nsp != nullptr && (secure_nsp->GetStatus() == ResultStatus::Success || !secure_nsp->GetNCAsCollapsed().empty())) {
+            return secure_nsp;
         }
-
-        return secure_nsp;
+        if (xci.GetStatus() == ResultStatus::Success && secure_nsp != nullptr) {
+            return secure_nsp;
+        }
+        return nullptr;
     }
 
     return nullptr;
@@ -351,7 +349,7 @@ std::unique_ptr<AppLoader> GetLoader(Core::System& system, FileSys::VirtualFile 
     if (type != filename_type && !(file->GetName() == "00" && type == FileType::NAX)) {
         LOG_WARNING(Loader, "File {} has a different type ({}) than its extension.",
                     file->GetName(), GetFileTypeString(type));
-        if (FileType::Unknown == type) {
+        if (FileType::Unknown == type || FileType::Error == type) {
             type = filename_type;
         }
     }
