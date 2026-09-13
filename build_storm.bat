@@ -28,8 +28,8 @@ cd /d "%BUILD_DIR%"
 echo [1/3] Running CMake configuration...
 "%CMAKE%" -G "Ninja" -DCMAKE_MAKE_PROGRAM="%NINJA%" ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DGIT_TAG="8.3.0" ^
-    -DGIT_RELEASE="8.3.0" ^
+    -DGIT_TAG="8.3.1" ^
+    -DGIT_RELEASE="8.3.1" ^
     -DENABLE_QT=ON ^
     -DENABLE_QT_TRANSLATION=ON ^
     -DYUZU_USE_BUNDLED_QT=ON ^
@@ -78,11 +78,15 @@ if not exist "%OUTPUT_DIR%\user" (
     mkdir "%OUTPUT_DIR%\user\cache"
 )
 
-if exist "E:\STORM SWITCH 3\Assembling\user\config\qt-config.ini" (
-    copy /Y "E:\STORM SWITCH 3\Assembling\user\config\qt-config.ini" "%OUTPUT_DIR%\user\config\"
+if not exist "%OUTPUT_DIR%\user\config\qt-config.ini" (
+    if exist "E:\STORM SWITCH 3\Assembling\user\config\qt-config.ini" (
+        copy /Y "E:\STORM SWITCH 3\Assembling\user\config\qt-config.ini" "%OUTPUT_DIR%\user\config\"
+    )
 )
-if exist "E:\STORM SWITCH 3\Assembling\user\config\custom" (
-    xcopy /E /Y /I "E:\STORM SWITCH 3\Assembling\user\config\custom" "%OUTPUT_DIR%\user\config\custom\"
+if not exist "%OUTPUT_DIR%\user\config\custom" (
+    if exist "E:\STORM SWITCH 3\Assembling\user\config\custom" (
+        xcopy /E /Y /I "E:\STORM SWITCH 3\Assembling\user\config\custom" "%OUTPUT_DIR%\user\config\custom\"
+    )
 )
 
 if exist "L:\CONSOLES\Nintendo Switch\STORM EDEN\user\keys" (

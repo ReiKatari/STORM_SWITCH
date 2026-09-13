@@ -400,6 +400,10 @@
     <string name="save_file_invalid_zip_structure_description">The first subfolder name must be the title ID of the game.</string>
     <string name="install_firmware">Install firmware</string>
     <string name="install_firmware_description">Firmware must be in a ZIP archive and is needed to boot some games</string>
+    <string name="online_install_firmware">Online firmware installation</string>
+    <string name="online_install_firmware_description">Download and install Nintendo Switch firmware directly without saving archives to storage</string>
+    <string name="online_install_keys">Online keys installation</string>
+    <string name="online_install_keys_description">Download and install prod.keys and title.keys directly without saving archives to storage</string>
     <string name="firmware_installing">Installing firmware</string>
     <string name="firmware_installed_failure">Firmware installation failed</string>
     <string name="firmware_installed_failure_description">Make sure the firmware nca files are at the root of the zip and try again.</string>

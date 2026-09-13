@@ -334,6 +334,10 @@
     <string name="save_file_invalid_zip_structure_description">Название первой вложенной папки должно быть идентификатором игры.</string>
     <string name="install_firmware">Установить прошивку из XCI/ZIP</string>
     <string name="install_firmware_description">Прошивка должна находиться в ZIP-архиве и необходима для загрузки некоторых игр</string>
+    <string name="online_install_firmware">Онлайн-установка прошивки</string>
+    <string name="online_install_firmware_description">Автоматическая загрузка и установка прошивки без сохранения архива на диск</string>
+    <string name="online_install_keys">Онлайн-установка ключей</string>
+    <string name="online_install_keys_description">Автоматическая загрузка и распаковка prod.keys и title.keys без сохранения архивов</string>
     <string name="firmware_installing">Установка прошивки</string>
     <string name="firmware_installed_failure">Не удалось установить прошивку</string>
     <string name="firmware_installed_failure_description">Убедитесь что файлы прошивки nca находятся в корне zip-архива и повторите попытку.</string>

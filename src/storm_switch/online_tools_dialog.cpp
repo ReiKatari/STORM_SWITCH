@@ -44,14 +44,14 @@ public:
         auto* main_layout = new QHBoxLayout(this);
         main_layout->setContentsMargins(4, 3, 4, 3);
 
-        auto* frame = new QFrame(this);
-        frame->setObjectName(QStringLiteral("CardFrame"));
-        auto* card_layout = new QHBoxLayout(frame);
+        m_frame = new QFrame(this);
+        m_frame->setObjectName(QStringLiteral("CardFrame"));
+        auto* card_layout = new QHBoxLayout(m_frame);
         card_layout->setContentsMargins(14, 8, 14, 8);
         card_layout->setSpacing(14);
 
         // Icon
-        auto* icon_label = new QLabel(frame);
+        auto* icon_label = new QLabel(m_frame);
         icon_label->setText(type == OnlineToolType::Firmware ? QStringLiteral("📦") : QStringLiteral("🔑"));
         icon_label->setStyleSheet(QStringLiteral("font-size: 24px; background: transparent;"));
         card_layout->addWidget(icon_label);
@@ -61,22 +61,18 @@ public:
         text_layout->setContentsMargins(0, 0, 0, 0);
         text_layout->setSpacing(4);
 
-        auto* title_label = new QLabel(asset.display_title, frame);
-        title_label->setStyleSheet(QStringLiteral(
-            "font-family: 'Segoe UI'; font-size: 14px; font-weight: bold; color: #ffffff; background: transparent;"));
-        text_layout->addWidget(title_label);
+        m_title_label = new QLabel(asset.display_title, m_frame);
+        text_layout->addWidget(m_title_label);
 
-        auto* sub_label = new QLabel(
-            QStringLiteral("Файл: %1 • Размер: %2").arg(asset.name, asset.display_size), frame);
-        sub_label->setStyleSheet(QStringLiteral(
-            "font-family: 'Segoe UI'; font-size: 11px; color: #94a3b8; background: transparent;"));
-        text_layout->addWidget(sub_label);
+        m_sub_label = new QLabel(
+            QStringLiteral("Файл: %1 • Размер: %2").arg(asset.name, asset.display_size), m_frame);
+        text_layout->addWidget(m_sub_label);
 
         card_layout->addLayout(text_layout, 1);
 
         // Recommended Badge
         if (asset.is_recommended) {
-            auto* badge = new QLabel(tr("🌟 РЕКОМЕНДУЕТСЯ"), frame);
+            auto* badge = new QLabel(tr("🌟 РЕКОМЕНДУЕТСЯ"), m_frame);
             badge->setStyleSheet(QStringLiteral(
                 "background-color: rgba(0, 240, 255, 0.16); "
                 "border: 1px solid #00F0FF; "
@@ -89,8 +85,57 @@ public:
             card_layout->addWidget(badge);
         }
 
-        main_layout->addWidget(frame);
+        m_selected_badge = new QLabel(tr("✔ ВЫБРАНО"), m_frame);
+        m_selected_badge->setStyleSheet(QStringLiteral(
+            "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00E5FF, stop:1 #00B0FF); "
+            "color: #06101e; "
+            "font-family: 'Segoe UI'; "
+            "font-size: 11px; "
+            "font-weight: bold; "
+            "border-radius: 10px; "
+            "padding: 4px 10px;"));
+        m_selected_badge->setVisible(false);
+        card_layout->addWidget(m_selected_badge);
+
+        main_layout->addWidget(m_frame);
+        SetSelected(false);
     }
+
+    void SetSelected(bool selected) {
+        m_is_selected = selected;
+        if (m_is_selected) {
+            m_frame->setStyleSheet(QStringLiteral(
+                "QFrame#CardFrame {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #162a3f, stop:1 #0c1b2c);"
+                "    border: 2px solid #00F0FF;"
+                "    border-radius: 8px;"
+                "}"));
+            m_title_label->setStyleSheet(QStringLiteral(
+                "font-family: 'Segoe UI'; font-size: 14px; font-weight: bold; color: #ffffff; background: transparent;"));
+            m_sub_label->setStyleSheet(QStringLiteral(
+                "font-family: 'Segoe UI'; font-size: 11px; color: #38bdf8; background: transparent;"));
+            m_selected_badge->setVisible(true);
+        } else {
+            m_frame->setStyleSheet(QStringLiteral(
+                "QFrame#CardFrame {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #151922, stop:1 #0f1218);"
+                "    border: 1px solid #232b3b;"
+                "    border-radius: 8px;"
+                "}"));
+            m_title_label->setStyleSheet(QStringLiteral(
+                "font-family: 'Segoe UI'; font-size: 14px; font-weight: 500; color: #cbd5e1; background: transparent;"));
+            m_sub_label->setStyleSheet(QStringLiteral(
+                "font-family: 'Segoe UI'; font-size: 11px; color: #64748b; background: transparent;"));
+            m_selected_badge->setVisible(false);
+        }
+    }
+
+private:
+    QFrame* m_frame{nullptr};
+    QLabel* m_title_label{nullptr};
+    QLabel* m_sub_label{nullptr};
+    QLabel* m_selected_badge{nullptr};
+    bool m_is_selected{false};
 };
 
 } // anonymous namespace
@@ -128,11 +173,6 @@ void OnlineToolsDialog::SetupUI() {
         "    color: #e2e8f0;"
         "    font-family: 'Segoe UI';"
         "}"
-        "QFrame#CardFrame {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #181d27, stop:1 #11141c);"
-        "    border: 1px solid #283347;"
-        "    border-radius: 8px;"
-        "}"
         "QListWidget {"
         "    background-color: #0a0d13;"
         "    border: 1px solid #1f2737;"
@@ -144,14 +184,6 @@ void OnlineToolsDialog::SetupUI() {
         "    background: transparent;"
         "    border: none;"
         "    margin: 2px 0px;"
-        "}"
-        "QListWidget::item:hover QFrame#CardFrame {"
-        "    border: 1px solid #00D2FF;"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #202736, stop:1 #151924);"
-        "}"
-        "QListWidget::item:selected QFrame#CardFrame {"
-        "    border: 2px solid #00F0FF;"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #1c2b3e, stop:1 #131d2b);"
         "}"
         "QProgressBar {"
         "    background-color: #141824;"
@@ -357,9 +389,11 @@ void OnlineToolsDialog::PopulateFallbackCatalog() {
 void OnlineToolsDialog::UpdateListView() {
     m_list_widget->clear();
 
-    for (const auto& asset : m_assets) {
+    for (size_t i = 0; i < m_assets.size(); ++i) {
+        const auto& asset = m_assets[i];
         auto* item = new QListWidgetItem(m_list_widget);
         auto* widget = new ToolItemWidget(asset, m_type, m_list_widget);
+        widget->SetSelected(i == 0);
         item->setSizeHint(QSize(0, 78));
         item->setData(Qt::UserRole, asset.version);
         m_list_widget->addItem(item);
@@ -450,6 +484,13 @@ void OnlineToolsDialog::RefreshCatalog() {
 
 void OnlineToolsDialog::OnItemSelectionChanged() {
     const int row = m_list_widget->currentRow();
+    for (int i = 0; i < m_list_widget->count(); ++i) {
+        auto* item = m_list_widget->item(i);
+        auto* widget = static_cast<ToolItemWidget*>(m_list_widget->itemWidget(item));
+        if (widget) {
+            widget->SetSelected(i == row);
+        }
+    }
     if (row >= 0 && row < static_cast<int>(m_assets.size())) {
         m_selected_asset = m_assets[row];
         m_btn_install->setEnabled(!m_is_downloading && !m_is_installing);

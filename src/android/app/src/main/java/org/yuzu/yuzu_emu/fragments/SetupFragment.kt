@@ -161,7 +161,17 @@ class SetupFragment : Fragment() {
                                 R.string.keys_description,
                                 {
                                     pageButtonCallback = it
-                                    getProdKey.launch(arrayOf("*/*"))
+                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                                        .setTitle(R.string.keys)
+                                        .setItems(arrayOf("🌐 Онлайн-установка ключей (рекомендуется)", "📁 Выбрать файл ключей с устройства")) { _, which ->
+                                            if (which == 0) {
+                                                OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS)
+                                                    .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                                            } else {
+                                                getProdKey.launch(arrayOf("*/*"))
+                                            }
+                                        }
+                                        .show()
                                 },
                                 {
                                     val file = File(
@@ -182,12 +192,44 @@ class SetupFragment : Fragment() {
                         )
                         add(
                             PageButton(
+                                R.drawable.ic_website,
+                                R.string.online_install_keys,
+                                R.string.online_install_keys_description,
+                                {
+                                    pageButtonCallback = it
+                                    OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS)
+                                        .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                                },
+                                {
+                                    val file = File(
+                                        DirectoryInitialization.userDirectory + "/keys/prod.keys"
+                                    )
+                                    if (file.exists() && NativeLibrary.areKeysPresent()) {
+                                        ButtonState.BUTTON_ACTION_COMPLETE
+                                    } else {
+                                        ButtonState.BUTTON_ACTION_INCOMPLETE
+                                    }
+                                }
+                            )
+                        )
+                        add(
+                            PageButton(
                                 R.drawable.ic_firmware,
                                 R.string.firmware,
                                 R.string.firmware_description,
                                 {
                                     pageButtonCallback = it
-                                    getFirmware.launch(arrayOf("application/zip"))
+                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                                        .setTitle(R.string.firmware)
+                                        .setItems(arrayOf("🌐 Онлайн-установка прошивки (рекомендуется)", "📁 Выбрать ZIP архив прошивки с устройства")) { _, which ->
+                                            if (which == 0) {
+                                                OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE)
+                                                    .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                                            } else {
+                                                getFirmware.launch(arrayOf("application/zip"))
+                                            }
+                                        }
+                                        .show()
                                 },
                                 {
                                     if (NativeLibrary.isFirmwareAvailable()) {
@@ -201,6 +243,25 @@ class SetupFragment : Fragment() {
                                 R.string.install_firmware_warning,
                                 R.string.install_firmware_warning_description,
                                 R.string.install_firmware_warning_help,
+                            )
+                        )
+                        add(
+                            PageButton(
+                                R.drawable.ic_website,
+                                R.string.online_install_firmware,
+                                R.string.online_install_firmware_description,
+                                {
+                                    pageButtonCallback = it
+                                    OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE)
+                                        .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                                },
+                                {
+                                    if (NativeLibrary.isFirmwareAvailable()) {
+                                        ButtonState.BUTTON_ACTION_COMPLETE
+                                    } else {
+                                        ButtonState.BUTTON_ACTION_INCOMPLETE
+                                    }
+                                }
                             )
                         )
                         add(

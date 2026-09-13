@@ -20,6 +20,79 @@ namespace Core {
 
 static const std::vector<GameFixProfile> s_profiles = {
     {
+        0x01006560184E6000ULL,
+        "Mortal Kombat 1",
+        "• Вылет при запуске игры на Android и сбои инициализации UE4\n• Нехватка динамической памяти DRAM (SIGSEGV / OOM)\n• Сбои разыменования ловушек памяти",
+        "• Crash on launch on Android and UE4 initialization failure\n• DRAM exhaustion / Out of memory SIGSEGV\n• Unmapped memory access trap crash",
+        "✓ Память: 8GB DRAM (критично для движка Unreal Engine 4)\n✓ Игнорирование сбоев памяти: Включено (устраняет вылет)\n✓ Точность ГПУ: Высокая (High FP16 шейдеры)\n✓ Реактивная очистка: Отключено\n✓ Barrier Feedback Loops: Включено",
+        "✓ Memory Layout: 8GB DRAM (Critical for UE4)\n✓ Ignore Memory Aborts: Enabled (Fixes startup crash)\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled",
+        {
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\sync_memory_operations", "false"}
+        }
+    },
+    {
+        0x0100F2200C984000ULL,
+        "Mortal Kombat 11",
+        "• Разлет полигонов, мерцание геометрии и графические баги шейдеров\n• Искажение динамического освещения и эффектов крови\n• Микрофризы рендеринга",
+        "• Exploding vertices, geometry flicker, and shader rendering artifacts\n• Corrupted dynamic lighting and blood particle effects\n• Pipeline micro-stutter",
+        "✓ Быстрое время ГПУ: Отключено (устраняет разлет геометрии и баги)\n✓ Синхронизация памяти ГПУ: Отключено (стабильный конвейер)\n✓ Реактивная очистка: Отключено (исправление отложенного освещения)\n✓ Barrier Feedback Loops: Включено (исправление частиц)\n✓ Сжатие ASTC: Без сжатия (оригинальное качество материалов)",
+        "✓ Fast GPU Time: Disabled (Fixes geometry glitching and vertices)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
+        {
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+        }
+    },
+    {
+        0x0100EC9010258000ULL,
+        "Streets of Rage 4",
+        "• Зависание на Windows при запуске (0 FPS / дедлок сетевого сокета)\n• Вылет при старте на Android\n• Сбои синхронизации видеороликов NVDEC",
+        "• Boot hang on Windows (0 FPS network socket deadlock)\n• Crash on startup on Android\n• NVDEC video playback desync",
+        "✓ Режим полета: Отключено (устраняет дедлок сетевого опроса DotEmu)\n✓ Декодирование видео: NVDEC ГПУ\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Игнорирование сбоев памяти: Включено\n✓ Реактивная очистка: Отключено",
+        "✓ Airplane Mode: Disabled (Fixes DotEmu network deadlock)\n✓ NVDEC Emulation: GPU Video Decoding\n✓ Sync Memory Operations: Disabled\n✓ Ignore Memory Aborts: Enabled\n✓ Reactive Flushing: Disabled",
+        {
+            {"System\\airplane_mode", "false"},
+            {"Network\\airplane_mode", "false"},
+            {"Services\\airplane_mode", "false"},
+            {"Renderer\\nvdec_emulation", "2"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"}
+        }
+    },
+    {
+        0x01007EF00011E000ULL,
+        "The Legend of Zelda: Breath of the Wild",
+        "• Вылет игры при загрузке сохранения (исчерпание пула памяти 4GB DRAM)\n• Сбои десериализации акторов и физики Havok\n• Графические артефакты теней и частиц",
+        "• Crash when loading save games (4GB DRAM pool exhaustion)\n• Havok physics and actor deserialization crash\n• Shadow and particle artifacts",
+        "✓ Память: 8GB DRAM (предотвращает краш аллокатора при распаковке сейва)\n✓ Игнорирование сбоев памяти: Включено (стабильность физики Havok)\n✓ Реактивная очистка: Отключено\n✓ Barrier Feedback Loops: Включено\n✓ Точность ГПУ: Высокая",
+        "✓ Memory Layout: 8GB DRAM (Prevents save loading OOM)\n✓ Ignore Memory Aborts: Enabled (Havok physics stability)\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ GPU Accuracy: High",
+        {
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"}
+        }
+    },
+    {
         0x01005B101DC84000ULL,
         "EA SPORTS FC 25",
         "• Зависание при старте игры / черный экран на заставке EA\n• Нехватка памяти Frostbite Engine (вылет при загрузке стадиона)\n• Зависание на сетевой аутентификации",

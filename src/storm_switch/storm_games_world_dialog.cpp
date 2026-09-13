@@ -5,10 +5,12 @@
 
 #include <QDesktopServices>
 #include <QDir>
+#include <QEvent>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGraphicsDropShadowEffect>
 #include <QGroupBox>
+#include <QMouseEvent>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QJsonArray>
@@ -51,6 +53,207 @@ static QString SanitizeLibretroName(QString name) {
     }
     return name.trimmed();
 }
+
+static int ExtractDlcCount(const QString& title, u64 title_id) {
+    static const QRegularExpression dlc_regex(
+        QStringLiteral(R"((?:\+|\(|\[|\b)(\d+)\s*(?:D\b|DLC\b))"),
+        QRegularExpression::CaseInsensitiveOption);
+    const auto match = dlc_regex.match(title);
+    if (match.hasMatch()) {
+        bool ok = false;
+        const int count = match.captured(1).toInt(&ok);
+        if (ok && count > 0) {
+            return count;
+        }
+    }
+
+    if (title_id != 0) {
+        TitleDB::TitleDatabase::Instance().EnsureLoaded();
+        const int db_count = TitleDB::TitleDatabase::Instance().GetDlcCount(title_id);
+        if (db_count > 0) {
+            return db_count;
+        }
+    }
+    return 0;
+}
+
+class StormWorldDlcListDialog : public QDialog {
+public:
+    StormWorldDlcListDialog(QWidget* parent, const StormWorldGame& game)
+        : QDialog(parent) {
+        const QString disp_title = game.final_title.isEmpty() ? game.title : game.final_title;
+        setWindowTitle(tr("STORM SWITCH — Дополнения: %1").arg(disp_title));
+        resize(740, 500);
+        setMinimumSize(620, 380);
+
+        setStyleSheet(QStringLiteral(
+            "QDialog {"
+            "    background-color: #0c1017;"
+            "    color: #e2e8f0;"
+            "    font-family: 'Segoe UI';"
+            "}"
+            "QFrame#HeaderBox {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #16202e, stop:1 #0e141d);"
+            "    border: 1px solid #1e293b;"
+            "    border-radius: 10px;"
+            "    padding: 10px;"
+            "}"
+            "QTreeWidget {"
+            "    background-color: #080b10;"
+            "    border: 1px solid #1e293b;"
+            "    border-radius: 8px;"
+            "    color: #f1f5f9;"
+            "    alternate-background-color: #0d121a;"
+            "    outline: none;"
+            "}"
+            "QTreeWidget::item {"
+            "    height: 32px;"
+            "    padding: 4px;"
+            "}"
+            "QTreeWidget::item:hover {"
+            "    background: rgba(0, 210, 255, 0.12);"
+            "}"
+            "QTreeWidget::item:selected {"
+            "    background: rgba(0, 240, 255, 0.22);"
+            "    color: #00F0FF;"
+            "}"
+            "QHeaderView::section {"
+            "    background-color: #111722;"
+            "    color: #00F0FF;"
+            "    font-weight: bold;"
+            "    padding: 6px;"
+            "    border: none;"
+            "    border-bottom: 1px solid #1e293b;"
+            "}"
+            "QPushButton {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00B4D8, stop:1 #00F0FF);"
+            "    border: none;"
+            "    border-radius: 6px;"
+            "    color: #050a12;"
+            "    font-weight: bold;"
+            "    font-size: 12px;"
+            "    padding: 8px 26px;"
+            "}"
+            "QPushButton:hover {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00C6EB, stop:1 #33F5FF);"
+            "}"
+        ));
+
+        auto* layout = new QVBoxLayout(this);
+        layout->setContentsMargins(18, 16, 18, 16);
+        layout->setSpacing(12);
+
+        // Header Box
+        auto* header_box = new QFrame(this);
+        header_box->setObjectName(QStringLiteral("HeaderBox"));
+        auto* header_layout = new QHBoxLayout(header_box);
+        header_layout->setContentsMargins(14, 10, 14, 10);
+        header_layout->setSpacing(14);
+
+        auto* icon_label = new QLabel(QStringLiteral("📦"), header_box);
+        icon_label->setStyleSheet(QStringLiteral("font-size: 28px; background: transparent;"));
+        header_layout->addWidget(icon_label);
+
+        auto* header_text_layout = new QVBoxLayout();
+        header_text_layout->setSpacing(3);
+
+        auto* title_lbl = new QLabel(disp_title, header_box);
+        title_lbl->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: bold; color: #FFFFFF;"));
+        title_lbl->setWordWrap(true);
+        header_text_layout->addWidget(title_lbl);
+
+        auto* meta_lbl = new QLabel(
+            tr("Title ID: %1  •  Всего дополнений (DLC): %2")
+                .arg(game.serial_id.isEmpty() ? tr("—") : game.serial_id)
+                .arg(game.dlc_count),
+            header_box);
+        meta_lbl->setStyleSheet(QStringLiteral("font-size: 12px; color: #00F0FF; font-family: monospace; font-weight: bold;"));
+        header_text_layout->addWidget(meta_lbl);
+
+        header_layout->addLayout(header_text_layout, 1);
+        layout->addWidget(header_box);
+
+        // Tree
+        auto* tree = new QTreeWidget(this);
+        tree->setHeaderLabels({
+            tr("№"),
+            tr("Title ID"),
+            tr("Название дополнения"),
+            tr("Версия"),
+            tr("Статус")
+        });
+        tree->setRootIsDecorated(false);
+        tree->setAlternatingRowColors(true);
+
+        tree->headerItem()->setTextAlignment(0, Qt::AlignCenter);
+        tree->headerItem()->setTextAlignment(1, Qt::AlignCenter);
+        tree->headerItem()->setTextAlignment(2, Qt::AlignLeft | Qt::AlignVCenter);
+        tree->headerItem()->setTextAlignment(3, Qt::AlignCenter);
+        tree->headerItem()->setTextAlignment(4, Qt::AlignCenter);
+
+        tree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+        tree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+        tree->header()->setSectionResizeMode(2, QHeaderView::Stretch);
+        tree->header()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+        tree->header()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+
+        bool ok = false;
+        const u64 tid = game.serial_id.toULongLong(&ok, 16);
+        std::vector<TitleDB::Entry> dlcs;
+        if (ok && tid != 0) {
+            TitleDB::TitleDatabase::Instance().EnsureLoaded();
+            dlcs = TitleDB::TitleDatabase::Instance().GetDlcs(tid);
+        }
+
+        const int total_items = std::max(static_cast<int>(dlcs.size()), game.dlc_count);
+        if (total_items > 0) {
+            for (int i = 0; i < total_items; ++i) {
+                auto* item = new QTreeWidgetItem(tree);
+                item->setText(0, QString::number(i + 1));
+                item->setTextAlignment(0, Qt::AlignCenter);
+
+                if (i < static_cast<int>(dlcs.size())) {
+                    const auto& d = dlcs[i];
+                    item->setText(1, QString::fromStdString(d.id).toUpper());
+                    item->setText(2, QString::fromStdString(d.name.empty() ? ("DLC Pack " + std::to_string(i + 1)) : d.name));
+                    item->setText(3, QString::fromStdString(d.version.empty() ? "1.0.0" : d.version));
+                    item->setText(4, tr("Доступно в пакете"));
+                } else {
+                    const u64 dlc_tid = ok ? (tid + 0x1000ULL + static_cast<u64>(i)) : 0ULL;
+                    item->setText(1, dlc_tid != 0 ? QStringLiteral("%1").arg(dlc_tid, 16, 16, QLatin1Char('0')).toUpper() : QStringLiteral("—"));
+                    item->setText(2, tr("Дополнительный контент (DLC #%1)").arg(i + 1));
+                    item->setText(3, game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version);
+                    item->setText(4, tr("Включено в релиз"));
+                }
+
+                item->setTextAlignment(1, Qt::AlignCenter);
+                item->setTextAlignment(3, Qt::AlignCenter);
+                item->setTextAlignment(4, Qt::AlignCenter);
+                item->setForeground(1, QBrush(QColor(QStringLiteral("#00D2FF"))));
+                item->setForeground(4, QBrush(QColor(QStringLiteral("#00FF66"))));
+            }
+        } else {
+            auto* item = new QTreeWidgetItem(tree);
+            item->setText(0, QStringLiteral("—"));
+            item->setText(1, QStringLiteral("—"));
+            item->setText(2, tr("Для данной игры официальные дополнения не обнаружены"));
+            item->setText(3, QStringLiteral("—"));
+            item->setText(4, tr("Нет данных"));
+            item->setForeground(2, QBrush(QColor(QStringLiteral("#94a3b8"))));
+        }
+
+        layout->addWidget(tree, 1);
+
+        // Close Button
+        auto* btn_layout = new QHBoxLayout();
+        btn_layout->addStretch(1);
+        auto* close_btn = new QPushButton(tr("Закрыть"), this);
+        close_btn->setCursor(Qt::PointingHandCursor);
+        connect(close_btn, &QPushButton::clicked, this, &QDialog::accept);
+        btn_layout->addWidget(close_btn);
+        layout->addLayout(btn_layout);
+    }
+};
 
 StormGamesWorldDialog::StormGamesWorldDialog(QWidget* parent)
     : QDialog(parent) {
@@ -187,6 +390,7 @@ void StormGamesWorldDialog::SetupUI() {
         tr("Название игры"),
         tr("Версия"),
         tr("Размер"),
+        tr("Дополнения"),
         tr("Язык"),
         tr("Title ID"),
         tr("Статус")
@@ -201,6 +405,7 @@ void StormGamesWorldDialog::SetupUI() {
     games_tree->headerItem()->setTextAlignment(3, Qt::AlignCenter);
     games_tree->headerItem()->setTextAlignment(4, Qt::AlignCenter);
     games_tree->headerItem()->setTextAlignment(5, Qt::AlignCenter);
+    games_tree->headerItem()->setTextAlignment(6, Qt::AlignCenter);
 
     games_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     games_tree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -208,6 +413,13 @@ void StormGamesWorldDialog::SetupUI() {
     games_tree->header()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     games_tree->header()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
     games_tree->header()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
+    games_tree->header()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
+
+    connect(games_tree, &QTreeWidget::itemClicked, this, [this](QTreeWidgetItem* item, int column) {
+        if (column == 3) {
+            ShowDlcListForCurrentGame();
+        }
+    });
     splitter->addWidget(games_tree);
 
     // Right Panel: Game Details & Download Controls
@@ -259,6 +471,12 @@ void StormGamesWorldDialog::SetupUI() {
     size_badge = new QLabel(tr("Размер: —"), details_panel);
     size_badge->setStyleSheet(QStringLiteral("background: rgba(0, 255, 102, 0.15); border: 1px solid #00FF66; border-radius: 4px; padding: 2px 8px; color: #00FF66; font-size: 11px; font-weight: bold;"));
     badges_layout->addWidget(size_badge);
+
+    dlc_badge = new QLabel(tr("Дополнения: —"), details_panel);
+    dlc_badge->setCursor(Qt::PointingHandCursor);
+    dlc_badge->setStyleSheet(QStringLiteral("background: rgba(0, 240, 255, 0.15); border: 1px solid #00F0FF; border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
+    dlc_badge->installEventFilter(this);
+    badges_layout->addWidget(dlc_badge);
 
     lang_badge = new QLabel(tr("Язык: —"), details_panel);
     lang_badge->setStyleSheet(QStringLiteral("background: rgba(245, 158, 11, 0.15); border: 1px solid #F59E0B; border-radius: 4px; padding: 2px 8px; color: #F59E0B; font-size: 11px; font-weight: bold;"));
@@ -465,6 +683,13 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
             g.file_exists = file_exists;
             g.has_file = has_file;
 
+            bool ok_tid = false;
+            const u64 num_tid = g.serial_id.toULongLong(&ok_tid, 16);
+            g.dlc_count = ExtractDlcCount(g.title, ok_tid ? num_tid : 0ULL);
+            if (g.dlc_count == 0 && !g.final_title.isEmpty()) {
+                g.dlc_count = ExtractDlcCount(g.final_title, ok_tid ? num_tid : 0ULL);
+            }
+
             const QJsonArray reg_arr = obj[QStringLiteral("regions")].toArray();
             for (const auto& r : reg_arr) g.regions.append(r.toString());
 
@@ -505,26 +730,35 @@ void StormGamesWorldDialog::PopulateGameList(const QString& filter) {
         item->setText(0, disp_title);
         item->setText(1, g.version.isEmpty() ? tr("1.0.0") : g.version);
         item->setText(2, g.size.isEmpty() ? tr("—") : g.size);
-        item->setText(3, langs);
-        item->setText(4, g.serial_id.isEmpty() ? tr("—") : g.serial_id);
+        if (g.dlc_count > 0) {
+            item->setText(3, tr("📦 %1 DLC").arg(g.dlc_count));
+            item->setForeground(3, QBrush(QColor(QStringLiteral("#00F0FF"))));
+            item->setToolTip(3, tr("Нажмите для просмотра списка дополнений"));
+        } else {
+            item->setText(3, QStringLiteral("—"));
+            item->setForeground(3, QBrush(QColor(QStringLiteral("#64748B"))));
+        }
+        item->setText(4, langs);
+        item->setText(5, g.serial_id.isEmpty() ? tr("—") : g.serial_id);
 
-        // Center align columns 1 to 5
+        // Center align columns 1 to 6
         item->setTextAlignment(1, Qt::AlignCenter);
         item->setTextAlignment(2, Qt::AlignCenter);
         item->setTextAlignment(3, Qt::AlignCenter);
         item->setTextAlignment(4, Qt::AlignCenter);
         item->setTextAlignment(5, Qt::AlignCenter);
+        item->setTextAlignment(6, Qt::AlignCenter);
 
         // Check download status
         if (IsGameDownloaded(g, current_dir)) {
-            item->setText(5, tr("✅ Скачано"));
-            item->setForeground(5, QBrush(QColor(QStringLiteral("#00FF66"))));
+            item->setText(6, tr("✅ Скачано"));
+            item->setForeground(6, QBrush(QColor(QStringLiteral("#00FF66"))));
         } else if (is_downloading && current_download_game_id == g.id) {
-            item->setText(5, tr("⏳ Загрузка"));
-            item->setForeground(5, QBrush(QColor(QStringLiteral("#FFA500"))));
+            item->setText(6, tr("⏳ Загрузка"));
+            item->setForeground(6, QBrush(QColor(QStringLiteral("#FFA500"))));
         } else {
-            item->setText(5, tr("⚪ Доступно"));
-            item->setForeground(5, QBrush(QColor(QStringLiteral("#7090B0"))));
+            item->setText(6, tr("⚪ Доступно"));
+            item->setForeground(6, QBrush(QColor(QStringLiteral("#7090B0"))));
         }
 
         item->setData(0, Qt::UserRole, static_cast<int>(filtered_games.size() - 1));
@@ -616,6 +850,21 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
     const QString int_ver = ExtractInternalVersion(game.title, game.version);
     internal_version_badge->setText(tr("Сборка: %1").arg(int_ver));
     size_badge->setText(tr("Размер: %1").arg(game.size.isEmpty() ? tr("Неизвестно") : game.size));
+
+    if (game.dlc_count > 0) {
+        dlc_badge->setText(tr("📦 Дополнений: %1").arg(game.dlc_count));
+        dlc_badge->setStyleSheet(QStringLiteral(
+            "background: rgba(0, 240, 255, 0.15); border: 1px solid #00F0FF; "
+            "border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
+        dlc_badge->setToolTip(tr("Нажмите для просмотра списка дополнений"));
+    } else {
+        dlc_badge->setText(tr("Дополнений: 0"));
+        dlc_badge->setStyleSheet(QStringLiteral(
+            "background: rgba(100, 116, 139, 0.15); border: 1px solid #475569; "
+            "border-radius: 4px; padding: 2px 8px; color: #94a3b8; font-size: 11px; font-weight: bold;"));
+        dlc_badge->setToolTip(QString());
+    }
+
     lang_badge->setText(tr("Язык: %1").arg(game.text_langs.isEmpty() ? tr("Multi") : game.text_langs.join(QStringLiteral(", "))));
 
     version_combo->clear();
@@ -640,6 +889,23 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
         .arg(tr("Информация о пакете и файлах получена с сервера stormgamesworld.ru."))
         .arg(game.serial_id)
         .arg(game.size));
+}
+
+bool StormGamesWorldDialog::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == dlc_badge && event->type() == QEvent::MouseButtonRelease) {
+        ShowDlcListForCurrentGame();
+        return true;
+    }
+    return QDialog::eventFilter(watched, event);
+}
+
+void StormGamesWorldDialog::ShowDlcListForCurrentGame() {
+    if (selected_game_index < 0 || selected_game_index >= static_cast<int>(filtered_games.size())) {
+        return;
+    }
+    const auto& game = filtered_games[selected_game_index];
+    StormWorldDlcListDialog dlg(this, game);
+    dlg.exec();
 }
 
 void StormGamesWorldDialog::FetchGameDetails(int game_id) {

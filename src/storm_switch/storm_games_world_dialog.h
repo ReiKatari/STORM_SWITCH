@@ -36,6 +36,7 @@ struct StormWorldGame {
     bool file_exists{false};
     bool has_file{false};
     QString real_extension{QStringLiteral(".nsp")};
+    int dlc_count{0};
 };
 
 class StormGamesWorldDialog : public QDialog {
@@ -44,6 +45,9 @@ class StormGamesWorldDialog : public QDialog {
 public:
     explicit StormGamesWorldDialog(QWidget* parent = nullptr);
     ~StormGamesWorldDialog() override;
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 signals:
     void GameDownloaded(const QString& file_path);
@@ -119,9 +123,12 @@ private:
     QLabel* version_badge{nullptr};
     QLabel* internal_version_badge{nullptr};
     QLabel* size_badge{nullptr};
+    QLabel* dlc_badge{nullptr};
     QLabel* lang_badge{nullptr};
     QComboBox* version_combo{nullptr};
     QTextBrowser* description_browser{nullptr};
+
+    void ShowDlcListForCurrentGame();
 
     // Download Controls
     QProgressBar* progress_bar{nullptr};

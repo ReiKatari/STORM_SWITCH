@@ -26,45 +26,85 @@ object GameFixDatabase {
 
     private val profiles = listOf(
         GameFixProfile(
+            0x01006560184E6000L,
+            "Mortal Kombat 1",
+            "• Вылет при запуске игры на Android и сбои инициализации UE4\n• Нехватка динамической памяти DRAM (SIGSEGV / OOM)\n• Сбои разыменования ловушек памяти",
+            "• Crash on launch on Android and UE4 initialization failure\n• DRAM exhaustion / Out of memory SIGSEGV\n• Unmapped memory access trap crash",
+            "✓ Память: 8GB DRAM (критично для движка Unreal Engine 4)\n✓ Игнорирование сбоев памяти: Включено (устраняет вылет)\n✓ Точность ГПУ: Высокая (High FP16 шейдеры)\n✓ Реактивная очистка: Отключено\n✓ Barrier Feedback Loops: Включено",
+            "✓ Memory Layout: 8GB DRAM (Critical for UE4)\n✓ Ignore Memory Aborts: Enabled (Fixes startup crash)\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled",
+            mapOf(
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\sync_memory_operations" to "false"
+            )
+        ),
+        GameFixProfile(
+            0x0100F2200C984000L,
+            "Mortal Kombat 11",
+            "• Разлет полигонов, мерцание геометрии и графические баги шейдеров\n• Искажение динамического освещения и эффектов крови\n• Микрофризы рендеринга",
+            "• Exploding vertices, geometry flicker, and shader rendering artifacts\n• Corrupted dynamic lighting and blood particle effects\n• Pipeline micro-stutter",
+            "✓ Быстрое время ГПУ: Отключено (устраняет разлет геометрии и баги)\n✓ Синхронизация памяти ГПУ: Отключено (стабильный конвейер)\n✓ Реактивная очистка: Отключено (исправление отложенного освещения)\n✓ Barrier Feedback Loops: Включено (исправление частиц)\n✓ Сжатие ASTC: Без сжатия (оригинальное качество материалов)",
+            "✓ Fast GPU Time: Disabled (Fixes geometry glitching and vertices)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
+            mapOf(
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\gpu_accuracy" to "1",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
+            )
+        ),
+        GameFixProfile(
             0x01007EF00011E000L,
             "The Legend of Zelda: Breath of the Wild",
-            "• Черный силуэт Линка из-за рассинхрона буфера освещения и трафарета\n• Белые вспышки и мерцание освещения/погоды\n• Пропадание текстур скал и земли при нехватке памяти\n• Бирюзовая сетка и артефакты Z-буфера в Святилищах",
-            "• Link black silhouette caused by unsynced lighting and stencil buffers\n• White screen flashes and lighting flicker\n• Ground and terrain textures disappearing due to memory pressure\n• Shrine depth bias / cyan grid artifacts",
-            "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Отключено (устраняет пропадание текстур и сбои в док-режиме)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 4 ГБ DRAM (устраняет падение сквозь землю и сбои физики Havok)",
-            "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Disabled (Fixes texture corruption and artifacts in docked mode)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 4GB DRAM (Prevents falling through terrain and Havok physics glitches)",
+            "• Вылет игры при загрузке сохранения (исчерпание пула памяти 4GB DRAM)\n• Сбои десериализации акторов и физики Havok\n• Черный силуэт Линка и мерцание освещения",
+            "• Crash when loading save games (4GB DRAM pool exhaustion)\n• Havok physics and actor deserialization crash\n• Link black silhouette and lighting flicker",
+            "✓ Память: 8GB DRAM (предотвращает краш аллокатора при загрузке сейва)\n✓ Игнорирование сбоев памяти: Включено (стабильность физики Havok)\n✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Отключено (стабильность кадрового буфера)\n✓ Barrier Feedback Loops: Включено\n✓ Сжатие ASTC: Отключено",
+            "✓ Memory Layout: 8GB DRAM (Prevents save loading OOM)\n✓ Ignore Memory Aborts: Enabled (Havok physics stability)\n✓ GPU Accuracy: High (Fixes Link silhouette)\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "0",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
         GameFixProfile(
             0x0100EC9010258000L,
             "Streets of Rage 4",
-            "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Рассинхронизация буфера презентации",
-            "• Intro NVDEC video stream freeze\n• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Presentation buffer desync and low framerate",
-            "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП)\n✓ Асинхронный вывод: Включено\n✓ Синхронизация операций памяти: Включено (устраняет разбалансировку буферов nvmap)\n✓ Реактивный сброс памяти: Включено (стабильный кэш поверхностей)\n✓ Режим «В самолете»: Включено\n✓ Быстрая память: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)",
-            "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: Hybrid (GPU decoding with CPU fallback)\n✓ Async Presentation: Enabled\n✓ Sync Memory Operations: Enabled (fixes nvmap buffer desync)\n✓ Reactive Flushing: Enabled\n✓ Airplane Mode: Enabled\n✓ Fastmem: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)",
+            "• Зависание на Windows при запуске (0 FPS / дедлок сетевого сокета)\n• Вылет при старте на Android\n• Сбои синхронизации видеороликов NVDEC",
+            "• Boot hang on Windows (0 FPS network socket deadlock)\n• Crash on startup on Android\n• NVDEC video playback desync",
+            "✓ Режим полета: Отключено (устраняет дедлок сетевого опроса DotEmu)\n✓ Декодирование видео: NVDEC ГПУ\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Игнорирование сбоев памяти: Включено\n✓ Реактивная очистка: Отключено",
+            "✓ Airplane Mode: Disabled (Fixes DotEmu network deadlock)\n✓ NVDEC Emulation: GPU Video Decoding\n✓ Sync Memory Operations: Disabled\n✓ Ignore Memory Aborts: Enabled\n✓ Reactive Flushing: Disabled",
             mapOf(
-                "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\nvdec_emulation" to "3",
+                "System\\airplane_mode" to "false",
+                "Network\\airplane_mode" to "false",
+                "Services\\airplane_mode" to "false",
+                "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "true",
-                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpuopt_ignore_memory_aborts" to "false",
-                "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
-                "System\\memory_layout_mode" to "0"
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "Renderer\\gpu_accuracy" to "0"
             )
         ),
         GameFixProfile(

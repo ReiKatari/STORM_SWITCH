@@ -200,6 +200,14 @@ class InstallableFragment : Fragment() {
                 install = { getFirmwareLauncher.launch(arrayOf("application/zip")) }
             ),
             Installable(
+                R.string.online_install_firmware,
+                R.string.online_install_firmware_description,
+                install = {
+                    OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE)
+                        .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                }
+            ),
+            Installable(
                 R.string.uninstall_firmware,
                 R.string.uninstall_firmware_description,
                 install = {
@@ -214,6 +222,14 @@ class InstallableFragment : Fragment() {
                 R.string.install_prod_keys,
                 R.string.install_prod_keys_description,
                 install = { getProdKeyLauncher.launch(arrayOf("*/*")) }
+            ),
+            Installable(
+                R.string.online_install_keys,
+                R.string.online_install_keys_description,
+                install = {
+                    OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS)
+                        .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                }
             ),
             Installable(
                 R.string.install_amiibo_keys,
