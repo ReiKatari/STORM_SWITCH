@@ -26,10 +26,6 @@ public:
 private:
     void Run(std::stop_token stop_token);
 
-#ifndef __ANDROID__
-    Device m_device;
-    MemoryAllocator m_allocator;
-#endif
     std::mutex m_submission_lock;
     std::condition_variable_any m_submission_cv;
     std::chrono::time_point<std::chrono::steady_clock> m_submission_time{};

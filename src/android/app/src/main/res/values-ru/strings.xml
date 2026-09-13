@@ -529,8 +529,8 @@
     <string name="sync_memory_operations_description">Обеспечивает согласованность данных между вычислительными операциями и операциями с памятью. Эта опция должна исправлять проблемы в некоторых играх, но может снижать производительность в некоторых случаях. Наиболее сильно это затрагивает игры на Unreal Engine 4.</string>
     <string name="use_disk_shader_cache">Дисковый кэш шейдеров</string>
     <string name="use_disk_shader_cache_description">Уменьшает заикания за счет сохранения скомпилированных шейдеров на накопитель.</string>
-    <string name="renderer_force_max_clock">Принудительная максимальная частота</string>
-    <string name="renderer_force_max_clock_description">Заставляет ГПУ работать на максимально возможных тактовых частотах (тепловые ограничения все равно будут применяться).</string>
+    <string name="renderer_force_max_clock">Принудительная максимальная частота (ПК и мобильные процессоры)</string>
+    <string name="renderer_force_max_clock_description">Фиксирует максимальную производительность CPU и GPU, отключает троттлинг и сберегающие режимы на всех процессорах ПК (Intel, AMD, NVIDIA) и смартфонах (Snapdragon, Dimensity, Exynos, Tensor).</string>
     <string name="renderer_asynchronous_gpu_emulation">Асинхронная эмуляция ГПУ</string>
     <string name="renderer_asynchronous_gpu_emulation_description">Запускает рендерер ГПУ в отдельном потоке.</string>
     <string name="renderer_async_presentation">Асинхронный вывод</string>

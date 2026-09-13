@@ -111,10 +111,6 @@ void HLE_DrawArraysIndirect::Fallback(Core::System& system, Engines::Maxwell3D& 
     auto topology = Maxwell3D::Regs::PrimitiveTopology(parameters[0]);
     const u32 vertex_first = parameters[3];
     const u32 vertex_count = parameters[1];
-    if (!IsTopologySafe(topology) && size_t(maxwell3d.GetMaxCurrentVertices()) < size_t(vertex_first) + size_t(vertex_count)) {
-        ASSERT(false && "Faulty draw!");
-        return;
-    }
     const u32 base_instance = extended ? parameters[4] : 0;
     if (extended) {
         maxwell3d.regs.global_base_instance_index = base_instance;

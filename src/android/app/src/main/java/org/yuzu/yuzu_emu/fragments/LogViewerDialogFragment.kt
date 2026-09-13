@@ -30,6 +30,7 @@ import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.databinding.DialogLogViewerBinding
 import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
+import org.yuzu.yuzu_emu.utils.Log
 import java.io.File
 
 class LogViewerDialogFragment : DialogFragment() {
@@ -308,11 +309,12 @@ class LogViewerDialogFragment : DialogFragment() {
 
                 val uri: Uri = FileProvider.getUriForFile(
                     requireContext(),
-                    "${requireContext().packageName}.fileprovider",
+                    "${requireContext().packageName}.provider",
                     shareFile
                 )
 
                 withContext(Dispatchers.Main) {
+                    if (!isAdded || context == null) return@withContext
                     val filterSuffix = when (currentFilterType) {
                         FILTER_ERRORS -> " (Только ошибки)"
                         FILTER_WARNINGS -> " (Только предупреждения)"
@@ -330,14 +332,20 @@ class LogViewerDialogFragment : DialogFragment() {
                     startActivity(chooser)
                 }
             } catch (e: Exception) {
+                Log.error("[LogViewer] Failed to share log file: ${e.message}")
                 withContext(Dispatchers.Main) {
-                    val intent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, textToShare)
+                    if (!isAdded || context == null) return@withContext
+                    try {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, textToShare.take(2000))
+                        }
+                        val chooser = Intent.createChooser(intent, "Поделиться журналом STORM SWITCH")
+                        chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(chooser)
+                    } catch (t: Throwable) {
+                        Toast.makeText(requireContext(), "Сбой отправки: ${e.localizedMessage ?: "Ошибка"}", Toast.LENGTH_SHORT).show()
                     }
-                    val chooser = Intent.createChooser(intent, "Поделиться журналом STORM SWITCH")
-                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(chooser)
                 }
             }
         }
@@ -363,11 +371,12 @@ class LogViewerDialogFragment : DialogFragment() {
 
                 val uri: Uri = FileProvider.getUriForFile(
                     requireContext(),
-                    "${requireContext().packageName}.fileprovider",
+                    "${requireContext().packageName}.provider",
                     shareFile
                 )
 
                 withContext(Dispatchers.Main) {
+                    if (!isAdded || context == null) return@withContext
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_STREAM, uri)
@@ -380,14 +389,20 @@ class LogViewerDialogFragment : DialogFragment() {
                     startActivity(chooser)
                 }
             } catch (e: Exception) {
+                Log.error("[LogViewer] Failed to share log to Telegram: ${e.message}")
                 withContext(Dispatchers.Main) {
-                    val intent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, textToShare)
+                    if (!isAdded || context == null) return@withContext
+                    try {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, textToShare.take(2000))
+                        }
+                        val chooser = Intent.createChooser(intent, "🚀 Отправить лог в Telegram / MAX")
+                        chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(chooser)
+                    } catch (t: Throwable) {
+                        Toast.makeText(requireContext(), "Сбой отправки: ${e.localizedMessage ?: "Ошибка"}", Toast.LENGTH_SHORT).show()
                     }
-                    val chooser = Intent.createChooser(intent, "🚀 Отправить лог в Telegram / MAX")
-                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(chooser)
                 }
             }
         }

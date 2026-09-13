@@ -1052,24 +1052,8 @@ std::string Device::GetDriverName() const {
 }
 
 bool Device::ShouldBoostClocks() const {
-    const auto driver_id = properties.driver.driverID;
-    const auto vendor_id = properties.properties.vendorID;
-    const auto device_id = properties.properties.deviceID;
-
-    const bool validated_driver =
-        driver_id == VK_DRIVER_ID_AMD_PROPRIETARY || driver_id == VK_DRIVER_ID_AMD_OPEN_SOURCE ||
-        driver_id == VK_DRIVER_ID_MESA_RADV || driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
-        driver_id == VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS ||
-        driver_id == VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA ||
-        driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY || driver_id == VK_DRIVER_ID_MESA_TURNIP ||
-        driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY;
-
-    const bool is_steam_deck = (vendor_id == 0x1002 && device_id == 0x163F) ||
-                               (vendor_id == 0x1002 && device_id == 0x1435);
-
     const bool is_debugging = this->HasDebuggingToolAttached();
-
-    return validated_driver && !is_steam_deck && !is_debugging;
+    return !is_debugging;
 }
 
 bool Device::HasTimelineSemaphore() const {

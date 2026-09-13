@@ -590,8 +590,8 @@
     <string name="sync_memory_operations_description">Ensures data consistency between compute and memory operations. This option should fix issues in some games, but may also reduce performance in some cases. Unreal Engine 4 games often see the most significant changes thereof.</string>
     <string name="use_disk_shader_cache">Disk shader cache</string>
     <string name="use_disk_shader_cache_description">Reduces stuttering by locally storing and loading generated shaders.</string>
-    <string name="renderer_force_max_clock">Force maximum clocks (Adreno only)</string>
-    <string name="renderer_force_max_clock_description">Forces the GPU to run at the maximum possible clocks (thermal constraints will still be applied).</string>
+    <string name="renderer_force_max_clock">Force maximum clocks (PC and Mobile)</string>
+    <string name="renderer_force_max_clock_description">Forces CPU and GPU to maintain peak clock frequencies, disabling power throttling across all PC (Intel, AMD, NVIDIA) and mobile (Snapdragon, Dimensity, Exynos, Tensor) processors.</string>
     <string name="renderer_asynchronous_gpu_emulation">GPU async emulation</string>
     <string name="renderer_asynchronous_gpu_emulation_description">This hack can increase performance by running GPU emulation asynchronously at the cost of graphical issues and increased crash rates by timing-related operations.</string>
     <string name="renderer_async_presentation">Asynchronous presentation</string>

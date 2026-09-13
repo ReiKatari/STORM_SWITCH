@@ -65,9 +65,12 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
     private val httpClient by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .connectionPool(okhttp3.ConnectionPool(5, 5, TimeUnit.MINUTES))
+            .protocols(listOf(okhttp3.Protocol.HTTP_2, okhttp3.Protocol.HTTP_1_1))
             .followRedirects(true)
+            .followSslRedirects(true)
             .build()
     }
 
@@ -93,6 +96,20 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 bytes >= 1024 -> String.format("%.1f КБ", bytes.toDouble() / 1024)
                 else -> "$bytes Б"
             }
+        }
+
+        fun compareVersions(v1: String, v2: String): Int {
+            val p1 = v1.split('.', '-', '_').mapNotNull { it.filter { c -> c.isDigit() }.toIntOrNull() }
+            val p2 = v2.split('.', '-', '_').mapNotNull { it.filter { c -> c.isDigit() }.toIntOrNull() }
+            val maxLen = maxOf(p1.size, p2.size)
+            for (i in 0 until maxLen) {
+                val n1 = p1.getOrElse(i) { 0 }
+                val n2 = p2.getOrElse(i) { 0 }
+                if (n1 != n2) {
+                    return n1.compareTo(n2)
+                }
+            }
+            return v1.compareTo(v2, ignoreCase = true)
         }
     }
 
@@ -181,6 +198,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 Pair("21.0.1", 11343L),
                 Pair("21.0.0", 11343L),
                 Pair("20.5.0", 6976L),
+                Pair("20.1.0", 6130L),
                 Pair("20.0.1", 6130L),
                 Pair("20.0.0", 6123L),
                 Pair("19.0.1", 8149L)
@@ -248,10 +266,15 @@ class OnlineToolsDialogFragment : DialogFragment() {
                                 )
                             )
                         }
-                        if (newAssets.isNotEmpty()) {
+                        // Sort strictly descending from newest to oldest version
+                        newAssets.sortWith { a, b -> compareVersions(b.version, a.version) }
+                        val sortedAssets = newAssets.mapIndexed { index, item ->
+                            item.copy(isRecommended = (index == 0))
+                        }
+                        if (sortedAssets.isNotEmpty()) {
                             withContext(Dispatchers.Main) {
                                 assets.clear()
-                                assets.addAll(newAssets)
+                                assets.addAll(sortedAssets)
                                 selectedIndex = 0
                                 adapter.notifyDataSetChanged()
                                 updateSelectionStatus()
@@ -300,6 +323,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 val request = Request.Builder()
                     .url(asset.downloadUrl)
                     .header("User-Agent", "STORM_SWITCH_Installer")
+                    .header("Accept-Encoding", "identity")
                     .build()
                 val response = httpClient.newCall(request).execute()
                 if (!response.isSuccessful) {
@@ -310,9 +334,9 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 val totalLength = body.contentLength()
                 var downloaded = 0L
 
-                body.byteStream().use { input ->
-                    FileOutputStream(tempZip).use { output ->
-                        val buffer = ByteArray(32768)
+                val buffer = ByteArray(262144)
+                java.io.BufferedInputStream(body.byteStream(), 262144).use { input ->
+                    java.io.BufferedOutputStream(FileOutputStream(tempZip), 262144).use { output ->
                         var read: Int
                         var lastReportTime = System.currentTimeMillis()
 
@@ -325,11 +349,14 @@ class OnlineToolsDialogFragment : DialogFragment() {
                                 lastReportTime = now
                                 val progress = if (totalLength > 0) ((downloaded * 100) / totalLength).toInt() else 0
                                 withContext(Dispatchers.Main) {
-                                    binding.progressBar.progress = progress
-                                    binding.textStatus.text = "Загрузка: $progress% (${formatBytes(downloaded)} / ${formatBytes(totalLength)})"
+                                    if (_binding != null) {
+                                        binding.progressBar.progress = progress
+                                        binding.textStatus.text = "Загрузка: $progress% (${formatBytes(downloaded)} / ${formatBytes(totalLength)})"
+                                    }
                                 }
                             }
                         }
+                        output.flush()
                     }
                 }
 

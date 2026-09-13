@@ -585,9 +585,13 @@ object GameHelper {
         }
 
         if ((cleanInternalVersion.isEmpty() || cleanInternalVersion == "0") && !isBaseVersion(cleanVersion)) {
-            val parts = cleanVersion.split('.').mapNotNull { it.toIntOrNull() }
-            if (parts.size >= 3 && parts[0] == 1 && parts[1] == 0 && parts[2] > 0) {
+            val parts = cleanVersion.split('.').mapNotNull { it.filter { c -> c.isDigit() }.toIntOrNull() }
+            if (parts.size >= 4 && parts[0] == 1 && parts[1] == 0 && parts[2] == 0 && parts[3] > 0) {
+                cleanInternalVersion = parts[3].toString()
+            } else if (parts.size >= 3 && parts[0] == 1 && parts[1] == 0 && parts[2] > 0) {
                 cleanInternalVersion = (parts[2] * 65536).toString()
+            } else if (parts.size >= 2 && parts[0] == 1 && parts[1] > 0) {
+                cleanInternalVersion = (parts[1] * 65536).toString()
             }
         }
 

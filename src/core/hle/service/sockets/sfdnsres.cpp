@@ -29,13 +29,13 @@ SFDNSRES::SFDNSRES(Core::System& system_) : ServiceFramework{system_, "sfdnsres"
         {4, nullptr, "GetHostStringErrorRequest"},
         {5, &SFDNSRES::GetGaiStringErrorRequest, "GetGaiStringErrorRequest"},
         {6, &SFDNSRES::GetAddrInfoRequest, "GetAddrInfoRequest"},
-        {7, nullptr, "GetNameInfoRequest"},
+        {7, &SFDNSRES::GetNameInfoRequest, "GetNameInfoRequest"},
         {8, nullptr, "RequestCancelHandleRequest"},
         {9, nullptr, "CancelRequest"},
         {10, &SFDNSRES::GetHostByNameRequestWithOptions, "GetHostByNameRequestWithOptions"},
         {11, nullptr, "GetHostByAddrRequestWithOptions"},
         {12, &SFDNSRES::GetAddrInfoRequestWithOptions, "GetAddrInfoRequestWithOptions"},
-        {13, nullptr, "GetNameInfoRequestWithOptions"},
+        {13, &SFDNSRES::GetNameInfoRequestWithOptions, "GetNameInfoRequestWithOptions"},
         {14, &SFDNSRES::ResolverSetOptionRequest, "ResolverSetOptionRequest"},
         {15, nullptr, "ResolverGetOptionRequest"},
     };
@@ -395,6 +395,58 @@ void SFDNSRES::GetAddrInfoRequestWithOptions(HLERequestContext& ctx) {
         .gai_error = emu_gai_err,
         .netdb_error = GetAddrInfoErrorToNetDbError(emu_gai_err),
         .bsd_errno = GetAddrInfoErrorToErrno(emu_gai_err),
+    });
+}
+
+void SFDNSRES::GetNameInfoRequest(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "called");
+
+    if (ctx.CanWriteBuffer(0)) {
+        ctx.WriteBuffer(std::string_view("127.0.0.1"), 0);
+    }
+    if (ctx.CanWriteBuffer(1)) {
+        ctx.WriteBuffer(std::string_view(""), 1);
+    }
+
+    struct OutputParameters {
+        Errno bsd_errno;
+        GetAddrInfoError gai_error;
+    };
+    static_assert(sizeof(OutputParameters) == 0x8);
+
+    IPC::ResponseBuilder rb{ctx, 4};
+    rb.Push(ResultSuccess);
+    rb.PushRaw(OutputParameters{
+        .bsd_errno = Errno::SUCCESS,
+        .gai_error = GetAddrInfoError::SUCCESS,
+    });
+}
+
+void SFDNSRES::GetNameInfoRequestWithOptions(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "called");
+
+    if (ctx.CanWriteBuffer(0)) {
+        ctx.WriteBuffer(std::string_view("127.0.0.1"), 0);
+    }
+    if (ctx.CanWriteBuffer(1)) {
+        ctx.WriteBuffer(std::string_view(""), 1);
+    }
+
+    struct OutputParameters {
+        u32 host_len;
+        u32 serv_len;
+        NetDbError netdb_error;
+        Errno bsd_errno;
+    };
+    static_assert(sizeof(OutputParameters) == 0x10);
+
+    IPC::ResponseBuilder rb{ctx, 6};
+    rb.Push(ResultSuccess);
+    rb.PushRaw(OutputParameters{
+        .host_len = 9,
+        .serv_len = 0,
+        .netdb_error = NetDbError::Success,
+        .bsd_errno = Errno::SUCCESS,
     });
 }
 

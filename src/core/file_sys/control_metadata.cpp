@@ -107,34 +107,34 @@ NACP::NACP(VirtualFile file)
 
 NACP::~NACP() = default;
 
+static Language GetCurrentSystemLanguage() {
+    switch (Settings::values.language_index.GetValue()) {
+    case Settings::Language::Chinese: return Language::SimplifiedChinese;
+    case Settings::Language::ChineseSimplified: return Language::SimplifiedChinese;
+    case Settings::Language::ChineseTraditional: return Language::TraditionalChinese;
+    case Settings::Language::Dutch: return Language::Dutch;
+    case Settings::Language::EnglishAmerican: return Language::AmericanEnglish;
+    case Settings::Language::EnglishBritish: return Language::BritishEnglish;
+    case Settings::Language::French: return Language::French;
+    case Settings::Language::FrenchCanadian: return Language::CanadianFrench;
+    case Settings::Language::German: return Language::German;
+    case Settings::Language::Italian: return Language::Italian;
+    case Settings::Language::Korean: return Language::Korean;
+    case Settings::Language::Japanese: return Language::Japanese;
+    case Settings::Language::Portuguese: return Language::Portuguese;
+    case Settings::Language::PortugueseBrazilian: return Language::BrazilianPortuguese;
+    case Settings::Language::Russian: return Language::Russian;
+    case Settings::Language::Spanish: return Language::Spanish;
+    case Settings::Language::SpanishLatin: return Language::LatinAmericanSpanish;
+    case Settings::Language::Taiwanese: return Language::TraditionalChinese;
+    case Settings::Language::Thai: return Language::Thai;
+    case Settings::Language::Polish: return Language::Polish;
+    default: return Language::AmericanEnglish;
+    }
+}
+
 const LanguageEntry& NACP::GetLanguageEntry() const {
-
-    auto const language = []{
-        switch (Settings::values.language_index.GetValue()) {
-        case Settings::Language::Chinese: return Language::SimplifiedChinese;
-        case Settings::Language::ChineseSimplified: return Language::SimplifiedChinese;
-        case Settings::Language::ChineseTraditional: return Language::TraditionalChinese;
-        case Settings::Language::Dutch: return Language::Dutch;
-        case Settings::Language::EnglishAmerican: return Language::AmericanEnglish;
-        case Settings::Language::EnglishBritish: return Language::BritishEnglish;
-        case Settings::Language::French: return Language::French;
-        case Settings::Language::FrenchCanadian: return Language::CanadianFrench;
-        case Settings::Language::German: return Language::German;
-        case Settings::Language::Italian: return Language::Italian;
-        case Settings::Language::Korean: return Language::Korean;
-        case Settings::Language::Japanese: return Language::Japanese;
-        case Settings::Language::Portuguese: return Language::Portuguese;
-        case Settings::Language::PortugueseBrazilian: return Language::BrazilianPortuguese;
-        case Settings::Language::Russian: return Language::Russian;
-        case Settings::Language::Spanish: return Language::Spanish;
-        case Settings::Language::SpanishLatin: return Language::LatinAmericanSpanish;
-        case Settings::Language::Taiwanese: return Language::TraditionalChinese;
-        case Settings::Language::Thai: return Language::Thai;
-        case Settings::Language::Polish: return Language::Polish;
-        default: return Language::AmericanEnglish;
-        }
-    }();
-
+    const auto language = GetCurrentSystemLanguage();
     const auto index = static_cast<size_t>(language);
 
     if (index < language_entries.size() &&
@@ -199,7 +199,10 @@ bool NACP::GetUserAccountSwitchLock() const {
 }
 
 u32 NACP::GetSupportedLanguages() const {
-    return u32(raw.supported_languages);
+    u32 supported = u32(raw.supported_languages);
+    const auto lang = GetCurrentSystemLanguage();
+    supported |= (1U << static_cast<u8>(lang));
+    return supported;
 }
 
 u64 NACP::GetDeviceSaveDataSize() const {
@@ -216,7 +219,9 @@ const std::array<u8, 0x20>& NACP::GetRatingAge() const {
 
 std::vector<u8> NACP::GetRawBytes() const {
     std::vector<u8> out(sizeof(RawNACP));
-    std::memcpy(out.data(), &raw, sizeof(RawNACP));
+    RawNACP modified_raw = raw;
+    modified_raw.supported_languages = static_cast<SupportedLanguage>(GetSupportedLanguages());
+    std::memcpy(out.data(), &modified_raw, sizeof(RawNACP));
     return out;
 }
 } // namespace FileSys

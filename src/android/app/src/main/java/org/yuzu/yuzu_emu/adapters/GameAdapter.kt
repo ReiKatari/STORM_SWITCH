@@ -167,12 +167,9 @@ class GameAdapter(private val activity: AppCompatActivity) :
         private fun bindBadgeInternalVersion(badge: android.widget.TextView?, model: Game) {
             if (badge == null) return
             val iv = model.internalVersion.trim().removePrefix("v").removePrefix("V")
-            if (iv.isNotEmpty() && iv != "0") {
-                badge.visibility = android.view.View.VISIBLE
-                badge.text = iv
-            } else {
-                badge.visibility = android.view.View.GONE
-            }
+            val textToShow = if (iv.isNotEmpty()) iv else "0"
+            badge.visibility = android.view.View.VISIBLE
+            badge.text = textToShow
         }
 
         private fun bindBadgeAddons(badge: android.widget.TextView?, model: Game) {

@@ -262,6 +262,10 @@ class GamesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        val currentGames = gamesViewModel.games.value
+        if (currentGames.isNotEmpty()) {
+            setAdapter(currentGames)
+        }
         if (getCurrentViewType() == GameAdapter.VIEW_TYPE_CAROUSEL) {
             (binding.gridGames as? CarouselRecyclerView)?.setupCarousel(true)
             (binding.gridGames as? CarouselRecyclerView)?.restoreScrollState(gamesViewModel.lastScrollPosition)
@@ -287,7 +291,15 @@ class GamesFragment : Fragment() {
             lastSearchText = currentSearchText
             lastFilter = currentFilter
         } else {
-            ((binding.gridGames as? RecyclerView)?.adapter as? GameAdapter)?.submitList(games)
+            val adapter = ((binding.gridGames as? RecyclerView)?.adapter as? GameAdapter) ?: gameAdapter
+            adapter.submitList(ArrayList(games)) {
+                if (_binding != null) {
+                    binding.noticeText.setVisible(
+                        visible = games.isEmpty() && !gamesViewModel.isReloading.value,
+                        gone = false
+                    )
+                }
+            }
             gamesViewModel.setFilteredGames(games)
         }
     }
