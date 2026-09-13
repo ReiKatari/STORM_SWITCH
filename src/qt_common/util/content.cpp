@@ -238,12 +238,41 @@ void VerifyGameContents(const std::string& game_path) {
     }
 }
 
+void InstallKeysZip() {
+    const QString zip_location = QtCommon::Frontend::GetOpenFileName(
+        tr("Select Keys ZIP Archive"), {}, QStringLiteral("ZIP Archives (*.zip);;All Files (*.*)"), {});
+
+    if (zip_location.isEmpty())
+        return;
+
+    if (InstallKeysFromZip(zip_location)) {
+        QtCommon::Frontend::Information(tr("Decryption Keys install succeeded"),
+                                        tr("Decryption keys were successfully installed from the ZIP archive."));
+    } else {
+        QtCommon::Frontend::Critical(tr("Decryption Keys install failed"),
+                                     tr("Failed to install decryption keys from the ZIP archive. Ensure prod.keys is present in the archive."));
+    }
+}
+
 void InstallKeys() {
     const QString key_source_location = QtCommon::Frontend::GetOpenFileName(
-        tr("Select Dumped Keys Location"), {}, QStringLiteral("Decryption Keys (*.keys)"), {});
+        tr("Select Dumped Keys Location"), {},
+        QStringLiteral("Decryption Keys (*.keys *.bin *.zip);;Keys (*.keys *.bin);;ZIP Archives (*.zip);;All Files (*.*)"),
+        {});
 
     if (key_source_location.isEmpty())
         return;
+
+    if (key_source_location.endsWith(QStringLiteral(".zip"), Qt::CaseInsensitive)) {
+        if (InstallKeysFromZip(key_source_location)) {
+            QtCommon::Frontend::Information(tr("Decryption Keys install succeeded"),
+                                            tr("Decryption keys were successfully installed from the ZIP archive."));
+        } else {
+            QtCommon::Frontend::Critical(tr("Decryption Keys install failed"),
+                                         tr("Failed to install decryption keys from the ZIP archive. Ensure prod.keys is present in the archive."));
+        }
+        return;
+    }
 
     FirmwareManager::KeyInstallResult result =
         FirmwareManager::InstallKeys(key_source_location.toStdString(), "keys");

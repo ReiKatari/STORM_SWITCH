@@ -4,7 +4,7 @@ Start-Sleep -Milliseconds 500
 $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe'
 $sha1 = '10C44A100C93E316872A1BEF4D46269EA9C52269'
 
-Write-Host "Copying freshly compiled 8.2.5 binaries from build_ninja\bin to Assembling..."
+Write-Host "Copying freshly compiled 8.2.7 binaries from build_ninja\bin to Assembling..."
 Copy-Item 'E:\STORM SWITCH 4\Build\build_ninja\bin\STORM_SWITCH*.exe' 'E:\STORM SWITCH 4\Assembling\' -Force
 
 Write-Host "Signing Assembling executables..."
@@ -42,7 +42,7 @@ Copy-Item 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH*.exe' $stageWin11\ -Force
 Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.exe' $stageWin11\ -Force -ErrorAction SilentlyContinue
 Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.dll' $stageWin11\ -Force -ErrorAction SilentlyContinue
 
-$zipPathWin11 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.5_Windows11.zip'
+$zipPathWin11 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.7_Windows11.zip'
 if (Test-Path $zipPathWin11) { Remove-Item $zipPathWin11 -Force }
 & 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathWin11 "$stageWin11\*" -mx=9
 Unblock-File $zipPathWin11
@@ -65,10 +65,10 @@ Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.exe' $stageWin10\ -Force -ErrorAction
 Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.dll' $stageWin10\ -Force -ErrorAction SilentlyContinue
 Copy-Item 'E:\STORM SWITCH 4\Assembling\*.dll' $stageWin10\ -Force -ErrorAction SilentlyContinue
 
-$zipPathWin10 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.5_Windows10.zip'
+$zipPathWin10 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_8.2.7_Windows10.zip'
 if (Test-Path $zipPathWin10) { Remove-Item $zipPathWin10 -Force }
 & 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathWin10 "$stageWin10\*" -mx=9
 Unblock-File $zipPathWin10
 Remove-Item $stageWin10 -Recurse -Force
 
-Write-Host "All Windows 8.2.5 executables signed and packaged successfully into E:\STORM SWITCH 4\Files!"
+Write-Host "All Windows 8.2.7 executables signed and packaged successfully into E:\STORM SWITCH 4\Files!"

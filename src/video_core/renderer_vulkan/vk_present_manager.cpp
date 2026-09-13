@@ -419,6 +419,12 @@ void PresentManager::CopyToSwapchain(Frame* frame) {
             return CopyToSwapchainImpl(frame);
         } catch (const vk::Exception& except) {
             const auto res = except.GetResult();
+            if (res == VK_ERROR_DEVICE_LOST) {
+                LOG_CRITICAL(Render_Vulkan, "STORM Vulkan Device Recovery: Device lost detected, performing safe recovery without crashing...");
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                requires_recreation = true;
+                return;
+            }
             if (res != VK_ERROR_SURFACE_LOST_KHR &&
                 res != VK_ERROR_OUT_OF_DATE_KHR &&
                 res != VK_SUBOPTIMAL_KHR &&

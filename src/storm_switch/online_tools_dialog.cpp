@@ -42,32 +42,34 @@ public:
     ToolItemWidget(const ReleaseAsset& asset, OnlineToolType type, QWidget* parent = nullptr)
         : QWidget(parent) {
         auto* main_layout = new QHBoxLayout(this);
-        main_layout->setContentsMargins(8, 6, 8, 6);
+        main_layout->setContentsMargins(4, 3, 4, 3);
 
         auto* frame = new QFrame(this);
         frame->setObjectName(QStringLiteral("CardFrame"));
         auto* card_layout = new QHBoxLayout(frame);
-        card_layout->setContentsMargins(14, 10, 14, 10);
-        card_layout->setSpacing(12);
+        card_layout->setContentsMargins(14, 8, 14, 8);
+        card_layout->setSpacing(14);
 
         // Icon
         auto* icon_label = new QLabel(frame);
         icon_label->setText(type == OnlineToolType::Firmware ? QStringLiteral("📦") : QStringLiteral("🔑"));
-        icon_label->setStyleSheet(QStringLiteral("font-size: 26px;"));
+        icon_label->setStyleSheet(QStringLiteral("font-size: 24px; background: transparent;"));
         card_layout->addWidget(icon_label);
 
         // Texts
         auto* text_layout = new QVBoxLayout();
         text_layout->setContentsMargins(0, 0, 0, 0);
-        text_layout->setSpacing(3);
+        text_layout->setSpacing(4);
 
         auto* title_label = new QLabel(asset.display_title, frame);
-        title_label->setStyleSheet(QStringLiteral("font-size: 14px; font-weight: bold; color: #ffffff;"));
+        title_label->setStyleSheet(QStringLiteral(
+            "font-family: 'Segoe UI'; font-size: 14px; font-weight: bold; color: #ffffff; background: transparent;"));
         text_layout->addWidget(title_label);
 
         auto* sub_label = new QLabel(
             QStringLiteral("Файл: %1 • Размер: %2").arg(asset.name, asset.display_size), frame);
-        sub_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #94a3b8;"));
+        sub_label->setStyleSheet(QStringLiteral(
+            "font-family: 'Segoe UI'; font-size: 11px; color: #94a3b8; background: transparent;"));
         text_layout->addWidget(sub_label);
 
         card_layout->addLayout(text_layout, 1);
@@ -80,6 +82,7 @@ public:
                 "border: 1px solid #00F0FF; "
                 "border-radius: 10px; "
                 "color: #00F0FF; "
+                "font-family: 'Segoe UI'; "
                 "font-size: 11px; "
                 "font-weight: bold; "
                 "padding: 4px 10px;"));
@@ -123,7 +126,7 @@ void OnlineToolsDialog::SetupUI() {
         "QDialog {"
         "    background-color: #0e1117;"
         "    color: #e2e8f0;"
-        "    font-family: 'Segoe UI', system-ui, sans-serif;"
+        "    font-family: 'Segoe UI';"
         "}"
         "QFrame#CardFrame {"
         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #181d27, stop:1 #11141c);"
@@ -357,7 +360,7 @@ void OnlineToolsDialog::UpdateListView() {
     for (const auto& asset : m_assets) {
         auto* item = new QListWidgetItem(m_list_widget);
         auto* widget = new ToolItemWidget(asset, m_type, m_list_widget);
-        item->setSizeHint(QSize(0, 68));
+        item->setSizeHint(QSize(0, 78));
         item->setData(Qt::UserRole, asset.version);
         m_list_widget->addItem(item);
         m_list_widget->setItemWidget(item, widget);

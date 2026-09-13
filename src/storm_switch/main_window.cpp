@@ -414,7 +414,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.2.5";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.2.7";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
@@ -2576,8 +2576,10 @@ void MainWindow::SetupMenuIcons() {
     apply_action(ui->action_Show_Performance_Overlay, QStringLiteral("chart"), col_amber);
 
     // Tools Menu
-    apply_action(ui->action_Install_Keys_Online, QStringLiteral("key"), col_cyan);
-    apply_action(ui->action_Install_Keys, QStringLiteral("key"), col_amber);
+    apply_menu(ui->menuInstall_Keys, QStringLiteral("key"), col_cyan);
+    apply_action(ui->action_Install_Keys_Online, QStringLiteral("network"), col_cyan);
+    apply_action(ui->action_Install_Keys_From_ZIP, QStringLiteral("save"), col_blue);
+    apply_action(ui->action_Install_Keys, QStringLiteral("file"), col_amber);
     apply_menu(ui->menuInstall_Firmware, QStringLiteral("nand"), col_purple);
     apply_action(ui->action_Firmware_Online, QStringLiteral("network"), col_cyan);
     apply_action(ui->action_Firmware_From_Folder, QStringLiteral("folder"), col_yellow);
@@ -3047,6 +3049,7 @@ void MainWindow::ConnectMenuEvents() {
     connect_menu(ui->action_Firmware_From_Folder, &MainWindow::OnInstallFirmware);
     connect_menu(ui->action_Firmware_From_ZIP, &MainWindow::OnInstallFirmwareFromZIP);
     connect_menu(ui->action_Install_Keys_Online, &MainWindow::OnInstallKeysOnline);
+    connect_menu(ui->action_Install_Keys_From_ZIP, &MainWindow::OnInstallKeysFromZIP);
     connect_menu(ui->action_Install_Keys, &MainWindow::OnInstallDecryptionKeys);
     connect_menu(ui->action_Check_Updates, [this] { OnCheckUpdates(true); });
     connect_menu(ui->action_About, &MainWindow::OnAbout);
@@ -3094,7 +3097,9 @@ void MainWindow::UpdateMenuState() {
     ui->action_Firmware_Online->setEnabled(!emulation_running);
     ui->action_Firmware_From_Folder->setEnabled(!emulation_running);
     ui->action_Firmware_From_ZIP->setEnabled(!emulation_running);
+    ui->menuInstall_Keys->setEnabled(!emulation_running);
     ui->action_Install_Keys_Online->setEnabled(!emulation_running);
+    ui->action_Install_Keys_From_ZIP->setEnabled(!emulation_running);
     ui->action_Install_Keys->setEnabled(!emulation_running);
 
     for (QAction* action : applet_actions) {
@@ -6823,6 +6828,15 @@ void MainWindow::OnInstallDecryptionKeys() {
     OnCheckFirmwareDecryption();
 }
 
+void MainWindow::OnInstallKeysFromZIP() {
+    if (QtCommon::emu_thread != nullptr && QtCommon::emu_thread->IsRunning())
+        return;
+
+    QtCommon::Content::InstallKeysZip();
+    game_list->PopulateAsync(UISettings::values.game_dirs);
+    OnCheckFirmwareDecryption();
+}
+
 void MainWindow::OnInstallKeysOnline() {
     if (QtCommon::emu_thread != nullptr && QtCommon::emu_thread->IsRunning())
         return;
@@ -8461,6 +8475,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         context_menu.addAction(tr("📁 Установить прошивку из папки..."), this, &MainWindow::OnInstallFirmware);
         context_menu.addSeparator();
         context_menu.addAction(tr("🔑 Онлайн-установка ключей из сети..."), this, &MainWindow::OnInstallKeysOnline);
+        context_menu.addAction(tr("📦 Установить ключи из ZIP..."), this, &MainWindow::OnInstallKeysFromZIP);
         context_menu.addAction(tr("🔑 Установить ключи из файла (prod.keys)..."), this, &MainWindow::OnInstallDecryptionKeys);
         context_menu.addSeparator();
         context_menu.addAction(tr("📁 Открыть папку NAND..."), this, &MainWindow::OnOpenNANDFolder);
@@ -8586,6 +8601,7 @@ void MainWindow::ShowFirmwareContextMenu() {
     context_menu.addAction(tr("📁 Установить прошивку из папки..."), this, &MainWindow::OnInstallFirmware);
     context_menu.addSeparator();
     context_menu.addAction(tr("🔑 Онлайн-установка ключей из сети..."), this, &MainWindow::OnInstallKeysOnline);
+    context_menu.addAction(tr("📦 Установить ключи из ZIP..."), this, &MainWindow::OnInstallKeysFromZIP);
     context_menu.addAction(tr("🔑 Установить ключи из файла (prod.keys)..."), this, &MainWindow::OnInstallDecryptionKeys);
     context_menu.addSeparator();
     context_menu.addAction(tr("📁 Открыть папку NAND..."), this, &MainWindow::OnOpenNANDFolder);

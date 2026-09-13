@@ -44,6 +44,7 @@ void InstallFirmwareZip();
 
 // Keys //
 void InstallKeys();
+void InstallKeysZip();
 bool InstallKeysFromZip(const QString& zip_location);
 
 // Content //
