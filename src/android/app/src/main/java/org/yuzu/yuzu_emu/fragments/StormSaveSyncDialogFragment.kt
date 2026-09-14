@@ -394,7 +394,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         put("status", "ok")
                         put("device_name", "${Build.MANUFACTURER} ${Build.MODEL}")
                         put("platform", "android")
-                        put("version", "8.4.0")
+                        put("version", "8.5.0")
                     }
                     sendResponse(200, "application/json", obj.toString().toByteArray(Charsets.UTF_8))
                 }

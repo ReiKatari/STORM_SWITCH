@@ -4919,52 +4919,17 @@ object GameFixDatabase {
         val fix = getFix(game) ?: return false
         activateSessionFix(game)
 
-        val file = SettingsFile.getCustomSettingsFile(game)
-        val parent = file.parentFile
-        if (parent != null && !parent.exists()) {
-            parent.mkdirs()
-        }
-
-        // If a config file already exists, merge the fix settings into it non-destructively
-        if (file.exists() && file.length() > 0) {
-            Log.info("[GameFixDatabase] Game ${game.title} has existing custom config; merging fixes non-destructively.")
-            mergeFixIntoExistingConfig(file, fix)
-            return true
-        }
-
+        // Runtime-only: Clean up any legacy GameFix file on disk so personal settings are pristine
         try {
-            val sections = mutableMapOf<String, MutableMap<String, String>>()
-            for ((fullKey, value) in fix.settingsMap) {
-                if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio")) { continue }
-                val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
-                val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
-                val section = sections.getOrPut(sectionName) { mutableMapOf() }
-                section[keyName] = value
-                if (keyName == "memory_layout_mode") {
-                    sections.getOrPut("Core") { mutableMapOf() }[keyName] = value
-                    sections.getOrPut("System") { mutableMapOf() }[keyName] = value
-                }
+            val file = SettingsFile.getCustomSettingsFile(game)
+            if (file.exists() && isTemporaryFixFile(file)) {
+                file.delete()
+                Log.info("[GameFixDatabase] Deleted legacy temporary fix file for ${game.title}")
             }
+        } catch (_: Exception) {}
 
-            val sb = StringBuilder()
-            sb.append("# STORM SWITCH Game Profile for ").append(game.title).append("\n\n")
-            for ((sectionName, map) in sections) {
-                sb.append("[$sectionName]\n")
-                for ((k, v) in map) {
-                    sb.append("$k = $v\n")
-                    sb.append("$k\\use_global = false\n")
-                    sb.append("$k\\default = false\n")
-                }
-                sb.append("\n")
-            }
-
-            file.writeText(sb.toString())
-            Log.info("[GameFixDatabase] Successfully wrote custom config for ${game.title} at ${file.absolutePath}")
-            return true
-        } catch (e: Exception) {
-            Log.error("[GameFixDatabase] Failed to write custom config: ${e.message}")
-            return false
-        }
+        Log.info("[GameFixDatabase] Runtime-only GameFix active in memory for ${game.title}")
+        return true
     }
 
     fun cleanupAllTemporaryFixes() {

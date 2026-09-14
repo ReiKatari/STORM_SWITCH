@@ -127,6 +127,29 @@ object DirectoryInitialization {
             saveConfig = true
         }
 
+        val hasSetSystemLocaleLang = preferences.getBoolean("migrated_system_locale_language_850", false)
+        if (!hasSetSystemLocaleLang) {
+            val sysLocale = java.util.Locale.getDefault()
+            val langCode = sysLocale.language.lowercase()
+            val switchLangIndex = when {
+                langCode in listOf("ru", "be", "uk", "kk") -> 10 // Russian
+                langCode == "de" -> 3 // German
+                langCode == "fr" -> 2 // French
+                langCode == "ja" -> 0 // Japanese
+                langCode == "zh" -> if (sysLocale.country in listOf("TW", "HK", "MO")) 16 else 15 // Chinese
+                langCode == "es" -> 5 // Spanish
+                langCode == "it" -> 4 // Italian
+                langCode == "pt" -> if (sysLocale.country == "BR") 17 else 9 // Portuguese
+                langCode == "ko" -> 7 // Korean
+                langCode == "nl" -> 8 // Dutch
+                langCode == "pl" -> 18 // Polish
+                else -> 1 // American English
+            }
+            IntSetting.LANGUAGE_INDEX.setInt(switchLangIndex)
+            saveConfig = true
+            preferences.edit().putBoolean("migrated_system_locale_language_850", true).apply()
+        }
+
         val hasMigratedDefaults499 = preferences.getBoolean("migrated_defaults_499", false)
         if (!hasMigratedDefaults499) {
             val curSpeedLimit = ShortSetting.RENDERER_SPEED_LIMIT.getShort(true)

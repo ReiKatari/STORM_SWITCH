@@ -24,11 +24,11 @@ namespace {
 
 using namespace Service::AM::Frontend;
 
-constexpr float BASE_HEADER_FONT_SIZE = 34.0f;
-constexpr float BASE_SUB_FONT_SIZE = 22.0f;
-constexpr float BASE_EDITOR_FONT_SIZE = 44.0f;
-constexpr float BASE_CHAR_BUTTON_FONT_SIZE = 38.0f;
-constexpr float BASE_LABEL_BUTTON_FONT_SIZE = 24.0f;
+constexpr float BASE_HEADER_FONT_SIZE = 26.0f;
+constexpr float BASE_SUB_FONT_SIZE = 18.0f;
+constexpr float BASE_EDITOR_FONT_SIZE = 30.0f;
+constexpr float BASE_CHAR_BUTTON_FONT_SIZE = 32.0f;
+constexpr float BASE_LABEL_BUTTON_FONT_SIZE = 18.0f;
 constexpr float BASE_ICON_BUTTON_SIZE = 48.0f;
 [[maybe_unused]] constexpr float BASE_WIDTH = 1280.0f;
 constexpr float BASE_HEIGHT = 720.0f;
@@ -647,14 +647,76 @@ void QtSoftwareKeyboardDialog::RescaleKeyboardElements(float width, float height
     const int char_button_font_size = static_cast<int>(BASE_CHAR_BUTTON_FONT_SIZE * scale_factor);
     const int label_button_font_size = static_cast<int>(BASE_LABEL_BUTTON_FONT_SIZE * scale_factor);
 
+    setStyleSheet(QStringLiteral(
+        "QDialog#QtSoftwareKeyboardDialog { background: rgba(10, 14, 23, 0.96); }"
+        "QWidget#topOSK { background: transparent; padding: 12px; }"
+        "QWidget#bottomOSK { background: rgba(15, 23, 42, 0.88); border-top: 1px solid rgba(0, 210, 255, 0.3); }"
+        "QLineEdit#line_edit_osk {"
+        "  background: rgba(15, 23, 42, 0.95);"
+        "  border: 2px solid rgba(0, 210, 255, 0.6);"
+        "  border-radius: 8px;"
+        "  color: #f8fafc;"
+        "  padding: 6px 16px;"
+        "  min-height: %1px;"
+        "  font-size: %2px;"
+        "  font-weight: bold;"
+        "  selection-background-color: #00d2ff;"
+        "  selection-color: #0b0f19;"
+        "}"
+        "QLineEdit#line_edit_osk:focus {"
+        "  border: 2px solid #00d2ff;"
+        "  background: rgba(15, 23, 42, 1.0);"
+        "}"
+        "QPushButton {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(30, 41, 59, 0.9), stop:1 rgba(15, 23, 42, 0.95));"
+        "  border: 1px solid rgba(255, 255, 255, 0.15);"
+        "  border-bottom: 2px solid rgba(0, 0, 0, 0.5);"
+        "  border-radius: 6px;"
+        "  color: #f1f5f9;"
+        "  font-size: %3px;"
+        "  font-weight: bold;"
+        "  padding: 2px;"
+        "}"
+        "QPushButton:hover {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(51, 65, 85, 0.9), stop:1 rgba(30, 41, 59, 0.95));"
+        "  border: 1px solid rgba(0, 210, 255, 0.6);"
+        "}"
+        "QPushButton:pressed {"
+        "  background: rgba(0, 210, 255, 0.25);"
+        "  border: 1px solid #00d2ff;"
+        "}"
+        "QPushButton#button_space, QPushButton#button_space_shift, "
+        "QPushButton#button_return, QPushButton#button_return_shift, "
+        "QPushButton#button_shift, QPushButton#button_shift_shift, "
+        "QPushButton#button_backspace, QPushButton#button_backspace_shift, QPushButton#button_backspace_num, "
+        "QPushButton#button_ok, QPushButton#button_ok_shift, QPushButton#button_ok_num {"
+        "  font-size: %4px;"
+        "}"
+        "QPushButton#button_ok, QPushButton#button_ok_shift, QPushButton#button_ok_num {"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0284c7, stop:1 #00d2ff);"
+        "  color: #0b0f19;"
+        "  font-weight: bold;"
+        "  border: none;"
+        "  border-radius: 6px;"
+        "}"
+        "QPushButton#button_ok:hover, QPushButton#button_ok_shift:hover, QPushButton#button_ok_num:hover {"
+        "  background: #38bdf8;"
+        "}"
+        "QLabel { color: #94a3b8; font-weight: 600; font-size: %5px; }"
+    ).arg(static_cast<int>(52 * scale_factor))
+     .arg(editor_font_size)
+     .arg(char_button_font_size)
+     .arg(label_button_font_size)
+     .arg(sub_font_size));
+
     QFont header_font(QStringLiteral("Segoe UI"), header_font_size, QFont::Bold);
     QFont sub_font(QStringLiteral("Segoe UI"), sub_font_size, QFont::Normal);
     QFont editor_font(QStringLiteral("Segoe UI"), editor_font_size, QFont::Bold);
     QFont char_button_font(QStringLiteral("Segoe UI"), char_button_font_size, QFont::Bold);
     QFont label_button_font(QStringLiteral("Segoe UI"), label_button_font_size, QFont::Bold);
 
-    ui->line_edit_osk->setMinimumHeight(static_cast<int>(60 * scale_factor));
-    ui->text_edit_osk->setMinimumHeight(static_cast<int>(90 * scale_factor));
+    ui->line_edit_osk->setMinimumHeight(static_cast<int>(56 * scale_factor));
+    ui->text_edit_osk->setMinimumHeight(static_cast<int>(80 * scale_factor));
 
     ui->label_header->setFont(header_font);
     ui->label_sub->setFont(sub_font);
@@ -755,125 +817,63 @@ void QtSoftwareKeyboardDialog::SetPasswordMode() {
 }
 
 void QtSoftwareKeyboardDialog::SetTextDrawType() {
-    switch (initialize_parameters.text_draw_type) {
-    case SwkbdTextDrawType::Line:
-    case SwkbdTextDrawType::DownloadCode: {
-        ui->topOSK->setCurrentIndex(0);
+    ui->topOSK->setCurrentIndex(0);
 
-        if (initialize_parameters.max_text_length <= 10) {
-            ui->gridLineOSK->setColumnStretch(0, 390);
-            ui->gridLineOSK->setColumnStretch(1, 500);
-            ui->gridLineOSK->setColumnStretch(2, 390);
-        } else {
-            ui->gridLineOSK->setColumnStretch(0, 130);
-            ui->gridLineOSK->setColumnStretch(1, 1020);
-            ui->gridLineOSK->setColumnStretch(2, 130);
-        }
+    if (initialize_parameters.max_text_length <= 10) {
+        ui->gridLineOSK->setColumnStretch(0, 390);
+        ui->gridLineOSK->setColumnStretch(1, 500);
+        ui->gridLineOSK->setColumnStretch(2, 390);
+    } else {
+        ui->gridLineOSK->setColumnStretch(0, 130);
+        ui->gridLineOSK->setColumnStretch(1, 1020);
+        ui->gridLineOSK->setColumnStretch(2, 130);
+    }
 
-        if (is_inline) {
-            return;
-        }
+    if (is_inline) {
+        return;
+    }
 
-        connect(ui->line_edit_osk, &QLineEdit::textChanged, [this](const QString& changed_string) {
-            const auto is_valid = ValidateInputText(changed_string);
+    connect(ui->line_edit_osk, &QLineEdit::textChanged, [this](const QString& changed_string) {
+        const auto is_valid = ValidateInputText(changed_string);
 
-            const auto text_length = static_cast<u32>(changed_string.length());
-
-            ui->label_characters->setText(QStringLiteral("%1/%2")
-                                              .arg(text_length)
-                                              .arg(initialize_parameters.max_text_length));
-
-            ui->button_ok->setEnabled(is_valid);
-            ui->button_ok_shift->setEnabled(is_valid);
-            ui->button_ok_num->setEnabled(is_valid);
-
-            ui->line_edit_osk->setFocus();
-        });
-
-        connect(ui->line_edit_osk, &QLineEdit::cursorPositionChanged,
-                [this](int old_cursor_position, int new_cursor_position) {
-                    ui->button_backspace->setEnabled(
-                        initialize_parameters.enable_backspace_button && new_cursor_position > 0);
-                    ui->button_backspace_shift->setEnabled(
-                        initialize_parameters.enable_backspace_button && new_cursor_position > 0);
-                    ui->button_backspace_num->setEnabled(
-                        initialize_parameters.enable_backspace_button && new_cursor_position > 0);
-
-                    ui->line_edit_osk->setFocus();
-                });
-
-        connect(
-            ui->line_edit_osk, &QLineEdit::returnPressed, this,
-            [this] { TranslateButtonPress(Core::HID::NpadButton::Plus); }, Qt::QueuedConnection);
-
-        ui->line_edit_osk->setPlaceholderText(
-            QString::fromStdU16String(initialize_parameters.guide_text));
-        ui->line_edit_osk->setText(QString::fromStdU16String(initialize_parameters.initial_text));
-        ui->line_edit_osk->setMaxLength(initialize_parameters.max_text_length);
-        ui->line_edit_osk->setCursorPosition(initialize_parameters.initial_cursor_position);
+        const auto text_length = static_cast<u32>(changed_string.length());
 
         ui->label_characters->setText(QStringLiteral("%1/%2")
-                                          .arg(initialize_parameters.initial_text.size())
+                                          .arg(text_length)
                                           .arg(initialize_parameters.max_text_length));
-        break;
-    }
-    case SwkbdTextDrawType::Box:
-    default: {
-        ui->topOSK->setCurrentIndex(1);
 
-        if (is_inline) {
-            return;
-        }
+        ui->button_ok->setEnabled(is_valid);
+        ui->button_ok_shift->setEnabled(is_valid);
+        ui->button_ok_num->setEnabled(is_valid);
 
-        connect(ui->text_edit_osk, &QTextEdit::textChanged, [this] {
-            if (static_cast<u32>(ui->text_edit_osk->toPlainText().length()) >
-                initialize_parameters.max_text_length) {
-                auto text_cursor = ui->text_edit_osk->textCursor();
-                ui->text_edit_osk->setTextCursor(text_cursor);
-                text_cursor.deletePreviousChar();
-            }
+        ui->line_edit_osk->setFocus();
+    });
 
-            const auto is_valid = ValidateInputText(ui->text_edit_osk->toPlainText());
+    connect(ui->line_edit_osk, &QLineEdit::cursorPositionChanged,
+            [this](int old_cursor_position, int new_cursor_position) {
+                ui->button_backspace->setEnabled(
+                    initialize_parameters.enable_backspace_button && new_cursor_position > 0);
+                ui->button_backspace_shift->setEnabled(
+                    initialize_parameters.enable_backspace_button && new_cursor_position > 0);
+                ui->button_backspace_num->setEnabled(
+                    initialize_parameters.enable_backspace_button && new_cursor_position > 0);
 
-            const auto text_length = static_cast<u32>(ui->text_edit_osk->toPlainText().length());
+                ui->line_edit_osk->setFocus();
+            });
 
-            ui->label_characters_box->setText(QStringLiteral("%1/%2")
-                                                  .arg(text_length)
-                                                  .arg(initialize_parameters.max_text_length));
+    connect(
+        ui->line_edit_osk, &QLineEdit::returnPressed, this,
+        [this] { TranslateButtonPress(Core::HID::NpadButton::Plus); }, Qt::QueuedConnection);
 
-            ui->button_ok->setEnabled(is_valid);
-            ui->button_ok_shift->setEnabled(is_valid);
-            ui->button_ok_num->setEnabled(is_valid);
+    ui->line_edit_osk->setPlaceholderText(
+        QString::fromStdU16String(initialize_parameters.guide_text));
+    ui->line_edit_osk->setText(QString::fromStdU16String(initialize_parameters.initial_text));
+    ui->line_edit_osk->setMaxLength(initialize_parameters.max_text_length);
+    ui->line_edit_osk->setCursorPosition(initialize_parameters.initial_cursor_position);
 
-            ui->text_edit_osk->setFocus();
-        });
-
-        connect(ui->text_edit_osk, &QTextEdit::cursorPositionChanged, [this] {
-            const auto new_cursor_position = ui->text_edit_osk->textCursor().position();
-
-            ui->button_backspace->setEnabled(initialize_parameters.enable_backspace_button &&
-                                             new_cursor_position > 0);
-            ui->button_backspace_shift->setEnabled(initialize_parameters.enable_backspace_button &&
-                                                   new_cursor_position > 0);
-            ui->button_backspace_num->setEnabled(initialize_parameters.enable_backspace_button &&
-                                                 new_cursor_position > 0);
-
-            ui->text_edit_osk->setFocus();
-        });
-
-        ui->text_edit_osk->setPlaceholderText(
-            QString::fromStdU16String(initialize_parameters.guide_text));
-        ui->text_edit_osk->setText(QString::fromStdU16String(initialize_parameters.initial_text));
-        ui->text_edit_osk->moveCursor(initialize_parameters.initial_cursor_position == 0
-                                          ? QTextCursor::Start
-                                          : QTextCursor::End);
-
-        ui->label_characters_box->setText(QStringLiteral("%1/%2")
-                                              .arg(initialize_parameters.initial_text.size())
-                                              .arg(initialize_parameters.max_text_length));
-        break;
-    }
-    }
+    ui->label_characters->setText(QStringLiteral("%1/%2")
+                                      .arg(initialize_parameters.initial_text.size())
+                                      .arg(initialize_parameters.max_text_length));
 }
 
 void QtSoftwareKeyboardDialog::SetControllerImage() {

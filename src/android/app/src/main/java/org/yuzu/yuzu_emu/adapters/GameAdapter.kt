@@ -160,7 +160,16 @@ class GameAdapter(private val activity: AppCompatActivity) :
         }
 
         private fun formatVersion(model: Game): String {
-            val v = model.version.trim().removePrefix("v").removePrefix("V")
+            var v = model.version.trim().removePrefix("v").removePrefix("V")
+            if (v.isEmpty() || v == "1.0.0") {
+                try {
+                    val catalog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalog(binding.root.context)
+                    val catGame = catalog.firstOrNull { it.serialId.equals(model.programIdHex, ignoreCase = true) }
+                    if (catGame != null && catGame.version.isNotEmpty() && catGame.version != "1.0.0") {
+                        v = catGame.version.trim().removePrefix("v").removePrefix("V")
+                    }
+                } catch (_: Exception) {}
+            }
             return if (v.isNotEmpty()) v else "1.0.0"
         }
 
@@ -169,8 +178,13 @@ class GameAdapter(private val activity: AppCompatActivity) :
                 val catalog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalog(binding.root.context)
                 val catGame = catalog.firstOrNull { it.serialId.equals(model.programIdHex, ignoreCase = true) }
                 if (catGame != null) {
-                    val p1 = catGame.version.removePrefix("v").removePrefix("V").split(".").mapNotNull { it.toIntOrNull() }
-                    val p2 = model.version.removePrefix("v").removePrefix("V").split(".").mapNotNull { it.toIntOrNull() }
+                    val catVerStr = catGame.version.removePrefix("v").removePrefix("V").trim()
+                    val modVerStr = model.version.removePrefix("v").removePrefix("V").trim()
+                    if (catVerStr.equals(modVerStr, ignoreCase = true)) {
+                        return false
+                    }
+                    val p1 = catVerStr.split(".").mapNotNull { it.takeWhile { c -> c.isDigit() }.toIntOrNull() }
+                    val p2 = modVerStr.split(".").mapNotNull { it.takeWhile { c -> c.isDigit() }.toIntOrNull() }
                     for (i in 0 until maxOf(p1.size, p2.size)) {
                         val n1 = p1.getOrElse(i) { 0 }
                         val n2 = p2.getOrElse(i) { 0 }
@@ -210,9 +224,19 @@ class GameAdapter(private val activity: AppCompatActivity) :
 
         private fun bindBadgeAddons(badge: android.widget.TextView?, model: Game) {
             if (badge == null) return
-            if (model.addonCount > 0) {
+            var count = model.addonCount
+            if (count == 0) {
+                try {
+                    val catalog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalog(binding.root.context)
+                    val catGame = catalog.firstOrNull { it.serialId.equals(model.programIdHex, ignoreCase = true) }
+                    if (catGame != null && catGame.dlcCount > 0) {
+                        count = catGame.dlcCount
+                    }
+                } catch (_: Exception) {}
+            }
+            if (count > 0) {
                 badge.visibility = android.view.View.VISIBLE
-                badge.text = "Дополнений: ${model.addonCount}"
+                badge.text = "Дополнений: $count"
             } else {
                 badge.visibility = android.view.View.GONE
             }

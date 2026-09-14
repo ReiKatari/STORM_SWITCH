@@ -719,7 +719,7 @@ void StormSaveSyncDialog::OnTcpSocketReadyRead() {
         obj[QStringLiteral("status")] = QStringLiteral("ok");
         obj[QStringLiteral("device_name")] = QHostInfo::localHostName();
         obj[QStringLiteral("platform")] = QStringLiteral("windows");
-        obj[QStringLiteral("version")] = QStringLiteral("8.4.0");
+        obj[QStringLiteral("version")] = QStringLiteral("8.5.0");
         send_response(200, QStringLiteral("application/json"), QJsonDocument(obj).toJson(QJsonDocument::Compact));
         return;
     }
@@ -922,7 +922,7 @@ void StormSaveSyncDialog::OnConnectClicked() {
     // Test connectivity via /api/status
     const QUrl url(QStringLiteral("http://%1:%2/api/status").arg(ip).arg(port));
     QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.4.0"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.5.0"));
 
     auto* reply = m_network_mgr->get(req);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {

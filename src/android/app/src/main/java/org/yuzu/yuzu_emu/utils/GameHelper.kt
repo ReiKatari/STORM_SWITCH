@@ -509,15 +509,41 @@ object GameHelper {
             cachedGameList.firstOrNull { it.path == filePath || it.programId == programId }?.addonCount ?: 0
         }
 
+        var resolvedVersion = cleanVersion
+        var resolvedInternalVersion = cleanInternalVersion
+        var resolvedAddonCount = finalAddonCount
+
+        if (isBaseVersion(resolvedVersion) || resolvedAddonCount == 0) {
+            try {
+                val catalog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalog(org.yuzu.yuzu_emu.YuzuApplication.appContext)
+                val cleanHex = programId.toULongOrNull(16)?.let { String.format(java.util.Locale.ROOT, "%016X", it.toLong()) } ?: programId
+                val matchedGame = catalog.firstOrNull { cat ->
+                    (cat.serialId.isNotEmpty() && cat.serialId.equals(cleanHex, ignoreCase = true)) ||
+                    (cat.finalTitle.isNotEmpty() && filename.contains(cat.finalTitle.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim(), ignoreCase = true))
+                }
+                if (matchedGame != null) {
+                    if (isBaseVersion(resolvedVersion) && matchedGame.version.isNotEmpty() && !isBaseVersion(matchedGame.version)) {
+                        resolvedVersion = matchedGame.version
+                        if (matchedGame.internalVersion.isNotEmpty()) {
+                            resolvedInternalVersion = matchedGame.internalVersion
+                        }
+                    }
+                    if (resolvedAddonCount == 0 && matchedGame.dlcCount > 0) {
+                        resolvedAddonCount = matchedGame.dlcCount
+                    }
+                }
+            } catch (_: Throwable) {}
+        }
+
         val newGame = Game(
             name,
             filePath,
             programId,
             GameMetadata.getDeveloper(filePath),
-            cleanVersion,
-            cleanInternalVersion,
+            resolvedVersion,
+            resolvedInternalVersion,
             GameMetadata.getIsHomebrew(filePath),
-            finalAddonCount
+            resolvedAddonCount
         )
 
 
@@ -552,8 +578,8 @@ object GameHelper {
             for (rawName in names) {
                 if (rawName.isEmpty()) continue
                 val name = rawName.substringAfterLast('/').substringAfterLast('\\')
-                // 1. Paired version: e.g. "(1.0.9 - 458752 - 0100EC9010258000)" or "(1.0.9 - 458752)" or "[1.0.9 - 458752]"
-                val pairMatches = Regex("""[\[\(]([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+)(?:\s*-\s*[0-9A-Fa-f]+)?[\)\]]""", RegexOption.IGNORE_CASE).findAll(name)
+                // 1. Paired version: e.g. "(1.0.9 - 458752 - 0100EC9010258000)" or "(4.2.1-b5628 - 0 - 01000B900D270000)" or "[1.0.9 - 458752]"
+                val pairMatches = Regex("""[\[\(]([0-9]+(?:\.[0-9]+)+(?:[-_][a-zA-Z0-9_\.]+)*)\s*-\s*([0-9]+)(?:\s*-\s*[0-9A-Fa-f]+)?[\)\]]""", RegexOption.IGNORE_CASE).findAll(name)
                 var foundPair = false
                 for (pairMatch in pairMatches) {
                     val pVer = pairMatch.groupValues[1].trim()
@@ -574,11 +600,23 @@ object GameHelper {
                 }
                 if (foundPair) break
 
-                // 2. Bracketed version: e.g. "[1.0.9]" or "(v1.0.9)" or "[Update 1.29.0]" or "[UPD 1.29.0]"
+                // 2. Bracketed version: e.g. "[1.0.9]" or "(v4.2.1-b5628)" or "[Update 1.29.0]" or "[UPD 1.29.0]"
                 if (isBaseVersion(cleanVersion)) {
-                    val bracketMatches = Regex("""[\[\(](?:v|ver|upd|update)?\s*([0-9]+\.[0-9]+(?:\.[0-9]+)*)[\]\)]""", RegexOption.IGNORE_CASE).findAll(name)
+                    val bracketMatches = Regex("""[\[\(](?:v|ver|upd|update)?\s*([0-9]+(?:\.[0-9]+)+(?:[-_][a-zA-Z0-9_\.]+)*)[\]\)]""", RegexOption.IGNORE_CASE).findAll(name)
                     for (bm in bracketMatches) {
                         val parsedVer = bm.groupValues[1].trim()
+                        if (!isBaseVersion(parsedVer)) {
+                            cleanVersion = parsedVer
+                            break
+                        }
+                    }
+                }
+
+                // 3. Fallback standalone version pattern in filename
+                if (isBaseVersion(cleanVersion)) {
+                    val standaloneMatches = Regex("""(?:^|[\s_-\[\(])(?:v|ver|upd|update)?([0-9]+(?:\.[0-9]+)+(?:[-_][a-zA-Z0-9_\.]+)*)(?:[\s_-\]\)]|$)""", RegexOption.IGNORE_CASE).findAll(name)
+                    for (sm in standaloneMatches) {
+                        val parsedVer = sm.groupValues[1].trim()
                         if (!isBaseVersion(parsedVer)) {
                             cleanVersion = parsedVer
                             break

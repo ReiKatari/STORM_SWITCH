@@ -67,7 +67,7 @@ namespace AndroidSettings {
                                                   Settings::Category::Android};
         Settings::Setting<bool> enable_qlaunch_button{linkage, false, "enable_qlaunch_button",
                                                   Settings::Category::Android};
-        Settings::Setting<bool> show_filename_as_title{linkage, true, "show_filename_as_title",
+        Settings::Setting<bool> show_filename_as_title{linkage, false, "show_filename_as_title",
                                                   Settings::Category::Android};
         Settings::Setting<bool> invert_confirm_back_controller_buttons{
             linkage, false, "invert_confirm_back_controller_buttons", Settings::Category::Android};

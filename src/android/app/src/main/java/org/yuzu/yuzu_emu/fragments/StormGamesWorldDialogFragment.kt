@@ -509,7 +509,7 @@ private val SWITCH_CDN_ICONS = mapOf(
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.5.0 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -550,7 +550,7 @@ private val SWITCH_CDN_ICONS = mapOf(
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.5.0 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -697,7 +697,7 @@ private val SWITCH_CDN_ICONS = mapOf(
                     val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
                     val reqBuilder = Request.Builder()
                         .url(downloadUrl)
-                        .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.5.0 (Android)")
 
                     if (existingBytes > 0L) {
                         reqBuilder.header("Range", "bytes=$existingBytes-")
@@ -1188,7 +1188,7 @@ private val SWITCH_CDN_ICONS = mapOf(
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.5.0 (Android)")
                     .build()
 
                 val resp = sharedHttpClient.newCall(req).execute()
@@ -1266,7 +1266,7 @@ private val SWITCH_CDN_ICONS = mapOf(
                                 val headReq = Request.Builder()
                                     .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                                     .head()
-                                    .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
+                                    .header("User-Agent", "STORM_SWITCH/8.5.0 (Android)")
                                     .build()
                                 val headResp = sharedHttpClient.newCall(headReq).execute()
                                 val isOk = headResp.isSuccessful

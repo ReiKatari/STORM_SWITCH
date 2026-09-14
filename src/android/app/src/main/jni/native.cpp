@@ -83,6 +83,7 @@ extern "C" {
 #include "core/hle/service/am/applet_manager.h"
 #include "core/hle/service/am/frontend/applets.h"
 #include "core/hle/service/filesystem/filesystem.h"
+#include "core/hle/service/game_fix_database.h"
 #include "core/hle/service/set/system_settings_server.h"
 #include "core/loader/loader.h"
 #include "frontend_common/config.h"
@@ -327,6 +328,17 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     if (per_game_config != nullptr) {
         per_game_config->ReloadAllValues();
     }
+    if (Core::GameFixDatabase::AreFixesEnabled()) {
+        u64 prog_id = 0;
+        auto loader = Loader::GetLoader(m_system, m_vfs->OpenFile(filepath, FileSys::OpenMode::Read));
+        if (loader) {
+            loader->ReadProgramId(prog_id);
+        }
+        if (prog_id != 0) {
+            Core::GameFixDatabase::ApplyProfileDirectly(prog_id);
+            LOG_INFO(Frontend, "Applied in-memory runtime GameFix for {:#016x}", prog_id);
+        }
+    }
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();
     Settings::LogSettings();
@@ -395,6 +407,11 @@ void EmulationSession::ShutdownEmulation() {
     m_system.DetachDebugger();
     m_system.ShutdownMainProcess();
     Settings::RestoreGlobalState(false);
+    Core::GameFixDatabase::SetFixesEnabled(false);
+    if (per_game_config != nullptr) {
+        per_game_config->ReloadAllValues();
+    }
+    m_system.ApplySettings();
     const auto result = (m_load_result == Core::SystemResultStatus::Success)
                             ? Core::SystemResultStatus::Success
                             : m_load_result;

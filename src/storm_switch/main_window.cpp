@@ -415,7 +415,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.4.0";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.5.0";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
@@ -3462,6 +3462,7 @@ void MainWindow::RestoreSessionSettings() {
         if (config) {
             config->ReloadAllValues();
         }
+        Core::GameFixDatabase::SetFixesEnabled(false);
         UpdateStatusButtons();
         ConfigurationShared::ReloadAllActiveWidgets();
     }
@@ -3784,8 +3785,9 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         }
     }
 
-    const bool fix_applied = Core::GameFixDatabase::IsFixApplied(title_id, check_ini);
-    if (dont_ask && fix_applied && !force_show) {
+    if (dont_ask && !force_show) {
+        Core::GameFixDatabase::SetFixesEnabled(true);
+        Core::GameFixDatabase::ApplyProfileDirectly(title_id);
         return GameFixDialogResult::ApplyAndLaunch;
     }
 
@@ -4091,12 +4093,10 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
     if (action == GameFixDialogResult::ApplyAndLaunch) {
         Core::GameFixDatabase::SetFixesEnabled(true);
-        Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, target_ini);
-        Core::GameFixDatabase::ApplyProfileToPerGameConfig(title_id, (custom_path / (legacy_config + ".ini")).string());
         Core::GameFixDatabase::ApplyProfileDirectly(title_id);
         if (force_show) {
             QMessageBox::information(this, tr("🛡️ Авто-исправление"),
-                tr("Параметры авто-исправления успешно сохранены для игры: %1").arg(clean_game_name));
+                tr("Параметры авто-исправления успешно применены для текущей сессии игры: %1").arg(clean_game_name));
         }
         return GameFixDialogResult::ApplyAndLaunch;
     }
@@ -4538,9 +4538,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         QtCommon::system->HIDCore().ReloadInputDevices();
         QtCommon::system->ApplySettings();
 
-        const bool fix_applied = Core::GameFixDatabase::IsFixApplied(title_id, target_ini) ||
-                                 Core::GameFixDatabase::IsFixApplied(title_id, (custom_path / (legacy_config + ".ini")).string());
-        if (fix_applied || Core::GameFixDatabase::AreFixesEnabled()) {
+        if (Core::GameFixDatabase::AreFixesEnabled()) {
             Core::GameFixDatabase::ApplyProfileDirectly(title_id);
             QtCommon::system->ApplySettings();
             statusBar()->showMessage(tr("🛡️ Авто-исправление: Применено"), 8000);
