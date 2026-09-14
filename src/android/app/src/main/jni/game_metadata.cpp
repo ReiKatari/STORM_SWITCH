@@ -123,7 +123,7 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
         }
 
         // 4. Try extracting paired or standalone version from leaf filename only (e.g. "(1.0.9 - 458752)")
-        if (IsBaseVersion(entry.version) || internal_ver == 0) {
+        {
             auto url_decode = [](std::string_view in) -> std::string {
                 std::string out;
                 out.reserve(in.size());
@@ -161,14 +161,29 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
 
             for (std::sregex_iterator it(fn.begin(), fn.end(), pair_regex), end_it; it != end_it; ++it) {
                 const std::string cand_ver = (*it)[1].str();
-                if (!IsBaseVersion(cand_ver)) {
+                u32 cand_int_ver = 0;
+                try {
+                    cand_int_ver = std::stoul((*it)[2].str());
+                } catch (...) {}
+                if (cand_int_ver > 0 && !IsBaseVersion(cand_ver)) {
                     entry.version = cand_ver;
-                    if (internal_ver == 0) {
-                        try {
-                            internal_ver = std::stoul((*it)[2].str());
-                        } catch (...) {}
-                    }
+                    internal_ver = cand_int_ver;
                     break;
+                }
+            }
+
+            if (IsBaseVersion(entry.version) || internal_ver == 0) {
+                for (std::sregex_iterator it(fn.begin(), fn.end(), pair_regex), end_it; it != end_it; ++it) {
+                    const std::string cand_ver = (*it)[1].str();
+                    if (!IsBaseVersion(cand_ver)) {
+                        entry.version = cand_ver;
+                        if (internal_ver == 0) {
+                            try {
+                                internal_ver = std::stoul((*it)[2].str());
+                            } catch (...) {}
+                        }
+                        break;
+                    }
                 }
             }
 

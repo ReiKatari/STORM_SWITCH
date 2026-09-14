@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2026 STORM SOFT Project
+﻿// SPDX-FileCopyrightText: Copyright 2026 STORM SOFT Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
@@ -17,6 +17,9 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import coil.load
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -144,8 +147,41 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         return binding.root
     }
 
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            window.setBackgroundDrawableResource(android.R.color.transparent)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                WindowInsetsCompat.Type.displayCutout()
+            )
+            val density = resources.displayMetrics.density
+            val hPadding = (16 * density).toInt()
+            val vPadding = (12 * density).toInt()
+
+            binding.topBar.setPadding(
+                hPadding + systemBars.left,
+                systemBars.top + vPadding,
+                hPadding + systemBars.right,
+                vPadding
+            )
+            binding.scrollContent.setPadding(
+                systemBars.left,
+                0,
+                systemBars.right,
+                systemBars.bottom
+            )
+            insets
+        }
+        binding.root.requestApplyInsets()
 
         setupUI()
         startLocalServer()
@@ -394,7 +430,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         put("status", "ok")
                         put("device_name", "${Build.MANUFACTURER} ${Build.MODEL}")
                         put("platform", "android")
-                        put("version", "8.5.0")
+                        put("version", "8.6.1")
                     }
                     sendResponse(200, "application/json", obj.toString().toByteArray(Charsets.UTF_8))
                 }
@@ -558,15 +594,24 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         if (titleId.isEmpty()) continue
 
                         val item = saveItems.getOrPut(titleId) {
-                            AndroidSaveItem(titleId, obj.optString("title_name", titleId))
+                            val rName = obj.optString("title_name", "")
+                            val finalName = if (rName.isNotBlank() && !rName.equals(titleId, ignoreCase = true)) {
+                                rName
+                            } else {
+                                resolveGameTitle(titleId)
+                            }
+                            AndroidSaveItem(titleId, finalName)
                         }
                         item.hasRemote = true
                         item.remoteTimestamp = obj.optLong("timestamp", 0L)
                         item.remoteDateStr = obj.optString("date_str", "")
                         item.remoteSizeBytes = obj.optLong("size_bytes", 0L)
                         item.remoteFileCount = obj.optInt("file_count", 0)
-                        if (item.titleName.isEmpty() || item.titleName == titleId) {
-                            item.titleName = obj.optString("title_name", titleId)
+                        val remoteName = obj.optString("title_name", "")
+                        if (remoteName.isNotBlank() && !remoteName.equals(titleId, ignoreCase = true)) {
+                            item.titleName = remoteName
+                        } else if (item.titleName.isEmpty() || item.titleName.equals(titleId, ignoreCase = true)) {
+                            item.titleName = resolveGameTitle(titleId)
                         }
                     }
 
@@ -581,6 +626,32 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         }
     }
 
+    private fun resolveGameTitle(titleId: String): String {
+        val cleanTid = titleId.trim().uppercase(Locale.ROOT)
+        // 1. Installed game in library
+        gamesViewModel.games.value.firstOrNull {
+            it.programIdHex.equals(cleanTid, ignoreCase = true)
+        }?.let {
+            if (it.title.isNotBlank()) return it.title
+        }
+
+        // 2. Storm World cached catalog
+        try {
+            val catalog = StormGamesWorldDialogFragment.getCachedCatalog(requireContext())
+            catalog.firstOrNull {
+                it.serialId.equals(cleanTid, ignoreCase = true)
+            }?.let {
+                if (it.finalTitle.isNotBlank()) return it.finalTitle
+                if (it.title.isNotBlank()) return it.title
+            }
+        } catch (_: Exception) {}
+
+        // 3. Known Switch titles map
+        SWITCH_KNOWN_TITLES[cleanTid]?.let { return it }
+
+        // 4. Default fallback formatted
+        return "Игра [${cleanTid}]"
+    }
     private fun scanLocalSaves() {
         val userDirStr = DirectoryInitialization.userDirectory ?: YuzuApplication.appContext.filesDir.absolutePath
         val saveRoot = File(userDirStr, "nand/user/save/0000000000000000")
@@ -610,10 +681,10 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 if (fileCount == 0) continue
 
                 val item = saveItems.getOrPut(titleId) {
-                    val resolvedTitle = gamesViewModel.games.value.find {
-                        it.programIdHex.equals(titleId, ignoreCase = true)
-                    }?.title ?: titleId
-                    AndroidSaveItem(titleId, resolvedTitle)
+                    AndroidSaveItem(titleId, resolveGameTitle(titleId))
+                }
+                if (item.titleName.isEmpty() || item.titleName.equals(titleId, ignoreCase = true)) {
+                    item.titleName = resolveGameTitle(titleId)
                 }
 
                 item.hasLocal = true
@@ -947,15 +1018,126 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         fun newInstance(): StormSaveSyncDialogFragment {
             return StormSaveSyncDialogFragment()
         }
+
+        val SWITCH_KNOWN_TITLES = mapOf(
+            "01000B900D8B0000" to "Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda",
+            "010015100B514000" to "Super Mario Bros. Wonder",
+            "01001B300B9BE000" to "Diablo III: Eternal Collection",
+            "010020D01AD24000" to "Animal Well",
+            "010022201229A000" to "Super Robot Wars 30",
+            "010026800E304000" to "Super Robot Wars X",
+            "01002DA013484000" to "The Legend of Zelda: Skyward Sword HD",
+            "01002EF01A316000" to "Brotato",
+            "01002FC00412C000" to "Little Nightmares",
+            "0100307018934000" to "Signalis",
+            "010040502453E000" to "Vampire Crawlers",
+            "010042D00D900000" to "LEGO Star Wars: The Skywalker Saga",
+            "010044700DEB0000" to "Assassin’s Creed: The Rebel Collection",
+            "010057901E9E6000" to "Underling Uprising",
+            "010059D020C26000" to "Marvel Cosmic Invasion",
+            "01005CF01E784000" to "Teenage Mutant Ninja Turtles: Splintered Fate",
+            "01005EC01E6A4000" to "The Art of Dave the Diver",
+            "010063301BD50000" to "Super Robot Wars Y",
+            "01006560184E6000" to "Mortal Kombat 1",
+            "010066101A55A000" to "Little Nightmares III",
+            "0100670014482000" to "Assassin's Creed: The Ezio Collection",
+            "01006BB00C6F0000" to "The Legend of Zelda: Link's Awakening",
+            "01006C900CC60000" to "Super Robot Wars T",
+            "0100726014352000" to "Diablo II: Resurrected",
+            "01007EF00011E000" to "The Legend of Zelda: Breath of the Wild",
+            "01007F600B134000" to "Assassin's Creed III: Remastered",
+            "010089A0197E4000" to "Vampire Survivors",
+            "01008BA02525A000" to "Dispatch",
+            "01008CF01BAAC000" to "The Legend of Zelda: Echoes of Wisdom",
+            "010093801237C000" to "Metroid Dread",
+            "010094D023A28000" to "Drill Core",
+            "010097100EDD6000" to "Little Nightmares II",
+            "010097F018538000" to "Dave the Diver",
+            "0100AC300919A000" to "Firewatch",
+            "0100B11027658000" to "Defender of the Crown: The Legend Returns",
+            "0100BAC01E57E000" to "Ys X: Nordics",
+            "0100BDA01AABC000" to "Rift of the NecroDancer",
+            "0100C6A0235D4000" to "Devil Jam",
+            "0100CA400E300000" to "Super Robot Wars V",
+            "0100CEA007D08000" to "Crypt of the NecroDancer",
+            "0100D59022590000" to "Scott Pilgrim EX",
+            "0100E65002BB8000" to "Stardew Valley",
+            "0100EC9010258000" to "Streets of Rage 4",
+            "0100F2200C984000" to "Mortal Kombat 11",
+            "0100F2C0115B6000" to "The Legend of Zelda: Tears of the Kingdom",
+            "0100000000010000" to "Super Mario Odyssey",
+            "0100152000022000" to "Mario Kart 8 Deluxe",
+            "01000320000CC000" to "Super Smash Bros. Ultimate",
+            "01006F8002326000" to "Animal Crossing: New Horizons",
+            "010041800C120000" to "Pokemon Sword",
+            "01008DB008C2C000" to "Pokemon Shield",
+            "0100ABF008968000" to "Pokemon Brilliant Diamond",
+            "0100000011D90000" to "Pokemon Shining Pearl",
+            "01001F5010DFA000" to "Pokemon Legends: Arceus",
+            "01008C5014C52000" to "Pokemon Scarlet",
+            "0100A39014C54000" to "Pokemon Violet",
+            "0100258002EAE000" to "Luigi's Mansion 3",
+            "010028600EBDA000" to "Super Mario 3D World + Bowser's Fury",
+            "0100D870045B6000" to "Super Mario 3D All-Stars",
+            "010040600C5CE000" to "Super Mario Party",
+            "010021C000B36000" to "Splatoon 2",
+            "0100C2500FC20000" to "Splatoon 3",
+            "01005EE00CDDC000" to "Xenoblade Chronicles 2",
+            "01008B3005A30000" to "Xenoblade Chronicles: Definitive Edition",
+            "010074600E2A6000" to "Xenoblade Chronicles 3",
+            "01001A8005ED6000" to "Fire Emblem: Three Houses",
+            "0100C9C017C14000" to "Fire Emblem Engage",
+            "01000A10041EA000" to "Kirby Star Allies",
+            "010005C013280000" to "Kirby and the Forgotten Land",
+            "0100B04011742000" to "Metroid Prime Remastered",
+            "0100827003E92000" to "Bayonetta 2",
+            "01004A4010F22000" to "Bayonetta 3",
+            "010049900F546000" to "Hollow Knight",
+            "010012F007A0C000" to "Hades",
+            "0100559011740000" to "Persona 5 Royal",
+            "010087700E340000" to "Persona 4 Golden",
+            "010065701446C000" to "Persona 3 Portable",
+            "01009100052C4000" to "Monster Hunter Rise",
+            "0100C81014D88000" to "Sonic Frontiers",
+            "010077000B410000" to "Crash Bandicoot N. Sane Trilogy",
+            "0100D7700B0BE000" to "Spyro Reignited Trilogy",
+            "01006F3009AE2000" to "The Witcher 3: Wild Hunt",
+            "01003BC0000A0000" to "The Elder Scrolls V: Skyrim",
+            "0100165003504000" to "DOOM",
+            "010008F005BDE000" to "DOOM Eternal",
+            "0100A250097F0000" to "Cuphead",
+            "01003C700009C000" to "Minecraft",
+            "0100B7D0022EE000" to "Mario + Rabbids Kingdom Battle",
+            "010068D01440C000" to "Mario + Rabbids Sparks of Hope",
+            "01005D100807A000" to "Donkey Kong Country: Tropical Freeze",
+            "01007E3006DDA000" to "Captain Toad: Treasure Tracker",
+            "0100490008A20000" to "Yoshi's Crafted World",
+            "01008A600CA58000" to "Paper Mario: The Origami King",
+            "01001C3018868000" to "Paper Mario: The Thousand-Year Door",
+            "010078000BAE6000" to "Mario Golf: Super Rush",
+            "0100B5B00D478000" to "Mario Tennis Aces",
+            "010080F01358C000" to "Mario Strikers: Battle League",
+            "01001B90145B8000" to "Advance Wars 1+2: Re-Boot Camp",
+            "01003D200FAA2000" to "Pikmin 3 Deluxe",
+            "0100B70012262000" to "Pikmin 4",
+            "01007DA00755C000" to "Astral Chain",
+            "0100D2800D5C0000" to "Shin Megami Tensei V",
+            "0100235017260000" to "Shin Megami Tensei V: Vengeance",
+            "01005C8009628000" to "Dragon Quest XI S",
+            "0100B96013A02000" to "NieR:Automata The End of YoRHa Edition",
+            "010003001886A000" to "Princess Peach: Showtime!",
+            "0100DCA01C46E000" to "Super Mario Party Jamboree",
+            "01004B201A996000" to "Mario and Luigi: Brothership"
+        )
     }
 
     // Inner Adapter
-    class SaveSyncAdapter(
+    inner class SaveSyncAdapter(
         private var items: List<AndroidSaveItem>,
         private val onSyncClick: (AndroidSaveItem) -> Unit
     ) : RecyclerView.Adapter<SaveSyncAdapter.ViewHolder>() {
 
-        class ViewHolder(val binding: ItemStormSaveSyncBinding) : RecyclerView.ViewHolder(binding.root)
+        inner class ViewHolder(val binding: ItemStormSaveSyncBinding) : RecyclerView.ViewHolder(binding.root)
 
         fun submitList(newItems: List<AndroidSaveItem>) {
             items = newItems
@@ -973,8 +1155,35 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             val item = items[position]
             val b = holder.binding
 
-            b.textGameTitle.text = item.titleName
-            b.textTitleId.text = item.titleId
+            val tid = item.titleId.uppercase(Locale.ROOT)
+            val finalTitle = if (item.titleName.isNotBlank() && !item.titleName.equals(item.titleId, ignoreCase = true)) {
+                item.titleName
+            } else {
+                resolveGameTitle(tid)
+            }
+
+            b.textGameTitle.text = finalTitle
+            b.textTitleId.text = "ID: $tid"
+
+            // Load Game Icon
+            val localGame = gamesViewModel.games.value.firstOrNull {
+                it.programIdHex.equals(tid, ignoreCase = true)
+            }
+            if (localGame != null) {
+                org.yuzu.yuzu_emu.utils.GameIconUtils.loadGameIcon(localGame, b.imageGameIcon)
+            } else {
+                val iconUrl = StormGamesWorldDialogFragment.SWITCH_CDN_ICONS[tid]
+                    ?: if (tid.length == 16) "https://raw.githubusercontent.com/blawar/titledb/master/icons/$tid.jpg" else null
+                if (!iconUrl.isNullOrBlank()) {
+                    b.imageGameIcon.load(iconUrl) {
+                        crossfade(true)
+                        placeholder(R.drawable.ic_cartridge)
+                        error(R.drawable.ic_cartridge)
+                    }
+                } else {
+                    b.imageGameIcon.setImageResource(R.drawable.ic_cartridge)
+                }
+            }
 
             b.textLocalSaveInfo.text = if (item.hasLocal) {
                 "📱 На этом устройстве: ${item.localDateStr} (${formatSize(item.localSizeBytes)}, ${item.localFileCount} файл.)"

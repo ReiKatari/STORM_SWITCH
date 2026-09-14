@@ -50,7 +50,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
                                                  const QString& local_device_name,
                                                  const QString& remote_device_name)
     : QDialog(parent) {
-    setWindowTitle(tr("STORM SAVE SYNC вЂ” Р Р°Р·СЂРµС€РµРЅРёРµ РєРѕРЅС„Р»РёРєС‚Р° СЃРѕС…СЂР°РЅРµРЅРёР№"));
+    setWindowTitle(tr("STORM SAVE SYNC — Разрешение конфликта сохранений"));
     resize(720, 420);
     setMinimumSize(640, 360);
 
@@ -107,13 +107,13 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     main_layout->setSpacing(14);
     main_layout->setContentsMargins(18, 18, 18, 18);
 
-    auto* header_lbl = new QLabel(tr("вљЎ РћР±РЅР°СЂСѓР¶РµРЅ РєРѕРЅС„Р»РёРєС‚ РІРµСЂСЃРёР№ СЃРѕС…СЂР°РЅРµРЅРёСЏ"), this);
+    auto* header_lbl = new QLabel(tr("⚡ Обнаружен конфликт версий сохранения"), this);
     header_lbl->setStyleSheet(QStringLiteral("font-size: 16px; font-weight: bold; color: #00F0FF;"));
     main_layout->addWidget(header_lbl);
 
     auto* desc_lbl = new QLabel(
-        tr("Р”Р»СЏ РёРіСЂС‹ %1 [%2] РѕР±РЅР°СЂСѓР¶РµРЅС‹ СЂР°Р·РЅС‹Рµ РІРµСЂСЃРёРё СЃРѕС…СЂР°РЅРµРЅРёСЏ РЅР° С‚РµРєСѓС‰РµРј Рё СѓРґР°Р»С‘РЅРЅРѕРј СѓСЃС‚СЂРѕР№СЃС‚РІР°С….\n"
-           "РЎСЂР°РІРЅРёС‚Рµ РґР°РЅРЅС‹Рµ СЃРѕР·РґР°РЅРёСЏ Рё РІС‹Р±РµСЂРёС‚Рµ РґРµР№СЃС‚РІРёРµ.")
+        tr("Для игры %1 [%2] обнаружены разные версии сохранения на текущем и удалённом устройствах.\n"
+           "Сравните данные создания и выберите действие.")
             .arg(item.title_name.isEmpty() ? item.title_id : item.title_name, item.title_id),
         this);
     desc_lbl->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 12px;"));
@@ -130,25 +130,25 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     local_layout->setSpacing(8);
 
     auto* local_title = new QLabel(
-        tr("РўРµРєСѓС‰РµРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ (%1)").arg(local_device_name.isEmpty() ? tr("РџРљ") : local_device_name),
+        tr("Текущее устройство (%1)").arg(local_device_name.isEmpty() ? tr("ПК") : local_device_name),
         local_card);
     local_title->setObjectName(QStringLiteral("CardTitle"));
     local_layout->addWidget(local_title);
 
     auto* local_date = new QLabel(
-        tr("рџ“… Р”Р°С‚Р° Рё РІСЂРµРјСЏ: %1").arg(item.local_date_str.isEmpty() ? tr("РќРµС‚ РґР°РЅРЅС‹С…") : item.local_date_str),
+        tr("📅 Дата и время: %1").arg(item.local_date_str.isEmpty() ? tr("Нет данных") : item.local_date_str),
         local_card);
     local_date->setObjectName(QStringLiteral("CardDetail"));
     local_layout->addWidget(local_date);
 
     auto* local_size = new QLabel(
-        tr("рџ“¦ Р Р°Р·РјРµСЂ РґР°РЅРЅС‹С…: %1").arg(StormSaveSyncDialog::FormatSize(item.local_size_bytes)),
+        tr("📦 Размер данных: %1").arg(StormSaveSyncDialog::FormatSize(item.local_size_bytes)),
         local_card);
     local_size->setObjectName(QStringLiteral("CardDetail"));
     local_layout->addWidget(local_size);
 
     auto* local_files = new QLabel(
-        tr("рџ“„ Р¤Р°Р№Р»РѕРІ: %1").arg(item.local_file_count),
+        tr("📄 Файлов: %1").arg(item.local_file_count),
         local_card);
     local_files->setObjectName(QStringLiteral("CardDetail"));
     local_layout->addWidget(local_files);
@@ -162,25 +162,25 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     remote_layout->setSpacing(8);
 
     auto* remote_title = new QLabel(
-        tr("РЈРґР°Р»С‘РЅРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ (%1)").arg(remote_device_name.isEmpty() ? tr("РўРµР»РµС„РѕРЅ / РЈР·РµР»") : remote_device_name),
+        tr("Удалённое устройство (%1)").arg(remote_device_name.isEmpty() ? tr("Телефон / Узел") : remote_device_name),
         remote_card);
     remote_title->setObjectName(QStringLiteral("CardTitle"));
     remote_layout->addWidget(remote_title);
 
     auto* remote_date = new QLabel(
-        tr("рџ“… Р”Р°С‚Р° Рё РІСЂРµРјСЏ: %1").arg(item.remote_date_str.isEmpty() ? tr("РќРµС‚ РґР°РЅРЅС‹С…") : item.remote_date_str),
+        tr("📅 Дата и время: %1").arg(item.remote_date_str.isEmpty() ? tr("Нет данных") : item.remote_date_str),
         remote_card);
     remote_date->setObjectName(QStringLiteral("CardDetail"));
     remote_layout->addWidget(remote_date);
 
     auto* remote_size = new QLabel(
-        tr("рџ“¦ Р Р°Р·РјРµСЂ РґР°РЅРЅС‹С…: %1").arg(StormSaveSyncDialog::FormatSize(item.remote_size_bytes)),
+        tr("📦 Размер данных: %1").arg(StormSaveSyncDialog::FormatSize(item.remote_size_bytes)),
         remote_card);
     remote_size->setObjectName(QStringLiteral("CardDetail"));
     remote_layout->addWidget(remote_size);
 
     auto* remote_files = new QLabel(
-        tr("рџ“„ Р¤Р°Р№Р»РѕРІ: %1").arg(item.remote_file_count),
+        tr("📄 Файлов: %1").arg(item.remote_file_count),
         remote_card);
     remote_files->setObjectName(QStringLiteral("CardDetail"));
     remote_layout->addWidget(remote_files);
@@ -193,29 +193,29 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     auto* btn_layout = new QHBoxLayout();
     btn_layout->setSpacing(10);
 
-    auto* btn_replace_local = new QPushButton(tr("Р—Р°РјРµРЅРёС‚СЊ С‚РµРєСѓС‰РµРµ"), this);
-    btn_replace_local->setToolTip(tr("РЎРєР°С‡Р°С‚СЊ СЃРѕС…СЂР°РЅРµРЅРёРµ СЃ СѓРґР°Р»С‘РЅРЅРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР° Рё РїРµСЂРµР·Р°РїРёСЃР°С‚СЊ Р»РѕРєР°Р»СЊРЅРѕРµ"));
+    auto* btn_replace_local = new QPushButton(tr("Заменить текущее"), this);
+    btn_replace_local->setToolTip(tr("Скачать сохранение с удалённого устройства и перезаписать локальное"));
     connect(btn_replace_local, &QPushButton::clicked, this, [this]() {
         m_action = StormConflictAction::ReplaceCurrent;
         accept();
     });
 
-    auto* btn_replace_remote = new QPushButton(tr("Р—Р°РјРµРЅРёС‚СЊ РЅР° СѓРґР°Р»С‘РЅРЅРѕРј"), this);
-    btn_replace_remote->setToolTip(tr("РћС‚РїСЂР°РІРёС‚СЊ Р»РѕРєР°Р»СЊРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ РЅР° СѓРґР°Р»С‘РЅРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ"));
+    auto* btn_replace_remote = new QPushButton(tr("Заменить на удалённом"), this);
+    btn_replace_remote->setToolTip(tr("Отправить локальное сохранение на удалённое устройство"));
     connect(btn_replace_remote, &QPushButton::clicked, this, [this]() {
         m_action = StormConflictAction::ReplaceRemote;
         accept();
     });
 
-    auto* btn_keep_both = new QPushButton(tr("РЎРѕС…СЂР°РЅРёС‚СЊ РѕР±Р° РІР°СЂРёР°РЅС‚Р°"), this);
+    auto* btn_keep_both = new QPushButton(tr("Сохранить оба варианта"), this);
     btn_keep_both->setObjectName(QStringLiteral("HeroBtn"));
-    btn_keep_both->setToolTip(tr("РЎРѕР·РґР°С‚СЊ СЂРµР·РµСЂРІРЅСѓСЋ РєРѕРїРёСЋ СЃРѕ С€С‚Р°РјРїРѕРј РґР°С‚С‹ Рё РІСЂРµРјРµРЅРё РЅР° РѕР±РѕРёС… СѓСЃС‚СЂРѕР№СЃС‚РІР°С…"));
+    btn_keep_both->setToolTip(tr("Создать резервную копию со штампом даты и времени на обоих устройствах"));
     connect(btn_keep_both, &QPushButton::clicked, this, [this]() {
         m_action = StormConflictAction::KeepBoth;
         accept();
     });
 
-    auto* btn_cancel = new QPushButton(tr("РћС‚РјРµРЅР°"), this);
+    auto* btn_cancel = new QPushButton(tr("Отмена"), this);
     connect(btn_cancel, &QPushButton::clicked, this, [this]() {
         m_action = StormConflictAction::Cancel;
         reject();
@@ -249,7 +249,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
 
 StormSaveSyncDialog::StormSaveSyncDialog(QWidget* parent, u64 target_program_id)
     : QDialog(parent), m_target_program_id(target_program_id) {
-    setWindowTitle(tr("STORM SAVE SYNC вЂ” РљСЂРѕСЃСЃРїР»Р°С‚С„РѕСЂРјРµРЅРЅР°СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЃРѕС…СЂР°РЅРµРЅРёР№"));
+    setWindowTitle(tr("STORM SAVE SYNC — Кроссплатформенная синхронизация сохранений"));
     resize(940, 620);
     setMinimumSize(800, 500);
 
@@ -277,10 +277,10 @@ QString StormSaveSyncDialog::FormatDateTime(const QDateTime& dt) {
 }
 
 QString StormSaveSyncDialog::FormatSize(qint64 bytes) {
-    if (bytes <= 0) return QStringLiteral("0 Р‘");
-    if (bytes < 1024) return QStringLiteral("%1 Р‘").arg(bytes);
-    if (bytes < 1024 * 1024) return QStringLiteral("%1 РљР‘").arg(QString::number(bytes / 1024.0, 'f', 1));
-    return QStringLiteral("%1 РњР‘").arg(QString::number(bytes / (1024.0 * 1024.0), 'f', 2));
+    if (bytes <= 0) return QStringLiteral("0 Б");
+    if (bytes < 1024) return QStringLiteral("%1 Б").arg(bytes);
+    if (bytes < 1024 * 1024) return QStringLiteral("%1 КБ").arg(QString::number(bytes / 1024.0, 'f', 1));
+    return QStringLiteral("%1 МБ").arg(QString::number(bytes / (1024.0 * 1024.0), 'f', 2));
 }
 
 QString StormSaveSyncDialog::GenerateConnectionKey(const QHostAddress& ip, quint16 port) {
@@ -385,7 +385,7 @@ void StormSaveSyncDialog::SetupUI() {
     title_box->addWidget(title_lbl);
 
     auto* sub_lbl = new QLabel(
-        tr("РљСЂРѕСЃСЃРїР»Р°С‚С„РѕСЂРјРµРЅРЅР°СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЃРѕС…СЂР°РЅРµРЅРёР№ Switch РјРµР¶РґСѓ РџРљ Рё Android РїРѕ Р·Р°С‰РёС‰С‘РЅРЅРѕРјСѓ РєР»СЋС‡Сѓ"),
+        tr("Кроссплатформенная синхронизация сохранений Switch между ПК и Android по защищённому ключу"),
         header_card);
     sub_lbl->setObjectName(QStringLiteral("AppSubtitle"));
     title_box->addWidget(sub_lbl);
@@ -399,17 +399,17 @@ void StormSaveSyncDialog::SetupUI() {
 
     auto* key_row = new QHBoxLayout();
     key_row->setSpacing(8);
-    m_local_key_label = new QLabel(tr("РљР»СЋС‡: РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ..."), header_card);
+    m_local_key_label = new QLabel(tr("Ключ: инициализация..."), header_card);
     m_local_key_label->setStyleSheet(QStringLiteral("font-family: monospace; font-size: 13px; font-weight: bold; color: #00F0FF;"));
     key_row->addWidget(m_local_key_label);
 
-    auto* copy_key_btn = new QPushButton(tr("рџ“‹ РЎРєРѕРїРёСЂРѕРІР°С‚СЊ"), header_card);
-    copy_key_btn->setToolTip(tr("РЎРєРѕРїРёСЂРѕРІР°С‚СЊ РєР»СЋС‡ СЌС‚РѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР° РІ Р±СѓС„РµСЂ РѕР±РјРµРЅР°"));
+    auto* copy_key_btn = new QPushButton(tr("📋 Скопировать"), header_card);
+    copy_key_btn->setToolTip(tr("Скопировать ключ этого устройства в буфер обмена"));
     connect(copy_key_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnCopyKeyClicked);
     key_row->addWidget(copy_key_btn);
     key_box->addLayout(key_row);
 
-    m_host_status_label = new QLabel(tr("рџџў РЎРµСЂРІРµСЂ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё Р°РєС‚РёРІРµРЅ"), header_card);
+    m_host_status_label = new QLabel(tr("🟢 Сервер синхронизации активен"), header_card);
     m_host_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #10B981;"));
     key_box->addWidget(m_host_status_label);
 
@@ -423,26 +423,26 @@ void StormSaveSyncDialog::SetupUI() {
     conn_layout->setContentsMargins(12, 8, 12, 8);
     conn_layout->setSpacing(10);
 
-    auto* enter_lbl = new QLabel(tr("РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє СѓРґР°Р»С‘РЅРЅРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ:"), conn_frame);
+    auto* enter_lbl = new QLabel(tr("Подключение к удалённому устройству:"), conn_frame);
     enter_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: #E2E8F0;"));
     conn_layout->addWidget(enter_lbl);
 
     m_remote_key_edit = new QLineEdit(conn_frame);
-    m_remote_key_edit->setPlaceholderText(tr("Р’РІРµРґРёС‚Рµ РєР»СЋС‡ (STORM-XXXXXXXX-YYYY) РёР»Рё IP:РїРѕСЂС‚..."));
+    m_remote_key_edit->setPlaceholderText(tr("Введите ключ (STORM-XXXXXXXX-YYYY) или IP:порт..."));
     m_remote_key_edit->setMinimumWidth(260);
     conn_layout->addWidget(m_remote_key_edit);
 
-    m_connect_btn = new QPushButton(tr("рџ”— РџРѕРґРєР»СЋС‡РёС‚СЊСЃСЏ"), conn_frame);
+    m_connect_btn = new QPushButton(tr("🔗 Подключиться"), conn_frame);
     connect(m_connect_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnConnectClicked);
     conn_layout->addWidget(m_connect_btn);
 
-    m_search_btn = new QPushButton(tr("рџ”Ќ РџРѕРёСЃРє СѓСЃС‚СЂРѕР№СЃС‚РІ"), conn_frame);
-    m_search_btn->setToolTip(tr("РџРѕРёСЃРє СѓСЃС‚СЂРѕР№СЃС‚РІ STORM SWITCH РІ Р»РѕРєР°Р»СЊРЅРѕР№ СЃРµС‚Рё Wi-Fi"));
+    m_search_btn = new QPushButton(tr("🔍 Поиск устройств"), conn_frame);
+    m_search_btn->setToolTip(tr("Поиск устройств STORM SWITCH в локальной сети Wi-Fi"));
     connect(m_search_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnSearchDevicesClicked);
     conn_layout->addWidget(m_search_btn);
 
     m_discovered_combo = new QComboBox(conn_frame);
-    m_discovered_combo->addItem(tr("РћР±РЅР°СЂСѓР¶РµРЅРЅС‹Рµ СѓСЃС‚СЂРѕР№СЃС‚РІР° РІ СЃРµС‚Рё (0)"));
+    m_discovered_combo->addItem(tr("Обнаруженные устройства в сети (0)"));
     m_discovered_combo->setMinimumWidth(220);
     connect(m_discovered_combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &StormSaveSyncDialog::OnDiscoveredDeviceSelected);
@@ -452,7 +452,7 @@ void StormSaveSyncDialog::SetupUI() {
 
     // Connection Status Strip
     m_connection_status_label = new QLabel(
-        tr("РЎС‚Р°С‚СѓСЃ: РЅРµ РїРѕРґРєР»СЋС‡РµРЅРѕ Рє СѓРґР°Р»С‘РЅРЅРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ. Р’РІРµРґРёС‚Рµ РєР»СЋС‡ РёР»Рё РІС‹Р±РµСЂРёС‚Рµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ РёР· СЃРїРёСЃРєР°."),
+        tr("Статус: не подключено к удалённому устройству. Введите ключ или выберите устройство из списка."),
         this);
     m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #94A3B8; padding-left: 4px;"));
     main_layout->addWidget(m_connection_status_label);
@@ -461,12 +461,12 @@ void StormSaveSyncDialog::SetupUI() {
     m_saves_table = new QTableWidget(this);
     m_saves_table->setColumnCount(6);
     m_saves_table->setHorizontalHeaderLabels({
-        tr("РРіСЂР°"),
+        tr("Игра"),
         tr("Title ID"),
-        tr("Р›РѕРєР°Р»СЊРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ"),
-        tr("РЈРґР°Р»С‘РЅРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ"),
-        tr("РЎС‚Р°С‚СѓСЃ"),
-        tr("Р”РµР№СЃС‚РІРёРµ")
+        tr("Локальное сохранение"),
+        tr("Удалённое сохранение"),
+        tr("Статус"),
+        tr("Действие")
     });
     m_saves_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     m_saves_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -492,21 +492,21 @@ void StormSaveSyncDialog::SetupUI() {
     auto* bottom_layout = new QHBoxLayout();
     bottom_layout->setSpacing(10);
 
-    m_status_label = new QLabel(tr("Р“РѕС‚РѕРІРѕ"), this);
+    m_status_label = new QLabel(tr("Готово"), this);
     m_status_label->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11px;"));
     bottom_layout->addWidget(m_status_label);
     bottom_layout->addStretch();
 
-    m_refresh_btn = new QPushButton(tr("рџ”„ РћР±РЅРѕРІРёС‚СЊ"), this);
+    m_refresh_btn = new QPushButton(tr("🔄 Обновить"), this);
     connect(m_refresh_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnRefreshClicked);
     bottom_layout->addWidget(m_refresh_btn);
 
-    m_sync_all_btn = new QPushButton(tr("вљЎ РЎРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°С‚СЊ РІСЃС‘"), this);
+    m_sync_all_btn = new QPushButton(tr("⚡ Синхронизировать всё"), this);
     m_sync_all_btn->setStyleSheet(QStringLiteral("background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0099CC, stop:1 #006699); border: 1px solid #00D2FF; color: #FFFFFF; font-weight: bold;"));
     connect(m_sync_all_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnSyncAllClicked);
     bottom_layout->addWidget(m_sync_all_btn);
 
-    m_close_btn = new QPushButton(tr("Р—Р°РєСЂС‹С‚СЊ"), this);
+    m_close_btn = new QPushButton(tr("Закрыть"), this);
     connect(m_close_btn, &QPushButton::clicked, this, &QDialog::accept);
     bottom_layout->addWidget(m_close_btn);
 
@@ -653,7 +653,7 @@ void StormSaveSyncDialog::StartHostServer() {
     }
 
     m_local_key = GenerateConnectionKey(local_v4, m_local_port);
-    m_local_key_label->setText(tr("РљР»СЋС‡: %1 (%2:%3)").arg(m_local_key, m_local_ip).arg(m_local_port));
+    m_local_key_label->setText(tr("Ключ: %1 (%2:%3)").arg(m_local_key, m_local_ip).arg(m_local_port));
 
     // Start UDP broadcast listener
     m_udp_socket = new QUdpSocket(this);
@@ -719,7 +719,7 @@ void StormSaveSyncDialog::OnTcpSocketReadyRead() {
         obj[QStringLiteral("status")] = QStringLiteral("ok");
         obj[QStringLiteral("device_name")] = QHostInfo::localHostName();
         obj[QStringLiteral("platform")] = QStringLiteral("windows");
-        obj[QStringLiteral("version")] = QStringLiteral("8.5.0");
+        obj[QStringLiteral("version")] = QStringLiteral("8.6.1");
         send_response(200, QStringLiteral("application/json"), QJsonDocument(obj).toJson(QJsonDocument::Compact));
         return;
     }
@@ -858,12 +858,12 @@ void StormSaveSyncDialog::OnUdpSocketReadyRead() {
                 const QString dev_name = tokens[2];
                 const QString platform = tokens.size() >= 4 ? tokens[3] : QStringLiteral("Node");
 
-                const QString label = QStringLiteral("%1 (%2) вЂ” %3").arg(dev_name, platform, remote_key);
+                const QString label = QStringLiteral("%1 (%2) — %3").arg(dev_name, platform, remote_key);
                 if (!m_discovered_devices.contains(remote_key)) {
                     m_discovered_devices.insert(remote_key, dev_name);
                     m_discovered_combo->addItem(label, remote_key);
                     m_discovered_combo->setItemText(
-                        0, tr("РћР±РЅР°СЂСѓР¶РµРЅРЅС‹Рµ СѓСЃС‚СЂРѕР№СЃС‚РІР° РІ СЃРµС‚Рё (%1)").arg(m_discovered_devices.size()));
+                        0, tr("Обнаруженные устройства в сети (%1)").arg(m_discovered_devices.size()));
                 }
             }
         }
@@ -874,7 +874,7 @@ void StormSaveSyncDialog::BroadcastDiscovery() {
     if (!m_udp_socket) return;
     const QByteArray ping = "STORM_SYNC_DISCOVER";
     m_udp_socket->writeDatagram(ping, QHostAddress::Broadcast, 28444);
-    m_status_label->setText(tr("Р’С‹РїРѕР»РЅСЏРµС‚СЃСЏ РїРѕРёСЃРє СѓСЃС‚СЂРѕР№СЃС‚РІ РІ Р»РѕРєР°Р»СЊРЅРѕР№ СЃРµС‚Рё..."));
+    m_status_label->setText(tr("Выполняется поиск устройств в локальной сети..."));
 }
 
 void StormSaveSyncDialog::OnSearchDevicesClicked() {
@@ -894,22 +894,22 @@ void StormSaveSyncDialog::OnCopyKeyClicked() {
     QClipboard* clipboard = QApplication::clipboard();
     if (clipboard) {
         clipboard->setText(m_local_key);
-        m_status_label->setText(tr("РљР»СЋС‡ СЃРєРѕРїРёСЂРѕРІР°РЅ РІ Р±СѓС„РµСЂ РѕР±РјРµРЅР°: %1").arg(m_local_key));
+        m_status_label->setText(tr("Ключ скопирован в буфер обмена: %1").arg(m_local_key));
     }
 }
 
 void StormSaveSyncDialog::OnConnectClicked() {
     const QString input = m_remote_key_edit->text().trimmed();
     if (input.isEmpty()) {
-        QMessageBox::warning(this, tr("РџРѕРґРєР»СЋС‡РµРЅРёРµ"), tr("РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РІРІРµРґРёС‚Рµ РєР»СЋС‡ РїРѕРґРєР»СЋС‡РµРЅРёСЏ РёР»Рё IP:РїРѕСЂС‚."));
+        QMessageBox::warning(this, tr("Подключение"), tr("Пожалуйста, введите ключ подключения или IP:порт."));
         return;
     }
 
     QString ip;
     quint16 port = 28443;
     if (!ParseConnectionKey(input, ip, port)) {
-        QMessageBox::warning(this, tr("РќРµРІРµСЂРЅС‹Р№ РєР»СЋС‡"),
-                             tr("РќРµ СѓРґР°Р»РѕСЃСЊ СЂР°СЃРїРѕР·РЅР°С‚СЊ РєР»СЋС‡ РїРѕРґРєР»СЋС‡РµРЅРёСЏ. РџСЂРѕРІРµСЂСЊС‚Рµ С„РѕСЂРјР°С‚."));
+        QMessageBox::warning(this, tr("Неверный ключ"),
+                             tr("Не удалось распознать ключ подключения. Проверьте формат."));
         return;
     }
 
@@ -917,12 +917,12 @@ void StormSaveSyncDialog::OnConnectClicked() {
     m_connected_remote_port = port;
 
     m_connection_status_label->setText(
-        tr("РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє %1:%2...").arg(m_connected_remote_ip).arg(m_connected_remote_port));
+        tr("Подключение к %1:%2...").arg(m_connected_remote_ip).arg(m_connected_remote_port));
 
     // Test connectivity via /api/status
     const QUrl url(QStringLiteral("http://%1:%2/api/status").arg(ip).arg(port));
     QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.5.0"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.6.1"));
 
     auto* reply = m_network_mgr->get(req);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
@@ -935,20 +935,20 @@ void StormSaveSyncDialog::OnConnectClicked() {
                 const QString platform = obj[QStringLiteral("platform")].toString();
                 m_is_connected = true;
                 m_connection_status_label->setText(
-                    tr("рџџў РџРѕРґРєР»СЋС‡РµРЅРѕ: %1 (%2) [%3:%4]")
+                    tr("🟢 Подключено: %1 (%2) [%3:%4]")
                         .arg(m_remote_device_name, platform, m_connected_remote_ip)
                         .arg(m_connected_remote_port));
-                m_status_label->setText(tr("РЈСЃРїРµС€РЅРѕ РїРѕРґРєР»СЋС‡РµРЅРѕ Рє СѓРґР°Р»С‘РЅРЅРѕРјСѓ СѓР·Р»Сѓ"));
+                m_status_label->setText(tr("Успешно подключено к удалённому узлу"));
                 FetchRemoteSaves();
                 return;
             }
         }
         m_is_connected = false;
         m_connection_status_label->setText(
-            tr("вќЊ РћС€РёР±РєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє %1:%2").arg(m_connected_remote_ip).arg(m_connected_remote_port));
-        QMessageBox::critical(this, tr("РћС€РёР±РєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ"),
-                              tr("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕРµРґРёРЅРёС‚СЊСЃСЏ СЃ СѓРґР°Р»С‘РЅРЅС‹Рј СѓСЃС‚СЂРѕР№СЃС‚РІРѕРј (%1:%2).\n"
-                                 "РЈР±РµРґРёС‚РµСЃСЊ, С‡С‚Рѕ РѕР±Р° СѓСЃС‚СЂРѕР№СЃС‚РІР° РЅР°С…РѕРґСЏС‚СЃСЏ РІ РѕРґРЅРѕР№ СЃРµС‚Рё Wi-Fi.")
+            tr("❌ Ошибка подключения к %1:%2").arg(m_connected_remote_ip).arg(m_connected_remote_port));
+        QMessageBox::critical(this, tr("Ошибка подключения"),
+                              tr("Не удалось соединиться с удалённым устройством (%1:%2).\n"
+                                 "Убедитесь, что оба устройства находятся в одной сети Wi-Fi.")
                                   .arg(m_connected_remote_ip)
                                   .arg(m_connected_remote_port));
     });
@@ -1063,7 +1063,7 @@ void StormSaveSyncDialog::FetchRemoteSaves() {
 
                 UpdateComparisonList();
                 PopulateTable();
-                m_status_label->setText(tr("РЎРїРёСЃРѕРє СѓРґР°Р»С‘РЅРЅС‹С… СЃРѕС…СЂР°РЅРµРЅРёР№ СѓСЃРїРµС€РЅРѕ РѕР±РЅРѕРІР»С‘РЅ"));
+                m_status_label->setText(tr("Список удалённых сохранений успешно обновлён"));
             }
         }
     });
@@ -1109,7 +1109,7 @@ void StormSaveSyncDialog::PopulateTable() {
         // Col 2: Local Info
         const QString local_str = item.has_local
                                       ? QStringLiteral("%1 (%2)").arg(item.local_date_str, FormatSize(item.local_size_bytes))
-                                      : tr("РћС‚СЃСѓС‚СЃС‚РІСѓРµС‚");
+                                      : tr("Отсутствует");
         auto* local_item = new QTableWidgetItem(local_str);
         local_item->setTextAlignment(Qt::AlignCenter);
         m_saves_table->setItem(row, 2, local_item);
@@ -1117,7 +1117,7 @@ void StormSaveSyncDialog::PopulateTable() {
         // Col 3: Remote Info
         const QString remote_str = item.has_remote
                                        ? QStringLiteral("%1 (%2)").arg(item.remote_date_str, FormatSize(item.remote_size_bytes))
-                                       : tr("РћС‚СЃСѓС‚СЃС‚РІСѓРµС‚");
+                                       : tr("Отсутствует");
         auto* remote_item = new QTableWidgetItem(remote_str);
         remote_item->setTextAlignment(Qt::AlignCenter);
         m_saves_table->setItem(row, 3, remote_item);
@@ -1127,23 +1127,23 @@ void StormSaveSyncDialog::PopulateTable() {
         QColor status_color;
         switch (item.status) {
         case StormSaveSyncStatus::Synchronized:
-            status_text = tr("рџџў РЎРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅРѕ");
+            status_text = tr("🟢 Синхронизировано");
             status_color = QColor(16, 185, 129);
             break;
         case StormSaveSyncStatus::Conflict:
-            status_text = tr("вљ пёЏ РљРѕРЅС„Р»РёРєС‚ СЃРѕС…СЂР°РЅРµРЅРёР№");
+            status_text = tr("⚠️ Конфликт сохранений");
             status_color = QColor(245, 158, 11);
             break;
         case StormSaveSyncStatus::LocalOnly:
-            status_text = tr("рџ“¤ РўРѕР»СЊРєРѕ Р»РѕРєР°Р»СЊРЅРѕ");
+            status_text = tr("📤 Только локально");
             status_color = QColor(59, 130, 246);
             break;
         case StormSaveSyncStatus::RemoteOnly:
-            status_text = tr("рџ“Ґ РўРѕР»СЊРєРѕ РЅР° СѓРґР°Р»С‘РЅРЅРѕРј");
+            status_text = tr("📥 Только на удалённом");
             status_color = QColor(139, 92, 246);
             break;
         default:
-            status_text = tr("РќРµРёР·РІРµСЃС‚РЅРѕ");
+            status_text = tr("Неизвестно");
             status_color = QColor(148, 163, 184);
             break;
         }
@@ -1154,7 +1154,7 @@ void StormSaveSyncDialog::PopulateTable() {
 
         // Col 5: Action Button
         auto* action_btn = new QPushButton(
-            item.status == StormSaveSyncStatus::Conflict ? tr("Р Р°Р·СЂРµС€РёС‚СЊ РєРѕРЅС„Р»РёРєС‚") : tr("РЎРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°С‚СЊ"),
+            item.status == StormSaveSyncStatus::Conflict ? tr("Разрешить конфликт") : tr("Синхронизировать"),
             this);
         const QString title_id = item.title_id;
         connect(action_btn, &QPushButton::clicked, this, [this, title_id]() {
@@ -1179,8 +1179,8 @@ void StormSaveSyncDialog::OnTableItemDoubleClicked(int row, int column) {
 
 void StormSaveSyncDialog::SyncItem(StormSaveItem& item) {
     if (!m_is_connected) {
-        QMessageBox::warning(this, tr("РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ"),
-                             tr("Р”Р»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РЅРµРѕР±С…РѕРґРёРјРѕ РїРѕРґРєР»СЋС‡РёС‚СЊСЃСЏ Рє СѓРґР°Р»С‘РЅРЅРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ."));
+        QMessageBox::warning(this, tr("Синхронизация"),
+                             tr("Для синхронизации необходимо подключиться к удалённому устройству."));
         return;
     }
 
@@ -1192,21 +1192,21 @@ void StormSaveSyncDialog::SyncItem(StormSaveItem& item) {
     } else if (item.status == StormSaveSyncStatus::LocalOnly) {
         UploadLocalSave(item.title_id, [this](bool ok) {
             if (ok) {
-                m_status_label->setText(tr("РЎРѕС…СЂР°РЅРµРЅРёРµ СѓСЃРїРµС€РЅРѕ РїРµСЂРµРґР°РЅРѕ РЅР° СѓРґР°Р»С‘РЅРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ"));
+                m_status_label->setText(tr("Сохранение успешно передано на удалённое устройство"));
                 FetchRemoteSaves();
             }
         });
     } else if (item.status == StormSaveSyncStatus::RemoteOnly) {
         DownloadRemoteSave(item.title_id, [this](bool ok) {
             if (ok) {
-                m_status_label->setText(tr("РЎРѕС…СЂР°РЅРµРЅРёРµ СѓСЃРїРµС€РЅРѕ РїРѕР»СѓС‡РµРЅРѕ СЃ СѓРґР°Р»С‘РЅРЅРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°"));
+                m_status_label->setText(tr("Сохранение успешно получено с удалённого устройства"));
                 ScanLocalSaves();
                 PopulateTable();
             }
         });
     } else if (item.status == StormSaveSyncStatus::Synchronized) {
-        QMessageBox::information(this, tr("РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ"),
-                                 tr("РЎРѕС…СЂР°РЅРµРЅРёСЏ РґР»СЏ РґР°РЅРЅРѕР№ РёРіСЂС‹ СѓР¶Рµ РїРѕР»РЅРѕСЃС‚СЊСЋ РёРґРµРЅС‚РёС‡РЅС‹ РЅР° РѕР±РѕРёС… СѓСЃС‚СЂРѕР№СЃС‚РІР°С…."));
+        QMessageBox::information(this, tr("Синхронизация"),
+                                 tr("Сохранения для данной игры уже полностью идентичны на обоих устройствах."));
     }
 }
 
@@ -1215,7 +1215,7 @@ void StormSaveSyncDialog::SyncItemWithAction(StormSaveItem& item, StormConflictA
     case StormConflictAction::ReplaceCurrent:
         DownloadRemoteSave(item.title_id, [this](bool ok) {
             if (ok) {
-                m_status_label->setText(tr("РўРµРєСѓС‰РµРµ СЃРѕС…СЂР°РЅРµРЅРёРµ Р·Р°РјРµРЅРµРЅРѕ РЅР° СѓРґР°Р»С‘РЅРЅРѕРµ"));
+                m_status_label->setText(tr("Текущее сохранение заменено на удалённое"));
                 ScanLocalSaves();
                 PopulateTable();
             }
@@ -1224,7 +1224,7 @@ void StormSaveSyncDialog::SyncItemWithAction(StormSaveItem& item, StormConflictA
     case StormConflictAction::ReplaceRemote:
         UploadLocalSave(item.title_id, [this](bool ok) {
             if (ok) {
-                m_status_label->setText(tr("РЈРґР°Р»С‘РЅРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ Р·Р°РјРµРЅРµРЅРѕ РЅР° С‚РµРєСѓС‰РµРµ"));
+                m_status_label->setText(tr("Удалённое сохранение заменено на текущее"));
                 FetchRemoteSaves();
             }
         });
@@ -1235,7 +1235,7 @@ void StormSaveSyncDialog::SyncItemWithAction(StormSaveItem& item, StormConflictA
             // After backup, download remote to synchronize active
             DownloadRemoteSave(item.title_id, [this](bool dl_ok) {
                 if (dl_ok) {
-                    m_status_label->setText(tr("РћР±Р° РІР°СЂРёР°РЅС‚Р° СЃРѕС…СЂР°РЅРµРЅС‹, СЂРµР·РµСЂРІРЅС‹Рµ РєРѕРїРёРё СЃРѕР·РґР°РЅС‹"));
+                    m_status_label->setText(tr("Оба варианта сохранены, резервные копии созданы"));
                     ScanLocalSaves();
                     PopulateTable();
                 }
@@ -1288,8 +1288,8 @@ void StormSaveSyncDialog::DownloadRemoteSave(const QString& title_id, std::funct
             }
         }
         m_progress_bar->setVisible(false);
-        QMessageBox::critical(this, tr("РћС€РёР±РєР° СЃРєР°С‡РёРІР°РЅРёСЏ"),
-                              tr("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєР°С‡Р°С‚СЊ СЃРѕС…СЂР°РЅРµРЅРёРµ РґР»СЏ Title ID: %1").arg(title_id));
+        QMessageBox::critical(this, tr("Ошибка скачивания"),
+                              tr("Не удалось скачать сохранение для Title ID: %1").arg(title_id));
         if (on_complete) on_complete(false);
     });
 }
@@ -1377,8 +1377,8 @@ void StormSaveSyncDialog::BackupRemoteSave(const QString& title_id, std::functio
 
 void StormSaveSyncDialog::OnSyncAllClicked() {
     if (!m_is_connected) {
-        QMessageBox::warning(this, tr("РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ"),
-                             tr("Р”Р»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РЅРµРѕР±С…РѕРґРёРјРѕ РїРѕРґРєР»СЋС‡РёС‚СЊСЃСЏ Рє СѓРґР°Р»С‘РЅРЅРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ."));
+        QMessageBox::warning(this, tr("Синхронизация"),
+                             tr("Для синхронизации необходимо подключиться к удалённому устройству."));
         return;
     }
 

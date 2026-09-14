@@ -41,12 +41,21 @@ struct AmiiboEntry {
     QList<QString> switch_games;
 };
 
+struct AmiiboRewardInfo {
+    QString category;
+    QString icon_emoji;
+    QString item_name;
+    QString description;
+};
+
 class AmiiboBrowserDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit AmiiboBrowserDialog(QWidget* parent, Core::System& system);
+    explicit AmiiboBrowserDialog(QWidget* parent, Core::System& system, const QString& initial_game_hint = {});
     ~AmiiboBrowserDialog() override;
+
+    static AmiiboRewardInfo GetRewardForGame(const AmiiboEntry& entry, const QString& game_name);
 
 signals:
     void AmiiboSelectedForLoading(const QString& file_path);
@@ -55,6 +64,7 @@ signals:
 private slots:
     void OnListLoaded();
     void OnSearchFilterChanged();
+    void OnTargetGameChanged(int index);
     void OnItemSelected(QListWidgetItem* current, QListWidgetItem* previous);
     void OnSaveAmiiboClicked();
     void OnLoadAmiiboClicked();
@@ -69,6 +79,7 @@ private:
     void PopulateSeriesFilter();
     void ApplyFilters();
     void DisplayAmiiboDetails(const AmiiboEntry& entry);
+    void UpdateRewardCard(const AmiiboEntry& entry);
     void FetchImage(const QString& image_url, QLabel* target_label);
     QString GenerateAndSaveAmiiboBin(const AmiiboEntry& entry);
 
@@ -77,11 +88,13 @@ private:
     std::vector<AmiiboEntry> m_all_amiibos;
     std::vector<int> m_filtered_indices;
     QMap<QString, QPixmap> m_image_cache;
+    QString m_initial_game_hint;
 
     // UI elements
     QLineEdit* m_search_edit{nullptr};
     QComboBox* m_series_combo{nullptr};
     QComboBox* m_type_combo{nullptr};
+    QComboBox* m_target_game_combo{nullptr};
     QListWidget* m_amiibo_list{nullptr};
     QLabel* m_status_label{nullptr};
     QProgressBar* m_progress_bar{nullptr};
@@ -94,6 +107,13 @@ private:
     QLabel* m_type_label{nullptr};
     QLabel* m_id_label{nullptr};
     QLabel* m_status_badge{nullptr};
+
+    // Game Specific Reward Card
+    QWidget* m_reward_card{nullptr};
+    QLabel* m_reward_category_badge{nullptr};
+    QLabel* m_reward_name_label{nullptr};
+    QLabel* m_reward_desc_label{nullptr};
+
     QTextEdit* m_games_text{nullptr};
     QPushButton* m_save_btn{nullptr};
     QPushButton* m_load_btn{nullptr};

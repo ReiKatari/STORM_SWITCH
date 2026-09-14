@@ -335,6 +335,19 @@ QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::stri
                 }
             }
 
+            // Priority Check: If filename explicitly encodes an update container with internal_version > 0
+            // (e.g. "(1.0.6 - 65536 - 0100811027E58000) (1G+1U)"), extract that version directly,
+            // as embedded base NACP in multi-content packages only reports base game initial version (e.g. 1.0.1).
+            const QString qpath = QString::fromStdString(path);
+            static const QRegularExpression fn_pair_update_regex{QStringLiteral(R"(\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+))")};
+            const auto pum = fn_pair_update_regex.match(qpath);
+            if (pum.hasMatch() && !pum.captured(1).isEmpty()) {
+                const u64 int_ver = pum.captured(2).toULongLong();
+                if (int_ver > 0) {
+                    ver_result = pum.captured(1);
+                }
+            }
+
             // 3. Try reading control data directly from loader (fastest, zero PatchRomFS overhead)
             if (IsBaseVersion(ver_result)) {
                 FileSys::NACP file_nacp;
@@ -358,7 +371,6 @@ QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::stri
 
             // 5. Try extracting paired version from filename (e.g. "(1.0.10 - 655360 - ...)")
             if (IsBaseVersion(ver_result)) {
-                const QString qpath = QString::fromStdString(path);
                 static const QRegularExpression fn_pair_ver_regex{QStringLiteral(R"(\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+))")};
                 const auto fm = fn_pair_ver_regex.match(qpath);
                 if (fm.hasMatch() && !fm.captured(1).isEmpty()) {
@@ -377,7 +389,6 @@ QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::stri
 
             // 6. Try [v12345] style numeric version in filename if still base version
             if (IsBaseVersion(ver_result)) {
-                const QString qpath = QString::fromStdString(path);
                 static const QRegularExpression fn_vnum_regex{QStringLiteral(R"(\[v([0-9]+)\])")};
                 const auto vm = fn_vnum_regex.match(qpath);
                 if (vm.hasMatch()) {

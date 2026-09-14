@@ -349,6 +349,10 @@ class AmiiboDialogFragment : DialogFragment() {
             b.textAmiiboSeries.text = "${entry.gameSeries} • ${entry.amiiboSeries} (${entry.type})"
             b.textAmiiboId.text = "ID: ${entry.fullId}"
 
+            val rewardInfo = AmiiboHelper.getRewardForGame(entry, gameTitle)
+            b.textAmiiboReward.text = rewardInfo.fullFormatted
+            b.textAmiiboReward.isVisible = true
+
             b.imageAmiibo.setImageResource(R.drawable.ic_amiibo)
             if (entry.imageUrl.isNotEmpty()) {
                 val imgUrl = entry.imageUrl

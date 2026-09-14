@@ -30,14 +30,14 @@ SFDNSRES::SFDNSRES(Core::System& system_) : ServiceFramework{system_, "sfdnsres"
         {5, &SFDNSRES::GetGaiStringErrorRequest, "GetGaiStringErrorRequest"},
         {6, &SFDNSRES::GetAddrInfoRequest, "GetAddrInfoRequest"},
         {7, &SFDNSRES::GetNameInfoRequest, "GetNameInfoRequest"},
-        {8, nullptr, "RequestCancelHandleRequest"},
-        {9, nullptr, "CancelRequest"},
+        {8, &SFDNSRES::RequestCancelHandleRequest, "RequestCancelHandleRequest"},
+        {9, &SFDNSRES::CancelRequest, "CancelRequest"},
         {10, &SFDNSRES::GetHostByNameRequestWithOptions, "GetHostByNameRequestWithOptions"},
-        {11, nullptr, "GetHostByAddrRequestWithOptions"},
+        {11, &SFDNSRES::GetHostByAddrRequestWithOptions, "GetHostByAddrRequestWithOptions"},
         {12, &SFDNSRES::GetAddrInfoRequestWithOptions, "GetAddrInfoRequestWithOptions"},
         {13, &SFDNSRES::GetNameInfoRequestWithOptions, "GetNameInfoRequestWithOptions"},
         {14, &SFDNSRES::ResolverSetOptionRequest, "ResolverSetOptionRequest"},
-        {15, nullptr, "ResolverGetOptionRequest"},
+        {15, &SFDNSRES::ResolverGetOptionRequest, "ResolverGetOptionRequest"},
     };
     RegisterHandlers(functions);
 }
@@ -458,4 +458,50 @@ void SFDNSRES::ResolverSetOptionRequest(HLERequestContext& ctx) {
     rb.Push(ResultSuccess);
     rb.Push<s32>(0); // bsd errno
 }
+
+void SFDNSRES::RequestCancelHandleRequest(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "(STUBBED) called");
+
+    IPC::ResponseBuilder rb{ctx, 4};
+    rb.Push(ResultSuccess);
+    rb.Push<u32>(1); // cancel handle
+    rb.Push<s32>(0); // bsd errno
+}
+
+void SFDNSRES::CancelRequest(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "(STUBBED) called");
+
+    IPC::ResponseBuilder rb{ctx, 3};
+    rb.Push(ResultSuccess);
+    rb.Push<s32>(0); // bsd errno
+}
+
+void SFDNSRES::GetHostByAddrRequestWithOptions(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "(STUBBED) called");
+
+    struct OutputParameters {
+        u32 data_size;
+        NetDbError netdb_error;
+        Errno bsd_errno;
+    };
+    static_assert(sizeof(OutputParameters) == 0xc);
+
+    IPC::ResponseBuilder rb{ctx, 5};
+    rb.Push(ResultSuccess);
+    rb.PushRaw(OutputParameters{
+        .data_size = 0,
+        .netdb_error = NetDbError::HostNotFound,
+        .bsd_errno = Errno::SUCCESS,
+    });
+}
+
+void SFDNSRES::ResolverGetOptionRequest(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "(STUBBED) called");
+
+    IPC::ResponseBuilder rb{ctx, 4};
+    rb.Push(ResultSuccess);
+    rb.Push<s32>(0); // option value
+    rb.Push<s32>(0); // bsd errno
+}
+
 } // namespace Service::Sockets

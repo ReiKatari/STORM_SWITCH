@@ -24,7 +24,11 @@ private:
     void GetAddrInfoRequestWithOptions(HLERequestContext& ctx);
     void GetNameInfoRequest(HLERequestContext& ctx);
     void GetNameInfoRequestWithOptions(HLERequestContext& ctx);
+    void RequestCancelHandleRequest(HLERequestContext& ctx);
+    void CancelRequest(HLERequestContext& ctx);
+    void GetHostByAddrRequestWithOptions(HLERequestContext& ctx);
     void ResolverSetOptionRequest(HLERequestContext& ctx);
+    void ResolverGetOptionRequest(HLERequestContext& ctx);
 };
 
 } // namespace Service::Sockets

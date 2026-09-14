@@ -415,7 +415,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.5.0";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.6.1";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
@@ -4494,12 +4494,16 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     }
 
     if (type == StartGameType::Normal) {
-        const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
-        if (fix_result == GameFixDialogResult::Cancel) {
-            LOG_INFO(Frontend, "Запуск игры отменен пользователем в диалоге авто-исправлений");
-            m_session_backup.is_active = false;
-            game_list->setDisabled(false);
-            return;
+        if (params.launch_type == Service::AM::LaunchType::ApplicationInitiated) {
+            Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+        } else {
+            const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
+            if (fix_result == GameFixDialogResult::Cancel) {
+                LOG_INFO(Frontend, "Запуск игры отменен пользователем в диалоге авто-исправлений");
+                m_session_backup.is_active = false;
+                game_list->setDisabled(false);
+                return;
+            }
         }
     }
 
@@ -5872,7 +5876,13 @@ void MainWindow::OnExecuteProgram(std::size_t program_index) {
     ShutdownGame();
 
     auto params = ApplicationAppletParameters();
-    params.program_index = static_cast<s32>(program_index);
+    if (program_index >= 0x0100000000000000ULL) {
+        params.program_id = program_index;
+        params.program_index = 0;
+    } else {
+        params.program_index = static_cast<s32>(program_index);
+        params.program_id = 0;
+    }
     params.launch_type = Service::AM::LaunchType::ApplicationInitiated;
     BootGame(last_filename_booted, params);
 }
@@ -6700,7 +6710,16 @@ void MainWindow::OnLoadAmiibo() {
 }
 
 void MainWindow::OnAmiiboOnlineDatabase() {
-    AmiiboBrowserDialog dialog(this, *QtCommon::system);
+    QString current_game_hint = m_current_addons_game_name;
+    if (current_game_hint.isEmpty()) {
+        if (!current_game_path.isEmpty()) {
+            current_game_hint = QFileInfo(current_game_path).completeBaseName();
+        } else if (!last_filename_booted.isEmpty()) {
+            current_game_hint = QFileInfo(last_filename_booted).completeBaseName();
+        }
+    }
+
+    AmiiboBrowserDialog dialog(this, *QtCommon::system, current_game_hint);
     connect(&dialog, &AmiiboBrowserDialog::AmiiboSelectedForLoading, this, [this](const QString& path) {
         if (QtCommon::emu_thread && QtCommon::emu_thread->IsRunning()) {
             LoadAmiibo(path);

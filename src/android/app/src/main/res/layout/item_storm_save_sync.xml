@@ -30,8 +30,7 @@
                 android:layout_height="44dp"
                 android:background="#0A0E17"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_cartridge"
-                app:tint="#00F0FF" />
+                android:src="@drawable/ic_cartridge" />
 
             <LinearLayout
                 android:layout_width="0dp"

@@ -1972,8 +1972,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
         dialogBinding.cardAmiiboDatabase.setOnClickListener {
             dialog.dismiss()
-            AmiiboDialogFragment.newInstance(isEmulating = true)
-                .show(parentFragmentManager, AmiiboDialogFragment.TAG)
+            AmiiboDialogFragment.newInstance(
+                isEmulating = true,
+                gameTitle = game?.title ?: "",
+                titleId = game?.programId ?: ""
+            ).show(parentFragmentManager, AmiiboDialogFragment.TAG)
         }
 
         dialogBinding.cardAmiiboFile.setOnClickListener {

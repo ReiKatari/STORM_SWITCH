@@ -201,7 +201,9 @@ object GameHelper {
     fun getGameDeduplicationKey(game: Game): String {
         val pid = game.programIdHex.trim()
         if (pid != "0" && pid.isNotEmpty()) {
-            return "PID_${pid.uppercase(Locale.ROOT)}"
+            val normVer = game.version.removePrefix("v").removePrefix("V").trim()
+            val intVer = game.internalVersion.trim()
+            return "PID_${pid.uppercase(Locale.ROOT)}_V_${normVer}_IV_${intVer}"
         }
         val ext = game.extension.uppercase(Locale.ROOT)
         val extSuffix = if (ext.isNotEmpty()) "_$ext" else ""
