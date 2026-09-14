@@ -48,6 +48,7 @@ static jmethodID s_overlay_control_data_constructor;
 static jfieldID s_overlay_control_data_id_field;
 static jfieldID s_overlay_control_data_enabled_field;
 static jfieldID s_overlay_control_data_individual_scale_field;
+static jfieldID s_overlay_control_data_individual_opacity_field;
 static jfieldID s_overlay_control_data_landscape_position_field;
 static jfieldID s_overlay_control_data_portrait_position_field;
 static jfieldID s_overlay_control_data_foldable_position_field;
@@ -244,6 +245,10 @@ namespace Common::Android {
 
     jfieldID GetOverlayControlDataIndividualScaleField() {
         return s_overlay_control_data_individual_scale_field;
+    }
+
+    jfieldID GetOverlayControlDataIndividualOpacityField() {
+        return s_overlay_control_data_individual_opacity_field;
     }
 
     jfieldID GetOverlayControlDataLandscapePositionField() {
@@ -692,13 +697,17 @@ void Initialize(JavaVM* vm, JNIEnv *env) {
     s_pair_second_field = GetFieldIDSafe(env, s_pair_class, "second", "Ljava/lang/Object;");
 
     s_overlay_control_data_class = FindClassSafe(env, "org/yuzu/yuzu_emu/overlay/model/OverlayControlData");
-    s_overlay_control_data_constructor = GetMethodIDSafe(env, s_overlay_control_data_class, "<init>", "(Ljava/lang/String;ZLkotlin/Pair;Lkotlin/Pair;Lkotlin/Pair;F)V");
+    s_overlay_control_data_constructor = GetMethodIDSafe(env, s_overlay_control_data_class, "<init>", "(Ljava/lang/String;ZLkotlin/Pair;Lkotlin/Pair;Lkotlin/Pair;FF)V");
+    if (!s_overlay_control_data_constructor) {
+        s_overlay_control_data_constructor = GetMethodIDSafe(env, s_overlay_control_data_class, "<init>", "(Ljava/lang/String;ZLkotlin/Pair;Lkotlin/Pair;Lkotlin/Pair;F)V");
+    }
     s_overlay_control_data_id_field = GetFieldIDSafe(env, s_overlay_control_data_class, "id", "Ljava/lang/String;");
     s_overlay_control_data_enabled_field = GetFieldIDSafe(env, s_overlay_control_data_class, "enabled", "Z");
     s_overlay_control_data_landscape_position_field = GetFieldIDSafe(env, s_overlay_control_data_class, "landscapePosition", "Lkotlin/Pair;");
     s_overlay_control_data_portrait_position_field = GetFieldIDSafe(env, s_overlay_control_data_class, "portraitPosition", "Lkotlin/Pair;");
     s_overlay_control_data_foldable_position_field = GetFieldIDSafe(env, s_overlay_control_data_class, "foldablePosition", "Lkotlin/Pair;");
     s_overlay_control_data_individual_scale_field = GetFieldIDSafe(env, s_overlay_control_data_class, "individualScale", "F");
+    s_overlay_control_data_individual_opacity_field = GetFieldIDSafe(env, s_overlay_control_data_class, "individualOpacity", "F");
 
     s_patch_class = FindClassSafe(env, "org/yuzu/yuzu_emu/model/Patch");
     s_patch_constructor = GetMethodIDSafe(env, s_patch_class, "<init>", "(ZLjava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;JI)V");

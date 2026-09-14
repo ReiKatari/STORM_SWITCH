@@ -190,6 +190,14 @@ class InstallableFragment : Fragment() {
                 }
             ),
             Installable(
+                R.string.storm_save_sync,
+                R.string.storm_save_sync_description,
+                install = {
+                    StormSaveSyncDialogFragment.newInstance()
+                        .show(parentFragmentManager, StormSaveSyncDialogFragment.TAG)
+                }
+            ),
+            Installable(
                 R.string.install_game_content,
                 R.string.install_game_content_description,
                 install = { installGameUpdateLauncher.launch(arrayOf("*/*")) }

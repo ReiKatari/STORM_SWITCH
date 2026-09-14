@@ -38,6 +38,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import com.google.android.material.slider.Slider
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -313,13 +314,25 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             val isFixRequested = (gameToUse == args.game && args.custom) || GameFixDatabase.isSessionFixActive(gameToUse)
 
             NativeLibrary.setGameFixesEnabled(isFixRequested)
+            if (!org.yuzu.yuzu_emu.utils.LosslessScalingHelper.isInstalled()) {
+                BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
+            }
 
             if (isFixRequested && GameFixDatabase.hasFix(gameToUse)) {
-                // Apply/merge GameFix profile (non-destructive if user already has custom config)
+                // Apply/merge GameFix profile (non-destructive; user manual preferences take priority)
                 shouldUseCustom = true
+                val overrides = GameFixDatabase.getManualOverrides(gameToUse)
                 GameFixDatabase.applyFix(gameToUse)
                 SettingsFile.loadCustomConfig(gameToUse)
-                Log.info("[EmulationFragment] Loaded GameFix profile for ${gameToUse.title} (custom config present: $isUserCustom)")
+                if (overrides.isNotEmpty()) {
+                    val overridesList = overrides.take(3).joinToString(", ")
+                    val more = if (overrides.size > 3) " (+${overrides.size - 3})" else ""
+                    val message = getString(R.string.game_fix_manual_override_warning, "$overridesList$more")
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                    Log.info("[EmulationFragment] GameFix active with user manual overrides: $overrides")
+                } else {
+                    Log.info("[EmulationFragment] Loaded GameFix profile for ${gameToUse.title} (custom config present: $isUserCustom)")
+                }
             } else if (isUserCustom) {
                 // Launch without fixes, but respect user manual per-game settings
                 shouldUseCustom = true
@@ -991,9 +1004,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_EXPANDED || newState == BottomSheetBehavior.STATE_HALF_EXPANDED) {
                     isQuickSettingsMenuOpen = true
-                    if (shouldUseCustom && game != null) {
-                        SettingsFile.loadCustomConfig(game!!)
-                    }
+                    addQuickSettings()
                 } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                     isQuickSettingsMenuOpen = false
                 }
@@ -1273,6 +1284,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 turboSpeed.isEnabled = enabled
                 slowSpeed.isEnabled = enabled
 
+                BooleanSetting.RENDERER_USE_SPEED_LIMIT.setBoolean(enabled)
                 NativeLibrary.setStandardSpeedLimit(enabled)
             }!!
 
@@ -1289,7 +1301,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 R.string.use_docked_mode,
                 container,
                 BooleanSetting.USE_DOCKED_MODE,
-            )
+            ) {
+                addQuickSettings()
+            }
 
             quickSettings.addDivider(container)
 
@@ -2153,12 +2167,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     val perfStats = NativeLibrary.getPerfStats()
                     val systemFps = perfStats[SYSTEM_FPS]
                     val actualFps = perfStats[FPS]
-                    val isFrameGen = BooleanSetting.RENDERER_FRAME_GEN.getBoolean(needsGlobal)
+                    val isFrameGen = BooleanSetting.RENDERER_FRAME_GEN.getBoolean(needsGlobal) && LosslessScalingHelper.isInstalled()
 
                     if (BooleanSetting.SHOW_FPS.getBoolean(needsGlobal)) {
                         val fpsText = if (isFrameGen && systemFps > 0.0) {
                             val mult = IntSetting.RENDERER_FRAME_GEN_MULTIPLIER.getInt(needsGlobal).coerceIn(2, 4)
-                            val tag = if (LosslessScalingHelper.isInstalled()) "LSFG ${mult}X" else "FG ${mult}X"
+                            val tag = "LSFG ${mult}X"
                             String.format(java.util.Locale.US, "⚡ FPS: %.0f [%s -> %.0f]", actualFps, tag, systemFps)
                         } else {
                             String.format(java.util.Locale.US, "⚡ FPS: %.0f", actualFps)
@@ -2881,6 +2895,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
         popup.menuInflater.inflate(R.menu.menu_overlay_options, popup.menu)
 
+        try {
+            val fieldMPopup = PopupMenu::class.java.getDeclaredField("mPopup")
+            fieldMPopup.isAccessible = true
+            val mPopup = fieldMPopup.get(popup)
+            mPopup?.javaClass?.getDeclaredMethod("setForceShowIcon", Boolean::class.javaPrimitiveType)
+                ?.invoke(mPopup, true)
+        } catch (_: Exception) {
+        }
+
         popup.menu.apply {
             findItem(R.id.menu_show_stats_overlay).isChecked =
                 BooleanSetting.SHOW_PERFORMANCE_OVERLAY.getBoolean()
@@ -2949,43 +2972,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 }
 
                 R.id.menu_toggle_controls -> {
-                    val overlayControlData = NativeConfig.getOverlayControlData()
-                    val optionsArray = BooleanArray(overlayControlData.size)
-                    overlayControlData.forEachIndexed { i, _ ->
-                        optionsArray[i] = overlayControlData.firstOrNull { data ->
-                            OverlayControl.entries[i].id == data.id
-                        }?.enabled == true
-                    }
-
-                    val dialog = MaterialAlertDialogBuilder(requireContext())
-                        .setTitle(R.string.emulation_toggle_controls)
-                        .setMultiChoiceItems(
-                            R.array.gamepadButtons,
-                            optionsArray
-                        ) { _, indexSelected, isChecked ->
-                            overlayControlData.firstOrNull { data ->
-                                OverlayControl.entries[indexSelected].id == data.id
-                            }?.enabled = isChecked
-                        }
-                        .setPositiveButton(android.R.string.ok) { _, _ ->
-                            NativeConfig.setOverlayControlData(overlayControlData)
-                            NativeConfig.saveGlobalConfig()
-                            binding.surfaceInputOverlay.refreshControls()
-                        }
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .setNeutralButton(R.string.emulation_toggle_all) { _, _ -> }
-                        .show()
-
-                    // Override normal behaviour so the dialog doesn't close
-                    dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-                        .setOnClickListener {
-                            val isChecked = !optionsArray[0]
-                            overlayControlData.forEachIndexed { i, _ ->
-                                optionsArray[i] = isChecked
-                                dialog.listView.setItemChecked(i, isChecked)
-                                overlayControlData[i].enabled = isChecked
-                            }
-                        }
+                    OverlayToggleDialogFragment.newInstance {
+                        binding.surfaceInputOverlay.refreshControls()
+                    }.show(parentFragmentManager, OverlayToggleDialogFragment.TAG)
                     true
                 }
 
@@ -3065,16 +3054,27 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 value = IntSetting.OVERLAY_SCALE.getInt().toFloat()
                 addOnChangeListener { _, value, _ ->
                     inputScaleValue.text = "${value.toInt()}%"
-                    setControlScale(value.toInt())
                 }
+                addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+                    override fun onStartTrackingTouch(slider: Slider) {}
+                    override fun onStopTrackingTouch(slider: Slider) {
+                        setControlScale(slider.value.toInt())
+                    }
+                })
             }
             inputOpacitySlider.apply {
                 valueTo = 100F
                 value = IntSetting.OVERLAY_OPACITY.getInt().toFloat()
                 addOnChangeListener { _, value, _ ->
                     inputOpacityValue.text = "${value.toInt()}%"
-                    setControlOpacity(value.toInt())
+                    binding.surfaceInputOverlay.setLiveOpacity(value.toInt())
                 }
+                addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+                    override fun onStartTrackingTouch(slider: Slider) {}
+                    override fun onStopTrackingTouch(slider: Slider) {
+                        setControlOpacity(slider.value.toInt())
+                    }
+                })
             }
             inputScaleValue.text = "${inputScaleSlider.value.toInt()}%"
             inputOpacityValue.text = "${inputOpacitySlider.value.toInt()}%"

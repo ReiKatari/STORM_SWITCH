@@ -223,21 +223,56 @@ class DriverManagerFragment : Fragment() {
                 } else {
                     driverViewModel.onDriverAdded(Pair(driverPath, driverData))
                     withContext(Dispatchers.Main) {
-                        if (_binding != null) {
-                            refreshDriverList()
-                            val adapter = binding.listDrivers.adapter as DriverAdapter
-                            val selectedPosition = adapter.currentList
-                                .indexOfFirst { it.selected }
-                                .let { if (it == -1) 0 else it }
-                            driverViewModel.showClearButton(!StringSetting.DRIVER_PATH.global)
-                            binding.listDrivers
-                                .smoothScrollToPosition(selectedPosition)
-                        }
+                        promptDriverApplication(driverPath, driverData)
                     }
                 }
                 return@newInstance Any()
             }.show(childFragmentManager, ProgressDialogFragment.TAG)
         }
+
+    private fun promptDriverApplication(driverPath: String, driverData: org.yuzu.yuzu_emu.utils.GpuDriverMetadata) {
+        if (_binding == null) return
+        refreshDriverList()
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.apply_driver_title)
+            .setMessage(R.string.apply_driver_message)
+            .setPositiveButton(R.string.apply_driver_globally) { _, _ ->
+                applyDriver(driverPath, globallyToAll = true)
+            }
+            .setNeutralButton(R.string.apply_driver_keep_custom) { _, _ ->
+                applyDriver(driverPath, globallyToAll = false)
+            }
+            .setNegativeButton(R.string.cancel) { _, _ ->
+                updateDriverSelectionUi()
+            }
+            .show()
+    }
+
+    private fun applyDriver(driverPath: String, globallyToAll: Boolean) {
+        val driverFile = File(driverPath)
+        StringSetting.DRIVER_PATH.setString(driverPath)
+        if (driverFile.exists() && args.game == null) {
+            GpuDriverHelper.installCustomDriver(driverFile)
+        }
+        if (globallyToAll) {
+            GpuDriverHelper.applyDriverGloballyToAllCustomConfigs()
+        }
+        driverViewModel.wipeAllShaders()
+        driverViewModel.reloadDriverData()
+        refreshDriverList()
+        updateDriverSelectionUi()
+    }
+
+    private fun updateDriverSelectionUi() {
+        if (_binding == null) return
+        val adapter = binding.listDrivers.adapter as? DriverAdapter ?: return
+        val selectedPosition = adapter.currentList
+            .indexOfFirst { it.selected }
+            .let { if (it == -1) 0 else it }
+        driverViewModel.showClearButton(!StringSetting.DRIVER_PATH.global)
+        binding.listDrivers.smoothScrollToPosition(selectedPosition)
+    }
 
     fun showDriverWarningDialog() {
         val shouldDisplayGpuWarning =

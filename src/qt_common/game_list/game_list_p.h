@@ -150,6 +150,7 @@ public:
     static constexpr int FullPathRole = SortRole + 2;
     static constexpr int ProgramIdRole = SortRole + 3;
     static constexpr int FileTypeRole = SortRole + 4;
+    static constexpr int VersionRole = SortRole + 5;
 
     GameListItemPath() = default;
     GameListItemPath(const QString& game_path, const std::vector<u8>& picture_data,
@@ -218,6 +219,8 @@ public:
                 version_num = m.captured(1);
             }
         }
+
+        setData(version_num, VersionRole);
 
         const QString addons_info = addon_count > 0
                                         ? QStringLiteral("%1").arg(addon_count)

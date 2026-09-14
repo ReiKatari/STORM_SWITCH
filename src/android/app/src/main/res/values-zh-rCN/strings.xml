@@ -1224,7 +1224,7 @@
     <string name="cheats">金手指 / 作弊码</string>
     <string name="auto_optimization_mode_fast">⚡ 极速 / 节能</string>
     <string name="vulkan_pipeline_cache">Vulkan 管线缓存</string>
-    <string name="cheats_count_summary">金手指总数：%1 | 已启用：%2</string>
+    <string name="cheats_count_summary">金手指总数：%1$d | 已启用：%2$d</string>
     <string name="eco_thermal_mode">节能温控模式</string>
 
     <string name="memory_12gb_not_enough_ram">12GB DRAM 模式需要至少 12GB 物理内存的设备。</string>
@@ -1437,10 +1437,23 @@
     <string name="enable_frame_interpolation_description">通过在连续帧之间进行插值，平滑动画过渡，提升视觉流畅度。</string>
     <string name="storm_games_world">STORM GAMES WORLD</string>
     <string name="storm_games_world_description">Nintendo Switch 游戏目录与下载</string>
+    <string name="storm_save_sync">存档同步 (STORM SAVE SYNC)</string>
+    <string name="storm_save_sync_description">使用安全密钥在电脑和安卓设备之间跨平台同步 Switch 存档</string>
+    <string name="storm_save_key_copied">连接密钥已复制到剪贴板</string>
+    <string name="storm_save_conflict_title">存档冲突解决</string>
+    <string name="storm_save_replace_current">覆盖本地存档</string>
+    <string name="storm_save_replace_remote">覆盖远程存档</string>
+    <string name="storm_save_keep_both">保留双向版本</string>
     <string name="gamebanana_tab_online">🌐 GameBanana 目录</string>
     <string name="gamebanana_tab_installed">💾 已安装</string>
     <string name="gamebanana_no_installed_mods">此游戏尚未安装任何模组</string>
     <string name="gamebanana_installed_stats">总计：%1$d | 已启用：%2$d | 已禁用：%3$d</string>
     <string name="gamebanana_delete_mod_confirm">您确定要删除模组“%1$s”吗？</string>
     <string name="gamebanana_mod_deleted">模组“%1$s”已删除</string>
+    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx 驱动与 Adreno 8xx (Snapdragon 8 Elite) 不兼容。已切换至系统驱动。</string>
+    <string name="apply_driver_title">应用 GPU 驱动</string>
+    <string name="apply_driver_message">您想如何应用已安装的 GPU 驱动？</string>
+    <string name="apply_driver_globally">全局应用于所有</string>
+    <string name="apply_driver_keep_custom">不影响自定义设置</string>
+    <string name="game_fix_manual_override_warning">⚠️ 手动设置优先：%s。自动修复已部分覆盖。</string>
 </resources>

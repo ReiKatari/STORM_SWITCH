@@ -1158,7 +1158,7 @@
     <string name="cheats">Codes de triche</string>
     <string name="auto_optimization_mode_fast">⚡ Rapide</string>
     <string name="vulkan_pipeline_cache">Cache de pipelines Vulkan</string>
-    <string name="cheats_count_summary">Total des codes: %1 | Activés: %2</string>
+    <string name="cheats_count_summary">Total des codes: %1$d | Activés: %2$d</string>
     <string name="eco_thermal_mode">Mode Éco et thermique</string>
 
     <string name="memory_12gb_not_enough_ram">Le mode 12 Go DRAM nécessite un appareil disposant d\'au moins 12 Go de RAM physique.</string>
@@ -1433,10 +1433,23 @@
     <string name="enable_frame_interpolation_description">Améliore la fluidité en interpolant des images intermédiaires entre chaque trame.</string>
     <string name="storm_games_world">STORM GAMES WORLD</string>
     <string name="storm_games_world_description">Catalogue et téléchargement de jeux Nintendo Switch</string>
+    <string name="storm_save_sync">Synchronisation des sauvegardes (STORM SAVE SYNC)</string>
+    <string name="storm_save_sync_description">Synchronisation multiplateforme des sauvegardes Switch entre PC et téléphone via clé sécurisée</string>
+    <string name="storm_save_key_copied">Clé de connexion copiée dans le presse-papiers</string>
+    <string name="storm_save_conflict_title">Résolution de conflit de sauvegarde</string>
+    <string name="storm_save_replace_current">Remplacer actuelle</string>
+    <string name="storm_save_replace_remote">Remplacer à distance</string>
+    <string name="storm_save_keep_both">Conserver les deux versions</string>
     <string name="gamebanana_tab_online">🌐 Catalogue GameBanana</string>
     <string name="gamebanana_tab_installed">💾 Installés</string>
     <string name="gamebanana_no_installed_mods">Aucun mod installé pour ce jeu</string>
     <string name="gamebanana_installed_stats">Total : %1$d | Activés : %2$d | Désactivés : %3$d</string>
     <string name="gamebanana_delete_mod_confirm">Voulez-vous vraiment supprimer le mod « %1$s » ?</string>
     <string name="gamebanana_mod_deleted">Mod « %1$s » supprimé</string>
+    <string name="driver_incompatible_adreno8xx">Le pilote Turnip a6xx/a7xx est incompatible avec Adreno 8xx (Snapdragon 8 Elite). Pilote système activé.</string>
+    <string name="apply_driver_title">Appliquer le pilote GPU</string>
+    <string name="apply_driver_message">Comment souhaitez-vous appliquer le pilote GPU installé ?</string>
+    <string name="apply_driver_globally">Globalement pour tous</string>
+    <string name="apply_driver_keep_custom">Sans affecter les paramètres personnalisés</string>
+    <string name="game_fix_manual_override_warning">⚠️ Paramètres manuels prioritaires : %s. Corrections automatiques partiellement ignorées.</string>
 </resources>

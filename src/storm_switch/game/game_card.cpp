@@ -5,6 +5,8 @@
 #include <QPainterPath>
 #include "game_card.h"
 #include "qt_common/config/uisettings.h"
+#include "qt_common/game_list/game_list_p.h"
+#include "storm_switch/storm_catalog_cache.h"
 
 GameCard::GameCard(QObject* parent) : QStyledItemDelegate{parent} {
     setObjectName("GameCard");
@@ -78,6 +80,46 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
         painter->setFont(font);
 
         painter->drawText(textRect, Qt::AlignHCenter | Qt::AlignTop | Qt::TextWordWrap, title);
+    }
+
+    // Check if an update is available for this game in STORM GAMES WORLD
+    const u64 program_id = index.data(GameListItemPath::ProgramIdRole).toULongLong();
+    const QString installed_ver = index.data(GameListItemPath::VersionRole).toString();
+
+    if (program_id != 0 && StormCatalogCache::Instance().HasUpdate(program_id, installed_ver)) {
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+
+        const QString badge_text = tr("Есть обновление");
+        QFont badge_font = option.font;
+        badge_font.setBold(true);
+        badge_font.setPixelSize(10);
+        painter->setFont(badge_font);
+
+        QFontMetrics fm(badge_font);
+        const int text_w = fm.horizontalAdvance(badge_text);
+        const int badge_w = text_w + 14;
+        const int badge_h = 20;
+
+        // Position badge at the top-right of the icon
+        const int badge_x = iconRect.right() - badge_w - 4;
+        const int badge_y = iconRect.top() + 4;
+        const QRect badge_rect(badge_x, badge_y, badge_w, badge_h);
+
+        // Glowing gradient pill background (cyan to blue)
+        QLinearGradient grad(badge_rect.topLeft(), badge_rect.bottomRight());
+        grad.setColorAt(0.0, QColor(0, 210, 255, 240));
+        grad.setColorAt(1.0, QColor(0, 114, 255, 240));
+
+        painter->setPen(QPen(QColor(255, 255, 255, 220), 1));
+        painter->setBrush(grad);
+        painter->drawRoundedRect(badge_rect, 10, 10);
+
+        // Badge text: crisp black text for maximum contrast on bright cyan/blue pill
+        painter->setPen(QColor(0, 0, 0));
+        painter->drawText(badge_rect, Qt::AlignCenter, badge_text);
+
+        painter->restore();
     }
 
     painter->restore();

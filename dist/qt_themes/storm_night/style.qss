@@ -1,4 +1,4 @@
-/*
+﻿/*
  * STORM NIGHT Stylesheet - Premium OLED Black & Electric Cyan Theme
  * Exclusively for STORM SWITCH 3
  */
@@ -13,7 +13,7 @@ QWidget {
 }
 
 QWidget:disabled {
-    color: #4b5563;
+    color: #FFFFFF;
     background-color: #040405;
 }
 
@@ -183,7 +183,7 @@ QPushButton:pressed {
 
 QPushButton:disabled {
     background-color: #08080c;
-    color: #4b5563;
+    color: #FFFFFF;
     border-color: #14141c;
 }
 
@@ -250,7 +250,7 @@ QTabWidget::pane {
 
 QTabBar::tab {
     background-color: #0a0a10;
-    color: #94a3b8;
+    color: #FFFFFF;
     border: 1px solid #1c1c24;
     border-bottom: none;
     padding: 8px 16px;
@@ -288,7 +288,7 @@ QListWidget#selectorList::item {
 QTreeView, QListView, QTableView {
     background-color: #000000;
     alternate-background-color: #06060a;
-    color: #e2e8f0;
+    color: #FFFFFF;
     border: 1px solid #14141c;
     border-radius: 6px;
     gridline-color: #14141c;
@@ -330,7 +330,7 @@ QHeaderView::section {
 QStatusBar {
     background-color: #050508;
     border-top: 1px solid #14141c;
-    color: #94a3b8;
+    color: #FFFFFF;
     padding: 2px 4px;
 }
 
@@ -548,7 +548,7 @@ QMenu::item:selected {
 }
 
 QMenu::item:disabled {
-    color: #4b5563;
+    color: #FFFFFF;
     background-color: transparent;
 }
 

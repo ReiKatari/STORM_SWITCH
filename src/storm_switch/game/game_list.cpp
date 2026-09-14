@@ -532,6 +532,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         context_menu.addAction(tr("🚀 Запустить со стандартными настройками"));
     context_menu.addSeparator();
     QAction* open_save_location = context_menu.addAction(tr("💾 Открыть папку сохранений"));
+    QAction* sync_save = context_menu.addAction(tr("🔄 Синхронизация сохранения (STORM SAVE SYNC)..."));
     QAction* open_mod_location = context_menu.addAction(tr("🧩 Открыть папку модов"));
     QAction* open_transferable_shader_cache =
         context_menu.addAction(tr("⚡ Открыть кэш шейдеров"));
@@ -576,6 +577,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     mod_manager_action->setVisible(program_id != 0);
     cheats_action->setVisible(program_id != 0);
     open_save_location->setVisible(program_id != 0);
+    sync_save->setVisible(program_id != 0);
     open_mod_location->setVisible(program_id != 0);
     open_transferable_shader_cache->setVisible(program_id != 0);
     remove_update->setVisible(program_id != 0);
@@ -610,6 +612,9 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             [this, program_id]() { ToggleFavorite(program_id); });
     connect(open_save_location, &QAction::triggered, this, [this, program_id, path]() {
         emit OpenFolderRequested(program_id, GameListOpenTarget::SaveData, path);
+    });
+    connect(sync_save, &QAction::triggered, this, [this, program_id]() {
+        emit OpenSaveSyncRequested(program_id);
     });
     connect(start_game, &QAction::triggered, this,
             [this, path]() { emit BootGame(QString::fromStdString(path), StartGameType::Normal); });

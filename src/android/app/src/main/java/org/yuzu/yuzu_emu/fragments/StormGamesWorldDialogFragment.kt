@@ -4,6 +4,7 @@
 package org.yuzu.yuzu_emu.fragments
 
 import android.app.Dialog
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -22,10 +23,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Call
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
@@ -70,8 +75,65 @@ data class StormWorldGameItem(
     var realExtension: String = ".nsp",
     var isDownloaded: Boolean = false,
     var dlcCount: Int = 0,
+    var isRecommended: Boolean = false,
     val dlcs: MutableList<StormWorldDlcItem> = mutableListOf()
-)
+) {
+    fun toJson(): JSONObject {
+        val obj = JSONObject()
+        obj.put("id", id)
+        obj.put("title", title)
+        obj.put("finalTitle", finalTitle)
+        obj.put("version", version)
+        obj.put("internalVersion", internalVersion)
+        obj.put("serialId", serialId)
+        obj.put("size", size)
+        obj.put("cover", cover)
+        obj.put("fileExists", fileExists)
+        obj.put("hasFile", hasFile)
+        obj.put("regions", JSONArray(regions))
+        obj.put("textLangs", JSONArray(textLangs))
+        obj.put("description", description)
+        obj.put("fileSizeBytes", fileSizeBytes)
+        obj.put("realExtension", realExtension)
+        obj.put("dlcCount", dlcCount)
+        obj.put("isRecommended", isRecommended)
+        return obj
+    }
+
+    companion object {
+        fun fromJson(obj: JSONObject): StormWorldGameItem {
+            val regList = mutableListOf<String>()
+            val regArr = obj.optJSONArray("regions")
+            if (regArr != null) {
+                for (r in 0 until regArr.length()) regList.add(regArr.optString(r))
+            }
+            val langList = mutableListOf<String>()
+            val langArr = obj.optJSONArray("textLangs")
+            if (langArr != null) {
+                for (l in 0 until langArr.length()) langList.add(langArr.optString(l))
+            }
+            return StormWorldGameItem(
+                id = obj.optInt("id"),
+                title = obj.optString("title"),
+                finalTitle = obj.optString("finalTitle"),
+                version = obj.optString("version"),
+                internalVersion = obj.optString("internalVersion"),
+                serialId = obj.optString("serialId"),
+                size = obj.optString("size"),
+                cover = obj.optString("cover"),
+                fileExists = obj.optBoolean("fileExists", true),
+                hasFile = obj.optBoolean("hasFile", true),
+                regions = regList,
+                textLangs = langList,
+                description = obj.optString("description"),
+                fileSizeBytes = obj.optLong("fileSizeBytes"),
+                realExtension = obj.optString("realExtension", ".nsp"),
+                dlcCount = obj.optInt("dlcCount"),
+                isRecommended = obj.optBoolean("isRecommended", false)
+            )
+        }
+    }
+}
 
 class StormGamesWorldDialogFragment : DialogFragment() {
 
@@ -89,12 +151,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     private var isPaused = false
     private var isCancelled = false
 
-    private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
-        .build()
+    private val httpClient get() = sharedHttpClient
 
 private val SWITCH_CDN_ICONS = mapOf(
         "01000B900D8B0000" to "https://img-eshop.cdn.nintendo.net/i/1972ebb4a507e7d83c7d4592ae4702ebdc5bf3738659644bc29c243b144782ee.jpg", // Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda
@@ -254,96 +311,44 @@ private val SWITCH_CDN_ICONS = mapOf(
             cancelDownload()
         }
 
+        val cached = getCachedCatalog(requireContext())
+        if (cached.isNotEmpty()) {
+            checkDownloadedStatus(cached)
+            allGames.clear()
+            allGames.addAll(cached)
+            filterGames(binding.editSearch.text?.toString().orEmpty())
+            binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
+            binding.progressLoading.isVisible = false
+        }
+
         fetchCatalog()
     }
 
     private fun fetchCatalog() {
-        binding.progressLoading.isVisible = true
+        if (allGames.isEmpty()) {
+            binding.progressLoading.isVisible = true
+            binding.textCatalogStatus.text = "Синхронизация каталога облака..."
+        }
         binding.textEmpty.isVisible = false
         binding.btnRefresh.isEnabled = false
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val req = Request.Builder()
-                    .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.3.2 (Android)")
-                    .build()
-
-                val resp = httpClient.newCall(req).execute()
-                val body = resp.body?.string().orEmpty()
-
-                val jsonArray = JSONArray(body)
-                val parsed = mutableListOf<StormWorldGameItem>()
-
-                for (i in 0 until jsonArray.length()) {
-                    val obj = jsonArray.optJSONObject(i) ?: continue
-                    val platform = obj.optString("platformName")
-                    val platformType = obj.optString("platformTypeName")
-                    val fileExists = obj.optBoolean("fileExists", false)
-                    val hasFile = obj.optBoolean("hasFile", false)
-
-                    if (platform == "Nintendo Switch" && platformType == "CONSOLES" && (fileExists || hasFile)) {
-                        val regList = mutableListOf<String>()
-                        val regArr = obj.optJSONArray("regions")
-                        if (regArr != null) {
-                            for (r in 0 until regArr.length()) regList.add(regArr.optString(r))
-                        }
-
-                        val langList = mutableListOf<String>()
-                        val langArr = obj.optJSONArray("textLangs")
-                        if (langArr != null) {
-                            for (l in 0 until langArr.length()) langList.add(langArr.optString(l))
-                        }
-
-                        val rawTitle = obj.optString("title")
-                        val rawFinalTitle = obj.optString("finalTitle")
-                        var rawVersion = obj.optString("version", "1.0.0").removePrefix("v").removePrefix("V").trim()
-                        var internalVer = ""
-                        var serialId = obj.optString("serialId").trim()
-
-                        val versionRegex = Regex("""\(\s*([^-\)]+?)\s*-\s*(\d+)\s*-\s*([0-9A-Fa-f]{16})\s*\)""")
-                        val match = versionRegex.find(rawFinalTitle) ?: versionRegex.find(rawTitle)
-                        if (match != null) {
-                            val vStr = match.groupValues[1].removePrefix("v").removePrefix("V").trim()
-                            if (vStr.isNotEmpty()) rawVersion = vStr
-                            internalVer = match.groupValues[2].trim()
-                            if (serialId.isEmpty()) serialId = match.groupValues[3].trim()
-                        }
-
-                        val dlcMatch = Regex("""(?:\+|[\(\[])(\d+)D(?:\)|\]|\+)""", RegexOption.IGNORE_CASE).find(rawFinalTitle)
-                        val dlcNum = dlcMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
-
-                        parsed.add(
-                            StormWorldGameItem(
-                                id = obj.optInt("id"),
-                                title = rawTitle,
-                                finalTitle = rawFinalTitle,
-                                version = if (rawVersion.isNotEmpty()) rawVersion else "1.0.0",
-                                internalVersion = internalVer,
-                                serialId = serialId,
-                                size = obj.optString("size", "—"),
-                                cover = obj.optString("cover"),
-                                fileExists = fileExists,
-                                hasFile = hasFile,
-                                regions = regList,
-                                textLangs = langList,
-                                dlcCount = dlcNum
-                            )
-                        )
-                    }
-                }
-
-                // Check local files for downloaded status
-                checkDownloadedStatus(parsed)
+                val freshGames = syncCatalogInBackground(requireContext().applicationContext)
+                checkDownloadedStatus(freshGames)
 
                 withContext(Dispatchers.Main) {
                     if (_binding == null) return@withContext
                     allGames.clear()
-                    allGames.addAll(parsed)
+                    allGames.addAll(freshGames)
                     filterGames(binding.editSearch.text?.toString().orEmpty())
                     binding.progressLoading.isVisible = false
                     binding.btnRefresh.isEnabled = true
                     binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
+                    if (allGames.isEmpty()) {
+                        binding.textEmpty.isVisible = true
+                        binding.textEmpty.text = "Нет доступных игр в облаке"
+                    }
                 }
             } catch (e: Exception) {
                 Log.error("[StormGamesWorld] Catalog fetch error: ${e.message}")
@@ -351,9 +356,11 @@ private val SWITCH_CDN_ICONS = mapOf(
                     if (_binding == null) return@withContext
                     binding.progressLoading.isVisible = false
                     binding.btnRefresh.isEnabled = true
-                    binding.textEmpty.isVisible = true
-                    binding.textEmpty.text = "Ошибка подключения: ${e.localizedMessage ?: "Сбой сети"}"
-                    Toast.makeText(requireContext(), "Не удалось загрузить каталог", Toast.LENGTH_SHORT).show()
+                    if (allGames.isEmpty()) {
+                        binding.textEmpty.isVisible = true
+                        binding.textEmpty.text = "Ошибка подключения: ${e.localizedMessage ?: "Сбой сети"}"
+                        Toast.makeText(requireContext(), "Не удалось загрузить каталог", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
@@ -380,11 +387,43 @@ private val SWITCH_CDN_ICONS = mapOf(
             } catch (_: Exception) {}
         }
 
+        val groupCounts = mutableMapOf<String, Int>()
         games.forEach { g ->
+            val key = g.serialId.ifEmpty { g.finalTitle.ifEmpty { g.title } }.uppercase(Locale.ROOT)
+            groupCounts[key] = (groupCounts[key] ?: 0) + 1
+        }
+
+        games.forEach { g ->
+            val key = g.serialId.ifEmpty { g.finalTitle.ifEmpty { g.title } }.uppercase(Locale.ROOT)
+            val isSingle = (groupCounts[key] ?: 0) <= 1
             val tid = g.serialId.lowercase(Locale.ROOT)
-            val title = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).lowercase(Locale.ROOT)
+            val cleanTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
+            val cleanFinal = g.finalTitle.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
+            val fullTitle = "${g.finalTitle} ${g.title}".lowercase(Locale.ROOT)
+            val gameIsRus = fullTitle.contains("rus")
+            val gameIsMod = fullTitle.contains("mod")
+
             g.isDownloaded = allFiles.any { name ->
-                (tid.isNotEmpty() && name.contains(tid)) || (name.contains(title) && (name.endsWith(".nsp") || name.endsWith(".xci") || name.endsWith(".nsz")))
+                if (!name.endsWith(".nsp") && !name.endsWith(".xci") && !name.endsWith(".nsz")) {
+                    return@any false
+                }
+                // Direct title match
+                if (cleanFinal.isNotEmpty() && name.contains(cleanFinal)) return@any true
+                if (cleanTitle.isNotEmpty() && name.contains(cleanTitle)) return@any true
+
+                // Title ID match
+                if (tid.isNotEmpty() && name.contains(tid)) {
+                    if (isSingle) return@any true
+                    val fileHasRus = name.contains("rus")
+                    val fileHasMod = name.contains("mod")
+                    if (gameIsRus == fileHasRus && gameIsMod == fileHasMod) {
+                        if (g.version.isNotEmpty() && g.version != "1.0.0") {
+                            return@any name.contains(g.version.lowercase(Locale.ROOT))
+                        }
+                        return@any true
+                    }
+                }
+                false
             }
         }
     }
@@ -470,30 +509,39 @@ private val SWITCH_CDN_ICONS = mapOf(
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.3.2 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
-                val obj = JSONObject(body)
+                val trimmed = body.trim()
+                val obj: JSONObject? = if (trimmed.startsWith("[")) {
+                    val arr = JSONArray(trimmed)
+                    if (arr.length() > 0) arr.optJSONObject(0) else null
+                } else if (trimmed.startsWith("{")) {
+                    JSONObject(trimmed)
+                } else null
 
-                val desc = obj.optString("description", "")
-                val bytes = obj.optLong("fileSizeBytes", 0L)
+                if (obj != null) {
+                    val desc = obj.optString("description", "")
+                    val bytes = obj.optLong("fileSizeBytes", 0L)
 
-                game.description = desc
-                game.fileSizeBytes = bytes
+                    game.description = desc
+                    game.fileSizeBytes = bytes
 
-                val dlcsArr = obj.optJSONArray("dlcs")
-                if (dlcsArr != null) {
-                    game.dlcs.clear()
-                    for (d in 0 until dlcsArr.length()) {
-                        val dObj = dlcsArr.optJSONObject(d) ?: continue
-                        val dlcId = dObj.optString("id", "")
-                        val dlcName = dObj.optString("name", "Дополнение ${d + 1}")
-                        val dlcDesc = dObj.optString("description", "")
-                        game.dlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
-                    }
-                    if (game.dlcs.isNotEmpty()) {
-                        game.dlcCount = game.dlcs.size
+                    val dlcsArr = obj.optJSONArray("dlcs")
+                    if (dlcsArr != null) {
+                        game.dlcs.clear()
+                        for (d in 0 until dlcsArr.length()) {
+                            val dObj = dlcsArr.optJSONObject(d) ?: continue
+                            val dlcId = dObj.optString("id", "")
+                            val rawName = dObj.optString("name", "").trim()
+                            val dlcName = if (rawName.isNotEmpty()) rawName else "Дополнение ${d + 1}"
+                            val dlcDesc = dObj.optString("description", "")
+                            game.dlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
+                        }
+                        if (game.dlcs.isNotEmpty()) {
+                            game.dlcCount = game.dlcs.size
+                        }
                     }
                 }
 
@@ -502,7 +550,7 @@ private val SWITCH_CDN_ICONS = mapOf(
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.3.2 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -513,7 +561,7 @@ private val SWITCH_CDN_ICONS = mapOf(
 
                 withContext(Dispatchers.Main) {
                     if (_binding == null || selectedGame?.id != game.id) return@withContext
-                    binding.detailGameDescription.text = if (desc.isNotEmpty()) desc else "Описание отсутствует"
+                    binding.detailGameDescription.text = if (game.description.isNotEmpty()) game.description else "Описание отсутствует"
                     if (game.dlcCount > 0) {
                         binding.detailGameDlc.isVisible = true
                         binding.detailGameDlc.text = "+${game.dlcCount} DLC"
@@ -649,7 +697,7 @@ private val SWITCH_CDN_ICONS = mapOf(
                     val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
                     val reqBuilder = Request.Builder()
                         .url(downloadUrl)
-                        .header("User-Agent", "STORM_SWITCH/8.3.2 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
 
                     if (existingBytes > 0L) {
                         reqBuilder.header("Range", "bytes=$existingBytes-")
@@ -738,14 +786,18 @@ private val SWITCH_CDN_ICONS = mapOf(
                             val remMb = (totMb - recMb).coerceAtLeast(0.0)
                             val etaSec = if (currentSpeedMbps > 0.05) (remMb / currentSpeedMbps).toInt() else 0
 
+                            val df = java.text.DecimalFormat("#,##0.0", java.text.DecimalFormatSymbols(Locale("ru", "RU")).apply {
+                                groupingSeparator = ' '
+                                decimalSeparator = ','
+                            })
                             val statsText = if (totMb > 0) {
-                                String.format(
-                                    Locale.US,
-                                    "%.1f МБ из %.1f МБ (%d%%) • %.2f МБ/с • Ост: %02d:%02d",
-                                    recMb, totMb, pct, currentSpeedMbps, etaSec / 60, etaSec % 60
-                                )
+                                val line1 = "Скачано: ${df.format(recMb)} МБ из ${df.format(totMb)} МБ ($pct%)"
+                                val line2 = "Скорость: ${df.format(currentSpeedMbps)} МБ/с • Осталось: ${etaSec / 60} мин ${etaSec % 60} сек"
+                                "$line1\n$line2"
                             } else {
-                                String.format(Locale.US, "%.1f МБ • %.2f МБ/с", recMb, currentSpeedMbps)
+                                val line1 = "Скачано: ${df.format(recMb)} МБ"
+                                val line2 = "Скорость: ${df.format(currentSpeedMbps)} МБ/с"
+                                "$line1\n$line2"
                             }
 
                             withContext(Dispatchers.Main) {
@@ -890,8 +942,13 @@ private val SWITCH_CDN_ICONS = mapOf(
             val item = filteredGames[position]
             val dispTitle = if (item.title.isNotBlank()) item.title else item.finalTitle
 
-            holder.b.textGameTitle.text = dispTitle
-            holder.b.textGameVersion.text = item.version
+            if (item.isRecommended) {
+                holder.b.textGameVersion.text = "⭐ ${item.version} [Рекомендуемая]"
+                holder.b.textGameVersion.setTextColor(0xFF00FF66.toInt())
+            } else {
+                holder.b.textGameVersion.text = item.version
+                holder.b.textGameVersion.setTextColor(0xFFFFFFFF.toInt())
+            }
             if (item.internalVersion.isNotEmpty()) {
                 holder.b.textInternalVersion.isVisible = true
                 holder.b.textInternalVersion.text = item.internalVersion
@@ -986,29 +1043,24 @@ private val SWITCH_CDN_ICONS = mapOf(
                         .build()
                     val resp = httpClient.newCall(req).execute()
                     val body = resp.body?.string().orEmpty()
-                    val obj = JSONObject(body)
-                    val dlcsArr = obj.optJSONArray("dlcs")
+                    val trimmed = body.trim()
+                    val obj: JSONObject? = if (trimmed.startsWith("[")) {
+                        val arr = JSONArray(trimmed)
+                        if (arr.length() > 0) arr.optJSONObject(0) else null
+                    } else if (trimmed.startsWith("{")) {
+                        JSONObject(trimmed)
+                    } else null
+                    val dlcsArr = obj?.optJSONArray("dlcs")
 
                     val fetchedDlcs = mutableListOf<StormWorldDlcItem>()
                     if (dlcsArr != null && dlcsArr.length() > 0) {
                         for (d in 0 until dlcsArr.length()) {
                             val dObj = dlcsArr.optJSONObject(d) ?: continue
                             val dlcId = dObj.optString("id", "")
-                            val dlcName = dObj.optString("name", "Дополнение ${d + 1}")
+                            val rawName = dObj.optString("name", "").trim()
+                            val dlcName = if (rawName.isNotEmpty()) rawName else "Официальное дополнение (DLC #${d + 1})"
                             val dlcDesc = dObj.optString("description", "")
                             fetchedDlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
-                        }
-                    }
-
-                    if (fetchedDlcs.isEmpty() && game.dlcCount > 0) {
-                        for (i in 1..game.dlcCount) {
-                            fetchedDlcs.add(
-                                StormWorldDlcItem(
-                                    id = "",
-                                    name = "Официальное дополнение #$i",
-                                    description = "Контент из расширенного издания игры"
-                                )
-                            )
                         }
                     }
 
@@ -1027,20 +1079,9 @@ private val SWITCH_CDN_ICONS = mapOf(
                         dialogBinding.textDlcEmpty.isVisible = dlcList.isEmpty()
                     }
                 } catch (e: Exception) {
+                    Log.error("[StormGamesWorld] DLC fetch error: ${e.message}")
                     withContext(Dispatchers.Main) {
                         if (!dialog.isShowing) return@withContext
-                        if (dlcList.isEmpty() && game.dlcCount > 0) {
-                            for (i in 1..game.dlcCount) {
-                                dlcList.add(
-                                    StormWorldDlcItem(
-                                        id = "",
-                                        name = "Официальное дополнение #$i",
-                                        description = "Входит в состав данного релиза"
-                                    )
-                                )
-                            }
-                            adapter.notifyDataSetChanged()
-                        }
                         dialogBinding.progressDlcLoading.isVisible = false
                         dialogBinding.textDlcEmpty.isVisible = dlcList.isEmpty()
                     }
@@ -1093,9 +1134,249 @@ private val SWITCH_CDN_ICONS = mapOf(
 
     companion object {
         const val TAG = "StormGamesWorldDialogFragment"
+        private const val CATALOG_CACHE_FILE = "storm_world_catalog_cache.json"
+
+        val sharedHttpClient: OkHttpClient by lazy {
+            OkHttpClient.Builder()
+                .dispatcher(Dispatcher().apply {
+                    maxRequests = 32
+                    maxRequestsPerHost = 16
+                })
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
+                .build()
+        }
 
         fun newInstance(): StormGamesWorldDialogFragment {
             return StormGamesWorldDialogFragment()
+        }
+
+        fun getCachedCatalog(context: Context): List<StormWorldGameItem> {
+            return try {
+                val file = File(context.filesDir, CATALOG_CACHE_FILE)
+                if (!file.exists()) return emptyList()
+                val jsonStr = file.readText()
+                val jsonArr = JSONArray(jsonStr)
+                val list = mutableListOf<StormWorldGameItem>()
+                for (i in 0 until jsonArr.length()) {
+                    val obj = jsonArr.optJSONObject(i) ?: continue
+                    list.add(StormWorldGameItem.fromJson(obj))
+                }
+                list
+            } catch (e: Exception) {
+                Log.error("[StormGamesWorld] Failed to read cached catalog: ${e.message}")
+                emptyList()
+            }
+        }
+
+        fun saveCatalogCache(context: Context, games: List<StormWorldGameItem>) {
+            try {
+                val jsonArr = JSONArray()
+                for (g in games) {
+                    jsonArr.put(g.toJson())
+                }
+                val file = File(context.filesDir, CATALOG_CACHE_FILE)
+                file.writeText(jsonArr.toString())
+            } catch (e: Exception) {
+                Log.error("[StormGamesWorld] Failed to save cached catalog: ${e.message}")
+            }
+        }
+
+        suspend fun syncCatalogInBackground(context: Context): List<StormWorldGameItem> = withContext(Dispatchers.IO) {
+            try {
+                val req = Request.Builder()
+                    .url("https://stormgamesworld.ru/api/games/index")
+                    .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
+                    .build()
+
+                val resp = sharedHttpClient.newCall(req).execute()
+                val body = resp.body?.string().orEmpty()
+                resp.close()
+
+                val jsonArray = JSONArray(body)
+                val candidateList = mutableListOf<StormWorldGameItem>()
+
+                for (i in 0 until jsonArray.length()) {
+                    val obj = jsonArray.optJSONObject(i) ?: continue
+                    val platform = obj.optString("platformName")
+                    val platformType = obj.optString("platformTypeName")
+                    val fileExists = obj.optBoolean("fileExists", false)
+                    val hasFile = obj.optBoolean("hasFile", false)
+                    val sizeStr = obj.optString("size", "").trim()
+
+                    // Exclude any game with missing flags or placeholder size
+                    if (platform == "Nintendo Switch" && platformType == "CONSOLES" && fileExists && hasFile && sizeStr.isNotEmpty() && sizeStr != "—") {
+                        val regList = mutableListOf<String>()
+                        val regArr = obj.optJSONArray("regions")
+                        if (regArr != null) {
+                            for (r in 0 until regArr.length()) regList.add(regArr.optString(r))
+                        }
+
+                        val langList = mutableListOf<String>()
+                        val langArr = obj.optJSONArray("textLangs")
+                        if (langArr != null) {
+                            for (l in 0 until langArr.length()) langList.add(langArr.optString(l))
+                        }
+
+                        val rawTitle = obj.optString("title")
+                        val rawFinalTitle = obj.optString("finalTitle")
+                        var rawVersion = obj.optString("version", "1.0.0").removePrefix("v").removePrefix("V").trim()
+                        var internalVer = ""
+                        var serialId = obj.optString("serialId").trim()
+
+                        val versionRegex = Regex("""\(\s*([^-\)]+?)\s*-\s*(\d+)\s*-\s*([0-9A-Fa-f]{16})\s*\)""")
+                        val match = versionRegex.find(rawFinalTitle) ?: versionRegex.find(rawTitle)
+                        if (match != null) {
+                            val vStr = match.groupValues[1].removePrefix("v").removePrefix("V").trim()
+                            if (vStr.isNotEmpty()) rawVersion = vStr
+                            internalVer = match.groupValues[2].trim()
+                            if (serialId.isEmpty()) serialId = match.groupValues[3].trim()
+                        }
+
+                        val dlcMatch = Regex("""(?:\+|[\(\[])(\d+)D(?:\)|\]|\+)""", RegexOption.IGNORE_CASE).find(rawFinalTitle)
+                        val dlcNum = dlcMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+
+                        candidateList.add(
+                            StormWorldGameItem(
+                                id = obj.optInt("id"),
+                                title = rawTitle,
+                                finalTitle = rawFinalTitle,
+                                version = if (rawVersion.isNotEmpty()) rawVersion else "1.0.0",
+                                internalVersion = internalVer,
+                                serialId = serialId,
+                                size = sizeStr,
+                                cover = obj.optString("cover"),
+                                fileExists = fileExists,
+                                hasFile = hasFile,
+                                regions = regList,
+                                textLangs = langList,
+                                dlcCount = dlcNum
+                            )
+                        )
+                    }
+                }
+
+                // Strictly verify cloud storage existence via HEAD request (only 200 OK kept, 404 filtered out)
+                val verifiedGames = coroutineScope {
+                    candidateList.map { game ->
+                        async(Dispatchers.IO) {
+                            try {
+                                val headReq = Request.Builder()
+                                    .url("https://stormgamesworld.ru/api/games/${game.id}/download")
+                                    .head()
+                                    .header("User-Agent", "STORM_SWITCH/8.4.0 (Android)")
+                                    .build()
+                                val headResp = sharedHttpClient.newCall(headReq).execute()
+                                val isOk = headResp.isSuccessful
+                                if (isOk) {
+                                    val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
+                                    if (disp.contains(".nsz")) game.realExtension = ".nsz"
+                                    else if (disp.contains(".xci")) game.realExtension = ".xci"
+                                    else if (disp.contains(".nsp")) game.realExtension = ".nsp"
+                                }
+                                headResp.close()
+                                if (isOk) game else null
+                            } catch (_: Exception) {
+                                null
+                            }
+                        }
+                    }.awaitAll().filterNotNull()
+                }
+
+                fun compareVers(v1: String, v2: String): Int {
+                    val p1 = v1.removePrefix("v").removePrefix("V").split(".").mapNotNull { it.toIntOrNull() }
+                    val p2 = v2.removePrefix("v").removePrefix("V").split(".").mapNotNull { it.toIntOrNull() }
+                    for (idx in 0 until maxOf(p1.size, p2.size)) {
+                        val n1 = p1.getOrElse(idx) { 0 }
+                        val n2 = p2.getOrElse(idx) { 0 }
+                        if (n1 > n2) return 1
+                        if (n1 < n2) return -1
+                    }
+                    return 0
+                }
+
+                fun calcPriority(g: StormWorldGameItem): Int {
+                    val t = "${g.finalTitle} ${g.title}".uppercase(Locale.ROOT)
+                    if (t.contains("MOD - RUS") || t.contains("MOD - M. RUS") ||
+                        t.contains("MOD-RUS") || t.contains("MOD - M.RUS")) {
+                        return 300
+                    }
+                    if (t.contains("[RUS]") || t.contains("(RUS)") ||
+                        t.contains(" RUS ") || t.endsWith(" RUS")) {
+                        return 200
+                    }
+                    for (l in g.textLangs) {
+                        val lu = l.uppercase(Locale.ROOT)
+                        if (lu == "RUS" || lu.contains("RUSSIAN") || lu.contains("РУССКИЙ")) {
+                            return 200
+                        }
+                    }
+                    return 100
+                }
+
+                val groups = mutableMapOf<String, MutableList<StormWorldGameItem>>()
+                for (g in verifiedGames) {
+                    val key = g.serialId.ifEmpty { g.finalTitle.ifEmpty { g.title } }.uppercase(Locale.ROOT)
+                    groups.getOrPut(key) { mutableListOf() }.add(g)
+                }
+
+                for ((_, list) in groups) {
+                    if (list.size <= 1) {
+                        for (g in list) g.isRecommended = false
+                        continue
+                    }
+
+                    var best: StormWorldGameItem? = null
+                    for (g in list) {
+                        g.isRecommended = false
+                        if (best == null) {
+                            best = g
+                            continue
+                        }
+                        val prioCur = calcPriority(g)
+                        val prioBest = calcPriority(best)
+                        if (prioCur > prioBest) {
+                            best = g
+                        } else if (prioCur == prioBest) {
+                            val cmp = compareVers(g.version, best.version)
+                            if (cmp > 0 || (cmp == 0 && g.id > best.id)) {
+                                best = g
+                            }
+                        }
+                    }
+                    best?.isRecommended = true
+                }
+
+                val sortedGames = verifiedGames.sortedWith { a, b ->
+                    val keyA = a.serialId.ifEmpty { a.finalTitle.ifEmpty { a.title } }.uppercase(Locale.ROOT)
+                    val keyB = b.serialId.ifEmpty { b.finalTitle.ifEmpty { b.title } }.uppercase(Locale.ROOT)
+                    if (keyA == keyB) {
+                        if (a.isRecommended != b.isRecommended) {
+                            if (a.isRecommended) -1 else 1
+                        } else {
+                            val prioA = calcPriority(a)
+                            val prioB = calcPriority(b)
+                            if (prioA != prioB) {
+                                prioB.compareTo(prioA)
+                            } else {
+                                compareVers(b.version, a.version)
+                            }
+                        }
+                    } else {
+                        0
+                    }
+                }
+
+                if (sortedGames.isNotEmpty()) {
+                    saveCatalogCache(context, sortedGames)
+                }
+                sortedGames
+            } catch (e: Exception) {
+                Log.error("[StormGamesWorld] Sync error: ${e.message}")
+                getCachedCatalog(context)
+            }
         }
     }
 }

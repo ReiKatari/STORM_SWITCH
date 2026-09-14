@@ -1100,10 +1100,13 @@ void System::Exit() {
 }
 
 void System::ApplySettings() {
+    Settings::UpdateGPUAccuracy();
+    Settings::UpdateRescalingInfo();
     impl->RefreshTime(*this);
 
     if (IsPoweredOn()) {
         Renderer().RefreshBaseSettings();
+        GetAppletManager().OperationModeChanged();
     }
 }
 

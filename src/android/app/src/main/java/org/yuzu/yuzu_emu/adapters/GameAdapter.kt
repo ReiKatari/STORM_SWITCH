@@ -164,9 +164,45 @@ class GameAdapter(private val activity: AppCompatActivity) :
             return if (v.isNotEmpty()) v else "1.0.0"
         }
 
+        private fun checkUpdateAvailable(model: Game): Boolean {
+            try {
+                val catalog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalog(binding.root.context)
+                val catGame = catalog.firstOrNull { it.serialId.equals(model.programIdHex, ignoreCase = true) }
+                if (catGame != null) {
+                    val p1 = catGame.version.removePrefix("v").removePrefix("V").split(".").mapNotNull { it.toIntOrNull() }
+                    val p2 = model.version.removePrefix("v").removePrefix("V").split(".").mapNotNull { it.toIntOrNull() }
+                    for (i in 0 until maxOf(p1.size, p2.size)) {
+                        val n1 = p1.getOrElse(i) { 0 }
+                        val n2 = p2.getOrElse(i) { 0 }
+                        if (n1 > n2) return true
+                        if (n1 < n2) return false
+                    }
+                }
+            } catch (_: Exception) {}
+            return false
+        }
+
+        private fun bindVersionBadge(badge: android.widget.TextView?, model: Game) {
+            if (badge == null) return
+            val ver = formatVersion(model)
+            if (checkUpdateAvailable(model)) {
+                badge.text = "$ver • Есть обновление"
+                badge.setTextColor(0xFF00F0FF.toInt())
+                badge.setTypeface(null, android.graphics.Typeface.BOLD)
+            } else {
+                badge.text = ver
+            }
+        }
+
         private fun bindBadgeInternalVersion(badge: android.widget.TextView?, model: Game) {
             if (badge == null) return
-            val iv = model.internalVersion.trim().removePrefix("v").removePrefix("V")
+            var iv = model.internalVersion.trim().removePrefix("v").removePrefix("V")
+            val num = iv.toLongOrNull() ?: 0L
+            if (num in 1..999L) {
+                // If it's a raw update number mistakenly stored (like "3" or "13"), multiply by 65536
+                iv = (num * 65536L).toString()
+                model.internalVersion = iv
+            }
             val textToShow = if (iv.isNotEmpty()) iv else "0"
             badge.visibility = android.view.View.VISIBLE
             badge.text = textToShow
@@ -196,7 +232,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
                 model.programIdHex
             }
             listBinding.textGameDeveloper.text = devText
-            listBinding.badgeGameVersion.text = formatVersion(model)
+            bindVersionBadge(listBinding.badgeGameVersion, model)
             bindBadgeInternalVersion(listBinding.badgeGameInternalVersion, model)
             bindBadgeAddons(listBinding.textGameAddons, model)
 
@@ -216,7 +252,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
 
             gridBinding.badgeGameExtension.text = model.extension
             gridBinding.textGameTitle.text = model.title.replace("[\\t\\n\\r]+".toRegex(), " ")
-            gridBinding.badgeGameVersion.text = formatVersion(model)
+            bindVersionBadge(gridBinding.badgeGameVersion, model)
             bindBadgeInternalVersion(gridBinding.badgeGameInternalVersion, model)
             bindBadgeAddons(gridBinding.badgeGameAddons, model)
 
@@ -236,7 +272,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
 
             gridCompactBinding.badgeGameExtension.text = model.extension
             gridCompactBinding.textGameTitleCompact.text = model.title.replace("[\\t\\n\\r]+".toRegex(), " ")
-            gridCompactBinding.badgeGameVersion.text = formatVersion(model)
+            bindVersionBadge(gridCompactBinding.badgeGameVersion, model)
             bindBadgeInternalVersion(gridCompactBinding.badgeGameInternalVersion, model)
             bindBadgeAddons(gridCompactBinding.textGameAddonsCompact, model)
 
@@ -255,7 +291,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
             GameIconUtils.loadGameIcon(model, carouselBinding.imageGameScreen)
 
             carouselBinding.badgeGameExtension?.text = model.extension
-            carouselBinding.badgeGameVersion?.text = formatVersion(model)
+            bindVersionBadge(carouselBinding.badgeGameVersion, model)
             bindBadgeInternalVersion(carouselBinding.badgeGameInternalVersion, model)
             bindBadgeAddons(carouselBinding.badgeGameAddons, model)
 

@@ -101,7 +101,7 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
         const auto all_patches = pm.GetPatches(update_raw_file);
         for (const auto& p : all_patches) {
             if (p.type == FileSys::PatchType::Update && p.enabled) {
-                if (p.numeric_version > 0 && internal_ver == 0) {
+                if (p.numeric_version > 0 && (internal_ver == 0 || p.numeric_version > internal_ver)) {
                     internal_ver = p.numeric_version;
                 }
                 if (IsBaseVersion(entry.version) && !p.version.empty() && p.version != "PACKED" && !p.version.starts_with("0.")) {
@@ -123,7 +123,7 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
         }
 
         // 4. Try extracting paired or standalone version from leaf filename only (e.g. "(1.0.9 - 458752)")
-        if (IsBaseVersion(entry.version)) {
+        if (IsBaseVersion(entry.version) || internal_ver == 0) {
             auto url_decode = [](std::string_view in) -> std::string {
                 std::string out;
                 out.reserve(in.size());
@@ -216,10 +216,13 @@ static RomMetadata CacheRomMetadata(const std::string& path) {
             entry.version = "1.0.0";
         }
 
-        // 6. If internal_ver is 0 but display version is known (e.g. 1.0.9), calculate accurate internal version
+        // 6. If internal_ver is 0 but display version is known (e.g. 1.0.9 or 1.0.0.13), calculate accurate internal version
         if (internal_ver == 0 && !IsBaseVersion(entry.version)) {
-            int major = 1, minor = 0, patch_val = 0;
-            if (std::sscanf(entry.version.c_str(), "%d.%d.%d", &major, &minor, &patch_val) >= 2) {
+            int major = 1, minor = 0, patch_val = 0, build_val = 0;
+            int scanned = std::sscanf(entry.version.c_str(), "%d.%d.%d.%d", &major, &minor, &patch_val, &build_val);
+            if (scanned == 4 && major == 1 && minor == 0 && patch_val == 0 && build_val > 0) {
+                internal_ver = static_cast<u32>(build_val * 65536);
+            } else if (scanned >= 2) {
                 if (major == 1 && minor == 0 && patch_val > 0) {
                     internal_ver = static_cast<u32>(patch_val * 65536);
                 } else if (major >= 1) {

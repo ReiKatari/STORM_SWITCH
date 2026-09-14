@@ -287,6 +287,7 @@ private:
     void OnResetGameFixSuppression();
     void OnAutoTuneSettings();
     void OnOpenStormGamesWorld();
+    void OnOpenStormSaveSync(u64 target_program_id = 0);
     void OnOpenLogViewer();
     void OnApplyAutoCorrection();
     void RestoreSessionSettings();
@@ -729,6 +730,7 @@ private:
     QAction* reset_gamefix_action{nullptr};
     QAction* autotune_action{nullptr};
     QAction* storm_games_world_action{nullptr};
+    QAction* storm_save_sync_action{nullptr};
     QAction* log_viewer_action{nullptr};
 
 protected:

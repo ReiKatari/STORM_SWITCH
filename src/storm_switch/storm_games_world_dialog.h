@@ -21,6 +21,13 @@ class QTextBrowser;
 class QTreeWidget;
 class QTreeWidgetItem;
 
+struct StormWorldDlc {
+    QString id;
+    QString name;
+    QString description;
+    QString version;
+};
+
 struct StormWorldGame {
     int id{0};
     QString title;
@@ -37,6 +44,8 @@ struct StormWorldGame {
     bool has_file{false};
     QString real_extension{QStringLiteral(".nsp")};
     int dlc_count{0};
+    bool is_recommended{false};
+    QVector<StormWorldDlc> dlcs;
 };
 
 class StormGamesWorldDialog : public QDialog {

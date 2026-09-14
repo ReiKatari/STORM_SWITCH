@@ -282,6 +282,17 @@ class HomeSettingsFragment : Fragment() {
             )
             add(
                 HomeSetting(
+                    R.string.storm_save_sync,
+                    R.string.storm_save_sync_description,
+                    R.drawable.ic_sync,
+                    {
+                        StormSaveSyncDialogFragment.newInstance()
+                            .show(parentFragmentManager, StormSaveSyncDialogFragment.TAG)
+                    }
+                )
+            )
+            add(
+                HomeSetting(
                     R.string.manage_game_folders,
                     R.string.select_games_folder_description,
                     R.drawable.ic_add,

@@ -33,7 +33,7 @@ import org.yuzu.yuzu_emu.features.settings.model.IntSetting
  * @param button             The [NativeButton] this Drawable represents.
  */
 class InputOverlayDrawableJoystick(
-    res: Resources,
+    val res: Resources,
     bitmapOuter: Bitmap,
     bitmapInnerDefault: Bitmap,
     bitmapInnerPressed: Bitmap,
@@ -53,6 +53,8 @@ class InputOverlayDrawableJoystick(
     val height: Int
 
     var individualScale: Float = 1.0f
+    var individualOpacity: Float = 1.0f
+    var inEditMode: Boolean = false
 
     private var opacity: Int = 0
 
@@ -106,7 +108,12 @@ class InputOverlayDrawableJoystick(
     }
 
     fun draw(canvas: Canvas?) {
-        outerBitmap.draw(canvas!!)
+        if (canvas == null) return
+        val isRelCenter = BooleanSetting.JOYSTICK_REL_CENTER.getBoolean()
+        if (isRelCenter && trackId == -1 && !inEditMode) {
+            return
+        }
+        outerBitmap.draw(canvas)
         currentStateBitmapDrawable.draw(canvas)
         boundsBoxBitmap.draw(canvas)
     }
@@ -122,21 +129,38 @@ class InputOverlayDrawableJoystick(
         val isActionUp =
             motionEvent == MotionEvent.ACTION_UP || motionEvent == MotionEvent.ACTION_POINTER_UP
 
+        val isRelCenter = BooleanSetting.JOYSTICK_REL_CENTER.getBoolean()
+
         if (isActionDown) {
-            if (!bounds.contains(xPosition, yPosition)) {
+            val touchMatches = if (isRelCenter && !inEditMode) {
+                val screenWidth = res.displayMetrics.widthPixels
+                if (joystick == NativeAnalog.LStick) {
+                    xPosition < screenWidth / 2
+                } else {
+                    xPosition >= screenWidth / 2
+                }
+            } else {
+                bounds.contains(xPosition, yPosition)
+            }
+
+            if (!touchMatches) {
                 return false
             }
+
             pressedState = true
             outerBitmap.alpha = 0
             boundsBoxBitmap.alpha = opacity
-            if (BooleanSetting.JOYSTICK_REL_CENTER.getBoolean()) {
+            if (isRelCenter && !inEditMode) {
                 virtBounds.offset(
                     xPosition - virtBounds.centerX(),
                     yPosition - virtBounds.centerY()
                 )
+                bounds = virtBounds
             }
             boundsBoxBitmap.bounds = virtBounds
             trackId = pointerId
+            setInnerBounds()
+            return true
         }
 
         if (isActionUp) {

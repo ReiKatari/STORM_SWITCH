@@ -750,7 +750,7 @@
     <string name="cheats">チートコード</string>
     <string name="auto_optimization_mode_fast">⚡ 高速 / Eco</string>
     <string name="vulkan_pipeline_cache">Vulkan パイプラインキャッシュ</string>
-    <string name="cheats_count_summary">チート合計: %1 | 有効: %2</string>
+    <string name="cheats_count_summary">チート合計: %1$d | 有効: %2$d</string>
     <string name="dma_accuracy_safe">安全（最高互換性）</string>
     <string name="eco_thermal_mode">Eco / サーマル制御</string>
 
@@ -1262,10 +1262,23 @@
     <string name="enable_frame_interpolation_description">連続するフレーム間に中間フレームを生成・補間して、映像の滑らかさを向上させます。</string>
     <string name="storm_games_world">STORM GAMES WORLD</string>
     <string name="storm_games_world_description">Nintendo Switch ゲームカタログとダウンロード</string>
+    <string name="storm_save_sync">セーブデータ同期 (STORM SAVE SYNC)</string>
+    <string name="storm_save_sync_description">安全なキーを使用してPCとAndroid間でSwitchのセーブデータを同期</string>
+    <string name="storm_save_key_copied">接続キーをクリップボードにコピーしました</string>
+    <string name="storm_save_conflict_title">セーブデータの競合解決</string>
+    <string name="storm_save_replace_current">現在のデータを上書き</string>
+    <string name="storm_save_replace_remote">リモートのデータを上書き</string>
+    <string name="storm_save_keep_both">両方のバージョンを保持</string>
     <string name="gamebanana_tab_online">🌐 GameBanana カタログ</string>
     <string name="gamebanana_tab_installed">💾 インストール済み</string>
     <string name="gamebanana_no_installed_mods">このゲームのModはインストールされていません</string>
     <string name="gamebanana_installed_stats">合計: %1$d | 有効: %2$d | 無効: %3$d</string>
     <string name="gamebanana_delete_mod_confirm">Mod「%1$s」を削除してもよろしいですか？</string>
     <string name="gamebanana_mod_deleted">Mod「%1$s」を削除しました</string>
+    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx ドライバは Adreno 8xx (Snapdragon 8 Elite) と互換性がありません。システムドライバに切り替えました。</string>
+    <string name="apply_driver_title">GPU ドライバーの適用</string>
+    <string name="apply_driver_message">インストールした GPU ドライバーをどのように適用しますか？</string>
+    <string name="apply_driver_globally">すべてにグローバル適用</string>
+    <string name="apply_driver_keep_custom">カスタム設定を変更しない</string>
+    <string name="game_fix_manual_override_warning">⚠️ 手動設定を優先しました: %s。自動修正が一部上書きされました。</string>
 </resources>

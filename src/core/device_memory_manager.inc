@@ -288,6 +288,7 @@ void DeviceMemoryManager<Traits>::Unmap(DAddr address, size_t size) {
         auto phys_addr = tracked_entries[start_page_d + i].compressed_physical_ptr;
         tracked_entries[start_page_d + i].compressed_physical_ptr = 0;
         tracked_entries[start_page_d + i].cpu_backing_address = 0;
+        tracked_entries[start_page_d + i].continuity_tracker = 1;
         if (phys_addr != 0 && (phys_addr - 1U) < total_phys) [[likely]] {
             const size_t phys_page = phys_addr - 1U;
             const u32 base_dev = compressed_device_addr[phys_page];
@@ -435,23 +436,37 @@ void DeviceMemoryManager<Traits>::WalkBlock(DAddr addr, std::size_t size, auto o
             on_unmapped(remaining_size, u64(page_index << Memory::YUZU_PAGEBITS) + page_offset);
             break;
         }
-        const size_t next_pages = (std::max)(size_t(1), std::size_t(tracked_entries[page_index].continuity_tracker));
-        const std::size_t copy_amount = (std::min)((next_pages << Memory::YUZU_PAGEBITS) - page_offset, remaining_size);
-        const auto current_vaddr = u64((page_index << Memory::YUZU_PAGEBITS) + page_offset);
-        SCOPE_EXIT{
-            page_index += next_pages;
-            page_offset = 0;
-            increment(copy_amount);
-            remaining_size -= copy_amount;
-        };
 
         auto phys_addr = tracked_entries[page_index].compressed_physical_ptr;
         if (phys_addr == 0 || (phys_addr - 1U) >= compressed_device_addr.size()) {
-            on_unmapped(copy_amount, current_vaddr);
+            const auto current_vaddr = u64((page_index << Memory::YUZU_PAGEBITS) + page_offset);
+            size_t unmapped_pages = 1;
+            while (page_index + unmapped_pages < total_virtual_pages &&
+                   (tracked_entries[page_index + unmapped_pages].compressed_physical_ptr == 0 ||
+                    (tracked_entries[page_index + unmapped_pages].compressed_physical_ptr - 1U) >= compressed_device_addr.size())) {
+                if (((unmapped_pages + 1) << Memory::YUZU_PAGEBITS) - page_offset > remaining_size) {
+                    break;
+                }
+                unmapped_pages++;
+            }
+            const std::size_t unmapped_amount = (std::min)((unmapped_pages << Memory::YUZU_PAGEBITS) - page_offset, remaining_size);
+            on_unmapped(unmapped_amount, current_vaddr);
+            page_index += unmapped_pages;
+            page_offset = 0;
+            increment(unmapped_amount);
+            remaining_size -= unmapped_amount;
             continue;
         }
+
+        const size_t next_pages = (std::max)(size_t(1), std::size_t(tracked_entries[page_index].continuity_tracker));
+        const std::size_t copy_amount = (std::min)((next_pages << Memory::YUZU_PAGEBITS) - page_offset, remaining_size);
         auto* mem_ptr = GetPointerFromRaw<u8>((PAddr(phys_addr - 1) << Memory::YUZU_PAGEBITS) + page_offset);
         on_memory(copy_amount, mem_ptr);
+
+        page_index += next_pages;
+        page_offset = 0;
+        increment(copy_amount);
+        remaining_size -= copy_amount;
     }
 }
 

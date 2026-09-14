@@ -1225,7 +1225,7 @@
     <string name="cheats">Códigos de trucos</string>
     <string name="auto_optimization_mode_fast">⚡ Rápido</string>
     <string name="vulkan_pipeline_cache">Caché de canalizaciones Vulkan</string>
-    <string name="cheats_count_summary">Total de trucos: %1 | Activados: %2</string>
+    <string name="cheats_count_summary">Total de trucos: %1$d | Activados: %2$d</string>
     <string name="eco_thermal_mode">Modo Eco y refrigeración</string>
 
     <string name="memory_12gb_not_enough_ram">El modo 12 GB DRAM requiere un dispositivo con al menos 12 GB de RAM física.</string>

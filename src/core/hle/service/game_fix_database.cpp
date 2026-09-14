@@ -20,56 +20,132 @@ namespace Core {
 
 static const std::vector<GameFixProfile> s_profiles = {
     {
+        0x01006560184E6000ULL,
+        "Mortal Kombat 1",
+        "• Мгновенный вылет при запуске (UE4 TaskGraph / атомики)\n• Зависание на заставке WB Games и вылет по нехватке памяти (OOM)\n• Сбои Extended Dynamic State в шейдерах арены\n• Пропадание текстур персонажей и окружения при длительной игре",
+        "• Instant crash on launch (UE4 TaskGraph / atomics)\n• WB Games intro freeze and Out of Memory crash\n• Extended Dynamic State arena shader crashes\n• Character and environment texture streaming dropouts",
+        "✓ Память: 6GB DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Включено\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Обычная",
+        "✓ Memory Layout: 6GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Enabled\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal",
+        {
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"System\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\nvdec_emulation", "2"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\eco_frame_pacing", "false"},
+            {"Renderer\\use_video_framerate", "false"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\gpu_accuracy", "0"}
+        },
+        {0x0100D2800D5C2000ULL}
+    },
+    {
         0x0100F2200C984000ULL,
         "Mortal Kombat 11",
         "• Разлет полигонов, мерцание геометрии и графические баги шейдеров\n• Искажение динамического освещения и эффектов крови\n• Микрофризы рендеринга",
         "• Exploding vertices, geometry flicker, and shader rendering artifacts\n• Corrupted dynamic lighting and blood particle effects\n• Pipeline micro-stutter",
-        "✓ Быстрое время ГПУ: Отключено (устраняет разлет геометрии и баги)\n✓ Синхронизация памяти ГПУ: Отключено (стабильный конвейер)\n✓ Реактивная очистка: Отключено (исправление отложенного освещения)\n✓ Barrier Feedback Loops: Включено (исправление частиц)\n✓ Сжатие ASTC: Без сжатия (оригинальное качество материалов)",
-        "✓ Fast GPU Time: Disabled (Fixes geometry glitching and vertices)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "✓ Точность ГПУ: Обычная (устраняет разлет полигонов и артефакты)\n✓ Быстрое время ГПУ: Отключено\n✓ Синхронизация памяти ГПУ: Отключено (стабильный конвейер)\n✓ Реактивная очистка: Отключено (исправление освещения)\n✓ Barrier Feedback Loops: Включено (исправление частиц)\n✓ Сжатие ASTC: Без сжатия\n✓ Память: 6 ГБ DRAM",
+        "✓ GPU Accuracy: Normal (Fixes exploding vertices and glitches)\n✓ Fast GPU Time: Disabled\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 6GB DRAM",
         {
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_disk_shader_cache", "true"},
+            {"Renderer\\nvdec_emulation", "2"},
+            {"Renderer\\async_presentation", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
-        }
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"System\\airplane_mode", "false"},
+            {"System\\language_index", "10"},
+            {"System\\region_index", "2"}
+        },
+        {0x0100B1100C4D0000ULL}
     },
     {
         0x0100EC9010258000ULL,
         "Streets of Rage 4",
-        "• Зависание на Windows при запуске (0 FPS / дедлок сетевого сокета)\n• Вылет при старте на Android\n• Сбои синхронизации видеороликов NVDEC",
-        "• Boot hang on Windows (0 FPS network socket deadlock)\n• Crash on startup on Android\n• NVDEC video playback desync",
-        "✓ Режим полета: Отключено (устраняет дедлок сетевого опроса DotEmu)\n✓ Декодирование видео: NVDEC ГПУ\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Игнорирование сбоев памяти: Включено\n✓ Реактивная очистка: Отключено",
-        "✓ Airplane Mode: Disabled (Fixes DotEmu network deadlock)\n✓ NVDEC Emulation: GPU Video Decoding\n✓ Sync Memory Operations: Disabled\n✓ Ignore Memory Aborts: Enabled\n✓ Reactive Flushing: Disabled",
+        "• Полная поддержка и стабильная работа на ПК (Windows 10/11) и Android: 60 FPS, устранено зависание сетевого сокета DotEmu и видеовставок NVDEC",
+        "• Full verified support and rock-solid performance on PC (Windows 10/11) and Android: 60 FPS, DotEmu network socket hang and NVDEC video desync fixed",
+        "✓ Режим полета: Отключено (устраняет дедлок сетевого опроса DotEmu)\n✓ Декодирование видео: NVDEC ГПУ\n✓ Синхронизация памяти ГПУ: Отключено (предотвращает зависание на 0 FPS)\n✓ Игнорирование сбоев памяти: Включено\n✓ Реактивная очистка: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено",
+        "✓ Airplane Mode: Disabled (Fixes DotEmu network deadlock)\n✓ NVDEC Emulation: GPU Video Decoding\n✓ Sync Memory Operations: Disabled (prevents 0 FPS hang)\n✓ Ignore Memory Aborts: Enabled\n✓ Reactive Flushing: Disabled\n✓ GPU Buffer Readback: Disabled",
         {
             {"System\\airplane_mode", "false"},
             {"Network\\airplane_mode", "false"},
             {"Services\\airplane_mode", "false"},
             {"Renderer\\nvdec_emulation", "2"},
-            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
             {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\use_vulkan_driver_pipeline_cache", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\use_disk_shader_cache", "true"},
+            {"Renderer\\enable_compute_pipelines", "false"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"}
-        }
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
+        },
+        {0x010085800E33E000ULL, 0x01000BD011936000ULL, 0x0100F7A011938000ULL, 0x0100BA700E340000ULL, 0x0100C60010228000ULL, 0x0100AC300919A000ULL}
     },
     {
         0x01007EF00011E000ULL,
         "The Legend of Zelda: Breath of the Wild",
-        "• Вылет игры при загрузке сохранения (исчерпание пула памяти 4GB DRAM)\n• Сбои десериализации акторов и физики Havok\n• Графические артефакты теней и частиц",
-        "• Crash when loading save games (4GB DRAM pool exhaustion)\n• Havok physics and actor deserialization crash\n• Shadow and particle artifacts",
-        "✓ Память: 8GB DRAM (предотвращает краш аллокатора при распаковке сейва)\n✓ Игнорирование сбоев памяти: Включено (стабильность физики Havok)\n✓ Реактивная очистка: Отключено\n✓ Barrier Feedback Loops: Включено\n✓ Точность ГПУ: Высокая",
-        "✓ Memory Layout: 8GB DRAM (Prevents save loading OOM)\n✓ Ignore Memory Aborts: Enabled (Havok physics stability)\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ GPU Accuracy: High",
+        "• Вылет игры при загрузке сохранения (исчерпание пула памяти 4GB DRAM)\n• Сбои десериализации акторов и физики Havok\n• Черный силуэт Линка и мерцание освещения",
+        "• Crash when loading save games (4GB DRAM pool exhaustion)\n• Havok physics and actor deserialization crash\n• Link black silhouette and lighting flicker",
+        "✓ Память: 8GB DRAM (предотвращает краш аллокатора при загрузке сейва)\n✓ Игнорирование сбоев памяти: Включено (стабильность физики Havok)\n✓ Точность ГПУ: Обычная\n✓ Реактивная очистка: Отключено (стабильность кадрового буфера)\n✓ Barrier Feedback Loops: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Memory Layout: 8GB DRAM (Prevents save loading OOM)\n✓ Ignore Memory Aborts: Enabled (Havok physics stability)\n✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\barrier_feedback_loops", "true"}
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_disk_shader_cache", "true"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_vulkan_driver_pipeline_cache", "true"},
+            {"Renderer\\enable_compute_pipelines", "false"},
+            {"System\\use_docked_mode", "0"},
+            {"System\\airplane_mode", "false"},
+            {"Network\\airplane_mode", "false"},
+            {"Services\\airplane_mode", "false"}
         }
     },
     {
@@ -191,25 +267,6 @@ static const std::vector<GameFixProfile> s_profiles = {
         },
         {0x0100B5B0112F8000ULL, 0x0100D1801648E000ULL}
     },
-
-    {
-        0x01007EF00011E000ULL,
-        "The Legend of Zelda: Breath of the Wild",
-        "• Черный силуэт Линка из-за рассинхрона буфера освещения и трафарета\n• Белые вспышки и мерцание освещения/погоды\n• Пропадание текстур скал и земли при нехватке памяти\n• Бирюзовая сетка и артефакты Z-буфера в Святилищах",
-        "• Link black silhouette caused by unsynced lighting and stencil buffers\n• White screen flashes and lighting flicker\n• Ground and terrain textures disappearing due to memory pressure\n• Shrine depth bias / cyan grid artifacts",
-        "✓ Точность ГПУ: Высокая (исправление силуэта Линка)\n✓ Реактивная очистка: Включено (устранение мерцания магии и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода и оригинальное качество)\n✓ Быстрое время ГПУ: Отключено (устраняет пропадание текстур и сбои в док-режиме)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 4 ГБ DRAM (устраняет падение сквозь землю и сбои физики Havok)",
-        "✓ GPU Accuracy: High (Fixes Link black silhouette)\n✓ Reactive Flushing: Enabled (Fixes rune and magic flickering)\n✓ ASTC Recompression: Uncompressed (Clear transparent water)\n✓ Fast GPU Time: Disabled (Fixes texture corruption and artifacts in docked mode)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 4GB DRAM (Prevents falling through terrain and Havok physics glitches)",
-        {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\use_fast_gpu_time", "false"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
-        }
-    },
     {
         0x0100F2C0115B6000ULL,
         "The Legend of Zelda: Tears of the Kingdom",
@@ -265,8 +322,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
         "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без растягивания)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -280,7 +337,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\resolution_setup", "3"},
             {"Renderer\\scaling_filter", "1"},
             {"Renderer\\anti_aliasing", "0"},
-            {"Renderer\\aspect_ratio", "0"},
             {"Renderer\\dyna_state", "1"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
             {"Renderer\\enable_compute_pipelines", "true"},
@@ -301,8 +357,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
         "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без растягивания)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -316,7 +372,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\resolution_setup", "3"},
             {"Renderer\\scaling_filter", "1"},
             {"Renderer\\anti_aliasing", "0"},
-            {"Renderer\\aspect_ratio", "0"},
             {"Renderer\\dyna_state", "1"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
             {"Renderer\\enable_compute_pipelines", "true"},
@@ -338,8 +393,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
         "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без растягивания)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -353,7 +408,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\resolution_setup", "3"},
             {"Renderer\\scaling_filter", "1"},
             {"Renderer\\anti_aliasing", "0"},
-            {"Renderer\\aspect_ratio", "0"},
             {"Renderer\\dyna_state", "1"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
             {"Renderer\\enable_compute_pipelines", "true"},
@@ -375,8 +429,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
         "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без растягивания)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -390,7 +444,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\resolution_setup", "3"},
             {"Renderer\\scaling_filter", "1"},
             {"Renderer\\anti_aliasing", "0"},
-            {"Renderer\\aspect_ratio", "0"},
             {"Renderer\\dyna_state", "1"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
             {"Renderer\\enable_compute_pipelines", "true"},
@@ -412,8 +465,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
         "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без растягивания)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -427,7 +480,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\resolution_setup", "3"},
             {"Renderer\\scaling_filter", "1"},
             {"Renderer\\anti_aliasing", "0"},
-            {"Renderer\\aspect_ratio", "0"},
             {"Renderer\\dyna_state", "1"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
             {"Renderer\\enable_compute_pipelines", "true"},
@@ -443,31 +495,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "0"},
             {"System\\memory_layout_mode", "0"}
         }
-    },
-    {
-        0x0100EC9010258000ULL,
-        "Streets of Rage 4",
-        "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Рассинхронизация буфера презентации",
-        "• Intro NVDEC video stream freeze\n• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Presentation buffer desync and low framerate",
-        "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Графический процессор (стабильный переход в меню)\n✓ Асинхронный вывод: Включено\n✓ Синхронизация операций памяти: Отключено (устраняет зависание на 0 FPS)\n✓ Реактивный сброс памяти: Включено (стабильный кэш поверхностей)\n✓ Быстрая память: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)",
-        "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: GPU (fixes menu transition hang)\n✓ Async Presentation: Enabled\n✓ Sync Memory Operations: Disabled (prevents 0 FPS deadlock)\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)",
-        {
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "2"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "false"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
-        },
-        {0x010085800E33E000ULL, 0x01000BD011936000ULL, 0x0100F7A011938000ULL, 0x0100BA700E340000ULL, 0x0100C60010228000ULL, 0x0100AC300919A000ULL}
+
     },
     {
         0x0100C6000EEA8000ULL,
@@ -614,12 +642,36 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100B9F010DC4000ULL,
         "Doom Eternal",
-        "• Вылет драйвера Vulkan при первом выстреле / спавне BFG",
-        "• Vulkan device loss crash on weapon fire / BFG",
-        "✓ Проверка границ глубины: Включено\n✓ Точность DMA: Safe",
-        "✓ Depth bounds test: STORM DRIVER (pan_depth_bounds)\n✓ DMA Accuracy: Safe",
+        "• Вылет после заставки об эпилепсии из-за переполнения пула памяти (OOM)\n• Вылет драйвера Vulkan при первом выстреле / спавне BFG",
+        "• Crash after epilepsy warning due to 4GB memory pool exhaustion (OOM)\n• Vulkan device loss crash on weapon fire / BFG",
+        "✓ Конфигурация памяти: 6 ГБ DRAM (устраняет вылет после предупреждения об эпилепсии)\n✓ Игнорировать прерывания памяти: Включено\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность DMA: Safe\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено",
+        "✓ Memory Layout: 6GB DRAM (Prevents crash after epilepsy warning)\n✓ Ignore Memory Aborts: Enabled\n✓ Dynamic State: Basic (EDS1)\n✓ DMA Accuracy: Safe\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled",
         {
-            {"Renderer\\dma_accuracy", "1"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\dma_accuracy", "1"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "1"}
         }
     },
     {
@@ -888,16 +940,37 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100E67012924000ULL,
         "The Witcher 3: Wild Hunt - Complete Edition",
-        "• Вылеты по памяти и заикания физики в Новиграде и Туссенте",
-        "• OOM crashes and physics stutter in Novigrad and Toussaint",
-        "✓ Память: 6GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Реактивная очистка: Включено",
-        "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Enabled\n✓ Reactive Flushing: Enabled",
+        "• Вылеты по памяти и дедлоки потоков REDengine в Новиграде и Туссенте\n• Мерцание теней и воды",
+        "• REDengine thread deadlocks and OOM crashes in Novigrad and Toussaint\n• Shadow and water flickering",
+        "✓ Память: 6 ГБ DRAM (устраняет падение аллокатора памяти хоста)\n✓ Fastmem Exclusives: Отключено (устраняет дедлоки диспетчера потоков)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Memory Layout: 6GB DRAM (Prevents host memory allocator OOM)\n✓ Fastmem Exclusives: Disabled (Fixes REDengine thread deadlocks)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
+            {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"},
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_fastmem_exclusives", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\use_reactive_flushing", "true"}
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "1"}
         }
     },
     {
@@ -1293,17 +1366,40 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x0100E67012924000ULL,
+        0x01003D100E9C6000ULL,
         "The Witcher 3: Wild Hunt",
-        "• Мерцание теней и воды в Новиграде\n• Просадки FPS в густых лесах Велена",
-        "• Shadow and water flickering in Novigrad\n• Dense forest FPS drops in Velen",
-        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
-        "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x\n✓ Memory Layout: 8GB DRAM",
+        "• Вылеты памяти (OOM) и зависания диспетчера потоков REDengine\n• Мерцание теней и воды в Новиграде",
+        "• REDengine thread deadlocks and host OOM memory crashes\n• Shadow and water flickering in Novigrad",
+        "✓ Память: 6 ГБ DRAM (устраняет сбой аллокатора памяти)\n✓ Fastmem Exclusives: Отключено (устраняет дедлоки диспетчера потоков)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено\n✓ Анизотропная фильтрация: 16x",
+        "✓ Memory Layout: 6GB DRAM (Prevents host allocator OOM)\n✓ Fastmem Exclusives: Disabled (Fixes REDengine thread deadlocks)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ Anisotropic Filtering: 16x",
         {
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_fastmem_exclusives", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\max_anisotropy", "5"},
-            {"System\\memory_layout_mode", "2"}
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "1"}
         }
     },
     {
@@ -1350,15 +1446,36 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100BB600DC30000ULL,
         "DOOM Eternal",
-        "• Ослепляющие вспышки плазменных взрывов\n• Статтеры при добивании демонов (Glory Kill)",
-        "• Blinding plasma explosion flashes\n• Glory kill execution micro-stutters",
-        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
-        "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
+        "• Вылет после заставки об эпилепсии из-за переполнения пула памяти (OOM)\n• Ослепляющие вспышки плазменных взрывов и статтеры Glory Kill",
+        "• Crash after epilepsy warning due to 4GB memory pool exhaustion (OOM)\n• Blinding plasma explosion flashes and Glory kill stutters",
+        "✓ Конфигурация памяти: 6 ГБ DRAM (устраняет вылет после предупреждения об эпилепсии)\n✓ Игнорировать прерывания памяти: Включено\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность DMA: Safe\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено",
+        "✓ Memory Layout: 6GB DRAM (Prevents crash after epilepsy warning)\n✓ Ignore Memory Aborts: Enabled\n✓ Dynamic State: Basic (EDS1)\n✓ DMA Accuracy: Safe\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"System\\memory_layout_mode", "2"}
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\dma_accuracy", "1"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "1"}
         }
     },
     {
@@ -1645,29 +1762,73 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01005AF00BA7A000ULL,
         "Metroid Dread",
-        "• Микрофризы при скоростном скольжении Самус\n• Рассинхронизация счетчика кадров в катсценах E.M.M.I.",
-        "• Samus speed booster micro-stutters\n• E.M.M.I. cutscene frame rate desync",
-        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Анизотропная фильтрация: 16x",
-        "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
+        "• Просадки FPS до 15-20 к/с на Snapdragon 8 Gen 3 (Adreno 750) из-за высокой точности ГПУ\n• Микрофризы при входе в зоны E.M.M.I.",
+        "• Framerate drops to 15-20 FPS on Snapdragon 8 Gen 3 (Adreno 750) due to high GPU accuracy\n• E.M.M.I. zone transition micro-stutters",
+        "✓ Точность ГПУ: Обычная (стабильные 60 FPS на Snapdragon 8 Gen 3 / Adreno 750)\n✓ Реактивная очистка: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Accuracy: Normal (Stable 60 FPS on Snapdragon 8 Gen 3 / Adreno 750)\n✓ Reactive Flushing: Disabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\max_anisotropy", "5"}
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
         0x010077200889E000ULL,
         "Donkey Kong Country: Tropical Freeze",
-        "• Сбои полупрозрачности воды и шерсти Донки Конга\n• Микростаттеры при полетах на бочках",
-        "• Water transparency and Kong fur shader glitches\n• Barrel blast transition micro-stutters",
-        "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено",
-        "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "• Просадки частоты кадров до 15 FPS на Snapdragon 8 Gen 3 (Adreno 750) из-за высокой точности ГПУ\n• Микростаттеры при полетах на бочках",
+        "• Heavy framerate drops to 15 FPS on Snapdragon 8 Gen 3 (Adreno 750) due to high GPU accuracy\n• Barrel blast transition micro-stutters",
+        "✓ Точность ГПУ: Обычная (стабильные 60 FPS на Snapdragon 8 Gen 3 / Adreno 750)\n✓ Реактивная очистка: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Обратные циклы барьеров: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ GPU Accuracy: Normal (Stable 60 FPS on Snapdragon 8 Gen 3 / Adreno 750)\n✓ Reactive Flushing: Disabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\astc_recompression", "0"}
-        }
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
+        },
+        {0x0100C1F0051B2000ULL}
     },
     {
         0x0100483017770000ULL,
@@ -2400,75 +2561,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\max_anisotropy", "5"}
         }
-    },
-    {
-        0x01006560184E6000ULL,
-        "Mortal Kombat 1",
-        "• Мгновенный вылет при запуске (UE4 TaskGraph / атомики)\n• Зависание на заставке WB Games и вылет по нехватке памяти (OOM)\n• Сбои Extended Dynamic State в шейдерах арены\n• Пропадание текстур персонажей и окружения при длительной игре",
-        "• Instant crash on launch (UE4 TaskGraph / atomics)\n• WB Games intro freeze and Out of Memory crash\n• Extended Dynamic State arena shader crashes\n• Character and environment texture streaming dropouts",
-        "✓ Конфигурация памяти: 8 ГБ DRAM (критично для предотвращения вылета!)\n✓ Быстрое время ГПУ: Отключено (устраняет deadlock UE4)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Точный (безопасные мониторы потоков TaskGraph)\n✓ Синхронизация памяти: Включено (устранение застывающего дыма)\n✓ Реактивная очистка: Включено (стабильный кэш текстур UE4)\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-        "✓ Memory Layout: 8GB DRAM (Critical to prevent OOM crash!)\n✓ Fast GPU Time: Disabled (Fixes UE4 deadlock)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Accurate (Safe TaskGraph thread monitors)\n✓ Sync Memory Operations: Enabled (fixes smoke/particle artifacts)\n✓ Reactive Flushing: Enabled (stable UE4 texture cache)\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
-        {
-            {"Core\\memory_layout_mode", "2"},
-            {"System\\memory_layout_mode", "2"},
-            {"System\\airplane_mode", "true"},
-            {"Network\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"},
-            {"Renderer\\use_fast_gpu_time", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\dyna_state", "1"},
-            {"Cpu\\cpu_accuracy", "1"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"System\\use_docked_mode", "0"}
-        },
-        {0x0100D2800D5C2000ULL}
-    },
-    {
-        0x0100B1100C4D0000ULL,
-        "Mortal Kombat 11",
-        "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити\n• Отсутствие русского языка при авто-определении",
-        "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes\n• Missing Russian language on auto-detection",
-        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Высокая (устранение растяжения полигонов и артефактов геометрии)\n✓ Синхронизация операций памяти: Включено (устранение сбоев текстур)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (чистые детальные текстуры)\n✓ Язык: Русский\n✓ Регион: Европа\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: High (eliminates polygon stretching and geometry glitches)\n✓ Sync Memory Operations: Enabled (fixes texture corruption)\n✓ Fast GPU Time: Enabled (stable 60 FPS)\n✓ ASTC Recompression: Uncompressed\n✓ Language: Russian\n✓ Region: Europe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\language_index", "10"},
-            {"System\\region_index", "2"},
-            {"System\\airplane_mode", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"}
-        }
-    },
-    {
-        0x0100F2200C984000ULL,
-        "Mortal Kombat 11 Ultimate",
-        "• Зависание на титульном экране при синхронизации WB Play / Башен Времени\n• Утечки VRAM в кинематографичных фаталити\n• Отсутствие русского языка при авто-определении",
-        "• WB Play / Towers of Time server sync freeze on title screen\n• Cinematic Fatalities VRAM spikes\n• Missing Russian language on auto-detection",
-        "✓ Режим полёта: Включено (пропуск ожидания WB Play)\n✓ Конфигурация памяти: 4 ГБ DRAM (устраняет растяжение полигонов и сбои текстур)\n✓ Точность ГПУ: Высокая (устранение растяжения полигонов и артефактов геометрии)\n✓ Синхронизация операций памяти: Включено (устранение сбоев текстур)\n✓ Быстрое время ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие ASTC: Отключено (чистые детальные текстуры)\n✓ Язык: Русский\n✓ Регион: Европа\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Memory Layout: 4GB DRAM (eliminates texture and vertex corruption)\n✓ GPU Accuracy: High (eliminates polygon stretching and geometry glitches)\n✓ Sync Memory Operations: Enabled (fixes texture corruption)\n✓ Fast GPU Time: Enabled (stable 60 FPS)\n✓ ASTC Recompression: Uncompressed\n✓ Language: Russian\n✓ Region: Europe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\language_index", "10"},
-            {"System\\region_index", "2"},
-            {"System\\airplane_mode", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"}
-        }
+
     },
     {
         0x01007E300B70C000ULL,
@@ -3408,15 +3501,38 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010093801237C000ULL,
         "Metroid Dread",
-        "• Микрофризы при входе в зоны E.M.M.I.\n• Сбои размытия в катсценах и шейдеров тепловизора",
-        "• E.M.M.I. zone transition micro-stutters\n• Cutscene motion blur and thermal vision shader glitches",
-        "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
-        "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
+        "• Просадки частоты кадров до 15-20 FPS на Snapdragon 8 Gen 3 (Adreno 750) из-за высокой точности ГПУ\n• Микрофризы при входе в зоны E.M.M.I.",
+        "• Heavy framerate drops to 15-20 FPS on Snapdragon 8 Gen 3 (Adreno 750) due to high GPU accuracy\n• E.M.M.I. zone transition micro-stutters",
+        "✓ Точность ГПУ: Обычная (стабильные 60 FPS на Snapdragon 8 Gen 3 / Adreno 750)\n✓ Реактивная очистка: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Accuracy: Normal (Stable 60 FPS on Snapdragon 8 Gen 3 / Adreno 750)\n✓ Reactive Flushing: Disabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"}
-        }
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
+        },
+        {0x01005AF00BA7A000ULL}
     },
     {
         0x010042D00D900000ULL,
@@ -3666,32 +3782,42 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010044700DEB0000ULL,
         "Assassin's Creed: The Rebel Collection",
-        "• Случайные вылеты из-за сбоев разыменования нулевых указателей в анимациях\n• Мерцание геометрии и исчезновение NPC из-за рассинхронизации барьеров и окклюзии",
-        "• Random crash from null pointer memory access in complex animations\n• Geometry flickering and disappearing NPCs due to fence desync and occlusion queries",
-        "✓ Барьеры ГПУ: Стандартный режим (устранение исчезновения NPC)\n✓ Обратное чтение буферов ГПУ: Включено (корректная окклюзия)\n✓ Синхронизация операций памяти: Включено\n✓ Реактивный сброс памяти: Включено\n✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Fences: Standard mode (fixes disappearing NPCs)\n✓ GPU Buffer Readback: Enabled (correct occlusion)\n✓ Sync Memory Operations: Enabled\n✓ Reactive Flushing: Enabled\n✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "• Случайные вылеты из-за сбоев разыменования нулевых указателей в анимациях\n• Мерцание геометрии и исчезновение NPC из-за рассинхронизации барьеров и окклюзии\n• Волны бьют сквозь палубу и Т-поза персонажей из-за неточного FMA",
+        "• Random crash from null pointer memory access in complex animations\n• Geometry flickering and disappearing NPCs due to fence desync and occlusion queries\n• Ocean waves clipping through deck and character T-pose from unfused FMA",
+        "✓ Точность ЦП: Точно (расчёт физики воды и волн, устранение Т-позы)\n✓ Обратное чтение буферов ГПУ: Включено (окклюзия и видимость NPC)\n✓ Барьеры ГПУ: Стандартный режим (устранение мерцания геометрии)\n✓ Асинхронные шейдеры: Включено (устранение микрофризов)\n✓ Синхронизация операций памяти: Включено\n✓ Реактивный сброс памяти: Включено\n✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая",
+        "✓ CPU Accuracy: Accurate (Ocean waves and buoyancy physics, fixes T-pose)\n✓ GPU Buffer Readback: Enabled (Occlusion and NPC visibility)\n✓ GPU Barriers: Standard mode (Fixes geometry flickering)\n✓ Asynchronous Shaders: Enabled (Stutter elimination)\n✓ Sync Memory Operations: Enabled\n✓ Reactive Flushing: Enabled\n✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High",
         {
-            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Cpu\\cpuopt_unsafe_unfuse_fma", "false"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\enable_gpu_buffer_readback", "true"},
+            {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\early_release_fences", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\use_disk_shader_cache", "true"},
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Renderer\\dyna_state", "0"},
             {"System\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "1"},
             {"Network\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"}
-        }
+        },
+        {0x010044700DC30000ULL, 0x010044700DEB0001ULL}
     },
     {
         0x0100670014482000ULL,
@@ -3749,6 +3875,41 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\airplane_mode", "true"},
             {"Network\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"}
+        }
+    },
+    {
+        0x0100236015B7A000ULL,
+        "Alan Wake Remastered",
+        "• Искажение луча света фонарика и артефакты теней\n• Размытие и нечеткость шрифтов субтитров и интерфейса",
+        "• Flashlight cone illumination artifacts and shadow glitch\n• Blurry subtitle fonts and distorted UI text rendering",
+        "✓ Динамическое состояние: Базовое (EDS 1 — корректный луч фонарика)\n✓ Сжатие ASTC: Отключено (четкие шрифты и интерфейс)\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Быстрое время ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM",
+        "✓ Dynamic State: Basic (EDS 1 — correct flashlight cone)\n✓ ASTC Recompression: Uncompressed (sharp text and UI)\n✓ GPU Buffer Readback: Enabled\n✓ Fast GPU Time: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
+        {
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\resolution_setup", "3"},
+            {"Renderer\\scaling_filter", "1"},
+            {"Renderer\\anti_aliasing", "0"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
+            {"System\\airplane_mode", "true"},
+            {"System\\use_docked_mode", "1"}
         }
     }
 };
@@ -4129,6 +4290,9 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
             return GetProfile(profile.title_id);
         }
         if (game_lower.find("witcher") != std::string::npos && (lower.find("witcher") != std::string::npos || lower.find("wild hunt") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("alan wake") != std::string::npos && (lower.find("alan wake") != std::string::npos || lower.find("0100236015b7a000") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
         if (game_lower.find("pikmin") != std::string::npos && lower.find("pikmin") != std::string::npos) {
@@ -4560,15 +4724,17 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
 
     // Merge settings from profile
     for (const auto& [full_key, val] : profile->ini_settings) {
+        if (full_key == "Renderer\\aspect_ratio") {
+            continue;
+        }
         auto slash = full_key.find('\\');
         if (slash != std::string::npos) {
             auto sec = full_key.substr(0, slash);
             auto key = full_key.substr(slash + 1);
-            std::string sanitized_val = val;
-            if (sec == "Renderer" && key == "enable_gpu_buffer_readback" && (val == "true" || val == "1")) {
-                LOG_WARNING(Frontend, "GameFixDatabase: Sanitized enable_gpu_buffer_readback to false for {:#016x}", title_id);
-                sanitized_val = "false";
+            if (key == "aspect_ratio") {
+                continue;
             }
+            std::string sanitized_val = val;
             sections[sec][key] = sanitized_val;
             sections[sec][key + "\\use_global"] = "false";
             sections[sec][key + "\\default"] = "false";
@@ -4749,6 +4915,9 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
         };
 
         for (const auto& [full_key, val] : profile->ini_settings) {
+            if (full_key == "Renderer\\aspect_ratio") {
+                continue;
+            }
             if (full_key == "Renderer\\gpu_accuracy") {
                 apply_setting(Settings::values.gpu_accuracy, static_cast<Settings::GpuAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\barrier_feedback_loops") {
@@ -4763,8 +4932,6 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.max_anisotropy, static_cast<Settings::AnisotropyMode>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\resolution_setup") {
                 apply_setting(Settings::values.resolution_setup, static_cast<Settings::ResolutionSetup>(safe_stoi(val, 3)));
-            } else if (full_key == "Renderer\\aspect_ratio") {
-                apply_setting(Settings::values.aspect_ratio, static_cast<Settings::AspectRatio>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\fsr_sharpening_slider") {
                 apply_setting(Settings::values.fsr_sharpening_slider, static_cast<u8>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\scaling_filter") {
@@ -4772,10 +4939,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\anti_aliasing") {
                 apply_setting(Settings::values.anti_aliasing, static_cast<Settings::AntiAliasing>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\enable_gpu_buffer_readback") {
-                if (val == "true" || val == "1") {
-                    LOG_WARNING(Frontend, "GameFixDatabase: Sanitized enable_gpu_buffer_readback to false for {:#016x} to protect 60 FPS", title_id);
-                }
-                apply_setting(Settings::values.enable_gpu_buffer_readback, false);
+                apply_setting(Settings::values.enable_gpu_buffer_readback, val == "true" || val == "1");
             } else if (full_key == "Renderer\\early_release_fences") {
                 apply_setting(Settings::values.early_release_fences, val == "true" || val == "1");
             } else if (full_key == "Renderer\\sync_memory_operations") {

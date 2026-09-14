@@ -1427,10 +1427,23 @@ Wirklich fortfahren?</string>
     <string name="enable_frame_interpolation_description">Glättet Übergänge zwischen aufeinanderfolgenden Bildern durch Bild-Interpolation.</string>
     <string name="storm_games_world">STORM GAMES WORLD</string>
     <string name="storm_games_world_description">Nintendo Switch Spielekatalog und Downloads</string>
+    <string name="storm_save_sync">Speichersynchronisierung (STORM SAVE SYNC)</string>
+    <string name="storm_save_sync_description">Plattformübergreifende Spielstand-Synchronisierung zwischen PC und Smartphone über sicheren Schlüssel</string>
+    <string name="storm_save_key_copied">Verbindungsschlüssel in die Zwischenablage kopiert</string>
+    <string name="storm_save_conflict_title">Speicherkonfliktlösung</string>
+    <string name="storm_save_replace_current">Aktuellen ersetzen</string>
+    <string name="storm_save_replace_remote">Auf Remote ersetzen</string>
+    <string name="storm_save_keep_both">Beide Varianten behalten</string>
     <string name="gamebanana_tab_online">🌐 GameBanana-Katalog</string>
     <string name="gamebanana_tab_installed">💾 Installiert</string>
     <string name="gamebanana_no_installed_mods">Keine Mods für dieses Spiel installiert</string>
     <string name="gamebanana_installed_stats">Gesamt: %1$d | Aktiviert: %2$d | Deaktiviert: %3$d</string>
     <string name="gamebanana_delete_mod_confirm">Möchten Sie den Mod "%1$s" wirklich löschen?</string>
     <string name="gamebanana_mod_deleted">Mod "%1$s" gelöscht</string>
+    <string name="driver_incompatible_adreno8xx">Der Turnip a6xx/a7xx-Treiber ist inkompatibel mit Adreno 8xx (Snapdragon 8 Elite). Systemtreiber aktiviert.</string>
+    <string name="apply_driver_title">GPU-Treiber anwenden</string>
+    <string name="apply_driver_message">Wie möchten Sie den installierten GPU-Treiber anwenden?</string>
+    <string name="apply_driver_globally">Global für alle</string>
+    <string name="apply_driver_keep_custom">Ohne benutzerdefinierte Einstellungen zu beeinflussen</string>
+    <string name="game_fix_manual_override_warning">⚠️ Manuelle Einstellungen priorisiert: %s. Automatische Korrekturen teilweise überschrieben.</string>
 </resources>

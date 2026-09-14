@@ -338,6 +338,14 @@ class SettingsFragmentPresenter(
             }
             add(IntSetting.RENDERER_ANTI_ALIASING.key)
             add(IntSetting.RENDERER_NVDEC_EMULATION.key)
+            add(
+                SubmenuSetting(
+                    titleId = R.string.frame_gen,
+                    descriptionId = R.string.frame_gen_description,
+                    iconId = R.drawable.ic_frames,
+                    menuKey = MenuTag.SECTION_FRAME_GEN
+                )
+            )
 
             add(HeaderSetting(R.string.advanced))
 

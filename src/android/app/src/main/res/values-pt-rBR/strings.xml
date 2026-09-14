@@ -1001,7 +1001,7 @@
     <string name="cheats">Códigos de trapaça</string>
     <string name="auto_optimization_mode_fast">⚡ Rápido</string>
     <string name="vulkan_pipeline_cache">Cache de pipelines Vulkan</string>
-    <string name="cheats_count_summary">Total de trapaças: %1 | Ativadas: %2</string>
+    <string name="cheats_count_summary">Total de trapaças: %1$d | Ativadas: %2$d</string>
     <string name="eco_thermal_mode">Modo Eco e térmico</string>
 
     <string name="memory_12gb_not_enough_ram">O modo 12 GB DRAM requer um dispositivo com pelo menos 12 GB de RAM física.</string>

@@ -28,6 +28,7 @@ import org.yuzu.yuzu_emu.databinding.ActivitySettingsBinding
 import org.yuzu.yuzu_emu.features.input.NativeInput
 import org.yuzu.yuzu_emu.features.settings.utils.SettingsFile
 import org.yuzu.yuzu_emu.fragments.ResetSettingsDialogFragment
+import org.yuzu.yuzu_emu.model.GameFixDatabase
 import org.yuzu.yuzu_emu.utils.*
 import org.yuzu.yuzu_emu.utils.collect
 
@@ -147,6 +148,7 @@ class SettingsActivity : AppCompatActivity() {
             } else if (NativeConfig.isPerGameConfigLoaded()) {
                 NativeLibrary.logSettings()
                 NativeConfig.savePerGameConfig()
+                args.game?.let { GameFixDatabase.markConfigAsUserCustom(it) }
                 NativeConfig.unloadPerGameConfig()
             }
 

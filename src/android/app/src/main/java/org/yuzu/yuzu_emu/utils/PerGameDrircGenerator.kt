@@ -284,6 +284,7 @@ object PerGameDrircGenerator {
 
         // 17. Mortal Kombat 11 (Dedicated High-FPS Profile: clean 55-60 FPS on Turnip)
         if (cleanId.startsWith("0100B1100C4D0") ||
+            cleanId.startsWith("0100F2200C984") ||
             cleanTitle.contains("mortal kombat 11") ||
             cleanTitle.contains("mk11") ||
             cleanTitle.contains("mk 11")
@@ -700,15 +701,15 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
             }
             GameProfileType.ASSASSINS_CREED -> {
-                optionsBuilder.append("\n            <!-- ASSASSIN'S CREED SERIES (Ubisoft AnvilNext Ocean & Shadows Integrity) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
+                optionsBuilder.append("\n            <!-- ASSASSIN'S CREED SERIES (Ubisoft AnvilNext Ocean and Shadows Integrity) -->\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
             }
             GameProfileType.EA_SPORTS -> {
-                optionsBuilder.append("\n            <!-- EA SPORTS FROSTBITE RULES (Pacing & Command Buffering) -->\n")
+                optionsBuilder.append("\n            <!-- EA SPORTS FROSTBITE RULES (Pacing and Command Buffering) -->\n")
                 optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
@@ -797,11 +798,7 @@ $optionsBuilder
 
         val configFile = File(targetDir, "drirc.xml")
         configFile.writeText(xml, Charsets.UTF_8)
-
-        // Duplicate as drirc, 00-storm.conf, drirc.conf for maximum loader compatibility
         File(targetDir, "00-storm.conf").writeText(xml, Charsets.UTF_8)
-        File(targetDir, "drirc").writeText(xml, Charsets.UTF_8)
-        File(targetDir, "drirc.conf").writeText(xml, Charsets.UTF_8)
 
         // Write directly to $HOME/.drirc
         val homeDir = YuzuApplication.appContext.filesDir

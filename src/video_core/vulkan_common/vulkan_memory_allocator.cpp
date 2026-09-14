@@ -240,7 +240,13 @@ namespace Vulkan {
         VkImage handle{};
         VmaAllocation allocation{};
         VmaAllocationInfo alloc_info{};
-        vk::Check(vmaCreateImage(allocator, &ci, &alloc_ci, &handle, &allocation, &alloc_info));
+        VkResult res_image = vmaCreateImage(allocator, &ci, &alloc_ci, &handle, &allocation, &alloc_info);
+        if (res_image != VK_SUCCESS) {
+            auto alloc_ci_relax = alloc_ci;
+            alloc_ci_relax.flags &= ~VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
+            res_image = vmaCreateImage(allocator, &ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
+        }
+        vk::Check(res_image);
 
         // Log GPU memory allocation for images
         if (GPU::Logging::IsActive() &&
@@ -277,7 +283,13 @@ namespace Vulkan {
         VmaAllocation allocation{};
         VkMemoryPropertyFlags property_flags{};
 
-        vk::Check(vmaCreateBuffer(allocator, &ci, &alloc_ci, &handle, &allocation, &alloc_info));
+        VkResult res_buffer = vmaCreateBuffer(allocator, &ci, &alloc_ci, &handle, &allocation, &alloc_info);
+        if (res_buffer != VK_SUCCESS) {
+            auto alloc_ci_relax = alloc_ci;
+            alloc_ci_relax.flags &= ~VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
+            res_buffer = vmaCreateBuffer(allocator, &ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
+        }
+        vk::Check(res_buffer);
         vmaGetAllocationMemoryProperties(allocator, allocation, &property_flags);
 
         // Log GPU memory allocation for buffers

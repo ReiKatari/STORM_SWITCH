@@ -33,6 +33,71 @@ object GpuDriverHelper {
         NativeFreedrenoConfig.reloadFreedrenoConfig()
     }
 
+    fun isAdreno8xx(): Boolean {
+        if (android.os.Build.MODEL.contains("S938", ignoreCase = true) ||
+            android.os.Build.HARDWARE.contains("sun", ignoreCase = true) ||
+            android.os.Build.BOARD.contains("sun", ignoreCase = true) ||
+            android.os.Build.DEVICE.contains("sun", ignoreCase = true) ||
+            android.os.Build.PRODUCT.contains("sun", ignoreCase = true) ||
+            (android.os.Build.VERSION.SDK_INT >= 31 && android.os.Build.SOC_MODEL.contains("8750", ignoreCase = true))
+        ) {
+            return true
+        }
+        try {
+            val model = hookLibPath?.let { getGpuModel(hookLibPath = it) } ?: ""
+            if (model.contains("830") || model.contains("Adreno (TM) 8", ignoreCase = true) || model.contains("Adreno 8", ignoreCase = true)) {
+                return true
+            }
+        } catch (_: Throwable) {}
+        return false
+    }
+
+    fun isTurnipDriverActive(): Boolean {
+        val metadata = installedCustomDriverData
+        val libName = metadata.libraryName ?: ""
+        val vendor = metadata.vendor ?: ""
+        val name = metadata.name ?: ""
+        val driverVersion = metadata.version ?: ""
+        if (libName.isEmpty()) {
+            return false // System driver
+        }
+        return vendor.contains("Freedreno", ignoreCase = true) ||
+               vendor.contains("Mesa", ignoreCase = true) ||
+               name.contains("Turnip", ignoreCase = true) ||
+               name.contains("STORM", ignoreCase = true) ||
+               driverVersion.contains("Turnip", ignoreCase = true) ||
+               libName.contains("freedreno", ignoreCase = true) ||
+               libName.contains("adreno", ignoreCase = true) ||
+               libName.contains("purple", ignoreCase = true)
+    }
+
+    fun isDriverCompatibleWithAdreno8xx(metadata: GpuDriverMetadata): Boolean {
+        // System driver is always 100% compatible
+        if (metadata.name == null) {
+            return true
+        }
+        val desc = metadata.description ?: ""
+        val name = metadata.name ?: ""
+        val version = metadata.packageVersion ?: ""
+
+        // Verified STORM DRIVER 3.2.0+
+        if (name.contains("STORM", ignoreCase = true)) {
+            val verNum = version.replace("[^0-9.]".toRegex(), "")
+            if (verNum.isNotEmpty()) {
+                val parts = verNum.split(".").mapNotNull { it.toIntOrNull() }
+                if (parts.isNotEmpty() && (parts[0] > 3 || (parts[0] == 3 && parts.getOrElse(1) { 0 } >= 2))) {
+                    return true
+                }
+            }
+        }
+
+        if (desc.contains("Adreno 8", ignoreCase = true) || desc.contains("830", ignoreCase = true) || desc.contains("Snapdragon 8 Elite", ignoreCase = true)) {
+            return true
+        }
+
+        return false
+    }
+
     fun initializeDriverParameters() {
         try {
             // Initialize the file redirection directory.
@@ -68,15 +133,8 @@ object GpuDriverHelper {
             }
         }
 
-        val isA830Device = android.os.Build.MODEL.contains("S938", ignoreCase = true) ||
-                           android.os.Build.HARDWARE.contains("sun", ignoreCase = true) ||
-                           android.os.Build.BOARD.contains("sun", ignoreCase = true) ||
-                           android.os.Build.DEVICE.contains("sun", ignoreCase = true) ||
-                           android.os.Build.PRODUCT.contains("sun", ignoreCase = true) ||
-                           (android.os.Build.VERSION.SDK_INT >= 31 && android.os.Build.SOC_MODEL.contains("8750", ignoreCase = true))
-
         val customLib = installedCustomDriverData.libraryName
-        if (!customLib.isNullOrEmpty()) {
+        if (!customLib.isNullOrEmpty() && isTurnipDriverActive()) {
             val installDir = File(driverInstallationPath!!)
             val drircFile = File(installDir, "drirc.xml")
             val drircConfFile = File(installDir, "00-storm.conf")
@@ -122,6 +180,11 @@ object GpuDriverHelper {
             if (model.contains("Mali", ignoreCase = true)) {
                 NativeFreedrenoConfig.setFreedrenoEnv("PAN_MESA_DEBUG", "fpk,early_z,opt")
             }
+        } else {
+            // Reverting to system driver or non-turnip: clear all freedreno drirc variables
+            NativeFreedrenoConfig.clearFreedrenoEnv("DRIRC_CONFIGDIR")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_DIR")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_FILE")
         }
 
         NativeLibrary.initializeGpuDriver(
@@ -134,7 +197,10 @@ object GpuDriverHelper {
 
     fun applyPerGameDriverConfig(programIdHex: String, gameTitle: String) {
         val customLib = installedCustomDriverData.libraryName
-        if (customLib.isNullOrEmpty() || driverInstallationPath.isNullOrEmpty()) {
+        if (customLib.isNullOrEmpty() || driverInstallationPath.isNullOrEmpty() || !isTurnipDriverActive()) {
+            NativeFreedrenoConfig.clearFreedrenoEnv("DRIRC_CONFIGDIR")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_DIR")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_FILE")
             return
         }
 
@@ -146,16 +212,12 @@ object GpuDriverHelper {
                 val redirDir = File(fileRedirectionPath!!)
                 if (!redirDir.exists()) redirDir.mkdirs()
                 File(redirDir, "drirc.xml").writeBytes(configBytes)
-                File(redirDir, "drirc").writeBytes(configBytes)
                 File(redirDir, "00-storm.conf").writeBytes(configBytes)
-                File(redirDir, "drirc.conf").writeBytes(configBytes)
             }
 
             val installDir = File(driverInstallationPath!!)
             File(installDir, "drirc.xml").writeBytes(configBytes)
             File(installDir, "00-storm.conf").writeBytes(configBytes)
-            File(installDir, "drirc").writeBytes(configBytes)
-            File(installDir, "drirc.conf").writeBytes(configBytes)
 
             val homeDir = YuzuApplication.appContext.filesDir
             File(homeDir, ".drirc").writeBytes(configBytes)
@@ -380,5 +442,56 @@ object GpuDriverHelper {
         if (!candidate.exists() || candidate.length() == 0L) return false
         val metadata = getMetadataFromZip(candidate)
         return metadata.name != null
+    }
+
+    /**
+     * Updates all per-game custom configs to use the global driver.
+     */
+    fun applyDriverGloballyToAllCustomConfigs() {
+        val userDir = DirectoryInitialization.userDirectory ?: return
+        val customDir = File(userDir, "config/custom")
+        if (!customDir.exists() || !customDir.isDirectory) return
+
+        val iniFiles = customDir.listFiles { file -> file.isFile && file.extension.equals("ini", ignoreCase = true) } ?: return
+        for (iniFile in iniFiles) {
+            try {
+                val lines = iniFile.readLines()
+                val newLines = mutableListOf<String>()
+                var hasUseGlobal = false
+                var inRendererSection = false
+                val hasRendererSection = lines.any { it.trim().equals("[Renderer]", ignoreCase = true) }
+
+                for (line in lines) {
+                    val trimmed = line.trim()
+                    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                        if (inRendererSection && !hasUseGlobal) {
+                            newLines.add("driver_path\\use_global=true")
+                            hasUseGlobal = true
+                        }
+                        inRendererSection = trimmed.equals("[Renderer]", ignoreCase = true)
+                    }
+
+                    if (inRendererSection) {
+                        if (trimmed.startsWith("driver_path\\use_global")) {
+                            newLines.add("driver_path\\use_global=true")
+                            hasUseGlobal = true
+                            continue
+                        }
+                    }
+                    newLines.add(line)
+                }
+
+                if (inRendererSection && !hasUseGlobal) {
+                    newLines.add("driver_path\\use_global=true")
+                } else if (!hasRendererSection) {
+                    newLines.add("")
+                    newLines.add("[Renderer]")
+                    newLines.add("driver_path\\use_global=true")
+                }
+
+                iniFile.writeText(newLines.joinToString("\n"))
+            } catch (_: Exception) {
+            }
+        }
     }
 }

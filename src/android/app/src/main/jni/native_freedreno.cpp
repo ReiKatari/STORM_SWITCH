@@ -19,6 +19,8 @@
 #include <memory>
 #include <string>
 #include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
 
 #include <jni.h>
 
@@ -60,15 +62,17 @@ bool ApplyEnvironmentVariable(const std::string& key, const std::string& value) 
 void ClearAllEnvironmentVariables() {
     if (!g_config) return;
     for (const auto& [key, value] : g_config->env_vars) {
-        if (key.rfind("DRIRC_", 0) == 0 || key.rfind("MESA_DRIRC_", 0) == 0 || key == "HOME") {
-            continue; // Preserve active per-game Mesa drirc configuration
-        }
         unsetenv(key.c_str());
     }
-    std::erase_if(g_config->env_vars, [](const auto& item) {
-        const auto& key = item.first;
-        return !(key.rfind("DRIRC_", 0) == 0 || key.rfind("MESA_DRIRC_", 0) == 0 || key == "HOME");
-    });
+    unsetenv("DRIRC_CONFIGDIR");
+    unsetenv("MESA_DRIRC_DIR");
+    unsetenv("MESA_DRIRC_FILE");
+    unsetenv("MESA_SHADER_CACHE_MAX_SIZE");
+    unsetenv("MESA_DISK_CACHE_SINGLE_FILE");
+    unsetenv("TU_DEBUG");
+    unsetenv("FD_MESA_DEBUG");
+    unsetenv("PAN_MESA_DEBUG");
+    g_config->env_vars.clear();
 }
 
 std::string GetConfigPath() {
@@ -483,6 +487,30 @@ Java_org_yuzu_yuzu_1emu_utils_NativeFreedrenoConfig_deletePerGameConfig(
         return JNI_TRUE;
     }
     return JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_yuzu_yuzu_1emu_utils_NativeFreedrenoConfig_deleteAllConfigs(
+    [[maybe_unused]] JNIEnv* env, [[maybe_unused]] jobject obj) {
+    ClearAllEnvironmentVariables();
+    std::string global_path = GetConfigPath();
+    remove(global_path.c_str());
+
+    std::string dir_path = g_base_path + "/" + kPerGameConfigDir;
+    DIR* dir = opendir(dir_path.c_str());
+    if (dir) {
+        struct dirent* entry;
+        while ((entry = readdir(dir)) != nullptr) {
+            if (entry->d_name[0] != '.') {
+                std::string file_path = dir_path + "/" + entry->d_name;
+                remove(file_path.c_str());
+            }
+        }
+        closedir(dir);
+        rmdir(dir_path.c_str());
+    }
+    LOG_INFO(Frontend, "[Freedreno] Deleted all Freedreno configurations and unset all environment variables");
+    return JNI_TRUE;
 }
 
 } // extern "C"

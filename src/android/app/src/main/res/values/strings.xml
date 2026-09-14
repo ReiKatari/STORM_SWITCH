@@ -1038,6 +1038,7 @@
     <string name="lock_drawer">Lock drawer</string>
     <string name="unlock_drawer">Unlock drawer</string>
     <string name="reset">Reset</string>
+    <string name="game_fix_manual_override_warning">⚠️ Manual settings prioritized: %s. Auto-fix partially overridden.</string>
 
     <!-- Amiibo -->
     <string name="amiibo_title">Amiibo</string>
@@ -2147,11 +2148,68 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="profile_import_failed">Failed to import profile. Invalid file format.</string>
     <string name="storm_games_world">STORM GAMES WORLD</string>
     <string name="storm_games_world_description">Nintendo Switch games catalog and downloads</string>
+    <string name="storm_save_sync">Save sync (STORM SAVE SYNC)</string>
+    <string name="storm_save_sync_description">Cross-platform Switch save synchronization between PC and Android using secure key</string>
+    <string name="storm_save_key_copied">Connection key copied to clipboard</string>
+    <string name="storm_save_conflict_title">Save conflict resolution</string>
+    <string name="storm_save_replace_current">Replace current</string>
+    <string name="storm_save_replace_remote">Replace remote</string>
+    <string name="storm_save_keep_both">Keep both variants</string>
     <string name="gamebanana_tab_online">🌐 GameBanana catalog</string>
     <string name="gamebanana_tab_installed">💾 Installed</string>
     <string name="gamebanana_no_installed_mods">No mods installed for this game</string>
     <string name="gamebanana_installed_stats">Total: %1$d | Enabled: %2$d | Disabled: %3$d</string>
-    <string name="gamebanana_delete_mod_confirm">Are you sure you want to delete mod "%1$s"?</string>
     <string name="gamebanana_mod_deleted">Mod "%1$s" deleted</string>
+
+    <!-- Overlay Toggle Controls -->
+    <string name="overlay_ctrl_button_a">Button A</string>
+    <string name="overlay_ctrl_button_a_desc">Primary action and confirm</string>
+    <string name="overlay_ctrl_button_b">Button B</string>
+    <string name="overlay_ctrl_button_b_desc">Action, cancel, and jump</string>
+    <string name="overlay_ctrl_button_x">Button X</string>
+    <string name="overlay_ctrl_button_x_desc">Secondary action and menu</string>
+    <string name="overlay_ctrl_button_y">Button Y</string>
+    <string name="overlay_ctrl_button_y_desc">Attack and interaction</string>
+    <string name="overlay_ctrl_dpad">D-Pad</string>
+    <string name="overlay_ctrl_dpad_desc">Directional pad and quick select</string>
+    <string name="overlay_ctrl_stick_l">Left stick</string>
+    <string name="overlay_ctrl_stick_l_desc">Character movement</string>
+    <string name="overlay_ctrl_stick_r">Right stick</string>
+    <string name="overlay_ctrl_stick_r_desc">Camera control</string>
+    <string name="overlay_ctrl_stick_l3">L-stick click (L3)</string>
+    <string name="overlay_ctrl_stick_l3_desc">Run and secondary action</string>
+    <string name="overlay_ctrl_stick_r3">R-stick click (R3)</string>
+    <string name="overlay_ctrl_stick_r3_desc">Focus and camera reset</string>
+    <string name="overlay_ctrl_button_l">Button L</string>
+    <string name="overlay_ctrl_button_l_desc">Left shoulder bumper</string>
+    <string name="overlay_ctrl_button_r">Button R</string>
+    <string name="overlay_ctrl_button_r_desc">Right shoulder bumper</string>
+    <string name="overlay_ctrl_button_zl">Trigger ZL</string>
+    <string name="overlay_ctrl_button_zl_desc">Left analog trigger</string>
+    <string name="overlay_ctrl_button_zr">Trigger ZR</string>
+    <string name="overlay_ctrl_button_zr_desc">Right analog trigger</string>
+    <string name="overlay_ctrl_button_plus">Button +</string>
+    <string name="overlay_ctrl_button_plus_desc">Pause and main menu</string>
+    <string name="overlay_ctrl_button_minus">Button -</string>
+    <string name="overlay_ctrl_button_minus_desc">Map and journal</string>
+    <string name="overlay_ctrl_button_home">Home button</string>
+    <string name="overlay_ctrl_button_home_desc">Return to home</string>
+    <string name="overlay_ctrl_button_capture">Capture button</string>
+    <string name="overlay_ctrl_button_capture_desc">Take screenshot</string>
+
+    <!-- Missing Default Localization Fallbacks -->
+    <string name="gamebanana_delete_mod_confirm">Are you sure you want to delete mod \"%1$s\"?</string>
+    <string name="anisotropic_filtering_2x">2x</string>
+    <string name="anisotropic_filtering_4x">4x</string>
+    <string name="anisotropic_filtering_8x">8x</string>
+    <string name="anisotropic_filtering_16x">16x</string>
+    <string name="anisotropic_filtering_default">Default</string>
+    <string name="anisotropic_filtering_automatic">Automatic</string>
+    <string name="oboe">Oboe</string>
+    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx driver is incompatible with Adreno 8xx (Snapdragon 8 Elite). Switched to System Driver.</string>
+    <string name="apply_driver_title">Apply GPU driver</string>
+    <string name="apply_driver_message">How would you like to apply the installed GPU driver?</string>
+    <string name="apply_driver_globally">Globally for all</string>
+    <string name="apply_driver_keep_custom">Without affecting custom settings</string>
 </resources>
 

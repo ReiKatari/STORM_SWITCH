@@ -214,6 +214,10 @@ add_executable(yuzu
     set_play_time_dialog.h
     storm_games_world_dialog.cpp
     storm_games_world_dialog.h
+    storm_catalog_cache.cpp
+    storm_catalog_cache.h
+    storm_save_sync_dialog.cpp
+    storm_save_sync_dialog.h
     log_viewer_dialog.cpp
     log_viewer_dialog.h
     util/clickable_label.cpp
@@ -419,7 +423,7 @@ elseif(WIN32)
 endif()
 
 target_link_libraries(yuzu PRIVATE nlohmann_json::nlohmann_json)
-target_link_libraries(yuzu PRIVATE common core input_common frontend_common network video_core qt_common)
+target_link_libraries(yuzu PRIVATE common core input_common frontend_common network video_core qt_common QuaZip::QuaZip)
 target_link_libraries(yuzu PRIVATE Boost::headers Qt6::Widgets Qt6::Charts Qt6::Concurrent Qt6::Network)
 target_link_libraries(yuzu PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
 if (ENABLE_OPENGL)

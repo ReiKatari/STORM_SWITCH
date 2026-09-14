@@ -30,6 +30,9 @@ object LosslessScalingHelper {
     fun refreshStatus(): Boolean {
         val result = NativeLibrary.validateLosslessDll() == RESULT_OK
         installed = result
+        if (!result) {
+            BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
+        }
 
         val context = YuzuApplication.appContext
         _statusText.value = if (result) {
@@ -59,6 +62,7 @@ object LosslessScalingHelper {
             NativeLibrary.removeLosslessDll()
         } else {
             BooleanSetting.RENDERER_FRAME_GEN.setBoolean(true)
+            NativeConfig.saveGlobalConfig()
         }
         refreshStatus()
         return result
@@ -66,10 +70,44 @@ object LosslessScalingHelper {
 
     fun remove(): Boolean {
         val removed = NativeLibrary.removeLosslessDll()
-        if (removed) {
-            BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
-        }
+        BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
+        NativeConfig.saveGlobalConfig()
+        cleanCustomConfigsFrameGen()
         refreshStatus()
         return removed
+    }
+
+    private fun cleanCustomConfigsFrameGen() {
+        try {
+            val customDir = File(DirectoryInitialization.userDirectory, "config/custom")
+            if (customDir.exists() && customDir.isDirectory) {
+                customDir.listFiles { file -> file.name.endsWith(".ini") }?.forEach { iniFile ->
+                    try {
+                        val lines = iniFile.readLines()
+                        var modified = false
+                        val newLines = lines.map { line ->
+                            val trimmed = line.trim()
+                            if (trimmed.startsWith("frame_gen=", ignoreCase = true) ||
+                                trimmed.startsWith("frame_gen =", ignoreCase = true)) {
+                                modified = true
+                                "frame_gen=false"
+                            } else if (trimmed.startsWith("frame_gen\\use_global=", ignoreCase = true) ||
+                                       trimmed.startsWith("frame_gen\\use_global =", ignoreCase = true)) {
+                                modified = true
+                                "frame_gen\\use_global=true"
+                            } else {
+                                line
+                            }
+                        }
+                        if (modified) {
+                            iniFile.writeText(newLines.joinToString("\n"))
+                            Log.info("[LosslessScalingHelper] Disabled frame_gen in custom config: ${iniFile.name}")
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+        } catch (e: Exception) {
+            Log.error("[LosslessScalingHelper] Failed to clean custom configs: ${e.message}")
+        }
     }
 }

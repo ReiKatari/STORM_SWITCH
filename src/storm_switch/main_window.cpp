@@ -49,6 +49,7 @@
 #include "deps_dialog.h"
 #include "install_dialog.h"
 #include "storm_switch/storm_games_world_dialog.h"
+#include "storm_switch/storm_save_sync_dialog.h"
 #include "storm_switch/log_viewer_dialog.h"
 #include "translator/floating_translate_button.h"
 #include "translator/game_translator.h"
@@ -414,7 +415,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.3.2";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.4.0";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
@@ -2627,6 +2628,13 @@ void MainWindow::SetupMenuIcons() {
     }
     apply_action(storm_games_world_action, QStringLiteral("download"), col_green);
 
+    if (!storm_save_sync_action) {
+        storm_save_sync_action = new QAction(tr("Синхронизация сохранений (STORM SAVE SYNC)..."), this);
+        storm_save_sync_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
+        ui->menu_Tools->addAction(storm_save_sync_action);
+    }
+    apply_action(storm_save_sync_action, QStringLiteral("refresh"), col_cyan);
+
     if (!log_viewer_action) {
         log_viewer_action = new QAction(tr("Журнал работы (Логи)..."), this);
         log_viewer_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+L")));
@@ -2853,6 +2861,8 @@ void MainWindow::ConnectWidgetEvents() {
     });
     connect(game_list, &GameList::OpenDirectory, this, &MainWindow::OnGameListOpenDirectory);
     connect(game_list, &GameList::OpenFolderRequested, this, &MainWindow::OnGameListOpenFolder);
+    connect(game_list, &GameList::OpenSaveSyncRequested, this,
+            [this](u64 program_id) { OnOpenStormSaveSync(program_id); });
     connect(game_list, &GameList::OpenModManagerRequested, this,
             [this](u64 program_id, const QString& game_path) {
                 const QString game_name = QFileInfo(game_path).completeBaseName();
@@ -3066,6 +3076,9 @@ void MainWindow::ConnectMenuEvents() {
 
     if (storm_games_world_action) {
         connect_menu(storm_games_world_action, &MainWindow::OnOpenStormGamesWorld);
+    }
+    if (storm_save_sync_action) {
+        connect_menu(storm_save_sync_action, [this] { OnOpenStormSaveSync(0); });
     }
     if (log_viewer_action) {
         connect_menu(log_viewer_action, &MainWindow::OnOpenLogViewer);
@@ -4405,6 +4418,11 @@ void MainWindow::OnAutoTuneSettings() {
 
 void MainWindow::OnOpenStormGamesWorld() {
     StormGamesWorldDialog dialog(this);
+    dialog.exec();
+}
+
+void MainWindow::OnOpenStormSaveSync(u64 target_program_id) {
+    StormSaveSyncDialog dialog(this, target_program_id);
     dialog.exec();
 }
 
@@ -7340,9 +7358,9 @@ void MainWindow::UpdateStatusBar() {
     }
 
     QString fpsText;
-    if (Settings::values.frame_gen.GetValue()) {
+    if (Settings::values.frame_gen.GetValue() && results.average_game_fps > 0.0) {
         const u32 mult = std::clamp<u32>(Settings::values.frame_gen_multiplier.GetValue(), 2, 4);
-        const double base_fps = results.average_game_fps > 0.0 ? results.average_game_fps : (display_fps / mult);
+        const double base_fps = results.average_game_fps;
         const double gen_fps = base_fps * mult;
         fpsText = tr("🎮 %1 FPS [LSFG %2X -> %3 FPS]").arg(std::round(base_fps), 0, 'f', 0).arg(mult).arg(std::round(gen_fps), 0, 'f', 0);
     } else {
@@ -9795,6 +9813,9 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
     }
     if (storm_games_world_action) {
         storm_games_world_action->setText(tr("Каталог и менеджер игр STORM GAMES WORLD..."));
+    }
+    if (storm_save_sync_action) {
+        storm_save_sync_action->setText(tr("Синхронизация сохранений (STORM SAVE SYNC)..."));
     }
     if (log_viewer_action) {
         log_viewer_action->setText(tr("Журнал работы (Логи)..."));

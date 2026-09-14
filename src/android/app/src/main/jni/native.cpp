@@ -59,6 +59,7 @@ extern "C" {
 #include "core/crypto/key_manager.h"
 #include "core/file_sys/card_image.h"
 #include "core/hle/service/game_fix_database.h"
+#include "android_config.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/control_metadata.h"
 #include "core/file_sys/fs_filesystem.h"
@@ -323,6 +324,9 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     jauto android_webapplet = std::make_unique<Common::Android::WebBrowser::AndroidWebBrowser>();
     m_software_keyboard = android_keyboard.get();
     Settings::RestoreGlobalState(false);
+    if (per_game_config != nullptr) {
+        per_game_config->ReloadAllValues();
+    }
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();
     Settings::LogSettings();
@@ -1319,6 +1323,8 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getGpuModel(JNIEnv* env, jobject j
 }
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_applySettings(JNIEnv* env, jobject jobj) {
+    Settings::UpdateGPUAccuracy();
+    Settings::UpdateRescalingInfo();
     EmulationSession::GetInstance().System().ApplySettings();
     EmulationSession::GetInstance().System().HIDCore().ReloadInputDevices();
 }
@@ -1582,6 +1588,7 @@ jint Java_org_yuzu_yuzu_1emu_NativeLibrary_prepareLosslessDll(JNIEnv* env, jclas
 
 jboolean Java_org_yuzu_yuzu_1emu_NativeLibrary_removeLosslessDll(JNIEnv* env, jclass clazz) {
 #ifdef HAS_LSFG
+    Settings::values.frame_gen.SetValue(false);
     return static_cast<jboolean>(VideoCore::FrameGen::RemoveInstalledLosslessDll());
 #else
     return static_cast<jboolean>(false);

@@ -24,6 +24,9 @@ import org.yuzu.yuzu_emu.utils.GpuDriverHelper
 import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.utils.GpuDriverMetadata
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import java.io.File
 
 class DriverViewModel : ViewModel() {
@@ -112,6 +115,21 @@ class DriverViewModel : ViewModel() {
     }
 
     fun onDriverSelected(position: Int, skipShaderWipe: Boolean = false) {
+        if (position > 0 && position - 1 in driverData.indices) {
+            val selectedMeta = driverData[position - 1].second
+            if (GpuDriverHelper.isAdreno8xx() && !GpuDriverHelper.isDriverCompatibleWithAdreno8xx(selectedMeta)) {
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        YuzuApplication.appContext,
+                        YuzuApplication.appContext.getString(R.string.driver_incompatible_adreno8xx),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                onDriverSelected(0, skipShaderWipe = true)
+                return
+            }
+        }
+
         val newDriverPath = if (position == 0) {
             ""
         } else {
@@ -159,7 +177,7 @@ class DriverViewModel : ViewModel() {
         _shouldShowDriverShaderDialog.value = false
     }
 
-    private fun wipeGameShaders(game: Game) {
+    fun wipeGameShaders(game: Game) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val externalFilesDir = YuzuApplication.appContext.getExternalFilesDir(null)
@@ -182,7 +200,7 @@ class DriverViewModel : ViewModel() {
         }
     }
 
-    private fun wipeAllShaders() {
+    fun wipeAllShaders() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val externalFilesDir = YuzuApplication.appContext.getExternalFilesDir(null)
@@ -298,7 +316,23 @@ class DriverViewModel : ViewModel() {
                     "[DriverViewModel] onLaunchGame for '${game?.title}': selected='$selectedDriverPath' (${selectedDriverMetadata.name}), installed='${installedMetadata.name}'"
                 )
 
-                if (selectedDriverPath.isEmpty() || selectedDriverMetadata.name == null) {
+                if (GpuDriverHelper.isAdreno8xx() && !GpuDriverHelper.isDriverCompatibleWithAdreno8xx(selectedDriverMetadata)) {
+                    org.yuzu.yuzu_emu.utils.Log.warning(
+                        "[DriverViewModel] Driver '${selectedDriverMetadata.name}' is incompatible with Adreno 8xx! Falling back to system driver."
+                    )
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(
+                            YuzuApplication.appContext,
+                            YuzuApplication.appContext.getString(R.string.driver_incompatible_adreno8xx),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    if (installedMetadata.name != null) {
+                        GpuDriverHelper.installDefaultDriver()
+                    } else {
+                        GpuDriverHelper.initializeDriverParameters()
+                    }
+                } else if (selectedDriverPath.isEmpty() || selectedDriverMetadata.name == null) {
                     if (installedMetadata.name != null) {
                         org.yuzu.yuzu_emu.utils.Log.info("[DriverViewModel] Reverting to default system driver")
                         GpuDriverHelper.installDefaultDriver()

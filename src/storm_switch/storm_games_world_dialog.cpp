@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "storm_switch/storm_games_world_dialog.h"
+#include "storm_switch/storm_catalog_cache.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -200,46 +201,68 @@ public:
         bool ok = false;
         const u64 tid = game.serial_id.toULongLong(&ok, 16);
         std::vector<TitleDB::Entry> dlcs;
-        if (ok && tid != 0) {
-            TitleDB::TitleDatabase::Instance().EnsureLoaded();
-            dlcs = TitleDB::TitleDatabase::Instance().GetDlcs(tid);
-        }
 
-        const int total_items = std::max(static_cast<int>(dlcs.size()), game.dlc_count);
-        if (total_items > 0) {
-            for (int i = 0; i < total_items; ++i) {
+        if (!game.dlcs.isEmpty()) {
+            for (int i = 0; i < game.dlcs.size(); ++i) {
+                const auto& d = game.dlcs[i];
                 auto* item = new QTreeWidgetItem(tree);
                 item->setText(0, QString::number(i + 1));
                 item->setTextAlignment(0, Qt::AlignCenter);
-
-                if (i < static_cast<int>(dlcs.size())) {
-                    const auto& d = dlcs[i];
-                    item->setText(1, QString::fromStdString(d.id).toUpper());
-                    item->setText(2, QString::fromStdString(d.name.empty() ? ("DLC Pack " + std::to_string(i + 1)) : d.name));
-                    item->setText(3, QString::fromStdString(d.version.empty() ? "1.0.0" : d.version));
-                    item->setText(4, tr("Доступно в пакете"));
-                } else {
-                    const u64 dlc_tid = ok ? (tid + 0x1000ULL + static_cast<u64>(i)) : 0ULL;
-                    item->setText(1, dlc_tid != 0 ? QStringLiteral("%1").arg(dlc_tid, 16, 16, QLatin1Char('0')).toUpper() : QStringLiteral("—"));
-                    item->setText(2, tr("Дополнительный контент (DLC #%1)").arg(i + 1));
-                    item->setText(3, game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version);
-                    item->setText(4, tr("Включено в релиз"));
-                }
+                item->setText(1, d.id.isEmpty() ? (ok ? QStringLiteral("%1").arg(tid + 0x1000ULL + static_cast<u64>(i + 1), 16, 16, QLatin1Char('0')).toUpper() : QStringLiteral("—")) : d.id.toUpper());
+                item->setText(2, d.name.isEmpty() ? tr("Официальное дополнение (DLC #%1)").arg(i + 1) : d.name);
+                item->setText(3, d.version.isEmpty() ? (game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version) : d.version);
+                item->setText(4, tr("Доступно в пакете"));
 
                 item->setTextAlignment(1, Qt::AlignCenter);
                 item->setTextAlignment(3, Qt::AlignCenter);
                 item->setTextAlignment(4, Qt::AlignCenter);
                 item->setForeground(1, QBrush(QColor(QStringLiteral("#00D2FF"))));
+                item->setForeground(2, QBrush(QColor(QStringLiteral("#FFFFFF"))));
                 item->setForeground(4, QBrush(QColor(QStringLiteral("#00FF66"))));
             }
         } else {
-            auto* item = new QTreeWidgetItem(tree);
-            item->setText(0, QStringLiteral("—"));
-            item->setText(1, QStringLiteral("—"));
-            item->setText(2, tr("Для данной игры официальные дополнения не обнаружены"));
-            item->setText(3, QStringLiteral("—"));
-            item->setText(4, tr("Нет данных"));
-            item->setForeground(2, QBrush(QColor(QStringLiteral("#94a3b8"))));
+            if (ok && tid != 0) {
+                TitleDB::TitleDatabase::Instance().WaitLoaded(std::chrono::milliseconds(1500));
+                dlcs = TitleDB::TitleDatabase::Instance().GetDlcs(tid);
+            }
+
+            const int total_items = std::max(static_cast<int>(dlcs.size()), game.dlc_count);
+            if (total_items > 0) {
+                for (int i = 0; i < total_items; ++i) {
+                    auto* item = new QTreeWidgetItem(tree);
+                    item->setText(0, QString::number(i + 1));
+                    item->setTextAlignment(0, Qt::AlignCenter);
+
+                    if (i < static_cast<int>(dlcs.size())) {
+                        const auto& d = dlcs[i];
+                        item->setText(1, QString::fromStdString(d.id).toUpper());
+                        item->setText(2, QString::fromStdString(d.name.empty() ? ("DLC Pack " + std::to_string(i + 1)) : d.name));
+                        item->setText(3, QString::fromStdString(d.version.empty() ? "1.0.0" : d.version));
+                        item->setText(4, tr("Доступно в пакете"));
+                    } else {
+                        const u64 dlc_tid = ok ? (tid + 0x1000ULL + static_cast<u64>(i)) : 0ULL;
+                        item->setText(1, dlc_tid != 0 ? QStringLiteral("%1").arg(dlc_tid, 16, 16, QLatin1Char('0')).toUpper() : QStringLiteral("—"));
+                        item->setText(2, tr("Официальный контент (DLC #%1)").arg(i + 1));
+                        item->setText(3, game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version);
+                        item->setText(4, tr("Включено в релиз"));
+                    }
+
+                    item->setTextAlignment(1, Qt::AlignCenter);
+                    item->setTextAlignment(3, Qt::AlignCenter);
+                    item->setTextAlignment(4, Qt::AlignCenter);
+                    item->setForeground(1, QBrush(QColor(QStringLiteral("#00D2FF"))));
+                    item->setForeground(2, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+                    item->setForeground(4, QBrush(QColor(QStringLiteral("#00FF66"))));
+                }
+            } else {
+                auto* item = new QTreeWidgetItem(tree);
+                item->setText(0, QStringLiteral("—"));
+                item->setText(1, QStringLiteral("—"));
+                item->setText(2, tr("Для данной игры официальные дополнения не обнаружены"));
+                item->setText(3, QStringLiteral("—"));
+                item->setText(4, tr("Нет данных"));
+                item->setForeground(2, QBrush(QColor(QStringLiteral("#94a3b8"))));
+            }
         }
 
         layout->addWidget(tree, 1);
@@ -309,6 +332,22 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
     const QString title2 = SanitizeFileName(game.title).toLower();
     const QString tid = game.serial_id.toLower();
 
+    const QString my_key = !game.serial_id.trimmed().isEmpty() ? game.serial_id.trimmed().toUpper()
+        : (game.final_title.isEmpty() ? game.title.trimmed().toLower() : game.final_title.trimmed().toLower());
+
+    int same_group_count = 0;
+    for (const auto& other : all_games) {
+        const QString other_key = !other.serial_id.trimmed().isEmpty() ? other.serial_id.trimmed().toUpper()
+            : (other.final_title.isEmpty() ? other.title.trimmed().toLower() : other.final_title.trimmed().toLower());
+        if (other_key == my_key) {
+            same_group_count++;
+        }
+    }
+
+    const QString full_game_name = (game.final_title + QLatin1Char(' ') + game.title).toLower();
+    const bool game_is_rus = full_game_name.contains(QStringLiteral("rus"));
+    const bool game_is_mod = full_game_name.contains(QStringLiteral("mod"));
+
     for (const auto& file : files) {
         const QString lower_file = file.toLower();
         if (!lower_file.endsWith(QStringLiteral(".nsp")) &&
@@ -320,14 +359,32 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
         const QFileInfo fi(dir.filePath(file));
         if (fi.size() < 1024 * 1024) continue;
 
-        if (!tid.isEmpty() && lower_file.contains(tid)) {
-            return true;
-        }
+        // 1. Direct title matches
         if (!title1.isEmpty() && lower_file.contains(title1)) {
             return true;
         }
         if (!title2.isEmpty() && lower_file.contains(title2)) {
             return true;
+        }
+
+        // 2. Title ID match
+        if (!tid.isEmpty() && lower_file.contains(tid)) {
+            if (same_group_count <= 1) {
+                return true;
+            }
+
+            // Multiple versions in catalog: must match language/mod and version traits
+            const bool file_has_rus = lower_file.contains(QStringLiteral("rus"));
+            const bool file_has_mod = lower_file.contains(QStringLiteral("mod"));
+            if (game_is_rus == file_has_rus && game_is_mod == file_has_mod) {
+                if (!game.version.isEmpty() && game.version != QStringLiteral("1.0.0")) {
+                    if (lower_file.contains(game.version.toLower())) {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            }
         }
     }
 
@@ -489,7 +546,7 @@ void StormGamesWorldDialog::SetupUI() {
     auto* ver_select_layout = new QHBoxLayout();
     ver_select_layout->setSpacing(6);
     auto* ver_title = new QLabel(tr("Доступная версия:"), details_panel);
-    ver_title->setStyleSheet(QStringLiteral("color: #B0C4DE; font-weight: bold;"));
+    ver_title->setStyleSheet(QStringLiteral("color: #FFFFFF; font-weight: bold;"));
     ver_select_layout->addWidget(ver_title);
 
     version_combo = new QComboBox(details_panel);
@@ -529,7 +586,7 @@ void StormGamesWorldDialog::SetupUI() {
     dl_box_layout->addWidget(progress_bar);
 
     download_status_label = new QLabel(tr("Готов к скачиванию"), download_box);
-    download_status_label->setStyleSheet(QStringLiteral("color: #B0C4DE; font-size: 12px;"));
+    download_status_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px; font-weight: 500;"));
     dl_box_layout->addWidget(download_status_label);
 
     auto* dl_buttons = new QHBoxLayout();
@@ -569,7 +626,7 @@ void StormGamesWorldDialog::SetupUI() {
     // --- Bottom Status Bar ---
     auto* bottom_bar = new QHBoxLayout();
     status_label = new QLabel(tr("Подключение к порталу stormgamesworld.ru..."), this);
-    status_label->setStyleSheet(QStringLiteral("color: #7090B0; font-size: 12px;"));
+    status_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px;"));
     bottom_bar->addWidget(status_label, 1);
 
     auto* close_btn = new QPushButton(tr("Закрыть"), this);
@@ -666,11 +723,13 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
         const QString platform_type = obj[QStringLiteral("platformTypeName")].toString();
         const bool file_exists = obj[QStringLiteral("fileExists")].toBool();
         const bool has_file = obj[QStringLiteral("hasFile")].toBool();
+        const QString size_str = obj[QStringLiteral("size")].toString().trimmed();
 
         // Strict requirement: Nintendo Switch CONSOLES only, and ONLY games with existing files!
         if (platform == QStringLiteral("Nintendo Switch") &&
             platform_type == QStringLiteral("CONSOLES") &&
-            (file_exists || has_file)) {
+            file_exists && has_file &&
+            !size_str.isEmpty() && size_str != QStringLiteral("—")) {
 
             StormWorldGame g;
             g.id = obj[QStringLiteral("id")].toInt();
@@ -700,6 +759,105 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
         }
     }
 
+    // Save catalog to cache for update notifications across main screen and cards
+    StormCatalogCache::Instance().SaveCache(raw_data);
+
+    // Group games by key to determine recommendations
+    QMap<QString, QVector<int>> game_groups;
+    for (int i = 0; i < static_cast<int>(all_games.size()); ++i) {
+        const auto& g = all_games[i];
+        const QString key = !g.serial_id.trimmed().isEmpty() ? g.serial_id.trimmed().toUpper()
+            : (g.final_title.isEmpty() ? g.title.trimmed().toLower() : g.final_title.trimmed().toLower());
+        game_groups[key].push_back(i);
+    }
+
+    auto calc_priority = [](const StormWorldGame& g) -> int {
+        const QString t = (g.final_title + QLatin1Char(' ') + g.title).toUpper();
+        if (t.contains(QStringLiteral("MOD - RUS")) || t.contains(QStringLiteral("MOD - M. RUS")) ||
+            t.contains(QStringLiteral("MOD-RUS")) || t.contains(QStringLiteral("MOD - M.RUS"))) {
+            return 300;
+        }
+        if (t.contains(QStringLiteral("[RUS]")) || t.contains(QStringLiteral("(RUS)")) ||
+            t.contains(QStringLiteral(" RUS ")) || t.endsWith(QStringLiteral(" RUS"))) {
+            return 200;
+        }
+        for (const auto& l : g.text_langs) {
+            const QString lu = l.toUpper();
+            if (lu == QStringLiteral("RUS") || lu.contains(QStringLiteral("RUSSIAN")) || lu.contains(QStringLiteral("РУССКИЙ"))) {
+                return 200;
+            }
+        }
+        return 100;
+    };
+
+    for (auto it = game_groups.begin(); it != game_groups.end(); ++it) {
+        const auto& indices = it.value();
+        // If only 1 version exists: do NOT display Recommended badge
+        if (indices.size() <= 1) {
+            for (int idx : indices) {
+                all_games[idx].is_recommended = false;
+            }
+            continue;
+        }
+
+        // Multiple versions exist: pick strictly ONE recommended version based on priority:
+        // Priority: MOD - RUS / MOD - M. RUS (300) > RUS (200) > ENG / other (100)
+        // Tie-breaker: highest version -> highest ID
+        int best_idx = -1;
+        int best_priority = -1;
+        QString best_version;
+        int best_id = -1;
+
+        for (int idx : indices) {
+            all_games[idx].is_recommended = false;
+            const auto& g = all_games[idx];
+            const int prio = calc_priority(g);
+
+            bool is_better = false;
+            if (best_idx == -1) {
+                is_better = true;
+            } else if (prio > best_priority) {
+                is_better = true;
+            } else if (prio == best_priority) {
+                const int cmp = StormCatalogCache::CompareVersions(g.version, best_version);
+                if (cmp > 0) {
+                    is_better = true;
+                } else if (cmp == 0 && g.id > best_id) {
+                    is_better = true;
+                }
+            }
+
+            if (is_better) {
+                best_idx = idx;
+                best_priority = prio;
+                best_version = g.version;
+                best_id = g.id;
+            }
+        }
+
+        if (best_idx >= 0) {
+            all_games[best_idx].is_recommended = true;
+        }
+    }
+
+    // Sort all_games so recommended version appears at the top within its group, followed by higher versions
+    std::stable_sort(all_games.begin(), all_games.end(), [&calc_priority](const StormWorldGame& a, const StormWorldGame& b) {
+        const QString key_a = !a.serial_id.trimmed().isEmpty() ? a.serial_id.trimmed().toUpper() : (a.final_title.isEmpty() ? a.title.trimmed().toLower() : a.final_title.trimmed().toLower());
+        const QString key_b = !b.serial_id.trimmed().isEmpty() ? b.serial_id.trimmed().toUpper() : (b.final_title.isEmpty() ? b.title.trimmed().toLower() : b.final_title.trimmed().toLower());
+        if (key_a == key_b) {
+            if (a.is_recommended != b.is_recommended) {
+                return a.is_recommended;
+            }
+            const int prio_a = calc_priority(a);
+            const int prio_b = calc_priority(b);
+            if (prio_a != prio_b) {
+                return prio_a > prio_b;
+            }
+            return StormCatalogCache::CompareVersions(a.version, b.version) > 0;
+        }
+        return false;
+    });
+
     PopulateGameList(search_edit->text());
     status_label->setText(tr("Каталог обновлен. Доступно для загрузки игр Nintendo Switch: %1").arg(all_games.size()));
 }
@@ -728,18 +886,34 @@ void StormGamesWorldDialog::PopulateGameList(const QString& filter) {
 
         auto* item = new QTreeWidgetItem(games_tree);
         item->setText(0, disp_title);
-        item->setText(1, g.version.isEmpty() ? tr("1.0.0") : g.version);
+        item->setForeground(0, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+
+        if (g.is_recommended) {
+            item->setText(1, QStringLiteral("⭐ %1 [Рекомендуемая]").arg(g.version.isEmpty() ? QStringLiteral("1.0.0") : g.version));
+            item->setForeground(1, QBrush(QColor(QStringLiteral("#00FF66"))));
+            item->setToolTip(1, tr("Рекомендуемая новейшая версия игры"));
+        } else {
+            item->setText(1, g.version.isEmpty() ? tr("1.0.0") : g.version);
+            item->setForeground(1, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+        }
+
         item->setText(2, g.size.isEmpty() ? tr("—") : g.size);
+        item->setForeground(2, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+
         if (g.dlc_count > 0) {
             item->setText(3, tr("📦 %1 DLC").arg(g.dlc_count));
             item->setForeground(3, QBrush(QColor(QStringLiteral("#00F0FF"))));
             item->setToolTip(3, tr("Нажмите для просмотра списка дополнений"));
         } else {
             item->setText(3, QStringLiteral("—"));
-            item->setForeground(3, QBrush(QColor(QStringLiteral("#64748B"))));
+            item->setForeground(3, QBrush(QColor(QStringLiteral("#FFFFFF"))));
         }
+
         item->setText(4, langs);
+        item->setForeground(4, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+
         item->setText(5, g.serial_id.isEmpty() ? tr("—") : g.serial_id);
+        item->setForeground(5, QBrush(QColor(QStringLiteral("#00F0FF"))));
 
         // Center align columns 1 to 6
         item->setTextAlignment(1, Qt::AlignCenter);
@@ -758,7 +932,7 @@ void StormGamesWorldDialog::PopulateGameList(const QString& filter) {
             item->setForeground(6, QBrush(QColor(QStringLiteral("#FFA500"))));
         } else {
             item->setText(6, tr("⚪ Доступно"));
-            item->setForeground(6, QBrush(QColor(QStringLiteral("#7090B0"))));
+            item->setForeground(6, QBrush(QColor(QStringLiteral("#FFFFFF"))));
         }
 
         item->setData(0, Qt::UserRole, static_cast<int>(filtered_games.size() - 1));
@@ -846,7 +1020,13 @@ static QString ExtractInternalVersion(const QString& title, const QString& versi
 void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
     title_label->setText(game.final_title.isEmpty() ? game.title : game.final_title);
     tid_label->setText(tr("Title ID: %1").arg(game.serial_id.isEmpty() ? tr("Не указан") : game.serial_id));
-    version_badge->setText(tr("Версия: %1").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version));
+    if (game.is_recommended) {
+        version_badge->setText(tr("Версия: %1 ★ Рекомендуемая").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version));
+        version_badge->setStyleSheet(QStringLiteral("background: rgba(0, 255, 102, 0.18); border: 1px solid #00FF66; border-radius: 4px; padding: 2px 8px; color: #00FF66; font-size: 11px; font-weight: bold;"));
+    } else {
+        version_badge->setText(tr("Версия: %1").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version));
+        version_badge->setStyleSheet(QStringLiteral("background: rgba(0, 210, 255, 0.15); border: 1px solid #00D2FF; border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
+    }
     const QString int_ver = ExtractInternalVersion(game.title, game.version);
     internal_version_badge->setText(tr("Сборка: %1").arg(int_ver));
     size_badge->setText(tr("Размер: %1").arg(game.size.isEmpty() ? tr("Неизвестно") : game.size));
@@ -860,8 +1040,8 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
     } else {
         dlc_badge->setText(tr("Дополнений: 0"));
         dlc_badge->setStyleSheet(QStringLiteral(
-            "background: rgba(100, 116, 139, 0.15); border: 1px solid #475569; "
-            "border-radius: 4px; padding: 2px 8px; color: #94a3b8; font-size: 11px; font-weight: bold;"));
+            "background: rgba(255, 255, 255, 0.08); border: 1px solid #475569; "
+            "border-radius: 4px; padding: 2px 8px; color: #FFFFFF; font-size: 11px; font-weight: bold;"));
         dlc_badge->setToolTip(QString());
     }
 
@@ -869,7 +1049,10 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
 
     version_combo->clear();
     const QString ext_tag = game.real_extension.isEmpty() ? QStringLiteral("NSP") : game.real_extension.mid(1).toUpper();
-    version_combo->addItem(tr("Основная версия (%1) [%2]").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(ext_tag));
+    const QString ver_item_text = game.is_recommended
+        ? tr("Основная версия (%1) [%2] — Рекомендуемая").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(ext_tag)
+        : tr("Основная версия (%1) [%2]").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(ext_tag);
+    version_combo->addItem(ver_item_text);
 
     // Fallback description from TitleDB if site description is not yet fetched
     if (!game.serial_id.isEmpty()) {
@@ -925,8 +1108,14 @@ void StormGamesWorldDialog::OnGameDetailsReplyFinished() {
     if (details_reply->error() == QNetworkReply::NoError) {
         const QByteArray raw_data = details_reply->readAll();
         const QJsonDocument doc = QJsonDocument::fromJson(raw_data);
+        QJsonObject obj;
         if (doc.isObject()) {
-            const QJsonObject obj = doc.object();
+            obj = doc.object();
+        } else if (doc.isArray() && !doc.array().isEmpty()) {
+            obj = doc.array().first().toObject();
+        }
+
+        if (!obj.isEmpty()) {
             const QString desc = obj[QStringLiteral("description")].toString();
             if (!desc.isEmpty()) {
                 description_browser->setHtml(QStringLiteral("<p style='line-height: 1.4; color: #E0E8F0;'>%1</p>").arg(desc));
@@ -934,6 +1123,25 @@ void StormGamesWorldDialog::OnGameDetailsReplyFinished() {
             const qint64 bytes = obj[QStringLiteral("fileSizeBytes")].toVariant().toLongLong();
             if (bytes > 0 && selected_game_index >= 0 && selected_game_index < static_cast<int>(filtered_games.size())) {
                 filtered_games[selected_game_index].file_size_bytes = bytes;
+            }
+
+            const QJsonArray dlcs_arr = obj[QStringLiteral("dlcs")].toArray();
+            if (!dlcs_arr.isEmpty() && selected_game_index >= 0 && selected_game_index < static_cast<int>(filtered_games.size())) {
+                filtered_games[selected_game_index].dlcs.clear();
+                for (const auto& d_val : dlcs_arr) {
+                    const QJsonObject d_obj = d_val.toObject();
+                    StormWorldDlc dlc;
+                    dlc.id = d_obj[QStringLiteral("id")].toString();
+                    dlc.name = d_obj[QStringLiteral("name")].toString().trimmed();
+                    dlc.description = d_obj[QStringLiteral("description")].toString().trimmed();
+                    if (!dlc.name.isEmpty()) {
+                        filtered_games[selected_game_index].dlcs.push_back(dlc);
+                    }
+                }
+                if (!filtered_games[selected_game_index].dlcs.isEmpty()) {
+                    filtered_games[selected_game_index].dlc_count = filtered_games[selected_game_index].dlcs.size();
+                    dlc_badge->setText(tr("📦 Дополнений: %1").arg(filtered_games[selected_game_index].dlc_count));
+                }
             }
         }
     }
@@ -948,7 +1156,7 @@ void StormGamesWorldDialog::FetchRealExtension(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.7 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.4.0 (Windows x64)"));
     head_reply = network_mgr.head(req);
     connect(head_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnHeadReplyFinished);
 }
@@ -1177,7 +1385,11 @@ void StormGamesWorldDialog::OnStartDownload() {
 
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game.id));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.7 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.4.0 (Windows x64)"));
+    req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
+    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    req.setRawHeader("Connection", "keep-alive");
+    req.setRawHeader("Accept-Encoding", "identity");
 
     is_downloading = true;
     current_download_game_id = game.id;
@@ -1194,6 +1406,7 @@ void StormGamesWorldDialog::OnStartDownload() {
     last_speed_time = 0;
 
     download_reply = network_mgr.get(req);
+    download_reply->setReadBufferSize(16 * 1024 * 1024);
     connect(download_reply, &QNetworkReply::readyRead, this, &StormGamesWorldDialog::OnDownloadDataReady);
     connect(download_reply, &QNetworkReply::downloadProgress, this, &StormGamesWorldDialog::OnDownloadProgress);
     connect(download_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnDownloadReplyFinished);
@@ -1205,14 +1418,24 @@ void StormGamesWorldDialog::OnDownloadDataReady() {
     }
 }
 
+static QString FormatRussianNumber(double value, int precision = 1) {
+    QLocale ru(QLocale::Russian, QLocale::Russia);
+    ru.setNumberOptions(QLocale::DefaultNumberOptions);
+    QString str = ru.toString(value, 'f', precision);
+    str.replace(QChar(0x00A0), QLatin1Char(' '));
+    str.replace(QChar(0x202F), QLatin1Char(' '));
+    return str;
+}
+
 void StormGamesWorldDialog::OnDownloadProgress(qint64 received, qint64 total) {
+    int pct = 0;
     if (total > 0) {
-        const int pct = static_cast<int>((received * 100) / total);
+        pct = static_cast<int>((received * 100) / total);
         progress_bar->setValue(pct);
     }
 
     const qint64 elapsed = download_timer.elapsed();
-    if (elapsed - last_speed_time > 600) {
+    if (elapsed - last_speed_time > 500) {
         const qint64 bytes_delta = received - last_received_bytes;
         const qint64 time_delta = elapsed - last_speed_time;
         if (time_delta > 0) {
@@ -1227,18 +1450,24 @@ void StormGamesWorldDialog::OnDownloadProgress(qint64 received, qint64 total) {
 
     QString status;
     if (total > 0) {
-        const double rem_mb = tot_mb - rec_mb;
+        const double rem_mb = std::max(0.0, tot_mb - rec_mb);
         const int eta_sec = (current_speed_mbps > 0.05) ? static_cast<int>(rem_mb / current_speed_mbps) : 0;
-        status = tr("Скачано: %1 МБ из %2 МБ • Скорость: %3 МБ/с • Ост: %4 мин %5 сек")
-            .arg(rec_mb, 0, 'f', 1)
-            .arg(tot_mb, 0, 'f', 1)
-            .arg(current_speed_mbps, 0, 'f', 2)
-            .arg(eta_sec / 60)
-            .arg(eta_sec % 60);
+        const int eta_min = eta_sec / 60;
+        const int eta_rem = eta_sec % 60;
+
+        const QString line1 = tr("Скачано: %1 МБ из %2 МБ (%3%)")
+            .arg(FormatRussianNumber(rec_mb, 1))
+            .arg(FormatRussianNumber(tot_mb, 1))
+            .arg(pct);
+        const QString line2 = tr("Скорость: %1 МБ/с • Осталось: %2 мин %3 сек")
+            .arg(FormatRussianNumber(current_speed_mbps, 1))
+            .arg(eta_min)
+            .arg(eta_rem);
+        status = QStringLiteral("%1\n%2").arg(line1, line2);
     } else {
-        status = tr("Скачано: %1 МБ • Скорость: %2 МБ/с")
-            .arg(rec_mb, 0, 'f', 1)
-            .arg(current_speed_mbps, 0, 'f', 2);
+        const QString line1 = tr("Скачано: %1 МБ").arg(FormatRussianNumber(rec_mb, 1));
+        const QString line2 = tr("Скорость: %1 МБ/с").arg(FormatRussianNumber(current_speed_mbps, 1));
+        status = QStringLiteral("%1\n%2").arg(line1, line2);
     }
 
     download_status_label->setText(status);

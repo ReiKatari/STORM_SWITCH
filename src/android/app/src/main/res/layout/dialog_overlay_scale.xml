@@ -1,28 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="320dp"
+    android:layout_width="340dp"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="8dp"
-    app:cardBackgroundColor="#CC222222">
+    app:cardCornerRadius="18dp"
+    app:cardElevation="12dp"
+    app:strokeWidth="1.5dp"
+    app:strokeColor="#4000D2FF"
+    app:cardBackgroundColor="#F00F172A">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="16dp">
 
+        <!-- Header: Control Title -->
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/scaleValueText"
+            android:id="@+id/dialogTitleText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="1.0x"
-            android:textAppearance="?attr/textAppearanceBody1"
+            android:text="@string/emulation_control_adjust"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
             android:gravity="center"
-            android:layout_marginBottom="4dp"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold" />
+            android:textColor="#00F0FF"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Scale Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="2dp">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/emulation_control_scale"
+                android:textColor="#E2E8F0"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/scaleValueText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1.0x"
+                android:textColor="#38BDF8"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <com.google.android.material.slider.Slider
             android:id="@+id/scaleSlider"
@@ -33,39 +63,125 @@
             android:stepSize="0.1"
             android:value="1.0"
             android:layout_marginBottom="8dp"
-            app:trackColorActive="@color/eden_border_gradient_start"
-            app:trackColorInactive="@color/eden_border_gradient_end"
-            app:tickColor="@color/eden_border_gradient_start"/>
+            app:trackColorActive="#00D2FF"
+            app:thumbColor="#00D2FF"
+            app:trackColorInactive="#334155" />
+
+        <!-- Opacity Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="end">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="2dp">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/emulation_control_opacity"
+                android:textColor="#E2E8F0"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/opacityValueText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100%"
+                android:textColor="#38BDF8"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/opacitySlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="0.0"
+            android:valueTo="1.0"
+            android:stepSize="0.05"
+            android:value="1.0"
+            android:layout_marginBottom="14dp"
+            app:trackColorActive="#00D2FF"
+            app:thumbColor="#00D2FF"
+            app:trackColorInactive="#334155" />
+
+        <!-- Buttons row: strictly 1 row, each width 0dp weight 1, compact padding -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="3">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/resetButton"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
                 android:text="@string/reset"
-                android:layout_marginEnd="4dp" />
+                android:textSize="11sp"
+                android:maxLines="1"
+                android:ellipsize="none"
+                app:cornerRadius="8dp"
+                android:textColor="#94A3B8"
+                app:backgroundTint="#1E293B" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/cancelButton"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
                 android:text="@android:string/cancel"
-                android:layout_marginEnd="4dp" />
+                android:textSize="11sp"
+                android:maxLines="1"
+                android:ellipsize="none"
+                app:cornerRadius="8dp"
+                android:textColor="#CBD5E1"
+                app:backgroundTint="#334155" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/confirmButton"
                 style="@style/Widget.Material3.Button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/eden_button_secondary_bg"
-                android:textColor="@color/eden_border_gradient_end"
-                android:text="@string/confirm" />
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:text="@string/confirm"
+                android:textSize="11sp"
+                android:maxLines="1"
+                android:ellipsize="none"
+                app:cornerRadius="8dp"
+                android:textColor="#0F172A"
+                android:textStyle="bold"
+                app:backgroundTint="#00D2FF" />
 
         </LinearLayout>
 

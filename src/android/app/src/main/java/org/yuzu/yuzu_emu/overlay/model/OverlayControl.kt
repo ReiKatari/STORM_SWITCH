@@ -192,7 +192,8 @@ enum class OverlayControl(
             getDefaultPositionForLayout(OverlayLayout.Landscape),
             getDefaultPositionForLayout(OverlayLayout.Portrait),
             getDefaultPositionForLayout(OverlayLayout.Foldable),
-            defaultIndividualScaleResource
+            defaultIndividualScaleResource,
+            1.0f
         )
 
     companion object {

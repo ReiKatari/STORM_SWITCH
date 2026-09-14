@@ -115,6 +115,7 @@ signals:
     void OpenModManagerRequested(u64 program_id, const QString& game_path);
     void OpenCheatsRequested(u64 program_id, const QString& game_path);
     void OpenGameFixRequested(u64 program_id, const QString& game_path);
+    void OpenSaveSyncRequested(u64 program_id);
     void LinkToRyujinxRequested(const u64& program_id);
     void OpenDirectory(const QString& directory);
     void AddDirectory();

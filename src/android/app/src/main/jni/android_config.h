@@ -3,7 +3,11 @@
 
 #pragma once
 
+#include <memory>
 #include "frontend_common/config.h"
+
+class AndroidConfig;
+extern std::unique_ptr<AndroidConfig> per_game_config;
 
 class AndroidConfig final : public Config {
 public:

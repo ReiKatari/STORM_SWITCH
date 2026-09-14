@@ -191,16 +191,28 @@ void TitleDatabase::LoadDataSync() {
         std::unordered_map<u64, int> temp_base_dlc_counts;
 
         for (auto it = json_data.begin(); it != json_data.end(); ++it) {
-            std::string key = it.key();
-            std::transform(key.begin(), key.end(), key.begin(), ::toupper);
-
             const auto& val = it.value();
             if (!val.is_object()) continue;
+
+            std::string key = it.key();
+            if (val.contains("id") && !val["id"].is_null() && val["id"].is_string()) {
+                const std::string explicit_id = val["id"].get<std::string>();
+                if (explicit_id.length() == 16) {
+                    key = explicit_id;
+                }
+            }
+            std::transform(key.begin(), key.end(), key.begin(), ::toupper);
 
             Entry entry;
             entry.id = key;
             if (val.contains("name") && !val["name"].is_null()) {
                 entry.name = val["name"].get<std::string>();
+                std::replace(entry.name.begin(), entry.name.end(), '\n', ' ');
+                std::replace(entry.name.begin(), entry.name.end(), '\r', ' ');
+                // Trim multiple spaces
+                while (entry.name.find("  ") != std::string::npos) {
+                    entry.name.replace(entry.name.find("  "), 2, " ");
+                }
             }
             if (val.contains("description") && !val["description"].is_null()) {
                 entry.description = val["description"].get<std::string>();

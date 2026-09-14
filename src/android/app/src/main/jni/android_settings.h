@@ -25,6 +25,7 @@ namespace AndroidSettings {
         std::pair<double, double> portrait_position;
         std::pair<double, double> foldable_position;
         float individual_scale;
+        float individual_opacity{1.0f};
     };
 
     struct Values {

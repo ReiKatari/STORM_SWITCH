@@ -353,11 +353,27 @@ class ReleaseAdapter(
                                     progressDialog.dismiss()
 
                                     MaterialAlertDialogBuilder(context)
-                                        .setTitle(context.getString(R.string.successfully_installed, driverData.name?.ifEmpty { artifact.name } ?: artifact.name))
-                                        .setMessage(context.getString(R.string.apply_driver_confirm, artifact.name))
-                                        .setPositiveButton(R.string.apply_driver_now) { _, _ ->
+                                        .setTitle(R.string.apply_driver_title)
+                                        .setMessage(R.string.apply_driver_message)
+                                        .setPositiveButton(R.string.apply_driver_globally) { _, _ ->
                                             org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
-                                            driverViewModel.updateDriverList()
+                                            val driverFile = File(driverPath)
+                                            if (driverFile.exists()) {
+                                                GpuDriverHelper.installCustomDriver(driverFile)
+                                            }
+                                            GpuDriverHelper.applyDriverGloballyToAllCustomConfigs()
+                                            driverViewModel.wipeAllShaders()
+                                            driverViewModel.reloadDriverData()
+                                            notifyDataSetChanged()
+                                        }
+                                        .setNeutralButton(R.string.apply_driver_keep_custom) { _, _ ->
+                                            org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
+                                            val driverFile = File(driverPath)
+                                            if (driverFile.exists()) {
+                                                GpuDriverHelper.installCustomDriver(driverFile)
+                                            }
+                                            driverViewModel.wipeAllShaders()
+                                            driverViewModel.reloadDriverData()
                                             notifyDataSetChanged()
                                         }
                                         .setNegativeButton(R.string.close) { _, _ ->

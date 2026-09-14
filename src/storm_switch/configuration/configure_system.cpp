@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2016 Citra Emulator Project
@@ -131,6 +131,10 @@ void ConfigureSystem::Setup(const ConfigurationShared::Builder& builder) {
     push(Settings::values.linkage.by_category[Settings::Category::System]);
 
     for (auto setting : settings) {
+        if (!Settings::IsConfiguringGlobal() && !setting->Switchable()) {
+            continue;
+        }
+
         if (setting->Id() == Settings::values.use_docked_mode.Id() &&
             Settings::IsConfiguringGlobal()) {
             continue;
@@ -166,6 +170,8 @@ void ConfigureSystem::Setup(const ConfigurationShared::Builder& builder) {
 
         if (setting->Id() == Settings::values.custom_rtc_offset.Id()) {
             date_rtc_offset = widget->spinbox;
+            widget->hide();
+            continue;
         }
 
         switch (setting->GetCategory()) {

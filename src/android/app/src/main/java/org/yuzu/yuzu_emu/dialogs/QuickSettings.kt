@@ -27,12 +27,20 @@ import org.yuzu.yuzu_emu.features.settings.model.AbstractIntSetting
 import org.yuzu.yuzu_emu.features.settings.model.AbstractByteSetting
 
 class QuickSettings(val emulationFragment: EmulationFragment) {
+    fun ensureCustomConfigLoaded() {
+        val currentGame = emulationFragment.game ?: return
+        if (!emulationFragment.shouldUseCustom || !NativeConfig.isPerGameConfigLoaded()) {
+            emulationFragment.shouldUseCustom = true
+            org.yuzu.yuzu_emu.features.settings.utils.SettingsFile.loadCustomConfig(currentGame)
+            org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
+        }
+    }
+
     private fun saveSettings() {
         val currentGame = emulationFragment.game
         if (currentGame != null) {
-            if (!emulationFragment.shouldUseCustom) {
-                emulationFragment.shouldUseCustom = true
-                org.yuzu.yuzu_emu.features.settings.utils.SettingsFile.loadCustomConfig(currentGame)
+            if (!emulationFragment.shouldUseCustom || !NativeConfig.isPerGameConfigLoaded()) {
+                ensureCustomConfigLoaded()
             }
             NativeConfig.savePerGameConfig()
             org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
@@ -101,6 +109,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
 
             radioButton.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
+                    ensureCustomConfigLoaded()
                     setting.setInt(values[index])
                     saveSettings()
                     valueView.text = optionName
@@ -142,6 +151,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         switchView.isChecked = setting.getBoolean(needsGlobal = false)
 
         switchView.setOnCheckedChangeListener { _, isChecked ->
+            ensureCustomConfigLoaded()
             setting.setBoolean(isChecked)
             saveSettings()
             onValueChanged?.invoke(isChecked)
@@ -174,6 +184,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         switchView.isEnabled = isEnabled
 
         switchView.setOnCheckedChangeListener { _, checked ->
+            ensureCustomConfigLoaded()
             callback(checked)
             saveSettings()
         }
@@ -230,11 +241,20 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
                     is AbstractIntSetting -> setting.setInt(intValue)
                     is AbstractByteSetting -> setting.setByte(intValue.toByte())
                 }
-                saveSettings()
                 valueDisplay.text = "$intValue$units"
                 onValueChanged?.invoke(intValue)
             }
         }
+
+        slider.addOnSliderTouchListener(object : com.google.android.material.slider.Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: com.google.android.material.slider.Slider) {
+                ensureCustomConfigLoaded()
+            }
+
+            override fun onStopTrackingTouch(slider: com.google.android.material.slider.Slider) {
+                saveSettings()
+            }
+        })
 
         slider.setOnTouchListener { _, event ->
             val drawer = emulationFragment.view?.findViewById<DrawerLayout>(R.id.drawer_layout)

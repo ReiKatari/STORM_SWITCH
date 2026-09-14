@@ -62,6 +62,9 @@ object NativeFreedrenoConfig {
 
     @Synchronized
     external fun deletePerGameConfig(programId: String): Boolean
+
+    @Synchronized
+    external fun deleteAllConfigs(): Boolean
 }
 
 /**

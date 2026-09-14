@@ -279,7 +279,14 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             shouldUpdateView = true
         }
 
+        val pointerIndex = event.actionIndex
+        val pointerId = event.getPointerId(pointerIndex)
+
         for (joystick in overlayJoysticks) {
+            // If this touch was already claimed by a button or dpad, do not pass ACTION_DOWN to the joystick
+            if (isButtonOrDpadTracking(pointerId) && joystick.trackId != pointerId) {
+                continue
+            }
             if (!joystick.updateStatus(event)) {
                 continue
             }
@@ -306,10 +313,8 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             return true
         }
 
-        val pointerIndex = event.actionIndex
         val xPosition = event.getX(pointerIndex).toInt()
         val yPosition = event.getY(pointerIndex).toInt()
-        val pointerId = event.getPointerId(pointerIndex)
         val motionEvent = event.action and MotionEvent.ACTION_MASK
         val isActionDown =
             motionEvent == MotionEvent.ACTION_DOWN || motionEvent == MotionEvent.ACTION_POINTER_DOWN
@@ -350,6 +355,20 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                     performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_RELEASE)
             }
         }
+    }
+
+    private fun isButtonOrDpadTracking(track_id: Int): Boolean {
+        for (button in overlayButtons) {
+            if (button.trackId == track_id) {
+                return true
+            }
+        }
+        for (dpad in overlayDpads) {
+            if (dpad.trackId == track_id) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun isTouchInputConsumed(track_id: Int): Boolean {
@@ -811,12 +830,29 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         postInvalidate()
     }
 
+    fun setLiveOpacity(opacityPercent: Int) {
+        val baseOpacity = opacityPercent * 255f / 100f
+        for (button in overlayButtons) {
+            val indOpacity = button.overlayControlData.individualOpacity.coerceIn(0f, 1f)
+            button.setOpacity((baseOpacity * indOpacity).toInt().coerceIn(0, 255))
+        }
+        for (dpad in overlayDpads) {
+            dpad.setOpacity(baseOpacity.toInt().coerceIn(0, 255))
+        }
+        for (joystick in overlayJoysticks) {
+            val indOpacity = joystick.individualOpacity.coerceIn(0f, 1f)
+            joystick.setOpacity((baseOpacity * indOpacity).toInt().coerceIn(0, 255))
+        }
+        postInvalidate()
+    }
+
     private fun saveControlPosition(
         id: String,
         x: Int,
         y: Int,
         individuaScale: Float,
-        layout: OverlayLayout
+        layout: OverlayLayout,
+        individualOpacity: Float? = null
     ) {
         val windowSize = getSafeScreenSize(context, Pair(measuredWidth, measuredHeight))
         val min = windowSize.first
@@ -833,12 +869,18 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         }
 
         data?.individualScale = individuaScale
+        if (individualOpacity != null) {
+            data?.individualOpacity = individualOpacity
+        }
 
         NativeConfig.setOverlayControlData(overlayControlData)
     }
 
     fun setIsInEditMode(editMode: Boolean) {
         inEditMode = editMode
+        for (joystick in overlayJoysticks) {
+            joystick.inEditMode = editMode
+        }
         if (!editMode) {
             scaleDialog?.dismiss()
             scaleDialog = null
@@ -867,13 +909,14 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                     overlayControlData.firstOrNull { it.id == button.overlayControlData.id }
                 if (buttonData != null) {
                     scaleDialog =
-                        OverlayScaleDialog(context, button.overlayControlData) { newScale ->
+                        OverlayScaleDialog(context, button.overlayControlData) { newScale, newOpacity ->
                             saveControlPosition(
                                 button.overlayControlData.id,
                                 button.bounds.centerX(),
                                 button.bounds.centerY(),
                                 individuaScale = newScale,
-                                layout
+                                layout = layout,
+                                individualOpacity = newOpacity
                             )
                             refreshControls()
                         }
@@ -887,13 +930,14 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 val dpadData =
                     overlayControlData.firstOrNull { it.id == OverlayControl.COMBINED_DPAD.id }
                 if (dpadData != null) {
-                    scaleDialog = OverlayScaleDialog(context, dpadData) { newScale ->
+                    scaleDialog = OverlayScaleDialog(context, dpadData) { newScale, newOpacity ->
                         saveControlPosition(
                             OverlayControl.COMBINED_DPAD.id,
                             dpad.bounds.centerX(),
                             dpad.bounds.centerY(),
-                            newScale,
-                            layout
+                            individuaScale = newScale,
+                            layout = layout,
+                            individualOpacity = newOpacity
                         )
 
                         refreshControls()
@@ -907,13 +951,14 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             joystick != null -> {
                 val joystickData = overlayControlData.firstOrNull { it.id == joystick.prefId }
                 if (joystickData != null) {
-                    scaleDialog = OverlayScaleDialog(context, joystickData) { newScale ->
+                    scaleDialog = OverlayScaleDialog(context, joystickData) { newScale, newOpacity ->
                         saveControlPosition(
                             joystick.prefId,
                             joystick.bounds.centerX(),
                             joystick.bounds.centerY(),
                             individuaScale = newScale,
-                            layout
+                            layout = layout,
+                            individualOpacity = newOpacity
                         )
 
                         refreshControls()
@@ -1426,7 +1471,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 drawableX - (width / 2),
                 drawableY - (height / 2)
             )
-            overlayDrawable.setOpacity(IntSetting.OVERLAY_OPACITY.getInt() * 255 / 100)
+            val baseOpacity = IntSetting.OVERLAY_OPACITY.getInt() * 255 / 100
+            val indOpacity = overlayControlData.individualOpacity.coerceIn(0f, 1f)
+            overlayDrawable.setOpacity((baseOpacity * indOpacity).toInt().coerceIn(0, 255))
             return overlayDrawable
         }
 
@@ -1502,7 +1549,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
 
             // Need to set the image's position
             overlayDrawable.setPosition(drawableX - (width / 2), drawableY - (height / 2))
-            overlayDrawable.setOpacity(IntSetting.OVERLAY_OPACITY.getInt() * 255 / 100)
+            val baseOpacity = IntSetting.OVERLAY_OPACITY.getInt() * 255 / 100
+            val indOpacity = (dpadData?.individualOpacity ?: 1f).coerceIn(0f, 1f)
+            overlayDrawable.setOpacity((baseOpacity * indOpacity).toInt().coerceIn(0, 255))
             return overlayDrawable
         }
 
@@ -1586,7 +1635,10 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
 
             // Need to set the image's position
             overlayDrawable.setPosition(drawableX, drawableY)
-            overlayDrawable.setOpacity(IntSetting.OVERLAY_OPACITY.getInt() * 255 / 100)
+            val baseOpacity = IntSetting.OVERLAY_OPACITY.getInt() * 255 / 100
+            val indOpacity = overlayControlData.individualOpacity.coerceIn(0f, 1f)
+            overlayDrawable.individualOpacity = indOpacity
+            overlayDrawable.setOpacity((baseOpacity * indOpacity).toInt().coerceIn(0, 255))
             return overlayDrawable
         }
     }

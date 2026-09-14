@@ -20,6 +20,7 @@ import org.yuzu.yuzu_emu.model.GameDir
 import org.yuzu.yuzu_emu.model.MinimalDocumentFile
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import java.util.Locale
 import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
 
@@ -128,6 +129,11 @@ object GameHelper {
 
         val finalGames = deduplicateGames(games)
 
+        // Upgrade and sanitize versions for all loaded games
+        finalGames.forEach { game ->
+            upgradeGameVersionIfNeeded(game)
+        }
+
         // Preserve higher addon counts and non-base versions from cached metadata
         if (cachedGameList.isNotEmpty()) {
             val cachedMap = cachedGameList.associateBy { it.programIdHex.uppercase(Locale.ROOT) }
@@ -141,6 +147,10 @@ object GameHelper {
                     val cachedVer = cached.version.removePrefix("v").removePrefix("V").trim()
                     if (isBaseVersion(currentVer) && !isBaseVersion(cachedVer)) {
                         game.version = cached.version
+                    }
+                    val currentIv = game.internalVersion.toLongOrNull() ?: 0L
+                    val cachedIv = cached.internalVersion.toLongOrNull() ?: 0L
+                    if (currentIv < 65536L && cachedIv >= 65536L) {
                         game.internalVersion = cached.internalVersion
                     }
                 }
@@ -159,13 +169,33 @@ object GameHelper {
             }
             cachedGameList = finalGames.toMutableList()
             return finalGames
-        } else if (cachedGameList.isNotEmpty()) {
-            // Protection: never wipe cached games if a background reload or driver switch temporarily returned 0 files
-            return cachedGameList
-        }
+        } else {
+            // Verify whether any previously cached games still actually exist on disk
+            val verified = cachedGameList.filter { game ->
+                try {
+                    val uri = Uri.parse(game.path)
+                    if (uri.scheme == "content") {
+                        DocumentFile.fromSingleUri(YuzuApplication.appContext, uri)?.exists() == true
+                    } else {
+                        File(game.path).exists()
+                    }
+                } catch (_: Exception) {
+                    false
+                }
+            }
 
-        cachedGameList = finalGames.toMutableList()
-        return finalGames
+            if (verified.isEmpty()) {
+                // All games were deleted from the folder! Purge cache and clear the list
+                preferences.edit() {
+                    remove(KEY_GAMES)
+                }
+                cachedGameList.clear()
+                return emptyList()
+            }
+
+            cachedGameList = verified.toMutableList()
+            return verified
+        }
     }
 
     fun getGameDeduplicationKey(game: Game): String {
@@ -515,8 +545,10 @@ object GameHelper {
     ): Pair<String, String> {
         var cleanVersion = currentVersion.trim().removePrefix("v").removePrefix("V").trim()
         var cleanInternalVersion = currentInternalVersion.trim().removePrefix("v").removePrefix("V").trim()
+        val parsedIntVer = cleanInternalVersion.toLongOrNull() ?: 0L
 
-        if (isBaseVersion(cleanVersion)) {
+        // If version is base OR internal version is missing / corrupted (< 65536 for non-base), search filenames
+        if (isBaseVersion(cleanVersion) || parsedIntVer < 65536L) {
             for (rawName in names) {
                 if (rawName.isEmpty()) continue
                 val name = rawName.substringAfterLast('/').substringAfterLast('\\')
@@ -529,13 +561,13 @@ object GameHelper {
                     if (pVer.isNotEmpty() && !isBaseVersion(pVer)) {
                         cleanVersion = pVer
                     }
-                    if (pIntVer.isNotEmpty() && (cleanInternalVersion == "0" || cleanInternalVersion.isEmpty())) {
+                    if (pIntVer.isNotEmpty() && (cleanInternalVersion == "0" || cleanInternalVersion.isEmpty() || (cleanInternalVersion.toLongOrNull() ?: 0L) < 65536L)) {
                         val num = pIntVer.toLongOrNull() ?: 0L
                         if (num in 1..4294967295L) {
                             cleanInternalVersion = pIntVer
                         }
                     }
-                    if (!isBaseVersion(cleanVersion)) {
+                    if (!isBaseVersion(cleanVersion) && (cleanInternalVersion.toLongOrNull() ?: 0L) >= 65536L) {
                         foundPair = true
                         break
                     }
@@ -543,21 +575,21 @@ object GameHelper {
                 if (foundPair) break
 
                 // 2. Bracketed version: e.g. "[1.0.9]" or "(v1.0.9)" or "[Update 1.29.0]" or "[UPD 1.29.0]"
-                val bracketMatches = Regex("""[\[\(](?:v|ver|upd|update)?\s*([0-9]+\.[0-9]+(?:\.[0-9]+)*)[\]\)]""", RegexOption.IGNORE_CASE).findAll(name)
-                var foundBracket = false
-                for (bm in bracketMatches) {
-                    val parsedVer = bm.groupValues[1].trim()
-                    if (!isBaseVersion(parsedVer)) {
-                        cleanVersion = parsedVer
-                        foundBracket = true
-                        break
+                if (isBaseVersion(cleanVersion)) {
+                    val bracketMatches = Regex("""[\[\(](?:v|ver|upd|update)?\s*([0-9]+\.[0-9]+(?:\.[0-9]+)*)[\]\)]""", RegexOption.IGNORE_CASE).findAll(name)
+                    for (bm in bracketMatches) {
+                        val parsedVer = bm.groupValues[1].trim()
+                        if (!isBaseVersion(parsedVer)) {
+                            cleanVersion = parsedVer
+                            break
+                        }
                     }
                 }
-                if (foundBracket) break
             }
         }
 
-        if (cleanInternalVersion.isEmpty() || cleanInternalVersion == "0") {
+        val currInt = cleanInternalVersion.toLongOrNull() ?: 0L
+        if (currInt < 65536L) {
             for (rawName in names) {
                 if (rawName.isEmpty()) continue
                 val name = rawName.substringAfterLast('/').substringAfterLast('\\')
@@ -570,7 +602,7 @@ object GameHelper {
                         break
                     }
                 }
-                if (cleanInternalVersion.isNotEmpty() && cleanInternalVersion != "0") break
+                if ((cleanInternalVersion.toLongOrNull() ?: 0L) >= 65536L) break
             }
         }
 
@@ -584,14 +616,20 @@ object GameHelper {
             }
         }
 
-        if ((cleanInternalVersion.isEmpty() || cleanInternalVersion == "0") && !isBaseVersion(cleanVersion)) {
+        val currentNum = cleanInternalVersion.toLongOrNull() ?: 0L
+        if ((currentNum == 0L || currentNum < 65536L) && !isBaseVersion(cleanVersion)) {
             val parts = cleanVersion.split('.').mapNotNull { it.filter { c -> c.isDigit() }.toIntOrNull() }
             if (parts.size >= 4 && parts[0] == 1 && parts[1] == 0 && parts[2] == 0 && parts[3] > 0) {
-                cleanInternalVersion = parts[3].toString()
+                cleanInternalVersion = (parts[3] * 65536).toString()
             } else if (parts.size >= 3 && parts[0] == 1 && parts[1] == 0 && parts[2] > 0) {
                 cleanInternalVersion = (parts[2] * 65536).toString()
             } else if (parts.size >= 2 && parts[0] == 1 && parts[1] > 0) {
                 cleanInternalVersion = (parts[1] * 65536).toString()
+            } else if (parts.isNotEmpty()) {
+                val lastVal = parts.last()
+                if (lastVal > 0) {
+                    cleanInternalVersion = (lastVal * 65536).toString()
+                }
             }
         }
 
@@ -606,7 +644,9 @@ object GameHelper {
     }
 
     fun upgradeGameVersionIfNeeded(game: Game): Game {
-        if (!isBaseVersion(game.version) && game.internalVersion.isNotEmpty() && game.internalVersion != "0") {
+        val intVer = game.internalVersion.toLongOrNull() ?: 0L
+        // Only skip if game has a real non-base internal version (>= 65536) and a valid non-base display version
+        if (!isBaseVersion(game.version) && intVer >= 65536L) {
             return game
         }
         val filename = try {
@@ -618,10 +658,17 @@ object GameHelper {
         val decodedFilePath = runCatching { Uri.decode(game.path) }.getOrDefault(game.path)
         val candidateNames = listOf(filename, decodedFilename, decodedFilePath, game.path)
 
+        // Try getting fresh internal version from native metadata if currently 0 or corrupted (< 65536)
+        val rawNativeInternal = if (intVer < 65536L) {
+            runCatching { GameMetadata.getInternalVersion(game.path) }.getOrDefault("")
+        } else {
+            game.internalVersion
+        }
+
         val (upgradedVersion, upgradedInternalVersion) = resolveVersionFromNames(
             candidateNames,
             game.version,
-            game.internalVersion
+            rawNativeInternal
         )
 
         game.version = upgradedVersion

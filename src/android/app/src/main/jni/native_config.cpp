@@ -402,7 +402,7 @@ jobjectArray Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getOverlayControlData(JN
                            Common::Android::GetOverlayControlDataConstructor(),
                            Common::Android::ToJString(env, control_data.id), control_data.enabled,
                            jlandscapePosition, jportraitPosition, jfoldablePosition,
-                           control_data.individual_scale);
+                           control_data.individual_scale, control_data.individual_opacity);
 
         env->SetObjectArrayElement(joverlayControlDataArray, i, jcontrolData);
     }
@@ -454,10 +454,12 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setOverlayControlData(
 
         float individual_scale = static_cast<float>(env->GetFloatField(
             joverlayControlData, Common::Android::GetOverlayControlDataIndividualScaleField()));
+        float individual_opacity = static_cast<float>(env->GetFloatField(
+            joverlayControlData, Common::Android::GetOverlayControlDataIndividualOpacityField()));
 
         AndroidSettings::values.overlay_control_data.push_back(AndroidSettings::OverlayControlData{
             Common::Android::GetJString(env, jidString), enabled, landscape_position,
-            portrait_position, foldable_position, individual_scale});
+            portrait_position, foldable_position, individual_scale, individual_opacity});
     }
 }
 

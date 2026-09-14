@@ -1,17 +1,17 @@
-/*
+﻿/*
  * STORM DAY Stylesheet - Clean High-End White & Electric Cobalt Theme
  * Exclusively for STORM SWITCH
  */
 
 QWidget {
-    color: #0f172a;
+    color: #000000;
     font-family: "Segoe UI", "Outfit", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
     font-size: 9pt;
     outline: none;
 }
 
 QWidget:disabled {
-    color: #94a3b8;
+    color: #000000;
 }
 
 QMainWindow, QDialog, QStackedWidget, QWizard, QDockWidget {
@@ -24,23 +24,23 @@ QWidget#normal_target, QWidget#scrollAreaWidgetContents {
 
 QLabel {
     background: transparent;
-    color: #0f172a;
+    color: #000000;
 }
 
 QLabel:disabled {
-    color: #94a3b8;
+    color: #000000;
 }
 
 QCheckBox, QRadioButton {
     background: transparent;
-    color: #0f172a;
+    color: #000000;
     spacing: 8px;
     padding: 3px;
     font-weight: 500;
 }
 
 QCheckBox:disabled, QRadioButton:disabled {
-    color: #94a3b8;
+    color: #000000;
 }
 
 QCheckBox::indicator, QRadioButton::indicator,
@@ -81,8 +81,8 @@ QTreeView::indicator:disabled, QTableView::indicator:disabled, QListView::indica
 
 QCheckBox::indicator:checked:disabled, QRadioButton::indicator:checked:disabled,
 QTreeView::indicator:checked:disabled, QTableView::indicator:checked:disabled, QListView::indicator:checked:disabled, QAbstractItemView::indicator:checked:disabled {
-    background-color: #94a3b8;
-    border-color: #94a3b8;
+    background-color: #000000;
+    border-color: #000000;
     image: none;
 }
 
@@ -101,7 +101,7 @@ QMenuBar {
 QMenuBar::item {
     background: transparent;
     padding: 6px 12px;
-    color: #0f172a;
+    color: #000000;
     border-radius: 4px;
 }
 
@@ -125,7 +125,7 @@ QMenu {
 QMenu::item {
     padding: 6px 24px;
     border-radius: 4px;
-    color: #0f172a;
+    color: #000000;
 }
 
 QMenu::item:selected {
@@ -153,7 +153,7 @@ QToolButton {
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     padding: 5px 10px;
-    color: #0f172a;
+    color: #000000;
     font-weight: 500;
 }
 
@@ -171,7 +171,7 @@ QToolButton:pressed {
 /* Push Buttons */
 QPushButton {
     background-color: #ffffff;
-    color: #0f172a;
+    color: #000000;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     padding: 6px 14px;
@@ -191,14 +191,14 @@ QPushButton:pressed {
 
 QPushButton:disabled {
     background-color: #f1f5f9;
-    color: #94a3b8;
+    color: #000000;
     border-color: #e2e8f0;
 }
 
 /* Line Edits & Text Inputs */
 QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox {
     background-color: #ffffff;
-    color: #0f172a;
+    color: #000000;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     padding: 6px 10px;
@@ -214,7 +214,7 @@ QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QSpinBox:focus, QDoubleS
 /* Combo Box */
 QComboBox {
     background-color: #ffffff;
-    color: #0f172a;
+    color: #000000;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     padding: 2px 10px;
@@ -237,7 +237,7 @@ QComboBox::drop-down {
 
 QComboBox QAbstractItemView {
     background-color: #ffffff;
-    color: #0f172a;
+    color: #000000;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     selection-background-color: #2563eb;
@@ -247,7 +247,7 @@ QComboBox QAbstractItemView {
 
 QComboBox QAbstractItemView::item {
     padding: 5px 8px;
-    color: #0f172a;
+    color: #000000;
 }
 
 QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected {
@@ -265,7 +265,7 @@ QTabWidget::pane {
 
 QTabBar::tab {
     background-color: #f1f5f9;
-    color: #64748b;
+    color: #000000;
     border: 1px solid #cbd5e1;
     border-bottom: none;
     padding: 8px 16px;
@@ -285,14 +285,14 @@ QTabBar::tab:selected {
 
 QTabBar::tab:hover:!selected {
     background-color: #e2e8f0;
-    color: #0f172a;
+    color: #000000;
     font-weight: bold;
 }
 
 /* Sidebar ListWidget */
 QListWidget#selectorList {
     background-color: #ffffff;
-    color: #0f172a;
+    color: #000000;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     font-weight: bold;
@@ -304,7 +304,7 @@ QListWidget#selectorList {
 QListWidget#selectorList::item {
     padding: 8px 12px;
     border-radius: 5px;
-    color: #334155;
+    color: #000000;
     margin-bottom: 2px;
 }
 
@@ -323,7 +323,7 @@ QListWidget#selectorList::item:selected {
 QTreeView, QListView, QTableView {
     background-color: #ffffff;
     alternate-background-color: #f8fafc;
-    color: #0f172a;
+    color: #000000;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     gridline-color: #e2e8f0;
@@ -364,7 +364,7 @@ QHeaderView::section {
 QStatusBar {
     background-color: #ffffff;
     border-top: 1px solid #cbd5e1;
-    color: #334155;
+    color: #000000;
     padding: 2px 4px;
 }
 
@@ -373,7 +373,7 @@ QStatusBar::item {
 }
 
 QStatusBar QLabel {
-    color: #334155;
+    color: #000000;
     font-weight: 500;
 }
 
@@ -406,7 +406,7 @@ QPushButton#RefreshButton,
 QPushButton#VolumeButton,
 QStatusBar QPushButton {
     background-color: #ffffff;
-    color: #0f172a;
+    color: #000000;
     border: 1px solid #cbd5e1;
     border-radius: 5px;
     padding: 3px 8px;
@@ -466,7 +466,7 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle:vertical {
-    background-color: #94a3b8;
+    background-color: #000000;
     min-height: 20px;
     border-radius: 5px;
 }
@@ -488,7 +488,7 @@ QScrollBar:horizontal {
 }
 
 QScrollBar::handle:horizontal {
-    background-color: #94a3b8;
+    background-color: #000000;
     min-width: 20px;
     border-radius: 5px;
 }
@@ -508,7 +508,7 @@ QProgressBar {
     border: 1px solid #cbd5e1;
     border-radius: 4px;
     text-align: center;
-    color: #0f172a;
+    color: #000000;
 }
 
 QProgressBar::chunk {
@@ -538,7 +538,7 @@ QGroupBox::title {
 /* ToolTip */
 QToolTip {
     background-color: #ffffff;
-    color: #0f172a;
+    color: #000000;
     border: 1px solid #2563eb;
     border-radius: 6px;
     padding: 6px;

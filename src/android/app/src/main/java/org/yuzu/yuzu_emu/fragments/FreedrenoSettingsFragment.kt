@@ -115,20 +115,37 @@ class FreedrenoSettingsFragment : Fragment() {
     }
 
     private fun loadCurrentSettings() {
-        // Load all currently set environment variables
         val variables = mutableListOf<FreedrenoVariable>()
+        val seenVars = mutableSetOf<String>()
 
-        // Common variables to check
+        // 1. Parse all currently set variables from summary
+        val summary = NativeFreedrenoConfig.getFreedrenoEnvSummary()
+        if (summary.isNotEmpty()) {
+            val pairs = summary.split(",")
+            for (pair in pairs) {
+                val parts = pair.split("=", limit = 2)
+                if (parts.size == 2) {
+                    val k = parts[0].trim()
+                    val v = parts[1].trim()
+                    if (k.isNotEmpty() && !k.startsWith("DRIRC_") && !k.startsWith("MESA_DRIRC_") && k != "HOME") {
+                        variables.add(FreedrenoVariable(k, v))
+                        seenVars.add(k)
+                    }
+                }
+            }
+        }
+
+        // 2. Check common variables to ensure none were missed
         val commonVars = listOf(
             "TU_DEBUG", "FD_MESA_DEBUG", "IR3_SHADER_DEBUG",
             "FD_RD_DUMP", "FD_RD_DUMP_FRAMES", "FD_RD_DUMP_TESTNAME",
             "TU_BREADCRUMBS", "FD_DEV_FEATURES"
         )
-
         for (varName in commonVars) {
-            if (NativeFreedrenoConfig.isFreedrenoEnvSet(varName)) {
+            if (!seenVars.contains(varName) && NativeFreedrenoConfig.isFreedrenoEnvSet(varName)) {
                 val value = NativeFreedrenoConfig.getFreedrenoEnv(varName)
                 variables.add(FreedrenoVariable(varName, value))
+                seenVars.add(varName)
             }
         }
 
@@ -165,7 +182,7 @@ class FreedrenoSettingsFragment : Fragment() {
             if (isPerGameConfig) {
                 NativeFreedrenoConfig.deletePerGameConfig(game!!.programIdHex)
             } else {
-                NativeFreedrenoConfig.saveFreedrenoConfig()
+                NativeFreedrenoConfig.deleteAllConfigs()
             }
             showSnackbar(getString(R.string.freedreno_cleared_all))
             loadCurrentSettings()

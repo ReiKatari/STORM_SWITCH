@@ -185,6 +185,13 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         }
         setInsets()
         applyFullscreenPreference()
+
+        // Synchronize STORM GAMES WORLD catalog in background on app launch
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.syncCatalogInBackground(applicationContext)
+            } catch (_: Throwable) {}
+        }
     }
 
     private fun checkForUpdates() {
