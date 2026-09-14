@@ -20,6 +20,7 @@ import android.graphics.Rect
 import android.graphics.drawable.Icon
 import android.app.GameManager
 import android.app.GameState
+import android.os.BatteryManager
 import android.os.PowerManager
 import android.hardware.input.InputManager
 import android.hardware.Sensor
@@ -84,6 +85,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
     private lateinit var inputManager: InputManager
 
     private var thermalJob: Job? = null
+    private var thermalListener: Any? = null
     private var isThermalThrottled = false
 
     private var touchDownTime: Long = 0
@@ -127,32 +129,66 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
     }
 
     private fun startThermalMonitor() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            try {
+                val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
+                if (powerManager != null) {
+                    if (thermalListener == null) {
+                        val listener = PowerManager.OnThermalStatusChangedListener { status ->
+                            val shouldThrottle = status >= PowerManager.THERMAL_STATUS_SEVERE
+                            if (shouldThrottle != isThermalThrottled) {
+                                isThermalThrottled = shouldThrottle
+                                NativeLibrary.setThermalThrottle(shouldThrottle)
+                                Log.info("[ThermalMonitor] System thermal status changed: status=$status, throttle=$shouldThrottle")
+                            }
+                        }
+                        powerManager.addThermalStatusListener(listener)
+                        thermalListener = listener
+                        Log.info("[ThermalMonitor] Registered PowerManager OnThermalStatusChangedListener")
+                    }
+                    return
+                }
+            } catch (e: Exception) {
+                Log.warning("[ThermalMonitor] Failed to register PowerManager thermal listener: ${e.message}")
+            }
+        }
+
+        thermalJob?.cancel()
         thermalJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
+                    val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                    val rawBatteryTemp = batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
+                    val batteryTempC = rawBatteryTemp / 10
+
                     val thermalZones = File("/sys/class/thermal/").listFiles { f -> f.name.startsWith("thermal_zone") } ?: emptyArray()
-                    var maxTemp = 0
+                    var maxSocTemp = 0
                     for (zone in thermalZones) {
                         val tempFile = File(zone, "temp")
                         if (tempFile.canRead()) {
                             val temp = tempFile.readText().trim().toIntOrNull() ?: 0
-                            // Some zones report in millidegrees, some in degrees
                             val tempC = if (temp > 1000) temp / 1000 else temp
-                            if (tempC > maxTemp) maxTemp = tempC
+                            if (tempC > maxSocTemp) maxSocTemp = tempC
                         }
                     }
-                    // Activate thermal throttle when device exceeds 56°C
-                    // Deactivate when device cools below 50°C (hysteresis to avoid flip-flopping)
-                    val shouldThrottle = if (isThermalThrottled) maxTemp >= 50 else maxTemp >= 56
+
+                    // Throttle only if battery exceeds 46°C (real chassis overheat) or SoC junction exceeds 85°C
+                    // Deactivate when battery drops below 42°C and SoC junction drops below 75°C
+                    val shouldThrottle = if (isThermalThrottled) {
+                        (batteryTempC >= 42 && batteryTempC > 0) || maxSocTemp >= 75
+                    } else {
+                        (batteryTempC >= 46 && batteryTempC > 0) || maxSocTemp >= 85
+                    }
+
                     if (shouldThrottle != isThermalThrottled) {
                         isThermalThrottled = shouldThrottle
                         NativeLibrary.setThermalThrottle(shouldThrottle)
-                        Log.info("[ThermalMonitor] Thermal throttle ${if (shouldThrottle) "ACTIVATED" else "DEACTIVATED"} (maxTemp=${maxTemp}°C)")
+                        Log.info("[ThermalMonitor] Thermal throttle ${if (shouldThrottle) "ACTIVATED" else "DEACTIVATED"} (battery=${batteryTempC}°C, maxSoc=${maxSocTemp}°C)")
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Thermal reading not available on all devices
                 }
-                delay(3000) // Check every 3 seconds for faster response
+                delay(5000)
             }
         }
     }
@@ -370,6 +406,10 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             } catch (_: Throwable) {}
         }
         thermalJob?.cancel()
+        if (isThermalThrottled) {
+            isThermalThrottled = false
+            NativeLibrary.setThermalThrottle(false)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             window.setSustainedPerformanceMode(false)
         }
@@ -380,6 +420,13 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
 
     override fun onDestroy() {
         mainHandler.removeCallbacks(romSwapStopTimeoutRunnable)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            (thermalListener as? PowerManager.OnThermalStatusChangedListener)?.let {
+                val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
+                powerManager?.removeThermalStatusListener(it)
+                thermalListener = null
+            }
+        }
         try {
             val game = getLaunchGame()
             org.yuzu.yuzu_emu.model.GameFixDatabase.cleanupSession(game)

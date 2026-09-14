@@ -35,6 +35,7 @@
 #include "network/network.h"
 #include "qt_common/discord/discord.h"
 #include "qt_common/titledb.h"
+#include "qt_common/game_list/game_list_p.h"
 #include "ui_main.h"
 
 // Other Yuzu stuff //
@@ -402,6 +403,43 @@ MainWindow* MainWindow::GetInstance() {
     return s_main_window_instance;
 }
 
+QString MainWindow::GetGameTitleByProgramId(u64 program_id) const {
+    if (!game_list) {
+        return QString();
+    }
+    auto* model = game_list->GetModel();
+    if (!model) {
+        return QString();
+    }
+    auto* root = model->invisibleRootItem();
+    if (!root) {
+        return QString();
+    }
+
+    std::function<QString(QStandardItem*)> searchItem = [&](QStandardItem* item) -> QString {
+        if (!item) return QString();
+        const auto prog_id_val = item->data(GameListItemPath::ProgramIdRole);
+        if (prog_id_val.isValid() && prog_id_val.toULongLong() == program_id) {
+            const QString title = item->data(GameListItemPath::TitleRole).toString().trimmed();
+            if (!title.isEmpty()) {
+                return title;
+            }
+        }
+        for (int r = 0; r < item->rowCount(); ++r) {
+            auto* child = item->child(r, 0);
+            if (child) {
+                const QString found = searchItem(child);
+                if (!found.isEmpty()) {
+                    return found;
+                }
+            }
+        }
+        return QString();
+    };
+
+    return searchItem(root);
+}
+
 MainWindow::MainWindow(bool has_broken_vulkan)
     : ui{std::make_unique<Ui::MainWindow>()},
       input_subsystem{std::make_shared<InputCommon::InputSubsystem>()}, user_data_migrator{this} {
@@ -415,7 +453,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.6.1";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.6.2";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);

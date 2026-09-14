@@ -342,7 +342,7 @@ class SettingsFragmentPresenter(
                 SubmenuSetting(
                     titleId = R.string.frame_gen,
                     descriptionId = R.string.frame_gen_description,
-                    iconId = R.drawable.ic_frames,
+                    iconId = 0,
                     menuKey = MenuTag.SECTION_FRAME_GEN
                 )
             )

@@ -342,7 +342,7 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_RESOLUTION.setInt(res)
         IntSetting.RENDERER_ACCURACY.setInt(0)
         IntSetting.DMA_ACCURACY.setInt(1)
-        IntSetting.RENDERER_VSYNC.setInt(if (profile.isAdreno830 || (profile.isAdreno && profile.tier >= HardwareTier.FLAGSHIP)) 2 else 0)
+        IntSetting.RENDERER_VSYNC.setInt(if (profile.isAdreno830 || (profile.isAdreno && profile.tier >= HardwareTier.FLAGSHIP)) 1 else 0)
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.totalRamGb < 8.0 || profile.isDimensity9400 || profile.isAdreno6xx) 0 else 1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(1) // Balanced
         IntSetting.RENDERER_ANTI_ALIASING.setInt(0)

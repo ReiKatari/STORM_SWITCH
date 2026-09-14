@@ -178,6 +178,7 @@ public:
     void AcceptDropEvent(QDropEvent* event);
 
     std::filesystem::path GetShortcutPath(QtCommon::Game::ShortcutTarget target);
+    QString GetGameTitleByProgramId(u64 program_id) const;
 
 signals:
 

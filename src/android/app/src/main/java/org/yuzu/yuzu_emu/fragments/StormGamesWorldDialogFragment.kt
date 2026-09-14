@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 STORM SOFT Project
+// SPDX-FileCopyrightText: Copyright 2026 STORM SOFT Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
@@ -30,8 +30,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Call
+import okhttp3.ConnectionPool
 import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
@@ -44,6 +46,8 @@ import org.yuzu.yuzu_emu.model.GamesViewModel
 import org.yuzu.yuzu_emu.utils.FileUtil
 import org.yuzu.yuzu_emu.utils.Log
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -75,6 +79,7 @@ data class StormWorldGameItem(
     var realExtension: String = ".nsp",
     var isDownloaded: Boolean = false,
     var dlcCount: Int = 0,
+    var modCount: Int = 0,
     var isRecommended: Boolean = false,
     val dlcs: MutableList<StormWorldDlcItem> = mutableListOf()
 ) {
@@ -96,6 +101,7 @@ data class StormWorldGameItem(
         obj.put("fileSizeBytes", fileSizeBytes)
         obj.put("realExtension", realExtension)
         obj.put("dlcCount", dlcCount)
+        obj.put("modCount", modCount)
         obj.put("isRecommended", isRecommended)
         return obj
     }
@@ -129,6 +135,7 @@ data class StormWorldGameItem(
                 fileSizeBytes = obj.optLong("fileSizeBytes"),
                 realExtension = obj.optString("realExtension", ".nsp"),
                 dlcCount = obj.optInt("dlcCount"),
+                modCount = obj.optInt("modCount"),
                 isRecommended = obj.optBoolean("isRecommended", false)
             )
         }
@@ -429,6 +436,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             binding.detailGameDlc.setOnClickListener(null)
         }
 
+        if (game.modCount > 0) {
+            binding.detailGameMod.isVisible = true
+            binding.detailGameMod.text = "+${game.modCount} MOD"
+        } else {
+            binding.detailGameMod.isVisible = false
+        }
+
         binding.detailGameDescription.text = "Загрузка информации..."
 
         loadCoverForGame(game, binding.detailGameCover)
@@ -462,7 +476,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.6.1 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.6.3 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -496,6 +510,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             game.dlcCount = game.dlcs.size
                         }
                     }
+
+                    val modsArr = obj.optJSONArray("mods")
+                    if (modsArr != null && modsArr.length() > 0) {
+                        game.modCount = maxOf(game.modCount, modsArr.length())
+                    }
                 }
 
                 // Also check HEAD Content-Disposition to detect real extension (.nsz / .xci / .nsp)
@@ -503,7 +522,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.6.1 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.6.3 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -521,6 +540,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         binding.detailGameDlc.setOnClickListener {
                             showDlcDialog(game)
                         }
+                    }
+                    if (game.modCount > 0) {
+                        binding.detailGameMod.isVisible = true
+                        binding.detailGameMod.text = "+${game.modCount} MOD"
                     }
                 }
             } catch (_: Exception) {
@@ -650,7 +673,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
                     val reqBuilder = Request.Builder()
                         .url(downloadUrl)
-                        .header("User-Agent", "STORM_SWITCH/8.6.1 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.6.3 (Android)")
 
                     if (existingBytes > 0L) {
                         reqBuilder.header("Range", "bytes=$existingBytes-")
@@ -705,9 +728,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         if (streamLen > 0) streamLen else game.fileSizeBytes
                     }
 
-                    inputStream = body.byteStream()
-                    val buffer = ByteArray(256 * 1024)
-                    var bytesRead: Int
+                    val bufferedOut = BufferedOutputStream(outputStream, 1024 * 1024)
+                    outputStream = bufferedOut
+                    val bufferedIn = BufferedInputStream(body.byteStream(), 1024 * 1024)
+                    inputStream = bufferedIn
+                    val buffer = ByteArray(512 * 1024)
                     var totalRead = existingBytes
                     var lastUpdateTime = System.currentTimeMillis()
                     var bytesSinceLastUpdate = 0L
@@ -719,10 +744,12 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         }
                     }
 
-                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    while (true) {
                         if (isPaused || isCancelled) break
+                        val bytesRead = bufferedIn.read(buffer)
+                        if (bytesRead == -1) break
 
-                        outputStream!!.write(buffer, 0, bytesRead)
+                        bufferedOut.write(buffer, 0, bytesRead)
                         totalRead += bytesRead
                         bytesSinceLastUpdate += bytesRead
 
@@ -895,13 +922,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val item = filteredGames[position]
             val dispTitle = if (item.title.isNotBlank()) item.title else item.finalTitle
 
-            if (item.isRecommended) {
-                holder.b.textGameVersion.text = "⭐ ${item.version} [Рекомендуемая]"
-                holder.b.textGameVersion.setTextColor(0xFF00FF66.toInt())
-            } else {
-                holder.b.textGameVersion.text = item.version
-                holder.b.textGameVersion.setTextColor(0xFFFFFFFF.toInt())
-            }
+            holder.b.textGameVersion.text = item.version
+            holder.b.textGameVersion.setTextColor(0xFF00D2FF.toInt())
             if (item.internalVersion.isNotEmpty()) {
                 holder.b.textInternalVersion.isVisible = true
                 holder.b.textInternalVersion.text = item.internalVersion
@@ -922,6 +944,15 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 holder.b.textGameDlc.isVisible = false
                 holder.b.textGameDlc.setOnClickListener(null)
             }
+
+            if (item.modCount > 0) {
+                holder.b.badgeMod.isVisible = true
+                holder.b.badgeMod.text = "+${item.modCount} MOD"
+            } else {
+                holder.b.badgeMod.isVisible = false
+            }
+
+            holder.b.badgeRecommended.isVisible = item.isRecommended
 
             loadCoverForGame(item, holder.b.imageGameCover)
 
@@ -992,7 +1023,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 try {
                     val req = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                        .header("User-Agent", "STORM_SWITCH/8.1.1 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.6.3 (Android)")
                         .build()
                     val resp = httpClient.newCall(req).execute()
                     val body = resp.body?.string().orEmpty()
@@ -1143,9 +1174,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     maxRequests = 32
                     maxRequestsPerHost = 16
                 })
+                .connectionPool(ConnectionPool(16, 5, TimeUnit.MINUTES))
+                .protocols(listOf(Protocol.HTTP_2, Protocol.HTTP_1_1))
                 .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(true)
                 .build()
         }
@@ -1189,7 +1222,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.6.1 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.6.3 (Android)")
                     .build()
 
                 val resp = sharedHttpClient.newCall(req).execute()
@@ -1239,6 +1272,17 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         val dlcMatch = Regex("""(?:\+|[\(\[])(\d+)D(?:\)|\]|\+)""", RegexOption.IGNORE_CASE).find(rawFinalTitle)
                         val dlcNum = dlcMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
 
+                        val modMatch = Regex("""(?:\+|[\(\[])(\d+)M(?:\)|\]|\+)""", RegexOption.IGNORE_CASE).find(rawFinalTitle)
+                        var modNum = modMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                        if (modNum == 0) {
+                            if (rawFinalTitle.contains("MOD", ignoreCase = true) || rawTitle.contains("MOD", ignoreCase = true) ||
+                                langList.any { it.contains("MOD", ignoreCase = true) || it.contains("русификатор", ignoreCase = true) || it.contains("озвучка", ignoreCase = true) } ||
+                                rawFinalTitle.contains("русификатор", ignoreCase = true) || rawTitle.contains("русификатор", ignoreCase = true) ||
+                                rawFinalTitle.contains("озвучка", ignoreCase = true) || rawTitle.contains("озвучка", ignoreCase = true)) {
+                                modNum = 1
+                            }
+                        }
+
                         candidateList.add(
                             StormWorldGameItem(
                                 id = obj.optInt("id"),
@@ -1253,7 +1297,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 hasFile = hasFile,
                                 regions = regList,
                                 textLangs = langList,
-                                dlcCount = dlcNum
+                                dlcCount = dlcNum,
+                                modCount = modNum
                             )
                         )
                     }
@@ -1267,7 +1312,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 val headReq = Request.Builder()
                                     .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                                     .head()
-                                    .header("User-Agent", "STORM_SWITCH/8.6.1 (Android)")
+                                    .header("User-Agent", "STORM_SWITCH/8.6.3 (Android)")
                                     .build()
                                 val headResp = sharedHttpClient.newCall(headReq).execute()
                                 val isOk = headResp.isSuccessful

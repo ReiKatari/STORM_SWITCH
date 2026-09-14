@@ -43,6 +43,7 @@ struct ResponseBuilder {
 
         IPC::CommandHeader header{};
         auto const mgr = ctx.GetManager().get();
+        const bool is_domain = mgr && mgr->IsDomain() && ctx.HasDomainMessageHeader();
 
         // The entire size of the raw data section in u32 units, including the 16 bytes of mandatory
         // padding.
@@ -50,13 +51,13 @@ struct ResponseBuilder {
         u32 num_handles_to_move{};
         u32 num_domain_objects{};
         const bool always_move_handles = (u32(flags) & u32(Flags::AlwaysMoveHandles)) != 0;
-        if (!mgr->IsDomain() || always_move_handles) {
+        if (!is_domain || always_move_handles) {
             num_handles_to_move = num_objects_to_move;
         } else {
             num_domain_objects = num_objects_to_move;
         }
 
-        if (mgr->IsDomain()) {
+        if (is_domain) {
             raw_data_size += u32(sizeof(DomainMessageHeader) / sizeof(u32) + num_domain_objects);
             ctx.write_size += num_domain_objects;
         }
@@ -85,7 +86,7 @@ struct ResponseBuilder {
         if (!ctx.IsTipc()) {
             AlignWithPadding();
 
-            if (mgr->IsDomain() && ctx.HasDomainMessageHeader()) {
+            if (is_domain) {
                 IPC::DomainMessageHeader domain_header{};
                 domain_header.num_objects = num_domain_objects;
                 PushRaw(domain_header);
@@ -113,7 +114,7 @@ struct ResponseBuilder {
 
     template <class T> inline void PushIpcInterface(Service::HLERequestContext& ctx, std::shared_ptr<T> iface) {
         auto manager = ctx.GetManager();
-        if (manager->IsDomain()) {
+        if (manager->IsDomain() && ctx.HasDomainMessageHeader()) {
             ctx.AddDomainObject(std::move(iface));
         } else {
             ASSERT(Kernel::GetCurrentProcess(ctx.kernel).GetResourceLimit()->Reserve(ctx.kernel, Kernel::LimitableResource::SessionCountMax, 1));

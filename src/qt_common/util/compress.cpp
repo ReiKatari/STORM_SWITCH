@@ -32,7 +32,9 @@ bool compressDir(QString fileCompressed, QString dir, const Options& options,
     }
 
     std::size_t progress = 0;
-    callback(total, progress);
+    if (callback) {
+        callback(total, progress);
+    }
 
     // Add the files and subdirectories
     if (!compressSubDir(&zip, dir, dir, options, total, progress, callback)) {
@@ -168,7 +170,7 @@ bool copyData(QIODevice& inFile, QIODevice& outFile, std::size_t total, std::siz
             return false;
 
         progress += readLen;
-        if (!callback(total, progress)) {
+        if (callback && !callback(total, progress)) {
             return false;
         }
     }
@@ -201,7 +203,9 @@ QStringList extractDir(QuaZip& zip, const QString& dir, QtCommon::QtProgressCall
     }
 
     std::size_t progress = 0;
-    callback(total, progress);
+    if (callback) {
+        callback(total, progress);
+    }
 
     do {
         QString name = zip.getCurrentFileName();

@@ -97,6 +97,8 @@ private slots:
     void OnRefreshClicked();
     void OnDiscoveredDeviceSelected(int index);
     void OnTableItemDoubleClicked(int row, int column);
+    void OnSearchFilterChanged(const QString& text);
+    void OnSwitchIpClicked();
 
 private:
     void SetupUI();
@@ -114,6 +116,7 @@ private:
     void UploadLocalSave(const QString& title_id, std::function<void(bool)> on_complete = nullptr);
     void BackupLocalSave(const QString& title_id);
     void BackupRemoteSave(const QString& title_id, std::function<void(bool)> on_complete = nullptr);
+    QString ResolveGameTitle(const QString& title_id) const;
 
     // Helpers
     std::filesystem::path GetLocalSaveRootDir() const;
@@ -133,17 +136,26 @@ private:
     QString m_remote_device_name;
     bool m_is_connected{false};
 
+    struct AvailableIpInfo {
+        QString ip;
+        QString name;
+        int score{0};
+    };
+    std::vector<AvailableIpInfo> m_available_ips;
+
     QMap<QString, StormSaveItem> m_items;
     QMap<QString, QString> m_discovered_devices;
 
     // UI elements
     QLabel* m_local_key_label{nullptr};
     QLabel* m_host_status_label{nullptr};
+    QPushButton* m_switch_ip_btn{nullptr};
     QLineEdit* m_remote_key_edit{nullptr};
     QPushButton* m_connect_btn{nullptr};
     QPushButton* m_search_btn{nullptr};
     QComboBox* m_discovered_combo{nullptr};
     QLabel* m_connection_status_label{nullptr};
+    QLineEdit* m_search_edit{nullptr};
     QTableWidget* m_saves_table{nullptr};
     QPushButton* m_sync_all_btn{nullptr};
     QPushButton* m_refresh_btn{nullptr};

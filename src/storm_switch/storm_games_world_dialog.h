@@ -44,6 +44,7 @@ struct StormWorldGame {
     bool has_file{false};
     QString real_extension{QStringLiteral(".nsp")};
     int dlc_count{0};
+    int mod_count{0};
     bool is_recommended{false};
     QVector<StormWorldDlc> dlcs;
 };
@@ -109,6 +110,7 @@ private:
     // Download state
     std::unique_ptr<QFile> output_file;
     QString current_download_path;
+    QByteArray download_write_buffer;
     QElapsedTimer download_timer;
     qint64 last_received_bytes{0};
     qint64 last_speed_time{0};
@@ -133,6 +135,7 @@ private:
     QLabel* internal_version_badge{nullptr};
     QLabel* size_badge{nullptr};
     QLabel* dlc_badge{nullptr};
+    QLabel* mod_badge{nullptr};
     QLabel* lang_badge{nullptr};
     QComboBox* version_combo{nullptr};
     QTextBrowser* description_browser{nullptr};

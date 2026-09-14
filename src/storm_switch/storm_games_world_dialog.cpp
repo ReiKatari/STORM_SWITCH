@@ -78,6 +78,44 @@ static int ExtractDlcCount(const QString& title, u64 title_id) {
     return 0;
 }
 
+static int ExtractModCount(const QString& title, const QString& final_title, const QStringList& text_langs) {
+    static const QRegularExpression mod_regex(
+        QStringLiteral(R"((?:\+|[\(\[])(\d+)\s*(?:M\b|MOD\b))"),
+        QRegularExpression::CaseInsensitiveOption);
+
+    auto match = mod_regex.match(final_title);
+    if (match.hasMatch()) {
+        bool ok = false;
+        const int count = match.captured(1).toInt(&ok);
+        if (ok && count > 0) return count;
+    }
+
+    match = mod_regex.match(title);
+    if (match.hasMatch()) {
+        bool ok = false;
+        const int count = match.captured(1).toInt(&ok);
+        if (ok && count > 0) return count;
+    }
+
+    const QString combined = (title + QLatin1Char(' ') + final_title).toLower();
+    if (combined.contains(QStringLiteral("mod")) ||
+        combined.contains(QStringLiteral("русификатор")) ||
+        combined.contains(QStringLiteral("озвучка"))) {
+        return 1;
+    }
+
+    for (const auto& l : text_langs) {
+        const QString lower_l = l.toLower();
+        if (lower_l.contains(QStringLiteral("mod")) ||
+            lower_l.contains(QStringLiteral("русификатор")) ||
+            lower_l.contains(QStringLiteral("озвучка"))) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 class StormWorldDlcListDialog : public QDialog {
 public:
     StormWorldDlcListDialog(QWidget* parent, const StormWorldGame& game)
@@ -447,7 +485,7 @@ void StormGamesWorldDialog::SetupUI() {
         tr("Название игры"),
         tr("Версия"),
         tr("Размер"),
-        tr("Дополнения"),
+        tr("Дополнения и моды"),
         tr("Язык"),
         tr("Title ID"),
         tr("Статус")
@@ -534,6 +572,11 @@ void StormGamesWorldDialog::SetupUI() {
     dlc_badge->setStyleSheet(QStringLiteral("background: rgba(0, 240, 255, 0.15); border: 1px solid #00F0FF; border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
     dlc_badge->installEventFilter(this);
     badges_layout->addWidget(dlc_badge);
+
+    mod_badge = new QLabel(tr("Модификации: —"), details_panel);
+    mod_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.18); border: 1px solid #A855F7; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold;"));
+    mod_badge->setVisible(false);
+    badges_layout->addWidget(mod_badge);
 
     lang_badge = new QLabel(tr("Язык: —"), details_panel);
     lang_badge->setStyleSheet(QStringLiteral("background: rgba(245, 158, 11, 0.15); border: 1px solid #F59E0B; border-radius: 4px; padding: 2px 8px; color: #F59E0B; font-size: 11px; font-weight: bold;"));
@@ -681,7 +724,7 @@ void StormGamesWorldDialog::OnFetchCatalog() {
     refresh_btn->setEnabled(false);
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/index")));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.7 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.3 (Windows x64)"));
 
     if (catalog_reply) {
         catalog_reply->abort();
@@ -754,6 +797,8 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
 
             const QJsonArray lang_arr = obj[QStringLiteral("textLangs")].toArray();
             for (const auto& l : lang_arr) g.text_langs.append(l.toString());
+
+            g.mod_count = ExtractModCount(g.title, g.final_title, g.text_langs);
 
             all_games.push_back(g);
         }
@@ -900,10 +945,18 @@ void StormGamesWorldDialog::PopulateGameList(const QString& filter) {
         item->setText(2, g.size.isEmpty() ? tr("—") : g.size);
         item->setForeground(2, QBrush(QColor(QStringLiteral("#FFFFFF"))));
 
-        if (g.dlc_count > 0) {
+        if (g.dlc_count > 0 && g.mod_count > 0) {
+            item->setText(3, tr("📦 %1 DLC  •  ⚡ +%2 MOD").arg(g.dlc_count).arg(g.mod_count));
+            item->setForeground(3, QBrush(QColor(QStringLiteral("#00F0FF"))));
+            item->setToolTip(3, tr("Дополнений: %1, Модификаций: %2 (нажмите для списка дополнений)").arg(g.dlc_count).arg(g.mod_count));
+        } else if (g.dlc_count > 0) {
             item->setText(3, tr("📦 %1 DLC").arg(g.dlc_count));
             item->setForeground(3, QBrush(QColor(QStringLiteral("#00F0FF"))));
             item->setToolTip(3, tr("Нажмите для просмотра списка дополнений"));
+        } else if (g.mod_count > 0) {
+            item->setText(3, tr("⚡ +%1 MOD").arg(g.mod_count));
+            item->setForeground(3, QBrush(QColor(QStringLiteral("#C084FC"))));
+            item->setToolTip(3, tr("Вшита модификация / русификатор (%1 MOD)").arg(g.mod_count));
         } else {
             item->setText(3, QStringLiteral("—"));
             item->setForeground(3, QBrush(QColor(QStringLiteral("#FFFFFF"))));
@@ -1045,6 +1098,14 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
         dlc_badge->setToolTip(QString());
     }
 
+    if (game.mod_count > 0) {
+        mod_badge->setText(tr("⚡ +%1 MOD").arg(game.mod_count));
+        mod_badge->setToolTip(tr("В сборку вшиты модификации / русификатор (%1 MOD)").arg(game.mod_count));
+        mod_badge->setVisible(true);
+    } else {
+        mod_badge->setVisible(false);
+    }
+
     lang_badge->setText(tr("Язык: %1").arg(game.text_langs.isEmpty() ? tr("Multi") : game.text_langs.join(QStringLiteral(", "))));
 
     version_combo->clear();
@@ -1098,7 +1159,7 @@ void StormGamesWorldDialog::FetchGameDetails(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games?id=%1").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.0.7 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.3 (Windows x64)"));
     details_reply = network_mgr.get(req);
     connect(details_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnGameDetailsReplyFinished);
 }
@@ -1143,6 +1204,14 @@ void StormGamesWorldDialog::OnGameDetailsReplyFinished() {
                     dlc_badge->setText(tr("📦 Дополнений: %1").arg(filtered_games[selected_game_index].dlc_count));
                 }
             }
+
+            const QJsonArray mods_arr = obj[QStringLiteral("mods")].toArray();
+            if (!mods_arr.isEmpty() && selected_game_index >= 0 && selected_game_index < static_cast<int>(filtered_games.size())) {
+                filtered_games[selected_game_index].mod_count = std::max(filtered_games[selected_game_index].mod_count, static_cast<int>(mods_arr.size()));
+                mod_badge->setText(tr("⚡ +%1 MOD").arg(filtered_games[selected_game_index].mod_count));
+                mod_badge->setToolTip(tr("В сборку вшиты модификации / русификатор (%1 MOD)").arg(filtered_games[selected_game_index].mod_count));
+                mod_badge->setVisible(true);
+            }
         }
     }
     details_reply->deleteLater();
@@ -1156,7 +1225,7 @@ void StormGamesWorldDialog::FetchRealExtension(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.1 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.3 (Windows x64)"));
     head_reply = network_mgr.head(req);
     connect(head_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnHeadReplyFinished);
 }
@@ -1385,7 +1454,7 @@ void StormGamesWorldDialog::OnStartDownload() {
 
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game.id));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.1 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.3 (Windows x64)"));
     req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     req.setRawHeader("Connection", "keep-alive");
@@ -1393,6 +1462,7 @@ void StormGamesWorldDialog::OnStartDownload() {
 
     is_downloading = true;
     current_download_game_id = game.id;
+    download_write_buffer.clear();
     download_btn->setEnabled(false);
     cancel_btn->setEnabled(true);
     refresh_btn->setEnabled(false);
@@ -1406,7 +1476,7 @@ void StormGamesWorldDialog::OnStartDownload() {
     last_speed_time = 0;
 
     download_reply = network_mgr.get(req);
-    download_reply->setReadBufferSize(16 * 1024 * 1024);
+    download_reply->setReadBufferSize(32 * 1024 * 1024);
     connect(download_reply, &QNetworkReply::readyRead, this, &StormGamesWorldDialog::OnDownloadDataReady);
     connect(download_reply, &QNetworkReply::downloadProgress, this, &StormGamesWorldDialog::OnDownloadProgress);
     connect(download_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnDownloadReplyFinished);
@@ -1414,7 +1484,11 @@ void StormGamesWorldDialog::OnStartDownload() {
 
 void StormGamesWorldDialog::OnDownloadDataReady() {
     if (download_reply && output_file && output_file->isOpen()) {
-        output_file->write(download_reply->readAll());
+        download_write_buffer.append(download_reply->readAll());
+        if (download_write_buffer.size() >= 2 * 1024 * 1024) {
+            output_file->write(download_write_buffer);
+            download_write_buffer.clear();
+        }
     }
 }
 
@@ -1477,6 +1551,7 @@ void StormGamesWorldDialog::OnCancelDownload() {
     if (download_reply) {
         download_reply->abort();
     }
+    download_write_buffer.clear();
 }
 
 void StormGamesWorldDialog::OnDownloadReplyFinished() {
@@ -1486,7 +1561,11 @@ void StormGamesWorldDialog::OnDownloadReplyFinished() {
     download_btn->setEnabled(true);
     refresh_btn->setEnabled(true);
 
-    if (output_file) {
+    if (output_file && output_file->isOpen()) {
+        if (!download_write_buffer.isEmpty()) {
+            output_file->write(download_write_buffer);
+            download_write_buffer.clear();
+        }
         output_file->flush();
         output_file->close();
     }

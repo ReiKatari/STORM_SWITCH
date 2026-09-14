@@ -39,8 +39,11 @@
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "core/core.h"
+#include "core/hle/service/game_fix_database.h"
+#include "storm_switch/main_window.h"
 #include "qt_common/titledb.h"
 #include "qt_common/util/compress.h"
+#include <QMenu>
 
 // ---------------------------------------------------------------------------
 // StormSaveConflictDialog implementation
@@ -250,8 +253,8 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
 StormSaveSyncDialog::StormSaveSyncDialog(QWidget* parent, u64 target_program_id)
     : QDialog(parent), m_target_program_id(target_program_id) {
     setWindowTitle(tr("STORM SAVE SYNC — Кроссплатформенная синхронизация сохранений"));
-    resize(940, 620);
-    setMinimumSize(800, 500);
+    resize(1280, 760);
+    setMinimumSize(1100, 640);
 
     m_network_mgr = new QNetworkAccessManager(this);
 
@@ -289,7 +292,19 @@ QString StormSaveSyncDialog::GenerateConnectionKey(const QHostAddress& ip, quint
 }
 
 bool StormSaveSyncDialog::ParseConnectionKey(const QString& raw_key, QString& out_ip, quint16& out_port) {
-    const QString key = raw_key.trimmed();
+    QString key = raw_key.trimmed();
+    if (key.isEmpty()) return false;
+
+    // Strip http:// or https:// if provided
+    if (key.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)) {
+        key = key.mid(7);
+    } else if (key.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive)) {
+        key = key.mid(8);
+    }
+    while (key.endsWith(QLatin1Char('/'))) {
+        key.chop(1);
+    }
+    key = key.trimmed();
     if (key.isEmpty()) return false;
 
     static const QRegularExpression storm_pattern(
@@ -321,14 +336,122 @@ bool StormSaveSyncDialog::ParseConnectionKey(const QString& raw_key, QString& ou
         }
     }
 
-    QHostAddress addr(key);
-    if (!addr.isNull()) {
+    if (!key.isEmpty() && !key.contains(QLatin1Char(' '))) {
         out_ip = key;
         out_port = 28443;
         return true;
     }
 
     return false;
+}
+
+QString StormSaveSyncDialog::ResolveGameTitle(const QString& title_id) const {
+    const QString clean_tid = title_id.trimmed().toUpper();
+    bool ok_pid = false;
+    const u64 pid = clean_tid.toULongLong(&ok_pid, 16);
+
+    // 1. Check MainWindow game list (the exact title displayed in the emulator UI / game parameters)
+    if (ok_pid) {
+        if (auto* mw = MainWindow::GetInstance()) {
+            const QString lib_title = mw->GetGameTitleByProgramId(pid);
+            if (!lib_title.isEmpty()) {
+                return lib_title;
+            }
+        }
+    }
+
+    // 2. Check GameFixDatabase profile
+    if (ok_pid) {
+        const auto* profile = Core::GameFixDatabase::GetProfile(pid);
+        if (profile && !profile->game_name.empty()) {
+            return QString::fromStdString(profile->game_name);
+        }
+    }
+
+    // 3. Known Switch titles map
+    if (ok_pid) {
+        static const std::unordered_map<u64, const char*> s_known_titles = {
+            {0x010022201229A000ULL, "Super Robot Wars 30"},
+            {0x0100B00B51230000ULL, "Grand Theft Auto V (GTA V Homebrew Port)"},
+            {0x01000B900D8B0000ULL, "Cadence of Hyrule: Crypt of the NecroDancer"},
+            {0x010015100B514000ULL, "Super Mario Bros. Wonder"},
+            {0x01001B300B9BE000ULL, "Diablo III: Eternal Collection"},
+            {0x010020D01AD24000ULL, "Animal Well"},
+            {0x010026800E304000ULL, "Super Robot Wars X"},
+            {0x01002DA013484000ULL, "The Legend of Zelda: Skyward Sword HD"},
+            {0x01002EF01A316000ULL, "Brotato"},
+            {0x01002FC00412C000ULL, "Little Nightmares"},
+            {0x0100307018934000ULL, "Signalis"},
+            {0x010040502453E000ULL, "Vampire Crawlers"},
+            {0x010042D00D900000ULL, "LEGO Star Wars: The Skywalker Saga"},
+            {0x010044700DEB0000ULL, "Assassin’s Creed: The Rebel Collection"},
+            {0x010057901E9E6000ULL, "Underling Uprising"},
+            {0x010059D020C26000ULL, "Marvel Cosmic Invasion"},
+            {0x01005CF01E784000ULL, "Teenage Mutant Ninja Turtles: Splintered Fate"},
+            {0x01005EC01E6A4000ULL, "The Art of Dave the Diver"},
+            {0x010063301BD50000ULL, "Super Robot Wars Y"},
+            {0x01006560184E6000ULL, "Mortal Kombat 1"},
+            {0x010066101A55A000ULL, "Little Nightmares III"},
+            {0x0100670014482000ULL, "Assassin's Creed: The Ezio Collection"},
+            {0x01006BB00C6F0000ULL, "The Legend of Zelda: Link's Awakening"},
+            {0x01006C900CC60000ULL, "Super Robot Wars T"},
+            {0x0100726014352000ULL, "Diablo II: Resurrected"},
+            {0x01007EF00011E000ULL, "The Legend of Zelda: Breath of the Wild"},
+            {0x01007F600B134000ULL, "Assassin's Creed III: Remastered"},
+            {0x010089A0197E4000ULL, "Vampire Survivors"},
+            {0x01008BA02525A000ULL, "Dispatch"},
+            {0x0100D59022590000ULL, "Scott Pilgrim EX"},
+            {0x0100E65002BB8000ULL, "Stardew Valley"},
+            {0x0100EC9010258000ULL, "Streets of Rage 4"},
+            {0x0100F2200C984000ULL, "Mortal Kombat 11"},
+            {0x0100F2C0115B6000ULL, "The Legend of Zelda: Tears of the Kingdom"}
+        };
+        const auto it = s_known_titles.find(pid);
+        if (it != s_known_titles.end()) {
+            return QString::fromUtf8(it->second);
+        }
+    }
+
+    // 4. Lookup from TitleDB
+    TitleDB::TitleDatabase::Instance().EnsureLoaded();
+    const auto entry = TitleDB::TitleDatabase::Instance().Lookup(clean_tid.toStdString());
+    if (entry && !entry->name.empty()) {
+        return QString::fromStdString(entry->name);
+    }
+
+    return clean_tid;
+}
+
+void StormSaveSyncDialog::OnSwitchIpClicked() {
+    if (m_available_ips.empty()) {
+        QMessageBox::information(this, tr("Сетевые интерфейсы"), tr("Сетевые интерфейсы не найдены."));
+        return;
+    }
+
+    QMenu menu(this);
+    menu.setStyleSheet(QStringLiteral(
+        "QMenu { background-color: #141B26; color: #FFFFFF; border: 1px solid #20354E; padding: 4px; }"
+        "QMenu::item { padding: 6px 14px; border-radius: 4px; font-weight: bold; }"
+        "QMenu::item:selected { background-color: #00D2FF; color: #000000; }"
+    ));
+
+    for (const auto& info : m_available_ips) {
+        const QString text = (info.ip == m_local_ip)
+            ? QStringLiteral("✓ %1 [Активен]").arg(info.name)
+            : info.name;
+        auto* action = menu.addAction(text);
+        const QString chosen_ip = info.ip;
+        connect(action, &QAction::triggered, this, [this, chosen_ip]() {
+            m_local_ip = chosen_ip;
+            m_local_key = GenerateConnectionKey(QHostAddress(m_local_ip), m_local_port);
+            m_local_key_label->setText(tr("Ключ: %1 (%2:%3)").arg(m_local_key, m_local_ip).arg(m_local_port));
+            m_status_label->setText(tr("Выбран IP-адрес: %1").arg(m_local_ip));
+        });
+    }
+
+    if (m_switch_ip_btn) {
+        menu.exec(m_switch_ip_btn->mapToGlobal(QPoint(0, m_switch_ip_btn->height() + 2)));
+    }
 }
 
 std::filesystem::path StormSaveSyncDialog::GetLocalSaveRootDir() const {
@@ -407,6 +530,12 @@ void StormSaveSyncDialog::SetupUI() {
     copy_key_btn->setToolTip(tr("Скопировать ключ этого устройства в буфер обмена"));
     connect(copy_key_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnCopyKeyClicked);
     key_row->addWidget(copy_key_btn);
+
+    m_switch_ip_btn = new QPushButton(tr("🌐 Сменить IP"), header_card);
+    m_switch_ip_btn->setToolTip(tr("Выбрать сетевой интерфейс и IP-адрес для подключения"));
+    connect(m_switch_ip_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnSwitchIpClicked);
+    key_row->addWidget(m_switch_ip_btn);
+
     key_box->addLayout(key_row);
 
     m_host_status_label = new QLabel(tr("🟢 Сервер синхронизации активен"), header_card);
@@ -457,6 +586,20 @@ void StormSaveSyncDialog::SetupUI() {
     m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #94A3B8; padding-left: 4px;"));
     main_layout->addWidget(m_connection_status_label);
 
+    // Search Bar
+    auto* search_layout = new QHBoxLayout();
+    search_layout->setSpacing(8);
+    auto* search_icon_lbl = new QLabel(tr("🔍 Поиск:"), this);
+    search_icon_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: #00F0FF; font-size: 12px;"));
+    search_layout->addWidget(search_icon_lbl);
+
+    m_search_edit = new QLineEdit(this);
+    m_search_edit->setPlaceholderText(tr("Поиск сохранений по названию игры или Title ID..."));
+    m_search_edit->setClearButtonEnabled(true);
+    connect(m_search_edit, &QLineEdit::textChanged, this, &StormSaveSyncDialog::OnSearchFilterChanged);
+    search_layout->addWidget(m_search_edit, 1);
+    main_layout->addLayout(search_layout);
+
     // Saves Table
     m_saves_table = new QTableWidget(this);
     m_saves_table->setColumnCount(6);
@@ -469,11 +612,17 @@ void StormSaveSyncDialog::SetupUI() {
         tr("Действие")
     });
     m_saves_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
+    m_saves_table->setColumnWidth(1, 160);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
+    m_saves_table->setColumnWidth(2, 180);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Fixed);
+    m_saves_table->setColumnWidth(3, 180);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
+    m_saves_table->setColumnWidth(4, 180);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed);
+    m_saves_table->setColumnWidth(5, 190);
+    m_saves_table->verticalHeader()->setDefaultSectionSize(42);
     m_saves_table->verticalHeader()->setVisible(false);
     m_saves_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_saves_table->setAlternatingRowColors(true);
@@ -626,33 +775,79 @@ void StormSaveSyncDialog::StartHostServer() {
     m_tcp_server = new QTcpServer(this);
     connect(m_tcp_server, &QTcpServer::newConnection, this, &StormSaveSyncDialog::OnNewTcpConnection);
 
-    // Determine primary local IPv4
-    QHostAddress local_v4 = QHostAddress::LocalHost;
+    m_available_ips.clear();
+
     for (const auto& iface : QNetworkInterface::allInterfaces()) {
         if (!(iface.flags() & QNetworkInterface::IsUp) ||
             (iface.flags() & QNetworkInterface::IsLoopBack)) {
             continue;
         }
+
+        const QString iface_name = iface.name().toLower();
+        const QString human_name = iface.humanReadableName().toLower();
+
+        bool is_virtual = iface_name.contains(QStringLiteral("vethernet")) ||
+                          iface_name.contains(QStringLiteral("virtual")) ||
+                          iface_name.contains(QStringLiteral("vmware")) ||
+                          iface_name.contains(QStringLiteral("virtualbox")) ||
+                          iface_name.contains(QStringLiteral("wsl")) ||
+                          iface_name.contains(QStringLiteral("bluetooth")) ||
+                          iface_name.contains(QStringLiteral("loopback")) ||
+                          iface_name.contains(QStringLiteral("adguard")) ||
+                          human_name.contains(QStringLiteral("vethernet")) ||
+                          human_name.contains(QStringLiteral("virtual")) ||
+                          human_name.contains(QStringLiteral("vmware")) ||
+                          human_name.contains(QStringLiteral("virtualbox")) ||
+                          human_name.contains(QStringLiteral("wsl")) ||
+                          human_name.contains(QStringLiteral("bluetooth")) ||
+                          human_name.contains(QStringLiteral("hyper-v")) ||
+                          human_name.contains(QStringLiteral("adguard"));
+
         for (const auto& entry : iface.addressEntries()) {
             const auto ip = entry.ip();
             if (ip.protocol() == QAbstractSocket::IPv4Protocol && !ip.isLoopback()) {
-                local_v4 = ip;
-                break;
+                const QString ip_str = ip.toString();
+                if (ip_str.startsWith(QStringLiteral("127.")) || ip_str.startsWith(QStringLiteral("169.254."))) {
+                    continue;
+                }
+
+                int score = 10;
+                if (ip_str.startsWith(QStringLiteral("192.168."))) {
+                    score = is_virtual ? 30 : 100;
+                } else if (ip_str.startsWith(QStringLiteral("10."))) {
+                    score = is_virtual ? 20 : 80;
+                } else if (ip_str.startsWith(QStringLiteral("172."))) {
+                    score = is_virtual ? 15 : 60;
+                } else if (ip_str.startsWith(QStringLiteral("100."))) {
+                    score = 70; // Tailscale / CGNAT VPN
+                }
+
+                AvailableIpInfo info;
+                info.ip = ip_str;
+                info.name = QStringLiteral("%1 (%2)").arg(ip_str, iface.humanReadableName());
+                info.score = score;
+                m_available_ips.push_back(info);
             }
         }
-        if (local_v4 != QHostAddress::LocalHost) break;
     }
 
-    m_local_ip = local_v4.toString();
-    m_local_port = 28443;
+    std::sort(m_available_ips.begin(), m_available_ips.end(), [](const AvailableIpInfo& a, const AvailableIpInfo& b) {
+        return a.score > b.score;
+    });
 
+    if (!m_available_ips.empty()) {
+        m_local_ip = m_available_ips[0].ip;
+    } else {
+        m_local_ip = QStringLiteral("127.0.0.1");
+    }
+
+    m_local_port = 28443;
     if (!m_tcp_server->listen(QHostAddress::AnyIPv4, m_local_port)) {
-        // Try fallback port
         m_local_port = 28445;
         m_tcp_server->listen(QHostAddress::AnyIPv4, m_local_port);
     }
 
-    m_local_key = GenerateConnectionKey(local_v4, m_local_port);
+    m_local_key = GenerateConnectionKey(QHostAddress(m_local_ip), m_local_port);
     m_local_key_label->setText(tr("Ключ: %1 (%2:%3)").arg(m_local_key, m_local_ip).arg(m_local_port));
 
     // Start UDP broadcast listener
@@ -719,7 +914,7 @@ void StormSaveSyncDialog::OnTcpSocketReadyRead() {
         obj[QStringLiteral("status")] = QStringLiteral("ok");
         obj[QStringLiteral("device_name")] = QHostInfo::localHostName();
         obj[QStringLiteral("platform")] = QStringLiteral("windows");
-        obj[QStringLiteral("version")] = QStringLiteral("8.6.1");
+        obj[QStringLiteral("version")] = QStringLiteral("8.6.2");
         send_response(200, QStringLiteral("application/json"), QJsonDocument(obj).toJson(QJsonDocument::Compact));
         return;
     }
@@ -852,18 +1047,21 @@ void StormSaveSyncDialog::OnUdpSocketReadyRead() {
                                       .arg(m_local_key, QHostInfo::localHostName());
             m_udp_socket->writeDatagram(reply.toUtf8(), sender_ip, sender_port);
         } else if (msg.startsWith(QStringLiteral("STORM_SYNC_ANNOUNCE:"))) {
-            const QStringList tokens = msg.split(QLatin1Char(':'));
-            if (tokens.size() >= 3) {
-                const QString remote_key = tokens[1];
-                const QString dev_name = tokens[2];
-                const QString platform = tokens.size() >= 4 ? tokens[3] : QStringLiteral("Node");
+            const QString rest = msg.mid(20);
+            const QStringList tokens = rest.split(QLatin1Char(':'));
+            if (!tokens.isEmpty()) {
+                const QString remote_key = tokens[0].trimmed();
+                if (!remote_key.isEmpty() && remote_key != m_local_key) {
+                    const QString dev_name = tokens.size() >= 2 ? tokens[1].trimmed() : tr("Устройство");
+                    const QString platform = tokens.size() >= 3 ? tokens[2].trimmed() : QStringLiteral("Node");
 
-                const QString label = QStringLiteral("%1 (%2) — %3").arg(dev_name, platform, remote_key);
-                if (!m_discovered_devices.contains(remote_key)) {
-                    m_discovered_devices.insert(remote_key, dev_name);
-                    m_discovered_combo->addItem(label, remote_key);
-                    m_discovered_combo->setItemText(
-                        0, tr("Обнаруженные устройства в сети (%1)").arg(m_discovered_devices.size()));
+                    const QString label = QStringLiteral("%1 (%2) — %3").arg(dev_name, platform, remote_key);
+                    if (!m_discovered_devices.contains(remote_key)) {
+                        m_discovered_devices.insert(remote_key, dev_name);
+                        m_discovered_combo->addItem(label, remote_key);
+                        m_discovered_combo->setItemText(
+                            0, tr("Обнаруженные устройства в сети (%1)").arg(m_discovered_devices.size()));
+                    }
                 }
             }
         }
@@ -873,6 +1071,18 @@ void StormSaveSyncDialog::OnUdpSocketReadyRead() {
 void StormSaveSyncDialog::BroadcastDiscovery() {
     if (!m_udp_socket) return;
     const QByteArray ping = "STORM_SYNC_DISCOVER";
+    for (const auto& iface : QNetworkInterface::allInterfaces()) {
+        if (!iface.flags().testFlag(QNetworkInterface::IsUp) ||
+            iface.flags().testFlag(QNetworkInterface::IsLoopBack)) {
+            continue;
+        }
+        for (const auto& entry : iface.addressEntries()) {
+            const QHostAddress bcast = entry.broadcast();
+            if (!bcast.isNull() && bcast.protocol() == QAbstractSocket::IPv4Protocol) {
+                m_udp_socket->writeDatagram(ping, bcast, 28444);
+            }
+        }
+    }
     m_udp_socket->writeDatagram(ping, QHostAddress::Broadcast, 28444);
     m_status_label->setText(tr("Выполняется поиск устройств в локальной сети..."));
 }
@@ -913,6 +1123,20 @@ void StormSaveSyncDialog::OnConnectClicked() {
         return;
     }
 
+    bool is_self = (ip == m_local_ip || ip == QStringLiteral("127.0.0.1") || ip == QStringLiteral("localhost")) && (port == m_local_port);
+    for (const auto& avail : m_available_ips) {
+        if (ip == avail.ip && port == m_local_port) {
+            is_self = true;
+            break;
+        }
+    }
+    if (is_self) {
+        QMessageBox::warning(this, tr("Подключение"),
+            tr("Вы ввели ключ этого же устройства.\n"
+               "Для синхронизации сохранений необходимо ввести ключ второго устройства (например, со смартфона Android или другого ПК)."));
+        return;
+    }
+
     m_connected_remote_ip = ip;
     m_connected_remote_port = port;
 
@@ -922,7 +1146,7 @@ void StormSaveSyncDialog::OnConnectClicked() {
     // Test connectivity via /api/status
     const QUrl url(QStringLiteral("http://%1:%2/api/status").arg(ip).arg(port));
     QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.6.1"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.6.2"));
 
     auto* reply = m_network_mgr->get(req);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
@@ -947,8 +1171,11 @@ void StormSaveSyncDialog::OnConnectClicked() {
         m_connection_status_label->setText(
             tr("❌ Ошибка подключения к %1:%2").arg(m_connected_remote_ip).arg(m_connected_remote_port));
         QMessageBox::critical(this, tr("Ошибка подключения"),
-                              tr("Не удалось соединиться с удалённым устройством (%1:%2).\n"
-                                 "Убедитесь, что оба устройства находятся в одной сети Wi-Fi.")
+                              tr("Не удалось соединиться с удалённым устройством (%1:%2).\n\n"
+                                 "Рекомендации по устранению:\n"
+                                 "• Убедитесь, что приложение STORM SWITCH открыто на удалённом устройстве и в нём запущен диалог синхронизации STORM SAVE SYNC.\n"
+                                 "• Проверьте, что устройства подключены к одной сети Wi-Fi (или используется VPN / Tailscale / ZeroTier).\n"
+                                 "• Проверьте, не блокирует ли брандмауэр Windows входящие подключения для порта %2.")
                                   .arg(m_connected_remote_ip)
                                   .arg(m_connected_remote_port));
     });
@@ -960,8 +1187,6 @@ void StormSaveSyncDialog::ScanLocalSaves() {
     if (!std::filesystem::exists(root, ec)) {
         return;
     }
-
-    TitleDB::TitleDatabase::Instance().EnsureLoaded();
 
     for (const auto& user_entry : std::filesystem::directory_iterator(root, ec)) {
         if (!user_entry.is_directory()) continue;
@@ -1005,13 +1230,8 @@ void StormSaveSyncDialog::ScanLocalSaves() {
                 item.local_date_str = FormatDateTime(dt);
             }
 
-            if (item.title_name.isEmpty()) {
-                const auto entry = TitleDB::TitleDatabase::Instance().Lookup(title_id.toStdString());
-                if (entry) {
-                    item.title_name = QString::fromStdString(entry->name);
-                } else {
-                    item.title_name = title_id;
-                }
+            if (item.title_name.isEmpty() || item.title_name == title_id) {
+                item.title_name = ResolveGameTitle(title_id);
             }
         }
     }
@@ -1056,8 +1276,11 @@ void StormSaveSyncDialog::FetchRemoteSaves() {
                     item.remote_date_str = obj[QStringLiteral("date_str")].toString();
                     item.remote_size_bytes = obj[QStringLiteral("size_bytes")].toInteger();
                     item.remote_file_count = obj[QStringLiteral("file_count")].toInt();
-                    if (item.title_name.isEmpty() || item.title_name == title_id) {
-                        item.title_name = obj[QStringLiteral("title_name")].toString();
+                    const QString remote_name = obj[QStringLiteral("title_name")].toString();
+                    if (!remote_name.isEmpty() && remote_name != title_id) {
+                        item.title_name = remote_name;
+                    } else if (item.title_name.isEmpty() || item.title_name == title_id) {
+                        item.title_name = ResolveGameTitle(title_id);
                     }
                 }
 
@@ -1092,13 +1315,17 @@ void StormSaveSyncDialog::PopulateTable() {
     m_saves_table->setRowCount(0);
 
     int row = 0;
-    for (auto it = m_items.begin(); it != m_items.end(); ++it) {
-        const auto& item = it.value();
+    QVector<StormSaveItem> sorted_items = m_items.values().toVector();
+    std::sort(sorted_items.begin(), sorted_items.end(), [](const StormSaveItem& a, const StormSaveItem& b) {
+        return a.title_name.localeAwareCompare(b.title_name) < 0;
+    });
+    for (const auto& item : sorted_items) {
         m_saves_table->insertRow(row);
 
         // Col 0: Name
         auto* name_item = new QTableWidgetItem(item.title_name);
         name_item->setData(Qt::UserRole, item.title_id);
+        name_item->setToolTip(QStringLiteral("%1 [%2]").arg(item.title_name, item.title_id));
         m_saves_table->setItem(row, 0, name_item);
 
         // Col 1: Title ID
@@ -1152,19 +1379,104 @@ void StormSaveSyncDialog::PopulateTable() {
         st_item->setForeground(status_color);
         m_saves_table->setItem(row, 4, st_item);
 
-        // Col 5: Action Button
-        auto* action_btn = new QPushButton(
-            item.status == StormSaveSyncStatus::Conflict ? tr("Разрешить конфликт") : tr("Синхронизировать"),
-            this);
+        // Col 5: Action Button in styled container
+        auto* container = new QWidget(this);
+        auto* c_layout = new QHBoxLayout(container);
+        c_layout->setContentsMargins(6, 4, 6, 4);
+        c_layout->setSpacing(0);
+
+        auto* action_btn = new QPushButton(container);
+        action_btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        action_btn->setCursor(Qt::PointingHandCursor);
+
+        QString btn_text;
+        QString btn_style;
+        bool btn_enabled = true;
+
+        switch (item.status) {
+        case StormSaveSyncStatus::Synchronized:
+            btn_text = tr("✓ Синхронизировано");
+            btn_style = QStringLiteral(
+                "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #112620, stop:1 #0C1A16); "
+                "border: 1px solid #10B981; color: #10B981; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
+                "QPushButton:disabled { background: #0E1A16; border: 1px solid #1B4D3E; color: #34D399; opacity: 0.8; }");
+            btn_enabled = false;
+            break;
+        case StormSaveSyncStatus::Conflict:
+            btn_text = tr("⚠️ Разрешить конфликт");
+            btn_style = QStringLiteral(
+                "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B45309, stop:1 #78350F); "
+                "border: 1px solid #F59E0B; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
+                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #D97706, stop:1 #92400E); border-color: #FBBF24; }"
+                "QPushButton:pressed { background: #F59E0B; color: #000000; }");
+            break;
+        case StormSaveSyncStatus::LocalOnly:
+            btn_text = tr("📤 Отправить");
+            btn_style = QStringLiteral(
+                "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1D4ED8, stop:1 #1E3A8A); "
+                "border: 1px solid #3B82F6; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
+                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2563EB, stop:1 #1D4ED8); border-color: #60A5FA; }"
+                "QPushButton:pressed { background: #3B82F6; color: #FFFFFF; }");
+            break;
+        case StormSaveSyncStatus::RemoteOnly:
+            btn_text = tr("📥 Скачать");
+            btn_style = QStringLiteral(
+                "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0099CC, stop:1 #006699); "
+                "border: 1px solid #00D2FF; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
+                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #00BFFF, stop:1 #0088CC); border-color: #38BDF8; }"
+                "QPushButton:pressed { background: #00D2FF; color: #000000; }");
+            break;
+        default:
+            btn_text = tr("Синхронизировать");
+            btn_style = QStringLiteral(
+                "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); "
+                "border: 1px solid #2A3B52; color: #E0E8F0; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
+                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border-color: #00D2FF; color: #FFFFFF; }");
+            break;
+        }
+
+        action_btn->setText(btn_text);
+        action_btn->setStyleSheet(btn_style);
+        action_btn->setEnabled(btn_enabled);
+
+        if (btn_enabled) {
+            auto* s = new QGraphicsDropShadowEffect(action_btn);
+            s->setBlurRadius(8);
+            s->setColor(item.status == StormSaveSyncStatus::Conflict ? QColor(245, 158, 11, 100) : QColor(0, 210, 255, 90));
+            s->setOffset(0, 2);
+            action_btn->setGraphicsEffect(s);
+        }
+
         const QString title_id = item.title_id;
         connect(action_btn, &QPushButton::clicked, this, [this, title_id]() {
             if (m_items.contains(title_id)) {
                 SyncItem(m_items[title_id]);
             }
         });
-        m_saves_table->setCellWidget(row, 5, action_btn);
+
+        c_layout->addWidget(action_btn);
+        m_saves_table->setCellWidget(row, 5, container);
 
         row++;
+    }
+
+    if (m_search_edit && !m_search_edit->text().isEmpty()) {
+        OnSearchFilterChanged(m_search_edit->text());
+    }
+}
+
+void StormSaveSyncDialog::OnSearchFilterChanged(const QString& text) {
+    const QString query = text.trimmed().toLower();
+    for (int r = 0; r < m_saves_table->rowCount(); ++r) {
+        auto* name_item = m_saves_table->item(r, 0);
+        auto* tid_item = m_saves_table->item(r, 1);
+        bool match = true;
+        if (!query.isEmpty()) {
+            const QString name_str = name_item ? name_item->text().toLower() : QString();
+            const QString tid_str = tid_item ? tid_item->text().toLower() : QString();
+            match = name_str.contains(query) || tid_str.contains(query);
+        }
+        m_saves_table->setRowHidden(r, !match);
     }
 }
 

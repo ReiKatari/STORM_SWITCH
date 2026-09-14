@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 STORM SOFT Project
+// SPDX-FileCopyrightText: Copyright 2026 STORM SOFT Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.net.wifi.WifiManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -118,8 +119,11 @@ class StormSaveSyncDialogFragment : DialogFragment() {
     private var serverJob: Job? = null
     private var udpSocket: DatagramSocket? = null
     private var udpJob: Job? = null
+    private var multicastLock: WifiManager.MulticastLock? = null
+    private var lastDiscoveredKeys: List<String> = emptyList()
 
     private var localIp: String = "127.0.0.1"
+    private val localIps = mutableSetOf<String>()
     private var localPort: Int = 28443
     private var localKey: String = ""
 
@@ -298,9 +302,26 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             udpSocket = null
         } catch (_: Exception) {}
         udpJob?.cancel()
+
+        try {
+            if (multicastLock?.isHeld == true) {
+                multicastLock?.release()
+            }
+        } catch (_: Exception) {}
+        multicastLock = null
     }
 
     private fun startUdpDiscovery() {
+        try {
+            val wifi = requireContext().applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+            multicastLock = wifi?.createMulticastLock("StormSaveSyncLock")?.apply {
+                setReferenceCounted(true)
+                acquire()
+            }
+        } catch (e: Exception) {
+            Log.error("[StormSaveSync] MulticastLock acquire error: ${e.message}")
+        }
+
         udpJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
                 udpSocket = DatagramSocket(28444).apply {
@@ -322,12 +343,17 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         val tokens = msg.split(":")
                         if (tokens.size >= 3) {
                             val rKey = tokens[1]
+                            if (rKey.equals(localKey, ignoreCase = true)) {
+                                continue
+                            }
                             val rName = tokens[2]
                             val rPlatform = if (tokens.size >= 4) tokens[3] else "Device"
-                            discoveredDevices[rKey] = "$rName ($rPlatform)"
-
-                            withContext(Dispatchers.Main) {
-                                updateDiscoveredSpinner()
+                            val currentName = "$rName ($rPlatform)"
+                            if (!discoveredDevices.containsKey(rKey) || discoveredDevices[rKey] != currentName) {
+                                discoveredDevices[rKey] = currentName
+                                withContext(Dispatchers.Main) {
+                                    updateDiscoveredSpinner()
+                                }
                             }
                         }
                     }
@@ -342,9 +368,33 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val ping = "STORM_SYNC_DISCOVER".toByteArray(Charsets.UTF_8)
-                val broadcastAddr = InetAddress.getByName("255.255.255.255")
-                val packet = DatagramPacket(ping, ping.size, broadcastAddr, 28444)
-                udpSocket?.send(packet)
+                val broadcastTargets = mutableSetOf<InetAddress>()
+                try {
+                    broadcastTargets.add(InetAddress.getByName("255.255.255.255"))
+                } catch (_: Exception) {}
+
+                try {
+                    val interfaces = NetworkInterface.getNetworkInterfaces()
+                    while (interfaces.hasMoreElements()) {
+                        val iface = interfaces.nextElement()
+                        if (!iface.isUp || iface.isLoopback) continue
+                        for (addr in iface.interfaceAddresses) {
+                            val bcast = addr.broadcast
+                            if (bcast != null) {
+                                broadcastTargets.add(bcast)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.error("[StormSaveSync] Failed to get broadcast interfaces: ${e.message}")
+                }
+
+                for (target in broadcastTargets) {
+                    try {
+                        val packet = DatagramPacket(ping, ping.size, target, 28444)
+                        udpSocket?.send(packet)
+                    } catch (_: Exception) {}
+                }
             } catch (e: Exception) {
                 Log.error("[StormSaveSync] Broadcast error: ${e.message}")
             }
@@ -353,16 +403,30 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
     private fun updateDiscoveredSpinner() {
         val binding = _binding ?: return
+        val currentKeys = discoveredDevices.keys.toList().sorted()
+        if (currentKeys == lastDiscoveredKeys && binding.spinnerDiscovered.adapter != null) {
+            return
+        }
+        lastDiscoveredKeys = currentKeys
+
         val list = mutableListOf("Обнаруженные устройства в сети (${discoveredDevices.size})")
         val keys = mutableListOf("")
 
-        for ((k, name) in discoveredDevices) {
+        for (k in currentKeys) {
+            val name = discoveredDevices[k] ?: ""
             list.add("$name — $k")
             keys.add(k)
         }
 
+        val currentSelectedKey = binding.editRemoteKey.text.toString().trim()
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, list)
         binding.spinnerDiscovered.adapter = adapter
+
+        val existingIndex = keys.indexOf(currentSelectedKey)
+        if (existingIndex > 0) {
+            binding.spinnerDiscovered.setSelection(existingIndex, false)
+        }
+
         binding.spinnerDiscovered.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if (position > 0) {
@@ -430,7 +494,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         put("status", "ok")
                         put("device_name", "${Build.MANUFACTURER} ${Build.MODEL}")
                         put("platform", "android")
-                        put("version", "8.6.1")
+                        put("version", "8.6.2")
                     }
                     sendResponse(200, "application/json", obj.toString().toByteArray(Charsets.UTF_8))
                 }
@@ -532,6 +596,12 @@ class StormSaveSyncDialogFragment : DialogFragment() {
     }
 
     private fun connectToRemote(ip: String, port: Int) {
+        if ((ip == "127.0.0.1" || ip.equals("localhost", ignoreCase = true) || localIps.contains(ip) || ip == localIp) && port == localPort) {
+            binding.textConnectionState.text = "⚠️ Введён ключ этого же устройства"
+            Toast.makeText(requireContext(), "Вы указали ключ текущего устройства. Для синхронизации введите ключ другого устройства (ПК или другого смартфона).", Toast.LENGTH_LONG).show()
+            return
+        }
+
         remoteIp = ip
         remotePort = port
         binding.textConnectionState.text = "Подключение к $ip:$port..."
@@ -560,7 +630,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             withContext(Dispatchers.Main) {
                 isConnected = false
                 binding.textConnectionState.text = "❌ Ошибка подключения к $ip:$port"
-                Toast.makeText(requireContext(), "Не удалось подключиться к $ip:$port", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Не удалось подключиться к $ip:$port. Убедитесь, что на втором устройстве запущен STORM SAVE SYNC и порт $port открыт.", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -954,21 +1024,43 @@ class StormSaveSyncDialogFragment : DialogFragment() {
     }
 
     private fun getLocalIpAddress(): String? {
+        localIps.clear()
+        val candidates = mutableListOf<Pair<String, Int>>()
         try {
             val interfaces = NetworkInterface.getNetworkInterfaces()
             while (interfaces.hasMoreElements()) {
                 val iface = interfaces.nextElement()
                 if (iface.isLoopback || !iface.isUp) continue
+                val name = iface.name.lowercase(Locale.ROOT)
+                val isVirtual = name.contains("dummy") || name.contains("docker") ||
+                        name.contains("vbox") || name.contains("vmnet") || name.contains("p2p")
+
                 val addresses = iface.inetAddresses
                 while (addresses.hasMoreElements()) {
                     val addr = addresses.nextElement()
                     if (addr is Inet4Address && !addr.isLoopbackAddress) {
-                        return addr.hostAddress
+                        val host = addr.hostAddress ?: continue
+                        localIps.add(host)
+                        var score = 10
+                        if (name.startsWith("wlan") || name.startsWith("wifi")) score += 100
+                        else if (name.startsWith("eth")) score += 90
+                        else if (name.startsWith("rmnet")) score += 50
+                        else if (name.startsWith("tun") || name.startsWith("tap") || name.startsWith("tailscale")) score += 30
+
+                        if (host.startsWith("192.168.")) score += 60
+                        else if (host.startsWith("10.0.") || host.startsWith("10.")) score += 40
+                        else if (host.startsWith("172.")) score += 35
+                        else if (host.startsWith("100.")) score += 30
+
+                        if (isVirtual) score -= 150
+                        candidates.add(host to score)
                     }
                 }
             }
         } catch (_: Exception) {}
-        return null
+
+        candidates.sortByDescending { it.second }
+        return candidates.firstOrNull()?.first
     }
 
     private fun generateConnectionKey(ipStr: String, port: Int): String {
@@ -983,7 +1075,17 @@ class StormSaveSyncDialogFragment : DialogFragment() {
     }
 
     private fun parseConnectionKey(rawKey: String): Pair<String, Int>? {
-        val key = rawKey.trim()
+        var key = rawKey.trim()
+        if (key.startsWith("http://", ignoreCase = true)) {
+            key = key.substring(7)
+        } else if (key.startsWith("https://", ignoreCase = true)) {
+            key = key.substring(8)
+        }
+        while (key.endsWith("/")) {
+            key = key.substring(0, key.length - 1).trim()
+        }
+        if (key.isEmpty()) return null
+
         val stormRegex = Regex("^STORM-([0-9A-Fa-f]{8})-([0-9A-Fa-f]{4})$", RegexOption.IGNORE_CASE)
         val match = stormRegex.matchEntire(key)
         if (match != null) {
@@ -994,11 +1096,11 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             return Pair(ip, port)
         }
         if (key.contains(":")) {
-            val parts = key.split(":")
-            if (parts.size == 2) {
-                val p = parts[1].toIntOrNull() ?: 28443
-                return Pair(parts[0], p)
-            }
+            val lastColon = key.lastIndexOf(':')
+            val host = key.substring(0, lastColon).trim()
+            val portStr = key.substring(lastColon + 1).trim()
+            val p = portStr.toIntOrNull() ?: 28443
+            return Pair(host, p)
         }
         return Pair(key, 28443)
     }

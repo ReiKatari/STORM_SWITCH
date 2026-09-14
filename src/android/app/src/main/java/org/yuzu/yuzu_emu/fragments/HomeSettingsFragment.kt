@@ -212,24 +212,6 @@ class HomeSettingsFragment : Fragment() {
             }
             add(
                 HomeSetting(
-                    R.string.lossless_scaling,
-                    R.string.lossless_scaling_description,
-                    R.drawable.ic_duck,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
-                            SettingsSubscreen.LOSSLESS_MANAGER,
-                            null
-                        )
-                        binding.root.findNavController().navigate(action)
-                    },
-                    { true },
-                    0,
-                    0,
-                    LosslessScalingHelper.statusText
-                )
-            )
-            add(
-                HomeSetting(
                     R.string.multiplayer,
                     R.string.multiplayer_description,
                     R.drawable.ic_two_users,
@@ -280,17 +262,7 @@ class HomeSettingsFragment : Fragment() {
                     }
                 )
             )
-            add(
-                HomeSetting(
-                    R.string.storm_save_sync,
-                    R.string.storm_save_sync_description,
-                    R.drawable.ic_sync,
-                    {
-                        StormSaveSyncDialogFragment.newInstance()
-                            .show(parentFragmentManager, StormSaveSyncDialogFragment.TAG)
-                    }
-                )
-            )
+
             add(
                 HomeSetting(
                     R.string.manage_game_folders,
