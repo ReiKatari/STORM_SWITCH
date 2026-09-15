@@ -788,7 +788,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         // Check base title ID if DLC or update
         val baseTidLong = cleanTid.toLongOrNull(16)
         val baseTid = if (baseTidLong != null) {
-            String.format(Locale.ROOT, "%016X", baseTidLong and 0x1FFFULL.inv())
+            String.format(Locale.ROOT, "%016X", baseTidLong and 0xFFFL.inv())
         } else null
 
         if (baseTid != null && baseTid != cleanTid) {

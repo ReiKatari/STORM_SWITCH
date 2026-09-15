@@ -23,6 +23,7 @@ public:
     ~ConfigureUi() override;
 
     void ApplyConfiguration();
+    void RetranslateUI();
 
     void UpdateScreenshotInfo(Settings::AspectRatio ratio,
                               Settings::ResolutionSetup resolution_info);
@@ -41,7 +42,6 @@ private:
     void SetConfiguration();
 
     void changeEvent(QEvent*) override;
-    void RetranslateUI();
 
     void InitializeLanguageComboBox();
     void InitializeIconSizeComboBox();

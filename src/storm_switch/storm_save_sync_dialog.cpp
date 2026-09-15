@@ -528,13 +528,13 @@ QString StormSaveSyncDialog::ResolveGameTitle(const QString& title_id) const {
         }
         auto it = s_cache_titles.find(clean_tid);
         if (it != s_cache_titles.end()) {
-            return CleanGameTitle(it.value());
+            return CleanGameTitle(it->second);
         }
         if (ok_pid && base_pid != 0) {
             const QString base_hex = QString::asprintf("%016llX", static_cast<unsigned long long>(base_pid));
             it = s_cache_titles.find(base_hex);
             if (it != s_cache_titles.end()) {
-                return CleanGameTitle(it.value());
+                return CleanGameTitle(it->second);
             }
         }
     }
