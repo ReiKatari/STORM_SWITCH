@@ -73,8 +73,10 @@ bool compressSubDir(QuaZip* zip, QString dir, QString origDir, const Options& op
     if (dir != origDir) {
         QuaZipFile dirZipFile(zip);
         std::unique_ptr<QuaZipNewInfo> qzni;
+        QString dirRel = origDirectory.relativeFilePath(dir);
+        dirRel.replace(QLatin1Char('\\'), QLatin1Char('/'));
         qzni = std::make_unique<QuaZipNewInfo>(
-            origDirectory.relativeFilePath(dir) + QLatin1String("/"), dir);
+            dirRel + QLatin1String("/"), dir);
         if (!dirZipFile.open(QIODevice::WriteOnly, *qzni, nullptr, 0, 0)) {
             return false;
         }
@@ -100,6 +102,7 @@ bool compressSubDir(QuaZip* zip, QString dir, QString origDir, const Options& op
 
         // Create relative name for the compressed file
         QString filename = origDirectory.relativeFilePath(file.absoluteFilePath());
+        filename.replace(QLatin1Char('\\'), QLatin1Char('/'));
 
         // Compress the file
         if (!compressFile(zip, file.absoluteFilePath(), filename, options, total, progress,
@@ -209,6 +212,7 @@ QStringList extractDir(QuaZip& zip, const QString& dir, QtCommon::QtProgressCall
 
     do {
         QString name = zip.getCurrentFileName();
+        name.replace(QLatin1Char('\\'), QLatin1Char('/'));
         QString absFilePath = directory.absoluteFilePath(name);
         QString absCleanPath = QDir::cleanPath(absFilePath);
         if (!absCleanPath.startsWith(absCleanDir))

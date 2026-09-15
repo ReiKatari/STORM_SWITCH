@@ -116,6 +116,7 @@ private:
     void UploadLocalSave(const QString& title_id, std::function<void(bool)> on_complete = nullptr);
     void BackupLocalSave(const QString& title_id);
     void BackupRemoteSave(const QString& title_id, std::function<void(bool)> on_complete = nullptr);
+    void ProcessNextSyncQueueItem();
     QString ResolveGameTitle(const QString& title_id) const;
 
     // Helpers
@@ -145,6 +146,8 @@ private:
 
     QMap<QString, StormSaveItem> m_items;
     QMap<QString, QString> m_discovered_devices;
+    QList<QString> m_sync_queue;
+    int m_sync_total{0};
 
     // UI elements
     QLabel* m_local_key_label{nullptr};

@@ -218,6 +218,13 @@ void ConfigureUi::changeEvent(QEvent* event) {
 void ConfigureUi::RetranslateUI() {
     ui->retranslateUi(this);
 
+    if (ui->language_label) {
+        ui->language_label->setText(tr("Interface language:"));
+    }
+    if (ui->theme_label) {
+        ui->theme_label->setText(tr("Theme:"));
+    }
+
     for (int i = 0; i < ui->folder_icon_size_combobox->count(); i++) {
         if (static_cast<size_t>(i) < default_folder_icon_sizes.size()) {
             ui->folder_icon_size_combobox->setItemText(

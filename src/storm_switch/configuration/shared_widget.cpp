@@ -92,6 +92,14 @@ void ReloadAllActiveWidgets() {
     s_is_reloading = false;
 }
 
+void RetranslateAllActiveWidgets() {
+    for (auto* w : s_active_widgets) {
+        if (w) {
+            w->RetranslateUI();
+        }
+    }
+}
+
 static int restore_button_count = 0;
 
 static std::string RelevantDefault(const Settings::BasicSetting& setting) {
@@ -722,13 +730,15 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
         };
     }
 
+    paired_other_setting = other_setting;
     if (require_checkbox) {
         QWidget* lhs =
             CreateCheckBox(other_setting, label, checkbox_serializer, checkbox_restore_func, touch);
+        lhs_checkbox = qobject_cast<QCheckBox*>(lhs);
         layout->addWidget(lhs, 1);
     } else if (type_id != "bool") {
-        QLabel* qt_label = CreateLabel(label);
-        layout->addWidget(qt_label, 1);
+        label_widget = CreateLabel(label);
+        layout->addWidget(label_widget, 1);
     }
 
     if (type_id == "bool") {
@@ -855,6 +865,47 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
         connect(checkbox, &QCheckBox::STATE_CHANGED, reset);
         reset(checkbox->checkState());
     }
+
+    retranslate_func = [this]() {
+        const int id = setting.Id();
+        if (label_widget && translations.contains(id)) {
+            label_widget->setText(translations.at(id).first);
+        }
+        if (lhs_checkbox && paired_other_setting && translations.contains(paired_other_setting->Id())) {
+            lhs_checkbox->setText(translations.at(paired_other_setting->Id()).first);
+        }
+        if (checkbox && setting.TypeId() == "bool" && translations.contains(id)) {
+            checkbox->setText(translations.at(id).first);
+        }
+        if (combobox && setting.IsEnum()) {
+            const auto type = setting.EnumIndex();
+            if (combobox_enumerations.contains(type)) {
+                const auto& enumeration = combobox_enumerations.at(type);
+                const bool blocked = combobox->blockSignals(true);
+                for (u32 i = 0; i < enumeration.size() && i < static_cast<u32>(combobox->count()); ++i) {
+                    combobox->setItemText(i, enumeration.at(i).second);
+                }
+                combobox->blockSignals(blocked);
+            }
+        }
+        if (setting.IsEnum() && !radio_buttons.empty()) {
+            const auto type = setting.EnumIndex();
+            if (combobox_enumerations.contains(type)) {
+                const auto& enumeration = combobox_enumerations.at(type);
+                for (auto& [val, rb] : radio_buttons) {
+                    for (const auto& [item_id, item_name] : enumeration) {
+                        if (item_id == val && rb) {
+                            rb->setText(item_name);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (translations.contains(id)) {
+            this->setToolTip(translations.at(id).second);
+        }
+    };
 }
 
 bool Widget::Valid() const {
@@ -868,6 +919,12 @@ Widget::~Widget() {
 void Widget::ReloadFromSetting() {
     if (reload_func) {
         reload_func();
+    }
+}
+
+void Widget::RetranslateUI() {
+    if (retranslate_func) {
+        retranslate_func();
     }
 }
 
@@ -966,6 +1023,17 @@ Widget* Builder::BuildWidget(Settings::BasicSetting* setting,
                              Settings::BasicSetting* other_setting, RequestType request,
                              const QString& suffix) const {
     return BuildWidget(setting, apply_funcs, request, true, 1.0f, other_setting, suffix);
+}
+
+void Builder::ReloadTranslations() {
+    auto new_trans = InitializeTranslations(parent);
+    if (translations && new_trans) {
+        *translations = std::move(*new_trans);
+    }
+    auto new_enums = ComboboxEnumeration(parent);
+    if (combobox_translations && new_enums) {
+        *combobox_translations = std::move(*new_enums);
+    }
 }
 
 const ComboboxTranslationMap& Builder::ComboboxTranslations() const {

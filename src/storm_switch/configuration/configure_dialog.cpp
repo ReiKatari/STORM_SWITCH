@@ -125,10 +125,10 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
                 &ConfigureDialog::HandleApplyButtonClicked);
     }
 
-    QPushButton* auto_settings_btn = ui->buttonBox->addButton(tr("⚡ Auto Settings"), QDialogButtonBox::ActionRole);
-    auto_settings_btn->setObjectName(QStringLiteral("AutoSettingsButton"));
-    auto_settings_btn->setCursor(Qt::PointingHandCursor);
-    auto_settings_btn->setStyleSheet(QStringLiteral(
+    m_auto_settings_btn = ui->buttonBox->addButton(tr("⚡ Auto Settings"), QDialogButtonBox::ActionRole);
+    m_auto_settings_btn->setObjectName(QStringLiteral("AutoSettingsButton"));
+    m_auto_settings_btn->setCursor(Qt::PointingHandCursor);
+    m_auto_settings_btn->setStyleSheet(QStringLiteral(
         "QPushButton#AutoSettingsButton {"
         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
         "    color: #050B14;"
@@ -146,12 +146,12 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "    background: #0284C7;"
         "}"
     ));
-    auto* shadow = new QGraphicsDropShadowEffect(auto_settings_btn);
+    auto* shadow = new QGraphicsDropShadowEffect(m_auto_settings_btn);
     shadow->setBlurRadius(10);
     shadow->setOffset(0, 2);
     shadow->setColor(QColor(0, 210, 255, 120));
-    auto_settings_btn->setGraphicsEffect(shadow);
-    connect(auto_settings_btn, &QPushButton::clicked, this, &ConfigureDialog::OnAutoSettingsClicked);
+    m_auto_settings_btn->setGraphicsEffect(shadow);
+    connect(m_auto_settings_btn, &QPushButton::clicked, this, &ConfigureDialog::OnAutoSettingsClicked);
 
     adjustSize();
     ui->selectorList->setCurrentRow(0);
@@ -221,6 +221,78 @@ void ConfigureDialog::RetranslateUI() {
     const int old_index = ui->tabWidget->currentIndex();
 
     ui->retranslateUi(this);
+
+    if (m_auto_settings_btn) {
+        m_auto_settings_btn->setText(tr("⚡ Auto Settings"));
+    }
+
+    if (builder) {
+        builder->ReloadTranslations();
+    }
+
+    ConfigurationShared::RetranslateAllActiveWidgets();
+
+    for (auto* tab : tab_group) {
+        if (tab) {
+            QEvent event(QEvent::LanguageChange);
+            QCoreApplication::sendEvent(tab, &event);
+        }
+    }
+    if (ui_tab) {
+        ui_tab->RetranslateUI();
+    }
+    if (general_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(general_tab.get(), &event);
+    }
+    if (system_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(system_tab.get(), &event);
+    }
+    if (applets_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(applets_tab.get(), &event);
+    }
+    if (filesystem_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(filesystem_tab.get(), &event);
+    }
+    if (graphics_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(graphics_tab.get(), &event);
+    }
+    if (graphics_advanced_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(graphics_advanced_tab.get(), &event);
+    }
+    if (graphics_extensions_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(graphics_extensions_tab.get(), &event);
+    }
+    if (audio_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(audio_tab.get(), &event);
+    }
+    if (cpu_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(cpu_tab.get(), &event);
+    }
+    if (debug_tab_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(debug_tab_tab.get(), &event);
+    }
+    if (web_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(web_tab.get(), &event);
+    }
+    if (profile_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(profile_tab.get(), &event);
+    }
+    if (network_tab) {
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(network_tab.get(), &event);
+    }
 
     PopulateSelectionList();
     ui->selectorList->setCurrentRow(old_row);

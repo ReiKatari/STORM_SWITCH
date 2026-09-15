@@ -7,6 +7,7 @@
 #pragma once
 
 #include "core/hle/service/cmif_types.h"
+#include "core/hle/service/ns/i_async_result.h"
 #include "core/hle/service/ns/language.h"
 #include "core/hle/service/ns/ns_types.h"
 #include "core/hle/service/os/event.h"
@@ -34,6 +35,7 @@ public:
     Result GetGameCardMountFailureEvent(OutCopyHandle<Kernel::KReadableEvent> out_event);
     Result GetGameCardWakenReadyEvent(OutCopyHandle<Kernel::KReadableEvent> out_event);
     Result IsGameCardApplicationRunning(Out<bool> out_is_running);
+    Result Unknown936(Out<u64> out_result);
     Result GetGameCardAttachmentInfo(Out<bool> out_is_attached);
     Result IsGameCardInserted(Out<bool> out_is_inserted);
     Result ListApplicationIdOnGameCard(Out<u32> out_count,
@@ -75,6 +77,9 @@ public:
                                   InBuffer<BufferAttr_HipcMapAlias> logo_path_buffer);
     Result Unknown4022(OutCopyHandle<Kernel::KReadableEvent> out_event);
     Result Unknown4023(Out<u64> out_result);
+    Result Unknown4042(OutInterface<IAsyncResult> out_interface,
+                       OutCopyHandle<Kernel::KReadableEvent> out_event,
+                       u64 arg1, u64 arg2);
     Result Unknown4053();
 
     Result RequestDownloadApplicationControlDataInBackground(u64 control_source,

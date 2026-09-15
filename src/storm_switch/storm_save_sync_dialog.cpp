@@ -361,6 +361,8 @@ QString StormSaveSyncDialog::ResolveGameTitle(const QString& title_id) const {
     bool ok_pid = false;
     const u64 pid = clean_tid.toULongLong(&ok_pid, 16);
 
+    const u64 base_pid = ok_pid ? (pid & ~0x1FFFULL) : 0;
+
     // 1. Known Switch titles map (clean, verified canonical titles)
     if (ok_pid) {
         static const std::unordered_map<u64, const char*> s_known_titles = {
@@ -404,38 +406,135 @@ QString StormSaveSyncDialog::ResolveGameTitle(const QString& title_id) const {
             {0x0100E65002BB8000ULL, "Stardew Valley"},
             {0x0100EC9010258000ULL, "Streets of Rage 4"},
             {0x0100F2200C984000ULL, "Mortal Kombat 11"},
-            {0x0100F2C0115B6000ULL, "The Legend of Zelda: Tears of the Kingdom"}
+            {0x0100F2C0115B6000ULL, "The Legend of Zelda: Tears of the Kingdom"},
+            {0x0100BAC01E57E000ULL, "Ys X: Nordics"},
+            {0x0100C6A0235D4000ULL, "Devil Jam"},
+            {0x01008CF01BAAC000ULL, "The Legend of Zelda: Echoes of Wisdom"},
+            {0x0100AC300919A000ULL, "Firewatch"},
+            {0x010093801237C000ULL, "Metroid Dread"},
+            {0x0100CA400E300000ULL, "Super Robot Wars V"},
+            {0x010097F018538000ULL, "Dave the Diver"},
+            {0x0100DDF01A03A000ULL, "Dave the Diver"},
+            {0x010077001A8D4000ULL, "Brotato"},
+            {0x0100BCB0176D0000ULL, "Hogwarts Legacy"},
+            {0x0100B5B0112F8000ULL, "Hogwarts Legacy"},
+            {0x0100D1801648E000ULL, "Hogwarts Legacy"},
+            {0x010053201F9B4000ULL, "Persona 5 Royal"},
+            {0x0100152000022000ULL, "Mario Kart 8 Deluxe"},
+            {0x01001F5010DFA000ULL, "Pokémon Legends: Arceus"},
+            {0x0100A3D008C5C000ULL, "Pokémon Scarlet"},
+            {0x0100187003A36000ULL, "Pokémon Violet"},
+            {0x010063B017DAE000ULL, "Batman: Arkham Knight"},
+            {0x01007820195A6000ULL, "Batman: Arkham City"},
+            {0x0100D6F015F70000ULL, "No Man's Sky"},
+            {0x0100BB600DC30000ULL, "DOOM Eternal"},
+            {0x010074F013262000ULL, "Xenoblade Chronicles 3"},
+            {0x0100E95004038000ULL, "Xenoblade Chronicles 2"},
+            {0x0100FF500E34A000ULL, "Xenoblade Chronicles: Definitive Edition"},
+            {0x0100C88011246000ULL, "Disco Elysium: The Final Cut"},
+            {0x01004D701742A000ULL, "Paper Mario: The Thousand-Year Door"},
+            {0x0100D7C000B02000ULL, "Luigi's Mansion 3"},
+            {0x01006F801BC4C000ULL, "Shin Megami Tensei V: Vengeance"},
+            {0x01004A4010FEA000ULL, "Bayonetta 3"},
+            {0x0100C6000EEA8000ULL, "Warhammer 40,000: Mechanicus"},
+            {0x0100000000010000ULL, "Super Mario Odyssey"}
         };
-        const auto it = s_known_titles.find(pid);
+        auto it = s_known_titles.find(pid);
         if (it != s_known_titles.end()) {
             return QString::fromUtf8(it->second);
         }
+        if (base_pid != 0 && base_pid != pid) {
+            it = s_known_titles.find(base_pid);
+            if (it != s_known_titles.end()) {
+                return QString::fromUtf8(it->second);
+            }
+        }
     }
 
-    // 2. Check GameFixDatabase profile
+    // 2. Check GameFixDatabase profile (ignoring synthetic universal profiles)
     if (ok_pid) {
         const auto* profile = Core::GameFixDatabase::GetProfile(pid);
         if (profile && !profile->game_name.empty()) {
-            return QString::fromStdString(profile->game_name);
+            const auto& gn = profile->game_name;
+            if (gn.rfind("Игра ", 0) != 0 && gn.rfind("Game ", 0) != 0 && gn != "Пользовательская игра") {
+                return QString::fromStdString(gn);
+            }
+        }
+        if (base_pid != 0 && base_pid != pid) {
+            const auto* base_profile = Core::GameFixDatabase::GetProfile(base_pid);
+            if (base_profile && !base_profile->game_name.empty()) {
+                const auto& gn = base_profile->game_name;
+                if (gn.rfind("Игра ", 0) != 0 && gn.rfind("Game ", 0) != 0 && gn != "Пользовательская игра") {
+                    return QString::fromStdString(gn);
+                }
+            }
         }
     }
 
     // 3. Lookup from TitleDB
-    TitleDB::TitleDatabase::Instance().EnsureLoaded();
-    const auto entry = TitleDB::TitleDatabase::Instance().Lookup(clean_tid.toStdString());
-    if (entry && !entry->name.empty()) {
+    TitleDB::TitleDatabase::Instance().WaitLoaded(std::chrono::milliseconds(1500));
+    auto entry = TitleDB::TitleDatabase::Instance().Lookup(clean_tid.toStdString());
+    if (entry && !entry->name.empty() && entry->name.rfind("Игра ", 0) != 0) {
         return CleanGameTitle(QString::fromStdString(entry->name));
+    }
+    if (ok_pid && base_pid != 0) {
+        entry = TitleDB::TitleDatabase::Instance().Lookup(base_pid);
+        if (entry && !entry->name.empty() && entry->name.rfind("Игра ", 0) != 0) {
+            return CleanGameTitle(QString::fromStdString(entry->name));
+        }
     }
 
     // 4. Check MainWindow game list and clean raw filename/brackets
     if (ok_pid) {
         if (auto* mw = MainWindow::GetInstance()) {
-            const QString lib_title = mw->GetGameTitleByProgramId(pid);
+            QString lib_title = mw->GetGameTitleByProgramId(pid);
+            if (lib_title.isEmpty() && base_pid != 0) {
+                lib_title = mw->GetGameTitleByProgramId(base_pid);
+            }
             if (!lib_title.isEmpty()) {
                 const QString cleaned = CleanGameTitle(lib_title);
                 if (!cleaned.isEmpty()) {
                     return cleaned;
                 }
+            }
+        }
+    }
+
+    // 5. Check file_metadata_cache.json in cache directory
+    const auto cache_file = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" / "file_metadata_cache.json";
+    std::error_code ec;
+    if (std::filesystem::exists(cache_file, ec)) {
+        static std::unordered_map<QString, QString> s_cache_titles;
+        static bool s_cache_loaded = false;
+        if (!s_cache_loaded) {
+            s_cache_loaded = true;
+            QFile f(QString::fromStdString(cache_file.string()));
+            if (f.open(QIODevice::ReadOnly)) {
+                const auto doc = QJsonDocument::fromJson(f.readAll());
+                if (doc.isObject()) {
+                    const auto obj = doc.object();
+                    for (auto it = obj.begin(); it != obj.end(); ++it) {
+                        if (it.value().isObject()) {
+                            const auto val_obj = it.value().toObject();
+                            const QString tid = val_obj.value(QStringLiteral("id")).toString().trimmed().toUpper();
+                            const QString name = val_obj.value(QStringLiteral("name")).toString().trimmed();
+                            if (!tid.isEmpty() && !name.isEmpty()) {
+                                s_cache_titles[tid] = name;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        auto it = s_cache_titles.find(clean_tid);
+        if (it != s_cache_titles.end()) {
+            return CleanGameTitle(it.value());
+        }
+        if (ok_pid && base_pid != 0) {
+            const QString base_hex = QString::asprintf("%016llX", static_cast<unsigned long long>(base_pid));
+            it = s_cache_titles.find(base_hex);
+            if (it != s_cache_titles.end()) {
+                return CleanGameTitle(it.value());
             }
         }
     }
@@ -981,7 +1080,7 @@ void StormSaveSyncDialog::OnTcpSocketReadyRead() {
         obj[QStringLiteral("status")] = QStringLiteral("ok");
         obj[QStringLiteral("device_name")] = QHostInfo::localHostName();
         obj[QStringLiteral("platform")] = QStringLiteral("windows");
-        obj[QStringLiteral("version")] = QStringLiteral("8.6.7");
+        obj[QStringLiteral("version")] = QStringLiteral("8.6.8");
         send_response(200, QStringLiteral("application/json"), QJsonDocument(obj).toJson(QJsonDocument::Compact));
         return;
     }
@@ -1240,7 +1339,7 @@ void StormSaveSyncDialog::OnConnectClicked() {
                        .arg(QString::fromUtf8(QUrl::toPercentEncoding(my_name)))
                        .arg(m_local_key));
     QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.6.7"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.6.8"));
 
     auto* reply = m_network_mgr->get(req);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
@@ -1812,10 +1911,80 @@ void StormSaveSyncDialog::OnSyncAllClicked() {
         return;
     }
 
-    for (auto& item : m_items) {
+    m_sync_queue.clear();
+    for (const auto& item : m_items) {
         if (item.status != StormSaveSyncStatus::Synchronized) {
-            SyncItem(item);
+            m_sync_queue.append(item.title_id);
         }
+    }
+
+    if (m_sync_queue.isEmpty()) {
+        QMessageBox::information(this, tr("Синхронизация"), tr("Все сохранения уже полностью синхронизированы!"));
+        return;
+    }
+
+    m_sync_total = m_sync_queue.size();
+    if (m_sync_all_btn) m_sync_all_btn->setEnabled(false);
+    if (m_progress_bar) {
+        m_progress_bar->setVisible(true);
+        m_progress_bar->setValue(5);
+    }
+    m_status_label->setText(tr("Синхронизация сохранений: 0 / %1...").arg(m_sync_total));
+
+    ProcessNextSyncQueueItem();
+}
+
+void StormSaveSyncDialog::ProcessNextSyncQueueItem() {
+    if (m_sync_queue.isEmpty()) {
+        if (m_progress_bar) {
+            m_progress_bar->setValue(100);
+            m_progress_bar->setVisible(false);
+        }
+        if (m_sync_all_btn) m_sync_all_btn->setEnabled(true);
+        m_status_label->setText(tr("Синхронизация всех сохранений успешно завершена!"));
+        ScanLocalSaves();
+        FetchRemoteSaves();
+        return;
+    }
+
+    const QString title_id = m_sync_queue.takeFirst();
+    const int done_count = m_sync_total - m_sync_queue.size();
+    if (m_progress_bar && m_sync_total > 0) {
+        int progress_val = (done_count * 100) / m_sync_total;
+        m_progress_bar->setValue(std::clamp(progress_val, 5, 95));
+    }
+
+    if (!m_items.contains(title_id)) {
+        ProcessNextSyncQueueItem();
+        return;
+    }
+
+    auto& item = m_items[title_id];
+    m_status_label->setText(tr("Синхронизация (%1/%2): %3...").arg(done_count).arg(m_sync_total).arg(item.title_name));
+
+    if (item.status == StormSaveSyncStatus::LocalOnly) {
+        UploadLocalSave(title_id, [this](bool) {
+            ProcessNextSyncQueueItem();
+        });
+    } else if (item.status == StormSaveSyncStatus::RemoteOnly) {
+        DownloadRemoteSave(title_id, [this](bool) {
+            ProcessNextSyncQueueItem();
+        });
+    } else if (item.status == StormSaveSyncStatus::Conflict) {
+        if (item.local_timestamp >= item.remote_timestamp) {
+            BackupRemoteSave(title_id, [this, title_id](bool) {
+                UploadLocalSave(title_id, [this](bool) {
+                    ProcessNextSyncQueueItem();
+                });
+            });
+        } else {
+            BackupLocalSave(title_id);
+            DownloadRemoteSave(title_id, [this](bool) {
+                ProcessNextSyncQueueItem();
+            });
+        }
+    } else {
+        ProcessNextSyncQueueItem();
     }
 }
 

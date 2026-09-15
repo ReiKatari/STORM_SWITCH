@@ -39,6 +39,7 @@ using SettingChangeCallback = std::function<void()>;
 void SetGlobalSettingChangeCallback(SettingChangeCallback cb);
 void NotifyGlobalSettingChanged();
 void ReloadAllActiveWidgets();
+void RetranslateAllActiveWidgets();
 void RegisterReloadCallback(uintptr_t id, std::function<void()> cb);
 void UnregisterReloadCallback(uintptr_t id);
 
@@ -103,6 +104,7 @@ public:
     [[nodiscard]] static QPushButton* CreateRestoreGlobalButton(bool using_global, QWidget* parent);
 
     void ReloadFromSetting();
+    void RetranslateUI();
 
     // Direct handles to sub components created
     QPushButton* restore_button{}; ///< Restore button for custom configurations
@@ -113,8 +115,12 @@ public:
     QSlider* slider{};
     QComboBox* combobox{};
     QDateTimeEdit* date_time_edit{};
+    QLabel* label_widget{};
+    QCheckBox* lhs_checkbox{};
+    Settings::BasicSetting* paired_other_setting{};
     std::vector<std::pair<u32, QRadioButton*>> radio_buttons{};
     std::function<void()> reload_func{};
+    std::function<void()> retranslate_func{};
 
 private:
     void SetupComponent(const QString& label, std::function<void()>& load_func, bool managed,
@@ -178,6 +184,8 @@ public:
                         Settings::BasicSetting* other_setting,
                         RequestType request = RequestType::Default,
                         const QString& suffix = default_suffix) const;
+
+    void ReloadTranslations();
 
     const ComboboxTranslationMap& ComboboxTranslations() const;
 

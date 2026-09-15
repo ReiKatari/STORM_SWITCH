@@ -45,7 +45,7 @@ void TitleDatabase::WaitLoaded(std::chrono::milliseconds timeout) {
         return;
     }
     EnsureLoaded();
-    const auto safe_timeout = std::min(timeout, std::chrono::milliseconds(50));
+    const auto safe_timeout = std::min(timeout, std::chrono::milliseconds(2500));
     std::unique_lock<std::mutex> lock(db_mutex);
     cv.wait_for(lock, safe_timeout, [this]() {
         return is_loaded.load(std::memory_order_acquire);

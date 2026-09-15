@@ -554,7 +554,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         put("status", "ok")
                         put("device_name", "${Build.MANUFACTURER} ${Build.MODEL}")
                         put("platform", "android")
-                        put("version", "8.6.7")
+                        put("version", "8.6.8")
                     }
                     sendResponse(200, "application/json", obj.toString().toByteArray(Charsets.UTF_8))
                 }
@@ -615,8 +615,9 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                     ZipInputStream(bodyBytes.inputStream()).use { zis ->
                         var entry = zis.nextEntry
                         while (entry != null) {
-                            val f = File(targetDir, entry.name)
-                            if (entry.isDirectory) {
+                            val entryName = entry.name.replace('\\', '/')
+                            val f = File(targetDir, entryName)
+                            if (entry.isDirectory || entryName.endsWith("/")) {
                                 f.mkdirs()
                             } else {
                                 f.parentFile?.mkdirs()
@@ -678,7 +679,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 val statusUrl = "http://$ip:$port/api/status?client_ip=$myIp&client_port=$localPort&client_name=$encodedName&client_key=$myKey"
                 val req = Request.Builder()
                     .url(statusUrl)
-                    .header("User-Agent", "STORM-SWITCH-SYNC/8.6.7")
+                    .header("User-Agent", "STORM-SWITCH-SYNC/8.6.8")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 if (resp.isSuccessful) {
@@ -784,17 +785,38 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         // 1. Known Switch titles map (clean, verified canonical names)
         SWITCH_KNOWN_TITLES[cleanTid]?.let { return it }
 
-        // 2. GameFixDatabase profile
+        // Check base title ID if DLC or update
+        val baseTidLong = cleanTid.toLongOrNull(16)
+        val baseTid = if (baseTidLong != null) {
+            String.format(Locale.ROOT, "%016X", baseTidLong and 0x1FFFULL.inv())
+        } else null
+
+        if (baseTid != null && baseTid != cleanTid) {
+            SWITCH_KNOWN_TITLES[baseTid]?.let { return it }
+        }
+
+        // 2. GameFixDatabase profile (ignoring generic auto-generated "Игра <ID>" / "Game <ID>")
         val fix = GameFixDatabase.getFix(cleanTid)
-        if (fix != null && fix.gameName.isNotBlank()) {
+        if (fix != null && fix.gameName.isNotBlank() &&
+            !fix.gameName.startsWith("Игра ", ignoreCase = true) &&
+            !fix.gameName.startsWith("Game ", ignoreCase = true)) {
             return fix.gameName
+        }
+
+        if (baseTid != null && baseTid != cleanTid) {
+            val baseFix = GameFixDatabase.getFix(baseTid)
+            if (baseFix != null && baseFix.gameName.isNotBlank() &&
+                !baseFix.gameName.startsWith("Игра ", ignoreCase = true) &&
+                !baseFix.gameName.startsWith("Game ", ignoreCase = true)) {
+                return baseFix.gameName
+            }
         }
 
         // 3. Storm World cached catalog
         try {
             val catalog = StormGamesWorldDialogFragment.getCachedCatalog(requireContext())
             catalog.firstOrNull {
-                it.serialId.equals(cleanTid, ignoreCase = true)
+                it.serialId.equals(cleanTid, ignoreCase = true) || (baseTid != null && it.serialId.equals(baseTid, ignoreCase = true))
             }?.let {
                 if (it.finalTitle.isNotBlank()) return cleanGameTitle(it.finalTitle)
                 if (it.title.isNotBlank()) return cleanGameTitle(it.title)
@@ -803,7 +825,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
         // 4. Installed game in library (cleaned of file brackets and tags)
         gamesViewModel.games.value.firstOrNull {
-            it.programIdHex.equals(cleanTid, ignoreCase = true)
+            it.programIdHex.equals(cleanTid, ignoreCase = true) || (baseTid != null && it.programIdHex.equals(baseTid, ignoreCase = true))
         }?.let {
             if (it.title.isNotBlank()) {
                 val cleaned = cleanGameTitle(it.title)
@@ -952,100 +974,102 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         dialog.show()
     }
 
-    private fun downloadSave(titleId: String) {
-        val ip = remoteIp ?: return
+    private suspend fun executeDownloadSync(titleId: String): Boolean = withContext(Dispatchers.IO) {
+        val ip = remoteIp ?: return@withContext false
         val port = remotePort
+        try {
+            val req = Request.Builder()
+                .url("http://$ip:$port/api/save/download?title_id=$titleId")
+                .build()
+            val resp = httpClient.newCall(req).execute()
+            if (resp.isSuccessful) {
+                val body = resp.body?.byteStream()
+                if (body != null) {
+                    val targetDir = getTargetSaveDirForTitle(titleId)
+                    targetDir.mkdirs()
 
+                    ZipInputStream(BufferedInputStream(body)).use { zis ->
+                        var entry = zis.nextEntry
+                        while (entry != null) {
+                            val entryName = entry.name.replace('\\', '/')
+                            val f = File(targetDir, entryName)
+                            if (entry.isDirectory || entryName.endsWith("/")) {
+                                f.mkdirs()
+                            } else {
+                                f.parentFile?.mkdirs()
+                                FileOutputStream(f).use { fos ->
+                                    zis.copyTo(fos)
+                                }
+                                if (entry.time > 0) {
+                                    f.setLastModified(entry.time)
+                                }
+                            }
+                            entry = zis.nextEntry
+                        }
+                    }
+                    return@withContext true
+                }
+            }
+        } catch (e: Exception) {
+            Log.error("[StormSaveSync] Download save error: ${e.message}")
+        }
+        return@withContext false
+    }
+
+    private fun downloadSave(titleId: String) {
         binding.progressSync.isVisible = true
 
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val req = Request.Builder()
-                    .url("http://$ip:$port/api/save/download?title_id=$titleId")
-                    .build()
-                val resp = httpClient.newCall(req).execute()
-                if (resp.isSuccessful) {
-                    val body = resp.body?.byteStream()
-                    if (body != null) {
-                        val targetDir = getTargetSaveDirForTitle(titleId)
-                        targetDir.mkdirs()
-
-                        ZipInputStream(BufferedInputStream(body)).use { zis ->
-                            var entry = zis.nextEntry
-                            while (entry != null) {
-                                val f = File(targetDir, entry.name)
-                                if (entry.isDirectory) {
-                                    f.mkdirs()
-                                } else {
-                                    f.parentFile?.mkdirs()
-                                    FileOutputStream(f).use { fos ->
-                                        zis.copyTo(fos)
-                                    }
-                                    if (entry.time > 0) {
-                                        f.setLastModified(entry.time)
-                                    }
-                                }
-                                entry = zis.nextEntry
-                            }
-                        }
-
-                        scanLocalSaves()
-                        withContext(Dispatchers.Main) {
-                            binding.progressSync.isVisible = false
-                            updateComparisonList()
-                            updateList()
-                            Toast.makeText(requireContext(), "Сохранение успешно загружено!", Toast.LENGTH_SHORT).show()
-                        }
-                        return@launch
-                    }
-                }
-            } catch (e: Exception) {
-                Log.error("[StormSaveSync] Download save error: ${e.message}")
-            }
-
-            withContext(Dispatchers.Main) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val ok = executeDownloadSync(titleId)
+            if (ok) {
+                scanLocalSaves()
+                binding.progressSync.isVisible = false
+                updateComparisonList()
+                updateList()
+                Toast.makeText(requireContext(), "Сохранение успешно загружено!", Toast.LENGTH_SHORT).show()
+            } else {
                 binding.progressSync.isVisible = false
                 Toast.makeText(requireContext(), "Ошибка скачивания сохранения", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun uploadSave(titleId: String) {
-        val ip = remoteIp ?: return
+    private suspend fun executeUploadSync(titleId: String): Boolean = withContext(Dispatchers.IO) {
+        val ip = remoteIp ?: return@withContext false
         val port = remotePort
-        val saveDir = getLocalSaveDirForTitle(titleId) ?: return
+        val saveDir = getLocalSaveDirForTitle(titleId) ?: return@withContext false
+        try {
+            val baos = ByteArrayOutputStream()
+            ZipOutputStream(BufferedOutputStream(baos)).use { zos ->
+                zipDirectory(saveDir, saveDir, zos)
+            }
+            val zipData = baos.toByteArray()
 
+            val req = Request.Builder()
+                .url("http://$ip:$port/api/save/upload?title_id=$titleId")
+                .post(zipData.toRequestBody("application/zip".toMediaType()))
+                .build()
+            val resp = httpClient.newCall(req).execute()
+            return@withContext resp.isSuccessful
+        } catch (e: Exception) {
+            Log.error("[StormSaveSync] Upload save error: ${e.message}")
+        }
+        return@withContext false
+    }
+
+    private fun uploadSave(titleId: String) {
         binding.progressSync.isVisible = true
 
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val baos = ByteArrayOutputStream()
-                ZipOutputStream(BufferedOutputStream(baos)).use { zos ->
-                    zipDirectory(saveDir, saveDir, zos)
-                }
-                val zipData = baos.toByteArray()
-
-                val req = Request.Builder()
-                    .url("http://$ip:$port/api/save/upload?title_id=$titleId")
-                    .post(zipData.toRequestBody("application/zip".toMediaType()))
-                    .build()
-                val resp = httpClient.newCall(req).execute()
-                if (resp.isSuccessful) {
-                    scanLocalSaves()
-                    fetchRemoteSaves()
-                    withContext(Dispatchers.Main) {
-                        binding.progressSync.isVisible = false
-                        updateComparisonList()
-                        updateList()
-                        Toast.makeText(requireContext(), "Сохранение успешно отправлено на удалённое устройство!", Toast.LENGTH_SHORT).show()
-                    }
-                    return@launch
-                }
-            } catch (e: Exception) {
-                Log.error("[StormSaveSync] Upload save error: ${e.message}")
-            }
-
-            withContext(Dispatchers.Main) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val ok = executeUploadSync(titleId)
+            if (ok) {
+                scanLocalSaves()
+                fetchRemoteSaves()
+                binding.progressSync.isVisible = false
+                updateComparisonList()
+                updateList()
+                Toast.makeText(requireContext(), "Сохранение успешно отправлено на удалённое устройство!", Toast.LENGTH_SHORT).show()
+            } else {
                 binding.progressSync.isVisible = false
                 Toast.makeText(requireContext(), "Ошибка отправки сохранения", Toast.LENGTH_SHORT).show()
             }
@@ -1059,30 +1083,77 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         saveDir.copyRecursively(backupDir, overwrite = true)
     }
 
-    private fun backupRemoteSave(titleId: String, onComplete: () -> Unit) {
-        val ip = remoteIp ?: return
+    private suspend fun executeBackupRemote(titleId: String): Boolean = withContext(Dispatchers.IO) {
+        val ip = remoteIp ?: return@withContext false
         val port = remotePort
+        try {
+            val req = Request.Builder()
+                .url("http://$ip:$port/api/save/backup?title_id=$titleId")
+                .post("".toRequestBody(null))
+                .build()
+            val resp = httpClient.newCall(req).execute()
+            return@withContext resp.isSuccessful
+        } catch (_: Exception) {
+            return@withContext false
+        }
+    }
 
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val req = Request.Builder()
-                    .url("http://$ip:$port/api/save/backup?title_id=$titleId")
-                    .post("".toRequestBody(null))
-                    .build()
-                httpClient.newCall(req).execute()
-            } catch (_: Exception) {}
-
-            withContext(Dispatchers.Main) {
-                onComplete()
-            }
+    private fun backupRemoteSave(titleId: String, onComplete: () -> Unit) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            executeBackupRemote(titleId)
+            onComplete()
         }
     }
 
     private fun syncAllSaves() {
-        for ((_, item) in saveItems) {
-            if (item.status != AndroidSaveSyncStatus.SYNCHRONIZED) {
-                handleSyncItem(item)
+        if (!isConnected) {
+            Toast.makeText(requireContext(), "Сначала подключитесь к устройству", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val queue = saveItems.values.filter { it.status != AndroidSaveSyncStatus.SYNCHRONIZED }
+        if (queue.isEmpty()) {
+            Toast.makeText(requireContext(), "Все сохранения уже полностью синхронизированы!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        binding.btnSyncAll.isEnabled = false
+        binding.progressSync.isVisible = true
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            var processed = 0
+            val total = queue.size
+            for (item in queue) {
+                processed++
+                Toast.makeText(requireContext(), "Синхронизация ($processed/$total): ${item.titleName}...", Toast.LENGTH_SHORT).show()
+
+                when (item.status) {
+                    AndroidSaveSyncStatus.LOCAL_ONLY -> {
+                        executeUploadSync(item.titleId)
+                    }
+                    AndroidSaveSyncStatus.REMOTE_ONLY -> {
+                        executeDownloadSync(item.titleId)
+                    }
+                    AndroidSaveSyncStatus.CONFLICT -> {
+                        if (item.localTimestamp >= item.remoteTimestamp) {
+                            executeBackupRemote(item.titleId)
+                            executeUploadSync(item.titleId)
+                        } else {
+                            backupLocalSave(item.titleId)
+                            executeDownloadSync(item.titleId)
+                        }
+                    }
+                    else -> {}
+                }
             }
+
+            scanLocalSaves()
+            fetchRemoteSaves()
+            binding.btnSyncAll.isEnabled = true
+            binding.progressSync.isVisible = false
+            updateComparisonList()
+            updateList()
+            Toast.makeText(requireContext(), "Синхронизация всех сохранений успешно завершена!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -1093,9 +1164,11 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
         val userDirs = saveRoot.listFiles { f -> f.isDirectory } ?: return null
         for (uDir in userDirs) {
-            val titleDir = File(uDir, titleId)
-            if (titleDir.exists() && titleDir.isDirectory) {
-                return titleDir
+            val titleDirs = uDir.listFiles { f -> f.isDirectory } ?: continue
+            for (tDir in titleDirs) {
+                if (tDir.name.equals(titleId, ignoreCase = true)) {
+                    return tDir
+                }
             }
         }
         return null
@@ -1106,7 +1179,11 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         val saveRoot = File(userDirStr, "nand/user/save/0000000000000000")
         val userDirs = saveRoot.listFiles { f -> f.isDirectory }
         val activeUser = if (!userDirs.isNullOrEmpty()) userDirs[0] else File(saveRoot, "00000000000000010000000000000000")
-        return File(activeUser, titleId)
+        val existing = activeUser.listFiles { f -> f.isDirectory && f.name.equals(titleId, ignoreCase = true) }
+        if (!existing.isNullOrEmpty()) {
+            return existing[0]
+        }
+        return File(activeUser, titleId.uppercase(Locale.ROOT))
     }
 
     private fun zipDirectory(root: File, source: File, zos: ZipOutputStream) {
