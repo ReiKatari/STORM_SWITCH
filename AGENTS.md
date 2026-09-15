@@ -171,6 +171,20 @@
 ## 7. Автоматическая поддержка будущих проектов
 - При создании любого нового проекта или клонировании репозитория в рабочую область:
   1. Автоматически устанавливается имя и email автора: `ReiKatari <45316432+ReiKatari@users.noreply.github.com>`.
-  2. Разворачивается каталог `.agents/skills/` с полным набором навыков (`skill-doctor`, `storm-rejudge`, `storm-codebase-intel`, `storm-model-liberator`, `storm-release-manager`, `storm-readme-auditor`, `storm-repo-hygiene`).
-  3. Копируется файл `AGENTS.md` и `.agents/rules/release_and_git_guidelines.md`.
+  2. Разворачивается каталог `.agents/skills/` с полным набором навыков (`skill-doctor`, `storm-rejudge`, `storm-codebase-intel`, `storm-model-liberator`, `storm-release-manager`, `storm-readme-auditor`, `storm-repo-hygiene`, `storm-token-optimizer`).
+  3. Копируется файл `AGENTS.md`, `.agents/rules/release_and_git_guidelines.md` и `.agents/rules/antigravity-rtk-rules.md`.
   4. Применяется защитный `.gitignore` (исключение секретов, токенов, сборок и дампов).
+
+---
+
+## 8. Стандарт оптимизации токенов и ускорения работы (Rust Token Killer - RTK)
+- **Обязательное использование RTK**:
+  - При выполнении команд терминала (`git`, `cargo`, `npm`, `dotnet`, `grep`, `find`, `cat`, тесты, линтеры, сборка) ВСЕГДА маршрутизировать вызовы через CLI-прокси `rtk`:
+    - **Git операции**: `rtk git status`, `rtk git diff`, `rtk git log -n 10`, `rtk git add`, `rtk git commit -m "..."`, `rtk git push`, `rtk git pull`
+    - **Тестирование (сокращение шума до 90%)**: `rtk cargo test`, `rtk pytest`, `rtk npm test`, `rtk vitest`, `rtk jest`, `rtk test <команда>`
+    - **Поиск и инспекция файлов**: `rtk grep <паттерн>`, `rtk find <паттерн>`, `rtk read <файл>`, `rtk ls <директория>`, `rtk diff <файл1> <файл2>`
+    - **Сборка и линтинг**: `rtk lint`, `rtk tsc`, `rtk err <команда>`
+  - В цепочках команд префикс сохраняется для каждого шага: `rtk git add . && rtk git commit -m "feat: ..."`
+  - Если для команды нет специализированного фильтра в RTK, она выполняется прозрачно как есть — префикс `rtk` всегда безопасен.
+  - Повторный запуск сырой команды `rtk proxy <cmd>` допускается ТОЛЬКО если вывод оказался повреждённым или противоречит коду возврата.
+  - Строго запрещено засорять контекстное окно модели длинными простынями успешных логов, прогресс-баров и мусорного вывода. Это сохраняет фокусировку рассуждений LLM и радикально снижает затраты токенов.
