@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.model
@@ -25,6 +25,115 @@ data class GameFixProfile(
 object GameFixDatabase {
 
     private val profiles = listOf(
+        GameFixProfile(
+            0x0100DDF01A03A000L,
+            "DAVE THE DIVER",
+            "• Вылеты при смене локаций (дайвинг / суши-бар Банчо) из-за сборщика мусора Unity GC\n• Утечка дескрипторов текстур под водой\n• Просадки кадровой частоты",
+            "• Crashes during transitions (Diving / Bancho Sushi) caused by Unity GC spikes\n• Underwater texture descriptor exhaustion\n• Framerate drops and stuttering",
+            "✓ Точность ГПУ: Обычная (стабильные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Очистка VRAM: Отключено (устраняет микрофризы анимаций)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ GPU Accuracy: Normal (Stable 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ VRAM Garbage Collection: Disabled (Prevents animation stutter)\n✓ Memory Layout: 6GB DRAM\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Console Mode: Handheld (720p)",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\resolution_setup" to "0",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "System\\use_docked_mode" to "0",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x010077001A8D4000L,
+            "Brotato",
+            "• Просадки FPS при спавне тысяч снарядов и врагов на поздних волнах (15-20)\n• Микрофризы рендеринга Godot Engine\n• Задержка отклика ввода",
+            "• Framerate drops during massive bullet/enemy swarms on waves 15-20\n• Godot Engine pipeline stalls\n• Input latency during intense combat",
+            "✓ Точность ГПУ: Обычная (идеальные 60 FPS)\n✓ Раннее освобождение барьеров: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Циклы обратной связи: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Сжатие ASTC: Без сжатия\n✓ Режим консоли: Портативный (720p)",
+            "✓ GPU Accuracy: Normal (Perfect 60 FPS)\n✓ Early Release Fences: Enabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Console Mode: Handheld (720p)",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\barrier_feedback_loops" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\resolution_setup" to "0",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "System\\use_docked_mode" to "0",
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x01008BA02525A000L,
+            "Dispatch",
+            "• Графические артефакты геометрии и мерцание полигонов в кинематографических сценах\n• Разрывы буферов кадров и вылеты шейдеров\n• Просадки FPS при динамическом освещении",
+            "• Geometry artifacts and polygon flickering during cinematic sequences\n• Framebuffer tearing and shader crashes\n• Framerate drops during dynamic lighting transitions",
+            "✓ Точность ГПУ: Обычная (устраняет мерцание и графические артефакты)\n✓ Точность DMA: Безопасно (0)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено (корректные тени Unreal Engine)\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Режим консоли: Портативный (720p)",
+            "✓ GPU Accuracy: Normal (Eliminates flickering and visual glitches)\n✓ DMA Accuracy: Safe (0)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled (Correct Unreal Engine shadows)\n✓ Sync Memory Operations: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM\n✓ Console Mode: Handheld (720p)",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\resolution_setup" to "0",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "System\\use_docked_mode" to "0",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+
         GameFixProfile(
             0x01006560184E6000L,
             "Mortal Kombat 1",
@@ -417,14 +526,38 @@ object GameFixDatabase {
             "The Elder Scrolls V: Skyrim",
             "• Некорректное изображение водной глади и искажения отражений\n• Артефакты сжатия снега и текстур ландшафта",
             "• Incorrect water rendering and reflection distortion\n• Snow and terrain texture compression artifacts",
-            "✓ Сжатие текстур ASTC: Отключено (четкие текстуры снега и гор)\n✓ Реактивная очистка: Отключено (исправление отражений воды)\n✓ Точность ГПУ: Высокая",
-            "✓ ASTC Recompression: Uncompressed (Crisp snow and terrain)\n✓ Reactive Flushing: Disabled (Fixes water reflections)\n✓ GPU Accuracy: High",
+            "✓ Сжатие ASTC: Отключено (четкие текстуры снега и гор)\n✓ Реактивная очистка: Отключено (исправление отражений воды)\n✓ Точность ГПУ: Высокая\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+            "✓ ASTC Recompression: Uncompressed (Crisp snow and terrain)\n✓ Reactive Flushing: Disabled (Fixes water reflections)\n✓ GPU Accuracy: High\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
-                "Renderer\\astc_recompression" to "0",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\gpu_accuracy" to "1"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\resolution_setup" to "0",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "false",
+                "System\\use_docked_mode" to "0",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2"
             )
         ),
+
         GameFixProfile(
             0x0100BCB0176D0000L,
             "Hogwarts Legacy",
@@ -446,18 +579,38 @@ object GameFixDatabase {
             "The Legend of Zelda: Tears of the Kingdom",
             "• Черный силуэт персонажей и тени в Кавернах\n• Бирюзовая сетка и артефакты Z-буфера на водных поверхностях\n• Утечки VRAM в конструкторе Ультраруки",
             "• Character silhouette and shadow artifacts in Depths\n• Water surface and depth bias cyan grid artifacts\n• Ultrahand VRAM pressure",
-            "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Реактивная очистка: Включено (устранение мерцания магии Ультраруки и рун)\n✓ Сжатие текстур ASTC: Отключено (прозрачная чистая вода)\n✓ Тайминги ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
+            "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Реактивная очистка: Включено (устранение мерцания магии Ультраруки и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода)\n✓ Быстрое время ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High (Fixes character shadows and lighting)\n✓ Reactive Flushing: Enabled (Fixes Ultrahand and rune magic flickering)\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\resolution_setup" to "0",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "false",
+                "System\\use_docked_mode" to "0",
+                "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2"
             )
         ),
+
         GameFixProfile(
             0x01004D701742A000L,
             "Paper Mario: The Thousand-Year Door",
@@ -3763,10 +3916,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x01002FC00412C000L,
             "Little Nightmares: Complete Edition",
-            "вЂў Р’С‹Р»РµС‚С‹ РЅР° РґРІРёР¶РєРµ Unreal Engine 4 РІ Р§СЂРµРІРµ\nвЂў РЎР±РѕРё РґРёРЅР°РјРёС‡РµСЃРєРёС… С‚РµРЅРµР№ С„РѕРЅР°СЂРёРєР°\nвЂў РџСЂРѕСЃР°РґРєРё FPS РѕС‚ РІС‹СЃРѕРєРѕР№ С‚РѕС‡РЅРѕСЃС‚Рё Р“РџРЈ",
-            "вЂў Unreal Engine 4 Maw transition crashes\nвЂў Flashlight dynamic shadow artifacts\nвЂў Heavy framerate drops caused by High GPU accuracy",
-            "вњ“ РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР°РјСЏС‚Рё: 6 Р“Р‘ DRAM (СѓСЃС‚СЂР°РЅРµРЅРёРµ РІС‹Р»РµС‚РѕРІ UE4)\nвњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р¦РёРєР»С‹ РѕР±СЂР°С‚РЅРѕР№ СЃРІСЏР·Рё: Р’РєР»СЋС‡РµРЅРѕ (С‚РµРЅРё Рё РѕСЃРІРµС‰РµРЅРёРµ UE4)\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ Р”РёРЅР°РјРёС‡РµСЃРєРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ: Р‘Р°Р·РѕРІРѕРµ (EDS 1)\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ РРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СЃР±РѕРµРІ РїР°РјСЏС‚Рё: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ Memory Layout: 6GB DRAM (Fixes UE4 crashes)\nвњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Barrier Feedback Loops: Enabled (UE4 lighting and shadows)\nвњ“ Reactive Flushing: Disabled\nвњ“ Dynamic State: Basic (EDS 1)\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Ignore Memory Aborts: Enabled\nвњ“ Fastmem: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Вылеты на движке Unreal Engine 4 в Чреве\n• Сбои динамических теней фонарика\n• Просадки FPS от высокой точности ГПУ",
+            "• Unreal Engine 4 Maw transition crashes\n• Flashlight dynamic shadow artifacts\n• Heavy framerate drops caused by High GPU accuracy",
+            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение вылетов UE4)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено (тени и освещение UE4)\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ Memory Layout: 6GB DRAM (Fixes UE4 crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled (UE4 lighting and shadows)\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -3799,10 +3952,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x010097100EDD6000L,
             "Little Nightmares II",
-            "вЂў Р’С‹Р»РµС‚С‹ РёР·-Р·Р° РЅРµС…РІР°С‚РєРё РїР°РјСЏС‚Рё (OOM) РІ Р‘Р»РµРґРЅРѕРј РіРѕСЂРѕРґРµ\nвЂў РђСЂС‚РµС„Р°РєС‚С‹ С‚СѓРјР°РЅР° Рё РѕР±СЉРµРјРЅРѕРіРѕ СЃРІРµС‚Р°\nвЂў РџСЂРѕСЃР°РґРєРё FPS РѕС‚ РІС‹СЃРѕРєРѕР№ С‚РѕС‡РЅРѕСЃС‚Рё Р“РџРЈ",
-            "вЂў Pale City memory pressure (OOM) crashes\nвЂў Volumetric fog and lighting artifacts\nвЂў Heavy framerate drops caused by High GPU accuracy",
-            "вњ“ РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР°РјСЏС‚Рё: 6 Р“Р‘ DRAM (СѓСЃС‚СЂР°РЅРµРЅРёРµ РІС‹Р»РµС‚РѕРІ РїР°РјСЏС‚Рё)\nвњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р¦РёРєР»С‹ РѕР±СЂР°С‚РЅРѕР№ СЃРІСЏР·Рё: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ Р”РёРЅР°РјРёС‡РµСЃРєРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ: Р‘Р°Р·РѕРІРѕРµ (EDS 1)\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ РРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СЃР±РѕРµРІ РїР°РјСЏС‚Рё: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ Memory Layout: 6GB DRAM (Fixes memory exhaustion crashes)\nвњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Barrier Feedback Loops: Enabled\nвњ“ Reactive Flushing: Disabled\nвњ“ Dynamic State: Basic (EDS 1)\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Ignore Memory Aborts: Enabled\nвњ“ Fastmem: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Вылеты из-за нехватки памяти (OOM) в Бледном городе\n• Артефакты тумана и объемного света\n• Просадки FPS от высокой точности ГПУ",
+            "• Pale City memory pressure (OOM) crashes\n• Volumetric fog and lighting artifacts\n• Heavy framerate drops caused by High GPU accuracy",
+            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение вылетов памяти)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ Memory Layout: 6GB DRAM (Fixes memory exhaustion crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -3835,10 +3988,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x010066101A55A000L,
             "Little Nightmares III",
-            "вЂў Р’С‹СЃРѕРєРёРµ С‚СЂРµР±РѕРІР°РЅРёСЏ Рє DRAM Рё С€РµР№РґРµСЂР°Рј СЃРїРёСЂР°Р»Рё\nвЂў РЎР±РѕРё РјРЅРѕРіРѕРїРѕС‚РѕС‡РЅРѕСЃС‚Рё Unreal Engine 5\nвЂў РџСЂРѕСЃР°РґРєРё РєР°РґСЂРѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹",
-            "вЂў High DRAM and Spiral shader complexity\nвЂў Unreal Engine 5 multithreading synchronization\nвЂў Framerate dips",
-            "вњ“ РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР°РјСЏС‚Рё: 6 Р“Р‘ DRAM (СѓСЃС‚СЂР°РЅРµРЅРёРµ СЃР±РѕРµРІ UE5)\nвњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р¦РёРєР»С‹ РѕР±СЂР°С‚РЅРѕР№ СЃРІСЏР·Рё: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ Р”РёРЅР°РјРёС‡РµСЃРєРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ: Р‘Р°Р·РѕРІРѕРµ (EDS 1)\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ РРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СЃР±РѕРµРІ РїР°РјСЏС‚Рё: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ Memory Layout: 6GB DRAM (Fixes UE5 crashes)\nвњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Barrier Feedback Loops: Enabled\nвњ“ Reactive Flushing: Disabled\nвњ“ Dynamic State: Basic (EDS 1)\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Ignore Memory Aborts: Enabled\nвњ“ Fastmem: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Высокие требования к DRAM и шейдерам спирали\n• Сбои многопоточности Unreal Engine 5\n• Просадки кадровой частоты",
+            "• High DRAM and Spiral shader complexity\n• Unreal Engine 5 multithreading synchronization\n• Framerate dips",
+            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение сбоев UE5)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ Memory Layout: 6GB DRAM (Fixes UE5 crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -3871,10 +4024,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x01000B900D8B0000L,
             "Cadence of Hyrule: Crypt of the NecroDancer",
-            "вЂў Р Р°СЃСЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЂРёС‚РјРёС‡РµСЃРєРѕРіРѕ Р°СѓРґРёРѕ-РґРІРёР¶РєР°\nвЂў Р—Р°РґРµСЂР¶РєР° РѕР±СЂР°Р±РѕС‚РєРё РІРІРѕРґР° СЃС‚СЂРµР»РѕРє\nвЂў РџСЂРѕСЃР°РґРєРё РєР°РґСЂРѕРІ РІ РїРѕРґР·РµРјРµР»СЊСЏС…",
-            "вЂў Rhythm audio engine timing desynchronization\nвЂў Beat input delay\nвЂў Dungeon combat framerate dips",
-            "вњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р¦Рџ: РђРІС‚Рѕ\nвњ“ РРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СЃР±РѕРµРІ РїР°РјСЏС‚Рё: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Reactive Flushing: Disabled\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Fastmem: Enabled\nвњ“ CPU Accuracy: Auto\nвњ“ Ignore Memory Aborts: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Рассинхронизация ритмического аудио-движка\n• Задержка обработки ввода стрелок\n• Просадки кадров в подземельях",
+            "• Rhythm audio engine timing desynchronization\n• Beat input delay\n• Dungeon combat framerate dips",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ЦП: Авто\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ CPU Accuracy: Auto\n✓ Ignore Memory Aborts: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -3907,10 +4060,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100CEA007D08000L,
             "Crypt of the NecroDancer: Nintendo Switch Edition",
-            "вЂў Р Р°СЃСЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ С‚Р°РєС‚Р° СѓРґР°СЂРѕРІ Рё РјСѓР·С‹РєРё РІ РїРѕРґР·РµРјРµР»СЊРµ\nвЂў Р—Р°РґРµСЂР¶РєР° Р°СѓРґРёРѕ-Р±СѓС„РµСЂР°\nвЂў РЎР±РѕРё РЅРµРєСЂР°С‚РЅС‹С… 16-Р±Р°Р№С‚ РѕРїРµСЂР°С†РёР№ DMA",
-            "вЂў Beat synchronization jitter in procedural dungeons\nвЂў Audio buffer latency\nвЂў Non-16-byte DMA transfer stalls",
-            "вњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р¦Рџ: РђРІС‚Рѕ\nвњ“ РРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СЃР±РѕРµРІ РїР°РјСЏС‚Рё: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Reactive Flushing: Disabled\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Fastmem: Enabled\nвњ“ CPU Accuracy: Auto\nвњ“ Ignore Memory Aborts: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Рассинхронизация такта ударов и музыки в подземелье\n• Задержка аудио-буфера\n• Сбои некратных 16-байт операций DMA",
+            "• Beat synchronization jitter in procedural dungeons\n• Audio buffer latency\n• Non-16-byte DMA transfer stalls",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ЦП: Авто\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ CPU Accuracy: Auto\n✓ Ignore Memory Aborts: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -3943,10 +4096,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100BDA01AABC000L,
             "Rift of the NecroDancer",
-            "вЂў Р Р°СЃСЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ РґРѕСЂРѕР¶РµРє СЂРёС‚Рј-Р±РёС‚РІ РІ РјРёРЅРё-РёРіСЂР°С…\nвЂў РРЅРїСѓС‚-Р»Р°Рі РєРѕРјР±Рѕ",
-            "вЂў Rhythm lane timing desync during minigames\nвЂў Combo input response latency",
-            "вњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Reactive Flushing: Disabled\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Fastmem: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Рассинхронизация дорожек ритм-битв в мини-играх\n• Инпут-лаг комбо",
+            "• Rhythm lane timing desync during minigames\n• Combo input response latency",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -3979,10 +4132,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100D59022590000L,
             "Scott Pilgrim vs. The World: The Game - Complete Edition",
-            "вЂў Р—Р°РІРёСЃР°РЅРёРµ РЅР° Р·Р°СЃС‚Р°РІРєРµ Ubisoft Connect Рё СЃР±РѕРё РѕРїСЂРѕСЃР° СЃРµС‚Рё NIFM\nвЂў РЎР±РѕРё РїРµСЂРµРєСЂС‹РІР°СЋС‰РёС…СЃСЏ С‚РµРєСЃС‚СѓСЂ GpuModified РІ РєСЌС€Рµ С‚РµРєСЃС‚СѓСЂ\nвЂў РџСЂРѕСЃР°РґРєРё FPS РїСЂРё РІС‹СЃРѕРєРѕР№ С‚РѕС‡РЅРѕСЃС‚Рё Р“РџРЈ",
-            "вЂў Ubisoft Connect boot hang and NIFM network query spam\nвЂў Texture cache GpuModified overlap crashes\nвЂў Framerate drops caused by High GPU accuracy",
-            "вњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РїРѕР»С‘С‚Р°: Р’РєР»СЋС‡РµРЅРѕ (РїСЂРѕРїСѓСЃРє Ubisoft Connect)\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Reactive Flushing: Disabled\nвњ“ Airplane Mode: Enabled (Bypasses Ubisoft Connect)\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Fastmem: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Зависание на заставке Ubisoft Connect и сбои опроса сети NIFM\n• Сбои перекрывающихся текстур GpuModified в кэше текстур\n• Просадки FPS при высокой точности ГПУ",
+            "• Ubisoft Connect boot hang and NIFM network query spam\n• Texture cache GpuModified overlap crashes\n• Framerate drops caused by High GPU accuracy",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск Ubisoft Connect)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses Ubisoft Connect)\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4015,10 +4168,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100B11027658000L,
             "Defender of the Crown: The Legend Returns",
-            "вЂў РџРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёР№ СЃР±РѕР№ РїСЂРё Р·Р°РїСѓСЃРєРµ (Userspace PANIC debug_buffer_err_code=0)\nвЂў РќРµС…РІР°С‚РєР° РІС‹РґРµР»РµРЅРЅРѕР№ РѕРїРµСЂР°С‚РёРІРЅРѕР№ РїР°РјСЏС‚Рё РґР»СЏ СЌРјСѓР»СЏС†РёРё\nвЂў Р Р°СЃСЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ 60 FPS",
-            "вЂў Boot crash (Userspace PANIC debug_buffer_err_code=0)\nвЂў Emulation DRAM pool allocation exhaustion\nвЂў 60 FPS timing desynchronization",
-            "вњ“ РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР°РјСЏС‚Рё: 6 Р“Р‘ DRAM (СѓСЃС‚СЂР°РЅРµРЅРёРµ РєСЂР°С€Р° РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РјР°С€РёРЅС‹)\nвњ“ РРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СЃР±РѕРµРІ РїР°РјСЏС‚Рё: Р’РєР»СЋС‡РµРЅРѕ (СѓСЃС‚СЂР°РЅРµРЅРёРµ Userspace PANIC)\nвњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ Memory Layout: 6GB DRAM (Eliminates VM crash)\nвњ“ Ignore Memory Aborts: Enabled (Fixes Userspace PANIC)\nвњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Reactive Flushing: Disabled\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Fastmem: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Пользовательский сбой при запуске (Userspace PANIC debug_buffer_err_code=0)\n• Нехватка выделенной оперативной памяти для эмуляции\n• Рассинхронизация 60 FPS",
+            "• Boot crash (Userspace PANIC debug_buffer_err_code=0)\n• Emulation DRAM pool allocation exhaustion\n• 60 FPS timing desynchronization",
+            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение краша виртуальной машины)\n✓ Игнорирование сбоев памяти: Включено (устранение Userspace PANIC)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ Memory Layout: 6GB DRAM (Eliminates VM crash)\n✓ Ignore Memory Aborts: Enabled (Fixes Userspace PANIC)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4051,10 +4204,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x010059D020C26000L,
             "Marvel Cosmic Invasion",
-            "вЂў РџРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёР№ СЃР±РѕР№ Userspace PANIC debug_buffer_err_code=1A80A\nвЂў РџСЂРѕСЃР°РґРєРё FPS РїСЂРё СЃРїР°РІРЅРµ РІРѕР»РЅ РІСЂР°РіРѕРІ Рё РІР·СЂС‹РІРѕРІ\nвЂў РњРёРєСЂРѕС„СЂРёР·С‹ СЂР°СЃС‡С‘С‚Р° С„РёР·РёРєРё",
-            "вЂў Userspace PANIC debug_buffer_err_code=1A80A\nвЂў Framerate drops during enemy waves and heavy particles\nвЂў Physics calculation micro-stutters",
-            "вњ“ РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР°РјСЏС‚Рё: 6 Р“Р‘ DRAM\nвњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ РРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СЃР±РѕРµРІ РїР°РјСЏС‚Рё: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ Memory Layout: 6GB DRAM\nвњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Reactive Flushing: Disabled\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Ignore Memory Aborts: Enabled\nвњ“ Fastmem: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Пользовательский сбой Userspace PANIC debug_buffer_err_code=1A80A\n• Просадки FPS при спавне волн врагов и взрывов\n• Микрофризы расчёта физики",
+            "• Userspace PANIC debug_buffer_err_code=1A80A\n• Framerate drops during enemy waves and heavy particles\n• Physics calculation micro-stutters",
+            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4087,10 +4240,10 @@ object GameFixDatabase {
         GameFixProfile(
             0x010057901E9E6000L,
             "Underling Uprising",
-            "вЂў РћР±СЂР°С‰РµРЅРёСЏ Рє РЅРµСЂР°Р·РјРµС‡РµРЅРЅРѕР№ РїР°РјСЏС‚Рё Unmapped Device ReadBlock 0x1000\nвЂў РџСЂРѕСЃР°РґРєРё РєР°РґСЂРѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ РёР·-Р·Р° Р±Р°СЂСЊРµСЂРѕРІ РєРѕРЅРІРµР№РµСЂР°\nвЂў РњРёРєСЂРѕС„СЂРёР·С‹ РїРѕРґРіСЂСѓР·РєРё СЃРїСЂР°Р№С‚РѕРІ",
-            "вЂў Unmapped Device ReadBlock 0x1000 warnings\nвЂў Pipeline fence stalls and framerate dips\nвЂў Sprite streaming micro-stutters",
-            "вњ“ РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР°РјСЏС‚Рё: 6 Р“Р‘ DRAM\nвњ“ РўРѕС‡РЅРѕСЃС‚СЊ Р“РџРЈ: РћР±С‹С‡РЅР°СЏ (РїР»Р°РІРЅС‹Рµ 60 FPS)\nвњ“ Р‘С‹СЃС‚СЂРѕРµ РІСЂРµРјСЏ Р“РџРЈ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р Р°РЅРЅРµРµ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ Р±Р°СЂСЊРµСЂРѕРІ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР°РєС‚РёРІРЅР°СЏ РѕС‡РёСЃС‚РєР°: РћС‚РєР»СЋС‡РµРЅРѕ\nвњ“ РђСЃРёРЅС…СЂРѕРЅРЅС‹Рµ С€РµР№РґРµСЂС‹: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ РРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СЃР±РѕРµРІ РїР°РјСЏС‚Рё: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р‘С‹СЃС‚СЂР°СЏ РїР°РјСЏС‚СЊ: Р’РєР»СЋС‡РµРЅРѕ\nвњ“ Р РµР¶РёРј РєРѕРЅСЃРѕР»Рё: РџРѕСЂС‚Р°С‚РёРІРЅС‹Р№ (720p)",
-            "вњ“ Memory Layout: 6GB DRAM\nвњ“ GPU Accuracy: Normal (Smooth 60 FPS)\nвњ“ Fast GPU Time: Enabled\nвњ“ Early Release Fences: Enabled\nвњ“ Reactive Flushing: Disabled\nвњ“ Asynchronous Shaders: Enabled\nвњ“ Ignore Memory Aborts: Enabled\nвњ“ Fastmem: Enabled\nвњ“ Console Mode: Handheld (720p)",
+            "• Обращения к неразмеченной памяти Unmapped Device ReadBlock 0x1000\n• Просадки кадровой частоты из-за барьеров конвейера\n• Микрофризы подгрузки спрайтов",
+            "• Unmapped Device ReadBlock 0x1000 warnings\n• Pipeline fence stalls and framerate dips\n• Sprite streaming micro-stutters",
+            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
+            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4120,6 +4273,7 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "1"
             )
         ),
+
         GameFixProfile(
             0x010094D023A28000L,
             "Drill Core",

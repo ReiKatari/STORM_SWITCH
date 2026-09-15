@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Static Qt on macOS doesn't use Vulkan
@@ -453,7 +453,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.6.4";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.6.5";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
@@ -1197,9 +1197,9 @@ void MainWindow::InitializeWidgets() {
         statusBar()->addPermanentWidget(label);
     }
 
-    auto_correction_button = new QPushButton(tr("🛠️ Авто-коррекция"));
+    auto_correction_button = new QPushButton(tr("🛠️ Auto-Correction"));
     auto_correction_button->setObjectName(QStringLiteral("AutoCorrectionButton"));
-    auto_correction_button->setToolTip(tr("Обнаружена повышенная нагрузка или просадки FPS. Нажмите для динамической авто-коррекции"));
+    auto_correction_button->setToolTip(tr("High load or FPS drops detected. Click for dynamic auto-correction"));
     auto_correction_button->setFocusPolicy(Qt::NoFocus);
     auto_correction_button->setVisible(false);
     auto_correction_button->setStyleSheet(QStringLiteral(
@@ -1270,7 +1270,7 @@ void MainWindow::InitializeWidgets() {
         "QPushButton:hover { background-color: #ffee00; color: #000000; }"
     ));
 
-    volume_val_label = new QLabel(tr("Громкость: 100%"), volume_popup);
+    volume_val_label = new QLabel(tr("Volume: 100%"), volume_popup);
     volume_val_label->setStyleSheet(QStringLiteral("font-weight: bold; color: #ffee00; font-size: 9.5pt; border: none; background: transparent;"));
     volume_val_label->setAlignment(Qt::AlignCenter);
     pop_layout->addWidget(volume_val_label);
@@ -1344,12 +1344,12 @@ void MainWindow::InitializeWidgets() {
             [this](const QPoint& menu_location) {
                 QMenu context_menu;
                 context_menu.addAction(
-                    Settings::values.audio_muted.GetValue() ? tr("Включить звук") : tr("Выключить звук"), [this] {
+                    Settings::values.audio_muted.GetValue() ? tr("Unmute") : tr("Mute"), [this] {
                         OnMute();
                         ApplyDynamicSettingChange();
                     });
 
-                context_menu.addAction(tr("Сбросить громкость (100%)"), [this] {
+                context_menu.addAction(tr("Reset volume (100%)"), [this] {
                     Settings::values.volume.SetValue(100);
                     UpdateVolumeUI();
                     ApplyDynamicSettingChange();
@@ -1506,7 +1506,7 @@ void MainWindow::InitializeWidgets() {
             {Settings::AspectRatio::R4_3, QStringLiteral("4:3")},
             {Settings::AspectRatio::R21_9, QStringLiteral("21:9")},
             {Settings::AspectRatio::R16_10, QStringLiteral("16:10")},
-            {Settings::AspectRatio::Stretch, tr("Растянуть на весь экран")},
+            {Settings::AspectRatio::Stretch, tr("Stretch to Window")},
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
@@ -1532,10 +1532,10 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_dma = Settings::values.dma_accuracy.GetValue();
         const std::vector<std::pair<Settings::DmaAccuracy, QString>> items = {
-            {Settings::DmaAccuracy::Default, tr("По умолчанию")},
-            {Settings::DmaAccuracy::Normal, tr("Нормально")},
-            {Settings::DmaAccuracy::Unsafe, tr("Небезопасно")},
-            {Settings::DmaAccuracy::Safe, tr("Безопасно")},
+            {Settings::DmaAccuracy::Default, tr("Default")},
+            {Settings::DmaAccuracy::Normal, tr("Normal")},
+            {Settings::DmaAccuracy::Unsafe, tr("Unsafe")},
+            {Settings::DmaAccuracy::Safe, tr("Safe")},
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
@@ -1561,11 +1561,11 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_fence = Settings::values.gpu_fence_behavior.GetValue();
         const std::vector<std::pair<Settings::GpuFenceBehavior, QString>> items = {
-            {Settings::GpuFenceBehavior::Default, tr("По умолчанию")},
-            {Settings::GpuFenceBehavior::Immediate, tr("Немедленно")},
-            {Settings::GpuFenceBehavior::Balanced, tr("Сбалансированно")},
-            {Settings::GpuFenceBehavior::Accurate, tr("Точно")},
-            {Settings::GpuFenceBehavior::Strict, tr("Строго")},
+            {Settings::GpuFenceBehavior::Default, tr("Default")},
+            {Settings::GpuFenceBehavior::Immediate, tr("Immediate")},
+            {Settings::GpuFenceBehavior::Balanced, tr("Balanced")},
+            {Settings::GpuFenceBehavior::Accurate, tr("Accurate")},
+            {Settings::GpuFenceBehavior::Strict, tr("Strict")},
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
@@ -1591,9 +1591,9 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_vram = Settings::values.vram_usage_mode.GetValue();
         const std::vector<std::pair<Settings::VramUsageMode, QString>> options = {
-            {Settings::VramUsageMode::Conservative, tr("Экономный")},
-            {Settings::VramUsageMode::Normal, tr("Нормальный")},
-            {Settings::VramUsageMode::Aggressive, tr("Агрессивный")},
+            {Settings::VramUsageMode::Conservative, tr("Conservative")},
+            {Settings::VramUsageMode::Normal, tr("Normal")},
+            {Settings::VramUsageMode::Aggressive, tr("Aggressive")},
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1619,15 +1619,15 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_aniso = Settings::values.max_anisotropy.GetValue();
         const std::vector<std::pair<Settings::AnisotropyMode, QString>> options = {
-            {Settings::AnisotropyMode::Automatic, tr("Автоматически")},
-            {Settings::AnisotropyMode::Default, tr("По умолчанию")},
+            {Settings::AnisotropyMode::Automatic, tr("Automatic")},
+            {Settings::AnisotropyMode::Default, tr("Default")},
             {Settings::AnisotropyMode::X2, QStringLiteral("2x")},
             {Settings::AnisotropyMode::X4, QStringLiteral("4x")},
             {Settings::AnisotropyMode::X8, QStringLiteral("8x")},
             {Settings::AnisotropyMode::X16, QStringLiteral("16x")},
             {Settings::AnisotropyMode::X32, QStringLiteral("32x")},
             {Settings::AnisotropyMode::X64, QStringLiteral("64x")},
-            {Settings::AnisotropyMode::None, tr("Отключено")},
+            {Settings::AnisotropyMode::None, tr("Disabled")},
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1653,10 +1653,10 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_dec = Settings::values.accelerate_astc.GetValue();
         const std::vector<std::pair<Settings::AstcDecodeMode, QString>> options = {
-            {Settings::AstcDecodeMode::CpuAsynchronous, tr("ЦП Асинхронно")},
-            {Settings::AstcDecodeMode::Cpu, tr("ЦП")},
-            {Settings::AstcDecodeMode::Gpu, tr("ГПУ")},
-            {Settings::AstcDecodeMode::Hybrid, tr("Гибридный")},
+            {Settings::AstcDecodeMode::CpuAsynchronous, tr("CPU Asynchronous")},
+            {Settings::AstcDecodeMode::Cpu, tr("CPU")},
+            {Settings::AstcDecodeMode::Gpu, tr("GPU")},
+            {Settings::AstcDecodeMode::Hybrid, tr("Hybrid")},
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1682,10 +1682,10 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_rec = Settings::values.astc_recompression.GetValue();
         const std::vector<std::pair<Settings::AstcRecompression, QString>> options = {
-            {Settings::AstcRecompression::Uncompressed, tr("Без сжатия (Лучшее качество)")},
-            {Settings::AstcRecompression::Bc1, tr("BC1 (Низкое качество)")},
-            {Settings::AstcRecompression::Bc3, tr("BC3 (Среднее качество)")},
-            {Settings::AstcRecompression::Bc5, tr("BC5 (Высокое качество)")},
+            {Settings::AstcRecompression::Uncompressed, tr("Uncompressed (Best Quality)")},
+            {Settings::AstcRecompression::Bc1, tr("BC1 (Low Quality)")},
+            {Settings::AstcRecompression::Bc3, tr("BC3 (Medium Quality)")},
+            {Settings::AstcRecompression::Bc5, tr("BC5 (High Quality)")},
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1731,22 +1731,22 @@ void MainWindow::InitializeWidgets() {
         }
         QMenu context_menu(this);
         if (m_current_addons_title_id == 0) {
-            auto* act = context_menu.addAction(tr("⚠️ Нет выделенной или запущенной игры"));
+            auto* act = context_menu.addAction(tr("⚠️ No game selected or running"));
             act->setEnabled(false);
         } else {
             const FileSys::PatchManager patch_manager(m_current_addons_title_id, QtCommon::system->GetFileSystemController(), QtCommon::system->GetContentProvider());
             auto patches = patch_manager.GetPatches();
 
-            auto* title_act = context_menu.addAction(tr("🎮 Дополнения и патчи (ID: 0x%1)")
+            auto* title_act = context_menu.addAction(tr("🎮 Add-ons and Patches (ID: 0x%1)")
                 .arg(QStringLiteral("%1").arg(m_current_addons_title_id, 16, 16, QLatin1Char('0')).toUpper()));
             title_act->setEnabled(false);
             context_menu.addSeparator();
 
-            context_menu.addAction(tr("📋 Открыть менеджер дополнений..."), [this] {
+            context_menu.addAction(tr("📋 Open Add-ons Manager..."), [this] {
                 ShowDLCDialog(m_current_addons_title_id, m_current_addons_game_name);
             });
 
-            context_menu.addAction(tr("📑 Копировать список дополнений"), [this] {
+            context_menu.addAction(tr("📑 Copy Add-ons List"), [this] {
                 const FileSys::PatchManager pm(m_current_addons_title_id, QtCommon::system->GetFileSystemController(), QtCommon::system->GetContentProvider());
                 const auto pts = pm.GetPatches();
                 QStringList lines;
@@ -1756,15 +1756,15 @@ void MainWindow::InitializeWidgets() {
                 int idx = 1;
                 for (const auto& p : pts) {
                     if (p.type == FileSys::PatchType::DLC || p.type == FileSys::PatchType::Mod || p.type == FileSys::PatchType::Update) {
-                        QString ptype = (p.type == FileSys::PatchType::Update) ? tr("Обновление") :
-                                        (p.type == FileSys::PatchType::DLC) ? tr("Дополнение") : tr("Мод");
+                        QString ptype = (p.type == FileSys::PatchType::Update) ? tr("Update") :
+                                        (p.type == FileSys::PatchType::DLC) ? tr("DLC") : tr("Mod");
                         lines << QStringLiteral("%1. 0x%2 — [%3] %4 (%5)")
                             .arg(QString::number(idx++), QStringLiteral("%1").arg(p.title_id, 16, 16, QLatin1Char('0')).toUpper(),
-                                 ptype, QString::fromStdString(p.name), p.enabled ? tr("Включено") : tr("Отключено"));
+                                 ptype, QString::fromStdString(p.name), p.enabled ? tr("Enabled") : tr("Disabled"));
                     }
                 }
                 QGuiApplication::clipboard()->setText(lines.join(QLatin1Char('\n')));
-                statusBar()->showMessage(tr("Список дополнений скопирован в буфер обмена."), 3000);
+                statusBar()->showMessage(tr("Add-ons list copied to clipboard."), 3000);
             });
 
             context_menu.addSeparator();
@@ -1776,10 +1776,10 @@ void MainWindow::InitializeWidgets() {
                 QString icon = QStringLiteral("📦");
                 if (patch.type == FileSys::PatchType::Update) {
                     icon = QStringLiteral("🆙");
-                    name = tr("Обновление");
+                    name = tr("Update");
                 } else if (patch.type == FileSys::PatchType::DLC) {
                     icon = QStringLiteral("🧩");
-                    name = tr("Дополнение");
+                    name = tr("DLC");
                 } else if (patch.type == FileSys::PatchType::Mod) {
                     icon = QStringLiteral("⚡");
                 }
@@ -7567,14 +7567,14 @@ void MainWindow::UpdateAspectText() {
         val_text = QStringLiteral("16:10");
         break;
     case Settings::AspectRatio::Stretch:
-        val_text = tr("Растянуть");
+        val_text = tr("Stretch");
         break;
     default:
         val_text = QStringLiteral("16:9");
         break;
     }
-    aspect_ratio_button->setText(tr("СООТНОШЕНИЕ:\n%1").arg(val_text));
-    aspect_ratio_button->setToolTip(tr("Соотношение сторон экрана"));
+    aspect_ratio_button->setText(tr("ASPECT RATIO:\n%1").arg(val_text));
+    aspect_ratio_button->setToolTip(tr("Screen aspect ratio"));
 }
 
 void MainWindow::UpdateDmaText() {
@@ -7598,7 +7598,7 @@ void MainWindow::UpdateDmaText() {
         break;
     }
     dma_accuracy_button->setText(tr("DMA:\n%1").arg(val_text));
-    dma_accuracy_button->setToolTip(tr("Точность прямого доступа к памяти DMA"));
+    dma_accuracy_button->setToolTip(tr("Direct Memory Access (DMA) accuracy"));
 }
 
 void MainWindow::UpdateGpuFenceText() {
@@ -7624,8 +7624,8 @@ void MainWindow::UpdateGpuFenceText() {
         val_text = tr("По умолчанию");
         break;
     }
-    gpu_fence_button->setText(tr("БАРЬЕРЫ ГПУ:\n%1").arg(val_text));
-    gpu_fence_button->setToolTip(tr("Поведение барьеров ГПУ — синхронизация команд рендера"));
+    gpu_fence_button->setText(tr("GPU BARRIERS:\n%1").arg(val_text));
+    gpu_fence_button->setToolTip(tr("GPU fence behavior — render command synchronization"));
 }
 
 void MainWindow::UpdateVramText() {
@@ -7684,7 +7684,7 @@ void MainWindow::UpdateAnisotropyText() {
         val_text = tr("Автоматически");
         break;
     }
-    anisotropy_button->setText(tr("АНИЗОТРОПИЯ:\n%1").arg(val_text));
+    anisotropy_button->setText(tr("ANISOTROPY:\n%1").arg(val_text));
 }
 
 void MainWindow::UpdateAstcDecodeText() {
@@ -7704,7 +7704,7 @@ void MainWindow::UpdateAstcDecodeText() {
         val_text = QStringLiteral("ГИБРИД");
         break;
     }
-    astc_decode_button->setText(tr("ДЕКОД. ASTC:\n%1").arg(val_text));
+    astc_decode_button->setText(tr("ASTC DECODE:\n%1").arg(val_text));
 }
 
 void MainWindow::UpdateAstcRecompressText() {
@@ -7724,7 +7724,7 @@ void MainWindow::UpdateAstcRecompressText() {
         val_text = QStringLiteral("BC5");
         break;
     }
-    astc_recompress_button->setText(tr("ПЕРЕСЖ. ASTC:\n%1").arg(val_text));
+    astc_recompress_button->setText(tr("ASTC RECOMP:\n%1").arg(val_text));
 }
 
 void MainWindow::UpdateResScaleText() {
@@ -7747,7 +7747,7 @@ void MainWindow::UpdateResScaleText() {
     case Settings::ResolutionSetup::Res8X: val_text = is_docked ? QStringLiteral("8X (8640p)") : QStringLiteral("8X (5760p)"); break;
     default: break;
     }
-    res_scale_button->setText(tr("МАСШТАБ:\n%1").arg(val_text));
+    res_scale_button->setText(tr("SCALE:\n%1").arg(val_text));
 }
 
 void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name) {
@@ -7759,9 +7759,9 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
         m_current_addons_game_name = game_name;
     }
     if (m_current_addons_title_id == 0) {
-        addons_status_button->setText(tr("ДОПОЛНЕНИЯ:\nНет"));
+        addons_status_button->setText(tr("ADD-ONS:\nNone"));
         addons_status_button->setStyleSheet(QString{});
-        addons_status_button->setToolTip(tr("Выберите или запустите игру для просмотра дополнений"));
+        addons_status_button->setToolTip(tr("Select or launch a game to view add-ons"));
         return;
     }
 
@@ -8233,10 +8233,10 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         auto* recomp_menu = context_menu.addMenu(tr("📦 Пересжатие ASTC"));
         const auto cur_rec = Settings::values.astc_recompression.GetValue();
         const std::vector<std::pair<Settings::AstcRecompression, QString>> rec_options = {
-            {Settings::AstcRecompression::Uncompressed, tr("Без сжатия (Лучшее качество)")},
-            {Settings::AstcRecompression::Bc1, tr("BC1 (Низкое качество)")},
-            {Settings::AstcRecompression::Bc3, tr("BC3 (Среднее качество)")},
-            {Settings::AstcRecompression::Bc5, tr("BC5 (Высокое качество)")},
+            {Settings::AstcRecompression::Uncompressed, tr("Uncompressed (Best Quality)")},
+            {Settings::AstcRecompression::Bc1, tr("BC1 (Low Quality)")},
+            {Settings::AstcRecompression::Bc3, tr("BC3 (Medium Quality)")},
+            {Settings::AstcRecompression::Bc5, tr("BC5 (High Quality)")},
         };
         for (const auto& opt : rec_options) {
             auto* act = recomp_menu->addAction(opt.second, [this, opt] {
@@ -8333,10 +8333,10 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         auto* dma_menu = context_menu.addMenu(tr("⚡ Точность DMA"));
         const auto cur_dma = Settings::values.dma_accuracy.GetValue();
         const std::vector<std::pair<Settings::DmaAccuracy, QString>> dma_options = {
-            {Settings::DmaAccuracy::Default, tr("По умолчанию")},
-            {Settings::DmaAccuracy::Normal, tr("Нормально")},
-            {Settings::DmaAccuracy::Unsafe, tr("Небезопасно")},
-            {Settings::DmaAccuracy::Safe, tr("Безопасно")},
+            {Settings::DmaAccuracy::Default, tr("Default")},
+            {Settings::DmaAccuracy::Normal, tr("Normal")},
+            {Settings::DmaAccuracy::Unsafe, tr("Unsafe")},
+            {Settings::DmaAccuracy::Safe, tr("Safe")},
         };
         for (const auto& item : dma_options) {
             auto* act = dma_menu->addAction(item.second, [this, item] {
@@ -8351,11 +8351,11 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         auto* fence_menu = context_menu.addMenu(tr("🛡️ Поведение барьеров ГПУ"));
         const auto cur_fence = Settings::values.gpu_fence_behavior.GetValue();
         const std::vector<std::pair<Settings::GpuFenceBehavior, QString>> fence_options = {
-            {Settings::GpuFenceBehavior::Default, tr("По умолчанию")},
-            {Settings::GpuFenceBehavior::Immediate, tr("Немедленно")},
-            {Settings::GpuFenceBehavior::Balanced, tr("Сбалансированно")},
-            {Settings::GpuFenceBehavior::Accurate, tr("Точно")},
-            {Settings::GpuFenceBehavior::Strict, tr("Строго")},
+            {Settings::GpuFenceBehavior::Default, tr("Default")},
+            {Settings::GpuFenceBehavior::Immediate, tr("Immediate")},
+            {Settings::GpuFenceBehavior::Balanced, tr("Balanced")},
+            {Settings::GpuFenceBehavior::Accurate, tr("Accurate")},
+            {Settings::GpuFenceBehavior::Strict, tr("Strict")},
         };
         for (const auto& item : fence_options) {
             auto* act = fence_menu->addAction(item.second, [this, item] {
@@ -8406,7 +8406,7 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             {Settings::AspectRatio::R4_3, QStringLiteral("4:3")},
             {Settings::AspectRatio::R21_9, QStringLiteral("21:9")},
             {Settings::AspectRatio::R16_10, QStringLiteral("16:10")},
-            {Settings::AspectRatio::Stretch, tr("Растянуть на весь экран")},
+            {Settings::AspectRatio::Stretch, tr("Stretch to Window")},
         };
         for (const auto& opt : aspect_options) {
             auto* act = aspect_menu->addAction(opt.second, [this, opt] {
@@ -8421,9 +8421,9 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         auto* vram_menu = context_menu.addMenu(tr("💾 Видеопамять"));
         const auto cur_vram = Settings::values.vram_usage_mode.GetValue();
         const std::vector<std::pair<Settings::VramUsageMode, QString>> vram_options = {
-            {Settings::VramUsageMode::Conservative, tr("Экономный")},
-            {Settings::VramUsageMode::Normal, tr("Нормальный")},
-            {Settings::VramUsageMode::Aggressive, tr("Агрессивный")},
+            {Settings::VramUsageMode::Conservative, tr("Conservative")},
+            {Settings::VramUsageMode::Normal, tr("Normal")},
+            {Settings::VramUsageMode::Aggressive, tr("Aggressive")},
         };
         for (const auto& opt : vram_options) {
             auto* act = vram_menu->addAction(opt.second, [this, opt] {
@@ -8438,15 +8438,15 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         auto* aniso_menu = context_menu.addMenu(tr("🔍 Анизотропная фильтрация"));
         const auto cur_aniso = Settings::values.max_anisotropy.GetValue();
         const std::vector<std::pair<Settings::AnisotropyMode, QString>> aniso_options = {
-            {Settings::AnisotropyMode::Automatic, tr("Автоматически")},
-            {Settings::AnisotropyMode::Default, tr("По умолчанию")},
+            {Settings::AnisotropyMode::Automatic, tr("Automatic")},
+            {Settings::AnisotropyMode::Default, tr("Default")},
             {Settings::AnisotropyMode::X2, QStringLiteral("2x")},
             {Settings::AnisotropyMode::X4, QStringLiteral("4x")},
             {Settings::AnisotropyMode::X8, QStringLiteral("8x")},
             {Settings::AnisotropyMode::X16, QStringLiteral("16x")},
             {Settings::AnisotropyMode::X32, QStringLiteral("32x")},
             {Settings::AnisotropyMode::X64, QStringLiteral("64x")},
-            {Settings::AnisotropyMode::None, tr("Отключено")},
+            {Settings::AnisotropyMode::None, tr("Disabled")},
         };
         for (const auto& opt : aniso_options) {
             auto* act = aniso_menu->addAction(opt.second, [this, opt] {
@@ -9227,7 +9227,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
             const u32 dlc_ver = provider.GetEntryVersion(entry.title_id).value_or(0);
 
             rows.push_back({
-                tr("Дополнение"),
+                tr("DLC"),
                 QString::fromStdString(fmt::format("{:016X}", entry.title_id)),
                 dlc_name,
                 dlc_desc,
@@ -9255,7 +9255,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                     const QString dlc_desc = resolve_dlc_desc(generated_tid, total_dlcs);
 
                     rows.push_back({
-                        tr("Дополнение"),
+                        tr("DLC"),
                         QString::fromStdString(fmt::format("{:016X}", generated_tid)),
                         dlc_name,
                         dlc_desc,
@@ -9278,7 +9278,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
             const QString upd_desc = tr("Накопительный пакет обновлений. Включает оптимизацию производительности, исправления ошибок и актуальные игровые данные.");
 
             rows.push_back({
-                tr("Обновление"),
+                tr("Update"),
                 QString::fromStdString(fmt::format("{:016X}", p.title_id)),
                 upd_name,
                 upd_desc,
@@ -9297,7 +9297,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
             }
             total_mods++;
             rows.push_back({
-                tr("Мод"),
+                tr("Mod"),
                 QString::fromStdString(fmt::format("{:016X}", p.title_id)),
                 QString::fromStdString(p.name),
                 tr("Пользовательская модификация игры (LayeredFS)"),
@@ -9327,7 +9327,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                             const QString upd_desc = tr("Накопительный пакет обновлений, вшитый в файл игры. Включает исправления и игровые ресурсы.");
 
                             rows.push_back({
-                                tr("Обновление"),
+                                tr("Update"),
                                 QString::fromStdString(fmt::format("{:016X}", nca_tid)),
                                 upd_name,
                                 upd_desc,
@@ -9351,7 +9351,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                             const QString dlc_desc = resolve_dlc_desc(nca_tid, total_dlcs);
 
                             rows.push_back({
-                                tr("Дополнение"),
+                                tr("DLC"),
                                 QString::fromStdString(fmt::format("{:016X}", nca_tid)),
                                 dlc_name,
                                 dlc_desc,
@@ -9379,7 +9379,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
             const QString upd_desc = tr("Накопительный пакет обновлений, вшитый в файл игры. Включает исправления и игровые ресурсы.");
 
             rows.push_back({
-                tr("Обновление"),
+                tr("Update"),
                 QString::fromStdString(fmt::format("{:016X}", upd_tid)),
                 upd_name,
                 upd_desc,
@@ -9406,7 +9406,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
                     const QString dlc_desc = resolve_dlc_desc(generated_tid, i);
 
                     rows.push_back({
-                        tr("Дополнение"),
+                        tr("DLC"),
                         QString::fromStdString(fmt::format("{:016X}", generated_tid)),
                         dlc_name,
                         dlc_desc,
@@ -9443,7 +9443,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
             }
 
             rows.push_back({
-                tr("Дополнение"),
+                tr("DLC"),
                 QString::fromStdString(fmt::format("{:016X}", dlc_tid)),
                 cleaned,
                 desc_str,
@@ -9559,11 +9559,11 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         auto* item1 = new QTableWidgetItem(r.type);
         item1->setTextAlignment(Qt::AlignCenter);
-        if (r.type == tr("Обновление")) {
+        if (r.type == tr("Update")) {
             item1->setForeground(QColor("#ffca28"));
-        } else if (r.type == tr("Дополнение")) {
+        } else if (r.type == tr("DLC")) {
             item1->setForeground(QColor("#00e5ff"));
-        } else if (r.type == tr("Мод")) {
+        } else if (r.type == tr("Mod")) {
             item1->setForeground(QColor("#e040fb"));
         }
         table->setItem(row_idx, 1, item1);

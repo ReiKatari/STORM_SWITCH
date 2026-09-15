@@ -14,7 +14,7 @@
     <string name="app_notification_running">STORM SWITCH is Running</string>
     <string name="seconds">Seconds</string>
     <string name="copy_to_clipboard">Copy Info</string>
-    <string name="view_logs">Журнал работы (Логи)</string>
+    <string name="view_logs">View logs</string>
 
     <!-- Spinbox strings -->
     <string name="increment">Increment</string>

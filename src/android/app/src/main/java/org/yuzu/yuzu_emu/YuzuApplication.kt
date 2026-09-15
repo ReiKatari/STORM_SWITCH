@@ -50,11 +50,22 @@ class YuzuApplication : Application() {
         noticeChannel.description = getString(R.string.notice_notification_channel_description)
         noticeChannel.setSound(null, null)
 
+        val stormDownloadChannel = NotificationChannel(
+            "storm_downloads_channel",
+            "STORM GAMES WORLD Загрузки",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            setDescription("Уведомления о скачивании игр и обновлений")
+            setSound(null, null)
+            enableVibration(false)
+        }
+
         // Register the channel with the system; you can't change the importance
         // or other notification behaviors after this
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(noticeChannel)
         notificationManager.createNotificationChannel(foregroundService)
+        notificationManager.createNotificationChannel(stormDownloadChannel)
     }
 
     override fun attachBaseContext(base: Context) {
@@ -147,6 +158,10 @@ class YuzuApplication : Application() {
             "zh-CN", "zh-TW", "pl", "cs", "nb", "hu", "uk", "vi", "id", "ar", "ckb", "fa", "he", "sr", "th"
         )
 
+        fun getLocalizedContext(): Context {
+            return applyLanguage(appContext)
+        }
+
         fun setAppLocale(languageIndex: Int) {
             val langCode = if (languageIndex in LANGUAGE_CODES.indices) {
                 LANGUAGE_CODES[languageIndex]
@@ -159,9 +174,11 @@ class YuzuApplication : Application() {
                     .putInt("app_language", languageIndex)
                     .putString("app_language_code", langCode)
                     .apply()
+                IntSetting.APP_LANGUAGE.setInt(languageIndex)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            applyLanguage(appContext)
             if (langCode == "system") {
                 androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(
                     androidx.core.os.LocaleListCompat.getEmptyLocaleList()

@@ -105,6 +105,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Keep emulation running in background"/>
         </service>
 
+        <service
+            android:name="org.yuzu.yuzu_emu.services.StormDownloadService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Download games and updates in background"/>
+        </service>
+
         <provider
             android:name=".features.DocumentProvider"
             android:authorities="${applicationId}.user"

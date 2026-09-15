@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 setlocal enabledelayedexpansion
 
 echo ===================================================
@@ -28,8 +28,8 @@ cd /d "%BUILD_DIR%"
 echo [1/3] Running CMake configuration...
 "%CMAKE%" -G "Ninja" -DCMAKE_MAKE_PROGRAM="%NINJA%" ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DGIT_TAG="8.6.4" ^
-    -DGIT_RELEASE="8.6.4" ^
+    -DGIT_TAG="8.6.5" ^
+    -DGIT_RELEASE="8.6.5" ^
     -DENABLE_QT=ON ^
     -DENABLE_QT_TRANSLATION=ON ^
     -DYUZU_USE_BUNDLED_QT=ON ^

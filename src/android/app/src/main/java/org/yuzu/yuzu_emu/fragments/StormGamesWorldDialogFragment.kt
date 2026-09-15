@@ -22,6 +22,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import kotlinx.coroutines.flow.collectLatest
+import org.yuzu.yuzu_emu.services.StormDownloadManager
+import org.yuzu.yuzu_emu.services.StormDownloadProgress
+import org.yuzu.yuzu_emu.services.StormDownloadStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -153,10 +157,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     private val filteredGames = mutableListOf<StormWorldGameItem>()
     private var selectedGame: StormWorldGameItem? = null
 
-    private var activeDownloadCall: Call? = null
-    private var isDownloading = false
-    private var isPaused = false
-    private var isCancelled = false
+
 
     private val httpClient get() = sharedHttpClient
 
@@ -237,11 +238,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         binding.recyclerGames.adapter = GamesAdapter()
 
         binding.btnClose.setOnClickListener {
-            if (isDownloading) {
-                Toast.makeText(requireContext(), "Идёт скачивание игры. Отмените перед закрытием.", Toast.LENGTH_SHORT).show()
-            } else {
-                dismiss()
+            if (StormDownloadManager.isDownloading()) {
+                Toast.makeText(requireContext(), "Загрузка игры продолжается в фоновом режиме", Toast.LENGTH_SHORT).show()
             }
+            dismiss()
         }
 
         binding.btnRefresh.setOnClickListener {
@@ -258,17 +258,21 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         binding.btnStartDownload.setOnClickListener {
             val game = selectedGame ?: return@setOnClickListener
-            isCancelled = false
-            isPaused = false
-            startDownload(game)
+            StormDownloadManager.startDownload(requireContext(), game)
         }
 
         binding.btnPauseDownload.setOnClickListener {
-            togglePauseDownload()
+            StormDownloadManager.togglePause(requireContext())
         }
 
         binding.btnCancelDownload.setOnClickListener {
-            cancelDownload()
+            StormDownloadManager.cancelDownload(requireContext())
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            StormDownloadManager.state.collectLatest { progress ->
+                updateDownloadUi(progress)
+            }
         }
 
         val cached = getCachedCatalog(requireContext())
@@ -450,23 +454,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val targetDir = getTargetDownloadDirectoryDescription()
         binding.detailSaveFolder.text = "📁 Каталог: $targetDir"
 
-        if (game.isDownloaded) {
-            binding.btnStartDownload.text = "Скачано"
-            binding.btnStartDownload.setIconResource(R.drawable.ic_check)
-            binding.btnStartDownload.isEnabled = false
-            binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
-            binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
-            binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
-            binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
-        } else {
-            binding.btnStartDownload.text = "Скачать игру"
-            binding.btnStartDownload.setIconResource(R.drawable.ic_install)
-            binding.btnStartDownload.isEnabled = !isDownloading
-            binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
-            binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
-            binding.btnStartDownload.setTextColor(0xFF94A3B8.toInt())
-            binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
-        }
+        updateDownloadUi(StormDownloadManager.state.value)
 
         fetchGameDetails(game)
     }
@@ -476,7 +464,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.6.4 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.6.5 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -522,7 +510,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.6.4 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.6.5 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -566,345 +554,97 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         return defaultDir.name
     }
 
-    private fun togglePauseDownload() {
-        if (!isDownloading && !isPaused) return
+    private fun updateDownloadUi(progress: StormDownloadProgress?) {
+        if (_binding == null) return
+        val game = selectedGame
 
-        if (!isPaused) {
-            isPaused = true
-            activeDownloadCall?.cancel()
-            binding.btnPauseDownload.text = "Продолжить"
-            binding.textDownloadStats.text = "⏸ Загрузка приостановлена"
-            binding.btnStartDownload.isEnabled = true
-            binding.btnStartDownload.text = "Возобновить"
-        } else {
-            isPaused = false
-            binding.btnPauseDownload.text = "Пауза"
-            val game = selectedGame ?: return
-            startDownload(game)
-        }
-    }
-
-    private fun startDownload(game: StormWorldGameItem) {
-        if (isDownloading) return
-
-        isDownloading = true
-        isCancelled = false
-        isPaused = false
-        binding.btnStartDownload.isEnabled = false
-        binding.layoutDownloadProgress.isVisible = true
-        binding.progressDownload.isIndeterminate = true
-        binding.btnPauseDownload.text = "Пауза"
-        binding.textDownloadStats.text = "Подключение к серверу загрузки..."
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            val cleanTitle = (if (game.finalTitle.isNotEmpty()) game.finalTitle else game.title)
-                .replace(Regex("[\\\\/:*?\"<>|]"), "_")
-                .trim()
-            val baseFilename = if (cleanTitle.endsWith(".nsp", ignoreCase = true) ||
-                cleanTitle.endsWith(".xci", ignoreCase = true) ||
-                cleanTitle.endsWith(".nsz", ignoreCase = true)) {
-                cleanTitle
-            } else {
-                "$cleanTitle${game.realExtension}"
-            }
-            val partFilename = "$baseFilename.part"
-
-            val gameDirs = NativeConfig.getGameDirs()
-            val firstDir = gameDirs.firstOrNull()
-            var isSaf = false
-            var targetFolder: File? = null
-            var safTree: DocumentFile? = null
-            var targetDocPart: DocumentFile? = null
-            var targetNormalPart: File? = null
-
-            if (firstDir != null) {
-                val dirUri = Uri.parse(firstDir.uriString)
-                if (dirUri.scheme == "content") {
-                    isSaf = true
-                    safTree = DocumentFile.fromTreeUri(requireContext(), dirUri)
+        if (progress == null || progress.status == StormDownloadStatus.IDLE || progress.status == StormDownloadStatus.CANCELLED) {
+            binding.layoutDownloadProgress.isVisible = false
+            if (game != null) {
+                if (game.isDownloaded) {
+                    binding.btnStartDownload.text = "Скачано"
+                    binding.btnStartDownload.setIconResource(R.drawable.ic_check)
+                    binding.btnStartDownload.isEnabled = false
+                    binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+                    binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+                    binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
+                    binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
                 } else {
-                    val p = dirUri.path ?: firstDir.uriString
-                    targetFolder = File(p)
-                    if (!targetFolder.exists()) targetFolder.mkdirs()
+                    binding.btnStartDownload.text = "Скачать игру"
+                    binding.btnStartDownload.setIconResource(R.drawable.ic_install)
+                    binding.btnStartDownload.isEnabled = true
+                    binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
+                    binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
+                    binding.btnStartDownload.setTextColor(0xFF94A3B8.toInt())
+                    binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
                 }
             }
-            if (!isSaf && targetFolder == null) {
-                targetFolder = File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                    "STORM_SWITCH_GAMES"
-                )
-                if (!targetFolder.exists()) targetFolder.mkdirs()
-            }
+            return
+        }
 
-            var retryCount = 0
-            val maxRetries = 5
-            var completed = false
-
-            while (retryCount <= maxRetries && !isCancelled && !isPaused && !completed) {
-                var outputStream: OutputStream? = null
-                var inputStream: InputStream? = null
-
-                try {
-                    var existingBytes = 0L
-
-                    if (isSaf && safTree != null) {
-                        targetDocPart = safTree.findFile(partFilename)
-                        if (targetDocPart != null && targetDocPart.exists()) {
-                            existingBytes = targetDocPart.length()
-                            outputStream = requireContext().contentResolver.openOutputStream(targetDocPart.uri, "wa")
-                        } else {
-                            targetDocPart = safTree.createFile("application/octet-stream", partFilename)
-                            if (targetDocPart != null) {
-                                outputStream = requireContext().contentResolver.openOutputStream(targetDocPart.uri, "w")
-                            }
-                        }
-                    } else if (targetFolder != null) {
-                        targetNormalPart = File(targetFolder, partFilename)
-                        if (targetNormalPart.exists()) {
-                            existingBytes = targetNormalPart.length()
-                        }
-                        outputStream = FileOutputStream(targetNormalPart, true)
-                    }
-
-                    if (outputStream == null) {
-                        throw RuntimeException("Не удалось открыть файл для записи")
-                    }
-
-                    val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
-                    val reqBuilder = Request.Builder()
-                        .url(downloadUrl)
-                        .header("User-Agent", "STORM_SWITCH/8.6.4 (Android)")
-
-                    if (existingBytes > 0L) {
-                        reqBuilder.header("Range", "bytes=$existingBytes-")
-                    }
-
-                    val req = reqBuilder.build()
-                    val call = httpClient.newCall(req)
-                    activeDownloadCall = call
-
-                    withContext(Dispatchers.Main) {
-                        if (_binding != null) {
-                            if (retryCount > 0) {
-                                binding.textDownloadStats.text = "Восстановление соединения (попытка $retryCount из $maxRetries)..."
-                            } else if (existingBytes > 0L) {
-                                val mb = existingBytes / (1024 * 1024)
-                                binding.textDownloadStats.text = "Возобновление загрузки с ${mb} МБ..."
-                            } else {
-                                binding.textDownloadStats.text = "Подключение к серверу загрузки..."
-                            }
-                        }
-                    }
-
-                    val resp = call.execute()
-
-                    if (resp.code == 416) {
-                        outputStream.close()
-                        completed = true
-                        break
-                    }
-
-                    if (!resp.isSuccessful) {
-                        throw RuntimeException("HTTP ${resp.code}: ${resp.message}")
-                    }
-
-                    val body = resp.body ?: throw RuntimeException("Пустой ответ сервера")
-                    val isPartial = (resp.code == 206)
-
-                    if (existingBytes > 0L && !isPartial) {
-                        outputStream.close()
-                        if (isSaf && targetDocPart != null) {
-                            outputStream = requireContext().contentResolver.openOutputStream(targetDocPart.uri, "w")
-                        } else if (targetNormalPart != null) {
-                            outputStream = FileOutputStream(targetNormalPart, false)
-                        }
-                        existingBytes = 0L
-                    }
-
-                    val streamLen = body.contentLength()
-                    val totalBytes = if (isPartial) {
-                        existingBytes + (if (streamLen > 0) streamLen else 0L)
-                    } else {
-                        if (streamLen > 0) streamLen else game.fileSizeBytes
-                    }
-
-                    val bufferedOut = BufferedOutputStream(outputStream, 1024 * 1024)
-                    outputStream = bufferedOut
-                    val bufferedIn = BufferedInputStream(body.byteStream(), 1024 * 1024)
-                    inputStream = bufferedIn
-                    val buffer = ByteArray(512 * 1024)
-                    var totalRead = existingBytes
-                    var lastUpdateTime = System.currentTimeMillis()
-                    var bytesSinceLastUpdate = 0L
-                    var currentSpeedMbps = 0.0
-
-                    withContext(Dispatchers.Main) {
-                        if (_binding != null) {
-                            binding.progressDownload.isIndeterminate = false
-                        }
-                    }
-
-                    while (true) {
-                        if (isPaused || isCancelled) break
-                        val bytesRead = bufferedIn.read(buffer)
-                        if (bytesRead == -1) break
-
-                        bufferedOut.write(buffer, 0, bytesRead)
-                        totalRead += bytesRead
-                        bytesSinceLastUpdate += bytesRead
-
-                        val now = System.currentTimeMillis()
-                        val delta = now - lastUpdateTime
-                        if (delta >= 500) {
-                            currentSpeedMbps = (bytesSinceLastUpdate.toDouble() / (1024.0 * 1024.0)) / (delta.toDouble() / 1000.0)
-                            bytesSinceLastUpdate = 0L
-                            lastUpdateTime = now
-
-                            val pct = if (totalBytes > 0) ((totalRead * 100) / totalBytes).toInt() else 0
-                            val recMb = totalRead.toDouble() / (1024.0 * 1024.0)
-                            val totMb = if (totalBytes > 0) totalBytes.toDouble() / (1024.0 * 1024.0) else 0.0
-                            val remMb = (totMb - recMb).coerceAtLeast(0.0)
-                            val etaSec = if (currentSpeedMbps > 0.05) (remMb / currentSpeedMbps).toInt() else 0
-
-                            val df = java.text.DecimalFormat("#,##0.0", java.text.DecimalFormatSymbols(Locale("ru", "RU")).apply {
-                                groupingSeparator = ' '
-                                decimalSeparator = ','
-                            })
-                            val statsText = if (totMb > 0) {
-                                val line1 = "Скачано: ${df.format(recMb)} МБ из ${df.format(totMb)} МБ ($pct%)"
-                                val line2 = "Скорость: ${df.format(currentSpeedMbps)} МБ/с • Осталось: ${etaSec / 60} мин ${etaSec % 60} сек"
-                                "$line1\n$line2"
-                            } else {
-                                val line1 = "Скачано: ${df.format(recMb)} МБ"
-                                val line2 = "Скорость: ${df.format(currentSpeedMbps)} МБ/с"
-                                "$line1\n$line2"
-                            }
-
-                            withContext(Dispatchers.Main) {
-                                if (_binding != null) {
-                                    binding.progressDownload.progress = pct
-                                    binding.textDownloadStats.text = statsText
-                                }
-                            }
-                        }
-                    }
-
-                    outputStream?.flush()
-
-                    if (!isPaused && !isCancelled) {
-                        completed = true
-                        break
-                    }
-
-                } catch (e: Exception) {
-                    if (isPaused || isCancelled) {
-                        break
-                    }
-                    Log.error("[StormGamesWorld] Download interrupted: ${e.message}")
-                    retryCount++
-                    if (retryCount <= maxRetries) {
-                        withContext(Dispatchers.Main) {
-                            if (_binding != null) {
-                                binding.textDownloadStats.text = "Обрыв соединения (${e.localizedMessage ?: "Сбой"}). Повтор $retryCount из $maxRetries..."
-                            }
-                        }
-                        delay(retryCount * 1500L)
-                    } else {
-                        throw e
-                    }
-                } finally {
-                    try { inputStream?.close() } catch (_: Exception) {}
-                    try { outputStream?.flush() } catch (_: Exception) {}
-                    try { outputStream?.close() } catch (_: Exception) {}
-                }
-            }
-
-            if (completed) {
-                try {
-                    if (isSaf && safTree != null && targetDocPart != null) {
-                        val existingFinal = safTree.findFile(baseFilename)
-                        if (existingFinal != null && existingFinal.exists()) {
-                            existingFinal.delete()
-                        }
-                        targetDocPart.renameTo(baseFilename)
-                    } else if (targetNormalPart != null) {
-                        val finalFile = File(targetNormalPart.parentFile, baseFilename)
-                        if (finalFile.exists()) finalFile.delete()
-                        targetNormalPart.renameTo(finalFile)
-                    }
-                } catch (e: Exception) {
-                    Log.error("[StormGamesWorld] Rename error: ${e.message}")
+        if (game?.id == progress.game.id) {
+            when (progress.status) {
+                StormDownloadStatus.CONNECTING -> {
+                    binding.layoutDownloadProgress.isVisible = true
+                    binding.progressDownload.isIndeterminate = true
+                    binding.textDownloadStats.text = progress.statsText
+                    binding.btnStartDownload.isEnabled = false
+                    binding.btnStartDownload.text = "Подключение..."
+                    binding.btnPauseDownload.text = "Пауза"
                 }
 
-                withContext(Dispatchers.Main) {
-                    isDownloading = false
-                    isPaused = false
-                    activeDownloadCall = null
+                StormDownloadStatus.DOWNLOADING -> {
+                    binding.layoutDownloadProgress.isVisible = true
+                    binding.progressDownload.isIndeterminate = false
+                    binding.progressDownload.progress = progress.progressPercent
+                    binding.textDownloadStats.text = progress.statsText
+                    binding.btnStartDownload.isEnabled = false
+                    binding.btnStartDownload.text = "Идет загрузка..."
+                    binding.btnPauseDownload.text = "Пауза"
+                }
+
+                StormDownloadStatus.PAUSED -> {
+                    binding.layoutDownloadProgress.isVisible = true
+                    binding.progressDownload.isIndeterminate = false
+                    binding.progressDownload.progress = progress.progressPercent
+                    binding.textDownloadStats.text = progress.statsText
+                    binding.btnStartDownload.isEnabled = true
+                    binding.btnStartDownload.text = "Возобновить"
+                    binding.btnPauseDownload.text = "Продолжить"
+                }
+
+                StormDownloadStatus.COMPLETED -> {
+                    binding.layoutDownloadProgress.isVisible = false
+                    binding.btnStartDownload.text = "Скачано"
+                    binding.btnStartDownload.setIconResource(R.drawable.ic_check)
+                    binding.btnStartDownload.isEnabled = false
+                    binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+                    binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
+                    binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
+                    binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
                     game.isDownloaded = true
-                    if (_binding != null) {
-                        binding.layoutDownloadProgress.isVisible = false
-                        binding.btnStartDownload.text = "Скачано"
-                        binding.btnStartDownload.setIconResource(R.drawable.ic_check)
-                        binding.btnStartDownload.isEnabled = false
-                        binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
-                        binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
-                        binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
-                        binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
-                        binding.recyclerGames.adapter?.notifyDataSetChanged()
-                    }
-                    Toast.makeText(requireContext(), "✅ Игра успешно скачана: ${game.finalTitle.ifEmpty { game.title }}", Toast.LENGTH_LONG).show()
+                    binding.recyclerGames.adapter?.notifyDataSetChanged()
                     gamesViewModel.reloadGames(directoriesChanged = true)
                 }
-            } else if (isPaused) {
-                withContext(Dispatchers.Main) {
-                    isDownloading = false
-                    activeDownloadCall = null
-                    if (_binding != null) {
-                        binding.btnPauseDownload.text = "Продолжить"
-                        binding.btnStartDownload.isEnabled = true
-                        binding.btnStartDownload.text = "Возобновить"
-                    }
+
+                StormDownloadStatus.ERROR -> {
+                    binding.layoutDownloadProgress.isVisible = true
+                    binding.textDownloadStats.text = progress.statsText
+                    binding.btnStartDownload.isEnabled = true
+                    binding.btnStartDownload.text = "Повторить"
+                    binding.btnPauseDownload.text = "Повторить"
                 }
-            } else if (!isCancelled) {
-                withContext(Dispatchers.Main) {
-                    isDownloading = false
-                    activeDownloadCall = null
-                    if (_binding != null) {
-                        binding.btnStartDownload.isEnabled = true
-                        binding.btnStartDownload.text = "Продолжить скачивание"
-                        binding.textDownloadStats.text = "Загрузка прервана. Нажмите «Продолжить скачивание»."
-                    }
-                    Toast.makeText(requireContext(), "Загрузка прервана. Прогресс сохранён — можно докачать!", Toast.LENGTH_LONG).show()
-                }
+
+                else -> {}
+            }
+        } else {
+            if (progress.status == StormDownloadStatus.DOWNLOADING || progress.status == StormDownloadStatus.CONNECTING) {
+                binding.textCatalogStatus.text = "Фоновая загрузка: ${progress.game.finalTitle.ifEmpty { progress.game.title }} (${progress.progressPercent}%)"
             }
         }
-    }
-
-    private fun cancelDownload() {
-        if (!isDownloading && !isPaused) return
-        isCancelled = true
-        isPaused = false
-        activeDownloadCall?.cancel()
-        activeDownloadCall = null
-        isDownloading = false
-        binding.layoutDownloadProgress.isVisible = false
-        binding.btnStartDownload.text = "Скачать игру"
-        binding.btnStartDownload.setIconResource(R.drawable.ic_install)
-        binding.btnStartDownload.isEnabled = true
-        binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
-        binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
-        binding.btnStartDownload.setTextColor(0xFF94A3B8.toInt())
-        binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
-        binding.btnPauseDownload.text = "Пауза"
-        Toast.makeText(requireContext(), "Загрузка отменена (прогресс сохранён)", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {
-        if (isDownloading) {
-            isPaused = true
-            activeDownloadCall?.cancel()
-            activeDownloadCall = null
-        }
         super.onDestroyView()
         _binding = null
     }
@@ -967,7 +707,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             } else {
                 holder.b.btnGameAction.text = "Скачать"
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_install)
-                holder.b.btnGameAction.isEnabled = !isDownloading
+                holder.b.btnGameAction.isEnabled = !StormDownloadManager.isDownloading()
                 holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
                 holder.b.btnGameAction.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
                 holder.b.btnGameAction.setTextColor(0xFF94A3B8.toInt())
@@ -976,8 +716,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
             holder.b.btnGameAction.setOnClickListener {
                 onGameSelected(item)
-                if (!item.isDownloaded && !isDownloading) {
-                    startDownload(item)
+                if (!item.isDownloaded && !StormDownloadManager.isDownloading()) {
+                    StormDownloadManager.startDownload(holder.itemView.context, item)
                 }
             }
 
@@ -1023,7 +763,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 try {
                     val req = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                        .header("User-Agent", "STORM_SWITCH/8.6.4 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.6.5 (Android)")
                         .build()
                     val resp = httpClient.newCall(req).execute()
                     val body = resp.body?.string().orEmpty()
@@ -1222,7 +962,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.6.4 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.6.5 (Android)")
                     .build()
 
                 val resp = sharedHttpClient.newCall(req).execute()
@@ -1312,7 +1052,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 val headReq = Request.Builder()
                                     .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                                     .head()
-                                    .header("User-Agent", "STORM_SWITCH/8.6.4 (Android)")
+                                    .header("User-Agent", "STORM_SWITCH/8.6.5 (Android)")
                                     .build()
                                 val headResp = sharedHttpClient.newCall(headReq).execute()
                                 val isOk = headResp.isSuccessful

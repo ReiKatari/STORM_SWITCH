@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+﻿# SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # SPDX-FileCopyrightText: 2019 yuzu Emulator Project
@@ -21,8 +21,8 @@ if (DEFINED GIT_RELEASE AND NOT GIT_RELEASE STREQUAL "")
 elseif (DEFINED GIT_TAG AND NOT GIT_TAG STREQUAL "")
     set(BUILD_VERSION "${GIT_TAG}")
 else()
-    set(BUILD_VERSION "8.6.4")
-    set(GIT_TAG "8.6.4")
+    set(BUILD_VERSION "8.6.5")
+    set(GIT_TAG "8.6.5")
 endif()
 set(GIT_REFSPEC "main")
 set(IS_DEV_BUILD false)

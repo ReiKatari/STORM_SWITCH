@@ -103,22 +103,22 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
 
     ui->setupUi(this);
 
-    ui->tabWidget->addTab(addons_tab.get(), tr("Дополнения"));
-    ui->tabWidget->addTab(gamebanana_tab.get(), tr("🍌 Моды GameBanana"));
-    ui->tabWidget->addTab(amiibo_tab.get(), tr("🕹️ Amiibo"));
-    ui->tabWidget->addTab(cheats_tab.get(), tr("⚡ Чит-коды"));
-    ui->tabWidget->addTab(system_tab.get(), tr("Система"));
-    ui->tabWidget->addTab(cpu_tab.get(), tr("ЦП"));
-    ui->tabWidget->addTab(graphics_tab.get(), tr("Графика"));
-    ui->tabWidget->addTab(graphics_advanced_tab.get(), tr("Расширенные"));
-    ui->tabWidget->addTab(graphics_extensions_tab.get(), tr("Расширения"));
-    ui->tabWidget->addTab(audio_tab.get(), tr("Аудио"));
-    ui->tabWidget->addTab(input_tab.get(), tr("Управление"));
-    ui->tabWidget->addTab(network_tab.get(), tr("Сеть"));
-    ui->tabWidget->addTab(applets_tab.get(), tr("Апплеты"));
+    ui->tabWidget->addTab(addons_tab.get(), tr("Add-Ons"));
+    ui->tabWidget->addTab(gamebanana_tab.get(), tr("GameBanana Mods"));
+    ui->tabWidget->addTab(amiibo_tab.get(), tr("Amiibo"));
+    ui->tabWidget->addTab(cheats_tab.get(), tr("Cheats"));
+    ui->tabWidget->addTab(system_tab.get(), tr("System"));
+    ui->tabWidget->addTab(cpu_tab.get(), tr("CPU"));
+    ui->tabWidget->addTab(graphics_tab.get(), tr("Graphics"));
+    ui->tabWidget->addTab(graphics_advanced_tab.get(), tr("Adv. Graphics"));
+    ui->tabWidget->addTab(graphics_extensions_tab.get(), tr("Ext. Graphics"));
+    ui->tabWidget->addTab(audio_tab.get(), tr("Audio"));
+    ui->tabWidget->addTab(input_tab.get(), tr("Input Profiles"));
+    ui->tabWidget->addTab(network_tab.get(), tr("Network"));
+    ui->tabWidget->addTab(applets_tab.get(), tr("Applets"));
 
     setFocusPolicy(Qt::ClickFocus);
-    setWindowTitle(tr("Параметры игры"));
+    setWindowTitle(tr("Properties"));
     resize(1360, 760);
     setMinimumSize(1200, 700);
 

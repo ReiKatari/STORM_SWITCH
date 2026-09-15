@@ -40,19 +40,27 @@ abstract class SettingsItem(
 ) {
     abstract val type: Int
 
-    val title: String by lazy {
-        if (titleId != 0) {
-            return@lazy YuzuApplication.appContext.getString(titleId)
+    open val title: String
+        get() = if (titleId != 0) {
+            try {
+                YuzuApplication.getLocalizedContext().getString(titleId)
+            } catch (_: Exception) {
+                YuzuApplication.appContext.getString(titleId)
+            }
+        } else {
+            titleString
         }
-        return@lazy titleString
-    }
 
-    val description: String by lazy {
-        if (descriptionId != 0) {
-            return@lazy YuzuApplication.appContext.getString(descriptionId)
+    open val description: String
+        get() = if (descriptionId != 0) {
+            try {
+                YuzuApplication.getLocalizedContext().getString(descriptionId)
+            } catch (_: Exception) {
+                YuzuApplication.appContext.getString(descriptionId)
+            }
+        } else {
+            descriptionString
         }
-        return@lazy descriptionString
-    }
 
     val isEditable: Boolean
         get() {
