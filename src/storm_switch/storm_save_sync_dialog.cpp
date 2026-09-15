@@ -345,53 +345,52 @@ bool StormSaveSyncDialog::ParseConnectionKey(const QString& raw_key, QString& ou
     return false;
 }
 
+static QString CleanGameTitle(QString title) {
+    if (title.isEmpty()) return title;
+    title.remove(QRegularExpression(QStringLiteral(R"(\.(nsp|xci|nsz|xcz)$)"), QRegularExpression::CaseInsensitiveOption));
+    title.remove(QRegularExpression(QStringLiteral(R"(\[[^\]]*\])")));
+    title.remove(QRegularExpression(QStringLiteral(R"(\([^\)]*\))")));
+    title.remove(QRegularExpression(QStringLiteral(R"(\b(v\d+(\.\d+)*)\b)"), QRegularExpression::CaseInsensitiveOption));
+    title.replace(QLatin1Char('_'), QLatin1Char(' '));
+    title = title.simplified().trimmed();
+    return title;
+}
+
 QString StormSaveSyncDialog::ResolveGameTitle(const QString& title_id) const {
     const QString clean_tid = title_id.trimmed().toUpper();
     bool ok_pid = false;
     const u64 pid = clean_tid.toULongLong(&ok_pid, 16);
 
-    // 1. Check MainWindow game list (the exact title displayed in the emulator UI / game parameters)
-    if (ok_pid) {
-        if (auto* mw = MainWindow::GetInstance()) {
-            const QString lib_title = mw->GetGameTitleByProgramId(pid);
-            if (!lib_title.isEmpty()) {
-                return lib_title;
-            }
-        }
-    }
-
-    // 2. Check GameFixDatabase profile
-    if (ok_pid) {
-        const auto* profile = Core::GameFixDatabase::GetProfile(pid);
-        if (profile && !profile->game_name.empty()) {
-            return QString::fromStdString(profile->game_name);
-        }
-    }
-
-    // 3. Known Switch titles map
+    // 1. Known Switch titles map (clean, verified canonical titles)
     if (ok_pid) {
         static const std::unordered_map<u64, const char*> s_known_titles = {
+            {0x0100B11027658000ULL, "Defender of the Crown: The Legend Returns"},
+            {0x010059D020C26000ULL, "Marvel Cosmic Invasion"},
+            {0x010057901E9E6000ULL, "Underling Uprising"},
+            {0x010020D01AD24000ULL, "Animal Well"},
+            {0x0100650017170000ULL, "Animal Well"},
+            {0x0100C9E01B854000ULL, "Animal Well"},
             {0x010022201229A000ULL, "Super Robot Wars 30"},
             {0x0100B00B51230000ULL, "Grand Theft Auto V (GTA V Homebrew Port)"},
             {0x01000B900D8B0000ULL, "Cadence of Hyrule: Crypt of the NecroDancer"},
+            {0x0100CEA007D08000ULL, "Crypt of the NecroDancer: Nintendo Switch Edition"},
+            {0x0100BDA01AABC000ULL, "Rift of the NecroDancer"},
             {0x010015100B514000ULL, "Super Mario Bros. Wonder"},
             {0x01001B300B9BE000ULL, "Diablo III: Eternal Collection"},
-            {0x010020D01AD24000ULL, "Animal Well"},
             {0x010026800E304000ULL, "Super Robot Wars X"},
             {0x01002DA013484000ULL, "The Legend of Zelda: Skyward Sword HD"},
             {0x01002EF01A316000ULL, "Brotato"},
-            {0x01002FC00412C000ULL, "Little Nightmares"},
+            {0x01002FC00412C000ULL, "Little Nightmares: Complete Edition"},
+            {0x010097100EDD6000ULL, "Little Nightmares II"},
+            {0x010066101A55A000ULL, "Little Nightmares III"},
             {0x0100307018934000ULL, "Signalis"},
             {0x010040502453E000ULL, "Vampire Crawlers"},
             {0x010042D00D900000ULL, "LEGO Star Wars: The Skywalker Saga"},
-            {0x010044700DEB0000ULL, "Assassin’s Creed: The Rebel Collection"},
-            {0x010057901E9E6000ULL, "Underling Uprising"},
-            {0x010059D020C26000ULL, "Marvel Cosmic Invasion"},
+            {0x010044700DEB0000ULL, "Assassin's Creed: The Rebel Collection"},
             {0x01005CF01E784000ULL, "Teenage Mutant Ninja Turtles: Splintered Fate"},
             {0x01005EC01E6A4000ULL, "The Art of Dave the Diver"},
             {0x010063301BD50000ULL, "Super Robot Wars Y"},
             {0x01006560184E6000ULL, "Mortal Kombat 1"},
-            {0x010066101A55A000ULL, "Little Nightmares III"},
             {0x0100670014482000ULL, "Assassin's Creed: The Ezio Collection"},
             {0x01006BB00C6F0000ULL, "The Legend of Zelda: Link's Awakening"},
             {0x01006C900CC60000ULL, "Super Robot Wars T"},
@@ -400,7 +399,8 @@ QString StormSaveSyncDialog::ResolveGameTitle(const QString& title_id) const {
             {0x01007F600B134000ULL, "Assassin's Creed III: Remastered"},
             {0x010089A0197E4000ULL, "Vampire Survivors"},
             {0x01008BA02525A000ULL, "Dispatch"},
-            {0x0100D59022590000ULL, "Scott Pilgrim EX"},
+            {0x010094D023A28000ULL, "Drill Core"},
+            {0x0100D59022590000ULL, "Scott Pilgrim vs. The World: The Game - Complete Edition"},
             {0x0100E65002BB8000ULL, "Stardew Valley"},
             {0x0100EC9010258000ULL, "Streets of Rage 4"},
             {0x0100F2200C984000ULL, "Mortal Kombat 11"},
@@ -412,11 +412,32 @@ QString StormSaveSyncDialog::ResolveGameTitle(const QString& title_id) const {
         }
     }
 
-    // 4. Lookup from TitleDB
+    // 2. Check GameFixDatabase profile
+    if (ok_pid) {
+        const auto* profile = Core::GameFixDatabase::GetProfile(pid);
+        if (profile && !profile->game_name.empty()) {
+            return QString::fromStdString(profile->game_name);
+        }
+    }
+
+    // 3. Lookup from TitleDB
     TitleDB::TitleDatabase::Instance().EnsureLoaded();
     const auto entry = TitleDB::TitleDatabase::Instance().Lookup(clean_tid.toStdString());
     if (entry && !entry->name.empty()) {
-        return QString::fromStdString(entry->name);
+        return CleanGameTitle(QString::fromStdString(entry->name));
+    }
+
+    // 4. Check MainWindow game list and clean raw filename/brackets
+    if (ok_pid) {
+        if (auto* mw = MainWindow::GetInstance()) {
+            const QString lib_title = mw->GetGameTitleByProgramId(pid);
+            if (!lib_title.isEmpty()) {
+                const QString cleaned = CleanGameTitle(lib_title);
+                if (!cleaned.isEmpty()) {
+                    return cleaned;
+                }
+            }
+        }
     }
 
     return clean_tid;
@@ -910,11 +931,31 @@ void StormSaveSyncDialog::OnTcpSocketReadyRead() {
     };
 
     if (method == QStringLiteral("GET") && path == QStringLiteral("/api/status")) {
+        const QString client_ip = query.queryItemValue(QStringLiteral("client_ip"));
+        if (!client_ip.isEmpty()) {
+            quint16 c_port = query.queryItemValue(QStringLiteral("client_port")).toUShort();
+            if (c_port == 0) c_port = 28443;
+            const QString raw_name = query.queryItemValue(QStringLiteral("client_name"));
+            const QString c_name = raw_name.isEmpty() ? tr("Удалённое устройство") : QUrl::fromPercentEncoding(raw_name.toUtf8());
+            m_connected_remote_ip = client_ip;
+            m_connected_remote_port = c_port;
+            m_remote_device_name = c_name;
+            m_is_connected = true;
+            m_connection_status_label->setText(
+                tr("🟢 Подключено: %1 [%2:%3]").arg(m_remote_device_name, m_connected_remote_ip).arg(m_connected_remote_port));
+            m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #10B981; padding-left: 4px; font-weight: bold;"));
+            m_connect_btn->setText(tr("Отключить"));
+            QTimer::singleShot(150, this, [this]() {
+                ScanLocalSaves();
+                FetchRemoteSaves();
+            });
+        }
+
         QJsonObject obj;
         obj[QStringLiteral("status")] = QStringLiteral("ok");
         obj[QStringLiteral("device_name")] = QHostInfo::localHostName();
         obj[QStringLiteral("platform")] = QStringLiteral("windows");
-        obj[QStringLiteral("version")] = QStringLiteral("8.6.2");
+        obj[QStringLiteral("version")] = QStringLiteral("8.6.4");
         send_response(200, QStringLiteral("application/json"), QJsonDocument(obj).toJson(QJsonDocument::Compact));
         return;
     }
@@ -1109,6 +1150,27 @@ void StormSaveSyncDialog::OnCopyKeyClicked() {
 }
 
 void StormSaveSyncDialog::OnConnectClicked() {
+    if (m_is_connected) {
+        m_is_connected = false;
+        m_connected_remote_ip.clear();
+        m_remote_device_name.clear();
+        m_connection_status_label->setText(
+            tr("Статус: не подключено к удалённому устройству. Введите ключ или выберите устройство из списка."));
+        m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #94A3B8; padding-left: 4px;"));
+        m_connect_btn->setText(tr("Подключить"));
+        for (auto& it : m_items) {
+            it.has_remote = false;
+            it.remote_timestamp = 0;
+            it.remote_size_bytes = 0;
+            it.remote_file_count = 0;
+            it.remote_date_str.clear();
+        }
+        UpdateComparisonList();
+        PopulateTable();
+        m_status_label->setText(tr("Отключено от удалённого устройства"));
+        return;
+    }
+
     const QString input = m_remote_key_edit->text().trimmed();
     if (input.isEmpty()) {
         QMessageBox::warning(this, tr("Подключение"), tr("Пожалуйста, введите ключ подключения или IP:порт."));
@@ -1143,10 +1205,16 @@ void StormSaveSyncDialog::OnConnectClicked() {
     m_connection_status_label->setText(
         tr("Подключение к %1:%2...").arg(m_connected_remote_ip).arg(m_connected_remote_port));
 
-    // Test connectivity via /api/status
-    const QUrl url(QStringLiteral("http://%1:%2/api/status").arg(ip).arg(port));
+    const QString my_name = QHostInfo::localHostName();
+    const QUrl url(QStringLiteral("http://%1:%2/api/status?client_ip=%3&client_port=%4&client_name=%5&client_key=%6")
+                       .arg(ip)
+                       .arg(port)
+                       .arg(m_local_ip)
+                       .arg(m_local_port)
+                       .arg(QString::fromUtf8(QUrl::toPercentEncoding(my_name)))
+                       .arg(m_local_key));
     QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.6.2"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.6.4"));
 
     auto* reply = m_network_mgr->get(req);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
@@ -1162,12 +1230,16 @@ void StormSaveSyncDialog::OnConnectClicked() {
                     tr("🟢 Подключено: %1 (%2) [%3:%4]")
                         .arg(m_remote_device_name, platform, m_connected_remote_ip)
                         .arg(m_connected_remote_port));
+                m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #10B981; padding-left: 4px; font-weight: bold;"));
+                m_connect_btn->setText(tr("Отключить"));
                 m_status_label->setText(tr("Успешно подключено к удалённому узлу"));
                 FetchRemoteSaves();
                 return;
             }
         }
         m_is_connected = false;
+        m_connect_btn->setText(tr("Подключить"));
+        m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #EF4444; padding-left: 4px; font-weight: bold;"));
         m_connection_status_label->setText(
             tr("❌ Ошибка подключения к %1:%2").arg(m_connected_remote_ip).arg(m_connected_remote_port));
         QMessageBox::critical(this, tr("Ошибка подключения"),
@@ -1296,7 +1368,10 @@ void StormSaveSyncDialog::UpdateComparisonList() {
     for (auto& item : m_items) {
         if (item.has_local && item.has_remote) {
             const qint64 diff = std::abs(item.local_timestamp - item.remote_timestamp);
-            if (diff <= 3 && item.local_size_bytes == item.remote_size_bytes) {
+            const bool size_and_count_match = (item.local_file_count == item.remote_file_count) &&
+                                              (item.local_size_bytes == item.remote_size_bytes) &&
+                                              (item.local_size_bytes > 0);
+            if (size_and_count_match || (diff <= 180 && item.local_size_bytes == item.remote_size_bytes)) {
                 item.status = StormSaveSyncStatus::Synchronized;
             } else {
                 item.status = StormSaveSyncStatus::Conflict;
@@ -1563,7 +1638,7 @@ void StormSaveSyncDialog::DownloadRemoteSave(const QString& title_id, std::funct
     if (!m_is_connected) return;
 
     m_progress_bar->setVisible(true);
-    m_progress_bar->setValue(30);
+    m_progress_bar->setValue(5);
 
     const QUrl url(QStringLiteral("http://%1:%2/api/save/download?title_id=%3")
                        .arg(m_connected_remote_ip)
@@ -1572,9 +1647,15 @@ void StormSaveSyncDialog::DownloadRemoteSave(const QString& title_id, std::funct
     QNetworkRequest req(url);
     auto* reply = m_network_mgr->get(req);
 
+    connect(reply, &QNetworkReply::downloadProgress, this, [this](qint64 received, qint64 total) {
+        if (total > 0) {
+            int p = static_cast<int>((received * 85) / total) + 5;
+            m_progress_bar->setValue(std::clamp(p, 5, 95));
+        }
+    });
+
     connect(reply, &QNetworkReply::finished, this, [this, reply, title_id, on_complete]() {
         reply->deleteLater();
-        m_progress_bar->setValue(70);
 
         if (reply->error() == QNetworkReply::NoError) {
             const QByteArray data = reply->readAll();
@@ -1599,6 +1680,7 @@ void StormSaveSyncDialog::DownloadRemoteSave(const QString& title_id, std::funct
                 }
             }
         }
+        m_progress_bar->setValue(0);
         m_progress_bar->setVisible(false);
         QMessageBox::critical(this, tr("Ошибка скачивания"),
                               tr("Не удалось скачать сохранение для Title ID: %1").arg(title_id));
@@ -1617,11 +1699,12 @@ void StormSaveSyncDialog::UploadLocalSave(const QString& title_id, std::function
     }
 
     m_progress_bar->setVisible(true);
-    m_progress_bar->setValue(30);
+    m_progress_bar->setValue(10);
 
     const QString temp_zip = QDir::tempPath() + QStringLiteral("/storm_ul_%1.zip").arg(title_id);
     QFile::remove(temp_zip);
     if (!QtCommon::Compress::compressDir(temp_zip, QString::fromStdString(save_dir.string()))) {
+        m_progress_bar->setValue(0);
         m_progress_bar->setVisible(false);
         if (on_complete) on_complete(false);
         return;
@@ -1629,6 +1712,7 @@ void StormSaveSyncDialog::UploadLocalSave(const QString& title_id, std::function
 
     QFile file(temp_zip);
     if (!file.open(QIODevice::ReadOnly)) {
+        m_progress_bar->setValue(0);
         m_progress_bar->setVisible(false);
         if (on_complete) on_complete(false);
         return;
@@ -1637,7 +1721,7 @@ void StormSaveSyncDialog::UploadLocalSave(const QString& title_id, std::function
     file.close();
     QFile::remove(temp_zip);
 
-    m_progress_bar->setValue(60);
+    m_progress_bar->setValue(30);
 
     const QUrl url(QStringLiteral("http://%1:%2/api/save/upload?title_id=%3")
                        .arg(m_connected_remote_ip)
@@ -1647,6 +1731,14 @@ void StormSaveSyncDialog::UploadLocalSave(const QString& title_id, std::function
     req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/zip"));
 
     auto* reply = m_network_mgr->post(req, zip_data);
+
+    connect(reply, &QNetworkReply::uploadProgress, this, [this](qint64 sent, qint64 total) {
+        if (total > 0) {
+            int p = static_cast<int>((sent * 65) / total) + 30;
+            m_progress_bar->setValue(std::clamp(p, 30, 95));
+        }
+    });
+
     connect(reply, &QNetworkReply::finished, this, [this, reply, on_complete]() {
         reply->deleteLater();
         m_progress_bar->setValue(100);

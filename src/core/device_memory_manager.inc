@@ -558,7 +558,7 @@ void DeviceMemoryManager<Traits>::ReadBlockUnsafe(DAddr address, void* dest_poin
     WalkBlock(
         address, size,
         [&](size_t copy_amount, DAddr current_vaddr) {
-            LOG_ERROR(
+            LOG_DEBUG(
                 HW_Memory,
                 "Unmapped Device ReadBlock @ {:#016x} (start address = {:#016x}, size = {})",
                 current_vaddr, address, size);

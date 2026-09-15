@@ -44,6 +44,7 @@ import org.yuzu.yuzu_emu.YuzuApplication
 import org.yuzu.yuzu_emu.databinding.DialogStormSaveConflictBinding
 import org.yuzu.yuzu_emu.databinding.DialogStormSaveSyncBinding
 import org.yuzu.yuzu_emu.databinding.ItemStormSaveSyncBinding
+import org.yuzu.yuzu_emu.model.GameFixDatabase
 import org.yuzu.yuzu_emu.model.GamesViewModel
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
 import org.yuzu.yuzu_emu.utils.Log
@@ -224,6 +225,25 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         }
 
         binding.btnConnect.setOnClickListener {
+            if (isConnected) {
+                isConnected = false
+                remoteIp = ""
+                remotePort = 28443
+                remoteDeviceName = ""
+                binding.textConnectionState.text = "Статус: не подключено к удалённому устройству"
+                binding.btnConnect.text = "Подключить"
+                for ((_, it) in saveItems) {
+                    it.hasRemote = false
+                    it.remoteTimestamp = 0L
+                    it.remoteSizeBytes = 0L
+                    it.remoteFileCount = 0
+                    it.remoteDateStr = ""
+                }
+                updateComparisonList()
+                updateList()
+                Toast.makeText(requireContext(), "Отключено от удалённого устройства", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val input = binding.editRemoteKey.text.toString().trim()
             if (input.isEmpty()) {
                 Toast.makeText(requireContext(), "Введите ключ или IP:порт", Toast.LENGTH_SHORT).show()
@@ -490,11 +510,28 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
             when {
                 method == "GET" && cleanPath == "/api/status" -> {
+                    val clientIp = queryParams["client_ip"]
+                    if (!clientIp.isNullOrEmpty()) {
+                        val clientPort = queryParams["client_port"]?.toIntOrNull() ?: 28443
+                        val rawClientName = queryParams["client_name"] ?: "Удалённое устройство"
+                        val clientName = try { java.net.URLDecoder.decode(rawClientName, "UTF-8") } catch (_: Exception) { rawClientName }
+                        remoteIp = clientIp
+                        remotePort = clientPort
+                        remoteDeviceName = clientName
+                        isConnected = true
+                        withContext(Dispatchers.Main) {
+                            binding.textConnectionState.text = "🟢 Подключено: $clientName [$clientIp:$clientPort]"
+                            binding.btnConnect.text = "Отключить"
+                            scanLocalSaves()
+                            fetchRemoteSaves()
+                        }
+                    }
+
                     val obj = JSONObject().apply {
                         put("status", "ok")
                         put("device_name", "${Build.MANUFACTURER} ${Build.MODEL}")
                         put("platform", "android")
-                        put("version", "8.6.2")
+                        put("version", "8.6.4")
                     }
                     sendResponse(200, "application/json", obj.toString().toByteArray(Charsets.UTF_8))
                 }
@@ -608,8 +645,14 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
+                val myName = "${Build.MANUFACTURER} ${Build.MODEL}"
+                val encodedName = java.net.URLEncoder.encode(myName, "UTF-8")
+                val myIp = localIp ?: "127.0.0.1"
+                val myKey = generateConnectionKey(myIp, localPort)
+                val statusUrl = "http://$ip:$port/api/status?client_ip=$myIp&client_port=$localPort&client_name=$encodedName&client_key=$myKey"
                 val req = Request.Builder()
-                    .url("http://$ip:$port/api/status")
+                    .url(statusUrl)
+                    .header("User-Agent", "STORM-SWITCH-SYNC/8.6.4")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 if (resp.isSuccessful) {
@@ -621,6 +664,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
                     withContext(Dispatchers.Main) {
                         binding.textConnectionState.text = "🟢 Подключено: $remoteDeviceName ($platform) [$ip:$port]"
+                        binding.btnConnect.text = "Отключить"
                         fetchRemoteSaves()
                     }
                     return@launch
@@ -629,6 +673,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
             withContext(Dispatchers.Main) {
                 isConnected = false
+                binding.btnConnect.text = "Подключить"
                 binding.textConnectionState.text = "❌ Ошибка подключения к $ip:$port"
                 Toast.makeText(requireContext(), "Не удалось подключиться к $ip:$port. Убедитесь, что на втором устройстве запущен STORM SAVE SYNC и порт $port открыт.", Toast.LENGTH_LONG).show()
             }
@@ -696,31 +741,52 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         }
     }
 
+    private fun cleanGameTitle(raw: String): String {
+        if (raw.isBlank()) return raw
+        var t = raw
+        t = t.replace(Regex("\\.(nsp|xci|nsz|xcz)$", RegexOption.IGNORE_CASE), "")
+        t = t.replace(Regex("\\[[^\\]]*\\]"), "")
+        t = t.replace(Regex("\\([^\\)]*\\)"), "")
+        t = t.replace(Regex("\\b(v\\d+(\\.\\d+)*)\\b", RegexOption.IGNORE_CASE), "")
+        t = t.replace('_', ' ')
+        return t.replace(Regex("\\s+"), " ").trim()
+    }
+
     private fun resolveGameTitle(titleId: String): String {
         val cleanTid = titleId.trim().uppercase(Locale.ROOT)
-        // 1. Installed game in library
-        gamesViewModel.games.value.firstOrNull {
-            it.programIdHex.equals(cleanTid, ignoreCase = true)
-        }?.let {
-            if (it.title.isNotBlank()) return it.title
+
+        // 1. Known Switch titles map (clean, verified canonical names)
+        SWITCH_KNOWN_TITLES[cleanTid]?.let { return it }
+
+        // 2. GameFixDatabase profile
+        val fix = GameFixDatabase.getFix(cleanTid)
+        if (fix != null && fix.gameName.isNotBlank()) {
+            return fix.gameName
         }
 
-        // 2. Storm World cached catalog
+        // 3. Storm World cached catalog
         try {
             val catalog = StormGamesWorldDialogFragment.getCachedCatalog(requireContext())
             catalog.firstOrNull {
                 it.serialId.equals(cleanTid, ignoreCase = true)
             }?.let {
-                if (it.finalTitle.isNotBlank()) return it.finalTitle
-                if (it.title.isNotBlank()) return it.title
+                if (it.finalTitle.isNotBlank()) return cleanGameTitle(it.finalTitle)
+                if (it.title.isNotBlank()) return cleanGameTitle(it.title)
             }
         } catch (_: Exception) {}
 
-        // 3. Known Switch titles map
-        SWITCH_KNOWN_TITLES[cleanTid]?.let { return it }
+        // 4. Installed game in library (cleaned of file brackets and tags)
+        gamesViewModel.games.value.firstOrNull {
+            it.programIdHex.equals(cleanTid, ignoreCase = true)
+        }?.let {
+            if (it.title.isNotBlank()) {
+                val cleaned = cleanGameTitle(it.title)
+                if (cleaned.isNotBlank()) return cleaned
+            }
+        }
 
-        // 4. Default fallback formatted
-        return "Игра [${cleanTid}]"
+        // 5. Default fallback
+        return cleanTid
     }
     private fun scanLocalSaves() {
         val userDirStr = DirectoryInitialization.userDirectory ?: YuzuApplication.appContext.filesDir.absolutePath
@@ -773,7 +839,10 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             item.status = when {
                 item.hasLocal && item.hasRemote -> {
                     val diff = Math.abs(item.localTimestamp - item.remoteTimestamp)
-                    if (diff <= 3 && item.localSizeBytes == item.remoteSizeBytes) {
+                    val sizeAndCountMatch = (item.localFileCount == item.remoteFileCount) &&
+                            (item.localSizeBytes == item.remoteSizeBytes) &&
+                            (item.localSizeBytes > 0L)
+                    if (sizeAndCountMatch || (diff <= 180 && item.localSizeBytes == item.remoteSizeBytes)) {
                         AndroidSaveSyncStatus.SYNCHRONIZED
                     } else {
                         AndroidSaveSyncStatus.CONFLICT
