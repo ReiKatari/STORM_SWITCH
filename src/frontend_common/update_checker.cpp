@@ -59,28 +59,50 @@ std::optional<Common::Net::Release> UpdateChecker::GetUpdate() {
 
     auto parse_semver = [](const std::string& ver) -> std::vector<int> {
         std::vector<int> components;
-        std::stringstream ss(ver);
-        std::string part;
-        while (std::getline(ss, part, '.')) {
+        std::string current;
+        for (unsigned char c : ver) {
+            if (c >= '0' && c <= '9') {
+                current += static_cast<char>(c);
+            } else if (c == '.') {
+                if (!current.empty()) {
+                    try {
+                        components.push_back(std::stoi(current));
+                    } catch (...) {
+                        components.push_back(0);
+                    }
+                    current.clear();
+                }
+            }
+        }
+        if (!current.empty()) {
             try {
-                components.push_back(std::stoi(part));
+                components.push_back(std::stoi(current));
             } catch (...) {
                 components.push_back(0);
             }
         }
-        while (components.size() < 3) components.push_back(0);
+        while (components.size() < 3) {
+            components.push_back(0);
+        }
         return components;
     };
 
     const auto remote_parts = parse_semver(tag);
     const auto local_parts = parse_semver(build);
 
+    LOG_INFO(Frontend, "Checking update: remote '{}' -> [{}.{}.{}] vs local '{}' -> [{}.{}.{}]",
+             tag, remote_parts[0], remote_parts[1], remote_parts[2],
+             build, local_parts[0], local_parts[1], local_parts[2]);
+
     bool is_newer = false;
-    for (std::size_t i = 0; i < std::min(remote_parts.size(), local_parts.size()); ++i) {
-        if (remote_parts[i] > local_parts[i]) {
+    const std::size_t max_parts = std::max(remote_parts.size(), local_parts.size());
+    for (std::size_t i = 0; i < max_parts; ++i) {
+        const int r = (i < remote_parts.size()) ? remote_parts[i] : 0;
+        const int l = (i < local_parts.size()) ? local_parts[i] : 0;
+        if (r > l) {
             is_newer = true;
             break;
-        } else if (remote_parts[i] < local_parts[i]) {
+        } else if (r < l) {
             is_newer = false;
             break;
         }

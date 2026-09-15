@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.model
@@ -30,8 +30,8 @@ object GameFixDatabase {
             "DAVE THE DIVER",
             "• Вылеты при смене локаций (дайвинг / суши-бар Банчо) из-за сборщика мусора Unity GC\n• Утечка дескрипторов текстур под водой\n• Просадки кадровой частоты",
             "• Crashes during transitions (Diving / Bancho Sushi) caused by Unity GC spikes\n• Underwater texture descriptor exhaustion\n• Framerate drops and stuttering",
-            "✓ Точность ГПУ: Обычная (стабильные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Очистка VRAM: Отключено (устраняет микрофризы анимаций)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ GPU Accuracy: Normal (Stable 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ VRAM Garbage Collection: Disabled (Prevents animation stutter)\n✓ Memory Layout: 6GB DRAM\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Точность ГПУ: Обычная (стабильные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Очистка VRAM: Отключено (устраняет микрофризы анимаций)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ GPU Accuracy: Normal (Stable 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ VRAM Garbage Collection: Disabled (Prevents animation stutter)\n✓ Memory Layout: 6GB DRAM\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -42,7 +42,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -56,7 +55,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -66,8 +64,8 @@ object GameFixDatabase {
             "Brotato",
             "• Просадки FPS при спавне тысяч снарядов и врагов на поздних волнах (15-20)\n• Микрофризы рендеринга Godot Engine\n• Задержка отклика ввода",
             "• Framerate drops during massive bullet/enemy swarms on waves 15-20\n• Godot Engine pipeline stalls\n• Input latency during intense combat",
-            "✓ Точность ГПУ: Обычная (идеальные 60 FPS)\n✓ Раннее освобождение барьеров: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Циклы обратной связи: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Сжатие ASTC: Без сжатия\n✓ Режим консоли: Портативный (720p)",
-            "✓ GPU Accuracy: Normal (Perfect 60 FPS)\n✓ Early Release Fences: Enabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Console Mode: Handheld (720p)",
+            "✓ Точность ГПУ: Обычная (идеальные 60 FPS)\n✓ Раннее освобождение барьеров: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Циклы обратной связи: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Сжатие ASTC: Без сжатия",
+            "✓ GPU Accuracy: Normal (Perfect 60 FPS)\n✓ Early Release Fences: Enabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -78,7 +76,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -92,7 +89,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -102,8 +98,8 @@ object GameFixDatabase {
             "Dispatch",
             "• Графические артефакты геометрии и мерцание полигонов в кинематографических сценах\n• Разрывы буферов кадров и вылеты шейдеров\n• Просадки FPS при динамическом освещении",
             "• Geometry artifacts and polygon flickering during cinematic sequences\n• Framebuffer tearing and shader crashes\n• Framerate drops during dynamic lighting transitions",
-            "✓ Точность ГПУ: Обычная (устраняет мерцание и графические артефакты)\n✓ Точность DMA: Безопасно (0)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено (корректные тени Unreal Engine)\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Режим консоли: Портативный (720p)",
-            "✓ GPU Accuracy: Normal (Eliminates flickering and visual glitches)\n✓ DMA Accuracy: Safe (0)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled (Correct Unreal Engine shadows)\n✓ Sync Memory Operations: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM\n✓ Console Mode: Handheld (720p)",
+            "✓ Точность ГПУ: Обычная (устраняет мерцание и графические артефакты)\n✓ Точность DMA: Безопасно (0)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено (корректные тени Unreal Engine)\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
+            "✓ GPU Accuracy: Normal (Eliminates flickering and visual glitches)\n✓ DMA Accuracy: Safe (0)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled (Correct Unreal Engine shadows)\n✓ Sync Memory Operations: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -114,7 +110,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -128,7 +123,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -139,20 +133,18 @@ object GameFixDatabase {
             "Mortal Kombat 1",
             "• Мгновенный вылет при запуске (UE4 TaskGraph / атомики)\n• Зависание на заставке WB Games и вылет по нехватке памяти (OOM)\n• Сбои Extended Dynamic State в шейдерах арены\n• Пропадание текстур персонажей и окружения при длительной игре",
             "• Instant crash on launch (UE4 TaskGraph / atomics)\n• WB Games intro freeze and Out of Memory crash\n• Extended Dynamic State arena shader crashes\n• Character and environment texture streaming dropouts",
-            "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Разрешение: 1X Родное (720p/1080p)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Resolution: 1X Native (720p/1080p)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal",
+            "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Обычная",
+            "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\accelerate_astc" to "1",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\dyna_state" to "1",
@@ -175,20 +167,18 @@ object GameFixDatabase {
             "Mortal Kombat 1 (Alt)",
             "• Мгновенный вылет при запуске (UE4 TaskGraph / атомики)\n• Зависание на заставке WB Games и вылет по нехватке памяти (OOM)\n• Сбои Extended Dynamic State в шейдерах арены\n• Пропадание текстур персонажей и окружения при длительной игре",
             "• Instant crash on launch (UE4 TaskGraph / atomics)\n• WB Games intro freeze and Out of Memory crash\n• Extended Dynamic State arena shader crashes\n• Character and environment texture streaming dropouts",
-            "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Разрешение: 1X Родное (720p/1080p)\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Resolution: 1X Native (720p/1080p)\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal",
+            "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Обычная",
+            "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\accelerate_astc" to "1",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\dyna_state" to "1",
@@ -289,7 +279,6 @@ object GameFixDatabase {
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
                 "Renderer\\enable_compute_pipelines" to "false",
-                "System\\use_docked_mode" to "0",
                 "System\\airplane_mode" to "false",
                 "Network\\airplane_mode" to "false",
                 "Services\\airplane_mode" to "false"
@@ -538,7 +527,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -552,7 +540,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "false",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2"
             )
@@ -591,7 +578,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -605,7 +591,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "false",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2"
             )
@@ -629,11 +614,10 @@ object GameFixDatabase {
             "Hogwarts Legacy",
             "• Вылет из-за нехватки памяти при загрузке замка Хогвартс\n• Высокое потребление ОЗУ (>8.5 ГБ) на мобильных чипах",
             "• Out of memory (OOM) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
-            "✓ Разрешение: Handheld 0.75X + FSR 80%\n✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
-            "✓ Resolution: Handheld 0.75X + FSR 80%\n✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
+            "✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
+            "✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\resolution_setup" to "1",
                 "Renderer\\fsr_sharpening_slider" to "80",
                 "System\\memory_layout_mode" to "2"
             )
@@ -643,11 +627,10 @@ object GameFixDatabase {
             "Hogwarts Legacy",
             "• Вылет из-за нехватки памяти при загрузке замка Хогвартс\n• Высокое потребление ОЗУ (>8.5 ГБ) на мобильных чипах",
             "• Out of memory (OOM) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
-            "✓ Разрешение: Handheld 0.75X + FSR 80%\n✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
-            "✓ Resolution: Handheld 0.75X + FSR 80%\n✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
+            "✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
+            "✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\resolution_setup" to "1",
                 "Renderer\\fsr_sharpening_slider" to "80",
                 "System\\memory_layout_mode" to "2"
             )
@@ -836,11 +819,10 @@ object GameFixDatabase {
             "Pokemon Scarlet",
             "• Утечки памяти в открытом мире Палдеи\n• Мерцание ландшафта и текстур",
             "• Open-world memory leaks in Paldea\n• Terrain and texture flickering",
-            "✓ Разрешение: Handheld 0.75X + FSR 75%\n✓ Сжатие текстур ASTC: Отключено\n✓ Ограничение VRAM: Conservative",
-            "✓ Resolution: Handheld 0.75X + FSR 75%\n✓ ASTC Recompression: BC3\n✓ VRAM Usage: Conservative",
+            "✓ Сжатие текстур ASTC: Отключено\n✓ Ограничение VRAM: Conservative",
+            "✓ ASTC Recompression: BC3\n✓ VRAM Usage: Conservative",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\resolution_setup" to "1",
                 "Renderer\\vram_usage_mode" to "1"
             )
         ),
@@ -872,11 +854,10 @@ object GameFixDatabase {
             "Batman: Arkham Knight",
             "• Вылет по нехватке памяти при погонях на Бэтмобиле",
             "• OOM crash during Batmobile chase sequences",
-            "✓ Разрешение: Handheld 0.75X + FSR 80%\n✓ Сжатие текстур ASTC: Отключено\n✓ Память: 8GB DRAM",
-            "✓ Resolution: Handheld 0.75X + FSR 80%\n✓ ASTC Recompression: BC1\n✓ Memory Layout: 8GB DRAM",
+            "✓ Сжатие текстур ASTC: Отключено\n✓ Память: 8GB DRAM",
+            "✓ ASTC Recompression: BC1\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\resolution_setup" to "1",
                 "System\\memory_layout_mode" to "2"
             )
         ),
@@ -897,11 +878,10 @@ object GameFixDatabase {
             "The Witcher 3: Wild Hunt",
             "• Зависание физики волос/одежды Геральта в Новиграде",
             "• HairWorks and physics freezes in Novigrad",
-            "✓ Эксклюзивы быстрой памяти: Включено\n✓ Разрешение: Handheld 0.75X + FSR 85%",
-            "✓ Fastmem Exclusives: Enabled\n✓ Resolution: Handheld 0.75X + FSR 85%",
+            "✓ Эксклюзивы быстрой памяти: Включено",
+            "✓ Fastmem Exclusives: Enabled",
             mapOf(
                 "Cpu\\cpuopt_fastmem_exclusives" to "true",
-                "Renderer\\resolution_setup" to "1",
                 "Renderer\\fsr_sharpening_slider" to "85",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_reactive_flushing" to "false",
@@ -928,11 +908,10 @@ object GameFixDatabase {
             "Sonic Frontiers",
             "• Падение FPS и вылет в открытых зонах островов",
             "• Frame drops and OOM crash in open-zone islands",
-            "✓ Разрешение: Handheld 0.75X + FSR 80%\n✓ Сжатие текстур ASTC: Отключено\n✓ Память: 8GB DRAM",
-            "✓ Resolution: Handheld 0.75X + FSR 80%\n✓ ASTC Recompression: BC1\n✓ Memory Layout: 8GB DRAM",
+            "✓ Сжатие текстур ASTC: Отключено\n✓ Память: 8GB DRAM",
+            "✓ ASTC Recompression: BC1\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\resolution_setup" to "1",
                 "System\\memory_layout_mode" to "2"
             )
         ),
@@ -980,8 +959,8 @@ object GameFixDatabase {
             "Animal Well",
             "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
             "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-            "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-            "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -992,7 +971,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -1006,7 +984,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -1016,8 +993,8 @@ object GameFixDatabase {
             "Animal Well",
             "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
             "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-            "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-            "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -1028,7 +1005,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -1042,7 +1018,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -1052,8 +1027,8 @@ object GameFixDatabase {
             "Animal Well",
             "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
             "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-            "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Режим консоли: Док-станция (стабильный вывод кадра)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Разрешение: Родное 1X (720p/1080p)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-            "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Console Mode: Docked (Stable frame delivery)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Resolution: Native 1X (720p/1080p)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -1064,7 +1039,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -1078,7 +1052,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -1247,7 +1220,6 @@ object GameFixDatabase {
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -1255,7 +1227,6 @@ object GameFixDatabase {
                 "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1"
             )
         ),
         GameFixProfile(
@@ -1284,7 +1255,6 @@ object GameFixDatabase {
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -1292,7 +1262,6 @@ object GameFixDatabase {
                 "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1"
             )
         ),
         GameFixProfile(
@@ -2067,7 +2036,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -2081,7 +2049,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -2102,7 +2069,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -2116,7 +2082,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -3819,7 +3784,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -3833,7 +3797,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -3854,7 +3817,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -3868,7 +3830,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -3918,8 +3879,8 @@ object GameFixDatabase {
             "Little Nightmares: Complete Edition",
             "• Вылеты на движке Unreal Engine 4 в Чреве\n• Сбои динамических теней фонарика\n• Просадки FPS от высокой точности ГПУ",
             "• Unreal Engine 4 Maw transition crashes\n• Flashlight dynamic shadow artifacts\n• Heavy framerate drops caused by High GPU accuracy",
-            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение вылетов UE4)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено (тени и освещение UE4)\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ Memory Layout: 6GB DRAM (Fixes UE4 crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled (UE4 lighting and shadows)\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение вылетов UE4)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено (тени и освещение UE4)\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
+            "✓ Memory Layout: 6GB DRAM (Fixes UE4 crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled (UE4 lighting and shadows)\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -3930,7 +3891,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -3944,7 +3904,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -3954,8 +3913,8 @@ object GameFixDatabase {
             "Little Nightmares II",
             "• Вылеты из-за нехватки памяти (OOM) в Бледном городе\n• Артефакты тумана и объемного света\n• Просадки FPS от высокой точности ГПУ",
             "• Pale City memory pressure (OOM) crashes\n• Volumetric fog and lighting artifacts\n• Heavy framerate drops caused by High GPU accuracy",
-            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение вылетов памяти)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ Memory Layout: 6GB DRAM (Fixes memory exhaustion crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение вылетов памяти)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
+            "✓ Memory Layout: 6GB DRAM (Fixes memory exhaustion crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -3966,7 +3925,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -3980,7 +3938,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -3990,8 +3947,8 @@ object GameFixDatabase {
             "Little Nightmares III",
             "• Высокие требования к DRAM и шейдерам спирали\n• Сбои многопоточности Unreal Engine 5\n• Просадки кадровой частоты",
             "• High DRAM and Spiral shader complexity\n• Unreal Engine 5 multithreading synchronization\n• Framerate dips",
-            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение сбоев UE5)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ Memory Layout: 6GB DRAM (Fixes UE5 crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение сбоев UE5)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
+            "✓ Memory Layout: 6GB DRAM (Fixes UE5 crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4002,7 +3959,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -4016,7 +3972,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -4026,8 +3981,8 @@ object GameFixDatabase {
             "Cadence of Hyrule: Crypt of the NecroDancer",
             "• Рассинхронизация ритмического аудио-движка\n• Задержка обработки ввода стрелок\n• Просадки кадров в подземельях",
             "• Rhythm audio engine timing desynchronization\n• Beat input delay\n• Dungeon combat framerate dips",
-            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ЦП: Авто\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ CPU Accuracy: Auto\n✓ Ignore Memory Aborts: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ЦП: Авто\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ CPU Accuracy: Auto\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4038,7 +3993,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -4052,7 +4006,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -4062,8 +4015,8 @@ object GameFixDatabase {
             "Crypt of the NecroDancer: Nintendo Switch Edition",
             "• Рассинхронизация такта ударов и музыки в подземелье\n• Задержка аудио-буфера\n• Сбои некратных 16-байт операций DMA",
             "• Beat synchronization jitter in procedural dungeons\n• Audio buffer latency\n• Non-16-byte DMA transfer stalls",
-            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ЦП: Авто\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ CPU Accuracy: Auto\n✓ Ignore Memory Aborts: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ЦП: Авто\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ CPU Accuracy: Auto\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4074,7 +4027,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -4088,7 +4040,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -4098,8 +4049,8 @@ object GameFixDatabase {
             "Rift of the NecroDancer",
             "• Рассинхронизация дорожек ритм-битв в мини-играх\n• Инпут-лаг комбо",
             "• Rhythm lane timing desync during minigames\n• Combo input response latency",
-            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4110,7 +4061,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -4124,7 +4074,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -4134,8 +4083,8 @@ object GameFixDatabase {
             "Scott Pilgrim vs. The World: The Game - Complete Edition",
             "• Зависание на заставке Ubisoft Connect и сбои опроса сети NIFM\n• Сбои перекрывающихся текстур GpuModified в кэше текстур\n• Просадки FPS при высокой точности ГПУ",
             "• Ubisoft Connect boot hang and NIFM network query spam\n• Texture cache GpuModified overlap crashes\n• Framerate drops caused by High GPU accuracy",
-            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск Ubisoft Connect)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses Ubisoft Connect)\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск Ubisoft Connect)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses Ubisoft Connect)\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4146,7 +4095,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -4160,7 +4108,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -4170,8 +4117,8 @@ object GameFixDatabase {
             "Defender of the Crown: The Legend Returns",
             "• Пользовательский сбой при запуске (Userspace PANIC debug_buffer_err_code=0)\n• Нехватка выделенной оперативной памяти для эмуляции\n• Рассинхронизация 60 FPS",
             "• Boot crash (Userspace PANIC debug_buffer_err_code=0)\n• Emulation DRAM pool allocation exhaustion\n• 60 FPS timing desynchronization",
-            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение краша виртуальной машины)\n✓ Игнорирование сбоев памяти: Включено (устранение Userspace PANIC)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ Memory Layout: 6GB DRAM (Eliminates VM crash)\n✓ Ignore Memory Aborts: Enabled (Fixes Userspace PANIC)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Конфигурация памяти: 6 ГБ DRAM (устранение краша виртуальной машины)\n✓ Игнорирование сбоев памяти: Включено (устранение Userspace PANIC)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+            "✓ Memory Layout: 6GB DRAM (Eliminates VM crash)\n✓ Ignore Memory Aborts: Enabled (Fixes Userspace PANIC)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4182,7 +4129,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -4196,7 +4142,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -4206,8 +4151,8 @@ object GameFixDatabase {
             "Marvel Cosmic Invasion",
             "• Пользовательский сбой Userspace PANIC debug_buffer_err_code=1A80A\n• Просадки FPS при спавне волн врагов и взрывов\n• Микрофризы расчёта физики",
             "• Userspace PANIC debug_buffer_err_code=1A80A\n• Framerate drops during enemy waves and heavy particles\n• Physics calculation micro-stutters",
-            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
+            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4218,7 +4163,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -4232,7 +4176,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -4242,8 +4185,8 @@ object GameFixDatabase {
             "Underling Uprising",
             "• Обращения к неразмеченной памяти Unmapped Device ReadBlock 0x1000\n• Просадки кадровой частоты из-за барьеров конвейера\n• Микрофризы подгрузки спрайтов",
             "• Unmapped Device ReadBlock 0x1000 warnings\n• Pipeline fence stalls and framerate dips\n• Sprite streaming micro-stutters",
-            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Режим консоли: Портативный (720p)",
-            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Console Mode: Handheld (720p)",
+            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
+            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -4254,7 +4197,6 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\resolution_setup" to "0",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
@@ -4268,7 +4210,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "0",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -4318,11 +4259,10 @@ object GameFixDatabase {
             "Pokemon Violet",
             "• Утечки памяти в открытом мире Палдеи\n• Мерцание ландшафта и текстур",
             "• Open-world memory leaks in Paldea\n• Terrain and texture flickering",
-            "✓ Разрешение: Handheld 0.75X + FSR 75%\n✓ Сжатие ASTC: Отключено\n✓ Ограничение VRAM: Conservative",
-            "✓ Resolution: Handheld 0.75X + FSR 75%\n✓ ASTC Recompression: BC3\n✓ VRAM Usage: Conservative",
+            "✓ Сжатие ASTC: Отключено\n✓ Ограничение VRAM: Conservative",
+            "✓ ASTC Recompression: BC3\n✓ VRAM Usage: Conservative",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\resolution_setup" to "1"
             )
         ),
         GameFixProfile(
@@ -4362,14 +4302,12 @@ object GameFixDatabase {
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1"
             )
         ),
         GameFixProfile(
@@ -4397,14 +4335,12 @@ object GameFixDatabase {
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1"
             )
         ),
         GameFixProfile(
@@ -4617,12 +4553,10 @@ object GameFixDatabase {
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
             )
@@ -4656,12 +4590,10 @@ object GameFixDatabase {
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
             )
@@ -4695,12 +4627,10 @@ object GameFixDatabase {
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "0",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
             )
@@ -4786,7 +4716,6 @@ object GameFixDatabase {
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\resolution_setup" to "3",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Cpu\\cpu_accuracy" to "0",
@@ -4795,7 +4724,6 @@ object GameFixDatabase {
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1",
                 "System\\airplane_mode" to "true",
-                "System\\use_docked_mode" to "1"
             )
         )
     )
@@ -5261,10 +5189,14 @@ object GameFixDatabase {
             )
 
             for ((fullKey, value) in fix.settingsMap) {
-                if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio")) { continue }
+                if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") || fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") || fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) { continue }
                 val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
                 val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
-                val section = sections.getOrPut(sectionName) { mutableMapOf() }
+                                val section = sections.getOrPut(sectionName) { mutableMapOf() }
+                // Clean up legacy 0.25X downscaling from previous auto-fixes
+                if (sections["Renderer"]?.get("resolution_setup") == "0") {
+                    sections["Renderer"]?.remove("resolution_setup")
+                }
 
                 // USER PRIORITY RULE:
                 // If user has already configured this key in custom config,

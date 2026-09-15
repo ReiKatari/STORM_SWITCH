@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright yuzu/Citra Emulator Project
@@ -419,12 +419,12 @@ fun runGitCommand(command: List<String>): String {
 fun getGitVersion(): String {
     val gitReleaseFile = File(project.rootDir, "../../GIT-RELEASE")
     if (gitReleaseFile.exists()) {
-        val ver = gitReleaseFile.readText().trim()
+        val ver = gitReleaseFile.readText().removePrefix("\uFEFF").trim()
         if (ver.isNotEmpty()) {
             return ver
         }
     }
-    return "8.6.5"
+    return "8.6.6"
 }
 
 
