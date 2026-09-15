@@ -171,7 +171,7 @@
 ## 7. Автоматическая поддержка будущих проектов
 - При создании любого нового проекта или клонировании репозитория в рабочую область:
   1. Автоматически устанавливается имя и email автора: `ReiKatari <45316432+ReiKatari@users.noreply.github.com>`.
-  2. Разворачивается каталог `.agents/skills/` с полным набором навыков (`skill-doctor`, `storm-rejudge`, `storm-codebase-intel`, `storm-model-liberator`, `storm-release-manager`, `storm-readme-auditor`, `storm-repo-hygiene`, `storm-token-optimizer`).
+  2. Разворачивается каталог `.agents/skills/` с полным набором навыков (`skill-doctor`, `storm-rejudge`, `storm-codebase-intel`, `storm-model-liberator`, `storm-release-manager`, `storm-readme-auditor`, `storm-repo-hygiene`, `storm-token-optimizer`, `storm-wpf-ui-architect`, `storm-asset-optimizer`, `storm-game-media-scout`, `storm-graphics-upscaler-shaders`).
   3. Копируется файл `AGENTS.md`, `.agents/rules/release_and_git_guidelines.md` и `.agents/rules/antigravity-rtk-rules.md`.
   4. Применяется защитный `.gitignore` (исключение секретов, токенов, сборок и дампов).
 
@@ -188,3 +188,37 @@
   - Если для команды нет специализированного фильтра в RTK, она выполняется прозрачно как есть — префикс `rtk` всегда безопасен.
   - Повторный запуск сырой команды `rtk proxy <cmd>` допускается ТОЛЬКО если вывод оказался повреждённым или противоречит коду возврата.
   - Строго запрещено засорять контекстное окно модели длинными простынями успешных логов, прогресс-баров и мусорного вывода. Это сохраняет фокусировку рассуждений LLM и радикально снижает затраты токенов.
+
+---
+
+## 9. Стандарт современного интерфейса и векторной графики (WPF-UI, Lucide и Tabler Icons, SkiaSharp и Lottie)
+- **WPF-UI (.NET 9 Elevated Controls)**:
+  - Во всех новых и обновляемых графических проектах на базе C#/.NET 9 в качестве базовой дизайн-системы используется **WPF-UI (`Wpf.Ui`)** с поддержкой нативной плавной прокрутки, сглаживания и стилизации окон.
+  - Обязательная привязка к эталонной 8-цветовой палитре STORM SOFT (`STORM DARK`, `STORM NIGHT`, `STORM DAY`, `STORM MIDNIGHT`, `STORM MATRIX`, `STORM CYBERPUNK`, `STORM FANTASY`, `STORM WARHAMMER 40K`).
+  - Сохранение фирменного 3D-стиля: кнопки с `DropShadowEffect` (`Direction=270`, `BlurRadius=8-12`, `ShadowDepth=2-3.5`), тактильная физика нажатия (`TranslateTransform Y="1.5"`, `Scale 0.98`), сплошные закруглённые чекбоксы (`CornerRadius="4"`) без устаревших галочек, градиентные подложки карточек.
+- **Векторные иконки Lucide и Tabler (XAML Vector Grids)**:
+  - **Полный запрет использования растровых PNG/ICO внутри интерфейса вместо векторной графики**.
+  - Все иконки кнопок, меню, вкладок и статусов внедряются строго в виде векторных геометрий XAML (`Path` / `PathGeometry` / `StreamGeometry`) на основе сеток **Lucide Icons** (сетка 24×24, stroke 2px) или **Tabler Icons**.
+  - Заливка и контуры иконок динамически наследуют акцентный неоновый цвет активной темы (`Foreground="{DynamicResource AccentBrush}"`).
+- **SkiaSharp и Lottie (Аппаратные векторные анимации)**:
+  - В инсталляторах `StormInstaller`, сплэш-скринах и экранах длительных операций (распаковка, скачивание, компиляция, апскейлинг) используются легковесные JSON-анимации **Lottie** через движок **SkiaSharp** (`SkiaSharp.Views.WPF` / `LottieSharp`).
+  - Гарантируется рендеринг 120 FPS без просадок UI-потока и нулевая нагрузка на CPU.
+
+---
+
+## 10. Стандарт оптимизации ассетов, текстур и игровых технологий (Oxipng, texconv, Real-ESRGAN, Slang Shaders, FidelityFX, Skyscraper)
+- **Сжатие PNG без потерь (Oxipng)**:
+  - Все растровые изображения, текстуры, слои иконок и ассеты дистрибутивов перед включением в релиз или сборку ОБЯЗАТЕЛЬНО оптимизируются через `rtk oxipng -o max --strip all <files>`.
+  - Удаляются избыточные метаданные и мусорные чанки, обеспечивая снижение веса на 20–45% без потери качества.
+- **Пайплайн текстур Direct3D (DirectXTex / texconv)**:
+  - В игровых проектах, утилитах модификаций и эмуляторах (`STORM EDEN`, `STORM DS`, `STORM SWITCH BOX`) для конвертации текстур используется официальный инструмент Microsoft **`texconv`**.
+  - Использование блочного сжатия **BC7_UNORM** для высококачественных текстур со сложной альфой и **BC1_UNORM** для базовых диффузных карт.
+- **Нейросетевой AI-апскейлинг обложек и текстур (Real-ESRGAN Vulkan)**:
+  - Для улучшения низкокачественных постеров, обложек и ретро-текстур в `STORM GOG LAUNCHER`, `STORM GAMES INFO`, `STORM RETRO` используется автономный GPU-апскейлер **`realesrgan-ncnn-vulkan`** (модели `realesrgan-x4plus` для фото/реализма и `realesrgan-x4plus-anime` для рисованных артов) с повышением разрешения до 4K.
+- **Шейдеры постобработки и масштабирование (Libretro Slang Shaders & AMD FidelityFX CAS)**:
+  - В графических конвейерах эмуляторов консолей поддерживается эталонный каталог шейдеров `E:\TOOLS\Shaders`:
+    - Ретро-мониторы: `crt-royale`, `crt-geom`, `mega-bezel`.
+    - Сглаживание пикселей без мыла: `xBRZ`, `ScaleFX`, `Bilateral`.
+    - Устранение замыливания при апскейле: шейдер адаптивной контрастной резкости **AMD FidelityFX CAS (RCAS)** (`sharpen/shaders/rcas.slang`).
+- **Сбор метаданных и 3D-боксов игр (Skyscraper & Scrapers Engine)**:
+  - Автоматическое наполнение игровых карточек в лаунчерах официальными постерами, снимками экрана, логотипами (wheel) и генерация 3D-боксов игр через базы Screenscraper, SteamGridDB, TheGamesDB и IGDB.
