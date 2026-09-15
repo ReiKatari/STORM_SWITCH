@@ -325,10 +325,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 GameFixDatabase.applyFix(gameToUse)
                 SettingsFile.loadCustomConfig(gameToUse)
                 if (overrides.isNotEmpty()) {
-                    val overridesList = overrides.take(3).joinToString(", ")
-                    val more = if (overrides.size > 3) " (+${overrides.size - 3})" else ""
-                    val message = getString(R.string.game_fix_manual_override_warning, "$overridesList$more")
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                     Log.info("[EmulationFragment] GameFix active with user manual overrides: $overrides")
                 } else {
                     Log.info("[EmulationFragment] Loaded GameFix profile for ${gameToUse.title} (custom config present: $isUserCustom)")

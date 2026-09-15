@@ -14,7 +14,7 @@
    <string>Form</string>
   </property>
   <property name="accessibleName">
-   <string>ЦП</string>
+   <string>CPU</string>
   </property>
   <layout class="QVBoxLayout" name="vboxlayout_2" stretch="0">
    <item>
@@ -65,7 +65,7 @@
         <bool>false</bool>
        </property>
        <property name="title">
-        <string>Бэкенд ЦП</string>
+        <string>Backend</string>
        </property>
        <layout class="QVBoxLayout">
         <item>
@@ -92,7 +92,7 @@
      <item>
       <widget class="QGroupBox" name="unsafe_group">
        <property name="title">
-        <string>Небезопасные оптимизации ЦП</string>
+        <string>Unsafe CPU Optimization</string>
        </property>
        <layout class="QVBoxLayout">
         <item>

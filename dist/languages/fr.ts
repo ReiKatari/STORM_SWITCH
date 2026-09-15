@@ -2977,6 +2977,22 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
       <source>Web</source>
       <translation>Web</translation>
     </message>
+    <message>
+      <source>⚡ Auto Settings</source>
+      <translation>⚡ Paramètres automatiques</translation>
+    </message>
+    <message>
+      <source>⚡ System Auto Settings</source>
+      <translation>⚡ Paramètres automatiques du système</translation>
+    </message>
+    <message>
+      <source>&lt;b&gt;Auto-configuration successfully applied&lt;/b&gt;</source>
+      <translation>&lt;b&gt;Configuration automatique appliquée avec succès&lt;/b&gt;</translation>
+    </message>
+    <message>
+      <source>Profile: &lt;b style='color: #00D2FF;'&gt;%1&lt;/b&gt;</source>
+      <translation>Profil : &lt;b style='color: #00D2FF;'&gt;%1&lt;/b&gt;</translation>
+    </message>
   </context>
   <context>
     <name>ConfigureFilesystem</name>

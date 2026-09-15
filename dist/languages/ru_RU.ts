@@ -3489,6 +3489,22 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Web</source>
       <translation>Сеть</translation>
     </message>
+    <message>
+      <source>⚡ Auto Settings</source>
+      <translation>⚡ Авто-настройки</translation>
+    </message>
+    <message>
+      <source>⚡ System Auto Settings</source>
+      <translation>⚡ Авто-настройки системы</translation>
+    </message>
+    <message>
+      <source>&lt;b&gt;Auto-configuration successfully applied&lt;/b&gt;</source>
+      <translation>&lt;b&gt;Авто-настройки успешно рассчитаны и применены&lt;/b&gt;</translation>
+    </message>
+    <message>
+      <source>Profile: &lt;b style='color: #00D2FF;'&gt;%1&lt;/b&gt;</source>
+      <translation>Профиль: &lt;b style='color: #00D2FF;'&gt;%1&lt;/b&gt;</translation>
+    </message>
   </context>
   <context>
     <name>ConfigureFilesystem</name>

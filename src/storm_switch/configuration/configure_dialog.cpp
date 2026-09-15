@@ -125,7 +125,7 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
                 &ConfigureDialog::HandleApplyButtonClicked);
     }
 
-    QPushButton* auto_settings_btn = ui->buttonBox->addButton(tr("⚡ Авто-настройки"), QDialogButtonBox::ActionRole);
+    QPushButton* auto_settings_btn = ui->buttonBox->addButton(tr("⚡ Auto Settings"), QDialogButtonBox::ActionRole);
     auto_settings_btn->setObjectName(QStringLiteral("AutoSettingsButton"));
     auto_settings_btn->setCursor(Qt::PointingHandCursor);
     auto_settings_btn->setStyleSheet(QStringLiteral(

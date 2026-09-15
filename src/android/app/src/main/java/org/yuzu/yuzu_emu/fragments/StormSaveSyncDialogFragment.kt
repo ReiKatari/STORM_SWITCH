@@ -467,8 +467,31 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             val input = socket.getInputStream()
             val output = socket.getOutputStream()
 
-            val reader = input.bufferedReader(Charsets.UTF_8)
-            val firstLine = reader.readLine() ?: return
+            val rawInput = BufferedInputStream(input)
+            val headerBaos = ByteArrayOutputStream()
+            var state = 0
+            while (true) {
+                val b = rawInput.read()
+                if (b == -1) return
+                headerBaos.write(b)
+                if (state == 0 || state == 2) {
+                    if (b == 13) state++ else state = 0
+                } else if (state == 1) {
+                    if (b == 10) state++ else state = if (b == 13) 1 else 0
+                } else if (state == 3) {
+                    if (b == 10) {
+                        break
+                    } else {
+                        state = if (b == 13) 1 else 0
+                    }
+                }
+            }
+
+            val headerBytes = headerBaos.toByteArray()
+            val headerText = String(headerBytes, Charsets.UTF_8)
+            val headerLines = headerText.split("\r\n")
+            if (headerLines.isEmpty()) return
+            val firstLine = headerLines[0]
             val parts = firstLine.split(" ")
             if (parts.size < 2) return
 
@@ -476,19 +499,19 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             val path = parts[1]
 
             val headers = mutableMapOf<String, String>()
-            var line: String? = reader.readLine()
             var contentLength = 0
-            while (!line.isNullOrEmpty()) {
+            for (i in 1 until headerLines.size) {
+                val line = headerLines[i]
+                if (line.isEmpty()) continue
                 val colon = line.indexOf(':')
                 if (colon != -1) {
-                    val k = line.substring(0, colon).trim().lowercase()
+                    val k = line.substring(0, colon).trim().lowercase(Locale.ROOT)
                     val v = line.substring(colon + 1).trim()
                     headers[k] = v
                     if (k == "content-length") {
                         contentLength = v.toIntOrNull() ?: 0
                     }
                 }
-                line = reader.readLine()
             }
 
             fun sendResponse(status: Int, contentType: String, body: ByteArray) {
@@ -531,7 +554,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         put("status", "ok")
                         put("device_name", "${Build.MANUFACTURER} ${Build.MODEL}")
                         put("platform", "android")
-                        put("version", "8.6.6")
+                        put("version", "8.6.7")
                     }
                     sendResponse(200, "application/json", obj.toString().toByteArray(Charsets.UTF_8))
                 }
@@ -578,7 +601,6 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         return
                     }
 
-                    val rawInput = BufferedInputStream(input)
                     val bodyBytes = ByteArray(contentLength)
                     var read = 0
                     while (read < contentLength) {
@@ -601,6 +623,9 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                                 FileOutputStream(f).use { fos ->
                                     zis.copyTo(fos)
                                 }
+                                if (entry.time > 0) {
+                                    f.setLastModified(entry.time)
+                                }
                             }
                             entry = zis.nextEntry
                         }
@@ -608,6 +633,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
                     scanLocalSaves()
                     withContext(Dispatchers.Main) {
+                        updateComparisonList()
                         updateList()
                     }
                     sendResponse(200, "application/json", "{\"status\":\"ok\"}".toByteArray())
@@ -652,7 +678,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 val statusUrl = "http://$ip:$port/api/status?client_ip=$myIp&client_port=$localPort&client_name=$encodedName&client_key=$myKey"
                 val req = Request.Builder()
                     .url(statusUrl)
-                    .header("User-Agent", "STORM-SWITCH-SYNC/8.6.6")
+                    .header("User-Agent", "STORM-SWITCH-SYNC/8.6.7")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 if (resp.isSuccessful) {
@@ -955,6 +981,9 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                                     FileOutputStream(f).use { fos ->
                                         zis.copyTo(fos)
                                     }
+                                    if (entry.time > 0) {
+                                        f.setLastModified(entry.time)
+                                    }
                                 }
                                 entry = zis.nextEntry
                             }
@@ -963,6 +992,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         scanLocalSaves()
                         withContext(Dispatchers.Main) {
                             binding.progressSync.isVisible = false
+                            updateComparisonList()
                             updateList()
                             Toast.makeText(requireContext(), "Сохранение успешно загружено!", Toast.LENGTH_SHORT).show()
                         }
@@ -1001,9 +1031,12 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 if (resp.isSuccessful) {
+                    scanLocalSaves()
                     fetchRemoteSaves()
                     withContext(Dispatchers.Main) {
                         binding.progressSync.isVisible = false
+                        updateComparisonList()
+                        updateList()
                         Toast.makeText(requireContext(), "Сохранение успешно отправлено на удалённое устройство!", Toast.LENGTH_SHORT).show()
                     }
                     return@launch
@@ -1083,7 +1116,10 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 zipDirectory(root, file, zos)
             } else {
                 val relPath = file.relativeTo(root).path.replace('\\', '/')
-                zos.putNextEntry(ZipEntry(relPath))
+                val entry = ZipEntry(relPath).apply {
+                    time = file.lastModified()
+                }
+                zos.putNextEntry(entry)
                 FileInputStream(file).use { fis ->
                     fis.copyTo(zos)
                 }

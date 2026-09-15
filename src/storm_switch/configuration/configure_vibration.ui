@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Вибрация и тактильная отдача</string>
+   <string>Configure Vibration</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -27,7 +27,7 @@
    <item>
     <widget class="QGroupBox" name="vibrationStrengthGroup">
      <property name="title">
-      <string>Вибрация и тактильная отдача</string>
+      <string>Vibration</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
       <property name="leftMargin">

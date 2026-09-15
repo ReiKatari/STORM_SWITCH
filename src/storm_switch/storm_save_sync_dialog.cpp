@@ -902,15 +902,41 @@ void StormSaveSyncDialog::OnTcpSocketReadyRead() {
     auto* socket = qobject_cast<QTcpSocket*>(sender());
     if (!socket) return;
 
-    const QByteArray socket_data = socket->readAll();
-    const QString req_str = QString::fromUtf8(socket_data);
+    QByteArray socket_data = socket->property("tcp_buf").toByteArray();
+    socket_data.append(socket->readAll());
+    socket->setProperty("tcp_buf", socket_data);
 
-    // Parse HTTP request line
-    const int first_line_end = req_str.indexOf(QStringLiteral("\r\n"));
-    if (first_line_end == -1) return;
-    const QString first_line = req_str.left(first_line_end);
+    // Wait for headers delimiter
+    const int header_end = socket_data.indexOf("\r\n\r\n");
+    if (header_end == -1) return;
+
+    const QString header_str = QString::fromUtf8(socket_data.left(header_end));
+    const QStringList header_lines = header_str.split(QStringLiteral("\r\n"));
+    if (header_lines.isEmpty()) return;
+
+    const QString first_line = header_lines[0];
     const QStringList parts = first_line.split(QLatin1Char(' '));
     if (parts.size() < 2) return;
+
+    qint64 content_length = 0;
+    for (int i = 1; i < header_lines.size(); ++i) {
+        const QString& hline = header_lines[i];
+        const int colon = hline.indexOf(QLatin1Char(':'));
+        if (colon != -1) {
+            const QString k = hline.left(colon).trimmed().toLower();
+            const QString v = hline.mid(colon + 1).trimmed();
+            if (k == QStringLiteral("content-length")) {
+                content_length = v.toLongLong();
+            }
+        }
+    }
+
+    if (socket_data.size() < header_end + 4 + content_length) {
+        // Wait for remaining body data packets
+        return;
+    }
+
+    socket->setProperty("tcp_buf", QByteArray());
 
     const QString method = parts[0];
     const QString path_and_query = parts[1];
@@ -955,7 +981,7 @@ void StormSaveSyncDialog::OnTcpSocketReadyRead() {
         obj[QStringLiteral("status")] = QStringLiteral("ok");
         obj[QStringLiteral("device_name")] = QHostInfo::localHostName();
         obj[QStringLiteral("platform")] = QStringLiteral("windows");
-        obj[QStringLiteral("version")] = QStringLiteral("8.6.6");
+        obj[QStringLiteral("version")] = QStringLiteral("8.6.7");
         send_response(200, QStringLiteral("application/json"), QJsonDocument(obj).toJson(QJsonDocument::Compact));
         return;
     }
@@ -1214,7 +1240,7 @@ void StormSaveSyncDialog::OnConnectClicked() {
                        .arg(QString::fromUtf8(QUrl::toPercentEncoding(my_name)))
                        .arg(m_local_key));
     QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.6.6"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-SYNC/8.6.7"));
 
     auto* reply = m_network_mgr->get(req);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {

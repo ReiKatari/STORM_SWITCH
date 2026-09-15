@@ -2978,6 +2978,22 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Web</source>
       <translation>网络</translation>
     </message>
+    <message>
+      <source>⚡ Auto Settings</source>
+      <translation>⚡ 自动设置</translation>
+    </message>
+    <message>
+      <source>⚡ System Auto Settings</source>
+      <translation>⚡ 系统自动设置</translation>
+    </message>
+    <message>
+      <source>&lt;b&gt;Auto-configuration successfully applied&lt;/b&gt;</source>
+      <translation>&lt;b&gt;自动配置已成功应用&lt;/b&gt;</translation>
+    </message>
+    <message>
+      <source>Profile: &lt;b style='color: #00D2FF;'&gt;%1&lt;/b&gt;</source>
+      <translation>配置文件: &lt;b style='color: #00D2FF;'&gt;%1&lt;/b&gt;</translation>
+    </message>
   </context>
   <context>
     <name>ConfigureFilesystem</name>

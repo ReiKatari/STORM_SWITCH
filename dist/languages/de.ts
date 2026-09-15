@@ -2976,6 +2976,22 @@ Wenn ein Programm versucht, das Controller-Applet zu öffnen, wird es sofort ges
       <source>Web</source>
       <translation>Web</translation>
     </message>
+    <message>
+      <source>⚡ Auto Settings</source>
+      <translation>⚡ Automatische Einstellungen</translation>
+    </message>
+    <message>
+      <source>⚡ System Auto Settings</source>
+      <translation>⚡ Automatische Systemeinstellungen</translation>
+    </message>
+    <message>
+      <source>&lt;b&gt;Auto-configuration successfully applied&lt;/b&gt;</source>
+      <translation>&lt;b&gt;Automatische Einstellungen erfolgreich angewendet&lt;/b&gt;</translation>
+    </message>
+    <message>
+      <source>Profile: &lt;b style='color: #00D2FF;'&gt;%1&lt;/b&gt;</source>
+      <translation>Profil: &lt;b style='color: #00D2FF;'&gt;%1&lt;/b&gt;</translation>
+    </message>
   </context>
   <context>
     <name>ConfigureFilesystem</name>
