@@ -440,6 +440,21 @@ QString MainWindow::GetGameTitleByProgramId(u64 program_id) const {
     return searchItem(root);
 }
 
+static QString StormLang(const QString& ru, const QString& en,
+                         const QString& de = QString(), const QString& fr = QString(),
+                         const QString& zh = QString(), const QString& ja = QString()) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
+    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
+    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
+    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
+    return en;
+}
+
 MainWindow::MainWindow(bool has_broken_vulkan)
     : ui{std::make_unique<Ui::MainWindow>()},
       input_subsystem{std::make_shared<InputCommon::InputSubsystem>()}, user_data_migrator{this} {
@@ -453,7 +468,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.6.8";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.6.9";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
@@ -1850,10 +1865,9 @@ void MainWindow::InitializeWidgets() {
     // Setup Refresh Button
     refresh_button = new QPushButton();
     refresh_button->setIcon(QIcon::fromTheme(QStringLiteral("view-refresh")));
-    refresh_button->setText(tr("СПИСОК:\nОбновить"));
     refresh_button->setObjectName(QStringLiteral("RefreshButton"));
-    refresh_button->setToolTip(tr("Обновить список игр"));
     refresh_button->setFocusPolicy(Qt::NoFocus);
+    UpdateRefreshButton();
     connect(refresh_button, &QPushButton::clicked, this, &MainWindow::OnGameListRefresh);
 
     // Setup Airplane Mode button
@@ -2057,7 +2071,14 @@ void MainWindow::InitializeWidgets() {
     // Setup Footer Customize button
     footer_customize_button = new QPushButton(QStringLiteral("⚙"));
     footer_customize_button->setObjectName(QStringLiteral("FooterCustomizeButton"));
-    footer_customize_button->setToolTip(tr("Настройка отображения разделов и кнопок подвала"));
+    footer_customize_button->setToolTip(StormLang(
+        QStringLiteral("Настройка отображения разделов и кнопок подвала"),
+        QStringLiteral("Customize footer sections and buttons display"),
+        QStringLiteral("Fußzeilenabschnitte und Schaltflächen anpassen"),
+        QStringLiteral("Personnaliser l'affichage des sections et boutons du pied de page"),
+        QStringLiteral("自定义底部栏分区与按钮显示"),
+        QStringLiteral("フッターのセクションとボタンの表示をカスタマイズ")
+    ));
     footer_customize_button->setFocusPolicy(Qt::NoFocus);
     footer_customize_button->setFixedWidth(28);
     footer_customize_button->setMinimumHeight(32);
@@ -2084,8 +2105,9 @@ void MainWindow::InitializeWidgets() {
     // ============================================================
 
     m_status_groups.clear();
+    m_status_group_headers.clear();
 
-    auto createGroup = [this](const QString& title, const QString& color, const QList<QWidget*>& widgets) -> QWidget* {
+    auto createGroup = [this](int group_index, const QString& title, const QString& color, const QList<QWidget*>& widgets) -> QWidget* {
         auto* container = new QWidget();
         container->setObjectName(QStringLiteral("StatusBarGroup"));
         container->setStyleSheet(QStringLiteral(
@@ -2161,9 +2183,16 @@ void MainWindow::InitializeWidgets() {
         headerBtn->setCursor(Qt::PointingHandCursor);
         headerBtn->setFocusPolicy(Qt::NoFocus);
         headerBtn->setFlat(true);
-        headerBtn->setToolTip(tr("Нажмите для быстрого меню раздела «%1»").arg(title));
-        auto show_grp = [this, title, container]() {
-            ShowGroupMenu(title, container);
+        headerBtn->setToolTip(StormLang(
+            QStringLiteral("Нажмите для быстрого меню раздела «%1»").arg(title),
+            QStringLiteral("Click for quick menu of \"%1\" section").arg(title),
+            QStringLiteral("Klicken für Schnellmenü des Abschnitts \"%1\"").arg(title),
+            QStringLiteral("Cliquer pour le menu rapide de la section \"%1\"").arg(title),
+            QStringLiteral("点击打开“%1”分区的快捷菜单").arg(title),
+            QStringLiteral("クリックして「%1」セクションのクイックメニューを開く").arg(title)
+        ));
+        auto show_grp = [this, group_index, container]() {
+            ShowGroupMenu(group_index, container);
         };
         connect(headerBtn, &QPushButton::clicked, show_grp);
         headerBtn->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -2186,50 +2215,58 @@ void MainWindow::InitializeWidgets() {
         connect(container, &QWidget::customContextMenuRequested, show_grp);
 
         m_status_groups.push_back(container);
+        m_status_group_headers.push_back(headerBtn);
         return container;
     };
 
-    // --- Group 1: УПРАВЛЕНИЕ (Green accent) ---
+    // --- Group 0: CONTROLS (Green accent) ---
     statusBar()->insertPermanentWidget(0, createGroup(
-        tr("УПРАВЛЕНИЕ"), QStringLiteral("#00e676"),
+        0, StormLang(QStringLiteral("УПРАВЛЕНИЕ"), QStringLiteral("CONTROLS"), QStringLiteral("STEUERUNG"), QStringLiteral("COMMANDES"), QStringLiteral("控制"), QStringLiteral("操作")),
+        QStringLiteral("#00e676"),
         {refresh_button, fullscreen_button}));
 
-    // --- Group 2: ДОПОЛНЕНИЯ (Purple/Magenta accent) ---
+    // --- Group 1: ADD-ONS (Purple/Magenta accent) ---
     statusBar()->insertPermanentWidget(1, createGroup(
-        tr("ДОПОЛНЕНИЯ"), QStringLiteral("#e040fb"),
+        1, StormLang(QStringLiteral("ДОПОЛНЕНИЯ"), QStringLiteral("ADD-ONS"), QStringLiteral("ADD-ONS"), QStringLiteral("EXTENSIONS"), QStringLiteral("附加组件"), QStringLiteral("アドオン")),
+        QStringLiteral("#e040fb"),
         {addons_status_button}));
 
-    // --- Group 3: РЕНДЕР (Cyan accent) ---
+    // --- Group 2: RENDER (Cyan accent) ---
     statusBar()->insertPermanentWidget(2, createGroup(
-        tr("РЕНДЕР"), QStringLiteral("#00e5ff"),
+        2, StormLang(QStringLiteral("РЕНДЕР"), QStringLiteral("RENDER"), QStringLiteral("RENDER"), QStringLiteral("RENDU"), QStringLiteral("渲染"), QStringLiteral("レンダー")),
+        QStringLiteral("#00e5ff"),
         {renderer_status_button, gpu_accuracy_button, cpu_accuracy_button, vsync_mode_button, dma_accuracy_button, gpu_fence_button, nvdec_status_button}));
 
-    // --- Group 4: ГРАФИКА (Yellow accent) ---
+    // --- Group 3: GRAPHICS (Yellow accent) ---
     statusBar()->insertPermanentWidget(3, createGroup(
-        tr("ГРАФИКА"), QStringLiteral("#ffca28"),
+        3, StormLang(QStringLiteral("ГРАФИКА"), QStringLiteral("GRAPHICS"), QStringLiteral("GRAFIK"), QStringLiteral("GRAPHISMES"), QStringLiteral("图形"), QStringLiteral("グラフィックス")),
+        QStringLiteral("#ffca28"),
         {aa_status_button, filter_status_button, aspect_ratio_button, res_scale_button, vram_mode_button, anisotropy_button, disk_cache_button}));
 
-    // --- Group 5: ASTC (Pink accent) ---
+    // --- Group 4: ASTC (Pink accent) ---
     statusBar()->insertPermanentWidget(4, createGroup(
-        tr("ASTC"), QStringLiteral("#ff4081"),
+        4, QStringLiteral("ASTC"), QStringLiteral("#ff4081"),
         {astc_decode_button, astc_recompress_button}));
 
-    // --- Group 6: РЕЖИМ (Purple accent) ---
+    // --- Group 5: MODE (Purple accent) ---
     statusBar()->insertPermanentWidget(5, createGroup(
-        tr("РЕЖИМ"), QStringLiteral("#b388ff"),
+        5, StormLang(QStringLiteral("РЕЖИМ"), QStringLiteral("MODE"), QStringLiteral("MODUS"), QStringLiteral("MODE"), QStringLiteral("模式"), QStringLiteral("モード")),
+        QStringLiteral("#b388ff"),
         {dock_status_button, airplane_mode_button, speed_limit_button, volume_button, mute_button}));
 
-    // --- Group 7: СИСТЕМА (Orange accent) ---
+    // --- Group 6: SYSTEM (Orange accent) ---
     auto* sys_group = createGroup(
-        tr("СИСТЕМА"), QStringLiteral("#ff9100"),
+        6, StormLang(QStringLiteral("СИСТЕМА"), QStringLiteral("SYSTEM"), QStringLiteral("SYSTEM"), QStringLiteral("SYSTÈME"), QStringLiteral("系统"), QStringLiteral("システム")),
+        QStringLiteral("#ff9100"),
         {firmware_label});
     sys_group->setMinimumWidth(90);
     firmware_label->setMinimumWidth(80);
     statusBar()->insertPermanentWidget(6, sys_group);
 
-    // --- Group 8: СЕТЬ (Blue/Cyan accent) ---
+    // --- Group 7: NETWORK (Blue/Cyan accent) ---
     auto* net_group = createGroup(
-        tr("СЕТЬ"), QStringLiteral("#00b0ff"),
+        7, StormLang(QStringLiteral("СЕТЬ"), QStringLiteral("NETWORK"), QStringLiteral("NETZWERK"), QStringLiteral("RÉSEAU"), QStringLiteral("网络"), QStringLiteral("ネットワーク")),
+        QStringLiteral("#00b0ff"),
         {multiplayer_state->GetStatusIcon(), multiplayer_state->GetStatusText()});
     net_group->setMinimumWidth(90);
     statusBar()->insertPermanentWidget(7, net_group);
@@ -2650,31 +2687,66 @@ void MainWindow::SetupMenuIcons() {
     apply_action(ui->action_Configure_Tas, QStringLiteral("gear"), col_grey);
 
     if (!reset_gamefix_action) {
-        reset_gamefix_action = ui->menu_Tools->addAction(tr("Сбросить скрытые диалоги авто-исправлений..."));
+        reset_gamefix_action = ui->menu_Tools->addAction(StormLang(
+            QStringLiteral("Сбросить скрытые диалоги авто-исправлений..."),
+            QStringLiteral("Reset Hidden Auto-Fix Dialogs..."),
+            QStringLiteral("Ausgeblendete Auto-Fix-Dialoge zurücksetzen..."),
+            QStringLiteral("Réinitialiser les dialogues d'auto-correction masqués..."),
+            QStringLiteral("重置隐藏的自动修复对话框..."),
+            QStringLiteral("非表示の自動修正ダイアログをリセット...")
+        ));
     }
     apply_action(reset_gamefix_action, QStringLiteral("restart"), col_cyan);
 
     if (!autotune_action) {
-        autotune_action = ui->menu_Tools->addAction(tr("Авто-настройки производительности..."));
+        autotune_action = ui->menu_Tools->addAction(StormLang(
+            QStringLiteral("Авто-настройки производительности..."),
+            QStringLiteral("Auto Performance Settings..."),
+            QStringLiteral("Automatische Leistungseinstellungen..."),
+            QStringLiteral("Paramètres de performance automatiques..."),
+            QStringLiteral("自动性能配置..."),
+            QStringLiteral("自動パフォーマンス設定...")
+        ));
     }
     apply_action(autotune_action, QStringLiteral("lightning"), col_amber);
 
     if (!storm_games_world_action) {
-        storm_games_world_action = new QAction(tr("Каталог и менеджер игр STORM GAMES WORLD..."), this);
+        storm_games_world_action = new QAction(StormLang(
+            QStringLiteral("Каталог и менеджер игр STORM GAMES WORLD..."),
+            QStringLiteral("STORM GAMES WORLD Game Catalog & Manager..."),
+            QStringLiteral("STORM GAMES WORLD Spielekatalog und Manager..."),
+            QStringLiteral("Catalogue et gestionnaire de jeux STORM GAMES WORLD..."),
+            QStringLiteral("STORM GAMES WORLD 游戏目录与管理器..."),
+            QStringLiteral("STORM GAMES WORLD ゲームカタログ＆マネージャー...")
+        ), this);
         storm_games_world_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+G")));
         ui->menu_Tools->addAction(storm_games_world_action);
     }
     apply_action(storm_games_world_action, QStringLiteral("download"), col_green);
 
     if (!storm_save_sync_action) {
-        storm_save_sync_action = new QAction(tr("Синхронизация сохранений (STORM SAVE SYNC)..."), this);
+        storm_save_sync_action = new QAction(StormLang(
+            QStringLiteral("Синхронизация сохранений (STORM SAVE SYNC)..."),
+            QStringLiteral("Save Synchronization (STORM SAVE SYNC)..."),
+            QStringLiteral("Spielstand-Synchronisierung (STORM SAVE SYNC)..."),
+            QStringLiteral("Synchronisation des sauvegardes (STORM SAVE SYNC)..."),
+            QStringLiteral("存档同步 (STORM SAVE SYNC)..."),
+            QStringLiteral("セーブデータ同期 (STORM SAVE SYNC)...")
+        ), this);
         storm_save_sync_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
         ui->menu_Tools->addAction(storm_save_sync_action);
     }
     apply_action(storm_save_sync_action, QStringLiteral("refresh"), col_cyan);
 
     if (!log_viewer_action) {
-        log_viewer_action = new QAction(tr("Журнал работы (Логи)..."), this);
+        log_viewer_action = new QAction(StormLang(
+            QStringLiteral("Журнал работы (Логи)..."),
+            QStringLiteral("Log Viewer (Logs)..."),
+            QStringLiteral("Ereignisprotokoll (Logs)..."),
+            QStringLiteral("Journal des opérations (Logs)..."),
+            QStringLiteral("运行日志 (Logs)..."),
+            QStringLiteral("動作ログ (Logs)...")
+        ), this);
         log_viewer_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+L")));
         ui->menu_Tools->addAction(log_viewer_action);
     }
@@ -3548,11 +3620,32 @@ void MainWindow::OnApplyAutoCorrection() {
     headerLayout->addWidget(iconLabel);
 
     auto* titleLayout = new QVBoxLayout();
-    auto* titleLabel = new QLabel(tr("<b>Авто-коррекция графического конвейера (в реальном времени)</b>"), headerCard);
+    auto* titleLabel = new QLabel(StormLang(
+        QStringLiteral("<b>Авто-коррекция графического конвейера (в реальном времени)</b>"),
+        QStringLiteral("<b>Graphics Pipeline Auto-Correction (Real-time)</b>"),
+        QStringLiteral("<b>Grafikpipeline-Autokorrektur (Echtzeit)</b>"),
+        QStringLiteral("<b>Auto-correction du pipeline graphique (Temps réel)</b>"),
+        QStringLiteral("<b>图形管线自动校正（实时）</b>"),
+        QStringLiteral("<b>グラフィックスパイプライン自動修正（リアルタイム）</b>")
+    ), headerCard);
     titleLabel->setStyleSheet(QStringLiteral("font-size: 14px; color: #FFFFFF; background: transparent; border: none;"));
     auto* subtitleLabel = new QLabel(m_auto_correction_applied ?
-        tr("Текущее состояние: <b style='color: #00E676;'>Активна (конвейер оптимизирован)</b>") :
-        tr("Текущее состояние: <b style='color: #FFAB40;'>Рекомендована оптимизация при падении FPS</b>"), headerCard);
+        StormLang(
+            QStringLiteral("Текущее состояние: <b style='color: #00E676;'>Активна (конвейер оптимизирован)</b>"),
+            QStringLiteral("Current status: <b style='color: #00E676;'>Active (pipeline optimized)</b>"),
+            QStringLiteral("Aktueller Status: <b style='color: #00E676;'>Aktiv (Pipeline optimiert)</b>"),
+            QStringLiteral("État actuel : <b style='color: #00E676;'>Actif (pipeline optimisé)</b>"),
+            QStringLiteral("当前状态：<b style='color: #00E676;'>已激活（管线已优化）</b>"),
+            QStringLiteral("現在の状態: <b style='color: #00E676;'>有効（パイプライン最適化済み）</b>")
+        ) :
+        StormLang(
+            QStringLiteral("Текущее состояние: <b style='color: #FFAB40;'>Рекомендована оптимизация при падении FPS</b>"),
+            QStringLiteral("Current status: <b style='color: #FFAB40;'>Optimization recommended on FPS drops</b>"),
+            QStringLiteral("Aktueller Status: <b style='color: #FFAB40;'>Optimierung bei FPS-Einbrüchen empfohlen</b>"),
+            QStringLiteral("État actuel : <b style='color: #FFAB40;'>Optimisation recommandée en cas de baisse de FPS</b>"),
+            QStringLiteral("当前状态：<b style='color: #FFAB40;'>帧率下降时建议优化</b>"),
+            QStringLiteral("現在の状態: <b style='color: #FFAB40;'>FPS低下時の最適化を推奨</b>")
+        ), headerCard);
     subtitleLabel->setStyleSheet(QStringLiteral("font-size: 12px; color: #94A3B8; background: transparent; border: none;"));
     titleLayout->addWidget(titleLabel);
     titleLayout->addWidget(subtitleLabel);
@@ -3572,19 +3665,82 @@ void MainWindow::OnApplyAutoCorrection() {
     pLayout->setContentsMargins(14, 12, 14, 12);
     pLayout->setSpacing(6);
 
-    auto* pTitle = new QLabel(tr("🛠️ <b>Параметры адаптивной коррекции конвейера:</b>"), paramsCard);
+    auto* pTitle = new QLabel(StormLang(
+        QStringLiteral("🛠️ <b>Параметры адаптивной коррекции конвейера:</b>"),
+        QStringLiteral("🛠️ <b>Adaptive Pipeline Correction Parameters:</b>"),
+        QStringLiteral("🛠️ <b>Parameter der adaptiven Pipeline-Korrektur:</b>"),
+        QStringLiteral("🛠️ <b>Paramètres d'auto-correction adaptative du pipeline :</b>"),
+        QStringLiteral("🛠️ <b>自适应管线校正参数：</b>"),
+        QStringLiteral("🛠️ <b>適応型パイプライン修正パラメータ:</b>")
+    ), paramsCard);
     pTitle->setStyleSheet(QStringLiteral("color: #FFAB40; font-size: 12.5px; font-weight: bold; background: transparent; border: none;"));
     pLayout->addWidget(pTitle);
 
     QStringList corr_items = {
-        tr("✓ <b>Разрешение рендеринга</b>: 0.75X / 0.5X (динамическое снижение разрешения разгружает ГПУ и шейдерные блоки)"),
-        tr("✓ <b>Точность ГПУ</b>: Быстрый (Low) (высокая скорость рендеринга без задержек видеокарты)"),
-        tr("✓ <b>Пересжатие текстур ASTC</b>: BC3 (аппаратное пересжатие с альфа-каналом снижает нагрузку на видеопамять)"),
-        tr("✓ <b>Декодирование ASTC</b>: ЦП (асинхронное декодирование силами процессора разгружает видеочип)"),
-        tr("✓ <b>Асинхронная компиляция шейдеров</b>: Включено (фоновая сборка шейдеров исключает внутриигровые микрофризы)"),
-        tr("✓ <b>Асинхронный вывод</b>: Включено (устраняет дедлоки потока Vulkan и лаг кадрового буфера)"),
-        tr("✓ <b>Масштабирование</b>: AMD FSR (апскейлинг с резкостью 85% сохраняет высокую четкость картинки)"),
-        tr("✓ <b>Энергоэффективный Frame Pacing</b>: Включено (сглаживание микролагов и выравнивание времени кадра)")
+        StormLang(
+            QStringLiteral("✓ <b>Разрешение рендеринга</b>: 0.75X / 0.5X (динамическое снижение разрешения разгружает ГПУ и шейдерные блоки)"),
+            QStringLiteral("✓ <b>Rendering Resolution</b>: 0.75X / 0.5X (dynamic downscaling offloads GPU and shader units)"),
+            QStringLiteral("✓ <b>Rendering-Auflösung</b>: 0.75X / 0.5X (dynamische Verringerung entlastet GPU und Shader)"),
+            QStringLiteral("✓ <b>Résolution de rendu</b> : 0.75X / 0.5X (la réduction dynamique décharge le GPU et les shaders)"),
+            QStringLiteral("✓ <b>渲染分辨率</b>：0.75X / 0.5X（动态缩放减轻GPU和着色器单元负担）"),
+            QStringLiteral("✓ <b>描画解像度</b>: 0.75X / 0.5X (動的スケーリングによりGPUとシェーダーの負荷を軽減)")
+        ),
+        StormLang(
+            QStringLiteral("✓ <b>Точность ГПУ</b>: Быстрый (Low) (высокая скорость рендеринга без задержек видеокарты)"),
+            QStringLiteral("✓ <b>GPU Accuracy</b>: Fast (Low) (high rendering throughput without GPU pipeline stalls)"),
+            QStringLiteral("✓ <b>GPU-Genauigkeit</b>: Schnell (Niedrig) (hohe Rendergeschwindigkeit ohne GPU-Engpässe)"),
+            QStringLiteral("✓ <b>Précision GPU</b> : Rapide (Faible) (débit de rendu élevé sans blocage GPU)"),
+            QStringLiteral("✓ <b>GPU 精度</b>：快速 (Low)（高渲染吞吐量，避免显卡管线卡顿）"),
+            QStringLiteral("✓ <b>GPU 精度</b>: 高速 (Low) (GPUパイプラインの停止なしに高速描画)")
+        ),
+        StormLang(
+            QStringLiteral("✓ <b>Пересжатие текстур ASTC</b>: BC3 (аппаратное пересжатие с альфа-каналом снижает нагрузку на видеопамять)"),
+            QStringLiteral("✓ <b>ASTC Recompression</b>: BC3 (hardware recompression with alpha channel reduces VRAM usage)"),
+            QStringLiteral("✓ <b>ASTC-Rekompression</b>: BC3 (Hardware-Kompression mit Alphakanal senkt VRAM-Verbrauch)"),
+            QStringLiteral("✓ <b>Recompression ASTC</b> : BC3 (la recompression matérielle avec canal alpha réduit la VRAM)"),
+            QStringLiteral("✓ <b>ASTC 纹理重压缩</b>：BC3（带Alpha通道的硬件重压缩减少显存占用）"),
+            QStringLiteral("✓ <b>ASTC 再圧縮</b>: BC3 (アルファ付きハードウェア再圧縮によりVRAM使用量を削減)")
+        ),
+        StormLang(
+            QStringLiteral("✓ <b>Декодирование ASTC</b>: ЦП (асинхронное декодирование силами процессора разгружает видеочип)"),
+            QStringLiteral("✓ <b>ASTC Decoding</b>: CPU (asynchronous CPU decode offloads graphics chip)"),
+            QStringLiteral("✓ <b>ASTC-Dekodierung</b>: CPU (asynchrones CPU-Dekodieren entlastet den Grafikchip)"),
+            QStringLiteral("✓ <b>Décodage ASTC</b> : CPU (le décodage asynchrone par le processeur soulage le GPU)"),
+            QStringLiteral("✓ <b>ASTC 解码</b>：CPU（CPU异步解码减轻显卡负担）"),
+            QStringLiteral("✓ <b>ASTC デコード</b>: CPU (CPUによる非同期デコードでグラフィックチップを負荷軽減)")
+        ),
+        StormLang(
+            QStringLiteral("✓ <b>Асинхронная компиляция шейдеров</b>: Включено (фоновая сборка шейдеров исключает внутриигровые микрофризы)"),
+            QStringLiteral("✓ <b>Asynchronous Shader Building</b>: Enabled (background compilation eliminates in-game stutter)"),
+            QStringLiteral("✓ <b>Asynchrone Shader-Kompilierung</b>: Aktiviert (Hintergrund-Kompilierung verhindert Ruckler)"),
+            QStringLiteral("✓ <b>Compilation asynchrone des shaders</b> : Activée (la compilation en arrière-plan élimine les saccades)"),
+            QStringLiteral("✓ <b>异步着色器构建</b>：启用（后台编译杜绝游戏内微卡顿）"),
+            QStringLiteral("✓ <b>非同期シェーダー構築</b>: 有効 (バックグラウンドコンパイルによりスタッターを解消)")
+        ),
+        StormLang(
+            QStringLiteral("✓ <b>Асинхронный вывод</b>: Включено (устраняет дедлоки потока Vulkan и лаг кадрового буфера)"),
+            QStringLiteral("✓ <b>Async Presentation</b>: Enabled (eliminates Vulkan thread deadlocks and frame buffer lag)"),
+            QStringLiteral("✓ <b>Asynchrone Darstellung</b>: Aktiviert (beseitigt Vulkan-Thread-Deadlocks und Frame-Lag)"),
+            QStringLiteral("✓ <b>Présentation asynchrone</b> : Activée (élimine les blocages de thread Vulkan et le lag d'image)"),
+            QStringLiteral("✓ <b>异步呈现</b>：启用（消除 Vulkan 线程死锁与帧缓冲延迟）"),
+            QStringLiteral("✓ <b>非同期プレゼンテーション</b>: 有効 (Vulkanスレッドのデッドロックと表示遅延を排除)")
+        ),
+        StormLang(
+            QStringLiteral("✓ <b>Масштабирование</b>: AMD FSR (апскейлинг с резкостью 85% сохраняет высокую четкость картинки)"),
+            QStringLiteral("✓ <b>Scaling Filter</b>: AMD FSR (85% sharpening upscaler preserves sharp image clarity)"),
+            QStringLiteral("✓ <b>Skalierungsfilter</b>: AMD FSR (85% Schärfe-Upscaler bewahrt hohe Bildklarheit)"),
+            QStringLiteral("✓ <b>Filtre de mise à l'échelle</b> : AMD FSR (l'upscaler avec netteté à 85% préserve la clarté)"),
+            QStringLiteral("✓ <b>缩放滤镜</b>：AMD FSR（85%锐化超分辨率保持清晰画面）"),
+            QStringLiteral("✓ <b>スケーリングフィルター</b>: AMD FSR (85%シャープネスにより高い鮮明度を維持)")
+        ),
+        StormLang(
+            QStringLiteral("✓ <b>Энергоэффективный Frame Pacing</b>: Включено (сглаживание микролагов и выравнивание времени кадра)"),
+            QStringLiteral("✓ <b>Eco Frame Pacing</b>: Enabled (smooths micro-stutters and stabilizes frame times)"),
+            QStringLiteral("✓ <b>Energieeffizientes Frame-Pacing</b>: Aktiviert (glättet Mikroruckler und stabilisiert Framezeiten)"),
+            QStringLiteral("✓ <b>Frame Pacing écoénergétique</b> : Activé (atténue les micro-saccades et stabilise le temps d'image)"),
+            QStringLiteral("✓ <b>节能帧同步 (Frame Pacing)</b>：启用（平滑微卡顿并稳定帧时间）"),
+            QStringLiteral("✓ <b>省電力フレームペーシング</b>: 有効 (マイクロスタッターを抑制しフレーム時間を安定化)")
+        )
     };
 
     QString p_text;
@@ -3599,8 +3755,22 @@ void MainWindow::OnApplyAutoCorrection() {
 
     // Prompt Label
     auto* promptLabel = new QLabel(m_auto_correction_applied ?
-        tr("Восстановить исходные параметры графического конвейера этой игровой сессии?") :
-        tr("Применить авто-коррекцию к графическому конвейеру текущей игры?"), &corrDialog);
+        StormLang(
+            QStringLiteral("Восстановить исходные параметры графического конвейера этой игровой сессии?"),
+            QStringLiteral("Restore original graphics pipeline settings for this game session?"),
+            QStringLiteral("Ursprüngliche Grafikpipeline-Einstellungen dieser Spielsitzung wiederherstellen?"),
+            QStringLiteral("Restaurer les paramètres initiaux du pipeline graphique pour cette session ?"),
+            QStringLiteral("恢复本次游戏会话的初始图形管线设置？"),
+            QStringLiteral("このゲームセッションの初期グラフィックス設定を復元しますか？")
+        ) :
+        StormLang(
+            QStringLiteral("Применить авто-коррекцию к графическому конвейеру текущей игры?"),
+            QStringLiteral("Apply auto-correction to the graphics pipeline of the current game?"),
+            QStringLiteral("Autokorrektur auf die Grafikpipeline des aktuellen Spiels anwenden?"),
+            QStringLiteral("Appliquer l'auto-correction au pipeline graphique du jeu en cours ?"),
+            QStringLiteral("对当前游戏的图形管线应用自动校正？"),
+            QStringLiteral("現在のゲームのグラフィックスパイプラインに自動修正を適用しますか？")
+        ), &corrDialog);
     promptLabel->setAlignment(Qt::AlignCenter);
     promptLabel->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 12.5px; color: #F8FAFC; margin-top: 4px; background: transparent; border: none;"));
     dlg_layout->addWidget(promptLabel);
@@ -3612,7 +3782,14 @@ void MainWindow::OnApplyAutoCorrection() {
 
     QPushButton* actionBtn = nullptr;
     if (m_auto_correction_applied) {
-        actionBtn = new QPushButton(tr("🔄 Восстановить исходные параметры"), &corrDialog);
+        actionBtn = new QPushButton(StormLang(
+            QStringLiteral("🔄 Восстановить исходные параметры"),
+            QStringLiteral("🔄 Restore Original Settings"),
+            QStringLiteral("🔄 Ursprüngliche Einstellungen wiederherstellen"),
+            QStringLiteral("🔄 Restaurer les paramètres initiaux"),
+            QStringLiteral("🔄 恢复初始设置"),
+            QStringLiteral("🔄 初期設定を復元")
+        ), &corrDialog);
         actionBtn->setStyleSheet(QStringLiteral(
             "QPushButton {"
             "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
@@ -3631,7 +3808,14 @@ void MainWindow::OnApplyAutoCorrection() {
             "}"
         ));
     } else {
-        actionBtn = new QPushButton(tr("🛠️ Применить авто-коррекцию"), &corrDialog);
+        actionBtn = new QPushButton(StormLang(
+            QStringLiteral("🛠️ Применить авто-коррекцию"),
+            QStringLiteral("🛠️ Apply Auto-Correction"),
+            QStringLiteral("🛠️ Autokorrektur anwenden"),
+            QStringLiteral("🛠️ Appliquer l'auto-correction"),
+            QStringLiteral("🛠️ 应用自动校正"),
+            QStringLiteral("🛠️ 自動修正を適用")
+        ), &corrDialog);
         actionBtn->setStyleSheet(QStringLiteral(
             "QPushButton {"
             "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FF9100, stop:1 #FF3D00);"
@@ -3652,7 +3836,23 @@ void MainWindow::OnApplyAutoCorrection() {
         ));
     }
 
-    auto* cancelBtn = new QPushButton(m_auto_correction_applied ? tr("Закрыть") : tr("Отмена"), &corrDialog);
+    auto* cancelBtn = new QPushButton(m_auto_correction_applied ?
+        StormLang(
+            QStringLiteral("Закрыть"),
+            QStringLiteral("Close"),
+            QStringLiteral("Schließen"),
+            QStringLiteral("Fermer"),
+            QStringLiteral("关闭"),
+            QStringLiteral("閉じる")
+        ) :
+        StormLang(
+            QStringLiteral("Отмена"),
+            QStringLiteral("Cancel"),
+            QStringLiteral("Abbrechen"),
+            QStringLiteral("Annuler"),
+            QStringLiteral("取消"),
+            QStringLiteral("キャンセル")
+        ), &corrDialog);
     cancelBtn->setStyleSheet(QStringLiteral(
         "QPushButton {"
         "    background: rgba(30, 41, 59, 0.75);"
@@ -3693,7 +3893,14 @@ void MainWindow::OnApplyAutoCorrection() {
         RestoreSessionSettings();
         m_auto_correction_applied = false;
         if (auto_correction_button) {
-            auto_correction_button->setText(tr("🛠️ Авто-коррекция"));
+            auto_correction_button->setText(StormLang(
+                QStringLiteral("🛠️ Авто-коррекция"),
+                QStringLiteral("🛠️ Auto-Correction"),
+                QStringLiteral("🛠️ Auto-Korrektur"),
+                QStringLiteral("🛠️ Auto-correction"),
+                QStringLiteral("🛠️ 自动校正"),
+                QStringLiteral("🛠️ 自動修正")
+            ));
             auto_correction_button->setStyleSheet(QStringLiteral(
                 "QPushButton#AutoCorrectionButton {"
                 "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FF9100, stop:1 #FF3D00);"
@@ -3713,7 +3920,14 @@ void MainWindow::OnApplyAutoCorrection() {
                 "}"
             ));
         }
-        statusBar()->showMessage(tr("🛠️ Авто-коррекция: Восстановлены исходные параметры сессии"), 6000);
+        statusBar()->showMessage(StormLang(
+            QStringLiteral("🛠️ Авто-коррекция: Восстановлены исходные параметры сессии"),
+            QStringLiteral("🛠️ Auto-Correction: Restored original session settings"),
+            QStringLiteral("🛠️ Auto-Korrektur: Ursprüngliche Sitzungseinstellungen wiederhergestellt"),
+            QStringLiteral("🛠️ Auto-correction : Paramètres initiaux de la session restaurés"),
+            QStringLiteral("🛠️ 自动校正：已恢复初始会话设置"),
+            QStringLiteral("🛠️ 自動修正: セッションの初期設定を復元しました")
+        ), 6000);
         return;
     }
 
@@ -3754,7 +3968,14 @@ void MainWindow::OnApplyAutoCorrection() {
     m_auto_correction_applied = true;
 
     if (auto_correction_button) {
-        auto_correction_button->setText(tr("🛠️ Авто-коррекция: Активна"));
+        auto_correction_button->setText(StormLang(
+            QStringLiteral("🛠️ Авто-коррекция: Активна"),
+            QStringLiteral("🛠️ Auto-Correction: Active"),
+            QStringLiteral("🛠️ Auto-Korrektur: Aktiv"),
+            QStringLiteral("🛠️ Auto-correction : Active"),
+            QStringLiteral("🛠️ 自动校正：已激活"),
+            QStringLiteral("🛠️ 自動修正: 有効")
+        ));
         auto_correction_button->setStyleSheet(QStringLiteral(
             "QPushButton#AutoCorrectionButton {"
             "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00E676, stop:1 #00B0FF);"
@@ -3771,7 +3992,14 @@ void MainWindow::OnApplyAutoCorrection() {
         ));
     }
 
-    statusBar()->showMessage(tr("🛠️ Авто-коррекция: Конвейер оптимизирован в реальном времени (0.75X/0.5X, Быстрый ГПУ, BC3 ASTC)"), 8000);
+    statusBar()->showMessage(StormLang(
+        QStringLiteral("🛠️ Авто-коррекция: Конвейер оптимизирован в реальном времени (0.75X/0.5X, Быстрый ГПУ, BC3 ASTC)"),
+        QStringLiteral("🛠️ Auto-Correction: Pipeline optimized in real-time (0.75X/0.5X, Fast GPU, BC3 ASTC)"),
+        QStringLiteral("🛠️ Auto-Korrektur: Pipeline in Echtzeit optimiert (0.75X/0.5X, Schnelle GPU, BC3 ASTC)"),
+        QStringLiteral("🛠️ Auto-correction : Pipeline optimisé en temps réel (0.75X/0.5X, GPU rapide, BC3 ASTC)"),
+        QStringLiteral("🛠️ 自动校正：管线已实时优化 (0.75X/0.5X, 快速 GPU, BC3 ASTC)"),
+        QStringLiteral("🛠️ 自動修正: パイプラインをリアルタイム最適化しました (0.75X/0.5X, 高速 GPU, BC3 ASTC)")
+    ), 8000);
 }
 
 MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show) {
@@ -4935,7 +5163,14 @@ void MainWindow::OnEmulationStopped() {
     emu_frametime_label->setVisible(false);
     if (auto_correction_button) {
         auto_correction_button->setVisible(false);
-        auto_correction_button->setText(tr("🛠️ Авто-коррекция"));
+        auto_correction_button->setText(StormLang(
+            QStringLiteral("🛠️ Авто-коррекция"),
+            QStringLiteral("🛠️ Auto-Correction"),
+            QStringLiteral("🛠️ Auto-Korrektur"),
+            QStringLiteral("🛠️ Auto-correction"),
+            QStringLiteral("🛠️ 自动校正"),
+            QStringLiteral("🛠️ 自動修正")
+        ));
         auto_correction_button->setStyleSheet(QStringLiteral(
             "QPushButton#AutoCorrectionButton {"
             "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #FF9100, stop:1 #FF3D00);"
@@ -7380,7 +7615,14 @@ void MainWindow::UpdateStatusBar() {
     emit statsUpdated(results, shader_notify);
 
     if (shaders_building > 0) {
-        shader_building_label->setText(tr("Компиляция: %n шейдер(ов)", "", shaders_building));
+        shader_building_label->setText(StormLang(
+            QStringLiteral("Компиляция: %1 шейдер(ов)").arg(shaders_building),
+            QStringLiteral("Compiling: %1 shader(s)").arg(shaders_building),
+            QStringLiteral("Kompilierung: %1 Shader").arg(shaders_building),
+            QStringLiteral("Compilation : %1 shader(s)").arg(shaders_building),
+            QStringLiteral("编译中：%1 个着色器").arg(shaders_building),
+            QStringLiteral("コンパイル中: %1 シェーダー").arg(shaders_building)
+        ));
         shader_building_label->setStyleSheet(QStringLiteral(
             "QLabel { background-color: rgba(255, 64, 129, 0.12); color: #ff4081; border: 1px solid rgba(255, 64, 129, 0.35); "
             "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
@@ -7391,12 +7633,26 @@ void MainWindow::UpdateStatusBar() {
 
     res_scale_label->setVisible(false);
 
+    const QString spd_str = QString::number(results.emulation_speed * 100.0, 'f', 0);
     if (Settings::values.use_speed_limit.GetValue()) {
-        emu_speed_label->setText(tr("Скорость: %1% / %2%")
-                                     .arg(results.emulation_speed * 100.0, 0, 'f', 0)
-                                     .arg(Settings::SpeedLimit()));
+        const QString limit_str = QString::number(Settings::SpeedLimit());
+        emu_speed_label->setText(StormLang(
+            QStringLiteral("Скорость: %1% / %2%").arg(spd_str, limit_str),
+            QStringLiteral("Speed: %1% / %2%").arg(spd_str, limit_str),
+            QStringLiteral("Geschwindigkeit: %1% / %2%").arg(spd_str, limit_str),
+            QStringLiteral("Vitesse : %1% / %2%").arg(spd_str, limit_str),
+            QStringLiteral("速度：%1% / %2%").arg(spd_str, limit_str),
+            QStringLiteral("速度: %1% / %2%").arg(spd_str, limit_str)
+        ));
     } else {
-        emu_speed_label->setText(tr("Скорость: %1%").arg(results.emulation_speed * 100.0, 0, 'f', 0));
+        emu_speed_label->setText(StormLang(
+            QStringLiteral("Скорость: %1%").arg(spd_str),
+            QStringLiteral("Speed: %1%").arg(spd_str),
+            QStringLiteral("Geschwindigkeit: %1%").arg(spd_str),
+            QStringLiteral("Vitesse : %1%").arg(spd_str),
+            QStringLiteral("速度：%1%").arg(spd_str),
+            QStringLiteral("速度: %1%").arg(spd_str)
+        ));
     }
     emu_speed_label->setStyleSheet(QStringLiteral(
         "QLabel { background-color: rgba(0, 230, 118, 0.10); color: #00e676; border: 1px solid rgba(0, 230, 118, 0.30); "
@@ -7417,9 +7673,9 @@ void MainWindow::UpdateStatusBar() {
         const u32 mult = std::clamp<u32>(Settings::values.frame_gen_multiplier.GetValue(), 2, 4);
         const double base_fps = results.average_game_fps;
         const double gen_fps = base_fps * mult;
-        fpsText = tr("🎮 %1 FPS [LSFG %2X -> %3 FPS]").arg(std::round(base_fps), 0, 'f', 0).arg(mult).arg(std::round(gen_fps), 0, 'f', 0);
+        fpsText = QStringLiteral("🎮 %1 FPS [LSFG %2X -> %3 FPS]").arg(std::round(base_fps), 0, 'f', 0).arg(mult).arg(std::round(gen_fps), 0, 'f', 0);
     } else {
-        fpsText = tr("🎮 %1 FPS").arg(std::round(display_fps), 0, 'f', 0);
+        fpsText = QStringLiteral("🎮 %1 FPS").arg(std::round(display_fps), 0, 'f', 0);
     }
     if (!m_fpsSuffix.isEmpty())
         fpsText = fpsText % QStringLiteral(" (%1)").arg(m_fpsSuffix);
@@ -7429,7 +7685,15 @@ void MainWindow::UpdateStatusBar() {
         "QLabel { background-color: rgba(0, 229, 255, 0.10); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.30); "
         "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
 
-    emu_frametime_label->setText(tr("⏱️ %1 мс").arg(results.frametime * 1000.0, 0, 'f', 2));
+    const QString ms_str = QString::number(results.frametime * 1000.0, 'f', 2);
+    emu_frametime_label->setText(StormLang(
+        QStringLiteral("⏱️ %1 мс").arg(ms_str),
+        QStringLiteral("⏱️ %1 ms").arg(ms_str),
+        QStringLiteral("⏱️ %1 ms").arg(ms_str),
+        QStringLiteral("⏱️ %1 ms").arg(ms_str),
+        QStringLiteral("⏱️ %1 毫秒").arg(ms_str),
+        QStringLiteral("⏱️ %1 ms").arg(ms_str)
+    ));
     emu_frametime_label->setStyleSheet(QStringLiteral(
         "QLabel { background-color: rgba(255, 202, 40, 0.10); color: #ffca28; border: 1px solid rgba(255, 202, 40, 0.30); "
         "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
@@ -7495,8 +7759,17 @@ QString MainWindow::CleanDisplayString(const QString& str) {
 void MainWindow::UpdateGPUAccuracyButton() {
     if (!gpu_accuracy_button) return;
     const auto gpu_accuracy = Settings::values.gpu_accuracy.GetValue();
-    QString text = (gpu_accuracy == Settings::GpuAccuracy::Low) ? tr("Быстрый") : tr("Высокая точность");
-    gpu_accuracy_button->setText(tr("ТОЧНОСТЬ ГПУ:\n%1").arg(text));
+    QString text = (gpu_accuracy == Settings::GpuAccuracy::Low)
+        ? StormLang(QStringLiteral("Быстрый"), QStringLiteral("Fast"), QStringLiteral("Schnell"), QStringLiteral("Rapide"), QStringLiteral("快速"), QStringLiteral("高速"))
+        : StormLang(QStringLiteral("Высокая"), QStringLiteral("High"), QStringLiteral("Hoch"), QStringLiteral("Élevée"), QStringLiteral("高"), QStringLiteral("高"));
+    gpu_accuracy_button->setText(StormLang(
+        QStringLiteral("ТОЧНОСТЬ ГПУ:\n%1"),
+        QStringLiteral("GPU ACCURACY:\n%1"),
+        QStringLiteral("GPU-GENAUIGKEIT:\n%1"),
+        QStringLiteral("PRÉCISION GPU:\n%1"),
+        QStringLiteral("GPU 精度:\n%1"),
+        QStringLiteral("GPU 精度:\n%1")
+    ).arg(text.toUpper()));
     gpu_accuracy_button->setChecked(gpu_accuracy != Settings::GpuAccuracy::Low);
 }
 
@@ -7504,8 +7777,17 @@ void MainWindow::UpdateDockedButton() {
     if (!dock_status_button) return;
     const auto console_mode = Settings::values.use_docked_mode.GetValue();
     dock_status_button->setChecked(Settings::IsDockedMode());
-    dock_status_button->setText(
-        tr("РЕЖИМ:\n%1").arg(console_mode == Settings::ConsoleMode::Docked ? tr("В ДОКЕ") : tr("ПОРТАТИВ")));
+    const QString mode_text = (console_mode == Settings::ConsoleMode::Docked)
+        ? StormLang(QStringLiteral("В ДОКЕ"), QStringLiteral("DOCKED"), QStringLiteral("DOCKED"), QStringLiteral("DOCKÉ"), QStringLiteral("底座"), QStringLiteral("ドック"))
+        : StormLang(QStringLiteral("ПОРТАТИВ"), QStringLiteral("HANDHELD"), QStringLiteral("HANDHELD"), QStringLiteral("PORTABLE"), QStringLiteral("掌机"), QStringLiteral("携帯"));
+    dock_status_button->setText(StormLang(
+        QStringLiteral("РЕЖИМ:\n%1"),
+        QStringLiteral("MODE:\n%1"),
+        QStringLiteral("MODUS:\n%1"),
+        QStringLiteral("MODE:\n%1"),
+        QStringLiteral("模式:\n%1"),
+        QStringLiteral("モード:\n%1")
+    ).arg(mode_text));
 }
 
 void MainWindow::UpdateAPIText() {
@@ -7513,7 +7795,14 @@ void MainWindow::UpdateAPIText() {
     const auto api = Settings::values.renderer_backend.GetValue();
     const auto renderer_status_text =
         ConfigurationShared::renderer_backend_texts_map.find(api)->second;
-    renderer_status_button->setText(tr("РЕНДЕР:\n%1").arg(renderer_status_text.toUpper()));
+    renderer_status_button->setText(StormLang(
+        QStringLiteral("РЕНДЕР:\n%1"),
+        QStringLiteral("RENDER:\n%1"),
+        QStringLiteral("RENDER:\n%1"),
+        QStringLiteral("RENDU:\n%1"),
+        QStringLiteral("渲染:\n%1"),
+        QStringLiteral("レンダー:\n%1")
+    ).arg(renderer_status_text.toUpper()));
 }
 
 void MainWindow::UpdateFilterText() {
@@ -7521,7 +7810,14 @@ void MainWindow::UpdateFilterText() {
     const auto filter = Settings::values.scaling_filter.GetValue();
     const auto it = ConfigurationShared::scaling_filter_texts_map.find(filter);
     const auto filter_text = it != ConfigurationShared::scaling_filter_texts_map.end() ? it->second : QStringLiteral("FSR");
-    filter_status_button->setText(tr("ФИЛЬТР:\n%1").arg(filter_text.toUpper()));
+    filter_status_button->setText(StormLang(
+        QStringLiteral("ФИЛЬТР:\n%1"),
+        QStringLiteral("FILTER:\n%1"),
+        QStringLiteral("FILTER:\n%1"),
+        QStringLiteral("FILTRE:\n%1"),
+        QStringLiteral("滤镜:\n%1"),
+        QStringLiteral("フィルター:\n%1")
+    ).arg(filter_text.toUpper()));
 }
 
 void MainWindow::UpdateAAText() {
@@ -7529,9 +7825,17 @@ void MainWindow::UpdateAAText() {
     const auto aa_mode = Settings::values.anti_aliasing.GetValue();
     const auto it = ConfigurationShared::anti_aliasing_texts_map.find(aa_mode);
     const auto aa_text = it != ConfigurationShared::anti_aliasing_texts_map.end() ? it->second : QStringLiteral("None");
-    aa_status_button->setText(tr("СГЛАЖИВАНИЕ:\n%1").arg(aa_mode == Settings::AntiAliasing::None
-                                  ? tr("ВЫКЛ")
-                                  : aa_text.toUpper()));
+    const QString val_text = (aa_mode == Settings::AntiAliasing::None)
+        ? StormLang(QStringLiteral("ВЫКЛ"), QStringLiteral("OFF"), QStringLiteral("AUS"), QStringLiteral("DÉSACTIVÉ"), QStringLiteral("关闭"), QStringLiteral("オフ"))
+        : aa_text.toUpper();
+    aa_status_button->setText(StormLang(
+        QStringLiteral("СГЛАЖИВАНИЕ:\n%1"),
+        QStringLiteral("ANTI-ALIASING:\n%1"),
+        QStringLiteral("KANTENGLÄTTUNG:\n%1"),
+        QStringLiteral("ANTICRÉNELAGE:\n%1"),
+        QStringLiteral("抗锯齿:\n%1"),
+        QStringLiteral("アンチエイリアス:\n%1")
+    ).arg(val_text));
 }
 
 void MainWindow::UpdateVolumeUI() {
@@ -7539,14 +7843,35 @@ void MainWindow::UpdateVolumeUI() {
     const auto volume_value = static_cast<int>(Settings::values.volume.GetValue());
     volume_slider->setValue(volume_value);
     if (volume_val_label) {
-        volume_val_label->setText(tr("Громкость: %1%").arg(volume_value));
+        volume_val_label->setText(StormLang(
+            QStringLiteral("Громкость: %1%"),
+            QStringLiteral("Volume: %1%"),
+            QStringLiteral("Lautstärke: %1%"),
+            QStringLiteral("Volume : %1%"),
+            QStringLiteral("音量: %1%"),
+            QStringLiteral("音量: %1%")
+        ).arg(volume_value));
     }
     if (Settings::values.audio_muted.GetValue()) {
         volume_button->setChecked(false);
-        volume_button->setText(tr("ГРОМКОСТЬ:\nВЫКЛ"));
+        volume_button->setText(StormLang(
+            QStringLiteral("ГРОМКОСТЬ:\nВЫКЛ"),
+            QStringLiteral("VOLUME:\nMUTE"),
+            QStringLiteral("LAUTSTÄRKE:\nSTUMM"),
+            QStringLiteral("VOLUME:\nMUET"),
+            QStringLiteral("音量:\n静音"),
+            QStringLiteral("音量:\n消音")
+        ));
     } else {
         volume_button->setChecked(true);
-        volume_button->setText(tr("ГРОМКОСТЬ:\n%1%").arg(volume_value));
+        volume_button->setText(StormLang(
+            QStringLiteral("ГРОМКОСТЬ:\n%1%"),
+            QStringLiteral("VOLUME:\n%1%"),
+            QStringLiteral("LAUTSTÄRKE:\n%1%"),
+            QStringLiteral("VOLUME:\n%1%"),
+            QStringLiteral("音量:\n%1%"),
+            QStringLiteral("音量:\n%1%")
+        ).arg(volume_value));
     }
 }
 
@@ -7567,14 +7892,28 @@ void MainWindow::UpdateAspectText() {
         val_text = QStringLiteral("16:10");
         break;
     case Settings::AspectRatio::Stretch:
-        val_text = tr("Stretch");
+        val_text = StormLang(QStringLiteral("РАСТЯНУТЬ"), QStringLiteral("STRETCH"), QStringLiteral("STRECKEN"), QStringLiteral("ÉTIRER"), QStringLiteral("拉伸"), QStringLiteral("引き伸ばし"));
         break;
     default:
         val_text = QStringLiteral("16:9");
         break;
     }
-    aspect_ratio_button->setText(tr("ASPECT RATIO:\n%1").arg(val_text));
-    aspect_ratio_button->setToolTip(tr("Screen aspect ratio"));
+    aspect_ratio_button->setText(StormLang(
+        QStringLiteral("СООТНОШЕНИЕ:\n%1"),
+        QStringLiteral("ASPECT RATIO:\n%1"),
+        QStringLiteral("SEITENVERH.:\n%1"),
+        QStringLiteral("PROPORTION:\n%1"),
+        QStringLiteral("宽高比:\n%1"),
+        QStringLiteral("アスペクト比:\n%1")
+    ).arg(val_text));
+    aspect_ratio_button->setToolTip(StormLang(
+        QStringLiteral("Соотношение сторон экрана"),
+        QStringLiteral("Screen aspect ratio"),
+        QStringLiteral("Bildschirm-Seitenverhältnis"),
+        QStringLiteral("Format d'image de l'écran"),
+        QStringLiteral("屏幕宽高比"),
+        QStringLiteral("画面のアスペクト比")
+    ));
 }
 
 void MainWindow::UpdateDmaText() {
@@ -7582,23 +7921,37 @@ void MainWindow::UpdateDmaText() {
     QString val_text;
     switch (Settings::values.dma_accuracy.GetValue()) {
     case Settings::DmaAccuracy::Default:
-        val_text = tr("По умолчанию");
+        val_text = StormLang(QStringLiteral("ПО УМОЛЧ."), QStringLiteral("DEFAULT"), QStringLiteral("STANDARD"), QStringLiteral("DÉFAUT"), QStringLiteral("默认"), QStringLiteral("デフォルト"));
         break;
     case Settings::DmaAccuracy::Normal:
-        val_text = tr("Нормально");
+        val_text = StormLang(QStringLiteral("НОРМАЛЬНО"), QStringLiteral("NORMAL"), QStringLiteral("NORMAL"), QStringLiteral("NORMAL"), QStringLiteral("正常"), QStringLiteral("通常"));
         break;
     case Settings::DmaAccuracy::Unsafe:
-        val_text = tr("Небезопасно");
+        val_text = StormLang(QStringLiteral("НЕБЕЗОПАСНО"), QStringLiteral("UNSAFE"), QStringLiteral("UNSICHER"), QStringLiteral("NON SÉCURISÉ"), QStringLiteral("不安全"), QStringLiteral("非安全"));
         break;
     case Settings::DmaAccuracy::Safe:
-        val_text = tr("Безопасно");
+        val_text = StormLang(QStringLiteral("БЕЗОПАСНО"), QStringLiteral("SAFE"), QStringLiteral("SICHER"), QStringLiteral("SÉCURISÉ"), QStringLiteral("安全"), QStringLiteral("安全"));
         break;
     default:
-        val_text = tr("По умолчанию");
+        val_text = StormLang(QStringLiteral("ПО УМОЛЧ."), QStringLiteral("DEFAULT"), QStringLiteral("STANDARD"), QStringLiteral("DÉFAUT"), QStringLiteral("默认"), QStringLiteral("デフォルト"));
         break;
     }
-    dma_accuracy_button->setText(tr("DMA:\n%1").arg(val_text));
-    dma_accuracy_button->setToolTip(tr("Direct Memory Access (DMA) accuracy"));
+    dma_accuracy_button->setText(StormLang(
+        QStringLiteral("DMA:\n%1"),
+        QStringLiteral("DMA:\n%1"),
+        QStringLiteral("DMA:\n%1"),
+        QStringLiteral("DMA:\n%1"),
+        QStringLiteral("DMA:\n%1"),
+        QStringLiteral("DMA:\n%1")
+    ).arg(val_text));
+    dma_accuracy_button->setToolTip(StormLang(
+        QStringLiteral("Точность Direct Memory Access (DMA)"),
+        QStringLiteral("Direct Memory Access (DMA) accuracy"),
+        QStringLiteral("Direct Memory Access (DMA)-Genauigkeit"),
+        QStringLiteral("Précision Direct Memory Access (DMA)"),
+        QStringLiteral("直接内存访问 (DMA) 精度"),
+        QStringLiteral("Direct Memory Access (DMA) 精度")
+    ));
 }
 
 void MainWindow::UpdateGpuFenceText() {
@@ -7606,26 +7959,40 @@ void MainWindow::UpdateGpuFenceText() {
     QString val_text;
     switch (Settings::values.gpu_fence_behavior.GetValue()) {
     case Settings::GpuFenceBehavior::Default:
-        val_text = tr("По умолчанию");
+        val_text = StormLang(QStringLiteral("ПО УМОЛЧ."), QStringLiteral("DEFAULT"), QStringLiteral("STANDARD"), QStringLiteral("DÉFAUT"), QStringLiteral("默认"), QStringLiteral("デフォルト"));
         break;
     case Settings::GpuFenceBehavior::Immediate:
-        val_text = tr("Немедленно");
+        val_text = StormLang(QStringLiteral("НЕМЕДЛЕННО"), QStringLiteral("IMMEDIATE"), QStringLiteral("SOFORT"), QStringLiteral("IMMÉDIAT"), QStringLiteral("即时"), QStringLiteral("即時"));
         break;
     case Settings::GpuFenceBehavior::Balanced:
-        val_text = tr("Сбалансированно");
+        val_text = StormLang(QStringLiteral("БАЛАНС"), QStringLiteral("BALANCED"), QStringLiteral("AUSGEGLICHEN"), QStringLiteral("ÉQUILIBRÉ"), QStringLiteral("均衡"), QStringLiteral("バランス"));
         break;
     case Settings::GpuFenceBehavior::Accurate:
-        val_text = tr("Точно");
+        val_text = StormLang(QStringLiteral("ТОЧНО"), QStringLiteral("ACCURATE"), QStringLiteral("GENAU"), QStringLiteral("PRÉCIS"), QStringLiteral("准确"), QStringLiteral("正確"));
         break;
     case Settings::GpuFenceBehavior::Strict:
-        val_text = tr("Строго");
+        val_text = StormLang(QStringLiteral("СТРОГО"), QStringLiteral("STRICT"), QStringLiteral("STRIKT"), QStringLiteral("STRICT"), QStringLiteral("严格"), QStringLiteral("厳格"));
         break;
     default:
-        val_text = tr("По умолчанию");
+        val_text = StormLang(QStringLiteral("ПО УМОЛЧ."), QStringLiteral("DEFAULT"), QStringLiteral("STANDARD"), QStringLiteral("DÉFAUT"), QStringLiteral("默认"), QStringLiteral("デフォルト"));
         break;
     }
-    gpu_fence_button->setText(tr("GPU BARRIERS:\n%1").arg(val_text));
-    gpu_fence_button->setToolTip(tr("GPU fence behavior — render command synchronization"));
+    gpu_fence_button->setText(StormLang(
+        QStringLiteral("БАРЬЕРЫ ГПУ:\n%1"),
+        QStringLiteral("GPU BARRIERS:\n%1"),
+        QStringLiteral("GPU-BARRIEREN:\n%1"),
+        QStringLiteral("BARRIÈRES GPU:\n%1"),
+        QStringLiteral("GPU 栅栏:\n%1"),
+        QStringLiteral("GPU バリア:\n%1")
+    ).arg(val_text));
+    gpu_fence_button->setToolTip(StormLang(
+        QStringLiteral("Поведение барьеров GPU — синхронизация команд рендеринга"),
+        QStringLiteral("GPU fence behavior — render command synchronization"),
+        QStringLiteral("GPU-Fence-Verhalten — Renderbefehl-Synchronisation"),
+        QStringLiteral("Comportement des barrières GPU — synchronisation des commandes de rendu"),
+        QStringLiteral("GPU 栅栏行为 — 渲染命令同步"),
+        QStringLiteral("GPU バリア動作 — レンダリングコマンド同期")
+    ));
 }
 
 void MainWindow::UpdateVramText() {
@@ -7633,20 +8000,34 @@ void MainWindow::UpdateVramText() {
     QString val_text;
     switch (Settings::values.vram_usage_mode.GetValue()) {
     case Settings::VramUsageMode::Conservative:
-        val_text = tr("Экономный");
+        val_text = StormLang(QStringLiteral("ЭКОНОМНЫЙ"), QStringLiteral("CONSERVATIVE"), QStringLiteral("SPARSAM"), QStringLiteral("ÉCONOME"), QStringLiteral("保守"), QStringLiteral("省メモリ"));
         break;
     case Settings::VramUsageMode::Normal:
-        val_text = tr("Нормальный");
+        val_text = StormLang(QStringLiteral("НОРМАЛЬНЫЙ"), QStringLiteral("NORMAL"), QStringLiteral("NORMAL"), QStringLiteral("NORMAL"), QStringLiteral("正常"), QStringLiteral("通常"));
         break;
     case Settings::VramUsageMode::Aggressive:
-        val_text = tr("Агрессивный");
+        val_text = StormLang(QStringLiteral("АГРЕССИВНЫЙ"), QStringLiteral("AGGRESSIVE"), QStringLiteral("AGGRESSIV"), QStringLiteral("AGRESSIF"), QStringLiteral("激进"), QStringLiteral("アグレッシブ"));
         break;
     default:
-        val_text = tr("Нормальный");
+        val_text = StormLang(QStringLiteral("НОРМАЛЬНЫЙ"), QStringLiteral("NORMAL"), QStringLiteral("NORMAL"), QStringLiteral("NORMAL"), QStringLiteral("正常"), QStringLiteral("通常"));
         break;
     }
-    vram_mode_button->setText(tr("VRAM:\n%1").arg(val_text));
-    vram_mode_button->setToolTip(tr("Режим использования видеопамяти (VRAM)\n• Экономный: жесткое ограничение VRAM\n• Нормальный: полное выделение физической VRAM с резервом для ОС\n• Агрессивный: 100% мощности и физической памяти видеокарты без ограничений"));
+    vram_mode_button->setText(StormLang(
+        QStringLiteral("VRAM:\n%1"),
+        QStringLiteral("VRAM:\n%1"),
+        QStringLiteral("VRAM:\n%1"),
+        QStringLiteral("VRAM:\n%1"),
+        QStringLiteral("显存模式:\n%1"),
+        QStringLiteral("VRAM:\n%1")
+    ).arg(val_text));
+    vram_mode_button->setToolTip(StormLang(
+        QStringLiteral("Режим использования видеопамяти (VRAM)\n• Экономный: жесткое ограничение VRAM\n• Нормальный: полное выделение физической VRAM с резервом для ОС\n• Агрессивный: 100% мощности и физической памяти видеокарты без ограничений"),
+        QStringLiteral("Video Memory (VRAM) usage mode\n• Conservative: strict VRAM limit\n• Normal: full physical VRAM allocation with OS reserve\n• Aggressive: 100% GPU memory allocation without limits"),
+        QStringLiteral("Videospeicher (VRAM)-Nutzungsmodus\n• Sparsam: striktes VRAM-Limit\n• Normal: volle physische VRAM-Zuweisung mit OS-Reserve\n• Aggressiv: 100% GPU-Speicherzuweisung ohne Einschränkungen"),
+        QStringLiteral("Mode d'utilisation de la mémoire vidéo (VRAM)\n• Économe : limite stricte de VRAM\n• Normal : allocation complète avec réserve pour l'OS\n• Agressif : 100% de la puissance et de la mémoire sans limites"),
+        QStringLiteral("显存 (VRAM) 使用模式\n• 保守: 严格限制显存使用\n• 正常: 完整分配物理显存并保留系统冗余\n• 激进: 无限制榨干 100% 显存性能"),
+        QStringLiteral("ビデオメモリ (VRAM) 使用モード\n• 省メモリ: 厳格なVRAM制限\n• 通常: OS用の予約を確保しつつ全物理VRAMを割り当て\n• アグレッシブ: 制限なしで100%のGPUメモリパワーを使用")
+    ));
 }
 
 void MainWindow::UpdateAnisotropyText() {
@@ -7654,10 +8035,10 @@ void MainWindow::UpdateAnisotropyText() {
     QString val_text;
     switch (Settings::values.max_anisotropy.GetValue()) {
     case Settings::AnisotropyMode::Automatic:
-        val_text = tr("Автоматически");
+        val_text = StormLang(QStringLiteral("АВТО"), QStringLiteral("AUTO"), QStringLiteral("AUTO"), QStringLiteral("AUTO"), QStringLiteral("自动"), QStringLiteral("自動"));
         break;
     case Settings::AnisotropyMode::Default:
-        val_text = tr("По умолчанию");
+        val_text = StormLang(QStringLiteral("ПО УМОЛЧ."), QStringLiteral("DEFAULT"), QStringLiteral("STANDARD"), QStringLiteral("DÉFAUT"), QStringLiteral("默认"), QStringLiteral("デフォルト"));
         break;
     case Settings::AnisotropyMode::X2:
         val_text = QStringLiteral("2x");
@@ -7678,41 +8059,55 @@ void MainWindow::UpdateAnisotropyText() {
         val_text = QStringLiteral("64x");
         break;
     case Settings::AnisotropyMode::None:
-        val_text = tr("Отключено");
+        val_text = StormLang(QStringLiteral("ВЫКЛ"), QStringLiteral("OFF"), QStringLiteral("AUS"), QStringLiteral("DÉSACTIVÉ"), QStringLiteral("关闭"), QStringLiteral("オフ"));
         break;
     default:
-        val_text = tr("Автоматически");
+        val_text = StormLang(QStringLiteral("АВТО"), QStringLiteral("AUTO"), QStringLiteral("AUTO"), QStringLiteral("AUTO"), QStringLiteral("自动"), QStringLiteral("自動"));
         break;
     }
-    anisotropy_button->setText(tr("ANISOTROPY:\n%1").arg(val_text));
+    anisotropy_button->setText(StormLang(
+        QStringLiteral("АНИЗОТРОПИЯ:\n%1"),
+        QStringLiteral("ANISOTROPY:\n%1"),
+        QStringLiteral("ANISOTROPIE:\n%1"),
+        QStringLiteral("ANISOTROPIE:\n%1"),
+        QStringLiteral("各向异性:\n%1"),
+        QStringLiteral("異方性:\n%1")
+    ).arg(val_text));
 }
 
 void MainWindow::UpdateAstcDecodeText() {
     if (!astc_decode_button) return;
-    QString val_text = QStringLiteral("ЦП Асинх.");
+    QString val_text = StormLang(QStringLiteral("ЦП АСИНХ."), QStringLiteral("CPU ASYNC"), QStringLiteral("CPU ASYNC"), QStringLiteral("CPU ASYNC"), QStringLiteral("CPU 异步"), QStringLiteral("CPU 非同期"));
     switch (Settings::values.accelerate_astc.GetValue()) {
     case Settings::AstcDecodeMode::CpuAsynchronous:
-        val_text = QStringLiteral("ЦП Асинх.");
+        val_text = StormLang(QStringLiteral("ЦП АСИНХ."), QStringLiteral("CPU ASYNC"), QStringLiteral("CPU ASYNC"), QStringLiteral("CPU ASYNC"), QStringLiteral("CPU 异步"), QStringLiteral("CPU 非同期"));
         break;
     case Settings::AstcDecodeMode::Cpu:
-        val_text = QStringLiteral("ЦП");
+        val_text = StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"));
         break;
     case Settings::AstcDecodeMode::Gpu:
-        val_text = QStringLiteral("ГПУ");
+        val_text = StormLang(QStringLiteral("ГПУ"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"));
         break;
     case Settings::AstcDecodeMode::Hybrid:
-        val_text = QStringLiteral("ГИБРИД");
+        val_text = StormLang(QStringLiteral("ГИБРИД"), QStringLiteral("HYBRID"), QStringLiteral("HYBRID"), QStringLiteral("HYBRIDE"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"));
         break;
     }
-    astc_decode_button->setText(tr("ASTC DECODE:\n%1").arg(val_text));
+    astc_decode_button->setText(StormLang(
+        QStringLiteral("ДЕКОД. ASTC:\n%1"),
+        QStringLiteral("ASTC DECODE:\n%1"),
+        QStringLiteral("ASTC-DEKOD.:\n%1"),
+        QStringLiteral("DÉCOD. ASTC:\n%1"),
+        QStringLiteral("ASTC 解码:\n%1"),
+        QStringLiteral("ASTC デコード:\n%1")
+    ).arg(val_text));
 }
 
 void MainWindow::UpdateAstcRecompressText() {
     if (!astc_recompress_button) return;
-    QString val_text = QStringLiteral("Без сжатия");
+    QString val_text = StormLang(QStringLiteral("БЕЗ СЖАТИЯ"), QStringLiteral("UNCOMPRESSED"), QStringLiteral("UNKOMPRIMIERT"), QStringLiteral("NON COMPRESSÉ"), QStringLiteral("未压缩"), QStringLiteral("非圧縮"));
     switch (Settings::values.astc_recompression.GetValue()) {
     case Settings::AstcRecompression::Uncompressed:
-        val_text = QStringLiteral("Без сжатия");
+        val_text = StormLang(QStringLiteral("БЕЗ СЖАТИЯ"), QStringLiteral("UNCOMPRESSED"), QStringLiteral("UNKOMPRIMIERT"), QStringLiteral("NON COMPRESSÉ"), QStringLiteral("未压缩"), QStringLiteral("非圧縮"));
         break;
     case Settings::AstcRecompression::Bc1:
         val_text = QStringLiteral("BC1");
@@ -7724,7 +8119,14 @@ void MainWindow::UpdateAstcRecompressText() {
         val_text = QStringLiteral("BC5");
         break;
     }
-    astc_recompress_button->setText(tr("ASTC RECOMP:\n%1").arg(val_text));
+    astc_recompress_button->setText(StormLang(
+        QStringLiteral("ПЕРЕСЖ. ASTC:\n%1"),
+        QStringLiteral("ASTC RECOMP:\n%1"),
+        QStringLiteral("ASTC-NEUKOMPR.:\n%1"),
+        QStringLiteral("RECOMP. ASTC:\n%1"),
+        QStringLiteral("ASTC 重新压缩:\n%1"),
+        QStringLiteral("ASTC 再圧縮:\n%1")
+    ).arg(val_text));
 }
 
 void MainWindow::UpdateResScaleText() {
@@ -7747,7 +8149,14 @@ void MainWindow::UpdateResScaleText() {
     case Settings::ResolutionSetup::Res8X: val_text = is_docked ? QStringLiteral("8X (8640p)") : QStringLiteral("8X (5760p)"); break;
     default: break;
     }
-    res_scale_button->setText(tr("SCALE:\n%1").arg(val_text));
+    res_scale_button->setText(StormLang(
+        QStringLiteral("МАСШТАБ:\n%1"),
+        QStringLiteral("SCALE:\n%1"),
+        QStringLiteral("SKALIERUNG:\n%1"),
+        QStringLiteral("ÉCHELLE:\n%1"),
+        QStringLiteral("分辨率缩放:\n%1"),
+        QStringLiteral("解像度:\n%1")
+    ).arg(val_text));
 }
 
 void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name) {
@@ -7759,9 +8168,23 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
         m_current_addons_game_name = game_name;
     }
     if (m_current_addons_title_id == 0) {
-        addons_status_button->setText(tr("ADD-ONS:\nNone"));
+        addons_status_button->setText(StormLang(
+            QStringLiteral("ДОПОЛНЕНИЯ:\nНЕТ"),
+            QStringLiteral("ADD-ONS:\nNONE"),
+            QStringLiteral("ADD-ONS:\nKEINE"),
+            QStringLiteral("EXTENSIONS:\nAUCUN"),
+            QStringLiteral("附加组件:\n无"),
+            QStringLiteral("アドオン:\nなし")
+        ));
         addons_status_button->setStyleSheet(QString{});
-        addons_status_button->setToolTip(tr("Select or launch a game to view add-ons"));
+        addons_status_button->setToolTip(StormLang(
+            QStringLiteral("Выберите или запустите игру для просмотра дополнений"),
+            QStringLiteral("Select or launch a game to view add-ons"),
+            QStringLiteral("Spiel auswählen oder starten, um Add-ons anzuzeigen"),
+            QStringLiteral("Sélectionnez ou lancez un jeu pour voir les extensions"),
+            QStringLiteral("选择或启动游戏以查看附加组件"),
+            QStringLiteral("ゲームを選択または起動してアドオンを表示")
+        ));
         return;
     }
 
@@ -7772,7 +8195,14 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
     auto apply_button_style = [this, cur_tid, cur_name](int file_dlc_count, int tinfoil_dlc_count) {
         if (m_current_addons_title_id != cur_tid) return;
         const QString dlc_display_text = QStringLiteral("%1 / %2").arg(file_dlc_count).arg(tinfoil_dlc_count);
-        addons_status_button->setText(tr("ДОПОЛНЕНИЯ:\n%1").arg(dlc_display_text));
+        addons_status_button->setText(StormLang(
+            QStringLiteral("ДОПОЛНЕНИЯ:\n%1"),
+            QStringLiteral("ADD-ONS:\n%1"),
+            QStringLiteral("ADD-ONS:\n%1"),
+            QStringLiteral("EXTENSIONS:\n%1"),
+            QStringLiteral("附加组件:\n%1"),
+            QStringLiteral("アドオン:\n%1")
+        ).arg(dlc_display_text));
 
         if (file_dlc_count >= tinfoil_dlc_count && (file_dlc_count > 0 || tinfoil_dlc_count > 0)) {
             addons_status_button->setStyleSheet(QStringLiteral(
@@ -7814,15 +8244,16 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
             addons_status_button->setStyleSheet(QString{});
         }
 
-        addons_status_button->setToolTip(tr(
-            "Дополнения (DLC):\n"
-            "• В файле игры: %1\n"
-            "• В базе Tinfoil: %2\n"
-            "Игра: %3 (ID: 0x%4)\n\n"
-            "Нажмите для просмотра подробного списка всех дополнений и модов"
+        addons_status_button->setToolTip(StormLang(
+            QStringLiteral("Дополнения (DLC):\n• В файле игры: %1\n• В базе Tinfoil: %2\nИгра: %3 (ID: 0x%4)\n\nНажмите для просмотра подробного списка всех дополнений и модов"),
+            QStringLiteral("Add-ons (DLC):\n• In game file: %1\n• In Tinfoil database: %2\nGame: %3 (ID: 0x%4)\n\nClick to view full list of add-ons and mods"),
+            QStringLiteral("Add-ons (DLC):\n• In Spieledatei: %1\n• In Tinfoil-Datenbank: %2\nSpiel: %3 (ID: 0x%4)\n\nKlicken für vollständige Liste aller Add-ons und Mods"),
+            QStringLiteral("Extensions (DLC) :\n• Dans le fichier du jeu : %1\n• Dans la base Tinfoil : %2\nJeu : %3 (ID : 0x%4)\n\nCliquer pour voir la liste complète des extensions et mods"),
+            QStringLiteral("附加组件 (DLC):\n• 游戏文件中: %1\n• Tinfoil 数据库中: %2\n游戏: %3 (ID: 0x%4)\n\n点击查看所有附加组件和模组详细列表"),
+            QStringLiteral("アドオン (DLC):\n• ゲームファイル内: %1\n• Tinfoil データベース内: %2\nゲーム: %3 (ID: 0x%4)\n\nクリックしてすべてのアドオンとModの詳細リストを表示")
         ).arg(file_dlc_count)
          .arg(tinfoil_dlc_count)
-         .arg(cur_name.isEmpty() ? tr("игре") : cur_name,
+         .arg(cur_name.isEmpty() ? StormLang(QStringLiteral("игре"), QStringLiteral("game"), QStringLiteral("Spiel"), QStringLiteral("jeu"), QStringLiteral("游戏"), QStringLiteral("ゲーム")) : cur_name,
               QStringLiteral("%1").arg(cur_tid, 16, 16, QLatin1Char('0')).toUpper()));
     };
 
@@ -7836,7 +8267,14 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
     }
 
     // Show quick status immediately without blocking
-    addons_status_button->setText(tr("ДОПОЛНЕНИЯ:\n..."));
+    addons_status_button->setText(StormLang(
+        QStringLiteral("ДОПОЛНЕНИЯ:\n..."),
+        QStringLiteral("ADD-ONS:\n..."),
+        QStringLiteral("ADD-ONS:\n..."),
+        QStringLiteral("EXTENSIONS:\n..."),
+        QStringLiteral("附加组件:\n..."),
+        QStringLiteral("アドオン:\n...")
+    ));
 
     // Compute in background thread
     std::thread([this, cur_tid, cur_name, cur_path, apply_button_style]() {
@@ -7886,7 +8324,7 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
                         for (const auto& [nca_tid, nca_map] : nsp->GetNCAs()) {
                             if (((nca_tid & 0xFFFFFFFFFFFFF000) == (cur_tid & 0xFFFFFFFFFFFFF000) ||
                                  (nca_tid >= cur_tid + 1 && nca_tid < cur_tid + 0x2000)) &&
-                                nca_tid != cur_tid && (nca_tid & 0x800) == 0) {
+                                 nca_tid != cur_tid && (nca_tid & 0x800) == 0) {
                                 seen_dlc_ids.insert(nca_tid);
                             }
                         }
@@ -7913,8 +8351,17 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
 void MainWindow::UpdateAirplaneModeButton() {
     if (!airplane_mode_button) return;
     const bool airplane = Settings::values.airplane_mode.GetValue();
-    airplane_mode_button->setText(airplane ? tr("САМОЛЁТ:\nВКЛ") : tr("САМОЛЁТ:\nВЫКЛ"));
-    airplane_mode_button->setToolTip(tr("Режим полёта (отключение сетевых функций Switch)"));
+    airplane_mode_button->setText(airplane
+        ? StormLang(QStringLiteral("САМОЛЁТ:\nВКЛ"), QStringLiteral("AIRPLANE:\nON"), QStringLiteral("FLUGMODUS:\nEIN"), QStringLiteral("AVION:\nACTIVÉ"), QStringLiteral("飞行模式:\n开启"), QStringLiteral("機内モード:\nオン"))
+        : StormLang(QStringLiteral("САМОЛЁТ:\nВЫКЛ"), QStringLiteral("AIRPLANE:\nOFF"), QStringLiteral("FLUGMODUS:\nAUS"), QStringLiteral("AVION:\nDÉSACTIVÉ"), QStringLiteral("飞行模式:\n关闭"), QStringLiteral("機内モード:\nオフ")));
+    airplane_mode_button->setToolTip(StormLang(
+        QStringLiteral("Режим полёта (отключение сетевых функций Switch)"),
+        QStringLiteral("Airplane mode (disable Switch network functions)"),
+        QStringLiteral("Flugmodus (Switch-Netzwerkfunktionen deaktivieren)"),
+        QStringLiteral("Mode avion (désactive les fonctions réseau de la Switch)"),
+        QStringLiteral("飞行模式 (禁用 Switch 网络功能)"),
+        QStringLiteral("機内モード (Switch ネットワーク機能を無効化)")
+    ));
 }
 
 void MainWindow::UpdateVSyncText() {
@@ -7922,68 +8369,154 @@ void MainWindow::UpdateVSyncText() {
     QString val_text = QStringLiteral("FIFO");
     const auto vsync = Settings::values.vsync_mode.GetValue();
     switch (vsync) {
-    case Settings::VSyncMode::Immediate: val_text = tr("ВЫКЛ"); break;
-    case Settings::VSyncMode::Mailbox: val_text = QStringLiteral("MAILBOX"); break;
-    case Settings::VSyncMode::Fifo: val_text = QStringLiteral("FIFO"); break;
-    case Settings::VSyncMode::FifoRelaxed: val_text = QStringLiteral("RELAXED"); break;
-    default: break;
+    case Settings::VSyncMode::Immediate:
+        val_text = StormLang(QStringLiteral("ВЫКЛ"), QStringLiteral("OFF"), QStringLiteral("AUS"), QStringLiteral("DÉSACTIVÉ"), QStringLiteral("关闭"), QStringLiteral("オフ"));
+        break;
+    case Settings::VSyncMode::Mailbox:
+        val_text = QStringLiteral("MAILBOX");
+        break;
+    case Settings::VSyncMode::Fifo:
+        val_text = QStringLiteral("FIFO");
+        break;
+    case Settings::VSyncMode::FifoRelaxed:
+        val_text = QStringLiteral("RELAXED");
+        break;
+    default:
+        break;
     }
-    vsync_mode_button->setText(tr("VSYNC:\n%1").arg(val_text));
+    vsync_mode_button->setText(StormLang(
+        QStringLiteral("VSYNC:\n%1"),
+        QStringLiteral("VSYNC:\n%1"),
+        QStringLiteral("VSYNC:\n%1"),
+        QStringLiteral("VSYNC:\n%1"),
+        QStringLiteral("垂直同步:\n%1"),
+        QStringLiteral("垂直同期:\n%1")
+    ).arg(val_text));
 }
 
 void MainWindow::UpdateSpeedLimitText() {
     if (!speed_limit_button) return;
     if (!Settings::values.use_speed_limit.GetValue()) {
-        speed_limit_button->setText(tr("СКОРОСТЬ:\nБЕЗ ЛИМИТА"));
+        speed_limit_button->setText(StormLang(
+            QStringLiteral("СКОРОСТЬ:\nБЕЗ ЛИМИТА"),
+            QStringLiteral("SPEED:\nUNLIMITED"),
+            QStringLiteral("GESCHW.:\nUNBEGRENZT"),
+            QStringLiteral("VITESSE:\nILLIMITÉE"),
+            QStringLiteral("速度:\n无限制"),
+            QStringLiteral("速度:\n無制限")
+        ));
     } else {
         const auto limit = Settings::values.speed_limit.GetValue();
-        speed_limit_button->setText(tr("СКОРОСТЬ:\n%1%").arg(limit));
+        speed_limit_button->setText(StormLang(
+            QStringLiteral("СКОРОСТЬ:\n%1%"),
+            QStringLiteral("SPEED:\n%1%"),
+            QStringLiteral("GESCHW.:\n%1%"),
+            QStringLiteral("VITESSE:\n%1%"),
+            QStringLiteral("速度:\n%1%"),
+            QStringLiteral("速度:\n%1%")
+        ).arg(limit));
     }
 }
 
 void MainWindow::UpdateNvdecText() {
     if (!nvdec_status_button) return;
-    QString val_text = QStringLiteral("ГПУ");
+    QString val_text = StormLang(QStringLiteral("ГПУ"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"));
     const auto nvdec = Settings::values.nvdec_emulation.GetValue();
     switch (nvdec) {
-    case Settings::NvdecEmulation::Off: val_text = tr("ВЫКЛ"); break;
-    case Settings::NvdecEmulation::Cpu: val_text = QStringLiteral("ЦП"); break;
-    case Settings::NvdecEmulation::Gpu: val_text = QStringLiteral("ГПУ"); break;
-    case Settings::NvdecEmulation::Hybrid: val_text = QStringLiteral("ГИБРИД"); break;
-    default: break;
+    case Settings::NvdecEmulation::Off:
+        val_text = StormLang(QStringLiteral("ВЫКЛ"), QStringLiteral("OFF"), QStringLiteral("AUS"), QStringLiteral("DÉSACTIVÉ"), QStringLiteral("关闭"), QStringLiteral("オフ"));
+        break;
+    case Settings::NvdecEmulation::Cpu:
+        val_text = StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"));
+        break;
+    case Settings::NvdecEmulation::Gpu:
+        val_text = StormLang(QStringLiteral("ГПУ"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"));
+        break;
+    case Settings::NvdecEmulation::Hybrid:
+        val_text = StormLang(QStringLiteral("ГИБРИД"), QStringLiteral("HYBRID"), QStringLiteral("HYBRID"), QStringLiteral("HYBRIDE"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"));
+        break;
+    default:
+        break;
     }
-    nvdec_status_button->setText(tr("NVDEC:\n%1").arg(val_text));
+    nvdec_status_button->setText(StormLang(
+        QStringLiteral("NVDEC:\n%1"),
+        QStringLiteral("NVDEC:\n%1"),
+        QStringLiteral("NVDEC:\n%1"),
+        QStringLiteral("NVDEC:\n%1"),
+        QStringLiteral("NVDEC:\n%1"),
+        QStringLiteral("NVDEC:\n%1")
+    ).arg(val_text));
 }
 
 void MainWindow::UpdateCpuAccuracyText() {
     if (!cpu_accuracy_button) return;
-    QString val_text = QStringLiteral("АВТО");
+    QString val_text = StormLang(QStringLiteral("АВТО"), QStringLiteral("AUTO"), QStringLiteral("AUTO"), QStringLiteral("AUTO"), QStringLiteral("自动"), QStringLiteral("自動"));
     const auto cpu_acc = Settings::values.cpu_accuracy.GetValue();
     switch (cpu_acc) {
-    case Settings::CpuAccuracy::Auto: val_text = QStringLiteral("АВТО"); break;
-    case Settings::CpuAccuracy::Accurate: val_text = tr("ТОЧНО"); break;
-    case Settings::CpuAccuracy::Unsafe: val_text = tr("НЕБЕЗОПАСНО"); break;
-    default: break;
+    case Settings::CpuAccuracy::Auto:
+        val_text = StormLang(QStringLiteral("АВТО"), QStringLiteral("AUTO"), QStringLiteral("AUTO"), QStringLiteral("AUTO"), QStringLiteral("自动"), QStringLiteral("自動"));
+        break;
+    case Settings::CpuAccuracy::Accurate:
+        val_text = StormLang(QStringLiteral("ТОЧНО"), QStringLiteral("ACCURATE"), QStringLiteral("GENAU"), QStringLiteral("PRÉCIS"), QStringLiteral("准确"), QStringLiteral("正確"));
+        break;
+    case Settings::CpuAccuracy::Unsafe:
+        val_text = StormLang(QStringLiteral("НЕБЕЗОПАСНО"), QStringLiteral("UNSAFE"), QStringLiteral("UNSICHER"), QStringLiteral("NON SÉCURISÉ"), QStringLiteral("不安全"), QStringLiteral("非安全"));
+        break;
+    default:
+        break;
     }
-    cpu_accuracy_button->setText(tr("ТОЧНОСТЬ ЦП:\n%1").arg(val_text));
+    cpu_accuracy_button->setText(StormLang(
+        QStringLiteral("ТОЧНОСТЬ ЦП:\n%1"),
+        QStringLiteral("CPU ACCURACY:\n%1"),
+        QStringLiteral("CPU-GENAUIGKEIT:\n%1"),
+        QStringLiteral("PRÉCISION CPU:\n%1"),
+        QStringLiteral("CPU 精度:\n%1"),
+        QStringLiteral("CPU 精度:\n%1")
+    ).arg(val_text));
 }
 
 void MainWindow::UpdateDiskCacheText() {
     if (!disk_cache_button) return;
     const bool enabled = Settings::values.use_disk_shader_cache.GetValue();
-    disk_cache_button->setText(enabled ? tr("КЭШ ШЕЙДЕРОВ:\nВКЛ") : tr("КЭШ ШЕЙДЕРОВ:\nВЫКЛ"));
+    disk_cache_button->setText(enabled
+        ? StormLang(QStringLiteral("КЭШ ШЕЙДЕРОВ:\nВКЛ"), QStringLiteral("DISK CACHE:\nON"), QStringLiteral("FESTPLATTEN-CACHE:\nEIN"), QStringLiteral("CACHE DISQUE:\nACTIVÉ"), QStringLiteral("着色器缓存:\n开启"), QStringLiteral("ディスクキャッシュ:\nオン"))
+        : StormLang(QStringLiteral("КЭШ ШЕЙДЕРОВ:\nВЫКЛ"), QStringLiteral("DISK CACHE:\nOFF"), QStringLiteral("FESTPLATTEN-CACHE:\nAUS"), QStringLiteral("CACHE DISQUE:\nDÉSACTIVÉ"), QStringLiteral("着色器缓存:\n关闭"), QStringLiteral("ディスクキャッシュ:\nオフ")));
+}
+
+void MainWindow::UpdateRefreshButton() {
+    if (!refresh_button) return;
+    refresh_button->setText(StormLang(
+        QStringLiteral("СПИСОК:\nОБНОВИТЬ"),
+        QStringLiteral("LIST:\nREFRESH"),
+        QStringLiteral("LISTE:\nAKTUAL."),
+        QStringLiteral("LISTE:\nACTUAL."),
+        QStringLiteral("列表:\n刷新"),
+        QStringLiteral("リスト:\n更新")
+    ));
+    refresh_button->setToolTip(StormLang(
+        QStringLiteral("Обновить список игр"),
+        QStringLiteral("Refresh game list"),
+        QStringLiteral("Spielliste aktualisieren"),
+        QStringLiteral("Actualiser la liste des jeux"),
+        QStringLiteral("刷新游戏列表"),
+        QStringLiteral("ゲームリストを更新")
+    ));
 }
 
 void MainWindow::UpdateFullscreenButton() {
     if (!fullscreen_button) return;
     const bool is_full = ui->action_Fullscreen->isChecked();
-    fullscreen_button->setText(is_full ? tr("ЭКРАН:\nПОЛНЫЙ") : tr("ЭКРАН:\nОКНО"));
+    fullscreen_button->setText(is_full
+        ? StormLang(QStringLiteral("ЭКРАН:\nПОЛНЫЙ"), QStringLiteral("SCREEN:\nFULL"), QStringLiteral("BILDSCHIRM:\nVOLL"), QStringLiteral("ÉCRAN:\nPLEIN"), QStringLiteral("屏幕:\n全屏"), QStringLiteral("画面:\n全画面"))
+        : StormLang(QStringLiteral("ЭКРАН:\nОКНО"), QStringLiteral("SCREEN:\nWINDOW"), QStringLiteral("BILDSCHIRM:\nFENSTER"), QStringLiteral("ÉCRAN:\nFENÊTRE"), QStringLiteral("屏幕:\n窗口"), QStringLiteral("画面:\nウィンドウ")));
 }
 
 void MainWindow::UpdateMuteButton() {
     if (!mute_button) return;
     const bool muted = Settings::values.audio_muted.GetValue();
-    mute_button->setText(muted ? tr("ЗВУК:\nМУТ") : tr("ЗВУК:\nВКЛ"));
+    mute_button->setText(muted
+        ? StormLang(QStringLiteral("ЗВУК:\nМУТ"), QStringLiteral("MUTE:\nON"), QStringLiteral("STUMM:\nEIN"), QStringLiteral("MUET:\nACTIVÉ"), QStringLiteral("静音:\n开启"), QStringLiteral("ミュート:\nオン"))
+        : StormLang(QStringLiteral("ЗВУК:\nВКЛ"), QStringLiteral("SOUND:\nON"), QStringLiteral("TON:\nEIN"), QStringLiteral("SON:\nACTIVÉ"), QStringLiteral("声音:\n开启"), QStringLiteral("サウンド:\nオン")));
 }
 
 void MainWindow::SaveFooterSettings() {
@@ -8073,9 +8606,23 @@ void MainWindow::LoadFooterSettings() {
 
 void MainWindow::ShowFooterCustomizeMenu() {
     QMenu context_menu(this);
-    context_menu.setTitle(tr("Настройка панели подвала"));
+    context_menu.setTitle(StormLang(
+        QStringLiteral("Настройка панели подвала"),
+        QStringLiteral("Footer panel customization"),
+        QStringLiteral("Anpassung der Fußzeile"),
+        QStringLiteral("Personnalisation du pied de page"),
+        QStringLiteral("底部栏设置"),
+        QStringLiteral("フッターパネルの設定")
+    ));
 
-    auto* header_act = context_menu.addAction(tr("--- РАЗДЕЛЫ ПОДВАЛА ---"));
+    auto* header_act = context_menu.addAction(StormLang(
+        QStringLiteral("--- РАЗДЕЛЫ ПОДВАЛА ---"),
+        QStringLiteral("--- FOOTER SECTIONS ---"),
+        QStringLiteral("--- FUSSZEILEN-ABSCHNITTE ---"),
+        QStringLiteral("--- SECTIONS DU PIED DE PAGE ---"),
+        QStringLiteral("--- 底部栏分区 ---"),
+        QStringLiteral("--- フッターセクション ---")
+    ));
     header_act->setEnabled(false);
 
     struct GroupInfo {
@@ -8084,14 +8631,14 @@ void MainWindow::ShowFooterCustomizeMenu() {
     };
 
     const std::vector<GroupInfo> groups = {
-        {tr("Раздел: УПРАВЛЕНИЕ"), m_status_groups.size() > 0 ? m_status_groups[0] : nullptr},
-        {tr("Раздел: ДОПОЛНЕНИЯ"), m_status_groups.size() > 1 ? m_status_groups[1] : nullptr},
-        {tr("Раздел: РЕНДЕР"), m_status_groups.size() > 2 ? m_status_groups[2] : nullptr},
-        {tr("Раздел: ГРАФИКА"), m_status_groups.size() > 3 ? m_status_groups[3] : nullptr},
-        {tr("Раздел: ASTC"), m_status_groups.size() > 4 ? m_status_groups[4] : nullptr},
-        {tr("Раздел: РЕЖИМ"), m_status_groups.size() > 5 ? m_status_groups[5] : nullptr},
-        {tr("Раздел: СИСТЕМА"), m_status_groups.size() > 6 ? m_status_groups[6] : nullptr},
-        {tr("Раздел: СЕТЬ"), m_status_groups.size() > 7 ? m_status_groups[7] : nullptr},
+        {StormLang(QStringLiteral("Раздел: УПРАВЛЕНИЕ"), QStringLiteral("Section: CONTROLS"), QStringLiteral("Abschnitt: STEUERUNG"), QStringLiteral("Section : COMMANDES"), QStringLiteral("分区: 控制"), QStringLiteral("セクション: 操作")), m_status_groups.size() > 0 ? m_status_groups[0] : nullptr},
+        {StormLang(QStringLiteral("Раздел: ДОПОЛНЕНИЯ"), QStringLiteral("Section: ADD-ONS"), QStringLiteral("Abschnitt: ADD-ONS"), QStringLiteral("Section : ADD-ONS"), QStringLiteral("分区: 附加内容"), QStringLiteral("セクション: アドオン")), m_status_groups.size() > 1 ? m_status_groups[1] : nullptr},
+        {StormLang(QStringLiteral("Раздел: РЕНДЕР"), QStringLiteral("Section: RENDER"), QStringLiteral("Abschnitt: RENDER"), QStringLiteral("Section : RENDU"), QStringLiteral("分区: 渲染"), QStringLiteral("セクション: レンダラー")), m_status_groups.size() > 2 ? m_status_groups[2] : nullptr},
+        {StormLang(QStringLiteral("Раздел: ГРАФИКА"), QStringLiteral("Section: GRAPHICS"), QStringLiteral("Abschnitt: GRAFIK"), QStringLiteral("Section : GRAPHISMES"), QStringLiteral("分区: 图形"), QStringLiteral("セクション: グラフィックス")), m_status_groups.size() > 3 ? m_status_groups[3] : nullptr},
+        {StormLang(QStringLiteral("Раздел: ASTC"), QStringLiteral("Section: ASTC"), QStringLiteral("Abschnitt: ASTC"), QStringLiteral("Section : ASTC"), QStringLiteral("分区: ASTC"), QStringLiteral("セクション: ASTC")), m_status_groups.size() > 4 ? m_status_groups[4] : nullptr},
+        {StormLang(QStringLiteral("Раздел: РЕЖИМ"), QStringLiteral("Section: MODE"), QStringLiteral("Abschnitt: MODUS"), QStringLiteral("Section : MODE"), QStringLiteral("分区: 模式"), QStringLiteral("セクション: モード")), m_status_groups.size() > 5 ? m_status_groups[5] : nullptr},
+        {StormLang(QStringLiteral("Раздел: СИСТЕМА"), QStringLiteral("Section: SYSTEM"), QStringLiteral("Abschnitt: SYSTEM"), QStringLiteral("Section : SYSTÈME"), QStringLiteral("分区: 系统"), QStringLiteral("セクション: システム")), m_status_groups.size() > 6 ? m_status_groups[6] : nullptr},
+        {StormLang(QStringLiteral("Раздел: СЕТЬ"), QStringLiteral("Section: NETWORK"), QStringLiteral("Abschnitt: NETZWERK"), QStringLiteral("Section : RÉSEAU"), QStringLiteral("分区: 网络"), QStringLiteral("セクション: ネットワーク")), m_status_groups.size() > 7 ? m_status_groups[7] : nullptr},
     };
 
     for (const auto& g : groups) {
@@ -8105,7 +8652,14 @@ void MainWindow::ShowFooterCustomizeMenu() {
     }
 
     context_menu.addSeparator();
-    auto* btn_header = context_menu.addAction(tr("--- ОТДЕЛЬНЫЕ КНОПКИ ---"));
+    auto* btn_header = context_menu.addAction(StormLang(
+        QStringLiteral("--- ОТДЕЛЬНЫЕ КНОПКИ ---"),
+        QStringLiteral("--- INDIVIDUAL BUTTONS ---"),
+        QStringLiteral("--- EINZELNE SCHALTFLÄCHEN ---"),
+        QStringLiteral("--- BOUTONS INDIVIDUELS ---"),
+        QStringLiteral("--- 单独按钮 ---"),
+        QStringLiteral("--- 個別ボタン ---")
+    ));
     btn_header->setEnabled(false);
 
     struct ButtonInfo {
@@ -8114,31 +8668,31 @@ void MainWindow::ShowFooterCustomizeMenu() {
     };
 
     const std::vector<ButtonInfo> buttons = {
-        {tr("Обновить список"), refresh_button},
-        {tr("Дополнения"), addons_status_button},
-        {tr("Полный экран"), fullscreen_button},
-        {tr("Рендер API"), renderer_status_button},
-        {tr("Точность ГПУ"), gpu_accuracy_button},
-        {tr("Точность ЦП"), cpu_accuracy_button},
-        {tr("VSync"), vsync_mode_button},
-        {tr("DMA"), dma_accuracy_button},
-        {tr("Барьеры ГПУ"), gpu_fence_button},
-        {tr("NVDEC"), nvdec_status_button},
-        {tr("Сглаживание"), aa_status_button},
-        {tr("Фильтр масштабирования"), filter_status_button},
-        {tr("Соотношение сторон"), aspect_ratio_button},
-        {tr("Масштаб разрешения"), res_scale_button},
-        {tr("VRAM"), vram_mode_button},
-        {tr("Анизотропия"), anisotropy_button},
-        {tr("Кэш шейдеров"), disk_cache_button},
-        {tr("Декод. ASTC"), astc_decode_button},
-        {tr("Пересж. ASTC"), astc_recompress_button},
-        {tr("Режим ТВ / Портал"), dock_status_button},
-        {tr("Режим полёта"), airplane_mode_button},
-        {tr("Лимит скорости"), speed_limit_button},
-        {tr("Громкость"), volume_button},
-        {tr("Отключение звука"), mute_button},
-        {tr("Прошивка"), firmware_label},
+        {StormLang(QStringLiteral("Обновить список"), QStringLiteral("Refresh list"), QStringLiteral("Liste aktualisieren"), QStringLiteral("Actualiser la liste"), QStringLiteral("刷新列表"), QStringLiteral("リストを更新")), refresh_button},
+        {StormLang(QStringLiteral("Дополнения"), QStringLiteral("Add-ons"), QStringLiteral("Add-ons"), QStringLiteral("Add-ons"), QStringLiteral("附加内容"), QStringLiteral("アドオン")), addons_status_button},
+        {StormLang(QStringLiteral("Полный экран"), QStringLiteral("Fullscreen"), QStringLiteral("Vollbild"), QStringLiteral("Plein écran"), QStringLiteral("全屏"), QStringLiteral("全画面")), fullscreen_button},
+        {StormLang(QStringLiteral("Рендер API"), QStringLiteral("Render API"), QStringLiteral("Render-API"), QStringLiteral("API de rendu"), QStringLiteral("渲染 API"), QStringLiteral("レンダー API")), renderer_status_button},
+        {StormLang(QStringLiteral("Точность ГПУ"), QStringLiteral("GPU accuracy"), QStringLiteral("GPU-Genauigkeit"), QStringLiteral("Précision GPU"), QStringLiteral("GPU 精度"), QStringLiteral("GPU 精度")), gpu_accuracy_button},
+        {StormLang(QStringLiteral("Точность ЦП"), QStringLiteral("CPU accuracy"), QStringLiteral("CPU-Genauigkeit"), QStringLiteral("Précision CPU"), QStringLiteral("CPU 精度"), QStringLiteral("CPU 精度")), cpu_accuracy_button},
+        {StormLang(QStringLiteral("VSync"), QStringLiteral("VSync"), QStringLiteral("VSync"), QStringLiteral("VSync"), QStringLiteral("垂直同步"), QStringLiteral("垂直同期")), vsync_mode_button},
+        {StormLang(QStringLiteral("DMA"), QStringLiteral("DMA"), QStringLiteral("DMA"), QStringLiteral("DMA"), QStringLiteral("DMA"), QStringLiteral("DMA")), dma_accuracy_button},
+        {StormLang(QStringLiteral("Барьеры ГПУ"), QStringLiteral("GPU fences"), QStringLiteral("GPU-Fences"), QStringLiteral("Barrières GPU"), QStringLiteral("GPU 栅栏"), QStringLiteral("GPU フェンス")), gpu_fence_button},
+        {StormLang(QStringLiteral("NVDEC"), QStringLiteral("NVDEC"), QStringLiteral("NVDEC"), QStringLiteral("NVDEC"), QStringLiteral("NVDEC"), QStringLiteral("NVDEC")), nvdec_status_button},
+        {StormLang(QStringLiteral("Сглаживание"), QStringLiteral("Anti-aliasing"), QStringLiteral("Kantenglättung"), QStringLiteral("Anticrénelage"), QStringLiteral("抗锯齿"), QStringLiteral("アンチエイリアス")), aa_status_button},
+        {StormLang(QStringLiteral("Фильтр масштабирования"), QStringLiteral("Scaling filter"), QStringLiteral("Skalierungsfilter"), QStringLiteral("Filtre de mise à l'échelle"), QStringLiteral("缩放过滤器"), QStringLiteral("スケーリングフィルター")), filter_status_button},
+        {StormLang(QStringLiteral("Соотношение сторон"), QStringLiteral("Aspect ratio"), QStringLiteral("Seitenverhältnis"), QStringLiteral("Format d'image"), QStringLiteral("宽高比"), QStringLiteral("アスペクト比")), aspect_ratio_button},
+        {StormLang(QStringLiteral("Масштаб разрешения"), QStringLiteral("Resolution scale"), QStringLiteral("Auflösungsskalierung"), QStringLiteral("Échelle de résolution"), QStringLiteral("分辨率缩放"), QStringLiteral("解像度スケール")), res_scale_button},
+        {StormLang(QStringLiteral("VRAM"), QStringLiteral("VRAM"), QStringLiteral("VRAM"), QStringLiteral("VRAM"), QStringLiteral("显存"), QStringLiteral("ビデオメモリ")), vram_mode_button},
+        {StormLang(QStringLiteral("Анизотропия"), QStringLiteral("Anisotropy"), QStringLiteral("Anisotropie"), QStringLiteral("Anisotropie"), QStringLiteral("各向异性"), QStringLiteral("異方性")), anisotropy_button},
+        {StormLang(QStringLiteral("Кэш шейдеров"), QStringLiteral("Shader cache"), QStringLiteral("Shader-Cache"), QStringLiteral("Cache de shaders"), QStringLiteral("着色器缓存"), QStringLiteral("シェーダーキャッシュ")), disk_cache_button},
+        {StormLang(QStringLiteral("Декод. ASTC"), QStringLiteral("ASTC decode"), QStringLiteral("ASTC-Dekodierung"), QStringLiteral("Décodage ASTC"), QStringLiteral("ASTC 解码"), QStringLiteral("ASTC デコード")), astc_decode_button},
+        {StormLang(QStringLiteral("Пересж. ASTC"), QStringLiteral("ASTC recompress"), QStringLiteral("ASTC-Rekompression"), QStringLiteral("Recompression ASTC"), QStringLiteral("ASTC 重压缩"), QStringLiteral("ASTC 再圧縮")), astc_recompress_button},
+        {StormLang(QStringLiteral("Режим ТВ / Портал"), QStringLiteral("Docked / Handheld"), QStringLiteral("Dock- / Handheld-Modus"), QStringLiteral("Mode TV / Portable"), QStringLiteral("底座 / 掌机模式"), QStringLiteral("ドック / 携帯モード")), dock_status_button},
+        {StormLang(QStringLiteral("Режим полёта"), QStringLiteral("Airplane mode"), QStringLiteral("Flugmodus"), QStringLiteral("Mode avion"), QStringLiteral("飞行模式"), QStringLiteral("機内モード")), airplane_mode_button},
+        {StormLang(QStringLiteral("Лимит скорости"), QStringLiteral("Speed limit"), QStringLiteral("Geschwindigkeitsbegrenzung"), QStringLiteral("Limite de vitesse"), QStringLiteral("速度限制"), QStringLiteral("速度制限")), speed_limit_button},
+        {StormLang(QStringLiteral("Громкость"), QStringLiteral("Volume"), QStringLiteral("Lautstärke"), QStringLiteral("Volume"), QStringLiteral("音量"), QStringLiteral("音量")), volume_button},
+        {StormLang(QStringLiteral("Отключение звука"), QStringLiteral("Mute sound"), QStringLiteral("Stummschaltung"), QStringLiteral("Couper le son"), QStringLiteral("静音"), QStringLiteral("消音")), mute_button},
+        {StormLang(QStringLiteral("Прошивка"), QStringLiteral("Firmware"), QStringLiteral("Firmware"), QStringLiteral("Firmware"), QStringLiteral("固件"), QStringLiteral("ファームウェア")), firmware_label},
     };
 
     for (const auto& b : buttons) {
@@ -8152,7 +8706,14 @@ void MainWindow::ShowFooterCustomizeMenu() {
     }
 
     context_menu.addSeparator();
-    context_menu.addAction(tr("Показать все разделы и элементы"), [this, groups, buttons] {
+    context_menu.addAction(StormLang(
+        QStringLiteral("Показать все разделы и элементы"),
+        QStringLiteral("Show all sections and elements"),
+        QStringLiteral("Alle Abschnitte und Elemente anzeigen"),
+        QStringLiteral("Afficher toutes les sections et éléments"),
+        QStringLiteral("显示所有分区和元素"),
+        QStringLiteral("すべてのセクションと要素を表示")
+    ), [this, groups, buttons] {
         for (const auto& g : groups) {
             if (g.widget) g.widget->setVisible(true);
         }
@@ -8192,8 +8753,8 @@ void MainWindow::ShowMenuAtWidget(QMenu& menu, QWidget* widget) {
     menu.exec(QPoint(x, y));
 }
 
-void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
-    if (title == tr("ДОПОЛНЕНИЯ")) {
+void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
+    if (group_index == 1) {
         if (m_current_addons_title_id == 0 && game_list) {
             const auto [tid, path] = game_list->GetSelectedGameInfo();
             if (tid != 0) {
@@ -8207,18 +8768,32 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         return;
     }
     QMenu context_menu(this);
-    if (title == tr("ASTC")) {
-        auto* header_act = context_menu.addAction(tr("🎨 Управление текстурами ASTC"));
+    if (group_index == 4) {
+        auto* header_act = context_menu.addAction(StormLang(
+            QStringLiteral("🎨 Управление текстурами ASTC"),
+            QStringLiteral("🎨 ASTC Texture Management"),
+            QStringLiteral("🎨 ASTC-Texturverwaltung"),
+            QStringLiteral("🎨 Gestion des textures ASTC"),
+            QStringLiteral("🎨 ASTC 纹理管理"),
+            QStringLiteral("🎨 ASTC テクスチャ管理")
+        ));
         header_act->setEnabled(false);
         context_menu.addSeparator();
 
-        auto* decode_menu = context_menu.addMenu(tr("⚙️ Метод декодирования ASTC"));
+        auto* decode_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("⚙️ Метод декодирования ASTC"),
+            QStringLiteral("⚙️ ASTC Decode Method"),
+            QStringLiteral("⚙️ ASTC-Dekodiermethode"),
+            QStringLiteral("⚙️ Méthode de décodage ASTC"),
+            QStringLiteral("⚙️ ASTC 解码方式"),
+            QStringLiteral("⚙️ ASTC デコード方法")
+        ));
         const auto cur_dec = Settings::values.accelerate_astc.GetValue();
         const std::vector<std::pair<Settings::AstcDecodeMode, QString>> dec_options = {
-            {Settings::AstcDecodeMode::CpuAsynchronous, tr("ЦП Асинхронно (Рекомендуется)")},
-            {Settings::AstcDecodeMode::Cpu, tr("ЦП (Синхронно)")},
-            {Settings::AstcDecodeMode::Gpu, tr("ГПУ (Аппаратное декодирование)")},
-            {Settings::AstcDecodeMode::Hybrid, tr("Гибридный (ГПУ и ЦП)")},
+            {Settings::AstcDecodeMode::CpuAsynchronous, StormLang(QStringLiteral("ЦП асинхронно (рекомендуется)"), QStringLiteral("CPU Asynchronous (Recommended)"), QStringLiteral("CPU asynchron (empfohlen)"), QStringLiteral("CPU asynchrone (recommandé)"), QStringLiteral("CPU 异步 (推荐)"), QStringLiteral("CPU 非同期 (推奨)"))},
+            {Settings::AstcDecodeMode::Cpu, StormLang(QStringLiteral("ЦП (синхронно)"), QStringLiteral("CPU (Synchronous)"), QStringLiteral("CPU (synchron)"), QStringLiteral("CPU (synchrone)"), QStringLiteral("CPU (同步)"), QStringLiteral("CPU (同期)"))},
+            {Settings::AstcDecodeMode::Gpu, StormLang(QStringLiteral("ГПУ (аппаратное декодирование)"), QStringLiteral("GPU (Hardware Decoding)"), QStringLiteral("GPU (Hardware-Dekodierung)"), QStringLiteral("GPU (décodage matériel)"), QStringLiteral("GPU (硬件解码)"), QStringLiteral("GPU (ハードウェアデコード)"))},
+            {Settings::AstcDecodeMode::Hybrid, StormLang(QStringLiteral("Гибридный (ГПУ и ЦП)"), QStringLiteral("Hybrid (GPU and CPU)"), QStringLiteral("Hybrid (GPU und CPU)"), QStringLiteral("Hybride (GPU et CPU)"), QStringLiteral("混合 (GPU 和 CPU)"), QStringLiteral("ハイブリッド (GPU と CPU)"))},
         };
         for (const auto& opt : dec_options) {
             auto* act = decode_menu->addAction(opt.second, [this, opt] {
@@ -8230,13 +8805,20 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(opt.first == cur_dec);
         }
 
-        auto* recomp_menu = context_menu.addMenu(tr("📦 Пересжатие ASTC"));
+        auto* recomp_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("📦 Пересжатие ASTC"),
+            QStringLiteral("📦 ASTC Recompression"),
+            QStringLiteral("📦 ASTC-Rekompression"),
+            QStringLiteral("📦 Recompression ASTC"),
+            QStringLiteral("📦 ASTC 重新压缩"),
+            QStringLiteral("📦 ASTC 再圧縮")
+        ));
         const auto cur_rec = Settings::values.astc_recompression.GetValue();
         const std::vector<std::pair<Settings::AstcRecompression, QString>> rec_options = {
-            {Settings::AstcRecompression::Uncompressed, tr("Uncompressed (Best Quality)")},
-            {Settings::AstcRecompression::Bc1, tr("BC1 (Low Quality)")},
-            {Settings::AstcRecompression::Bc3, tr("BC3 (Medium Quality)")},
-            {Settings::AstcRecompression::Bc5, tr("BC5 (High Quality)")},
+            {Settings::AstcRecompression::Uncompressed, StormLang(QStringLiteral("Без сжатия (лучшее качество)"), QStringLiteral("Uncompressed (Best Quality)"), QStringLiteral("Unkomprimiert (beste Qualität)"), QStringLiteral("Non compressé (meilleure qualité)"), QStringLiteral("未压缩 (最高质量)"), QStringLiteral("非圧縮 (最高品質)"))},
+            {Settings::AstcRecompression::Bc1, StormLang(QStringLiteral("BC1 (низкое качество)"), QStringLiteral("BC1 (Low Quality)"), QStringLiteral("BC1 (niedrige Qualität)"), QStringLiteral("BC1 (basse qualité)"), QStringLiteral("BC1 (低质量)"), QStringLiteral("BC1 (低品質)"))},
+            {Settings::AstcRecompression::Bc3, StormLang(QStringLiteral("BC3 (среднее качество)"), QStringLiteral("BC3 (Medium Quality)"), QStringLiteral("BC3 (mittlere Qualität)"), QStringLiteral("BC3 (qualité moyenne)"), QStringLiteral("BC3 (中质量)"), QStringLiteral("BC3 (中品質)"))},
+            {Settings::AstcRecompression::Bc5, StormLang(QStringLiteral("BC5 (высокое качество)"), QStringLiteral("BC5 (High Quality)"), QStringLiteral("BC5 (hohe Qualität)"), QStringLiteral("BC5 (haute qualité)"), QStringLiteral("BC5 (高质量)"), QStringLiteral("BC5 (高品質)"))},
         };
         for (const auto& opt : rec_options) {
             auto* act = recomp_menu->addAction(opt.second, [this, opt] {
@@ -8247,12 +8829,26 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setCheckable(true);
             act->setChecked(opt.first == cur_rec);
         }
-    } else if (title == tr("РЕНДЕР")) {
-        auto* header_act = context_menu.addAction(tr("⚡ Параметры рендера"));
+    } else if (group_index == 2) {
+        auto* header_act = context_menu.addAction(StormLang(
+            QStringLiteral("⚡ Параметры рендера"),
+            QStringLiteral("⚡ Render Settings"),
+            QStringLiteral("⚡ Rendereinstellungen"),
+            QStringLiteral("⚡ Paramètres de rendu"),
+            QStringLiteral("⚡ 渲染设置"),
+            QStringLiteral("⚡ レンダラー設定")
+        ));
         header_act->setEnabled(false);
         context_menu.addSeparator();
 
-        auto* api_menu = context_menu.addMenu(tr("🎮 Графический API"));
+        auto* api_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("🎮 Графический API"),
+            QStringLiteral("🎮 Graphics API"),
+            QStringLiteral("🎮 Grafik-API"),
+            QStringLiteral("🎮 API graphique"),
+            QStringLiteral("🎮 图形 API"),
+            QStringLiteral("🎮 グラフィックス API")
+        ));
         const auto cur_api = Settings::values.renderer_backend.GetValue();
         for (const auto& pair : ConfigurationShared::renderer_backend_texts_map) {
             if (pair.first == Settings::RendererBackend::Null) continue;
@@ -8265,7 +8861,14 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(pair.first == cur_api);
         }
 
-        auto* gpu_acc_menu = context_menu.addMenu(tr("🎯 Точность GPU"));
+        auto* gpu_acc_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("🎯 Точность GPU"),
+            QStringLiteral("🎯 GPU Accuracy"),
+            QStringLiteral("🎯 GPU-Genauigkeit"),
+            QStringLiteral("🎯 Précision GPU"),
+            QStringLiteral("🎯 GPU 精度"),
+            QStringLiteral("🎯 GPU 精度")
+        ));
         const auto cur_gpu_acc = Settings::values.gpu_accuracy.GetValue();
         for (const auto& pair : ConfigurationShared::gpu_accuracy_texts_map) {
             auto* act = gpu_acc_menu->addAction(pair.second, [this, pair] {
@@ -8277,12 +8880,19 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(pair.first == cur_gpu_acc);
         }
 
-        auto* cpu_acc_menu = context_menu.addMenu(tr("🧠 Точность CPU"));
+        auto* cpu_acc_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("🧠 Точность CPU"),
+            QStringLiteral("🧠 CPU Accuracy"),
+            QStringLiteral("🧠 CPU-Genauigkeit"),
+            QStringLiteral("🧠 Précision CPU"),
+            QStringLiteral("🧠 CPU 精度"),
+            QStringLiteral("🧠 CPU 精度")
+        ));
         const auto cur_cpu = Settings::values.cpu_accuracy.GetValue();
         const std::vector<std::pair<Settings::CpuAccuracy, QString>> cpu_options = {
-            {Settings::CpuAccuracy::Auto, tr("Авто")},
-            {Settings::CpuAccuracy::Accurate, tr("Точно")},
-            {Settings::CpuAccuracy::Unsafe, tr("Небезопасно")},
+            {Settings::CpuAccuracy::Auto, StormLang(QStringLiteral("Авто"), QStringLiteral("Auto"), QStringLiteral("Automatisch"), QStringLiteral("Auto"), QStringLiteral("自动"), QStringLiteral("自動"))},
+            {Settings::CpuAccuracy::Accurate, StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Genau"), QStringLiteral("Précis"), QStringLiteral("准确"), QStringLiteral("正確"))},
+            {Settings::CpuAccuracy::Unsafe, StormLang(QStringLiteral("Небезопасно"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisé"), QStringLiteral("不安全"), QStringLiteral("非安全"))},
         };
         for (const auto& opt : cpu_options) {
             auto* act = cpu_acc_menu->addAction(opt.second, [this, opt] {
@@ -8294,13 +8904,20 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(opt.first == cur_cpu);
         }
 
-        auto* vsync_menu = context_menu.addMenu(tr("⏱️ Синхронизация кадров"));
+        auto* vsync_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("⏱️ Синхронизация кадров"),
+            QStringLiteral("⏱️ Frame Synchronization"),
+            QStringLiteral("⏱️ Bildsynchronisation"),
+            QStringLiteral("⏱️ Synchronisation des images"),
+            QStringLiteral("⏱️ 帧同步"),
+            QStringLiteral("⏱️ フレーム同期")
+        ));
         const auto cur_vsync = Settings::values.vsync_mode.GetValue();
         const std::vector<std::pair<Settings::VSyncMode, QString>> vsync_options = {
-            {Settings::VSyncMode::Fifo, tr("FIFO")},
-            {Settings::VSyncMode::FifoRelaxed, tr("FIFO Relaxed")},
-            {Settings::VSyncMode::Mailbox, tr("Mailbox")},
-            {Settings::VSyncMode::Immediate, tr("Immediate")},
+            {Settings::VSyncMode::Fifo, QStringLiteral("FIFO")},
+            {Settings::VSyncMode::FifoRelaxed, QStringLiteral("FIFO Relaxed")},
+            {Settings::VSyncMode::Mailbox, QStringLiteral("Mailbox")},
+            {Settings::VSyncMode::Immediate, StormLang(QStringLiteral("Выключено (Immediate)"), QStringLiteral("Immediate (Off)"), QStringLiteral("Aus (Immediate)"), QStringLiteral("Désactivé (Immediate)"), QStringLiteral("关闭 (Immediate)"), QStringLiteral("オフ (Immediate)"))},
         };
         for (const auto& opt : vsync_options) {
             auto* act = vsync_menu->addAction(opt.second, [this, opt] {
@@ -8312,13 +8929,20 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(opt.first == cur_vsync);
         }
 
-        auto* nvdec_menu = context_menu.addMenu(tr("🎬 Декодирование видео"));
+        auto* nvdec_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("🎬 Декодирование видео"),
+            QStringLiteral("🎬 Video Decoding"),
+            QStringLiteral("🎬 Videodekodierung"),
+            QStringLiteral("🎬 Décodage vidéo"),
+            QStringLiteral("🎬 视频解码"),
+            QStringLiteral("🎬 ビデオデコード")
+        ));
         const auto cur_nvdec = Settings::values.nvdec_emulation.GetValue();
         const std::vector<std::pair<Settings::NvdecEmulation, QString>> nvdec_options = {
-            {Settings::NvdecEmulation::Gpu, tr("ГПУ")},
-            {Settings::NvdecEmulation::Hybrid, tr("Гибридный")},
-            {Settings::NvdecEmulation::Cpu, tr("ЦП")},
-            {Settings::NvdecEmulation::Off, tr("Отключено")},
+            {Settings::NvdecEmulation::Gpu, StormLang(QStringLiteral("ГПУ"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"))},
+            {Settings::NvdecEmulation::Hybrid, StormLang(QStringLiteral("Гибридный"), QStringLiteral("Hybrid"), QStringLiteral("Hybrid"), QStringLiteral("Hybride"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"))},
+            {Settings::NvdecEmulation::Cpu, StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"))},
+            {Settings::NvdecEmulation::Off, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
         };
         for (const auto& opt : nvdec_options) {
             auto* act = nvdec_menu->addAction(opt.second, [this, opt] {
@@ -8330,13 +8954,20 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(opt.first == cur_nvdec);
         }
 
-        auto* dma_menu = context_menu.addMenu(tr("⚡ Точность DMA"));
+        auto* dma_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("⚡ Точность DMA"),
+            QStringLiteral("⚡ DMA Accuracy"),
+            QStringLiteral("⚡ DMA-Genauigkeit"),
+            QStringLiteral("⚡ Précision DMA"),
+            QStringLiteral("⚡ DMA 精度"),
+            QStringLiteral("⚡ DMA 精度")
+        ));
         const auto cur_dma = Settings::values.dma_accuracy.GetValue();
         const std::vector<std::pair<Settings::DmaAccuracy, QString>> dma_options = {
-            {Settings::DmaAccuracy::Default, tr("Default")},
-            {Settings::DmaAccuracy::Normal, tr("Normal")},
-            {Settings::DmaAccuracy::Unsafe, tr("Unsafe")},
-            {Settings::DmaAccuracy::Safe, tr("Safe")},
+            {Settings::DmaAccuracy::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
+            {Settings::DmaAccuracy::Normal, StormLang(QStringLiteral("Нормальная"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("正常"), QStringLiteral("通常"))},
+            {Settings::DmaAccuracy::Unsafe, StormLang(QStringLiteral("Небезопасная"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisée"), QStringLiteral("不安全"), QStringLiteral("非安全"))},
+            {Settings::DmaAccuracy::Safe, StormLang(QStringLiteral("Безопасная"), QStringLiteral("Safe"), QStringLiteral("Sicher"), QStringLiteral("Sécurisée"), QStringLiteral("安全"), QStringLiteral("安全"))},
         };
         for (const auto& item : dma_options) {
             auto* act = dma_menu->addAction(item.second, [this, item] {
@@ -8348,14 +8979,21 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(item.first == cur_dma);
         }
 
-        auto* fence_menu = context_menu.addMenu(tr("🛡️ Поведение барьеров ГПУ"));
+        auto* fence_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("🛡️ Поведение барьеров ГПУ"),
+            QStringLiteral("🛡️ GPU Fence Behavior"),
+            QStringLiteral("🛡️ GPU-Fence-Verhalten"),
+            QStringLiteral("🛡️ Comportement des barrières GPU"),
+            QStringLiteral("🛡️ GPU 栅栏行为"),
+            QStringLiteral("🛡️ GPU フェンス動作")
+        ));
         const auto cur_fence = Settings::values.gpu_fence_behavior.GetValue();
         const std::vector<std::pair<Settings::GpuFenceBehavior, QString>> fence_options = {
-            {Settings::GpuFenceBehavior::Default, tr("Default")},
-            {Settings::GpuFenceBehavior::Immediate, tr("Immediate")},
-            {Settings::GpuFenceBehavior::Balanced, tr("Balanced")},
-            {Settings::GpuFenceBehavior::Accurate, tr("Accurate")},
-            {Settings::GpuFenceBehavior::Strict, tr("Strict")},
+            {Settings::GpuFenceBehavior::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
+            {Settings::GpuFenceBehavior::Immediate, StormLang(QStringLiteral("Мгновенно"), QStringLiteral("Immediate"), QStringLiteral("Sofort"), QStringLiteral("Immédiat"), QStringLiteral("立即"), QStringLiteral("即時"))},
+            {Settings::GpuFenceBehavior::Balanced, StormLang(QStringLiteral("Сбалансированно"), QStringLiteral("Balanced"), QStringLiteral("Ausgeglichen"), QStringLiteral("Équilibré"), QStringLiteral("平衡"), QStringLiteral("バランス"))},
+            {Settings::GpuFenceBehavior::Accurate, StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Genau"), QStringLiteral("Précis"), QStringLiteral("准确"), QStringLiteral("正確"))},
+            {Settings::GpuFenceBehavior::Strict, StormLang(QStringLiteral("Строго"), QStringLiteral("Strict"), QStringLiteral("Strikt"), QStringLiteral("Strict"), QStringLiteral("严格"), QStringLiteral("厳格"))},
         };
         for (const auto& item : fence_options) {
             auto* act = fence_menu->addAction(item.second, [this, item] {
@@ -8366,28 +9004,42 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setCheckable(true);
             act->setChecked(item.first == cur_fence);
         }
-    } else if (title == tr("ГРАФИКА")) {
-        auto* header_act = context_menu.addAction(tr("🖼️ Графика и масштабирование"));
+    } else if (group_index == 3) {
+        auto* header_act = context_menu.addAction(StormLang(
+            QStringLiteral("🖼️ Графика и масштабирование"),
+            QStringLiteral("🖼️ Graphics and Scaling"),
+            QStringLiteral("🖼️ Grafik und Skalierung"),
+            QStringLiteral("🖼️ Graphismes et mise à l'échelle"),
+            QStringLiteral("🖼️ 图形与缩放"),
+            QStringLiteral("🖼️ グラフィックスとスケーリング")
+        ));
         header_act->setEnabled(false);
         context_menu.addSeparator();
 
-        auto* res_menu = context_menu.addMenu(tr("📐 Разрешение"));
+        auto* res_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("📐 Разрешение"),
+            QStringLiteral("📐 Resolution"),
+            QStringLiteral("📐 Auflösung"),
+            QStringLiteral("📐 Résolution"),
+            QStringLiteral("📐 分辨率"),
+            QStringLiteral("📐 解像度")
+        ));
         const auto cur_res = Settings::values.resolution_setup.GetValue();
         const bool is_docked = Settings::values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked;
         const std::vector<std::pair<Settings::ResolutionSetup, QString>> res_options = {
-            {Settings::ResolutionSetup::Res1_4X, is_docked ? tr("0.25X (270p)") : tr("0.25X (180p)")},
-            {Settings::ResolutionSetup::Res1_2X, is_docked ? tr("0.5X (540p)") : tr("0.5X (360p)")},
-            {Settings::ResolutionSetup::Res3_4X, is_docked ? tr("0.75X (810p)") : tr("0.75X (540p)")},
-            {Settings::ResolutionSetup::Res1X, is_docked ? tr("1X (1080p)") : tr("1X (720p)")},
-            {Settings::ResolutionSetup::Res5_4X, is_docked ? tr("1.25X (1350p)") : tr("1.25X (900p)")},
-            {Settings::ResolutionSetup::Res3_2X, is_docked ? tr("1.5X (1620p)") : tr("1.5X (1080p)")},
-            {Settings::ResolutionSetup::Res2X, is_docked ? tr("2X (2160p / 4K)") : tr("2X (1440p / 2K)")},
-            {Settings::ResolutionSetup::Res3X, is_docked ? tr("3X (3240p / 6K)") : tr("3X (2160p / 4K)")},
-            {Settings::ResolutionSetup::Res4X, is_docked ? tr("4X (4320p / 8K)") : tr("4X (2880p)")},
-            {Settings::ResolutionSetup::Res5X, is_docked ? tr("5X (5400p)") : tr("5X (3600p)")},
-            {Settings::ResolutionSetup::Res6X, is_docked ? tr("6X (6480p)") : tr("6X (4320p)")},
-            {Settings::ResolutionSetup::Res7X, is_docked ? tr("7X (7560p)") : tr("7X (5040p)")},
-            {Settings::ResolutionSetup::Res8X, is_docked ? tr("8X (8640p)") : tr("8X (5760p)")},
+            {Settings::ResolutionSetup::Res1_4X, is_docked ? QStringLiteral("0.25X (270p)") : QStringLiteral("0.25X (180p)")},
+            {Settings::ResolutionSetup::Res1_2X, is_docked ? QStringLiteral("0.5X (540p)") : QStringLiteral("0.5X (360p)")},
+            {Settings::ResolutionSetup::Res3_4X, is_docked ? QStringLiteral("0.75X (810p)") : QStringLiteral("0.75X (540p)")},
+            {Settings::ResolutionSetup::Res1X, is_docked ? QStringLiteral("1X (1080p)") : QStringLiteral("1X (720p)")},
+            {Settings::ResolutionSetup::Res5_4X, is_docked ? QStringLiteral("1.25X (1350p)") : QStringLiteral("1.25X (900p)")},
+            {Settings::ResolutionSetup::Res3_2X, is_docked ? QStringLiteral("1.5X (1620p)") : QStringLiteral("1.5X (1080p)")},
+            {Settings::ResolutionSetup::Res2X, is_docked ? QStringLiteral("2X (2160p / 4K)") : QStringLiteral("2X (1440p / 2K)")},
+            {Settings::ResolutionSetup::Res3X, is_docked ? QStringLiteral("3X (3240p / 6K)") : QStringLiteral("3X (2160p / 4K)")},
+            {Settings::ResolutionSetup::Res4X, is_docked ? QStringLiteral("4X (4320p / 8K)") : QStringLiteral("4X (2880p)")},
+            {Settings::ResolutionSetup::Res5X, is_docked ? QStringLiteral("5X (5400p)") : QStringLiteral("5X (3600p)")},
+            {Settings::ResolutionSetup::Res6X, is_docked ? QStringLiteral("6X (6480p)") : QStringLiteral("6X (4320p)")},
+            {Settings::ResolutionSetup::Res7X, is_docked ? QStringLiteral("7X (7560p)") : QStringLiteral("7X (5040p)")},
+            {Settings::ResolutionSetup::Res8X, is_docked ? QStringLiteral("8X (8640p)") : QStringLiteral("8X (5760p)")},
         };
         for (const auto& opt : res_options) {
             auto* act = res_menu->addAction(opt.second, [this, opt] {
@@ -8399,14 +9051,21 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(opt.first == cur_res);
         }
 
-        auto* aspect_menu = context_menu.addMenu(tr("📐 Соотношение сторон"));
+        auto* aspect_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("📐 Соотношение сторон"),
+            QStringLiteral("📐 Aspect Ratio"),
+            QStringLiteral("📐 Seitenverhältnis"),
+            QStringLiteral("📐 Format d'image"),
+            QStringLiteral("📐 宽高比"),
+            QStringLiteral("📐 アスペクト比")
+        ));
         const auto cur_aspect = Settings::values.aspect_ratio.GetValue();
         const std::vector<std::pair<Settings::AspectRatio, QString>> aspect_options = {
             {Settings::AspectRatio::R16_9, QStringLiteral("16:9")},
             {Settings::AspectRatio::R4_3, QStringLiteral("4:3")},
             {Settings::AspectRatio::R21_9, QStringLiteral("21:9")},
             {Settings::AspectRatio::R16_10, QStringLiteral("16:10")},
-            {Settings::AspectRatio::Stretch, tr("Stretch to Window")},
+            {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"))},
         };
         for (const auto& opt : aspect_options) {
             auto* act = aspect_menu->addAction(opt.second, [this, opt] {
@@ -8418,12 +9077,19 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(opt.first == cur_aspect);
         }
 
-        auto* vram_menu = context_menu.addMenu(tr("💾 Видеопамять"));
+        auto* vram_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("💾 Видеопамять"),
+            QStringLiteral("💾 Video Memory"),
+            QStringLiteral("💾 Videospeicher"),
+            QStringLiteral("💾 Mémoire vidéo"),
+            QStringLiteral("💾 显存"),
+            QStringLiteral("💾 ビデオメモリ")
+        ));
         const auto cur_vram = Settings::values.vram_usage_mode.GetValue();
         const std::vector<std::pair<Settings::VramUsageMode, QString>> vram_options = {
-            {Settings::VramUsageMode::Conservative, tr("Conservative")},
-            {Settings::VramUsageMode::Normal, tr("Normal")},
-            {Settings::VramUsageMode::Aggressive, tr("Aggressive")},
+            {Settings::VramUsageMode::Conservative, StormLang(QStringLiteral("Консервативный"), QStringLiteral("Conservative"), QStringLiteral("Konservativ"), QStringLiteral("Conservateur"), QStringLiteral("保守"), QStringLiteral("控えめ"))},
+            {Settings::VramUsageMode::Normal, StormLang(QStringLiteral("Нормальный"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("正常"), QStringLiteral("通常"))},
+            {Settings::VramUsageMode::Aggressive, StormLang(QStringLiteral("Агрессивный"), QStringLiteral("Aggressive"), QStringLiteral("Aggressiv"), QStringLiteral("Agressif"), QStringLiteral("激进"), QStringLiteral("積極的"))},
         };
         for (const auto& opt : vram_options) {
             auto* act = vram_menu->addAction(opt.second, [this, opt] {
@@ -8435,18 +9101,25 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(opt.first == cur_vram);
         }
 
-        auto* aniso_menu = context_menu.addMenu(tr("🔍 Анизотропная фильтрация"));
+        auto* aniso_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("🔍 Анизотропная фильтрация"),
+            QStringLiteral("🔍 Anisotropic Filtering"),
+            QStringLiteral("🔍 Anisotrope Filterung"),
+            QStringLiteral("🔍 Filtrage anisotrope"),
+            QStringLiteral("🔍 各向异性过滤"),
+            QStringLiteral("🔍 異方性フィルタリング")
+        ));
         const auto cur_aniso = Settings::values.max_anisotropy.GetValue();
         const std::vector<std::pair<Settings::AnisotropyMode, QString>> aniso_options = {
-            {Settings::AnisotropyMode::Automatic, tr("Automatic")},
-            {Settings::AnisotropyMode::Default, tr("Default")},
+            {Settings::AnisotropyMode::Automatic, StormLang(QStringLiteral("Автоматически"), QStringLiteral("Automatic"), QStringLiteral("Automatisch"), QStringLiteral("Automatique"), QStringLiteral("自动"), QStringLiteral("自動"))},
+            {Settings::AnisotropyMode::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
             {Settings::AnisotropyMode::X2, QStringLiteral("2x")},
             {Settings::AnisotropyMode::X4, QStringLiteral("4x")},
             {Settings::AnisotropyMode::X8, QStringLiteral("8x")},
             {Settings::AnisotropyMode::X16, QStringLiteral("16x")},
             {Settings::AnisotropyMode::X32, QStringLiteral("32x")},
             {Settings::AnisotropyMode::X64, QStringLiteral("64x")},
-            {Settings::AnisotropyMode::None, tr("Disabled")},
+            {Settings::AnisotropyMode::None, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
         };
         for (const auto& opt : aniso_options) {
             auto* act = aniso_menu->addAction(opt.second, [this, opt] {
@@ -8458,7 +9131,14 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(opt.first == cur_aniso);
         }
 
-        auto* aa_menu = context_menu.addMenu(tr("✨ Сглаживание"));
+        auto* aa_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("✨ Сглаживание"),
+            QStringLiteral("✨ Anti-Aliasing"),
+            QStringLiteral("✨ Kantenglättung"),
+            QStringLiteral("✨ Anticrénelage"),
+            QStringLiteral("✨ 抗锯齿"),
+            QStringLiteral("✨ アンチエイリアス")
+        ));
         const auto cur_aa = Settings::values.anti_aliasing.GetValue();
         for (const auto& pair : ConfigurationShared::anti_aliasing_texts_map) {
             auto* act = aa_menu->addAction(pair.second, [this, pair] {
@@ -8470,7 +9150,14 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(pair.first == cur_aa);
         }
 
-        auto* filter_menu = context_menu.addMenu(tr("🔬 Фильтрация масштабирования"));
+        auto* filter_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("🔬 Фильтрация масштабирования"),
+            QStringLiteral("🔬 Scaling Filter"),
+            QStringLiteral("🔬 Skalierungsfilter"),
+            QStringLiteral("🔬 Filtre de mise à l'échelle"),
+            QStringLiteral("🔬 缩放过滤器"),
+            QStringLiteral("🔬 スケーリングフィルター")
+        ));
         const auto cur_filter = Settings::values.scaling_filter.GetValue();
         for (const auto& pair : ConfigurationShared::scaling_filter_texts_map) {
             auto* act = filter_menu->addAction(pair.second, [this, pair] {
@@ -8482,19 +9169,40 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(pair.first == cur_filter);
         }
 
-        auto* disk_act = context_menu.addAction(tr("💽 Кэш шейдеров на диске"), [this] {
+        auto* disk_act = context_menu.addAction(StormLang(
+            QStringLiteral("💽 Кэш шейдеров на диске"),
+            QStringLiteral("💽 Disk Shader Cache"),
+            QStringLiteral("💽 Festplatten-Shader-Cache"),
+            QStringLiteral("💽 Cache de shaders sur disque"),
+            QStringLiteral("💽 磁盘着色器缓存"),
+            QStringLiteral("💽 ディスクシェーダーキャッシュ")
+        ), [this] {
             Settings::values.use_disk_shader_cache.SetValue(!Settings::values.use_disk_shader_cache.GetValue());
             UpdateDiskCacheText();
             ApplyDynamicSettingChange();
         });
         disk_act->setCheckable(true);
         disk_act->setChecked(Settings::values.use_disk_shader_cache.GetValue());
-    } else if (title == tr("РЕЖИМ")) {
-        auto* header_act = context_menu.addAction(tr("🕹️ Режимы работы консоли"));
+    } else if (group_index == 5) {
+        auto* header_act = context_menu.addAction(StormLang(
+            QStringLiteral("🕹️ Режимы работы консоли"),
+            QStringLiteral("🕹️ Console Operation Modes"),
+            QStringLiteral("🕹️ Konsolen-Betriebsmodi"),
+            QStringLiteral("🕹️ Modes de fonctionnement de la console"),
+            QStringLiteral("🕹️ 主机运行模式"),
+            QStringLiteral("🕹️ 本体の動作モード")
+        ));
         header_act->setEnabled(false);
         context_menu.addSeparator();
 
-        auto* dock_menu = context_menu.addMenu(tr("📺 Режим док-станции"));
+        auto* dock_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("📺 Режим док-станции"),
+            QStringLiteral("📺 Docked Mode"),
+            QStringLiteral("📺 Dock-Modus"),
+            QStringLiteral("📺 Mode station d'accueil"),
+            QStringLiteral("📺 底座模式"),
+            QStringLiteral("📺 ドックモード")
+        ));
         const auto cur_dock = Settings::values.use_docked_mode.GetValue();
         for (const auto& pair : ConfigurationShared::use_docked_mode_texts_map) {
             auto* act = dock_menu->addAction(pair.second, [this, pair] {
@@ -8506,38 +9214,59 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
             act->setChecked(pair.first == cur_dock);
         }
 
-        auto* speed_menu = context_menu.addMenu(tr("⚡ Ограничение скорости"));
-        speed_menu->addAction(tr("100%"), [this] {
+        auto* speed_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("⚡ Ограничение скорости"),
+            QStringLiteral("⚡ Speed Limit"),
+            QStringLiteral("⚡ Geschwindigkeitsbegrenzung"),
+            QStringLiteral("⚡ Limite de vitesse"),
+            QStringLiteral("⚡ 速度限制"),
+            QStringLiteral("⚡ 速度制限")
+        ));
+        speed_menu->addAction(QStringLiteral("100%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(100);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
-        speed_menu->addAction(tr("150%"), [this] {
+        speed_menu->addAction(QStringLiteral("150%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(150);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
-        speed_menu->addAction(tr("200%"), [this] {
+        speed_menu->addAction(QStringLiteral("200%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(200);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
-        speed_menu->addAction(tr("300%"), [this] {
+        speed_menu->addAction(QStringLiteral("300%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(300);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
-        speed_menu->addAction(tr("Без лимита скорости"), [this] {
+        speed_menu->addAction(StormLang(
+            QStringLiteral("Без лимита скорости"),
+            QStringLiteral("No Speed Limit"),
+            QStringLiteral("Keine Geschwindigkeitsbegrenzung"),
+            QStringLiteral("Pas de limite de vitesse"),
+            QStringLiteral("无速度限制"),
+            QStringLiteral("速度制限なし")
+        ), [this] {
             Settings::values.use_speed_limit.SetValue(false);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
 
-        auto* airplane_act = context_menu.addAction(tr("✈️ Режим полёта"), [this] {
+        auto* airplane_act = context_menu.addAction(StormLang(
+            QStringLiteral("✈️ Режим полёта"),
+            QStringLiteral("✈️ Airplane Mode"),
+            QStringLiteral("✈️ Flugmodus"),
+            QStringLiteral("✈️ Mode avion"),
+            QStringLiteral("✈️ 飞行模式"),
+            QStringLiteral("✈️ 機内モード")
+        ), [this] {
             Settings::values.airplane_mode.SetValue(!Settings::values.airplane_mode.GetValue());
             UpdateAirplaneModeButton();
             ApplyDynamicSettingChange();
@@ -8545,43 +9274,155 @@ void MainWindow::ShowGroupMenu(const QString& title, QWidget* group_widget) {
         airplane_act->setCheckable(true);
         airplane_act->setChecked(Settings::values.airplane_mode.GetValue());
 
-        auto* mute_act = context_menu.addAction(tr("🔇 Отключить звук"), [this] {
+        auto* mute_act = context_menu.addAction(StormLang(
+            QStringLiteral("🔇 Отключить звук"),
+            QStringLiteral("🔇 Mute Audio"),
+            QStringLiteral("🔇 Ton stummschalten"),
+            QStringLiteral("🔇 Couper le son"),
+            QStringLiteral("🔇 静音"),
+            QStringLiteral("🔇 消音")
+        ), [this] {
             OnMute();
         });
         mute_act->setCheckable(true);
         mute_act->setChecked(Settings::values.audio_muted.GetValue());
-    } else if (title == tr("УПРАВЛЕНИЕ")) {
-        context_menu.addAction(tr("🔄 Обновить список игр"), this, &MainWindow::OnGameListRefresh);
-        context_menu.addAction(tr("🖥️ Полноэкранный режим"), this, [this] {
+    } else if (group_index == 0) {
+        context_menu.addAction(StormLang(
+            QStringLiteral("🔄 Обновить список игр"),
+            QStringLiteral("🔄 Refresh Game List"),
+            QStringLiteral("🔄 Spielliste aktualisieren"),
+            QStringLiteral("🔄 Actualiser la liste des jeux"),
+            QStringLiteral("🔄 刷新游戏列表"),
+            QStringLiteral("🔄 ゲームリストを更新")
+        ), this, &MainWindow::OnGameListRefresh);
+        context_menu.addAction(StormLang(
+            QStringLiteral("🖥️ Полноэкранный режим"),
+            QStringLiteral("🖥️ Fullscreen"),
+            QStringLiteral("🖥️ Vollbild"),
+            QStringLiteral("🖥️ Plein écran"),
+            QStringLiteral("🖥️ 全屏模式"),
+            QStringLiteral("🖥️ フルスクリーン")
+        ), this, [this] {
             ui->action_Fullscreen->setChecked(!ui->action_Fullscreen->isChecked());
             ToggleFullscreen();
             UpdateFullscreenButton();
         });
-    } else if (title == tr("СИСТЕМА")) {
-        auto* header_act = context_menu.addAction(tr("🛠️ Системные компоненты"));
+    } else if (group_index == 6) {
+        auto* header_act = context_menu.addAction(StormLang(
+            QStringLiteral("🛠️ Системные компоненты"),
+            QStringLiteral("🛠️ System Components"),
+            QStringLiteral("🛠️ Systemkomponenten"),
+            QStringLiteral("🛠️ Composants système"),
+            QStringLiteral("🛠️ 系统组件"),
+            QStringLiteral("🛠️ システムコンポーネント")
+        ));
         header_act->setEnabled(false);
         context_menu.addSeparator();
-        context_menu.addAction(tr("🌐 Онлайн-установка прошивки из сети..."), this, &MainWindow::OnInstallFirmwareOnline);
-        context_menu.addAction(tr("📦 Установить прошивку из ZIP..."), this, &MainWindow::OnInstallFirmwareFromZIP);
-        context_menu.addAction(tr("📁 Установить прошивку из папки..."), this, &MainWindow::OnInstallFirmware);
+        context_menu.addAction(StormLang(
+            QStringLiteral("🌐 Онлайн-установка прошивки из сети..."),
+            QStringLiteral("🌐 Online Install Firmware from Network..."),
+            QStringLiteral("🌐 Online-Firmware-Installation aus dem Netzwerk..."),
+            QStringLiteral("🌐 Installation en ligne du firmware depuis le réseau..."),
+            QStringLiteral("🌐 从网络在线安装固件..."),
+            QStringLiteral("🌐 ネットワークからファームウェアをオンラインインストール...")
+        ), this, &MainWindow::OnInstallFirmwareOnline);
+        context_menu.addAction(StormLang(
+            QStringLiteral("📦 Установить прошивку из ZIP..."),
+            QStringLiteral("📦 Install Firmware from ZIP..."),
+            QStringLiteral("📦 Firmware aus ZIP installieren..."),
+            QStringLiteral("📦 Installer le firmware depuis un ZIP..."),
+            QStringLiteral("📦 从 ZIP 安装固件..."),
+            QStringLiteral("📦 ZIP からファームウェアをインストール...")
+        ), this, &MainWindow::OnInstallFirmwareFromZIP);
+        context_menu.addAction(StormLang(
+            QStringLiteral("📁 Установить прошивку из папки..."),
+            QStringLiteral("📁 Install Firmware from Folder..."),
+            QStringLiteral("📁 Firmware aus Ordner installieren..."),
+            QStringLiteral("📁 Installer le firmware depuis un dossier..."),
+            QStringLiteral("📁 从文件夹安装固件..."),
+            QStringLiteral("📁 フォルダからファームウェアをインストール...")
+        ), this, &MainWindow::OnInstallFirmware);
         context_menu.addSeparator();
-        context_menu.addAction(tr("🔑 Онлайн-установка ключей из сети..."), this, &MainWindow::OnInstallKeysOnline);
-        context_menu.addAction(tr("📦 Установить ключи из ZIP..."), this, &MainWindow::OnInstallKeysFromZIP);
-        context_menu.addAction(tr("🔑 Установить ключи из файла (prod.keys)..."), this, &MainWindow::OnInstallDecryptionKeys);
+        context_menu.addAction(StormLang(
+            QStringLiteral("🔑 Онлайн-установка ключей из сети..."),
+            QStringLiteral("🔑 Online Install Keys from Network..."),
+            QStringLiteral("🔑 Online-Schlüssel-Installation aus dem Netzwerk..."),
+            QStringLiteral("🔑 Installation en ligne des clés depuis le réseau..."),
+            QStringLiteral("🔑 从网络在线安装密钥..."),
+            QStringLiteral("🔑 ネットワークからキーをオンラインインストール...")
+        ), this, &MainWindow::OnInstallKeysOnline);
+        context_menu.addAction(StormLang(
+            QStringLiteral("📦 Установить ключи из ZIP..."),
+            QStringLiteral("📦 Install Keys from ZIP..."),
+            QStringLiteral("📦 Schlüssel aus ZIP installieren..."),
+            QStringLiteral("📦 Installer les clés depuis un ZIP..."),
+            QStringLiteral("📦 从 ZIP 安装密钥..."),
+            QStringLiteral("📦 ZIP からキーをインストール...")
+        ), this, &MainWindow::OnInstallKeysFromZIP);
+        context_menu.addAction(StormLang(
+            QStringLiteral("🔑 Установить ключи из файла (prod.keys)..."),
+            QStringLiteral("🔑 Install Decryption Keys (prod.keys)..."),
+            QStringLiteral("🔑 Entschlüsselungsschlüssel installieren (prod.keys)..."),
+            QStringLiteral("🔑 Installer les clés de déchiffrement (prod.keys)..."),
+            QStringLiteral("🔑 从文件安装解密密钥 (prod.keys)..."),
+            QStringLiteral("🔑 ファイルから復号キーをインストール (prod.keys)...")
+        ), this, &MainWindow::OnInstallDecryptionKeys);
         context_menu.addSeparator();
-        context_menu.addAction(tr("📁 Открыть папку NAND..."), this, &MainWindow::OnOpenNANDFolder);
-    } else if (title == tr("СЕТЬ")) {
-        auto* header_act = context_menu.addAction(tr("🌐 Сетевые функции"));
+        context_menu.addAction(StormLang(
+            QStringLiteral("📁 Открыть папку NAND..."),
+            QStringLiteral("📁 Open NAND Folder..."),
+            QStringLiteral("📁 NAND-Ordner öffnen..."),
+            QStringLiteral("📁 Ouvrir le dossier NAND..."),
+            QStringLiteral("📁 打开 NAND 文件夹..."),
+            QStringLiteral("📁 NAND フォルダを開く...")
+        ), this, &MainWindow::OnOpenNANDFolder);
+    } else if (group_index == 7) {
+        auto* header_act = context_menu.addAction(StormLang(
+            QStringLiteral("🌐 Сетевые функции"),
+            QStringLiteral("🌐 Network Features"),
+            QStringLiteral("🌐 Netzwerkfunktionen"),
+            QStringLiteral("🌐 Fonctions réseau"),
+            QStringLiteral("🌐 网络功能"),
+            QStringLiteral("🌐 ネットワーク機能")
+        ));
         header_act->setEnabled(false);
         context_menu.addSeparator();
-        context_menu.addAction(tr("🌐 Мультиплеер (Обзор комнат)..."), multiplayer_state, &MultiplayerState::OnOpenNetworkRoom);
-        context_menu.addAction(tr("🔗 Прямое подключение к комнате..."), multiplayer_state, &MultiplayerState::OnDirectConnectToRoom);
-        context_menu.addAction(tr("⚙️ Настройки сети..."), this, [this] {
+        context_menu.addAction(StormLang(
+            QStringLiteral("🌐 Мультиплеер (обзор комнат)..."),
+            QStringLiteral("🌐 Multiplayer (Browse Rooms)..."),
+            QStringLiteral("🌐 Mehrspieler (Räume durchsuchen)..."),
+            QStringLiteral("🌐 Multijoueur (parcourir les salons)..."),
+            QStringLiteral("🌐 多人游戏 (浏览房间)..."),
+            QStringLiteral("🌐 マルチプレイヤー (ルーム閲覧)...")
+        ), multiplayer_state, &MultiplayerState::OnOpenNetworkRoom);
+        context_menu.addAction(StormLang(
+            QStringLiteral("🔗 Прямое подключение к комнате..."),
+            QStringLiteral("🔗 Direct Connect to Room..."),
+            QStringLiteral("🔗 Direktverbindung zum Raum..."),
+            QStringLiteral("🔗 Connexion directe au salon..."),
+            QStringLiteral("🔗 直接连接到房间..."),
+            QStringLiteral("🔗 ルームに直接接続...")
+        ), multiplayer_state, &MultiplayerState::OnDirectConnectToRoom);
+        context_menu.addAction(StormLang(
+            QStringLiteral("⚙️ Настройки сети..."),
+            QStringLiteral("⚙️ Network Settings..."),
+            QStringLiteral("⚙️ Netzwerkeinstellungen..."),
+            QStringLiteral("⚙️ Paramètres réseau..."),
+            QStringLiteral("⚙️ 网络设置..."),
+            QStringLiteral("⚙️ ネットワーク設定...")
+        ), this, [this] {
             OnConfigure();
         });
     }
     context_menu.addSeparator();
-    context_menu.addAction(tr("⚙️ Настроить подвал..."), this, &MainWindow::ShowFooterCustomizeMenu);
+    context_menu.addAction(StormLang(
+        QStringLiteral("⚙️ Настроить подвал..."),
+        QStringLiteral("⚙️ Customize Footer..."),
+        QStringLiteral("⚙️ Fußzeile anpassen..."),
+        QStringLiteral("⚙️ Personnaliser le pied de page..."),
+        QStringLiteral("⚙️ 自定义底部栏..."),
+        QStringLiteral("⚙️ フッターのカスタマイズ...")
+    ), this, &MainWindow::ShowFooterCustomizeMenu);
 
     ShowMenuAtWidget(context_menu, group_widget);
 }
@@ -8611,6 +9452,7 @@ void MainWindow::UpdateStatusButtons() {
     UpdateCpuAccuracyText();
     UpdateDiskCacheText();
     UpdateFullscreenButton();
+    UpdateRefreshButton();
     UpdateMuteButton();
     UpdateVolumeUI();
 }
@@ -8663,12 +9505,47 @@ void MainWindow::OnMouseActivity() {
 void MainWindow::OnCheckFirmwareDecryption() {
     if (!ContentManager::AreKeysPresent()) {
         QMessageBox msg(this);
-        msg.setWindowTitle(tr("Отсутствуют ключи дешифрования"));
-        msg.setText(tr("Ключи шифрования (prod.keys) не найдены.\nЖелаете загрузить и установить актуальные ключи онлайн?"));
+        msg.setWindowTitle(StormLang(
+            QStringLiteral("Отсутствуют ключи дешифрования"),
+            QStringLiteral("Decryption Keys Missing"),
+            QStringLiteral("Entschlüsselungsschlüssel fehlen"),
+            QStringLiteral("Clés de déchiffrement manquantes"),
+            QStringLiteral("缺少解密密钥"),
+            QStringLiteral("復号キーがありません")
+        ));
+        msg.setText(StormLang(
+            QStringLiteral("Ключи шифрования (prod.keys) не найдены.\nЖелаете загрузить и установить актуальные ключи онлайн?"),
+            QStringLiteral("Decryption keys (prod.keys) not found.\nWould you like to download and install the latest keys online?"),
+            QStringLiteral("Entschlüsselungsschlüssel (prod.keys) nicht gefunden.\nMöchten Sie die neuesten Schlüssel online herunterladen und installieren?"),
+            QStringLiteral("Clés de déchiffrement (prod.keys) introuvables.\nSouhaitez-vous télécharger et installer les clés actuelles en ligne ?"),
+            QStringLiteral("未找到加密密钥 (prod.keys)。\n是否要在线下载并安装最新的密钥？"),
+            QStringLiteral("暗号化キー (prod.keys) が見つかりません。\nオンラインで最新のキーをダウンロードしてインストールしますか？")
+        ));
         msg.setIcon(QMessageBox::Question);
-        auto* online_btn = msg.addButton(tr("🌐 Установить онлайн"), QMessageBox::ActionRole);
-        auto* file_btn = msg.addButton(tr("📁 Выбрать файл"), QMessageBox::ActionRole);
-        msg.addButton(tr("Позже"), QMessageBox::RejectRole);
+        auto* online_btn = msg.addButton(StormLang(
+            QStringLiteral("🌐 Установить онлайн"),
+            QStringLiteral("🌐 Install Online"),
+            QStringLiteral("🌐 Online installieren"),
+            QStringLiteral("🌐 Installer en ligne"),
+            QStringLiteral("🌐 在线安装"),
+            QStringLiteral("🌐 オンラインでインストール")
+        ), QMessageBox::ActionRole);
+        auto* file_btn = msg.addButton(StormLang(
+            QStringLiteral("📁 Выбрать файл"),
+            QStringLiteral("📁 Select File"),
+            QStringLiteral("📁 Datei auswählen"),
+            QStringLiteral("📁 Choisir un fichier"),
+            QStringLiteral("📁 选择文件"),
+            QStringLiteral("📁 ファイルを選択")
+        ), QMessageBox::ActionRole);
+        msg.addButton(StormLang(
+            QStringLiteral("Позже"),
+            QStringLiteral("Later"),
+            QStringLiteral("Später"),
+            QStringLiteral("Plus tard"),
+            QStringLiteral("稍后"),
+            QStringLiteral("後で")
+        ), QMessageBox::RejectRole);
         msg.exec();
 
         if (msg.clickedButton() == online_btn) {
@@ -8684,18 +9561,74 @@ void MainWindow::OnCheckFirmwareDecryption() {
 
 void MainWindow::ShowFirmwareContextMenu() {
     QMenu context_menu(this);
-    auto* header = context_menu.addAction(tr("🛠️ Прошивка и ключи Nintendo Switch"));
+    auto* header = context_menu.addAction(StormLang(
+        QStringLiteral("🛠️ Прошивка и ключи Nintendo Switch"),
+        QStringLiteral("🛠️ Nintendo Switch Firmware and Keys"),
+        QStringLiteral("🛠️ Nintendo Switch Firmware und Schlüssel"),
+        QStringLiteral("🛠️ Firmware et clés Nintendo Switch"),
+        QStringLiteral("🛠️ Nintendo Switch 固件与密钥"),
+        QStringLiteral("🛠️ Nintendo Switch ファームウェアとキー")
+    ));
     header->setEnabled(false);
     context_menu.addSeparator();
-    context_menu.addAction(tr("🌐 Онлайн-установка прошивки из сети..."), this, &MainWindow::OnInstallFirmwareOnline);
-    context_menu.addAction(tr("📦 Установить прошивку из ZIP..."), this, &MainWindow::OnInstallFirmwareFromZIP);
-    context_menu.addAction(tr("📁 Установить прошивку из папки..."), this, &MainWindow::OnInstallFirmware);
+    context_menu.addAction(StormLang(
+        QStringLiteral("🌐 Онлайн-установка прошивки из сети..."),
+        QStringLiteral("🌐 Online Install Firmware from Network..."),
+        QStringLiteral("🌐 Online-Firmware-Installation aus dem Netzwerk..."),
+        QStringLiteral("🌐 Installation en ligne du firmware depuis le réseau..."),
+        QStringLiteral("🌐 从网络在线安装固件..."),
+        QStringLiteral("🌐 ネットワークからファームウェアをオンラインインストール...")
+    ), this, &MainWindow::OnInstallFirmwareOnline);
+    context_menu.addAction(StormLang(
+        QStringLiteral("📦 Установить прошивку из ZIP..."),
+        QStringLiteral("📦 Install Firmware from ZIP..."),
+        QStringLiteral("📦 Firmware aus ZIP installieren..."),
+        QStringLiteral("📦 Installer le firmware depuis un ZIP..."),
+        QStringLiteral("📦 从 ZIP 安装固件..."),
+        QStringLiteral("📦 ZIP からファームウェアをインストール...")
+    ), this, &MainWindow::OnInstallFirmwareFromZIP);
+    context_menu.addAction(StormLang(
+        QStringLiteral("📁 Установить прошивку из папки..."),
+        QStringLiteral("📁 Install Firmware from Folder..."),
+        QStringLiteral("📁 Firmware aus Ordner installieren..."),
+        QStringLiteral("📁 Installer le firmware depuis un dossier..."),
+        QStringLiteral("📁 从文件夹安装固件..."),
+        QStringLiteral("📁 フォルダからファームウェアをインストール...")
+    ), this, &MainWindow::OnInstallFirmware);
     context_menu.addSeparator();
-    context_menu.addAction(tr("🔑 Онлайн-установка ключей из сети..."), this, &MainWindow::OnInstallKeysOnline);
-    context_menu.addAction(tr("📦 Установить ключи из ZIP..."), this, &MainWindow::OnInstallKeysFromZIP);
-    context_menu.addAction(tr("🔑 Установить ключи из файла (prod.keys)..."), this, &MainWindow::OnInstallDecryptionKeys);
+    context_menu.addAction(StormLang(
+        QStringLiteral("🔑 Онлайн-установка ключей из сети..."),
+        QStringLiteral("🔑 Online Install Keys from Network..."),
+        QStringLiteral("🔑 Online-Schlüssel-Installation aus dem Netzwerk..."),
+        QStringLiteral("🔑 Installation en ligne des clés depuis le réseau..."),
+        QStringLiteral("🔑 从网络在线安装密钥..."),
+        QStringLiteral("🔑 ネットワークからキーをオンラインインストール...")
+    ), this, &MainWindow::OnInstallKeysOnline);
+    context_menu.addAction(StormLang(
+        QStringLiteral("📦 Установить ключи из ZIP..."),
+        QStringLiteral("📦 Install Keys from ZIP..."),
+        QStringLiteral("📦 Schlüssel aus ZIP installieren..."),
+        QStringLiteral("📦 Installer les clés depuis un ZIP..."),
+        QStringLiteral("📦 从 ZIP 安装密钥..."),
+        QStringLiteral("📦 ZIP からキーをインストール...")
+    ), this, &MainWindow::OnInstallKeysFromZIP);
+    context_menu.addAction(StormLang(
+        QStringLiteral("🔑 Установить ключи из файла (prod.keys)..."),
+        QStringLiteral("🔑 Install Decryption Keys (prod.keys)..."),
+        QStringLiteral("🔑 Entschlüsselungsschlüssel installieren (prod.keys)..."),
+        QStringLiteral("🔑 Installer les clés de déchiffrement (prod.keys)..."),
+        QStringLiteral("🔑 从文件安装解密密钥 (prod.keys)..."),
+        QStringLiteral("🔑 ファイルから復号キーをインストール (prod.keys)...")
+    ), this, &MainWindow::OnInstallDecryptionKeys);
     context_menu.addSeparator();
-    context_menu.addAction(tr("📁 Открыть папку NAND..."), this, &MainWindow::OnOpenNANDFolder);
+    context_menu.addAction(StormLang(
+        QStringLiteral("📁 Открыть папку NAND..."),
+        QStringLiteral("📁 Open NAND Folder..."),
+        QStringLiteral("📁 NAND-Ordner öffnen..."),
+        QStringLiteral("📁 Ouvrir le dossier NAND..."),
+        QStringLiteral("📁 打开 NAND 文件夹..."),
+        QStringLiteral("📁 NAND フォルダを開く...")
+    ), this, &MainWindow::OnOpenNANDFolder);
 
     context_menu.exec(QCursor::pos());
 }
@@ -8764,8 +9697,22 @@ void MainWindow::SetFirmwareVersion() {
         ui->menu_Applets->setEnabled(false);
         ui->menu_Create_Shortcuts->setEnabled(false);
         firmware_label->setAlignment(Qt::AlignCenter);
-        firmware_label->setText(tr("ПРОШИВКА:\nНЕТ"));
-        firmware_label->setToolTip(tr("Прошивка не установлена (Инструменты -> Установить прошивку)"));
+        firmware_label->setText(StormLang(
+            QStringLiteral("ПРОШИВКА:\nНЕТ"),
+            QStringLiteral("FIRMWARE:\nNONE"),
+            QStringLiteral("FIRMWARE:\nKEINE"),
+            QStringLiteral("FIRMWARE:\nAUCUN"),
+            QStringLiteral("固件:\n无"),
+            QStringLiteral("ファームウェア:\nなし")
+        ));
+        firmware_label->setToolTip(StormLang(
+            QStringLiteral("Прошивка не установлена (Инструменты -> Установить прошивку)"),
+            QStringLiteral("Firmware not installed (Tools -> Install firmware)"),
+            QStringLiteral("Firmware nicht installiert (Werkzeuge -> Firmware installieren)"),
+            QStringLiteral("Firmware non installé (Outils -> Installer le firmware)"),
+            QStringLiteral("固件未安装 (工具 -> 安装固件)"),
+            QStringLiteral("ファームウェアがインストールされていません (ツール -> ファームウェアのインストール)")
+        ));
         firmware_label->setVisible(true);
         return;
     }
@@ -8780,7 +9727,14 @@ void MainWindow::SetFirmwareVersion() {
     LOG_INFO(Frontend, "Installed firmware: {}", display_version);
 
     firmware_label->setAlignment(Qt::AlignCenter);
-    firmware_label->setText(tr("ПРОШИВКА:\n%1").arg(QString::fromStdString(display_version)));
+    firmware_label->setText(StormLang(
+        QStringLiteral("ПРОШИВКА:\n%1"),
+        QStringLiteral("FIRMWARE:\n%1"),
+        QStringLiteral("FIRMWARE:\n%1"),
+        QStringLiteral("FIRMWARE:\n%1"),
+        QStringLiteral("固件:\n%1"),
+        QStringLiteral("ファームウェア:\n%1")
+    ).arg(QString::fromStdString(display_version)));
     firmware_label->setToolTip(QString::fromStdString(display_title));
 }
 
@@ -8868,8 +9822,15 @@ bool MainWindow::ConfirmClose() {
         UISettings::values.confirm_before_stopping.GetValue() == ConfirmStop::Ask_Based_On_Game)
         return true;
 
-    const auto text = tr("Вы действительно хотите закрыть STORM SWITCH?");
-    return question(this, tr("STORM SWITCH"), text);
+    const auto text = StormLang(
+        QStringLiteral("Вы действительно хотите закрыть STORM SWITCH?"),
+        QStringLiteral("Are you sure you want to close STORM SWITCH?"),
+        QStringLiteral("Möchten Sie STORM SWITCH wirklich schließen?"),
+        QStringLiteral("Voulez-vous vraiment fermer STORM SWITCH ?"),
+        QStringLiteral("您确定要关闭 STORM SWITCH 吗？"),
+        QStringLiteral("STORM SWITCH を本当に終了しますか？")
+    );
+    return question(this, QStringLiteral("STORM SWITCH"), text);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
@@ -8959,7 +9920,14 @@ void MainWindow::dragMoveEvent(QDragMoveEvent* event) {
 
 void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
     if (title_id == 0) {
-        QMessageBox::information(this, QStringLiteral("STORM SWITCH"), tr("Нет выделенной или запущенной игры."));
+        QMessageBox::information(this, QStringLiteral("STORM SWITCH"), StormLang(
+            QStringLiteral("Нет выделенной или запущенной игры."),
+            QStringLiteral("No selected or running game."),
+            QStringLiteral("Kein ausgewähltes oder laufendes Spiel."),
+            QStringLiteral("Aucun jeu sélectionné ou en cours d'exécution."),
+            QStringLiteral("没有选中或正在运行的游戏。"),
+            QStringLiteral("選択中または実行中のゲームがありません。")
+        ));
         return;
     }
 
@@ -8974,7 +9942,14 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
     const int target_height = std::clamp(static_cast<int>(parent_height * 0.90), 680, 1200);
 
     QDialog dlg(this);
-    dlg.setWindowTitle(tr("STORM SWITCH — Менеджер дополнений"));
+    dlg.setWindowTitle(StormLang(
+        QStringLiteral("STORM SWITCH — Менеджер дополнений"),
+        QStringLiteral("STORM SWITCH — Add-ons Manager"),
+        QStringLiteral("STORM SWITCH — Add-ons-Manager"),
+        QStringLiteral("STORM SWITCH — Gestionnaire d'extensions"),
+        QStringLiteral("STORM SWITCH — 附加组件管理器"),
+        QStringLiteral("STORM SWITCH — アドオンマネージャー")
+    ));
     dlg.resize(target_width, target_height);
     dlg.setMinimumSize(1300, 600);
     dlg.setStyleSheet(QStringLiteral(
@@ -9494,15 +10469,28 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
     main_layout->addWidget(header_card);
 
     auto* search_box = new QLineEdit(&dlg);
-    search_box->setPlaceholderText(tr("🔍 Поиск по названию, описанию или Title ID..."));
+    search_box->setPlaceholderText(StormLang(
+        QStringLiteral("🔍 Поиск по названию, описанию или Title ID..."),
+        QStringLiteral("🔍 Search by title, description, or Title ID..."),
+        QStringLiteral("🔍 Suche nach Titel, Beschreibung oder Title-ID..."),
+        QStringLiteral("🔍 Rechercher par titre, description ou Title ID..."),
+        QStringLiteral("🔍 按名称、描述或 Title ID 搜索..."),
+        QStringLiteral("🔍 タイトル、説明、または Title ID で検索...")
+    ));
     search_box->setClearButtonEnabled(true);
     main_layout->addWidget(search_box);
 
     auto* table = new QTableWidget(&dlg);
     table->setColumnCount(8);
     table->setHorizontalHeaderLabels({
-        tr("№"), tr("Тип"), tr("Title ID"), tr("Полное название"),
-        tr("Описание"), tr("Версия"), tr("Внутренняя версия"), tr("Статус")
+        QStringLiteral("№"),
+        StormLang(QStringLiteral("Тип"), QStringLiteral("Type"), QStringLiteral("Typ"), QStringLiteral("Type"), QStringLiteral("类型"), QStringLiteral("タイプ")),
+        QStringLiteral("Title ID"),
+        StormLang(QStringLiteral("Полное название"), QStringLiteral("Full Name"), QStringLiteral("Vollständiger Name"), QStringLiteral("Nom complet"), QStringLiteral("完整名称"), QStringLiteral("完全な名前")),
+        StormLang(QStringLiteral("Описание"), QStringLiteral("Description"), QStringLiteral("Beschreibung"), QStringLiteral("Description"), QStringLiteral("描述"), QStringLiteral("説明")),
+        StormLang(QStringLiteral("Версия"), QStringLiteral("Version"), QStringLiteral("Version"), QStringLiteral("Version"), QStringLiteral("版本"), QStringLiteral("バージョン")),
+        StormLang(QStringLiteral("Внутренняя версия"), QStringLiteral("Internal Version"), QStringLiteral("Interne Version"), QStringLiteral("Version interne"), QStringLiteral("内部版本"), QStringLiteral("内部バージョン")),
+        StormLang(QStringLiteral("Статус"), QStringLiteral("Status"), QStringLiteral("Status"), QStringLiteral("Statut"), QStringLiteral("状态"), QStringLiteral("ステータス"))
     });
     table->setWordWrap(true);
     table->setTextElideMode(Qt::ElideNone);
@@ -9704,23 +10692,58 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
     main_layout->addWidget(table);
 
     auto* btn_layout = new QHBoxLayout();
-    auto* copy_btn = new QPushButton(tr("📋 Копировать список"), &dlg);
+    auto* copy_btn = new QPushButton(StormLang(
+        QStringLiteral("📋 Копировать список"),
+        QStringLiteral("📋 Copy List"),
+        QStringLiteral("📋 Liste kopieren"),
+        QStringLiteral("📋 Copier la liste"),
+        QStringLiteral("📋 复制列表"),
+        QStringLiteral("📋 リストをコピー")
+    ), &dlg);
     copy_btn->setObjectName(QStringLiteral("CopyBtn"));
     connect(copy_btn, &QPushButton::clicked, [copy_lines, copy_btn] {
         QGuiApplication::clipboard()->setText(copy_lines.join(QLatin1Char('\n')));
-        copy_btn->setText(QCoreApplication::translate("MainWindow", "✅ Скопировано в буфер обмена!"));
+        copy_btn->setText(StormLang(
+            QStringLiteral("✅ Скопировано в буфер обмена!"),
+            QStringLiteral("✅ Copied to clipboard!"),
+            QStringLiteral("✅ In Zwischenablage kopiert!"),
+            QStringLiteral("✅ Copié dans le presse-papiers !"),
+            QStringLiteral("✅ 已复制到剪贴板！"),
+            QStringLiteral("✅ クリップボードにコピーしました！")
+        ));
         QTimer::singleShot(2000, [copy_btn] {
-            if (copy_btn) copy_btn->setText(QCoreApplication::translate("MainWindow", "📋 Копировать список"));
+            if (copy_btn) copy_btn->setText(StormLang(
+                QStringLiteral("📋 Копировать список"),
+                QStringLiteral("📋 Copy List"),
+                QStringLiteral("📋 Liste kopieren"),
+                QStringLiteral("📋 Copier la liste"),
+                QStringLiteral("📋 复制列表"),
+                QStringLiteral("📋 リストをコピー")
+            ));
         });
     });
 
-    auto* manage_btn = new QPushButton(tr("⚙️ Управление дополнениями..."), &dlg);
+    auto* manage_btn = new QPushButton(StormLang(
+        QStringLiteral("⚙️ Управление дополнениями..."),
+        QStringLiteral("⚙️ Manage Add-ons..."),
+        QStringLiteral("⚙️ Add-ons verwalten..."),
+        QStringLiteral("⚙️ Gérer les extensions..."),
+        QStringLiteral("⚙️ 管理附加组件..."),
+        QStringLiteral("⚙️ アドオンを管理...")
+    ), &dlg);
     connect(manage_btn, &QPushButton::clicked, [this, title_id, &dlg] {
         dlg.accept();
         OpenPerGameConfiguration(title_id, m_current_addons_game_path);
     });
 
-    auto* close_btn = new QPushButton(tr("Закрыть"), &dlg);
+    auto* close_btn = new QPushButton(StormLang(
+        QStringLiteral("Закрыть"),
+        QStringLiteral("Close"),
+        QStringLiteral("Schließen"),
+        QStringLiteral("Fermer"),
+        QStringLiteral("关闭"),
+        QStringLiteral("閉じる")
+    ), &dlg);
     connect(close_btn, &QPushButton::clicked, &dlg, &QDialog::accept);
 
     btn_layout->addWidget(copy_btn);
@@ -9740,7 +10763,14 @@ bool MainWindow::ConfirmChangeGame() {
     // Use custom question to link controller navigation
     return question(
         this, QStringLiteral("STORM SWITCH"),
-        tr("Вы действительно хотите остановить эмуляцию?\nВсе несохраненные данные будут потеряны."),
+        StormLang(
+            QStringLiteral("Вы действительно хотите остановить эмуляцию?\nВсе несохраненные данные будут потеряны."),
+            QStringLiteral("Are you sure you want to stop emulation?\nAll unsaved data will be lost."),
+            QStringLiteral("Möchten Sie die Emulation wirklich stoppen?\nAlle nicht gespeicherten Daten gehen verloren."),
+            QStringLiteral("Voulez-vous vraiment arrêter l'émulation ?\nToutes les données non enregistrées seront perdues."),
+            QStringLiteral("您确定要停止模拟吗？\n所有未保存的数据都将丢失。"),
+            QStringLiteral("エミュレーションを本当に停止しますか？\n保存されていないデータはすべて失われます。")
+        ),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
 }
 
@@ -9748,8 +10778,20 @@ bool MainWindow::ConfirmForceLockedExit() {
     if (QtCommon::emu_thread == nullptr)
         return true;
 
-    const auto text = tr("Запущенное приложение запросило запрет на выход из STORM SWITCH.\n\n"
-                         "Вы действительно хотите принудительно завершить работу и выйти?");
+    const auto text = StormLang(
+        QStringLiteral("Запущенное приложение запросило запрет на выход из STORM SWITCH.\n\n"
+                       "Вы действительно хотите принудительно завершить работу и выйти?"),
+        QStringLiteral("The running application has requested not to exit STORM SWITCH.\n\n"
+                       "Are you sure you want to force exit?"),
+        QStringLiteral("Die laufende Anwendung hat angefordert, STORM SWITCH nicht zu beenden.\n\n"
+                       "Möchten Sie das Beenden wirklich erzwingen?"),
+        QStringLiteral("L'application en cours a demandé à ne pas quitter STORM SWITCH.\n\n"
+                       "Voulez-vous vraiment forcer la fermeture ?"),
+        QStringLiteral("正在运行的应用程序已请求禁止退出 STORM SWITCH。\n\n"
+                       "您确定要强制退出吗？"),
+        QStringLiteral("実行中のアプリケーションが STORM SWITCH の終了禁止を要求しました。\n\n"
+                       "本当に強制終了しますか？")
+    );
 
     return question(this, QStringLiteral("STORM SWITCH"), text);
 }
@@ -9860,21 +10902,430 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
     }
 
     ui->retranslateUi(this);
+
+    // Explicitly retranslate menus and actions across all 6 core languages with StormLang
+    if (ui->menuOpen_Eden_Folders) {
+        ui->menuOpen_Eden_Folders->setTitle(StormLang(
+            QStringLiteral("Открыть папки STORM SWITCH"),
+            QStringLiteral("Open STORM SWITCH Folders"),
+            QStringLiteral("STORM SWITCH-Ordner öffnen"),
+            QStringLiteral("Ouvrir les dossiers STORM SWITCH"),
+            QStringLiteral("打开 STORM SWITCH 文件夹"),
+            QStringLiteral("STORM SWITCH フォルダーを開く")
+        ));
+    }
+    if (ui->action_Root_Data_Folder) {
+        ui->action_Root_Data_Folder->setText(StormLang(
+            QStringLiteral("Корневая папка"),
+            QStringLiteral("Root Folder"),
+            QStringLiteral("Stammordner"),
+            QStringLiteral("Dossier racine"),
+            QStringLiteral("根文件夹"),
+            QStringLiteral("ルートフォルダー")
+        ));
+    }
+    if (ui->action_NAND_Folder) {
+        ui->action_NAND_Folder->setText(StormLang(
+            QStringLiteral("Каталог NAND"),
+            QStringLiteral("NAND Directory"),
+            QStringLiteral("NAND-Verzeichnis"),
+            QStringLiteral("Répertoire NAND"),
+            QStringLiteral("NAND 目录"),
+            QStringLiteral("NAND ディレクトリ")
+        ));
+    }
+    if (ui->action_SDMC_Folder) {
+        ui->action_SDMC_Folder->setText(StormLang(
+            QStringLiteral("Каталог SDMC"),
+            QStringLiteral("SDMC Directory"),
+            QStringLiteral("SDMC-Verzeichnis"),
+            QStringLiteral("Répertoire SDMC"),
+            QStringLiteral("SDMC 目录"),
+            QStringLiteral("SDMC ディレクトリ")
+        ));
+    }
+    if (ui->action_Mod_Folder) {
+        ui->action_Mod_Folder->setText(StormLang(
+            QStringLiteral("Папка модов"),
+            QStringLiteral("Load (Mods) Directory"),
+            QStringLiteral("Mod-Verzeichnis laden"),
+            QStringLiteral("Répertoire des mods"),
+            QStringLiteral("模组 (Mods) 目录"),
+            QStringLiteral("Mod ディレクトリ")
+        ));
+    }
+    if (ui->action_Log_Folder) {
+        ui->action_Log_Folder->setText(StormLang(
+            QStringLiteral("Папка журнала"),
+            QStringLiteral("Log Directory"),
+            QStringLiteral("Protokollverzeichnis"),
+            QStringLiteral("Répertoire des journaux"),
+            QStringLiteral("日志目录"),
+            QStringLiteral("ログディレクトリ")
+        ));
+    }
+    if (ui->action_Install_File_NAND) {
+        ui->action_Install_File_NAND->setText(StormLang(
+            QStringLiteral("Установить файлы в NAND..."),
+            QStringLiteral("Install Files to NAND..."),
+            QStringLiteral("Dateien in NAND installieren..."),
+            QStringLiteral("Installer les fichiers dans la NAND..."),
+            QStringLiteral("安装文件到 NAND..."),
+            QStringLiteral("NAND にファイルをインストール...")
+        ));
+    }
+    if (ui->action_Amiibo_Online_Database) {
+        ui->action_Amiibo_Online_Database->setText(StormLang(
+            QStringLiteral("Онлайн-база Amiibo..."),
+            QStringLiteral("Online Amiibo Database..."),
+            QStringLiteral("Online-Amiibo-Datenbank..."),
+            QStringLiteral("Base de données Amiibo en ligne..."),
+            QStringLiteral("在线 Amiibo 数据库..."),
+            QStringLiteral("オンライン Amiibo データベース...")
+        ));
+    }
+    if (ui->action_Show_Performance_Overlay) {
+        ui->action_Show_Performance_Overlay->setText(StormLang(
+            QStringLiteral("Отображать оверлей производительности"),
+            QStringLiteral("Show Performance Overlay"),
+            QStringLiteral("Leistungs-Overlay anzeigen"),
+            QStringLiteral("Afficher l'overlay de performances"),
+            QStringLiteral("显示性能悬浮窗"),
+            QStringLiteral("パフォーマンスオーバーレイを表示")
+        ));
+    }
+    if (ui->action_Show_Game_Name) {
+        ui->action_Show_Game_Name->setText(StormLang(
+            QStringLiteral("Отображать название игры"),
+            QStringLiteral("Show Game Title"),
+            QStringLiteral("Spieltitel anzeigen"),
+            QStringLiteral("Afficher le titre du jeu"),
+            QStringLiteral("显示游戏名称"),
+            QStringLiteral("ゲームタイトルを表示")
+        ));
+    }
+    if (ui->menu_Game_List_Mode) {
+        ui->menu_Game_List_Mode->setTitle(StormLang(
+            QStringLiteral("Режим списка игр"),
+            QStringLiteral("Game List Mode"),
+            QStringLiteral("Spielelisten-Modus"),
+            QStringLiteral("Mode liste de jeux"),
+            QStringLiteral("游戏列表模式"),
+            QStringLiteral("ゲームリスト表示モード")
+        ));
+    }
+    if (ui->action_Tree_View) {
+        ui->action_Tree_View->setText(StormLang(
+            QStringLiteral("Дерево"),
+            QStringLiteral("Tree"),
+            QStringLiteral("Baumansicht"),
+            QStringLiteral("Arborescence"),
+            QStringLiteral("树状视图"),
+            QStringLiteral("ツリー表示")
+        ));
+    }
+    if (ui->action_Grid_View) {
+        ui->action_Grid_View->setText(StormLang(
+            QStringLiteral("Сетка"),
+            QStringLiteral("Grid"),
+            QStringLiteral("Rasteransicht"),
+            QStringLiteral("Grille"),
+            QStringLiteral("网格视图"),
+            QStringLiteral("グリッド表示")
+        ));
+    }
+    if (ui->action_Carousel_View) {
+        ui->action_Carousel_View->setText(StormLang(
+            QStringLiteral("Карусель"),
+            QStringLiteral("Carousel"),
+            QStringLiteral("Karussell"),
+            QStringLiteral("Carrousel"),
+            QStringLiteral("轮播视图"),
+            QStringLiteral("カルーセル表示")
+        ));
+    }
+    if (ui->menuGame_Icon_Size) {
+        ui->menuGame_Icon_Size->setTitle(StormLang(
+            QStringLiteral("Размер иконок игр"),
+            QStringLiteral("Game Icon Size"),
+            QStringLiteral("Symbolgröße der Spiele"),
+            QStringLiteral("Taille des icônes de jeux"),
+            QStringLiteral("游戏图标大小"),
+            QStringLiteral("ゲームアイコンサイズ")
+        ));
+    }
+    if (ui->menuInstall_Keys) {
+        ui->menuInstall_Keys->setTitle(StormLang(
+            QStringLiteral("Установить ключи дешифрования"),
+            QStringLiteral("Install Decryption Keys"),
+            QStringLiteral("Entschlüsselungsschlüssel installieren"),
+            QStringLiteral("Installer les clés de déchiffrement"),
+            QStringLiteral("安装解密密钥"),
+            QStringLiteral("復号キーをインストール")
+        ));
+    }
+    if (ui->action_Install_Keys_Online) {
+        ui->action_Install_Keys_Online->setText(StormLang(
+            QStringLiteral("Онлайн-установка ключей из сети..."),
+            QStringLiteral("Install Keys Online from Network..."),
+            QStringLiteral("Schlüssel online aus dem Netzwerk installieren..."),
+            QStringLiteral("Installer les clés en ligne depuis le réseau..."),
+            QStringLiteral("从网络在线安装密钥..."),
+            QStringLiteral("ネットワークからキーをオンラインインストール...")
+        ));
+    }
+    if (ui->action_Install_Keys_From_ZIP) {
+        ui->action_Install_Keys_From_ZIP->setText(StormLang(
+            QStringLiteral("Из архива (ZIP)..."),
+            QStringLiteral("From Archive (ZIP)..."),
+            QStringLiteral("Aus Archiv (ZIP)..."),
+            QStringLiteral("Depuis une archive (ZIP)..."),
+            QStringLiteral("从压缩包 (ZIP)..."),
+            QStringLiteral("アーカイブから (ZIP)...")
+        ));
+    }
+    if (ui->action_Install_Keys) {
+        ui->action_Install_Keys->setText(StormLang(
+            QStringLiteral("Из файла (prod.keys)..."),
+            QStringLiteral("From File (prod.keys)..."),
+            QStringLiteral("Aus Datei (prod.keys)..."),
+            QStringLiteral("Depuis un fichier (prod.keys)..."),
+            QStringLiteral("从文件 (prod.keys)..."),
+            QStringLiteral("ファイルから (prod.keys)...")
+        ));
+    }
+    if (ui->menuInstall_Firmware) {
+        ui->menuInstall_Firmware->setTitle(StormLang(
+            QStringLiteral("Установить прошивку"),
+            QStringLiteral("Install Firmware"),
+            QStringLiteral("Firmware installieren"),
+            QStringLiteral("Installer le firmware"),
+            QStringLiteral("安装固件"),
+            QStringLiteral("ファームウェアをインストール")
+        ));
+    }
+    if (ui->action_Firmware_Online) {
+        ui->action_Firmware_Online->setText(StormLang(
+            QStringLiteral("Онлайн-установка прошивки из сети..."),
+            QStringLiteral("Install Firmware Online from Network..."),
+            QStringLiteral("Firmware online aus dem Netzwerk installieren..."),
+            QStringLiteral("Installer le firmware en ligne depuis le réseau..."),
+            QStringLiteral("从网络在线安装固件..."),
+            QStringLiteral("ネットワークからファームウェアをオンラインインストール...")
+        ));
+    }
+    if (ui->action_Firmware_From_Folder) {
+        ui->action_Firmware_From_Folder->setText(StormLang(
+            QStringLiteral("Из папки..."),
+            QStringLiteral("From Folder..."),
+            QStringLiteral("Aus Ordner..."),
+            QStringLiteral("Depuis un dossier..."),
+            QStringLiteral("从文件夹..."),
+            QStringLiteral("フォルダーから...")
+        ));
+    }
+    if (ui->action_Firmware_From_ZIP) {
+        ui->action_Firmware_From_ZIP->setText(StormLang(
+            QStringLiteral("Из архива (ZIP)..."),
+            QStringLiteral("From Archive (ZIP)..."),
+            QStringLiteral("Aus Archiv (ZIP)..."),
+            QStringLiteral("Depuis une archive (ZIP)..."),
+            QStringLiteral("从压缩包 (ZIP)..."),
+            QStringLiteral("アーカイブから (ZIP)...")
+        ));
+    }
+    if (ui->action_Verify_installed_contents) {
+        ui->action_Verify_installed_contents->setText(StormLang(
+            QStringLiteral("Проверить установленный контент"),
+            QStringLiteral("Verify Installed Contents"),
+            QStringLiteral("Installierte Inhalte überprüfen"),
+            QStringLiteral("Vérifier le contenu installé"),
+            QStringLiteral("验证已安装内容"),
+            QStringLiteral("インストール済みコンテンツを検証")
+        ));
+    }
+    if (ui->action_Data_Manager) {
+        ui->action_Data_Manager->setText(StormLang(
+            QStringLiteral("Менеджер данных..."),
+            QStringLiteral("Data Manager..."),
+            QStringLiteral("Datenmanager..."),
+            QStringLiteral("Gestionnaire de données..."),
+            QStringLiteral("数据管理器..."),
+            QStringLiteral("データマネージャー...")
+        ));
+    }
+    if (ui->action_Translate_Screen) {
+        ui->action_Translate_Screen->setText(StormLang(
+            QStringLiteral("Авто-переводчик (OCR + Озвучка)..."),
+            QStringLiteral("Auto Translator (OCR + Voice)..."),
+            QStringLiteral("Automatischer Übersetzer (OCR + Sprachausgabe)..."),
+            QStringLiteral("Traducteur automatique (OCR + Voix)..."),
+            QStringLiteral("自动翻译器 (OCR + 语音)..."),
+            QStringLiteral("自動翻訳（OCR＋音声読み上げ）...")
+        ));
+    }
+    if (ui->action_Mod_Manager) {
+        ui->action_Mod_Manager->setText(StormLang(
+            QStringLiteral("Менеджер модов..."),
+            QStringLiteral("Mod Manager..."),
+            QStringLiteral("Mod-Manager..."),
+            QStringLiteral("Gestionnaire de mods..."),
+            QStringLiteral("模组管理器..."),
+            QStringLiteral("Mod マネージャー...")
+        ));
+    }
+    if (ui->action_Cheats) {
+        ui->action_Cheats->setText(StormLang(
+            QStringLiteral("Чит-коды..."),
+            QStringLiteral("Cheats..."),
+            QStringLiteral("Cheats..."),
+            QStringLiteral("Codes de triche..."),
+            QStringLiteral("金手指 / 作弊码..."),
+            QStringLiteral("チートコード...")
+        ));
+    }
+    if (ui->action_Check_Updates) {
+        ui->action_Check_Updates->setText(StormLang(
+            QStringLiteral("Проверка обновлений..."),
+            QStringLiteral("Check for Updates..."),
+            QStringLiteral("Nach Updates suchen..."),
+            QStringLiteral("Rechercher des mises à jour..."),
+            QStringLiteral("检查更新..."),
+            QStringLiteral("アップデートを確認...")
+        ));
+    }
+    if (ui->action_About) {
+        ui->action_About->setText(StormLang(
+            QStringLiteral("О STORM SWITCH"),
+            QStringLiteral("About STORM SWITCH"),
+            QStringLiteral("Über STORM SWITCH"),
+            QStringLiteral("À propos de STORM SWITCH"),
+            QStringLiteral("关于 STORM SWITCH"),
+            QStringLiteral("STORM SWITCH について")
+        ));
+    }
+    if (ui->action_Eden_Dependencies) {
+        ui->action_Eden_Dependencies->setText(StormLang(
+            QStringLiteral("Зависимости STORM SWITCH"),
+            QStringLiteral("STORM SWITCH Dependencies"),
+            QStringLiteral("STORM SWITCH-Abhängigkeiten"),
+            QStringLiteral("Dépendances de STORM SWITCH"),
+            QStringLiteral("STORM SWITCH 依赖项"),
+            QStringLiteral("STORM SWITCH 依存関係")
+        ));
+    }
+
     if (reset_gamefix_action) {
-        reset_gamefix_action->setText(tr("Сбросить скрытые диалоги авто-исправлений..."));
+        reset_gamefix_action->setText(StormLang(
+            QStringLiteral("Сбросить скрытые диалоги авто-исправлений..."),
+            QStringLiteral("Reset Hidden Auto-Fix Dialogs..."),
+            QStringLiteral("Ausgeblendete Auto-Fix-Dialoge zurücksetzen..."),
+            QStringLiteral("Réinitialiser les dialogues d'auto-correction masqués..."),
+            QStringLiteral("重置隐藏的自动修复对话框..."),
+            QStringLiteral("非表示の自動修正ダイアログをリセット...")
+        ));
     }
     if (autotune_action) {
-        autotune_action->setText(tr("Авто-настройки производительности..."));
+        autotune_action->setText(StormLang(
+            QStringLiteral("Авто-настройки производительности..."),
+            QStringLiteral("Auto Performance Settings..."),
+            QStringLiteral("Automatische Leistungseinstellungen..."),
+            QStringLiteral("Paramètres de performance automatiques..."),
+            QStringLiteral("自动性能配置..."),
+            QStringLiteral("自動パフォーマンス設定...")
+        ));
     }
     if (storm_games_world_action) {
-        storm_games_world_action->setText(tr("Каталог и менеджер игр STORM GAMES WORLD..."));
+        storm_games_world_action->setText(StormLang(
+            QStringLiteral("Каталог и менеджер игр STORM GAMES WORLD..."),
+            QStringLiteral("STORM GAMES WORLD Game Catalog and Manager..."),
+            QStringLiteral("STORM GAMES WORLD Spielekatalog und Manager..."),
+            QStringLiteral("Catalogue et gestionnaire de jeux STORM GAMES WORLD..."),
+            QStringLiteral("STORM GAMES WORLD 游戏目录与管理器..."),
+            QStringLiteral("STORM GAMES WORLD ゲームカタログ＆マネージャー...")
+        ));
     }
     if (storm_save_sync_action) {
-        storm_save_sync_action->setText(tr("Синхронизация сохранений (STORM SAVE SYNC)..."));
+        storm_save_sync_action->setText(StormLang(
+            QStringLiteral("Синхронизация сохранений (STORM SAVE SYNC)..."),
+            QStringLiteral("Save Synchronization (STORM SAVE SYNC)..."),
+            QStringLiteral("Spielstand-Synchronisierung (STORM SAVE SYNC)..."),
+            QStringLiteral("Synchronisation des sauvegardes (STORM SAVE SYNC)..."),
+            QStringLiteral("存档同步 (STORM SAVE SYNC)..."),
+            QStringLiteral("セーブデータ同期 (STORM SAVE SYNC)...")
+        ));
     }
     if (log_viewer_action) {
-        log_viewer_action->setText(tr("Журнал работы (Логи)..."));
+        log_viewer_action->setText(StormLang(
+            QStringLiteral("Журнал работы (Логи)..."),
+            QStringLiteral("Log Viewer (Logs)..."),
+            QStringLiteral("Ereignisprotokoll (Logs)..."),
+            QStringLiteral("Journal des opérations (Logs)..."),
+            QStringLiteral("运行日志 (Logs)..."),
+            QStringLiteral("動作ログ (Logs)...")
+        ));
     }
+
+    // Retranslate footer status bar group headers
+    if (m_status_group_headers.size() >= 8) {
+        m_status_group_headers[0]->setText(StormLang(QStringLiteral("УПРАВЛЕНИЕ"), QStringLiteral("CONTROLS"), QStringLiteral("STEUERUNG"), QStringLiteral("COMMANDES"), QStringLiteral("控制"), QStringLiteral("操作")));
+        m_status_group_headers[1]->setText(StormLang(QStringLiteral("ДОПОЛНЕНИЯ"), QStringLiteral("ADD-ONS"), QStringLiteral("ADD-ONS"), QStringLiteral("EXTENSIONS"), QStringLiteral("附加组件"), QStringLiteral("アドオン")));
+        m_status_group_headers[2]->setText(StormLang(QStringLiteral("РЕНДЕР"), QStringLiteral("RENDER"), QStringLiteral("RENDER"), QStringLiteral("RENDU"), QStringLiteral("渲染"), QStringLiteral("レンダー")));
+        m_status_group_headers[3]->setText(StormLang(QStringLiteral("ГРАФИКА"), QStringLiteral("GRAPHICS"), QStringLiteral("GRAFIK"), QStringLiteral("GRAPHISMES"), QStringLiteral("图形"), QStringLiteral("グラフィックス")));
+        m_status_group_headers[4]->setText(QStringLiteral("ASTC"));
+        m_status_group_headers[5]->setText(StormLang(QStringLiteral("РЕЖИМ"), QStringLiteral("MODE"), QStringLiteral("MODUS"), QStringLiteral("MODE"), QStringLiteral("模式"), QStringLiteral("モード")));
+        m_status_group_headers[6]->setText(StormLang(QStringLiteral("СИСТЕМА"), QStringLiteral("SYSTEM"), QStringLiteral("SYSTEM"), QStringLiteral("SYSTÈME"), QStringLiteral("系统"), QStringLiteral("システム")));
+        m_status_group_headers[7]->setText(StormLang(QStringLiteral("СЕТЬ"), QStringLiteral("NETWORK"), QStringLiteral("NETZWERK"), QStringLiteral("RÉSEAU"), QStringLiteral("网络"), QStringLiteral("ネットワーク")));
+
+        for (size_t i = 0; i < m_status_group_headers.size() && i < 8; ++i) {
+            const QString title = m_status_group_headers[i]->text();
+            m_status_group_headers[i]->setToolTip(StormLang(
+                QStringLiteral("Нажмите для быстрого меню раздела «%1»").arg(title),
+                QStringLiteral("Click for quick menu of \"%1\" section").arg(title),
+                QStringLiteral("Klicken für Schnellmenü des Abschnitts \"%1\"").arg(title),
+                QStringLiteral("Cliquer pour le menu rapide de la section \"%1\"").arg(title),
+                QStringLiteral("点击打开“%1”分区的快捷菜单").arg(title),
+                QStringLiteral("クリックして「%1」セクションのクイックメニューを開く").arg(title)
+            ));
+        }
+    }
+
+    if (footer_customize_button) {
+        footer_customize_button->setToolTip(StormLang(
+            QStringLiteral("Настройка отображения разделов и кнопок подвала"),
+            QStringLiteral("Customize footer sections and buttons display"),
+            QStringLiteral("Fußzeilenabschnitte und Schaltflächen anpassen"),
+            QStringLiteral("Personnaliser l'affichage des sections et boutons du pied de page"),
+            QStringLiteral("自定义底部栏分区与按钮显示"),
+            QStringLiteral("フッターのセクションとボタンの表示をカスタマイズ")
+        ));
+    }
+
+    if (auto_correction_button) {
+        if (m_auto_correction_applied) {
+            auto_correction_button->setText(StormLang(
+                QStringLiteral("🛠️ Авто-коррекция: Активна"),
+                QStringLiteral("🛠️ Auto-Correction: Active"),
+                QStringLiteral("🛠️ Auto-Korrektur: Aktiv"),
+                QStringLiteral("🛠️ Auto-correction : Active"),
+                QStringLiteral("🛠️ 自动校正：已激活"),
+                QStringLiteral("🛠️ 自動修正: 有効")
+            ));
+        } else {
+            auto_correction_button->setText(StormLang(
+                QStringLiteral("🛠️ Авто-коррекция"),
+                QStringLiteral("🛠️ Auto-Correction"),
+                QStringLiteral("🛠️ Auto-Korrektur"),
+                QStringLiteral("🛠️ Auto-correction"),
+                QStringLiteral("🛠️ 自动校正"),
+                QStringLiteral("🛠️ 自動修正")
+            ));
+        }
+    }
+
+    UpdateStatusButtons();
+    SetFirmwareVersion();
+
     if (multiplayer_state) {
         multiplayer_state->retranslateUi();
     }

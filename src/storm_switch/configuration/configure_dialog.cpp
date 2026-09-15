@@ -43,6 +43,67 @@
 #include "storm_switch/configuration/configure_ui.h"
 #include "storm_switch/configuration/configure_web.h"
 #include "storm_switch/configuration/shared_widget.h"
+
+static QString StormLang(const QString& ru, const QString& en,
+                         const QString& de = QString(), const QString& fr = QString(),
+                         const QString& zh = QString(), const QString& ja = QString()) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
+    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
+    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
+    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
+    return en;
+}
+
+static QString GetLocalizedTabText(const QString& accessible_name) {
+    if (accessible_name == QStringLiteral("General"))
+        return StormLang(QStringLiteral("Общие"), QStringLiteral("General"), QStringLiteral("Allgemein"), QStringLiteral("Général"), QStringLiteral("通用"), QStringLiteral("全般"));
+    if (accessible_name == QStringLiteral("Hotkeys"))
+        return StormLang(QStringLiteral("Горячие клавиши"), QStringLiteral("Hotkeys"), QStringLiteral("Tastenkürzel"), QStringLiteral("Raccourcis"), QStringLiteral("快捷键"), QStringLiteral("ショートカット"));
+    if (accessible_name == QStringLiteral("UI") || accessible_name == QStringLiteral("Game List"))
+        return StormLang(QStringLiteral("Интерфейс"), QStringLiteral("Interface"), QStringLiteral("Benutzeroberfläche"), QStringLiteral("Interface"), QStringLiteral("界面"), QStringLiteral("インターフェース"));
+    if (accessible_name == QStringLiteral("Web"))
+        return StormLang(QStringLiteral("Веб"), QStringLiteral("Web"), QStringLiteral("Web"), QStringLiteral("Web"), QStringLiteral("网络服务"), QStringLiteral("Web"));
+    if (accessible_name == QStringLiteral("Debug"))
+        return StormLang(QStringLiteral("Отладка"), QStringLiteral("Debug"), QStringLiteral("Debug"), QStringLiteral("Débogage"), QStringLiteral("调试"), QStringLiteral("デバッグ"));
+    if (accessible_name == QStringLiteral("System"))
+        return StormLang(QStringLiteral("Система"), QStringLiteral("System"), QStringLiteral("System"), QStringLiteral("Système"), QStringLiteral("系统"), QStringLiteral("システム"));
+    if (accessible_name == QStringLiteral("Profiles"))
+        return StormLang(QStringLiteral("Профили"), QStringLiteral("Profiles"), QStringLiteral("Profile"), QStringLiteral("Profils"), QStringLiteral("用户配置"), QStringLiteral("プロフィール"));
+    if (accessible_name == QStringLiteral("Filesystem"))
+        return StormLang(QStringLiteral("Файловая система"), QStringLiteral("Filesystem"), QStringLiteral("Dateisystem"), QStringLiteral("Système de fichiers"), QStringLiteral("文件系统"), QStringLiteral("ファイルシステム"));
+    if (accessible_name == QStringLiteral("Applets"))
+        return StormLang(QStringLiteral("Апплеты"), QStringLiteral("Applets"), QStringLiteral("Applets"), QStringLiteral("Applets"), QStringLiteral("小程序"), QStringLiteral("アプレット"));
+    if (accessible_name == QStringLiteral("CPU"))
+        return StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"));
+    if (accessible_name == QStringLiteral("Graphics"))
+        return StormLang(QStringLiteral("Графика"), QStringLiteral("Graphics"), QStringLiteral("Grafik"), QStringLiteral("Graphismes"), QStringLiteral("图形"), QStringLiteral("グラフィックス"));
+    if (accessible_name == QStringLiteral("Advanced") || accessible_name == QStringLiteral("GraphicsAdvanced"))
+        return StormLang(QStringLiteral("Продвинутые"), QStringLiteral("Advanced"), QStringLiteral("Erweitert"), QStringLiteral("Avancé"), QStringLiteral("高级"), QStringLiteral("高度な設定"));
+    if (accessible_name == QStringLiteral("Extensions") || accessible_name == QStringLiteral("GraphicsExtra"))
+        return StormLang(QStringLiteral("Дополнительно"), QStringLiteral("Extensions"), QStringLiteral("Erweiterungen"), QStringLiteral("Extensions"), QStringLiteral("扩展"), QStringLiteral("拡張設定"));
+    if (accessible_name == QStringLiteral("Audio"))
+        return StormLang(QStringLiteral("Аудио"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("オーディオ"));
+    if (accessible_name == QStringLiteral("Network"))
+        return StormLang(QStringLiteral("Сеть"), QStringLiteral("Network"), QStringLiteral("Netzwerk"), QStringLiteral("Réseau"), QStringLiteral("网络"), QStringLiteral("ネットワーク"));
+    if (accessible_name == QStringLiteral("Controls") || accessible_name == QStringLiteral("Input"))
+        return StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作"));
+    if (accessible_name == QStringLiteral("Input Profiles"))
+        return StormLang(QStringLiteral("Профили ввода"), QStringLiteral("Input Profiles"), QStringLiteral("Eingabeprofile"), QStringLiteral("Profils d'entrée"), QStringLiteral("输入配置"), QStringLiteral("入力プロファイル"));
+    if (accessible_name == QStringLiteral("Add-Ons"))
+        return StormLang(QStringLiteral("Дополнения"), QStringLiteral("Add-Ons"), QStringLiteral("Add-Ons"), QStringLiteral("Extensions"), QStringLiteral("附加组件"), QStringLiteral("アドオン"));
+    if (accessible_name == QStringLiteral("GameBanana Mods"))
+        return StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"));
+    if (accessible_name == QStringLiteral("Amiibo"))
+        return StormLang(QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"));
+    if (accessible_name == QStringLiteral("Cheats"))
+        return StormLang(QStringLiteral("Читы"), QStringLiteral("Cheats"), QStringLiteral("Cheats"), QStringLiteral("Triche"), QStringLiteral("作弊码"), QStringLiteral("チート"));
+    return accessible_name;
+}
 #include "storm_switch/hotkeys.h"
 
 ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
@@ -223,7 +284,25 @@ void ConfigureDialog::RetranslateUI() {
     ui->retranslateUi(this);
 
     if (m_auto_settings_btn) {
-        m_auto_settings_btn->setText(tr("⚡ Auto Settings"));
+        m_auto_settings_btn->setText(StormLang(
+            QStringLiteral("⚡ Авто-настройки"),
+            QStringLiteral("⚡ Auto Settings"),
+            QStringLiteral("⚡ Automatische Einstellungen"),
+            QStringLiteral("⚡ Paramètres automatiques"),
+            QStringLiteral("⚡ 自动设置"),
+            QStringLiteral("⚡ 自動設定")
+        ));
+    }
+
+    if (ui->label) {
+        ui->label->setText(StormLang(
+            QStringLiteral("Некоторые параметры доступны только когда игра не запущена."),
+            QStringLiteral("Some settings are only available when a game is not running."),
+            QStringLiteral("Einige Einstellungen sind nur verfügbar, wenn kein Spiel ausgeführt wird."),
+            QStringLiteral("Certains paramètres ne sont disponibles que lorsqu'aucun jeu n'est lancé."),
+            QStringLiteral("某些设置仅在游戏未运行时可用。"),
+            QStringLiteral("一部の設定はゲームが実行されていない場合にのみ利用可能です。")
+        ));
     }
 
     if (builder) {
@@ -311,17 +390,17 @@ Q_DECLARE_METATYPE(QList<QWidget*>);
 
 void ConfigureDialog::PopulateSelectionList() {
     const std::array<std::pair<QString, QList<QWidget*>>, 7> items{
-        {{tr("General"),
+        {{StormLang(QStringLiteral("Общие"), QStringLiteral("General"), QStringLiteral("Allgemein"), QStringLiteral("Général"), QStringLiteral("通用"), QStringLiteral("全般")),
           {general_tab.get(), hotkeys_tab.get(), ui_tab.get(), web_tab.get(), debug_tab_tab.get()}},
-         {tr("System"),
+         {StormLang(QStringLiteral("Система"), QStringLiteral("System"), QStringLiteral("System"), QStringLiteral("Système"), QStringLiteral("系统"), QStringLiteral("システム")),
           {system_tab.get(), profile_tab.get(), filesystem_tab.get(),
            applets_tab.get()}},
-         {tr("CPU"), {cpu_tab.get()}},
-         {tr("Graphics"),
+         {StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU")), {cpu_tab.get()}},
+         {StormLang(QStringLiteral("Графика"), QStringLiteral("Graphics"), QStringLiteral("Grafik"), QStringLiteral("Graphismes"), QStringLiteral("图形"), QStringLiteral("グラフィックス")),
           {graphics_tab.get(), graphics_advanced_tab.get(), graphics_extensions_tab.get()}},
-         {tr("Audio"), {audio_tab.get()}},
-         {tr("Network"), {network_tab.get()}},
-         {tr("Controls"), input_tab->GetSubTabs()}},
+         {StormLang(QStringLiteral("Аудио"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("オーディオ")), {audio_tab.get()}},
+         {StormLang(QStringLiteral("Сеть"), QStringLiteral("Network"), QStringLiteral("Netzwerk"), QStringLiteral("Réseau"), QStringLiteral("网络"), QStringLiteral("ネットワーク")), {network_tab.get()}},
+         {StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作")), input_tab->GetSubTabs()}},
     };
 
     QFont tab_font = ui->tabWidget->tabBar()->font();
@@ -382,7 +461,7 @@ void ConfigureDialog::UpdateVisibleTabs() {
 
     if (tabs_match) {
         for (int i = 0; i < tabs.size(); ++i) {
-            ui->tabWidget->setTabText(i, tr(tabs[i]->accessibleName().toUtf8().constData()));
+            ui->tabWidget->setTabText(i, GetLocalizedTabText(tabs[i]->accessibleName()));
         }
         return;
     }
@@ -391,7 +470,7 @@ void ConfigureDialog::UpdateVisibleTabs() {
 
     for (auto* const tab : tabs) {
         LOG_DEBUG(Frontend, "{}", tab->accessibleName().toStdString());
-        ui->tabWidget->addTab(tab, tr(tab->accessibleName().toUtf8().constData()));
+        ui->tabWidget->addTab(tab, GetLocalizedTabText(tab->accessibleName()));
     }
 }
 

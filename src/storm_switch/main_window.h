@@ -494,11 +494,12 @@ private:
     void UpdateNvdecText();
     void UpdateCpuAccuracyText();
     void UpdateDiskCacheText();
+    void UpdateRefreshButton();
     void UpdateFullscreenButton();
     void UpdateMuteButton();
     void ShowFooterCustomizeMenu();
     void ShowMenuAtWidget(QMenu& menu, QWidget* widget);
-    void ShowGroupMenu(const QString& title, QWidget* group_widget);
+    void ShowGroupMenu(int group_index, QWidget* group_widget);
     static QString CleanDisplayString(const QString& str);
     void UpdateVolumeUI();
     void UpdateStatusBar();
@@ -648,6 +649,7 @@ private:
     QPushButton* mute_button = nullptr;
     QPushButton* footer_customize_button = nullptr;
     std::vector<QWidget*> m_status_groups;
+    std::vector<QPushButton*> m_status_group_headers;
     u64 m_current_addons_title_id = 0;
     QString m_current_addons_game_name;
     std::string m_current_addons_game_path;

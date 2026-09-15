@@ -59,7 +59,7 @@
     </widget>
     <widget class="QMenu" name="menuOpen_Eden_Folders">
      <property name="title">
-      <string>Открыть папки STORM SWITCH</string>
+      <string>Open &amp;STORM SWITCH Folders</string>
      </property>
      <addaction name="action_Root_Data_Folder"/>
      <addaction name="action_NAND_Folder"/>
@@ -267,7 +267,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Установить файлы в NAND</string>
+    <string>Install Files to &amp;NAND...</string>
    </property>
   </action>
   <action name="action_Load_File">
@@ -308,12 +308,12 @@
   </action>
   <action name="action_Check_Updates">
    <property name="text">
-    <string>Проверка обновлений</string>
+    <string>Check for &amp;Updates...</string>
    </property>
   </action>
   <action name="action_About">
    <property name="text">
-    <string>&amp;О STORM SWITCH</string>
+    <string>&amp;About STORM SWITCH</string>
    </property>
   </action>
   <action name="action_Single_Window_Mode">
@@ -500,7 +500,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Менеджер модов...</string>
+    <string>&amp;Mod Manager...</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
@@ -511,7 +511,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Чит-коды...</string>
+    <string>&amp;Cheats...</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
@@ -548,17 +548,17 @@
   </action>
   <action name="action_Install_Keys">
    <property name="text">
-    <string>Из файла (prod.keys)</string>
+    <string>From &amp;File (prod.keys)...</string>
    </property>
   </action>
   <action name="action_Install_Keys_From_ZIP">
    <property name="text">
-    <string>Из архива (ZIP)</string>
+    <string>From &amp;Archive (ZIP)...</string>
    </property>
   </action>
   <action name="action_Install_Keys_Online">
    <property name="text">
-    <string>Онлайн-установка ключей из сети...</string>
+    <string>Install Keys &amp;Online from Network...</string>
    </property>
   </action>
   <action name="action_Launch_QLaunch">
@@ -578,52 +578,52 @@
   </action>
   <action name="action_Root_Data_Folder">
    <property name="text">
-    <string>Корневая папка</string>
+    <string>Root Folder</string>
    </property>
   </action>
   <action name="action_NAND_Folder">
    <property name="text">
-    <string>Каталог NAND</string>
+    <string>NAND Directory</string>
    </property>
   </action>
   <action name="action_SDMC_Folder">
    <property name="text">
-    <string>Каталог SDMC</string>
+    <string>SDMC Directory</string>
    </property>
   </action>
   <action name="action_Mod_Folder">
    <property name="text">
-    <string>Папка модов</string>
+    <string>Load (Mods) Directory</string>
    </property>
   </action>
   <action name="action_Log_Folder">
    <property name="text">
-    <string>Папка журнала</string>
+    <string>Log Directory</string>
    </property>
   </action>
   <action name="action_Firmware_From_Folder">
    <property name="text">
-    <string>Из папки</string>
+    <string>From &amp;Folder...</string>
    </property>
   </action>
   <action name="action_Firmware_From_ZIP">
    <property name="text">
-    <string>Из архива (ZIP)</string>
+    <string>From &amp;Archive (ZIP)...</string>
    </property>
   </action>
   <action name="action_Firmware_Online">
    <property name="text">
-    <string>Онлайн-установка прошивки из сети...</string>
+    <string>Install Firmware &amp;Online from Network...</string>
    </property>
   </action>
   <action name="action_Eden_Dependencies">
    <property name="text">
-    <string>&amp;Зависимости STORM SWITCH</string>
+    <string>&amp;STORM SWITCH Dependencies</string>
    </property>
   </action>
   <action name="action_Data_Manager">
    <property name="text">
-    <string>&amp;Менеджер данных</string>
+    <string>&amp;Data Manager</string>
    </property>
   </action>
   <action name="action_Tree_View">
@@ -631,7 +631,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Дерево</string>
+    <string>&amp;Tree</string>
    </property>
   </action>
   <action name="action_Grid_View">
@@ -639,22 +639,22 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Сетка</string>
+    <string>&amp;Grid</string>
    </property>
   </action>
   <action name="actionGame_Icon_Size">
    <property name="text">
-    <string>Размер иконок игр</string>
+    <string>Game &amp;Icon Size</string>
    </property>
   </action>
   <action name="actionNone">
    <property name="text">
-    <string>Без иконок</string>
+    <string>None</string>
    </property>
   </action>
   <action name="action_Amiibo_Online_Database">
    <property name="text">
-    <string>Онлайн-база &amp;Amiibo...</string>
+    <string>Online &amp;Amiibo Database...</string>
    </property>
   </action>
   <action name="action_Show_Game_Name">
@@ -662,7 +662,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Отображать название &amp;игры</string>
+    <string>Show Game &amp;Title</string>
    </property>
   </action>
   <action name="action_Show_Performance_Overlay">
@@ -670,7 +670,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Отображать &amp;оверлей производительности</string>
+    <string>Show &amp;Performance Overlay</string>
    </property>
   </action>
   <action name="action_Carousel_View">
@@ -678,12 +678,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Карусель</string>
+    <string>&amp;Carousel</string>
    </property>
   </action>
   <action name="action_Translate_Screen">
    <property name="text">
-    <string>&amp;Авто-переводчик (OCR + Озвучка)...</string>
+    <string>&amp;Auto Translator (OCR + Voice)...</string>
    </property>
    <property name="shortcut">
     <string>T</string>

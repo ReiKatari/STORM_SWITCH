@@ -1,10 +1,26 @@
-﻿// SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
+// SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "common/settings.h"
 #include "core/core.h"
 #include "ui_configure_cpu_debug.h"
 #include "storm_switch/configuration/configure_cpu_debug.h"
+#include "qt_common/config/uisettings.h"
+
+static QString StormLang(const QString& ru, const QString& en,
+                         const QString& de = QString(), const QString& fr = QString(),
+                         const QString& zh = QString(), const QString& ja = QString()) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
+    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
+    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
+    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
+    return en;
+}
 
 ConfigureCpuDebug::ConfigureCpuDebug(const Core::System& system_, QWidget* parent)
     : QWidget(parent), ui{std::make_unique<Ui::ConfigureCpuDebug>()}, system{system_} {
@@ -75,4 +91,28 @@ void ConfigureCpuDebug::changeEvent(QEvent* event) {
 
 void ConfigureCpuDebug::RetranslateUI() {
     ui->retranslateUi(this);
+    setAccessibleName(StormLang(
+        QStringLiteral("ЦП"),
+        QStringLiteral("CPU"),
+        QStringLiteral("CPU"),
+        QStringLiteral("CPU"),
+        QStringLiteral("CPU"),
+        QStringLiteral("CPU")
+    ));
+    ui->groupBox->setTitle(StormLang(
+        QStringLiteral("Оптимизации ЦП"),
+        QStringLiteral("CPU Optimizations"),
+        QStringLiteral("CPU-Optimierungen"),
+        QStringLiteral("Optimisations CPU"),
+        QStringLiteral("CPU 优化"),
+        QStringLiteral("CPU 最適化")
+    ));
+    ui->label_disable_info->setText(StormLang(
+        QStringLiteral("Настройки ЦП доступны только когда игра не запущена."),
+        QStringLiteral("CPU settings are only available when a game is not running."),
+        QStringLiteral("CPU-Einstellungen sind nur verfügbar, wenn kein Spiel läuft."),
+        QStringLiteral("Les paramètres CPU ne sont disponibles que lorsqu'aucun jeu n'est lancé."),
+        QStringLiteral("CPU 设置仅在游戏未运行时可用。"),
+        QStringLiteral("CPU 設定はゲームが実行されていない場合のみ利用可能です。")
+    ));
 }

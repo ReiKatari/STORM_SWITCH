@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
@@ -16,6 +16,22 @@
 #include "storm_switch/configuration/configuration_shared.h"
 #include "storm_switch/configuration/configure_graphics_extensions.h"
 #include "storm_switch/configuration/shared_widget.h"
+#include "qt_common/config/uisettings.h"
+
+static QString StormLang(const QString& ru, const QString& en,
+                         const QString& de = QString(), const QString& fr = QString(),
+                         const QString& zh = QString(), const QString& ja = QString()) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
+    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
+    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
+    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
+    return en;
+}
 
 ConfigureGraphicsExtensions::ConfigureGraphicsExtensions(
     const Core::System& system_, std::shared_ptr<std::vector<ConfigurationShared::Tab*>> group_,
@@ -115,4 +131,36 @@ void ConfigureGraphicsExtensions::changeEvent(QEvent* event) {
 
 void ConfigureGraphicsExtensions::RetranslateUI() {
     ui->retranslateUi(this);
+    setAccessibleName(StormLang(
+        QStringLiteral("Дополнительно"),
+        QStringLiteral("Extensions"),
+        QStringLiteral("Erweiterungen"),
+        QStringLiteral("Extensions"),
+        QStringLiteral("扩展"),
+        QStringLiteral("拡張機能")
+    ));
+    ui->hacks->setTitle(StormLang(
+        QStringLiteral("Хаки"),
+        QStringLiteral("Hacks"),
+        QStringLiteral("Hacks"),
+        QStringLiteral("Hacks"),
+        QStringLiteral("Hack"),
+        QStringLiteral("ハック")
+    ));
+    ui->label->setText(StormLang(
+        QStringLiteral("Изменение этих параметров может вызвать проблемы. Только для опытных пользователей!"),
+        QStringLiteral("Modifying these settings can cause problems. For advanced users only!"),
+        QStringLiteral("Das Ändern dieser Einstellungen kann Probleme verursachen. Nur für fortgeschrittene Benutzer!"),
+        QStringLiteral("La modification de ces paramètres peut causer des problèmes. Réservé aux utilisateurs avancés !"),
+        QStringLiteral("修改这些设置可能会导致问题。仅供高级用户使用！"),
+        QStringLiteral("これらの設定を変更すると問題が発生する可能性があります。上級ユーザー専用です！")
+    ));
+    ui->groupBox_1->setTitle(StormLang(
+        QStringLiteral("Расширения Vulkan"),
+        QStringLiteral("Vulkan Extensions"),
+        QStringLiteral("Vulkan-Erweiterungen"),
+        QStringLiteral("Extensions Vulkan"),
+        QStringLiteral("Vulkan 扩展"),
+        QStringLiteral("Vulkan 拡張機能")
+    ));
 }

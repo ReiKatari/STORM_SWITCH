@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
@@ -12,6 +12,22 @@
 #include "qt_common/qt_compat.h"
 #include "ui_configure_input_advanced.h"
 #include "storm_switch/configuration/configure_input_advanced.h"
+#include "qt_common/config/uisettings.h"
+
+static QString StormLang(const QString& ru, const QString& en,
+                         const QString& de = QString(), const QString& fr = QString(),
+                         const QString& zh = QString(), const QString& ja = QString()) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
+    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
+    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
+    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
+    return en;
+}
 
 ConfigureInputAdvanced::ConfigureInputAdvanced(Core::HID::HIDCore& hid_core_, QWidget* parent)
     : QWidget(parent), ui(std::make_unique<Ui::ConfigureInputAdvanced>()), hid_core{hid_core_} {
@@ -198,6 +214,22 @@ void ConfigureInputAdvanced::changeEvent(QEvent* event) {
 
 void ConfigureInputAdvanced::RetranslateUI() {
     ui->retranslateUi(this);
+    ui->disable_wgi_xinput->setText(StormLang(
+        QStringLiteral("Отключить SDL WGI/XInput (требуется перезапуск)"),
+        QStringLiteral("Disable SDL WGI/XInput (restart required)"),
+        QStringLiteral("SDL WGI/XInput deaktivieren (Neustart erforderlich)"),
+        QStringLiteral("Désactiver SDL WGI/XInput (redémarrage requis)"),
+        QStringLiteral("禁用 SDL WGI/XInput (需要重启)"),
+        QStringLiteral("SDL WGI/XInput を無効化 (再起動が必要)")
+    ));
+    ui->disable_wgi_xinput->setToolTip(StormLang(
+        QStringLiteral("Отключает драйверы контроллеров SDL WGI и XInput. Предотвращает конфликты курков, проблемы с вибрацией и ложные нажатия кнопки Home. Требуется перезапуск эмулятора."),
+        QStringLiteral("Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required."),
+        QStringLiteral("Deaktiviert SDL WGI- und XInput-Controller-Treiber. Verhindert Trigger-Konflikte, Vibrationsprobleme und falsche Home-Tastendrücke. Neustart des Emulators erforderlich."),
+        QStringLiteral("Désactive les pilotes de manette SDL WGI et XInput. Évite les conflits de gâchettes, les problèmes de vibration et les appuis involontaires sur le bouton Home. Redémarrage de l'émulateur requis."),
+        QStringLiteral("禁用 SDL WGI 和 XInput 控制器驱动程序。防止扳机冲突、震动问题和意外的 Home 键按下。需要重启模拟器。"),
+        QStringLiteral("SDL WGI および XInput コントローラー ドライバーを無効化します。トリガーの競合、振動の問題、予期しない Home ボタンの押下を防ぎます。エミュレータの再起動が必要です。")
+    ));
 }
 
 void ConfigureInputAdvanced::UpdateUIEnabled() {

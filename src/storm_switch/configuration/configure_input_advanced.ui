@@ -2760,7 +2760,7 @@
                    <item row="9" column="0">
                       <widget class="QCheckBox" name="disable_wgi_xinput">
                         <property name="toolTip">
-                          <string>Отключает драйверы SDL WGI и XInput для контроллеров. Предотвращает конфликты триггеров, вибрации и синтетических нажатий кнопки Home. Требуется перезапуск эмулятора.</string>
+                          <string>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</string>
                         </property>
                         <property name="minimumSize">
                           <size>
@@ -2769,7 +2769,7 @@
                           </size>
                         </property>
                         <property name="text">
-                          <string>Отключить SDL WGI/XInput (требуется перезапуск)</string>
+                          <string>Disable SDL WGI/XInput (restart required)</string>
                         </property>
                       </widget>
                    </item>
