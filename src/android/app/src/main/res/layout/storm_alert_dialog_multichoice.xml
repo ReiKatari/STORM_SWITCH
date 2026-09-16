@@ -8,7 +8,7 @@
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:gravity="center_vertical"
-    android:textColor="#F1F5F9"
+    android:textColor="?attr/colorOnSurface"
     android:textSize="15sp"
     android:background="?attr/selectableItemBackground"
     app:buttonTint="@color/storm_radio_tint"

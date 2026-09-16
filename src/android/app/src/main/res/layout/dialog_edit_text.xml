@@ -30,7 +30,7 @@
             android:paddingHorizontal="14dp"
             android:paddingVertical="12dp"
             android:textColor="#FFFFFF"
-            android:textColorHint="#64748B"
+            android:textColorHint="#38BDF8"
             android:textSize="14sp" />
 
     </com.google.android.material.textfield.TextInputLayout>

@@ -329,9 +329,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
         }
 
-        val cached = getCachedCatalog(requireContext())
-        if (cached.isNotEmpty()) {
-            checkDownloadedStatus(cached)
+        val appCtx = context?.applicationContext
+        val cached = if (appCtx != null) getCachedCatalog(appCtx) else emptyList()
+        if (cached.isNotEmpty() && appCtx != null) {
+            checkDownloadedStatus(cached, appCtx)
             allGames.clear()
             allGames.addAll(cached)
             filterGames(binding.editSearch.text?.toString().orEmpty())
@@ -343,6 +344,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     }
 
     private fun fetchCatalog() {
+        val appCtx = context?.applicationContext ?: return
         if (allGames.isEmpty()) {
             binding.progressLoading.isVisible = true
             binding.textCatalogStatus.text = "Синхронизация каталога облака..."
@@ -352,8 +354,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val freshGames = syncCatalogInBackground(requireContext().applicationContext)
-                checkDownloadedStatus(freshGames)
+                val freshGames = syncCatalogInBackground(appCtx)
+                checkDownloadedStatus(freshGames, appCtx)
 
                 withContext(Dispatchers.Main) {
                     if (_binding == null) return@withContext
@@ -377,14 +379,16 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     if (allGames.isEmpty()) {
                         binding.textEmpty.isVisible = true
                         binding.textEmpty.text = "Ошибка подключения: ${e.localizedMessage ?: "Сбой сети"}"
-                        Toast.makeText(requireContext(), "Не удалось загрузить каталог", Toast.LENGTH_SHORT).show()
+                        context?.let { c ->
+                            Toast.makeText(c, "Не удалось загрузить каталог", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
         }
     }
 
-    private fun checkDownloadedStatus(games: List<StormWorldGameItem>) {
+    private fun checkDownloadedStatus(games: List<StormWorldGameItem>, ctx: Context) {
         val gameDirs = NativeConfig.getGameDirs()
         data class LocalFile(val name: String, val size: Long)
         val allFiles = mutableListOf<LocalFile>()
@@ -393,7 +397,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val uri = Uri.parse(dir.uriString)
                 if (uri.scheme == "content") {
-                    val rootDoc = DocumentFile.fromTreeUri(requireContext(), uri)
+                    val rootDoc = DocumentFile.fromTreeUri(ctx, uri)
                     rootDoc?.listFiles()?.forEach { f ->
                         if (f.isFile) allFiles.add(LocalFile(f.name.orEmpty().lowercase(Locale.ROOT), f.length()))
                     }
@@ -594,12 +598,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
         val sortedPages = pagesToShow.sorted()
 
+        val ctx = context ?: return
         var prev = 0
         for (p in sortedPages) {
             if (prev != 0 && p > prev + 1) {
-                val ellipsis = android.widget.TextView(requireContext()).apply {
+                val ellipsis = android.widget.TextView(ctx).apply {
                     text = "…"
-                    setTextColor(0xFF64748B.toInt())
+                    setTextColor(0xFFFFFFFF.toInt())
                     textSize = 12f
                     setPadding(margin * 2, 0, margin * 2, 0)
                 }
@@ -608,7 +613,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             prev = p
 
             val btn = com.google.android.material.button.MaterialButton(
-                requireContext(),
+                ctx,
                 null,
                 com.google.android.material.R.attr.materialButtonOutlinedStyle
             ).apply {
@@ -623,14 +628,14 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 cornerRadius = (6 * density).toInt()
 
                 if (p == currentPage) {
-                    setBackgroundColor(0xFF00F0FF.toInt())
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF00F0FF.toInt())
                     setTextColor(0xFF0A0E17.toInt())
                     strokeColor = android.content.res.ColorStateList.valueOf(0xFF00F0FF.toInt())
                     strokeWidth = (1.5 * density).toInt()
                     typeface = android.graphics.Typeface.DEFAULT_BOLD
                 } else {
-                    setBackgroundColor(0xFF131B2A.toInt())
-                    setTextColor(0xFFCBD5E1.toInt())
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF131B2A.toInt())
+                    setTextColor(0xFFFFFFFF.toInt())
                     strokeColor = android.content.res.ColorStateList.valueOf(0xFF20354E.toInt())
                     strokeWidth = (1 * density).toInt()
                     setOnClickListener {
@@ -697,7 +702,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.7.4 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -743,7 +748,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.7.4 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -807,9 +812,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.btnStartDownload.setIconResource(R.drawable.ic_install)
                     binding.btnStartDownload.isEnabled = true
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
-                    binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
-                    binding.btnStartDownload.setTextColor(0xFF94A3B8.toInt())
-                    binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
+                    binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF00D2FF.toInt())
+                    binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
+                    binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF00D2FF.toInt())
                 }
             }
             return
@@ -942,9 +947,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_install)
                 holder.b.btnGameAction.isEnabled = !StormDownloadManager.isDownloading()
                 holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
-                holder.b.btnGameAction.strokeColor = android.content.res.ColorStateList.valueOf(0xFF334155.toInt())
-                holder.b.btnGameAction.setTextColor(0xFF94A3B8.toInt())
-                holder.b.btnGameAction.iconTint = android.content.res.ColorStateList.valueOf(0xFF94A3B8.toInt())
+                holder.b.btnGameAction.strokeColor = android.content.res.ColorStateList.valueOf(0xFF00D2FF.toInt())
+                holder.b.btnGameAction.setTextColor(0xFFFFFFFF.toInt())
+                holder.b.btnGameAction.iconTint = android.content.res.ColorStateList.valueOf(0xFF00D2FF.toInt())
             }
 
             holder.b.btnGameAction.setOnClickListener {
@@ -996,7 +1001,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 try {
                     val req = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                        .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.7.4 (Android)")
                         .build()
                     val resp = httpClient.newCall(req).execute()
                     val body = resp.body?.string().orEmpty()
@@ -1195,7 +1200,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.7.4 (Android)")
                     .build()
 
                 val resp = sharedHttpClient.newCall(req).execute()
@@ -1277,32 +1282,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     }
                 }
 
-                // Strictly verify cloud storage existence via HEAD request (only 200 OK kept, 404 filtered out)
-                val verifiedGames = coroutineScope {
-                    candidateList.map { game ->
-                        async(Dispatchers.IO) {
-                            try {
-                                val headReq = Request.Builder()
-                                    .url("https://stormgamesworld.ru/api/games/${game.id}/download")
-                                    .head()
-                                    .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
-                                    .build()
-                                val headResp = sharedHttpClient.newCall(headReq).execute()
-                                val isOk = headResp.isSuccessful
-                                if (isOk) {
-                                    val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
-                                    if (disp.contains(".nsz")) game.realExtension = ".nsz"
-                                    else if (disp.contains(".xci")) game.realExtension = ".xci"
-                                    else if (disp.contains(".nsp")) game.realExtension = ".nsp"
-                                }
-                                headResp.close()
-                                if (isOk) game else null
-                            } catch (_: Exception) {
-                                null
-                            }
-                        }
-                    }.awaitAll().filterNotNull()
-                }
+                // Fast catalog compilation: candidateList already filters games with valid sizes and files
+                val verifiedGames = candidateList
 
                 fun compareVers(v1: String, v2: String): Int {
                     val p1 = v1.removePrefix("v").removePrefix("V").split(".").mapNotNull { it.toIntOrNull() }

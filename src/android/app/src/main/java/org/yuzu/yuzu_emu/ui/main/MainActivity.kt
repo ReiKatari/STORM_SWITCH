@@ -71,6 +71,56 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
     private val CHECKED_DECRYPTION = "CheckedDecryption"
     private var checkedDecryption = false
 
+    private val requestStoragePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (android.os.Environment.isExternalStorageManager()) {
+                DirectoryInitialization.initializeSharedStorage()
+            }
+        }
+    }
+
+    private val requestLegacyStorageLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[android.Manifest.permission.WRITE_EXTERNAL_STORAGE] == true ||
+            permissions[android.Manifest.permission.READ_EXTERNAL_STORAGE] == true) {
+            DirectoryInitialization.initializeSharedStorage()
+        }
+    }
+
+    fun checkAllFilesAccessPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!android.os.Environment.isExternalStorageManager()) {
+                try {
+                    val intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                        data = Uri.fromParts("package", packageName, null)
+                    }
+                    requestStoragePermissionLauncher.launch(intent)
+                } catch (_: Exception) {
+                    try {
+                        val intent = Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                        requestStoragePermissionLauncher.launch(intent)
+                    } catch (_: Exception) {}
+                }
+            } else {
+                DirectoryInitialization.initializeSharedStorage()
+            }
+        } else {
+            val writeGranted = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            val readGranted = ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (!writeGranted || !readGranted) {
+                requestLegacyStorageLauncher.launch(arrayOf(
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ))
+            } else {
+                DirectoryInitialization.initializeSharedStorage()
+            }
+        }
+    }
+
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(YuzuApplication.applyLanguage(base))
         CrashHandler.install(base)
@@ -92,6 +142,8 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         }
 
         super.onCreate(savedInstanceState)
+
+        checkAllFilesAccessPermission()
 
         try {
             NativeLibrary.initMultiplayer()
@@ -389,6 +441,11 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         ThemeHelper.setCorrectTheme(this)
         super.onResume()
         applyFullscreenPreference()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (android.os.Environment.isExternalStorageManager()) {
+                DirectoryInitialization.initializeSharedStorage()
+            }
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -509,6 +566,15 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         )
     }
 
+    fun processKeysFolder(result: Uri) {
+        InstallableActions.processKeysFolder(
+            activity = this,
+            fragmentManager = supportFragmentManager,
+            gamesViewModel = gamesViewModel,
+            treeUri = result
+        )
+    }
+
     val getFirmware = registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
         if (result != null) {
             processFirmware(result)
@@ -521,6 +587,16 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
             fragmentManager = supportFragmentManager,
             homeViewModel = homeViewModel,
             result = result,
+            onComplete = onComplete
+        )
+    }
+
+    fun processFirmwareFolder(result: Uri, onComplete: (() -> Unit)? = null) {
+        InstallableActions.processFirmwareFolder(
+            activity = this,
+            fragmentManager = supportFragmentManager,
+            homeViewModel = homeViewModel,
+            treeUri = result,
             onComplete = onComplete
         )
     }

@@ -110,6 +110,26 @@ class SetupFragment : Fragment() {
                     R.string.permissions,
                     R.string.permissions_description,
                     mutableListOf<PageButton>().apply {
+                        add(
+                            PageButton(
+                                R.drawable.ic_folder_open,
+                                R.string.storage_permission,
+                                R.string.storage_permission_description,
+                                {
+                                    pageButtonCallback = it
+                                    requestStoragePermission()
+                                },
+                                {
+                                    if (isStoragePermissionGranted()) {
+                                        ButtonState.BUTTON_ACTION_COMPLETE
+                                    } else {
+                                        ButtonState.BUTTON_ACTION_INCOMPLETE
+                                    }
+                                },
+                                false,
+                                false,
+                            )
+                        )
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             add(
                                 PageButton(
@@ -138,9 +158,10 @@ class SetupFragment : Fragment() {
                         }
                     },
                     {
-                        if (NotificationManagerCompat.from(requireContext())
-                                .areNotificationsEnabled()
-                        ) {
+                        val storageOk = isStoragePermissionGranted()
+                        val notifOk = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                            NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()
+                        if (storageOk && notifOk) {
                             PageState.COMPLETE
                         } else {
                             PageState.INCOMPLETE
@@ -161,14 +182,13 @@ class SetupFragment : Fragment() {
                                 R.string.keys_description,
                                 {
                                     pageButtonCallback = it
-                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                                         .setTitle(R.string.keys)
-                                        .setItems(arrayOf("🌐 Онлайн-установка ключей (рекомендуется)", "📁 Выбрать файл ключей с устройства")) { _, which ->
-                                            if (which == 0) {
-                                                OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS)
-                                                    .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
-                                            } else {
-                                                getProdKey.launch(arrayOf("*/*"))
+                                        .setItems(arrayOf("🌐 Онлайн-установка ключей (рекомендуется)", "📄 Выбрать файл ключей с устройства", "📁 Выбрать папку с ключами")) { _, which ->
+                                            when (which) {
+                                                0 -> OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS).show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                                                1 -> getProdKey.launch(arrayOf("*/*"))
+                                                2 -> getKeysFolder.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
                                             }
                                         }
                                         .show()
@@ -184,7 +204,7 @@ class SetupFragment : Fragment() {
                                     }
                                 },
                                 false,
-                                true,
+                                false,
                                 R.string.install_prod_keys_warning,
                                 R.string.install_prod_keys_warning_description,
                                 R.string.install_prod_keys_warning_help,
@@ -219,14 +239,13 @@ class SetupFragment : Fragment() {
                                 R.string.firmware_description,
                                 {
                                     pageButtonCallback = it
-                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                                         .setTitle(R.string.firmware)
-                                        .setItems(arrayOf("🌐 Онлайн-установка прошивки (рекомендуется)", "📁 Выбрать ZIP архив прошивки с устройства")) { _, which ->
-                                            if (which == 0) {
-                                                OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE)
-                                                    .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
-                                            } else {
-                                                getFirmware.launch(arrayOf("application/zip"))
+                                        .setItems(arrayOf("🌐 Онлайн-установка прошивки (рекомендуется)", "📦 Выбрать ZIP архив прошивки с устройства", "📁 Выбрать папку с прошивкой (.nca)")) { _, which ->
+                                            when (which) {
+                                                0 -> OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE).show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                                                1 -> getFirmware.launch(arrayOf("application/zip"))
+                                                2 -> getFirmwareFolder.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
                                             }
                                         }
                                         .show()
@@ -239,7 +258,7 @@ class SetupFragment : Fragment() {
                                     }
                                 },
                                 false,
-                                true,
+                                false,
                                 R.string.install_firmware_warning,
                                 R.string.install_firmware_warning_description,
                                 R.string.install_firmware_warning_help,
@@ -299,7 +318,7 @@ class SetupFragment : Fragment() {
                                     }
                                 },
                                 false,
-                                true,
+                                false,
                                 R.string.add_games_warning,
                                 R.string.add_games_warning_description,
                                 R.string.add_games_warning_help,
@@ -312,7 +331,6 @@ class SetupFragment : Fragment() {
                         )
                         if (file.exists() && NativeLibrary.areKeysPresent() &&
                             NativeLibrary.isFirmwareAvailable() &&
-                            LosslessScalingHelper.isInstalled() &&
                             NativeConfig.getGameDirs().isNotEmpty()
                         ) {
                             PageState.COMPLETE
@@ -394,20 +412,10 @@ class SetupFragment : Fragment() {
                 mutableListOf<Triple<Int, Int, Int>>() // title, description, helpLink
 
             currentPage.pageButtons?.forEach { button ->
-                if (button.hasWarning || button.isUnskippable) {
+                if (button.hasWarning) {
                     val buttonState = button.buttonState()
                     if (buttonState == ButtonState.BUTTON_ACTION_COMPLETE) {
                         return@forEach
-                    }
-
-                    if (button.isUnskippable) {
-                        MessageDialogFragment.newInstance(
-                            activity = requireActivity(),
-                            titleId = button.warningTitleId,
-                            descriptionId = button.warningDescriptionId,
-                            helpLinkId = button.warningHelpLinkId
-                        ).show(childFragmentManager, MessageDialogFragment.TAG)
-                        return@setOnClickListener
                     }
 
                     if (!hasBeenWarned[index]) {
@@ -557,6 +565,71 @@ class SetupFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
             if (result != null) {
                 mainActivity.processGamesDir(result)
+            }
+        }
+
+    private fun isStoragePermissionGranted(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            android.os.Environment.isExternalStorageManager()
+        } else {
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                    data = android.net.Uri.fromParts("package", requireContext().packageName, null)
+                }
+                storagePermissionLauncher.launch(intent)
+            } catch (_: Exception) {
+                try {
+                    val intent = Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                    storagePermissionLauncher.launch(intent)
+                } catch (_: Exception) {}
+            }
+        } else {
+            legacyStorageLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+        }
+    }
+
+    private val storagePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (isStoragePermissionGranted()) {
+            DirectoryInitialization.initializeSharedStorage()
+            checkForButtonState.invoke()
+        }
+    }
+
+    private val legacyStorageLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] == true || permissions[Manifest.permission.READ_EXTERNAL_STORAGE] == true) {
+            DirectoryInitialization.initializeSharedStorage()
+            checkForButtonState.invoke()
+        }
+    }
+
+    val getKeysFolder =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
+            if (result != null) {
+                mainActivity.processKeysFolder(result)
+                if (NativeLibrary.areKeysPresent()) {
+                    checkForButtonState.invoke()
+                }
+            }
+        }
+
+    val getFirmwareFolder =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
+            if (result != null) {
+                mainActivity.processFirmwareFolder(result) {
+                    if (NativeLibrary.isFirmwareAvailable()) {
+                        checkForButtonState.invoke()
+                    }
+                }
             }
         }
 

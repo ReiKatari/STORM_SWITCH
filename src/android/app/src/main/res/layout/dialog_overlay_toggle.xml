@@ -51,7 +51,7 @@
                     android:layout_height="wrap_content"
                     android:text="Настройка отображения сенсорных элементов"
                     android:textSize="11sp"
-                    android:textColor="#94A3B8" />
+                    android:textColor="#38BDF8" />
 
             </LinearLayout>
 
@@ -75,7 +75,7 @@
                 android:layout_height="32dp"
                 android:padding="6dp"
                 android:src="@drawable/ic_clear"
-                app:tint="#94A3B8"
+                app:tint="#38BDF8"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"

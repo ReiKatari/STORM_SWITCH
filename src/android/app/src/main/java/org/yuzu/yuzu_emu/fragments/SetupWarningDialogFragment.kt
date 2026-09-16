@@ -35,7 +35,7 @@ class SetupWarningDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = MaterialAlertDialogBuilder(requireContext())
+        val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setPositiveButton(R.string.warning_skip) { _: DialogInterface?, _: Int ->
                 setupFragment.pageForward()
                 setupFragment.setPageWarned(page)

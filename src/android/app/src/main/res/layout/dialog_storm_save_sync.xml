@@ -43,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Кроссплатформенная синхронизация сохранений"
-                android:textColor="#94A3B8"
+                android:textColor="#38BDF8"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -63,7 +63,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Закрыть"
             android:src="@drawable/ic_clear"
-            app:tint="#94A3B8" />
+            app:tint="#FFFFFF" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -101,7 +101,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Ключ этого устройства"
-                        android:textColor="#94A3B8"
+                        android:textColor="#38BDF8"
                         android:textSize="12sp" />
 
                     <LinearLayout
@@ -167,7 +167,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Подключение к удалённому устройству"
-                        android:textColor="#CBD5E1"
+                        android:textColor="#FFFFFF"
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
@@ -187,7 +187,7 @@
                             android:hint="Введите ключ или IP:порт..."
                             android:paddingHorizontal="10dp"
                             android:textColor="#FFFFFF"
-                            android:textColorHint="#64748B"
+                            android:textColorHint="#38BDF8"
                             android:textSize="13sp" />
 
                         <com.google.android.material.button.MaterialButton
@@ -237,7 +237,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Статус: не подключено к удалённому устройству"
-                        android:textColor="#94A3B8"
+                        android:textColor="#38BDF8"
                         android:textSize="11sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -294,7 +294,7 @@
                 app:boxStrokeColor="#00D2FF"
                 app:hintTextColor="#00D2FF"
                 app:startIconDrawable="@drawable/ic_search"
-                app:startIconTint="#94A3B8">
+                app:startIconTint="#38BDF8">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edit_search_saves"
@@ -326,7 +326,7 @@
                 android:layout_marginTop="20dp"
                 android:gravity="center"
                 android:text="Сохранения не найдены. Подключитесь к устройству или начните игру."
-                android:textColor="#64748B"
+                android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 android:visibility="gone" />
         </LinearLayout>

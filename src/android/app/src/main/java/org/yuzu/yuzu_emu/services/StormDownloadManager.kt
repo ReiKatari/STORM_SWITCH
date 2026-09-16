@@ -278,7 +278,7 @@ object StormDownloadManager {
                 val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
                 val reqBuilder = Request.Builder()
                     .url(downloadUrl)
-                    .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.7.4 (Android)")
 
                 if (existingBytes > 0L) {
                     reqBuilder.header("Range", "bytes=$existingBytes-")

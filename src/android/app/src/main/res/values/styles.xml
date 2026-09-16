@@ -177,29 +177,29 @@
     </style>
 
     <style name="StormDialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
-        <item name="android:textColor">#00F0FF</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
         <item name="android:textSize">18sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="StormDialog.Body" parent="MaterialAlertDialog.Material3.Body.Text">
-        <item name="android:textColor">#CBD5E1</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textSize">14sp</item>
         <item name="android:lineHeight">20sp</item>
     </style>
 
     <style name="StormButton.Dialog.Positive" parent="Widget.Material3.Button.TonalButton">
-        <item name="android:textColor">#00F0FF</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">13sp</item>
-        <item name="backgroundTint">#16263D</item>
-        <item name="strokeColor">#00D2FF</item>
+        <item name="backgroundTint">?attr/colorSurfaceVariant</item>
+        <item name="strokeColor">?attr/colorPrimary</item>
         <item name="strokeWidth">1dp</item>
         <item name="cornerRadius">8dp</item>
     </style>
 
     <style name="StormButton.Dialog.Negative" parent="Widget.Material3.Button.TextButton.Dialog">
-        <item name="android:textColor">#94A3B8</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">13sp</item>
         <item name="cornerRadius">8dp</item>
@@ -215,7 +215,7 @@
     <style name="EdenMaterialDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="materialAlertDialogTitleTextStyle">@style/StormDialog.Title</item>
         <item name="materialAlertDialogBodyTextStyle">@style/StormDialog.Body</item>
-        <item name="android:textColorAlertDialogListItem">#F1F5F9</item>
+        <item name="android:textColorAlertDialogListItem">?attr/colorOnSurface</item>
         <item name="singleChoiceItemLayout">@layout/storm_alert_dialog_singlechoice</item>
         <item name="multiChoiceItemLayout">@layout/storm_alert_dialog_multichoice</item>
         <item name="listItemLayout">@layout/storm_alert_dialog_item</item>
@@ -224,16 +224,7 @@
         <item name="buttonBarNeutralButtonStyle">@style/StormButton.Dialog.Neutral</item>
         <item name="shapeAppearance">@style/StormShape.Dialog</item>
         <item name="shapeAppearanceOverlay">@style/StormShape.Dialog</item>
-        <item name="colorSurface">#0F172A</item>
-        <item name="colorOnSurface">#F1F5F9</item>
-        <item name="colorSurfaceVariant">#1E293B</item>
-        <item name="colorOnSurfaceVariant">#94A3B8</item>
-        <item name="colorPrimary">#00D2FF</item>
-        <item name="colorSecondary">#00F0FF</item>
-        <item name="colorOutline">#20354E</item>
         <item name="dialogCornerRadius">18dp</item>
-        <item name="backgroundTint">#0F172A</item>
-        <item name="android:windowBackground">@drawable/dialog_background_storm</item>
     </style>
 
     <style name="EdenButton.Dialog" parent="Widget.Material3.Button.TextButton.Dialog">

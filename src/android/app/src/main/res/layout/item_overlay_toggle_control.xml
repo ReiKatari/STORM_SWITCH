@@ -72,7 +72,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Основная кнопка действия"
-                android:textColor="#94A3B8"
+                android:textColor="#38BDF8"
                 android:textSize="11sp" />
         </LinearLayout>
 

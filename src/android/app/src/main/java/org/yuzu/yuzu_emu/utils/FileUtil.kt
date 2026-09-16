@@ -114,6 +114,19 @@ object FileUtil {
      * @return CheapDocument lists.
      */
     fun listFiles(uri: Uri): Array<MinimalDocumentFile> {
+        val results: MutableList<MinimalDocumentFile> = ArrayList()
+
+        if (uri.scheme == "file" || !uri.toString().startsWith("content://")) {
+            val file = if (uri.scheme == "file") File(uri.path ?: "") else File(uri.toString())
+            if (file.exists() && file.isDirectory) {
+                file.listFiles()?.forEach { f ->
+                    val mime = if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "application/octet-stream"
+                    results.add(MinimalDocumentFile(f.name, mime, Uri.fromFile(f)))
+                }
+            }
+            return results.toTypedArray()
+        }
+
         val resolver = context.contentResolver
         val columns = arrayOf(
             DocumentsContract.Document.COLUMN_DOCUMENT_ID,
@@ -121,7 +134,6 @@ object FileUtil {
             DocumentsContract.Document.COLUMN_MIME_TYPE
         )
         var c: Cursor? = null
-        val results: MutableList<MinimalDocumentFile> = ArrayList()
         try {
             val docId: String = if (isRootTreeUri(uri)) {
                 DocumentsContract.getTreeDocumentId(uri)
@@ -130,19 +142,37 @@ object FileUtil {
             }
             val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, docId)
             c = resolver.query(childrenUri, columns, null, null, null)
-            while (c!!.moveToNext()) {
-                val documentId = c.getString(0)
-                val documentName = c.getString(1)
-                val documentMimeType = c.getString(2)
-                val documentUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
-                val document = MinimalDocumentFile(documentName, documentMimeType, documentUri)
-                results.add(document)
+            if (c != null) {
+                while (c.moveToNext()) {
+                    val documentId = c.getString(0)
+                    val documentName = c.getString(1)
+                    val documentMimeType = c.getString(2)
+                    val documentUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
+                    val document = MinimalDocumentFile(documentName, documentMimeType, documentUri)
+                    results.add(document)
+                }
             }
         } catch (e: Exception) {
             Log.error("[FileUtil]: Cannot list file error: " + e.message)
         } finally {
             closeQuietly(c)
         }
+
+        if (results.isEmpty()) {
+            try {
+                val treeDoc = DocumentFile.fromTreeUri(context, uri)
+                if (treeDoc != null && treeDoc.isDirectory) {
+                    treeDoc.listFiles().forEach { doc ->
+                        val name = doc.name ?: ""
+                        val mime = doc.type ?: if (doc.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else ""
+                        results.add(MinimalDocumentFile(name, mime, doc.uri))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.error("[FileUtil]: DocumentFile fallback failed: " + e.message)
+            }
+        }
+
         return results.toTypedArray()
     }
 
@@ -510,6 +540,10 @@ object FileUtil {
     }
 
     fun isTreeUriValid(uri: Uri): Boolean {
+        if (uri.scheme == "file" || !uri.toString().startsWith("content://")) {
+            val f = if (uri.scheme == "file") File(uri.path ?: "") else File(uri.toString())
+            return f.exists() && f.canRead()
+        }
         val resolver = context.contentResolver
         val columns = arrayOf(
             DocumentsContract.Document.COLUMN_DOCUMENT_ID,
@@ -523,10 +557,15 @@ object FileUtil {
                 DocumentsContract.getDocumentId(uri)
             }
             val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, docId)
-            resolver.query(childrenUri, columns, null, null, null)
-            true
+            val cursor = resolver.query(childrenUri, columns, null, null, null)
+            val hasCursor = cursor?.use { true } ?: false
+            if (hasCursor) true else (DocumentFile.fromTreeUri(context, uri)?.canRead() == true)
         } catch (_: Exception) {
-            false
+            try {
+                DocumentFile.fromTreeUri(context, uri)?.canRead() == true
+            } catch (_: Exception) {
+                false
+            }
         }
     }
 

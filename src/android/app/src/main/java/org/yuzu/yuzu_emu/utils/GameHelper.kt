@@ -50,12 +50,9 @@ object GameHelper {
         }
 
         if (gameDirs.isEmpty()) {
-            val backupDirs = preferences.getStringSet("game_directories_backup", null)
-            if (!backupDirs.isNullOrEmpty()) {
-                val restored = backupDirs.map { GameDir(it, true) }
-                restored.forEach { gameDirs.add(it) }
-                NativeConfig.setGameDirs(restored.toTypedArray())
-            }
+            preferences.edit().remove(KEY_GAMES).apply()
+            cachedGameList.clear()
+            return emptyList()
         } else {
             val dirSet = gameDirs.map { it.uriString }.toSet()
             preferences.edit().putStringSet("game_directories_backup", dirSet).apply()
@@ -89,7 +86,7 @@ object GameHelper {
         gameDirs.forEach { gameDir ->
             val gameDirUri = gameDir.uriString.toUri()
             if (FileUtil.isTreeUriValid(gameDirUri)) {
-                val scanDepth = if (gameDir.deepScan) 3 else 1
+                val scanDepth = if (gameDir.deepScan) 5 else 3
                 scanContentContainersRecursive(FileUtil.listFiles(gameDirUri), scanDepth) {
                     val filePath = it.uri.toString()
                     if (mountedContainerUris.add(filePath)) {
@@ -105,7 +102,7 @@ object GameHelper {
             val gameDirUri = gameDir.uriString.toUri()
             val isValid = FileUtil.isTreeUriValid(gameDirUri)
             if (isValid) {
-                val scanDepth = if (gameDir.deepScan) 3 else 1
+                val scanDepth = if (gameDir.deepScan) 5 else 3
 
                 addGamesRecursive(
                     games,

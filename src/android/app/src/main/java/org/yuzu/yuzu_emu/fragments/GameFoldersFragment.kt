@@ -95,7 +95,7 @@ class GameFoldersFragment : Fragment() {
                 getString(R.string.external_content)
             )
 
-            MaterialAlertDialogBuilder(requireContext())
+            MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                 .setTitle(R.string.add_folders)
                 .setItems(options) { _, which ->
                     when (which) {

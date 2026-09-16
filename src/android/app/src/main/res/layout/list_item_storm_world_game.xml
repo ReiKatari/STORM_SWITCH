@@ -188,7 +188,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:fontFamily="monospace"
-                android:textColor="#64748B"
+                android:textColor="#38BDF8"
                 android:textSize="10sp"
                 tools:text="01001B700A654000" />
         </LinearLayout>

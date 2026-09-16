@@ -563,7 +563,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         put("status", "ok")
                         put("device_name", "${Build.MANUFACTURER} ${Build.MODEL}")
                         put("platform", "android")
-                        put("version", "8.7.2")
+                        put("version", "8.7.4")
                     }
                     sendResponse(200, "application/json", obj.toString().toByteArray(Charsets.UTF_8))
                 }
@@ -688,7 +688,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 val statusUrl = "http://$ip:$port/api/status?client_ip=$myIp&client_port=$localPort&client_name=$encodedName&client_key=$myKey"
                 val req = Request.Builder()
                     .url(statusUrl)
-                    .header("User-Agent", "STORM-SWITCH-SYNC/8.7.2")
+                    .header("User-Agent", "STORM-SWITCH-SYNC/8.7.4")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 if (resp.isSuccessful) {

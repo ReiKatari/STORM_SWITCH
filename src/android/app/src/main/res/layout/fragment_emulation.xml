@@ -201,7 +201,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:textSize="12sp"
-                    android:textColor="#CBD5E1"
+                    android:textColor="#FFFFFF"
                     android:text="🌡️ Температура: --°C ➔ Цель: 36.5°C" />
 
                 <com.google.android.material.textview.MaterialTextView
@@ -210,7 +210,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textSize="11sp"
-                    android:textColor="#94A3B8"
+                    android:textColor="#38BDF8"
                     android:text="⚡ Нагрузка на чипсет снята (&lt; 1 Вт)" />
             </LinearLayout>
 

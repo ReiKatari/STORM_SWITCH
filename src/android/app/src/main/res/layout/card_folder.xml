@@ -28,6 +28,7 @@
             android:layout_marginEnd="12dp"
             android:gravity="start|top"
             android:textAlignment="viewStart"
+            android:textColor="?attr/colorOnSurface"
             android:maxLines="4"
             android:ellipsize="end"
             android:breakStrategy="high_quality"
@@ -70,7 +71,7 @@
                 android:contentDescription="@string/edit"
                 android:tooltipText="@string/edit"
                 app:icon="@drawable/ic_edit"
-                app:iconTint="?attr/colorControlNormal" />
+                app:iconTint="?attr/colorOnSurface" />
 
             <Button
                 android:id="@+id/button_delete"
@@ -81,7 +82,7 @@
                 android:contentDescription="@string/delete"
                 android:tooltipText="@string/delete"
                 app:icon="@drawable/ic_delete"
-                app:iconTint="?attr/colorControlNormal" />
+                app:iconTint="?attr/colorOnSurface" />
 
         </LinearLayout>
 

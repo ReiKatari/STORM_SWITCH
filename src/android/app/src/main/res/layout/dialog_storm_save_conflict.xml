@@ -40,7 +40,7 @@
                 android:id="@+id/text_conflict_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#94A3B8"
+                android:textColor="#38BDF8"
                 android:textSize="12sp"
                 tools:text="Игра: Assassin's Creed: The Rebel Collection [010044700DEB0000]" />
         </LinearLayout>
@@ -51,7 +51,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:text="На текущем и удалённом устройствах обнаружены разные версии сохранения. Сравните время создания и выберите действие."
-        android:textColor="#CBD5E1"
+        android:textColor="#FFFFFF"
         android:textSize="13sp" />
 
     <!-- Cards container -->
@@ -101,7 +101,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="#94A3B8"
+                    android:textColor="#38BDF8"
                     android:textSize="12sp"
                     tools:text="📦 Размер данных: 1.42 МБ • Файлов: 6" />
             </LinearLayout>
@@ -146,7 +146,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="#94A3B8"
+                    android:textColor="#38BDF8"
                     android:textSize="12sp"
                     tools:text="📦 Размер данных: 1.50 МБ • Файлов: 6" />
             </LinearLayout>
@@ -204,6 +204,6 @@
             android:layout_height="40dp"
             android:layout_marginTop="4dp"
             android:text="Отмена"
-            android:textColor="#94A3B8" />
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 </LinearLayout>

@@ -29,9 +29,16 @@ class AddGameFolderDialogFragment : DialogFragment() {
         if (folderUriString == null) {
             dismiss()
         }
-        binding.path.text = Uri.parse(folderUriString).path
+        val rawPath = Uri.parse(folderUriString).path ?: folderUriString
+        val displayPath = try {
+            Uri.decode(rawPath).replace("/tree/primary:", "")
+        } catch (_: Exception) {
+            rawPath
+        }
+        binding.path.text = displayPath
+        binding.deepScanSwitch.isChecked = true
 
-        return MaterialAlertDialogBuilder(requireContext())
+        return MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setTitle(R.string.add_game_folder)
             .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                 val newGameDir = GameDir(folderUriString!!, binding.deepScanSwitch.isChecked)
@@ -46,7 +53,7 @@ class AddGameFolderDialogFragment : DialogFragment() {
             }
             .setNegativeButton(android.R.string.cancel, null)
             .setView(binding.root)
-            .show()
+            .create()
     }
 
     companion object {

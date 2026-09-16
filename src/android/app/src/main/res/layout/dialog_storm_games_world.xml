@@ -44,7 +44,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Каталог игр Nintendo Switch"
-                android:textColor="#94A3B8"
+                android:textColor="#38BDF8"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -91,7 +91,7 @@
             app:boxStrokeColor="#00D2FF"
             app:hintTextColor="#00D2FF"
             app:startIconDrawable="@drawable/ic_search"
-            app:startIconTint="#94A3B8">
+            app:startIconTint="#38BDF8">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_search"
@@ -291,7 +291,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="monospace"
-                        android:textColor="#64748B"
+                        android:textColor="#38BDF8"
                         android:textSize="11sp"
                         tools:text="ID: 01001B700A654000" />
                 </LinearLayout>
@@ -304,7 +304,7 @@
                 android:layout_marginTop="6dp"
                 android:ellipsize="end"
                 android:maxLines="3"
-                android:textColor="#94A3B8"
+                android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 tools:text="Описание игры..." />
 
@@ -315,7 +315,7 @@
                 android:layout_marginTop="6dp"
                 android:ellipsize="start"
                 android:maxLines="1"
-                android:textColor="#64748B"
+                android:textColor="#38BDF8"
                 android:textSize="11sp"
                 tools:text="📁 Папка: /storage/emulated/0/Switch" />
 
@@ -437,7 +437,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Игры не найдены"
-            android:textColor="#64748B"
+            android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:visibility="gone" />
     </FrameLayout>
@@ -489,7 +489,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:textColor="#94A3B8"
+                android:textColor="#FFFFFF"
                 android:textSize="11sp"
                 android:maxLines="1"
                 android:ellipsize="end"

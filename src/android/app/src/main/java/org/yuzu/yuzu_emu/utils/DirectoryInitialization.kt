@@ -36,30 +36,107 @@ object DirectoryInitialization {
 
     val userDirectory: String?
         get() {
-            check(areDirectoriesReady) { "Directory initialization is not ready!" }
-            return userPath
+            if (!areDirectoriesReady) {
+                start()
+            }
+            return userPath ?: (File(Environment.getExternalStorageDirectory(), "STORM SWITCH").canonicalPath)
         }
 
-    private fun initializeInternalStorage() {
+    fun initializeSharedStorage() {
         try {
-            val stormExternalDir = File(Environment.getExternalStorageDirectory(), "STORM SWITCH")
-            if (stormExternalDir.exists() || stormExternalDir.mkdirs()) {
+            val rootExternal = File(Environment.getExternalStorageDirectory(), "STORM SWITCH")
+            if (rootExternal.exists() || rootExternal.mkdirs()) {
                 val subdirs = arrayOf(
                     "config",
+                    "config/custom",
                     "load",
                     "nand",
+                    "nand/user/save",
                     "sdmc",
                     "cache",
                     "amiibo",
+                    "cheats",
+                    "gpu_drivers",
                     "crash_reports",
-                    "screenshots"
+                    "screenshots",
+                    "profiles",
+                    "keys"
                 )
                 for (subdir in subdirs) {
-                    File(stormExternalDir, subdir).mkdirs()
+                    File(rootExternal, subdir).mkdirs()
                 }
-                userPath = stormExternalDir.canonicalPath
+
+                // Migrate files from internal storage if they were initialized there previously
+                val internalBaseDir = YuzuApplication.appContext.getExternalFilesDir(null) ?: YuzuApplication.appContext.filesDir
+                migrateDirectoryIfMissing(internalBaseDir, rootExternal)
+
+                userPath = rootExternal.canonicalPath
                 NativeLibrary.setAppDirectory(userPath!!)
+                areDirectoriesReady = true
+                NativeConfig.initializeGlobalConfig()
+                NativeLibrary.reloadProfiles()
+            }
+        } catch (e: Throwable) {
+            android.util.Log.e("STORM_SWITCH", "Failed to initializeSharedStorage: ${e.message}")
+        }
+    }
+
+    private fun migrateDirectoryIfMissing(sourceDir: File, targetDir: File) {
+        try {
+            if (!sourceDir.exists() || sourceDir.canonicalPath == targetDir.canonicalPath) {
                 return
+            }
+            val subdirs = listOf("keys", "config", "load", "nand", "sdmc", "amiibo", "cheats", "gpu_drivers", "profiles")
+            for (sub in subdirs) {
+                val srcSub = File(sourceDir, sub)
+                val dstSub = File(targetDir, sub)
+                if (srcSub.exists() && srcSub.isDirectory) {
+                    dstSub.mkdirs()
+                    srcSub.listFiles()?.forEach { file ->
+                        val targetFile = File(dstSub, file.name)
+                        if (!targetFile.exists()) {
+                            try {
+                                if (file.isDirectory) {
+                                    file.copyRecursively(targetFile, overwrite = false)
+                                } else {
+                                    file.copyTo(targetFile, overwrite = false)
+                                }
+                            } catch (_: Throwable) {}
+                        }
+                    }
+                }
+            }
+        } catch (_: Throwable) {}
+    }
+
+    private fun initializeInternalStorage() {
+        try {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R || android.os.Environment.isExternalStorageManager()) {
+                val stormExternalDir = File(Environment.getExternalStorageDirectory(), "STORM SWITCH")
+                if (stormExternalDir.exists() || stormExternalDir.mkdirs()) {
+                    val subdirs = arrayOf(
+                        "config",
+                        "config/custom",
+                        "load",
+                        "nand",
+                        "nand/user/save",
+                        "sdmc",
+                        "cache",
+                        "amiibo",
+                        "cheats",
+                        "gpu_drivers",
+                        "crash_reports",
+                        "screenshots",
+                        "profiles",
+                        "keys"
+                    )
+                    for (subdir in subdirs) {
+                        File(stormExternalDir, subdir).mkdirs()
+                    }
+                    userPath = stormExternalDir.canonicalPath
+                    NativeLibrary.setAppDirectory(userPath!!)
+                    return
+                }
             }
         } catch (e: Exception) {
             android.util.Log.e("STORM_SWITCH", "Failed to initialize /sdcard/STORM SWITCH/: ${e.message}")

@@ -6,6 +6,7 @@ package org.yuzu.yuzu_emu.utils
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import org.yuzu.yuzu_emu.NativeLibrary
@@ -127,6 +128,94 @@ object InstallableActions {
             descriptionString = resultString,
             helpLinkId = R.string.keys_missing_help
         ).show(fragmentManager, MessageDialogFragment.TAG)
+    }
+
+    fun processKeysFolder(
+        activity: FragmentActivity,
+        fragmentManager: FragmentManager,
+        gamesViewModel: GamesViewModel,
+        treeUri: Uri
+    ) {
+        val rootDoc = DocumentFile.fromTreeUri(activity, treeUri)
+        if (rootDoc == null || !rootDoc.isDirectory) {
+            Toast.makeText(activity, R.string.keys_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val userDir = DirectoryInitialization.userDirectory
+        val targetDir = File(userDir, "keys")
+        targetDir.mkdirs()
+        var keysCopied = 0
+        rootDoc.listFiles().forEach { file ->
+            val name = file.name?.lowercase() ?: ""
+            if (name == "prod.keys" || name == "title.keys" || name.endsWith(".keys")) {
+                val targetFile = File(targetDir, file.name!!)
+                try {
+                    activity.contentResolver.openInputStream(file.uri)?.use { input ->
+                        targetFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    keysCopied++
+                } catch (_: Exception) {}
+            }
+        }
+        NativeLibrary.reloadKeys()
+        if (keysCopied > 0 && NativeLibrary.areKeysPresent()) {
+            Toast.makeText(activity, R.string.keys_install_success, Toast.LENGTH_SHORT).show()
+            gamesViewModel.reloadGames(true)
+        } else {
+            Toast.makeText(activity, R.string.keys_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun processFirmwareFolder(
+        activity: FragmentActivity,
+        fragmentManager: FragmentManager,
+        homeViewModel: HomeViewModel,
+        treeUri: Uri,
+        onComplete: (() -> Unit)? = null
+    ) {
+        val firmwarePath = File(NativeConfig.getNandDir() + "/system/Contents/registered/")
+        firmwarePath.mkdirs()
+
+        ProgressDialogFragment.newInstance(
+            activity,
+            R.string.firmware_installing
+        ) { progressCallback, _ ->
+            var messageToShow: Any
+            try {
+                val rootDoc = DocumentFile.fromTreeUri(activity, treeUri)
+                val ncaFiles = rootDoc?.listFiles()?.filter { it.name?.endsWith(".nca", ignoreCase = true) == true } ?: emptyList()
+                if (ncaFiles.isEmpty()) {
+                    messageToShow = MessageDialogFragment.newInstance(
+                        activity,
+                        titleId = R.string.firmware_installed_failure,
+                        descriptionId = R.string.firmware_installed_failure_description
+                    )
+                } else {
+                    firmwarePath.deleteRecursively()
+                    firmwarePath.mkdirs()
+                    val total = ncaFiles.size.toLong()
+                    ncaFiles.forEachIndexed { index, docFile ->
+                        val targetFile = File(firmwarePath, docFile.name!!)
+                        activity.contentResolver.openInputStream(docFile.uri)?.use { input ->
+                            targetFile.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        progressCallback.invoke(total, (index + 1).toLong())
+                    }
+                    NativeLibrary.initializeSystem(true)
+                    homeViewModel.setCheckKeys(true)
+                    messageToShow = activity.getString(R.string.save_file_imported_success)
+                }
+            } catch (_: Exception) {
+                messageToShow = activity.getString(R.string.fatal_error)
+            }
+            messageToShow
+        }.apply {
+            onDialogComplete = onComplete
+        }.show(fragmentManager, ProgressDialogFragment.TAG)
     }
 
     fun processFirmware(

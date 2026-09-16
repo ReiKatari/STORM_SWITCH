@@ -471,7 +471,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.7.2";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.7.4";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);

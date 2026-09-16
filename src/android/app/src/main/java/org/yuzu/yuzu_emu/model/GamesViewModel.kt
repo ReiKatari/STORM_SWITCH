@@ -151,14 +151,18 @@ class GamesViewModel : ViewModel() {
                 when (gameDir.type) {
                     DirectoryType.GAME -> {
                         NativeConfig.addGameDir(gameDir)
-                        val isFirstTimeSetup = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
-                            .getBoolean(org.yuzu.yuzu_emu.features.settings.model.Settings.PREF_FIRST_APP_LAUNCH, true)
+                        val prefs = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
+                        val currentBackup = prefs.getStringSet("game_directories_backup", emptySet())?.toMutableSet() ?: mutableSetOf()
+                        currentBackup.add(gameDir.uriString)
+                        prefs.edit().putStringSet("game_directories_backup", currentBackup).apply()
+                        NativeConfig.saveGlobalConfig()
+                        val isFirstTimeSetup = prefs.getBoolean(Settings.PREF_FIRST_APP_LAUNCH, true)
                         getGameDirsAndExternalContent(!isFirstTimeSetup)
                     }
                     DirectoryType.EXTERNAL_CONTENT -> {
                         addExternalContentDir(gameDir.uriString)
                         NativeConfig.saveGlobalConfig()
-                        getGameDirsAndExternalContent()
+                        getGameDirsAndExternalContent(true)
                     }
                 }
             }
@@ -176,20 +180,32 @@ class GamesViewModel : ViewModel() {
     fun removeFolder(gameDir: GameDir) =
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val gameDirs = _folders.value.toMutableList()
-                val removedDirIndex = gameDirs.indexOf(gameDir)
-                if (removedDirIndex != -1) {
-                    gameDirs.removeAt(removedDirIndex)
-                    when (gameDir.type) {
-                        DirectoryType.GAME -> {
-                            NativeConfig.setGameDirs(gameDirs.filter { it.type == DirectoryType.GAME }.toTypedArray())
-                        }
-                        DirectoryType.EXTERNAL_CONTENT -> {
-                            removeExternalContentDir(gameDir.uriString)
+                val currentFolders = _folders.value.toMutableList()
+                val remainingFolders = currentFolders.filterNot { it.uriString == gameDir.uriString }.toMutableList()
+                val prefs = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
+
+                when (gameDir.type) {
+                    DirectoryType.GAME -> {
+                        val remainingGameDirs = remainingFolders.filter { it.type == DirectoryType.GAME }
+                        NativeConfig.setGameDirs(remainingGameDirs.toTypedArray())
+                        if (remainingGameDirs.isEmpty()) {
+                            prefs.edit().remove("game_directories_backup").apply()
+                            prefs.edit().remove(GameHelper.KEY_GAMES).apply()
+                            GameHelper.cachedGameList.clear()
+                            withContext(Dispatchers.Main) {
+                                setGames(emptyList())
+                            }
+                        } else {
+                            val dirSet = remainingGameDirs.map { it.uriString }.toSet()
+                            prefs.edit().putStringSet("game_directories_backup", dirSet).apply()
                         }
                     }
-                    getGameDirsAndExternalContent()
+                    DirectoryType.EXTERNAL_CONTENT -> {
+                        removeExternalContentDir(gameDir.uriString)
+                    }
                 }
+                NativeConfig.saveGlobalConfig()
+                getGameDirsAndExternalContent(reloadList = true)
             }
         }
 
@@ -198,7 +214,11 @@ class GamesViewModel : ViewModel() {
             withContext(Dispatchers.IO) {
                 val gameDirs = _folders.value.filter { it.type == DirectoryType.GAME }
                 NativeConfig.setGameDirs(gameDirs.toTypedArray())
-                getGameDirsAndExternalContent()
+                val prefs = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
+                val dirSet = gameDirs.map { it.uriString }.toSet()
+                prefs.edit().putStringSet("game_directories_backup", dirSet).apply()
+                NativeConfig.saveGlobalConfig()
+                getGameDirsAndExternalContent(reloadList = true)
             }
         }
 
@@ -219,20 +239,7 @@ class GamesViewModel : ViewModel() {
     }
 
     private fun getGameDirsAndExternalContent(reloadList: Boolean = false) {
-        var gameDirs = NativeConfig.getGameDirs().distinctBy { it.uriString }.toMutableList()
-        if (gameDirs.isEmpty()) {
-            val prefs = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
-            val savedDirs = prefs.getStringSet("game_directories_backup", null)
-            if (!savedDirs.isNullOrEmpty()) {
-                val restoredDirs = savedDirs.map { GameDir(it, true, DirectoryType.GAME) }
-                NativeConfig.setGameDirs(restoredDirs.toTypedArray())
-                gameDirs = restoredDirs.toMutableList()
-            }
-        } else {
-            val prefs = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
-            val dirSet = gameDirs.filter { it.type == DirectoryType.GAME }.map { it.uriString }.toSet()
-            prefs.edit().putStringSet("game_directories_backup", dirSet).apply()
-        }
+        val gameDirs = NativeConfig.getGameDirs().distinctBy { it.uriString }.toMutableList()
         val externalContentDirs = NativeConfig.getExternalContentDirs().distinct().map {
             GameDir(it, false, DirectoryType.EXTERNAL_CONTENT)
         }

@@ -53,7 +53,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="#94A3B8"
+                android:textColor="#FFFFFF"
                 android:textSize="11sp"
                 android:visibility="gone"
                 tools:text="Дополнительный сюжетный контент и локации"
@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:fontFamily="monospace"
-                android:textColor="#64748B"
+                android:textColor="#38BDF8"
                 android:textSize="9sp"
                 android:visibility="gone"
                 tools:text="ID: 0.7202710899357588" />

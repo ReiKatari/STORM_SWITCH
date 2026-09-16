@@ -134,7 +134,7 @@
                 android:maxLines="1"
                 android:ellipsize="none"
                 app:cornerRadius="8dp"
-                android:textColor="#94A3B8"
+                android:textColor="#FFFFFF"
                 app:backgroundTint="#1E293B" />
 
             <com.google.android.material.button.MaterialButton
@@ -157,7 +157,7 @@
                 android:maxLines="1"
                 android:ellipsize="none"
                 app:cornerRadius="8dp"
-                android:textColor="#CBD5E1"
+                android:textColor="#FFFFFF"
                 app:backgroundTint="#334155" />
 
             <com.google.android.material.button.MaterialButton
