@@ -61,6 +61,24 @@
 #include "qt_common/config/uisettings.h"
 #include "storm_switch/translator/game_translator.h"
 
+static QString StormLang(const QString& ru, const QString& en,
+                         const QString& de = QString(), const QString& fr = QString(),
+                         const QString& zh = QString(), const QString& ja = QString(),
+                         const QString& ar = QString(), const QString& es = QString()) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("ar", 0) == 0 && !ar.isEmpty()) return ar;
+    if (lang.rfind("es", 0) == 0 && !es.isEmpty()) return es;
+    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
+    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
+    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
+    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
+    return en;
+}
+
 // ============================================================================
 // ROIPreviewWidget Implementation
 // ============================================================================
@@ -733,10 +751,12 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     connect(m_roi_preview, &ROIPreviewWidget::ZonesChanged, this, &GameTranslator::OnZonesUpdatedInPreview);
 
     LoadSettings();
+    LoadCache();
 }
 
 GameTranslator::~GameTranslator() {
     SaveSettings();
+    SaveCache();
     if (m_hud_overlay) {
         delete m_hud_overlay;
     }
@@ -871,16 +891,177 @@ void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
     watcher->setFuture(future);
 }
 
+void GameTranslator::LoadCache() {
+    std::filesystem::path config_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir);
+    std::filesystem::path cache_path = config_dir / "translator_cache.json";
+    std::error_code ec;
+    if (std::filesystem::exists(cache_path, ec)) {
+        QFile f(QString::fromStdString(cache_path.string()));
+        if (f.open(QIODevice::ReadOnly)) {
+            QJsonObject root = QJsonDocument::fromJson(f.readAll()).object();
+            f.close();
+            for (auto it = root.begin(); it != root.end(); ++it) {
+                m_translation_cache.insert(it.key(), it.value().toString());
+            }
+        }
+    }
+}
+
+void GameTranslator::SaveCache() {
+    std::filesystem::path config_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir);
+    std::filesystem::path cache_path = config_dir / "translator_cache.json";
+    std::error_code ec;
+    static_cast<void>(Common::FS::CreateParentDir(cache_path));
+
+    QJsonObject root;
+    // Limit cache size to 2000 entries (LRU/cap)
+    int count = 0;
+    for (auto it = m_translation_cache.begin(); it != m_translation_cache.end() && count < 2000; ++it, ++count) {
+        root.insert(it.key(), it.value());
+    }
+
+    QFile f_out(QString::fromStdString(cache_path.string()));
+    if (f_out.open(QIODevice::WriteOnly)) {
+        f_out.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
+        f_out.close();
+    }
+}
+
+QString GameTranslator::SanitizeOcrText(const QString& text) const {
+    if (text.isEmpty()) return text;
+    QString cleaned = text;
+    // 1. Glue hyphenated line-breaks: "exam-\nple" -> "example"
+    static const QRegularExpression hyphen_break(QStringLiteral(R"((?<=\w)-\s*[\r\n]+\s*(?=\w))"));
+    cleaned.replace(hyphen_break, QString());
+
+    // 2. Collapse line breaks into single spaces within sentences
+    cleaned.replace(QRegularExpression(QStringLiteral(R"([\r\n]+)")), QStringLiteral(" "));
+
+    // 3. Collapse multiple whitespace characters into a single space
+    cleaned.replace(QRegularExpression(QStringLiteral(R"(\s{2,})")), QStringLiteral(" "));
+
+    return cleaned.trimmed();
+}
+
+void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString& text, const QString& src_lang, const QString& tgt_lang, const QString& cache_key) {
+    if (endpoint_index > 2) {
+        m_status_label->setText(tr("⚠️ Ошибка перевода: серверы недоступны"));
+        return;
+    }
+
+    QUrl url;
+    QUrlQuery query;
+    const QString sl = src_lang.isEmpty() ? QStringLiteral("auto") : src_lang;
+    const QString tl = tgt_lang.isEmpty() ? QStringLiteral("ru") : tgt_lang;
+
+    if (endpoint_index == 0) {
+        m_status_label->setText(tr("🌐 Перевод через Google Web API..."));
+        url = QUrl(QStringLiteral("https://translate.googleapis.com/translate_a/single"));
+        query.addQueryItem(QStringLiteral("client"), QStringLiteral("gtx"));
+        query.addQueryItem(QStringLiteral("sl"), sl);
+        query.addQueryItem(QStringLiteral("tl"), tl);
+        query.addQueryItem(QStringLiteral("dt"), QStringLiteral("t"));
+        query.addQueryItem(QStringLiteral("q"), text);
+    } else if (endpoint_index == 1) {
+        m_status_label->setText(tr("🌐 Перевод через Google Dict API (резерв 1)..."));
+        url = QUrl(QStringLiteral("https://clients5.google.com/translate_a/t"));
+        query.addQueryItem(QStringLiteral("client"), QStringLiteral("dict-chrome-ex"));
+        query.addQueryItem(QStringLiteral("sl"), sl);
+        query.addQueryItem(QStringLiteral("tl"), tl);
+        query.addQueryItem(QStringLiteral("q"), text);
+    } else if (endpoint_index == 2) {
+        m_status_label->setText(tr("🌐 Перевод через MyMemory API (резерв 2)..."));
+        url = QUrl(QStringLiteral("https://api.mymemory.translated.net/get"));
+        query.addQueryItem(QStringLiteral("q"), text);
+        query.addQueryItem(QStringLiteral("langpair"), QStringLiteral("%1|%2").arg(sl == QStringLiteral("auto") ? QStringLiteral("en") : sl, tl));
+    }
+    url.setQuery(query);
+
+    QNetworkRequest req(url);
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"));
+    req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
+
+    QNetworkReply* reply = m_network_mgr->get(req);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, endpoint_index, text, src_lang, tgt_lang, cache_key]() {
+        reply->deleteLater();
+        bool success = false;
+        QString translated_result;
+
+        if (reply->error() == QNetworkReply::NoError) {
+            const QByteArray data = reply->readAll();
+            if (endpoint_index == 0) {
+                QJsonDocument doc = QJsonDocument::fromJson(data);
+                if (doc.isArray()) {
+                    QJsonArray arr = doc.array();
+                    if (!arr.isEmpty() && arr[0].isArray()) {
+                        for (const auto& item : arr[0].toArray()) {
+                            if (item.isArray() && !item.toArray().isEmpty()) {
+                                translated_result += item.toArray()[0].toString();
+                            }
+                        }
+                        if (!translated_result.isEmpty()) success = true;
+                    }
+                }
+            } else if (endpoint_index == 1) {
+                QJsonDocument doc = QJsonDocument::fromJson(data);
+                if (doc.isArray()) {
+                    QJsonArray arr = doc.array();
+                    if (!arr.isEmpty() && arr[0].isString()) {
+                        translated_result = arr[0].toString();
+                        if (!translated_result.isEmpty()) success = true;
+                    }
+                }
+            } else if (endpoint_index == 2) {
+                QJsonDocument doc = QJsonDocument::fromJson(data);
+                if (doc.isObject()) {
+                    QJsonObject obj = doc.object();
+                    if (obj.contains(QStringLiteral("responseData")) && obj[QStringLiteral("responseData")].isObject()) {
+                        translated_result = obj[QStringLiteral("responseData")].toObject()[QStringLiteral("translatedText")].toString();
+                        if (!translated_result.isEmpty()) success = true;
+                    }
+                }
+            }
+        }
+
+        if (success && !translated_result.trimmed().isEmpty()) {
+            translated_result = translated_result.trimmed();
+            m_translation_cache.insert(cache_key, translated_result);
+            m_last_translated_input = text;
+            m_last_translated_output = translated_result;
+
+            m_translated_edit->setText(translated_result);
+            m_hud_overlay->SetSubtitleText(translated_result);
+            m_status_label->setText(tr("✅ Перевод завершён"));
+
+            if (m_auto_speak_check->isChecked()) {
+                SpeakText(translated_result);
+            }
+        } else {
+            ExecuteTranslationRequest(endpoint_index + 1, text, src_lang, tgt_lang, cache_key);
+        }
+    });
+}
+
 void GameTranslator::PerformOnlineTranslation(const QString& text, const QString& src_lang, const QString& tgt_lang) {
-    const QString trimmed_text = text.trimmed();
-    if (trimmed_text.isEmpty()) {
+    const QString cleaned_text = SanitizeOcrText(text);
+    if (cleaned_text.isEmpty()) {
         m_status_label->setText(tr("Готов"));
         return;
     }
 
-    const QString cache_key = QStringLiteral("%1:%2:%3").arg(src_lang, tgt_lang, trimmed_text);
+    // Anti-flicker subtitle diffing: if input has not changed, keep current output without flickering
+    if (cleaned_text == m_last_translated_input && !m_last_translated_output.isEmpty()) {
+        m_translated_edit->setText(m_last_translated_output);
+        m_hud_overlay->SetSubtitleText(m_last_translated_output);
+        m_status_label->setText(tr("✅ Перевод (без изменений)"));
+        return;
+    }
+
+    const QString cache_key = QStringLiteral("%1:%2:%3").arg(src_lang, tgt_lang, cleaned_text);
     if (m_translation_cache.contains(cache_key)) {
         const QString translated_result = m_translation_cache.value(cache_key);
+        m_last_translated_input = cleaned_text;
+        m_last_translated_output = translated_result;
         m_translated_edit->setText(translated_result);
         m_hud_overlay->SetSubtitleText(translated_result);
         m_status_label->setText(tr("✅ Перевод (кэш)"));
@@ -891,49 +1072,7 @@ void GameTranslator::PerformOnlineTranslation(const QString& text, const QString
         return;
     }
 
-    m_status_label->setText(tr("🌐 Перевод через Google Web API..."));
-
-    QUrl url(QStringLiteral("https://translate.googleapis.com/translate_a/single"));
-    QUrlQuery query;
-    query.addQueryItem(QStringLiteral("client"), QStringLiteral("gtx"));
-    query.addQueryItem(QStringLiteral("sl"), src_lang.isEmpty() ? QStringLiteral("auto") : src_lang);
-    query.addQueryItem(QStringLiteral("tl"), tgt_lang.isEmpty() ? QStringLiteral("ru") : tgt_lang);
-    query.addQueryItem(QStringLiteral("dt"), QStringLiteral("t"));
-    query.addQueryItem(QStringLiteral("q"), trimmed_text);
-    url.setQuery(query);
-
-    QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"));
-
-    QNetworkReply* reply = m_network_mgr->get(req);
-    connect(reply, &QNetworkReply::finished, this, [this, reply, cache_key]() {
-        reply->deleteLater();
-        if (reply->error() == QNetworkReply::NoError) {
-            QByteArray data = reply->readAll();
-            QJsonDocument doc = QJsonDocument::fromJson(data);
-            if (doc.isArray()) {
-                QJsonArray arr = doc.array();
-                if (!arr.isEmpty() && arr[0].isArray()) {
-                    QString translated_result;
-                    for (const auto& item : arr[0].toArray()) {
-                        if (item.isArray() && !item.toArray().isEmpty()) {
-                            translated_result += item.toArray()[0].toString();
-                        }
-                    }
-                    m_translation_cache.insert(cache_key, translated_result);
-                    m_translated_edit->setText(translated_result);
-                    m_hud_overlay->SetSubtitleText(translated_result);
-                    m_status_label->setText(tr("✅ Перевод завершён"));
-
-                    if (m_auto_speak_check->isChecked()) {
-                        SpeakText(translated_result);
-                    }
-                    return;
-                }
-            }
-        }
-        m_status_label->setText(tr("⚠️ Ошибка перевода"));
-    });
+    ExecuteTranslationRequest(0, cleaned_text, src_lang, tgt_lang, cache_key);
 }
 
 std::vector<SpeechSegment> GameTranslator::ParseDialogueSegments(const QString& text) {
@@ -1310,7 +1449,7 @@ void GameTranslator::SaveSettings() {
     std::filesystem::path config_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir);
     std::filesystem::path config_path = config_dir / "translator.json";
     std::error_code ec;
-    Common::FS::CreateParentDir(config_path);
+    static_cast<void>(Common::FS::CreateParentDir(config_path));
 
     QJsonObject root;
     QFile f_in(QString::fromStdString(config_path.string()));

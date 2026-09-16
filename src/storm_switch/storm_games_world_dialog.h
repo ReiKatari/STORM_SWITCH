@@ -33,6 +33,7 @@ struct StormWorldGame {
     QString title;
     QString final_title;
     QString version;
+    QString internal_version;
     QString serial_id;
     QString size;
     qint64 file_size_bytes{0};

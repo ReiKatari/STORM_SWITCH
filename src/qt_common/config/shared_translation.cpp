@@ -21,14 +21,177 @@
 
 namespace ConfigurationShared {
 
+static QString TranslateConfigText(const char* text, const char* disambiguation = nullptr) {
+    if (!text || text[0] == '\0') {
+        return QString();
+    }
+    std::string cur_lang = UISettings::values.language.GetValue();
+    if (cur_lang.empty()) {
+        cur_lang = QLocale::system().name().toStdString();
+    }
+    if (cur_lang == "en") {
+        return QString::fromUtf8(text);
+    }
+
+    struct LangItem {
+        const char* key;
+        const char* ru;
+        const char* ar;
+        const char* de;
+        const char* fr;
+        const char* zh;
+        const char* ja;
+        const char* es;
+    };
+
+    static const LangItem s_table[] = {
+        // Screenshot 2 & System settings
+        {"CPU Clocks", "Частоты ЦП", "ترددات المعالج", "CPU-Takte", "Fréquences CPU", "CPU 时钟", "CPU クロック", "Frecuencias CPU"},
+        {"GPU Clocks", "Частоты ГПУ", "ترددات معالج الرسوميات", "GPU-Takte", "Fréquences GPU", "GPU 时钟", "GPU クロック", "Frecuencias GPU"},
+        {"Eco Thermal Mode", "Эко-термальный режим", "الوضع الحراري الاقتصادي", "Eco-Thermal-Modus", "Mode thermique éco", "环保节能模式", "エコ熱管理モード", "Modo térmico ecológico"},
+        {"STORM Low-End Turbo", "STORM турбо для слабых ПК", "وضع التوربو للأجهزة الضعيفة STORM", "STORM Low-End Turbo", "STORM Turbo pour machines modestes", "STORM 低端设备加速", "STORM 低スペック高速化", "STORM Turbo para gama baja"},
+        {"STORM Thermal Governor", "STORM термоконтроллер", "متحكم الحرارة STORM", "STORM Thermal Governor", "Régulateur thermique STORM", "STORM 温度调节器", "STORM 温度ガバナー", "Regulador térmico STORM"},
+        {"Limit Speed Percent", "Ограничение скорости в процентах", "نسبة تحديد السرعة", "Geschwindigkeitsbegrenzung in Prozent", "Pourcentage de limite de vitesse", "运行速度百分比限制", "速度制限パーセント", "Límite de velocidad en porcentaje"},
+        {"Turbo Speed", "Турбо скорость", "سرعة التوربو", "Turbo-Geschwindigkeit", "Vitesse Turbo", "加速速度", "ターボ速度", "Velocidad turbo"},
+        {"Slow Speed", "Замедленная скорость", "السرعة البطيئة", "Verlangsamte Geschwindigkeit", "Vitesse lente", "减速速度", "低速", "Velocidad lenta"},
+        {"Synchronize Core Speed", "Синхронизировать скорость ядра", "مزامنة سرعة النواة", "Kerngeschwindigkeit synchronisieren", "Synchroniser la vitesse du cœur", "同步核心速度", "コア速度を同期", "Sincronizar velocidad del núcleo"},
+        {"Multicore CPU Emulation", "Многоядерная эмуляция ЦП", "محاكاة المعالج متعدد النواة", "Mehrkern-CPU-Emulation", "Émulation CPU multicœur", "多核 CPU 模拟", "マルチコア CPU エミュレーション", "Emulación de CPU multinúcleo"},
+        {"Memory Layout", "Схема памяти", "مخطط الذاكرة", "Speicher-Layout", "Disposition de la mémoire", "内存布局", "メモリレイアウト", "Distribución de memoria"},
+        {"Custom RTC Date:", "Пользовательское время RTC:", "تاريخ RTC مخصص:", "Benutzerdefinierte RTC-Zeit:", "Date RTC personnalisée :", "自定义 RTC 时间:", "カスタム RTC 日時:", "Fecha RTC personalizada:"},
+        {"Custom RTC Offset:", "Смещение RTC:", "إزاحة RTC:", "RTC-Offset:", "Décalage RTC :", "RTC 偏移量:", "RTC オフセット:", "Compensación RTC:"},
+        {"Custom RTC Offset", "Смещение RTC", "إزاحة RTC", "RTC-Offset", "Décalage RTC", "RTC 偏移量", "RTC オフセット", "Compensación RTC"},
+        {"Custom RTC", "Пользовательское время RTC", "تاريخ RTC مخصص", "Benutzerdefinierte RTC-Zeit", "Date RTC personnalisée", "自定义 RTC 时间", "カスタム RTC 日時", "Fecha RTC personalizada"},
+        {"Custom RNG Seed", "Пользовательский сид RNG", "بذرة عشوائية مخصصة (RNG)", "Benutzerdefinierter RNG-Seed", "Graine RNG personnalisée", "自定义随机数种子", "カスタム RNG シード", "Semilla RNG personalizada"},
+
+        // Screenshot 3 & CPU settings
+        {"Accuracy:", "Точность:", "الدقة:", "Genauigkeit:", "Précision :", "精确度:", "精度:", "Precisión:"},
+        {"Accurate", "Точный", "دقيق", "Präzise", "Précis", "高精度", "正確", "Preciso"},
+        {"Auto", "Авто", "تلقائي", "Auto", "Auto", "自动", "自動", "Automático"},
+        {"Unsafe", "Небезопасно", "غير آمن", "Unsicher", "Non sécurisé", "不安全", "非安全", "Inseguro"},
+        {"Unsafe (fast)", "Небезопасно (быстро)", "غير آمن (سريع)", "Unsicher (schnell)", "Non sécurisé (rapide)", "不安全 (极速)", "非安全 (高速)", "Inseguro (rápido)"},
+        {"Safe (stable)", "Безопасно (стабильно)", "آمن (مستقر)", "Sicher (stabil)", "Sécurisé (stable)", "安全 (稳定)", "安全 (安定)", "Seguro (estable)"},
+        {"Paranoid (disables most optimizations)", "Параноидальный (отключает оптимизации)", "مفرط في الدقة (يعطل التحسينات)", "Paranoid (deaktiviert die meisten Optimierungen)", "Paranoïaque (désactive la plupart des optimisations)", "极致安全 (禁用大部分优化)", "パラノイド (大半の最適化を無効化)", "Paranoico (desactiva la mayoría de optimizaciones)"},
+        {"Debugging", "Отладка", "تصحيح الأخطاء", "Debugging", "Débogage", "调试", "デバッグ", "Depuración"},
+        {"Custom CPU Ticks", "Пользовательские такты ЦП", "ترددات مخصصة للمعالج", "Benutzerdefinierte CPU-Ticks", "Ticks CPU personnalisés", "自定义 CPU 时钟节拍", "カスタム CPU ティック", "Ticks de CPU personalizados"},
+        {"CPU Affinity Pinning", "Привязка потоков ЦП (Affinity)", "تثبيت أنوية المعالج", "CPU-Affinity Pinning", "Affinité des cœurs CPU", "CPU 核心亲和性绑定", "CPU アフィニティ固定", "Fijación de afinidad de CPU"},
+
+        // Screenshot 4 & Graphics settings
+        {"API:", "Графический API:", "واجهة برمجة الرسوميات:", "Grafik-API:", "API graphique :", "图形 API:", "グラフィックス API:", "API de gráficos:"},
+        {"Device:", "Устройство:", "الجهاز:", "Gerät:", "Appareil :", "设备:", "デバイス:", "Dispositivo:"},
+        {"VSync Mode:", "Режим VSync:", "وضع VSync:", "VSync-Modus:", "Mode VSync :", "垂直同步模式:", "VSync モード:", "Modo VSync:"},
+        {"Resolution:", "Разрешение:", "الدقة:", "Auflösung:", "Résolution :", "分辨率:", "解像度:", "Resolución:"},
+        {"Window Adapting Filter:", "Фильтр масштабирования окна:", "مرشح ملاءمة النافذة:", "Fensteranpassungsfilter:", "Filtre d'adaptation de fenêtre :", "窗口自适应滤镜:", "ウィンドウ適応フィルター:", "Filtro de adaptación de ventana:"},
+        {"FSR Sharpness:", "Резкость FSR:", "حدة FSR:", "FSR-Schärfe:", "Netteté FSR :", "FSR 锐度:", "FSR シャープネス:", "Nitidez FSR:"},
+        {"Anti-Aliasing Method:", "Метод сглаживания:", "طريقة منع التعرج:", "Kantenglättungsmethode:", "Méthode anticrénelage :", "抗锯齿方法:", "アンチエイリアシング方式:", "Método de suavizado:"},
+        {"Fullscreen Mode:", "Полноэкранный режим:", "وضع ملء الشاشة:", "Vollbildmodus:", "Mode plein écran :", "全屏模式:", "全画面モード:", "Modo de pantalla completa:"},
+        {"Aspect Ratio:", "Соотношение сторон:", "نسبة الأبعاد:", "Seitenverhältnis:", "Format d'image :", "宽高比:", "アスペクト比:", "Relación de aspecto:"},
+        {"Use persistent pipeline cache", "Использовать постоянный кэш конвейера", "استخدام ذاكرة خطوط الأنابيب الدائمة", "Dauerhaften Pipeline-Cache verwenden", "Utiliser le cache de pipeline persistant", "使用持久化管线缓存", "永続パイプラインキャッシュを使用", "Usar caché de tuberías persistente"},
+        {"Use asynchronous GPU emulation", "Асинхронная эмуляция ГПУ", "محاكاة غير متزامنة لمعالج الرسوميات", "Asynchrone GPU-Emulation", "Émulation GPU asynchrone", "异步 GPU 模拟", "非同期 GPU エミュレーション", "Emulación asíncrona de GPU"},
+        {"Eco Frame Pacing", "Эко-выравнивание кадров", "تنظيم الإطارات الاقتصادي", "Eco-Frame-Pacing", "Régulation d'images éco", "环保帧平滑", "エコフレームペーシング", "Compensación de fotogramas ecológica"},
+
+        // Screenshot 5 & Advanced Graphics settings
+        {"GPU Fence Behavior:", "Барьеры ГПУ:", "سلوك حواجز معالج الرسوميات:", "GPU-Fence-Verhalten:", "Comportement des barrières GPU :", "GPU 栅栏同步行为:", "GPU フェンス動作:", "Comportamiento de barreras GPU:"},
+        {"VRAM Usage Mode:", "Использование видеопамяти:", "وضع استخدام ذاكرة الفيديو:", "VRAM-Nutzungsmodus:", "Mode d'utilisation VRAM :", "显存使用模式:", "VRAM 使用モード:", "Modo de uso de VRAM:"},
+        {"NVDEC emulation:", "Эмуляция NVDEC:", "محاكاة NVDEC:", "NVDEC-Emulation:", "Émulation NVDEC :", "NVDEC 视频解码模拟:", "NVDEC エミュレーション:", "Emulación NVDEC:"},
+        {"Anisotropic Filtering:", "Анизотропная фильтрация:", "التصفية متباينة الخواص:", "Anisotrope Filterung:", "Filtrage anisotrope :", "各向异性过滤:", "異方性フィルタリング:", "Filtrado anisotrópico:"},
+        {"ASTC Decoding Method:", "Метод декодирования ASTC:", "طريقة فك تشفير ASTC:", "ASTC-Dekodierungsmethode:", "Méthode de décodage ASTC :", "ASTC 解码方法:", "ASTC デコード方式:", "Método de decodificación ASTC:"},
+        {"Frame Pacing Mode (Vulkan only)", "Режим стабилизации кадров (только Vulkan)", "وضع ضبط توقيت الإطارات (Vulkan فقط)", "Frame-Pacing-Modus (nur Vulkan)", "Mode de calage d'images (Vulkan uniquement)", "帧同步模式 (仅限 Vulkan)", "フレームペーシングモード (Vulkan のみ)", "Modo de sincronización de fotogramas (solo Vulkan)"},
+        {"ASTC Recompression Method:", "Метод пересжатия ASTC:", "طريقة إعادة ضغط ASTC:", "ASTC-Rekompression:", "Méthode de recompression ASTC :", "ASTC 重压缩方式:", "ASTC 再圧縮方式:", "Método de recompresión ASTC:"},
+        {"Lock Dynamic Resolution", "Блокировка динамического разрешения", "قفل الدقة الديناميكية", "Dynamische Auflösung sperren", "Verrouiller la résolution dynamique", "锁定动态分辨率", "動的解像度ロック", "Bloquear resolución dinámica"},
+        {"Sync Memory Operations", "Синхронизация операций памяти", "مزامنة عمليات الذاكرة", "Speicheroperationen synchronisieren", "Synchroniser les opérations de mémoire", "同步内存操作", "メモリオペレーションの同期", "Sincronizar operaciones de memoria"},
+        {"Force Maximum Clocks (PC and Mobile)", "Принудительная максимальная частота", "فرض أقصى ترددات", "Maximale Taktraten erzwingen", "Forcer les fréquences maximales", "强制最高时钟频率", "最大クロックを強制", "Forzar frecuencias máximas"},
+        {"Force maximum clocks (Vulkan only)", "Принудительная максимальная частота (только Vulkan)", "فرض أقصى ترددات (Vulkan فقط)", "Maximale Taktraten erzwingen (nur Vulkan)", "Forcer les fréquences maximales (Vulkan uniquement)", "强制最高时钟频率 (仅限 Vulkan)", "最大クロックを強制 (Vulkan のみ)", "Forzar frecuencias máximas (solo Vulkan)"},
+        {"Early Release Fences", "Раннее освобождение барьеров (Fences)", "تحرير المزامنة المبكر (Fences)", "Frühes Freigeben von Fences", "Libération anticipée des barrières", "提前释放同步栅栏 (Fences)", "フェンスの早期解放", "Liberación temprana de barreras"},
+        {"Optimize SPIR-V Output", "Оптимизировать SPIR-V вывод", "تحسين مخرجات SPIR-V", "SPIR-V-Ausgabe optimieren", "Optimiser la sortie SPIR-V", "优化 SPIR-V 输出", "SPIR-V 出力を最適化", "Optimizar salida SPIR-V"},
+        {"Fast GPU Time", "Тайминги ГПУ", "توقيت GPU السريع", "Schnelle GPU-Zeit", "Temps GPU rapide", "快速 GPU 时间", "高速 GPU タイマー", "Tiempo rápido de GPU"},
+        {"Enable Frame Skipping", "Включить пропуск кадров", "تفعيل تخطي الإطارات", "Frame-Skipping aktivieren", "Activer le saut d'images", "启用跳帧", "フレームスキップを有効化", "Habilitar salto de fotogramas"},
+        {"Use Vulkan pipeline cache", "Кэш конвейеров Vulkan", "استخدام ذاكرة خطوط أنابيب Vulkan", "Vulkan-Pipeline-Cache verwenden", "Utiliser le cache de pipeline Vulkan", "使用 Vulkan 管线缓存", "Vulkan パイプラインキャッシュを使用", "Usar caché de tuberías de Vulkan"},
+        {"Enable asynchronous shader compilation", "Включить асинхронную компиляцию шейдеров", "تجميع الشيدر غير المتزامن", "Asynchrone Shader-Kompilierung aktivieren", "Activer la compilation asynchrone des shaders", "启用异步着色器编译", "非同期シェーダーコンパイルを有効化", "Habilitar compilación asíncrona de shaders"},
+        {"Sync to framerate of video playback", "Синхронизировать с частотой кадров видео", "المزامنة مع معدل إطارات تشغيل الفيديو", "Mit Video-Framerate synchronisieren", "Synchroniser avec le framerate de la vidéo", "与视频播放帧率同步", "動画再生のフレームレートに同期", "Sincronizar con tasa de fotogramas de video"},
+        {"Enable Reactive Flushing", "Включить реактивный сброс", "تفعيل التفريغ التفاعلي", "Reaktives Flushing aktivieren", "Activer la vidange réactive", "启用响应式刷新 (Reactive Flushing)", "リアクティブフラッシュを有効化", "Habilitar vaciado reactivo"},
+        {"Barrier feedback loops", "Циклы обратной связи барьеров", "حلقات التغذية الراجعة للحواجز", "Barrieren-Feedbackschleifen", "Boucles de rétroaction des barrières", "栅栏反馈循环", "バリアフィードバックループ", "Bucles de retroalimentación de barreras"},
+        {"Enable buffer history", "Включить историю буфера", "تفعيل سجل التخزين المؤقت", "Pufferverlauf aktivieren", "Activer l'historique du tampon", "启用缓冲区历史记录", "バッファ履歴を有効化", "Habilitar historial de búfer"},
+        {"Smart Shader Throttle", "Умный троттлинг шейдеров", "التحكم الذكي بمترجم الشيدر", "Smart Shader Throttle", "Régulation intelligente des shaders", "智能着色器节流", "スマートシェーダースロットル", "Regulador inteligente de shaders"},
+        {"VRAM Garbage Collection", "Очистка виртуальной памяти", "تنظيف ذاكرة الفيديو (VRAM)", "VRAM-Speicherbereinigung", "Nettoyage de la mémoire VRAM", "显存垃圾回收", "VRAM ガベージコレクション", "Recolección de basura VRAM"},
+        {"Enable HDR10", "Включить HDR10", "تفعيل HDR10", "HDR10 aktivieren", "Activer HDR10", "启用 HDR10", "HDR10 を有効化", "Habilitar HDR10"},
+        {"VRAM Budget Governor", "Контроллер бюджета VRAM", "منظم ميزانية VRAM", "VRAM-Budget-Governor", "Régulateur de budget VRAM", "显存预算调度器", "VRAM 予算ガバナー", "Regulador de presupuesto VRAM"},
+        {"Enable GPU buffer readback", "Обратное чтение буфера ГПУ", "تفعيل إعادة قراءة مخزن GPU", "GPU-Puffer-Rücklesung aktivieren", "Activer la relecture du tampon GPU", "启用 GPU 缓冲区回读", "GPU バッファのリードバックを有効化", "Habilitar relectura del búfer de GPU"},
+        {"Floating Translate Button", "Плавающая кнопка перевода", "زر الترجمة العائم", "Schwebender Übersetzungs-Button", "Bouton de traduction flottant", "悬浮翻译按钮", "フローティング翻訳ボタン", "Botón de traducción flotante"},
+
+        // Combobox enums
+        {"Conservative", "Экономный", "اقتصادي", "Konservativ", "Économe", "保守", "控えめ", "Conservador"},
+        {"Normal", "Нормальный", "عادي", "Normal", "Normal", "正常", "標準", "Normal"},
+        {"Aggressive", "Агрессивный", "عدواني", "Aggressiv", "Agressif", "激进", "積極的", "Agresivo"},
+        {"Default", "По умолчанию", "افتراضي", "Standard", "Par défaut", "默认", "デフォルト", "Por defecto"},
+        {"Default (16:9)", "По умолчанию (16:9)", "افتراضي (16:9)", "Standard (16:9)", "Par défaut (16:9)", "默认 (16:9)", "デフォルト (16:9)", "Por defecto (16:9)"},
+        {"Stretch to Window", "Растянуть до окна", "تمديد إلى النافذة", "Auf Fenstergröße strecken", "Étirer à la fenêtre", "拉伸至窗口", "ウィンドウに合わせる", "Estirar a la ventana"},
+        {"Borderless Windowed", "Безрамочный режим", "نافذة بلا حدود", "Rahmenloses Fenster", "Fenêtré sans bordure", "无边框窗口", "ボーダーレスウィンドウ", "Ventana sin bordes"},
+        {"Exclusive Fullscreen", "Эксклюзивный полноэкранный режим", "ملء الشاشة الحصري", "Exklusives Vollbild", "Plein écran exclusif", "独占全屏", "排他フルスクリーン", "Pantalla completa exclusiva"},
+        {"None", "Нет", "لا شيء", "Keine", "Aucun", "无", "なし", "Ninguno"},
+        {"Off", "Выкл", "إيقاف", "Aus", "Désactivé", "关闭", "オフ", "Desactivado"},
+        {"Never", "Никогда", "أبداً", "Nie", "Jamais", "从不", "なし", "Nunca"},
+        {"On Load", "При загрузке", "عند التحميل", "Beim Laden", "Au chargement", "加载时", "読み込み時", "Al cargar"},
+        {"Always", "Всегда", "دائماً", "Immer", "Toujours", "总是", "常に", "Siempre"},
+        {"GPU Video Decoding (Default)", "Декодирование видео на GPU (По умолчанию)", "فك تشفير الفيديو عبر GPU (افتراضي)", "GPU-Videodekodierung (Standard)", "Décodage vidéo GPU (par défaut)", "GPU 视频解码 (默认)", "GPU ビデオデコード (デフォルト)", "Decodificación de video por GPU (predeterminado)"},
+        {"CPU Video Decoding", "Декодирование видео на CPU", "فك تشفير الفيديو عبر CPU", "CPU-Videodekodierung", "Décodage vidéo CPU", "CPU 视频解码", "CPU ビデオデコード", "Decodificación de video por CPU"},
+        {"No Video Output", "Без вывода видео", "بدون إخراج فيديو", "Keine Videoausgabe", "Aucune sortie vidéo", "无视频输出", "ビデオ出力なし", "Sin salida de video"},
+        {"Uncompressed (Best quality)", "Без сжатия (наилучшее качество)", "غير مضغوط (أفضل جودة)", "Unkomprimiert (Beste Qualität)", "Non compressé (Meilleure qualité)", "未压缩 (最高质量)", "非圧縮 (最高品質)", "Sin comprimir (mejor calidad)"},
+        {"BC1 (Low quality)", "BC1 (Низкое качество)", "BC1 (جودة منخفضة)", "BC1 (Geringe Qualität)", "BC1 (Basse qualité)", "BC1 (低质量)", "BC1 (低品質)", "BC1 (baja calidad)"},
+        {"BC3 (Medium quality)", "BC3 (Среднее качество)", "BC3 (جودة متوسطة)", "BC3 (Mittlere Qualität)", "BC3 (Qualité moyenne)", "BC3 (中等质量)", "BC3 (中品質)", "BC3 (calidad media)"},
+        {"Fast", "Быстро", "سريع", "Schnell", "Rapide", "快速", "高速", "Rápido"},
+        {"Strict", "Строго", "صارم", "Strikt", "Strict", "严格", "厳格", "Estricto"},
+        {"Immediate", "Немедленно", "فوري", "Sofort", "Immédiat", "立即", "即時", "Inmediato"},
+        {"Balanced", "Сбалансированно", "متوازن", "Ausgewogen", "Équilibré", "平衡", "バランス", "Equilibrado"},
+        {"Automatic", "Автоматически", "تلقائي", "Automatisch", "Automatique", "自动", "自動", "Automático"},
+        {"Custom frontend", "Пользовательский интерфейс", "واجهة أمامية مخصصة", "Benutzerdefiniertes Frontend", "Interface personnalisée", "自定义前端", "カスタムフロントエンド", "Frontend personalizado"},
+        {"Real applet", "Настоящий апплет", "بريمج حقيقي", "Echtes Applet", "Véritable applet", "真实小程序", "実際のアプレット", "Applet real"},
+        {"CPU Asynchronous", "ЦП (Асинхронно)", "المعالج (غير متزامن)", "CPU asynchron", "CPU asynchrone", "CPU 异步", "CPU 非同期", "CPU asíncrono"},
+        {"Force 4:3", "Принудительно 4:3", "إجبار 4:3", "4:3 erzwingen", "Forcer 4:3", "强制 4:3", "強制 4:3", "Forzar 4:3"},
+        {"Force 21:9", "Принудительно 21:9", "إجبار 21:9", "21:9 erzwingen", "Forcer 21:9", "强制 21:9", "強制 21:9", "Forzar 21:9"},
+        {"Force 16:10", "Принудительно 16:10", "إجبار 16:10", "16:10 erzwingen", "Forcer 16:10", "强制 16:10", "強制 16:10", "Forzar 16:10"},
+        {"Nearest Neighbor", "Ближайший сосед", "أقرب جار", "Nächster Nachbar", "Plus proche voisin", "最近邻", "最近傍", "Vecino más cercano"},
+        {"Bilinear", "Билинейный", "ثنائي الخطي", "Bilinear", "Bilinéaire", "双线性", "バイリニア", "Bilineal"},
+        {"Bicubic", "Бикубический", "ثنائي التكعيب", "Bikubisch", "Bicubique", "双三次", "バイキュービック", "Bicúbico"},
+        {"Gaussian", "Гауссов", "جاوسي", "Gauß", "Gaussien", "高斯", "ガウス", "Gaussiano"},
+        {"Lanczos", "Ланцош", "لانكزوس", "Lanczos", "Lanczos", "兰索斯", "ランチョス", "Lanczos"},
+        {"Japanese (日本語)", "Японский (日本語)", "اليابانية (日本語)", "Japanisch (日本語)", "Japonais (日本語)", "日语 (日本語)", "日本語", "Japonés (日本語)"},
+        {"American English", "Американский английский", "الإنجليزية الأمريكية", "Amerikanisches Englisch", "Anglais américain", "美式英语", "アメリカ英語", "Inglés estadounidense"},
+        {"French (français)", "Французский (français)", "الفرنسية (français)", "Französisch (français)", "Français (français)", "法语 (français)", "フランス語 (français)", "Francés (français)"},
+        {"German (Deutsch)", "Немецкий (Deutsch)", "الألمانية (Deutsch)", "Deutsch", "Allemand (Deutsch)", "德语 (Deutsch)", "ドイツ語 (Deutsch)", "Alemán (Deutsch)"},
+        {"Italian (italiano)", "Итальянский (italiano)", "الإيطالية (italiano)", "Italienisch (italiano)", "Italien (italiano)", "意大利语 (italiano)", "イタリア語 (italiano)", "Italiano (italiano)"},
+        {"Spanish (español)", "Испанский (español)", "الإسبانية (español)", "Spanisch (español)", "Espagnol (español)", "西班牙语 (español)", "スペイン語 (español)", "Español (español)"},
+        {"Chinese", "Китайский", "الصينية", "Chinesisch", "Chinois", "中文", "中国語", "Chino"},
+        {"Korean (한국어)", "Корейский (한국어)", "الكورية (한국어)", "Koreanisch (한국어)", "Coréen (한국어)", "韩语 (한국어)", "韓国語 (한국어)", "Coreano (한국어)"},
+        {"Dutch (Nederlands)", "Нидерландский (Nederlands)", "الهولندية (Nederlands)", "Niederländisch (Nederlands)", "Néerlandais (Nederlands)", "荷兰语 (Nederlands)", "オランダ語 (Nederlands)", "Holandés (Nederlands)"},
+        {"Portuguese (Português)", "Португальский (Português)", "البرتغالية (Português)", "Portugiesisch (Português)", "Portugais (Português)", "葡萄牙语 (Português)", "ポルトガル語 (Português)", "Portugués (Português)"},
+        {"Russian (Русский)", "Русский (Русский)", "الروسية (Русский)", "Russisch (Русский)", "Russe (Русский)", "俄语 (Русский)", "ロシア語 (Русский)", "Ruso (Русский)"},
+        {"Taiwanese", "Тайваньский", "التايوانية", "Taiwanisch", "Taïwanais", "繁体中文 (台湾)", "台湾語", "Taiwanés"},
+        {"British English", "Британский английский", "الإنجليزية البريطانية", "Britisches Englisch", "Anglais britannique", "英式英语", "イギリス英語", "Inglés británico"},
+        {"Simplified Chinese", "Упрощенный китайский", "الصينية المبسطة", "Vereinfachtes Chinesisch", "Chinois simplifié", "简体中文", "簡体字中国語", "Chino simplificado"},
+        {"Traditional Chinese", "Традиционный китайский", "الصينية التقليدية", "Traditionelles Chinesisch", "Chinois traditionnel", "繁体中文", "繁体字中国語", "Chino tradicional"},
+        {"Brazilian Portuguese", "Бразильский португальский", "البرتغالية البرازيلية", "Brasilianisches Portugiesisch", "Portugais brésilien", "巴西葡萄牙语", "ブラジルポルトガル語", "Portugués brasileño"},
+        {"Latin American Spanish", "Латиноамериканский испанский", "الإسبانية الأمريكية اللاتينية", "Lateinamerikanisches Spanisch", "Espagnol d'Amérique latine", "拉美西班牙语", "ラテンアメリカスペイン語", "Español latinoamericano"},
+    };
+
+    for (const auto& item : s_table) {
+        if (std::strcmp(text, item.key) == 0) {
+            if (cur_lang.rfind("ru", 0) == 0 && item.ru) return QString::fromUtf8(item.ru);
+            if (cur_lang.rfind("ar", 0) == 0 && item.ar) return QString::fromUtf8(item.ar);
+            if (cur_lang.rfind("de", 0) == 0 && item.de) return QString::fromUtf8(item.de);
+            if (cur_lang.rfind("fr", 0) == 0 && item.fr) return QString::fromUtf8(item.fr);
+            if (cur_lang.rfind("zh", 0) == 0 && item.zh) return QString::fromUtf8(item.zh);
+            if (cur_lang.rfind("ja", 0) == 0 && item.ja) return QString::fromUtf8(item.ja);
+            if (cur_lang.rfind("es", 0) == 0 && item.es) return QString::fromUtf8(item.es);
+        }
+    }
+
+    return QCoreApplication::translate("ConfigurationShared", text, disambiguation);
+}
+
 std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
     std::unique_ptr<TranslationMap> translations = std::make_unique<TranslationMap>();
     const auto& tr = [](const char* text, const char* disambiguation = nullptr) -> QString {
-        const std::string& cur_lang = UISettings::values.language.GetValue();
-        if (cur_lang == "en") {
-            return QString::fromUtf8(text);
-        }
-        return QCoreApplication::translate("ConfigurationShared", text, disambiguation);
+        return TranslateConfigText(text, disambiguation);
     };
 
 #define INSERT(SETTINGS, ID, NAME, TOOLTIP)                                                        \
@@ -73,7 +236,7 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Increases the amount of emulated RAM.\nDoesn't affect performance/stability but may "
               "allow HD texture "
               "mods to load."));
-    INSERT(Settings, use_speed_limit, QString(), QString());
+    INSERT(Settings, use_speed_limit, tr("Limit Speed Percent"), QString());
     INSERT(Settings, current_speed_mode, QString(), QString());
     INSERT(Settings, speed_limit, tr("Limit Speed Percent"),
            tr("Controls the game's maximum rendering speed, but it's up to each game if it runs "
@@ -102,7 +265,7 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Raises the clock the emulated CPU reports, which removes some FPS limiters.\n"
               "Weaker CPUs may see reduced performance, and certain games may behave improperly."));
 
-    INSERT(Settings, use_custom_cpu_ticks, QString(), QString());
+    INSERT(Settings, use_custom_cpu_ticks, tr("Custom CPU Ticks"), QString());
     INSERT(Settings, cpu_ticks, tr("Custom CPU Ticks"),
            tr("Set a custom value of CPU ticks. Higher values can increase performance, but may "
               "cause deadlocks. A range of 77-21000 is recommended."));
@@ -301,15 +464,15 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
     // System
     INSERT(Settings, rng_seed, tr("RNG Seed"),
            tr("Controls the seed of the random number generator.\nMainly used for speedrunning."));
-    INSERT(Settings, rng_seed_enabled, QString(), QString());
+    INSERT(Settings, rng_seed_enabled, tr("Custom RNG Seed"), QString());
     INSERT(Settings, device_name, tr("Device Name"), tr("The name of the console."));
     INSERT(Settings, program_args, tr("Homebrew Args"),
            tr("Command-line arguments passed to homebrew at launch (e.g. -noglsl)."));
     INSERT(Settings, custom_rtc, tr("Custom RTC Date:"),
            tr("This option allows to change the clock of the console.\n"
               "Can be used to manipulate time in games."));
-    INSERT(Settings, custom_rtc_enabled, QString(), QString());
-    INSERT(Settings, custom_rtc_offset, QStringLiteral(" "),
+    INSERT(Settings, custom_rtc_enabled, tr("Custom RTC Date:"), QString());
+    INSERT(Settings, custom_rtc_offset, tr("Custom RTC Offset:"),
            tr("The number of seconds from the current unix time"));
     INSERT(Settings, language_index, tr("Language:"),
            tr("This option can be overridden when region setting is auto-select"));
@@ -414,11 +577,7 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
     std::unique_ptr<ComboboxTranslationMap> translations =
         std::make_unique<ComboboxTranslationMap>();
     const auto& tr = [](const char* text, const char* disambiguation = nullptr) -> QString {
-        const std::string& cur_lang = UISettings::values.language.GetValue();
-        if (cur_lang == "en") {
-            return QString::fromUtf8(text);
-        }
-        return QCoreApplication::translate("ConfigurationShared", text, disambiguation);
+        return TranslateConfigText(text, disambiguation);
     };
 
 #define PAIR(ENUM, VALUE, TRANSLATION) {static_cast<u32>(Settings::ENUM::VALUE), (TRANSLATION)}
@@ -460,6 +619,7 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
     translations->insert({Settings::EnumMetadata<Settings::VramUsageMode>::Index(),
                           {
                               PAIR(VramUsageMode, Conservative, tr("Conservative")),
+                              PAIR(VramUsageMode, Normal, tr("Normal")),
                               PAIR(VramUsageMode, Aggressive, tr("Aggressive")),
                           }});
     translations->insert(

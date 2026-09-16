@@ -442,12 +442,15 @@ QString MainWindow::GetGameTitleByProgramId(u64 program_id) const {
 
 static QString StormLang(const QString& ru, const QString& en,
                          const QString& de = QString(), const QString& fr = QString(),
-                         const QString& zh = QString(), const QString& ja = QString()) {
+                         const QString& zh = QString(), const QString& ja = QString(),
+                         const QString& ar = QString(), const QString& es = QString()) {
     std::string lang = UISettings::values.language.GetValue();
     if (lang.empty()) {
         lang = QLocale::system().name().toStdString();
     }
     if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("ar", 0) == 0 && !ar.isEmpty()) return ar;
+    if (lang.rfind("es", 0) == 0 && !es.isEmpty()) return es;
     if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
     if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
     if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
@@ -468,7 +471,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.6.9";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.7.0";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);

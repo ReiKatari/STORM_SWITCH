@@ -46,12 +46,15 @@
 
 static QString StormLang(const QString& ru, const QString& en,
                          const QString& de = QString(), const QString& fr = QString(),
-                         const QString& zh = QString(), const QString& ja = QString()) {
+                         const QString& zh = QString(), const QString& ja = QString(),
+                         const QString& ar = QString(), const QString& es = QString()) {
     std::string lang = UISettings::values.language.GetValue();
     if (lang.empty()) {
         lang = QLocale::system().name().toStdString();
     }
     if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("ar", 0) == 0 && !ar.isEmpty()) return ar;
+    if (lang.rfind("es", 0) == 0 && !es.isEmpty()) return es;
     if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
     if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
     if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
@@ -61,47 +64,47 @@ static QString StormLang(const QString& ru, const QString& en,
 
 static QString GetLocalizedTabText(const QString& accessible_name) {
     if (accessible_name == QStringLiteral("General"))
-        return StormLang(QStringLiteral("Общие"), QStringLiteral("General"), QStringLiteral("Allgemein"), QStringLiteral("Général"), QStringLiteral("通用"), QStringLiteral("全般"));
+        return StormLang(QStringLiteral("Общие"), QStringLiteral("General"), QStringLiteral("Allgemein"), QStringLiteral("Général"), QStringLiteral("通用"), QStringLiteral("全般"), QStringLiteral("عام"), QStringLiteral("General"));
     if (accessible_name == QStringLiteral("Hotkeys"))
-        return StormLang(QStringLiteral("Горячие клавиши"), QStringLiteral("Hotkeys"), QStringLiteral("Tastenkürzel"), QStringLiteral("Raccourcis"), QStringLiteral("快捷键"), QStringLiteral("ショートカット"));
+        return StormLang(QStringLiteral("Горячие клавиши"), QStringLiteral("Hotkeys"), QStringLiteral("Tastenkürzel"), QStringLiteral("Raccourcis"), QStringLiteral("快捷键"), QStringLiteral("ショートカット"), QStringLiteral("مفاتيح الاختصار"), QStringLiteral("Atajos de teclado"));
     if (accessible_name == QStringLiteral("UI") || accessible_name == QStringLiteral("Game List"))
-        return StormLang(QStringLiteral("Интерфейс"), QStringLiteral("Interface"), QStringLiteral("Benutzeroberfläche"), QStringLiteral("Interface"), QStringLiteral("界面"), QStringLiteral("インターフェース"));
+        return StormLang(QStringLiteral("Интерфейс"), QStringLiteral("Interface"), QStringLiteral("Benutzeroberfläche"), QStringLiteral("Interface"), QStringLiteral("界面"), QStringLiteral("インターフェース"), QStringLiteral("الواجهة"), QStringLiteral("Interfaz"));
     if (accessible_name == QStringLiteral("Web"))
-        return StormLang(QStringLiteral("Веб"), QStringLiteral("Web"), QStringLiteral("Web"), QStringLiteral("Web"), QStringLiteral("网络服务"), QStringLiteral("Web"));
+        return StormLang(QStringLiteral("Веб"), QStringLiteral("Web"), QStringLiteral("Web"), QStringLiteral("Web"), QStringLiteral("网络服务"), QStringLiteral("Web"), QStringLiteral("الويب"), QStringLiteral("Web"));
     if (accessible_name == QStringLiteral("Debug"))
-        return StormLang(QStringLiteral("Отладка"), QStringLiteral("Debug"), QStringLiteral("Debug"), QStringLiteral("Débogage"), QStringLiteral("调试"), QStringLiteral("デバッグ"));
+        return StormLang(QStringLiteral("Отладка"), QStringLiteral("Debug"), QStringLiteral("Debug"), QStringLiteral("Débogage"), QStringLiteral("调试"), QStringLiteral("デバッグ"), QStringLiteral("تصحيح الأخطاء"), QStringLiteral("Depuración"));
     if (accessible_name == QStringLiteral("System"))
-        return StormLang(QStringLiteral("Система"), QStringLiteral("System"), QStringLiteral("System"), QStringLiteral("Système"), QStringLiteral("系统"), QStringLiteral("システム"));
+        return StormLang(QStringLiteral("Система"), QStringLiteral("System"), QStringLiteral("System"), QStringLiteral("Système"), QStringLiteral("系统"), QStringLiteral("システム"), QStringLiteral("النظام"), QStringLiteral("Sistema"));
     if (accessible_name == QStringLiteral("Profiles"))
-        return StormLang(QStringLiteral("Профили"), QStringLiteral("Profiles"), QStringLiteral("Profile"), QStringLiteral("Profils"), QStringLiteral("用户配置"), QStringLiteral("プロフィール"));
+        return StormLang(QStringLiteral("Профили"), QStringLiteral("Profiles"), QStringLiteral("Profile"), QStringLiteral("Profils"), QStringLiteral("用户配置"), QStringLiteral("プロフィール"), QStringLiteral("الملفات الشخصية"), QStringLiteral("Perfiles"));
     if (accessible_name == QStringLiteral("Filesystem"))
-        return StormLang(QStringLiteral("Файловая система"), QStringLiteral("Filesystem"), QStringLiteral("Dateisystem"), QStringLiteral("Système de fichiers"), QStringLiteral("文件系统"), QStringLiteral("ファイルシステム"));
+        return StormLang(QStringLiteral("Файловая система"), QStringLiteral("Filesystem"), QStringLiteral("Dateisystem"), QStringLiteral("Système de fichiers"), QStringLiteral("文件系统"), QStringLiteral("ファイルシステム"), QStringLiteral("نظام الملفات"), QStringLiteral("Sistema de archivos"));
     if (accessible_name == QStringLiteral("Applets"))
-        return StormLang(QStringLiteral("Апплеты"), QStringLiteral("Applets"), QStringLiteral("Applets"), QStringLiteral("Applets"), QStringLiteral("小程序"), QStringLiteral("アプレット"));
+        return StormLang(QStringLiteral("Апплеты"), QStringLiteral("Applets"), QStringLiteral("Applets"), QStringLiteral("Applets"), QStringLiteral("小程序"), QStringLiteral("アプレット"), QStringLiteral("البريمجات"), QStringLiteral("Applets"));
     if (accessible_name == QStringLiteral("CPU"))
-        return StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"));
+        return StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("المعالج"), QStringLiteral("CPU"));
     if (accessible_name == QStringLiteral("Graphics"))
-        return StormLang(QStringLiteral("Графика"), QStringLiteral("Graphics"), QStringLiteral("Grafik"), QStringLiteral("Graphismes"), QStringLiteral("图形"), QStringLiteral("グラフィックス"));
+        return StormLang(QStringLiteral("Графика"), QStringLiteral("Graphics"), QStringLiteral("Grafik"), QStringLiteral("Graphismes"), QStringLiteral("图形"), QStringLiteral("グラフィックス"), QStringLiteral("الرسوميات"), QStringLiteral("Gráficos"));
     if (accessible_name == QStringLiteral("Advanced") || accessible_name == QStringLiteral("GraphicsAdvanced"))
-        return StormLang(QStringLiteral("Продвинутые"), QStringLiteral("Advanced"), QStringLiteral("Erweitert"), QStringLiteral("Avancé"), QStringLiteral("高级"), QStringLiteral("高度な設定"));
+        return StormLang(QStringLiteral("Продвинутые"), QStringLiteral("Advanced"), QStringLiteral("Erweitert"), QStringLiteral("Avancé"), QStringLiteral("高级"), QStringLiteral("高度な設定"), QStringLiteral("متقدم"), QStringLiteral("Avanzado"));
     if (accessible_name == QStringLiteral("Extensions") || accessible_name == QStringLiteral("GraphicsExtra"))
-        return StormLang(QStringLiteral("Дополнительно"), QStringLiteral("Extensions"), QStringLiteral("Erweiterungen"), QStringLiteral("Extensions"), QStringLiteral("扩展"), QStringLiteral("拡張設定"));
+        return StormLang(QStringLiteral("Дополнительно"), QStringLiteral("Extensions"), QStringLiteral("Erweiterungen"), QStringLiteral("Extensions"), QStringLiteral("扩展"), QStringLiteral("拡張設定"), QStringLiteral("ملحقات"), QStringLiteral("Extensiones"));
     if (accessible_name == QStringLiteral("Audio"))
-        return StormLang(QStringLiteral("Аудио"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("オーディオ"));
+        return StormLang(QStringLiteral("Аудио"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("オーディオ"), QStringLiteral("الصوت"), QStringLiteral("Audio"));
     if (accessible_name == QStringLiteral("Network"))
-        return StormLang(QStringLiteral("Сеть"), QStringLiteral("Network"), QStringLiteral("Netzwerk"), QStringLiteral("Réseau"), QStringLiteral("网络"), QStringLiteral("ネットワーク"));
+        return StormLang(QStringLiteral("Сеть"), QStringLiteral("Network"), QStringLiteral("Netzwerk"), QStringLiteral("Réseau"), QStringLiteral("网络"), QStringLiteral("ネットワーク"), QStringLiteral("الشبكة"), QStringLiteral("Red"));
     if (accessible_name == QStringLiteral("Controls") || accessible_name == QStringLiteral("Input"))
-        return StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作"));
+        return StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作"), QStringLiteral("التحكم"), QStringLiteral("Controles"));
     if (accessible_name == QStringLiteral("Input Profiles"))
-        return StormLang(QStringLiteral("Профили ввода"), QStringLiteral("Input Profiles"), QStringLiteral("Eingabeprofile"), QStringLiteral("Profils d'entrée"), QStringLiteral("输入配置"), QStringLiteral("入力プロファイル"));
+        return StormLang(QStringLiteral("Профили ввода"), QStringLiteral("Input Profiles"), QStringLiteral("Eingabeprofile"), QStringLiteral("Profils d'entrée"), QStringLiteral("输入配置"), QStringLiteral("入力プロファイル"), QStringLiteral("ملفات التحكم"), QStringLiteral("Perfiles de entrada"));
     if (accessible_name == QStringLiteral("Add-Ons"))
-        return StormLang(QStringLiteral("Дополнения"), QStringLiteral("Add-Ons"), QStringLiteral("Add-Ons"), QStringLiteral("Extensions"), QStringLiteral("附加组件"), QStringLiteral("アドオン"));
+        return StormLang(QStringLiteral("Дополнения"), QStringLiteral("Add-Ons"), QStringLiteral("Add-Ons"), QStringLiteral("Extensions"), QStringLiteral("附加组件"), QStringLiteral("アドオン"), QStringLiteral("الإضافات"), QStringLiteral("Complementos"));
     if (accessible_name == QStringLiteral("GameBanana Mods"))
-        return StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"));
+        return StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"), QStringLiteral("تعديلات GameBanana"), QStringLiteral("Mods de GameBanana"));
     if (accessible_name == QStringLiteral("Amiibo"))
-        return StormLang(QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"));
+        return StormLang(QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"), QStringLiteral("Amiibo"));
     if (accessible_name == QStringLiteral("Cheats"))
-        return StormLang(QStringLiteral("Читы"), QStringLiteral("Cheats"), QStringLiteral("Cheats"), QStringLiteral("Triche"), QStringLiteral("作弊码"), QStringLiteral("チート"));
+        return StormLang(QStringLiteral("Читы"), QStringLiteral("Cheats"), QStringLiteral("Cheats"), QStringLiteral("Triche"), QStringLiteral("作弊码"), QStringLiteral("チート"), QStringLiteral("الغش"), QStringLiteral("Trucos"));
     return accessible_name;
 }
 #include "storm_switch/hotkeys.h"

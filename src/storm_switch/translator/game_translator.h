@@ -141,11 +141,17 @@ private:
     std::vector<SpeechSegment> ParseDialogueSegments(const QString& text);
     void SpeakSingleSegment(const SpeechSegment& segment);
     QString GetCurrentTitleIdString() const;
+    void LoadCache();
+    void SaveCache();
+    QString SanitizeOcrText(const QString& text) const;
+    void ExecuteTranslationRequest(int endpoint_index, const QString& text, const QString& src_lang, const QString& tgt_lang, const QString& cache_key);
 
     Core::System& m_system;
     QNetworkAccessManager* m_network_mgr{nullptr};
     QImage m_captured_frame;
     QHash<QString, QString> m_translation_cache;
+    QString m_last_translated_input;
+    QString m_last_translated_output;
 
     // Tabs
     QTabWidget* m_tab_widget{nullptr};

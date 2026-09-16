@@ -366,25 +366,27 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
     QDir dir(dir_path);
     const QStringList files = dir.entryList(QDir::Files);
 
-    const QString title1 = SanitizeFileName(game.final_title.isEmpty() ? game.title : game.final_title).toLower();
-    const QString title2 = SanitizeFileName(game.title).toLower();
-    const QString tid = game.serial_id.toLower();
+    const QString clean_final = SanitizeFileName(game.final_title.isEmpty() ? game.title : game.final_title).toLower();
+    const QString clean_title = SanitizeFileName(game.title).toLower();
+    const QString tid = game.serial_id.trimmed().toLower();
+    const QString ver = game.version.trimmed().toLower();
+    const QString int_ver = game.internal_version.trimmed();
 
-    const QString my_key = !game.serial_id.trimmed().isEmpty() ? game.serial_id.trimmed().toUpper()
-        : (game.final_title.isEmpty() ? game.title.trimmed().toLower() : game.final_title.trimmed().toLower());
+    const QString full_game_name = (game.final_title + QLatin1Char(' ') + game.title).toLower();
+    const bool game_is_rus = full_game_name.contains(QStringLiteral("rus")) || full_game_name.contains(QStringLiteral("рус"));
+    const bool game_is_mod = full_game_name.contains(QStringLiteral("mod")) || full_game_name.contains(QStringLiteral("мод"));
 
     int same_group_count = 0;
     for (const auto& other : all_games) {
-        const QString other_key = !other.serial_id.trimmed().isEmpty() ? other.serial_id.trimmed().toUpper()
-            : (other.final_title.isEmpty() ? other.title.trimmed().toLower() : other.final_title.trimmed().toLower());
-        if (other_key == my_key) {
+        const QString other_tid = other.serial_id.trimmed().toLower();
+        const QString other_clean_title = SanitizeFileName(other.title).toLower();
+        if ((!tid.isEmpty() && tid != QStringLiteral("—") && tid == other_tid) ||
+            (!clean_title.isEmpty() && clean_title == other_clean_title)) {
             same_group_count++;
         }
     }
 
-    const QString full_game_name = (game.final_title + QLatin1Char(' ') + game.title).toLower();
-    const bool game_is_rus = full_game_name.contains(QStringLiteral("rus"));
-    const bool game_is_mod = full_game_name.contains(QStringLiteral("mod"));
+    const bool is_single = (same_group_count <= 1);
 
     for (const auto& file : files) {
         const QString lower_file = file.toLower();
@@ -397,32 +399,55 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
         const QFileInfo fi(dir.filePath(file));
         if (fi.size() < 1024 * 1024) continue;
 
-        // 1. Direct title matches
-        if (!title1.isEmpty() && lower_file.contains(title1)) {
-            return true;
-        }
-        if (!title2.isEmpty() && lower_file.contains(title2)) {
+        const QString file_stem = fi.completeBaseName().toLower();
+
+        // 1. Exact match with final_title (how Storm Games World saves downloaded files)
+        if (!clean_final.isEmpty() && file_stem == clean_final) {
             return true;
         }
 
-        // 2. Title ID match
-        if (!tid.isEmpty() && lower_file.contains(tid)) {
-            if (same_group_count <= 1) {
-                return true;
-            }
-
-            // Multiple versions in catalog: must match language/mod and version traits
-            const bool file_has_rus = lower_file.contains(QStringLiteral("rus"));
-            const bool file_has_mod = lower_file.contains(QStringLiteral("mod"));
-            if (game_is_rus == file_has_rus && game_is_mod == file_has_mod) {
-                if (!game.version.isEmpty() && game.version != QStringLiteral("1.0.0")) {
-                    if (lower_file.contains(game.version.toLower())) {
-                        return true;
-                    }
-                } else {
+        if (!is_single) {
+            // Multiple versions in catalog: must verify exact version/mod/rus
+            if (!clean_final.isEmpty() && lower_file.contains(clean_final)) {
+                const bool file_has_rus = lower_file.contains(QStringLiteral("rus")) || lower_file.contains(QStringLiteral("рус"));
+                const bool file_has_mod = lower_file.contains(QStringLiteral("mod")) || lower_file.contains(QStringLiteral("мод"));
+                if (game_is_rus == file_has_rus && game_is_mod == file_has_mod) {
                     return true;
                 }
             }
+
+            if (!tid.isEmpty() && tid != QStringLiteral("—") && lower_file.contains(tid)) {
+                const bool file_has_rus = lower_file.contains(QStringLiteral("rus")) || lower_file.contains(QStringLiteral("рус"));
+                const bool file_has_mod = lower_file.contains(QStringLiteral("mod")) || lower_file.contains(QStringLiteral("мод"));
+                if (game_is_rus != file_has_rus || game_is_mod != file_has_mod) {
+                    continue;
+                }
+
+                if (!int_ver.isEmpty() && int_ver != QStringLiteral("0")) {
+                    if (lower_file.contains(int_ver) || lower_file.contains(QStringLiteral("v%1").arg(int_ver)) ||
+                        lower_file.contains(QStringLiteral("-%1-").arg(int_ver))) {
+                        return true;
+                    }
+                }
+
+                if (!ver.isEmpty() && ver != QStringLiteral("1.0.0")) {
+                    if (lower_file.contains(ver) || lower_file.contains(QStringLiteral("v%1").arg(ver))) {
+                        return true;
+                    }
+                }
+
+                if ((ver.isEmpty() || ver == QStringLiteral("1.0.0")) && (int_ver.isEmpty() || int_ver == QStringLiteral("0"))) {
+                    static const QRegularExpression ver_regex(QStringLiteral("(?:v|\\-|\\b)(\\d+\\.\\d+(?:\\.\\d+)?|\\d{5,8})(?:\\b|\\]|\\))"));
+                    if (!lower_file.contains(ver_regex)) {
+                        return true;
+                    }
+                }
+            }
+        } else {
+            // Single version in catalog
+            if (!clean_final.isEmpty() && lower_file.contains(clean_final)) return true;
+            if (!tid.isEmpty() && tid != QStringLiteral("—") && lower_file.contains(tid)) return true;
+            if (!clean_title.isEmpty() && clean_title.length() >= 4 && lower_file.contains(clean_title)) return true;
         }
     }
 
@@ -724,7 +749,7 @@ void StormGamesWorldDialog::OnFetchCatalog() {
     refresh_btn->setEnabled(false);
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/index")));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.9 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.0 (Windows x64)"));
 
     if (catalog_reply) {
         catalog_reply->abort();
@@ -784,6 +809,25 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
             g.cover_url = obj[QStringLiteral("cover")].toString();
             g.file_exists = file_exists;
             g.has_file = has_file;
+
+            static const QRegularExpression ver_rx(QStringLiteral(R"(\(\s*([^-\)]+?)\s*-\s*(\d+)\s*-\s*([0-9A-Fa-f]{16})\s*\))"));
+            auto m = ver_rx.match(g.final_title);
+            if (!m.hasMatch()) {
+                m = ver_rx.match(g.title);
+            }
+            if (m.hasMatch()) {
+                QString v_str = m.captured(1).trimmed();
+                if (v_str.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                    v_str = v_str.mid(1).trimmed();
+                }
+                if (!v_str.isEmpty()) {
+                    g.version = v_str;
+                }
+                g.internal_version = m.captured(2).trimmed();
+                if (g.serial_id.isEmpty()) {
+                    g.serial_id = m.captured(3).trimmed();
+                }
+            }
 
             bool ok_tid = false;
             const u64 num_tid = g.serial_id.toULongLong(&ok_tid, 16);
@@ -1159,7 +1203,7 @@ void StormGamesWorldDialog::FetchGameDetails(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games?id=%1").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.9 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.0 (Windows x64)"));
     details_reply = network_mgr.get(req);
     connect(details_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnGameDetailsReplyFinished);
 }
@@ -1225,7 +1269,7 @@ void StormGamesWorldDialog::FetchRealExtension(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.9 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.0 (Windows x64)"));
     head_reply = network_mgr.head(req);
     connect(head_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnHeadReplyFinished);
 }
@@ -1454,7 +1498,7 @@ void StormGamesWorldDialog::OnStartDownload() {
 
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game.id));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.6.9 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.0 (Windows x64)"));
     req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     req.setRawHeader("Connection", "keep-alive");

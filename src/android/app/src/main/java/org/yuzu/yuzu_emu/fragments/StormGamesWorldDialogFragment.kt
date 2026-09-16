@@ -353,41 +353,81 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         val groupCounts = mutableMapOf<String, Int>()
         games.forEach { g ->
-            val key = g.serialId.ifEmpty { g.finalTitle.ifEmpty { g.title } }.uppercase(Locale.ROOT)
+            val tid = g.serialId.trim().uppercase(Locale.ROOT)
+            val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
+            val key = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid else cleanBaseTitle
             groupCounts[key] = (groupCounts[key] ?: 0) + 1
         }
 
         games.forEach { g ->
-            val key = g.serialId.ifEmpty { g.finalTitle.ifEmpty { g.title } }.uppercase(Locale.ROOT)
-            val isSingle = (groupCounts[key] ?: 0) <= 1
-            val tid = g.serialId.lowercase(Locale.ROOT)
+            val tid = g.serialId.trim().lowercase(Locale.ROOT)
+            val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
+            val groupKey = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid.uppercase(Locale.ROOT) else cleanBaseTitle
+            val isSingle = (groupCounts[groupKey] ?: 0) <= 1
             val cleanTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
-            val cleanFinal = g.finalTitle.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
+            val cleanFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
+            val ver = g.version.trim().lowercase(Locale.ROOT)
+            val intVer = g.internalVersion.trim()
             val fullTitle = "${g.finalTitle} ${g.title}".lowercase(Locale.ROOT)
-            val gameIsRus = fullTitle.contains("rus")
-            val gameIsMod = fullTitle.contains("mod")
+            val gameIsRus = fullTitle.contains("rus") || fullTitle.contains("рус")
+            val gameIsMod = fullTitle.contains("mod") || fullTitle.contains("мод")
 
             g.isDownloaded = allFiles.any { name ->
-                if (!name.endsWith(".nsp") && !name.endsWith(".xci") && !name.endsWith(".nsz")) {
+                val lowerName = name.lowercase(Locale.ROOT)
+                if (!lowerName.endsWith(".nsp") && !lowerName.endsWith(".xci") && !lowerName.endsWith(".nsz")) {
                     return@any false
                 }
-                // Direct title match
-                if (cleanFinal.isNotEmpty() && name.contains(cleanFinal)) return@any true
-                if (cleanTitle.isNotEmpty() && name.contains(cleanTitle)) return@any true
+                val fileStem = lowerName.substringBeforeLast('.')
 
-                // Title ID match
-                if (tid.isNotEmpty() && name.contains(tid)) {
-                    if (isSingle) return@any true
-                    val fileHasRus = name.contains("rus")
-                    val fileHasMod = name.contains("mod")
-                    if (gameIsRus == fileHasRus && gameIsMod == fileHasMod) {
-                        if (g.version.isNotEmpty() && g.version != "1.0.0") {
-                            return@any name.contains(g.version.lowercase(Locale.ROOT))
-                        }
-                        return@any true
-                    }
+                // 1. Exact match with finalTitle (how Storm Games World names downloaded files)
+                if (cleanFinal.isNotEmpty() && fileStem == cleanFinal) {
+                    return@any true
                 }
-                false
+
+                if (!isSingle) {
+                    // Multiple versions in catalog: must verify exact version/mod/rus
+                    if (cleanFinal.isNotEmpty() && lowerName.contains(cleanFinal)) {
+                        val fileHasRus = lowerName.contains("rus") || lowerName.contains("рус")
+                        val fileHasMod = lowerName.contains("mod") || lowerName.contains("мод")
+                        if (gameIsRus == fileHasRus && gameIsMod == fileHasMod) {
+                            return@any true
+                        }
+                    }
+
+                    if (tid.isNotEmpty() && tid != "—" && lowerName.contains(tid)) {
+                        val fileHasRus = lowerName.contains("rus") || lowerName.contains("рус")
+                        val fileHasMod = lowerName.contains("mod") || lowerName.contains("мод")
+                        if (gameIsRus != fileHasRus || gameIsMod != fileHasMod) {
+                            return@any false
+                        }
+
+                        if (intVer.isNotEmpty() && intVer != "0") {
+                            if (lowerName.contains(intVer) || lowerName.contains("v$intVer") || lowerName.contains("-$intVer-")) {
+                                return@any true
+                            }
+                        }
+
+                        if (ver.isNotEmpty() && ver != "1.0.0") {
+                            if (lowerName.contains(ver) || lowerName.contains("v$ver")) {
+                                return@any true
+                            }
+                        }
+
+                        if ((ver.isEmpty() || ver == "1.0.0") && (intVer.isEmpty() || intVer == "0")) {
+                            val verRegex = Regex("""(?:v|\-|\b)(\d+\.\d+(?:\.\d+)?|\d{5,8})(?:\b|\]|\))""")
+                            if (!verRegex.containsMatchIn(lowerName)) {
+                                return@any true
+                            }
+                        }
+                    }
+                    false
+                } else {
+                    // Single version in catalog
+                    if (cleanFinal.isNotEmpty() && lowerName.contains(cleanFinal)) return@any true
+                    if (tid.isNotEmpty() && tid != "—" && lowerName.contains(tid)) return@any true
+                    if (cleanTitle.isNotEmpty() && cleanTitle.length >= 4 && lowerName.contains(cleanTitle)) return@any true
+                    false
+                }
             }
         }
     }
@@ -464,7 +504,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.6.9 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -510,7 +550,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.6.9 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -763,7 +803,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 try {
                     val req = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                        .header("User-Agent", "STORM_SWITCH/8.6.9 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
                         .build()
                     val resp = httpClient.newCall(req).execute()
                     val body = resp.body?.string().orEmpty()
@@ -962,7 +1002,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.6.9 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
                     .build()
 
                 val resp = sharedHttpClient.newCall(req).execute()
@@ -1052,7 +1092,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 val headReq = Request.Builder()
                                     .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                                     .head()
-                                    .header("User-Agent", "STORM_SWITCH/8.6.9 (Android)")
+                                    .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
                                     .build()
                                 val headResp = sharedHttpClient.newCall(headReq).execute()
                                 val isOk = headResp.isSuccessful
