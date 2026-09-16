@@ -153,8 +153,20 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     private val gamesViewModel: GamesViewModel by activityViewModels()
 
+    enum class SortMode(val label: String) {
+        TITLE_ASC("А-Я"),
+        TITLE_DESC("Я-А"),
+        SIZE_DESC("Размер ↓"),
+        SIZE_ASC("Размер ↑"),
+        RECOMMENDED("Реком.")
+    }
+
     private val allGames = mutableListOf<StormWorldGameItem>()
-    private val filteredGames = mutableListOf<StormWorldGameItem>()
+    private val filteredAndSortedGames = mutableListOf<StormWorldGameItem>()
+    private val pagedGames = mutableListOf<StormWorldGameItem>()
+    private var currentSortMode = SortMode.TITLE_ASC
+    private var currentPage = 1
+    private val pageSize = 25
     private var selectedGame: StormWorldGameItem? = null
 
 
@@ -269,6 +281,48 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             StormDownloadManager.cancelDownload(requireContext())
         }
 
+        binding.btnPagePrev.setOnClickListener {
+            if (currentPage > 1) {
+                currentPage--
+                applySortAndPagination(resetPage = false)
+                binding.recyclerGames.scrollToPosition(0)
+            }
+        }
+
+        binding.btnPageNext.setOnClickListener {
+            val totalItems = filteredAndSortedGames.size
+            val totalPages = if (totalItems > 0) ((totalItems - 1) / pageSize) + 1 else 1
+            if (currentPage < totalPages) {
+                currentPage++
+                applySortAndPagination(resetPage = false)
+                binding.recyclerGames.scrollToPosition(0)
+            }
+        }
+
+        binding.btnSortCatalog.setOnClickListener { v ->
+            val popup = androidx.appcompat.widget.PopupMenu(requireContext(), v)
+            popup.menu.add(0, 1, 0, "По названию (А-Я)")
+            popup.menu.add(0, 2, 1, "По названию (Я-А)")
+            popup.menu.add(0, 3, 2, "По размеру (убывание)")
+            popup.menu.add(0, 4, 3, "По размеру (возрастание)")
+            popup.menu.add(0, 5, 4, "По дополнениям и модам")
+
+            popup.setOnMenuItemClickListener { menuItem ->
+                currentSortMode = when (menuItem.itemId) {
+                    1 -> SortMode.TITLE_ASC
+                    2 -> SortMode.TITLE_DESC
+                    3 -> SortMode.SIZE_DESC
+                    4 -> SortMode.SIZE_ASC
+                    5 -> SortMode.RECOMMENDED
+                    else -> SortMode.TITLE_ASC
+                }
+                applySortAndPagination(resetPage = true)
+                binding.recyclerGames.scrollToPosition(0)
+                true
+            }
+            popup.show()
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             StormDownloadManager.state.collectLatest { progress ->
                 updateDownloadUi(progress)
@@ -332,7 +386,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     private fun checkDownloadedStatus(games: List<StormWorldGameItem>) {
         val gameDirs = NativeConfig.getGameDirs()
-        val allFiles = mutableListOf<String>()
+        data class LocalFile(val name: String, val size: Long)
+        val allFiles = mutableListOf<LocalFile>()
 
         for (dir in gameDirs) {
             try {
@@ -340,12 +395,12 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 if (uri.scheme == "content") {
                     val rootDoc = DocumentFile.fromTreeUri(requireContext(), uri)
                     rootDoc?.listFiles()?.forEach { f ->
-                        if (f.isFile) allFiles.add(f.name.orEmpty().lowercase(Locale.ROOT))
+                        if (f.isFile) allFiles.add(LocalFile(f.name.orEmpty().lowercase(Locale.ROOT), f.length()))
                     }
                 } else {
                     val path = uri.path ?: dir.uriString
                     File(path).listFiles()?.forEach { f ->
-                        if (f.isFile) allFiles.add(f.name.lowercase(Locale.ROOT))
+                        if (f.isFile) allFiles.add(LocalFile(f.name.lowercase(Locale.ROOT), f.length()))
                     }
                 }
             } catch (_: Exception) {}
@@ -359,6 +414,16 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             groupCounts[key] = (groupCounts[key] ?: 0) + 1
         }
 
+        fun extractModCount(str: String): Int {
+            val m = Regex("""(?:[+([{\s]|^)(\d+)m(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE).find(str)
+            return m?.groupValues?.get(1)?.toIntOrNull() ?: if (Regex("""(?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка""", RegexOption.IGNORE_CASE).containsMatchIn(str)) 1 else 0
+        }
+
+        fun extractDlcCount(str: String): Int {
+            val m = Regex("""(?:[+([{\s]|^)(\d+)d(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE).find(str)
+            return m?.groupValues?.get(1)?.toIntOrNull() ?: if (str.contains("dlc", ignoreCase = true)) 1 else 0
+        }
+
         games.forEach { g ->
             val tid = g.serialId.trim().lowercase(Locale.ROOT)
             val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
@@ -370,10 +435,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val intVer = g.internalVersion.trim()
             val fullTitle = "${g.finalTitle} ${g.title}".lowercase(Locale.ROOT)
             val gameIsRus = fullTitle.contains("rus") || fullTitle.contains("рус")
-            val gameIsMod = fullTitle.contains("mod") || fullTitle.contains("мод")
+            val gameModCount = maxOf(g.modCount, extractModCount(fullTitle))
+            val gameDlcCount = maxOf(g.dlcCount, extractDlcCount(fullTitle))
+            val gameIsMod = gameModCount > 0
+            val gameHasDlc = gameDlcCount > 0
 
-            g.isDownloaded = allFiles.any { name ->
-                val lowerName = name.lowercase(Locale.ROOT)
+            g.isDownloaded = allFiles.any { fileItem ->
+                val lowerName = fileItem.name
                 if (!lowerName.endsWith(".nsp") && !lowerName.endsWith(".xci") && !lowerName.endsWith(".nsz")) {
                     return@any false
                 }
@@ -384,23 +452,25 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     return@any true
                 }
 
+                val fileModCount = extractModCount(lowerName)
+                val fileDlcCount = extractDlcCount(lowerName)
+                val fileHasRus = lowerName.contains("rus") || lowerName.contains("рус")
+                val fileHasMod = fileModCount > 0
+                val fileHasDlc = fileDlcCount > 0
+
                 if (!isSingle) {
-                    // Multiple versions in catalog: must verify exact version/mod/rus
-                    if (cleanFinal.isNotEmpty() && lowerName.contains(cleanFinal)) {
-                        val fileHasRus = lowerName.contains("rus") || lowerName.contains("рус")
-                        val fileHasMod = lowerName.contains("mod") || lowerName.contains("мод")
-                        if (gameIsRus == fileHasRus && gameIsMod == fileHasMod) {
-                            return@any true
-                        }
+                    // Multiple versions in catalog: must verify exact version/mod/dlc/rus
+                    if (gameIsMod != fileHasMod) return@any false
+                    if (gameIsMod && gameModCount != fileModCount) return@any false
+                    if (gameHasDlc != fileHasDlc) return@any false
+                    if (gameHasDlc && gameDlcCount != fileDlcCount) return@any false
+                    if (gameIsRus != fileHasRus) return@any false
+
+                    if (cleanFinal.isNotEmpty() && (fileStem == cleanFinal || lowerName.contains(cleanFinal))) {
+                        return@any true
                     }
 
                     if (tid.isNotEmpty() && tid != "—" && lowerName.contains(tid)) {
-                        val fileHasRus = lowerName.contains("rus") || lowerName.contains("рус")
-                        val fileHasMod = lowerName.contains("mod") || lowerName.contains("мод")
-                        if (gameIsRus != fileHasRus || gameIsMod != fileHasMod) {
-                            return@any false
-                        }
-
                         if (intVer.isNotEmpty() && intVer != "0") {
                             if (lowerName.contains(intVer) || lowerName.contains("v$intVer") || lowerName.contains("-$intVer-")) {
                                 return@any true
@@ -434,21 +504,144 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     private fun filterGames(query: String) {
         val q = query.trim().lowercase(Locale.ROOT)
-        filteredGames.clear()
+        filteredAndSortedGames.clear()
         if (q.isEmpty()) {
-            filteredGames.addAll(allGames)
+            filteredAndSortedGames.addAll(allGames)
         } else {
             for (g in allGames) {
                 val matchTitle = g.title.lowercase(Locale.ROOT).contains(q)
                 val matchFinal = g.finalTitle.lowercase(Locale.ROOT).contains(q)
                 val matchTid = g.serialId.lowercase(Locale.ROOT).contains(q)
                 if (matchTitle || matchFinal || matchTid) {
-                    filteredGames.add(g)
+                    filteredAndSortedGames.add(g)
                 }
             }
         }
+        applySortAndPagination(resetPage = true)
+    }
+
+    private fun parseSizeToBytes(sizeStr: String): Long {
+        val trimmed = sizeStr.trim().uppercase(Locale.ROOT)
+        val num = trimmed.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
+        return when {
+            trimmed.endsWith("ГБ") || trimmed.endsWith("GB") -> (num * 1024.0 * 1024.0 * 1024.0).toLong()
+            trimmed.endsWith("МБ") || trimmed.endsWith("MB") -> (num * 1024.0 * 1024.0).toLong()
+            trimmed.endsWith("КБ") || trimmed.endsWith("KB") -> (num * 1024.0).toLong()
+            else -> num.toLong()
+        }
+    }
+
+    private fun applySortAndPagination(resetPage: Boolean = false) {
+        when (currentSortMode) {
+            SortMode.TITLE_ASC -> filteredAndSortedGames.sortBy { (if (it.title.isNotBlank()) it.title else it.finalTitle).lowercase(Locale.ROOT) }
+            SortMode.TITLE_DESC -> filteredAndSortedGames.sortByDescending { (if (it.title.isNotBlank()) it.title else it.finalTitle).lowercase(Locale.ROOT) }
+            SortMode.SIZE_DESC -> filteredAndSortedGames.sortByDescending { parseSizeToBytes(it.size) }
+            SortMode.SIZE_ASC -> filteredAndSortedGames.sortBy { parseSizeToBytes(it.size) }
+            SortMode.RECOMMENDED -> filteredAndSortedGames.sortByDescending { (it.dlcCount * 2 + it.modCount * 3) }
+        }
+
+        val totalItems = filteredAndSortedGames.size
+        val totalPages = if (totalItems > 0) ((totalItems - 1) / pageSize) + 1 else 1
+        if (resetPage) {
+            currentPage = 1
+        } else {
+            currentPage = currentPage.coerceIn(1, totalPages)
+        }
+
+        val startIndex = (currentPage - 1) * pageSize
+        val endIndex = Math.min(startIndex + pageSize, totalItems)
+
+        pagedGames.clear()
+        if (startIndex < totalItems) {
+            pagedGames.addAll(filteredAndSortedGames.subList(startIndex, endIndex))
+        }
+
         binding.recyclerGames.adapter?.notifyDataSetChanged()
-        binding.textEmpty.isVisible = filteredGames.isEmpty()
+        binding.textEmpty.isVisible = totalItems == 0
+
+        updatePaginationUI(totalPages, totalItems)
+    }
+
+    private fun updatePaginationUI(totalPages: Int, totalItems: Int) {
+        val binding = _binding ?: return
+        binding.btnSortCatalog.text = currentSortMode.label
+        binding.textPaginationInfo.text = "Стр. $currentPage из $totalPages ($totalItems)"
+
+        binding.btnPagePrev.isEnabled = currentPage > 1
+        binding.btnPagePrev.alpha = if (currentPage > 1) 1.0f else 0.4f
+
+        binding.btnPageNext.isEnabled = currentPage < totalPages
+        binding.btnPageNext.alpha = if (currentPage < totalPages) 1.0f else 0.4f
+
+        binding.layoutPageButtons.removeAllViews()
+        if (totalPages <= 1) {
+            binding.scrollPageNumbers.isVisible = false
+            return
+        }
+        binding.scrollPageNumbers.isVisible = true
+
+        val density = resources.displayMetrics.density
+        val btnSize = (36 * density).toInt()
+        val margin = (2 * density).toInt()
+
+        val pagesToShow = linkedSetOf<Int>()
+        pagesToShow.add(1)
+        pagesToShow.add(totalPages)
+        for (i in (currentPage - 2)..(currentPage + 2)) {
+            if (i in 1..totalPages) {
+                pagesToShow.add(i)
+            }
+        }
+        val sortedPages = pagesToShow.sorted()
+
+        var prev = 0
+        for (p in sortedPages) {
+            if (prev != 0 && p > prev + 1) {
+                val ellipsis = android.widget.TextView(requireContext()).apply {
+                    text = "…"
+                    setTextColor(0xFF64748B.toInt())
+                    textSize = 12f
+                    setPadding(margin * 2, 0, margin * 2, 0)
+                }
+                binding.layoutPageButtons.addView(ellipsis)
+            }
+            prev = p
+
+            val btn = com.google.android.material.button.MaterialButton(
+                requireContext(),
+                null,
+                com.google.android.material.R.attr.materialButtonOutlinedStyle
+            ).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(btnSize, btnSize).apply {
+                    setMargins(margin, 0, margin, 0)
+                }
+                insetTop = 0
+                insetBottom = 0
+                setPadding(0, 0, 0, 0)
+                text = p.toString()
+                textSize = 12f
+                cornerRadius = (6 * density).toInt()
+
+                if (p == currentPage) {
+                    setBackgroundColor(0xFF00F0FF.toInt())
+                    setTextColor(0xFF0A0E17.toInt())
+                    strokeColor = android.content.res.ColorStateList.valueOf(0xFF00F0FF.toInt())
+                    strokeWidth = (1.5 * density).toInt()
+                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+                } else {
+                    setBackgroundColor(0xFF131B2A.toInt())
+                    setTextColor(0xFFCBD5E1.toInt())
+                    strokeColor = android.content.res.ColorStateList.valueOf(0xFF20354E.toInt())
+                    strokeWidth = (1 * density).toInt()
+                    setOnClickListener {
+                        currentPage = p
+                        applySortAndPagination(resetPage = false)
+                        binding.recyclerGames.scrollToPosition(0)
+                    }
+                }
+            }
+            binding.layoutPageButtons.addView(btn)
+        }
     }
 
     private fun onGameSelected(game: StormWorldGameItem) {
@@ -504,7 +697,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -550,7 +743,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -699,7 +892,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = filteredGames[position]
+            val item = pagedGames[position]
             val dispTitle = if (item.title.isNotBlank()) item.title else item.finalTitle
 
             holder.b.textGameVersion.text = item.version
@@ -771,7 +964,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
         }
 
-        override fun getItemCount(): Int = filteredGames.size
+        override fun getItemCount(): Int = pagedGames.size
     }
 
     private fun showDlcDialog(game: StormWorldGameItem) {
@@ -803,7 +996,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 try {
                     val req = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                        .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
                         .build()
                     val resp = httpClient.newCall(req).execute()
                     val body = resp.body?.string().orEmpty()
@@ -1002,7 +1195,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
                     .build()
 
                 val resp = sharedHttpClient.newCall(req).execute()
@@ -1092,7 +1285,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 val headReq = Request.Builder()
                                     .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                                     .head()
-                                    .header("User-Agent", "STORM_SWITCH/8.7.0 (Android)")
+                                    .header("User-Agent", "STORM_SWITCH/8.7.2 (Android)")
                                     .build()
                                 val headResp = sharedHttpClient.newCall(headReq).execute()
                                 val isOk = headResp.isSuccessful

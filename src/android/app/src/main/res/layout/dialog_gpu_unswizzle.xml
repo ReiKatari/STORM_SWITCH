@@ -9,28 +9,42 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="20dp">
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switch_enable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
+            android:textColor="#F1F5F9"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:thumbTint="#00F0FF"
+            app:trackTint="#334155"
             android:text="@string/gpu_unswizzle_enable" />
 
         <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layout_texture_size"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:hint="@string/gpu_unswizzle_texture_size">
-
-        <com.google.android.material.textfield.MaterialAutoCompleteTextView
-            android:id="@+id/dropdown_texture_size"
+            android:id="@+id/layout_texture_size"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="none" />
+            android:layout_marginBottom="12dp"
+            android:textColorHint="#94A3B8"
+            app:boxBackgroundColor="#0A0E17"
+            app:boxCornerRadiusBottomEnd="10dp"
+            app:boxCornerRadiusBottomStart="10dp"
+            app:boxCornerRadiusTopEnd="10dp"
+            app:boxCornerRadiusTopStart="10dp"
+            app:boxStrokeColor="#00D2FF"
+            app:hintTextColor="#00D2FF"
+            android:hint="@string/gpu_unswizzle_texture_size">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/dropdown_texture_size"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#F8FAFC"
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -39,12 +53,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
+            android:textColorHint="#94A3B8"
+            app:boxBackgroundColor="#0A0E17"
+            app:boxCornerRadiusBottomEnd="10dp"
+            app:boxCornerRadiusBottomStart="10dp"
+            app:boxCornerRadiusTopEnd="10dp"
+            app:boxCornerRadiusTopStart="10dp"
+            app:boxStrokeColor="#00D2FF"
+            app:hintTextColor="#00D2FF"
             android:hint="@string/gpu_unswizzle_stream_size">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/dropdown_stream_size"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="#F8FAFC"
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -53,40 +76,50 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColorHint="#94A3B8"
+            app:boxBackgroundColor="#0A0E17"
+            app:boxCornerRadiusBottomEnd="10dp"
+            app:boxCornerRadiusBottomStart="10dp"
+            app:boxCornerRadiusTopEnd="10dp"
+            app:boxCornerRadiusTopStart="10dp"
+            app:boxStrokeColor="#00D2FF"
+            app:hintTextColor="#00D2FF"
             android:hint="@string/gpu_unswizzle_chunk_size">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/dropdown_chunk_size"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="#F8FAFC"
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="20dp"
             android:orientation="horizontal"
-            android:gravity="end"
-            android:spacing="8dp">
+            android:gravity="end">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_default"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/StormButton.Dialog.Neutral"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
                 android:text="@string/gpu_unswizzle_default_button" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_cancel"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/StormButton.Dialog.Negative"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
                 android:text="@android:string/cancel" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_ok"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/StormButton.Dialog.Positive"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@android:string/ok" />

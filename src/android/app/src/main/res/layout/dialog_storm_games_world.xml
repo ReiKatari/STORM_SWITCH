@@ -442,4 +442,110 @@
             android:visibility="gone" />
     </FrameLayout>
 
+    <!-- Bottom Pagination Bar -->
+    <LinearLayout
+        android:id="@+id/layout_pagination_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#101623"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="8dp"
+            android:background="#20354E" />
+
+        <!-- Controls Row: Sort Button / Info, Prev, Page Numbers, Next -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_sort_catalog"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="А-Я"
+                android:textColor="#38BDF8"
+                android:textSize="12sp"
+                app:backgroundTint="#16263D"
+                app:strokeColor="#20354E"
+                app:strokeWidth="1dp"
+                app:icon="@drawable/ic_filter"
+                app:iconSize="16dp"
+                app:iconTint="#38BDF8" />
+
+            <TextView
+                android:id="@+id/text_pagination_info"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:textColor="#94A3B8"
+                android:textSize="11sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Стр. 1 из 45 (1120 игр)" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_page_prev"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                android:text="‹"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#00F0FF"
+                app:backgroundTint="#16263D"
+                app:strokeColor="#00D2FF"
+                app:strokeWidth="1dp" />
+
+            <HorizontalScrollView
+                android:id="@+id/scroll_page_numbers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="4dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/layout_page_buttons"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_page_next"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                android:text="›"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#00F0FF"
+                app:backgroundTint="#16263D"
+                app:strokeColor="#00D2FF"
+                app:strokeWidth="1dp" />
+        </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>

@@ -373,8 +373,37 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
     const QString int_ver = game.internal_version.trimmed();
 
     const QString full_game_name = (game.final_title + QLatin1Char(' ') + game.title).toLower();
+
+    auto extract_mod_count = [](const QString& str) -> int {
+        static const QRegularExpression m_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)m(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
+        const auto match = m_regex.match(str);
+        if (match.hasMatch()) {
+            return match.captured(1).toInt();
+        }
+        static const QRegularExpression word_regex(QStringLiteral(R"((?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка)"), QRegularExpression::CaseInsensitiveOption);
+        if (str.contains(word_regex)) {
+            return 1;
+        }
+        return 0;
+    };
+
+    auto extract_dlc_count = [](const QString& str) -> int {
+        static const QRegularExpression d_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)d(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
+        const auto match = d_regex.match(str);
+        if (match.hasMatch()) {
+            return match.captured(1).toInt();
+        }
+        if (str.contains(QStringLiteral("dlc"), Qt::CaseInsensitive)) {
+            return 1;
+        }
+        return 0;
+    };
+
     const bool game_is_rus = full_game_name.contains(QStringLiteral("rus")) || full_game_name.contains(QStringLiteral("рус"));
-    const bool game_is_mod = full_game_name.contains(QStringLiteral("mod")) || full_game_name.contains(QStringLiteral("мод"));
+    const int game_mod_count = std::max(game.mod_count, extract_mod_count(full_game_name));
+    const int game_dlc_count = std::max(game.dlc_count, extract_dlc_count(full_game_name));
+    const bool game_is_mod = (game_mod_count > 0);
+    const bool game_has_dlc = (game_dlc_count > 0);
 
     int same_group_count = 0;
     for (const auto& other : all_games) {
@@ -406,23 +435,25 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
             return true;
         }
 
+        const int file_mod_count = extract_mod_count(lower_file);
+        const int file_dlc_count = extract_dlc_count(lower_file);
+        const bool file_has_rus = lower_file.contains(QStringLiteral("rus")) || lower_file.contains(QStringLiteral("рус"));
+        const bool file_has_mod = (file_mod_count > 0);
+        const bool file_has_dlc = (file_dlc_count > 0);
+
         if (!is_single) {
-            // Multiple versions in catalog: must verify exact version/mod/rus
-            if (!clean_final.isEmpty() && lower_file.contains(clean_final)) {
-                const bool file_has_rus = lower_file.contains(QStringLiteral("rus")) || lower_file.contains(QStringLiteral("рус"));
-                const bool file_has_mod = lower_file.contains(QStringLiteral("mod")) || lower_file.contains(QStringLiteral("мод"));
-                if (game_is_rus == file_has_rus && game_is_mod == file_has_mod) {
-                    return true;
-                }
+            // Multiple versions in catalog: must verify exact version/mod/dlc/rus
+            if (game_is_mod != file_has_mod) continue;
+            if (game_is_mod && game_mod_count != file_mod_count) continue;
+            if (game_has_dlc != file_has_dlc) continue;
+            if (game_has_dlc && game_dlc_count != file_dlc_count) continue;
+            if (game_is_rus != file_has_rus) continue;
+
+            if (!clean_final.isEmpty() && (file_stem == clean_final || lower_file.contains(clean_final))) {
+                return true;
             }
 
             if (!tid.isEmpty() && tid != QStringLiteral("—") && lower_file.contains(tid)) {
-                const bool file_has_rus = lower_file.contains(QStringLiteral("rus")) || lower_file.contains(QStringLiteral("рус"));
-                const bool file_has_mod = lower_file.contains(QStringLiteral("mod")) || lower_file.contains(QStringLiteral("мод"));
-                if (game_is_rus != file_has_rus || game_is_mod != file_has_mod) {
-                    continue;
-                }
-
                 if (!int_ver.isEmpty() && int_ver != QStringLiteral("0")) {
                     if (lower_file.contains(int_ver) || lower_file.contains(QStringLiteral("v%1").arg(int_ver)) ||
                         lower_file.contains(QStringLiteral("-%1-").arg(int_ver))) {
@@ -437,7 +468,7 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
                 }
 
                 if ((ver.isEmpty() || ver == QStringLiteral("1.0.0")) && (int_ver.isEmpty() || int_ver == QStringLiteral("0"))) {
-                    static const QRegularExpression ver_regex(QStringLiteral("(?:v|\\-|\\b)(\\d+\\.\\d+(?:\\.\\d+)?|\\d{5,8})(?:\\b|\\]|\\))"));
+                    static const QRegularExpression ver_regex(QStringLiteral(R"((?:v|\-|\b)(\d+\.\d+(?:\.\d+)?|\d{5,8})(?:\b|\]|\)))"));
                     if (!lower_file.contains(ver_regex)) {
                         return true;
                     }
@@ -749,7 +780,7 @@ void StormGamesWorldDialog::OnFetchCatalog() {
     refresh_btn->setEnabled(false);
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/index")));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.0 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.2 (Windows x64)"));
 
     if (catalog_reply) {
         catalog_reply->abort();
@@ -1203,7 +1234,7 @@ void StormGamesWorldDialog::FetchGameDetails(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games?id=%1").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.0 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.2 (Windows x64)"));
     details_reply = network_mgr.get(req);
     connect(details_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnGameDetailsReplyFinished);
 }
@@ -1269,7 +1300,7 @@ void StormGamesWorldDialog::FetchRealExtension(int game_id) {
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.0 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.2 (Windows x64)"));
     head_reply = network_mgr.head(req);
     connect(head_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnHeadReplyFinished);
 }
@@ -1498,7 +1529,7 @@ void StormGamesWorldDialog::OnStartDownload() {
 
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game.id));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.0 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.2 (Windows x64)"));
     req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     req.setRawHeader("Connection", "keep-alive");

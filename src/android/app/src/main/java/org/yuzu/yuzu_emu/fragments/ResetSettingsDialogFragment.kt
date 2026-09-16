@@ -14,14 +14,15 @@ class ResetSettingsDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val settingsActivity = requireActivity() as SettingsActivity
 
-        return MaterialAlertDialogBuilder(requireContext())
+        return MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+            .setIcon(R.drawable.ic_restore)
             .setTitle(R.string.reset_all_settings)
             .setMessage(R.string.reset_all_settings_description)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 settingsActivity.onSettingsReset()
             }
             .setNegativeButton(android.R.string.cancel, null)
-            .show()
+            .create()
     }
 
     companion object {

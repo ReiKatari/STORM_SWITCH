@@ -126,7 +126,12 @@ class DriverManagerFragment : Fragment() {
                 requireContext(),
                 resources.getInteger(R.integer.grid_columns)
             )
-            adapter = DriverAdapter(driverViewModel)
+            adapter = DriverAdapter(driverViewModel) { driver, position ->
+                val path = if (position == 0) "" else {
+                    driverViewModel.driverData.getOrNull(position - 1)?.first ?: ""
+                }
+                promptDriverApplication(path, position)
+            }
         }
 
         setInsets()
@@ -147,7 +152,9 @@ class DriverManagerFragment : Fragment() {
     }
 
     private fun refreshDriverList() {
+        if (_binding == null) return
         driverViewModel.reloadDriverData()
+        driverViewModel.updateDriverList()
         (binding.listDrivers.adapter as? DriverAdapter)
             ?.replaceList(driverViewModel.driverList.value)
     }
@@ -223,25 +230,29 @@ class DriverManagerFragment : Fragment() {
                 } else {
                     driverViewModel.onDriverAdded(Pair(driverPath, driverData))
                     withContext(Dispatchers.Main) {
-                        promptDriverApplication(driverPath, driverData)
+                        promptDriverApplication(driverPath, driverViewModel.driverData.size)
                     }
                 }
                 return@newInstance Any()
             }.show(childFragmentManager, ProgressDialogFragment.TAG)
         }
 
-    private fun promptDriverApplication(driverPath: String, driverData: org.yuzu.yuzu_emu.utils.GpuDriverMetadata) {
+
+    private fun promptDriverApplication(driverPath: String, selectedPosition: Int) {
         if (_binding == null) return
         refreshDriverList()
+
+        val isForGame = args.game != null
+        val neutralTextRes = if (isForGame) R.string.apply_driver_current_game else R.string.apply_driver_keep_custom
 
         com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.apply_driver_title)
             .setMessage(R.string.apply_driver_message)
             .setPositiveButton(R.string.apply_driver_globally) { _, _ ->
-                applyDriver(driverPath, globallyToAll = true)
+                applyDriver(driverPath, globallyToAll = true, selectedPosition = selectedPosition)
             }
-            .setNeutralButton(R.string.apply_driver_keep_custom) { _, _ ->
-                applyDriver(driverPath, globallyToAll = false)
+            .setNeutralButton(neutralTextRes) { _, _ ->
+                applyDriver(driverPath, globallyToAll = false, selectedPosition = selectedPosition)
             }
             .setNegativeButton(R.string.cancel) { _, _ ->
                 updateDriverSelectionUi()
@@ -249,16 +260,38 @@ class DriverManagerFragment : Fragment() {
             .show()
     }
 
-    private fun applyDriver(driverPath: String, globallyToAll: Boolean) {
+    private fun applyDriver(driverPath: String, globallyToAll: Boolean, selectedPosition: Int) {
         val driverFile = File(driverPath)
-        StringSetting.DRIVER_PATH.setString(driverPath)
-        if (driverFile.exists() && args.game == null) {
-            GpuDriverHelper.installCustomDriver(driverFile)
-        }
+        val isForGame = args.game != null
+
         if (globallyToAll) {
+            StringSetting.DRIVER_PATH.global = true
+            StringSetting.DRIVER_PATH.setString(driverPath)
+            if (driverPath.isEmpty() || !driverFile.exists()) {
+                GpuDriverHelper.installDefaultDriver()
+            } else {
+                GpuDriverHelper.installCustomDriver(driverFile)
+            }
             GpuDriverHelper.applyDriverGloballyToAllCustomConfigs()
+            driverViewModel.wipeAllShaders()
+        } else {
+            if (isForGame) {
+                StringSetting.DRIVER_PATH.global = false
+                StringSetting.DRIVER_PATH.setString(driverPath)
+                driverViewModel.wipeGameShaders(args.game!!)
+            } else {
+                StringSetting.DRIVER_PATH.global = true
+                StringSetting.DRIVER_PATH.setString(driverPath)
+                if (driverPath.isEmpty() || !driverFile.exists()) {
+                    GpuDriverHelper.installDefaultDriver()
+                } else {
+                    GpuDriverHelper.installCustomDriver(driverFile)
+                }
+                driverViewModel.wipeAllShaders()
+            }
         }
-        driverViewModel.wipeAllShaders()
+
+        driverViewModel.onDriverSelected(selectedPosition)
         driverViewModel.reloadDriverData()
         refreshDriverList()
         updateDriverSelectionUi()

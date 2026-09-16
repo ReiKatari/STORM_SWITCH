@@ -135,6 +135,8 @@ class GamesViewModel : ViewModel() {
                     setGames(GameHelper.getGames())
                     _shouldScrollAfterReload.value = true
                     setShouldSwapData(true)
+                } catch (e: Throwable) {
+                    org.yuzu.yuzu_emu.utils.Log.error("[GamesViewModel] Error reloading games: ${e.message}")
                 } finally {
                     reloading.set(false)
                     _isReloading.value = false

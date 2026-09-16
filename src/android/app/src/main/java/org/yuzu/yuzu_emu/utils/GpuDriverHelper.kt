@@ -457,35 +457,38 @@ object GpuDriverHelper {
             try {
                 val lines = iniFile.readLines()
                 val newLines = mutableListOf<String>()
-                var hasUseGlobal = false
-                var inRendererSection = false
-                val hasRendererSection = lines.any { it.trim().equals("[Renderer]", ignoreCase = true) }
+                var inGpuDriverSection = false
+                var hasGpuDriverSection = false
 
                 for (line in lines) {
                     val trimmed = line.trim()
                     if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
-                        if (inRendererSection && !hasUseGlobal) {
+                        if (inGpuDriverSection) {
                             newLines.add("driver_path\\use_global=true")
-                            hasUseGlobal = true
+                            inGpuDriverSection = false
                         }
-                        inRendererSection = trimmed.equals("[Renderer]", ignoreCase = true)
-                    }
-
-                    if (inRendererSection) {
-                        if (trimmed.startsWith("driver_path\\use_global")) {
-                            newLines.add("driver_path\\use_global=true")
-                            hasUseGlobal = true
+                        val isGpuDriver = trimmed.equals("[GpuDriver]", ignoreCase = true)
+                        if (isGpuDriver) {
+                            hasGpuDriverSection = true
+                            inGpuDriverSection = true
+                            newLines.add("[GpuDriver]")
                             continue
                         }
                     }
+
+                    // Strip any old driver_path settings (overrides, use_global flags, defaults)
+                    if (trimmed.startsWith("driver_path", ignoreCase = true)) {
+                        continue
+                    }
+
                     newLines.add(line)
                 }
 
-                if (inRendererSection && !hasUseGlobal) {
+                if (inGpuDriverSection) {
                     newLines.add("driver_path\\use_global=true")
-                } else if (!hasRendererSection) {
+                } else if (!hasGpuDriverSection) {
                     newLines.add("")
-                    newLines.add("[Renderer]")
+                    newLines.add("[GpuDriver]")
                     newLines.add("driver_path\\use_global=true")
                 }
 

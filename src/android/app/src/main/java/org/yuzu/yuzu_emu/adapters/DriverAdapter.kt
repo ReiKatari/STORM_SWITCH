@@ -14,7 +14,10 @@ import org.yuzu.yuzu_emu.utils.ViewUtils.marquee
 import org.yuzu.yuzu_emu.utils.ViewUtils.setVisible
 import org.yuzu.yuzu_emu.viewholder.AbstractViewHolder
 
-class DriverAdapter(private val driverViewModel: DriverViewModel) :
+class DriverAdapter(
+    private val driverViewModel: DriverViewModel,
+    private val onDriverClicked: ((driver: Driver, position: Int) -> Unit)? = null
+) :
     AbstractSingleSelectionList<Driver, DriverAdapter.DriverViewHolder>(
         driverViewModel.driverList.value
     ) {
@@ -29,9 +32,13 @@ class DriverAdapter(private val driverViewModel: DriverViewModel) :
             binding.apply {
                 radioButton.isChecked = model.selected
                 root.setOnClickListener {
-                    selectItem(bindingAdapterPosition) {
-                        driverViewModel.onDriverSelected(it)
-                        driverViewModel.showClearButton(!StringSetting.DRIVER_PATH.global)
+                    if (onDriverClicked != null) {
+                        onDriverClicked.invoke(model, bindingAdapterPosition)
+                    } else {
+                        selectItem(bindingAdapterPosition) {
+                            driverViewModel.onDriverSelected(it)
+                            driverViewModel.showClearButton(!StringSetting.DRIVER_PATH.global)
+                        }
                     }
                 }
                 if (driverViewModel.isPerGame) {

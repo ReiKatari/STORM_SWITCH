@@ -2211,5 +2211,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="apply_driver_message">How would you like to apply the installed GPU driver?</string>
     <string name="apply_driver_globally">Globally for all</string>
     <string name="apply_driver_keep_custom">Without affecting custom settings</string>
+    <string name="apply_driver_current_game">For the current game</string>
 </resources>
 

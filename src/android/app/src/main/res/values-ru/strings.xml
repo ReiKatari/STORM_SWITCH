@@ -1653,5 +1653,6 @@
     <string name="apply_driver_message">Как вы хотите применить установленный драйвер GPU?</string>
     <string name="apply_driver_globally">Глобально для всех</string>
     <string name="apply_driver_keep_custom">Не затрагивая персональные настройки</string>
+    <string name="apply_driver_current_game">Для текущей игры</string>
     <string name="game_fix_manual_override_warning">⚠️ Применены ручные настройки (приоритет): %s. Авто-исправление частично переопределено.</string>
 </resources>

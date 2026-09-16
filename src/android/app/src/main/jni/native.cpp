@@ -242,31 +242,37 @@ void EmulationSession::SurfaceChanged() {
 }
 
 void EmulationSession::ConfigureFilesystemProvider(const std::string& filepath) {
-    const auto file = m_system.GetFilesystem()->OpenFile(filepath, FileSys::OpenMode::Read);
-    if (!file) {
-        return;
-    }
+    try {
+        const auto file = m_system.GetFilesystem()->OpenFile(filepath, FileSys::OpenMode::Read);
+        if (!file) {
+            return;
+        }
 
-    if (m_manual_provider->AddEntriesFromContainer(file)) {
-        return;
-    }
+        if (m_manual_provider->AddEntriesFromContainer(file)) {
+            return;
+        }
 
-    auto loader = Loader::GetLoader(m_system, file);
-    if (!loader) {
-        return;
-    }
+        auto loader = Loader::GetLoader(m_system, file);
+        if (!loader) {
+            return;
+        }
 
-    const auto file_type = loader->GetFileType();
-    if (file_type == Loader::FileType::Unknown || file_type == Loader::FileType::Error) {
-        return;
-    }
+        const auto file_type = loader->GetFileType();
+        if (file_type == Loader::FileType::Unknown || file_type == Loader::FileType::Error) {
+            return;
+        }
 
-    u64 program_id = 0;
-    const auto res2 = loader->ReadProgramId(program_id);
-    if (res2 == Loader::ResultStatus::Success && file_type == Loader::FileType::NCA) {
-        m_manual_provider->AddEntry(FileSys::TitleType::Application,
-                                    FileSys::GetCRTypeFromNCAType(FileSys::NCA{file}.GetType()),
-                                    program_id, file);
+        u64 program_id = 0;
+        const auto res2 = loader->ReadProgramId(program_id);
+        if (res2 == Loader::ResultStatus::Success && file_type == Loader::FileType::NCA) {
+            m_manual_provider->AddEntry(FileSys::TitleType::Application,
+                                        FileSys::GetCRTypeFromNCAType(FileSys::NCA{file}.GetType()),
+                                        program_id, file);
+        }
+    } catch (const std::exception& e) {
+        LOG_WARNING(Frontend, "Failed to configure filesystem provider for {}: {}", filepath, e.what());
+    } catch (...) {
+        LOG_WARNING(Frontend, "Failed to configure filesystem provider for {} with unknown error", filepath);
     }
 }
 
@@ -894,21 +900,35 @@ jobjectArray Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getSystemDriverInfo(
         }
         if (handle) {
             auto driver_library = std::make_shared<Common::DynamicLibrary>(handle);
-            auto window =
-                std::make_unique<EmuWindow_Android>(ANativeWindow_fromSurface(env, j_surf), driver_library);
-
             Vulkan::vk::InstanceDispatch dld;
             Vulkan::vk::Instance vk_instance = Vulkan::CreateInstance(
                 *driver_library, dld, VK_API_VERSION_1_1, Core::Frontend::WindowSystemType::Android);
 
-            auto surface = Vulkan::CreateSurface(vk_instance, window->GetWindowInfo());
-            auto device = Vulkan::CreateDevice(vk_instance, dld, *surface);
+            const auto physical_devices = vk_instance.EnumeratePhysicalDevices();
+            if (!physical_devices.empty()) {
+                const Vulkan::vk::PhysicalDevice physical_device(physical_devices[0], dld);
+                const auto props = physical_device.GetProperties();
+                const auto driver_version = props.driverVersion;
+                version_string =
+                    fmt::format("{}.{}.{}", VK_API_VERSION_MAJOR(driver_version),
+                                VK_API_VERSION_MINOR(driver_version), VK_API_VERSION_PATCH(driver_version));
 
-            auto driver_version = device.GetDriverVersion();
-            version_string =
-                fmt::format("{}.{}.{}", VK_API_VERSION_MAJOR(driver_version),
-                            VK_API_VERSION_MINOR(driver_version), VK_API_VERSION_PATCH(driver_version));
-            driver_name = device.GetDriverName();
+                VkPhysicalDeviceDriverProperties driver_properties{
+                    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES,
+                    .pNext = nullptr,
+                };
+                VkPhysicalDeviceProperties2 properties2{
+                    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+                    .pNext = &driver_properties,
+                };
+                if (dld.vkGetPhysicalDeviceProperties2) {
+                    dld.vkGetPhysicalDeviceProperties2(physical_devices[0], &properties2);
+                    driver_name = Vulkan::vk::GetDriverName(driver_properties);
+                }
+                if (driver_name.empty() || driver_name == "Unknown") {
+                    driver_name = props.deviceName;
+                }
+            }
         }
     } catch (const std::exception& e) {
         LOG_WARNING(Frontend, "Failed to query system driver info: {}", e.what());
@@ -945,17 +965,16 @@ jstring Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getGpuModel(JNIEnv *env, j
         }
         if (handle) {
             auto driver_library = std::make_shared<Common::DynamicLibrary>(handle);
-            auto window =
-                    std::make_unique<EmuWindow_Android>(ANativeWindow_fromSurface(env, j_surf), driver_library);
-
             Vulkan::vk::InstanceDispatch dld;
             Vulkan::vk::Instance vk_instance = Vulkan::CreateInstance(
                     *driver_library, dld, VK_API_VERSION_1_1, Core::Frontend::WindowSystemType::Android);
 
-            auto surface = Vulkan::CreateSurface(vk_instance, window->GetWindowInfo());
-            auto device = Vulkan::CreateDevice(vk_instance, dld, *surface);
-
-            model_name = device.GetModelName();
+            const auto physical_devices = vk_instance.EnumeratePhysicalDevices();
+            if (!physical_devices.empty()) {
+                const Vulkan::vk::PhysicalDevice physical_device(physical_devices[0], dld);
+                const auto props = physical_device.GetProperties();
+                model_name = props.deviceName;
+            }
         }
     } catch (const std::exception& e) {
         LOG_WARNING(Frontend, "Failed to query GPU model: {}", e.what());

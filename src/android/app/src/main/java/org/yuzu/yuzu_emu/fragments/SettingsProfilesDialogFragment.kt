@@ -176,7 +176,7 @@ class SettingsProfilesDialogFragment : DialogFragment() {
     }
 
     private fun showDeleteProfileDialog(profile: SettingsProfile) {
-        MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setTitle(R.string.profile_delete_title)
             .setMessage(getString(R.string.profile_delete_confirmation, profile.name))
             .setPositiveButton(R.string.delete) { _, _ ->

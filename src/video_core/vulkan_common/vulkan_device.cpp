@@ -1323,7 +1323,7 @@ bool Device::GetSuitability(bool requires_swapchain) {
     const VkPhysicalDeviceLimits& limits{properties.properties.limits};
     const std::array limits_report{
                                    Limit{65536, limits.maxUniformBufferRange, "maxUniformBufferRange"},
-                                   Limit{16, limits.maxViewports, "maxViewports"},
+                                   Limit{1, limits.maxViewports, "maxViewports"},
                                    Limit{8, limits.maxColorAttachments, "maxColorAttachments"},
                                    Limit{8, limits.maxClipDistances, "maxClipDistances"},
                                    };

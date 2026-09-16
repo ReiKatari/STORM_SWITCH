@@ -154,7 +154,6 @@ VK_DEFINE_HANDLE(VmaAllocator)
     FEATURE_NAME(features, largePoints)                                                            \
     FEATURE_NAME(features, logicOp)                                                                \
     FEATURE_NAME(features, multiDrawIndirect)                                                      \
-    FEATURE_NAME(features, multiViewport)                                                          \
     FEATURE_NAME(features, occlusionQueryPrecise)                                                  \
     FEATURE_NAME(features, robustBufferAccess)                                                     \
     FEATURE_NAME(features, samplerAnisotropy)                                                      \
@@ -183,6 +182,7 @@ VK_DEFINE_HANDLE(VmaAllocator)
     FEATURE_NAME(descriptor_indexing, descriptorBindingPartiallyBound)                             \
     FEATURE_NAME(descriptor_indexing, shaderSampledImageArrayNonUniformIndexing)                   \
     FEATURE_NAME(extended_dynamic_state, extendedDynamicState)                                     \
+    FEATURE_NAME(features, multiViewport)                                                          \
     FEATURE_NAME(format_a4b4g4r4, formatA4B4G4R4)                                                  \
     FEATURE_NAME(robust_image_access, robustImageAccess)                                           \
     FEATURE_NAME(index_type_uint8, indexTypeUint8)                                                 \
@@ -984,7 +984,7 @@ FN_MAX_LIMIT_LIST
     }
 
     u32 GetMaxViewports() const {
-        return properties.properties.limits.maxViewports;
+        return (std::max)(1U, properties.properties.limits.maxViewports);
     }
 
     u32 GetMaxUserClipDistances() const {

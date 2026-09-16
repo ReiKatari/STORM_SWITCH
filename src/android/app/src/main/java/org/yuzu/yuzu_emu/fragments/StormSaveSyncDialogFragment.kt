@@ -270,11 +270,20 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             syncAllSaves()
         }
 
+        binding.editSearchSaves.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updateList()
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
         adapter = SaveSyncAdapter(
             items = mutableListOf(),
             onSyncClick = { item -> handleSyncItem(item) }
         )
         binding.recyclerSaves.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerSaves.isNestedScrollingEnabled = false
         binding.recyclerSaves.adapter = adapter
     }
 
@@ -554,7 +563,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         put("status", "ok")
                         put("device_name", "${Build.MANUFACTURER} ${Build.MODEL}")
                         put("platform", "android")
-                        put("version", "8.7.0")
+                        put("version", "8.7.2")
                     }
                     sendResponse(200, "application/json", obj.toString().toByteArray(Charsets.UTF_8))
                 }
@@ -679,7 +688,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 val statusUrl = "http://$ip:$port/api/status?client_ip=$myIp&client_port=$localPort&client_name=$encodedName&client_key=$myKey"
                 val req = Request.Builder()
                     .url(statusUrl)
-                    .header("User-Agent", "STORM-SWITCH-SYNC/8.7.0")
+                    .header("User-Agent", "STORM-SWITCH-SYNC/8.7.2")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 if (resp.isSuccessful) {
@@ -905,10 +914,23 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
     private fun updateList() {
         val binding = _binding ?: return
-        val list = saveItems.values.toList().sortedBy { it.titleName.lowercase() }
-        adapter.submitList(list)
-        binding.textSavesHeader.text = "Сохранения игр (${list.size})"
-        binding.textEmptySaves.isVisible = list.isEmpty()
+        val query = binding.editSearchSaves.text?.toString()?.trim()?.lowercase(Locale.ROOT) ?: ""
+        val allSaves = saveItems.values.toList().sortedBy { it.titleName.lowercase() }
+        val filteredList = if (query.isEmpty()) {
+            allSaves
+        } else {
+            allSaves.filter {
+                it.titleName.lowercase(Locale.ROOT).contains(query) ||
+                it.titleId.lowercase(Locale.ROOT).contains(query)
+            }
+        }
+        adapter.submitList(filteredList)
+        binding.textSavesHeader.text = if (query.isEmpty()) {
+            "Сохранения игр (${allSaves.size})"
+        } else {
+            "Сохранения игр (${filteredList.size} из ${allSaves.size})"
+        }
+        binding.textEmptySaves.isVisible = filteredList.isEmpty()
     }
 
     private fun handleSyncItem(item: AndroidSaveItem) {

@@ -1,55 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingVertical="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_marginTop="32dp"
-        android:orientation="horizontal"
-        android:paddingLeft="@dimen/spacing_large"
-        android:paddingRight="@dimen/spacing_large">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_decrement"
-            style="@style/Widget.Material3.Button.IconButton.Filled"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:padding="0dp"
             android:contentDescription="@string/decrement"
-            android:text="-" />
+            android:text="-"
+            android:textColor="#00F0FF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:backgroundTint="#16263D"
+            app:cornerRadius="10dp"
+            app:strokeColor="#00D2FF"
+            app:strokeWidth="1.5dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/text_input_layout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/spacing_medlarge"
-            android:layout_marginRight="@dimen/spacing_medlarge"
+            android:layout_marginHorizontal="12dp"
             android:layout_weight="1"
-            android:hint="Value">
+            app:boxBackgroundColor="#0A0E17"
+            app:boxCornerRadiusBottomEnd="10dp"
+            app:boxCornerRadiusBottomStart="10dp"
+            app:boxCornerRadiusTopEnd="10dp"
+            app:boxCornerRadiusTopStart="10dp"
+            app:boxStrokeColor="#00D2FF"
+            app:boxStrokeWidth="1.5dp"
+            app:hintTextColor="#00D2FF"
+            android:hint="Значение">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:inputType="number"
-                android:textAlignment="textStart"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
                 tools:text="0" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_increment"
-            style="@style/Widget.Material3.Button.IconButton.Filled"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:padding="0dp"
             android:contentDescription="@string/increment"
-            android:text="+" />
+            android:text="+"
+            android:textColor="#00F0FF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:backgroundTint="#16263D"
+            app:cornerRadius="10dp"
+            app:strokeColor="#00D2FF"
+            app:strokeWidth="1.5dp" />
 
     </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>

@@ -98,7 +98,7 @@ class GpuUnswizzleDialogFragment : DialogFragment() {
             updateDropdownsState(checked)
         }
 
-        val dialog = MaterialAlertDialogBuilder(requireContext())
+        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setTitle(item.title)
             .setView(binding.root)
             .create()
