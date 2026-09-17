@@ -113,8 +113,7 @@ VK_DEFINE_HANDLE(VmaAllocator)
     EXTENSION(NV, VIEWPORT_SWIZZLE, viewport_swizzle)                                              \
     EXTENSION(EXT, FILTER_CUBIC, filter_cubic)                                                     \
     EXTENSION(IMG, FILTER_CUBIC, filter_cubic_img)                                                 \
-    EXTENSION(QCOM, FILTER_CUBIC_WEIGHTS, filter_cubic_weights)                                     \
-    EXTENSION(EXT, SHADER_OBJECT, shader_object)
+    EXTENSION(QCOM, FILTER_CUBIC_WEIGHTS, filter_cubic_weights)
 
 // Define extensions which must be supported.
 #define FOR_EACH_VK_MANDATORY_EXTENSION(EXTENSION_NAME)                                            \
@@ -881,11 +880,6 @@ FN_MAX_LIMIT_LIST
 
     bool IsExtAstcDecodeModeSupported() const {
         return extensions.astc_decode_mode;
-    }
-
-    /// Returns true if the device supports VK_EXT_shader_object.
-    bool IsExtShaderObjectSupported() const {
-        return extensions.shader_object;
     }
 
     /// Returns true if descriptor bindings is partially bound.

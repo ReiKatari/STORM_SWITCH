@@ -97,9 +97,6 @@ android {
                         "-DYUZU_TESTS=OFF",
                         "-DDYNARMIC_TESTS=OFF",
                         "-DYUZU_DOWNLOAD_ANDROID_VVL=OFF",
-                        "-DYUZU_BUILD_PRESET=optimized",
-                        "-DENABLE_LTO=ON",
-                        "-DYUZU_USE_THIN_LTO=ON",
                         *extraCMakeArgs.toTypedArray()
                     )
                 )

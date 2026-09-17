@@ -151,17 +151,8 @@ else()
         add_compile_options(
             $<$<COMPILE_LANGUAGE:C,CXX>:-fwrapv>
             $<$<COMPILE_LANGUAGE:C,CXX>:-pipe>
-            $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:C,CXX>:-O3>>
-            $<$<CONFIG:RelWithDebInfo>:$<$<COMPILE_LANGUAGE:C,CXX>:-O3>>
             # Disable RTTI (C++ only)
             $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
-
-        if (CXX_CLANG)
-            add_compile_options(
-                $<$<COMPILE_LANGUAGE:C,CXX>:-fvectorize>
-                $<$<COMPILE_LANGUAGE:C,CXX>:-fslp-vectorize>
-                $<$<COMPILE_LANGUAGE:C,CXX>:-funroll-loops>)
-        endif()
     endif()
 
     if (ENABLE_WERROR)

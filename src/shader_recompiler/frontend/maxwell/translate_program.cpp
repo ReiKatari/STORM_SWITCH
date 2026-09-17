@@ -300,7 +300,6 @@ IR::Program TranslateProgram(ObjectPool<IR::Inst>& inst_pool, ObjectPool<IR::Blo
     }
     Optimization::SsaRewritePass(program);
 
-    Optimization::IdentityRemovalPass(program);
     Optimization::ConstantPropagationPass(env, program);
 
     Optimization::PositionPass(env, program);
@@ -319,7 +318,6 @@ IR::Program TranslateProgram(ObjectPool<IR::Inst>& inst_pool, ObjectPool<IR::Blo
     Optimization::CollectShaderInfoPass(env, program);
     Optimization::LayerPass(program, normalized_host_info);
     Optimization::VendorWorkaroundPass(program);
-    Optimization::DeadCodeEliminationPass(program);
 
     CollectInterpolationInfo(env, program);
     AddNVNStorageBuffers(program);

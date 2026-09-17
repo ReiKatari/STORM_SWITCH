@@ -29,9 +29,6 @@
 #ifndef VK_KHR_MAINTENANCE_8_EXTENSION_NAME
 #define VK_KHR_MAINTENANCE_8_EXTENSION_NAME "VK_KHR_maintenance8"
 #endif
-#ifndef VK_EXT_SHADER_OBJECT_EXTENSION_NAME
-#define VK_EXT_SHADER_OBJECT_EXTENSION_NAME "VK_EXT_shader_object"
-#endif
 
 // Sanitize macros
 #undef CreateEvent
