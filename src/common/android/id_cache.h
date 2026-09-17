@@ -84,6 +84,10 @@ jclass GetDoubleClass();
 jmethodID GetDoubleConstructor();
 jmethodID GetDoubleValueMethod();
 
+jclass GetLongClass();
+jmethodID GetLongConstructor();
+jmethodID GetLongValueMethod();
+
 jclass GetIntegerClass();
 jmethodID GetIntegerConstructor();
 jmethodID GetIntegerValueMethod();

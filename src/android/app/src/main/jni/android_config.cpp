@@ -72,9 +72,9 @@ void AndroidConfig::ReadPathValues() {
     }
     BeginGroup(Settings::TranslateCategory(Settings::Category::Paths));
 
+    AndroidSettings::values.game_dirs.clear();
     const int gamedirs_size = BeginArray(std::string("gamedirs"));
     if (gamedirs_size > 0) {
-        AndroidSettings::values.game_dirs.clear();
         for (int i = 0; i < gamedirs_size; ++i) {
             SetArrayIndex(i);
             AndroidSettings::GameDir game_dir;

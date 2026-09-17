@@ -31,7 +31,7 @@ class SystemInfoDialogFragment : DialogFragment() {
             copyDiagnosticsToClipboard()
         }
 
-        return MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+        return MaterialAlertDialogBuilder(requireContext())
             .setView(binding.root)
             .create()
     }
@@ -49,7 +49,8 @@ class SystemInfoDialogFragment : DialogFragment() {
     }
 
     private fun populateSystemInfo() {
-        binding.textAppBuild.text = "STORM SWITCH ${NativeLibrary.getBuildVersion()}"
+        val buildVer = try { NativeLibrary.getBuildVersion() } catch (_: Throwable) { "8.7.7" }
+        binding.textAppBuild.text = "STORM SWITCH $buildVer"
 
         // 1. Device Info
         val deviceInfo = buildString {
@@ -68,7 +69,11 @@ class SystemInfoDialogFragment : DialogFragment() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Build.SOC_MODEL.isNotBlank()) {
                 append("• Платформа SoC: ").append(Build.SOC_MODEL).append("\n")
             }
-            val cpuSummary = NativeLibrary.getCpuSummary()
+            val cpuSummary = try {
+                NativeLibrary.getCpuSummary()
+            } catch (_: Throwable) {
+                ""
+            }
             if (cpuSummary.isNotEmpty() && cpuSummary != "Unknown") {
                 append("• Процессор: ").append(cpuSummary)
             } else {
@@ -89,9 +94,9 @@ class SystemInfoDialogFragment : DialogFragment() {
                 val vulkanDriver = NativeLibrary.getVulkanDriverVersion()
                 append("• Версия драйвера: ").append(if (vulkanDriver.isNotEmpty()) vulkanDriver else "Vulkan Hardware Driver").append("\n")
 
-                val frameGen = NativeLibrary.supportsFrameGeneration()
+                val frameGen = try { NativeLibrary.supportsFrameGeneration() } catch (_: Throwable) { false }
                 append("• Генерация кадров: ").append(if (frameGen) "Поддерживается" else "Не поддерживается")
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 append("• Статус: ").append(e.message)
             }
         }
@@ -114,8 +119,9 @@ class SystemInfoDialogFragment : DialogFragment() {
     }
 
     private fun copyDiagnosticsToClipboard() {
+        val buildVer = try { NativeLibrary.getBuildVersion() } catch (_: Throwable) { "8.7.7" }
         val fullInfo = buildString {
-            appendLine("=== STORM SWITCH v${NativeLibrary.getBuildVersion()} System Diagnostics ===")
+            appendLine("=== STORM SWITCH v$buildVer System Diagnostics ===")
             appendLine("Date: ${java.util.Date()}")
             appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL} (${Build.DEVICE})")
             appendLine("Android: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}), Patch: ${Build.VERSION.SECURITY_PATCH}")

@@ -44,22 +44,32 @@ object LosslessScalingHelper {
     }
 
     fun install(source: Uri): Int {
-        val destination = File(NativeLibrary.getLosslessDllPath())
-        destination.parentFile?.mkdirs()
+        var rawPath = try { NativeLibrary.getLosslessDllPath() } catch (_: Throwable) { "" }
+        if (rawPath.isBlank()) {
+            val userDir = DirectoryInitialization.userDirectory ?: ""
+            rawPath = if (userDir.isNotBlank()) {
+                File(userDir, "lossless/LosslessScaling.dll").absolutePath
+            } else {
+                File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/lossless/LosslessScaling.dll").absolutePath
+            }
+        }
+        val destination = File(rawPath)
+        val parentDir = destination.parentFile ?: File(DirectoryInitialization.userDirectory, "lossless")
+        parentDir.mkdirs()
 
         val copied = FileUtil.copyUriToInternalStorage(
             source,
-            destination.parent!!,
-            destination.name
+            parentDir.absolutePath,
+            destination.name.ifEmpty { "LosslessScaling.dll" }
         )
         if (copied == null) {
             refreshStatus()
             return RESULT_NOT_INSTALLED
         }
 
-        val result = NativeLibrary.prepareLosslessDll()
+        val result = try { NativeLibrary.prepareLosslessDll() } catch (_: Throwable) { RESULT_NOT_INSTALLED }
         if (result != RESULT_OK) {
-            NativeLibrary.removeLosslessDll()
+            try { NativeLibrary.removeLosslessDll() } catch (_: Throwable) {}
         } else {
             BooleanSetting.RENDERER_FRAME_GEN.setBoolean(true)
             NativeConfig.saveGlobalConfig()

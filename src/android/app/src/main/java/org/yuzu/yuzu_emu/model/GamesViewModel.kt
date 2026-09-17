@@ -3,6 +3,7 @@
 
 package org.yuzu.yuzu_emu.model
 
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.documentfile.provider.DocumentFile
@@ -156,8 +157,7 @@ class GamesViewModel : ViewModel() {
                         currentBackup.add(gameDir.uriString)
                         prefs.edit().putStringSet("game_directories_backup", currentBackup).apply()
                         NativeConfig.saveGlobalConfig()
-                        val isFirstTimeSetup = prefs.getBoolean(Settings.PREF_FIRST_APP_LAUNCH, true)
-                        getGameDirsAndExternalContent(!isFirstTimeSetup)
+                        getGameDirsAndExternalContent(reloadList = true)
                     }
                     DirectoryType.EXTERNAL_CONTENT -> {
                         addExternalContentDir(gameDir.uriString)
@@ -180,13 +180,29 @@ class GamesViewModel : ViewModel() {
     fun removeFolder(gameDir: GameDir) =
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val currentFolders = _folders.value.toMutableList()
-                val remainingFolders = currentFolders.filterNot { it.uriString == gameDir.uriString }.toMutableList()
+                try {
+                    val uri = Uri.parse(gameDir.uriString)
+                    YuzuApplication.appContext.contentResolver.releasePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                } catch (_: Exception) {}
+
                 val prefs = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
+                val targetUri = gameDir.uriString
+                val targetDecoded = try { Uri.decode(targetUri) } catch (_: Exception) { targetUri }
+
+                fun matchesTarget(testUri: String): Boolean {
+                    if (testUri == targetUri) return true
+                    if (testUri.trimEnd('/') == targetUri.trimEnd('/')) return true
+                    val decoded = try { Uri.decode(testUri) } catch (_: Exception) { testUri }
+                    return decoded == targetDecoded || decoded.trimEnd('/') == targetDecoded.trimEnd('/')
+                }
 
                 when (gameDir.type) {
                     DirectoryType.GAME -> {
-                        val remainingGameDirs = remainingFolders.filter { it.type == DirectoryType.GAME }
+                        val currentNativeDirs = NativeConfig.getGameDirs().toMutableList()
+                        val remainingGameDirs = currentNativeDirs.filterNot { matchesTarget(it.uriString) }
                         NativeConfig.setGameDirs(remainingGameDirs.toTypedArray())
                         if (remainingGameDirs.isEmpty()) {
                             prefs.edit().remove("game_directories_backup").apply()

@@ -255,6 +255,9 @@
     <string name="emulator_data_description">模拟器需要密钥才能运行建议使用固件,并且使用 QLaunch 小程序时需要固件</string>
     <string name="permissions">授予权限</string>
     <string name="permissions_description">授予使用模拟器特定功能所需的权限</string>
+    <string name="storage_permission">所有文件访问权限 (必需)</string>
+    <string name="storage_permission_description">授予所有文件访问权限以管理 STORM SWITCH 共享目录</string>
+    <string name="storage_permission_required_notice">使用 STORM SWITCH 需要所有文件访问权限</string>
     <string name="install_firmware_warning_description">许多游戏需要访问固件才能正常运行。</string>
     <string name="install_firmware_warning_help">https://yuzu-mirror.github.io/help/quickstart/#guide-introduction</string>
     <string name="notifications">通知</string>

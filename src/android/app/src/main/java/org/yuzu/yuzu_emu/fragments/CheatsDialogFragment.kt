@@ -30,6 +30,7 @@ import org.yuzu.yuzu_emu.databinding.DialogCheatsBinding
 import org.yuzu.yuzu_emu.databinding.ItemCheatBinding
 import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -72,7 +73,7 @@ class CheatsDialogFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         game = requireArguments().getParcelable(ARG_GAME)!!
-        setStyle(STYLE_NO_TITLE, 0)
+        setStyle(STYLE_NORMAL, ThemeHelper.getSelectedStaticThemeColor())
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -551,7 +552,7 @@ class CheatsDialogFragment : DialogFragment() {
         layout.addView(nameEdit)
         layout.addView(codeEdit)
 
-        MaterialAlertDialogBuilder(context)
+        MaterialAlertDialogBuilder(context, R.style.EdenMaterialDialog)
             .setTitle(R.string.add_cheat)
             .setView(layout)
             .setPositiveButton(R.string.ok) { _, _ ->
@@ -607,7 +608,7 @@ class CheatsDialogFragment : DialogFragment() {
         val titleTv = com.google.android.material.textview.MaterialTextView(context).apply {
             text = "Текущее значение: $existingDec (0x$existingHex)"
             textSize = 13f
-            setTextColor(0xFF38BDF8.toInt())
+            setTextColor(ThemeHelper.getColor(context, androidx.appcompat.R.attr.colorPrimary))
             setPadding(0, 0, 0, 16)
         }
         layout.addView(titleTv)
@@ -645,7 +646,7 @@ class CheatsDialogFragment : DialogFragment() {
         }
         layout.addView(presetsLayout)
 
-        MaterialAlertDialogBuilder(context)
+        MaterialAlertDialogBuilder(context, R.style.EdenMaterialDialog)
             .setTitle("✏️ Изменить кол-во: ${item.name}")
             .setView(layout)
             .setPositiveButton(R.string.apply_driver_now) { _, _ ->
@@ -710,7 +711,7 @@ class CheatsDialogFragment : DialogFragment() {
 
     private fun showCheatActionMenu(item: CheatModel) {
         val options = arrayOf("✏️ Изменить кол-во / значение", "📋 Копировать код", "🗑️ Удалить чит")
-        MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setTitle(item.name)
             .setItems(options) { _, which ->
                 when (which) {
@@ -780,6 +781,8 @@ class CheatsDialogFragment : DialogFragment() {
         override fun onBindViewHolder(holder: CheatViewHolder, position: Int) {
             val item = items[position]
             val b = holder.binding
+            val primaryColor = ThemeHelper.getColor(b.root.context, androidx.appcompat.R.attr.colorPrimary)
+            val secondaryTextColor = ThemeHelper.getColor(b.root.context, com.google.android.material.R.attr.colorOnSurfaceVariant)
 
             b.textCheatName.text = item.name
             b.checkboxCheat.setOnCheckedChangeListener(null)
@@ -790,13 +793,13 @@ class CheatsDialogFragment : DialogFragment() {
 
             if (isRunning && item.isEnabled) {
                 b.textCheatStatus.text = "⚡ В игре"
-                b.textCheatStatus.setTextColor(0xFF00F2FE.toInt())
+                b.textCheatStatus.setTextColor(primaryColor)
             } else if (item.isEnabled) {
                 b.textCheatStatus.text = "✅ Включен"
-                b.textCheatStatus.setTextColor(0xFF00F2FE.toInt())
+                b.textCheatStatus.setTextColor(primaryColor)
             } else {
                 b.textCheatStatus.text = "⚪ Выкл"
-                b.textCheatStatus.setTextColor(0xFF718096.toInt())
+                b.textCheatStatus.setTextColor(secondaryTextColor)
             }
 
             val localizedDesc = getLocalizedCheatDescription(item.name, item.code)
@@ -818,13 +821,13 @@ class CheatsDialogFragment : DialogFragment() {
                 onCheckChanged(item, isChecked)
                 if (isRunning && isChecked) {
                     b.textCheatStatus.text = "⚡ В игре"
-                    b.textCheatStatus.setTextColor(0xFF00F2FE.toInt())
+                    b.textCheatStatus.setTextColor(primaryColor)
                 } else if (isChecked) {
                     b.textCheatStatus.text = "✅ Включен"
-                    b.textCheatStatus.setTextColor(0xFF00F2FE.toInt())
+                    b.textCheatStatus.setTextColor(primaryColor)
                 } else {
                     b.textCheatStatus.text = "⚪ Выкл"
-                    b.textCheatStatus.setTextColor(0xFF718096.toInt())
+                    b.textCheatStatus.setTextColor(secondaryTextColor)
                 }
             }
 

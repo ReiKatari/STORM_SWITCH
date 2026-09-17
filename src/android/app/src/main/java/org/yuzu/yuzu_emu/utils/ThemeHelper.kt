@@ -38,7 +38,7 @@ object ThemeHelper {
         }
     }
 
-    private fun getSelectedStaticThemeColor(): Int {
+    fun getSelectedStaticThemeColor(): Int {
         val themeIndex = IntSetting.THEME_MODE.getInt()
         return when (themeIndex) {
             0 -> R.style.Theme_Storm_Dark
@@ -61,6 +61,11 @@ object ThemeHelper {
             Color.green(color),
             Color.blue(color)
         )
+    }
+
+    @ColorInt
+    fun getColor(context: android.content.Context, @androidx.annotation.AttrRes attrRes: Int): Int {
+        return getColorFromAttr(context, attrRes)
     }
 
     @ColorInt

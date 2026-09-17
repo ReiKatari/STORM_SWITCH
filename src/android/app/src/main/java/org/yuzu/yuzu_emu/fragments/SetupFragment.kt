@@ -182,7 +182,7 @@ class SetupFragment : Fragment() {
                                 R.string.keys_description,
                                 {
                                     pageButtonCallback = it
-                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                                         .setTitle(R.string.keys)
                                         .setItems(arrayOf("🌐 Онлайн-установка ключей (рекомендуется)", "📄 Выбрать файл ключей с устройства", "📁 Выбрать папку с ключами")) { _, which ->
                                             when (which) {
@@ -212,34 +212,12 @@ class SetupFragment : Fragment() {
                         )
                         add(
                             PageButton(
-                                R.drawable.ic_website,
-                                R.string.online_install_keys,
-                                R.string.online_install_keys_description,
-                                {
-                                    pageButtonCallback = it
-                                    OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS)
-                                        .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
-                                },
-                                {
-                                    val file = File(
-                                        DirectoryInitialization.userDirectory + "/keys/prod.keys"
-                                    )
-                                    if (file.exists() && NativeLibrary.areKeysPresent()) {
-                                        ButtonState.BUTTON_ACTION_COMPLETE
-                                    } else {
-                                        ButtonState.BUTTON_ACTION_INCOMPLETE
-                                    }
-                                }
-                            )
-                        )
-                        add(
-                            PageButton(
                                 R.drawable.ic_firmware,
                                 R.string.firmware,
                                 R.string.firmware_description,
                                 {
                                     pageButtonCallback = it
-                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                                         .setTitle(R.string.firmware)
                                         .setItems(arrayOf("🌐 Онлайн-установка прошивки (рекомендуется)", "📦 Выбрать ZIP архив прошивки с устройства", "📁 Выбрать папку с прошивкой (.nca)")) { _, which ->
                                             when (which) {
@@ -262,25 +240,6 @@ class SetupFragment : Fragment() {
                                 R.string.install_firmware_warning,
                                 R.string.install_firmware_warning_description,
                                 R.string.install_firmware_warning_help,
-                            )
-                        )
-                        add(
-                            PageButton(
-                                R.drawable.ic_website,
-                                R.string.online_install_firmware,
-                                R.string.online_install_firmware_description,
-                                {
-                                    pageButtonCallback = it
-                                    OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE)
-                                        .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
-                                },
-                                {
-                                    if (NativeLibrary.isFirmwareAvailable()) {
-                                        ButtonState.BUTTON_ACTION_COMPLETE
-                                    } else {
-                                        ButtonState.BUTTON_ACTION_INCOMPLETE
-                                    }
-                                }
                             )
                         )
                         add(
@@ -311,7 +270,7 @@ class SetupFragment : Fragment() {
                                     getGamesDirectory.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
                                 },
                                 {
-                                    if (NativeConfig.getGameDirs().isNotEmpty()) {
+                                    if (hasValidGameDirectories()) {
                                         ButtonState.BUTTON_ACTION_COMPLETE
                                     } else {
                                         ButtonState.BUTTON_ACTION_INCOMPLETE
@@ -331,7 +290,7 @@ class SetupFragment : Fragment() {
                         )
                         if (file.exists() && NativeLibrary.areKeysPresent() &&
                             NativeLibrary.isFirmwareAvailable() &&
-                            NativeConfig.getGameDirs().isNotEmpty()
+                            hasValidGameDirectories()
                         ) {
                             PageState.COMPLETE
                         } else {
@@ -372,6 +331,10 @@ class SetupFragment : Fragment() {
             viewLifecycleOwner,
             resetState = { homeViewModel.setGamesDirSelected(false) }
         ) { if (it) checkForButtonState.invoke() }
+        homeViewModel.checkKeys.collect(
+            viewLifecycleOwner,
+            resetState = { homeViewModel.setCheckKeys(false) }
+        ) { if (it) checkForButtonState.invoke() }
 
         binding.viewPager2.apply {
             adapter = SetupAdapter(requireActivity() as AppCompatActivity, pages)
@@ -406,6 +369,15 @@ class SetupFragment : Fragment() {
 
         binding.buttonNext.setOnClickListener {
             val index = binding.viewPager2.currentItem
+            if (index == 0 && !isStoragePermissionGranted()) {
+                com.google.android.material.snackbar.Snackbar.make(
+                    binding.root,
+                    R.string.storage_permission_required_notice,
+                    com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+                ).show()
+                requestStoragePermission()
+                return@setOnClickListener
+            }
             val currentPage = pages[index]
 
             val warningMessages =
@@ -633,7 +605,32 @@ class SetupFragment : Fragment() {
             }
         }
 
+    private fun hasValidGameDirectories(): Boolean {
+        val dirs = NativeConfig.getGameDirs().filter { it.uriString.isNotBlank() }
+        if (dirs.isEmpty()) return false
+        val persisted = try { requireContext().contentResolver.persistedUriPermissions } catch (_: Exception) { emptyList() }
+        return dirs.any { d ->
+            val uri = android.net.Uri.parse(d.uriString)
+            if (uri.scheme == "file" || uri.scheme.isNullOrEmpty()) {
+                File(d.uriString).exists()
+            } else {
+                persisted.any { p -> p.uri == uri && p.isReadPermission }
+            }
+        }
+    }
+
     private fun finishSetup() {
+        if (!isStoragePermissionGranted()) {
+            binding.viewPager2.currentItem = 0
+            com.google.android.material.snackbar.Snackbar.make(
+                binding.root,
+                R.string.storage_permission_required_notice,
+                com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+            ).show()
+            requestStoragePermission()
+            return
+        }
+
         PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
             .edit()
             .putBoolean(Settings.PREF_FIRST_APP_LAUNCH, false)

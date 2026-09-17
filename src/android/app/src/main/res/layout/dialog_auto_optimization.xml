@@ -132,7 +132,7 @@
                         android:layout_height="wrap_content"
                         android:text="Класс устройства: Флагман (Высокая производительность)"
                         android:textSize="11sp"
-                        android:textColor="#38bdf8"
+                        android:textColor="?attr/colorPrimary"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -382,13 +382,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="42dp"
                     android:text="@string/auto_optimization_reset_defaults"
-                    android:textColor="#ffffff"
+                    android:textColor="?attr/colorOnError"
                     android:textSize="12.5sp"
                     android:textStyle="bold"
-                    app:backgroundTint="#dc2626"
+                    app:backgroundTint="?attr/colorError"
                     app:cornerRadius="12dp"
                     app:icon="@drawable/ic_clear"
-                    app:iconTint="#ffffff"
+                    app:iconTint="?attr/colorOnError"
                     app:iconSize="16dp"
                     android:layout_marginBottom="8dp" />
 
@@ -422,13 +422,13 @@
                         android:layout_height="42dp"
                         android:layout_weight="1"
                         android:text="@string/auto_optimization_apply"
-                        android:textColor="#ffffff"
+                        android:textColor="?attr/colorOnPrimary"
                         android:textSize="12.5sp"
                         android:textStyle="bold"
                         app:backgroundTint="?attr/colorPrimary"
                         app:cornerRadius="12dp"
                         app:icon="@drawable/ic_settings"
-                        app:iconTint="#ffffff"
+                        app:iconTint="?attr/colorOnPrimary"
                         app:iconSize="16dp"
                         android:layout_marginStart="6dp" />
 

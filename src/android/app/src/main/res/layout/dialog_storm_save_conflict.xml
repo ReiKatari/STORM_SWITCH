@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#0A0E17"
+    android:background="?attr/colorSurface"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -19,7 +19,7 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/ic_sync"
-            app:tint="#00F0FF" />
+            app:tint="?attr/colorPrimary" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -32,7 +32,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Разрешение конфликта сохранений"
-                android:textColor="#00F0FF"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
@@ -40,7 +40,7 @@
                 android:id="@+id/text_conflict_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#38BDF8"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
                 tools:text="Игра: Assassin's Creed: The Rebel Collection [010044700DEB0000]" />
         </LinearLayout>
@@ -51,7 +51,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:text="На текущем и удалённом устройствах обнаружены разные версии сохранения. Сравните время создания и выберите действие."
-        android:textColor="#FFFFFF"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="13sp" />
 
     <!-- Cards container -->
@@ -66,10 +66,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            app:cardBackgroundColor="#141C2B"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:cardCornerRadius="8dp"
             app:cardElevation="2dp"
-            app:strokeColor="#20354E"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -83,7 +83,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Текущее устройство (Телефон)"
-                    android:textColor="#00F0FF"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -92,7 +92,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
                     tools:text="📅 Дата и время: 14.09.2026 13:30" />
 
@@ -101,7 +101,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="#38BDF8"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
                     tools:text="📦 Размер данных: 1.42 МБ • Файлов: 6" />
             </LinearLayout>
@@ -111,10 +111,11 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="#141C2B"
+            android:layout_marginBottom="8dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:cardCornerRadius="8dp"
             app:cardElevation="2dp"
-            app:strokeColor="#20354E"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -128,7 +129,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Удалённое устройство (ПК)"
-                    android:textColor="#38BDF8"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -137,7 +138,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
                     tools:text="📅 Дата и время: 14.09.2026 13:35" />
 
@@ -146,7 +147,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="#38BDF8"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
                     tools:text="📦 Размер данных: 1.50 МБ • Файлов: 6" />
             </LinearLayout>
@@ -166,10 +167,10 @@
             android:layout_width="match_parent"
             android:layout_height="46dp"
             android:text="Заменить текущее"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="13sp"
-            app:backgroundTint="#1B2B44"
-            app:strokeColor="#00D2FF"
+            app:backgroundTint="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -179,23 +180,23 @@
             android:layout_height="46dp"
             android:layout_marginTop="6dp"
             android:text="Заменить на удалённом"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="13sp"
-            app:backgroundTint="#162030"
-            app:strokeColor="#3B82F6"
+            app:backgroundTint="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_keep_both"
-            style="@style/Widget.Material3.Button"
+            style="@style/EdenButton.Primary"
             android:layout_width="match_parent"
             android:layout_height="46dp"
             android:layout_marginTop="6dp"
             android:text="Сохранить оба варианта"
-            android:textColor="#000000"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="13sp"
             android:textStyle="bold"
-            app:backgroundTint="#00F0FF" />
+            app:backgroundTint="?attr/colorPrimary" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel_conflict"
@@ -204,6 +205,6 @@
             android:layout_height="40dp"
             android:layout_marginTop="4dp"
             android:text="Отмена"
-            android:textColor="#FFFFFF" />
+            android:textColor="?attr/colorOnSurfaceVariant" />
     </LinearLayout>
 </LinearLayout>

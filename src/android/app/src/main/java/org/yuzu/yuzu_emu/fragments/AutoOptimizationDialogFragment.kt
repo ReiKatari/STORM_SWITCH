@@ -27,6 +27,8 @@ import org.yuzu.yuzu_emu.utils.GpuDriverHelper
 import org.yuzu.yuzu_emu.utils.NativeConfig
 import org.yuzu.yuzu_emu.utils.StormHardwareCalibrator
 
+import org.yuzu.yuzu_emu.utils.ThemeHelper
+
 class AutoOptimizationDialogFragment : DialogFragment() {
 
     private var _binding: DialogAutoOptimizationBinding? = null
@@ -49,7 +51,7 @@ class AutoOptimizationDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(STYLE_NO_TITLE, 0)
+        setStyle(STYLE_NORMAL, ThemeHelper.getSelectedStaticThemeColor())
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -153,8 +155,8 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         binding.radioModeAccurate.isChecked = (mode == MODE_ACCURATE)
         binding.radioModeDefault.isChecked = (mode == MODE_DEFAULT)
 
-        val primaryColor = Color.parseColor("#00F0FF")
-        val outlineColor = Color.parseColor("#374151")
+        val primaryColor = ThemeHelper.getColorFromAttr(requireContext(), androidx.appcompat.R.attr.colorPrimary)
+        val outlineColor = ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorOutline)
 
         binding.cardModeFast.strokeColor = if (mode == MODE_FAST) primaryColor else outlineColor
         binding.cardModeFast.strokeWidth = if (mode == MODE_FAST) 4 else 2

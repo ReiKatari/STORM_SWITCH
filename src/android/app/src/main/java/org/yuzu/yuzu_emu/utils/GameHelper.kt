@@ -97,8 +97,7 @@ object GameHelper {
         }
 
         // Stage 2: Load games with all content/updates/DLCs already registered in ContentProvider
-        val badDirs = mutableListOf<Int>()
-        gameDirs.forEachIndexed { index: Int, gameDir: GameDir ->
+        gameDirs.forEach { gameDir ->
             val gameDirUri = gameDir.uriString.toUri()
             val isValid = FileUtil.isTreeUriValid(gameDirUri)
             if (isValid) {
@@ -109,19 +108,7 @@ object GameHelper {
                     FileUtil.listFiles(gameDirUri),
                     scanDepth
                 )
-            } else {
-                badDirs.add(index)
             }
-        }
-
-        // Remove all game dirs with insufficient permissions from config
-        if (badDirs.isNotEmpty()) {
-            var offset = 0
-            badDirs.forEach {
-                gameDirs.removeAt(it - offset)
-                offset++
-            }
-            NativeConfig.setGameDirs(gameDirs.toTypedArray())
         }
 
         val finalGames = deduplicateGames(games)
@@ -310,7 +297,11 @@ object GameHelper {
                     onContainerFound
                 )
             } else {
-                val extension = FileUtil.getExtension(it.uri).lowercase()
+                val extension = if (it.filename.isNotEmpty() && it.filename.contains('.')) {
+                    it.filename.substringAfterLast('.').lowercase()
+                } else {
+                    FileUtil.getExtension(it.uri).lowercase()
+                }
                 if (externalContentExtensions.contains(extension)) {
                     onContainerFound(it)
                 }
@@ -335,7 +326,11 @@ object GameHelper {
                     depth - 1
                 )
             } else {
-                val extension = FileUtil.getExtension(it.uri).lowercase()
+                val extension = if (it.filename.isNotEmpty() && it.filename.contains('.')) {
+                    it.filename.substringAfterLast('.').lowercase()
+                } else {
+                    FileUtil.getExtension(it.uri).lowercase()
+                }
                 if (Game.extensions.contains(extension)) {
                     val game = getGame(it.uri, true, false)
                     if (game != null) {

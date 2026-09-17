@@ -110,7 +110,7 @@
                         android:background="@android:color/transparent"
                         android:hint="Поиск..."
                         android:textSize="11sp"
-                        android:textColor="?attr/colorOnBackground"
+                        android:textColor="?attr/colorOnSurface"
                         android:textColorHint="?attr/colorOnSurfaceVariant"
                         android:maxLines="1"
                         android:inputType="text" />
@@ -205,7 +205,7 @@
             android:padding="4dp"
             android:visibility="gone"
             android:layout_marginBottom="4dp"
-            android:background="@drawable/theme_card_background">
+            android:background="?attr/colorSurfaceVariant">
 
             <ProgressBar
                 android:layout_width="18dp"
@@ -284,7 +284,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save_cheats"
-                style="@style/Widget.Material3.Button"
+                style="@style/EdenButton.Primary"
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:minHeight="0dp"

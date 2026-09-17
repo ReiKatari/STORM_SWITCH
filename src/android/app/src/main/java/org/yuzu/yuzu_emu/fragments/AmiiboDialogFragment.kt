@@ -85,27 +85,25 @@ class AmiiboDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.Theme_Yuzu_Main)
         isEmulating = arguments?.getBoolean(ARG_IS_EMULATING, false) ?: false
         gameTitle = arguments?.getString(ARG_GAME_TITLE, "") ?: ""
         titleId = arguments?.getString(ARG_TITLE_ID, "") ?: ""
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        _binding = DialogAmiiboBrowserBinding.inflate(layoutInflater)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = DialogAmiiboBrowserBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setupUI()
         loadDatabase(false)
-
-        val dialogTitle = if (gameTitle.isNotBlank()) {
-            getString(R.string.amiibo_for_game_title, gameTitle)
-        } else {
-            getString(R.string.amiibo_database_title)
-        }
-
-        return MaterialAlertDialogBuilder(requireActivity())
-            .setTitle(dialogTitle)
-            .setView(binding.root)
-            .create()
     }
 
     override fun onStart() {
@@ -116,20 +114,7 @@ class AmiiboDialogFragment : DialogFragment() {
             val width = if (isLandscape) (dm.widthPixels * 0.92).toInt() else (dm.widthPixels * 0.95).toInt()
             val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.85).toInt()
             window.setLayout(width, height)
-            window.setBackgroundDrawableResource(R.drawable.eden_dialog_background)
-
-            val customPanel = window.findViewById<View>(androidx.appcompat.R.id.customPanel)
-            if (customPanel != null) {
-                val params = customPanel.layoutParams
-                if (params is LinearLayout.LayoutParams) {
-                    params.weight = 1f
-                    params.height = 0
-                    customPanel.layoutParams = params
-                }
-            }
-
-            val buttonPanel = window.findViewById<View>(androidx.appcompat.R.id.buttonPanel)
-            buttonPanel?.visibility = View.GONE
+            window.setBackgroundDrawableResource(android.R.color.transparent)
         }
     }
 
@@ -236,6 +221,7 @@ class AmiiboDialogFragment : DialogFragment() {
 
         lifecycleScope.launch {
             val list = AmiiboHelper.getAmiiboDatabase(forceRefresh)
+            if (!isAdded || _binding == null) return@launch
             allAmiibos = if (gameTitle.isNotBlank()) {
                 AmiiboHelper.getAmiibosForGame(list, titleId, gameTitle)
             } else {

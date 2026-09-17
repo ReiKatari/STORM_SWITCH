@@ -369,7 +369,8 @@ class SettingsFragment : Fragment() {
         Thread {
             val success = PathUtil.copyDirectory(sourceDir, destDir, overwrite = true)
 
-            requireActivity().runOnUiThread {
+            activity?.runOnUiThread {
+                if (!isAdded) return@runOnUiThread
                 if (success) {
                     setPathAndNotify(pathSetting, newPath)
                     Toast.makeText(
@@ -389,10 +390,13 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setPathAndNotify(pathSetting: PathSetting, path: String) {
+        if (!isAdded) return
         pathSetting.setPath(path)
-        NativeConfig.saveGlobalConfig()
-
-        NativeConfig.reloadGlobalConfig()
+        try {
+            NativeConfig.saveGlobalConfig()
+            NativeConfig.reloadGlobalConfig()
+        } catch (_: Exception) {
+        }
 
         val messageResId = if (pathSetting.pathType == PathSetting.PathType.SAVE_DATA) {
             R.string.save_directory_set
@@ -400,11 +404,13 @@ class SettingsFragment : Fragment() {
             R.string.path_set
         }
 
-        Toast.makeText(
-            requireContext(),
-            messageResId,
-            Toast.LENGTH_SHORT
-        ).show()
+        context?.let { ctx ->
+            Toast.makeText(
+                ctx,
+                messageResId,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
 
         val position = settingsViewModel.pathSettingPosition.value
         if (position >= 0) {
@@ -422,22 +428,48 @@ class SettingsFragment : Fragment() {
         val currentPath = pathSetting.getCurrentPath()
         val defaultPath = pathSetting.getDefaultPath()
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.reset_to_nand)
-            .setMessage(R.string.migrate_save_data_question)
-            .setPositiveButton(R.string.confirm) { _, _ ->
-                val sourceSaveDir = File(currentPath, "user/save")
-                val destSaveDir = File(defaultPath, "user/save")
-
-                if (sourceSaveDir.exists() && sourceSaveDir.listFiles()?.isNotEmpty() == true) {
-                    migrateSaveData(pathSetting, sourceSaveDir, destSaveDir, defaultPath)
-                } else {
+        if (pathSetting.pathType == PathSetting.PathType.SDMC || pathSetting.pathType == PathSetting.PathType.NAND) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.reset_to_default)
+                .setMessage(defaultPath)
+                .setPositiveButton(R.string.confirm) { _, _ ->
                     setPathAndNotify(pathSetting, defaultPath)
                 }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+            return
+        }
+
+        val sourceSaveDir = File(currentPath, "user/save")
+        val destSaveDir = File(defaultPath, "user/save")
+        val isSameDir = try {
+            sourceSaveDir.canonicalPath.equals(destSaveDir.canonicalPath, ignoreCase = true)
+        } catch (_: Exception) {
+            false
+        }
+
+        if (isSameDir || !sourceSaveDir.exists() || sourceSaveDir.listFiles()?.isNotEmpty() != true) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.reset_to_default)
+                .setMessage(defaultPath)
+                .setPositiveButton(R.string.confirm) { _, _ ->
+                    setPathAndNotify(pathSetting, defaultPath)
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+            return
+        }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.reset_to_default)
+            .setMessage(R.string.migrate_save_data_question)
+            .setPositiveButton(R.string.confirm) { _, _ ->
+                migrateSaveData(pathSetting, sourceSaveDir, destSaveDir, defaultPath)
             }
-            .setNegativeButton(R.string.cancel) { _, _ ->
-                // just dismiss
+            .setNegativeButton(R.string.skip_migration) { _, _ ->
+                setPathAndNotify(pathSetting, defaultPath)
             }
+            .setNeutralButton(R.string.cancel, null)
             .show()
     }
 }

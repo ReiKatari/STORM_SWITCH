@@ -85,7 +85,7 @@ class GameFoldersFragment : Fragment() {
         }
 
         gamesViewModel.folders.collect(viewLifecycleOwner) {
-            (binding.listFolders.adapter as FolderAdapter).submitList(it)
+            (binding.listFolders.adapter as FolderAdapter).submitList(it.toList())
         }
 
         binding.buttonAdd.setOnClickListener {

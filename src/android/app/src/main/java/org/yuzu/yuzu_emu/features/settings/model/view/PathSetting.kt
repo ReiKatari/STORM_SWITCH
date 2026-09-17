@@ -5,6 +5,7 @@ package org.yuzu.yuzu_emu.features.settings.model.view
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import java.io.File
 
 class PathSetting(
     @StringRes titleId: Int = 0,
@@ -35,7 +36,16 @@ class PathSetting(
     fun isUsingDefaultPath(): Boolean {
         val cur = getCurrentPath().trim().trimEnd('/', '\\')
         val def = getDefaultPath().trim().trimEnd('/', '\\')
-        return cur.isEmpty() || cur.equals(def, ignoreCase = true)
+        if (cur.isEmpty() || cur.equals(def, ignoreCase = true)) {
+            return true
+        }
+        return try {
+            val curCanonical = File(cur).canonicalPath.trimEnd('/', '\\')
+            val defCanonical = File(def).canonicalPath.trimEnd('/', '\\')
+            curCanonical.equals(defCanonical, ignoreCase = true)
+        } catch (_: Exception) {
+            false
+        }
     }
 
     companion object {

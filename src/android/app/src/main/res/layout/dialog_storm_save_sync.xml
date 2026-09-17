@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0E17"
+    android:background="?attr/colorSurface"
     android:orientation="vertical">
 
     <!-- Top Bar -->
@@ -12,7 +12,7 @@
         android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#111827"
+        android:background="?attr/colorSurfaceVariant"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="16dp"
@@ -22,7 +22,7 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/ic_sync"
-            app:tint="#00F0FF" />
+            app:tint="?attr/colorPrimary" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -35,7 +35,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="STORM SAVE SYNC"
-                android:textColor="#00F0FF"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
@@ -43,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Кроссплатформенная синхронизация сохранений"
-                android:textColor="#38BDF8"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -54,7 +54,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Обновить"
             android:src="@drawable/ic_refresh"
-            app:tint="#38BDF8" />
+            app:tint="?attr/colorPrimary" />
 
         <ImageButton
             android:id="@+id/btn_close"
@@ -63,7 +63,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Закрыть"
             android:src="@drawable/ic_clear"
-            app:tint="#FFFFFF" />
+            app:tint="?attr/colorOnSurface" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -85,10 +85,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                app:cardBackgroundColor="#131B2A"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="2dp"
-                app:strokeColor="#20354E"
+                app:strokeColor="?attr/colorOutline"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -101,7 +101,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Ключ этого устройства"
-                        android:textColor="#38BDF8"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="12sp" />
 
                     <LinearLayout
@@ -117,7 +117,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:fontFamily="monospace"
-                            android:textColor="#00F0FF"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             tools:text="STORM-C0A80169-6F1B" />
@@ -128,11 +128,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
                             android:text="Скопировать"
-                            android:textColor="#38BDF8"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="12sp"
-                            app:backgroundTint="#16263D"
+                            app:backgroundTint="?attr/colorSurface"
                             app:icon="@drawable/ic_copy"
-                            app:iconTint="#38BDF8" />
+                            app:iconTint="?attr/colorPrimary" />
                     </LinearLayout>
 
                     <TextView
@@ -151,10 +151,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                app:cardBackgroundColor="#131B2A"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="2dp"
-                app:strokeColor="#20354E"
+                app:strokeColor="?attr/colorOutline"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -167,7 +167,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Подключение к удалённому устройству"
-                        android:textColor="#FFFFFF"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
@@ -183,11 +183,11 @@
                             android:layout_width="0dp"
                             android:layout_height="44dp"
                             android:layout_weight="1"
-                            android:background="@drawable/popup_menu_background"
+                            android:background="?attr/colorSurface"
                             android:hint="Введите ключ или IP:порт..."
                             android:paddingHorizontal="10dp"
-                            android:textColor="#FFFFFF"
-                            android:textColorHint="#38BDF8"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textColorHint="?attr/colorOnSurfaceVariant"
                             android:textSize="13sp" />
 
                         <com.google.android.material.button.MaterialButton
@@ -197,10 +197,10 @@
                             android:layout_height="44dp"
                             android:layout_marginStart="8dp"
                             android:text="Подключиться"
-                            android:textColor="#00F0FF"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="12sp"
-                            app:backgroundTint="#1B2D46"
-                            app:strokeColor="#00D2FF"
+                            app:backgroundTint="?attr/colorSurface"
+                            app:strokeColor="?attr/colorPrimary"
                             app:strokeWidth="1dp" />
                     </LinearLayout>
 
@@ -217,10 +217,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
                             android:text="Поиск в сети Wi-Fi"
-                            android:textColor="#38BDF8"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="12sp"
                             app:icon="@drawable/ic_network"
-                            app:iconTint="#38BDF8" />
+                            app:iconTint="?attr/colorPrimary" />
 
                         <Spinner
                             android:id="@+id/spinner_discovered"
@@ -228,7 +228,7 @@
                             android:layout_height="36dp"
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
-                            android:background="@drawable/popup_menu_background" />
+                            android:background="?attr/colorSurface" />
                     </LinearLayout>
 
                     <TextView
@@ -237,7 +237,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Статус: не подключено к удалённому устройству"
-                        android:textColor="#38BDF8"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="11sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -249,6 +249,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
                 android:indeterminate="true"
+                android:indeterminateTint="?attr/colorPrimary"
                 android:visibility="gone" />
 
             <!-- Saves List Header -->
@@ -265,20 +266,20 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Сохранения игр (0)"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_sync_all"
-                    style="@style/Widget.Material3.Button"
+                    style="@style/EdenButton.Primary"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:text="Синхронизировать всё"
-                    android:textColor="#000000"
+                    android:textColor="?attr/colorOnPrimary"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    app:backgroundTint="#00F0FF" />
+                    app:backgroundTint="?attr/colorPrimary" />
             </LinearLayout>
 
             <!-- Search Saves -->
@@ -286,15 +287,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="6dp"
-                app:boxBackgroundColor="#161B26"
+                app:boxBackgroundColor="?attr/colorSurfaceVariant"
                 app:boxCornerRadiusBottomEnd="8dp"
                 app:boxCornerRadiusBottomStart="8dp"
                 app:boxCornerRadiusTopEnd="8dp"
                 app:boxCornerRadiusTopStart="8dp"
-                app:boxStrokeColor="#00D2FF"
-                app:hintTextColor="#00D2FF"
+                app:boxStrokeColor="?attr/colorPrimary"
+                app:hintTextColor="?attr/colorPrimary"
                 app:startIconDrawable="@drawable/ic_search"
-                app:startIconTint="#38BDF8">
+                app:startIconTint="?attr/colorOnSurfaceVariant">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edit_search_saves"
@@ -305,7 +306,7 @@
                     android:inputType="text"
                     android:maxLines="1"
                     android:paddingVertical="10dp"
-                    android:textColor="#F1F5F9"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -326,7 +327,7 @@
                 android:layout_marginTop="20dp"
                 android:gravity="center"
                 android:text="Сохранения не найдены. Подключитесь к устройству или начните игру."
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="13sp"
                 android:visibility="gone" />
         </LinearLayout>

@@ -9,10 +9,10 @@
     android:layout_marginVertical="4dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardBackgroundColor="#151922"
+    app:cardBackgroundColor="?attr/colorSurfaceVariant"
     app:cardCornerRadius="10dp"
     app:cardElevation="2dp"
-    app:strokeColor="#232B3B"
+    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -40,7 +40,7 @@
                 android:id="@+id/text_tool_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 tools:text="Прошивка 20.0.1" />
@@ -50,7 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="#38BDF8"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp"
                 tools:text="Файл: 20.0.1.zip • Размер: 324.7 МБ" />
         </LinearLayout>
@@ -79,7 +79,7 @@
             android:paddingHorizontal="8dp"
             android:paddingVertical="3dp"
             android:text="✔ ВЫБРАНО"
-            android:textColor="#00F0FF"
+            android:textColor="?attr/colorPrimary"
             android:textSize="10sp"
             android:textStyle="bold"
             android:visibility="gone"

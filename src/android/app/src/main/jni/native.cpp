@@ -797,8 +797,8 @@ int Java_org_yuzu_yuzu_1emu_NativeLibrary_installFileToNand(JNIEnv* env, jobject
         jlambdaClass, "invoke", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     const auto callback = [env, jcallback, jlambdaInvokeMethod](size_t max, size_t progress) {
         auto jwasCancelled = env->CallObjectMethod(jcallback, jlambdaInvokeMethod,
-                                                   Common::Android::ToJDouble(env, max),
-                                                   Common::Android::ToJDouble(env, progress));
+                                                   Common::Android::ToJLong(env, static_cast<s64>(max)),
+                                                   Common::Android::ToJLong(env, static_cast<s64>(progress)));
         return Common::Android::GetJBoolean(env, jwasCancelled);
     };
 
@@ -1104,9 +1104,6 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getGpuDriver(JNIEnv* env, jobject 
 }
 
 jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getCpuSummary(JNIEnv* env, jobject /*jobj*/) {
-    get_arm_cpu_name();
-    constexpr const char* CPUINFO_PATH = "/proc/cpuinfo";
-
     auto trim = [](std::string& s) {
         const auto start = s.find_first_not_of(" \t\r\n");
         const auto end = s.find_last_not_of(" \t\r\n");
@@ -1119,6 +1116,8 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getCpuSummary(JNIEnv* env, jobject
     };
 
     try {
+        get_arm_cpu_name();
+        constexpr const char* CPUINFO_PATH = "/proc/cpuinfo";
         std::string result;
         std::pair<u32, std::string> pretty_cpus = get_pretty_cpus();
         u32 threads = pretty_cpus.first;
@@ -1226,21 +1225,24 @@ constexpr u32 VENDOR_QUALCOMM = 0x5143;
 constexpr u32 VENDOR_ARM = 0x13B5;
 
 VkPhysicalDeviceProperties GetVulkanDeviceProperties() {
-    Common::DynamicLibrary library;
-    if (!library.Open("libvulkan.so")) {
+    try {
+        Common::DynamicLibrary library;
+        if (!library.Open("libvulkan.so")) {
+            return {};
+        }
+
+        Vulkan::vk::InstanceDispatch dld;
+        const auto instance = Vulkan::CreateInstance(library, dld, VK_API_VERSION_1_1);
+        const auto physical_devices = instance.EnumeratePhysicalDevices();
+        if (physical_devices.empty()) {
+            return {};
+        }
+
+        const Vulkan::vk::PhysicalDevice physical_device(physical_devices[0], dld);
+        return physical_device.GetProperties();
+    } catch (...) {
         return {};
     }
-
-    Vulkan::vk::InstanceDispatch dld;
-    // TODO: warn the user that Vulkan is unavailable rather than hard crash
-    const auto instance = Vulkan::CreateInstance(library, dld, VK_API_VERSION_1_1);
-    const auto physical_devices = instance.EnumeratePhysicalDevices();
-    if (physical_devices.empty()) {
-        return {};
-    }
-
-    const Vulkan::vk::PhysicalDevice physical_device(physical_devices[0], dld);
-    return physical_device.GetProperties();
 }
 
 bool GetVulkanMemoryModelSupport() {
@@ -1350,12 +1352,16 @@ jboolean Java_org_yuzu_yuzu_1emu_NativeLibrary_supportsFrameGeneration(JNIEnv* e
 }
 
 jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getGpuModel(JNIEnv* env, jobject jobj) {
-    const auto props = GetVulkanDeviceProperties();
-    if (props.deviceID == 0) {
+    try {
+        const auto props = GetVulkanDeviceProperties();
+        if (props.deviceID == 0 || props.deviceName[0] == '\0') {
+            return Common::Android::ToJString(env, "Unknown");
+        }
+
+        return Common::Android::ToJString(env, props.deviceName);
+    } catch (...) {
         return Common::Android::ToJString(env, "Unknown");
     }
-
-    return Common::Android::ToJString(env, props.deviceName);
 }
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_applySettings(JNIEnv* env, jobject jobj) {
@@ -1602,7 +1608,8 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getLosslessDllPath(JNIEnv* env, jc
     const auto path = VideoCore::FrameGen::GetLosslessDllPath();
     return Common::Android::ToJString(env, Common::FS::PathToUTF8String(path));
 #else
-    return Common::Android::ToJString(env, "");
+    const auto path = Common::FS::GetEdenPath(Common::FS::EdenPath::LosslessDir) / "LosslessScaling.dll";
+    return Common::Android::ToJString(env, Common::FS::PathToUTF8String(path));
 #endif
 }
 
@@ -1696,8 +1703,8 @@ jobjectArray Java_org_yuzu_yuzu_1emu_NativeLibrary_verifyInstalledContents(JNIEn
         jlambdaClass, "invoke", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     const auto callback = [env, jcallback, jlambdaInvokeMethod](size_t max, size_t progress) {
         auto jwasCancelled = env->CallObjectMethod(jcallback, jlambdaInvokeMethod,
-                                                   Common::Android::ToJDouble(env, max),
-                                                   Common::Android::ToJDouble(env, progress));
+                                                   Common::Android::ToJLong(env, static_cast<s64>(max)),
+                                                   Common::Android::ToJLong(env, static_cast<s64>(progress)));
         return Common::Android::GetJBoolean(env, jwasCancelled);
     };
 
@@ -1719,8 +1726,8 @@ jint Java_org_yuzu_yuzu_1emu_NativeLibrary_verifyGameContents(JNIEnv* env, jobje
         jlambdaClass, "invoke", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     const auto callback = [env, jcallback, jlambdaInvokeMethod](size_t max, size_t progress) {
         auto jwasCancelled = env->CallObjectMethod(jcallback, jlambdaInvokeMethod,
-                                                   Common::Android::ToJDouble(env, max),
-                                                   Common::Android::ToJDouble(env, progress));
+                                                   Common::Android::ToJLong(env, static_cast<s64>(max)),
+                                                   Common::Android::ToJLong(env, static_cast<s64>(progress)));
         return Common::Android::GetJBoolean(env, jwasCancelled);
     };
     auto& session = EmulationSession::GetInstance();

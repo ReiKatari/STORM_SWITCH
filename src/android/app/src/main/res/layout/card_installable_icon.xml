@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:orientation="vertical"
-        android:paddingHorizontal="24dp"
+        android:paddingHorizontal="20dp"
         android:paddingVertical="16dp">
 
         <LinearLayout
@@ -31,11 +31,11 @@
 
             <ImageView
                 android:id="@+id/icon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="20dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="16dp"
                 android:layout_gravity="center_vertical"
-                app:tint="?attr/colorOnSurface"
+                app:tint="?attr/colorPrimary"
                 tools:src="@drawable/ic_settings" />
 
             <LinearLayout

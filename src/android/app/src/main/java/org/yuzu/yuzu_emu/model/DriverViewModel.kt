@@ -84,7 +84,11 @@ class DriverViewModel : ViewModel() {
 
     fun updateDriverList() {
         val selectedDriver = GpuDriverHelper.customDriverSettingData
-        val systemDriverData = GpuDriverHelper.getSystemDriverInfo()
+        val systemDriverData = try {
+            GpuDriverHelper.getSystemDriverInfo()
+        } catch (_: Throwable) {
+            null
+        }
         val systemDriverTitle = YuzuApplication.appContext.getString(R.string.system_gpu_driver)
         val newDriverList = mutableListOf(
             Driver(

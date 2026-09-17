@@ -6,10 +6,10 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:layout_margin="16dp"
-    app:cardBackgroundColor="#0F172A"
+    app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="16dp"
     app:cardElevation="8dp"
-    app:strokeColor="#00D2FF"
+    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -22,7 +22,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#161F36"
+            android:background="?attr/colorSurfaceVariant"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="16dp"
@@ -32,7 +32,7 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_install"
-                app:tint="#10B981" />
+                app:tint="?attr/colorPrimary" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -51,7 +51,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Дополнения"
-                        android:textColor="#F1F5F9"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -76,7 +76,7 @@
                     android:layout_marginTop="2dp"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:textColor="#38BDF8"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
                     tools:text="Dave the Diver" />
             </LinearLayout>
@@ -88,24 +88,24 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Закрыть"
                 android:src="@drawable/ic_clear"
-                app:tint="#FFFFFF" />
+                app:tint="?attr/colorOnSurface" />
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#20354E" />
+            android:background="?attr/colorOutlineVariant" />
 
         <!-- Subtitle Info Bar -->
         <TextView
             android:id="@+id/text_dlc_dialog_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#0B1322"
+            android:background="?attr/colorSurface"
             android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"
             android:text="Официальные дополнения и контент, включённые в комплект игры"
-            android:textColor="#38BDF8"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="11sp" />
 
         <!-- Content Area -->
@@ -130,7 +130,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginVertical="32dp"
-                android:indeterminateTint="#10B981"
+                android:indeterminateTint="?attr/colorPrimary"
                 android:visibility="gone"
                 tools:visibility="visible" />
 
@@ -141,7 +141,7 @@
                 android:layout_gravity="center"
                 android:layout_marginVertical="32dp"
                 android:text="Список дополнений пуст"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="13sp"
                 android:visibility="gone" />
         </FrameLayout>
@@ -155,10 +155,10 @@
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="8dp"
             android:text="Понятно"
-            android:textColor="#0A0E17"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="13sp"
             android:textStyle="bold"
-            app:backgroundTint="#00D2FF"
+            app:backgroundTint="?attr/colorPrimary"
             app:cornerRadius="8dp" />
 
     </LinearLayout>

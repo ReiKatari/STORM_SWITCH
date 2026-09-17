@@ -68,7 +68,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return when (type) {
             TYPE_RESET_SETTING -> {
-                MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                MaterialAlertDialogBuilder(requireContext())
                     .setMessage(R.string.reset_setting_confirmation)
                     .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                         val item = settingsViewModel.clickedItem ?: return@setPositiveButton
@@ -139,7 +139,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                     item.choicesId
                 }
 
-                MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(item.title)
                     .setSingleChoiceItems(choicesId, value, this)
                     .create()
@@ -159,8 +159,14 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                         settingsViewModel.setSliderTextValue(value, item.units)
                     }
                 }
+                settingsViewModel.sliderTextValue.collect(this) {
+                    sliderBinding.textValue.text = it
+                }
+                settingsViewModel.sliderProgress.collect(this) {
+                    sliderBinding.slider.value = it.toFloat()
+                }
 
-                MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(item.title)
                     .setView(sliderBinding.root)
                     .setPositiveButton(android.R.string.ok, this)
@@ -176,7 +182,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                 spinboxBinding.editValue.setText(currentValue.toString())
                 spinboxBinding.textInputLayout.hint = getString(item.valueHint)
 
-                val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                val dialog = MaterialAlertDialogBuilder(requireContext())
                     .setTitle(item.title)
                     .setView(spinboxBinding.root)
                     .setPositiveButton(android.R.string.ok, this)
@@ -323,7 +329,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                     watcher.afterTextChanged(stringInputBinding.editText.text)
                 }
 
-                MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(item.title)
                     .setView(stringInputBinding.root)
                     .setPositiveButton(android.R.string.ok, this)
@@ -333,7 +339,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
 
             SettingsItem.TYPE_STRING_SINGLE_CHOICE -> {
                 val item = settingsViewModel.clickedItem as StringSingleChoiceSetting
-                MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(item.title)
                     .setSingleChoiceItems(item.choices, item.selectedValueIndex, this)
                     .create()
@@ -341,39 +347,13 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
 
             SettingsItem.TYPE_INT_SINGLE_CHOICE -> {
                 val item = settingsViewModel.clickedItem as IntSingleChoiceSetting
-                MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(item.title)
                     .setSingleChoiceItems(item.choices, item.selectedValueIndex, this)
                     .create()
             }
 
             else -> super.onCreateDialog(savedInstanceState)
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return when (type) {
-            SettingsItem.TYPE_SLIDER -> sliderBinding.root
-            SettingsItem.TYPE_STRING_INPUT -> stringInputBinding.root
-            else -> super.onCreateView(inflater, container, savedInstanceState)
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        when (type) {
-            SettingsItem.TYPE_SLIDER -> {
-                settingsViewModel.sliderTextValue.collect(viewLifecycleOwner) {
-                    sliderBinding.textValue.text = it
-                }
-                settingsViewModel.sliderProgress.collect(viewLifecycleOwner) {
-                    sliderBinding.slider.value = it.toFloat()
-                }
-            }
         }
     }
 
@@ -392,7 +372,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                         totalRamGb = memInfo.totalMem.toDouble() / (1024.0 * 1024.0 * 1024.0)
                     }
                     if (totalRamGb < 11.0) {
-                        MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                        MaterialAlertDialogBuilder(requireContext())
                             .setTitle(R.string.warning)
                             .setMessage(R.string.memory_12gb_not_enough_ram)
                             .setPositiveButton(android.R.string.ok, null)
@@ -404,7 +384,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                 }
 
                 if (value in scSetting.warnChoices) {
-                    MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                    MaterialAlertDialogBuilder(requireContext())
                         .setTitle(R.string.warning)
                         .setMessage(scSetting.warningMessage)
                         .setPositiveButton(R.string.ok, null)

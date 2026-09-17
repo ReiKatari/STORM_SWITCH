@@ -130,6 +130,7 @@ class GameBananaDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.Theme_Yuzu_Main)
         if (game == null) {
             game = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 arguments?.getParcelable(ARG_GAME, Game::class.java)
@@ -140,16 +141,19 @@ class GameBananaDialogFragment : DialogFragment() {
         }
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        _binding = DialogGamebananaModsBinding.inflate(layoutInflater)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = DialogGamebananaModsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setupUI()
         performSearch(1)
-
-        return MaterialAlertDialogBuilder(requireContext())
-            .setTitle(getString(R.string.gamebanana_mods) + " - " + (game?.title ?: ""))
-            .setView(binding.root)
-            .create()
     }
 
     override fun onStart() {
@@ -160,20 +164,7 @@ class GameBananaDialogFragment : DialogFragment() {
             val width = if (isLandscape) (dm.widthPixels * 0.92).toInt() else (dm.widthPixels * 0.95).toInt()
             val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.85).toInt()
             window.setLayout(width, height)
-            window.setBackgroundDrawableResource(R.drawable.eden_dialog_background)
-
-            val customPanel = window.findViewById<View>(androidx.appcompat.R.id.customPanel)
-            if (customPanel != null) {
-                val params = customPanel.layoutParams
-                if (params is LinearLayout.LayoutParams) {
-                    params.weight = 1f
-                    params.height = 0
-                    customPanel.layoutParams = params
-                }
-            }
-
-            val buttonPanel = window.findViewById<View>(androidx.appcompat.R.id.buttonPanel)
-            buttonPanel?.visibility = View.GONE
+            window.setBackgroundDrawableResource(android.R.color.transparent)
         }
     }
 
@@ -244,6 +235,10 @@ class GameBananaDialogFragment : DialogFragment() {
             dismiss()
         }
 
+        binding.buttonClose.setOnClickListener {
+            dismiss()
+        }
+
         binding.buttonRefreshInstalled.setOnClickListener {
             loadInstalledMods()
         }
@@ -292,6 +287,7 @@ class GameBananaDialogFragment : DialogFragment() {
                 page = currentPage,
                 sortIndex = currentSortIndex
             )
+            if (!isAdded || _binding == null) return@launch
             binding.progressLoading.isVisible = false
             modsList.clear()
             modsList.addAll(results)

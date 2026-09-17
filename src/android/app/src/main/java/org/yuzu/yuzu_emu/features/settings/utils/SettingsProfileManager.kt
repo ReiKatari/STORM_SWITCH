@@ -254,7 +254,7 @@ object SettingsProfileManager {
             put("id", id)
             put("name", name)
             put("description", description)
-            put("version", "7.3.2")
+            put("version", "8.7.7")
             put("timestamp", System.currentTimeMillis())
 
             val boolObj = JSONObject()
@@ -279,7 +279,9 @@ object SettingsProfileManager {
         val list = mutableListOf<SettingsProfile>()
         for (file in files) {
             try {
-                val json = JSONObject(file.readText())
+                val content = file.readText().trim()
+                if (content.isEmpty()) continue
+                val json = JSONObject(content)
                 val id = json.optString("id", file.nameWithoutExtension)
                 val name = json.optString("name", file.nameWithoutExtension)
                 val desc = json.optString("description", "")
@@ -303,26 +305,38 @@ object SettingsProfileManager {
             json.put("id", id)
             json.put("name", safeName)
             json.put("description", description.trim())
-            json.put("version", "7.3.2")
+            json.put("version", "8.7.7")
             json.put("timestamp", System.currentTimeMillis())
 
             val needsGlobal = !NativeConfig.isPerGameConfigLoaded()
 
             val boolObj = JSONObject()
             for (setting in trackedBooleanSettings) {
-                boolObj.put(setting.key, setting.getBoolean(needsGlobal))
+                try {
+                    boolObj.put(setting.key, setting.getBoolean(needsGlobal))
+                } catch (e: Throwable) {
+                    Log.warning("[SettingsProfileManager] Could not read boolean setting ${setting.key}: ${e.message}")
+                }
             }
             json.put("booleans", boolObj)
 
             val intObj = JSONObject()
             for (setting in trackedIntSettings) {
-                intObj.put(setting.key, setting.getInt(needsGlobal))
+                try {
+                    intObj.put(setting.key, setting.getInt(needsGlobal))
+                } catch (e: Throwable) {
+                    Log.warning("[SettingsProfileManager] Could not read int setting ${setting.key}: ${e.message}")
+                }
             }
             json.put("integers", intObj)
 
             val shortObj = JSONObject()
             for (setting in trackedShortSettings) {
-                shortObj.put(setting.key, setting.getShort(needsGlobal).toInt())
+                try {
+                    shortObj.put(setting.key, setting.getShort(needsGlobal).toInt())
+                } catch (e: Throwable) {
+                    Log.warning("[SettingsProfileManager] Could not read short setting ${setting.key}: ${e.message}")
+                }
             }
             json.put("shorts", shortObj)
 
@@ -344,8 +358,12 @@ object SettingsProfileManager {
             val booleans = json.optJSONObject("booleans")
             if (booleans != null) {
                 for (setting in trackedBooleanSettings) {
-                    if (booleans.has(setting.key)) {
-                        setting.setBoolean(booleans.getBoolean(setting.key))
+                    try {
+                        if (booleans.has(setting.key)) {
+                            setting.setBoolean(booleans.getBoolean(setting.key))
+                        }
+                    } catch (e: Throwable) {
+                        Log.warning("[SettingsProfileManager] Could not apply boolean setting ${setting.key}: ${e.message}")
                     }
                 }
             }
@@ -353,8 +371,12 @@ object SettingsProfileManager {
             val integers = json.optJSONObject("integers")
             if (integers != null) {
                 for (setting in trackedIntSettings) {
-                    if (integers.has(setting.key)) {
-                        setting.setInt(integers.getInt(setting.key))
+                    try {
+                        if (integers.has(setting.key)) {
+                            setting.setInt(integers.getInt(setting.key))
+                        }
+                    } catch (e: Throwable) {
+                        Log.warning("[SettingsProfileManager] Could not apply int setting ${setting.key}: ${e.message}")
                     }
                 }
             }
@@ -362,8 +384,12 @@ object SettingsProfileManager {
             val shorts = json.optJSONObject("shorts")
             if (shorts != null) {
                 for (setting in trackedShortSettings) {
-                    if (shorts.has(setting.key)) {
-                        setting.setShort(shorts.getInt(setting.key).toShort())
+                    try {
+                        if (shorts.has(setting.key)) {
+                            setting.setShort(shorts.getInt(setting.key).toShort())
+                        }
+                    } catch (e: Throwable) {
+                        Log.warning("[SettingsProfileManager] Could not apply short setting ${setting.key}: ${e.message}")
                     }
                 }
             }

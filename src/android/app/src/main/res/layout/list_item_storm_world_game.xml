@@ -8,10 +8,10 @@
     android:layout_marginVertical="5dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardBackgroundColor="#161B26"
+    app:cardBackgroundColor="?attr/colorSurfaceVariant"
     app:cardCornerRadius="10dp"
     app:cardElevation="2dp"
-    app:strokeColor="#20354E"
+    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="2"
-                android:textColor="#F1F5F9"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 tools:text="Diablo III: Eternal Collection" />
@@ -188,7 +188,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:fontFamily="monospace"
-                android:textColor="#38BDF8"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="10sp"
                 tools:text="01001B700A654000" />
         </LinearLayout>
@@ -211,7 +211,7 @@
             app:iconGravity="textStart"
             app:iconPadding="4dp"
             app:strokeWidth="1dp"
-            app:strokeColor="#38BDF8"
+            app:strokeColor="?attr/colorPrimary"
             tools:text="Скачать" />
 
         <TextView

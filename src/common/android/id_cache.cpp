@@ -66,6 +66,10 @@ static jclass s_double_class;
 static jmethodID s_double_constructor;
 static jmethodID s_double_value_method;
 
+static jclass s_long_class;
+static jmethodID s_long_constructor;
+static jmethodID s_long_value_method;
+
 static jclass s_integer_class;
 static jmethodID s_integer_constructor;
 static jmethodID s_integer_value_method;
@@ -305,6 +309,18 @@ namespace Common::Android {
 
     jmethodID GetDoubleValueMethod() {
         return s_double_value_method;
+    }
+
+    jclass GetLongClass() {
+        return s_long_class;
+    }
+
+    jmethodID GetLongConstructor() {
+        return s_long_constructor;
+    }
+
+    jmethodID GetLongValueMethod() {
+        return s_long_value_method;
     }
 
     jclass GetIntegerClass() {
@@ -721,6 +737,10 @@ void Initialize(JavaVM* vm, JNIEnv *env) {
     s_double_class = FindClassSafe(env, "java/lang/Double");
     s_double_constructor = GetMethodIDSafe(env, s_double_class, "<init>", "(D)V");
     s_double_value_method = GetMethodIDSafe(env, s_double_class, "doubleValue", "()D");
+
+    s_long_class = FindClassSafe(env, "java/lang/Long");
+    s_long_constructor = GetMethodIDSafe(env, s_long_class, "<init>", "(J)V");
+    s_long_value_method = GetMethodIDSafe(env, s_long_class, "longValue", "()J");
 
     s_integer_class = FindClassSafe(env, "java/lang/Integer");
     s_integer_constructor = GetMethodIDSafe(env, s_integer_class, "<init>", "(I)V");

@@ -143,7 +143,11 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
 
         super.onCreate(savedInstanceState)
 
-        checkAllFilesAccessPermission()
+        val firstTimeSetup = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+            .getBoolean(Settings.PREF_FIRST_APP_LAUNCH, true)
+        if (!firstTimeSetup) {
+            checkAllFilesAccessPermission()
+        }
 
         try {
             NativeLibrary.initMultiplayer()
@@ -229,10 +233,10 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         // Dismiss previous notifications (should not happen unless a crash occurred)
         EmulationActivity.stopForegroundService(this)
 
-        val firstTimeSetup = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        val isFirstLaunch = PreferenceManager.getDefaultSharedPreferences(applicationContext)
                 .getBoolean(Settings.PREF_FIRST_APP_LAUNCH, true)
 
-        if (!firstTimeSetup && NativeLibrary.isUpdateCheckerEnabled() && BooleanSetting.ENABLE_UPDATE_CHECKS.getBoolean()) {
+        if (!isFirstLaunch && NativeLibrary.isUpdateCheckerEnabled() && BooleanSetting.ENABLE_UPDATE_CHECKS.getBoolean()) {
              checkForUpdates()
         }
         setInsets()

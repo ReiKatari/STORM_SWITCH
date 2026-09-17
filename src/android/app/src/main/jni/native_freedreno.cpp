@@ -97,7 +97,6 @@ bool LoadConfigFromFile(const std::string& config_path) {
     }
 
     char line[512];
-    int count = 0;
     while (fgets(line, sizeof(line), file)) {
         size_t len = strlen(line);
         if (len > 0 && line[len - 1] == '\n') {
@@ -119,11 +118,10 @@ bool LoadConfigFromFile(const std::string& config_path) {
 
         g_config->env_vars[key] = value;
         ApplyEnvironmentVariable(key, value);
-        count++;
     }
 
     fclose(file);
-    return count > 0;
+    return true;
 }
 
 bool SaveConfigToFile(const std::string& config_path) {
@@ -314,16 +312,16 @@ Java_org_yuzu_yuzu_1emu_utils_NativeFreedrenoConfig_clearFreedrenoEnv(
     }
 
     auto var_name = Common::Android::GetJString(env, jvarName);
+    unsetenv(var_name.c_str());
     auto it = g_config->env_vars.find(var_name);
 
     if (it != g_config->env_vars.end()) {
         g_config->env_vars.erase(it);
-        unsetenv(var_name.c_str());
         LOG_INFO(Frontend, "[Freedreno] Cleared {}", var_name);
         return JNI_TRUE;
     }
 
-    return JNI_FALSE;
+    return JNI_TRUE;
 }
 
 JNIEXPORT void JNICALL

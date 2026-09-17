@@ -188,43 +188,36 @@
         <item name="android:lineHeight">20sp</item>
     </style>
 
-    <style name="StormButton.Dialog.Positive" parent="Widget.Material3.Button.TonalButton">
+    <style name="StormButton.Dialog.Positive" parent="Widget.Material3.Button.TextButton.Dialog">
         <item name="android:textColor">?attr/colorPrimary</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textSize">13sp</item>
-        <item name="backgroundTint">?attr/colorSurfaceVariant</item>
-        <item name="strokeColor">?attr/colorPrimary</item>
-        <item name="strokeWidth">1dp</item>
-        <item name="cornerRadius">8dp</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
     <style name="StormButton.Dialog.Negative" parent="Widget.Material3.Button.TextButton.Dialog">
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textSize">13sp</item>
-        <item name="cornerRadius">8dp</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
     <style name="StormButton.Dialog.Neutral" parent="Widget.Material3.Button.TextButton.Dialog">
         <item name="android:textColor">#F59E0B</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textSize">13sp</item>
-        <item name="cornerRadius">8dp</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
     <style name="EdenMaterialDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="materialAlertDialogTitleTextStyle">@style/StormDialog.Title</item>
         <item name="materialAlertDialogBodyTextStyle">@style/StormDialog.Body</item>
         <item name="android:textColorAlertDialogListItem">?attr/colorOnSurface</item>
-        <item name="singleChoiceItemLayout">@layout/storm_alert_dialog_singlechoice</item>
-        <item name="multiChoiceItemLayout">@layout/storm_alert_dialog_multichoice</item>
-        <item name="listItemLayout">@layout/storm_alert_dialog_item</item>
         <item name="buttonBarPositiveButtonStyle">@style/StormButton.Dialog.Positive</item>
         <item name="buttonBarNegativeButtonStyle">@style/StormButton.Dialog.Negative</item>
         <item name="buttonBarNeutralButtonStyle">@style/StormButton.Dialog.Neutral</item>
         <item name="shapeAppearance">@style/StormShape.Dialog</item>
         <item name="shapeAppearanceOverlay">@style/StormShape.Dialog</item>
         <item name="dialogCornerRadius">18dp</item>
+        <item name="colorSurface">?attr/colorSurface</item>
+        <item name="colorOnSurface">?attr/colorOnSurface</item>
     </style>
 
     <style name="EdenButton.Dialog" parent="Widget.Material3.Button.TextButton.Dialog">

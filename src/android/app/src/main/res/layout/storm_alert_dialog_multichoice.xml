@@ -11,5 +11,5 @@
     android:textColor="?attr/colorOnSurface"
     android:textSize="15sp"
     android:background="?attr/selectableItemBackground"
-    app:buttonTint="@color/storm_radio_tint"
+    app:buttonTint="?attr/colorPrimary"
     android:ellipsize="marquee" />

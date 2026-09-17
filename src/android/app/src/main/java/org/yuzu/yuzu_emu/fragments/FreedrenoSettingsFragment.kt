@@ -149,7 +149,7 @@ class FreedrenoSettingsFragment : Fragment() {
             }
         }
 
-        settingsAdapter.submitList(variables)
+        settingsAdapter.submitList(variables.toList())
     }
 
     private fun setupButtonListeners() {

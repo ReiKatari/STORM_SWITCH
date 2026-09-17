@@ -32,6 +32,7 @@ import org.yuzu.yuzu_emu.model.HomeViewModel
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
 import org.yuzu.yuzu_emu.utils.Log
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -115,7 +116,17 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, ThemeHelper.getSelectedStaticThemeColor())
         toolType = arguments?.getInt(ARG_TYPE, TYPE_FIRMWARE) ?: TYPE_FIRMWARE
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        dialog.window?.let { window ->
+            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        }
+        return dialog
     }
 
     override fun onCreateView(
@@ -482,18 +493,26 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 badgeRecommended.isVisible = asset.isRecommended
                 badgeSelected.isVisible = isSelected
 
+                val context = cardToolItem.context
+                val primaryColor = ThemeHelper.getColor(context, androidx.appcompat.R.attr.colorPrimary)
+                val surfaceVariantColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorSurfaceVariant)
+                val surfaceColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorSurface)
+                val outlineColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorOutline)
+                val onSurfaceColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorOnSurface)
+                val onSurfaceVariantColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant)
+
                 if (isSelected) {
-                    cardToolItem.setCardBackgroundColor(Color.parseColor("#162A3F"))
-                    cardToolItem.strokeColor = Color.parseColor("#00F0FF")
+                    cardToolItem.setCardBackgroundColor(surfaceVariantColor)
+                    cardToolItem.strokeColor = primaryColor
                     cardToolItem.strokeWidth = (2 * resources.displayMetrics.density).toInt()
-                    textToolTitle.setTextColor(Color.parseColor("#FFFFFF"))
-                    textToolSubtitle.setTextColor(Color.parseColor("#38BDF8"))
+                    textToolTitle.setTextColor(onSurfaceColor)
+                    textToolSubtitle.setTextColor(primaryColor)
                 } else {
-                    cardToolItem.setCardBackgroundColor(Color.parseColor("#151922"))
-                    cardToolItem.strokeColor = Color.parseColor("#232B3B")
+                    cardToolItem.setCardBackgroundColor(surfaceColor)
+                    cardToolItem.strokeColor = outlineColor
                     cardToolItem.strokeWidth = (1 * resources.displayMetrics.density).toInt()
-                    textToolTitle.setTextColor(Color.parseColor("#CBD5E1"))
-                    textToolSubtitle.setTextColor(Color.parseColor("#64748B"))
+                    textToolTitle.setTextColor(onSurfaceColor)
+                    textToolSubtitle.setTextColor(onSurfaceVariantColor)
                 }
 
                 cardToolItem.setOnClickListener {

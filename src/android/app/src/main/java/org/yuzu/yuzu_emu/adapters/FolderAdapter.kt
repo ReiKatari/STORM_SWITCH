@@ -20,7 +20,7 @@ import org.yuzu.yuzu_emu.utils.ViewUtils.marquee
 import org.yuzu.yuzu_emu.viewholder.AbstractViewHolder
 
 class FolderAdapter(val activity: FragmentActivity, val gamesViewModel: GamesViewModel) :
-    AbstractDiffAdapter<GameDir, FolderAdapter.FolderViewHolder>() {
+    AbstractDiffAdapter<GameDir, FolderAdapter.FolderViewHolder>(exact = false) {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int

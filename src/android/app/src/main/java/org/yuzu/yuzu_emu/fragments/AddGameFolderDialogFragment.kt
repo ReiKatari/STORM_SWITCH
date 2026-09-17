@@ -46,9 +46,13 @@ class AddGameFolderDialogFragment : DialogFragment() {
                     "calledFromGameFragment",
                     false
                 )
-                val job = gamesViewModel.addFolder(newGameDir, calledFromGameFragment)
-                job.invokeOnCompletion {
-                    homeViewModel.setGamesDirSelected(true)
+                val hvm = try { homeViewModel } catch (_: Exception) { null }
+                val gvm = try { gamesViewModel } catch (_: Exception) { null }
+                val job = gvm?.addFolder(newGameDir, calledFromGameFragment)
+                job?.invokeOnCompletion {
+                    try {
+                        hvm?.setGamesDirSelected(true)
+                    } catch (_: Exception) {}
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)

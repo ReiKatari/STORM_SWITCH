@@ -1281,4 +1281,7 @@
     <string name="apply_driver_globally">すべてにグローバル適用</string>
     <string name="apply_driver_keep_custom">カスタム設定を変更しない</string>
     <string name="game_fix_manual_override_warning">⚠️ 手動設定を優先しました: %s。自動修正が一部上書きされました。</string>
+    <string name="storage_permission">すべてのファイルへのアクセス (必須)</string>
+    <string name="storage_permission_description">STORM SWITCH 共有ディレクトリを作成・使用するためにすべてのファイルへのアクセスを許可してください</string>
+    <string name="storage_permission_required_notice">STORM SWITCH を使用するには、すべてのファイルへのアクセスが必要です</string>
 </resources>

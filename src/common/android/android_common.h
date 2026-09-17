@@ -20,6 +20,9 @@ jstring ToJString(JNIEnv* env, std::u16string_view str);
 double GetJDouble(JNIEnv* env, jobject jdouble);
 jobject ToJDouble(JNIEnv* env, double value);
 
+s64 GetJLong(JNIEnv* env, jobject jlong);
+jobject ToJLong(JNIEnv* env, s64 value);
+
 s32 GetJInteger(JNIEnv* env, jobject jinteger);
 jobject ToJInteger(JNIEnv* env, s32 value);
 jobjectArray ToJStringArray(JNIEnv* env, const std::vector<std::string>& strs);

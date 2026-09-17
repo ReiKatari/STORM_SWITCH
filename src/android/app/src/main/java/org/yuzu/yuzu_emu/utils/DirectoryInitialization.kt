@@ -26,9 +26,17 @@ object DirectoryInitialization {
     fun start() {
         if (!areDirectoriesReady) {
             initializeInternalStorage()
-            NativeConfig.initializeGlobalConfig()
-            NativeLibrary.initializeSystem(false)
-            NativeLibrary.reloadProfiles()
+            try {
+                NativeConfig.initializeGlobalConfig()
+            } catch (e: Throwable) {
+                android.util.Log.e("STORM_SWITCH", "Failed NativeConfig.initializeGlobalConfig: ${e.message}")
+            }
+            try {
+                NativeLibrary.initializeSystem(false)
+                NativeLibrary.reloadProfiles()
+            } catch (e: Throwable) {
+                android.util.Log.e("STORM_SWITCH", "Failed NativeLibrary.initializeSystem: ${e.message}")
+            }
             migrateSettings()
             areDirectoriesReady = true
         }

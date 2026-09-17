@@ -50,6 +50,7 @@ import org.yuzu.yuzu_emu.model.GamesViewModel
 import org.yuzu.yuzu_emu.utils.FileUtil
 import org.yuzu.yuzu_emu.utils.Log
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -299,28 +300,39 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
         }
 
-        binding.btnSortCatalog.setOnClickListener { v ->
-            val popup = androidx.appcompat.widget.PopupMenu(requireContext(), v)
-            popup.menu.add(0, 1, 0, "По названию (А-Я)")
-            popup.menu.add(0, 2, 1, "По названию (Я-А)")
-            popup.menu.add(0, 3, 2, "По размеру (убывание)")
-            popup.menu.add(0, 4, 3, "По размеру (возрастание)")
-            popup.menu.add(0, 5, 4, "По дополнениям и модам")
-
-            popup.setOnMenuItemClickListener { menuItem ->
-                currentSortMode = when (menuItem.itemId) {
-                    1 -> SortMode.TITLE_ASC
-                    2 -> SortMode.TITLE_DESC
-                    3 -> SortMode.SIZE_DESC
-                    4 -> SortMode.SIZE_ASC
-                    5 -> SortMode.RECOMMENDED
-                    else -> SortMode.TITLE_ASC
-                }
-                applySortAndPagination(resetPage = true)
-                binding.recyclerGames.scrollToPosition(0)
-                true
+        binding.btnSortCatalog.setOnClickListener {
+            val sortOptions = arrayOf(
+                "По названию (А-Я)",
+                "По названию (Я-А)",
+                "По размеру (убывание)",
+                "По размеру (возрастание)",
+                "По дополнениям и модам"
+            )
+            val selectedIndex = when (currentSortMode) {
+                SortMode.TITLE_ASC -> 0
+                SortMode.TITLE_DESC -> 1
+                SortMode.SIZE_DESC -> 2
+                SortMode.SIZE_ASC -> 3
+                SortMode.RECOMMENDED -> 4
             }
-            popup.show()
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                .setTitle("Сортировка игр")
+                .setSingleChoiceItems(sortOptions, selectedIndex) { dialog: android.content.DialogInterface, which: Int ->
+                    currentSortMode = when (which) {
+                        0 -> SortMode.TITLE_ASC
+                        1 -> SortMode.TITLE_DESC
+                        2 -> SortMode.SIZE_DESC
+                        3 -> SortMode.SIZE_ASC
+                        4 -> SortMode.RECOMMENDED
+                        else -> SortMode.TITLE_ASC
+                    }
+                    applySortAndPagination(resetPage = true)
+                    binding.recyclerGames.scrollToPosition(0)
+                    binding.btnSortCatalog.text = currentSortMode.label
+                    dialog.dismiss()
+                }
+                .setNegativeButton(R.string.close, null)
+                .show()
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -418,14 +430,26 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             groupCounts[key] = (groupCounts[key] ?: 0) + 1
         }
 
+        val modCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)m(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
+        val rusModRegex = Regex("""(?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка""", RegexOption.IGNORE_CASE)
+        val dlcCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)d(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
+
         fun extractModCount(str: String): Int {
-            val m = Regex("""(?:[+([{\s]|^)(\d+)m(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE).find(str)
-            return m?.groupValues?.get(1)?.toIntOrNull() ?: if (Regex("""(?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка""", RegexOption.IGNORE_CASE).containsMatchIn(str)) 1 else 0
+            return try {
+                val m = modCountRegex.find(str)
+                m?.groupValues?.get(1)?.toIntOrNull() ?: if (rusModRegex.containsMatchIn(str)) 1 else 0
+            } catch (_: Exception) {
+                0
+            }
         }
 
         fun extractDlcCount(str: String): Int {
-            val m = Regex("""(?:[+([{\s]|^)(\d+)d(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE).find(str)
-            return m?.groupValues?.get(1)?.toIntOrNull() ?: if (str.contains("dlc", ignoreCase = true)) 1 else 0
+            return try {
+                val m = dlcCountRegex.find(str)
+                m?.groupValues?.get(1)?.toIntOrNull() ?: if (str.contains("dlc", ignoreCase = true)) 1 else 0
+            } catch (_: Exception) {
+                0
+            }
         }
 
         games.forEach { g ->
@@ -599,12 +623,19 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val sortedPages = pagesToShow.sorted()
 
         val ctx = context ?: return
+        val primaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorPrimary)
+        val onPrimaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOnPrimary)
+        val surfaceVariantColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorSurfaceVariant)
+        val onSurfaceColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOnSurface)
+        val onSurfaceVariantColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOnSurfaceVariant)
+        val outlineColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOutline)
+
         var prev = 0
         for (p in sortedPages) {
             if (prev != 0 && p > prev + 1) {
                 val ellipsis = android.widget.TextView(ctx).apply {
                     text = "…"
-                    setTextColor(0xFFFFFFFF.toInt())
+                    setTextColor(onSurfaceVariantColor)
                     textSize = 12f
                     setPadding(margin * 2, 0, margin * 2, 0)
                 }
@@ -628,15 +659,15 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 cornerRadius = (6 * density).toInt()
 
                 if (p == currentPage) {
-                    backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF00F0FF.toInt())
-                    setTextColor(0xFF0A0E17.toInt())
-                    strokeColor = android.content.res.ColorStateList.valueOf(0xFF00F0FF.toInt())
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(primaryColor)
+                    setTextColor(onPrimaryColor)
+                    strokeColor = android.content.res.ColorStateList.valueOf(primaryColor)
                     strokeWidth = (1.5 * density).toInt()
                     typeface = android.graphics.Typeface.DEFAULT_BOLD
                 } else {
-                    backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF131B2A.toInt())
-                    setTextColor(0xFFFFFFFF.toInt())
-                    strokeColor = android.content.res.ColorStateList.valueOf(0xFF20354E.toInt())
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(surfaceVariantColor)
+                    setTextColor(onSurfaceColor)
+                    strokeColor = android.content.res.ColorStateList.valueOf(outlineColor)
                     strokeWidth = (1 * density).toInt()
                     setOnClickListener {
                         currentPage = p
@@ -702,7 +733,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.7.4 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.7.7 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -748,7 +779,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.7.4 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.7.7 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -799,6 +830,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         if (progress == null || progress.status == StormDownloadStatus.IDLE || progress.status == StormDownloadStatus.CANCELLED) {
             binding.layoutDownloadProgress.isVisible = false
             if (game != null) {
+                val ctx = requireContext()
+                val primaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorPrimary)
                 if (game.isDownloaded) {
                     binding.btnStartDownload.text = "Скачано"
                     binding.btnStartDownload.setIconResource(R.drawable.ic_check)
@@ -812,9 +845,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.btnStartDownload.setIconResource(R.drawable.ic_install)
                     binding.btnStartDownload.isEnabled = true
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
-                    binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(0xFF00D2FF.toInt())
-                    binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
-                    binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFF00D2FF.toInt())
+                    binding.btnStartDownload.strokeColor = android.content.res.ColorStateList.valueOf(primaryColor)
+                    binding.btnStartDownload.setTextColor(primaryColor)
+                    binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(primaryColor)
                 }
             }
             return
@@ -899,9 +932,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = pagedGames[position]
             val dispTitle = if (item.title.isNotBlank()) item.title else item.finalTitle
+            val context = holder.itemView.context
+            val primaryColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorPrimary)
+            val outlineColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorOutline)
 
+            holder.b.textGameTitle.text = dispTitle
             holder.b.textGameVersion.text = item.version
-            holder.b.textGameVersion.setTextColor(0xFF00D2FF.toInt())
+            holder.b.textGameVersion.setTextColor(primaryColor)
             if (item.internalVersion.isNotEmpty()) {
                 holder.b.textInternalVersion.isVisible = true
                 holder.b.textInternalVersion.text = item.internalVersion
@@ -947,9 +984,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_install)
                 holder.b.btnGameAction.isEnabled = !StormDownloadManager.isDownloading()
                 holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
-                holder.b.btnGameAction.strokeColor = android.content.res.ColorStateList.valueOf(0xFF00D2FF.toInt())
-                holder.b.btnGameAction.setTextColor(0xFFFFFFFF.toInt())
-                holder.b.btnGameAction.iconTint = android.content.res.ColorStateList.valueOf(0xFF00D2FF.toInt())
+                holder.b.btnGameAction.strokeColor = android.content.res.ColorStateList.valueOf(primaryColor)
+                holder.b.btnGameAction.setTextColor(primaryColor)
+                holder.b.btnGameAction.iconTint = android.content.res.ColorStateList.valueOf(primaryColor)
             }
 
             holder.b.btnGameAction.setOnClickListener {
@@ -960,7 +997,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
 
             val isSelected = selectedGame?.id == item.id
-            holder.b.root.strokeColor = if (isSelected) 0xFF00F0FF.toInt() else 0xFF20354E.toInt()
+            holder.b.root.strokeColor = if (isSelected) primaryColor else outlineColor
             holder.b.root.strokeWidth = if (isSelected) 2 else 1
 
             holder.b.root.setOnClickListener {
@@ -1001,7 +1038,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 try {
                     val req = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                        .header("User-Agent", "STORM_SWITCH/8.7.4 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/8.7.7 (Android)")
                         .build()
                     val resp = httpClient.newCall(req).execute()
                     val body = resp.body?.string().orEmpty()
@@ -1200,7 +1237,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.7.4 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/8.7.7 (Android)")
                     .build()
 
                 val resp = sharedHttpClient.newCall(req).execute()

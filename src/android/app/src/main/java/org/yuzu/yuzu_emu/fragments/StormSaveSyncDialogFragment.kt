@@ -48,6 +48,7 @@ import org.yuzu.yuzu_emu.model.GameFixDatabase
 import org.yuzu.yuzu_emu.model.GamesViewModel
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
 import org.yuzu.yuzu_emu.utils.Log
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
@@ -140,7 +141,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(STYLE_NORMAL, R.style.Theme_Yuzu_Main)
+        setStyle(STYLE_NORMAL, ThemeHelper.getSelectedStaticThemeColor())
     }
 
     override fun onCreateView(
@@ -563,7 +564,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                         put("status", "ok")
                         put("device_name", "${Build.MANUFACTURER} ${Build.MODEL}")
                         put("platform", "android")
-                        put("version", "8.7.4")
+                        put("version", "8.7.5")
                     }
                     sendResponse(200, "application/json", obj.toString().toByteArray(Charsets.UTF_8))
                 }
@@ -688,7 +689,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 val statusUrl = "http://$ip:$port/api/status?client_ip=$myIp&client_port=$localPort&client_name=$encodedName&client_key=$myKey"
                 val req = Request.Builder()
                     .url(statusUrl)
-                    .header("User-Agent", "STORM-SWITCH-SYNC/8.7.4")
+                    .header("User-Agent", "STORM-SWITCH-SYNC/8.7.5")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 if (resp.isSuccessful) {
@@ -958,7 +959,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
     private fun showConflictDialog(item: AndroidSaveItem) {
         val conflictBinding = DialogStormSaveConflictBinding.inflate(layoutInflater)
-        val dialog = MaterialAlertDialogBuilder(requireContext())
+        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setView(conflictBinding.root)
             .create()
 

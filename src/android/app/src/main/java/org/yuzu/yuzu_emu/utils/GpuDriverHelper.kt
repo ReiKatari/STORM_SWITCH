@@ -23,7 +23,23 @@ object GpuDriverHelper {
     private const val META_JSON_FILENAME = "meta.json"
     private var fileRedirectionPath: String? = null
     var driverInstallationPath: String? = null
+        get() {
+            if (field == null) {
+                try {
+                    field = YuzuApplication.appContext.filesDir.canonicalPath + "/gpu_driver/"
+                } catch (_: Throwable) {}
+            }
+            return field
+        }
     internal var hookLibPath: String? = null
+        get() {
+            if (field == null) {
+                try {
+                    field = YuzuApplication.appContext.applicationInfo.nativeLibraryDir + "/"
+                } catch (_: Throwable) {}
+            }
+            return field
+        }
 
     val driverStoragePath get() = DirectoryInitialization.userDirectory!! + "/gpu_drivers/"
 
@@ -389,7 +405,7 @@ object GpuDriverHelper {
 
     external fun getSystemDriverInfo(
         surface: Surface = Surface(SurfaceTexture(true)),
-        hookLibPath: String = GpuDriverHelper.hookLibPath!!
+        hookLibPath: String = GpuDriverHelper.hookLibPath ?: (YuzuApplication.appContext.applicationInfo.nativeLibraryDir + "/")
     ): Array<String>?
 
     external fun getGpuModel(

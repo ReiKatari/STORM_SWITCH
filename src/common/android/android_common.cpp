@@ -58,6 +58,14 @@ jobject ToJDouble(JNIEnv* env, double value) {
     return env->NewObject(GetDoubleClass(), GetDoubleConstructor(), value);
 }
 
+s64 GetJLong(JNIEnv* env, jobject jlong) {
+    return env->CallLongMethod(jlong, GetLongValueMethod());
+}
+
+jobject ToJLong(JNIEnv* env, s64 value) {
+    return env->NewObject(GetLongClass(), GetLongConstructor(), value);
+}
+
 s32 GetJInteger(JNIEnv* env, jobject jinteger) {
     return env->CallIntMethod(jinteger, GetIntegerValueMethod());
 }

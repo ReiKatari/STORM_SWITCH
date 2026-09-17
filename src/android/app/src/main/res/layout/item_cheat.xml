@@ -47,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Infinite Health"
-                    android:textColor="?attr/colorOnBackground"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:ellipsize="end"
@@ -60,10 +60,10 @@
                     android:layout_height="wrap_content"
                     android:text="Build: A1B2C3"
                     android:textSize="8sp"
-                    android:textColor="#38bdf8"
-                    android:paddingHorizontal="3dp"
-                    android:paddingVertical="0dp"
-                    android:background="@drawable/theme_card_background"
+                    android:textColor="?attr/colorPrimary"
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="1dp"
+                    android:background="@drawable/badge_pill_blue"
                     android:layout_marginStart="4dp" />
 
                 <com.google.android.material.textview.MaterialTextView
@@ -84,7 +84,7 @@
                 android:layout_height="wrap_content"
                 android:text="Описание"
                 android:textSize="10sp"
-                android:textColor="#38BDF8"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:visibility="gone"
@@ -97,7 +97,7 @@
                 android:text="04000000 01234567 00000001"
                 android:fontFamily="monospace"
                 android:textSize="9sp"
-                android:textColor="@color/synthwave_text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:maxLines="1"
                 android:ellipsize="end" />
 

@@ -37,15 +37,17 @@ class PathViewHolder(val binding: ListItemSettingBinding, adapter: SettingsAdapt
 
         val currentPath = setting.getCurrentPath()
         val displayPath = PathUtil.truncatePathForDisplay(currentPath)
+        val isDefault = setting.isUsingDefaultPath()
 
         binding.textSettingValue.setVisible(true)
-        binding.textSettingValue.text = if (setting.isUsingDefaultPath()) {
-            binding.root.context.getString(R.string.default_string)
+        binding.textSettingValue.text = if (isDefault) {
+            val defaultStr = binding.root.context.getString(R.string.default_string)
+            if (displayPath.isNotBlank()) "$defaultStr ($displayPath)" else defaultStr
         } else {
             displayPath
         }
 
-        binding.buttonClear.setVisible(!setting.isUsingDefaultPath())
+        binding.buttonClear.setVisible(!isDefault)
         binding.buttonClear.text = binding.root.context.getString(R.string.reset_to_default)
         binding.buttonClear.setOnClickListener {
             adapter.onPathReset(setting, bindingAdapterPosition)
