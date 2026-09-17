@@ -959,7 +959,7 @@ void Memory::MarkRegionDebug(Common::ProcessAddress vaddr, u64 size, bool debug)
 }
 
 bool Memory::InvalidateNCE(Common::ProcessAddress vaddr, size_t size) {
-    if (GetInteger(vaddr) == 0 || size == 0) {
+    if (GetInteger(vaddr) == 0 || size == 0) [[unlikely]] {
         return false;
     }
     [[maybe_unused]] bool mapped = true;
@@ -968,17 +968,15 @@ bool Memory::InvalidateNCE(Common::ProcessAddress vaddr, size_t size) {
     u8* const ptr = impl->GetPointerImpl(
         GetInteger(vaddr),
         [&] {
-            LOG_ERROR(HW_Memory, "Unmapped InvalidateNCE for {} bytes @ {:#x}", size,
-                      GetInteger(vaddr));
             mapped = false;
         },
         [&] { rasterizer = true; });
-    if (rasterizer) {
+    if (rasterizer) [[unlikely]] {
         impl->InvalidateGPUMemory(ptr, size);
     }
 
 #ifdef __ANDROID__
-    if (!rasterizer && mapped) {
+    if (!rasterizer && mapped) [[likely]] {
         impl->host_buffer->DeferredMapSeparateHeap(GetInteger(vaddr));
     }
 #endif

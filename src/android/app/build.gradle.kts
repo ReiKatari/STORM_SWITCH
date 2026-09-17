@@ -97,9 +97,23 @@ android {
                         "-DYUZU_TESTS=OFF",
                         "-DDYNARMIC_TESTS=OFF",
                         "-DYUZU_DOWNLOAD_ANDROID_VVL=OFF",
+                        "-DYUZU_BUILD_PRESET=optimized",
+                        "-DENABLE_LTO=ON",
+                        "-DYUZU_USE_THIN_LTO=ON",
                         *extraCMakeArgs.toTypedArray()
                     )
                 )
+
+                val pgoMode = project.findProperty("YUZU_PGO") as String?
+                if (pgoMode == "generate") {
+                    arguments.add("-DYUZU_ENABLE_PGO_GENERATE=ON")
+                } else if (pgoMode == "use") {
+                    arguments.add("-DYUZU_ENABLE_PGO_USE=ON")
+                    val pgoPath = project.findProperty("YUZU_PGO_PATH") as String?
+                    if (!pgoPath.isNullOrEmpty()) {
+                        arguments.add("-DYUZU_PGO_PROFILE_PATH=$pgoPath")
+                    }
+                }
 
                 if (isNightly) {
                     arguments.addAll(listOf(

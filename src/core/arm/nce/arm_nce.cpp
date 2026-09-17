@@ -213,11 +213,11 @@ bool ArmNce::HandleGuestAccessFault(GuestContext* guest_ctx, void* raw_info, voi
 
     bool handled = memory.InvalidateNCE(addr, Memory::YUZU_PAGESIZE);
     // Handle accesses which split a page boundary (e.g. unaligned 128-bit vector / atomic access)
-    if ((fault_addr + 16) > (addr + Memory::YUZU_PAGESIZE)) {
+    if ((fault_addr + 16) > (addr + Memory::YUZU_PAGESIZE)) [[unlikely]] {
         handled |= memory.InvalidateNCE(addr + Memory::YUZU_PAGESIZE, Memory::YUZU_PAGESIZE);
     }
 
-    if (handled) {
+    if (handled) [[likely]] {
         // We handled the access successfully and are returning to guest code.
         return true;
     }
