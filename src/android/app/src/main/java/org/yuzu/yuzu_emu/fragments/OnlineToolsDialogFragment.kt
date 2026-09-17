@@ -61,6 +61,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
     private val assets = mutableListOf<OnlineToolAsset>()
     private var selectedIndex = 0
     private var isDownloading = false
+    var onInstalled: (() -> Unit)? = null
 
     private lateinit var adapter: ToolsAdapter
 
@@ -90,12 +91,17 @@ class OnlineToolsDialogFragment : DialogFragment() {
             }
         }
 
-        private fun formatBytes(bytes: Long): String {
+        fun formatBytes(bytes: Long, context: android.content.Context? = null): String {
+            val ctx = context ?: org.yuzu.yuzu_emu.YuzuApplication.appContext
+            val gb = ctx.getString(R.string.unit_gb)
+            val mb = ctx.getString(R.string.unit_mb)
+            val kb = ctx.getString(R.string.unit_kb)
+            val b = ctx.getString(R.string.unit_b)
             return when {
-                bytes >= 1024 * 1024 * 1024 -> String.format("%.1f ГБ", bytes.toDouble() / (1024 * 1024 * 1024))
-                bytes >= 1024 * 1024 -> String.format("%.1f МБ", bytes.toDouble() / (1024 * 1024))
-                bytes >= 1024 -> String.format("%.1f КБ", bytes.toDouble() / 1024)
-                else -> "$bytes Б"
+                bytes >= 1024 * 1024 * 1024 -> String.format("%.1f %s", bytes.toDouble() / (1024 * 1024 * 1024), gb)
+                bytes >= 1024 * 1024 -> String.format("%.1f %s", bytes.toDouble() / (1024 * 1024), mb)
+                bytes >= 1024 -> String.format("%.1f %s", bytes.toDouble() / 1024, kb)
+                else -> "$bytes $b"
             }
         }
 
@@ -307,7 +313,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
     private fun updateSelectionStatus() {
         if (selectedIndex in assets.indices) {
             val asset = assets[selectedIndex]
-            binding.textStatus.text = "Выбрано: ${asset.displayTitle} (${asset.displaySize})"
+            binding.textStatus.text = getString(R.string.online_tools_selected_format, asset.displayTitle, asset.displaySize)
             binding.btnInstall.isEnabled = !isDownloading
         }
     }
@@ -328,7 +334,9 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
             try {
                 withContext(Dispatchers.Main) {
-                    binding.textStatus.text = "Подключение и загрузка ${asset.name}..."
+                    if (_binding != null) {
+                        binding.textStatus.text = getString(R.string.online_tools_connecting_format, asset.name)
+                    }
                 }
 
                 val request = Request.Builder()
@@ -362,7 +370,12 @@ class OnlineToolsDialogFragment : DialogFragment() {
                                 withContext(Dispatchers.Main) {
                                     if (_binding != null) {
                                         binding.progressBar.progress = progress
-                                        binding.textStatus.text = "Загрузка: $progress% (${formatBytes(downloaded)} / ${formatBytes(totalLength)})"
+                                        binding.textStatus.text = getString(
+                                            R.string.online_tools_downloading_format,
+                                            progress,
+                                            formatBytes(downloaded, requireContext()),
+                                            formatBytes(totalLength, requireContext())
+                                        )
                                     }
                                 }
                             }
@@ -372,8 +385,10 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 }
 
                 withContext(Dispatchers.Main) {
-                    binding.progressBar.isIndeterminate = true
-                    binding.textStatus.text = "Распаковка и установка компонентов в систему..."
+                    if (_binding != null) {
+                        binding.progressBar.isIndeterminate = true
+                        binding.textStatus.text = getString(R.string.online_tools_extracting)
+                    }
                 }
 
                 if (toolType == TYPE_FIRMWARE) {
@@ -406,19 +421,42 @@ class OnlineToolsDialogFragment : DialogFragment() {
                     nandFirmwareDir.mkdirs()
 
                     tempExtract.copyRecursively(nandFirmwareDir, overwrite = true)
+
+                    // Also sync to external /sdcard/STORM SWITCH/nand/system/Contents/registered/
+                    try {
+                        val externalNand = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/nand/system/Contents/registered")
+                        if (externalNand.parentFile?.exists() == true || DirectoryInitialization.userDirectory?.contains("STORM SWITCH") == true) {
+                            externalNand.mkdirs()
+                            tempExtract.copyRecursively(externalNand, overwrite = true)
+                        }
+                    } catch (_: Throwable) {}
+
                     tempExtract.deleteRecursively()
                     tempZip.delete()
 
                     withContext(Dispatchers.Main) {
-                        NativeLibrary.initializeSystem(true)
+                        try {
+                            NativeLibrary.initializeSystem(true)
+                        } catch (_: Throwable) {}
                         homeViewModel.setCheckKeys(true)
-                        Toast.makeText(requireContext(), "✅ Прошивка ${asset.version} успешно установлена онлайн!", Toast.LENGTH_LONG).show()
+                        onInstalled?.invoke()
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.online_firmware_installed_success, asset.version),
+                            Toast.LENGTH_LONG
+                        ).show()
                         dismiss()
                     }
                 } else {
-                    // Keys installation: extract prod.keys and title.keys directly to userDirectory/keys/
-                    val keysDir = File(DirectoryInitialization.userDirectory, "keys")
-                    if (!keysDir.exists()) keysDir.mkdirs()
+                    // Keys installation: extract prod.keys and title.keys to all known target key directories
+                    val targetDirs = listOfNotNull(
+                        DirectoryInitialization.userDirectory?.let { File(it, "keys") },
+                        File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/keys"),
+                        requireContext().getExternalFilesDir(null)?.let { File(it, "keys") }
+                    )
+                    for (kd in targetDirs) {
+                        kd.mkdirs()
+                    }
 
                     java.util.zip.ZipFile(tempZip).use { zipFile ->
                         val entries = zipFile.entries()
@@ -430,11 +468,14 @@ class OnlineToolsDialogFragment : DialogFragment() {
                             val isTitle = entryName.equals("title.keys", ignoreCase = true)
 
                             if (isProd || isTitle) {
-                                val targetFile = File(keysDir, entryName.lowercase())
-                                zipFile.getInputStream(entry).use { inStream ->
-                                    FileOutputStream(targetFile).use { outStream ->
-                                        inStream.copyTo(outStream)
-                                    }
+                                val content = zipFile.getInputStream(entry).use { it.readBytes() }
+                                for (kd in targetDirs) {
+                                    try {
+                                        val targetFile = File(kd, entryName.lowercase())
+                                        FileOutputStream(targetFile).use { outStream ->
+                                            outStream.write(content)
+                                        }
+                                    } catch (_: Throwable) {}
                                 }
                             }
                         }
@@ -443,11 +484,18 @@ class OnlineToolsDialogFragment : DialogFragment() {
                     tempZip.delete()
 
                     withContext(Dispatchers.Main) {
-                        NativeLibrary.reloadKeys()
-                        NativeLibrary.initializeSystem(true)
-                        gamesViewModel.reloadGames(true)
+                        try {
+                            NativeLibrary.reloadKeys()
+                            NativeLibrary.initializeSystem(true)
+                            gamesViewModel.reloadGames(true)
+                        } catch (_: Throwable) {}
                         homeViewModel.setCheckKeys(true)
-                        Toast.makeText(requireContext(), "✅ Ключи ${asset.version} успешно установлены онлайн!", Toast.LENGTH_LONG).show()
+                        onInstalled?.invoke()
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.online_keys_installed_success, asset.version),
+                            Toast.LENGTH_LONG
+                        ).show()
                         dismiss()
                     }
                 }

@@ -1295,4 +1295,14 @@
     <string name="sort_by_size_desc">サイズ順 (降順)</string>
     <string name="sort_by_size_asc">サイズ順 (昇順)</string>
     <string name="sort_by_addons_mods">DLCおよびMOD順</string>
+    <string name="online_tools_selected_format">選択中：%1$s（%2$s）</string>
+    <string name="online_tools_connecting_format">%1$s に接続してダウンロード中...</string>
+    <string name="online_tools_downloading_format">ダウンロード中：%1$d%%（%2$s / %3$s）</string>
+    <string name="online_tools_extracting">システムにコンポーネントを展開してインストール中...</string>
+    <string name="online_firmware_installed_success">✅ ファームウェア %1$s がオンラインで正常にインストールされました！</string>
+    <string name="online_keys_installed_success">✅ キー %1$s がオンラインで正常にインストールされました！</string>
+    <string name="unit_gb">GB</string>
+    <string name="unit_mb">MB</string>
+    <string name="unit_kb">KB</string>
+    <string name="unit_b">B</string>
 </resources>

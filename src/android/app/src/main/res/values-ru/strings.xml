@@ -1669,4 +1669,14 @@
     <string name="sort_by_size_desc">По размеру (убывание)</string>
     <string name="sort_by_size_asc">По размеру (возрастание)</string>
     <string name="sort_by_addons_mods">По дополнениям и модам</string>
+    <string name="online_tools_selected_format">Выбрано: %1$s (%2$s)</string>
+    <string name="online_tools_connecting_format">Подключение и загрузка %1$s...</string>
+    <string name="online_tools_downloading_format">Загрузка: %1$d%% (%2$s / %3$s)</string>
+    <string name="online_tools_extracting">Распаковка и установка компонентов в систему...</string>
+    <string name="online_firmware_installed_success">✅ Прошивка %1$s успешно установлена онлайн!</string>
+    <string name="online_keys_installed_success">✅ Ключи %1$s успешно установлены онлайн!</string>
+    <string name="unit_gb">ГБ</string>
+    <string name="unit_mb">МБ</string>
+    <string name="unit_kb">КБ</string>
+    <string name="unit_b">Б</string>
 </resources>

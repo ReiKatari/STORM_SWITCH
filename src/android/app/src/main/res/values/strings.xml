@@ -2226,5 +2226,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="sort_by_size_desc">By size (descending)</string>
     <string name="sort_by_size_asc">By size (ascending)</string>
     <string name="sort_by_addons_mods">By addons and mods</string>
+    <string name="online_tools_selected_format">Selected: %1$s (%2$s)</string>
+    <string name="online_tools_connecting_format">Connecting and downloading %1$s...</string>
+    <string name="online_tools_downloading_format">Downloading: %1$d%% (%2$s / %3$s)</string>
+    <string name="online_tools_extracting">Unpacking and installing components into system...</string>
+    <string name="online_firmware_installed_success">✅ Firmware %1$s installed online successfully!</string>
+    <string name="online_keys_installed_success">✅ Keys %1$s installed online successfully!</string>
+    <string name="unit_gb">GB</string>
+    <string name="unit_mb">MB</string>
+    <string name="unit_kb">KB</string>
+    <string name="unit_b">B</string>
 </resources>
 

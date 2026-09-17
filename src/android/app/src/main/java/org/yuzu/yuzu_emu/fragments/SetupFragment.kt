@@ -186,10 +186,7 @@ class SetupFragment : Fragment() {
                                     showKeysDialog()
                                 },
                                 {
-                                    val file = File(
-                                        DirectoryInitialization.userDirectory + "/keys/prod.keys"
-                                    )
-                                    if (file.exists() && NativeLibrary.areKeysPresent()) {
+                                    if (areKeysInstalled()) {
                                         ButtonState.BUTTON_ACTION_COMPLETE
                                     } else {
                                         ButtonState.BUTTON_ACTION_INCOMPLETE
@@ -212,7 +209,7 @@ class SetupFragment : Fragment() {
                                     showFirmwareDialog()
                                 },
                                 {
-                                    if (NativeLibrary.isFirmwareAvailable()) {
+                                    if (isFirmwareInstalled()) {
                                         ButtonState.BUTTON_ACTION_COMPLETE
                                     } else {
                                         ButtonState.BUTTON_ACTION_INCOMPLETE
@@ -235,7 +232,7 @@ class SetupFragment : Fragment() {
                                     getLosslessDll.launch(arrayOf("*/*"))
                                 },
                                 {
-                                    if (LosslessScalingHelper.isInstalled()) {
+                                    if (isFrameGenInstalled()) {
                                         ButtonState.BUTTON_ACTION_COMPLETE
                                     } else {
                                         ButtonState.BUTTON_ACTION_INCOMPLETE
@@ -253,7 +250,7 @@ class SetupFragment : Fragment() {
                                     getGamesDirectory.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
                                 },
                                 {
-                                    if (hasValidGameDirectories()) {
+                                    if (areGamesConfigured()) {
                                         ButtonState.BUTTON_ACTION_COMPLETE
                                     } else {
                                         ButtonState.BUTTON_ACTION_INCOMPLETE
@@ -267,19 +264,7 @@ class SetupFragment : Fragment() {
                             )
                         )
                     },
-                    {
-                        val file = File(
-                            DirectoryInitialization.userDirectory + "/keys/prod.keys"
-                        )
-                        if (file.exists() && NativeLibrary.areKeysPresent() &&
-                            NativeLibrary.isFirmwareAvailable() &&
-                            hasValidGameDirectories()
-                        ) {
-                            PageState.COMPLETE
-                        } else {
-                            PageState.INCOMPLETE
-                        }
-                    }
+                    { PageState.INCOMPLETE }
                 )
             )
             add(
@@ -417,6 +402,10 @@ class SetupFragment : Fragment() {
         setInsets()
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshAllButtonStates()
+    }
 
     override fun onStop() {
         super.onStop()
@@ -435,28 +424,20 @@ class SetupFragment : Fragment() {
         _binding = null
     }
 
-    private val checkForButtonState: () -> Unit = {
-        val page = pages[binding.viewPager2.currentItem]
-        page.pageButtons?.forEach {
-            if (it.buttonState() == ButtonState.BUTTON_ACTION_COMPLETE) {
-                pageButtonCallback.onStepCompleted(
-                    it.titleId,
-                    pageFullyCompleted = false
-                )
-            }
+    val checkForButtonState: () -> Unit = {
+        refreshAllButtonStates()
+    }
 
-            if (page.pageSteps() == PageState.COMPLETE) {
-                pageButtonCallback.onStepCompleted(0, pageFullyCompleted = true)
-            }
+    fun refreshAllButtonStates() {
+        if (_binding != null) {
+            (binding.viewPager2.adapter as? SetupAdapter)?.refreshAllButtonStates()
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            if (it) {
-                checkForButtonState.invoke()
-            }
+            refreshAllButtonStates()
 
             if (!it &&
                 !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
@@ -468,14 +449,11 @@ class SetupFragment : Fragment() {
             }
         }
 
-
     val getProdKey =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
             if (result != null) {
                 mainActivity.processKey(result, "keys")
-                if (NativeLibrary.areKeysPresent()) {
-                    checkForButtonState.invoke()
-                }
+                refreshAllButtonStates()
             }
         }
 
@@ -483,9 +461,7 @@ class SetupFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
             if (result != null) {
                 mainActivity.processFirmware(result) {
-                    if (NativeLibrary.isFirmwareAvailable()) {
-                        checkForButtonState.invoke()
-                    }
+                    refreshAllButtonStates()
                 }
             }
         }
@@ -513,7 +489,7 @@ class SetupFragment : Fragment() {
                     )
                 }
             }.apply {
-                onDialogComplete = { checkForButtonState.invoke() }
+                onDialogComplete = { refreshAllButtonStates() }
             }.show(parentFragmentManager, ProgressDialogFragment.TAG)
         }
 
@@ -572,9 +548,7 @@ class SetupFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
             if (result != null) {
                 mainActivity.processKeysFolder(result)
-                if (NativeLibrary.areKeysPresent()) {
-                    checkForButtonState.invoke()
-                }
+                refreshAllButtonStates()
             }
         }
 
@@ -582,12 +556,53 @@ class SetupFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
             if (result != null) {
                 mainActivity.processFirmwareFolder(result) {
-                    if (NativeLibrary.isFirmwareAvailable()) {
-                        checkForButtonState.invoke()
-                    }
+                    refreshAllButtonStates()
                 }
             }
         }
+
+    private fun areKeysInstalled(): Boolean {
+        val candidates = listOfNotNull(
+            DirectoryInitialization.userDirectory?.let { File(it, "keys/prod.keys") },
+            File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/keys/prod.keys"),
+            context?.getExternalFilesDir(null)?.let { File(it, "keys/prod.keys") },
+            context?.filesDir?.let { File(it, "keys/prod.keys") }
+        )
+        val fileExists = candidates.any { it.exists() && it.length() > 0 }
+        if (fileExists) {
+            try {
+                NativeLibrary.reloadKeys()
+            } catch (_: Throwable) {}
+        }
+        return fileExists || NativeLibrary.areKeysPresent()
+    }
+
+    private fun isFirmwareInstalled(): Boolean {
+        val nandDir = try { NativeConfig.getNandDir() } catch (_: Throwable) { "" }
+        val candidates = listOfNotNull(
+            if (nandDir.isNotBlank()) File(nandDir, "system/Contents/registered") else null,
+            DirectoryInitialization.userDirectory?.let { File(it, "nand/system/Contents/registered") },
+            File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/nand/system/Contents/registered"),
+            context?.getExternalFilesDir(null)?.let { File(it, "nand/system/Contents/registered") }
+        )
+        val filesExist = candidates.any { dir ->
+            dir.exists() && dir.isDirectory && (dir.listFiles { f -> f.extension.equals("nca", ignoreCase = true) }?.isNotEmpty() == true)
+        }
+        if (filesExist) {
+            try {
+                NativeLibrary.initializeSystem(true)
+            } catch (_: Throwable) {}
+        }
+        return filesExist || NativeLibrary.isFirmwareAvailable()
+    }
+
+    private fun isFrameGenInstalled(): Boolean {
+        return LosslessScalingHelper.isInstalled()
+    }
+
+    private fun areGamesConfigured(): Boolean {
+        return hasValidGameDirectories()
+    }
 
     private fun hasValidGameDirectories(): Boolean {
         val dirs = NativeConfig.getGameDirs().filter { it.uriString.isNotBlank() }
@@ -752,8 +767,11 @@ class SetupFragment : Fragment() {
                 setOnClickListener {
                     dialog.dismiss()
                     when (i) {
-                        0 -> OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS)
-                            .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                        0 -> {
+                            val onlineDialog = OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS)
+                            onlineDialog.onInstalled = { refreshAllButtonStates() }
+                            onlineDialog.show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                        }
                         1 -> getProdKey.launch(arrayOf("*/*"))
                         2 -> getKeysFolder.launch(null)
                     }
@@ -834,8 +852,11 @@ class SetupFragment : Fragment() {
                 setOnClickListener {
                     dialog.dismiss()
                     when (i) {
-                        0 -> OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE)
-                            .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                        0 -> {
+                            val onlineDialog = OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE)
+                            onlineDialog.onInstalled = { refreshAllButtonStates() }
+                            onlineDialog.show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                        }
                         1 -> getFirmware.launch(arrayOf("application/zip", "application/x-zip-compressed", "*/*"))
                         2 -> getFirmwareFolder.launch(null)
                     }

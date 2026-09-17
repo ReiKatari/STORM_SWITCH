@@ -10,6 +10,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
+import android.view.LayoutInflater
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -24,12 +25,20 @@ class AddGameFolderDialogFragment : DialogFragment() {
     private val gamesViewModel: GamesViewModel by activityViewModels()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val binding = DialogAddFolderBinding.inflate(layoutInflater)
-        val folderUriString = requireArguments().getString(FOLDER_URI_STRING)
-        if (folderUriString == null) {
+        val themedContext = androidx.appcompat.view.ContextThemeWrapper(
+            requireContext(),
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getSelectedStaticThemeColor()
+        )
+        val binding = DialogAddFolderBinding.inflate(LayoutInflater.from(themedContext))
+        val folderUriString = arguments?.getString(FOLDER_URI_STRING) ?: ""
+        if (folderUriString.isBlank()) {
             dismiss()
         }
-        val rawPath = Uri.parse(folderUriString).path ?: folderUriString
+        val rawPath = try {
+            Uri.parse(folderUriString).path ?: folderUriString
+        } catch (_: Exception) {
+            folderUriString
+        }
         val displayPath = try {
             Uri.decode(rawPath).replace("/tree/primary:", "")
         } catch (_: Exception) {
@@ -38,21 +47,27 @@ class AddGameFolderDialogFragment : DialogFragment() {
         binding.path.text = displayPath
         binding.deepScanSwitch.isChecked = true
 
-        return MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+        return MaterialAlertDialogBuilder(themedContext)
             .setTitle(R.string.add_game_folder)
             .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
-                val newGameDir = GameDir(folderUriString!!, binding.deepScanSwitch.isChecked)
-                val calledFromGameFragment = requireArguments().getBoolean(
-                    "calledFromGameFragment",
-                    false
-                )
-                val hvm = try { homeViewModel } catch (_: Exception) { null }
-                val gvm = try { gamesViewModel } catch (_: Exception) { null }
-                val job = gvm?.addFolder(newGameDir, calledFromGameFragment)
-                job?.invokeOnCompletion {
+                if (folderUriString.isNotBlank()) {
+                    val newGameDir = GameDir(folderUriString, binding.deepScanSwitch.isChecked)
+                    val calledFromGameFragment = arguments?.getBoolean(
+                        "calledFromGameFragment",
+                        false
+                    ) ?: false
                     try {
-                        hvm?.setGamesDirSelected(true)
-                    } catch (_: Exception) {}
+                        val hvm = try { homeViewModel } catch (_: Exception) { null }
+                        val gvm = try { gamesViewModel } catch (_: Exception) { null }
+                        val job = gvm?.addFolder(newGameDir, calledFromGameFragment)
+                        job?.invokeOnCompletion {
+                            try {
+                                hvm?.setGamesDirSelected(true)
+                            } catch (_: Exception) {}
+                        }
+                    } catch (e: Throwable) {
+                        android.util.Log.e("STORM_SWITCH", "addFolder error: ${e.message}")
+                    }
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)

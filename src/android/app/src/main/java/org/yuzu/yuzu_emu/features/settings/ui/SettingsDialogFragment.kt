@@ -59,6 +59,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, org.yuzu.yuzu_emu.utils.ThemeHelper.getSelectedStaticThemeColor())
         type = requireArguments().getInt(TYPE)
         position = requireArguments().getInt(POSITION)
 
@@ -66,9 +67,13 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val themedContext = androidx.appcompat.view.ContextThemeWrapper(
+            requireContext(),
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getSelectedStaticThemeColor()
+        )
         return when (type) {
             TYPE_RESET_SETTING -> {
-                MaterialAlertDialogBuilder(requireContext())
+                MaterialAlertDialogBuilder(themedContext)
                     .setMessage(R.string.reset_setting_confirmation)
                     .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                         val item = settingsViewModel.clickedItem ?: return@setPositiveButton
@@ -139,7 +144,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                     item.choicesId
                 }
 
-                MaterialAlertDialogBuilder(requireContext())
+                MaterialAlertDialogBuilder(themedContext)
                     .setTitle(item.title)
                     .setSingleChoiceItems(choicesId, value, this)
                     .create()
@@ -166,7 +171,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                     sliderBinding.slider.value = it.toFloat()
                 }
 
-                MaterialAlertDialogBuilder(requireContext())
+                MaterialAlertDialogBuilder(themedContext)
                     .setTitle(item.title)
                     .setView(sliderBinding.root)
                     .setPositiveButton(android.R.string.ok, this)
@@ -182,7 +187,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                 spinboxBinding.editValue.setText(currentValue.toString())
                 spinboxBinding.textInputLayout.hint = getString(item.valueHint)
 
-                val dialog = MaterialAlertDialogBuilder(requireContext())
+                val dialog = MaterialAlertDialogBuilder(themedContext)
                     .setTitle(item.title)
                     .setView(spinboxBinding.root)
                     .setPositiveButton(android.R.string.ok, this)
@@ -329,7 +334,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                     watcher.afterTextChanged(stringInputBinding.editText.text)
                 }
 
-                MaterialAlertDialogBuilder(requireContext())
+                MaterialAlertDialogBuilder(themedContext)
                     .setTitle(item.title)
                     .setView(stringInputBinding.root)
                     .setPositiveButton(android.R.string.ok, this)
@@ -339,7 +344,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
 
             SettingsItem.TYPE_STRING_SINGLE_CHOICE -> {
                 val item = settingsViewModel.clickedItem as StringSingleChoiceSetting
-                MaterialAlertDialogBuilder(requireContext())
+                MaterialAlertDialogBuilder(themedContext)
                     .setTitle(item.title)
                     .setSingleChoiceItems(item.choices, item.selectedValueIndex, this)
                     .create()
@@ -347,7 +352,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
 
             SettingsItem.TYPE_INT_SINGLE_CHOICE -> {
                 val item = settingsViewModel.clickedItem as IntSingleChoiceSetting
-                MaterialAlertDialogBuilder(requireContext())
+                MaterialAlertDialogBuilder(themedContext)
                     .setTitle(item.title)
                     .setSingleChoiceItems(item.choices, item.selectedValueIndex, this)
                     .create()

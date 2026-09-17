@@ -1466,4 +1466,14 @@
     <string name="sort_by_size_desc">Par taille (décroissante)</string>
     <string name="sort_by_size_asc">Par taille (croissante)</string>
     <string name="sort_by_addons_mods">Par extensions et mods</string>
+    <string name="online_tools_selected_format">Sélectionné : %1$s (%2$s)</string>
+    <string name="online_tools_connecting_format">Connexion et téléchargement de %1$s...</string>
+    <string name="online_tools_downloading_format">Téléchargement : %1$d%% (%2$s / %3$s)</string>
+    <string name="online_tools_extracting">Décompression et installation des composants dans le système...</string>
+    <string name="online_firmware_installed_success">✅ Firmware %1$s installé en ligne avec succès !</string>
+    <string name="online_keys_installed_success">✅ Clés %1$s installées en ligne avec succès !</string>
+    <string name="unit_gb">Go</string>
+    <string name="unit_mb">Mo</string>
+    <string name="unit_kb">Ko</string>
+    <string name="unit_b">o</string>
 </resources>

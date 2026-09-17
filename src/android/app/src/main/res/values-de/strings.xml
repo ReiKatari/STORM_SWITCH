@@ -1460,4 +1460,14 @@ Wirklich fortfahren?</string>
     <string name="sort_by_size_desc">Nach Größe (absteigend)</string>
     <string name="sort_by_size_asc">Nach Größe (aufsteigend)</string>
     <string name="sort_by_addons_mods">Nach Add-ons und Mods</string>
+    <string name="online_tools_selected_format">Ausgewählt: %1$s (%2$s)</string>
+    <string name="online_tools_connecting_format">Verbindung wird hergestellt und %1$s heruntergeladen...</string>
+    <string name="online_tools_downloading_format">Herunterladen: %1$d%% (%2$s / %3$s)</string>
+    <string name="online_tools_extracting">Komponenten werden entpackt und installiert...</string>
+    <string name="online_firmware_installed_success">✅ Firmware %1$s erfolgreich online installiert!</string>
+    <string name="online_keys_installed_success">✅ Keys %1$s erfolgreich online installiert!</string>
+    <string name="unit_gb">GB</string>
+    <string name="unit_mb">MB</string>
+    <string name="unit_kb">KB</string>
+    <string name="unit_b">B</string>
 </resources>

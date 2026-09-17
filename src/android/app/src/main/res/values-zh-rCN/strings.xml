@@ -1470,4 +1470,14 @@
     <string name="sort_by_size_desc">按大小降序</string>
     <string name="sort_by_size_asc">按大小升序</string>
     <string name="sort_by_addons_mods">按扩展包和模组</string>
+    <string name="online_tools_selected_format">已选择：%1$s（%2$s）</string>
+    <string name="online_tools_connecting_format">正在连接并下载 %1$s...</string>
+    <string name="online_tools_downloading_format">下载中：%1$d%%（%2$s / %3$s）</string>
+    <string name="online_tools_extracting">正在解压并安装组件到系统中...</string>
+    <string name="online_firmware_installed_success">✅ 固件 %1$s 在线安装成功！</string>
+    <string name="online_keys_installed_success">✅ 密钥 %1$s 在线安装成功！</string>
+    <string name="unit_gb">GB</string>
+    <string name="unit_mb">MB</string>
+    <string name="unit_kb">KB</string>
+    <string name="unit_b">B</string>
 </resources>

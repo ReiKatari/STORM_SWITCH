@@ -11,5 +11,6 @@
     android:textColor="?attr/colorOnSurface"
     android:textSize="15sp"
     android:background="?attr/selectableItemBackground"
+    android:buttonTint="?attr/colorPrimary"
     app:buttonTint="?attr/colorPrimary"
     android:ellipsize="marquee" />
