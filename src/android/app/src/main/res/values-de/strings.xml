@@ -1475,4 +1475,6 @@ Wirklich fortfahren?</string>
     <string name="unit_mb">MB</string>
     <string name="unit_kb">KB</string>
     <string name="unit_b">B</string>
+    <string name="file_size">Dateigröße</string>
+    <string name="game_info_title">Spielinformationen</string>
 </resources>

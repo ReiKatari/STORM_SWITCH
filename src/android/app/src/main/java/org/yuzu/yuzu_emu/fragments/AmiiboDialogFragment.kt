@@ -32,6 +32,7 @@ import org.yuzu.yuzu_emu.databinding.ListItemInstalledAmiiboBinding
 import org.yuzu.yuzu_emu.utils.AmiiboEntry
 import org.yuzu.yuzu_emu.utils.AmiiboHelper
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.io.File
 import java.io.InputStream
 
@@ -85,7 +86,7 @@ class AmiiboDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(STYLE_NORMAL, R.style.Theme_Yuzu_Main)
+        setStyle(STYLE_NORMAL, ThemeHelper.getSelectedStaticThemeColor())
         isEmulating = arguments?.getBoolean(ARG_IS_EMULATING, false) ?: false
         gameTitle = arguments?.getString(ARG_GAME_TITLE, "") ?: ""
         titleId = arguments?.getString(ARG_TITLE_ID, "") ?: ""
@@ -111,11 +112,17 @@ class AmiiboDialogFragment : DialogFragment() {
         dialog?.window?.let { window ->
             val dm = resources.displayMetrics
             val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) (dm.widthPixels * 0.92).toInt() else (dm.widthPixels * 0.95).toInt()
-            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.85).toInt()
+            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else (dm.widthPixels * 0.95).toInt()
+            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.88).toInt()
             window.setLayout(width, height)
             window.setBackgroundDrawableResource(android.R.color.transparent)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
+    }
+
+    override fun onDismiss(dialog: android.content.DialogInterface) {
+        super.onDismiss(dialog)
+        activity?.let { ThemeHelper.applySystemBarsTheme(it.window, it) }
     }
 
     private fun setupUI() {
@@ -123,6 +130,11 @@ class AmiiboDialogFragment : DialogFragment() {
         val spanCount = if (isLandscape) 2 else 1
         binding.listAmiibo.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), spanCount)
         binding.listAmiibo.adapter = AmiiboAdapter()
+
+        binding.buttonCloseTop.setOnClickListener {
+            dismiss()
+        }
+        binding.textGameTitle.text = if (gameTitle.isNotBlank()) gameTitle else getString(R.string.amiibo)
 
         binding.buttonClose.setOnClickListener {
             dismiss()
@@ -417,13 +429,18 @@ class AmiiboDialogFragment : DialogFragment() {
         binding.layoutCatalogContainer.isVisible = true
         binding.layoutInstalledContainer.isVisible = false
 
-        binding.buttonTabCatalog.setBackgroundColor(android.graphics.Color.parseColor("#00D2FF"))
-        binding.buttonTabCatalog.setTextColor(android.graphics.Color.parseColor("#0A0E17"))
-        binding.buttonTabCatalog.strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#00D2FF"))
+        val primaryColor = MaterialColors.getColor(binding.buttonTabCatalog, com.google.android.material.R.attr.colorPrimary)
+        val onPrimaryColor = MaterialColors.getColor(binding.buttonTabCatalog, com.google.android.material.R.attr.colorOnPrimary)
+        val onSurfaceVariant = MaterialColors.getColor(binding.buttonTabCatalog, com.google.android.material.R.attr.colorOnSurfaceVariant)
+        val outlineColor = MaterialColors.getColor(binding.buttonTabCatalog, com.google.android.material.R.attr.colorOutline)
+
+        binding.buttonTabCatalog.setBackgroundColor(primaryColor)
+        binding.buttonTabCatalog.setTextColor(onPrimaryColor)
+        binding.buttonTabCatalog.strokeColor = android.content.res.ColorStateList.valueOf(primaryColor)
 
         binding.buttonTabInstalled.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        binding.buttonTabInstalled.setTextColor(android.graphics.Color.parseColor("#94A3B8"))
-        binding.buttonTabInstalled.strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#25354C"))
+        binding.buttonTabInstalled.setTextColor(onSurfaceVariant)
+        binding.buttonTabInstalled.strokeColor = android.content.res.ColorStateList.valueOf(outlineColor)
     }
 
     private fun switchToInstalledTab() {
@@ -431,13 +448,18 @@ class AmiiboDialogFragment : DialogFragment() {
         binding.layoutCatalogContainer.isVisible = false
         binding.layoutInstalledContainer.isVisible = true
 
-        binding.buttonTabInstalled.setBackgroundColor(android.graphics.Color.parseColor("#00D2FF"))
-        binding.buttonTabInstalled.setTextColor(android.graphics.Color.parseColor("#0A0E17"))
-        binding.buttonTabInstalled.strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#00D2FF"))
+        val primaryColor = MaterialColors.getColor(binding.buttonTabInstalled, com.google.android.material.R.attr.colorPrimary)
+        val onPrimaryColor = MaterialColors.getColor(binding.buttonTabInstalled, com.google.android.material.R.attr.colorOnPrimary)
+        val onSurfaceVariant = MaterialColors.getColor(binding.buttonTabInstalled, com.google.android.material.R.attr.colorOnSurfaceVariant)
+        val outlineColor = MaterialColors.getColor(binding.buttonTabInstalled, com.google.android.material.R.attr.colorOutline)
+
+        binding.buttonTabInstalled.setBackgroundColor(primaryColor)
+        binding.buttonTabInstalled.setTextColor(onPrimaryColor)
+        binding.buttonTabInstalled.strokeColor = android.content.res.ColorStateList.valueOf(primaryColor)
 
         binding.buttonTabCatalog.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        binding.buttonTabCatalog.setTextColor(android.graphics.Color.parseColor("#94A3B8"))
-        binding.buttonTabCatalog.strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#25354C"))
+        binding.buttonTabCatalog.setTextColor(onSurfaceVariant)
+        binding.buttonTabCatalog.strokeColor = android.content.res.ColorStateList.valueOf(outlineColor)
 
         loadInstalledAmiibos()
     }

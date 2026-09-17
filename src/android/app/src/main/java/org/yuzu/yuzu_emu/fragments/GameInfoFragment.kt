@@ -26,7 +26,9 @@ import org.yuzu.yuzu_emu.databinding.FragmentGameInfoBinding
 import org.yuzu.yuzu_emu.model.GameVerificationResult
 import org.yuzu.yuzu_emu.model.HomeViewModel
 import org.yuzu.yuzu_emu.utils.GameHelper
+import org.yuzu.yuzu_emu.utils.GameIconUtils
 import org.yuzu.yuzu_emu.utils.GameMetadata
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import org.yuzu.yuzu_emu.utils.ViewUtils.setVisible
 import org.yuzu.yuzu_emu.utils.ViewUtils.updateMargins
 
@@ -65,7 +67,7 @@ class GameInfoFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentGameInfoBinding.inflate(inflater)
+        _binding = FragmentGameInfoBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -74,31 +76,24 @@ class GameInfoFragment : Fragment() {
         homeViewModel.setStatusBarShadeVisibility(false)
 
         binding.apply {
-            toolbarInfo.title = args.game.title
+            toolbarInfo.title = getString(R.string.game_info_title)
             toolbarInfo.setNavigationOnClickListener {
                 requireActivity().onBackPressedDispatcher.onBackPressed()
             }
 
-            val pathString = Uri.parse(args.game.path).path ?: ""
-            path.setHint(R.string.path)
-            pathField.setText(pathString)
-            pathField.setOnClickListener { copyToClipboard(getString(R.string.path), pathString) }
+            // Bind Game Header Card
+            textGameTitle.text = args.game.title
+            textGameDeveloperHeader.text = if (args.game.developer.isNotEmpty()) args.game.developer else "Nintendo"
+            GameIconUtils.loadGameIcon(args.game, imageGameIcon)
 
-            programId.setHint(R.string.program_id)
-            programIdField.setText(args.game.programIdHex)
-            programIdField.setOnClickListener {
-                copyToClipboard(getString(R.string.program_id), args.game.programIdHex)
+            val ext = try {
+                val p = Uri.parse(args.game.path).path ?: args.game.path
+                val dot = p.lastIndexOf('.')
+                if (dot != -1) p.substring(dot + 1).uppercase() else "NSP"
+            } catch (_: Exception) {
+                "NSP"
             }
-
-            if (args.game.developer.isNotEmpty()) {
-                developer.setHint(R.string.developer)
-                developerField.setText(args.game.developer)
-                developerField.setOnClickListener {
-                    copyToClipboard(getString(R.string.developer), args.game.developer)
-                }
-            } else {
-                developer.setVisible(false)
-            }
+            badgeGameFormat.text = ext
 
             val cleanVer = args.game.version.trim().removePrefix("v").removePrefix("V").ifEmpty { "1.0.0" }
             val cleanIntVer = args.game.internalVersion.trim().removePrefix("v").removePrefix("V")
@@ -107,12 +102,58 @@ class GameInfoFragment : Fragment() {
             } else {
                 cleanVer
             }
+            badgeGameVersion.text = "v$cleanVer"
 
-            version.setHint(R.string.version)
-            versionField.setText(fullVersionText)
-            versionField.setOnClickListener {
-                copyToClipboard(getString(R.string.version), fullVersionText)
+            // Bind Path
+            val pathString = Uri.parse(args.game.path).path ?: ""
+            pathField.text = pathString
+            pathField.setOnClickListener { copyToClipboard(getString(R.string.path), pathString) }
+            path.setOnClickListener { copyToClipboard(getString(R.string.path), pathString) }
+            buttonCopyPath.setOnClickListener { copyToClipboard(getString(R.string.path), pathString) }
+
+            // Bind Program ID
+            programIdField.text = args.game.programIdHex
+            programIdField.setOnClickListener { copyToClipboard(getString(R.string.program_id), args.game.programIdHex) }
+            programId.setOnClickListener { copyToClipboard(getString(R.string.program_id), args.game.programIdHex) }
+            buttonCopyProgramId.setOnClickListener { copyToClipboard(getString(R.string.program_id), args.game.programIdHex) }
+
+            // Bind Developer
+            if (args.game.developer.isNotEmpty()) {
+                developerField.text = args.game.developer
+                developerField.setOnClickListener { copyToClipboard(getString(R.string.developer), args.game.developer) }
+                developer.setOnClickListener { copyToClipboard(getString(R.string.developer), args.game.developer) }
+                buttonCopyDeveloper.setOnClickListener { copyToClipboard(getString(R.string.developer), args.game.developer) }
+            } else {
+                developer.setVisible(false)
             }
+
+            // Bind Version
+            versionField.text = fullVersionText
+            versionField.setOnClickListener { copyToClipboard(getString(R.string.version), fullVersionText) }
+            version.setOnClickListener { copyToClipboard(getString(R.string.version), fullVersionText) }
+            buttonCopyVersion.setOnClickListener { copyToClipboard(getString(R.string.version), fullVersionText) }
+
+            // Bind File Size
+            val fileSizeBytes: Long = try {
+                val uri = Uri.parse(args.game.path)
+                if (uri.scheme == "content") {
+                    requireContext().contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize } ?: 0L
+                } else {
+                    val f = java.io.File(uri.path ?: args.game.path)
+                    if (f.exists()) f.length() else 0L
+                }
+            } catch (_: Exception) {
+                0L
+            }
+            val formattedSize = if (fileSizeBytes > 0) {
+                android.text.format.Formatter.formatFileSize(requireContext(), fileSizeBytes)
+            } else {
+                "—"
+            }
+            fileSizeField.text = formattedSize
+            fileSizeField.setOnClickListener { copyToClipboard(getString(R.string.file_size), formattedSize) }
+            cardFileSize.setOnClickListener { copyToClipboard(getString(R.string.file_size), formattedSize) }
+            buttonCopyFileSize.setOnClickListener { copyToClipboard(getString(R.string.file_size), formattedSize) }
 
             buttonCopy.setOnClickListener {
                 val details = """
@@ -121,6 +162,7 @@ class GameInfoFragment : Fragment() {
                     ${getString(R.string.program_id)} - ${args.game.programIdHex}
                     ${getString(R.string.developer)} - ${args.game.developer}
                     ${getString(R.string.version)} - $fullVersionText
+                    ${getString(R.string.file_size)} - $formattedSize
                 """.trimIndent()
                 copyToClipboard(args.game.title, details)
             }
@@ -169,13 +211,7 @@ class GameInfoFragment : Fragment() {
         val clip = ClipData.newPlainText(label, body)
         clipBoard.setPrimaryClip(clip)
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            Toast.makeText(
-                requireContext(),
-                R.string.copied_to_clipboard,
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        ThemeHelper.showThemedSnackbar(binding.root, getString(R.string.copied_to_clipboard))
     }
 
     private fun setInsets() =

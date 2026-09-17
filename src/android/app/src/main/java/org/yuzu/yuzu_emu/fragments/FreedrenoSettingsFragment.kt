@@ -22,6 +22,7 @@ import org.yuzu.yuzu_emu.databinding.FragmentFreedrenoSettingsBinding
 import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.utils.NativeFreedrenoConfig
 import org.yuzu.yuzu_emu.utils.FreedrenoPresets
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import org.yuzu.yuzu_emu.utils.ViewUtils.updateMargins
 
 
@@ -232,8 +233,9 @@ class FreedrenoSettingsFragment : Fragment() {
             insets
         }
     }
-private fun showSnackbar(message: String) {
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+
+    private fun showSnackbar(message: String) {
+        ThemeHelper.showThemedSnackbar(binding.root, message)
     }
 
     override fun onDestroyView() {

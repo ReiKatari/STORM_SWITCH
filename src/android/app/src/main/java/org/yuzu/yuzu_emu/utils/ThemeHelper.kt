@@ -131,6 +131,48 @@ object ThemeHelper {
         windowController.isAppearanceLightNavigationBars = false
     }
 
+    fun showThemedSnackbar(
+        view: android.view.View,
+        message: CharSequence,
+        duration: Int = com.google.android.material.snackbar.Snackbar.LENGTH_SHORT,
+        actionText: CharSequence? = null,
+        onActionClick: android.view.View.OnClickListener? = null
+    ): com.google.android.material.snackbar.Snackbar {
+        val context = view.context
+        val snackbar = com.google.android.material.snackbar.Snackbar.make(view, message, duration)
+        val snackbarView = snackbar.view
+        val density = context.resources.displayMetrics.density
+        val surfaceColor = getColor(context, com.google.android.material.R.attr.colorSurfaceVariant)
+        val strokeColor = getColor(context, com.google.android.material.R.attr.colorOutline)
+        val textColor = getColor(context, com.google.android.material.R.attr.colorOnSurface)
+        val primaryColor = getColor(context, com.google.android.material.R.attr.colorPrimary)
+
+        val shape = com.google.android.material.shape.MaterialShapeDrawable().apply {
+            shapeAppearanceModel = com.google.android.material.shape.ShapeAppearanceModel.builder()
+                .setAllCornerSizes(12f * density)
+                .build()
+            fillColor = android.content.res.ColorStateList.valueOf(surfaceColor)
+            setStroke(1.5f * density, strokeColor)
+            elevation = 6f * density
+        }
+        snackbarView.background = shape
+        snackbar.setTextColor(textColor)
+        snackbar.setActionTextColor(primaryColor)
+
+        (snackbarView.layoutParams as? android.view.ViewGroup.MarginLayoutParams)?.let { params ->
+            val marginH = (16f * density).toInt()
+            val marginB = (16f * density).toInt()
+            params.setMargins(marginH, params.topMargin, marginH, marginB)
+            snackbarView.layoutParams = params
+        }
+
+        if (actionText != null && onActionClick != null) {
+            snackbar.setAction(actionText, onActionClick)
+        }
+        snackbar.show()
+        return snackbar
+    }
+
     fun ThemeChangeListener(activity: AppCompatActivity) {
         listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             val relevantKeys = listOf(

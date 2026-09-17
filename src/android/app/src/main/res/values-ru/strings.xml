@@ -1684,4 +1684,6 @@
     <string name="unit_mb">МБ</string>
     <string name="unit_kb">КБ</string>
     <string name="unit_b">Б</string>
+    <string name="file_size">Размер файла</string>
+    <string name="game_info_title">Информация об игре</string>
 </resources>

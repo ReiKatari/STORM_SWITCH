@@ -71,7 +71,7 @@
             android:layout_marginTop="8dp"
             android:visibility="gone"
             app:indicatorColor="?attr/colorPrimary"
-            app:trackColor="@color/eden_card_stroke"
+            app:trackColor="?attr/colorOutline"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

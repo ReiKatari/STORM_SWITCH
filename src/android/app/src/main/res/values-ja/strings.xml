@@ -1310,4 +1310,6 @@
     <string name="unit_mb">MB</string>
     <string name="unit_kb">KB</string>
     <string name="unit_b">B</string>
+    <string name="file_size">ファイルサイズ</string>
+    <string name="game_info_title">ゲーム情報</string>
 </resources>

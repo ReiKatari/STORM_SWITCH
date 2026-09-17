@@ -2241,5 +2241,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="unit_mb">MB</string>
     <string name="unit_kb">KB</string>
     <string name="unit_b">B</string>
+    <string name="file_size">File size</string>
+    <string name="game_info_title">Game information</string>
 </resources>
 

@@ -36,6 +36,7 @@ import org.yuzu.yuzu_emu.utils.GameBananaFile
 import org.yuzu.yuzu_emu.utils.GameBananaHelper
 import org.yuzu.yuzu_emu.utils.GameBananaMod
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 
 class GameBananaDialogFragment : DialogFragment() {
 
@@ -130,7 +131,7 @@ class GameBananaDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(STYLE_NORMAL, R.style.Theme_Yuzu_Main)
+        setStyle(STYLE_NORMAL, ThemeHelper.getSelectedStaticThemeColor())
         if (game == null) {
             game = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 arguments?.getParcelable(ARG_GAME, Game::class.java)
@@ -161,11 +162,17 @@ class GameBananaDialogFragment : DialogFragment() {
         dialog?.window?.let { window ->
             val dm = resources.displayMetrics
             val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) (dm.widthPixels * 0.92).toInt() else (dm.widthPixels * 0.95).toInt()
-            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.85).toInt()
+            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else (dm.widthPixels * 0.95).toInt()
+            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.88).toInt()
             window.setLayout(width, height)
             window.setBackgroundDrawableResource(android.R.color.transparent)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
+    }
+
+    override fun onDismiss(dialog: android.content.DialogInterface) {
+        super.onDismiss(dialog)
+        activity?.let { ThemeHelper.applySystemBarsTheme(it.window, it) }
     }
 
     private fun setupUI() {
@@ -173,6 +180,11 @@ class GameBananaDialogFragment : DialogFragment() {
         val spanCount = if (isLandscape) 2 else 1
         binding.listMods.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), spanCount)
         binding.listMods.adapter = GameBananaModAdapter()
+
+        binding.buttonCloseTop.setOnClickListener {
+            dismiss()
+        }
+        binding.textGameTitle.text = game?.title ?: ""
 
         binding.buttonClose.setOnClickListener {
             dismiss()

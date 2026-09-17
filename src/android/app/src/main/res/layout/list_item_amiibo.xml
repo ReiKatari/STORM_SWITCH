@@ -96,7 +96,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:textSize="10.5sp"
-                android:textColor="#00FFCC"
+                android:textColor="?attr/colorPrimary"
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:visibility="gone"

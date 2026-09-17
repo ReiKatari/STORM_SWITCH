@@ -91,6 +91,8 @@ class DriverFetcherFragment : Fragment() {
         DriverRepo("Weab-Chan Freedreno CI", "Weab-chan/freedreno_turnip-CI", 4),
         DriverRepo("Whitebelyash Turnip Hub", "whitebelyash/freedreno_turnip-CI", 5, false, SortMode.PublishTime),
         DriverRepo("GameHub Adreno 8xx", "crueter/GameHub-8Elite-Drivers", 6),
+        DriverRepo("Amaral Adreno Tools", "rickamaral94/Amaral-Adreno-Tools", 7, true, SortMode.PublishTime),
+        DriverRepo("WinNative Drivers", "WinNative-Emu/Drivers", 8, true, SortMode.PublishTime),
     )
 
     private val driverMap = listOf(

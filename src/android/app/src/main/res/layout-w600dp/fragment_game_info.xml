@@ -5,10 +5,11 @@
     android:id="@+id/coordinator_about"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="?android:attr/colorBackground">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar_info"
+        style="@style/Widget.Eden.TransparentTopAppBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
@@ -16,6 +17,7 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar_info"
+            style="@style/Widget.Eden.TransparentTopToolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:touchscreenBlocksFocus="false"
@@ -35,116 +37,480 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingHorizontal="16dp"
+            android:paddingHorizontal="24dp"
+            android:paddingBottom="24dp"
             android:baselineAligned="false">
 
+            <!-- Left Column: Hero Header & Actions -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_weight="3"
-                android:gravity="top|center_horizontal"
-                android:paddingHorizontal="16dp">
+                android:layout_marginEnd="16dp">
 
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_game_header"
+                    style="@style/EdenCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="20dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="96dp"
+                            android:layout_height="96dp"
+                            app:cardCornerRadius="18dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp">
+
+                            <ImageView
+                                android:id="@+id/image_game_icon"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop"
+                                android:contentDescription="@string/game_info_title"
+                                tools:src="@drawable/default_icon" />
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_game_title"
+                            style="@style/SynthwaveText.Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:textStyle="bold"
+                            android:textSize="17sp"
+                            android:gravity="center"
+                            android:textColor="?attr/colorOnSurface"
+                            tools:text="The Legend of Zelda: Tears of the Kingdom" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_game_developer_header"
+                            style="@style/SynthwaveText.Secondary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textSize="13sp"
+                            android:textColor="?attr/colorPrimary"
+                            tools:text="Nintendo" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal"
+                            android:gravity="center">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/badge_game_format"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="3dp"
+                                android:background="@drawable/badge_pill_background"
+                                android:backgroundTint="?attr/colorPrimary"
+                                android:textColor="?attr/colorOnPrimary"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                tools:text="NSP" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/badge_game_version"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="3dp"
+                                android:background="@drawable/badge_pill_background"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                tools:text="1.2.1" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Action Buttons on Left -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_copy"
-                    style="@style/Widget.Material3.Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/copy_details" />
+                    style="@style/EdenButton.Primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:text="@string/copy_details"
+                    app:icon="@drawable/ic_copy"
+                    app:iconGravity="textStart"
+                    app:cornerRadius="10dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_verify_integrity"
-                    style="@style/Widget.Material3.Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    style="@style/EdenButton.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
                     android:layout_marginTop="10dp"
-                    android:text="@string/verify_integrity" />
+                    android:text="@string/verify_integrity"
+                    app:icon="@drawable/ic_check_circle"
+                    app:iconGravity="textStart"
+                    app:cornerRadius="10dp" />
 
             </LinearLayout>
 
+            <!-- Right Column: Metadata Cards -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.5"
                 android:orientation="vertical"
-                android:layout_weight="1">
+                android:layout_marginTop="8dp">
 
-                <com.google.android.material.textfield.TextInputLayout
+                <!-- Path Card -->
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/path"
+                    style="@style/EdenCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingTop="16dp">
+                    android:layout_marginBottom="10dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/path_field"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:editable="false"
-                        android:importantForAutofill="no"
-                        android:inputType="none"
-                        android:minHeight="48dp"
-                        android:textAlignment="viewStart"
-                        tools:text="1.0.0" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
 
-                </com.google.android.material.textfield.TextInputLayout>
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:src="@drawable/ic_folder_open"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="12dp" />
 
-                <com.google.android.material.textfield.TextInputLayout
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                style="@style/SynthwaveText.Secondary"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/path"
+                                android:textSize="11sp"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/path_field"
+                                style="@style/SynthwaveText.Body"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="13sp"
+                                android:textColor="?attr/colorOnSurface"
+                                tools:text="/storage/emulated/0/Switch/Zelda.nsp" />
+
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/button_copy_path"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_copy"
+                            app:tint="?attr/colorPrimary"
+                            android:contentDescription="@string/copy" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Program ID Card -->
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/program_id"
+                    style="@style/EdenCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingTop="16dp">
+                    android:layout_marginBottom="10dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/program_id_field"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:editable="false"
-                        android:importantForAutofill="no"
-                        android:inputType="none"
-                        android:minHeight="48dp"
-                        android:textAlignment="viewStart"
-                        tools:text="1.0.0" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
 
-                </com.google.android.material.textfield.TextInputLayout>
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:src="@drawable/ic_code"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="12dp" />
 
-                <com.google.android.material.textfield.TextInputLayout
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                style="@style/SynthwaveText.Secondary"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/program_id"
+                                android:textSize="11sp"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/program_id_field"
+                                style="@style/SynthwaveText.Body"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="monospace"
+                                android:textSize="13.5sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface"
+                                tools:text="0100F2C0115B6000" />
+
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/button_copy_program_id"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_copy"
+                            app:tint="?attr/colorPrimary"
+                            android:contentDescription="@string/copy" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Developer Card -->
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/developer"
+                    style="@style/EdenCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingTop="16dp">
+                    android:layout_marginBottom="10dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/developer_field"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:editable="false"
-                        android:importantForAutofill="no"
-                        android:inputType="none"
-                        android:minHeight="48dp"
-                        android:textAlignment="viewStart"
-                        tools:text="1.0.0" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
 
-                </com.google.android.material.textfield.TextInputLayout>
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:src="@drawable/ic_account_circle"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="12dp" />
 
-                <com.google.android.material.textfield.TextInputLayout
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                style="@style/SynthwaveText.Secondary"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/developer"
+                                android:textSize="11sp"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/developer_field"
+                                style="@style/SynthwaveText.Body"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="13sp"
+                                android:textColor="?attr/colorOnSurface"
+                                tools:text="Nintendo" />
+
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/button_copy_developer"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_copy"
+                            app:tint="?attr/colorPrimary"
+                            android:contentDescription="@string/copy" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Version Card -->
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/version"
+                    style="@style/EdenCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingTop="16dp">
+                    android:layout_marginBottom="10dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/version_field"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:editable="false"
-                        android:importantForAutofill="no"
-                        android:inputType="none"
-                        android:minHeight="48dp"
-                        android:textAlignment="viewStart"
-                        tools:text="1.0.0" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
 
-                </com.google.android.material.textfield.TextInputLayout>
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:src="@drawable/ic_info_outline"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="12dp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                style="@style/SynthwaveText.Secondary"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/version"
+                                android:textSize="11sp"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/version_field"
+                                style="@style/SynthwaveText.Body"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="13sp"
+                                android:textColor="?attr/colorOnSurface"
+                                tools:text="1.2.1 (v131072)" />
+
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/button_copy_version"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_copy"
+                            app:tint="?attr/colorPrimary"
+                            android:contentDescription="@string/copy" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- File Size Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_file_size"
+                    style="@style/EdenCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:src="@drawable/ic_cartridge"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="12dp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                style="@style/SynthwaveText.Secondary"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/file_size"
+                                android:textSize="11sp"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/file_size_field"
+                                style="@style/SynthwaveText.Body"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="13.5sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface"
+                                tools:text="16.3 ГБ" />
+
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/button_copy_file_size"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_copy"
+                            app:tint="?attr/colorPrimary"
+                            android:contentDescription="@string/copy" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 
