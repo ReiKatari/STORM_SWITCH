@@ -806,7 +806,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/8.7.7 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/9.0.0 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -852,7 +852,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/8.7.7 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/9.0.0 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -1111,7 +1111,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 try {
                     val req = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                        .header("User-Agent", "STORM_SWITCH/8.7.7 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/9.0.0 (Android)")
                         .build()
                     val resp = httpClient.newCall(req).execute()
                     val body = resp.body?.string().orEmpty()
@@ -1317,7 +1317,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/8.7.7 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/9.0.0 (Android)")
                     .build()
 
                 val resp = sharedHttpClient.newCall(req).execute()

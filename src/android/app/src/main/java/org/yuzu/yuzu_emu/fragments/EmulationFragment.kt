@@ -310,15 +310,16 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     private fun continueGameSetupAfterFix() {
         try {
             val gameToUse = game ?: return
+            val hasBuiltInFix = GameFixDatabase.hasFix(gameToUse)
             val isUserCustom = GameFixDatabase.isUserCustomConfig(gameToUse)
-            val isFixRequested = (gameToUse == args.game && args.custom) || GameFixDatabase.isSessionFixActive(gameToUse)
+            val isFixRequested = hasBuiltInFix || (gameToUse == args.game && args.custom) || GameFixDatabase.isSessionFixActive(gameToUse)
 
             NativeLibrary.setGameFixesEnabled(isFixRequested)
             if (!org.yuzu.yuzu_emu.utils.LosslessScalingHelper.isInstalled()) {
                 BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
             }
 
-            if (isFixRequested && GameFixDatabase.hasFix(gameToUse)) {
+            if (isFixRequested && hasBuiltInFix) {
                 // Apply/merge GameFix profile (non-destructive; user manual preferences take priority)
                 shouldUseCustom = true
                 val overrides = GameFixDatabase.getManualOverrides(gameToUse)

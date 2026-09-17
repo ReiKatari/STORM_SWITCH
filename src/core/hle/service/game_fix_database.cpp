@@ -5295,6 +5295,8 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.scaling_filter, static_cast<Settings::ScalingFilter>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\anti_aliasing") {
                 apply_setting(Settings::values.anti_aliasing, static_cast<Settings::AntiAliasing>(safe_stoi(val, 0)));
+            } else if (full_key == "Renderer\\fix_bloom_effects") {
+                apply_setting(Settings::values.fix_bloom_effects, val == "true" || val == "1");
             } else if (full_key == "Renderer\\enable_gpu_buffer_readback") {
                 apply_setting(Settings::values.enable_gpu_buffer_readback, val == "true" || val == "1");
             } else if (full_key == "Renderer\\early_release_fences") {
