@@ -87,28 +87,31 @@ object ThemeHelper {
 
     fun applySystemBarsTheme(window: android.view.Window?, context: android.content.Context? = null) {
         if (window == null) return
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        val windowController = WindowCompat.getInsetsController(window, window.decorView)
-        val themeMode = IntSetting.THEME_MODE.getInt()
-        val isLight = themeMode == 2
-        windowController.isAppearanceLightStatusBars = isLight
-        windowController.isAppearanceLightNavigationBars = isLight
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            window.isNavigationBarContrastEnforced = false
-            window.isStatusBarContrastEnforced = false
+        try {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            val windowController = WindowCompat.getInsetsController(window, window.decorView)
+            val themeMode = IntSetting.THEME_MODE.getInt()
+            val isLight = themeMode == 2
+            windowController.isAppearanceLightStatusBars = isLight
+            windowController.isAppearanceLightNavigationBars = isLight
+            window.statusBarColor = Color.TRANSPARENT
+            window.navigationBarColor = Color.TRANSPARENT
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                window.isNavigationBarContrastEnforced = false
+                window.isStatusBarContrastEnforced = false
+            }
+        } catch (_: Throwable) {
         }
     }
 
     fun setThemeMode(activity: AppCompatActivity) {
         val themeMode = IntSetting.THEME_MODE.getInt()
-        if (themeMode == 2) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            activity.delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_NO
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            activity.delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
+        val targetNightMode = if (themeMode == 2) AppCompatDelegate.MODE_NIGHT_NO else AppCompatDelegate.MODE_NIGHT_YES
+        if (AppCompatDelegate.getDefaultNightMode() != targetNightMode) {
+            AppCompatDelegate.setDefaultNightMode(targetNightMode)
+        }
+        if (activity.delegate.localNightMode != targetNightMode) {
+            activity.delegate.localNightMode = targetNightMode
         }
         applySystemBarsTheme(activity.window, activity)
     }

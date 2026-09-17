@@ -234,12 +234,6 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         // Dismiss previous notifications (should not happen unless a crash occurred)
         EmulationActivity.stopForegroundService(this)
 
-        val currentTheme = themeId
-        val expectedTheme = ThemeHelper.getSelectedStaticThemeColor()
-        if (currentTheme != 0 && currentTheme != expectedTheme) {
-            recreate()
-            return
-        }
         ThemeHelper.applySystemBarsTheme(window, this)
 
         val isFirstLaunch = PreferenceManager.getDefaultSharedPreferences(applicationContext)
@@ -491,7 +485,9 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
 
     override fun setTheme(resId: Int) {
         super.setTheme(resId)
-        themeId = resId
+        if (resId != R.style.ThemeOverlay_Yuzu_Dark) {
+            themeId = resId
+        }
     }
 
     override fun onDestroy() {
