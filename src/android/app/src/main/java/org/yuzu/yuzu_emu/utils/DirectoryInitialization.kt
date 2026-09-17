@@ -229,12 +229,7 @@ object DirectoryInitialization {
             saveConfig = true
         }
 
-        val blackBackgrounds =
-            preferences.migratePreference<Boolean>(Settings.PREF_BLACK_BACKGROUNDS)
-        if (blackBackgrounds != null) {
-            BooleanSetting.BLACK_BACKGROUNDS.setBoolean(blackBackgrounds)
-            saveConfig = true
-        }
+        BooleanSetting.BLACK_BACKGROUNDS.setBoolean(false)
 
         val joystickRelCenter =
             preferences.migratePreference<Boolean>(Settings.PREF_MENU_SETTINGS_JOYSTICK_REL_CENTER)

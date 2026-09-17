@@ -485,9 +485,7 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
 
     override fun setTheme(resId: Int) {
         super.setTheme(resId)
-        if (resId != R.style.ThemeOverlay_Yuzu_Dark) {
-            themeId = resId
-        }
+        themeId = resId
     }
 
     override fun onDestroy() {

@@ -24,6 +24,7 @@
         <item name="colorOnSecondary">#0A0E17</item>
         <item name="colorSecondaryContainer">@color/storm_night_surface_variant</item>
         <item name="colorOnSecondaryContainer">@color/storm_night_on_surface</item>
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
         <item name="android:colorBackground">@color/storm_night_background</item>
         <item name="colorOnBackground">@color/storm_night_on_surface</item>
         <item name="colorSurface">@color/storm_night_surface</item>
@@ -106,6 +107,7 @@
         <item name="colorOnSecondary">#FFFFFF</item>
         <item name="colorSecondaryContainer">@color/storm_day_surface_variant</item>
         <item name="colorOnSecondaryContainer">@color/storm_day_on_surface</item>
+        <item name="android:windowBackground">@color/storm_day_background</item>
         <item name="android:colorBackground">@color/storm_day_background</item>
         <item name="colorOnBackground">@color/storm_day_on_surface</item>
         <item name="colorSurface">@color/storm_day_surface</item>
@@ -358,5 +360,8 @@
     <style name="Theme.Yuzu.Main.Pink" parent="Theme.Storm.Glacier" />
     <style name="Theme.Yuzu.Main.Gray" parent="Theme.Storm.Amethyst" />
     <style name="Theme.Yuzu.Main.Violet" parent="Theme.Storm.Day" />
+
+    <!-- Neutralized legacy dark overlay -->
+    <style name="ThemeOverlay.Yuzu.Dark" parent="" />
 
 </resources>

@@ -33,9 +33,6 @@ object ThemeHelper {
     fun setTheme(activity: AppCompatActivity) {
         setThemeMode(activity)
         activity.setTheme(getSelectedStaticThemeColor())
-        if (BooleanSetting.BLACK_BACKGROUNDS.getBoolean() && isNightMode(activity)) {
-            activity.setTheme(R.style.ThemeOverlay_Yuzu_Dark)
-        }
     }
 
     fun getSelectedStaticThemeColor(): Int {
