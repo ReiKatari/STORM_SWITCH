@@ -861,7 +861,7 @@
     <string name="clear_shader_cache_warning_description">У вас будет больше лагов во время повторной генерации кэша шейдеров</string>
     <string name="cleared_shaders_successfully">Успешно очищены шейдеры</string>
     <string name="driver_shader_wipe_dialog_title">Шейдеры очищены</string>
-    <string name="driver_shader_wipe_dialog_message">Eden автоматически очистил все кэши шейдеров для поддержания валидации Vulkan-конвейера. Это необходимо при переключении драйверов графического процессора для предотвращения сбоев и графических артефактов. Вы можете столкнуться с некоторыми подтормаживаниями во время перекомпиляции шейдеров.</string>
+    <string name="driver_shader_wipe_dialog_message">STORM SWITCH автоматически очистил все кэши шейдеров для поддержания валидации Vulkan-конвейера. Это необходимо при переключении драйверов графического процессора для предотвращения сбоев и графических артефактов. Вы можете столкнуться с некоторыми подтормаживаниями во время перекомпиляции шейдеров.</string>
     <string name="addons_game">Аддоны: %1$s</string>
     <string name="save_data">Сохранить данные</string>
     <string name="save_data_description">Управлять сохранениями этой игры.</string>
@@ -1686,4 +1686,6 @@
     <string name="unit_b">Б</string>
     <string name="file_size">Размер файла</string>
     <string name="game_info_title">Информация об игре</string>
+    <string name="driver_delete_confirm">Вы действительно хотите удалить драйвер «%1$s»?</string>
+    <string name="driver_deleted">Драйвер удален</string>
 </resources>

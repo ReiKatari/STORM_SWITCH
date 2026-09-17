@@ -84,24 +84,44 @@ class DriverViewModel : ViewModel() {
 
     fun updateDriverList() {
         val selectedDriver = GpuDriverHelper.customDriverSettingData
+        val currentDriverPath = StringSetting.DRIVER_PATH.getString()
         val systemDriverData = try {
             GpuDriverHelper.getSystemDriverInfo()
         } catch (_: Throwable) {
             null
         }
         val systemDriverTitle = YuzuApplication.appContext.getString(R.string.system_gpu_driver)
+
+        val isSystemSelected = currentDriverPath.isEmpty() || (!File(currentDriverPath).exists() && selectedDriver.name == null)
+
         val newDriverList = mutableListOf(
             Driver(
-                selectedDriver == GpuDriverMetadata(),
-                systemDriverTitle,
-                //systemDriverData?.get(0) ?: "",
-                NativeLibrary.getVulkanDriverVersion().takeIf { !it.isNullOrEmpty() } ?: systemDriverTitle,
-                systemDriverData?.get(1) ?: ""
+                selected = isSystemSelected,
+                title = systemDriverTitle,
+                version = NativeLibrary.getVulkanDriverVersion().takeIf { !it.isNullOrEmpty() } ?: systemDriverTitle,
+                description = systemDriverData?.get(1) ?: ""
             )
         )
         driverData.forEach {
-            newDriverList.add(it.second.toDriver(it.second == selectedDriver))
+            val isSelected = !isSystemSelected && (
+                it.first.equals(currentDriverPath, ignoreCase = true) ||
+                File(it.first).name.equals(File(currentDriverPath).name, ignoreCase = true) ||
+                (it.second.name != null && it.second.name == selectedDriver.name && it.second.version == selectedDriver.version)
+            )
+            newDriverList.add(it.second.toDriver(isSelected))
         }
+
+        if (!isSystemSelected && newDriverList.none { it.selected }) {
+            val matchedIndex = driverData.indexOfFirst {
+                File(it.first).name.equals(File(currentDriverPath).name, ignoreCase = true)
+            }
+            if (matchedIndex != -1) {
+                newDriverList[matchedIndex + 1].selected = true
+            } else if (newDriverList.isNotEmpty()) {
+                newDriverList[0].selected = true
+            }
+        }
+
         _driverList.value = newDriverList
         previousDriverPath = StringSetting.DRIVER_PATH.getString()
     }
@@ -231,10 +251,41 @@ class DriverViewModel : ViewModel() {
             return
         }
 
-        driversToDelete.add(driverData[driverIndex].first)
-        driverData.removeAt(driverIndex)
-        val safeSelectedPosition = selectedPosition.coerceIn(0, driverData.size)
-        onDriverSelected(safeSelectedPosition)
+        val pathToDelete = driverData[driverIndex].first
+        deleteDriver(pathToDelete)
+    }
+
+    fun deleteDriver(driverPath: String) {
+        val file = File(driverPath)
+        if (file.exists()) {
+            file.delete()
+        }
+        driversToDelete.remove(driverPath)
+
+        val currentSelectedPath = StringSetting.DRIVER_PATH.getString()
+        val isCurrentSelected = currentSelectedPath.equals(driverPath, ignoreCase = true) ||
+            (file.name.isNotEmpty() && File(currentSelectedPath).name.equals(file.name, ignoreCase = true))
+
+        if (isCurrentSelected) {
+            StringSetting.DRIVER_PATH.setString("")
+            if (activeGame == null) {
+                GpuDriverHelper.installDefaultDriver()
+                NativeConfig.saveGlobalConfig()
+            } else {
+                NativeConfig.savePerGameConfig()
+            }
+            wipeAllShaders()
+        }
+
+        reloadDriverData()
+        updateDriverList()
+        updateName()
+
+        Toast.makeText(
+            YuzuApplication.appContext,
+            R.string.driver_deleted,
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     fun onDriverAdded(driver: Pair<String, GpuDriverMetadata>) {
@@ -360,24 +411,35 @@ class DriverViewModel : ViewModel() {
     private fun updateName() {
         val systemDriverTitle = YuzuApplication.appContext.getString(R.string.system_gpu_driver)
         val systemDriverVersion = NativeLibrary.getVulkanDriverVersion().takeIf { !it.isNullOrEmpty() } ?: systemDriverTitle
-        val customDriver = GpuDriverHelper.customDriverSettingData
+        val currentDriverPath = StringSetting.DRIVER_PATH.getString()
+        val customDriver = if (currentDriverPath.isNotEmpty() && File(currentDriverPath).exists()) {
+            val fromSetting = GpuDriverHelper.customDriverSettingData
+            if (fromSetting.name != null) fromSetting else GpuDriverHelper.getMetadataFromZip(File(currentDriverPath))
+        } else {
+            GpuDriverHelper.customDriverSettingData
+        }
 
         val effectiveVer = customDriver.packageVersion?.takeIf { it.isNotBlank() }
             ?: customDriver.version?.takeIf { it.isNotBlank() } ?: ""
-        val baseName = customDriver.name?.takeIf { it.isNotBlank() } ?: ""
-
-        val customDisplayTitle = if (baseName.isNotEmpty() && effectiveVer.isNotEmpty()) {
-            if (baseName.contains(effectiveVer)) baseName else "$baseName $effectiveVer"
-        } else if (baseName.isNotEmpty()) {
-            baseName
-        } else if (effectiveVer.isNotEmpty()) {
-            effectiveVer
+        val rawName = customDriver.name?.takeIf { it.isNotBlank() } ?: ""
+        val baseName = if (rawName.contains("(") && rawName.contains(")")) {
+            rawName.substringBefore("(").trim()
         } else {
-            null
+            rawName.trim()
+        }
+
+        val mainVerNumber = effectiveVer.substringBefore("-").trim()
+        val customDisplayTitle = when {
+            baseName.isNotEmpty() && mainVerNumber.isNotEmpty() && baseName.contains(mainVerNumber) -> baseName
+            baseName.isNotEmpty() && effectiveVer.isNotEmpty() && baseName.contains(effectiveVer) -> baseName
+            baseName.isNotEmpty() && effectiveVer.isNotEmpty() && !baseName.endsWith(effectiveVer) -> "$baseName $effectiveVer"
+            baseName.isNotEmpty() -> baseName
+            effectiveVer.isNotEmpty() -> effectiveVer
+            else -> null
         }
 
         _selectedDriverTitle.value = customDisplayTitle ?: systemDriverTitle
-        _selectedDriverVersion.value = if (effectiveVer.isNotEmpty()) "Версия: $effectiveVer" else systemDriverVersion
+        _selectedDriverVersion.value = if (effectiveVer.isNotEmpty()) effectiveVer else systemDriverVersion
     }
 
     private fun setDriverReady() {

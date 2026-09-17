@@ -10,7 +10,6 @@ import org.yuzu.yuzu_emu.databinding.CardDriverOptionBinding
 import org.yuzu.yuzu_emu.features.settings.model.StringSetting
 import org.yuzu.yuzu_emu.model.Driver
 import org.yuzu.yuzu_emu.model.DriverViewModel
-import org.yuzu.yuzu_emu.utils.ViewUtils.marquee
 import org.yuzu.yuzu_emu.utils.ViewUtils.setVisible
 import org.yuzu.yuzu_emu.viewholder.AbstractViewHolder
 
@@ -31,6 +30,24 @@ class DriverAdapter(
         override fun bind(model: Driver) {
             binding.apply {
                 radioButton.isChecked = model.selected
+
+                // Highlight selected card border
+                if (model.selected) {
+                    val primaryColor = com.google.android.material.color.MaterialColors.getColor(
+                        root,
+                        com.google.android.material.R.attr.colorPrimary
+                    )
+                    cardDriver.strokeColor = primaryColor
+                    cardDriver.strokeWidth = (root.context.resources.displayMetrics.density * 2).toInt()
+                } else {
+                    val outlineColor = com.google.android.material.color.MaterialColors.getColor(
+                        root,
+                        com.google.android.material.R.attr.colorOutline
+                    )
+                    cardDriver.strokeColor = outlineColor
+                    cardDriver.strokeWidth = (root.context.resources.displayMetrics.density * 1).toInt()
+                }
+
                 root.setOnClickListener {
                     if (onDriverClicked != null) {
                         onDriverClicked.invoke(model, bindingAdapterPosition)
@@ -41,9 +58,13 @@ class DriverAdapter(
                         }
                     }
                 }
+
+                val isSystemDriver = bindingAdapterPosition == 0 ||
+                    model.title == root.context.getString(R.string.system_gpu_driver)
+
                 if (driverViewModel.isPerGame) {
                     val isCustomOverride = !StringSetting.DRIVER_PATH.global
-                    val useGlobalText = binding.root.context.getString(R.string.menu_driver_use_global)
+                    val useGlobalText = root.context.getString(R.string.menu_driver_use_global)
                     buttonDelete.setVisible(model.selected && isCustomOverride)
                     buttonDelete.contentDescription = useGlobalText
                     buttonDelete.tooltipText = useGlobalText
@@ -52,29 +73,42 @@ class DriverAdapter(
                         replaceList(driverViewModel.driverList.value)
                     }
                 } else {
-                    val deleteText = binding.root.context.getString(R.string.delete)
+                    val deleteText = root.context.getString(R.string.delete)
                     buttonDelete.contentDescription = deleteText
                     buttonDelete.tooltipText = deleteText
-                    buttonDelete.setVisible(
-                        model.title != binding.root.context.getString(R.string.system_gpu_driver)
-                    )
+                    buttonDelete.setVisible(!isSystemDriver)
                     buttonDelete.setOnClickListener {
-                        removeSelectableItem(
-                            bindingAdapterPosition
-                        ) { removedPosition: Int, selectedPosition: Int ->
-                            driverViewModel.onDriverRemoved(removedPosition, selectedPosition)
-                            driverViewModel.showClearButton(!StringSetting.DRIVER_PATH.global)
+                        val currentPos = bindingAdapterPosition
+                        if (currentPos > 0 && currentPos - 1 in driverViewModel.driverData.indices) {
+                            val driverEntry = driverViewModel.driverData[currentPos - 1]
+                            val driverTitle = model.title
+                            com.google.android.material.dialog.MaterialAlertDialogBuilder(root.context)
+                                .setTitle(R.string.delete)
+                                .setMessage(root.context.getString(R.string.driver_delete_confirm, driverTitle))
+                                .setPositiveButton(R.string.delete) { _, _ ->
+                                    driverViewModel.deleteDriver(driverEntry.first)
+                                    replaceList(driverViewModel.driverList.value)
+                                }
+                                .setNegativeButton(R.string.cancel, null)
+                                .show()
                         }
                     }
                 }
 
-                // Delay marquee by 3s
-                title.marquee()
-                version.marquee()
-                description.marquee()
                 title.text = model.title
-                version.text = model.version
-                description.text = model.description
+                if (model.version.isNotBlank() && model.version != model.title) {
+                    version.setVisible(true)
+                    version.text = model.version
+                } else {
+                    version.setVisible(false)
+                }
+
+                if (model.description.isNotBlank()) {
+                    description.setVisible(true)
+                    description.text = model.description
+                } else {
+                    description.setVisible(false)
+                }
             }
         }
     }

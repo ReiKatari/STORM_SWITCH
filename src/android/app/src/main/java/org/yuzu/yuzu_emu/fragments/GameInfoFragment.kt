@@ -102,7 +102,7 @@ class GameInfoFragment : Fragment() {
             } else {
                 cleanVer
             }
-            badgeGameVersion.text = "v$cleanVer"
+            badgeGameVersion.text = cleanVer
 
             // Bind Path
             val pathString = Uri.parse(args.game.path).path ?: ""

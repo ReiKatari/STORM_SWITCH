@@ -50,6 +50,7 @@
         <item name="popupMenuStyle">@style/EdenPopupMenu</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
         <item name="colorControlActivated">?attr/colorPrimary</item>
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
     <!-- STORM DARK (Cyber Slate & Electric Cyan) -->
@@ -117,6 +118,7 @@
         <item name="colorOutline">@color/storm_day_outline</item>
         <item name="android:textColorPrimary">@color/storm_day_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
     <!-- STORM MIDNIGHT (Deep Velvet Violet & Electric Purple) -->

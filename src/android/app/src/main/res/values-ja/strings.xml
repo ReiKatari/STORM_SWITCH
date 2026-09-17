@@ -1312,4 +1312,6 @@
     <string name="unit_b">B</string>
     <string name="file_size">ファイルサイズ</string>
     <string name="game_info_title">ゲーム情報</string>
+    <string name="driver_delete_confirm">ドライバ「%1$s」を削除してもよろしいですか？</string>
+    <string name="driver_deleted">ドライバが削除されました</string>
 </resources>

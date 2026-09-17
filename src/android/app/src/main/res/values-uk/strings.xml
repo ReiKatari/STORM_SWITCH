@@ -792,7 +792,7 @@
     <string name="clear_shader_cache_warning_description">Під час повторної генерації шейдерів можуть виникати затримки</string>
     <string name="cleared_shaders_successfully">Очищення шейдерів успішне </string>
     <string name="driver_shader_wipe_dialog_title">Шейдери очищено</string>
-    <string name="driver_shader_wipe_dialog_message">Eden автоматично очистив увесь кеш шейдерів, щоб забезпечити перевірку конвеєра Vulkan. Це необхідно при зміні драйверів ГП, щоб уникнути збоїв і графічних помилок.  У вас можуть виникнути мікропідвисання під час повторної компіляції шейдерів.</string>
+    <string name="driver_shader_wipe_dialog_message">STORM SWITCH автоматично очистив увесь кеш шейдерів, щоб забезпечити перевірку конвеєра Vulkan. Це необхідно при зміні драйверів ГП, щоб уникнути збоїв і графічних помилок.  У вас можуть виникнути мікропідвисання під час повторної компіляції шейдерів.</string>
     <string name="addons_game">Доповнення: %1$s</string>
     <string name="save_data">Збереження</string>
     <string name="save_data_description">Керування збереження цієї гри</string>

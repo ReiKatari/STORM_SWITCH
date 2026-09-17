@@ -737,7 +737,7 @@ Wird der Handheld-Modus verwendet, verringert es die Auflösung und erhöht die 
     <string name="clear_shader_cache_warning_description">Während der Shader-Cache regeneriert wird, kann es zu Rucklern kommen</string>
     <string name="cleared_shaders_successfully">Shader erfolgreich gelöscht</string>
     <string name="driver_shader_wipe_dialog_title">Shader gelöscht</string>
-    <string name="driver_shader_wipe_dialog_message">Eden hat automatisch alle Shader-Caches geleert, um die Vulkan-Pipeline-Validierung aufrechtzuerhalten. Dies ist beim Wechsel des GPU-Treibers erforderlich, um Abstürze und Grafikfehler zu vermeiden. Während die Shader neu gebaut werden, kann es zu kurzen Rucklern kommen.</string>
+    <string name="driver_shader_wipe_dialog_message">STORM SWITCH hat automatisch alle Shader-Caches geleert, um die Vulkan-Pipeline-Validierung aufrechtzuerhalten. Dies ist beim Wechsel des GPU-Treibers erforderlich, um Abstürze und Grafikfehler zu vermeiden. Während die Shader neu gebaut werden, kann es zu kurzen Rucklern kommen.</string>
     <string name="addons_game">Add-ons: %1$s</string>
     <string name="save_data">Speicherdaten</string>
     <string name="save_data_description">Importiert oder exportiert Speicherdaten für dieses Spiel</string>
@@ -1477,4 +1477,6 @@ Wirklich fortfahren?</string>
     <string name="unit_b">B</string>
     <string name="file_size">Dateigröße</string>
     <string name="game_info_title">Spielinformationen</string>
+    <string name="driver_delete_confirm">Möchten Sie den Treiber „%1$s“ wirklich löschen?</string>
+    <string name="driver_deleted">Treiber gelöscht</string>
 </resources>

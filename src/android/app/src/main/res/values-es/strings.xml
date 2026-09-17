@@ -799,7 +799,7 @@
     <string name="clear_shader_cache_warning_description">Experimentará más tirones mientras se regenera la caché de los sombreadores</string>
     <string name="cleared_shaders_successfully">Sombreadores limpiados con éxito</string>
     <string name="driver_shader_wipe_dialog_title">Sombreadores limpiados</string>
-    <string name="driver_shader_wipe_dialog_message">Eden ha limpiado automáticamente todos los sombreadores guardados para mantener la canalización de Vulkan válida. Esto es esencial al cambiar o actualizar los controladores de la GPU para prevenir errores y fallos gráficos. Es posible que experimente algunas interrupciones durante la reconstrucción de los sombreadores.</string>
+    <string name="driver_shader_wipe_dialog_message">STORM SWITCH ha limpiado automáticamente todos los sombreadores guardados para mantener la canalización de Vulkan válida. Esto es esencial al cambiar o actualizar los controladores de la GPU para prevenir errores y fallos gráficos. Es posible que experimente algunas interrupciones durante la reconstrucción de los sombreadores.</string>
     <string name="addons_game">Complementos: %1$s</string>
     <string name="save_data">Datos de guardado</string>
     <string name="save_data_description">Gestiona los datos de guardado de este juego</string>

@@ -806,7 +806,7 @@
     <string name="clear_shader_cache_warning_description">由于着色器缓存需要重新生成，您将遇到更多卡顿</string>
     <string name="cleared_shaders_successfully">着色器缓存清除成功</string>
     <string name="driver_shader_wipe_dialog_title">已清理着色器</string>
-    <string name="driver_shader_wipe_dialog_message">Eden 已自动清空所有着色器缓存，以维持 Vulkan 管线验证流程。在切换 GPU 驱动程序时，此操作是必要的，可防止崩溃和画面异常。在着色器重构期间，您可能会感受到些许卡顿。</string>
+    <string name="driver_shader_wipe_dialog_message">STORM SWITCH 已自动清空所有着色器缓存，以维持 Vulkan 管线验证流程。在切换 GPU 驱动程序时，此操作是必要的，可防止崩溃和画面异常。在着色器重构期间，您可能会感受到些许卡顿。</string>
     <string name="addons_game">附加项: %1$s</string>
     <string name="save_data">保存数据</string>
     <string name="save_data_description">管理此游戏的保存数据</string>
@@ -1487,4 +1487,6 @@
     <string name="unit_b">B</string>
     <string name="file_size">文件大小</string>
     <string name="game_info_title">游戏信息</string>
+    <string name="driver_delete_confirm">您确定要删除驱动程序“%1$s”吗？</string>
+    <string name="driver_deleted">驱动程序已删除</string>
 </resources>

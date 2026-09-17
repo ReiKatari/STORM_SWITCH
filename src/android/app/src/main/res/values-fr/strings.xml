@@ -1483,4 +1483,6 @@
     <string name="unit_b">o</string>
     <string name="file_size">Taille du fichier</string>
     <string name="game_info_title">Informations sur le jeu</string>
+    <string name="driver_delete_confirm">Voulez-vous vraiment supprimer le pilote « %1$s » ?</string>
+    <string name="driver_deleted">Pilote supprimé</string>
 </resources>

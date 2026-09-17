@@ -677,7 +677,7 @@
     <string name="clear_shader_cache_warning_description">Você terá mais engasgos enquanto o cache de shaders for recompilado</string>
     <string name="cleared_shaders_successfully">Shaders excluídos com sucesso</string>
     <string name="driver_shader_wipe_dialog_title">Cache de Shader Limpo</string>
-    <string name="driver_shader_wipe_dialog_message">O Eden limpou automaticamente todos os caches de shader para manter a validação do pipeline Vulkan. Isso é necessário ao trocar drivers de GPU para evitar travamentos e corrupção gráfica. Você pode notar alguns engasgos enquanto os shaders são reconstruídos.</string>
+    <string name="driver_shader_wipe_dialog_message">O STORM SWITCH limpou automaticamente todos os caches de shader para manter a validação do pipeline Vulkan. Isso é necessário ao trocar drivers de GPU para evitar travamentos e corrupção gráfica. Você pode notar alguns engasgos enquanto os shaders são reconstruídos.</string>
     <string name="addons_game">Complementos: %1$s</string>
     <string name="save_data">Dados salvos</string>
     <string name="save_data_description">Gerencie dados salvos específicos deste jogo</string>

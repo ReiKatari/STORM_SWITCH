@@ -18,21 +18,32 @@ data class Driver(
     companion object {
         fun GpuDriverMetadata.toDriver(selected: Boolean = false): Driver {
             val ver = packageVersion?.takeIf { it.isNotBlank() } ?: version?.takeIf { it.isNotBlank() } ?: ""
-            val baseName = name?.takeIf { it.isNotBlank() } ?: ""
-            val displayTitle = if (ver.isNotEmpty() && baseName.isNotEmpty()) {
-                if (baseName.contains(ver)) baseName else "$baseName $ver"
-            } else if (baseName.isNotEmpty()) {
-                baseName
-            } else if (ver.isNotEmpty()) {
-                ver
+            val rawName = name?.takeIf { it.isNotBlank() } ?: ""
+
+            // Clean title: strip parenthesis subtitle from name if redundant with description
+            val cleanName = if (rawName.contains("(") && rawName.contains(")")) {
+                rawName.substringBefore("(").trim()
             } else {
-                ""
+                rawName.trim()
             }
+
+            val mainVerNumber = ver.substringBefore("-").trim()
+            val displayTitle = when {
+                cleanName.isNotEmpty() && mainVerNumber.isNotEmpty() && cleanName.contains(mainVerNumber) -> cleanName
+                cleanName.isNotEmpty() && ver.isNotEmpty() && cleanName.contains(ver) -> cleanName
+                cleanName.isNotEmpty() && ver.isNotEmpty() && !cleanName.endsWith(ver) -> "$cleanName $ver"
+                cleanName.isNotEmpty() -> cleanName
+                ver.isNotEmpty() -> ver
+                else -> ""
+            }
+
+            val cleanDesc = description?.trim() ?: ""
+
             return Driver(
                 selected,
                 displayTitle,
                 ver,
-                description ?: ""
+                cleanDesc
             )
         }
     }

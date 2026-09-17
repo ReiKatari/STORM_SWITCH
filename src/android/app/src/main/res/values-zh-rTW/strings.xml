@@ -706,7 +706,7 @@
     <string name="clear_shader_cache_warning_description">重新編譯著色器快取的過程中可能會導致遊戲有些微卡頓</string>
     <string name="cleared_shaders_successfully">著色器快取已成功清除</string>
     <string name="driver_shader_wipe_dialog_title">已刪除著色器快取</string>
-    <string name="driver_shader_wipe_dialog_message">為了維持Vulkan管線驗證，Eden已自動清除所有著色器快取。為了預防閃退和圖形錯誤，這是必須的動作。因為著色器需要重新編譯，您在遊戲過程中可能會遇到些微卡頓的情況</string>
+    <string name="driver_shader_wipe_dialog_message">為了維持Vulkan管線驗證，STORM SWITCH已自動清除所有著色器快取。為了預防閃退和圖形錯誤，這是必須的動作。因為著色器需要重新編譯，您在遊戲過程中可能會遇到些微卡頓的情況</string>
     <string name="addons_game">附加元件：%1$s</string>
     <string name="save_data">儲存資料</string>
     <string name="save_data_description">管理此遊戲的儲存資料</string>

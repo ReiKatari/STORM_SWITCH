@@ -721,7 +721,7 @@
     <string name="clear_shader_cache_warning_description">Możesz doświadczyć większych przycięć, gdy pamięć podręczna shaderów będzie się odbudowywać</string>
     <string name="cleared_shaders_successfully">Pomyślnie wyczyszczono shadery</string>
     <string name="driver_shader_wipe_dialog_title">Shadery wyczyszczone</string>
-    <string name="driver_shader_wipe_dialog_message">Eden automatycznie wyczyścił wszystkie pamięci podręczne shaderów, aby zachować poprawność walidacji potoków Vulkan. Jest to wymagane przy zmianie sterowników GPU, aby zapobiec awariom i błędom graficznym. Podczas ponownego budowania shaderów możesz doświadczyć chwilowych przycięć.</string>
+    <string name="driver_shader_wipe_dialog_message">STORM SWITCH automatycznie wyczyścił wszystkie pamięci podręczne shaderów, aby zachować poprawność walidacji potoków Vulkan. Jest to wymagane przy zmianie sterowników GPU, aby zapobiec awariom i błędom graficznym. Podczas ponownego budowania shaderów możesz doświadczyć chwilowych przycięć.</string>
     <string name="addons_game">Dodatki: %1$s</string>
     <string name="save_data">Dane zapisu</string>
     <string name="save_data_description">Zarządzaj danymi zapisu specyficznymi dla tej gry</string>

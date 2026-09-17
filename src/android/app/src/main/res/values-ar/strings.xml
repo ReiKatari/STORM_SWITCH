@@ -807,7 +807,7 @@
     <string name="clear_shader_cache_warning_description">ستواجه المزيد من التقطع مع إعادة إنشاء ذاكرة التخزين المؤقتة للتظلل</string>
     <string name="cleared_shaders_successfully">تم مسح التظليل بنجاح</string>
     <string name="driver_shader_wipe_dialog_title">تم مسح التظليلات</string>
-    <string name="driver_shader_wipe_dialog_message">لقد قام Eden تلقائيًا بمسح جميع ذاكرات التخزين المؤقتة لبرامج التظليل للحفاظ على صحة خط أنابيب Vulkan. وهذا ضروري عند تبديل برامج تشغيل وحدة معالجة الرسومات لمنع حدوث أعطال وتلف الرسومات. قد تواجه بعض التقطعات أثناء إعادة بناء التظليل.</string>
+    <string name="driver_shader_wipe_dialog_message">لقد قام STORM SWITCH تلقائيًا بمسح جميع ذاكرات التخزين المؤقتة لبرامج التظليل للحفاظ على صحة خط أنابيب Vulkan. وهذا ضروري عند تبديل برامج تشغيل وحدة معالجة الرسومات لمنع حدوث أعطال وتلف الرسومات. قد تواجه بعض التقطعات أثناء إعادة بناء التظليل.</string>
     <string name="addons_game">إضافات: %1$s</string>
     <string name="save_data">البيانات المحفوظة</string>
     <string name="save_data_description">إدارة البيانات المحفوظة الخاصة بهذه اللعبة</string>

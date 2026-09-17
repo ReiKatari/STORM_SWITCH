@@ -45,7 +45,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:text="@string/install"
+        android:textColor="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
+        app:cornerRadius="16dp"
+        app:elevation="6dp"
         app:icon="@drawable/ic_add"
+        app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -55,7 +60,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:text="@string/fetch"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        app:backgroundTint="?attr/colorSurfaceVariant"
+        app:cornerRadius="16dp"
+        app:elevation="4dp"
         app:icon="@drawable/ic_import"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:strokeColor="?attr/colorOutline"
+        app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
