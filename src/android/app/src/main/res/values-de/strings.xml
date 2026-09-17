@@ -1449,4 +1449,15 @@ Wirklich fortfahren?</string>
     <string name="apply_driver_globally">Global für alle</string>
     <string name="apply_driver_keep_custom">Ohne benutzerdefinierte Einstellungen zu beeinflussen</string>
     <string name="game_fix_manual_override_warning">⚠️ Manuelle Einstellungen priorisiert: %s. Automatische Korrekturen teilweise überschrieben.</string>
+    <string name="online_install_recommended">Online-Installation (empfohlen)</string>
+    <string name="select_keys_file">Schlüsseldatei vom Gerät auswählen</string>
+    <string name="select_keys_folder">Schlüsselordner auswählen</string>
+    <string name="select_firmware_zip">Firmware-ZIP-Archiv auswählen</string>
+    <string name="select_firmware_folder">Firmware-Ordner (.nca) auswählen</string>
+    <string name="sort_games_title">Spiele sortieren</string>
+    <string name="sort_by_title_asc">Nach Titel (A-Z)</string>
+    <string name="sort_by_title_desc">Nach Titel (Z-A)</string>
+    <string name="sort_by_size_desc">Nach Größe (absteigend)</string>
+    <string name="sort_by_size_asc">Nach Größe (aufsteigend)</string>
+    <string name="sort_by_addons_mods">Nach Add-ons und Mods</string>
 </resources>

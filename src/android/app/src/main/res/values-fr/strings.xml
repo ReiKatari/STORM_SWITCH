@@ -1455,4 +1455,15 @@
     <string name="apply_driver_globally">Globalement pour tous</string>
     <string name="apply_driver_keep_custom">Sans affecter les paramètres personnalisés</string>
     <string name="game_fix_manual_override_warning">⚠️ Paramètres manuels prioritaires : %s. Corrections automatiques partiellement ignorées.</string>
+    <string name="online_install_recommended">Installation en ligne (recommandé)</string>
+    <string name="select_keys_file">Sélectionner le fichier de clés depuis l\'appareil</string>
+    <string name="select_keys_folder">Sélectionner le dossier des clés</string>
+    <string name="select_firmware_zip">Sélectionner l\'archive ZIP du firmware</string>
+    <string name="select_firmware_folder">Sélectionner le dossier du firmware (.nca)</string>
+    <string name="sort_games_title">Trier les jeux</string>
+    <string name="sort_by_title_asc">Par titre (A-Z)</string>
+    <string name="sort_by_title_desc">Par titre (Z-A)</string>
+    <string name="sort_by_size_desc">Par taille (décroissante)</string>
+    <string name="sort_by_size_asc">Par taille (croissante)</string>
+    <string name="sort_by_addons_mods">Par extensions et mods</string>
 </resources>

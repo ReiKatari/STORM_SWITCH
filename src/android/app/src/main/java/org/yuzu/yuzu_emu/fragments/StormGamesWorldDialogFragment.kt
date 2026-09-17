@@ -154,12 +154,20 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     private val gamesViewModel: GamesViewModel by activityViewModels()
 
-    enum class SortMode(val label: String) {
-        TITLE_ASC("А-Я"),
-        TITLE_DESC("Я-А"),
-        SIZE_DESC("Размер ↓"),
-        SIZE_ASC("Размер ↑"),
-        RECOMMENDED("Реком.")
+    enum class SortMode(val titleRes: Int, val labelRu: String, val labelEn: String) {
+        TITLE_ASC(R.string.sort_by_title_asc, "А-Я", "A-Z"),
+        TITLE_DESC(R.string.sort_by_title_desc, "Я-А", "Z-A"),
+        SIZE_DESC(R.string.sort_by_size_desc, "Размер ↓", "Size ↓"),
+        SIZE_ASC(R.string.sort_by_size_asc, "Размер ↑", "Size ↑"),
+        RECOMMENDED(R.string.sort_by_addons_mods, "DLC и моды", "DLC and mods");
+
+        val label: String
+            get() = labelRu
+
+        fun getLabel(context: Context): String {
+            val lang = context.resources.configuration.locales[0].language
+            return if (lang == "ru") labelRu else labelEn
+        }
     }
 
     private val allGames = mutableListOf<StormWorldGameItem>()
@@ -302,11 +310,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         binding.btnSortCatalog.setOnClickListener {
             val sortOptions = arrayOf(
-                "По названию (А-Я)",
-                "По названию (Я-А)",
-                "По размеру (убывание)",
-                "По размеру (возрастание)",
-                "По дополнениям и модам"
+                getString(R.string.sort_by_title_asc),
+                getString(R.string.sort_by_title_desc),
+                getString(R.string.sort_by_size_desc),
+                getString(R.string.sort_by_size_asc),
+                getString(R.string.sort_by_addons_mods)
             )
             val selectedIndex = when (currentSortMode) {
                 SortMode.TITLE_ASC -> 0
@@ -315,8 +323,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 SortMode.SIZE_ASC -> 3
                 SortMode.RECOMMENDED -> 4
             }
-            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
-                .setTitle("Сортировка игр")
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.sort_games_title)
                 .setSingleChoiceItems(sortOptions, selectedIndex) { dialog: android.content.DialogInterface, which: Int ->
                     currentSortMode = when (which) {
                         0 -> SortMode.TITLE_ASC
@@ -328,7 +336,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     }
                     applySortAndPagination(resetPage = true)
                     binding.recyclerGames.scrollToPosition(0)
-                    binding.btnSortCatalog.text = currentSortMode.label
+                    binding.btnSortCatalog.text = currentSortMode.getLabel(requireContext())
                     dialog.dismiss()
                 }
                 .setNegativeButton(R.string.close, null)
@@ -344,12 +352,20 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val appCtx = context?.applicationContext
         val cached = if (appCtx != null) getCachedCatalog(appCtx) else emptyList()
         if (cached.isNotEmpty() && appCtx != null) {
-            checkDownloadedStatus(cached, appCtx)
             allGames.clear()
             allGames.addAll(cached)
             filterGames(binding.editSearch.text?.toString().orEmpty())
             binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
             binding.progressLoading.isVisible = false
+
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                checkDownloadedStatus(allGames, appCtx)
+                withContext(Dispatchers.Main) {
+                    if (_binding != null) {
+                        binding.recyclerGames.adapter?.notifyDataSetChanged()
+                    }
+                }
+            }
         }
 
         fetchCatalog()
@@ -402,33 +418,15 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     private fun checkDownloadedStatus(games: List<StormWorldGameItem>, ctx: Context) {
         val gameDirs = NativeConfig.getGameDirs()
-        data class LocalFile(val name: String, val size: Long)
+        data class LocalFile(
+            val name: String,
+            val stem: String,
+            val size: Long,
+            val modCount: Int,
+            val dlcCount: Int,
+            val hasRus: Boolean
+        )
         val allFiles = mutableListOf<LocalFile>()
-
-        for (dir in gameDirs) {
-            try {
-                val uri = Uri.parse(dir.uriString)
-                if (uri.scheme == "content") {
-                    val rootDoc = DocumentFile.fromTreeUri(ctx, uri)
-                    rootDoc?.listFiles()?.forEach { f ->
-                        if (f.isFile) allFiles.add(LocalFile(f.name.orEmpty().lowercase(Locale.ROOT), f.length()))
-                    }
-                } else {
-                    val path = uri.path ?: dir.uriString
-                    File(path).listFiles()?.forEach { f ->
-                        if (f.isFile) allFiles.add(LocalFile(f.name.lowercase(Locale.ROOT), f.length()))
-                    }
-                }
-            } catch (_: Exception) {}
-        }
-
-        val groupCounts = mutableMapOf<String, Int>()
-        games.forEach { g ->
-            val tid = g.serialId.trim().uppercase(Locale.ROOT)
-            val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
-            val key = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid else cleanBaseTitle
-            groupCounts[key] = (groupCounts[key] ?: 0) + 1
-        }
 
         val modCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)m(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
         val rusModRegex = Regex("""(?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка""", RegexOption.IGNORE_CASE)
@@ -452,6 +450,65 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
         }
 
+        for (dir in gameDirs) {
+            try {
+                val uri = Uri.parse(dir.uriString)
+                if (uri.scheme == "content") {
+                    val rootDoc = DocumentFile.fromTreeUri(ctx, uri)
+                    rootDoc?.listFiles()?.forEach { f ->
+                        if (f.isFile) {
+                            val lower = f.name.orEmpty().lowercase(Locale.ROOT)
+                            if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz")) {
+                                val stem = lower.substringBeforeLast('.')
+                                allFiles.add(
+                                    LocalFile(
+                                        lower,
+                                        stem,
+                                        f.length(),
+                                        extractModCount(lower),
+                                        extractDlcCount(lower),
+                                        lower.contains("rus") || lower.contains("рус")
+                                    )
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    val path = uri.path ?: dir.uriString
+                    File(path).listFiles()?.forEach { f ->
+                        if (f.isFile) {
+                            val lower = f.name.lowercase(Locale.ROOT)
+                            if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz")) {
+                                val stem = lower.substringBeforeLast('.')
+                                allFiles.add(
+                                    LocalFile(
+                                        lower,
+                                        stem,
+                                        f.length(),
+                                        extractModCount(lower),
+                                        extractDlcCount(lower),
+                                        lower.contains("rus") || lower.contains("рус")
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        val exactStems = allFiles.map { it.stem }.toHashSet()
+
+        val groupCounts = mutableMapOf<String, Int>()
+        games.forEach { g ->
+            val tid = g.serialId.trim().uppercase(Locale.ROOT)
+            val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
+            val key = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid else cleanBaseTitle
+            groupCounts[key] = (groupCounts[key] ?: 0) + 1
+        }
+
+        val verRegex = Regex("""(?:v|\-|\b)(\d+\.\d+(?:\.\d+)?|\d{5,8})(?:\b|\]|\))""")
+
         games.forEach { g ->
             val tid = g.serialId.trim().lowercase(Locale.ROOT)
             val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
@@ -468,31 +525,27 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val gameIsMod = gameModCount > 0
             val gameHasDlc = gameDlcCount > 0
 
+            // Fast path: exact stem match
+            if (cleanFinal.isNotEmpty() && exactStems.contains(cleanFinal)) {
+                g.isDownloaded = true
+                return@forEach
+            }
+
             g.isDownloaded = allFiles.any { fileItem ->
                 val lowerName = fileItem.name
-                if (!lowerName.endsWith(".nsp") && !lowerName.endsWith(".xci") && !lowerName.endsWith(".nsz")) {
-                    return@any false
-                }
-                val fileStem = lowerName.substringBeforeLast('.')
+                val fileStem = fileItem.stem
 
-                // 1. Exact match with finalTitle (how Storm Games World names downloaded files)
                 if (cleanFinal.isNotEmpty() && fileStem == cleanFinal) {
                     return@any true
                 }
 
-                val fileModCount = extractModCount(lowerName)
-                val fileDlcCount = extractDlcCount(lowerName)
-                val fileHasRus = lowerName.contains("rus") || lowerName.contains("рус")
-                val fileHasMod = fileModCount > 0
-                val fileHasDlc = fileDlcCount > 0
-
                 if (!isSingle) {
                     // Multiple versions in catalog: must verify exact version/mod/dlc/rus
-                    if (gameIsMod != fileHasMod) return@any false
-                    if (gameIsMod && gameModCount != fileModCount) return@any false
-                    if (gameHasDlc != fileHasDlc) return@any false
-                    if (gameHasDlc && gameDlcCount != fileDlcCount) return@any false
-                    if (gameIsRus != fileHasRus) return@any false
+                    if (gameIsMod != (fileItem.modCount > 0)) return@any false
+                    if (gameIsMod && gameModCount != fileItem.modCount) return@any false
+                    if (gameHasDlc != (fileItem.dlcCount > 0)) return@any false
+                    if (gameHasDlc && gameDlcCount != fileItem.dlcCount) return@any false
+                    if (gameIsRus != fileItem.hasRus) return@any false
 
                     if (cleanFinal.isNotEmpty() && (fileStem == cleanFinal || lowerName.contains(cleanFinal))) {
                         return@any true
@@ -512,7 +565,6 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         }
 
                         if ((ver.isEmpty() || ver == "1.0.0") && (intVer.isEmpty() || intVer == "0")) {
-                            val verRegex = Regex("""(?:v|\-|\b)(\d+\.\d+(?:\.\d+)?|\d{5,8})(?:\b|\]|\))""")
                             if (!verRegex.containsMatchIn(lowerName)) {
                                 return@any true
                             }
@@ -592,7 +644,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     private fun updatePaginationUI(totalPages: Int, totalItems: Int) {
         val binding = _binding ?: return
-        binding.btnSortCatalog.text = currentSortMode.label
+        binding.btnSortCatalog.text = currentSortMode.getLabel(binding.root.context)
         binding.textPaginationInfo.text = "Стр. $currentPage из $totalPages ($totalItems)"
 
         binding.btnPagePrev.isEnabled = currentPage > 1
@@ -1190,10 +1242,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     maxRequestsPerHost = 16
                 })
                 .connectionPool(ConnectionPool(16, 5, TimeUnit.MINUTES))
-                .protocols(listOf(Protocol.HTTP_2, Protocol.HTTP_1_1))
                 .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(true)
                 .build()
         }
@@ -1389,7 +1440,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val sortedGames = verifiedGames.sortedWith { a, b ->
                     val keyA = a.serialId.ifEmpty { a.finalTitle.ifEmpty { a.title } }.uppercase(Locale.ROOT)
                     val keyB = b.serialId.ifEmpty { b.finalTitle.ifEmpty { b.title } }.uppercase(Locale.ROOT)
-                    if (keyA == keyB) {
+                    val keyCmp = keyA.compareTo(keyB)
+                    if (keyCmp != 0) {
+                        keyCmp
+                    } else {
                         if (a.isRecommended != b.isRecommended) {
                             if (a.isRecommended) -1 else 1
                         } else {
@@ -1398,11 +1452,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             if (prioA != prioB) {
                                 prioB.compareTo(prioA)
                             } else {
-                                compareVers(b.version, a.version)
+                                val verCmp = compareVers(b.version, a.version)
+                                if (verCmp != 0) verCmp else b.id.compareTo(a.id)
                             }
                         }
-                    } else {
-                        0
                     }
                 }
 

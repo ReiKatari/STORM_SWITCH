@@ -139,9 +139,10 @@ class LosslessManagerFragment : Fragment() {
                 if (installResult == LosslessScalingHelper.RESULT_OK) {
                     getString(R.string.lossless_scaling_install_success)
                 } else {
+                    val errorDesc = resultStrings.getOrElse(installResult) { resultStrings[1] }
                     MessageDialogFragment.newInstance(
                         titleId = R.string.lossless_scaling_install_failed,
-                        descriptionString = resultStrings[installResult]
+                        descriptionString = errorDesc
                     )
                 }
             }.show(parentFragmentManager, ProgressDialogFragment.TAG)

@@ -44,38 +44,47 @@ object LosslessScalingHelper {
     }
 
     fun install(source: Uri): Int {
-        var rawPath = try { NativeLibrary.getLosslessDllPath() } catch (_: Throwable) { "" }
-        if (rawPath.isBlank()) {
-            val userDir = DirectoryInitialization.userDirectory ?: ""
-            rawPath = if (userDir.isNotBlank()) {
-                File(userDir, "lossless/LosslessScaling.dll").absolutePath
-            } else {
-                File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/lossless/LosslessScaling.dll").absolutePath
+        return try {
+            var rawPath = try { NativeLibrary.getLosslessDllPath() } catch (_: Throwable) { "" }
+            if (rawPath.isBlank()) {
+                val userDir = DirectoryInitialization.userDirectory ?: ""
+                rawPath = if (userDir.isNotBlank()) {
+                    File(userDir, "lossless/LosslessScaling.dll").absolutePath
+                } else {
+                    val fallbackBase = YuzuApplication.appContext.getExternalFilesDir(null)?.absolutePath
+                        ?: YuzuApplication.appContext.filesDir.absolutePath
+                    File(fallbackBase, "lossless/LosslessScaling.dll").absolutePath
+                }
             }
-        }
-        val destination = File(rawPath)
-        val parentDir = destination.parentFile ?: File(DirectoryInitialization.userDirectory, "lossless")
-        parentDir.mkdirs()
+            val destination = File(rawPath)
+            val fallbackUserDir = DirectoryInitialization.userDirectory ?: YuzuApplication.appContext.filesDir.absolutePath
+            val parentDir = destination.parentFile ?: File(fallbackUserDir, "lossless")
+            parentDir.mkdirs()
 
-        val copied = FileUtil.copyUriToInternalStorage(
-            source,
-            parentDir.absolutePath,
-            destination.name.ifEmpty { "LosslessScaling.dll" }
-        )
-        if (copied == null) {
+            val copied = FileUtil.copyUriToInternalStorage(
+                source,
+                parentDir.absolutePath,
+                destination.name.ifEmpty { "LosslessScaling.dll" }
+            )
+            if (copied == null) {
+                refreshStatus()
+                return RESULT_NOT_INSTALLED
+            }
+
+            val result = try { NativeLibrary.prepareLosslessDll() } catch (_: Throwable) { RESULT_NOT_INSTALLED }
+            if (result != RESULT_OK) {
+                try { NativeLibrary.removeLosslessDll() } catch (_: Throwable) {}
+            } else {
+                BooleanSetting.RENDERER_FRAME_GEN.setBoolean(true)
+                NativeConfig.saveGlobalConfig()
+            }
             refreshStatus()
-            return RESULT_NOT_INSTALLED
+            result
+        } catch (t: Throwable) {
+            Log.error("[LosslessScalingHelper] Error during install: ${t.message}")
+            refreshStatus()
+            RESULT_NOT_INSTALLED
         }
-
-        val result = try { NativeLibrary.prepareLosslessDll() } catch (_: Throwable) { RESULT_NOT_INSTALLED }
-        if (result != RESULT_OK) {
-            try { NativeLibrary.removeLosslessDll() } catch (_: Throwable) {}
-        } else {
-            BooleanSetting.RENDERER_FRAME_GEN.setBoolean(true)
-            NativeConfig.saveGlobalConfig()
-        }
-        refreshStatus()
-        return result
     }
 
     fun remove(): Boolean {

@@ -1459,4 +1459,15 @@
     <string name="apply_driver_globally">全局应用于所有</string>
     <string name="apply_driver_keep_custom">不影响自定义设置</string>
     <string name="game_fix_manual_override_warning">⚠️ 手动设置优先：%s。自动修复已部分覆盖。</string>
+    <string name="online_install_recommended">在线安装（推荐）</string>
+    <string name="select_keys_file">从设备中选择密钥文件</string>
+    <string name="select_keys_folder">选择密钥文件夹</string>
+    <string name="select_firmware_zip">选择固件 ZIP 压缩包</string>
+    <string name="select_firmware_folder">选择固件文件夹 (.nca)</string>
+    <string name="sort_games_title">游戏排序</string>
+    <string name="sort_by_title_asc">按名称升序 (A-Z)</string>
+    <string name="sort_by_title_desc">按名称降序 (Z-A)</string>
+    <string name="sort_by_size_desc">按大小降序</string>
+    <string name="sort_by_size_asc">按大小升序</string>
+    <string name="sort_by_addons_mods">按扩展包和模组</string>
 </resources>

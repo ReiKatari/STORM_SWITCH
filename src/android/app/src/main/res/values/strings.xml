@@ -2215,5 +2215,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="apply_driver_globally">Globally for all</string>
     <string name="apply_driver_keep_custom">Without affecting custom settings</string>
     <string name="apply_driver_current_game">For the current game</string>
+    <string name="online_install_recommended">Online installation (recommended)</string>
+    <string name="select_keys_file">Select keys file from device</string>
+    <string name="select_keys_folder">Select keys folder</string>
+    <string name="select_firmware_zip">Select firmware ZIP archive</string>
+    <string name="select_firmware_folder">Select firmware folder (.nca)</string>
+    <string name="sort_games_title">Sort games</string>
+    <string name="sort_by_title_asc">By title (A-Z)</string>
+    <string name="sort_by_title_desc">By title (Z-A)</string>
+    <string name="sort_by_size_desc">By size (descending)</string>
+    <string name="sort_by_size_asc">By size (ascending)</string>
+    <string name="sort_by_addons_mods">By addons and mods</string>
 </resources>
 

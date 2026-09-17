@@ -44,6 +44,7 @@ import org.yuzu.yuzu_emu.ui.main.MainActivity
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
 import org.yuzu.yuzu_emu.utils.LosslessScalingHelper
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import org.yuzu.yuzu_emu.utils.ViewUtils
 import org.yuzu.yuzu_emu.utils.ViewUtils.setVisible
 import org.yuzu.yuzu_emu.utils.collect
@@ -182,16 +183,7 @@ class SetupFragment : Fragment() {
                                 R.string.keys_description,
                                 {
                                     pageButtonCallback = it
-                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-                                        .setTitle(R.string.keys)
-                                        .setItems(arrayOf("🌐 Онлайн-установка ключей (рекомендуется)", "📄 Выбрать файл ключей с устройства", "📁 Выбрать папку с ключами")) { _, which ->
-                                            when (which) {
-                                                0 -> OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS).show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
-                                                1 -> getProdKey.launch(arrayOf("*/*"))
-                                                2 -> getKeysFolder.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
-                                            }
-                                        }
-                                        .show()
+                                    showKeysDialog()
                                 },
                                 {
                                     val file = File(
@@ -217,16 +209,7 @@ class SetupFragment : Fragment() {
                                 R.string.firmware_description,
                                 {
                                     pageButtonCallback = it
-                                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-                                        .setTitle(R.string.firmware)
-                                        .setItems(arrayOf("🌐 Онлайн-установка прошивки (рекомендуется)", "📦 Выбрать ZIP архив прошивки с устройства", "📁 Выбрать папку с прошивкой (.nca)")) { _, which ->
-                                            when (which) {
-                                                0 -> OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE).show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
-                                                1 -> getFirmware.launch(arrayOf("application/zip"))
-                                                2 -> getFirmwareFolder.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
-                                            }
-                                        }
-                                        .show()
+                                    showFirmwareDialog()
                                 },
                                 {
                                     if (NativeLibrary.isFirmwareAvailable()) {
@@ -523,9 +506,10 @@ class SetupFragment : Fragment() {
                 if (installResult == LosslessScalingHelper.RESULT_OK) {
                     getString(R.string.lossless_scaling_install_success)
                 } else {
+                    val errorDesc = resultStrings.getOrElse(installResult) { resultStrings[1] }
                     MessageDialogFragment.newInstance(
                         titleId = R.string.lossless_scaling_install_failed,
-                        descriptionString = resultStrings[installResult]
+                        descriptionString = errorDesc
                     )
                 }
             }.apply {
@@ -698,4 +682,162 @@ class SetupFragment : Fragment() {
             }
             windowInsets
         }
+
+    private fun showKeysDialog() {
+        val context = requireContext()
+        val options = arrayOf(
+            getString(R.string.online_install_recommended),
+            getString(R.string.select_keys_file),
+            getString(R.string.select_keys_folder)
+        )
+        val icons = intArrayOf(
+            R.drawable.ic_website,
+            R.drawable.ic_key,
+            R.drawable.ic_folder_open
+        )
+
+        val linearLayout = android.widget.LinearLayout(context).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            val padH = (20 * resources.displayMetrics.density).toInt()
+            val padV = (12 * resources.displayMetrics.density).toInt()
+            setPadding(padH, padV, padH, padV)
+        }
+
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.keys)
+            .setView(linearLayout)
+            .setNegativeButton(R.string.close, null)
+            .create()
+
+        val primaryColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorPrimary)
+        val outlineColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorOutline)
+        val onSurfaceColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorOnSurface)
+
+        for (i in options.indices) {
+            val btn = com.google.android.material.button.MaterialButton(
+                context,
+                null,
+                com.google.android.material.R.attr.materialButtonOutlinedStyle
+            ).apply {
+                text = options[i]
+                isAllCaps = false
+                textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                icon = ContextCompat.getDrawable(context, icons[i])
+                iconGravity = com.google.android.material.button.MaterialButton.ICON_GRAVITY_START
+                iconPadding = (12 * resources.displayMetrics.density).toInt()
+                cornerRadius = (12 * resources.displayMetrics.density).toInt()
+                strokeWidth = (1 * resources.displayMetrics.density).toInt()
+
+                if (i == 0) {
+                    strokeColor = android.content.res.ColorStateList.valueOf(primaryColor)
+                    setTextColor(primaryColor)
+                    iconTint = android.content.res.ColorStateList.valueOf(primaryColor)
+                } else {
+                    strokeColor = android.content.res.ColorStateList.valueOf(outlineColor)
+                    setTextColor(onSurfaceColor)
+                    iconTint = android.content.res.ColorStateList.valueOf(onSurfaceColor)
+                }
+
+                val lp = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    topMargin = if (i > 0) (8 * resources.displayMetrics.density).toInt() else 0
+                }
+                layoutParams = lp
+
+                setOnClickListener {
+                    dialog.dismiss()
+                    when (i) {
+                        0 -> OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_KEYS)
+                            .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                        1 -> getProdKey.launch(arrayOf("*/*"))
+                        2 -> getKeysFolder.launch(null)
+                    }
+                }
+            }
+            linearLayout.addView(btn)
+        }
+
+        dialog.show()
+    }
+
+    private fun showFirmwareDialog() {
+        val context = requireContext()
+        val options = arrayOf(
+            getString(R.string.online_install_recommended),
+            getString(R.string.select_firmware_zip),
+            getString(R.string.select_firmware_folder)
+        )
+        val icons = intArrayOf(
+            R.drawable.ic_website,
+            R.drawable.ic_firmware,
+            R.drawable.ic_folder_open
+        )
+
+        val linearLayout = android.widget.LinearLayout(context).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            val padH = (20 * resources.displayMetrics.density).toInt()
+            val padV = (12 * resources.displayMetrics.density).toInt()
+            setPadding(padH, padV, padH, padV)
+        }
+
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.firmware)
+            .setView(linearLayout)
+            .setNegativeButton(R.string.close, null)
+            .create()
+
+        val primaryColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorPrimary)
+        val outlineColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorOutline)
+        val onSurfaceColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorOnSurface)
+
+        for (i in options.indices) {
+            val btn = com.google.android.material.button.MaterialButton(
+                context,
+                null,
+                com.google.android.material.R.attr.materialButtonOutlinedStyle
+            ).apply {
+                text = options[i]
+                isAllCaps = false
+                textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                icon = ContextCompat.getDrawable(context, icons[i])
+                iconGravity = com.google.android.material.button.MaterialButton.ICON_GRAVITY_START
+                iconPadding = (12 * resources.displayMetrics.density).toInt()
+                cornerRadius = (12 * resources.displayMetrics.density).toInt()
+                strokeWidth = (1 * resources.displayMetrics.density).toInt()
+
+                if (i == 0) {
+                    strokeColor = android.content.res.ColorStateList.valueOf(primaryColor)
+                    setTextColor(primaryColor)
+                    iconTint = android.content.res.ColorStateList.valueOf(primaryColor)
+                } else {
+                    strokeColor = android.content.res.ColorStateList.valueOf(outlineColor)
+                    setTextColor(onSurfaceColor)
+                    iconTint = android.content.res.ColorStateList.valueOf(onSurfaceColor)
+                }
+
+                val lp = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    topMargin = if (i > 0) (8 * resources.displayMetrics.density).toInt() else 0
+                }
+                layoutParams = lp
+
+                setOnClickListener {
+                    dialog.dismiss()
+                    when (i) {
+                        0 -> OnlineToolsDialogFragment.newInstance(OnlineToolsDialogFragment.TYPE_FIRMWARE)
+                            .show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
+                        1 -> getFirmware.launch(arrayOf("application/zip", "application/x-zip-compressed", "*/*"))
+                        2 -> getFirmwareFolder.launch(null)
+                    }
+                }
+            }
+            linearLayout.addView(btn)
+        }
+
+        dialog.show()
+    }
 }

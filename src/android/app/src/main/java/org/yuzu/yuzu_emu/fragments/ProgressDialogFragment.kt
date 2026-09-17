@@ -40,7 +40,7 @@ class ProgressDialogFragment : DialogFragment() {
 
         binding = DialogProgressBarBinding.inflate(layoutInflater)
         binding.progressBar.isIndeterminate = true
-        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle(titleId)
             .setView(binding.root)
 
@@ -137,8 +137,8 @@ class ProgressDialogFragment : DialogFragment() {
     // Setting the OnClickListener again after the dialog is shown overrides this behavior.
     override fun onResume() {
         super.onResume()
-        val alertDialog = dialog as AlertDialog
-        val negativeButton = alertDialog.getButton(Dialog.BUTTON_NEGATIVE)
+        val alertDialog = dialog as? AlertDialog ?: return
+        val negativeButton = alertDialog.getButton(Dialog.BUTTON_NEGATIVE) ?: return
         negativeButton.setOnClickListener {
             alertDialog.setTitle(getString(R.string.cancelling))
             binding.progressBar.isIndeterminate = true

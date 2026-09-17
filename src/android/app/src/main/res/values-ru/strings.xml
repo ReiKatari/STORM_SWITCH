@@ -1658,4 +1658,15 @@
     <string name="apply_driver_keep_custom">Не затрагивая персональные настройки</string>
     <string name="apply_driver_current_game">Для текущей игры</string>
     <string name="game_fix_manual_override_warning">⚠️ Применены ручные настройки (приоритет): %s. Авто-исправление частично переопределено.</string>
+    <string name="online_install_recommended">Онлайн-установка (рекомендуется)</string>
+    <string name="select_keys_file">Выбрать файл ключей с устройства</string>
+    <string name="select_keys_folder">Выбрать папку с ключами</string>
+    <string name="select_firmware_zip">Выбрать ZIP архив прошивки с устройства</string>
+    <string name="select_firmware_folder">Выбрать папку с прошивкой (.nca)</string>
+    <string name="sort_games_title">Сортировка игр</string>
+    <string name="sort_by_title_asc">По названию (А-Я)</string>
+    <string name="sort_by_title_desc">По названию (Я-А)</string>
+    <string name="sort_by_size_desc">По размеру (убывание)</string>
+    <string name="sort_by_size_asc">По размеру (возрастание)</string>
+    <string name="sort_by_addons_mods">По дополнениям и модам</string>
 </resources>
