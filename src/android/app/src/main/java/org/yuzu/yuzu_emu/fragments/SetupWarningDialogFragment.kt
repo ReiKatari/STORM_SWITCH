@@ -35,7 +35,11 @@ class SetupWarningDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+        val themeContext = androidx.appcompat.view.ContextThemeWrapper(
+            requireContext(),
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getSelectedStaticThemeColor()
+        )
+        val builder = MaterialAlertDialogBuilder(themeContext, R.style.EdenMaterialDialog)
             .setPositiveButton(R.string.warning_skip) { _: DialogInterface?, _: Int ->
                 setupFragment.pageForward()
                 setupFragment.setPageWarned(page)
@@ -64,7 +68,7 @@ class SetupWarningDialogFragment : DialogFragment() {
             }
         }
 
-        return builder.show()
+        return builder.create()
     }
 
     companion object {

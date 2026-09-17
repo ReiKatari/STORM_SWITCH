@@ -684,7 +684,10 @@ class SetupFragment : Fragment() {
         }
 
     private fun showKeysDialog() {
-        val context = requireContext()
+        val context = androidx.appcompat.view.ContextThemeWrapper(
+            requireContext(),
+            ThemeHelper.getSelectedStaticThemeColor()
+        )
         val options = arrayOf(
             getString(R.string.online_install_recommended),
             getString(R.string.select_keys_file),
@@ -763,7 +766,10 @@ class SetupFragment : Fragment() {
     }
 
     private fun showFirmwareDialog() {
-        val context = requireContext()
+        val context = androidx.appcompat.view.ContextThemeWrapper(
+            requireContext(),
+            ThemeHelper.getSelectedStaticThemeColor()
+        )
         val options = arrayOf(
             getString(R.string.online_install_recommended),
             getString(R.string.select_firmware_zip),

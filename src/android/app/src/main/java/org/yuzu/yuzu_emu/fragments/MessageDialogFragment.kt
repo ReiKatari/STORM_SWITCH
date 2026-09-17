@@ -61,8 +61,11 @@ class MessageDialogFragment : DialogFragment() {
         val dismissible = requireArguments().getBoolean(DISMISSIBLE)
         val clearPositiveAction = requireArguments().getBoolean(CLEAR_ACTIONS)
         val showNegativeButton = requireArguments().getBoolean(SHOW_NEGATIVE_BUTTON)
-
-        val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+        val themeContext = androidx.appcompat.view.ContextThemeWrapper(
+            requireContext(),
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getSelectedStaticThemeColor()
+        )
+        val builder = MaterialAlertDialogBuilder(themeContext, R.style.EdenMaterialDialog)
 
         if (clearPositiveAction) {
             messageDialogViewModel.positiveAction = null

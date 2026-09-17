@@ -40,7 +40,11 @@ class ProgressDialogFragment : DialogFragment() {
 
         binding = DialogProgressBarBinding.inflate(layoutInflater)
         binding.progressBar.isIndeterminate = true
-        val dialog = MaterialAlertDialogBuilder(requireContext())
+        val themeContext = androidx.appcompat.view.ContextThemeWrapper(
+            requireContext(),
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getSelectedStaticThemeColor()
+        )
+        val dialog = MaterialAlertDialogBuilder(themeContext)
             .setTitle(titleId)
             .setView(binding.root)
 

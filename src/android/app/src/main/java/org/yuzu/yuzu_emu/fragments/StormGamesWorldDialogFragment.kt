@@ -208,7 +208,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(STYLE_NORMAL, R.style.Theme_Yuzu_Main)
+        setStyle(STYLE_NORMAL, ThemeHelper.getSelectedStaticThemeColor())
     }
 
     override fun onStart() {
@@ -323,7 +323,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 SortMode.SIZE_ASC -> 3
                 SortMode.RECOMMENDED -> 4
             }
-            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            val themeContext = androidx.appcompat.view.ContextThemeWrapper(
+                requireContext(),
+                ThemeHelper.getSelectedStaticThemeColor()
+            )
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(themeContext)
                 .setTitle(R.string.sort_games_title)
                 .setSingleChoiceItems(sortOptions, selectedIndex) { dialog: android.content.DialogInterface, which: Int ->
                     currentSortMode = when (which) {
@@ -351,24 +355,33 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         val appCtx = context?.applicationContext
         val cached = if (appCtx != null) getCachedCatalog(appCtx) else emptyList()
-        if (cached.isNotEmpty() && appCtx != null) {
+        if (cached.isNotEmpty()) {
             allGames.clear()
             allGames.addAll(cached)
             filterGames(binding.editSearch.text?.toString().orEmpty())
             binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
             binding.progressLoading.isVisible = false
 
-            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                checkDownloadedStatus(allGames, appCtx)
-                withContext(Dispatchers.Main) {
-                    if (_binding != null) {
-                        binding.recyclerGames.adapter?.notifyDataSetChanged()
-                    }
-                }
+            if (appCtx != null) {
+                scheduleDownloadedStatusCheck(appCtx)
             }
         }
 
         fetchCatalog()
+    }
+
+    private var downloadCheckJob: kotlinx.coroutines.Job? = null
+
+    private fun scheduleDownloadedStatusCheck(ctx: Context) {
+        downloadCheckJob?.cancel()
+        downloadCheckJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            checkDownloadedStatus(allGames, ctx)
+            withContext(Dispatchers.Main) {
+                if (_binding != null) {
+                    binding.recyclerGames.adapter?.notifyDataSetChanged()
+                }
+            }
+        }
     }
 
     private fun fetchCatalog() {
@@ -383,7 +396,6 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val freshGames = syncCatalogInBackground(appCtx)
-                checkDownloadedStatus(freshGames, appCtx)
 
                 withContext(Dispatchers.Main) {
                     if (_binding == null) return@withContext
@@ -398,6 +410,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         binding.textEmpty.text = "Нет доступных игр в облаке"
                     }
                 }
+
+                scheduleDownloadedStatusCheck(appCtx)
             } catch (e: Exception) {
                 Log.error("[StormGamesWorld] Catalog fetch error: ${e.message}")
                 withContext(Dispatchers.Main) {
@@ -1256,8 +1270,16 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         fun getCachedCatalog(context: Context): List<StormWorldGameItem> {
             return try {
                 val file = File(context.filesDir, CATALOG_CACHE_FILE)
-                if (!file.exists()) return emptyList()
-                val jsonStr = file.readText()
+                val jsonStr = if (file.exists() && file.length() > 0) {
+                    file.readText()
+                } else {
+                    try {
+                        context.assets.open(CATALOG_CACHE_FILE).bufferedReader().use { it.readText() }
+                    } catch (_: Exception) {
+                        ""
+                    }
+                }
+                if (jsonStr.isBlank()) return emptyList()
                 val jsonArr = JSONArray(jsonStr)
                 val list = mutableListOf<StormWorldGameItem>()
                 for (i in 0 until jsonArr.length()) {

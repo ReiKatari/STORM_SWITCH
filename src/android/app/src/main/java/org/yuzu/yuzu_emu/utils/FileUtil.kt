@@ -301,13 +301,17 @@ object FileUtil {
         sourceUri: Uri,
         destinationParentPath: String,
         destinationFilename: String = ""
-    ): File? =
-        try {
-            val fileName =
-                if (destinationFilename == "") getFilename(sourceUri) else "/$destinationFilename"
-            val inputStream = context.contentResolver.openInputStream(sourceUri)!!
+    ): File? {
+        return try {
+            val cleanName = if (destinationFilename.isNotEmpty()) {
+                destinationFilename.removePrefix("/")
+            } else {
+                getFilename(sourceUri).removePrefix("/")
+            }
+            val inputStream = context.contentResolver.openInputStream(sourceUri) ?: return null
 
-            val destinationFile = File("$destinationParentPath$fileName")
+            val parentDir = File(destinationParentPath).apply { mkdirs() }
+            val destinationFile = File(parentDir, cleanName)
             if (destinationFile.exists()) {
                 destinationFile.delete()
             }
@@ -316,11 +320,11 @@ object FileUtil {
                 inputStream.use { it.copyTo(fos) }
             }
             destinationFile
-        } catch (e: IOException) {
-            null
-        } catch (e: NullPointerException) {
+        } catch (e: Exception) {
+            Log.error("[FileUtil] Failed to copy URI to internal storage: ${e.message}")
             null
         }
+    }
 
     /**
      * Copies a file from internal appdata storage to an external Uri.

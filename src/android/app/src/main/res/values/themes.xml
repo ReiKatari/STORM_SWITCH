@@ -5,9 +5,34 @@
         <item name="windowSplashScreenBackground">@color/storm_night_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_yuzu_splash</item>
         <item name="postSplashScreenTheme">@style/Theme.Storm.Night</item>
+        <item name="colorSurface">@color/storm_night_surface</item>
+        <item name="colorOnSurface">@color/storm_night_on_surface</item>
+        <item name="colorSurfaceVariant">@color/storm_night_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/storm_night_on_surface</item>
+        <item name="colorPrimary">@color/storm_night_primary</item>
+        <item name="colorOnPrimary">#0A0E17</item>
+        <item name="colorOutline">@color/storm_night_outline</item>
+        <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
     <style name="Theme.Yuzu.Main" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/storm_night_primary</item>
+        <item name="colorOnPrimary">#0A0E17</item>
+        <item name="colorPrimaryContainer">@color/storm_night_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/storm_night_primary</item>
+        <item name="colorSecondary">@color/storm_night_secondary</item>
+        <item name="colorOnSecondary">#0A0E17</item>
+        <item name="colorSecondaryContainer">@color/storm_night_surface_variant</item>
+        <item name="colorOnSecondaryContainer">@color/storm_night_on_surface</item>
+        <item name="android:colorBackground">@color/storm_night_background</item>
+        <item name="colorOnBackground">@color/storm_night_on_surface</item>
+        <item name="colorSurface">@color/storm_night_surface</item>
+        <item name="colorOnSurface">@color/storm_night_on_surface</item>
+        <item name="colorSurfaceVariant">@color/storm_night_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/storm_night_on_surface</item>
+        <item name="colorOutline">@color/storm_night_outline</item>
+        <item name="android:textColorPrimary">@color/storm_night_on_surface</item>
+
         <item name="colorError">@color/eden_error</item>
         <item name="colorErrorContainer">@color/eden_error</item>
         <item name="colorOnError">#FFFFFF</item>
