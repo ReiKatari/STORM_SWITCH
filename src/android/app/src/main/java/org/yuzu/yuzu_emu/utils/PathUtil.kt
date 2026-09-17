@@ -104,7 +104,7 @@ object PathUtil {
     }
 
 
-    fun truncatePathForDisplay(path: String, maxLength: Int = 40): String {
+    fun truncatePathForDisplay(path: String, maxLength: Int = 45): String {
         return if (path.length > maxLength) {
             "...${path.takeLast(maxLength - 3)}"
         } else {

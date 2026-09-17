@@ -24,6 +24,18 @@ class AddGameFolderDialogFragment : DialogFragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val gamesViewModel: GamesViewModel by activityViewModels()
 
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            org.yuzu.yuzu_emu.utils.ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        activity?.let { org.yuzu.yuzu_emu.utils.ThemeHelper.applySystemBarsTheme(it.window, it) }
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val themedContext = androidx.appcompat.view.ContextThemeWrapper(
             requireContext(),

@@ -6,6 +6,7 @@ package org.yuzu.yuzu_emu.features.settings.ui
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
@@ -14,6 +15,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.DialogGpuUnswizzleBinding
 import org.yuzu.yuzu_emu.features.settings.model.view.GpuUnswizzleSetting
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 
 class GpuUnswizzleDialogFragment : DialogFragment() {
     private var position = 0
@@ -28,7 +30,8 @@ class GpuUnswizzleDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        binding = DialogGpuUnswizzleBinding.inflate(LayoutInflater.from(requireContext()))
+        val themedContext = ContextThemeWrapper(requireContext(), ThemeHelper.getCurrentTheme())
+        binding = DialogGpuUnswizzleBinding.inflate(LayoutInflater.from(themedContext))
         val item = settingsViewModel.clickedItem as GpuUnswizzleSetting
 
         // Setup texture size dropdown
@@ -98,7 +101,7 @@ class GpuUnswizzleDialogFragment : DialogFragment() {
             updateDropdownsState(checked)
         }
 
-        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+        val dialog = MaterialAlertDialogBuilder(themedContext, R.style.EdenMaterialDialog)
             .setTitle(item.title)
             .setView(binding.root)
             .create()
@@ -175,6 +178,20 @@ class GpuUnswizzleDialogFragment : DialogFragment() {
         }
 
         return dialog
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        activity?.window?.let { window ->
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
     }
 
     private fun updateDropdownsState(enabled: Boolean) {

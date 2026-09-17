@@ -529,6 +529,11 @@
     <!-- GPU Logging strings -->
     <string name="gpu_logging_header">Journalisation GPU</string>
     <string name="gpu_log_level">Niveau de journalisation</string>
+    <string name="gpu_log_level_off">Désactivé</string>
+    <string name="gpu_log_level_errors_only">Erreurs seulement</string>
+    <string name="gpu_log_level_standard">Standard</string>
+    <string name="gpu_log_level_verbose">Détaillé</string>
+    <string name="gpu_log_level_all">Tous</string>
     <string name="gpu_log_vulkan_calls">Journaliser les appels API Vulkan</string>
     <string name="gpu_log_memory_tracking">Monitorer la mémoire GPU</string>
     <string name="gpu_log_memory_tracking_description">Monitorer les allocations et désallocations de la mémoire GPU</string>

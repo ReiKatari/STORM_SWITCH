@@ -186,6 +186,7 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        ThemeHelper.applySystemBarsTheme(window, this)
 
         window.statusBarColor =
             ContextCompat.getColor(applicationContext, android.R.color.transparent)
@@ -232,6 +233,14 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
 
         // Dismiss previous notifications (should not happen unless a crash occurred)
         EmulationActivity.stopForegroundService(this)
+
+        val currentTheme = themeId
+        val expectedTheme = ThemeHelper.getSelectedStaticThemeColor()
+        if (currentTheme != 0 && currentTheme != expectedTheme) {
+            recreate()
+            return
+        }
+        ThemeHelper.applySystemBarsTheme(window, this)
 
         val isFirstLaunch = PreferenceManager.getDefaultSharedPreferences(applicationContext)
                 .getBoolean(Settings.PREF_FIRST_APP_LAUNCH, true)

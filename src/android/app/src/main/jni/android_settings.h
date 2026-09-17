@@ -56,7 +56,7 @@ namespace AndroidSettings {
                                                                     Settings::Category::GpuDriver};
 
         Settings::Setting<s32> theme{linkage, 0, "theme", Settings::Category::Android};
-        Settings::Setting<s32> theme_mode{linkage, 2, "theme_mode", Settings::Category::Android};
+        Settings::Setting<s32> theme_mode{linkage, 0, "theme_mode", Settings::Category::Android};
         Settings::Setting<s32> static_theme_color{linkage, 0, "static_theme_color", Settings::Category::Android};
         Settings::Setting<bool> black_backgrounds{linkage, true, "black_backgrounds",
                                                   Settings::Category::Android};

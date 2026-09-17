@@ -687,6 +687,11 @@
     <string name="gpu_logging_header">GPU Logging</string>
     <string name="gpu_log_level">Log Level</string>
     <string name="gpu_log_level_description">Detail level for GPU logs (higher = more detail, more overhead)</string>
+    <string name="gpu_log_level_off">Off</string>
+    <string name="gpu_log_level_errors_only">Errors only</string>
+    <string name="gpu_log_level_standard">Standard</string>
+    <string name="gpu_log_level_verbose">Verbose</string>
+    <string name="gpu_log_level_all">All</string>
     <string name="gpu_log_vulkan_calls">Log Vulkan API Calls</string>
     <string name="gpu_log_vulkan_calls_description">Track all Vulkan API calls in ring buffer</string>
     <string name="gpu_log_shader_dumps">Dump SPIR-V Shaders</string>

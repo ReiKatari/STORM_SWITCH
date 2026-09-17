@@ -580,37 +580,63 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_saveControlPlayerValues(JNIEnv* 
 }
 
 jstring Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getSaveDir(JNIEnv* env, jobject obj) {
-    return Common::Android::ToJString(env,
-        Common::FS::GetEdenPathString(Common::FS::EdenPath::SaveDir));
+    auto path = Common::FS::GetEdenPathString(Common::FS::EdenPath::SaveDir);
+    if (path.empty() || path.find("dev.storm_switch/files") != std::string::npos) {
+        path = "/storage/emulated/0/STORM SWITCH/nand";
+        Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir, path);
+    }
+    return Common::Android::ToJString(env, path);
 }
 
 jstring Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getDefaultSaveDir(JNIEnv* env, jobject obj) {
-    const auto default_save = std::filesystem::path(Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir));
+    auto nand_path = Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir);
+    if (nand_path.empty() || nand_path.find("dev.storm_switch/files") != std::string::npos) {
+        nand_path = "/storage/emulated/0/STORM SWITCH/nand";
+        Common::FS::SetEdenPath(Common::FS::EdenPath::NANDDir, nand_path);
+    }
+    const auto default_save = std::filesystem::path(nand_path);
     return Common::Android::ToJString(env, default_save.string());
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setSaveDir(JNIEnv* env, jobject obj, jstring jpath) {
     auto path = Common::Android::GetJString(env, jpath);
+    if (path.find("dev.storm_switch/files") != std::string::npos) {
+        path = "/storage/emulated/0/STORM SWITCH/nand";
+    }
     Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir, path);
 }
 
 jstring Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getNandDir(JNIEnv* env, jobject obj) {
-    return Common::Android::ToJString(env,
-        Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir));
+    auto path = Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir);
+    if (path.empty() || path.find("dev.storm_switch/files") != std::string::npos) {
+        path = "/storage/emulated/0/STORM SWITCH/nand";
+        Common::FS::SetEdenPath(Common::FS::EdenPath::NANDDir, path);
+    }
+    return Common::Android::ToJString(env, path);
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setNandDir(JNIEnv* env, jobject obj, jstring jpath) {
     auto path = Common::Android::GetJString(env, jpath);
+    if (path.empty() || path.find("dev.storm_switch/files") != std::string::npos) {
+        path = "/storage/emulated/0/STORM SWITCH/nand";
+    }
     Common::FS::SetEdenPath(Common::FS::EdenPath::NANDDir, path);
 }
 
 jstring Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getSdmcDir(JNIEnv* env, jobject obj) {
-    return Common::Android::ToJString(env,
-        Common::FS::GetEdenPathString(Common::FS::EdenPath::SDMCDir));
+    auto path = Common::FS::GetEdenPathString(Common::FS::EdenPath::SDMCDir);
+    if (path.empty() || path.find("dev.storm_switch/files") != std::string::npos) {
+        path = "/storage/emulated/0/STORM SWITCH/sdmc";
+        Common::FS::SetEdenPath(Common::FS::EdenPath::SDMCDir, path);
+    }
+    return Common::Android::ToJString(env, path);
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setSdmcDir(JNIEnv* env, jobject obj, jstring jpath) {
     auto path = Common::Android::GetJString(env, jpath);
+    if (path.empty() || path.find("dev.storm_switch/files") != std::string::npos) {
+        path = "/storage/emulated/0/STORM SWITCH/sdmc";
+    }
     Common::FS::SetEdenPath(Common::FS::EdenPath::SDMCDir, path);
 }
 

@@ -5,6 +5,7 @@ package org.yuzu.yuzu_emu.fragments
 
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -220,7 +221,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val height = ViewGroup.LayoutParams.MATCH_PARENT
             window.setLayout(width, height)
             window.setGravity(android.view.Gravity.CENTER)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        activity?.let { ThemeHelper.applySystemBarsTheme(it.window, it) }
     }
 
     override fun onCreateView(

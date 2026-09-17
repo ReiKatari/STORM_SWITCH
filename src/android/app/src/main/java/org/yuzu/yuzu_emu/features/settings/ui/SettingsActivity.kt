@@ -62,6 +62,7 @@ class SettingsActivity : AppCompatActivity() {
         navHostFragment.navController.setGraph(R.navigation.settings_navigation, intent.extras)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        ThemeHelper.applySystemBarsTheme(window, this)
 
         if (InsetsHelper.getSystemGestureType(applicationContext) !=
             InsetsHelper.GESTURE_NAVIGATION
@@ -127,6 +128,7 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        ThemeHelper.applySystemBarsTheme(window, this)
         applyFullscreenPreference()
     }
 

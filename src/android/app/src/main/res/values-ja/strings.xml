@@ -879,6 +879,11 @@
     <string name="gpu_logging_header">GPUログ記録</string>
     <string name="gpu_log_level">ログレベル</string>
     <string name="gpu_log_level_description">GPUログの詳細度。</string>
+    <string name="gpu_log_level_off">オフ</string>
+    <string name="gpu_log_level_errors_only">エラーのみ</string>
+    <string name="gpu_log_level_standard">標準</string>
+    <string name="gpu_log_level_verbose">詳細</string>
+    <string name="gpu_log_level_all">すべて</string>
     <string name="gpu_log_vulkan_calls">Vulkan API呼び出しを記録</string>
     <string name="gpu_log_vulkan_calls_description">リングバッファにすべてのVulkan API呼び出しを記録します。</string>
     <string name="external_content">外部コンテンツ</string>

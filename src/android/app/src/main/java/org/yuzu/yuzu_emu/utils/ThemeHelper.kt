@@ -53,6 +53,8 @@ object ThemeHelper {
         }
     }
 
+    fun getCurrentTheme(): Int = getSelectedStaticThemeColor()
+
     @ColorInt
     fun getColorWithOpacity(@ColorInt color: Int, alphaFactor: Float): Int {
         return Color.argb(
@@ -83,21 +85,32 @@ object ThemeHelper {
         }
     }
 
+    fun applySystemBarsTheme(window: android.view.Window?, context: android.content.Context? = null) {
+        if (window == null) return
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val windowController = WindowCompat.getInsetsController(window, window.decorView)
+        val themeMode = IntSetting.THEME_MODE.getInt()
+        val isLight = themeMode == 2
+        windowController.isAppearanceLightStatusBars = isLight
+        windowController.isAppearanceLightNavigationBars = isLight
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+            window.isStatusBarContrastEnforced = false
+        }
+    }
+
     fun setThemeMode(activity: AppCompatActivity) {
         val themeMode = IntSetting.THEME_MODE.getInt()
-        val windowController = WindowCompat.getInsetsController(
-            activity.window,
-            activity.window.decorView
-        )
         if (themeMode == 2) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             activity.delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_NO
-            setLightModeSystemBars(windowController)
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             activity.delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
-            setDarkModeSystemBars(windowController)
         }
+        applySystemBarsTheme(activity.window, activity)
     }
 
     private fun isNightMode(activity: AppCompatActivity): Boolean {

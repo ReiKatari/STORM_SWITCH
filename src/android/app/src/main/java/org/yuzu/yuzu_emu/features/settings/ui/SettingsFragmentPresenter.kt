@@ -1213,6 +1213,15 @@ class SettingsFragmentPresenter(
                     IntSetting.THEME_MODE.setInt(value)
                     IntSetting.STATIC_THEME_COLOR.setInt(value)
                     IntSetting.THEME.setInt(0)
+                    try {
+                        NativeConfig.saveGlobalConfig()
+                    } catch (_: Throwable) {}
+                    try {
+                        androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
+                            .putInt(Settings.PREF_THEME_MODE, value)
+                            .putInt(Settings.PREF_STATIC_THEME_COLOR, value)
+                            .apply()
+                    } catch (_: Throwable) {}
                     settingsViewModel.setShouldRecreate(true)
                 }
 
@@ -1227,6 +1236,15 @@ class SettingsFragmentPresenter(
                     IntSetting.THEME_MODE.setInt(0)
                     IntSetting.STATIC_THEME_COLOR.setInt(0)
                     IntSetting.THEME.setInt(0)
+                    try {
+                        NativeConfig.saveGlobalConfig()
+                    } catch (_: Throwable) {}
+                    try {
+                        androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
+                            .putInt(Settings.PREF_THEME_MODE, 0)
+                            .putInt(Settings.PREF_STATIC_THEME_COLOR, 0)
+                            .apply()
+                    } catch (_: Throwable) {}
                     settingsViewModel.setShouldRecreate(true)
                 }
             }
@@ -1326,10 +1344,9 @@ class SettingsFragmentPresenter(
     }
 
     private fun addCustomPathsSettings(sl: ArrayList<SettingsItem>) {
-        val rootDir = DirectoryInitialization.userDirectory
-            ?: File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH").absolutePath
-        val defaultNand = "$rootDir/nand"
-        val defaultSdmc = "$rootDir/sdmc"
+        val stormSwitchDir = "/storage/emulated/0/STORM SWITCH"
+        val defaultNand = "$stormSwitchDir/nand"
+        val defaultSdmc = "$stormSwitchDir/sdmc"
 
         sl.apply {
             add(
@@ -1341,13 +1358,19 @@ class SettingsFragmentPresenter(
                     defaultPathGetter = { defaultNand },
                     currentPathGetter = {
                         val cur = NativeConfig.getSaveDir()
-                        if (cur.isBlank() || cur.endsWith("/nand/user/save") || cur.equals(NativeConfig.getDefaultSaveDir(), ignoreCase = true)) {
+                        if (cur.isBlank() || cur.contains("dev.storm_switch/files") || cur.endsWith("/nand/user/save") || cur.equals(NativeConfig.getDefaultSaveDir(), ignoreCase = true)) {
                             defaultNand
                         } else {
                             cur
                         }
                     },
-                    pathSetter = { path -> NativeConfig.setSaveDir(path) }
+                    pathSetter = { path ->
+                        val cleanPath = if (path.contains("dev.storm_switch/files")) defaultNand else path
+                        NativeConfig.setSaveDir(cleanPath)
+                        try {
+                            NativeConfig.saveGlobalConfig()
+                        } catch (_: Exception) {}
+                    }
                 )
             )
             add(
@@ -1359,9 +1382,15 @@ class SettingsFragmentPresenter(
                     defaultPathGetter = { defaultNand },
                     currentPathGetter = {
                         val cur = NativeConfig.getNandDir()
-                        if (cur.isBlank()) defaultNand else cur
+                        if (cur.isBlank() || cur.contains("dev.storm_switch/files")) defaultNand else cur
                     },
-                    pathSetter = { path -> NativeConfig.setNandDir(path) }
+                    pathSetter = { path ->
+                        val cleanPath = if (path.contains("dev.storm_switch/files")) defaultNand else path
+                        NativeConfig.setNandDir(cleanPath)
+                        try {
+                            NativeConfig.saveGlobalConfig()
+                        } catch (_: Exception) {}
+                    }
                 )
             )
             add(
@@ -1373,9 +1402,15 @@ class SettingsFragmentPresenter(
                     defaultPathGetter = { defaultSdmc },
                     currentPathGetter = {
                         val cur = NativeConfig.getSdmcDir()
-                        if (cur.isBlank()) defaultSdmc else cur
+                        if (cur.isBlank() || cur.contains("dev.storm_switch/files")) defaultSdmc else cur
                     },
-                    pathSetter = { path -> NativeConfig.setSdmcDir(path) }
+                    pathSetter = { path ->
+                        val cleanPath = if (path.contains("dev.storm_switch/files")) defaultSdmc else path
+                        NativeConfig.setSdmcDir(cleanPath)
+                        try {
+                            NativeConfig.saveGlobalConfig()
+                        } catch (_: Exception) {}
+                    }
                 )
             )
         }

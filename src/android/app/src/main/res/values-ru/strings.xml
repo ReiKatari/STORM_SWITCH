@@ -616,6 +616,11 @@
     <string name="gpu_logging_header">Ведение журнала ГПУ</string>
     <string name="gpu_log_level">Уровень логирования ГПУ</string>
     <string name="gpu_log_level_description">Уровень детализации логов ГПУ (больше значение = больше деталей, выше нагрузка)</string>
+    <string name="gpu_log_level_off">Отключено</string>
+    <string name="gpu_log_level_errors_only">Только ошибки</string>
+    <string name="gpu_log_level_standard">Стандартный</string>
+    <string name="gpu_log_level_verbose">Подробный</string>
+    <string name="gpu_log_level_all">Все сообщения</string>
     <string name="gpu_log_vulkan_calls">Логирование вызовов Vulkan</string>
     <string name="gpu_log_vulkan_calls_description">Отслеживать все вызовы Vulkan API в кольцевом буфере</string>
     <string name="gpu_log_shader_dumps">Выгрузить SPIR-V шейдеры</string>

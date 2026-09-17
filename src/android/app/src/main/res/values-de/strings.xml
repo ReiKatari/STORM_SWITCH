@@ -1240,6 +1240,11 @@ Wirklich fortfahren?</string>
     <string name="gpu_logging_header">GPU-Protokollierung</string>
     <string name="gpu_log_level">Protokollierungsstufe</string>
     <string name="gpu_log_level_description">Detailstufe für GPU-Protokolle.</string>
+    <string name="gpu_log_level_off">Aus</string>
+    <string name="gpu_log_level_errors_only">Nur Fehler</string>
+    <string name="gpu_log_level_standard">Standard</string>
+    <string name="gpu_log_level_verbose">Ausführlich</string>
+    <string name="gpu_log_level_all">Alle</string>
     <string name="gpu_log_vulkan_calls">Vulkan-API-Aufrufe protokollieren</string>
     <string name="gpu_log_vulkan_calls_description">Zeichnet alle Vulkan-API-Aufrufe im Ringpuffer auf.</string>
     <string name="external_content">Externe Inhalte</string>

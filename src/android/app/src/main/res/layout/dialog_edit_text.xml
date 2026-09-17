@@ -5,21 +5,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:padding="20dp">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/edit_text_layout"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:boxBackgroundColor="#0A0E17"
-        app:boxCornerRadiusBottomEnd="10dp"
-        app:boxCornerRadiusBottomStart="10dp"
-        app:boxCornerRadiusTopEnd="10dp"
-        app:boxCornerRadiusTopStart="10dp"
-        app:boxStrokeColor="#00D2FF"
+        app:boxBackgroundColor="?attr/colorSurface"
+        app:boxCornerRadiusBottomEnd="8dp"
+        app:boxCornerRadiusBottomStart="8dp"
+        app:boxCornerRadiusTopEnd="8dp"
+        app:boxCornerRadiusTopStart="8dp"
+        app:boxStrokeColor="?attr/colorPrimary"
         app:boxStrokeWidth="1.5dp"
-        app:hintTextColor="#00D2FF"
+        app:hintTextColor="?attr/colorPrimary"
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -29,8 +29,8 @@
             android:inputType="none"
             android:paddingHorizontal="14dp"
             android:paddingVertical="12dp"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#38BDF8"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOutline"
             android:textSize="14sp" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -42,12 +42,12 @@
         android:layout_height="38dp"
         android:layout_marginTop="12dp"
         android:text="@string/generate"
-        android:textColor="#00F0FF"
+        android:textColor="?attr/colorPrimary"
         android:textSize="12sp"
         android:visibility="gone"
-        app:backgroundTint="#16263D"
+        app:backgroundTint="?attr/colorSurfaceVariant"
         app:cornerRadius="8dp"
-        app:strokeColor="#00D2FF"
+        app:strokeColor="?attr/colorPrimary"
         app:strokeWidth="1dp"
         app:layout_constraintEnd_toEndOf="@+id/edit_text_layout"
         app:layout_constraintTop_toBottomOf="@+id/edit_text_layout" />

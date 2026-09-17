@@ -6,35 +6,39 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingHorizontal="20dp"
-    android:paddingVertical="12dp">
+    android:paddingVertical="16dp">
 
     <!-- Value Badge -->
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/popup_menu_background"
-        android:paddingHorizontal="20dp"
-        android:paddingVertical="8dp">
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        app:strokeColor="?attr/colorPrimary"
+        app:strokeWidth="1.5dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/text_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#00F0FF"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="8dp"
+            android:textColor="?attr/colorPrimary"
             android:textSize="22sp"
             android:textStyle="bold"
             tools:text="75%" />
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.slider.Slider
         android:id="@+id/slider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:trackColorActive="#00F0FF"
-        app:trackColorInactive="#20354E"
-        app:thumbColor="#00F0FF"
-        app:haloColor="#3300F0FF" />
+        app:trackColorActive="?attr/colorPrimary"
+        app:trackColorInactive="?attr/colorSurfaceVariant"
+        app:thumbColor="?attr/colorPrimary"
+        app:haloColor="?attr/colorSurfaceVariant" />
 
 </LinearLayout>

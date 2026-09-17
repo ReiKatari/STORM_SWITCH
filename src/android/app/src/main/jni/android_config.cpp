@@ -114,17 +114,21 @@ void AndroidConfig::ReadPathValues() {
     EndArray();
 
     const auto nand_dir_setting = ReadStringSetting(std::string("nand_directory"));
-    if (!nand_dir_setting.empty()) {
+    if (!nand_dir_setting.empty() && nand_dir_setting.find("dev.storm_switch/files") == std::string::npos) {
         Common::FS::SetEdenPath(Common::FS::EdenPath::NANDDir, nand_dir_setting);
+    } else {
+        Common::FS::SetEdenPath(Common::FS::EdenPath::NANDDir, "/storage/emulated/0/STORM SWITCH/nand");
     }
 
     const auto sdmc_dir_setting = ReadStringSetting(std::string("sdmc_directory"));
-    if (!sdmc_dir_setting.empty()) {
+    if (!sdmc_dir_setting.empty() && sdmc_dir_setting.find("dev.storm_switch/files") == std::string::npos) {
         Common::FS::SetEdenPath(Common::FS::EdenPath::SDMCDir, sdmc_dir_setting);
+    } else {
+        Common::FS::SetEdenPath(Common::FS::EdenPath::SDMCDir, "/storage/emulated/0/STORM SWITCH/sdmc");
     }
 
     const auto save_dir_setting = ReadStringSetting(std::string("save_directory"));
-    if (save_dir_setting.empty()) {
+    if (save_dir_setting.empty() || save_dir_setting.find("dev.storm_switch/files") != std::string::npos) {
         const auto default_save = std::filesystem::path(Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir));
         Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir, default_save.string());
     } else {
@@ -298,17 +302,29 @@ void AndroidConfig::SavePathValues() {
     EndArray();
 
     // Save custom NAND directory
-    const auto nand_path = Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir);
+    auto nand_path = Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir);
+    if (nand_path.empty() || nand_path.find("dev.storm_switch/files") != std::string::npos) {
+        nand_path = "/storage/emulated/0/STORM SWITCH/nand";
+        Common::FS::SetEdenPath(Common::FS::EdenPath::NANDDir, nand_path);
+    }
     WriteStringSetting(std::string("nand_directory"), nand_path,
                        std::make_optional(std::string("")));
 
     // Save custom SDMC directory
-    const auto sdmc_path = Common::FS::GetEdenPathString(Common::FS::EdenPath::SDMCDir);
+    auto sdmc_path = Common::FS::GetEdenPathString(Common::FS::EdenPath::SDMCDir);
+    if (sdmc_path.empty() || sdmc_path.find("dev.storm_switch/files") != std::string::npos) {
+        sdmc_path = "/storage/emulated/0/STORM SWITCH/sdmc";
+        Common::FS::SetEdenPath(Common::FS::EdenPath::SDMCDir, sdmc_path);
+    }
     WriteStringSetting(std::string("sdmc_directory"), sdmc_path,
                        std::make_optional(std::string("")));
 
     // Save custom save directory
-    const auto save_path = Common::FS::GetEdenPathString(Common::FS::EdenPath::SaveDir);
+    auto save_path = Common::FS::GetEdenPathString(Common::FS::EdenPath::SaveDir);
+    if (save_path.find("dev.storm_switch/files") != std::string::npos) {
+        save_path = "/storage/emulated/0/STORM SWITCH/nand";
+        Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir, save_path);
+    }
     const auto default_save = (std::filesystem::path(nand_path) / "user" / "save").string();
     if (save_path.empty() || save_path == default_save || save_path == nand_path) {
         WriteStringSetting(std::string("save_directory"), std::string(""),

@@ -256,14 +256,14 @@ class SettingsFragment : Fragment() {
 
     private fun handlePathPickerRequest() {
         if (!hasAllFilesPermission()) {
-            MaterialAlertDialogBuilder(requireContext())
+            val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                 .setTitle(R.string.all_files_permission_required)
                 .setMessage(R.string.all_files_permission_required)
                 .setPositiveButton(R.string.grant_permission) { _, _ ->
                     requestAllFilesPermission()
                 }
                 .setNegativeButton(R.string.cancel, null)
-                .show()
+            showMaterialDialog(builder)
             return
         }
         showPathPickerDialog()
@@ -334,7 +334,7 @@ class SettingsFragment : Fragment() {
         }
 
         if (destHasSaves) {
-            MaterialAlertDialogBuilder(requireContext())
+            val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                 .setTitle(R.string.migrate_save_data)
                 .setMessage(R.string.destination_has_saves)
                 .setPositiveButton(R.string.confirm) { _, _ ->
@@ -344,9 +344,9 @@ class SettingsFragment : Fragment() {
                     setPathAndNotify(pathSetting, toPath)
                 }
                 .setNeutralButton(R.string.cancel, null)
-                .show()
+            showMaterialDialog(builder)
         } else {
-            MaterialAlertDialogBuilder(requireContext())
+            val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                 .setTitle(R.string.migrate_save_data)
                 .setMessage(R.string.migrate_save_data_question)
                 .setPositiveButton(R.string.confirm) { _, _ ->
@@ -356,7 +356,7 @@ class SettingsFragment : Fragment() {
                     setPathAndNotify(pathSetting, toPath)
                 }
                 .setNeutralButton(R.string.cancel, null)
-                .show()
+            showMaterialDialog(builder)
         }
     }
 
@@ -429,14 +429,14 @@ class SettingsFragment : Fragment() {
         val defaultPath = pathSetting.getDefaultPath()
 
         if (pathSetting.pathType == PathSetting.PathType.SDMC || pathSetting.pathType == PathSetting.PathType.NAND) {
-            MaterialAlertDialogBuilder(requireContext())
+            val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                 .setTitle(R.string.reset_to_default)
                 .setMessage(defaultPath)
                 .setPositiveButton(R.string.confirm) { _, _ ->
                     setPathAndNotify(pathSetting, defaultPath)
                 }
                 .setNegativeButton(R.string.cancel, null)
-                .show()
+            showMaterialDialog(builder)
             return
         }
 
@@ -449,18 +449,18 @@ class SettingsFragment : Fragment() {
         }
 
         if (isSameDir || !sourceSaveDir.exists() || sourceSaveDir.listFiles()?.isNotEmpty() != true) {
-            MaterialAlertDialogBuilder(requireContext())
+            val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                 .setTitle(R.string.reset_to_default)
                 .setMessage(defaultPath)
                 .setPositiveButton(R.string.confirm) { _, _ ->
                     setPathAndNotify(pathSetting, defaultPath)
                 }
                 .setNegativeButton(R.string.cancel, null)
-                .show()
+            showMaterialDialog(builder)
             return
         }
 
-        MaterialAlertDialogBuilder(requireContext())
+        val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setTitle(R.string.reset_to_default)
             .setMessage(R.string.migrate_save_data_question)
             .setPositiveButton(R.string.confirm) { _, _ ->
@@ -470,6 +470,21 @@ class SettingsFragment : Fragment() {
                 setPathAndNotify(pathSetting, defaultPath)
             }
             .setNeutralButton(R.string.cancel, null)
-            .show()
+        showMaterialDialog(builder)
+    }
+
+    private fun showMaterialDialog(builder: MaterialAlertDialogBuilder) {
+        val dialog = builder.create()
+        dialog.setOnShowListener {
+            dialog.window?.let { window ->
+                ThemeHelper.applySystemBarsTheme(window, requireContext())
+            }
+        }
+        dialog.setOnDismissListener {
+            activity?.window?.let { window ->
+                ThemeHelper.applySystemBarsTheme(window, requireContext())
+            }
+        }
+        dialog.show()
     }
 }

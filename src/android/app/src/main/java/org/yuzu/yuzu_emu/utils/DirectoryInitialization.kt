@@ -28,6 +28,28 @@ object DirectoryInitialization {
             initializeInternalStorage()
             try {
                 NativeConfig.initializeGlobalConfig()
+                val stormExternalDir = File(Environment.getExternalStorageDirectory(), "STORM SWITCH").canonicalPath
+                val defaultNand = "$stormExternalDir/nand"
+                val defaultSdmc = "$stormExternalDir/sdmc"
+                var pathsUpdated = false
+                val curNand = NativeConfig.getNandDir()
+                if (curNand.isBlank() || curNand.contains("dev.storm_switch/files")) {
+                    NativeConfig.setNandDir(defaultNand)
+                    pathsUpdated = true
+                }
+                val curSdmc = NativeConfig.getSdmcDir()
+                if (curSdmc.isBlank() || curSdmc.contains("dev.storm_switch/files")) {
+                    NativeConfig.setSdmcDir(defaultSdmc)
+                    pathsUpdated = true
+                }
+                val curSave = NativeConfig.getSaveDir()
+                if (curSave.contains("dev.storm_switch/files")) {
+                    NativeConfig.setSaveDir(defaultNand)
+                    pathsUpdated = true
+                }
+                if (pathsUpdated) {
+                    NativeConfig.saveGlobalConfig()
+                }
             } catch (e: Throwable) {
                 android.util.Log.e("STORM_SWITCH", "Failed NativeConfig.initializeGlobalConfig: ${e.message}")
             }
@@ -82,6 +104,29 @@ object DirectoryInitialization {
                 NativeLibrary.setAppDirectory(userPath!!)
                 areDirectoriesReady = true
                 NativeConfig.initializeGlobalConfig()
+
+                val defaultNand = "${userPath}/nand"
+                val defaultSdmc = "${userPath}/sdmc"
+                var pathsUpdated = false
+                val curNand = NativeConfig.getNandDir()
+                if (curNand.isBlank() || curNand.contains("dev.storm_switch/files")) {
+                    NativeConfig.setNandDir(defaultNand)
+                    pathsUpdated = true
+                }
+                val curSdmc = NativeConfig.getSdmcDir()
+                if (curSdmc.isBlank() || curSdmc.contains("dev.storm_switch/files")) {
+                    NativeConfig.setSdmcDir(defaultSdmc)
+                    pathsUpdated = true
+                }
+                val curSave = NativeConfig.getSaveDir()
+                if (curSave.contains("dev.storm_switch/files")) {
+                    NativeConfig.setSaveDir(defaultNand)
+                    pathsUpdated = true
+                }
+                if (pathsUpdated) {
+                    NativeConfig.saveGlobalConfig()
+                }
+
                 NativeLibrary.reloadProfiles()
             }
         } catch (e: Throwable) {

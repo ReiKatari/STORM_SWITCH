@@ -566,6 +566,11 @@
     <string name="gpu_logging_header">GPU 日志</string>
     <string name="gpu_log_level">日志等级</string>
     <string name="gpu_log_level_description">GPU 日志的详细级别(数值越高 = 细节越多,开销越大)</string>
+    <string name="gpu_log_level_off">关闭</string>
+    <string name="gpu_log_level_errors_only">仅错误</string>
+    <string name="gpu_log_level_standard">标准</string>
+    <string name="gpu_log_level_verbose">详细</string>
+    <string name="gpu_log_level_all">全部</string>
     <string name="gpu_log_vulkan_calls">记录 Vulkan API 调用</string>
     <string name="gpu_log_vulkan_calls_description">在环形缓冲区中跟踪所有 Vulkan API 调用</string>
     <string name="gpu_log_shader_dumps">转储 SPIR-V 着色器</string>

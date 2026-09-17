@@ -7,6 +7,7 @@ import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -158,7 +159,13 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         dialog?.window?.let { window ->
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             window.setBackgroundDrawableResource(android.R.color.transparent)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        activity?.let { ThemeHelper.applySystemBarsTheme(it.window, it) }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

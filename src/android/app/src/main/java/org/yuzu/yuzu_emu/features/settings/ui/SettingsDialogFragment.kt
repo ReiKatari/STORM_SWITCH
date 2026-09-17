@@ -66,6 +66,18 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
         if (settingsViewModel.clickedItem == null) dismiss()
     }
 
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            org.yuzu.yuzu_emu.utils.ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        activity?.let { org.yuzu.yuzu_emu.utils.ThemeHelper.applySystemBarsTheme(it.window, it) }
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val themedContext = androidx.appcompat.view.ContextThemeWrapper(
             requireContext(),
@@ -151,7 +163,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
             }
 
             SettingsItem.TYPE_SLIDER -> {
-                sliderBinding = DialogSliderBinding.inflate(layoutInflater)
+                sliderBinding = DialogSliderBinding.inflate(LayoutInflater.from(themedContext))
                 val item = settingsViewModel.clickedItem as SliderSetting
 
                 settingsViewModel.setSliderTextValue(item.getSelectedValue().toFloat(), item.units)
@@ -180,7 +192,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
             }
 
             SettingsItem.TYPE_SPINBOX -> {
-                spinboxBinding = DialogSpinboxBinding.inflate(layoutInflater)
+                spinboxBinding = DialogSpinboxBinding.inflate(LayoutInflater.from(themedContext))
                 val item = settingsViewModel.clickedItem as SpinBoxSetting
 
                 val currentValue = item.getSelectedValue()
@@ -284,7 +296,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
             }
 
             SettingsItem.TYPE_STRING_INPUT -> {
-                stringInputBinding = DialogEditTextBinding.inflate(layoutInflater)
+                stringInputBinding = DialogEditTextBinding.inflate(LayoutInflater.from(themedContext))
                 val item = settingsViewModel.clickedItem as StringInputSetting
                 stringInputBinding.editText.setText(item.getSelectedValue())
 

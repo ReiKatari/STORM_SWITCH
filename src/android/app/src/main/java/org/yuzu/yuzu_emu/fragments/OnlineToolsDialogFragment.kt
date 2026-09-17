@@ -135,6 +135,22 @@ class OnlineToolsDialogFragment : DialogFragment() {
         return dialog
     }
 
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onDismiss(dialog: android.content.DialogInterface) {
+        super.onDismiss(dialog)
+        activity?.let { ThemeHelper.applySystemBarsTheme(it.window, it) }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -171,14 +187,6 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
         populateFallbackCatalog()
         refreshCatalog()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
     }
 
     private fun populateFallbackCatalog() {
