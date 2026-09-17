@@ -34,4 +34,5 @@ endif()
 
 set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} yuzu-android)
 
+target_compile_options(yuzu-android PRIVATE -fvisibility=default)
 target_link_options(yuzu-android PRIVATE "-Wl,-Bsymbolic" "-Wl,--allow-multiple-definition")

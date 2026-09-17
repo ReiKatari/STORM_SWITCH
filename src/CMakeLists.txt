@@ -153,14 +153,11 @@ else()
             $<$<COMPILE_LANGUAGE:C,CXX>:-pipe>
             $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:C,CXX>:-O3>>
             $<$<CONFIG:RelWithDebInfo>:$<$<COMPILE_LANGUAGE:C,CXX>:-O3>>
-            $<$<COMPILE_LANGUAGE:C,CXX>:-fvisibility=hidden>
-            $<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>
             # Disable RTTI (C++ only)
             $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
         if (CXX_CLANG)
             add_compile_options(
-                $<$<COMPILE_LANGUAGE:C,CXX>:-fno-semantic-interposition>
                 $<$<COMPILE_LANGUAGE:C,CXX>:-fvectorize>
                 $<$<COMPILE_LANGUAGE:C,CXX>:-fslp-vectorize>
                 $<$<COMPILE_LANGUAGE:C,CXX>:-funroll-loops>)
