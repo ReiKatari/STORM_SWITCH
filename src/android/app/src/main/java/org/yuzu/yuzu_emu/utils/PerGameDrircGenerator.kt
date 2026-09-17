@@ -38,6 +38,7 @@ object PerGameDrircGenerator {
         ALAN_WAKE,
         LEGEND_OF_HEROES,
         SONIC,
+        LITTLE_NIGHTMARES,
         UNIVERSAL_DEFAULT
     }
 
@@ -398,6 +399,15 @@ object PerGameDrircGenerator {
             return GameProfileType.SONIC
         }
 
+        // 24. Little Nightmares Series (Unreal Engine 4 & 5 Bloom and Volumetric Light Fix)
+        if (cleanId.startsWith("01002FC00412C") || // Little Nightmares I
+            cleanId.startsWith("010097100EDD6") || // Little Nightmares II
+            cleanId.startsWith("010066101A55A") || // Little Nightmares III
+            cleanTitle.contains("little nightmares")
+        ) {
+            return GameProfileType.LITTLE_NIGHTMARES
+        }
+
         return GameProfileType.UNIVERSAL_DEFAULT
     }
 
@@ -506,17 +516,20 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"false\" />\n")
             }
             GameProfileType.DIABLO -> {
-                optionsBuilder.append("\n            <!-- DIABLO II & III RULES (Full D32 Precision, No Dropped Tiles, Maximum FPS Unlocked) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
+                optionsBuilder.append("\n            <!-- DIABLO II & III RULES (Normalized Depth, Full Glyph Swizzle, Fast Clears, Maximum Smoothness) -->\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds_test\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_bounds_test\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_a8_unorm_swizzle_one\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_r8_unorm_swizzle_alpha\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_frame_time_smoothing\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_relaxed_frame_pacing\" value=\"false\" />\n")
@@ -740,15 +753,31 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"true\" />\n")
             }
+            GameProfileType.LITTLE_NIGHTMARES -> {
+                optionsBuilder.append("\n            <!-- LITTLE NIGHTMARES I, II & III (Unreal Engine 4 Bloom & Volumetric Depth Fix) -->\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_bounds_test\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_disable_lossy_ubwc_depth\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_subpass_fusion\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_subpass_fusion_v2\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
+            }
             GameProfileType.UNIVERSAL_DEFAULT -> {
                 optionsBuilder.append("\n            <!-- UNIVERSAL STORM SWITCH DEFAULT ENGINE RULES -->\n")
                 optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
             }
         }

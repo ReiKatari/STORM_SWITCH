@@ -456,6 +456,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
