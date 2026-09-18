@@ -76,10 +76,16 @@ class DriverManagerFragment : Fragment() {
                 when (it.itemId) {
                     R.id.menu_driver_use_global -> {
                         StringSetting.DRIVER_PATH.global = true
+                        NativeConfig.savePerGameConfig()
+                        val targetGame = args.game
+                        if (targetGame != null) {
+                            driverViewModel.wipeGameShaders(targetGame)
+                        }
                         driverViewModel.updateDriverList()
                         (binding.listDrivers.adapter as DriverAdapter)
                             .replaceList(driverViewModel.driverList.value)
                         driverViewModel.showClearButton(false)
+                        homeViewModel.reloadPropertiesList(true)
                         true
                     }
 
@@ -295,6 +301,7 @@ class DriverManagerFragment : Fragment() {
         driverViewModel.reloadDriverData()
         refreshDriverList()
         updateDriverSelectionUi()
+        homeViewModel.reloadPropertiesList(true)
     }
 
     private fun updateDriverSelectionUi() {

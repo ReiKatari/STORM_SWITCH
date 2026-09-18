@@ -527,24 +527,36 @@ class GamePropertiesFragment : Fragment() {
                     )
                 }
 
-                val shaderCacheDir = File(
-                    DirectoryInitialization.userDirectory +
-                        "/cache/shader/" + args.game.settingsName.lowercase()
-                )
-                if (shaderCacheDir.exists()) {
+                val userDir = DirectoryInitialization.userDirectory
+                val shaderDirs = mutableListOf<File>()
+                if (userDir != null) {
+                    val candidateNames = listOf(
+                        args.game.settingsName.lowercase(),
+                        args.game.settingsName.uppercase(),
+                        args.game.settingsName,
+                        args.game.programIdHex.lowercase(),
+                        args.game.programIdHex.uppercase()
+                    ).distinct()
+                    for (name in candidateNames) {
+                        val d = File(userDir, "cache/shader/$name")
+                        if (d.exists()) shaderDirs.add(d)
+                    }
+                }
+                val totalShaderBytes = shaderDirs.sumOf { d ->
+                    try {
+                        d.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
+                    } catch (_: Exception) {
+                        0L
+                    }
+                }
+                if (shaderDirs.isNotEmpty() && totalShaderBytes > 0L) {
                     add(
                         SubmenuProperty(
                             R.string.clear_shader_cache,
                             R.string.clear_shader_cache_description,
                             R.drawable.ic_delete,
                             details = {
-                                if (shaderCacheDir.exists()) {
-                                    val bytes = shaderCacheDir.walkTopDown().filter { it.isFile }
-                                        .map { it.length() }.sum()
-                                    MemoryUtil.bytesToSizeUnit(bytes.toFloat())
-                                } else {
-                                    MemoryUtil.bytesToSizeUnit(0f)
-                                }
+                                MemoryUtil.bytesToSizeUnit(totalShaderBytes.toFloat())
                             },
                             action = {
                                 MessageDialogFragment.newInstance(
@@ -552,7 +564,7 @@ class GamePropertiesFragment : Fragment() {
                                     titleId = R.string.clear_shader_cache,
                                     descriptionId = R.string.clear_shader_cache_warning_description,
                                     positiveAction = {
-                                        shaderCacheDir.deleteRecursively()
+                                        shaderDirs.forEach { runCatching { it.deleteRecursively() } }
                                         Toast.makeText(
                                             YuzuApplication.appContext,
                                             R.string.cleared_shaders_successfully,

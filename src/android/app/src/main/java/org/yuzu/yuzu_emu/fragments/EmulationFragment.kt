@@ -319,8 +319,13 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
             }
 
-            if (isFixRequested && hasBuiltInFix) {
-                // Apply/merge GameFix profile (non-destructive; user manual preferences take priority)
+            if (isUserCustom) {
+                // User manual per-game settings take absolute priority over built-in GameFix profiles
+                shouldUseCustom = true
+                SettingsFile.loadCustomConfig(gameToUse)
+                Log.info("[EmulationFragment] Loaded user manual per-game config for ${gameToUse.title} (user custom takes priority)")
+            } else if (isFixRequested && hasBuiltInFix) {
+                // Apply GameFix profile (only when no user custom config exists)
                 shouldUseCustom = true
                 val overrides = GameFixDatabase.getManualOverrides(gameToUse)
                 GameFixDatabase.applyFix(gameToUse)
@@ -328,13 +333,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 if (overrides.isNotEmpty()) {
                     Log.info("[EmulationFragment] GameFix active with user manual overrides: $overrides")
                 } else {
-                    Log.info("[EmulationFragment] Loaded GameFix profile for ${gameToUse.title} (custom config present: $isUserCustom)")
+                    Log.info("[EmulationFragment] Loaded GameFix profile for ${gameToUse.title}")
                 }
-            } else if (isUserCustom) {
-                // Launch without fixes, but respect user manual per-game settings
-                shouldUseCustom = true
-                SettingsFile.loadCustomConfig(gameToUse)
-                Log.info("[EmulationFragment] Loaded user manual per-game config (no fixes) for ${gameToUse.title}")
             } else {
                 // Clean launch: remove any temporary fix file and use global config
                 shouldUseCustom = false
@@ -2105,6 +2105,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     override fun onResume() {
         super.onResume()
         NativeLibrary.refreshThreadPolicies()
+        val currentGame = game ?: args.game
+        if (currentGame != null) {
+            if (GameFixDatabase.isUserCustomConfig(currentGame) || shouldUseCustom) {
+                if (!NativeConfig.isPerGameConfigLoaded()) {
+                    SettingsFile.loadCustomConfig(currentGame)
+                }
+            }
+            NativeLibrary.applySettings()
+        }
         val b = _binding ?: return
         updateStatsPosition(IntSetting.PERF_OVERLAY_POSITION.getInt())
         updateSocPosition(IntSetting.SOC_OVERLAY_POSITION.getInt())

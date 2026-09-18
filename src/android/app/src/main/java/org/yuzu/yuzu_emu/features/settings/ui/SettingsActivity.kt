@@ -27,6 +27,7 @@ import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.ActivitySettingsBinding
 import org.yuzu.yuzu_emu.features.input.NativeInput
 import org.yuzu.yuzu_emu.features.settings.utils.SettingsFile
+import org.yuzu.yuzu_emu.activities.EmulationActivity
 import org.yuzu.yuzu_emu.fragments.ResetSettingsDialogFragment
 import org.yuzu.yuzu_emu.model.GameFixDatabase
 import org.yuzu.yuzu_emu.utils.*
@@ -144,14 +145,20 @@ class SettingsActivity : AppCompatActivity() {
         Log.info("[SettingsActivity] Settings activity stopping. Saving settings to INI...")
         if (isFinishing) {
             NativeInput.reloadInputDevices()
-            NativeLibrary.applySettings()
             if (args.game == null) {
                 NativeConfig.saveGlobalConfig()
+                NativeLibrary.applySettings()
             } else if (NativeConfig.isPerGameConfigLoaded()) {
-                NativeLibrary.logSettings()
                 NativeConfig.savePerGameConfig()
                 args.game?.let { GameFixDatabase.markConfigAsUserCustom(it) }
-                NativeConfig.unloadPerGameConfig()
+                NativeLibrary.logSettings()
+                NativeLibrary.applySettings()
+
+                if (!EmulationActivity.isEmulationRunning) {
+                    NativeConfig.unloadPerGameConfig()
+                } else {
+                    Log.info("[SettingsActivity] Preserving loaded per-game config because emulation session is active")
+                }
             }
 
             if (settingsViewModel.shouldRecreateForLanguageChange.value) {

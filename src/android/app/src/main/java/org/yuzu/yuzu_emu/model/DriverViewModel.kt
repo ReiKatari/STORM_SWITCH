@@ -27,6 +27,8 @@ import org.yuzu.yuzu_emu.utils.NativeConfig
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
+import org.yuzu.yuzu_emu.utils.DirectoryInitialization
+import org.yuzu.yuzu_emu.utils.Log
 import java.io.File
 
 class DriverViewModel : ViewModel() {
@@ -190,22 +192,7 @@ class DriverViewModel : ViewModel() {
     fun wipeGameShaders(game: Game) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val externalFilesDir = YuzuApplication.appContext.getExternalFilesDir(null)
-                    ?: return@withContext
-                val shaderDir = File(
-                    externalFilesDir.absolutePath +
-                    "/shader/" + game.settingsName.lowercase()
-                )
-                if (shaderDir.exists()) {
-                    shaderDir.deleteRecursively()
-                }
-                val cacheDir = YuzuApplication.appContext.cacheDir
-                if (cacheDir != null) {
-                    val vulkanCache = File(cacheDir, "vulkan_pipelines.bin")
-                    if (vulkanCache.exists()) {
-                        vulkanCache.delete()
-                    }
-                }
+                deleteGameShadersInternal(game)
             }
         }
     }
@@ -213,20 +200,91 @@ class DriverViewModel : ViewModel() {
     fun wipeAllShaders() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val externalFilesDir = YuzuApplication.appContext.getExternalFilesDir(null)
-                if (externalFilesDir != null) {
-                    val shaderDir = File(externalFilesDir.absolutePath + "/shader")
-                    if (shaderDir.exists()) {
-                        shaderDir.deleteRecursively()
+                deleteAllShadersInternal()
+            }
+        }
+    }
+
+    private fun deleteGameShadersInternal(game: Game) {
+        val targets = mutableListOf<File>()
+        val userDir = DirectoryInitialization.userDirectory
+        val names = listOf(
+            game.settingsName.lowercase(),
+            game.settingsName.uppercase(),
+            game.settingsName,
+            game.programIdHex.lowercase(),
+            game.programIdHex.uppercase()
+        ).distinct()
+
+        if (userDir != null) {
+            for (name in names) {
+                targets.add(File(userDir, "cache/shader/$name"))
+                targets.add(File(userDir, "shader/$name"))
+            }
+        }
+
+        val extFiles = YuzuApplication.appContext.getExternalFilesDir(null)
+        if (extFiles != null) {
+            for (name in names) {
+                targets.add(File(extFiles, "shader/$name"))
+                targets.add(File(extFiles, "cache/shader/$name"))
+            }
+        }
+
+        val cacheDir = YuzuApplication.appContext.cacheDir
+        if (cacheDir != null) {
+            for (name in names) {
+                targets.add(File(cacheDir, "shader/$name"))
+            }
+            targets.add(File(cacheDir, "vulkan_pipelines.bin"))
+        }
+
+        for (target in targets) {
+            try {
+                if (target.exists()) {
+                    if (target.isDirectory) {
+                        target.deleteRecursively()
+                    } else {
+                        target.delete()
                     }
+                    Log.info("[DriverViewModel] Deleted shader cache target: ${target.absolutePath}")
                 }
-                val cacheDir = YuzuApplication.appContext.cacheDir
-                if (cacheDir != null) {
-                    val vulkanCache = File(cacheDir, "vulkan_pipelines.bin")
-                    if (vulkanCache.exists()) {
-                        vulkanCache.delete()
+            } catch (e: Exception) {
+                Log.error("[DriverViewModel] Failed to delete shader cache target ${target.absolutePath}: ${e.message}")
+            }
+        }
+    }
+
+    private fun deleteAllShadersInternal() {
+        val targets = mutableListOf<File>()
+        val userDir = DirectoryInitialization.userDirectory
+        if (userDir != null) {
+            targets.add(File(userDir, "cache/shader"))
+            targets.add(File(userDir, "shader"))
+        }
+        val extFiles = YuzuApplication.appContext.getExternalFilesDir(null)
+        if (extFiles != null) {
+            targets.add(File(extFiles, "shader"))
+            targets.add(File(extFiles, "cache/shader"))
+        }
+        val cacheDir = YuzuApplication.appContext.cacheDir
+        if (cacheDir != null) {
+            targets.add(File(cacheDir, "shader"))
+            targets.add(File(cacheDir, "vulkan_pipelines.bin"))
+        }
+
+        for (target in targets) {
+            try {
+                if (target.exists()) {
+                    if (target.isDirectory) {
+                        target.deleteRecursively()
+                    } else {
+                        target.delete()
                     }
+                    Log.info("[DriverViewModel] Deleted all shader cache target: ${target.absolutePath}")
                 }
+            } catch (e: Exception) {
+                Log.error("[DriverViewModel] Failed to delete all shader cache in ${target.absolutePath}: ${e.message}")
             }
         }
     }
