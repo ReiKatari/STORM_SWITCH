@@ -172,6 +172,7 @@ object StormHardwareCalibrator {
         prefs.edit()
             .putBoolean(PREF_HARDWARE_CALIBRATED, true)
             .putString(PREF_LAST_CONFIGURED_VERSION, currentVersion)
+            .putBoolean(org.yuzu.yuzu_emu.features.settings.model.Settings.PREF_APP_FULLSCREEN, true)
             .apply()
     }
 

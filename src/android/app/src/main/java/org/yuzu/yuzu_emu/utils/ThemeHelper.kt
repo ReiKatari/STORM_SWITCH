@@ -97,6 +97,10 @@ object ThemeHelper {
                 window.isNavigationBarContrastEnforced = false
                 window.isStatusBarContrastEnforced = false
             }
+            val ctx = context ?: window.context
+            if (FullscreenHelper.isFullscreenEnabled(ctx)) {
+                FullscreenHelper.applyToWindow(window, true)
+            }
         } catch (_: Throwable) {
         }
     }

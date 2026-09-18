@@ -213,6 +213,11 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
             )
         }
 
+        if (FullscreenHelper.isFullscreenEnabled(applicationContext)) {
+            binding.statusBarShade.visibility = View.GONE
+            binding.navigationBarShade.visibility = View.GONE
+        }
+
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
         setUpNavigation(navHostFragment.navController)
@@ -424,6 +429,10 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
     }
 
     private fun showStatusBarShade(visible: Boolean) {
+        if (FullscreenHelper.isFullscreenEnabled(applicationContext)) {
+            binding.statusBarShade.visibility = View.GONE
+            return
+        }
         binding.statusBarShade.animate().apply {
             if (visible) {
                 binding.statusBarShade.setVisible(true)
@@ -464,22 +473,31 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
     private fun setInsets() = ViewCompat.setOnApplyWindowInsetsListener(
         binding.root
     ) { _: View, windowInsets: WindowInsetsCompat ->
-        val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-        val mlpStatusShade = binding.statusBarShade.layoutParams as MarginLayoutParams
-        mlpStatusShade.height = insets.top
-        binding.statusBarShade.layoutParams = mlpStatusShade
+        val isFullscreen = FullscreenHelper.isFullscreenEnabled(applicationContext)
+        if (isFullscreen) {
+            binding.statusBarShade.visibility = View.GONE
+            binding.navigationBarShade.visibility = View.GONE
+        } else {
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val mlpStatusShade = binding.statusBarShade.layoutParams as MarginLayoutParams
+            mlpStatusShade.height = insets.top
+            binding.statusBarShade.layoutParams = mlpStatusShade
 
-        // The only situation where we care to have a nav bar shade is when it's at the bottom
-        // of the screen where scrolling list elements can go behind it.
-        val mlpNavShade = binding.navigationBarShade.layoutParams as MarginLayoutParams
-        mlpNavShade.height = insets.bottom
-        binding.navigationBarShade.layoutParams = mlpNavShade
+            val mlpNavShade = binding.navigationBarShade.layoutParams as MarginLayoutParams
+            mlpNavShade.height = insets.bottom
+            binding.navigationBarShade.layoutParams = mlpNavShade
+        }
 
         windowInsets
     }
 
     private fun applyFullscreenPreference() {
+        val isFullscreen = FullscreenHelper.isFullscreenEnabled(this)
         FullscreenHelper.applyToActivity(this)
+        if (isFullscreen) {
+            binding.statusBarShade.visibility = View.GONE
+            binding.navigationBarShade.visibility = View.GONE
+        }
     }
 
     override fun setTheme(resId: Int) {

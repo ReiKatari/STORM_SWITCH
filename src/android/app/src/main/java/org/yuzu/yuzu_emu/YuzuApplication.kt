@@ -25,6 +25,7 @@ import org.yuzu.yuzu_emu.utils.GpuDriverHelper
 import org.yuzu.yuzu_emu.utils.Log
 import org.yuzu.yuzu_emu.utils.PowerStateUpdater
 import org.yuzu.yuzu_emu.utils.ControllerNavigationGlobalHook
+import org.yuzu.yuzu_emu.utils.FullscreenHelper
 import java.util.Locale
 
 fun Context.getPublicFilesDir(): File = getExternalFilesDir(null) ?: filesDir
@@ -77,6 +78,49 @@ class YuzuApplication : Application() {
         super.onCreate()
         application = this
         org.yuzu.yuzu_emu.utils.CrashHandler.install(this)
+
+        try {
+            registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+                override fun onActivityCreated(activity: android.app.Activity, savedInstanceState: android.os.Bundle?) {
+                    FullscreenHelper.applyToActivity(activity)
+                    if (activity is androidx.fragment.app.FragmentActivity) {
+                        activity.supportFragmentManager.registerFragmentLifecycleCallbacks(
+                            object : androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
+                                override fun onFragmentStarted(
+                                    fm: androidx.fragment.app.FragmentManager,
+                                    f: androidx.fragment.app.Fragment
+                                ) {
+                                    if (f is androidx.fragment.app.DialogFragment) {
+                                        f.dialog?.window?.let { dialogWindow ->
+                                            FullscreenHelper.applyToWindow(
+                                                dialogWindow,
+                                                FullscreenHelper.isFullscreenEnabled(activity)
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                            true
+                        )
+                    }
+                }
+
+                override fun onActivityStarted(activity: android.app.Activity) {
+                    FullscreenHelper.applyToActivity(activity)
+                }
+
+                override fun onActivityResumed(activity: android.app.Activity) {
+                    FullscreenHelper.applyToActivity(activity)
+                }
+
+                override fun onActivityPaused(activity: android.app.Activity) {}
+                override fun onActivityStopped(activity: android.app.Activity) {}
+                override fun onActivitySaveInstanceState(activity: android.app.Activity, outState: android.os.Bundle) {}
+                override fun onActivityDestroyed(activity: android.app.Activity) {}
+            })
+        } catch (t: Throwable) {
+            org.yuzu.yuzu_emu.utils.CrashHandler.logError(this, "FullscreenLifecycleCallbacks", t)
+        }
 
         try {
             documentsTree = DocumentsTree()
