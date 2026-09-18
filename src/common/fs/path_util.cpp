@@ -482,6 +482,9 @@ std::string SanitizePath(std::string_view path_, DirectorySeparator directory_se
     if (Android::IsContentUri(path)) {
         return path;
     }
+    if (path.starts_with("file://")) {
+        path = path.substr(7);
+    }
 #endif // __ANDROID__
 
     char type1 = directory_separator == DirectorySeparator::BackwardSlash ? '/' : '\\';

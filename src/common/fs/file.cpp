@@ -260,21 +260,25 @@ void IOFile::Open(const fs::path& path, FileAccessMode mode, FileType type, File
         _wfopen_s(&file, path.c_str(), AccessModeToWStr(mode, type));
     }
 #elif __ANDROID__
-    if (Android::IsContentUri(path)) {
+    std::string resolved_path = path;
+    if (resolved_path.starts_with("file://")) {
+        resolved_path = resolved_path.substr(7);
+    }
+    if (Android::IsContentUri(resolved_path)) {
         ASSERT_MSG(mode == FileAccessMode::Read, "Content URI file access is for read-only!");
-        const auto fd = Android::OpenContentUri(path, Android::OpenMode::Read);
+        const auto fd = Android::OpenContentUri(resolved_path, Android::OpenMode::Read);
         if (fd != -1) {
             file = fdopen(fd, "r");
             const auto error_num = errno;
             if (error_num != 0 && file == nullptr) {
-                LOG_ERROR(Common_Filesystem, "Error opening file: {}, error: {}", path.c_str(),
+                LOG_ERROR(Common_Filesystem, "Error opening file: {}, error: {}", resolved_path.c_str(),
                           strerror(error_num));
             }
         } else {
-            LOG_ERROR(Common_Filesystem, "Error opening file: {}", path.c_str());
+            LOG_ERROR(Common_Filesystem, "Error opening file: {}", resolved_path.c_str());
         }
     } else {
-        file = std::fopen(path.c_str(), AccessModeToStr(mode, type));
+        file = std::fopen(resolved_path.c_str(), AccessModeToStr(mode, type));
     }
 #else
     file = std::fopen(path.c_str(), AccessModeToStr(mode, type));

@@ -8,6 +8,7 @@ package org.yuzu.yuzu_emu.utils
 
 import android.database.Cursor
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import java.io.BufferedInputStream
@@ -92,6 +93,17 @@ object FileUtil {
     @JvmStatic
     fun openContentUri(path: String, openMode: String?): Int {
         try {
+            if (path.startsWith("/") || path.startsWith("file://")) {
+                val cleanPath = if (path.startsWith("file://")) path.substring(7) else path
+                val f = File(cleanPath)
+                if (f.exists()) {
+                    val mode = when (openMode) {
+                        "rw", "rwa", "wa" -> ParcelFileDescriptor.MODE_READ_WRITE
+                        else -> ParcelFileDescriptor.MODE_READ_ONLY
+                    }
+                    return ParcelFileDescriptor.open(f, mode).detachFd()
+                }
+            }
             val uri = Uri.parse(path)
             val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, openMode!!)
             if (parcelFileDescriptor == null) {
@@ -117,7 +129,8 @@ object FileUtil {
         val results: MutableList<MinimalDocumentFile> = ArrayList()
 
         if (uri.scheme == "file" || !uri.toString().startsWith("content://")) {
-            val file = if (uri.scheme == "file") File(uri.path ?: "") else File(uri.toString())
+            val path = if (uri.scheme == "file") uri.path ?: "" else uri.toString()
+            val file = File(path)
             if (file.exists() && file.isDirectory) {
                 file.listFiles()?.forEach { f ->
                     val mime = if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "application/octet-stream"
@@ -125,6 +138,31 @@ object FileUtil {
                 }
             }
             return results.toTypedArray()
+        }
+
+        val realPath = PathUtil.getPathFromUri(uri)
+        if (realPath != null) {
+            val file = File(realPath)
+            if (file.exists() && file.isDirectory) {
+                val treeDocId = if (isRootTreeUri(uri)) DocumentsContract.getTreeDocumentId(uri) else DocumentsContract.getDocumentId(uri)
+                file.listFiles()?.forEach { f ->
+                    val mime = if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "application/octet-stream"
+                    val childDocId = if (treeDocId.contains(":")) {
+                        val prefix = treeDocId.substringBefore(":") + ":"
+                        val rel = f.absolutePath.substringAfter("/storage/emulated/0/").removePrefix("/")
+                        prefix + rel
+                    } else {
+                        "$treeDocId/${f.name}"
+                    }
+                    val childUri = runCatching {
+                        DocumentsContract.buildDocumentUriUsingTree(uri, childDocId)
+                    }.getOrDefault(Uri.fromFile(f))
+                    results.add(MinimalDocumentFile(f.name, mime, childUri))
+                }
+                if (results.isNotEmpty()) {
+                    return results.toTypedArray()
+                }
+            }
         }
 
         val resolver = context.contentResolver
@@ -182,12 +220,17 @@ object FileUtil {
      * @return bool
      */
     fun exists(path: String?, suppressLog: Boolean = false): Boolean {
+        if (path.isNullOrEmpty()) return false
+        if (path.startsWith("/") || path.startsWith("file://")) {
+            val clean = if (path.startsWith("file://")) path.substring(7) else path
+            return File(clean).exists()
+        }
         var c: Cursor? = null
         try {
             val mUri = Uri.parse(path)
             val columns = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
             c = context.contentResolver.query(mUri, columns, null, null, null)
-            return c!!.count > 0
+            return c != null && c.count > 0
         } catch (e: Exception) {
             if (!suppressLog) {
                 Log.info("[FileUtil] Cannot find file from given path, error: " + e.message)
@@ -204,6 +247,10 @@ object FileUtil {
      * @return bool
      */
     fun isDirectory(path: String): Boolean {
+        if (path.startsWith("/") || path.startsWith("file://")) {
+            val clean = if (path.startsWith("file://")) path.substring(7) else path
+            return File(clean).isDirectory
+        }
         val resolver = context.contentResolver
         val columns = arrayOf(
             DocumentsContract.Document.COLUMN_MIME_TYPE
@@ -213,9 +260,10 @@ object FileUtil {
         try {
             val mUri = Uri.parse(path)
             c = resolver.query(mUri, columns, null, null, null)
-            c!!.moveToNext()
-            val mimeType = c.getString(0)
-            isDirectory = mimeType == DocumentsContract.Document.MIME_TYPE_DIR
+            if (c != null && c.moveToNext()) {
+                val mimeType = c.getString(0)
+                isDirectory = mimeType == DocumentsContract.Document.MIME_TYPE_DIR
+            }
         } catch (e: Exception) {
             Log.error("[FileUtil]: Cannot list files, error: " + e.message)
         } finally {
@@ -230,10 +278,9 @@ object FileUtil {
      * @return String display name
      */
     fun getFilename(uri: Uri): String {
-        if (uri.scheme == "file") {
-            return uri.lastPathSegment?.takeIf { it.isNotEmpty() } ?: throw IOException(
-                "Invalid file URI: $uri"
-            )
+        if (uri.scheme == "file" || uri.scheme == null || !uri.toString().startsWith("content://")) {
+            val p = uri.path ?: uri.toString()
+            return File(p).name
         }
 
         val resolver = YuzuApplication.appContext.contentResolver
@@ -244,12 +291,19 @@ object FileUtil {
         var c: Cursor? = null
         try {
             c = resolver.query(uri, columns, null, null, null)
-            c!!.moveToNext()
-            filename = c.getString(0)
+            if (c != null && c.moveToNext()) {
+                filename = c.getString(0)
+            }
         } catch (e: Exception) {
-            Log.error("[FileUtil]: Cannot get file size, error: " + e.message)
+            Log.error("[FileUtil]: Cannot get filename, error: " + e.message)
         } finally {
             closeQuietly(c)
+        }
+        if (filename.isEmpty()) {
+            val real = PathUtil.getPathFromUri(uri)
+            if (real != null) {
+                filename = File(real).name
+            }
         }
         return filename
     }
@@ -270,6 +324,10 @@ object FileUtil {
      */
     @JvmStatic
     fun getFileSize(path: String): Long {
+        if (path.startsWith("/") || path.startsWith("file://")) {
+            val clean = if (path.startsWith("file://")) path.substring(7) else path
+            return File(clean).length()
+        }
         val resolver = context.contentResolver
         val columns = arrayOf(
             DocumentsContract.Document.COLUMN_SIZE
@@ -279,8 +337,9 @@ object FileUtil {
         try {
             val mUri = path.toUri()
             c = resolver.query(mUri, columns, null, null, null)
-            c!!.moveToNext()
-            size = c.getLong(0)
+            if (c != null && c.moveToNext()) {
+                size = c.getLong(0)
+            }
         } catch (e: Exception) {
             Log.error("[FileUtil]: Cannot get file size, error: " + e.message)
         } finally {
@@ -547,6 +606,13 @@ object FileUtil {
         if (uri.scheme == "file" || !uri.toString().startsWith("content://")) {
             val f = if (uri.scheme == "file") File(uri.path ?: "") else File(uri.toString())
             return f.exists() && f.canRead()
+        }
+        val realPath = PathUtil.getPathFromUri(uri)
+        if (realPath != null) {
+            val f = File(realPath)
+            if (f.exists() && f.canRead()) {
+                return true
+            }
         }
         val resolver = context.contentResolver
         val columns = arrayOf(

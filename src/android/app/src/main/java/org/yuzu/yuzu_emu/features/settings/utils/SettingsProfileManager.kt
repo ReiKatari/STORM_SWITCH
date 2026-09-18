@@ -112,15 +112,15 @@ object SettingsProfileManager {
                         BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.key to true,
                         BooleanSetting.RENDERER_REACTIVE_FLUSHING.key to true,
                         BooleanSetting.VULKAN_PIPELINE_CACHE.key to true,
-                        BooleanSetting.VRAM_GARBAGE_COLLECTION.key to true,
+                        BooleanSetting.VRAM_GARBAGE_COLLECTION.key to false,
                         BooleanSetting.FASTMEM.key to true,
                         BooleanSetting.FASTMEM_EXCLUSIVES.key to true,
                         BooleanSetting.USE_DOCKED_MODE.key to false,
                         BooleanSetting.AIRPLANE_MODE.key to false,
-                        BooleanSetting.ECO_THERMAL_MODE.key to true,
-                        BooleanSetting.ECO_FRAME_PACING.key to true,
-                        BooleanSetting.SMART_SHADER_THROTTLE.key to true,
-                        BooleanSetting.CPU_AFFINITY_PINNING.key to true,
+                        BooleanSetting.ECO_THERMAL_MODE.key to false,
+                        BooleanSetting.ECO_FRAME_PACING.key to false,
+                        BooleanSetting.SMART_SHADER_THROTTLE.key to false,
+                        BooleanSetting.CPU_AFFINITY_PINNING.key to false,
                         BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.key to true,
                         BooleanSetting.ENABLE_FRAME_SKIPPING.key to true,
                         BooleanSetting.RENDERER_USE_DISK_SHADER_CACHE.key to true,
@@ -156,15 +156,15 @@ object SettingsProfileManager {
                         BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.key to true,
                         BooleanSetting.RENDERER_REACTIVE_FLUSHING.key to true,
                         BooleanSetting.VULKAN_PIPELINE_CACHE.key to true,
-                        BooleanSetting.VRAM_GARBAGE_COLLECTION.key to true,
+                        BooleanSetting.VRAM_GARBAGE_COLLECTION.key to false,
                         BooleanSetting.FASTMEM.key to true,
                         BooleanSetting.FASTMEM_EXCLUSIVES.key to true,
                         BooleanSetting.USE_DOCKED_MODE.key to false,
                         BooleanSetting.AIRPLANE_MODE.key to false,
-                        BooleanSetting.ECO_THERMAL_MODE.key to true,
-                        BooleanSetting.ECO_FRAME_PACING.key to true,
-                        BooleanSetting.SMART_SHADER_THROTTLE.key to true,
-                        BooleanSetting.CPU_AFFINITY_PINNING.key to true,
+                        BooleanSetting.ECO_THERMAL_MODE.key to false,
+                        BooleanSetting.ECO_FRAME_PACING.key to false,
+                        BooleanSetting.SMART_SHADER_THROTTLE.key to false,
+                        BooleanSetting.CPU_AFFINITY_PINNING.key to false,
                         BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.key to true,
                         BooleanSetting.ENABLE_FRAME_SKIPPING.key to true,
                         BooleanSetting.RENDERER_USE_DISK_SHADER_CACHE.key to true,
@@ -202,15 +202,15 @@ object SettingsProfileManager {
                         BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.key to true,
                         BooleanSetting.RENDERER_REACTIVE_FLUSHING.key to true,
                         BooleanSetting.VULKAN_PIPELINE_CACHE.key to true,
-                        BooleanSetting.VRAM_GARBAGE_COLLECTION.key to true,
+                        BooleanSetting.VRAM_GARBAGE_COLLECTION.key to false,
                         BooleanSetting.FASTMEM.key to true,
                         BooleanSetting.FASTMEM_EXCLUSIVES.key to true,
                         BooleanSetting.USE_DOCKED_MODE.key to true,
                         BooleanSetting.AIRPLANE_MODE.key to false,
-                        BooleanSetting.ECO_THERMAL_MODE.key to true,
-                        BooleanSetting.ECO_FRAME_PACING.key to true,
-                        BooleanSetting.SMART_SHADER_THROTTLE.key to true,
-                        BooleanSetting.CPU_AFFINITY_PINNING.key to true,
+                        BooleanSetting.ECO_THERMAL_MODE.key to false,
+                        BooleanSetting.ECO_FRAME_PACING.key to false,
+                        BooleanSetting.SMART_SHADER_THROTTLE.key to false,
+                        BooleanSetting.CPU_AFFINITY_PINNING.key to false,
                         BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.key to true,
                         BooleanSetting.ENABLE_FRAME_SKIPPING.key to true,
                         BooleanSetting.RENDERER_USE_DISK_SHADER_CACHE.key to true,
@@ -254,7 +254,7 @@ object SettingsProfileManager {
             put("id", id)
             put("name", name)
             put("description", description)
-            put("version", "9.0.0")
+            put("version", "9.0.1")
             put("timestamp", System.currentTimeMillis())
 
             val boolObj = JSONObject()
@@ -305,7 +305,7 @@ object SettingsProfileManager {
             json.put("id", id)
             json.put("name", safeName)
             json.put("description", description.trim())
-            json.put("version", "9.0.0")
+            json.put("version", "9.0.1")
             json.put("timestamp", System.currentTimeMillis())
 
             val needsGlobal = !NativeConfig.isPerGameConfigLoaded()

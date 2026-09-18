@@ -135,6 +135,11 @@ void AndroidConfig::ReadPathValues() {
         Common::FS::SetEdenPath(Common::FS::EdenPath::SaveDir, save_dir_setting);
     }
 
+    Common::FS::SetEdenPath(Common::FS::EdenPath::KeysDir, "/storage/emulated/0/STORM SWITCH/keys");
+    Common::FS::SetEdenPath(Common::FS::EdenPath::LoadDir, "/storage/emulated/0/STORM SWITCH/load");
+    Common::FS::SetEdenPath(Common::FS::EdenPath::AmiiboDir, "/storage/emulated/0/STORM SWITCH/amiibo");
+    Common::FS::SetEdenPath(Common::FS::EdenPath::ScreenshotsDir, "/storage/emulated/0/STORM SWITCH/screenshots");
+
     EndGroup();
 }
 

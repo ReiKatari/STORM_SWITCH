@@ -269,12 +269,12 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FRAME_GEN_FLOW_SCALE_AUTO.setBoolean(true)
 
         // 6. Thermal & Pacing Flags
-        BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
-        BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
-        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
+        BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
+        BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
+        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
-        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
+        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(false)
     }
 
     /**
@@ -304,7 +304,7 @@ object StormHardwareCalibrator {
         IntSetting.MEMORY_LAYOUT.setInt(0) // 4GB
         BooleanSetting.USE_DOCKED_MODE.setBoolean(false) // Handheld for speed/efficiency
         IntSetting.RENDERER_DYNA_STATE.setInt(if (profile.isAdreno && !profile.isAdreno6xx) 1 else 0)
-        IntSetting.ANDROID_PIPELINE_WORKERS.setInt(2)
+        IntSetting.ANDROID_PIPELINE_WORKERS.setInt(if (profile.isAdreno830) 4 else 2)
 
         BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
         BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
@@ -325,12 +325,12 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FRAME_GEN_FP16.setBoolean(true)
         BooleanSetting.RENDERER_FRAME_GEN_FLOW_SCALE_AUTO.setBoolean(true)
 
-        BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
-        BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
-        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
+        BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
+        BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
+        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
-        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
+        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(false)
     }
 
     /**
@@ -381,12 +381,12 @@ object StormHardwareCalibrator {
         BooleanSetting.RENDERER_FRAME_GEN_FP16.setBoolean(true)
         BooleanSetting.RENDERER_FRAME_GEN_FLOW_SCALE_AUTO.setBoolean(true)
 
-        BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
-        BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
-        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
+        BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
+        BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
+        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
-        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
+        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(false)
     }
 
     /**
@@ -432,11 +432,11 @@ object StormHardwareCalibrator {
         BooleanSetting.ENABLE_GPU_BUFFER_READBACK.setBoolean(false)
         BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(profile.isAdreno && !profile.isAdreno6xx)
 
-        BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
-        BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
-        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
+        BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
+        BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
+        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
-        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
+        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(false)
     }
 }

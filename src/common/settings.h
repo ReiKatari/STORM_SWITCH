@@ -599,28 +599,28 @@ struct Values {
 
     // Optimization & Thermal / Memory Features
     SwitchableSetting<bool> eco_thermal_mode{linkage,
-                                             true,
+                                             false,
                                              "eco_thermal_mode",
                                              Category::System,
                                              Specialization::Default,
                                              true,
                                              true};
     SwitchableSetting<bool> eco_frame_pacing{linkage,
-                                             true,
+                                             false,
                                              "eco_frame_pacing",
                                              Category::Renderer,
                                              Specialization::Default,
                                              true,
                                              true};
     SwitchableSetting<bool> smart_shader_throttle{linkage,
-                                                  true,
+                                                  false,
                                                   "smart_shader_throttle",
                                                   Category::RendererAdvanced,
                                                   Specialization::Default,
                                                   true,
                                                   true};
     SwitchableSetting<bool> cpu_affinity_pinning{linkage,
-                                                 true,
+                                                 false,
                                                  "cpu_affinity_pinning",
                                                  Category::Cpu,
                                                  Specialization::Default,
@@ -641,7 +641,7 @@ struct Values {
                                          true,
                                          true};
     SwitchableSetting<bool> vram_budget_governor{linkage,
-                                                 true,
+                                                 false,
                                                  "vram_budget_governor",
                                                  Category::RendererAdvanced,
                                                  Specialization::Default,
@@ -655,7 +655,7 @@ struct Values {
                                                true,
                                                true};
     SwitchableSetting<bool> storm_thermal_governor{linkage,
-                                                  true,
+                                                  false,
                                                   "storm_thermal_governor",
                                                   Category::System,
                                                   Specialization::Default,

@@ -478,10 +478,14 @@ void IterateDirEntriesRecursively(const std::filesystem::path& path, const DirEn
 bool Exists(const fs::path& path) {
     std::error_code ec;
 #ifdef __ANDROID__
-    if (Android::IsContentUri(path)) {
-        return Android::Exists(path);
+    std::string path_str = path.string();
+    if (path_str.starts_with("file://")) {
+        path_str = path_str.substr(7);
+    }
+    if (Android::IsContentUri(path_str)) {
+        return Android::Exists(path_str);
     } else {
-        return fs::exists(path, ec);
+        return fs::exists(path_str, ec);
     }
 #else
     return fs::exists(path, ec);
@@ -491,10 +495,14 @@ bool Exists(const fs::path& path) {
 bool IsFile(const fs::path& path) {
     std::error_code ec;
 #ifdef __ANDROID__
-    if (Android::IsContentUri(path)) {
-        return !Android::IsDirectory(path);
+    std::string path_str = path.string();
+    if (path_str.starts_with("file://")) {
+        path_str = path_str.substr(7);
+    }
+    if (Android::IsContentUri(path_str)) {
+        return !Android::IsDirectory(path_str);
     } else {
-        return fs::is_regular_file(path, ec);
+        return fs::is_regular_file(path_str, ec);
     }
 #else
     return fs::is_regular_file(path, ec);
@@ -504,10 +512,14 @@ bool IsFile(const fs::path& path) {
 bool IsDir(const fs::path& path) {
     std::error_code ec;
 #ifdef __ANDROID__
-    if (Android::IsContentUri(path)) {
-        return Android::IsDirectory(path);
+    std::string path_str = path.string();
+    if (path_str.starts_with("file://")) {
+        path_str = path_str.substr(7);
+    }
+    if (Android::IsContentUri(path_str)) {
+        return Android::IsDirectory(path_str);
     } else {
-        return fs::is_directory(path, ec);
+        return fs::is_directory(path_str, ec);
     }
 #else
     return fs::is_directory(path, ec);

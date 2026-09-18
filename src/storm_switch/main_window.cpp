@@ -483,10 +483,10 @@ MainWindow::MainWindow(bool has_broken_vulkan)
         Settings::values.use_asynchronous_shaders.SetValue(true);
         Settings::values.use_asynchronous_gpu_emulation.SetValue(true);
         Settings::values.async_presentation.SetValue(true);
-        Settings::values.eco_thermal_mode.SetValue(true);
-        Settings::values.eco_frame_pacing.SetValue(true);
-        Settings::values.smart_shader_throttle.SetValue(true);
-        Settings::values.cpu_affinity_pinning.SetValue(true);
+        Settings::values.eco_thermal_mode.SetValue(false);
+        Settings::values.eco_frame_pacing.SetValue(false);
+        Settings::values.smart_shader_throttle.SetValue(false);
+        Settings::values.cpu_affinity_pinning.SetValue(false);
         Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
         Settings::values.vram_garbage_collection.SetValue(false);
         Settings::values.early_release_fences.SetValue(false);
@@ -498,9 +498,9 @@ MainWindow::MainWindow(bool has_broken_vulkan)
         Settings::values.barrier_feedback_loops.SetValue(true);
         Settings::values.drs_resolution_lock.SetValue(false);
         Settings::values.vram_usage_mode.SetValue(Settings::VramUsageMode::Normal);
-        Settings::values.vram_budget_governor.SetValue(true);
+        Settings::values.vram_budget_governor.SetValue(false);
         Settings::values.storm_lowend_turbo.SetValue(false);
-        Settings::values.storm_thermal_governor.SetValue(true);
+        Settings::values.storm_thermal_governor.SetValue(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
         Settings::values.cpuopt_fastmem.SetValue(true);
         Settings::values.skip_cpu_inner_invalidation.SetValue(false);

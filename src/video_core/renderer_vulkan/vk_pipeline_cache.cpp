@@ -324,11 +324,7 @@ size_t GetTotalPipelineWorkers() {
     if (desired == 0) {
         return 1ULL;
     }
-    size_t count = std::min(max_core_threads, desired);
-    if (Settings::values.smart_shader_throttle.GetValue() || Settings::values.eco_thermal_mode.GetValue()) {
-        count = std::max<size_t>(1ULL, count / 2ULL);
-    }
-    return count;
+    return std::min(max_core_threads, desired);
 #else
     if (Settings::values.storm_lowend_turbo.GetValue()) {
         return 1ULL;

@@ -130,8 +130,8 @@ void TextureCache<P>::RunGarbageCollector() {
         const size_t target_critical = budget_gov ? (critical_memory * 90 / 100) : critical_memory;
         high_priority_mode = total_used_memory >= target_expected;
         aggressive_mode = allow_aggressive && (total_used_memory >= target_critical || lowend_turbo);
-        ticks_to_destroy = aggressive_mode ? 30ULL : (high_priority_mode ? 90ULL : ((vram_gc || lowend_turbo) ? 120ULL : 180ULL));
-        num_iterations = aggressive_mode ? 40 : (high_priority_mode ? 20 : ((vram_gc || lowend_turbo) ? 15 : 10));
+        ticks_to_destroy = aggressive_mode ? 60ULL : (high_priority_mode ? 180ULL : 300ULL);
+        num_iterations = aggressive_mode ? 30 : (high_priority_mode ? 15 : 10);
     };
     const auto Cleanup = [this, &num_iterations, &high_priority_mode, &aggressive_mode, &sync_downloads, vram_gc](ImageId image_id) {
         if (num_iterations == 0) {
@@ -190,9 +190,11 @@ void TextureCache<P>::TickFrame() {
     }
     const bool vram_gc = Settings::values.vram_garbage_collection.GetValue();
     const bool budget_gov = Settings::values.vram_budget_governor.GetValue();
-    u64 gc_threshold = vram_gc ? (minimum_memory * 3 / 4) : critical_memory;
+    u64 gc_threshold = critical_memory;
     if (budget_gov) {
-        gc_threshold = std::min<u64>(gc_threshold, static_cast<u64>(critical_memory * 85 / 100));
+        gc_threshold = static_cast<u64>(critical_memory * 90 / 100);
+    } else if (vram_gc) {
+        gc_threshold = static_cast<u64>(critical_memory * 95 / 100);
     }
     if (total_used_memory > gc_threshold) {
         RunGarbageCollector();

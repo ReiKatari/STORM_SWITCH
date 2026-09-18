@@ -15,6 +15,7 @@
 #include "common/logging.h"
 #include "common/assert.h"
 #include "common/thread.h"
+#include "common/settings.h"
 #ifdef __APPLE__
 #include <mach/mach.h>
 #elif defined(__HAIKU__)
@@ -549,6 +550,10 @@ void SetCurrentThreadName(const char* name) {
 
 void SetCurrentThreadToPerformanceCores() {
 #if defined(__ANDROID__)
+    if (!Settings::values.cpu_affinity_pinning.GetValue()) {
+        SetCurrentThreadCoreGroup(CoreGroup::Unrestricted);
+        return;
+    }
     if (ADPF::AddCurrentThread(ADPF::Session::Render)) {
         SetCurrentThreadCoreGroup(CoreGroup::Unrestricted);
         return;
@@ -559,6 +564,10 @@ void SetCurrentThreadToPerformanceCores() {
 
 void SetCurrentThreadToEfficiencyCores() {
 #if defined(__ANDROID__)
+    if (!Settings::values.cpu_affinity_pinning.GetValue()) {
+        SetCurrentThreadCoreGroup(CoreGroup::Unrestricted);
+        return;
+    }
     if (ADPF::AddCurrentThread(ADPF::Session::Background)) {
         SetCurrentThreadCoreGroup(CoreGroup::Unrestricted);
         return;

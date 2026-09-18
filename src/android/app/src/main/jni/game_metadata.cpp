@@ -8,6 +8,7 @@
 #include "common/android/android_common.h"
 #include "common/string_util.h"
 #include "core/core.h"
+#include "core/crypto/key_manager.h"
 #include "core/file_sys/fs_filesystem.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/loader/loader.h"
@@ -41,7 +42,14 @@ static bool IsBaseVersion(std::string_view ver) {
            ver.starts_with("0.");
 }
 
-static RomMetadata CacheRomMetadata(const std::string& path) {
+static RomMetadata CacheRomMetadata(const std::string& raw_path) {
+    std::string path = raw_path;
+    if (path.starts_with("file://")) {
+        path = path.substr(7);
+    }
+    if (!Core::Crypto::KeyManager::Instance().AreKeysLoaded()) {
+        Core::Crypto::KeyManager::Instance().ReloadKeys();
+    }
     auto& instance = EmulationSession::GetInstance();
     auto* content_provider = instance.GetContentProvider();
     const auto file = Core::GetGameFileFromPath(instance.System().GetFilesystem(), path);
@@ -295,12 +303,19 @@ static RomMetadata GetRomMetadata(const std::string& path, bool reload = false) 
 extern "C" {
 
 jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobject obj, jstring jpath) {
-    const std::string path_str = Common::Android::GetJString(env, jpath);
+    std::string path_str = Common::Android::GetJString(env, jpath);
+    if (path_str.starts_with("file://")) {
+        path_str = path_str.substr(7);
+    }
     const auto l_path = Common::ToLower(path_str);
     if (l_path.ends_with(".part") || l_path.ends_with(".tmp") ||
         l_path.ends_with(".crdownload") || l_path.ends_with(".downloading") ||
         l_path.ends_with(".incomplete") || l_path.ends_with(".!ut")) {
         return false;
+    }
+
+    if (!Core::Crypto::KeyManager::Instance().AreKeysLoaded()) {
+        Core::Crypto::KeyManager::Instance().ReloadKeys();
     }
 
     if (auto const file = EmulationSession::GetInstance().System().GetFilesystem()->OpenFile(path_str, FileSys::OpenMode::Read); file) {
@@ -313,6 +328,7 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
                 return false;
             if ((file_type == Loader::FileType::NSP || file_type == Loader::FileType::XCI ||
                  file_type == Loader::FileType::NSZ || file_type == Loader::FileType::XCZ) &&
+                Core::Crypto::KeyManager::Instance().AreKeysLoaded() &&
                 !Loader::IsBootableGameContainer(file, file_type))
                 return false;
             u64 program_id = 0;
@@ -332,7 +348,7 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
             if (file_type == Loader::FileType::NRO) {
                 return true;
             }
-            if (program_id == 0 || (program_id & 0xFFF) != 0) {
+            if (program_id != 0 && (program_id & 0xFFF) != 0) {
                 return false; // Exclude standalone Updates (0x800) and DLCs (0x001+)
             }
             return true;
