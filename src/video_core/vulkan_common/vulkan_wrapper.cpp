@@ -454,6 +454,18 @@ Instance Instance::Create(u32 version, Span<const char*> layers, Span<const char
 #else
     constexpr VkFlags ci_flags{};
 #endif
+#ifdef ANDROID
+    // Masquerade as PUBG Mobile / Unreal Engine on Android to trigger OEM GPU driver game mode heuristics
+    const VkApplicationInfo application_info{
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pNext = nullptr,
+        .pApplicationName = "PUBGMOBILE",
+        .applicationVersion = VK_MAKE_VERSION(1, 3, 0),
+        .pEngineName = "UnrealEngine",
+        .engineVersion = VK_MAKE_VERSION(1, 3, 0),
+        .apiVersion = VK_API_VERSION_1_3,
+    };
+#else
     std::string const application_name = app_name.empty() ? "STORM SWITCH" : std::string(app_name);
     const VkApplicationInfo application_info{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -464,6 +476,7 @@ Instance Instance::Create(u32 version, Span<const char*> layers, Span<const char
         .engineVersion = VK_MAKE_VERSION(1, 3, 0),
         .apiVersion = VK_API_VERSION_1_3,
     };
+#endif
     const VkInstanceCreateInfo ci{
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pNext = nullptr,

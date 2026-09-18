@@ -50,6 +50,7 @@ object DirectoryInitialization {
                 if (pathsUpdated) {
                     NativeConfig.saveGlobalConfig()
                 }
+                StormHardwareCalibrator.autoCalibrate(YuzuApplication.appContext)
             } catch (e: Throwable) {
                 android.util.Log.e("STORM_SWITCH", "Failed NativeConfig.initializeGlobalConfig: ${e.message}")
             }
@@ -275,41 +276,7 @@ object DirectoryInitialization {
             preferences.edit().putBoolean("migrated_system_locale_language_850", true).apply()
         }
 
-        val hasMigratedDefaults499 = preferences.getBoolean("migrated_defaults_499", false)
-        if (!hasMigratedDefaults499) {
-            val curSpeedLimit = ShortSetting.RENDERER_SPEED_LIMIT.getShort(true)
-            if (curSpeedLimit <= 0 || curSpeedLimit > 1000) {
-                ShortSetting.RENDERER_SPEED_LIMIT.setShort(100.toShort())
-                saveConfig = true
-            }
-            if (!BooleanSetting.RENDERER_USE_SPEED_LIMIT.getBoolean(true)) {
-                BooleanSetting.RENDERER_USE_SPEED_LIMIT.setBoolean(true)
-                saveConfig = true
-            }
-            // Enforce low-latency Mailbox VSync Mode (1)
-            if (IntSetting.RENDERER_VSYNC.getInt(true) != 1) {
-                IntSetting.RENDERER_VSYNC.setInt(1)
-                saveConfig = true
-            }
-            if (!BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.getBoolean(true)) {
-                BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.setBoolean(true)
-                saveConfig = true
-            }
-            if (!BooleanSetting.FASTMEM.getBoolean(true)) {
-                BooleanSetting.FASTMEM.setBoolean(true)
-                saveConfig = true
-            }
-            if (IntSetting.RENDERER_DYNA_STATE.getInt(true) == 0) {
-                IntSetting.RENDERER_DYNA_STATE.setInt(1)
-                saveConfig = true
-            }
-            // Ensure CPU Accuracy is Auto (1) to prevent unsafe 64-bit tagged pointer crashes
-            if (IntSetting.CPU_ACCURACY.getInt(true) == 2) {
-                IntSetting.CPU_ACCURACY.setInt(1)
-                saveConfig = true
-            }
-            preferences.edit().putBoolean("migrated_defaults_499", true).apply()
-        }
+
 
         val showPerformanceOverlay =
             preferences.migratePreference<Boolean>(Settings.PREF_MENU_SETTINGS_SHOW_FPS)

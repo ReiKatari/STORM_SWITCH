@@ -174,11 +174,10 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
             checkedDecryption = savedInstanceState.getBoolean(CHECKED_DECRYPTION)
         }
         if (!checkedDecryption) {
+            StormHardwareCalibrator.autoCalibrate(applicationContext)
             val firstTimeSetup = PreferenceManager.getDefaultSharedPreferences(applicationContext)
                 .getBoolean(Settings.PREF_FIRST_APP_LAUNCH, true)
-            if (firstTimeSetup) {
-                StormHardwareCalibrator.autoCalibrate(applicationContext)
-            } else {
+            if (!firstTimeSetup) {
                 checkKeys()
             }
             checkedDecryption = true

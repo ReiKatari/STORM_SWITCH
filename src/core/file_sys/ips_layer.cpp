@@ -310,8 +310,9 @@ void IPSwitchCompiler::Parse() {
                     std::copy(value.begin(), value.end(), std::back_inserter(replace));
                 } else {
                     // hex replacement
-                    const auto value =
-                        patch_line.substr(9, patch_line.find_first_of(" /\r\n", 9) - 9);
+                    const auto end_pos = patch_line.find_first_of(" /\r\n", 9);
+                    const auto count = end_pos == std::string::npos ? std::string::npos : (end_pos - 9);
+                    const auto value = patch_line.substr(9, count);
                     replace = Common::HexStringToVector(value, is_little_endian);
                 }
 
