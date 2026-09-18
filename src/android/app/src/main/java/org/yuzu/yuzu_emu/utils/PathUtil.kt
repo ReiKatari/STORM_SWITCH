@@ -6,6 +6,7 @@ package org.yuzu.yuzu_emu.utils
 import android.net.Uri
 import android.provider.DocumentsContract
 import java.io.File
+import org.yuzu.yuzu_emu.YuzuApplication
 
 object PathUtil {
 
@@ -13,11 +14,29 @@ object PathUtil {
      * Converts a content:// URI from the Storage Access Framework to a real filesystem path.
      */
     fun getPathFromUri(uri: Uri): String? {
-        val docId = try {
-            DocumentsContract.getTreeDocumentId(uri)
-        } catch (_: Exception) {
-            return null
+        if (uri.scheme == "file") {
+            return uri.path
         }
+        val docId = try {
+            if (DocumentsContract.isDocumentUri(YuzuApplication.appContext, uri)) {
+                DocumentsContract.getDocumentId(uri)
+            } else if (DocumentsContract.isTreeUri(uri)) {
+                DocumentsContract.getTreeDocumentId(uri)
+            } else {
+                DocumentsContract.getDocumentId(uri)
+            }
+        } catch (_: Exception) {
+            try {
+                val path = uri.path ?: ""
+                when {
+                    path.contains("/document/") -> Uri.decode(path.substringAfter("/document/"))
+                    path.contains("/tree/") -> Uri.decode(path.substringAfter("/tree/"))
+                    else -> null
+                }
+            } catch (_: Exception) {
+                null
+            }
+        } ?: return null
 
         if (docId.startsWith("primary:")) {
             val relativePath = docId.substringAfter(":")

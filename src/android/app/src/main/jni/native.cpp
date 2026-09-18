@@ -170,6 +170,17 @@ void EmulationSession::SetNativeWindow(ANativeWindow* native_window) {
     m_native_window = native_window;
 }
 
+#ifdef ARCHITECTURE_arm64
+[[maybe_unused]] static bool CheckKgslPresent() {
+    constexpr auto KgslPath{"/dev/kgsl-3d0"};
+    return access(KgslPath, F_OK) == 0;
+}
+
+[[maybe_unused]] bool SupportsCustomDriver() {
+    return android_get_device_api_level() >= 28 && CheckKgslPresent();
+}
+#endif
+
 void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
                                            const std::string& custom_driver_dir,
                                            const std::string& custom_driver_name,
@@ -179,33 +190,36 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
     const char* file_redirect_dir_{};
     int featureFlags{};
 
-    // Enable driver file redirection whenever file_redirect_dir is provided
-    if (file_redirect_dir.size()) {
-        featureFlags |= ADRENOTOOLS_DRIVER_FILE_REDIRECT;
-        file_redirect_dir_ = file_redirect_dir.c_str();
+    // Only attempt adrenotools custom/hooked driver loading on Adreno hardware where KGSL is available
+    if (SupportsCustomDriver()) {
+        // Enable driver file redirection whenever file_redirect_dir is provided
+        if (file_redirect_dir.size()) {
+            featureFlags |= ADRENOTOOLS_DRIVER_FILE_REDIRECT;
+            file_redirect_dir_ = file_redirect_dir.c_str();
+        }
+
+        // Try to load a custom driver.
+        if (custom_driver_name.size()) {
+            handle = adrenotools_open_libvulkan(
+                RTLD_NOW, featureFlags | ADRENOTOOLS_DRIVER_CUSTOM, nullptr, hook_lib_dir.c_str(),
+                custom_driver_dir.c_str(), custom_driver_name.c_str(), file_redirect_dir_, nullptr);
+        }
+
+        // Try to load the system driver via adrenotools.
+        if (!handle && hook_lib_dir.size()) {
+            handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
+                                                nullptr, nullptr, file_redirect_dir_, nullptr);
+        }
     }
 
-    // Try to load a custom driver.
-    if (custom_driver_name.size()) {
-        handle = adrenotools_open_libvulkan(
-            RTLD_NOW, featureFlags | ADRENOTOOLS_DRIVER_CUSTOM, nullptr, hook_lib_dir.c_str(),
-            custom_driver_dir.c_str(), custom_driver_name.c_str(), file_redirect_dir_, nullptr);
-    }
-
-    // Try to load the system driver.
-    if (!handle && hook_lib_dir.size()) {
-        handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
-                                            nullptr, nullptr, file_redirect_dir_, nullptr);
-    }
-
-    // Ultimate fallback directly to system libvulkan.so if adrenotools returned null
+    // Direct system libvulkan.so loader for Mali/Dimensity/Exynos/Tensor and fallback
     if (!handle) {
         handle = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
         if (!handle) {
             handle = dlopen("libvulkan.so.1", RTLD_NOW | RTLD_LOCAL);
         }
         if (handle) {
-            LOG_INFO(Frontend, "Fallback: loaded native system libvulkan.so via dlopen");
+            LOG_INFO(Frontend, "Loaded native system libvulkan.so via direct dlopen");
         } else {
             LOG_CRITICAL(Frontend, "Failed to dlopen libvulkan.so: {}", dlerror());
         }
@@ -858,16 +872,6 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
         Common::Android::GetJString(env, file_redirect_dir));
 }
 
-[[maybe_unused]] static bool CheckKgslPresent() {
-    constexpr auto KgslPath{"/dev/kgsl-3d0"};
-
-    return access(KgslPath, F_OK) == 0;
-}
-
-[[maybe_unused]] bool SupportsCustomDriver() {
-    return android_get_device_api_level() >= 28 && CheckKgslPresent();
-}
-
 jboolean JNICALL Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_supportsCustomDriverLoading(
     JNIEnv* env, jobject instance) {
 #ifdef ARCHITECTURE_arm64
@@ -888,7 +892,7 @@ jobjectArray Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getSystemDriverInfo(
         int featureFlags{};
         std::string hook_lib_dir = Common::Android::GetJString(env, j_hook_lib_dir);
         void* handle = nullptr;
-        if (hook_lib_dir.size()) {
+        if (SupportsCustomDriver() && hook_lib_dir.size()) {
             handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
                                                  nullptr, nullptr, file_redirect_dir_, nullptr);
         }
@@ -953,7 +957,7 @@ jstring Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getGpuModel(JNIEnv *env, j
         int featureFlags{};
         std::string hook_lib_dir = Common::Android::GetJString(env, j_hook_lib_dir);
         void* handle = nullptr;
-        if (hook_lib_dir.size()) {
+        if (SupportsCustomDriver() && hook_lib_dir.size()) {
             handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
                                                  nullptr, nullptr, file_redirect_dir_, nullptr);
         }

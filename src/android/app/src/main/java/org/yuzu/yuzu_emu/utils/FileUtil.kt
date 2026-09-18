@@ -144,19 +144,30 @@ object FileUtil {
         if (realPath != null) {
             val file = File(realPath)
             if (file.exists() && file.isDirectory) {
-                val treeDocId = if (isRootTreeUri(uri)) DocumentsContract.getTreeDocumentId(uri) else DocumentsContract.getDocumentId(uri)
+                val isRoot = isRootTreeUri(uri)
+                val treeDocId = if (isRoot) {
+                    try { DocumentsContract.getTreeDocumentId(uri) } catch (_: Exception) { "" }
+                } else {
+                    try { DocumentsContract.getDocumentId(uri) } catch (_: Exception) { "" }
+                }
                 file.listFiles()?.forEach { f ->
                     val mime = if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "application/octet-stream"
-                    val childDocId = if (treeDocId.contains(":")) {
-                        val prefix = treeDocId.substringBefore(":") + ":"
-                        val rel = f.absolutePath.substringAfter("/storage/emulated/0/").removePrefix("/")
-                        prefix + rel
+                    val childUri = if (f.isDirectory) {
+                        Uri.fromFile(f)
+                    } else if (uri.scheme == "content" && isRoot && treeDocId.isNotEmpty()) {
+                        val childDocId = if (treeDocId.contains(":")) {
+                            val prefix = treeDocId.substringBefore(":") + ":"
+                            val rel = f.absolutePath.substringAfter("/storage/emulated/0/").removePrefix("/")
+                            prefix + rel
+                        } else {
+                            "$treeDocId/${f.name}"
+                        }
+                        runCatching {
+                            DocumentsContract.buildDocumentUriUsingTree(uri, childDocId)
+                        }.getOrDefault(Uri.fromFile(f))
                     } else {
-                        "$treeDocId/${f.name}"
+                        Uri.fromFile(f)
                     }
-                    val childUri = runCatching {
-                        DocumentsContract.buildDocumentUriUsingTree(uri, childDocId)
-                    }.getOrDefault(Uri.fromFile(f))
                     results.add(MinimalDocumentFile(f.name, mime, childUri))
                 }
                 if (results.isNotEmpty()) {

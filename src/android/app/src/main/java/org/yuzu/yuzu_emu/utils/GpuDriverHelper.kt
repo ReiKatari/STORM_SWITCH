@@ -41,7 +41,7 @@ object GpuDriverHelper {
             return field
         }
 
-    val driverStoragePath get() = DirectoryInitialization.userDirectory!! + "/gpu_drivers/"
+    val driverStoragePath get() = (DirectoryInitialization.userDirectory ?: YuzuApplication.appContext.filesDir.absolutePath) + "/gpu_drivers/"
 
     fun initializeFreedrenoConfigEarly() {
         NativeFreedrenoConfig.setFreedrenoBasePath(YuzuApplication.appContext.cacheDir.absolutePath)
@@ -116,19 +116,33 @@ object GpuDriverHelper {
 
     fun initializeDriverParameters() {
         try {
-            // Initialize the file redirection directory.
-            fileRedirectionPath = YuzuApplication.appContext
-                .getExternalFilesDir(null)!!.canonicalPath + "/gpu/vk_file_redirect/"
-
-            // Initialize the driver installation directory.
-            driverInstallationPath = YuzuApplication.appContext
-                .filesDir.canonicalPath + "/gpu_driver/"
-        } catch (e: IOException) {
-            throw RuntimeException(e)
+            val extDir = YuzuApplication.appContext.getExternalFilesDir(null)
+            val baseDir = extDir ?: YuzuApplication.appContext.filesDir
+            fileRedirectionPath = baseDir.canonicalPath + "/gpu/vk_file_redirect/"
+            driverInstallationPath = YuzuApplication.appContext.filesDir.canonicalPath + "/gpu_driver/"
+        } catch (_: Exception) {
+            fileRedirectionPath = YuzuApplication.appContext.filesDir.canonicalPath + "/gpu/vk_file_redirect/"
+            driverInstallationPath = YuzuApplication.appContext.filesDir.canonicalPath + "/gpu_driver/"
         }
 
         initializeDirectories()
         hookLibPath = YuzuApplication.appContext.applicationInfo.nativeLibraryDir + "/"
+
+        if (!isAdrenoGpu()) {
+            // On non-Adreno GPUs (Mali / Immortalis on Dimensity, Xclipse, Tensor), custom drivers cannot be loaded.
+            // Clean up any stray Turnip driver files to prevent startup crashes.
+            try {
+                driverInstallationPath?.let { path ->
+                    val installDir = File(path)
+                    if (installDir.exists()) {
+                        installDir.deleteRecursively()
+                        installDir.mkdirs()
+                    }
+                }
+            } catch (_: Exception) {}
+            return
+        }
+
         NativeFreedrenoConfig.reloadFreedrenoConfig()
 
         // Auto-restore selected driver from config if installation folder is missing files
@@ -429,21 +443,12 @@ object GpuDriverHelper {
         get() = getMetadataFromZip(File(StringSetting.DRIVER_PATH.getString()))
 
     fun initializeDirectories() {
-        // Ensure the file redirection directory exists.
-        val fileRedirectionDir = File(fileRedirectionPath!!)
-        if (!fileRedirectionDir.exists()) {
-            fileRedirectionDir.mkdirs()
-        }
-        // Ensure the driver installation directory exists.
-        val driverInstallationDir = File(driverInstallationPath!!)
-        if (!driverInstallationDir.exists()) {
-            driverInstallationDir.mkdirs()
-        }
-        // Ensure the driver storage directory exists
-        val driverStorageDirectory = File(driverStoragePath)
-        if (!driverStorageDirectory.exists()) {
-            driverStorageDirectory.mkdirs()
-        }
+        try {
+            fileRedirectionPath?.let { File(it).mkdirs() }
+            driverInstallationPath?.let { File(it).mkdirs() }
+            val storagePath = try { driverStoragePath } catch (_: Exception) { null }
+            storagePath?.let { File(it).mkdirs() }
+        } catch (_: Exception) {}
     }
 
     /**
