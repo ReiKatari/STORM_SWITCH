@@ -247,8 +247,14 @@ class OnlineToolsDialogFragment : DialogFragment() {
             }
         } else {
             val savedVer = prefs.getString("installed_online_keys_version", null)
-            val detectedVer = detectKeysVersionFromDisk(ctx) ?: savedVer
+            val diskVer = detectKeysVersionFromDisk(ctx)
             val keysValid = try { NativeLibrary.reloadKeys() } catch (_: Throwable) { false }
+
+            val detectedVer = when {
+                savedVer != null && (keysValid || diskVer != null) -> savedVer
+                diskVer != null -> diskVer
+                else -> null
+            }
 
             if (keysValid || detectedVer != null) {
                 val display = if (detectedVer != null) {
@@ -297,18 +303,18 @@ class OnlineToolsDialogFragment : DialogFragment() {
                         }
                     }
                     if (highestMasterKeyHex >= 0) {
-                        return when (highestMasterKeyHex) {
-                            0x17 -> "23.0.0"
-                            0x16 -> "21.2.0"
-                            0x15 -> "20.5.0"
-                            0x14 -> "19.0.1"
-                            0x13 -> "18.1.0"
-                            0x12 -> "17.0.1"
-                            0x11 -> "16.1.0"
-                            0x10 -> "15.0.1"
-                            0x0f -> "14.1.2"
-                            0x0e -> "13.2.1"
-                            0x0d -> "12.1.0"
+                        return when {
+                            highestMasterKeyHex >= 0x16 -> "23.0.0"
+                            highestMasterKeyHex == 0x15 -> "21.2.0"
+                            highestMasterKeyHex == 0x14 -> "20.5.0"
+                            highestMasterKeyHex == 0x13 -> "19.0.1"
+                            highestMasterKeyHex == 0x12 -> "18.1.0"
+                            highestMasterKeyHex == 0x11 -> "17.0.1"
+                            highestMasterKeyHex == 0x10 -> "16.1.0"
+                            highestMasterKeyHex == 0x0f -> "15.0.1"
+                            highestMasterKeyHex == 0x0e -> "14.1.2"
+                            highestMasterKeyHex == 0x0d -> "13.2.1"
+                            highestMasterKeyHex == 0x0c -> "12.1.0"
                             else -> null
                         }
                     }
@@ -777,7 +783,13 @@ class OnlineToolsDialogFragment : DialogFragment() {
                             val isTitle = entryName.equals("title.keys", ignoreCase = true)
 
                             if (isProd || isTitle) {
-                                val content = zipFile.getInputStream(entry).use { it.readBytes() }
+                                val rawBytes = zipFile.getInputStream(entry).use { it.readBytes() }
+                                val content = if (isProd) {
+                                    val header = "# STORM SWITCH KEYS: ${asset.version}\n".toByteArray(Charsets.UTF_8)
+                                    header + rawBytes
+                                } else {
+                                    rawBytes
+                                }
                                 for (kd in targetDirs) {
                                     try {
                                         val targetFile = File(kd, entryName.lowercase())
