@@ -254,23 +254,20 @@ class ReleaseAdapter(
 
                                 val originalUrl = artifact.url.toString()
                                 val downloadMirrors = mutableListOf<String>()
+                                downloadMirrors.add(originalUrl)
                                 if (originalUrl.startsWith("https://github.com/")) {
-                                    downloadMirrors.add("https://ghfast.top/$originalUrl")
-                                    downloadMirrors.add("https://gh-proxy.net/$originalUrl")
-                                    downloadMirrors.add("https://ghproxy.net/$originalUrl")
                                     downloadMirrors.add("https://gh.con.sh/$originalUrl")
                                     downloadMirrors.add("https://gh.llkk.cc/$originalUrl")
-                                    downloadMirrors.add(originalUrl.replace("https://github.com/", "https://githubfast.com/"))
+                                    downloadMirrors.add("https://ghfast.top/$originalUrl")
                                 }
-                                downloadMirrors.add(originalUrl)
 
                                 var downloadSuccess = false
                                 var lastException: Exception? = null
 
                                 val downloadClient = OkHttpClient.Builder()
                                     .dns(SmartDns)
-                                    .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
-                                    .readTimeout(180, java.util.concurrent.TimeUnit.SECONDS)
+                                    .connectTimeout(12, java.util.concurrent.TimeUnit.SECONDS)
+                                    .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
                                     .followRedirects(true)
                                     .followSslRedirects(true)
                                     .retryOnConnectionFailure(true)
@@ -296,6 +293,11 @@ class ReleaseAdapter(
                                             downloadClient.newCall(req).execute().use { response ->
                                                 if (!response.isSuccessful) {
                                                     throw IOException("HTTP ${response.code}")
+                                                }
+
+                                                val contentType = response.header("Content-Type") ?: ""
+                                                if (contentType.contains("text/html", ignoreCase = true)) {
+                                                    throw IOException("Ответ сервера — HTML страница")
                                                 }
 
                                                 val body = response.body ?: throw IOException(context.getString(R.string.empty_response_body))

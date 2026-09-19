@@ -215,11 +215,10 @@ class DriverFetcherFragment : Fragment() {
                     var releases = ArrayList<Release>()
                     
                     val urlsToTry = listOf(
-                        "https://ghfast.top/https://api.github.com/repos/$path/releases",
-                        "https://gh-proxy.net/https://api.github.com/repos/$path/releases",
                         "https://api.github.com/repos/$path/releases",
-                        "https://ghproxy.net/https://api.github.com/repos/$path/releases",
-                        "https://api.githubfast.com/repos/$path/releases"
+                        "https://gh.con.sh/https://api.github.com/repos/$path/releases",
+                        "https://gh.llkk.cc/https://api.github.com/repos/$path/releases",
+                        "https://ghfast.top/https://api.github.com/repos/$path/releases"
                     )
 
                     for (url in urlsToTry) {

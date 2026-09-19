@@ -16,9 +16,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
@@ -62,6 +66,8 @@ class OnlineToolsDialogFragment : DialogFragment() {
     private val assets = mutableListOf<OnlineToolAsset>()
     private var selectedIndex = 0
     private var isDownloading = false
+    private var downloadJob: Job? = null
+    private var activeCall: Call? = null
     var onInstalled: (() -> Unit)? = null
 
     private lateinit var adapter: ToolsAdapter
@@ -69,8 +75,9 @@ class OnlineToolsDialogFragment : DialogFragment() {
     private val httpClient by lazy {
         OkHttpClient.Builder()
             .dns(SmartDns)
-            .connectTimeout(12, TimeUnit.SECONDS)
-            .readTimeout(180, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
             .connectionPool(okhttp3.ConnectionPool(5, 5, TimeUnit.MINUTES))
             .protocols(listOf(okhttp3.Protocol.HTTP_2, okhttp3.Protocol.HTTP_1_1))
             .followRedirects(true)
@@ -179,8 +186,19 @@ class OnlineToolsDialogFragment : DialogFragment() {
             getString(R.string.online_install_keys_description)
         }
 
-        binding.btnCloseDialog.setOnClickListener { dismiss() }
-        binding.btnCancel.setOnClickListener { dismiss() }
+        binding.btnCloseDialog.setOnClickListener {
+            if (isDownloading) {
+                cancelDownload(cleanOnly = true)
+            }
+            dismiss()
+        }
+        binding.btnCancel.setOnClickListener {
+            if (isDownloading) {
+                cancelDownload(cleanOnly = false)
+            } else {
+                dismiss()
+            }
+        }
         binding.btnRefresh.setOnClickListener { refreshCatalog() }
         binding.btnInstall.setOnClickListener { startDownloadAndInstall() }
 
@@ -342,20 +360,60 @@ class OnlineToolsDialogFragment : DialogFragment() {
         }
     }
 
+    private fun cancelDownload(cleanOnly: Boolean = false) {
+        val job = downloadJob
+        downloadJob = null
+        val call = activeCall
+        activeCall = null
+        isDownloading = false
+
+        try {
+            call?.cancel()
+        } catch (_: Throwable) {}
+        try {
+            job?.cancel()
+        } catch (_: Throwable) {}
+
+        try {
+            val cacheDir = context?.cacheDir
+            if (cacheDir != null) {
+                File(cacheDir, "firmware_stream.tmp").delete()
+                File(cacheDir, "keys_stream.tmp").delete()
+                File(cacheDir, "extracted_firmware").deleteRecursively()
+            }
+        } catch (_: Throwable) {}
+
+        if (!cleanOnly && _binding != null) {
+            binding.progressBar.isIndeterminate = false
+            binding.progressBar.progress = 0
+            binding.btnInstall.isEnabled = (selectedIndex in assets.indices)
+            binding.btnInstall.text = "Скачать и установить"
+            binding.btnRefresh.isEnabled = true
+            binding.btnCancel.isEnabled = true
+            updateSelectionStatus()
+            context?.let {
+                Toast.makeText(it, "Загрузка отменена", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun startDownloadAndInstall() {
         if (selectedIndex !in assets.indices || isDownloading) return
         val asset = assets[selectedIndex]
 
+        val appContext = requireContext().applicationContext
+        val cacheDir = appContext.cacheDir
+        val tempZip = File(cacheDir, if (toolType == TYPE_FIRMWARE) "firmware_stream.tmp" else "keys_stream.tmp")
+
         isDownloading = true
         binding.btnInstall.isEnabled = false
+        binding.btnInstall.text = "Загрузка..."
         binding.btnRefresh.isEnabled = false
+        binding.btnCancel.isEnabled = true
         binding.progressBar.isIndeterminate = false
         binding.progressBar.progress = 0
 
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val cacheDir = requireContext().cacheDir
-            val tempZip = File(cacheDir, if (toolType == TYPE_FIRMWARE) "firmware_stream.tmp" else "keys_stream.tmp")
-
+        downloadJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
                 withContext(Dispatchers.Main) {
                     if (_binding != null) {
@@ -364,57 +422,80 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 }
 
                 val candidateDlUrls = mutableListOf<String>()
+                // Direct GitHub first: CDN (1.3+ MB/s) and no proxy bottlenecks or arbitrary size limits!
+                candidateDlUrls.add(asset.downloadUrl)
+
                 if (asset.downloadUrl.startsWith("https://github.com/")) {
-                    candidateDlUrls.add("https://ghfast.top/" + asset.downloadUrl)
-                    candidateDlUrls.add("https://gh-proxy.net/" + asset.downloadUrl)
-                    candidateDlUrls.add("https://ghproxy.net/" + asset.downloadUrl)
                     candidateDlUrls.add("https://gh.con.sh/" + asset.downloadUrl)
                     candidateDlUrls.add("https://gh.llkk.cc/" + asset.downloadUrl)
+                    candidateDlUrls.add("https://ghfast.top/" + asset.downloadUrl)
                 }
-                candidateDlUrls.add(asset.downloadUrl)
 
                 var downloadSuccess = false
                 var lastError: Exception? = null
 
                 for (dlUrl in candidateDlUrls) {
+                    if (!isActive) break
                     try {
+                        withContext(Dispatchers.Main) {
+                            if (_binding != null) {
+                                binding.textStatus.text = getString(R.string.online_tools_connecting_format, asset.name)
+                            }
+                        }
+
                         val request = Request.Builder()
                             .url(dlUrl)
                             .header("User-Agent", "STORM_SWITCH_Installer")
                             .header("Accept-Encoding", "identity")
                             .build()
-                        val response = httpClient.newCall(request).execute()
+
+                        val call = httpClient.newCall(request)
+                        activeCall = call
+                        val response = call.execute()
                         if (!response.isSuccessful) {
                             response.close()
-                            continue
+                            throw java.io.IOException("HTTP ${response.code}")
                         }
-                        val body = response.body ?: continue
+
+                        val contentType = response.header("Content-Type") ?: ""
+                        if (contentType.contains("text/html", ignoreCase = true)) {
+                            response.close()
+                            throw java.io.IOException("Ответ сервера — веб-страница вместо файла")
+                        }
+
+                        val body = response.body ?: throw java.io.IOException("Пустой ответ")
                         val totalLength = body.contentLength()
                         var downloaded = 0L
 
-                        val buffer = ByteArray(262144)
-                        java.io.BufferedInputStream(body.byteStream(), 262144).use { input ->
-                            java.io.BufferedOutputStream(FileOutputStream(tempZip), 262144).use { output ->
-                                var read: Int
+                        val buffer = ByteArray(65536)
+                        java.io.BufferedInputStream(body.byteStream(), 65536).use { input ->
+                            java.io.BufferedOutputStream(FileOutputStream(tempZip), 65536).use { output ->
+                                var read = 0
                                 var lastReportTime = System.currentTimeMillis()
 
-                                while (input.read(buffer).also { read = it } != -1) {
+                                while (isActive && input.read(buffer).also { read = it } != -1) {
                                     output.write(buffer, 0, read)
                                     downloaded += read
 
                                     val now = System.currentTimeMillis()
-                                    if (now - lastReportTime > 200) {
+                                    if (now - lastReportTime > 250) {
                                         lastReportTime = now
                                         val progress = if (totalLength > 0) ((downloaded * 100) / totalLength).toInt() else 0
+                                        val dlFormatted = formatBytes(downloaded, appContext)
+                                        val totalFormatted = if (totalLength > 0) formatBytes(totalLength, appContext) else ""
                                         withContext(Dispatchers.Main) {
-                                            if (_binding != null) {
+                                            if (_binding != null && isDownloading) {
                                                 binding.progressBar.progress = progress
-                                                binding.textStatus.text = getString(
-                                                    R.string.online_tools_downloading_format,
-                                                    progress,
-                                                    formatBytes(downloaded, requireContext()),
-                                                    formatBytes(totalLength, requireContext())
-                                                )
+                                                binding.textStatus.text = if (totalLength > 0) {
+                                                    getString(
+                                                        R.string.online_tools_downloading_format,
+                                                        progress,
+                                                        dlFormatted,
+                                                        totalFormatted
+                                                    )
+                                                } else {
+                                                    "Загрузка: $dlFormatted"
+                                                }
                                             }
                                         }
                                     }
@@ -422,13 +503,28 @@ class OnlineToolsDialogFragment : DialogFragment() {
                                 output.flush()
                             }
                         }
-                        if (tempZip.exists() && tempZip.length() > 0 && (totalLength <= 0 || downloaded >= totalLength)) {
+
+                        activeCall = null
+
+                        val isComplete = if (totalLength > 0) {
+                            downloaded >= totalLength
+                        } else if (asset.size > 0) {
+                            downloaded >= (asset.size * 95 / 100)
+                        } else {
+                            downloaded > 0
+                        }
+
+                        if (tempZip.exists() && isComplete) {
                             downloadSuccess = true
                             break
                         } else {
                             tempZip.delete()
                         }
+                    } catch (e: CancellationException) {
+                        tempZip.delete()
+                        throw e
                     } catch (e: Exception) {
+                        activeCall = null
                         tempZip.delete()
                         lastError = e
                         Log.error("[OnlineToolsDialogFragment] Failed downloading from $dlUrl: ${e.message}")
@@ -436,7 +532,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 }
 
                 if (!downloadSuccess) {
-                    throw lastError ?: Exception("Не удалось загрузить файл из доступных зеркал")
+                    throw lastError ?: Exception("Не удалось загрузить файл из доступных источников")
                 }
 
                 withContext(Dispatchers.Main) {
@@ -447,20 +543,22 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 }
 
                 if (toolType == TYPE_FIRMWARE) {
-                    // Extract NCA files directly to temp directory then move to NAND registered
-                    val tempExtract = File(cacheDir, "extracted_firmware")
-                    if (tempExtract.exists()) tempExtract.deleteRecursively()
-                    tempExtract.mkdirs()
+                    val primaryNand = try {
+                        val nd = NativeConfig.getNandDir()
+                        if (nd.isNotBlank()) File(nd, "system/Contents/registered") else null
+                    } catch (_: Throwable) { null } ?: File(appContext.filesDir, "nand/system/Contents/registered")
+
+                    primaryNand.mkdirs()
 
                     java.util.zip.ZipFile(tempZip).use { zipFile ->
                         val entries = zipFile.entries()
-                        while (entries.hasMoreElements()) {
+                        while (isActive && entries.hasMoreElements()) {
                             val entry = entries.nextElement()
                             if (entry.isDirectory) continue
                             val entryName = entry.name.substringAfterLast('/')
                             if (!entryName.endsWith(".nca", ignoreCase = true)) continue
 
-                            val outFile = File(tempExtract, entryName)
+                            val outFile = File(primaryNand, entryName)
                             zipFile.getInputStream(entry).use { inStream ->
                                 FileOutputStream(outFile).use { outStream ->
                                     inStream.copyTo(outStream)
@@ -469,26 +567,23 @@ class OnlineToolsDialogFragment : DialogFragment() {
                         }
                     }
 
+                    tempZip.delete()
+
                     val targetFirmwareDirs = listOfNotNull(
-                        requireContext().filesDir?.let { File(it, "nand/system/Contents/registered") },
-                        requireContext().getExternalFilesDir(null)?.let { File(it, "nand/system/Contents/registered") },
+                        appContext.filesDir?.let { File(it, "nand/system/Contents/registered") },
+                        appContext.getExternalFilesDir(null)?.let { File(it, "nand/system/Contents/registered") },
                         DirectoryInitialization.userDirectory?.let { File(it, "nand/system/Contents/registered") },
-                        try {
-                            val nd = NativeConfig.getNandDir()
-                            if (nd.isNotBlank()) File(nd, "system/Contents/registered") else null
-                        } catch (_: Throwable) { null },
                         File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/nand/system/Contents/registered")
                     ).distinctBy { it.canonicalPath }
 
                     for (targetDir in targetFirmwareDirs) {
-                        try {
-                            targetDir.mkdirs()
-                            tempExtract.copyRecursively(targetDir, overwrite = true)
-                        } catch (_: Throwable) {}
+                        if (targetDir.canonicalPath != primaryNand.canonicalPath) {
+                            try {
+                                targetDir.mkdirs()
+                                primaryNand.copyRecursively(targetDir, overwrite = true)
+                            } catch (_: Throwable) {}
+                        }
                     }
-
-                    tempExtract.deleteRecursively()
-                    tempZip.delete()
 
                     withContext(Dispatchers.Main) {
                         try {
@@ -497,27 +592,27 @@ class OnlineToolsDialogFragment : DialogFragment() {
                         homeViewModel.setCheckKeys(true)
                         onInstalled?.invoke()
                         Toast.makeText(
-                            requireContext(),
+                            appContext,
                             getString(R.string.online_firmware_installed_success, asset.version),
                             Toast.LENGTH_LONG
                         ).show()
                         dismiss()
                     }
                 } else {
-                    // Keys installation: extract prod.keys and title.keys to all known target key directories
                     val targetDirs = listOfNotNull(
-                        requireContext().filesDir?.let { File(it, "keys") },
+                        appContext.filesDir?.let { File(it, "keys") },
                         DirectoryInitialization.userDirectory?.let { File(it, "keys") },
                         File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/keys"),
-                        requireContext().getExternalFilesDir(null)?.let { File(it, "keys") }
+                        appContext.getExternalFilesDir(null)?.let { File(it, "keys") }
                     ).distinctBy { it.canonicalPath }
+
                     for (kd in targetDirs) {
                         kd.mkdirs()
                     }
 
                     java.util.zip.ZipFile(tempZip).use { zipFile ->
                         val entries = zipFile.entries()
-                        while (entries.hasMoreElements()) {
+                        while (isActive && entries.hasMoreElements()) {
                             val entry = entries.nextElement()
                             if (entry.isDirectory) continue
                             val entryName = entry.name.substringAfterLast('/')
@@ -549,29 +644,46 @@ class OnlineToolsDialogFragment : DialogFragment() {
                         homeViewModel.setCheckKeys(true)
                         onInstalled?.invoke()
                         Toast.makeText(
-                            requireContext(),
+                            appContext,
                             getString(R.string.online_keys_installed_success, asset.version),
                             Toast.LENGTH_LONG
                         ).show()
                         dismiss()
                     }
                 }
+            } catch (e: CancellationException) {
+                Log.info("[OnlineTools] Operation cancelled by user")
+                if (tempZip.exists()) tempZip.delete()
             } catch (e: Exception) {
                 Log.error("[OnlineTools] Download/Install failed: ${e.message}")
                 if (tempZip.exists()) tempZip.delete()
                 withContext(Dispatchers.Main) {
                     isDownloading = false
-                    binding.btnInstall.isEnabled = true
-                    binding.btnRefresh.isEnabled = true
-                    binding.progressBar.isIndeterminate = false
-                    binding.textStatus.text = "Ошибка установки: ${e.localizedMessage ?: "Сбой сети"}"
-                    Toast.makeText(requireContext(), "Сбой онлайн-установки: ${e.message}", Toast.LENGTH_SHORT).show()
+                    activeCall = null
+                    downloadJob = null
+                    if (_binding != null) {
+                        binding.btnInstall.isEnabled = true
+                        binding.btnInstall.text = "Скачать и установить"
+                        binding.btnRefresh.isEnabled = true
+                        binding.btnCancel.isEnabled = true
+                        binding.progressBar.isIndeterminate = false
+                        binding.progressBar.progress = 0
+                        val errText = e.localizedMessage ?: "Сбой сети"
+                        binding.textStatus.text = "Ошибка установки: $errText"
+                        Toast.makeText(appContext, "Сбой онлайн-установки: $errText", Toast.LENGTH_SHORT).show()
+                    }
                 }
+            } finally {
+                activeCall = null
+                downloadJob = null
             }
         }
     }
 
     override fun onDestroyView() {
+        if (isDownloading) {
+            cancelDownload(cleanOnly = true)
+        }
         super.onDestroyView()
         _binding = null
     }
