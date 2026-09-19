@@ -192,22 +192,6 @@
                 app:strokeColor="?attr/colorOutline"
                 app:strokeWidth="1dp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/chip_lang_jpn"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:layout_marginEnd="6dp"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="0dp"
-                android:text="🇯🇵 日本語"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                app:backgroundTint="?attr/colorSurfaceVariant"
-                app:cornerRadius="17dp"
-                app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/chip_with_dlc"

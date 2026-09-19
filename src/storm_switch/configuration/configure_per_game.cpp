@@ -198,6 +198,14 @@ void ConfigurePerGame::changeEvent(QEvent* event) {
     QDialog::changeEvent(event);
 }
 
+void ConfigurePerGame::showEvent(QShowEvent* event) {
+    QDialog::showEvent(event);
+    if (ui && ui->display_developer) {
+        ui->display_developer->setCursorPosition(0);
+        ui->display_developer->home(false);
+    }
+}
+
 void ConfigurePerGame::RetranslateUI() {
     ui->retranslateUi(this);
 }
@@ -219,6 +227,8 @@ void ConfigurePerGame::LoadConfiguration() {
 
     ui->display_title_id->setText(
         QStringLiteral("%1").arg(title_id, 16, 16, QLatin1Char{'0'}).toUpper());
+    ui->display_title_id->setCursorPosition(0);
+    ui->display_title_id->home(false);
 
     const FileSys::PatchManager pm{title_id, system.GetFileSystemController(),
                                    system.GetContentProvider()};
@@ -291,7 +301,12 @@ void ConfigurePerGame::LoadConfiguration() {
 
     ui->display_name->setPlainText(title_text);
     ui->display_developer->setText(dev_text);
+    ui->display_developer->setCursorPosition(0);
+    ui->display_developer->home(false);
+    ui->display_developer->setToolTip(dev_text);
     ui->display_version->setText(ver_str);
+    ui->display_version->setCursorPosition(0);
+    ui->display_version->home(false);
 
     if (gamebanana_tab) {
         gamebanana_tab->SetGameInfo(title_id, title_text);
@@ -331,7 +346,11 @@ void ConfigurePerGame::LoadConfiguration() {
         format_str = QStringLiteral("XCZ");
     }
     ui->display_format->setText(format_str);
+    ui->display_format->setCursorPosition(0);
+    ui->display_format->home(false);
 
     const auto valueText = QtCommon::ReadableByteSize(file->GetSize());
     ui->display_size->setText(valueText);
+    ui->display_size->setCursorPosition(0);
+    ui->display_size->home(false);
 }

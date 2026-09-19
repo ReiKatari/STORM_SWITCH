@@ -176,7 +176,6 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         RUS,
         ENG,
         MULTI,
-        JPN,
         DLC_OR_MODS
     }
 
@@ -343,7 +342,6 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             binding.chipLangRus?.let { it to LanguageFilter.RUS },
             binding.chipLangEng?.let { it to LanguageFilter.ENG },
             binding.chipLangMulti?.let { it to LanguageFilter.MULTI },
-            binding.chipLangJpn?.let { it to LanguageFilter.JPN },
             binding.chipWithDlc?.let { it to LanguageFilter.DLC_OR_MODS }
         )
         for ((chip, filter) in chipMappings) {
@@ -700,19 +698,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 }
             }
             LanguageFilter.MULTI -> {
-                val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
-                g.textLangs.size >= 2 || full.contains("multi") || full.contains("мульти")
-            }
-            LanguageFilter.JPN -> {
-                val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
-                val hasTextLang = g.textLangs.any {
-                    val l = it.lowercase(Locale.ROOT).trim()
-                    l == "ja" || l == "jp" || l == "jpn" || l == "japanese" || l.startsWith("ja-")
-                }
-                hasTextLang || full.contains("jpn") || full.contains("japan") || full.contains("япон") || g.regions.any { r ->
-                    val reg = r.uppercase(Locale.ROOT)
-                    reg == "JAP" || reg == "JPN"
-                }
+                true
             }
             LanguageFilter.DLC_OR_MODS -> {
                 val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
@@ -738,7 +724,6 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             binding.chipLangRus?.let { it to LanguageFilter.RUS },
             binding.chipLangEng?.let { it to LanguageFilter.ENG },
             binding.chipLangMulti?.let { it to LanguageFilter.MULTI },
-            binding.chipLangJpn?.let { it to LanguageFilter.JPN },
             binding.chipWithDlc?.let { it to LanguageFilter.DLC_OR_MODS }
         )
 
