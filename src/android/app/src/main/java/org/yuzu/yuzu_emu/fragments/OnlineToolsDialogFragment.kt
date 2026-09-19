@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -158,8 +160,9 @@ class OnlineToolsDialogFragment : DialogFragment() {
         dialog?.window?.let { window ->
             window.setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                ViewGroup.LayoutParams.MATCH_PARENT
             )
+            window.setBackgroundDrawableResource(android.R.color.transparent)
             ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
     }
@@ -180,6 +183,21 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                WindowInsetsCompat.Type.displayCutout()
+            )
+            binding.root.setPadding(
+                systemBars.left,
+                systemBars.top,
+                systemBars.right,
+                systemBars.bottom
+            )
+            insets
+        }
+        binding.root.requestApplyInsets()
 
         val isFirmware = toolType == TYPE_FIRMWARE
         binding.headerIcon.text = if (isFirmware) "🌐" else "🔑"

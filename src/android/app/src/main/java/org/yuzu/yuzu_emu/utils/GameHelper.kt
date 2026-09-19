@@ -185,7 +185,8 @@ object GameHelper {
                     if (uri.scheme == "content") {
                         DocumentFile.fromSingleUri(YuzuApplication.appContext, uri)?.exists() == true
                     } else {
-                        File(game.path).exists()
+                        val localPath = if (uri.scheme == "file") uri.path ?: "" else game.path
+                        File(localPath).exists() || File(Uri.decode(localPath)).exists()
                     }
                 } catch (_: Exception) {
                     false
@@ -476,9 +477,6 @@ object GameHelper {
             }
         }
         if (!GameMetadata.getIsValid(filePath)) {
-            return null
-        }
-        if (!GameMetadata.isBaseGame(filePath)) {
             return null
         }
 

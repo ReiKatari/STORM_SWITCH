@@ -607,7 +607,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         val buttonId = InputHandler.getButtonIdFromEvent(event)
         if (buttonId == 0) return false
 
-        val controllerData = InputHandler.androidControllers[event.device?.controllerNumber ?: 0]
+        val controllerData = InputHandler.getControllerForDevice(event.device)
         val guid = controllerData?.getGUID() ?: ""
         val port = controllerData?.getPort() ?: 0
 

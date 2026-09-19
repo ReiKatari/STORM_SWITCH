@@ -284,7 +284,22 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
             entry.is_base_game = true;
         } else {
             entry.isHomebrew = false;
-            entry.is_base_game = Loader::IsBootableGameContainer(file);
+            bool bootable = Loader::IsBootableGameContainer(file);
+            if (!bootable) {
+                if (entry.programId != 0 && (entry.programId & 0xFFF) == 0 && (entry.programId & 0x800) == 0) {
+                    bootable = true;
+                } else {
+                    std::vector<u64> candidate_pids;
+                    loader->ReadProgramIds(candidate_pids);
+                    for (const auto id : candidate_pids) {
+                        if ((id & 0xFFF) == 0 && (id & 0x800) == 0) {
+                            bootable = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            entry.is_base_game = bootable;
         }
         m_rom_metadata_cache[path] = entry;
         return entry;
@@ -326,17 +341,17 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
             auto const file_type = loader->GetFileType();
             if (file_type == Loader::FileType::Unknown || file_type == Loader::FileType::Error)
                 return false;
-            if ((file_type == Loader::FileType::NSP || file_type == Loader::FileType::XCI ||
-                 file_type == Loader::FileType::NSZ || file_type == Loader::FileType::XCZ) &&
-                Core::Crypto::KeyManager::Instance().AreKeysLoaded() &&
-                !Loader::IsBootableGameContainer(file, file_type))
-                return false;
+
+            if (file_type == Loader::FileType::NRO) {
+                return true;
+            }
+
             u64 program_id = 0;
             std::vector<u64> pids;
             loader->ReadProgramIds(pids);
             if (!pids.empty()) {
                 for (const auto id : pids) {
-                    if ((id & 0xFFF) == 0) {
+                    if ((id & 0xFFF) == 0 && (id & 0x800) == 0) {
                         program_id = id;
                         break;
                     }
@@ -345,12 +360,29 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
             if (program_id == 0) {
                 loader->ReadProgramId(program_id);
             }
-            if (file_type == Loader::FileType::NRO) {
+
+            // Exclude standalone Updates (0x800) and DLCs (0x001+)
+            if (program_id != 0 && (program_id & 0xFFF) != 0) {
+                return false;
+            }
+
+            const bool is_container = (file_type == Loader::FileType::NSP || file_type == Loader::FileType::XCI ||
+                                       file_type == Loader::FileType::NSZ || file_type == Loader::FileType::XCZ);
+            if (is_container) {
+                if (Loader::IsBootableGameContainer(file, file_type)) {
+                    return true;
+                }
+                if (program_id != 0 && (program_id & 0xFFF) == 0 && (program_id & 0x800) == 0) {
+                    return true;
+                }
+                for (const auto id : pids) {
+                    if ((id & 0xFFF) == 0 && (id & 0x800) == 0) {
+                        return true;
+                    }
+                }
                 return true;
             }
-            if (program_id != 0 && (program_id & 0xFFF) != 0) {
-                return false; // Exclude standalone Updates (0x800) and DLCs (0x001+)
-            }
+
             return true;
         }
     }

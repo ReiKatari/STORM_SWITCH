@@ -172,7 +172,7 @@ class InputDialogFragment : DialogFragment() {
             else -> return false
         }
         val controllerData =
-            InputHandler.androidControllers[event.device.controllerNumber] ?: return false
+            InputHandler.getControllerForDevice(event.device) ?: return false
         NativeInput.onGamePadButtonEvent(
             controllerData.getGUID(),
             controllerData.getPort(),
@@ -196,7 +196,7 @@ class InputDialogFragment : DialogFragment() {
         // take in a specific axis direction for a binding so you lose half of the directions for a DPad.
 
         val controllerData =
-            InputHandler.androidControllers[event.device.controllerNumber] ?: return false
+            InputHandler.getControllerForDevice(event.device) ?: return false
         event.device.motionRanges.forEach {
             NativeInput.onGamePadAxisEvent(
                 controllerData.getGUID(),

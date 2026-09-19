@@ -21,22 +21,19 @@ object SettingsFile {
 
     fun getCustomSettingsFile(game: Game): File {
         val configDir = File(DirectoryInitialization.userDirectory, "config/custom")
-        val hexId = if (game.programId.isNotEmpty() && game.programId != "0") {
-            try {
-                String.format(java.util.Locale.US, "%016X", game.programId.toULong())
-            } catch (_: Exception) {
-                game.programIdHex
-            }
-        } else {
-            game.programIdHex
-        }
-        val byHex = File(configDir, "$hexId.ini")
+        val cleanProgHex = game.programIdHex.trim().uppercase(java.util.Locale.ROOT)
+        val settingsName = game.settingsName.trim()
+
+        val byHex = File(configDir, "$cleanProgHex.ini")
         if (byHex.exists()) return byHex
-        val byProg = File(configDir, "${game.programIdHex}.ini")
-        if (byProg.exists()) return byProg
-        val bySettings = File(configDir, "${game.settingsName}.ini")
+        val bySettings = File(configDir, "$settingsName.ini")
         if (bySettings.exists()) return bySettings
-        return byHex
+
+        return if (cleanProgHex.isNotEmpty() && cleanProgHex != "0" && cleanProgHex != "0000000000000000") {
+            byHex
+        } else {
+            bySettings
+        }
     }
 
     fun loadCustomConfig(game: Game) {

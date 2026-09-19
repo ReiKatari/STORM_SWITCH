@@ -152,9 +152,7 @@ object FileUtil {
                 }
                 file.listFiles()?.forEach { f ->
                     val mime = if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "application/octet-stream"
-                    val childUri = if (f.isDirectory) {
-                        Uri.fromFile(f)
-                    } else if (uri.scheme == "content" && isRoot && treeDocId.isNotEmpty()) {
+                    val childUri = if (uri.scheme == "content" && isRoot && treeDocId.isNotEmpty()) {
                         val childDocId = if (treeDocId.contains(":")) {
                             val prefix = treeDocId.substringBefore(":") + ":"
                             val rel = f.absolutePath.substringAfter("/storage/emulated/0/").removePrefix("/")

@@ -6,16 +6,21 @@
 
 package org.yuzu.yuzu_emu.utils
 
+import android.content.Context
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import org.yuzu.yuzu_emu.YuzuApplication
 import org.yuzu.yuzu_emu.features.input.NativeInput
 import org.yuzu.yuzu_emu.features.input.YuzuInputOverlayDevice
 import org.yuzu.yuzu_emu.features.input.YuzuPhysicalDevice
+import java.util.Locale
 
 object InputHandler {
     var androidControllers = mapOf<Int, YuzuPhysicalDevice>()
     var registeredControllers = mutableListOf<ParamPackage>()
+
+    private const val PREFS_CONTROLLER_SLOTS = "storm_controller_slots"
 
     private val controllerButtons = intArrayOf(
         KeyEvent.KEYCODE_BUTTON_A,
@@ -77,6 +82,21 @@ object InputHandler {
         return hasControllerButtons || hasControllerAxes
     }
 
+    fun InputDevice.getPersistentDescriptor(): String {
+        val desc = descriptor?.trim() ?: ""
+        if (desc.isNotEmpty()) {
+            return desc
+        }
+        return String.format(Locale.ROOT, "%04x:%04x:%s", vendorId, productId, name ?: "Gamepad")
+    }
+
+    fun getControllerForDevice(device: InputDevice?): YuzuPhysicalDevice? {
+        device ?: return null
+        return androidControllers[device.id]
+            ?: androidControllers[device.controllerNumber]
+            ?: androidControllers.values.firstOrNull()
+    }
+
     fun dispatchKeyEvent(event: KeyEvent): Boolean {
         val action = when (event.action) {
             KeyEvent.ACTION_DOWN -> NativeInput.ButtonState.PRESSED
@@ -84,13 +104,10 @@ object InputHandler {
             else -> return false
         }
 
-        val device = event.device
-        val controllerNumber = device?.controllerNumber ?: 0
-        var controllerData = androidControllers[controllerNumber]
+        var controllerData = getControllerForDevice(event.device)
         if (controllerData == null) {
             updateControllerData()
-            controllerData = androidControllers[controllerNumber]
-                ?: androidControllers.values.firstOrNull() ?: return false
+            controllerData = getControllerForDevice(event.device) ?: return false
         }
 
         NativeInput.onGamePadButtonEvent(
@@ -117,12 +134,10 @@ object InputHandler {
 
     fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
         val device = event.device
-        val controllerNumber = device?.controllerNumber ?: 0
-        var controllerData = androidControllers[controllerNumber]
+        var controllerData = getControllerForDevice(device)
         if (controllerData == null) {
             updateControllerData()
-            controllerData = androidControllers[controllerNumber]
-                ?: androidControllers.values.firstOrNull() ?: return false
+            controllerData = getControllerForDevice(device) ?: return false
         }
         device?.motionRanges?.forEach {
             NativeInput.onGamePadAxisEvent(
@@ -136,40 +151,120 @@ object InputHandler {
     }
 
     fun getDevices(): Map<Int, YuzuPhysicalDevice> {
-        val gameControllerDeviceIds = mutableMapOf<Int, YuzuPhysicalDevice>()
+        val resultControllers = mutableMapOf<Int, YuzuPhysicalDevice>()
         val deviceIds = InputDevice.getDeviceIds()
-        var port = 0
+        val physicalDevices = deviceIds.toList().mapNotNull { InputDevice.getDevice(it) }
+            .filter { isPhysicalGameController(it) }
+            .distinctBy { it.id }
+
+        if (physicalDevices.isEmpty()) {
+            return emptyMap()
+        }
+
+        val prefs = YuzuApplication.appContext.getSharedPreferences(PREFS_CONTROLLER_SLOTS, Context.MODE_PRIVATE)
         val inputSettings = NativeConfig.getInputSettings(true)
-        deviceIds.forEach { deviceId ->
-            InputDevice.getDevice(deviceId)?.apply {
-                if (isPhysicalGameController(this)) {
-                    if (!gameControllerDeviceIds.contains(controllerNumber)) {
-                        gameControllerDeviceIds[controllerNumber] = YuzuPhysicalDevice(
-                            this,
-                            port,
-                            inputSettings[port].useSystemVibrator
-                        )
-                    }
-                    port++
-                }
+
+        // Track slots claimed in this session pass (0..7 for Player 1..8)
+        val assignedSlots = mutableMapOf<InputDevice, Int>()
+        val usedSlots = mutableSetOf<Int>()
+
+        // 1. First pass: restore previously assigned slots for controllers that reconnect
+        for (device in physicalDevices) {
+            val key = device.getPersistentDescriptor()
+            val savedSlot = prefs.getInt(key, -1)
+            if (savedSlot in 0..7 && !usedSlots.contains(savedSlot)) {
+                assignedSlots[device] = savedSlot
+                usedSlots.add(savedSlot)
             }
         }
-        return gameControllerDeviceIds
+
+        // 2. Second pass: assign lowest available free slot for any new controllers
+        val editor = prefs.edit()
+        for (device in physicalDevices) {
+            if (!assignedSlots.containsKey(device)) {
+                var freeSlot = 0
+                while (freeSlot < 8 && usedSlots.contains(freeSlot)) {
+                    freeSlot++
+                }
+                if (freeSlot >= 8) {
+                    freeSlot = 7 // Fallback cap at Player 8
+                }
+                assignedSlots[device] = freeSlot
+                usedSlots.add(freeSlot)
+                editor.putInt(device.getPersistentDescriptor(), freeSlot)
+            }
+        }
+        editor.apply()
+
+        // 3. Build physical devices and index by both device.id and controllerNumber
+        for ((device, slot) in assignedSlots) {
+            val useSystemVibrator = if (slot < inputSettings.size) inputSettings[slot].useSystemVibrator else false
+            val physicalDevice = YuzuPhysicalDevice(device, slot, useSystemVibrator)
+            // Index by runtime device ID (unique per hardware device at runtime)
+            resultControllers[device.id] = physicalDevice
+            // Also index by controllerNumber if not conflicting
+            if (!resultControllers.containsKey(device.controllerNumber)) {
+                resultControllers[device.controllerNumber] = physicalDevice
+            }
+        }
+
+        return resultControllers
     }
 
     fun updateControllerData() {
         androidControllers = getDevices()
-        androidControllers.forEach {
-            NativeInput.registerController(it.value)
+
+        // Register distinct physical devices by assigned port
+        val uniqueControllers = androidControllers.values.distinctBy { it.getPort() }
+        uniqueControllers.forEach {
+            NativeInput.registerController(it)
         }
 
         // Register the input overlay on a dedicated port for all player 1 vibrations
         NativeInput.registerController(YuzuInputOverlayDevice(androidControllers.isEmpty(), 100))
+
         registeredControllers.clear()
         NativeInput.getInputDevices().forEach {
             registeredControllers.add(ParamPackage(it))
         }
         registeredControllers.sortBy { it.get("port", 0) }
+
+        // Ensure connected state and default button mappings for all active controllers
+        ensureControllersConnectedAndMapped(uniqueControllers)
+    }
+
+    private fun ensureControllersConnectedAndMapped(activeControllers: List<YuzuPhysicalDevice>) {
+        if (activeControllers.isEmpty()) return
+
+        var needSave = false
+        val inputSettings = NativeConfig.getInputSettings(true)
+
+        for (controller in activeControllers) {
+            val port = controller.getPort()
+            if (port in 0..7) {
+                // Ensure the slot is marked as connected in the emulator
+                NativeInput.connectControllers(port, true)
+
+                // If this player slot has no button mappings configured, auto-map with defaults
+                val hasMapping = if (port < inputSettings.size) inputSettings[port].hasMapping() else false
+                if (!hasMapping) {
+                    val matchingParam = registeredControllers.firstOrNull { it.get("port", -1) == port }
+                    if (matchingParam != null) {
+                        val displayName = matchingParam.get("display", controller.getName())
+                        NativeInput.updateMappingsWithDefault(port, matchingParam, displayName)
+                        needSave = true
+                    }
+                }
+            }
+        }
+
+        if (needSave) {
+            NativeConfig.saveGlobalConfig()
+        }
+
+        try {
+            NativeInput.reloadInputDevices()
+        } catch (_: Throwable) {}
     }
 
     fun InputDevice.getGUID(): String = String.format("%016x%016x", productId, vendorId)

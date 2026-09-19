@@ -632,4 +632,39 @@ object GpuDriverHelper {
             Log.error("[GpuDriverHelper] Failed to reset per-game driver for ${game.title}: ${e.message}")
         }
     }
+
+    fun getPerGameDriver(game: Game): Pair<Boolean, String?> {
+        try {
+            val iniFile = SettingsFile.getCustomSettingsFile(game)
+            if (!iniFile.exists() || iniFile.length() == 0L) {
+                return Pair(true, null)
+            }
+            var inGpuDriver = false
+            var useGlobal = true
+            var pathInIni: String? = null
+            for (line in iniFile.readLines()) {
+                val trimmed = line.trim()
+                if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith(";")) {
+                    continue
+                }
+                if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                    inGpuDriver = trimmed.equals("[GpuDriver]", ignoreCase = true)
+                    continue
+                }
+                if (inGpuDriver && trimmed.contains("=")) {
+                    val key = trimmed.substringBefore("=").trim()
+                    val value = trimmed.substringAfter("=").trim().removeSurrounding("\"", "\"")
+                    if (key.equals("driver_path\\use_global", ignoreCase = true)) {
+                        useGlobal = value.equals("true", ignoreCase = true)
+                    } else if (key.equals("driver_path", ignoreCase = true)) {
+                        pathInIni = value
+                    }
+                }
+            }
+            return Pair(useGlobal, pathInIni)
+        } catch (e: Exception) {
+            Log.error("[GpuDriverHelper] Failed to read per-game driver for ${game.title}: ${e.message}")
+            return Pair(true, null)
+        }
+    }
 }

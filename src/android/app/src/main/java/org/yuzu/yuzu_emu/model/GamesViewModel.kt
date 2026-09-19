@@ -10,6 +10,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
+import java.io.File
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -121,12 +122,17 @@ class GamesViewModel : ViewModel() {
                                     return@forEach
                                 }
 
-                                val gameExists =
+                                val uri = Uri.parse(game.path)
+                                val gameExists = if (uri.scheme == "content") {
                                     DocumentFile.fromSingleUri(
                                         YuzuApplication.appContext,
-                                        Uri.parse(game.path)
-                                    )?.exists()
-                                if (gameExists == true) {
+                                        uri
+                                    )?.exists() == true
+                                } else {
+                                    val localPath = if (uri.scheme == "file") uri.path ?: "" else game.path
+                                    File(localPath).exists() || File(Uri.decode(localPath)).exists()
+                                }
+                                if (gameExists) {
                                     deserializedGames.add(game)
                                 }
                             }

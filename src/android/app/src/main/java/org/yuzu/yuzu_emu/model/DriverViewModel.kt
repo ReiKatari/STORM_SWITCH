@@ -530,6 +530,27 @@ class DriverViewModel : ViewModel() {
         }
 
         try {
+            if (game != null) {
+                val (useGlobal, customDriverPath) = GpuDriverHelper.getPerGameDriver(game)
+                if (!useGlobal && !customDriverPath.isNullOrEmpty()) {
+                    val driverFile = File(customDriverPath)
+                    val metadata = if (driverFile.exists()) {
+                        GpuDriverHelper.getMetadataFromZip(driverFile)
+                    } else {
+                        GpuDriverMetadata()
+                    }
+                    applyDriverMetadataToTitle(metadata)
+                    return
+                } else if (!useGlobal && customDriverPath.isNullOrEmpty()) {
+                    // System driver explicitly selected for this game
+                    val systemDriverTitle = YuzuApplication.appContext.getString(R.string.system_gpu_driver)
+                    val systemDriverVersion = NativeLibrary.getVulkanDriverVersion().takeIf { !it.isNullOrEmpty() } ?: systemDriverTitle
+                    _selectedDriverTitle.value = systemDriverTitle
+                    _selectedDriverVersion.value = systemDriverVersion
+                    return
+                }
+            }
+
             if (game == null || NativeConfig.isPerGameConfigLoaded()) {
                 updateName()
             } else {
@@ -543,16 +564,9 @@ class DriverViewModel : ViewModel() {
         }
     }
 
-    private fun updateName() {
+    private fun applyDriverMetadataToTitle(customDriver: GpuDriverMetadata) {
         val systemDriverTitle = YuzuApplication.appContext.getString(R.string.system_gpu_driver)
         val systemDriverVersion = NativeLibrary.getVulkanDriverVersion().takeIf { !it.isNullOrEmpty() } ?: systemDriverTitle
-        val currentDriverPath = StringSetting.DRIVER_PATH.getString()
-        val customDriver = if (currentDriverPath.isNotEmpty() && File(currentDriverPath).exists()) {
-            val fromSetting = GpuDriverHelper.customDriverSettingData
-            if (fromSetting.name != null) fromSetting else GpuDriverHelper.getMetadataFromZip(File(currentDriverPath))
-        } else {
-            GpuDriverHelper.customDriverSettingData
-        }
 
         val effectiveVer = customDriver.packageVersion?.takeIf { it.isNotBlank() }
             ?: customDriver.version?.takeIf { it.isNotBlank() } ?: ""
@@ -575,6 +589,18 @@ class DriverViewModel : ViewModel() {
 
         _selectedDriverTitle.value = customDisplayTitle ?: systemDriverTitle
         _selectedDriverVersion.value = if (effectiveVer.isNotEmpty()) effectiveVer else systemDriverVersion
+    }
+
+    private fun updateName() {
+        val currentDriverPath = StringSetting.DRIVER_PATH.getString()
+        val customDriver = if (currentDriverPath.isNotEmpty() && File(currentDriverPath).exists()) {
+            val fromSetting = GpuDriverHelper.customDriverSettingData
+            if (fromSetting.name != null) fromSetting else GpuDriverHelper.getMetadataFromZip(File(currentDriverPath))
+        } else {
+            GpuDriverHelper.customDriverSettingData
+        }
+
+        applyDriverMetadataToTitle(customDriver)
     }
 
     private fun setDriverReady() {
