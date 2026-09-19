@@ -46,11 +46,15 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_unloadGlobalConfig(JNIEnv* env, 
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_reloadGlobalConfig(JNIEnv* env, jobject obj) {
-    global_config->AndroidConfig::ReloadAllValues();
+    if (global_config != nullptr) {
+        global_config->AndroidConfig::ReloadAllValues();
+    }
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_saveGlobalConfig(JNIEnv* env, jobject obj) {
-    global_config->AndroidConfig::SaveAllValues();
+    if (global_config != nullptr) {
+        global_config->AndroidConfig::SaveAllValues();
+    }
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_initializePerGameConfig(JNIEnv* env, jobject obj,
@@ -69,7 +73,9 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_NativeConfig_isPerGameConfigLoaded(JNIEnv
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_savePerGameConfig(JNIEnv* env, jobject obj) {
-    per_game_config->AndroidConfig::SaveAllValues();
+    if (per_game_config != nullptr) {
+        per_game_config->AndroidConfig::SaveAllValues();
+    }
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_reloadPerGameConfig(JNIEnv* env, jobject obj) {

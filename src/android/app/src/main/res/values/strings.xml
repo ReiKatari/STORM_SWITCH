@@ -428,6 +428,7 @@
     <string name="install_game_content_success_install">%1$d installed successfully</string>
     <string name="install_game_content_success_overwrite">%1$d overwritten successfully</string>
     <string name="install_game_content_help_link">https://yuzu-mirror.github.io/help/quickstart/#dumping-installed-updates</string>
+    <string name="resolution_change_warning">Changing resolution in-game may cause visual artifacts. Restarting the game is recommended.</string>
     <string name="custom_driver_not_supported">Custom drivers not supported</string>
     <string name="custom_driver_not_supported_description">Custom driver loading isn\'t currently supported for this device.\nCheck this option again in the future to see if support was added!</string>
     <string name="manage_yuzu_data">Manage STORM SWITCH data</string>

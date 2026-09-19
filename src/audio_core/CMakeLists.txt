@@ -243,6 +243,9 @@ target_sources(audio_core PRIVATE
     sink/sdl3_sink.h)
 
 target_link_libraries(audio_core PRIVATE SDL3::SDL3)
+if (ANDROID)
+    target_link_libraries(audio_core PRIVATE aaudio OpenSLES)
+endif()
 target_compile_definitions(audio_core PRIVATE HAVE_SDL3)
 
 create_target_directory_groups(audio_core)

@@ -153,10 +153,9 @@ bool ArmNce::HandleFailedGuestFault(GuestContext* guest_ctx, void* raw_info, voi
             }
         }
 
-        if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
-            host_ctx.pc += 4;
-            return true;
-        }
+        // For data aborts, safely advance PC and recover, preventing game crashes on NCE (7.3.2 behavior)
+        host_ctx.pc += 4;
+        return true;
     } else if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
         const u64 lr = host_ctx.regs[30];
         auto& memory = guest_ctx->parent->m_running_thread->GetOwnerProcess()->GetMemory();

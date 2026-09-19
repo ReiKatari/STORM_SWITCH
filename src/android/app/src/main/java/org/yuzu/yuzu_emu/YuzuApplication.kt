@@ -239,7 +239,15 @@ class YuzuApplication : Application() {
                 androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
             } catch (_: Exception) { null }
             val savedIdx = prefs?.getInt("app_language", -1) ?: -1
-            val languageIndex = if (savedIdx >= 0) savedIdx else IntSetting.APP_LANGUAGE.getInt()
+            val languageIndex = if (savedIdx >= 0) {
+                savedIdx
+            } else {
+                try {
+                    IntSetting.APP_LANGUAGE.getInt()
+                } catch (_: Throwable) {
+                    0
+                }
+            }
 
             val langCode = if (languageIndex in LANGUAGE_CODES.indices) {
                 LANGUAGE_CODES[languageIndex]

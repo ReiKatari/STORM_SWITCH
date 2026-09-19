@@ -44,15 +44,39 @@ object GameHelper {
             preferences.edit() { remove(KEY_OLD_GAME_PATH) }
         }
         NativeConfig.getGameDirs().forEach { dir ->
-            if (gameDirs.none { it.uriString == dir.uriString }) {
+            if (dir.uriString.isNotBlank() && gameDirs.none { it.uriString == dir.uriString }) {
                 gameDirs.add(dir)
             }
         }
 
+        // Restore from backup if NativeConfig has no directories loaded yet
+        val backupDirs = preferences.getStringSet("game_directories_backup", emptySet()) ?: emptySet()
+        if (gameDirs.isEmpty() && backupDirs.isNotEmpty()) {
+            backupDirs.forEach { uriStr ->
+                if (uriStr.isNotBlank() && gameDirs.none { it.uriString == uriStr }) {
+                    gameDirs.add(GameDir(uriStr, true))
+                }
+            }
+            if (gameDirs.isNotEmpty()) {
+                NativeConfig.setGameDirs(gameDirs.toTypedArray())
+                NativeConfig.saveGlobalConfig()
+            }
+        }
+
         if (gameDirs.isEmpty()) {
-            preferences.edit().remove(KEY_GAMES).apply()
-            cachedGameList.clear()
-            return emptyList()
+            // NEVER clear KEY_GAMES or cachedGameList when directories are temporarily empty
+            if (cachedGameList.isEmpty()) {
+                val stored = preferences.getStringSet(KEY_GAMES, emptySet()) ?: emptySet()
+                for (item in stored) {
+                    try {
+                        val game = Json.decodeFromString<Game>(item)
+                        if (!isUpdateOrDlcPath(game.path) && !isUpdateOrDlcPath(game.title)) {
+                            cachedGameList.add(upgradeGameVersionIfNeeded(game))
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+            return cachedGameList.toList()
         } else {
             val dirSet = gameDirs.map { it.uriString }.toSet()
             preferences.edit().putStringSet("game_directories_backup", dirSet).apply()

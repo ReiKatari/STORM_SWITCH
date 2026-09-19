@@ -32,6 +32,7 @@ import org.yuzu.yuzu_emu.model.HomeViewModel
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
 import org.yuzu.yuzu_emu.utils.Log
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.utils.SmartDns
 import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.io.File
 import java.io.FileOutputStream
@@ -67,12 +68,14 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
     private val httpClient by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(20, TimeUnit.SECONDS)
-            .readTimeout(120, TimeUnit.SECONDS)
+            .dns(SmartDns)
+            .connectTimeout(12, TimeUnit.SECONDS)
+            .readTimeout(180, TimeUnit.SECONDS)
             .connectionPool(okhttp3.ConnectionPool(5, 5, TimeUnit.MINUTES))
             .protocols(listOf(okhttp3.Protocol.HTTP_2, okhttp3.Protocol.HTTP_1_1))
             .followRedirects(true)
             .followSslRedirects(true)
+            .retryOnConnectionFailure(true)
             .build()
     }
 
@@ -257,17 +260,31 @@ class OnlineToolsDialogFragment : DialogFragment() {
         } else {
             "STORM_SWITCH_TOOLS_KEYS"
         }
-        val url = "https://api.github.com/repos/ReiKatari/STORM_SWITCH_TOOLS/releases/tags/$tagName"
+        val candidateUrls = listOf(
+            "https://api.github.com/repos/ReiKatari/STORM_SWITCH_TOOLS/releases/tags/$tagName",
+            "https://ghfast.top/https://api.github.com/repos/ReiKatari/STORM_SWITCH_TOOLS/releases/tags/$tagName",
+            "https://gh-proxy.net/https://api.github.com/repos/ReiKatari/STORM_SWITCH_TOOLS/releases/tags/$tagName"
+        )
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val request = Request.Builder()
-                    .url(url)
-                    .header("User-Agent", "STORM_SWITCH_Android")
-                    .build()
-                val response = httpClient.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val body = response.body?.string()
+                var body: String? = null
+                for (reqUrl in candidateUrls) {
+                    try {
+                        val request = Request.Builder()
+                            .url(reqUrl)
+                            .header("User-Agent", "STORM_SWITCH_Android")
+                            .build()
+                        val response = httpClient.newCall(request).execute()
+                        if (response.isSuccessful) {
+                            val resBody = response.body?.string()
+                            if (!resBody.isNullOrEmpty()) {
+                                body = resBody
+                                break
+                            }
+                        }
+                    } catch (_: Throwable) {}
+                }
                     if (!body.isNullOrEmpty()) {
                         val json = JSONObject(body)
                         val assetsArray = json.optJSONArray("assets") ?: JSONArray()
@@ -307,7 +324,6 @@ class OnlineToolsDialogFragment : DialogFragment() {
                             }
                         }
                     }
-                }
             } catch (e: Exception) {
                 Log.error("[OnlineTools] Failed to fetch catalog: ${e.message}")
             } finally {
@@ -347,49 +363,80 @@ class OnlineToolsDialogFragment : DialogFragment() {
                     }
                 }
 
-                val request = Request.Builder()
-                    .url(asset.downloadUrl)
-                    .header("User-Agent", "STORM_SWITCH_Installer")
-                    .header("Accept-Encoding", "identity")
-                    .build()
-                val response = httpClient.newCall(request).execute()
-                if (!response.isSuccessful) {
-                    throw Exception("Ошибка загрузки HTTP ${response.code}")
+                val candidateDlUrls = mutableListOf<String>()
+                if (asset.downloadUrl.startsWith("https://github.com/")) {
+                    candidateDlUrls.add("https://ghfast.top/" + asset.downloadUrl)
+                    candidateDlUrls.add("https://gh-proxy.net/" + asset.downloadUrl)
+                    candidateDlUrls.add("https://ghproxy.net/" + asset.downloadUrl)
+                    candidateDlUrls.add("https://gh.con.sh/" + asset.downloadUrl)
+                    candidateDlUrls.add("https://gh.llkk.cc/" + asset.downloadUrl)
                 }
+                candidateDlUrls.add(asset.downloadUrl)
 
-                val body = response.body ?: throw Exception("Пустой ответ сервера")
-                val totalLength = body.contentLength()
-                var downloaded = 0L
+                var downloadSuccess = false
+                var lastError: Exception? = null
 
-                val buffer = ByteArray(262144)
-                java.io.BufferedInputStream(body.byteStream(), 262144).use { input ->
-                    java.io.BufferedOutputStream(FileOutputStream(tempZip), 262144).use { output ->
-                        var read: Int
-                        var lastReportTime = System.currentTimeMillis()
+                for (dlUrl in candidateDlUrls) {
+                    try {
+                        val request = Request.Builder()
+                            .url(dlUrl)
+                            .header("User-Agent", "STORM_SWITCH_Installer")
+                            .header("Accept-Encoding", "identity")
+                            .build()
+                        val response = httpClient.newCall(request).execute()
+                        if (!response.isSuccessful) {
+                            response.close()
+                            continue
+                        }
+                        val body = response.body ?: continue
+                        val totalLength = body.contentLength()
+                        var downloaded = 0L
 
-                        while (input.read(buffer).also { read = it } != -1) {
-                            output.write(buffer, 0, read)
-                            downloaded += read
+                        val buffer = ByteArray(262144)
+                        java.io.BufferedInputStream(body.byteStream(), 262144).use { input ->
+                            java.io.BufferedOutputStream(FileOutputStream(tempZip), 262144).use { output ->
+                                var read: Int
+                                var lastReportTime = System.currentTimeMillis()
 
-                            val now = System.currentTimeMillis()
-                            if (now - lastReportTime > 200) {
-                                lastReportTime = now
-                                val progress = if (totalLength > 0) ((downloaded * 100) / totalLength).toInt() else 0
-                                withContext(Dispatchers.Main) {
-                                    if (_binding != null) {
-                                        binding.progressBar.progress = progress
-                                        binding.textStatus.text = getString(
-                                            R.string.online_tools_downloading_format,
-                                            progress,
-                                            formatBytes(downloaded, requireContext()),
-                                            formatBytes(totalLength, requireContext())
-                                        )
+                                while (input.read(buffer).also { read = it } != -1) {
+                                    output.write(buffer, 0, read)
+                                    downloaded += read
+
+                                    val now = System.currentTimeMillis()
+                                    if (now - lastReportTime > 200) {
+                                        lastReportTime = now
+                                        val progress = if (totalLength > 0) ((downloaded * 100) / totalLength).toInt() else 0
+                                        withContext(Dispatchers.Main) {
+                                            if (_binding != null) {
+                                                binding.progressBar.progress = progress
+                                                binding.textStatus.text = getString(
+                                                    R.string.online_tools_downloading_format,
+                                                    progress,
+                                                    formatBytes(downloaded, requireContext()),
+                                                    formatBytes(totalLength, requireContext())
+                                                )
+                                            }
+                                        }
                                     }
                                 }
+                                output.flush()
                             }
                         }
-                        output.flush()
+                        if (tempZip.exists() && tempZip.length() > 0 && (totalLength <= 0 || downloaded >= totalLength)) {
+                            downloadSuccess = true
+                            break
+                        } else {
+                            tempZip.delete()
+                        }
+                    } catch (e: Exception) {
+                        tempZip.delete()
+                        lastError = e
+                        Log.error("[OnlineToolsDialogFragment] Failed downloading from $dlUrl: ${e.message}")
                     }
+                }
+
+                if (!downloadSuccess) {
+                    throw lastError ?: Exception("Не удалось загрузить файл из доступных зеркал")
                 }
 
                 withContext(Dispatchers.Main) {
@@ -422,22 +469,23 @@ class OnlineToolsDialogFragment : DialogFragment() {
                         }
                     }
 
-                    val nandFirmwareDir = File(NativeConfig.getNandDir() + "/system/Contents/registered/")
-                    if (nandFirmwareDir.exists()) {
-                        nandFirmwareDir.deleteRecursively()
+                    val targetFirmwareDirs = listOfNotNull(
+                        requireContext().filesDir?.let { File(it, "nand/system/Contents/registered") },
+                        requireContext().getExternalFilesDir(null)?.let { File(it, "nand/system/Contents/registered") },
+                        DirectoryInitialization.userDirectory?.let { File(it, "nand/system/Contents/registered") },
+                        try {
+                            val nd = NativeConfig.getNandDir()
+                            if (nd.isNotBlank()) File(nd, "system/Contents/registered") else null
+                        } catch (_: Throwable) { null },
+                        File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/nand/system/Contents/registered")
+                    ).distinctBy { it.canonicalPath }
+
+                    for (targetDir in targetFirmwareDirs) {
+                        try {
+                            targetDir.mkdirs()
+                            tempExtract.copyRecursively(targetDir, overwrite = true)
+                        } catch (_: Throwable) {}
                     }
-                    nandFirmwareDir.mkdirs()
-
-                    tempExtract.copyRecursively(nandFirmwareDir, overwrite = true)
-
-                    // Also sync to external /sdcard/STORM SWITCH/nand/system/Contents/registered/
-                    try {
-                        val externalNand = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/nand/system/Contents/registered")
-                        if (externalNand.parentFile?.exists() == true || DirectoryInitialization.userDirectory?.contains("STORM SWITCH") == true) {
-                            externalNand.mkdirs()
-                            tempExtract.copyRecursively(externalNand, overwrite = true)
-                        }
-                    } catch (_: Throwable) {}
 
                     tempExtract.deleteRecursively()
                     tempZip.delete()
@@ -458,10 +506,11 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 } else {
                     // Keys installation: extract prod.keys and title.keys to all known target key directories
                     val targetDirs = listOfNotNull(
+                        requireContext().filesDir?.let { File(it, "keys") },
                         DirectoryInitialization.userDirectory?.let { File(it, "keys") },
                         File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/keys"),
                         requireContext().getExternalFilesDir(null)?.let { File(it, "keys") }
-                    )
+                    ).distinctBy { it.canonicalPath }
                     for (kd in targetDirs) {
                         kd.mkdirs()
                     }

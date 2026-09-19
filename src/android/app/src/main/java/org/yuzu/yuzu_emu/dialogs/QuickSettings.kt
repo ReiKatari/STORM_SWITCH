@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -39,14 +40,10 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
     private fun saveSettings() {
         val currentGame = emulationFragment.game
         if (currentGame != null) {
-            if (!emulationFragment.shouldUseCustom || !NativeConfig.isPerGameConfigLoaded()) {
-                ensureCustomConfigLoaded()
-            }
             NativeConfig.savePerGameConfig()
             org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
-        } else {
-            NativeConfig.saveGlobalConfig()
         }
+        NativeConfig.saveGlobalConfig()
         try {
             NativeLibrary.applySettings()
         } catch (_: Throwable) {}
@@ -114,6 +111,14 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
                     saveSettings()
                     valueView.text = optionName
                     onValueChanged?.invoke(values[index])
+
+                    if (setting == IntSetting.RENDERER_RESOLUTION) {
+                        Toast.makeText(
+                            emulationFragment.requireContext(),
+                            R.string.resolution_change_warning,
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
             radioGroup.addView(radioButton)
@@ -235,6 +240,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
 
         slider.addOnChangeListener { _, value, changed ->
             if (changed) {
+                ensureCustomConfigLoaded()
                 val intValue = value.toInt()
                 when (setting) {
                     is AbstractShortSetting -> setting.setShort(intValue.toShort())

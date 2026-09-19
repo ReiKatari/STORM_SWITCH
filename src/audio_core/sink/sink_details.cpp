@@ -98,9 +98,13 @@ const SinkDetails& GetOutputSinkDetails(Settings::AudioEngine sink_id) {
         // causes audio issues, in that case go with SDL.
 #if defined(HAVE_CUBEB) && defined(HAVE_SDL3)
         iter = find_backend(Settings::AudioEngine::Cubeb);
-        if (iter->latency() > TargetSampleCount * 3) {
-        iter = find_backend(Settings::AudioEngine::Sdl3);
+        if (iter == std::end(sink_details) || iter->latency() > TargetSampleCount * 3) {
+            iter = find_backend(Settings::AudioEngine::Sdl3);
         }
+#elif defined(HAVE_CUBEB)
+        iter = find_backend(Settings::AudioEngine::Cubeb);
+#elif defined(HAVE_SDL3)
+        iter = find_backend(Settings::AudioEngine::Sdl3);
 #else
         iter = std::begin(sink_details);
 #endif

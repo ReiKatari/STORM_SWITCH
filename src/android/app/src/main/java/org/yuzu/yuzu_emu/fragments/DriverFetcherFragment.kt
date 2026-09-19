@@ -33,6 +33,7 @@ import org.yuzu.yuzu_emu.features.fetcher.DriverGroupAdapter
 import org.yuzu.yuzu_emu.model.DriverViewModel
 import org.yuzu.yuzu_emu.model.HomeViewModel
 import org.yuzu.yuzu_emu.utils.GpuDriverHelper
+import org.yuzu.yuzu_emu.utils.SmartDns
 import org.yuzu.yuzu_emu.utils.ViewUtils.updateMargins
 import java.io.IOException
 import java.net.URL
@@ -189,10 +190,12 @@ class DriverFetcherFragment : Fragment() {
     }
 
     private val client = OkHttpClient.Builder()
+        .dns(SmartDns)
         .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
         .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
         .followRedirects(true)
         .followSslRedirects(true)
+        .retryOnConnectionFailure(true)
         .build()
 
     private fun fetchDrivers() {
@@ -212,10 +215,11 @@ class DriverFetcherFragment : Fragment() {
                     var releases = ArrayList<Release>()
                     
                     val urlsToTry = listOf(
+                        "https://ghfast.top/https://api.github.com/repos/$path/releases",
+                        "https://gh-proxy.net/https://api.github.com/repos/$path/releases",
                         "https://api.github.com/repos/$path/releases",
-                        "https://api.githubfast.com/repos/$path/releases",
                         "https://ghproxy.net/https://api.github.com/repos/$path/releases",
-                        "https://gh-proxy.com/https://api.github.com/repos/$path/releases"
+                        "https://api.githubfast.com/repos/$path/releases"
                     )
 
                     for (url in urlsToTry) {

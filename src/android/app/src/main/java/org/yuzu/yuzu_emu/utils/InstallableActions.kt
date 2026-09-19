@@ -225,8 +225,6 @@ object InstallableActions {
         result: Uri,
         onComplete: (() -> Unit)? = null
     ) {
-        val filterNCA = FilenameFilter { _, dirName -> dirName.endsWith(".nca") }
-        val firmwarePath = File(NativeConfig.getNandDir() + "/system/Contents/registered/")
         val cacheFirmwareDir = File("${activity.cacheDir.path}/registered/")
 
         ProgressDialogFragment.newInstance(
@@ -235,25 +233,58 @@ object InstallableActions {
         ) { progressCallback, _ ->
             var messageToShow: Any
             try {
+                cacheFirmwareDir.deleteRecursively()
+                cacheFirmwareDir.mkdirs()
                 FileUtil.unzipToInternalStorage(
                     result.toString(),
                     cacheFirmwareDir,
                     progressCallback
                 )
-                val unfilteredNumOfFiles = cacheFirmwareDir.list()?.size ?: -1
-                val filteredNumOfFiles = cacheFirmwareDir.list(filterNCA)?.size ?: -2
-                messageToShow = if (unfilteredNumOfFiles != filteredNumOfFiles) {
-                    MessageDialogFragment.newInstance(
+                val ncaFiles = cacheFirmwareDir.walkTopDown()
+                    .filter { it.isFile && it.name.endsWith(".nca", ignoreCase = true) }
+                    .toList()
+                if (ncaFiles.isEmpty()) {
+                    messageToShow = MessageDialogFragment.newInstance(
                         activity,
                         titleId = R.string.firmware_installed_failure,
                         descriptionId = R.string.firmware_installed_failure_description
                     )
                 } else {
-                    firmwarePath.deleteRecursively()
-                    cacheFirmwareDir.copyRecursively(firmwarePath, overwrite = true)
+                    val targetDirs = mutableListOf<File>()
+                    val primaryNand = File(NativeConfig.getNandDir(), "system/Contents/registered/")
+                    targetDirs.add(primaryNand)
+
+                    val internalNand = File(activity.filesDir, "nand/system/Contents/registered/")
+                    if (!targetDirs.any { it.canonicalPath == internalNand.canonicalPath }) {
+                        targetDirs.add(internalNand)
+                    }
+
+                    val extDir = activity.getExternalFilesDir(null)
+                    if (extDir != null) {
+                        val extNand = File(extDir, "nand/system/Contents/registered/")
+                        if (!targetDirs.any { it.canonicalPath == extNand.canonicalPath }) {
+                            targetDirs.add(extNand)
+                        }
+                    }
+
+                    val userDir = DirectoryInitialization.userDirectory
+                    if (!userDir.isNullOrEmpty()) {
+                        val userNand = File(userDir, "nand/system/Contents/registered/")
+                        if (!targetDirs.any { it.canonicalPath == userNand.canonicalPath }) {
+                            targetDirs.add(userNand)
+                        }
+                    }
+
+                    for (targetDir in targetDirs) {
+                        targetDir.mkdirs()
+                        for (nca in ncaFiles) {
+                            nca.copyTo(File(targetDir, nca.name), overwrite = true)
+                        }
+                    }
+
                     NativeLibrary.initializeSystem(true)
                     homeViewModel.setCheckKeys(true)
-                    activity.getString(R.string.save_file_imported_success)
+                    messageToShow = activity.getString(R.string.save_file_imported_success)
                 }
             } catch (_: Exception) {
                 messageToShow = activity.getString(R.string.fatal_error)
@@ -271,19 +302,38 @@ object InstallableActions {
         fragmentManager: FragmentManager,
         homeViewModel: HomeViewModel
     ) {
-        val firmwarePath = File(NativeConfig.getNandDir() + "/system/Contents/registered/")
+        val targetDirs = mutableListOf<File>()
+        targetDirs.add(File(NativeConfig.getNandDir(), "system/Contents/registered/"))
+        targetDirs.add(File(activity.filesDir, "nand/system/Contents/registered/"))
+        activity.getExternalFilesDir(null)?.let {
+            targetDirs.add(File(it, "nand/system/Contents/registered/"))
+        }
+        val userDir = DirectoryInitialization.userDirectory
+        if (!userDir.isNullOrEmpty()) {
+            targetDirs.add(File(userDir, "nand/system/Contents/registered/"))
+        }
+
         ProgressDialogFragment.newInstance(
             activity,
             R.string.firmware_uninstalling
         ) { _, _ ->
             val messageToShow: Any = try {
-                if (firmwarePath.exists()) {
-                    firmwarePath.deleteRecursively()
+                var deletedAny = false
+                for (dir in targetDirs) {
+                    if (dir.exists()) {
+                        dir.deleteRecursively()
+                        deletedAny = true
+                    }
+                }
+                if (deletedAny) {
                     NativeLibrary.initializeSystem(true)
                     homeViewModel.setCheckKeys(true)
-                    activity.getString(R.string.firmware_uninstalled_success)
+                    activity.getString(R.string.save_file_imported_success)
                 } else {
-                    activity.getString(R.string.firmware_uninstalled_failure)
+                    MessageDialogFragment.newInstance(
+                        activity,
+                        titleId = R.string.firmware_uninstalled_failure
+                    )
                 }
             } catch (_: Exception) {
                 activity.getString(R.string.fatal_error)

@@ -1228,6 +1228,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
             container.removeAllViews()
 
+            if (game != null) {
+                quickSettings.ensureCustomConfigLoaded()
+            }
+
             if (shouldUseCustom) {
                 quickSettings.addPerGameConfigStatusIndicator(container)
             }

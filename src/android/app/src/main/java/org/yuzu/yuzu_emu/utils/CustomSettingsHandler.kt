@@ -459,10 +459,13 @@ object CustomSettingsHandler {
                 continue
             }
 
-            if (inGpuDriverSection && trimmed.startsWith("driver_path=")) {
-                return trimmed.substringAfter("driver_path=")
-                    .trim()
-                    .removeSurrounding("\"", "\"")
+            if (inGpuDriverSection && trimmed.contains("=")) {
+                val key = trimmed.substringBefore("=").trim()
+                if (key.equals("driver_path", ignoreCase = true)) {
+                    return trimmed.substringAfter("=")
+                        .trim()
+                        .removeSurrounding("\"", "\"")
+                }
             }
         }
 

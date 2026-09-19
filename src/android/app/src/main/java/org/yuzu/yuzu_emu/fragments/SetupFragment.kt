@@ -496,7 +496,14 @@ class SetupFragment : Fragment() {
     val getGamesDirectory =
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
             if (result != null) {
+                try {
+                    requireContext().contentResolver.takePersistableUriPermission(
+                        result,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                } catch (_: Exception) {}
                 mainActivity.processGamesDir(result)
+                refreshAllButtonStates()
             }
         }
 
@@ -580,11 +587,12 @@ class SetupFragment : Fragment() {
     private fun isFirmwareInstalled(): Boolean {
         val nandDir = try { NativeConfig.getNandDir() } catch (_: Throwable) { "" }
         val candidates = listOfNotNull(
-            if (nandDir.isNotBlank()) File(nandDir, "system/Contents/registered") else null,
+            context?.filesDir?.let { File(it, "nand/system/Contents/registered") },
+            context?.getExternalFilesDir(null)?.let { File(it, "nand/system/Contents/registered") },
             DirectoryInitialization.userDirectory?.let { File(it, "nand/system/Contents/registered") },
-            File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/nand/system/Contents/registered"),
-            context?.getExternalFilesDir(null)?.let { File(it, "nand/system/Contents/registered") }
-        )
+            if (nandDir.isNotBlank()) File(nandDir, "system/Contents/registered") else null,
+            File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/nand/system/Contents/registered")
+        ).distinctBy { it.canonicalPath }
         val filesExist = candidates.any { dir ->
             dir.exists() && dir.isDirectory && (dir.listFiles { f -> f.extension.equals("nca", ignoreCase = true) }?.isNotEmpty() == true)
         }

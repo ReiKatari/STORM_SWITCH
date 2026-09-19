@@ -104,6 +104,7 @@ class GamesViewModel : ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
+                    getGameDirsAndExternalContent()
                     if (firstStartup) {
                         // Retrieve list of cached games
                         val storedGames =
@@ -255,7 +256,20 @@ class GamesViewModel : ViewModel() {
     }
 
     private fun getGameDirsAndExternalContent(reloadList: Boolean = false) {
-        val gameDirs = NativeConfig.getGameDirs().distinctBy { it.uriString }.toMutableList()
+        val gameDirs = NativeConfig.getGameDirs().filter { it.uriString.isNotBlank() }.distinctBy { it.uriString }.toMutableList()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
+        val backupDirs = prefs.getStringSet("game_directories_backup", emptySet()) ?: emptySet()
+        if (gameDirs.isEmpty() && backupDirs.isNotEmpty()) {
+            backupDirs.forEach { uriStr ->
+                if (uriStr.isNotBlank() && gameDirs.none { it.uriString == uriStr }) {
+                    gameDirs.add(GameDir(uriStr, true))
+                }
+            }
+            if (gameDirs.isNotEmpty()) {
+                NativeConfig.setGameDirs(gameDirs.toTypedArray())
+                NativeConfig.saveGlobalConfig()
+            }
+        }
         val externalContentDirs = NativeConfig.getExternalContentDirs().distinct().map {
             GameDir(it, false, DirectoryType.EXTERNAL_CONTENT)
         }

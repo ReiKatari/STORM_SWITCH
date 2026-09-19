@@ -664,6 +664,9 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     UpdateUITheme();
     UpdateStatusButtons();
 
+    // Ensure all explicit StormLang translations are applied immediately at startup
+    OnLanguageChanged(QString::fromStdString(UISettings::values.language.GetValue()));
+
     QTimer::singleShot(2500, this, [this] {
         OnCheckUpdates(false);
     });
@@ -11159,12 +11162,62 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
     }
     if (ui->action_Translate_Screen) {
         ui->action_Translate_Screen->setText(StormLang(
-            QStringLiteral("Авто-переводчик (OCR + Озвучка)..."),
-            QStringLiteral("Auto Translator (OCR + Voice)..."),
-            QStringLiteral("Automatischer Übersetzer (OCR + Sprachausgabe)..."),
-            QStringLiteral("Traducteur automatique (OCR + Voix)..."),
-            QStringLiteral("自动翻译器 (OCR + 语音)..."),
-            QStringLiteral("自動翻訳（OCR＋音声読み上げ）...")
+            QStringLiteral("Авто-переводчик (OCR и озвучка)..."),
+            QStringLiteral("Auto Translator (OCR and Voice)..."),
+            QStringLiteral("Automatischer Übersetzer (OCR und Sprachausgabe)..."),
+            QStringLiteral("Traducteur automatique (OCR et Voix)..."),
+            QStringLiteral("自动翻译器 (OCR 和 语音)..."),
+            QStringLiteral("自動翻訳（OCRと音声読み上げ）...")
+        ));
+    }
+    if (ui->menuTAS) {
+        ui->menuTAS->setTitle(StormLang(
+            QStringLiteral("TAS"),
+            QStringLiteral("TAS"),
+            QStringLiteral("TAS"),
+            QStringLiteral("TAS"),
+            QStringLiteral("TAS"),
+            QStringLiteral("TAS")
+        ));
+    }
+    if (ui->action_TAS_Start) {
+        ui->action_TAS_Start->setText(StormLang(
+            QStringLiteral("Запуск / Пауза TAS"),
+            QStringLiteral("Start / Pause TAS"),
+            QStringLiteral("TAS starten / pausieren"),
+            QStringLiteral("Démarrer / Mettre en pause TAS"),
+            QStringLiteral("启动 / 暂停 TAS"),
+            QStringLiteral("TAS を開始 / 一時停止")
+        ));
+    }
+    if (ui->action_TAS_Record) {
+        ui->action_TAS_Record->setText(StormLang(
+            QStringLiteral("Запись скрипта TAS"),
+            QStringLiteral("Record TAS"),
+            QStringLiteral("TAS aufzeichnen"),
+            QStringLiteral("Enregistrer TAS"),
+            QStringLiteral("录制 TAS"),
+            QStringLiteral("TAS を録画")
+        ));
+    }
+    if (ui->action_TAS_Reset) {
+        ui->action_TAS_Reset->setText(StormLang(
+            QStringLiteral("Сброс TAS"),
+            QStringLiteral("Reset TAS"),
+            QStringLiteral("TAS zurücksetzen"),
+            QStringLiteral("Réinitialiser TAS"),
+            QStringLiteral("重置 TAS"),
+            QStringLiteral("TAS をリセット")
+        ));
+    }
+    if (ui->action_Configure_Tas) {
+        ui->action_Configure_Tas->setText(StormLang(
+            QStringLiteral("Настройка TAS..."),
+            QStringLiteral("Configure TAS..."),
+            QStringLiteral("TAS konfigurieren..."),
+            QStringLiteral("Configurer TAS..."),
+            QStringLiteral("配置 TAS..."),
+            QStringLiteral("TAS を設定...")
         ));
     }
     if (ui->action_Mod_Manager) {

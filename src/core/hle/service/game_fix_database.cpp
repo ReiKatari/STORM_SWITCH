@@ -895,40 +895,49 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01004AB00A260000ULL,
         "Dark Souls: Remastered",
-        "• Вылеты при запуске и загрузках на NCE, просадки кадровой частоты у костров и зацикливание звука баффов",
-        "• Startup crashes on NCE, bonfire particle slowdown and weapon buff sound loop",
-        "✓ Бэкенд ЦП: Dynarmic JIT (устраняет вылеты при запуске и загрузках на мобильных устройствах)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Аудио-движок: Cubeb",
-        "✓ CPU Backend: Dynarmic JIT (prevents startup crashes on ARM/NCE)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Audio Engine: Cubeb",
+        "• Просадки кадровой частоты у костров и зацикливание звука баффов",
+        "• Bonfire particle slowdown and weapon buff sound loop",
+        "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Игнорировать прерывания памяти: Включено\n✓ Сжатие ASTC: Отключено (нативный ASTC для Mali и Adreno)\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed (native ASTC for Mali and Adreno)\n✓ Asynchronous Shaders: Enabled",
         {
-            {"Cpu\\cpu_backend", "0"},
+            {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Renderer\\gpu_accuracy", "1"}
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\async_presentation", "false"}
         }
     },
     {
         0x01001A8005FB2000ULL,
         "Dark Souls: Remastered",
-        "• Вылеты при запуске и загрузках на NCE, просадки кадровой частоты у костров и зацикливание звука баффов",
-        "• Startup crashes on NCE, bonfire particle slowdown and weapon buff sound loop",
-        "✓ Бэкенд ЦП: Dynarmic JIT (устраняет вылеты при запуске и загрузках на мобильных устройствах)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Аудио-движок: Cubeb",
-        "✓ CPU Backend: Dynarmic JIT (prevents startup crashes on ARM/NCE)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Audio Engine: Cubeb",
+        "• Просадки кадровой частоты у костров и зацикливание звука баффов",
+        "• Bonfire particle slowdown and weapon buff sound loop",
+        "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Игнорировать прерывания памяти: Включено\n✓ Сжатие ASTC: Отключено (нативный ASTC для Mali и Adreno)\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed (native ASTC for Mali and Adreno)\n✓ Asynchronous Shaders: Enabled",
         {
-            {"Cpu\\cpu_backend", "0"},
+            {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Renderer\\gpu_accuracy", "1"}
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\async_presentation", "false"}
         }
     },
     {
         0x01004AB00A266000ULL,
         "Dark Souls: Remastered",
-        "• Вылеты при запуске и загрузках на NCE, просадки кадровой частоты у костров и зацикливание звука баффов",
-        "• Startup crashes on NCE, bonfire particle slowdown and weapon buff sound loop",
-        "✓ Бэкенд ЦП: Dynarmic JIT (устраняет вылеты при запуске и загрузках на мобильных устройствах)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Аудио-движок: Cubeb",
-        "✓ CPU Backend: Dynarmic JIT (prevents startup crashes on ARM/NCE)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Audio Engine: Cubeb",
+        "• Просадки кадровой частоты у костров и зацикливание звука баффов",
+        "• Bonfire particle slowdown and weapon buff sound loop",
+        "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Игнорировать прерывания памяти: Включено\n✓ Сжатие ASTC: Отключено (нативный ASTC для Mali и Adreno)\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed (native ASTC for Mali and Adreno)\n✓ Asynchronous Shaders: Enabled",
         {
-            {"Cpu\\cpu_backend", "0"},
+            {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Renderer\\gpu_accuracy", "1"}
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\async_presentation", "false"}
         }
     },
     {

@@ -26,6 +26,7 @@ import kotlinx.coroutines.withContext
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.adapters.DriverAdapter
 import org.yuzu.yuzu_emu.databinding.FragmentDriverManagerBinding
+import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
 import org.yuzu.yuzu_emu.features.settings.model.Settings
 import org.yuzu.yuzu_emu.features.settings.model.StringSetting
 import org.yuzu.yuzu_emu.features.settings.ui.SettingsSubscreen
@@ -79,6 +80,7 @@ class DriverManagerFragment : Fragment() {
                         NativeConfig.savePerGameConfig()
                         val targetGame = args.game
                         if (targetGame != null) {
+                            GpuDriverHelper.resetPerGameDriverToGlobal(targetGame)
                             driverViewModel.wipeGameShaders(targetGame)
                         }
                         driverViewModel.updateDriverList()
@@ -136,7 +138,12 @@ class DriverManagerFragment : Fragment() {
                 val path = if (position == 0) "" else {
                     driverViewModel.driverData.getOrNull(position - 1)?.first ?: ""
                 }
-                promptDriverApplication(path, position)
+                if (args.game != null) {
+                    // Personal game settings: ALWAYS apply directly for this game without prompting
+                    applyDriver(path, globallyToAll = false, selectedPosition = position)
+                } else {
+                    promptDriverApplication(path, position)
+                }
             }
         }
 
@@ -231,12 +238,26 @@ class DriverManagerFragment : Fragment() {
                     driverViewModel.driverData.firstOrNull {
                         it.first == driverPath || it.second == driverData
                     }
+                val isForGame = args.game != null
                 if (driverInList != null) {
-                    return@newInstance getString(R.string.driver_already_installed)
+                    val existingIndex = driverViewModel.driverData.indexOf(driverInList)
+                    if (isForGame) {
+                        withContext(Dispatchers.Main) {
+                            applyDriver(driverInList.first, globallyToAll = false, selectedPosition = existingIndex + 1)
+                        }
+                        return@newInstance Any()
+                    } else {
+                        return@newInstance getString(R.string.driver_already_installed)
+                    }
                 } else {
-                    driverViewModel.onDriverAdded(Pair(driverPath, driverData))
+                    driverViewModel.addDriverOnly(Pair(driverPath, driverData))
+                    val newPosition = driverViewModel.driverData.size
                     withContext(Dispatchers.Main) {
-                        promptDriverApplication(driverPath, driverViewModel.driverData.size)
+                        if (isForGame) {
+                            applyDriver(driverPath, globallyToAll = false, selectedPosition = newPosition)
+                        } else {
+                            promptDriverApplication(driverPath, newPosition)
+                        }
                     }
                 }
                 return@newInstance Any()
@@ -248,8 +269,11 @@ class DriverManagerFragment : Fragment() {
         if (_binding == null) return
         refreshDriverList()
 
-        val isForGame = args.game != null
-        val neutralTextRes = if (isForGame) R.string.apply_driver_current_game else R.string.apply_driver_keep_custom
+        if (args.game != null) {
+            // Per-game settings: NEVER prompt with global/game/cancel dialog. Always apply directly for this game.
+            applyDriver(driverPath, globallyToAll = false, selectedPosition = selectedPosition)
+            return
+        }
 
         com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.apply_driver_title)
@@ -257,7 +281,7 @@ class DriverManagerFragment : Fragment() {
             .setPositiveButton(R.string.apply_driver_globally) { _, _ ->
                 applyDriver(driverPath, globallyToAll = true, selectedPosition = selectedPosition)
             }
-            .setNeutralButton(neutralTextRes) { _, _ ->
+            .setNeutralButton(R.string.apply_driver_keep_custom) { _, _ ->
                 applyDriver(driverPath, globallyToAll = false, selectedPosition = selectedPosition)
             }
             .setNegativeButton(R.string.cancel) { _, _ ->
@@ -280,11 +304,24 @@ class DriverManagerFragment : Fragment() {
             }
             GpuDriverHelper.applyDriverGloballyToAllCustomConfigs()
             driverViewModel.wipeAllShaders()
+            NativeConfig.saveGlobalConfig()
         } else {
             if (isForGame) {
+                val targetGame = args.game!!
+                if (!NativeConfig.isPerGameConfigLoaded()) {
+                    org.yuzu.yuzu_emu.features.settings.utils.SettingsFile.loadCustomConfig(targetGame)
+                }
                 StringSetting.DRIVER_PATH.global = false
                 StringSetting.DRIVER_PATH.setString(driverPath)
-                driverViewModel.wipeGameShaders(args.game!!)
+                if (driverPath.isEmpty() || !driverFile.exists()) {
+                    GpuDriverHelper.installDefaultDriver()
+                } else {
+                    GpuDriverHelper.installCustomDriver(driverFile)
+                }
+                GpuDriverHelper.savePerGameDriver(targetGame, driverPath)
+                driverViewModel.wipeGameShaders(targetGame)
+                NativeConfig.savePerGameConfig()
+                org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(targetGame)
             } else {
                 StringSetting.DRIVER_PATH.global = true
                 StringSetting.DRIVER_PATH.setString(driverPath)
@@ -294,14 +331,19 @@ class DriverManagerFragment : Fragment() {
                     GpuDriverHelper.installCustomDriver(driverFile)
                 }
                 driverViewModel.wipeAllShaders()
+                NativeConfig.saveGlobalConfig()
             }
         }
 
-        driverViewModel.onDriverSelected(selectedPosition)
+        driverViewModel.onDriverSelected(selectedPosition, skipShaderWipe = true)
         driverViewModel.reloadDriverData()
         refreshDriverList()
         updateDriverSelectionUi()
         homeViewModel.reloadPropertiesList(true)
+
+        if (!BooleanSetting.DONT_SHOW_DRIVER_SHADER_WARNING.getBoolean(needsGlobal = true)) {
+            showDriverShaderWipeDialog()
+        }
     }
 
     private fun updateDriverSelectionUi() {

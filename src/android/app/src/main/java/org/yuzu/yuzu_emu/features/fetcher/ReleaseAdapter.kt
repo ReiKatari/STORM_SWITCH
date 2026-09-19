@@ -37,6 +37,7 @@ import org.yuzu.yuzu_emu.databinding.DialogProgressBinding
 import org.yuzu.yuzu_emu.model.DriverViewModel
 import org.yuzu.yuzu_emu.utils.FileUtil
 import org.yuzu.yuzu_emu.utils.GpuDriverHelper
+import org.yuzu.yuzu_emu.utils.SmartDns
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -252,18 +253,23 @@ class ReleaseAdapter(
                                 val file = File(cacheDir, artifact.name)
 
                                 val originalUrl = artifact.url.toString()
-                                val downloadMirrors = mutableListOf(originalUrl)
+                                val downloadMirrors = mutableListOf<String>()
                                 if (originalUrl.startsWith("https://github.com/")) {
+                                    downloadMirrors.add("https://ghfast.top/$originalUrl")
+                                    downloadMirrors.add("https://gh-proxy.net/$originalUrl")
                                     downloadMirrors.add("https://ghproxy.net/$originalUrl")
-                                    downloadMirrors.add("https://gh-proxy.com/$originalUrl")
+                                    downloadMirrors.add("https://gh.con.sh/$originalUrl")
+                                    downloadMirrors.add("https://gh.llkk.cc/$originalUrl")
                                     downloadMirrors.add(originalUrl.replace("https://github.com/", "https://githubfast.com/"))
                                 }
+                                downloadMirrors.add(originalUrl)
 
                                 var downloadSuccess = false
                                 var lastException: Exception? = null
 
                                 val downloadClient = OkHttpClient.Builder()
-                                    .connectTimeout(45, java.util.concurrent.TimeUnit.SECONDS)
+                                    .dns(SmartDns)
+                                    .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
                                     .readTimeout(180, java.util.concurrent.TimeUnit.SECONDS)
                                     .followRedirects(true)
                                     .followSslRedirects(true)
@@ -349,7 +355,7 @@ class ReleaseAdapter(
                                     )}"
 
                                 if (GpuDriverHelper.copyDriverToInternalStorage(file.toUri())) {
-                                    driverViewModel.onDriverAdded(Pair(driverPath, driverData))
+                                    driverViewModel.addDriverOnly(Pair(driverPath, driverData))
                                     progressDialog.dismiss()
 
                                     MaterialAlertDialogBuilder(context)

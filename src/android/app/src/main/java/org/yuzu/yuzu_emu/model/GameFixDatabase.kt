@@ -921,40 +921,49 @@ object GameFixDatabase {
         GameFixProfile(
             0x01004AB00A260000L,
             "Dark Souls: Remastered",
-            "• Вылеты при запуске и загрузках на NCE, просадки кадровой частоты у костров и зацикливание звука баффов",
-            "• Startup crashes on NCE, bonfire particle slowdown and weapon buff sound loop",
-            "✓ Бэкенд ЦП: Dynarmic JIT (устраняет вылеты при запуске и загрузках на мобильных устройствах)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Аудио-движок: Cubeb",
-            "✓ CPU Backend: Dynarmic JIT (prevents startup crashes on ARM/NCE)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Audio Engine: Cubeb",
+            "• Просадки кадровой частоты у костров и зацикливание звука баффов",
+            "• Bonfire particle slowdown and weapon buff sound loop",
+            "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Игнорировать прерывания памяти: Включено\n✓ Сжатие ASTC: Отключено (нативный ASTC для Mali и Adreno)\n✓ Асинхронные шейдеры: Включено",
+            "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed (native ASTC for Mali and Adreno)\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Cpu\\cpu_backend" to "0",
+                "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Renderer\\gpu_accuracy" to "1"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\async_presentation" to "false"
             )
         ),
         GameFixProfile(
             0x01001A8005FB2000L,
             "Dark Souls: Remastered",
-            "• Вылеты при запуске и загрузках на NCE, просадки кадровой частоты у костров и зацикливание звука баффов",
-            "• Startup crashes on NCE, bonfire particle slowdown and weapon buff sound loop",
-            "✓ Бэкенд ЦП: Dynarmic JIT (устраняет вылеты при запуске и загрузках на мобильных устройствах)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Аудио-движок: Cubeb",
-            "✓ CPU Backend: Dynarmic JIT (prevents startup crashes on ARM/NCE)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Audio Engine: Cubeb",
+            "• Просадки кадровой частоты у костров и зацикливание звука баффов",
+            "• Bonfire particle slowdown and weapon buff sound loop",
+            "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Игнорировать прерывания памяти: Включено\n✓ Сжатие ASTC: Отключено (нативный ASTC для Mali и Adreno)\n✓ Асинхронные шейдеры: Включено",
+            "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed (native ASTC for Mali and Adreno)\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Cpu\\cpu_backend" to "0",
+                "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Renderer\\gpu_accuracy" to "1"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\async_presentation" to "false"
             )
         ),
         GameFixProfile(
             0x01004AB00A266000L,
             "Dark Souls: Remastered",
-            "• Вылеты при запуске и загрузках на NCE, просадки кадровой частоты у костров и зацикливание звука баффов",
-            "• Startup crashes on NCE, bonfire particle slowdown and weapon buff sound loop",
-            "✓ Бэкенд ЦП: Dynarmic JIT (устраняет вылеты при запуске и загрузках на мобильных устройствах)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Аудио-движок: Cubeb",
-            "✓ CPU Backend: Dynarmic JIT (prevents startup crashes on ARM/NCE)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Audio Engine: Cubeb",
+            "• Просадки кадровой частоты у костров и зацикливание звука баффов",
+            "• Bonfire particle slowdown and weapon buff sound loop",
+            "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Игнорировать прерывания памяти: Включено\n✓ Сжатие ASTC: Отключено (нативный ASTC для Mali и Adreno)\n✓ Асинхронные шейдеры: Включено",
+            "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed (native ASTC for Mali and Adreno)\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Cpu\\cpu_backend" to "0",
+                "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Renderer\\gpu_accuracy" to "1"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\async_presentation" to "false"
             )
         ),
         GameFixProfile(
@@ -5084,16 +5093,31 @@ object GameFixDatabase {
     fun isUserCustomConfig(game: Game): Boolean {
         return try {
             val file = SettingsFile.getCustomSettingsFile(game)
-            if (!file.exists() || file.length() == 0L || isTemporaryFixFile(file)) {
+            if (!file.exists() || file.length() == 0L) {
                 return false
             }
+            val isTemp = isTemporaryFixFile(file)
+            var hasUserOverrides = false
             file.bufferedReader().useLines { lines ->
-                lines.any { line ->
+                for (line in lines) {
                     val trimmed = line.trim()
-                    trimmed.endsWith("\\use_global=false", ignoreCase = true) ||
-                    trimmed.endsWith("\\use_global = false", ignoreCase = true)
+                    if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith(";")) {
+                        continue
+                    }
+                    if (trimmed.contains("\\use_global", ignoreCase = true) && trimmed.contains("=")) {
+                        val value = trimmed.substringAfter("=").trim()
+                        if (value.equals("false", ignoreCase = true)) {
+                            hasUserOverrides = true
+                            break
+                        }
+                    }
                 }
             }
+            if (isTemp && hasUserOverrides) {
+                markConfigAsUserCustom(game)
+                return true
+            }
+            return !isTemp && hasUserOverrides
         } catch (_: Exception) {
             false
         }

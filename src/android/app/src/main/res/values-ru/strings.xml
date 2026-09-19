@@ -422,6 +422,7 @@
     <string name="cabinet_game_data_eraser">Удаление игровых данных</string>
     <string name="cabinet_restorer">Восстановитель</string>
     <string name="cabinet_formatter">Форматтер</string>
+    <string name="resolution_change_warning">Смена разрешения во время игры может вызывать графические артефакты. Рекомендуется перезапустить игру.</string>
 
     <!-- About screen strings -->
     <string name="gaia_is_not_real">Gaia не существует</string>

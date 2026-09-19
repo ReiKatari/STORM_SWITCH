@@ -160,6 +160,9 @@ class DriverViewModel : ViewModel() {
             }
         }
 
+        if (activeGame != null) {
+            StringSetting.DRIVER_PATH.global = false
+        }
         if (position == 0) {
             StringSetting.DRIVER_PATH.setString("")
             if (activeGame == null) {
@@ -176,6 +179,8 @@ class DriverViewModel : ViewModel() {
             NativeConfig.saveGlobalConfig()
         } else {
             NativeConfig.savePerGameConfig()
+            GameFixDatabase.markConfigAsUserCustom(activeGame!!)
+            GpuDriverHelper.savePerGameDriver(activeGame!!, newDriverPath)
         }
         previousDriverPath = newDriverPath
         updateName()
@@ -296,7 +301,19 @@ class DriverViewModel : ViewModel() {
         if (isPerGame) {
             // Per-game settings must NEVER delete driver packages from storage or global settings.
             // Reset this game's driver override to use the global driver instead.
-            StringSetting.DRIVER_PATH.global = true
+            val targetGame = activeGame
+            if (targetGame != null) {
+                if (!NativeConfig.isPerGameConfigLoaded()) {
+                    SettingsFile.loadCustomConfig(targetGame)
+                }
+                StringSetting.DRIVER_PATH.global = true
+                NativeConfig.savePerGameConfig()
+                GameFixDatabase.markConfigAsUserCustom(targetGame)
+                GpuDriverHelper.resetPerGameDriverToGlobal(targetGame)
+                wipeGameShaders(targetGame)
+            } else {
+                StringSetting.DRIVER_PATH.global = true
+            }
             updateDriverList()
             updateName()
             showClearButton(false)
@@ -346,7 +363,7 @@ class DriverViewModel : ViewModel() {
         ).show()
     }
 
-    fun onDriverAdded(driver: Pair<String, GpuDriverMetadata>) {
+    fun addDriverOnly(driver: Pair<String, GpuDriverMetadata>) {
         if (driversToDelete.contains(driver.first)) {
             driversToDelete.remove(driver.first)
         }
@@ -354,12 +371,19 @@ class DriverViewModel : ViewModel() {
         val existingDriverIndex = driverData.indexOfFirst {
             it.first == driver.first || it.second == driver.second
         }
+        if (existingDriverIndex == -1) {
+            driverData.add(driver)
+        }
+    }
+
+    fun onDriverAdded(driver: Pair<String, GpuDriverMetadata>) {
+        addDriverOnly(driver)
+        val existingDriverIndex = driverData.indexOfFirst {
+            it.first == driver.first || it.second == driver.second
+        }
         if (existingDriverIndex != -1) {
             onDriverSelected(existingDriverIndex + 1)
-            return
         }
-        driverData.add(driver)
-        onDriverSelected(driverData.size)
     }
 
     fun onCloseDriverManager(game: Game?) {
@@ -389,6 +413,7 @@ class DriverViewModel : ViewModel() {
                 }
             } else {
                 NativeConfig.savePerGameConfig()
+                GameFixDatabase.markConfigAsUserCustom(game)
                 NativeConfig.unloadPerGameConfig()
                 NativeConfig.reloadGlobalConfig()
             }
@@ -406,18 +431,70 @@ class DriverViewModel : ViewModel() {
 
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val selectedDriverPath = StringSetting.DRIVER_PATH.getString()
+                var selectedDriverPath = ""
+                var isCustomDriverForGame = false
+
+                if (game != null) {
+                    val customFile = SettingsFile.getCustomSettingsFile(game)
+                    if (customFile.exists() && customFile.length() > 0) {
+                        try {
+                            var inGpuDriver = false
+                            var useGlobal = true
+                            var pathInIni: String? = null
+                            for (line in customFile.readLines()) {
+                                val trimmed = line.trim()
+                                if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith(";")) {
+                                    continue
+                                }
+                                if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                                    inGpuDriver = trimmed.equals("[GpuDriver]", ignoreCase = true)
+                                    continue
+                                }
+                                if (inGpuDriver && trimmed.contains("=")) {
+                                    val key = trimmed.substringBefore("=").trim()
+                                    val value = trimmed.substringAfter("=").trim().removeSurrounding("\"", "\"")
+                                    if (key.equals("driver_path\\use_global", ignoreCase = true)) {
+                                        useGlobal = value.equals("true", ignoreCase = true)
+                                    } else if (key.equals("driver_path", ignoreCase = true)) {
+                                        pathInIni = value
+                                    }
+                                }
+                            }
+                            if (!useGlobal) {
+                                selectedDriverPath = pathInIni ?: ""
+                                isCustomDriverForGame = true
+                            }
+                        } catch (e: Exception) {
+                            Log.error("[DriverViewModel] Error reading custom driver from INI for ${game.title}: ${e.message}")
+                        }
+                    }
+                }
+
+                if (!isCustomDriverForGame) {
+                    selectedDriverPath = StringSetting.DRIVER_PATH.getString(needsGlobal = (game == null))
+                }
+
                 val selectedDriverFile = File(selectedDriverPath)
-                val selectedDriverMetadata = GpuDriverHelper.customDriverSettingData
+                val selectedDriverMetadata = if (selectedDriverPath.isNotEmpty() && selectedDriverFile.exists()) {
+                    GpuDriverHelper.getMetadataFromZip(selectedDriverFile)
+                } else {
+                    GpuDriverMetadata()
+                }
                 val installedMetadata = GpuDriverHelper.installedCustomDriverData
 
-                org.yuzu.yuzu_emu.utils.Log.info(
-                    "[DriverViewModel] onLaunchGame for '${game?.title}': selected='$selectedDriverPath' (${selectedDriverMetadata.name}), installed='${installedMetadata.name}'"
+                Log.info(
+                    "[DriverViewModel] onLaunchGame for '${game?.title}': selected='$selectedDriverPath' (${selectedDriverMetadata.name}), installed='${installedMetadata.name}', isPerGameOverride=$isCustomDriverForGame"
                 )
+
+                // Sync StringSetting with selected driver if per-game
+                if (game != null && isCustomDriverForGame) {
+                    StringSetting.DRIVER_PATH.global = false
+                    StringSetting.DRIVER_PATH.setString(selectedDriverPath)
+                }
 
                 if (selectedDriverPath.isEmpty() || selectedDriverMetadata.name == null) {
                     if (installedMetadata.name != null) {
-                        org.yuzu.yuzu_emu.utils.Log.info("[DriverViewModel] Reverting to default system driver")
+                        Log.info("[DriverViewModel] Reverting to default system driver for '${game?.title}'")
                         GpuDriverHelper.installDefaultDriver()
                     } else {
                         GpuDriverHelper.initializeDriverParameters()
@@ -426,14 +503,14 @@ class DriverViewModel : ViewModel() {
                     val libName = installedMetadata.libraryName
                     val libFile = if (!libName.isNullOrEmpty()) File(GpuDriverHelper.driverInstallationPath, libName) else null
                     if (installedMetadata != selectedDriverMetadata || libFile == null || !libFile.exists()) {
-                        org.yuzu.yuzu_emu.utils.Log.info("[DriverViewModel] Installing custom driver: ${selectedDriverFile.name}")
+                        Log.info("[DriverViewModel] Installing custom driver: ${selectedDriverFile.name} for '${game?.title}'")
                         GpuDriverHelper.installCustomDriver(selectedDriverFile)
                     } else {
-                        org.yuzu.yuzu_emu.utils.Log.info("[DriverViewModel] Driver already active: ${installedMetadata.name}")
+                        Log.info("[DriverViewModel] Driver already active: ${installedMetadata.name} for '${game?.title}'")
                         GpuDriverHelper.initializeDriverParameters()
                     }
                 } else {
-                    org.yuzu.yuzu_emu.utils.Log.info("[DriverViewModel] Selected driver file missing, falling back to default")
+                    Log.info("[DriverViewModel] Selected driver file missing ($selectedDriverPath), falling back to default")
                     GpuDriverHelper.installDefaultDriver()
                 }
 

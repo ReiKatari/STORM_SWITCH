@@ -28,15 +28,20 @@ namespace {
         //
         // Keep in sync with cubeb_sink.cpp name.
         SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", "yuzu Latency Getter");
+#if defined(__ANDROID__)
+        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "aaudio,opensles");
+#endif
         if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
             LOG_CRITICAL(Audio_Sink, "SDL_InitSubSystem audio failed: {}", SDL_GetError());
             return false;
         }
+        LOG_INFO(Audio_Sink, "SDL audio initialized using driver: {}",
+                 SDL_GetCurrentAudioDriver() ? SDL_GetCurrentAudioDriver() : "unknown");
     }
     return true;
 }
 
-SDL_AudioDeviceID FindAudioDeviceByName(const std::string& device_name, bool capture) {
+[[maybe_unused]] SDL_AudioDeviceID FindAudioDeviceByName(const std::string& device_name, bool capture) {
     int device_count = 0;
     SDL_AudioDeviceID* devices = capture ? SDL_GetAudioRecordingDevices(&device_count)
                                          : SDL_GetAudioPlaybackDevices(&device_count);
@@ -93,9 +98,13 @@ public:
         }
 
         const SDL_AudioDeviceID audio_device =
+#if defined(__ANDROID__)
+            capture ? SDL_AUDIO_DEVICE_DEFAULT_RECORDING : SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+#else
             device_name.empty() ? (capture ? SDL_AUDIO_DEVICE_DEFAULT_RECORDING
                                            : SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK)
                                 : FindAudioDeviceByName(device_name, capture);
+#endif
 
         stream = SDL_OpenAudioDeviceStream(audio_device, &spec, &SDLSinkStream::DataCallback,
                                            this);
@@ -207,12 +216,22 @@ private:
             }
 
             const int bytes_requested = additional_amount > 0 ? additional_amount : total_amount;
-            std::vector<s16> output(bytes_requested / static_cast<int>(sizeof(s16)));
+            if (bytes_requested <= 0) {
+                return;
+            }
+
             const std::size_t num_frames =
-                static_cast<std::size_t>(bytes_requested) / sizeof(s16) / frame_size;
-            std::span<s16> output_buffer{output.data(), output.size()};
+                static_cast<std::size_t>(bytes_requested) / (sizeof(s16) * frame_size);
+            if (num_frames == 0) {
+                return;
+            }
+
+            const std::size_t samples_to_render = num_frames * frame_size;
+            std::vector<s16> output(samples_to_render);
+            std::span<s16> output_buffer{output.data(), samples_to_render};
             impl->ProcessAudioOutAndRender(output_buffer, num_frames);
-            static_cast<void>(SDL_PutAudioStreamData(stream, output.data(), bytes_requested));
+            const int bytes_to_put = static_cast<int>(samples_to_render * sizeof(s16));
+            static_cast<void>(SDL_PutAudioStreamData(stream, output.data(), bytes_to_put));
         }
     }
 

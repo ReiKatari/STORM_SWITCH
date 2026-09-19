@@ -130,7 +130,7 @@ class GamesFragment : Fragment() {
 
         binding.swipeRefresh.apply {
             (binding.swipeRefresh as? SwipeRefreshLayout)?.setOnRefreshListener {
-                gamesViewModel.reloadGames(false)
+                gamesViewModel.reloadGames(true)
             }
             (binding.swipeRefresh as? SwipeRefreshLayout)?.setProgressBackgroundColorSchemeColor(
                 com.google.android.material.color.MaterialColors.getColor(
