@@ -76,6 +76,54 @@
             android:layout_height="1dp"
             android:background="?attr/colorOutlineVariant" />
 
+        <!-- Current Installed Status Banner -->
+        <LinearLayout
+            android:id="@+id/layout_installed_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSurfaceVariant"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="9dp">
+
+            <TextView
+                android:id="@+id/text_installed_status_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🟢"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/text_installed_status"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                tools:text="Установлена версия: 20.0.1" />
+
+            <TextView
+                android:id="@+id/badge_installed_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/badge_pill_emerald"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:text="АКТИВНА"
+                android:textColor="#10B981"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorOutlineVariant" />
+
         <!-- List of assets -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list_tools"

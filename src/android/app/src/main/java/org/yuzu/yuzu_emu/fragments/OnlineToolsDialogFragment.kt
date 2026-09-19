@@ -41,6 +41,7 @@ import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -55,6 +56,12 @@ data class OnlineToolAsset(
     val isRecommended: Boolean = false
 )
 
+data class InstalledInfo(
+    val isInstalled: Boolean,
+    val version: String?,
+    val displayText: String
+)
+
 class OnlineToolsDialogFragment : DialogFragment() {
     private var _binding: DialogOnlineToolsBinding? = null
     private val binding get() = _binding!!
@@ -64,6 +71,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
     private var toolType: Int = TYPE_FIRMWARE
     private val assets = mutableListOf<OnlineToolAsset>()
+    private var currentInstalledInfo = InstalledInfo(false, null, "")
     private var selectedIndex = 0
     private var isDownloading = false
     private var downloadJob: Job? = null
@@ -206,8 +214,138 @@ class OnlineToolsDialogFragment : DialogFragment() {
         binding.listTools.layoutManager = LinearLayoutManager(requireContext())
         binding.listTools.adapter = adapter
 
+        updateInstalledStatusHeader()
         populateFallbackCatalog()
         refreshCatalog()
+    }
+
+    private fun detectInstalledInfo(): InstalledInfo {
+        val ctx = context?.applicationContext ?: return InstalledInfo(false, null, "Не определено")
+        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+
+        return if (toolType == TYPE_FIRMWARE) {
+            val isAvail = try { NativeLibrary.isFirmwareAvailable() } catch (_: Throwable) { false }
+            val fwVerNative = if (isAvail) {
+                try {
+                    val v = NativeLibrary.firmwareVersion()
+                    if (v.isNotBlank() && !v.equals("N/A", ignoreCase = true)) v.trim() else null
+                } catch (_: Throwable) { null }
+            } else null
+
+            val savedVer = prefs.getString("installed_online_firmware_version", null)
+            val resolvedVer = fwVerNative ?: savedVer
+
+            if (isAvail || resolvedVer != null) {
+                val display = if (resolvedVer != null) {
+                    "Установлена версия: $resolvedVer"
+                } else {
+                    "Установлена прошивка Switch"
+                }
+                InstalledInfo(true, resolvedVer, display)
+            } else {
+                InstalledInfo(false, null, "Прошивка не установлена")
+            }
+        } else {
+            val savedVer = prefs.getString("installed_online_keys_version", null)
+            val detectedVer = detectKeysVersionFromDisk(ctx) ?: savedVer
+            val keysValid = try { NativeLibrary.reloadKeys() } catch (_: Throwable) { false }
+
+            if (keysValid || detectedVer != null) {
+                val display = if (detectedVer != null) {
+                    "Установлена версия: $detectedVer"
+                } else {
+                    "Установлены ключи (prod.keys)"
+                }
+                InstalledInfo(true, detectedVer, display)
+            } else {
+                InstalledInfo(false, null, "Ключи не установлены")
+            }
+        }
+    }
+
+    private fun detectKeysVersionFromDisk(ctx: android.content.Context): String? {
+        val targetDirs = listOfNotNull(
+            ctx.filesDir?.let { File(it, "keys") },
+            DirectoryInitialization.userDirectory?.let { File(it, "keys") },
+            File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH/keys"),
+            ctx.getExternalFilesDir(null)?.let { File(it, "keys") }
+        ).distinctBy { it.canonicalPath }
+
+        for (dir in targetDirs) {
+            val prodKeys = File(dir, "prod.keys")
+            if (prodKeys.exists() && prodKeys.isFile && prodKeys.length() > 0) {
+                try {
+                    val lines = prodKeys.readLines()
+                    for (line in lines.take(15)) {
+                        val trimmed = line.trim()
+                        if (trimmed.startsWith("#") || trimmed.startsWith("//")) {
+                            val match = Regex("""(?:v|\b)(\d+\.\d+(?:\.\d+)?)\b""").find(trimmed)
+                            if (match != null) {
+                                return match.groupValues[1]
+                            }
+                        }
+                    }
+                    var highestMasterKeyHex = -1
+                    for (line in lines) {
+                        val trimmed = line.trim().lowercase(Locale.ROOT)
+                        if (trimmed.startsWith("master_key_")) {
+                            val hexStr = trimmed.substringAfter("master_key_").substringBefore('=').trim()
+                            val num = hexStr.toIntOrNull(16) ?: -1
+                            if (num > highestMasterKeyHex) {
+                                highestMasterKeyHex = num
+                            }
+                        }
+                    }
+                    if (highestMasterKeyHex >= 0) {
+                        return when (highestMasterKeyHex) {
+                            0x17 -> "23.0.0"
+                            0x16 -> "21.2.0"
+                            0x15 -> "20.5.0"
+                            0x14 -> "19.0.1"
+                            0x13 -> "18.1.0"
+                            0x12 -> "17.0.1"
+                            0x11 -> "16.1.0"
+                            0x10 -> "15.0.1"
+                            0x0f -> "14.1.2"
+                            0x0e -> "13.2.1"
+                            0x0d -> "12.1.0"
+                            else -> null
+                        }
+                    }
+                } catch (_: Throwable) {}
+            }
+        }
+        return null
+    }
+
+    private fun isVersionMatching(assetVer: String, installedVer: String?): Boolean {
+        if (installedVer == null) return false
+        val v1 = assetVer.trim().lowercase(Locale.ROOT).removePrefix("v")
+        val v2 = installedVer.trim().lowercase(Locale.ROOT).removePrefix("v")
+        if (v1 == v2) return true
+
+        val p1 = v1.split('.').take(2)
+        val p2 = v2.split('.').take(2)
+        if (p1.size == 2 && p2.size == 2 && p1 == p2) return true
+
+        return false
+    }
+
+    private fun updateInstalledStatusHeader() {
+        val binding = _binding ?: return
+        currentInstalledInfo = detectInstalledInfo()
+        binding.textInstalledStatus.text = currentInstalledInfo.displayText
+        if (currentInstalledInfo.isInstalled) {
+            binding.textInstalledStatusIcon.text = "🟢"
+            binding.badgeInstalledHeader.text = "АКТИВНА"
+            binding.badgeInstalledHeader.setTextColor(0xFF10B981.toInt())
+            binding.badgeInstalledHeader.setBackgroundResource(R.drawable.badge_pill_emerald)
+        } else {
+            binding.textInstalledStatusIcon.text = "⚪"
+            binding.badgeInstalledHeader.text = "НЕ УСТАНОВЛЕНА"
+            binding.badgeInstalledHeader.setTextColor(0xFFF59E0B.toInt())
+            binding.badgeInstalledHeader.setBackgroundResource(R.drawable.badge_pill_amber)
+        }
     }
 
     private fun populateFallbackCatalog() {
@@ -264,7 +402,8 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 )
             }
         }
-        selectedIndex = 0
+        val installedIdx = assets.indexOfFirst { isVersionMatching(it.version, currentInstalledInfo.version) }
+        selectedIndex = if (installedIdx >= 0) installedIdx else 0
         adapter.notifyDataSetChanged()
         updateSelectionStatus()
     }
@@ -335,7 +474,8 @@ class OnlineToolsDialogFragment : DialogFragment() {
                             withContext(Dispatchers.Main) {
                                 assets.clear()
                                 assets.addAll(sortedAssets)
-                                selectedIndex = 0
+                                val installedIdx = assets.indexOfFirst { isVersionMatching(it.version, currentInstalledInfo.version) }
+                                selectedIndex = if (installedIdx >= 0) installedIdx else 0
                                 adapter.notifyDataSetChanged()
                                 updateSelectionStatus()
                                 binding.textStatus.text = "Каталог успешно обновлен из репозитория."
@@ -355,7 +495,18 @@ class OnlineToolsDialogFragment : DialogFragment() {
     private fun updateSelectionStatus() {
         if (selectedIndex in assets.indices) {
             val asset = assets[selectedIndex]
-            binding.textStatus.text = getString(R.string.online_tools_selected_format, asset.displayTitle, asset.displaySize)
+            val isCurrentInstalled = isVersionMatching(asset.version, currentInstalledInfo.version)
+
+            if (isCurrentInstalled) {
+                binding.textStatus.text = "Выбрана текущая установленная версия: ${asset.displayTitle} (${asset.displaySize})"
+                binding.btnInstall.text = "Переустановить"
+            } else if (currentInstalledInfo.isInstalled && currentInstalledInfo.version != null && compareVersions(asset.version, currentInstalledInfo.version!!) > 0) {
+                binding.textStatus.text = "Доступно обновление: ${asset.displayTitle} (${asset.displaySize})"
+                binding.btnInstall.text = "Обновить"
+            } else {
+                binding.textStatus.text = getString(R.string.online_tools_selected_format, asset.displayTitle, asset.displaySize)
+                binding.btnInstall.text = "Скачать и установить"
+            }
             binding.btnInstall.isEnabled = !isDownloading
         }
     }
@@ -587,6 +738,12 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
                     withContext(Dispatchers.Main) {
                         try {
+                            androidx.preference.PreferenceManager.getDefaultSharedPreferences(appContext)
+                                .edit()
+                                .putString("installed_online_firmware_version", asset.version)
+                                .apply()
+                        } catch (_: Throwable) {}
+                        try {
                             NativeLibrary.initializeSystem(true)
                         } catch (_: Throwable) {}
                         homeViewModel.setCheckKeys(true)
@@ -636,6 +793,12 @@ class OnlineToolsDialogFragment : DialogFragment() {
                     tempZip.delete()
 
                     withContext(Dispatchers.Main) {
+                        try {
+                            androidx.preference.PreferenceManager.getDefaultSharedPreferences(appContext)
+                                .edit()
+                                .putString("installed_online_keys_version", asset.version)
+                                .apply()
+                        } catch (_: Throwable) {}
                         try {
                             NativeLibrary.reloadKeys()
                             NativeLibrary.initializeSystem(true)
@@ -701,13 +864,15 @@ class OnlineToolsDialogFragment : DialogFragment() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val asset = assets[position]
             val isSelected = position == selectedIndex
+            val isInstalled = isVersionMatching(asset.version, currentInstalledInfo.version)
 
             holder.itemBinding.apply {
                 iconToolType.text = if (toolType == TYPE_FIRMWARE) "📦" else "🔑"
                 textToolTitle.text = asset.displayTitle
                 textToolSubtitle.text = "Файл: ${asset.name} • Размер: ${asset.displaySize}"
 
-                badgeRecommended.isVisible = asset.isRecommended
+                badgeInstalled.isVisible = isInstalled
+                badgeRecommended.isVisible = asset.isRecommended && !isInstalled
                 badgeSelected.isVisible = isSelected
 
                 val context = cardToolItem.context
@@ -724,6 +889,12 @@ class OnlineToolsDialogFragment : DialogFragment() {
                     cardToolItem.strokeWidth = (2 * resources.displayMetrics.density).toInt()
                     textToolTitle.setTextColor(onSurfaceColor)
                     textToolSubtitle.setTextColor(primaryColor)
+                } else if (isInstalled) {
+                    cardToolItem.setCardBackgroundColor(surfaceColor)
+                    cardToolItem.strokeColor = 0xFF10B981.toInt()
+                    cardToolItem.strokeWidth = (1.5f * resources.displayMetrics.density).toInt()
+                    textToolTitle.setTextColor(onSurfaceColor)
+                    textToolSubtitle.setTextColor(onSurfaceVariantColor)
                 } else {
                     cardToolItem.setCardBackgroundColor(surfaceColor)
                     cardToolItem.strokeColor = outlineColor

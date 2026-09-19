@@ -107,6 +107,126 @@
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
+    <!-- Language Filter Chips Bar -->
+    <HorizontalScrollView
+        android:id="@+id/scroll_language_filters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingHorizontal="12dp"
+        android:paddingBottom="6dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/layout_language_chips"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_lang_all"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="🌐 Все языки"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_lang_rus"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="🇷🇺 Русский"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_lang_eng"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="🇬🇧 English"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_lang_multi"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="🌍 Multi"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_lang_jpn"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="🇯🇵 日本語"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_with_dlc"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="✨ DLC и моды"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
     <!-- Selected Game Details / Download Card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_details_panel"
@@ -451,7 +571,8 @@
         android:gravity="center_vertical"
         android:orientation="vertical"
         android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp">
+        android:paddingTop="8dp"
+        android:paddingBottom="10dp">
 
         <View
             android:layout_width="match_parent"
@@ -459,7 +580,7 @@
             android:layout_marginBottom="8dp"
             android:background="?attr/colorOutline" />
 
-        <!-- Controls Row: Sort Button / Info, Prev, Page Numbers, Next -->
+        <!-- Row 1: Sort Button (Left) and Pagination Info (Right) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -470,7 +591,7 @@
                 android:id="@+id/btn_sort_catalog"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="38dp"
+                android:layout_height="36dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
                 android:text="А-Я"
@@ -488,12 +609,24 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="12dp"
+                android:gravity="end|center_vertical"
+                android:textAlignment="viewEnd"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="11sp"
+                android:textSize="12sp"
+                android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
-                tools:text="Стр. 1 из 45 (1120 игр)" />
+                tools:text="Страница 1 из 45 (1120 игр)" />
+        </LinearLayout>
+
+        <!-- Row 2: Page Navigation (Centered Prev, Page Numbers, Next) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_page_prev"
@@ -517,7 +650,7 @@
                 android:id="@+id/scroll_page_numbers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="4dp"
+                android:layout_marginHorizontal="6dp"
                 android:scrollbars="none">
 
                 <LinearLayout

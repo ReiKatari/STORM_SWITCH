@@ -171,10 +171,20 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
     }
 
+    enum class LanguageFilter {
+        ALL,
+        RUS,
+        ENG,
+        MULTI,
+        JPN,
+        DLC_OR_MODS
+    }
+
     private val allGames = mutableListOf<StormWorldGameItem>()
     private val filteredAndSortedGames = mutableListOf<StormWorldGameItem>()
     private val pagedGames = mutableListOf<StormWorldGameItem>()
     private var currentSortMode = SortMode.TITLE_ASC
+    private var selectedLanguageFilter = LanguageFilter.ALL
     private var currentPage = 1
     private val pageSize = 25
     private var selectedGame: StormWorldGameItem? = null
@@ -327,6 +337,26 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
             override fun afterTextChanged(s: Editable?) {}
         })
+
+        val chipMappings = listOfNotNull(
+            binding.chipLangAll?.let { it to LanguageFilter.ALL },
+            binding.chipLangRus?.let { it to LanguageFilter.RUS },
+            binding.chipLangEng?.let { it to LanguageFilter.ENG },
+            binding.chipLangMulti?.let { it to LanguageFilter.MULTI },
+            binding.chipLangJpn?.let { it to LanguageFilter.JPN },
+            binding.chipWithDlc?.let { it to LanguageFilter.DLC_OR_MODS }
+        )
+        for ((chip, filter) in chipMappings) {
+            chip.setOnClickListener {
+                if (selectedLanguageFilter != filter) {
+                    selectedLanguageFilter = filter
+                    updateLanguageChipsUi()
+                    filterGames(binding.editSearch.text?.toString().orEmpty())
+                    binding.recyclerGames.scrollToPosition(0)
+                }
+            }
+        }
+        updateLanguageChipsUi()
 
         binding.btnStartDownload.setOnClickListener {
             val game = selectedGame ?: return@setOnClickListener
@@ -647,20 +677,100 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
     }
 
+    private fun matchesLanguage(g: StormWorldGameItem, filter: LanguageFilter): Boolean {
+        return when (filter) {
+            LanguageFilter.ALL -> true
+            LanguageFilter.RUS -> {
+                val full = "${g.title} ${g.finalTitle} ${g.description}".lowercase(Locale.ROOT)
+                val hasTextLang = g.textLangs.any {
+                    val l = it.lowercase(Locale.ROOT).trim()
+                    l == "ru" || l == "rus" || l == "russian" || l.startsWith("ru-")
+                }
+                hasTextLang || full.contains("rus") || full.contains("рус") || full.contains("русификатор") || full.contains("озвучка")
+            }
+            LanguageFilter.ENG -> {
+                val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
+                val hasTextLang = g.textLangs.any {
+                    val l = it.lowercase(Locale.ROOT).trim()
+                    l == "en" || l == "eng" || l == "english" || l.startsWith("en-")
+                }
+                hasTextLang || full.contains("eng") || full.contains("english") || g.regions.any { r ->
+                    val reg = r.uppercase(Locale.ROOT)
+                    reg == "US" || reg == "USA" || reg == "EUR"
+                }
+            }
+            LanguageFilter.MULTI -> {
+                val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
+                g.textLangs.size >= 2 || full.contains("multi") || full.contains("мульти")
+            }
+            LanguageFilter.JPN -> {
+                val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
+                val hasTextLang = g.textLangs.any {
+                    val l = it.lowercase(Locale.ROOT).trim()
+                    l == "ja" || l == "jp" || l == "jpn" || l == "japanese" || l.startsWith("ja-")
+                }
+                hasTextLang || full.contains("jpn") || full.contains("japan") || full.contains("япон") || g.regions.any { r ->
+                    val reg = r.uppercase(Locale.ROOT)
+                    reg == "JAP" || reg == "JPN"
+                }
+            }
+            LanguageFilter.DLC_OR_MODS -> {
+                val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
+                g.dlcCount > 0 || g.modCount > 0 || g.dlcs.isNotEmpty() ||
+                    full.contains("dlc") || full.contains("mod") || full.contains("мод") ||
+                    full.contains("дополнение") || full.contains("update") || full.contains("обновление")
+            }
+        }
+    }
+
+    private fun updateLanguageChipsUi() {
+        val binding = _binding ?: return
+        val ctx = context ?: return
+
+        val primaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorPrimary)
+        val onPrimaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOnPrimary)
+        val surfaceVariantColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorSurfaceVariant)
+        val onSurfaceColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOnSurface)
+        val outlineColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOutline)
+
+        val chips = listOfNotNull(
+            binding.chipLangAll?.let { it to LanguageFilter.ALL },
+            binding.chipLangRus?.let { it to LanguageFilter.RUS },
+            binding.chipLangEng?.let { it to LanguageFilter.ENG },
+            binding.chipLangMulti?.let { it to LanguageFilter.MULTI },
+            binding.chipLangJpn?.let { it to LanguageFilter.JPN },
+            binding.chipWithDlc?.let { it to LanguageFilter.DLC_OR_MODS }
+        )
+
+        val density = resources.displayMetrics.density
+        for ((chip, filter) in chips) {
+            val isSelected = (filter == selectedLanguageFilter)
+            if (isSelected) {
+                chip.backgroundTintList = android.content.res.ColorStateList.valueOf(primaryColor)
+                chip.setTextColor(onPrimaryColor)
+                chip.strokeColor = android.content.res.ColorStateList.valueOf(primaryColor)
+                chip.strokeWidth = (1.5f * density).toInt()
+            } else {
+                chip.backgroundTintList = android.content.res.ColorStateList.valueOf(surfaceVariantColor)
+                chip.setTextColor(onSurfaceColor)
+                chip.strokeColor = android.content.res.ColorStateList.valueOf(outlineColor)
+                chip.strokeWidth = (1f * density).toInt()
+            }
+        }
+    }
+
     private fun filterGames(query: String) {
         val q = query.trim().lowercase(Locale.ROOT)
         filteredAndSortedGames.clear()
-        if (q.isEmpty()) {
-            filteredAndSortedGames.addAll(allGames)
-        } else {
-            for (g in allGames) {
+        for (g in allGames) {
+            if (!matchesLanguage(g, selectedLanguageFilter)) continue
+            if (q.isNotEmpty()) {
                 val matchTitle = g.title.lowercase(Locale.ROOT).contains(q)
                 val matchFinal = g.finalTitle.lowercase(Locale.ROOT).contains(q)
                 val matchTid = g.serialId.lowercase(Locale.ROOT).contains(q)
-                if (matchTitle || matchFinal || matchTid) {
-                    filteredAndSortedGames.add(g)
-                }
+                if (!matchTitle && !matchFinal && !matchTid) continue
             }
+            filteredAndSortedGames.add(g)
         }
         applySortAndPagination(resetPage = true)
     }
@@ -710,7 +820,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     private fun updatePaginationUI(totalPages: Int, totalItems: Int) {
         val binding = _binding ?: return
         binding.btnSortCatalog.text = currentSortMode.getLabel(binding.root.context)
-        binding.textPaginationInfo.text = "Стр. $currentPage из $totalPages ($totalItems)"
+        binding.textPaginationInfo.text = "Страница $currentPage из $totalPages ($totalItems)"
 
         binding.btnPagePrev.isEnabled = currentPage > 1
         binding.btnPagePrev.alpha = if (currentPage > 1) 1.0f else 0.4f
