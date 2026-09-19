@@ -61,7 +61,9 @@ static DescriptorBankInfo MakeBankInfo(std::span<const Shader::Info> infos) {
 static void AllocatePool(const Device& device, DescriptorBank& bank) {
     std::array<VkDescriptorPoolSize, 6> pool_sizes;
     size_t pool_cursor{};
-    const u32 sets_per_pool = device.GetSetsPerPool();
+    const u32 base_sets = std::max(device.GetSetsPerPool(), 256U);
+    const u32 scale = 1u << std::min<size_t>(bank.pools.size(), 3);
+    const u32 sets_per_pool = base_sets * scale;
     const auto add = [&](VkDescriptorType type, u32 count) {
         if (count > 0) {
             pool_sizes[pool_cursor++] = {

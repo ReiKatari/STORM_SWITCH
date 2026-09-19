@@ -348,6 +348,7 @@ struct DeviceDispatch : InstanceDispatch {
     PFN_vkQueueSubmit2 vkQueueSubmit2{};
     PFN_vkResetFences vkResetFences{};
     PFN_vkResetQueryPool vkResetQueryPool{};
+    PFN_vkResetDescriptorPool vkResetDescriptorPool{};
     PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT{};
     PFN_vkSetDebugUtilsObjectTagEXT vkSetDebugUtilsObjectTagEXT{};
     PFN_vkUnmapMemory vkUnmapMemory{};
@@ -924,6 +925,9 @@ class DescriptorPool : public Handle<VkDescriptorPool, VkDevice, DeviceDispatch>
 
 public:
     DescriptorSets Allocate(const VkDescriptorSetAllocateInfo& ai) const;
+
+    /// Resets the descriptor pool
+    void Reset() const;
 
     /// Set object name.
     void SetObjectNameEXT(const char* name) const;

@@ -28,6 +28,7 @@ EventObserver::EventObserver(Core::System& system, WindowSystem& window_system)
     m_wakeup_holder.LinkToMultiWait(std::addressof(m_multi_wait));
     m_thread = std::jthread([this](std::stop_token stop_token) {
         Common::SetCurrentThreadName("am:EventObserver");
+        Common::SetCurrentThreadToEfficiencyCores();
         while (!stop_token.stop_requested()) {
             auto* signaled_holder = this->WaitSignaled(stop_token);
             if (!signaled_holder)

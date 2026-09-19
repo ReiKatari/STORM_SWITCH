@@ -128,6 +128,7 @@ void TimeWorker::StartThread() {
 void TimeWorker::ThreadFunc(std::stop_token stop_token) {
     Common::SetCurrentThreadName("TimeWorker");
     Common::SetCurrentThreadPriority(Common::ThreadPriority::Low);
+    Common::SetCurrentThreadToEfficiencyCores();
 
     while (!stop_token.stop_requested()) {
         enum class EventType : s32 {

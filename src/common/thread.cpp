@@ -550,11 +550,8 @@ void SetCurrentThreadName(const char* name) {
 
 void SetCurrentThreadToPerformanceCores() {
 #if defined(__ANDROID__)
+    ADPF::AddCurrentThread(ADPF::Session::Render);
     if (!Settings::values.cpu_affinity_pinning.GetValue()) {
-        SetCurrentThreadCoreGroup(CoreGroup::Unrestricted);
-        return;
-    }
-    if (ADPF::AddCurrentThread(ADPF::Session::Render)) {
         SetCurrentThreadCoreGroup(CoreGroup::Unrestricted);
         return;
     }
@@ -564,11 +561,8 @@ void SetCurrentThreadToPerformanceCores() {
 
 void SetCurrentThreadToEfficiencyCores() {
 #if defined(__ANDROID__)
+    ADPF::AddCurrentThread(ADPF::Session::Background);
     if (!Settings::values.cpu_affinity_pinning.GetValue()) {
-        SetCurrentThreadCoreGroup(CoreGroup::Unrestricted);
-        return;
-    }
-    if (ADPF::AddCurrentThread(ADPF::Session::Background)) {
         SetCurrentThreadCoreGroup(CoreGroup::Unrestricted);
         return;
     }

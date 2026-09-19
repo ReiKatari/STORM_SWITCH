@@ -232,6 +232,7 @@ void Load(VkDevice device, DeviceDispatch& dld) noexcept {
     X(vkQueueSubmit2);
     X(vkResetFences);
     X(vkResetQueryPool);
+    X(vkResetDescriptorPool);
     X(vkSetDebugUtilsObjectNameEXT);
     X(vkSetDebugUtilsObjectTagEXT);
     X(vkUnmapMemory);
@@ -610,6 +611,10 @@ DescriptorSets DescriptorPool::Allocate(const VkDescriptorSetAllocateInfo& ai) c
     default:
         throw Exception(result);
     }
+}
+
+void DescriptorPool::Reset() const {
+    Check(dld->vkResetDescriptorPool(owner, handle, 0));
 }
 
 void DescriptorPool::SetObjectNameEXT(const char* name) const {

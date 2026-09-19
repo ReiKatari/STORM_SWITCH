@@ -812,7 +812,58 @@ GraphicsPipeline* PipelineCache::CurrentGraphicsPipelineSlowPath() {
             current_pipeline = it->second.get();
             return BuiltPipeline(current_pipeline);
         }
+        if (in_flight_pipelines.contains(graphics_key)) {
+            return nullptr;
+        }
     }
+
+    const auto& draw_state = maxwell3d->draw_manager.draw_state;
+    const bool is_async = use_asynchronous_shaders &&
+                          (draw_state.index_buffer.count > 6 && draw_state.vertex_buffer.count > 6);
+
+    if (is_async) {
+        GraphicsEnvironments environments;
+        GetGraphicsEnvironments(environments, graphics_key.unique_hashes);
+
+        {
+            std::scoped_lock lock{cache_mutex};
+            in_flight_pipelines.insert(graphics_key);
+        }
+
+        workers.QueueWork([this, key = graphics_key, envs = std::move(environments)]() mutable {
+            ShaderPools pools;
+            boost::container::static_vector<Shader::Environment*, Maxwell::MaxShaderProgram> env_ptrs;
+            for (size_t index = 0; index < Maxwell::MaxShaderProgram; ++index) {
+                if (key.unique_hashes[index] != 0) {
+                    env_ptrs.push_back(&envs.envs[index]);
+                }
+            }
+
+            auto pipeline = CreateGraphicsPipeline(pools, key, env_ptrs, nullptr, false);
+            if (pipeline && !pipeline_cache_filename.empty()) {
+                serialization_thread.QueueWork([this, key, envs_ = std::move(envs.envs)] {
+                    boost::container::static_vector<const GenericEnvironment*, Maxwell::MaxShaderProgram>
+                        ptrs;
+                    for (size_t index = 0; index < Maxwell::MaxShaderProgram; ++index) {
+                        if (key.unique_hashes[index] != 0) {
+                            ptrs.push_back(&envs_[index]);
+                        }
+                    }
+                    SerializePipeline(key, ptrs, pipeline_cache_filename, CACHE_VERSION);
+                });
+                QueueVulkanPipelineCacheFlush();
+            }
+
+            std::scoped_lock lock{cache_mutex};
+            if (pipeline) {
+                graphics_cache.try_emplace(key, std::move(pipeline));
+            }
+            in_flight_pipelines.erase(key);
+        });
+
+        return nullptr;
+    }
+
     auto pipeline = CreateGraphicsPipeline();
     if (!pipeline) {
         return nullptr;

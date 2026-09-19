@@ -29,6 +29,7 @@ void SystemManager::InitializeUnsafe() {
         thread = std::jthread([this](std::stop_token stop_token) {
             Common::SetCurrentThreadName("AudioRenderSystemManager");
             Common::SetCurrentThreadPriority(Common::ThreadPriority::High);
+            Common::SetCurrentThreadToEfficiencyCores();
             while (active && !stop_token.stop_requested()) {
                 {
                     std::scoped_lock l{mutex1};

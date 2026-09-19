@@ -558,6 +558,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     is_blit_depth24_stencil8_supported = TestDepthStencilBlits(VK_FORMAT_D24_UNORM_S8_UINT);
     is_blit_depth32_stencil8_supported = TestDepthStencilBlits(VK_FORMAT_D32_SFLOAT_S8_UINT);
     is_optimal_astc_supported = ComputeIsOptimalAstcSupported();
+    LOG_INFO(Render_Vulkan, "ASTC optimal tiling hardware passthrough: {}",
+             is_optimal_astc_supported ? "enabled" : "disabled (using software/compute fallback)");
     is_warp_potentially_bigger = !extensions.subgroup_size_control ||
                                  properties.subgroup_size_control.maxSubgroupSize > GuestWarpSize;
 
@@ -666,10 +668,10 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         }
     }
 
-    sets_per_pool = 64;
-    if (is_amd_driver) {
-        // AMD drivers need a higher amount of Sets per Pool in certain circumstances like in XC2.
-        sets_per_pool = 96;
+    sets_per_pool = 256;
+    if (is_amd_driver || is_nvidia) {
+        // AMD/NVIDIA drivers benefit from a higher amount of Sets per Pool in heavy titles.
+        sets_per_pool = 512;
 
         // Disable VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT on AMD GCN4 and lower as it is broken.
         if (!features.shader_float16_int8.shaderFloat16) {
@@ -1016,7 +1018,7 @@ bool Device::ComputeIsOptimalAstcSupported() const {
     }
     const VkFormatFeatureFlags format_feature_usage{
         VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
-        VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT};
+        VK_FORMAT_FEATURE_TRANSFER_DST_BIT};
     for (const auto format : astc_formats) {
         const auto physical_format_properties{physical.GetFormatProperties(format)};
         if ((physical_format_properties.optimalTilingFeatures & format_feature_usage) !=
