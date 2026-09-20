@@ -212,9 +212,20 @@ bool Swapchain::AcquireNextImage() {
 
 void Swapchain::Present(VkSemaphore render_semaphore) {
     const auto present_queue{device.GetPresentQueue()};
+    const VkPresentModeKHR current_requested_mode =
+        ChooseSwapPresentMode(has_imm, has_mailbox, has_fifo_relaxed);
+    const VkSwapchainPresentModeInfoEXT present_mode_info{
+        .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_EXT,
+        .pNext = nullptr,
+        .swapchainCount = 1,
+        .pPresentModes = &current_requested_mode,
+    };
+    if (device.IsExtSwapchainMaintenance1Supported() && present_mode != current_requested_mode) {
+        present_mode = current_requested_mode;
+    }
     const VkPresentInfoKHR present_info{
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        .pNext = nullptr,
+        .pNext = (device.IsExtSwapchainMaintenance1Supported()) ? &present_mode_info : nullptr,
         .waitSemaphoreCount = render_semaphore ? 1U : 0U,
         .pWaitSemaphores = &render_semaphore,
         .swapchainCount = 1,
@@ -341,6 +352,26 @@ void Swapchain::CreateSwapchain(const VkSurfaceCapabilitiesKHR& capabilities) {
         format_list.pNext = std::exchange(swapchain_ci.pNext, &format_list);
         swapchain_ci.flags |= VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR;
     }
+    std::vector<VkPresentModeKHR> present_modes_list;
+    present_modes_list.push_back(VK_PRESENT_MODE_FIFO_KHR);
+    if (has_mailbox) {
+        present_modes_list.push_back(VK_PRESENT_MODE_MAILBOX_KHR);
+    }
+    if (has_imm) {
+        present_modes_list.push_back(VK_PRESENT_MODE_IMMEDIATE_KHR);
+    }
+    if (has_fifo_relaxed) {
+        present_modes_list.push_back(VK_PRESENT_MODE_FIFO_RELAXED_KHR);
+    }
+    VkSwapchainPresentModesCreateInfoEXT present_modes_ci{
+        .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_EXT,
+        .pNext = nullptr,
+        .presentModeCount = static_cast<u32>(present_modes_list.size()),
+        .pPresentModes = present_modes_list.data(),
+    };
+    if (device.IsExtSwapchainMaintenance1Supported()) {
+        present_modes_ci.pNext = std::exchange(swapchain_ci.pNext, &present_modes_ci);
+    }
     // Request the size again to reduce the possibility of a TOCTOU race condition.
     const auto updated_capabilities = physical_device.GetSurfaceCapabilitiesKHR(VkSurfaceKHR(surface));
     swapchain_ci.imageExtent = ChooseSwapExtent(updated_capabilities, width, height);
@@ -376,6 +407,9 @@ void Swapchain::Destroy() {
 }
 
 bool Swapchain::NeedsPresentModeUpdate() const {
+    if (device.IsExtSwapchainMaintenance1Supported()) {
+        return false;
+    }
     const auto requested_mode = ChooseSwapPresentMode(has_imm, has_mailbox, has_fifo_relaxed);
     return present_mode != requested_mode;
 }

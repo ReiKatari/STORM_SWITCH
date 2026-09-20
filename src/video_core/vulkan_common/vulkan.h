@@ -30,6 +30,50 @@
 #define VK_KHR_MAINTENANCE_8_EXTENSION_NAME "VK_KHR_maintenance8"
 #endif
 
+// Define VK_EXT_swapchain_maintenance1
+#ifndef VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME
+#define VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME "VK_EXT_swapchain_maintenance1"
+#endif
+#ifndef VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT
+#define VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT (static_cast<VkStructureType>(1000275000))
+#endif
+#ifndef VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_EXT
+#define VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_EXT (static_cast<VkStructureType>(1000275001))
+#endif
+#ifndef VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_EXT
+#define VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_EXT (static_cast<VkStructureType>(1000275002))
+#endif
+#ifndef VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_SCALING_CREATE_INFO_EXT
+#define VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_SCALING_CREATE_INFO_EXT (static_cast<VkStructureType>(1000275003))
+#endif
+#ifndef VK_STRUCTURE_TYPE_RELEASE_SWAPPED_IMAGE_RESERVATIONS_INFO_EXT
+#define VK_STRUCTURE_TYPE_RELEASE_SWAPPED_IMAGE_RESERVATIONS_INFO_EXT (static_cast<VkStructureType>(1000275004))
+#endif
+
+#ifndef VK_EXT_swapchain_maintenance1
+#define VK_EXT_swapchain_maintenance1 1
+
+typedef struct VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT {
+    VkStructureType sType;
+    void* pNext;
+    VkBool32 swapchainMaintenance1;
+} VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT;
+
+typedef struct VkSwapchainPresentModesCreateInfoEXT {
+    VkStructureType sType;
+    const void* pNext;
+    uint32_t presentModeCount;
+    const VkPresentModeKHR* pPresentModes;
+} VkSwapchainPresentModesCreateInfoEXT;
+
+typedef struct VkSwapchainPresentModeInfoEXT {
+    VkStructureType sType;
+    const void* pNext;
+    uint32_t swapchainCount;
+    const VkPresentModeKHR* pPresentModes;
+} VkSwapchainPresentModeInfoEXT;
+#endif
+
 // Sanitize macros
 #undef CreateEvent
 #undef CreateSemaphore

@@ -1617,6 +1617,10 @@ void Device::RemoveUnsuitableExtensions() {
     extensions.maintenance8 = loaded_extensions.contains(VK_KHR_MAINTENANCE_8_EXTENSION_NAME);
     RemoveExtensionIfUnsuitable(extensions.maintenance8, VK_KHR_MAINTENANCE_8_EXTENSION_NAME);
 
+    // VK_EXT_swapchain_maintenance1
+    extensions.swapchain_maintenance_1 = loaded_extensions.contains(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+    RemoveExtensionIfUnsuitable(extensions.swapchain_maintenance_1, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+
     // VK_KHR_synchronization2
     extensions.synchronization2 = features.synchronization2.synchronization2;
     RemoveExtensionFeatureIfUnsuitable(extensions.synchronization2, features.synchronization2,

@@ -27,6 +27,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Rational
+import android.view.Choreographer
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -2812,13 +2813,45 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         binding.inGameMenu.requestLayout()
     }
 
+    private val ltpoFrameCallback = object : Choreographer.FrameCallback {
+        override fun doFrame(frameTimeNanos: Long) {
+            if (isResumed && this@EmulationFragment::emulationState.isInitialized && emulationState.isRunning) {
+                Choreographer.getInstance().postFrameCallback(this)
+            }
+        }
+    }
+
     override fun surfaceCreated(holder: SurfaceHolder) {
-        // We purposely don't do anything here.
-        // All work is done in surfaceChanged, which we are guaranteed to get even for surface creation.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    holder.surface.setFrameRate(60.0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
+                } else {
+                    holder.surface.setFrameRate(60.0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
+                }
+                Log.info("[EmulationFragment] Locked surface frame rate to 60.0 FPS (LTPO refresh lock)")
+            } catch (e: Exception) {
+                Log.warning("[EmulationFragment] Failed to lock surface frame rate: ${e.message}")
+            }
+        }
+        try {
+            Choreographer.getInstance().postFrameCallback(ltpoFrameCallback)
+        } catch (_: Exception) {}
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         Log.debug("[EmulationFragment] Surface changed. Resolution: " + width + "x" + height)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    holder.surface.setFrameRate(60.0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
+                } else {
+                    holder.surface.setFrameRate(60.0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
+                }
+            } catch (e: Exception) {
+                Log.warning("[EmulationFragment] Failed to update surface frame rate: ${e.message}")
+            }
+        }
         lifecycleScope.launch {
             driverViewModel.isInteractionAllowed.first { it }
             if (holder.surface.isValid) {
@@ -2834,6 +2867,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
+        try {
+            Choreographer.getInstance().removeFrameCallback(ltpoFrameCallback)
+        } catch (_: Exception) {}
         if (this::emulationState.isInitialized && !hasNewerEmulationFragment()) {
             emulationState.clearSurface()
         }

@@ -312,6 +312,22 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         // Set minimal post processing for lowest display latency (Gaming Mode)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.setPreferMinimalPostProcessing(true)
+            try {
+                window.attributes?.let { lp ->
+                    val modes = display?.supportedModes ?: windowManager.defaultDisplay.supportedModes
+                    val targetMode = modes?.firstOrNull { mode ->
+                        (mode.refreshRate >= 59.9f && mode.refreshRate <= 60.1f) ||
+                        (mode.refreshRate >= 119.9f && mode.refreshRate <= 120.1f)
+                    }
+                    if (targetMode != null) {
+                        lp.preferredDisplayModeId = targetMode.modeId
+                        window.attributes = lp
+                        Log.info("[EmulationActivity] Set preferred display mode to ${targetMode.refreshRate} Hz (id=${targetMode.modeId})")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.warning("[EmulationActivity] Failed to set preferred display mode: ${e.message}")
+            }
         }
 
         // Sustained Performance Mode (prevents aggressive thermal throttling drops)
