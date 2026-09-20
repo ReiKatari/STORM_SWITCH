@@ -101,7 +101,7 @@ StagingBufferPool::StagingBufferPool(const Device& device_, MemoryAllocator& mem
 StagingBufferPool::~StagingBufferPool() = default;
 
 StagingBufferRef StagingBufferPool::Request(size_t size, MemoryUsage usage, bool deferred) {
-    if (!deferred && usage == MemoryUsage::Upload && size <= region_size) {
+    if (!deferred && usage == MemoryUsage::Upload && size <= (region_size * 4)) {
         return GetStreamBuffer(size);
     }
     return GetStagingBuffer(size, usage, deferred);

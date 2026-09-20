@@ -31,7 +31,7 @@ struct StagingBufferRef {
 
 class StagingBufferPool {
 public:
-    static constexpr size_t NUM_SYNCS = 16;
+    static constexpr size_t NUM_SYNCS = 32;
 
     explicit StagingBufferPool(const Device& device, MemoryAllocator& memory_allocator,
                                Scheduler& scheduler);

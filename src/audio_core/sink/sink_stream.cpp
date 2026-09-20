@@ -222,20 +222,36 @@ void SinkStream::ProcessAudioOutAndRender(std::span<s16> output_buffer, std::siz
         if (actual_consume == frames_available) {
             samples_buffer.Pop(&output_buffer[frames_written * frame_size], frames_available * frame_size);
         } else {
-            // Dynamic resampling
-            std::vector<s16> temp_buf(actual_consume * frame_size);
-            samples_buffer.Pop(temp_buf.data(), actual_consume * frame_size);
-            
+            // High-fidelity Dynamic Time Stretching with 4-point Hermite interpolation (zero allocation)
+            const size_t required_samples = actual_consume * frame_size;
+            if (resample_scratch.size() < required_samples) {
+                resample_scratch.resize(required_samples);
+            }
+            samples_buffer.Pop(resample_scratch.data(), required_samples);
+
+            const auto Hermite = [](f64 p0, f64 p1, f64 p2, f64 p3, f64 t) -> s16 {
+                const f64 c0 = p1;
+                const f64 c1 = 0.5 * (p2 - p0);
+                const f64 c2 = p0 - 2.5 * p1 + 2.0 * p2 - 0.5 * p3;
+                const f64 c3 = 0.5 * (p3 - p0) + 1.5 * (p1 - p2);
+                const f64 result = ((c3 * t + c2) * t + c1) * t + c0;
+                return static_cast<s16>(std::clamp<f64>(result, -32768.0, 32767.0));
+            };
+
             for (size_t i = 0; i < frames_available; i++) {
-                f64 src_idx = static_cast<f64>(i) * drift_ratio;
-                size_t idx0 = std::min(static_cast<size_t>(src_idx), actual_consume - 1);
-                size_t idx1 = std::min(idx0 + 1, actual_consume - 1);
-                f64 frac = src_idx - std::floor(src_idx);
-                
+                const f64 src_idx = static_cast<f64>(i) * drift_ratio;
+                const size_t idx1 = std::min(static_cast<size_t>(src_idx), actual_consume - 1);
+                const size_t idx0 = (idx1 > 0) ? (idx1 - 1) : 0;
+                const size_t idx2 = std::min(idx1 + 1, actual_consume - 1);
+                const size_t idx3 = std::min(idx1 + 2, actual_consume - 1);
+                const f64 t = src_idx - std::floor(src_idx);
+
                 for (size_t ch = 0; ch < frame_size; ch++) {
-                    s16 s0 = temp_buf[idx0 * frame_size + ch];
-                    s16 s1 = temp_buf[idx1 * frame_size + ch];
-                    output_buffer[(frames_written + i) * frame_size + ch] = static_cast<s16>(s0 + (s1 - s0) * frac);
+                    const f64 p0 = resample_scratch[idx0 * frame_size + ch];
+                    const f64 p1 = resample_scratch[idx1 * frame_size + ch];
+                    const f64 p2 = resample_scratch[idx2 * frame_size + ch];
+                    const f64 p3 = resample_scratch[idx3 * frame_size + ch];
+                    output_buffer[(frames_written + i) * frame_size + ch] = Hermite(p0, p1, p2, p3, t);
                 }
             }
         }

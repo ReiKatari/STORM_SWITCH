@@ -259,6 +259,7 @@ private:
     static constexpr f64 drift_ki{0.0001};     // Integral gain
     static constexpr f64 drift_max{0.05};      // Maximum drift ±5%
     static constexpr f64 drift_ema_alpha{0.1}; // EMA smoothing factor
+    std::vector<s16> resample_scratch;         // Reusable buffer to avoid heap allocations in audio callback
 
     /// Locks access to sample count tracking info
     std::mutex sample_count_lock;

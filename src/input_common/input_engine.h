@@ -258,6 +258,7 @@ protected:
     void SetButton(const PadIdentifier& identifier, int button, bool value);
     void SetHatButton(const PadIdentifier& identifier, int button, u8 value);
     void SetAxis(const PadIdentifier& identifier, int axis, f32 value);
+    void SetTouchState(const PadIdentifier& identifier, int finger_index, bool pressed, float x, float y);
     void SetBattery(const PadIdentifier& identifier, Common::Input::BatteryLevel value);
     void SetColor(const PadIdentifier& identifier, Common::Input::BodyColorStatus value);
     void SetMotion(const PadIdentifier& identifier, int motion, const BasicMotion& value);

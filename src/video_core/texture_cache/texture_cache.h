@@ -142,6 +142,14 @@ void TextureCache<P>::RunGarbageCollector() {
         if (True(image.flags & ImageFlagBits::IsDecoding)) {
             return false;
         }
+        // Generational VRAM Recycling: Active (0) -> Standby (1) -> Eviction Candidate (2)
+        // In normal load, transition images through a hysteresis Standby grace period
+        // before destroying them, preventing expensive asset reloading hitches.
+        if (!aggressive_mode && image.generation < 2) {
+            image.generation++;
+            lru_cache.Touch(image.lru_index, frame_tick);
+            return false;
+        }
         const bool must_download = image.IsSafeDownload() && False(image.flags & ImageFlagBits::BadOverlap);
         if ((!aggressive_mode && True(image.flags & ImageFlagBits::CostlyLoad)) || (!high_priority_mode && must_download)) {
             return false;
@@ -2525,6 +2533,7 @@ void TextureCache<P>::PrepareImage(ImageId image_id, bool is_modification, bool 
         MarkModification(image);
     }
     lru_cache.Touch(image.lru_index, frame_tick);
+    image.generation = 0; // Promoted to Generation 0 (Active)
 }
 
 template <class P>

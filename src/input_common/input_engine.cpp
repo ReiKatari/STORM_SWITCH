@@ -71,6 +71,21 @@ void InputEngine::SetAxis(const PadIdentifier& identifier, int axis, f32 value) 
     TriggerOnAxisChange(identifier, axis, value);
 }
 
+void InputEngine::SetTouchState(const PadIdentifier& identifier, int finger_index, bool pressed, float x, float y) {
+    {
+        std::scoped_lock lock{mutex};
+        ControllerData& controller = controller_list.at(identifier);
+        if (!configuring) {
+            controller.buttons.insert_or_assign(finger_index, pressed);
+            controller.axes.insert_or_assign(finger_index * 2, pressed ? x : 0.0f);
+            controller.axes.insert_or_assign(finger_index * 2 + 1, pressed ? y : 0.0f);
+        }
+    }
+    TriggerOnButtonChange(identifier, finger_index, pressed);
+    TriggerOnAxisChange(identifier, finger_index * 2, pressed ? x : 0.0f);
+    TriggerOnAxisChange(identifier, finger_index * 2 + 1, pressed ? y : 0.0f);
+}
+
 void InputEngine::SetBattery(const PadIdentifier& identifier, Common::Input::BatteryLevel value) {
     {
         std::scoped_lock lock{mutex};
