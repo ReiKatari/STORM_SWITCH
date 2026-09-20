@@ -12,7 +12,7 @@ Copy-Item "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Redist\MSVC\1
 
 Get-ChildItem -Path 'E:\STORM SWITCH 4\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 
-Write-Host "Copying freshly compiled 9.0.7 binaries from build_ninja\bin to Assembling..."
+Write-Host "Copying freshly compiled 9.1.0 binaries from build_ninja\bin to Assembling..."
 Copy-Item 'E:\STORM SWITCH 4\Build\build_ninja\bin\STORM_SWITCH*.exe' 'E:\STORM SWITCH 4\Assembling\' -Force
 
 Write-Host "Signing Assembling executables..."
