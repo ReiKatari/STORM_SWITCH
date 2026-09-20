@@ -4,6 +4,7 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <cmath>
 #include <set>
 #include <common/settings_input.h>
 #include <common/thread.h>
@@ -57,10 +58,48 @@ void Android::SetMotionState(std::string guid, size_t port, u64 delta_timestamp,
                              float gyro_y, float gyro_z, float accel_x, float accel_y,
                              float accel_z) {
     const auto identifier = GetIdentifier(guid, port);
+
+    // STORM Smart Precision Gyro Aiming and Recoil Drift Damper
+    static float prev_gyro_x = 0.0f;
+    static float prev_gyro_y = 0.0f;
+    static float prev_gyro_z = 0.0f;
+
+    const float gyro_magnitude = std::sqrt(gyro_x * gyro_x + gyro_y * gyro_y + gyro_z * gyro_z);
+
+    // Sub-pixel sniper aim deadzone and tremor filter
+    constexpr float MICRO_DEADZONE = 0.008f;
+    constexpr float PRECISION_THRESHOLD = 0.35f;
+
+    float filtered_gyro_x = gyro_x;
+    float filtered_gyro_y = gyro_y;
+    float filtered_gyro_z = gyro_z;
+
+    if (gyro_magnitude < MICRO_DEADZONE) {
+        filtered_gyro_x = 0.0f;
+        filtered_gyro_y = 0.0f;
+        filtered_gyro_z = 0.0f;
+    } else if (gyro_magnitude < PRECISION_THRESHOLD) {
+        // Micro-aim zone: EMA smoothing to eliminate tremor
+        constexpr float EMA_ALPHA = 0.45f;
+        filtered_gyro_x = EMA_ALPHA * gyro_x + (1.0f - EMA_ALPHA) * prev_gyro_x;
+        filtered_gyro_y = EMA_ALPHA * gyro_y + (1.0f - EMA_ALPHA) * prev_gyro_y;
+        filtered_gyro_z = EMA_ALPHA * gyro_z + (1.0f - EMA_ALPHA) * prev_gyro_z;
+    }
+
+    // Recoil drift damping: dampen abrupt vertical pitch spikes from screen tapping
+    const float accel_shock = std::abs(accel_z - 9.81f);
+    if (accel_shock > 2.5f) {
+        filtered_gyro_x *= 0.35f; // suppress pitch recoil jump
+    }
+
+    prev_gyro_x = filtered_gyro_x;
+    prev_gyro_y = filtered_gyro_y;
+    prev_gyro_z = filtered_gyro_z;
+
     const BasicMotion motion_data{
-        .gyro_x = gyro_x,
-        .gyro_y = gyro_y,
-        .gyro_z = gyro_z,
+        .gyro_x = filtered_gyro_x,
+        .gyro_y = filtered_gyro_y,
+        .gyro_z = filtered_gyro_z,
         .accel_x = accel_x,
         .accel_y = accel_y,
         .accel_z = accel_z,

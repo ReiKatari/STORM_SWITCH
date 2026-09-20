@@ -247,6 +247,15 @@ private:
 
             const std::size_t samples_to_render = num_frames * frame_size;
             std::vector<s16> output(samples_to_render);
+
+            // Audio DSP Deep Sleep: if emulation is paused, feed silence without DSP load
+            if (impl->system.IsPaused()) {
+                std::fill(output.begin(), output.end(), static_cast<s16>(0));
+                const int bytes_to_put = static_cast<int>(samples_to_render * sizeof(s16));
+                static_cast<void>(SDL_PutAudioStreamData(stream, output.data(), bytes_to_put));
+                return;
+            }
+
             std::span<s16> output_buffer{output.data(), samples_to_render};
             impl->ProcessAudioOutAndRender(output_buffer, num_frames);
             const int bytes_to_put = static_cast<int>(samples_to_render * sizeof(s16));

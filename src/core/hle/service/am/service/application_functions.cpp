@@ -329,8 +329,7 @@ Result IApplicationFunctions::GetPseudoDeviceId(Out<Common::UUID> out_pseudo_dev
     // This should be hashed with the device specific hash
     // for now this will do
     const auto res = FileSys::PatchManager::GetMetadataFromBaseOrUpdate(system, m_applet->program_id);
-    R_UNLESS(res.first != nullptr, ResultUnknown);
-    std::array<u8, EVP_MAX_MD_SIZE> hash;
+    std::array<u8, EVP_MAX_MD_SIZE> hash{};
     unsigned int hash_len = 0;
     u64 seed = 0;
     if (res.first != nullptr) {

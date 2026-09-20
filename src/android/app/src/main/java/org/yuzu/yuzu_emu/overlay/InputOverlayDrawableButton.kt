@@ -110,7 +110,9 @@ class InputOverlayDrawableButton(
             val centerX = b.exactCenterX()
             val centerY = b.exactCenterY()
             canvas.save()
-            canvas.scale(0.92f, 0.92f, centerX, centerY)
+            // STORM Tactile 3D: translate down and scale into surface for authentic mechanical press
+            canvas.translate(0f, 3.5f)
+            canvas.scale(0.93f, 0.93f, centerX, centerY)
             pressedStateBitmap.draw(canvas)
             canvas.restore()
         } else {

@@ -234,6 +234,51 @@ object SettingsProfileManager {
                     ),
                     shorts = mapOf(ShortSetting.RENDERER_SPEED_LIMIT.key to 100)
                 )
+
+                // 4. Eco Battery profile (2D and Indie)
+                createDefaultProfile(
+                    dir = dir,
+                    id = "profile_eco_battery",
+                    name = "Энергосберегающий (2D и Инди)",
+                    description = "Максимальное время работы от батареи и минимальный нагрев для 2D-игр и инди-проектов",
+                    booleans = mapOf(
+                        BooleanSetting.RENDERER_USE_SPEED_LIMIT.key to true,
+                        BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.key to true,
+                        BooleanSetting.RENDERER_REACTIVE_FLUSHING.key to true,
+                        BooleanSetting.VULKAN_PIPELINE_CACHE.key to true,
+                        BooleanSetting.VRAM_GARBAGE_COLLECTION.key to true,
+                        BooleanSetting.FASTMEM.key to true,
+                        BooleanSetting.FASTMEM_EXCLUSIVES.key to true,
+                        BooleanSetting.USE_DOCKED_MODE.key to false,
+                        BooleanSetting.AIRPLANE_MODE.key to false,
+                        BooleanSetting.ECO_THERMAL_MODE.key to true,
+                        BooleanSetting.ECO_FRAME_PACING.key to true,
+                        BooleanSetting.SMART_SHADER_THROTTLE.key to true,
+                        BooleanSetting.CPU_AFFINITY_PINNING.key to true,
+                        BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.key to true,
+                        BooleanSetting.ENABLE_FRAME_SKIPPING.key to true,
+                        BooleanSetting.RENDERER_USE_DISK_SHADER_CACHE.key to true,
+                        BooleanSetting.RENDERER_FORCE_MAX_CLOCK.key to false,
+                        BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.key to true,
+                        BooleanSetting.RENDERER_ASYNC_PRESENTATION.key to true
+                    ),
+                    integers = mapOf(
+                        IntSetting.RENDERER_BACKEND.key to 1,
+                        IntSetting.RENDERER_ACCURACY.key to 0,
+                        IntSetting.RENDERER_RESOLUTION.key to 1,
+                        IntSetting.RENDERER_SCALING_FILTER.key to 0,
+                        IntSetting.RENDERER_NVDEC_EMULATION.key to 3,
+                        IntSetting.RENDERER_ASTC_DECODE_METHOD.key to 3,
+                        IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.key to 1,
+                        IntSetting.RENDERER_DYNA_STATE.key to 1,
+                        IntSetting.RENDERER_VRAM_USAGE_MODE.key to 1,
+                        IntSetting.RENDERER_VSYNC.key to 1,
+                        IntSetting.CPU_ACCURACY.key to 1,
+                        IntSetting.CPU_BACKEND.key to 0,
+                        IntSetting.FAST_GPU_TIME.key to 1
+                    ),
+                    shorts = mapOf(ShortSetting.RENDERER_SPEED_LIMIT.key to 100)
+                )
             } catch (e: Exception) {
                 Log.error("[SettingsProfileManager] Error ensuring default profiles: ${e.message}")
             }
@@ -254,7 +299,7 @@ object SettingsProfileManager {
             put("id", id)
             put("name", name)
             put("description", description)
-            put("version", "9.0.7")
+            put("version", "9.1.0")
             put("timestamp", System.currentTimeMillis())
 
             val boolObj = JSONObject()
@@ -305,7 +350,7 @@ object SettingsProfileManager {
             json.put("id", id)
             json.put("name", safeName)
             json.put("description", description.trim())
-            json.put("version", "9.0.7")
+            json.put("version", "9.1.0")
             json.put("timestamp", System.currentTimeMillis())
 
             val needsGlobal = !NativeConfig.isPerGameConfigLoaded()

@@ -49,8 +49,8 @@ constexpr u64 GpuClockMultiplier(Settings::GpuClock clock) {
 struct GPU::Impl {
     explicit Impl(Core::System& system_, bool is_async_, bool use_nvdec_)
         : system{system_}
-        , gpu_thread{system_}
         , use_nvdec{use_nvdec_}
+        , gpu_thread{system_}
         , shader_notify()
         , is_async{is_async_}
     {}
@@ -293,12 +293,13 @@ struct GPU::Impl {
 
     Core::System& system;
 
-    // Destruction of thread must be done before all (non trivial)
-    // previous members has been destroyed
-    VideoCommon::GPUThread::ThreadManager gpu_thread;
-
     std::unique_ptr<VideoCore::RendererBase> renderer;
     const bool use_nvdec;
+
+    // Destruction of thread must be done before renderer
+    // is destroyed, so gpu_thread is declared after renderer
+    // (members are destroyed in reverse declaration order).
+    VideoCommon::GPUThread::ThreadManager gpu_thread;
 
     s32 new_channel_id{1};
     /// Shader build notifier
