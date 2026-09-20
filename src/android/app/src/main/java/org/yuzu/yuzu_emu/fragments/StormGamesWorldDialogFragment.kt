@@ -225,7 +225,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                     try {
                         val searchUrl = "https://search.nintendo-europe.com/en/select?q=${Uri.encode(cleanTitle)}&fq=type:GAME&rows=1&wt=json"
-                        val req = Request.Builder().url(searchUrl).header("User-Agent", "STORM_SWITCH/9.0.3").build()
+                        val req = Request.Builder().url(searchUrl).header("User-Agent", "STORM_SWITCH/9.0.5").build()
                         val resp = sharedHttpClient.newCall(req).execute()
                         val body = resp.body?.string().orEmpty()
                         resp.close()
