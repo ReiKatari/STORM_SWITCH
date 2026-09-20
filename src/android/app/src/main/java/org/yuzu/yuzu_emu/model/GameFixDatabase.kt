@@ -5097,6 +5097,11 @@ object GameFixDatabase {
                 return false
             }
             val isTemp = isTemporaryFixFile(file)
+            if (!isTemp) {
+                // Any non-temporary, non-empty custom config file in config/custom/ is a user manual configuration
+                return true
+            }
+
             var hasUserOverrides = false
             file.bufferedReader().useLines { lines ->
                 for (line in lines) {
@@ -5113,11 +5118,11 @@ object GameFixDatabase {
                     }
                 }
             }
-            if (isTemp && hasUserOverrides) {
+            if (hasUserOverrides) {
                 markConfigAsUserCustom(game)
                 return true
             }
-            return !isTemp && hasUserOverrides
+            return false
         } catch (_: Exception) {
             false
         }

@@ -49,7 +49,7 @@ class SystemInfoDialogFragment : DialogFragment() {
     }
 
     private fun populateSystemInfo() {
-        val buildVer = try { NativeLibrary.getBuildVersion() } catch (_: Throwable) { "9.0.5" }
+        val buildVer = try { NativeLibrary.getBuildVersion() } catch (_: Throwable) { "9.0.6" }
         binding.textAppBuild.text = "STORM SWITCH $buildVer"
 
         // 1. Device Info
@@ -119,7 +119,7 @@ class SystemInfoDialogFragment : DialogFragment() {
     }
 
     private fun copyDiagnosticsToClipboard() {
-        val buildVer = try { NativeLibrary.getBuildVersion() } catch (_: Throwable) { "9.0.5" }
+        val buildVer = try { NativeLibrary.getBuildVersion() } catch (_: Throwable) { "9.0.6" }
         val fullInfo = buildString {
             appendLine("=== STORM SWITCH v$buildVer System Diagnostics ===")
             appendLine("Date: ${java.util.Date()}")

@@ -254,7 +254,7 @@ object SettingsProfileManager {
             put("id", id)
             put("name", name)
             put("description", description)
-            put("version", "9.0.5")
+            put("version", "9.0.6")
             put("timestamp", System.currentTimeMillis())
 
             val boolObj = JSONObject()
@@ -305,7 +305,7 @@ object SettingsProfileManager {
             json.put("id", id)
             json.put("name", safeName)
             json.put("description", description.trim())
-            json.put("version", "9.0.5")
+            json.put("version", "9.0.6")
             json.put("timestamp", System.currentTimeMillis())
 
             val needsGlobal = !NativeConfig.isPerGameConfigLoaded()

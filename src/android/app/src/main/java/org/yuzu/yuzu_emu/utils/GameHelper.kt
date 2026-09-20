@@ -125,7 +125,7 @@ object GameHelper {
             val gameDirUri = gameDir.uriString.toUri()
             val isValid = FileUtil.isTreeUriValid(gameDirUri)
             if (isValid) {
-                val scanDepth = if (gameDir.deepScan) 5 else 3
+                val scanDepth = if (gameDir.deepScan) 7 else 5
 
                 addGamesRecursive(
                     games,
@@ -449,6 +449,10 @@ object GameHelper {
 
     fun isUpdateOrDlcPath(str: String): Boolean {
         val lower = str.lowercase(Locale.ROOT)
+        // Cartridge dumps (.xci, .xcz) are always full games, never standalone updates/DLCs
+        if (lower.endsWith(".xci") || lower.endsWith(".xcz")) {
+            return false
+        }
         if (lower.contains("[upd") || lower.contains("(upd") ||
             lower.contains("[update") || lower.contains("(update") ||
             lower.contains("[dlc") || lower.contains("(dlc") ||
@@ -469,10 +473,11 @@ object GameHelper {
     ): Game? {
         val filePath = uri.toString()
         val filename = FileUtil.getFilename(uri)
+        val isCartridge = filename.endsWith(".xci", ignoreCase = true) || filename.endsWith(".xcz", ignoreCase = true)
 
         if (addedToLibrary && isUpdateOrDlcPath(filename)) {
             // If the filename clearly designates an update/DLC, double-check if it has base content
-            if (!GameMetadata.isBaseGame(filePath)) {
+            if (!isCartridge && !GameMetadata.isBaseGame(filePath)) {
                 return null
             }
         }
@@ -496,13 +501,20 @@ object GameHelper {
         var programId = GameMetadata.getProgramId(filePath)
 
         val pIdLong = programId.toULongOrNull(16)
-        if (pIdLong != null && (pIdLong and 0xFFFuL) != 0uL) {
+        if (!isCartridge && pIdLong != null && pIdLong != 0uL && (pIdLong and 0xFFFuL) != 0uL) {
             return null // Exclude standalone Updates and DLCs from game list
         }
 
-        // If the game's ID field is empty, use the filename without extension.
-        if (programId.isEmpty()) {
-            programId = if (filename.contains(".")) filename.substring(0, filename.lastIndexOf(".")) else filename
+        // If the game's ID field is empty or zero, extract from filename or use filename without extension
+        if (programId.isEmpty() || programId == "0000000000000000" || programId == "0") {
+            val idMatch = Regex("""0100[0-9a-fA-F]{12}""").find(filename)
+            programId = if (idMatch != null) {
+                idMatch.value.uppercase(Locale.ROOT)
+            } else if (filename.contains(".")) {
+                filename.substring(0, filename.lastIndexOf("."))
+            } else {
+                filename
+            }
         }
 
         val rawVersion = GameMetadata.getVersion(filePath, false)

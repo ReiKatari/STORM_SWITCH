@@ -37,20 +37,20 @@ namespace AndroidSettings {
         // Android
         Settings::Setting<bool> picture_in_picture{linkage, false, "picture_in_picture",
                                                    Settings::Category::Android};
-        Settings::Setting<s32> screen_layout{linkage,
-                                             5,
-                                             "screen_layout",
-                                             Settings::Category::Android,
-                                             Settings::Specialization::Default,
-                                             true,
-                                             true};
-        Settings::Setting<s32> vertical_alignment{linkage,
-                                                  0,
-                                                  "vertical_alignment",
-                                                  Settings::Category::Android,
-                                                  Settings::Specialization::Default,
-                                                  true,
-                                                  true};
+        Settings::SwitchableSetting<s32, false> screen_layout{linkage,
+                                                              5,
+                                                              "screen_layout",
+                                                              Settings::Category::Android,
+                                                              Settings::Specialization::Default,
+                                                              true,
+                                                              true};
+        Settings::SwitchableSetting<s32, false> vertical_alignment{linkage,
+                                                                   0,
+                                                                   "vertical_alignment",
+                                                                   Settings::Category::Android,
+                                                                   Settings::Specialization::Default,
+                                                                   true,
+                                                                   true};
 
         Settings::SwitchableSetting<std::string, false> driver_path{linkage, "", "driver_path",
                                                                     Settings::Category::GpuDriver};
@@ -73,12 +73,12 @@ namespace AndroidSettings {
             linkage, false, "invert_confirm_back_controller_buttons", Settings::Category::Android};
 
         // Optimization & Thermal Features
-        Settings::Setting<bool> eco_thermal_mode{linkage, false, "eco_thermal_mode", Settings::Category::Android};
-        Settings::Setting<bool> eco_frame_pacing{linkage, false, "eco_frame_pacing", Settings::Category::Android};
-        Settings::Setting<bool> smart_shader_throttle{linkage, false, "smart_shader_throttle", Settings::Category::Android};
-        Settings::Setting<bool> cpu_affinity_pinning{linkage, false, "cpu_affinity_pinning", Settings::Category::Android};
-        Settings::Setting<bool> vulkan_pipeline_cache{linkage, true, "vulkan_pipeline_cache", Settings::Category::Android};
-        Settings::Setting<bool> vram_garbage_collection{linkage, false, "vram_garbage_collection", Settings::Category::Android};
+        Settings::SwitchableSetting<bool, false> eco_thermal_mode{linkage, false, "eco_thermal_mode", Settings::Category::Android};
+        Settings::SwitchableSetting<bool, false> eco_frame_pacing{linkage, false, "eco_frame_pacing", Settings::Category::Android};
+        Settings::SwitchableSetting<bool, false> smart_shader_throttle{linkage, false, "smart_shader_throttle", Settings::Category::Android};
+        Settings::SwitchableSetting<bool, false> cpu_affinity_pinning{linkage, false, "cpu_affinity_pinning", Settings::Category::Android};
+        Settings::SwitchableSetting<bool, false> vulkan_pipeline_cache{linkage, true, "vulkan_pipeline_cache", Settings::Category::Android};
+        Settings::SwitchableSetting<bool, false> vram_garbage_collection{linkage, false, "vram_garbage_collection", Settings::Category::Android};
 
         // Input/performance overlay settings
         std::vector<OverlayControlData> overlay_control_data;

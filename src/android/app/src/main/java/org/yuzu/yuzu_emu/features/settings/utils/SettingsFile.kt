@@ -23,16 +23,23 @@ object SettingsFile {
         val configDir = File(DirectoryInitialization.userDirectory, "config/custom")
         val cleanProgHex = game.programIdHex.trim().uppercase(java.util.Locale.ROOT)
         val settingsName = game.settingsName.trim()
+        val fileName = try { FileUtil.getFilename(Uri.parse(game.path)) } catch (_: Exception) { "" }
 
         val byHex = File(configDir, "$cleanProgHex.ini")
-        if (byHex.exists()) return byHex
+        if (cleanProgHex.isNotEmpty() && cleanProgHex != "0" && cleanProgHex != "0000000000000000" && byHex.exists()) return byHex
         val bySettings = File(configDir, "$settingsName.ini")
         if (bySettings.exists()) return bySettings
+        if (fileName.isNotEmpty()) {
+            val byFileName = File(configDir, "$fileName.ini")
+            if (byFileName.exists()) return byFileName
+        }
 
         return if (cleanProgHex.isNotEmpty() && cleanProgHex != "0" && cleanProgHex != "0000000000000000") {
             byHex
-        } else {
+        } else if (settingsName.isNotEmpty() && settingsName != "0000000000000000") {
             bySettings
+        } else {
+            File(configDir, "$fileName.ini")
         }
     }
 

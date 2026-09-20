@@ -12,7 +12,7 @@ Copy-Item "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Redist\MSVC\1
 
 Get-ChildItem -Path 'E:\STORM SWITCH 4\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
 
-Write-Host "Copying freshly compiled 9.0.5 binaries from build_ninja\bin to Assembling..."
+Write-Host "Copying freshly compiled 9.0.6 binaries from build_ninja\bin to Assembling..."
 Copy-Item 'E:\STORM SWITCH 4\Build\build_ninja\bin\STORM_SWITCH*.exe' 'E:\STORM SWITCH 4\Assembling\' -Force
 
 Write-Host "Signing Assembling executables..."
@@ -53,7 +53,7 @@ Write-Host "Preparing Windows 11 staging..."
 $stageWin11 = 'E:\STORM SWITCH 4\Temp_Package_Win11'
 Prepare-Staging $stageWin11 $false
 
-$zipPathWin11 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_9.0.5_Windows11.zip'
+$zipPathWin11 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_9.0.6_Windows11.zip'
 if (Test-Path $zipPathWin11) { Remove-Item $zipPathWin11 -Force }
 & 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathWin11 "$stageWin11\*" -mx=9
 Unblock-File $zipPathWin11
@@ -63,10 +63,10 @@ Write-Host "Preparing Windows 10 staging (with VC CRT)..."
 $stageWin10 = 'E:\STORM SWITCH 4\Temp_Package_Win10'
 Prepare-Staging $stageWin10 $true
 
-$zipPathWin10 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_9.0.5_Windows10.zip'
+$zipPathWin10 = 'E:\STORM SWITCH 4\Files\STORM_SWITCH_9.0.6_Windows10.zip'
 if (Test-Path $zipPathWin10) { Remove-Item $zipPathWin10 -Force }
 & 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathWin10 "$stageWin10\*" -mx=9
 Unblock-File $zipPathWin10
 Remove-Item $stageWin10 -Recurse -Force
 
-Write-Host "All Windows 9.0.5 executables signed and packaged successfully into E:\STORM SWITCH 4\Files!"
+Write-Host "All Windows 9.0.6 executables signed and packaged successfully into E:\STORM SWITCH 4\Files!"

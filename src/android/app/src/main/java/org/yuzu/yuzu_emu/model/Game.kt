@@ -49,7 +49,7 @@ class Game(
             val parsedHex = cleanId.toULongOrNull(16) ?: cleanId.toULongOrNull(10)
             return if (parsedHex != null && parsedHex != 0uL) {
                 String.format(java.util.Locale.ROOT, "%016X", parsedHex.toLong())
-            } else if (cleanId.isNotEmpty() && cleanId != "0") {
+            } else if (cleanId.isNotEmpty() && cleanId != "0" && cleanId != "0000000000000000") {
                 cleanId
             } else {
                 FileUtil.getFilename(Uri.parse(path))
@@ -62,7 +62,7 @@ class Game(
             val parsedHex = cleanId.toULongOrNull(16) ?: cleanId.toULongOrNull(10)
             return if (parsedHex != null && parsedHex != 0uL) {
                 String.format(java.util.Locale.ROOT, "%016X", parsedHex.toLong())
-            } else if (cleanId.isNotEmpty()) {
+            } else if (cleanId.isNotEmpty() && cleanId != "0" && cleanId != "0000000000000000") {
                 cleanId
             } else {
                 "0"

@@ -62,7 +62,27 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
         loader->ReadProgramId(entry.programId);
         loader->ReadIcon(entry.icon);
 
-        const u64 raw_pid = entry.programId;
+        u64 raw_pid = entry.programId;
+        std::vector<u64> pids;
+        loader->ReadProgramIds(pids);
+        if (!pids.empty()) {
+            for (const auto id : pids) {
+                if ((id & 0xFFF) == 0 && (id & 0x800) == 0) {
+                    raw_pid = id;
+                    break;
+                }
+            }
+        }
+        if (raw_pid == 0) {
+            std::regex id_regex(R"(0100[0-9a-fA-F]{12})");
+            std::smatch match;
+            if (std::regex_search(path, match, id_regex)) {
+                try {
+                    raw_pid = std::stoull(match.str(), nullptr, 16);
+                } catch (...) {}
+            }
+        }
+
         entry.raw_program_id = raw_pid;
         const u64 base_tid = FileSys::GetBaseTitleID(raw_pid);
         const u64 update_tid = FileSys::GetUpdateTitleID(base_tid);
@@ -284,7 +304,8 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
             entry.is_base_game = true;
         } else {
             entry.isHomebrew = false;
-            bool bootable = Loader::IsBootableGameContainer(file);
+            const bool is_xci = (loader->GetFileType() == Loader::FileType::XCI || loader->GetFileType() == Loader::FileType::XCZ);
+            bool bootable = is_xci || Loader::IsBootableGameContainer(file);
             if (!bootable) {
                 if (entry.programId != 0 && (entry.programId & 0xFFF) == 0 && (entry.programId & 0x800) == 0) {
                     bootable = true;
@@ -361,26 +382,33 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
                 loader->ReadProgramId(program_id);
             }
 
-            // Exclude standalone Updates (0x800) and DLCs (0x001+)
-            if (program_id != 0 && (program_id & 0xFFF) != 0) {
-                return false;
+            const bool is_xci = (file_type == Loader::FileType::XCI || file_type == Loader::FileType::XCZ);
+            const bool is_container = (is_xci || file_type == Loader::FileType::NSP || file_type == Loader::FileType::NSZ);
+
+            // Cartridges (XCI/XCZ) are always game images
+            if (is_xci) {
+                return true;
             }
 
-            const bool is_container = (file_type == Loader::FileType::NSP || file_type == Loader::FileType::XCI ||
-                                       file_type == Loader::FileType::NSZ || file_type == Loader::FileType::XCZ);
+            // If a valid base application program ID is found
+            if (program_id != 0 && (program_id & 0xFFF) == 0 && (program_id & 0x800) == 0) {
+                return true;
+            }
+            for (const auto id : pids) {
+                if ((id & 0xFFF) == 0 && (id & 0x800) == 0) {
+                    return true;
+                }
+            }
+
             if (is_container) {
                 if (Loader::IsBootableGameContainer(file, file_type)) {
                     return true;
                 }
-                if (program_id != 0 && (program_id & 0xFFF) == 0 && (program_id & 0x800) == 0) {
-                    return true;
-                }
-                for (const auto id : pids) {
-                    if ((id & 0xFFF) == 0 && (id & 0x800) == 0) {
-                        return true;
-                    }
-                }
-                return true;
+            }
+
+            // Exclude standalone Updates (0x800) and DLCs (0x001+)
+            if (program_id != 0 && (program_id & 0xFFF) != 0) {
+                return false;
             }
 
             return true;
