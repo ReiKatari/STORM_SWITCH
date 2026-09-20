@@ -1383,9 +1383,23 @@ public:
                 };
             }
             std::array<VkImageMemoryBarrier2, MaxBarriers> image_barriers2;
+            u32 valid_image_barriers2 = 0;
             for (u32 i = 0; i < image_barriers.size(); ++i) {
                 const auto& barrier = image_barriers[i];
-                image_barriers2[i] = VkImageMemoryBarrier2{
+                // Barrier Coalescing: Prune no-op barriers with identical layout and zero write hazards
+                if (barrier.oldLayout == barrier.newLayout &&
+                    barrier.srcAccessMask == barrier.dstAccessMask &&
+                    (barrier.srcAccessMask == 0 ||
+                     !(barrier.srcAccessMask & (VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                                                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+                                                VK_ACCESS_TRANSFER_WRITE_BIT |
+                                                VK_ACCESS_SHADER_WRITE_BIT |
+                                                VK_ACCESS_HOST_WRITE_BIT |
+                                                VK_ACCESS_MEMORY_WRITE_BIT))) &&
+                    barrier.srcQueueFamilyIndex == barrier.dstQueueFamilyIndex) {
+                    continue;
+                }
+                image_barriers2[valid_image_barriers2++] = VkImageMemoryBarrier2{
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
                     .pNext = nullptr,
                     .srcStageMask = src_stage_mask2,
@@ -1400,15 +1414,19 @@ public:
                     .subresourceRange = barrier.subresourceRange,
                 };
             }
+            if (memory_barriers.empty() && buffer_barriers.empty() && valid_image_barriers2 == 0 &&
+                (src_stage_mask == 0 || dst_stage_mask == 0)) {
+                return;
+            }
             const VkDependencyInfo dependency_info{
                 .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
                 .pNext = nullptr,
                 .dependencyFlags = dependency_flags,
-                .memoryBarrierCount = memory_barriers.size(),
+                .memoryBarrierCount = static_cast<u32>(memory_barriers.size()),
                 .pMemoryBarriers = memory_barriers2.data(),
-                .bufferMemoryBarrierCount = buffer_barriers.size(),
+                .bufferMemoryBarrierCount = static_cast<u32>(buffer_barriers.size()),
                 .pBufferMemoryBarriers = buffer_barriers2.data(),
-                .imageMemoryBarrierCount = image_barriers.size(),
+                .imageMemoryBarrierCount = valid_image_barriers2,
                 .pImageMemoryBarriers = image_barriers2.data(),
             };
             dld->vkCmdPipelineBarrier2(handle, &dependency_info);

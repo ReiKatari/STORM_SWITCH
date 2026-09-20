@@ -135,11 +135,13 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                 if (powerManager != null) {
                     if (thermalListener == null) {
                         val listener = PowerManager.OnThermalStatusChangedListener { status ->
-                            val shouldThrottle = status >= PowerManager.THERMAL_STATUS_SEVERE
+                            // Proactive Multi-stage Thermal Shield:
+                            // Moderate warning (status >= 2) activates protective eco governor before severe throttling (status >= 3)
+                            val shouldThrottle = status >= PowerManager.THERMAL_STATUS_MODERATE
                             if (shouldThrottle != isThermalThrottled) {
                                 isThermalThrottled = shouldThrottle
                                 NativeLibrary.setThermalThrottle(shouldThrottle)
-                                Log.info("[ThermalMonitor] System thermal status changed: status=$status, throttle=$shouldThrottle")
+                                Log.info("[ThermalMonitor] Proactive thermal status changed: status=$status, throttle=$shouldThrottle")
                             }
                         }
                         powerManager.addThermalStatusListener(listener)
@@ -172,23 +174,24 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                         }
                     }
 
-                    // Throttle only if battery exceeds 46°C (real chassis overheat) or SoC junction exceeds 85°C
-                    // Deactivate when battery drops below 42°C and SoC junction drops below 75°C
+                    // Proactive Multi-stage Thermal Shield:
+                    // Trigger proactive mitigation at 42°C (battery) / 78°C (SoC) before severe OS emergency drops
+                    // Deactivate when chassis cools to 39°C / 72°C
                     val shouldThrottle = if (isThermalThrottled) {
-                        (batteryTempC >= 42 && batteryTempC > 0) || maxSocTemp >= 75
+                        (batteryTempC >= 39 && batteryTempC > 0) || maxSocTemp >= 72
                     } else {
-                        (batteryTempC >= 46 && batteryTempC > 0) || maxSocTemp >= 85
+                        (batteryTempC >= 42 && batteryTempC > 0) || maxSocTemp >= 78
                     }
 
                     if (shouldThrottle != isThermalThrottled) {
                         isThermalThrottled = shouldThrottle
                         NativeLibrary.setThermalThrottle(shouldThrottle)
-                        Log.info("[ThermalMonitor] Thermal throttle ${if (shouldThrottle) "ACTIVATED" else "DEACTIVATED"} (battery=${batteryTempC}°C, maxSoc=${maxSocTemp}°C)")
+                        Log.info("[ThermalMonitor] Proactive thermal throttle ${if (shouldThrottle) "ACTIVATED" else "DEACTIVATED"} (battery=${batteryTempC}°C, maxSoc=${maxSocTemp}°C)")
                     }
                 } catch (_: Exception) {
                     // Thermal reading not available on all devices
                 }
-                delay(5000)
+                delay(4000)
             }
         }
     }

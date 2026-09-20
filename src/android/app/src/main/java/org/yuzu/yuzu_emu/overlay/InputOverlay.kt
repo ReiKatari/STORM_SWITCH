@@ -53,9 +53,9 @@ import org.yuzu.yuzu_emu.utils.NativeConfig
 class InputOverlay(context: Context, attrs: AttributeSet?) :
     View(context, attrs),
     OnTouchListener {
-    private val overlayButtons: MutableSet<InputOverlayDrawableButton> = HashSet()
-    private val overlayDpads: MutableSet<InputOverlayDrawableDpad> = HashSet()
-    private val overlayJoysticks: MutableSet<InputOverlayDrawableJoystick> = HashSet()
+    private val overlayButtons: ArrayList<InputOverlayDrawableButton> = ArrayList()
+    private val overlayDpads: ArrayList<InputOverlayDrawableDpad> = ArrayList()
+    private val overlayJoysticks: ArrayList<InputOverlayDrawableJoystick> = ArrayList()
     private val imeEditable = Editable.Factory.getInstance().newEditable("")
 
     private var inEditMode = false
@@ -173,14 +173,17 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             drawGrid(canvas)
         }
 
-        for (button in overlayButtons) {
-            button.draw(canvas)
+        val buttonCount = overlayButtons.size
+        for (i in 0 until buttonCount) {
+            overlayButtons[i].draw(canvas)
         }
-        for (dpad in overlayDpads) {
-            dpad.draw(canvas)
+        val dpadCount = overlayDpads.size
+        for (i in 0 until dpadCount) {
+            overlayDpads[i].draw(canvas)
         }
-        for (joystick in overlayJoysticks) {
-            joystick.draw(canvas)
+        val joystickCount = overlayJoysticks.size
+        for (i in 0 until joystickCount) {
+            overlayJoysticks[i].draw(canvas)
         }
     }
 
@@ -238,7 +241,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             else -> 0
         }
 
-        for (button in overlayButtons) {
+        val buttonCount = overlayButtons.size
+        for (i in 0 until buttonCount) {
+            val button = overlayButtons[i]
             if (!button.updateStatus(event)) {
                 continue
             }
@@ -251,7 +256,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             shouldUpdateView = true
         }
 
-        for (dpad in overlayDpads) {
+        val dpadCount = overlayDpads.size
+        for (i in 0 until dpadCount) {
+            val dpad = overlayDpads[i]
             if (!dpad.updateStatus(event, BooleanSetting.DPAD_SLIDE.getBoolean())) {
                 continue
             }
@@ -282,7 +289,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         val pointerIndex = event.actionIndex
         val pointerId = event.getPointerId(pointerIndex)
 
-        for (joystick in overlayJoysticks) {
+        val joystickCount = overlayJoysticks.size
+        for (i in 0 until joystickCount) {
+            val joystick = overlayJoysticks[i]
             // If this touch was already claimed by a button or dpad, do not pass ACTION_DOWN to the joystick
             if (isButtonOrDpadTracking(pointerId) && joystick.trackId != pointerId) {
                 continue
@@ -358,13 +367,15 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
     }
 
     private fun isButtonOrDpadTracking(track_id: Int): Boolean {
-        for (button in overlayButtons) {
-            if (button.trackId == track_id) {
+        val buttonCount = overlayButtons.size
+        for (i in 0 until buttonCount) {
+            if (overlayButtons[i].trackId == track_id) {
                 return true
             }
         }
-        for (dpad in overlayDpads) {
-            if (dpad.trackId == track_id) {
+        val dpadCount = overlayDpads.size
+        for (i in 0 until dpadCount) {
+            if (overlayDpads[i].trackId == track_id) {
                 return true
             }
         }
@@ -372,18 +383,21 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
     }
 
     private fun isTouchInputConsumed(track_id: Int): Boolean {
-        for (button in overlayButtons) {
-            if (button.trackId == track_id) {
+        val buttonCount = overlayButtons.size
+        for (i in 0 until buttonCount) {
+            if (overlayButtons[i].trackId == track_id) {
                 return true
             }
         }
-        for (dpad in overlayDpads) {
-            if (dpad.trackId == track_id) {
+        val dpadCount = overlayDpads.size
+        for (i in 0 until dpadCount) {
+            if (overlayDpads[i].trackId == track_id) {
                 return true
             }
         }
-        for (joystick in overlayJoysticks) {
-            if (joystick.trackId == track_id) {
+        val joystickCount = overlayJoysticks.size
+        for (i in 0 until joystickCount) {
+            if (overlayJoysticks[i].trackId == track_id) {
                 return true
             }
         }
@@ -832,14 +846,19 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
 
     fun setLiveOpacity(opacityPercent: Int) {
         val baseOpacity = opacityPercent * 255f / 100f
-        for (button in overlayButtons) {
+        val buttonCount = overlayButtons.size
+        for (i in 0 until buttonCount) {
+            val button = overlayButtons[i]
             val indOpacity = button.overlayControlData.individualOpacity.coerceIn(0f, 1f)
             button.setOpacity((baseOpacity * indOpacity).toInt().coerceIn(0, 255))
         }
-        for (dpad in overlayDpads) {
-            dpad.setOpacity(baseOpacity.toInt().coerceIn(0, 255))
+        val dpadCount = overlayDpads.size
+        for (i in 0 until dpadCount) {
+            overlayDpads[i].setOpacity(baseOpacity.toInt().coerceIn(0, 255))
         }
-        for (joystick in overlayJoysticks) {
+        val joystickCount = overlayJoysticks.size
+        for (i in 0 until joystickCount) {
+            val joystick = overlayJoysticks[i]
             val indOpacity = joystick.individualOpacity.coerceIn(0f, 1f)
             joystick.setOpacity((baseOpacity * indOpacity).toInt().coerceIn(0, 255))
         }

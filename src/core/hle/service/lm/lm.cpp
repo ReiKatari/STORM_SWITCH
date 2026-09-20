@@ -52,7 +52,7 @@ struct hash<Service::LM::LogPacketHeaderEntry> {
 
 namespace Service::LM {
 namespace {
-std::string_view NameOf(LogSeverity severity) {
+[[maybe_unused]] std::string_view NameOf(LogSeverity severity) {
     switch (severity) {
     case LogSeverity::Trace:
         return "TRACE";
