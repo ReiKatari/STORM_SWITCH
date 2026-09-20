@@ -589,7 +589,7 @@ FN_MAX_LIMIT_LIST
 
     /// Returns true if VK_EXT_swapchain_maintenance1 is enabled.
     bool IsExtSwapchainMaintenance1Supported() const {
-        return extensions.swapchain_maintenance_1;
+        return false;
     }
 
     /// Returns true if VK_KHR_shader_float_controls is enabled.

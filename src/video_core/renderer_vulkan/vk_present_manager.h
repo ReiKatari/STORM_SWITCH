@@ -77,8 +77,6 @@ private:
 
     void SetImageCount();
 
-    void PaceFrame();
-
 private:
     const vk::Instance& instance;
     Core::Frontend::EmuWindow& render_window;
@@ -101,9 +99,6 @@ private:
     bool storage_supported;
     bool use_present_thread;
     std::size_t image_count{};
-
-    std::chrono::steady_clock::time_point last_present_time{};
-    std::chrono::steady_clock::time_point next_present_target{};
 };
 
 } // namespace Vulkan

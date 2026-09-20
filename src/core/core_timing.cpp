@@ -86,7 +86,7 @@ void CoreTiming::Initialize(std::function<void()>&& on_thread_init_) {
                     if (auto const next_time = Advance(); next_time) {
                         // There are more events left in the queue, wait until the next event.
                         auto const wait_time = *next_time - GetGlobalTimeNs().count();
-                        if (wait_time > 50'000) {
+                        if (wait_time > 0) {
                             event.WaitFor(std::chrono::nanoseconds(wait_time));
                         }
                     } else {
@@ -258,10 +258,7 @@ std::optional<s64> CoreTiming::Advance() {
     std::scoped_lock lock{advance_lock, basic_lock};
     global_timer = GetGlobalTimeNs().count();
 
-    // Timer Coalescing: Batch events scheduled within a 50us micro-window
-    // to avoid waking up the CPU core multiple times in rapid succession.
-    constexpr s64 COALESCE_WINDOW_NS = 50'000;
-    while (!event_queue.empty() && event_queue.top().time <= (global_timer + COALESCE_WINDOW_NS)) {
+    while (!event_queue.empty() && event_queue.top().time <= global_timer) {
         const Event& evt = event_queue.top();
 
         if (const auto event_type{evt.type.lock()}) {

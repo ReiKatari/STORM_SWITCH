@@ -348,9 +348,6 @@ void PresentManager::PresentThread(std::stop_token token) {
             // lock in WaitPresent is guaranteed to occur after here.
             std::exchange(lock, std::unique_lock{swapchain_mutex});
 
-            // Smart Frame Pacer: smooth out frametime jitter via micro-buffering (±0.5ms tolerance)
-            PaceFrame();
-
             CopyToSwapchain(frame);
 
             // Free the frame for reuse
@@ -359,42 +356,6 @@ void PresentManager::PresentThread(std::stop_token token) {
             free_cv.notify_one();
         }
     }
-}
-
-void PresentManager::PaceFrame() {
-    if (!Settings::values.use_speed_limit.GetValue() ||
-        Settings::values.current_speed_mode.GetValue() == Settings::SpeedMode::Turbo) {
-        last_present_time = std::chrono::steady_clock::now();
-        next_present_target = last_present_time;
-        return;
-    }
-
-    const auto now = std::chrono::steady_clock::now();
-    if (next_present_target.time_since_epoch().count() == 0) {
-        last_present_time = now;
-        next_present_target = now;
-        return;
-    }
-
-    const u16 speed_limit = Settings::values.speed_limit.GetValue();
-    const u64 target_interval_ns = (1'000'000'000ULL * 100ULL) / (60ULL * (std::max<u64>)(speed_limit, 1));
-    const auto frame_duration = std::chrono::nanoseconds(target_interval_ns);
-
-    // Micro-buffering tolerance: 500 microseconds (0.5 ms)
-    constexpr auto micro_tolerance = std::chrono::microseconds(500);
-
-    next_present_target += frame_duration;
-
-    // If we have fallen behind significantly (e.g. game stutter > 1.5 frame periods), resync target
-    if (now > next_present_target + frame_duration / 2) {
-        next_present_target = now;
-    } else if (next_present_target > now + micro_tolerance) {
-        // We are ahead of cadence. Wait until within tolerance to present at exact interval.
-        const auto sleep_until = next_present_target - micro_tolerance;
-        std::this_thread::sleep_until(sleep_until);
-    }
-
-    last_present_time = std::chrono::steady_clock::now();
 }
 
 void PresentManager::RecreateSwapchain(Frame* frame) {

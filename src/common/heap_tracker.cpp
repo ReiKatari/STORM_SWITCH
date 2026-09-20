@@ -60,7 +60,6 @@ void HeapTracker::Map(size_t virtual_offset, size_t host_offset, size_t length,
         // Insert into mappings.
         m_map_count++;
         m_mappings.insert(*map);
-        this->CoalesceHeapMapLocked(virtual_offset);
     }
 
     // Finally, map.
@@ -159,12 +158,6 @@ void HeapTracker::Protect(size_t virtual_offset, size_t size, MemoryPermission p
         // Advance.
         cur = next;
     }
-
-    {
-        std::scoped_lock lk2{m_lock};
-        this->CoalesceHeapMapLocked(virtual_offset);
-        this->CoalesceHeapMapLocked(virtual_offset + size);
-    }
 }
 
 bool HeapTracker::DeferredMapSeparateHeap(u8* fault_address) {
@@ -202,8 +195,6 @@ bool HeapTracker::DeferredMapSeparateHeap(size_t virtual_offset) {
         it->is_resident = true;
         m_resident_map_count++;
         m_resident_mappings.insert(*it);
-
-        this->CoalesceHeapMapLocked(it->vaddr);
     }
 
     if (rebuild_required) {
@@ -219,9 +210,13 @@ void HeapTracker::RebuildSeparateHeapAddressSpace() {
 
     ASSERT(!m_resident_mappings.empty());
 
-    // Evict only a small 10% slice of the oldest resident mappings instead of a catastrophic 50% dump.
-    // This prevents frequent SIGSEGV page fault thrashing and expensive user/kernel context switches.
-    std::size_t const evict_count = std::max<std::size_t>(m_resident_map_count / 10, 1);
+    // Dump half of the mappings.
+    //
+    // Despite being worse in theory, this has proven to be better in practice than more
+    // regularly dumping a smaller amount, because it significantly reduces average case
+    // lock contention.
+    std::size_t const desired_count = (std::min)(m_resident_map_count, m_max_resident_map_count) / 2;
+    std::size_t const evict_count = m_resident_map_count - desired_count;
     auto it = m_resident_mappings.begin();
 
     for (size_t i = 0; i < evict_count && it != m_resident_mappings.end(); i++) {
@@ -275,67 +270,6 @@ void HeapTracker::SplitHeapMapLocked(VAddr offset) {
     if (right->is_resident) {
         m_resident_map_count++;
         m_resident_mappings.insert(*right);
-    }
-}
-
-void HeapTracker::CoalesceHeapMapLocked(VAddr offset) {
-    auto it = this->GetNearestHeapMapLocked(offset);
-    if (it == m_mappings.end()) {
-        return;
-    }
-
-    // Try coalescing with previous adjacent mapping
-    if (it != m_mappings.begin()) {
-        auto prev = std::prev(it);
-        if (prev->vaddr + prev->size == it->vaddr &&
-            prev->paddr + prev->size == it->paddr &&
-            prev->perm == it->perm &&
-            prev->is_resident == it->is_resident) {
-            auto* const prev_item = std::addressof(*prev);
-            auto* const cur_item = std::addressof(*it);
-
-            const size_t combined_size = prev_item->size + cur_item->size;
-
-            if (cur_item->is_resident) {
-                m_resident_mappings.erase(m_resident_mappings.iterator_to(*cur_item));
-                --m_resident_map_count;
-            }
-            m_mappings.erase(m_mappings.iterator_to(*cur_item));
-            --m_map_count;
-            delete cur_item;
-
-            m_mappings.erase(m_mappings.iterator_to(*prev_item));
-            prev_item->size = combined_size;
-            m_mappings.insert(*prev_item);
-
-            it = m_mappings.iterator_to(*prev_item);
-        }
-    }
-
-    // Try coalescing with next adjacent mapping
-    auto next = std::next(it);
-    if (next != m_mappings.end()) {
-        if (it->vaddr + it->size == next->vaddr &&
-            it->paddr + it->size == next->paddr &&
-            it->perm == next->perm &&
-            it->is_resident == next->is_resident) {
-            auto* const cur_item = std::addressof(*it);
-            auto* const next_item = std::addressof(*next);
-
-            const size_t combined_size = cur_item->size + next_item->size;
-
-            if (next_item->is_resident) {
-                m_resident_mappings.erase(m_resident_mappings.iterator_to(*next_item));
-                --m_resident_map_count;
-            }
-            m_mappings.erase(m_mappings.iterator_to(*next_item));
-            --m_map_count;
-            delete next_item;
-
-            m_mappings.erase(m_mappings.iterator_to(*cur_item));
-            cur_item->size = combined_size;
-            m_mappings.insert(*cur_item);
-        }
     }
 }
 

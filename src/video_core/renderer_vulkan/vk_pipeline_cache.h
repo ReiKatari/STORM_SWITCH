@@ -166,7 +166,6 @@ private:
     mutable std::mutex cache_mutex;
     ankerl::unordered_dense::map<ComputePipelineCacheKey, std::unique_ptr<ComputePipeline>> compute_cache;
     ankerl::unordered_dense::map<GraphicsPipelineCacheKey, std::unique_ptr<GraphicsPipeline>> graphics_cache;
-    ankerl::unordered_dense::set<GraphicsPipelineCacheKey> in_flight_pipelines;
 
     ShaderPools main_pools;
 

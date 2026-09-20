@@ -295,10 +295,10 @@ GraphicsEnvironment::GraphicsEnvironment(Tegra::Engines::Maxwell3D& maxwell3d_,
                                          Tegra::MemoryManager& gpu_memory_,
                                          Maxwell::ShaderType program, GPUVAddr program_base_,
                                          u32 start_address_)
-    : GenericEnvironment{gpu_memory_, program_base_, start_address_} {
+    : GenericEnvironment{gpu_memory_, program_base_, start_address_}, maxwell3d{&maxwell3d_} {
     gpu_memory->ReadBlock(program_base + start_address, &sph, sizeof(sph));
     initial_offset = sizeof(sph);
-    gp_passthrough_mask = maxwell3d_.regs.post_vtg_shader_attrib_skip_mask;
+    gp_passthrough_mask = maxwell3d->regs.post_vtg_shader_attrib_skip_mask;
     switch (program) {
     case Maxwell::ShaderType::VertexA:
         stage = Shader::Stage::VertexA;
@@ -333,21 +333,14 @@ GraphicsEnvironment::GraphicsEnvironment(Tegra::Engines::Maxwell3D& maxwell3d_,
     const u64 max_allowed_local = static_cast<u64>((std::numeric_limits<u32>::max)()) - crs_size;
     const u64 clamped_local_size = std::min<u64>(local_size, max_allowed_local);
     local_memory_size = static_cast<u32>(clamped_local_size) + static_cast<u32>(crs_size);
-    texture_bound = maxwell3d_.regs.bindless_texture_const_buffer_slot;
+    texture_bound = maxwell3d->regs.bindless_texture_const_buffer_slot;
     is_proprietary_driver = texture_bound == 2;
     has_hle_engine_state =
-        maxwell3d_.engine_state == Tegra::Engines::Maxwell3D::EngineHint::OnHLEMacro;
-
-    const_buffers = maxwell3d_.state.shader_stages[stage_index].const_buffers;
-    tex_header_addr = maxwell3d_.regs.tex_header.Address();
-    tex_header_limit = maxwell3d_.regs.tex_header.limit;
-    via_header_index = maxwell3d_.regs.sampler_binding == Maxwell::SamplerBinding::ViaHeaderBinding;
-    viewport_transform_state = maxwell3d_.regs.viewport_scale_offset_enabled;
-    replace_table = maxwell3d_.replace_table;
+        maxwell3d->engine_state == Tegra::Engines::Maxwell3D::EngineHint::OnHLEMacro;
 }
 
 u32 GraphicsEnvironment::ReadCbufValue(u32 cbuf_index, u32 cbuf_offset) {
-    const auto& cbuf{const_buffers[cbuf_index]};
+    const auto& cbuf{maxwell3d->state.shader_stages[stage_index].const_buffers[cbuf_index]};
     ASSERT(cbuf.enabled);
     u32 value{};
     if (cbuf_offset < cbuf.size) {
@@ -363,8 +356,8 @@ std::optional<Shader::ReplaceConstant> GraphicsEnvironment::GetReplaceConstBuffe
         return std::nullopt;
     }
     const u64 key = (static_cast<u64>(bank) << 32) | static_cast<u64>(offset);
-    auto it = replace_table.find(key);
-    if (it == replace_table.end()) {
+    auto it = maxwell3d->replace_table.find(key);
+    if (it == maxwell3d->replace_table.end()) {
         return std::nullopt;
     }
     const auto converted_value = [](Tegra::Engines::Maxwell3D::HLEReplacementAttributeType name) {
@@ -384,14 +377,20 @@ std::optional<Shader::ReplaceConstant> GraphicsEnvironment::GetReplaceConstBuffe
 }
 
 Shader::TextureType GraphicsEnvironment::ReadTextureType(u32 handle) {
-    auto entry = ReadTextureInfo(tex_header_addr, tex_header_limit, via_header_index, handle);
+    const auto& regs{maxwell3d->regs};
+    const bool via_header_index{regs.sampler_binding == Maxwell::SamplerBinding::ViaHeaderBinding};
+    auto entry =
+        ReadTextureInfo(regs.tex_header.Address(), regs.tex_header.limit, via_header_index, handle);
     const Shader::TextureType result{ConvertTextureType(entry)};
     texture_types.emplace(handle, result);
     return result;
 }
 
 Shader::TexturePixelFormat GraphicsEnvironment::ReadTexturePixelFormat(u32 handle) {
-    auto entry = ReadTextureInfo(tex_header_addr, tex_header_limit, via_header_index, handle);
+    const auto& regs{maxwell3d->regs};
+    const bool via_header_index{regs.sampler_binding == Maxwell::SamplerBinding::ViaHeaderBinding};
+    auto entry =
+        ReadTextureInfo(regs.tex_header.Address(), regs.tex_header.limit, via_header_index, handle);
     const Shader::TexturePixelFormat result(ConvertTexturePixelFormat(entry));
     texture_pixel_formats.emplace(handle, result);
     return result;
@@ -403,6 +402,8 @@ bool GraphicsEnvironment::IsTexturePixelFormatInteger(u32 handle) {
 }
 
 u32 GraphicsEnvironment::ReadViewportTransformState() {
+    const auto& regs{maxwell3d->regs};
+    viewport_transform_state = regs.viewport_scale_offset_enabled;
     return viewport_transform_state;
 }
 

@@ -37,12 +37,6 @@ public:
 
     ~GenericEnvironment() override;
 
-    GenericEnvironment& operator=(GenericEnvironment&&) noexcept = default;
-    GenericEnvironment(GenericEnvironment&&) noexcept = default;
-
-    GenericEnvironment& operator=(const GenericEnvironment&) = default;
-    GenericEnvironment(const GenericEnvironment&) = default;
-
     [[nodiscard]] u32 TextureBoundBuffer() const final;
 
     [[nodiscard]] u32 LocalMemorySize() const final;
@@ -118,12 +112,6 @@ public:
 
     ~GraphicsEnvironment() override = default;
 
-    GraphicsEnvironment& operator=(GraphicsEnvironment&&) noexcept = default;
-    GraphicsEnvironment(GraphicsEnvironment&&) noexcept = default;
-
-    GraphicsEnvironment& operator=(const GraphicsEnvironment&) = default;
-    GraphicsEnvironment(const GraphicsEnvironment&) = default;
-
     u32 ReadCbufValue(u32 cbuf_index, u32 cbuf_offset) override;
 
     Shader::TextureType ReadTextureType(u32 handle) override;
@@ -137,11 +125,7 @@ public:
     std::optional<Shader::ReplaceConstant> GetReplaceConstBuffer(u32 bank, u32 offset) override;
 
 private:
-    std::array<Tegra::Engines::ConstBufferInfo, Tegra::Engines::Maxwell3D::Regs::MaxConstBuffers> const_buffers{};
-    ankerl::unordered_dense::map<u64, Tegra::Engines::Maxwell3D::HLEReplacementAttributeType> replace_table;
-    GPUVAddr tex_header_addr{};
-    u32 tex_header_limit{};
-    bool via_header_index{};
+    Tegra::Engines::Maxwell3D* maxwell3d{};
     size_t stage_index{};
 };
 
