@@ -321,6 +321,52 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData2(
     R_SUCCEED();
 }
 
+void IReadOnlyApplicationControlDataInterface::ListApplicationIcon(HLERequestContext& ctx) {
+    LOG_WARNING(Service_NS, "(stubbed)");
+    const auto app_ids_buffer = ctx.ReadBuffer();
+    const u64 app_count = app_ids_buffer.size() / sizeof(u64);
+    auto t_mem_obj = ctx.GetObjectFromHandle<Kernel::KTransferMemory>(ctx.GetCopyHandle(0));
+    auto* t_mem = t_mem_obj.GetPointerUnsafe();
+    size_t out_length = 0;
+    if (t_mem != nullptr && t_mem->GetOwner() != nullptr && app_count > 0) {
+        auto& memory = t_mem->GetOwner()->GetMemory();
+        const auto t_mem_address = t_mem->GetSourceAddress();
+        // u64 - app count
+        memory.WriteBlock(t_mem_address + out_length, &app_count, sizeof(u64));
+        out_length += sizeof(u64);
+        ASSERT(out_length <= t_mem->GetSize());
+        // [list of u64] - size of icons
+        for (size_t i = 0; i < app_count; ++i) {
+            const u64 app_id = app_ids_buffer[i];
+            const FileSys::PatchManager pm{app_id, system.GetFileSystemController(), system.GetContentProvider()};
+            if (const auto control = pm.GetControlMetadata(); control.second) {
+                u64 full_size = control.second->GetSize();
+                memory.WriteBlock(t_mem_address + out_length, &full_size, sizeof(u64));
+            }
+            out_length += sizeof(u64);
+            ASSERT(out_length <= t_mem->GetSize());
+        }
+        // [list of raw icon data]
+        for (size_t i = 0; i < app_count; ++i) {
+            const u64 app_id = app_ids_buffer[i];
+            const FileSys::PatchManager pm{app_id, system.GetFileSystemController(), system.GetContentProvider()};
+            if (const auto control = pm.GetControlMetadata(); control.second) {
+                if (auto const full_size = control.second->GetSize(); full_size > 0) {
+                    std::vector<u8> full_icon_data(full_size);
+                    control.second->Read(full_icon_data.data(), full_size, 0);
+                    memory.WriteBlock(t_mem_address + out_length, full_icon_data.data(), full_size);
+                    out_length += full_size;
+                    ASSERT(out_length <= t_mem->GetSize());
+                }
+            }
+        }
+    }
+    auto async_value = std::make_shared<IAsyncValue>(system, 0, s32(out_length));
+    IPC::ResponseBuilder rb{ctx, 2, 1, 1};
+    rb.Push(ResultSuccess);
+    rb.PushCopyObjects(ctx, async_value->ReadableEvent());
+    rb.PushIpcInterface(ctx, std::move(async_value));
+}
 
 void IReadOnlyApplicationControlDataInterface::ListApplicationTitle(HLERequestContext& ctx) {
     /*
