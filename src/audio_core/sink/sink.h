@@ -96,6 +96,8 @@ public:
     }
 
 protected:
+    /// Master volume, persists stream lifetimes
+    f32 device_volume{1.0f};
     /// Number of device channels supported by the hardware
     u32 device_channels{2};
     /// Number of channels the game is sending

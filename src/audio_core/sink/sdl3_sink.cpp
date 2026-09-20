@@ -28,10 +28,14 @@ namespace {
         //
         // Keep in sync with cubeb_sink.cpp name.
         SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", "yuzu Latency Getter");
-#if defined(__ANDROID__)
-        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "aaudio,opensles");
-#endif
+#ifdef __ANDROID__
+        SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, "openslES", SDL_HINT_OVERRIDE);
         if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+            LOG_WARNING(Audio_Sink, "OpenSL ES audio initialization failed: {}; retrying default drivers", SDL_GetError());
+            SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
+        }
+#endif
+        if (!SDL_WasInit(SDL_INIT_AUDIO) && !SDL_InitSubSystem(SDL_INIT_AUDIO)) {
             LOG_CRITICAL(Audio_Sink, "SDL_InitSubSystem audio failed: {}", SDL_GetError());
             return false;
         }
@@ -108,6 +112,21 @@ public:
 
         stream = SDL_OpenAudioDeviceStream(audio_device, &spec, &SDLSinkStream::DataCallback,
                                            this);
+
+#if defined(__ANDROID__)
+        if (stream == nullptr) {
+            LOG_WARNING(Audio_Sink, "Failed to open SDL audio device stream with {}: {}. Retrying fallback driver...",
+                        SDL_GetCurrentAudioDriver() ? SDL_GetCurrentAudioDriver() : "unknown", SDL_GetError());
+            const char* current_drv = SDL_GetCurrentAudioDriver();
+            const char* fallback_drv = (current_drv && std::string_view(current_drv) == "openslES") ? "aaudio" : "openslES";
+            SDL_QuitSubSystem(SDL_INIT_AUDIO);
+            SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, fallback_drv, SDL_HINT_OVERRIDE);
+            if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+                stream = SDL_OpenAudioDeviceStream(audio_device, &spec, &SDLSinkStream::DataCallback, this);
+                LOG_INFO(Audio_Sink, "Audio fallback to {} {}", fallback_drv, stream ? "succeeded" : "failed");
+            }
+        }
+#endif
 
         if (stream == nullptr) {
             LOG_CRITICAL(Audio_Sink, "Error opening SDL audio device: {}", SDL_GetError());
@@ -257,6 +276,7 @@ SinkStream* SDLSink::AcquireSinkStream(Core::System& system, u32 system_channels
     system_channels = system_channels_;
     SinkStreamPtr& stream = sink_streams.emplace_back(std::make_unique<SDLSinkStream>(
         device_channels, system_channels, output_device, input_device, type, system));
+    stream->SetDeviceVolume(device_volume);
     return stream.get();
 }
 
@@ -275,14 +295,11 @@ void SDLSink::CloseStreams() {
 }
 
 f32 SDLSink::GetDeviceVolume() const {
-    if (sink_streams.empty()) {
-        return 1.0f;
-    }
-
-    return sink_streams[0]->GetDeviceVolume();
+    return device_volume;
 }
 
 void SDLSink::SetDeviceVolume(f32 volume) {
+    device_volume = volume;
     for (auto& stream : sink_streams) {
         stream->SetDeviceVolume(volume);
     }
