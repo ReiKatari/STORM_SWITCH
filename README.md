@@ -10,7 +10,7 @@ STORM SWITCH является высокопроизводительным фо�
 - **Языки программирования**: C++20, C, Kotlin, Java, CMake
 - **Графический стек**: Vulkan 1.3, Turnip/Adreno Custom Extensions, Spirv-Cross, Shader Recompiler
 - **Компиляция кода**: Dynarmic (ARM64 JIT Recompiler), Native Code Execution (NCE) для Android ARM64
-- **Аудио**: Cubeb, Oboe Audio, OpenSL ES
+- **Аудио**: Cubeb, SDL3 Audio, OpenSL ES
 - **Декомпрессия и форматы**: Zstandard (NSZ/NCZ/XCZ streaming decompressor), hactool, liblz4
 - **Пользовательский интерфейс**: Qt6 (Windows), Jetpack Compose / Android Native UI (Android)
 
@@ -30,8 +30,8 @@ STORM SWITCH является высокопроизводительным фо�
 
 ## **Установка и запуск**
 1. Перейдите в раздел **Releases** репозитория на GitHub.
-2. Для Android: скачайте и установите APK-файл `STORM_SWITCH_9.0.6.apk`, `STORM_SWITCH_9.0.6_LEGACY.apk` или `STORM_SWITCH_9.0.6_SDK27.apk`.
-3. Для Windows: скачайте архив `STORM_SWITCH_9.0.6_Windows11.zip` (для Windows 11) или `STORM_SWITCH_9.0.6_Windows10.zip` (универсальный, с библиотеками среды выполнения MSVC CRT).
+2. Для Android: скачайте и установите APK-файл `STORM_SWITCH_9.0.7.apk`, `STORM_SWITCH_9.0.7_LEGACY.apk` или `STORM_SWITCH_9.0.7_SDK27.apk`.
+3. Для Windows: скачайте архив `STORM_SWITCH_9.0.7_Windows11.zip` (для Windows 11) или `STORM_SWITCH_9.0.7_Windows10.zip` (универсальный, с библиотеками среды выполнения MSVC CRT).
 4. Установите системные ключи (`prod.keys`) и актуальную прошивку Nintendo Switch (Firmware) через меню настроек эмулятора.
 
 ## **Благодарности**
