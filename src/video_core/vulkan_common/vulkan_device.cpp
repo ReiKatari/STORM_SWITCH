@@ -672,7 +672,9 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     if (is_amd_driver || is_nvidia) {
         // AMD/NVIDIA drivers benefit from a higher amount of Sets per Pool in heavy titles.
         sets_per_pool = 512;
+    }
 
+    if (is_amd_driver) {
         // Disable VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT on AMD GCN4 and lower as it is broken.
         if (!features.shader_float16_int8.shaderFloat16) {
             LOG_WARNING(Render_Vulkan,

@@ -101,7 +101,7 @@ StagingBufferPool::StagingBufferPool(const Device& device_, MemoryAllocator& mem
 StagingBufferPool::~StagingBufferPool() = default;
 
 StagingBufferRef StagingBufferPool::Request(size_t size, MemoryUsage usage, bool deferred) {
-    if (!deferred && usage == MemoryUsage::Upload && size <= (region_size * 4)) {
+    if (!deferred && usage == MemoryUsage::Upload && size <= region_size) {
         return GetStreamBuffer(size);
     }
     return GetStagingBuffer(size, usage, deferred);
@@ -187,8 +187,11 @@ std::optional<StagingBufferRef> StagingBufferPool::TryGetReservedBuffer(size_t s
         return !entry.deferred && scheduler.IsFree(entry.tick);
     };
     auto& entries = cache_level.entries;
+    if (cache_level.iterate_index >= entries.size()) {
+        cache_level.iterate_index = 0;
+    }
     const auto hint_it = entries.begin() + cache_level.iterate_index;
-    auto it = std::find_if(entries.begin() + cache_level.iterate_index, entries.end(), is_free);
+    auto it = std::find_if(hint_it, entries.end(), is_free);
     if (it == entries.end()) {
         it = std::find_if(entries.begin(), hint_it, is_free);
         if (it == hint_it) {
@@ -268,6 +271,14 @@ void StagingBufferPool::ReleaseLevel(StagingBuffersCache& cache, size_t log2) {
     auto& staging = cache[log2];
     auto& entries = staging.entries;
     const size_t old_size = entries.size();
+    if (old_size == 0) {
+        staging.delete_index = 0;
+        staging.iterate_index = 0;
+        return;
+    }
+    if (staging.delete_index >= old_size) {
+        staging.delete_index = 0;
+    }
 
     const auto is_deletable = [this](const StagingBuffer& entry) {
         return scheduler.IsFree(entry.tick);
