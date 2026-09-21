@@ -81,7 +81,6 @@ public:
                        OutCopyHandle<Kernel::KReadableEvent> out_event,
                        u64 arg1, u64 arg2);
     Result Unknown4053();
-    Result Unknown4105();
 
     Result RequestDownloadApplicationControlDataInBackground(u64 control_source,
                                                              u64 application_id);

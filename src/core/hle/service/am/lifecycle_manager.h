@@ -92,13 +92,6 @@ public:
         }
     }
 
-    void RequestFocusStateChangedNotification(Kernel::KernelCore& kernel) {
-        if (m_focus_state_changed_notification_enabled) {
-            m_has_focus_state_changed = true;
-            this->SignalSystemEventIfNeeded(kernel);
-        }
-    }
-
     void OnOperationAndPerformanceModeChanged(Kernel::KernelCore& kernel);
 
 public:

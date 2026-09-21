@@ -228,15 +228,6 @@ private:
 
             const std::size_t samples_to_render = num_frames * frame_size;
             std::vector<s16> output(samples_to_render);
-
-            // Audio DSP Deep Sleep: if emulation is paused, feed silence without DSP load
-            if (impl->system.IsPaused()) {
-                std::fill(output.begin(), output.end(), static_cast<s16>(0));
-                const int bytes_to_put = static_cast<int>(samples_to_render * sizeof(s16));
-                static_cast<void>(SDL_PutAudioStreamData(stream, output.data(), bytes_to_put));
-                return;
-            }
-
             std::span<s16> output_buffer{output.data(), samples_to_render};
             impl->ProcessAudioOutAndRender(output_buffer, num_frames);
             const int bytes_to_put = static_cast<int>(samples_to_render * sizeof(s16));
@@ -266,7 +257,6 @@ SinkStream* SDLSink::AcquireSinkStream(Core::System& system, u32 system_channels
     system_channels = system_channels_;
     SinkStreamPtr& stream = sink_streams.emplace_back(std::make_unique<SDLSinkStream>(
         device_channels, system_channels, output_device, input_device, type, system));
-    stream->SetDeviceVolume(device_volume);
     return stream.get();
 }
 
@@ -285,11 +275,14 @@ void SDLSink::CloseStreams() {
 }
 
 f32 SDLSink::GetDeviceVolume() const {
-    return device_volume;
+    if (sink_streams.empty()) {
+        return 1.0f;
+    }
+
+    return sink_streams[0]->GetDeviceVolume();
 }
 
 void SDLSink::SetDeviceVolume(f32 volume) {
-    device_volume = volume;
     for (auto& stream : sink_streams) {
         stream->SetDeviceVolume(volume);
     }

@@ -12,7 +12,6 @@
 #include "hid_core/frontend/emulated_controller.h"
 #include "hid_core/hid_core.h"
 #include "hid_core/hid_types.h"
-#include <array>
 
 namespace Core::Frontend {
 

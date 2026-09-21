@@ -29,7 +29,6 @@
 #include "core/hle/service/am/frontend/applet_web_browser.h"
 #include "core/hle/service/am/frontend/applets.h"
 #include "core/hle/service/am/service/storage.h"
-#include "core/hle/service/am/window_system.h"
 #include "core/hle/service/sm/sm.h"
 
 namespace Service::AM::Frontend {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
@@ -261,7 +261,6 @@ SinkStream* CubebSink::AcquireSinkStream(Core::System& system, u32 system_channe
     system_channels = system_channels_;
     SinkStreamPtr& stream = sink_streams.emplace_back(std::make_unique<CubebSinkStream>(
         ctx, device_channels, system_channels, output_device, input_device, name, type, system));
-    stream->SetDeviceVolume(device_volume);
 
     return stream.get();
 }
@@ -281,11 +280,14 @@ void CubebSink::CloseStreams() {
 }
 
 f32 CubebSink::GetDeviceVolume() const {
-    return device_volume;
+    if (sink_streams.empty()) {
+        return 1.0f;
+    }
+
+    return sink_streams[0]->GetDeviceVolume();
 }
 
 void CubebSink::SetDeviceVolume(f32 volume) {
-    device_volume = volume;
     for (auto& stream : sink_streams) {
         stream->SetDeviceVolume(volume);
     }

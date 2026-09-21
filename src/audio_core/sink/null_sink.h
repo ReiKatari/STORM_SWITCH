@@ -38,7 +38,6 @@ public:
                                   StreamType type) override {
         if (null_sink == nullptr) {
             null_sink = std::make_unique<NullSinkStreamImpl>(system, type);
-            null_sink->SetDeviceVolume(device_volume);
         }
         return null_sink.get();
     }
@@ -46,14 +45,9 @@ public:
     void CloseStream(SinkStream*) override {}
     void CloseStreams() override {}
     f32 GetDeviceVolume() const override {
-        return device_volume;
+        return 1.0f;
     }
-    void SetDeviceVolume(f32 volume) override {
-        device_volume = volume;
-        if (null_sink != nullptr) {
-            null_sink->SetDeviceVolume(volume);
-        }
-    }
+    void SetDeviceVolume(f32 volume) override {}
     void SetSystemVolume(f32 volume) override {}
 
 private:

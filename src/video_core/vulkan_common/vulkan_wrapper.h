@@ -485,7 +485,7 @@ protected:
 private:
     /// Destroys the held object if it exists.
     void Release() noexcept {
-        if (handle && dld && owner) {
+        if (handle) {
             Destroy(OwnerType(owner), Type(handle), *dld);
         }
     }
@@ -566,7 +566,7 @@ protected:
 private:
     /// Destroys the held object if it exists.
     void Release() noexcept {
-        if (handle && dld) {
+        if (handle) {
             Destroy(handle, *dld);
         }
     }
@@ -692,22 +692,17 @@ public:
     Image& operator=(const Image&) = delete;
 
     Image(Image&& rhs) noexcept
-        : handle{std::exchange(rhs.handle, VkImage{})}, usage{rhs.usage},
-          owner{std::exchange(rhs.owner, nullptr)},
-          allocator{std::exchange(rhs.allocator, nullptr)},
-          allocation{std::exchange(rhs.allocation, nullptr)},
-          dld{rhs.dld} {}
+        : handle{std::exchange(rhs.handle, VkImage{})}, usage{rhs.usage}, owner{rhs.owner},
+          allocator{rhs.allocator}, allocation{rhs.allocation}, dld{rhs.dld} {}
 
     Image& operator=(Image&& rhs) noexcept {
-        if (this != &rhs) {
-            Release();
-            handle = std::exchange(rhs.handle, VkImage{});
-            usage = rhs.usage;
-            owner = std::exchange(rhs.owner, nullptr);
-            allocator = std::exchange(rhs.allocator, nullptr);
-            allocation = std::exchange(rhs.allocation, nullptr);
-            dld = rhs.dld;
-        }
+        Release();
+        handle = std::exchange(rhs.handle, VkImage{});
+        usage = rhs.usage;
+        owner = rhs.owner;
+        allocator = rhs.allocator;
+        allocation = rhs.allocation;
+        dld = rhs.dld;
         return *this;
     }
 
@@ -758,24 +753,19 @@ public:
     Buffer& operator=(const Buffer&) = delete;
 
     Buffer(Buffer&& rhs) noexcept
-        : handle{std::exchange(rhs.handle, VkBuffer{})},
-          owner{std::exchange(rhs.owner, nullptr)},
-          allocator{std::exchange(rhs.allocator, nullptr)},
-          allocation{std::exchange(rhs.allocation, nullptr)},
-          mapped{std::exchange(rhs.mapped, {})},
+        : handle{std::exchange(rhs.handle, VkBuffer{})}, owner{rhs.owner}, allocator{rhs.allocator},
+          allocation{rhs.allocation}, mapped{rhs.mapped},
           is_coherent{rhs.is_coherent}, dld{rhs.dld} {}
 
     Buffer& operator=(Buffer&& rhs) noexcept {
-        if (this != &rhs) {
-            Release();
-            handle = std::exchange(rhs.handle, VkBuffer{});
-            owner = std::exchange(rhs.owner, nullptr);
-            allocator = std::exchange(rhs.allocator, nullptr);
-            allocation = std::exchange(rhs.allocation, nullptr);
-            mapped = std::exchange(rhs.mapped, {});
-            is_coherent = rhs.is_coherent;
-            dld = rhs.dld;
-        }
+        Release();
+        handle = std::exchange(rhs.handle, VkBuffer{});
+        owner = rhs.owner;
+        allocator = rhs.allocator;
+        allocation = rhs.allocation;
+        mapped = rhs.mapped;
+        is_coherent = rhs.is_coherent;
+        dld = rhs.dld;
         return *this;
     }
 

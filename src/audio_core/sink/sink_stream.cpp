@@ -219,10 +219,6 @@ void SinkStream::ProcessAudioOutAndRender(std::span<s16> output_buffer, std::siz
         const size_t frames_to_consume = static_cast<size_t>(std::ceil(static_cast<f64>(frames_available) * drift_ratio));
         const size_t actual_consume = std::min(frames_to_consume, static_cast<size_t>(playing_buffer.frames - playing_buffer.frames_played));
 
-        if (frames_available == 0 || actual_consume == 0) {
-            break;
-        }
-
         if (actual_consume == frames_available) {
             samples_buffer.Pop(&output_buffer[frames_written * frame_size], frames_available * frame_size);
         } else {

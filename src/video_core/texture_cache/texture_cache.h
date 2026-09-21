@@ -243,9 +243,7 @@ typename P::ImageView& TextureCache<P>::GetImageView(u32 index) noexcept {
 
 template <class P>
 void TextureCache<P>::MarkModification(ImageId id) noexcept {
-    if (id && slot_images.contains(id)) {
-        MarkModification(slot_images[id]);
-    }
+    MarkModification(slot_images[id]);
 }
 
 template <class P>
@@ -259,13 +257,11 @@ void TextureCache<P>::FillImageViews(std::span<ImageViewInOut> views, bool compu
         for (ImageViewInOut& view : views) {
             view.id = VisitImageView(view.index, compute);
             if (blacklist) {
-                if (view.blacklist && view.id != NULL_IMAGE_VIEW_ID && slot_image_views.contains(view.id)) {
+                if (view.blacklist && view.id != NULL_IMAGE_VIEW_ID) {
                     const ImageViewBase& image_view = slot_image_views[view.id];
-                    if (slot_images.contains(image_view.image_id)) {
-                        auto& image = slot_images[image_view.image_id];
-                        has_blacklisted |= ScaleDown(image);
-                        image.scale_rating = 0;
-                    }
+                    auto& image = slot_images[image_view.image_id];
+                    has_blacklisted |= ScaleDown(image);
+                    image.scale_rating = 0;
                 }
             }
         }
@@ -312,9 +308,6 @@ void TextureCache<P>::CheckFeedbackLoop(std::span<const ImageViewInOut> views) {
             if (depth_active && view.id == render_targets.depth_buffer_id)
                 continue;
 
-            if (!slot_image_views.contains(view.id)) {
-                continue;
-            }
             const ImageId view_image_id = slot_image_views[view.id].image_id;
             {
                 bool is_continue = false;
@@ -420,22 +413,20 @@ bool TextureCache<P>::RescaleRenderTargets() {
         bool any_rescaled = false;
         bool can_rescale = true;
         const auto check_rescale = [&](ImageViewId view_id, ImageId& id_save) {
-            if (view_id != NULL_IMAGE_VIEW_ID && view_id != ImageViewId{} && slot_image_views.contains(view_id)) {
+            if (view_id != NULL_IMAGE_VIEW_ID && view_id != ImageViewId{}) {
                 const auto& view = slot_image_views[view_id];
                 const auto image_id = view.image_id;
-                if (image_id && slot_images.contains(image_id)) {
-                    id_save = image_id;
-                    auto& image = slot_images[image_id];
-                    can_rescale &= ImageCanRescale(image);
-                    any_rescaled |= True(image.flags & ImageFlagBits::Rescaled) ||
-                                    GetFormatType(image.info.format) != SurfaceType::ColorTexture;
-                    scale_rating = std::max<u32>(scale_rating, image.scale_tick <= frame_tick
-                                                                   ? image.scale_rating + 1U
-                                                                   : image.scale_rating);
-                    return;
-                }
+                id_save = image_id;
+                auto& image = slot_images[image_id];
+                can_rescale &= ImageCanRescale(image);
+                any_rescaled |= True(image.flags & ImageFlagBits::Rescaled) ||
+                                GetFormatType(image.info.format) != SurfaceType::ColorTexture;
+                scale_rating = std::max<u32>(scale_rating, image.scale_tick <= frame_tick
+                                                               ? image.scale_rating + 1U
+                                                               : image.scale_rating);
+            } else {
+                id_save = CORRUPT_ID;
             }
-            id_save = CORRUPT_ID;
         };
         for (size_t index = 0; index < NUM_RT; ++index) {
             ImageViewId& color_buffer_id = render_targets.color_buffer_ids[index];
@@ -454,49 +445,35 @@ bool TextureCache<P>::RescaleRenderTargets() {
         if (can_rescale) {
             rescaled = any_rescaled || scale_rating >= 2;
             const auto scale_up = [this](ImageId image_id) {
-                if (image_id != CORRUPT_ID && slot_images.contains(image_id)) {
+                if (image_id != CORRUPT_ID) {
                     Image& image = slot_images[image_id];
                     ScaleUp(image);
                 }
             };
             if (rescaled) {
-                boost::container::small_vector<ImageId, NUM_RT + 1> scaled_images;
                 for (size_t index = 0; index < NUM_RT; ++index) {
-                    const ImageId id = tmp_color_images[index];
-                    if (id != CORRUPT_ID && std::ranges::find(scaled_images, id) == scaled_images.end()) {
-                        scaled_images.push_back(id);
-                        scale_up(id);
-                    }
+                    scale_up(tmp_color_images[index]);
                 }
-                if (tmp_depth_image != CORRUPT_ID && std::ranges::find(scaled_images, tmp_depth_image) == scaled_images.end()) {
-                    scale_up(tmp_depth_image);
-                }
+                scale_up(tmp_depth_image);
                 scale_rating = 2;
             }
         } else {
             rescaled = false;
             const auto scale_down = [this](ImageId image_id) {
-                if (image_id != CORRUPT_ID && slot_images.contains(image_id)) {
+                if (image_id != CORRUPT_ID) {
                     Image& image = slot_images[image_id];
                     ScaleDown(image);
                 }
             };
-            boost::container::small_vector<ImageId, NUM_RT + 1> scaled_images;
             for (size_t index = 0; index < NUM_RT; ++index) {
-                const ImageId id = tmp_color_images[index];
-                if (id != CORRUPT_ID && std::ranges::find(scaled_images, id) == scaled_images.end()) {
-                    scaled_images.push_back(id);
-                    scale_down(id);
-                }
+                scale_down(tmp_color_images[index]);
             }
-            if (tmp_depth_image != CORRUPT_ID && std::ranges::find(scaled_images, tmp_depth_image) == scaled_images.end()) {
-                scale_down(tmp_depth_image);
-            }
+            scale_down(tmp_depth_image);
             scale_rating = 1;
         }
     } while (has_deleted_images);
     const auto set_rating = [this, scale_rating](ImageId image_id) {
-        if (image_id != CORRUPT_ID && slot_images.contains(image_id)) {
+        if (image_id != CORRUPT_ID) {
             Image& image = slot_images[image_id];
             image.scale_rating = scale_rating;
             if (image.scale_tick <= frame_tick) {
@@ -545,12 +522,12 @@ void TextureCache<P>::UpdateRenderTargets(bool is_clear) {
     rt_active_mask = 0;
     rt_image_id = {};
     for (size_t i = 0; i < rt_image_id.size(); ++i) {
-        if (ImageViewId const view = render_targets.color_buffer_ids[i]; view && slot_image_views.contains(view)) {
+        if (ImageViewId const view = render_targets.color_buffer_ids[i]; view) {
             rt_active_mask |= 1u << i;
             rt_image_id[i] = slot_image_views[view].image_id;
         }
     }
-    if (depth_buffer_id && slot_image_views.contains(depth_buffer_id)) {
+    if (depth_buffer_id) {
         rt_active_mask |= (1u << NUM_RT);
         rt_depth_image_id = slot_image_views[depth_buffer_id].image_id;
     } else {
@@ -628,12 +605,9 @@ FramebufferId TextureCache<P>::GetFramebufferId(const RenderTargets& key) {
     }
     std::array<ImageView*, NUM_RT> color_buffers;
     std::ranges::transform(key.color_buffer_ids, color_buffers.begin(), [this](ImageViewId id) {
-        return (id && slot_image_views.contains(id)) ? &slot_image_views[id] : nullptr;
+        return id ? &slot_image_views[id] : nullptr;
     });
-    ImageView* const depth_buffer =
-        (key.depth_buffer_id && slot_image_views.contains(key.depth_buffer_id))
-            ? &slot_image_views[key.depth_buffer_id]
-            : nullptr;
+    ImageView* const depth_buffer = key.depth_buffer_id ? &slot_image_views[key.depth_buffer_id] : nullptr;
     framebuffer_id = slot_framebuffers.insert(runtime, color_buffers, depth_buffer, key);
     return framebuffer_id;
 }
@@ -695,10 +669,8 @@ std::optional<VideoCore::RasterizerDownloadArea> TextureCache<P>::GetFlushArea(D
         area->start_address = (std::min)(area->start_address, image.cpu_addr);
         area->end_address = (std::max)(area->end_address, image.cpu_addr_end);
         for (auto image_view_id : image.image_view_ids) {
-            if (slot_image_views.contains(image_view_id)) {
-                auto& image_view = slot_image_views[image_view_id];
-                image_view.flags |= ImageViewFlagBits::PreemtiveDownload;
-            }
+            auto& image_view = slot_image_views[image_view_id];
+            image_view.flags |= ImageViewFlagBits::PreemtiveDownload;
         }
         area->preemtive &= image.info.forced_flushed;
         image.info.forced_flushed = true;
@@ -768,10 +740,8 @@ bool TextureCache<P>::BlitImage(const Tegra::Engines::Fermi2D::Surface& dst,
             if (is_resolve) {
                 dst_image.info.rescaleable = true;
                 for (const auto& alias : dst_image.aliased_images) {
-                    if (slot_images.contains(alias.id)) {
-                        Image& other_image = slot_images[alias.id];
-                        other_image.info.rescaleable = true;
-                    }
+                    Image& other_image = slot_images[alias.id];
+                    other_image.info.rescaleable = true;
                 }
             }
         }
@@ -851,13 +821,7 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
     const auto& image_map_ids = it->second;
     boost::container::small_vector<ImageId, 4> valid_image_ids;
     for (const ImageMapId map_id : image_map_ids) {
-        if (!slot_map_views.contains(map_id)) {
-            continue;
-        }
         const ImageMapView& map = slot_map_views[map_id];
-        if (!slot_images.contains(map.image_id)) {
-            continue;
-        }
         const ImageBase& image = slot_images[map.image_id];
         if (image.cpu_addr != cpu_addr) {
             continue;
@@ -887,9 +851,8 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
             info.z_source = static_cast<u8>(SwizzleSource::B);
             info.w_source = static_cast<u8>(SwizzleSource::OneFloat);
         }
-        const ImageViewId view_id = FindOrEmplaceImageView(image_id, info);
-        return std::make_pair(slot_image_views.contains(view_id) ? &slot_image_views[view_id] : nullptr,
-                              (slot_images.contains(image_id) && slot_images[image_id].IsRescaled()));
+        return std::make_pair(&slot_image_views[FindOrEmplaceImageView(image_id, info)],
+                              slot_images[image_id].IsRescaled());
     };
 
     if (valid_image_ids.size() == 1) [[likely]] {
@@ -898,9 +861,7 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
 
     if (valid_image_ids.size() > 0) [[unlikely]] {
         auto most_recent = std::ranges::max_element(valid_image_ids, [&](auto a, auto b) {
-            const u64 tick_a = slot_images.contains(a) ? slot_images[a].modification_tick : 0;
-            const u64 tick_b = slot_images.contains(b) ? slot_images[b].modification_tick : 0;
-            return tick_a < tick_b;
+            return slot_images[a].modification_tick < slot_images[b].modification_tick;
         });
         return GetImageViewForFramebuffer(*most_recent);
     }
@@ -1078,9 +1039,6 @@ bool TextureCache<P>::IsRescaling(const ImageViewBase& image_view) const noexcep
     if (image_view.type == ImageViewType::Buffer) {
         return false;
     }
-    if (!slot_images.contains(image_view.image_id)) {
-        return false;
-    }
     const ImageBase& image = slot_images[image_view.image_id];
     return True(image.flags & ImageFlagBits::Rescaled);
 }
@@ -1252,9 +1210,6 @@ ImageViewId TextureCache<P>::CreateImageView(const TICEntry& config) {
     ASSERT(base.level == 0);
     const ImageViewInfo view_info(config, base.layer);
     const ImageViewId image_view_id = FindOrEmplaceImageView(image_id, view_info);
-    if (!slot_image_views.contains(image_view_id)) {
-        return NULL_IMAGE_VIEW_ID;
-    }
     ImageViewBase& image_view = slot_image_views[image_view_id];
     image_view.flags |= ImageViewFlagBits::Strong;
     image.flags |= ImageFlagBits::Strong;
@@ -1316,9 +1271,9 @@ ImageId TextureCache<P>::FindImage(const ImageInfo& info, GPUVAddr gpu_addr,
         return image_id;
     }
     auto image_ids_compare = [this](ImageId a, ImageId b) {
-        const u64 tick_a = slot_images.contains(a) ? slot_images[a].modification_tick : 0;
-        const u64 tick_b = slot_images.contains(b) ? slot_images[b].modification_tick : 0;
-        return tick_a < tick_b;
+        auto& image_a = slot_images[a];
+        auto& image_b = slot_images[b];
+        return image_a.modification_tick < image_b.modification_tick;
     };
     return *std::ranges::max_element(image_ids, image_ids_compare);
 }
@@ -1343,9 +1298,6 @@ bool TextureCache<P>::ImageCanRescale(ImageBase& image) {
     }
     image.flags |= ImageFlagBits::CheckingRescalable;
     for (const auto& alias : image.aliased_images) {
-        if (!slot_images.contains(alias.id)) {
-            continue;
-        }
         Image& other_image = slot_images[alias.id];
         if (!ImageCanRescale(other_image)) {
             image.flags &= ~ImageFlagBits::CheckingRescalable;
@@ -1362,8 +1314,7 @@ void TextureCache<P>::InvalidateScale(Image& image) {
     if (image.scale_tick <= frame_tick) {
         image.scale_tick = frame_tick + 1;
     }
-    const boost::container::small_vector<ImageViewId, 16> image_view_ids(image.image_view_ids.begin(),
-                                                                         image.image_view_ids.end());
+    const std::span<const ImageViewId> image_view_ids = image.image_view_ids;
     auto& dirty = maxwell3d->dirty.flags;
     dirty[Dirty::RenderTargets] = true;
     dirty[Dirty::ZetaBuffer] = true;
@@ -1379,10 +1330,8 @@ void TextureCache<P>::InvalidateScale(Image& image) {
     RemoveImageViewReferences(image_view_ids);
     RemoveFramebuffers(image_view_ids);
     for (const ImageViewId image_view_id : image_view_ids) {
-        if (slot_image_views.contains(image_view_id)) {
-            sentenced_image_view.Push(std::move(slot_image_views[image_view_id]));
-            slot_image_views.erase(image_view_id);
-        }
+        sentenced_image_view.Push(std::move(slot_image_views[image_view_id]));
+        slot_image_views.erase(image_view_id);
     }
     image.image_view_ids.clear();
     image.image_view_infos.clear();
@@ -1685,9 +1634,6 @@ ImageId TextureCache<P>::JoinImages(const ImageInfo& info, GPUVAddr gpu_addr, DA
         if (!can_rescale) {
             break;
         }
-        if (!slot_images.contains(copy.id)) {
-            continue;
-        }
         Image& sibling = slot_images[copy.id];
         can_rescale &= ImageCanRescale(sibling);
         any_rescaled |= True(sibling.flags & ImageFlagBits::Rescaled);
@@ -1695,22 +1641,15 @@ ImageId TextureCache<P>::JoinImages(const ImageInfo& info, GPUVAddr gpu_addr, DA
 
     can_rescale &= any_rescaled;
 
-    boost::container::small_vector<ImageId, 16> scaled_siblings;
     if (can_rescale) {
         for (const auto& copy : join_copies_to_do) {
-            if (slot_images.contains(copy.id) && std::ranges::find(scaled_siblings, copy.id) == scaled_siblings.end()) {
-                scaled_siblings.push_back(copy.id);
-                Image& sibling = slot_images[copy.id];
-                ScaleUp(sibling);
-            }
+            Image& sibling = slot_images[copy.id];
+            ScaleUp(sibling);
         }
     } else {
         for (const auto& copy : join_copies_to_do) {
-            if (slot_images.contains(copy.id) && std::ranges::find(scaled_siblings, copy.id) == scaled_siblings.end()) {
-                scaled_siblings.push_back(copy.id);
-                Image& sibling = slot_images[copy.id];
-                ScaleDown(sibling);
-            }
+            Image& sibling = slot_images[copy.id];
+            ScaleDown(sibling);
         }
     }
 
@@ -1725,9 +1664,6 @@ ImageId TextureCache<P>::JoinImages(const ImageInfo& info, GPUVAddr gpu_addr, DA
     }
 
     for (const ImageId overlap_id : join_ignore_textures) {
-        if (!slot_images.contains(overlap_id)) {
-            continue;
-        }
         Image& overlap = slot_images[overlap_id];
         if (True(overlap.flags & ImageFlagBits::GpuModified)) {
             overlap.flags &= ~ImageFlagBits::GpuModified;
@@ -1739,70 +1675,55 @@ ImageId TextureCache<P>::JoinImages(const ImageInfo& info, GPUVAddr gpu_addr, DA
         DeleteImage(overlap_id);
     }
 
-    // Re-acquire reference after potential deletions
-    Image& new_image_ref = slot_images[new_image_id];
-
     // TODO: Only upload what we need
-    RefreshContents(new_image_ref, new_image_id);
+    RefreshContents(new_image, new_image_id);
 
     if (can_rescale) {
-        ScaleUp(new_image_ref);
+        ScaleUp(new_image);
     } else {
-        ScaleDown(new_image_ref);
+        ScaleDown(new_image);
     }
 
     std::ranges::sort(join_copies_to_do, [this](const JoinCopy& lhs, const JoinCopy& rhs) {
-        const u64 lhs_tick = slot_images.contains(lhs.id) ? slot_images[lhs.id].modification_tick : 0;
-        const u64 rhs_tick = slot_images.contains(rhs.id) ? slot_images[rhs.id].modification_tick : 0;
-        return lhs_tick < rhs_tick;
+        const ImageBase& lhs_image = slot_images[lhs.id];
+        const ImageBase& rhs_image = slot_images[rhs.id];
+        return lhs_image.modification_tick < rhs_image.modification_tick;
     });
 
-    ImageBase& new_image_base = slot_images[new_image_id];
+    ImageBase& new_image_base = new_image;
     for (const ImageId aliased_id : join_right_aliased_ids) {
-        if (!slot_images.contains(aliased_id)) {
-            continue;
-        }
         ImageBase& aliased = slot_images[aliased_id];
         size_t alias_index = new_image_base.aliased_images.size();
         if (!AddImageAlias(new_image_base, aliased, new_image_id, aliased_id)) {
             continue;
         }
         join_alias_indices.emplace(aliased_id, alias_index);
-        new_image_ref.flags |= ImageFlagBits::Alias;
+        new_image.flags |= ImageFlagBits::Alias;
     }
     for (const ImageId aliased_id : join_left_aliased_ids) {
-        if (!slot_images.contains(aliased_id)) {
-            continue;
-        }
         ImageBase& aliased = slot_images[aliased_id];
         size_t alias_index = new_image_base.aliased_images.size();
         if (!AddImageAlias(aliased, new_image_base, aliased_id, new_image_id)) {
             continue;
         }
         join_alias_indices.emplace(aliased_id, alias_index);
-        new_image_ref.flags |= ImageFlagBits::Alias;
+        new_image.flags |= ImageFlagBits::Alias;
     }
     for (const ImageId aliased_id : join_bad_overlap_ids) {
-        if (!slot_images.contains(aliased_id)) {
-            continue;
-        }
         ImageBase& aliased = slot_images[aliased_id];
         aliased.overlapping_images.push_back(new_image_id);
-        new_image_ref.overlapping_images.push_back(aliased_id);
+        new_image.overlapping_images.push_back(aliased_id);
         if (aliased.info.resources.levels == 1 && aliased.info.block.depth == 0 &&
             aliased.overlapping_images.size() > 1) {
             aliased.flags |= ImageFlagBits::BadOverlap;
         }
-        if (new_image_ref.info.resources.levels == 1 && new_image_ref.info.block.depth == 0 &&
-            new_image_ref.overlapping_images.size() > 1) {
-            new_image_ref.flags |= ImageFlagBits::BadOverlap;
+        if (new_image.info.resources.levels == 1 && new_image.info.block.depth == 0 &&
+            new_image.overlapping_images.size() > 1) {
+            new_image.flags |= ImageFlagBits::BadOverlap;
         }
     }
 
     for (const auto& copy_object : join_copies_to_do) {
-        if (!slot_images.contains(copy_object.id)) {
-            continue;
-        }
         Image& overlap = slot_images[copy_object.id];
         if (copy_object.is_alias) {
             if (!overlap.IsSafeDownload()) {
@@ -2037,7 +1958,7 @@ ImageViewId TextureCache<P>::FindRenderTargetView(const ImageInfo& info, GPUVAdd
         delete_state |= has_deleted_images;
     } while (has_deleted_images);
     has_deleted_images = delete_state;
-    if (!image_id || !slot_images.contains(image_id)) {
+    if (!image_id) {
         return NULL_IMAGE_VIEW_ID;
     }
     Image& image = slot_images[image_id];
@@ -2456,38 +2377,32 @@ void TextureCache<P>::DeleteImage(ImageId image_id, bool immediate_delete) {
     RemoveFramebuffers(image_view_ids);
 
     for (const AliasedImage& alias : image.aliased_images) {
-        if (!slot_images.contains(alias.id)) {
-            continue;
-        }
         ImageBase& other_image = slot_images[alias.id];
         [[maybe_unused]] const size_t num_removed_aliases =
             std::erase_if(other_image.aliased_images, [image_id](const AliasedImage& other_alias) {
                 return other_alias.id == image_id;
             });
         other_image.CheckAliasState();
+        ASSERT_MSG(num_removed_aliases == 1, "Invalid number of removed aliases: {}",
+                   num_removed_aliases);
     }
     for (const ImageId overlap_id : image.overlapping_images) {
-        if (!slot_images.contains(overlap_id)) {
-            continue;
-        }
         ImageBase& other_image = slot_images[overlap_id];
         [[maybe_unused]] const size_t num_removed_overlaps = std::erase_if(
             other_image.overlapping_images,
             [image_id](const ImageId other_overlap_id) { return other_overlap_id == image_id; });
         other_image.CheckBadOverlapState();
+        ASSERT_MSG(num_removed_overlaps == 1, "Invalid number of removed overlapps: {}",
+                   num_removed_overlaps);
     }
     for (const ImageViewId image_view_id : image_view_ids) {
-        if (slot_image_views.contains(image_view_id)) {
-            if (!immediate_delete) {
-                sentenced_image_view.Push(std::move(slot_image_views[image_view_id]));
-            }
-            slot_image_views.erase(image_view_id);
+        if (!immediate_delete) {
+            sentenced_image_view.Push(std::move(slot_image_views[image_view_id]));
         }
+        slot_image_views.erase(image_view_id);
     }
     if (!immediate_delete) {
-        if (slot_images.contains(image_id)) {
-            sentenced_images.Push(std::move(slot_images[image_id]));
-        }
+        sentenced_images.Push(std::move(slot_images[image_id]));
     }
     slot_images.erase(image_id);
 
@@ -2533,9 +2448,7 @@ void TextureCache<P>::RemoveFramebuffers(std::span<const ImageViewId> removed_vi
                 last_framebuffer_id = {};
                 last_framebuffer_serial = 0;
             }
-            if (slot_framebuffers.contains(framebuffer_id)) {
-                sentenced_framebuffers.Push(std::move(slot_framebuffers[framebuffer_id]));
-            }
+            sentenced_framebuffers.Push(std::move(slot_framebuffers[framebuffer_id]));
             it = framebuffers.erase(it);
         } else {
             ++it;
@@ -2551,18 +2464,12 @@ void TextureCache<P>::MarkModification(ImageBase& image) noexcept {
 
 template <class P>
 void TextureCache<P>::SynchronizeAliases(ImageId image_id) {
-    if (!image_id || !slot_images.contains(image_id)) {
-        return;
-    }
     boost::container::small_vector<const AliasedImage*, 8> aliased_images;
     Image& image = slot_images[image_id];
     bool any_rescaled = True(image.flags & ImageFlagBits::Rescaled);
     bool any_modified = True(image.flags & ImageFlagBits::GpuModified);
     u64 most_recent_tick = image.modification_tick;
     for (const AliasedImage& aliased : image.aliased_images) {
-        if (!slot_images.contains(aliased.id)) {
-            continue;
-        }
         ImageBase& aliased_image = slot_images[aliased.id];
         if (image.modification_tick < aliased_image.modification_tick) {
             most_recent_tick = (std::max)(most_recent_tick, aliased_image.modification_tick);
@@ -2587,15 +2494,12 @@ void TextureCache<P>::SynchronizeAliases(ImageId image_id) {
         image.flags |= ImageFlagBits::GpuModified;
     }
     std::ranges::sort(aliased_images, [this](const AliasedImage* lhs, const AliasedImage* rhs) {
-        const u64 lhs_tick = slot_images.contains(lhs->id) ? slot_images[lhs->id].modification_tick : 0;
-        const u64 rhs_tick = slot_images.contains(rhs->id) ? slot_images[rhs->id].modification_tick : 0;
-        return lhs_tick < rhs_tick;
+        const ImageBase& lhs_image = slot_images[lhs->id];
+        const ImageBase& rhs_image = slot_images[rhs->id];
+        return lhs_image.modification_tick < rhs_image.modification_tick;
     });
     const auto& resolution = Settings::values.resolution_info;
     for (const AliasedImage* const aliased : aliased_images) {
-        if (!slot_images.contains(aliased->id)) {
-            continue;
-        }
         if (!resolution.active || !any_rescaled) {
             CopyImage(image_id, aliased->id, aliased->copies);
             continue;
@@ -2613,9 +2517,6 @@ void TextureCache<P>::SynchronizeAliases(ImageId image_id) {
 
 template <class P>
 void TextureCache<P>::PrepareImage(ImageId image_id, bool is_modification, bool invalidate) {
-    if (!image_id || !slot_images.contains(image_id)) {
-        return;
-    }
     Image& image = slot_images[image_id];
     if (invalidate) {
         image.flags &= ~(ImageFlagBits::CpuModified | ImageFlagBits::GpuModified);
@@ -2638,7 +2539,7 @@ void TextureCache<P>::PrepareImage(ImageId image_id, bool is_modification, bool 
 template <class P>
 void TextureCache<P>::PrepareImageView(ImageViewId image_view_id, bool is_modification,
                                        bool invalidate) {
-    if (!image_view_id || !slot_image_views.contains(image_view_id)) {
+    if (!image_view_id) {
         return;
     }
     const ImageViewBase& image_view = slot_image_views[image_view_id];
@@ -2650,9 +2551,6 @@ void TextureCache<P>::PrepareImageView(ImageViewId image_view_id, bool is_modifi
 
 template <class P>
 void TextureCache<P>::CopyImage(ImageId dst_id, ImageId src_id, std::vector<ImageCopy> copies) {
-    if (!dst_id || !src_id || !slot_images.contains(dst_id) || !slot_images.contains(src_id)) {
-        return;
-    }
     Image& dst = slot_images[dst_id];
     Image& src = slot_images[src_id];
     const bool is_rescaled = True(src.flags & ImageFlagBits::Rescaled);

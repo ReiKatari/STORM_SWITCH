@@ -526,19 +526,19 @@ void Image::SetObjectNameEXT(const char* name) const {
 }
 
 void Image::Release() const noexcept {
-    if (handle && allocator) {
+    if (handle) {
         vmaDestroyImage(allocator, handle, allocation);
     }
 }
 
 void Buffer::Flush() const {
-    if (!is_coherent && allocator) {
+    if (!is_coherent) {
         vmaFlushAllocation(allocator, allocation, 0, VK_WHOLE_SIZE);
     }
 }
 
 void Buffer::Invalidate() const {
-    if (!is_coherent && allocator) {
+    if (!is_coherent) {
         vmaInvalidateAllocation(allocator, allocation, 0, VK_WHOLE_SIZE);
     }
 }
@@ -548,7 +548,7 @@ void Buffer::SetObjectNameEXT(const char* name) const {
 }
 
 void Buffer::Release() const noexcept {
-    if (handle && allocator) {
+    if (handle) {
         vmaDestroyBuffer(allocator, handle, allocation);
     }
 }

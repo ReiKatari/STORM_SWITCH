@@ -324,12 +324,12 @@ Result IApplicationFunctions::NotifyRunning(Out<bool> out_became_running) {
 
 Result IApplicationFunctions::GetPseudoDeviceId(Out<Common::UUID> out_pseudo_device_id) {
     LOG_WARNING(Service_AM, "(stubbed)");
-    R_UNLESS(out_pseudo_device_id != nullptr, ResultUnknown);
+    R_UNLESS(out_pseudo_device_id, ResultUnknown);
 
     // This should be hashed with the device specific hash
     // for now this will do
     const auto res = FileSys::PatchManager::GetMetadataFromBaseOrUpdate(system, m_applet->program_id);
-    std::array<u8, EVP_MAX_MD_SIZE> hash{};
+    u8 hash[EVP_MAX_MD_SIZE];
     unsigned int hash_len = 0;
     u64 seed = 0;
     if (res.first != nullptr) {
@@ -341,9 +341,9 @@ Result IApplicationFunctions::GetPseudoDeviceId(Out<Common::UUID> out_pseudo_dev
     auto const algorithm = EVP_sha1();
     EVP_DigestInit_ex(ctx, algorithm, nullptr);
     EVP_DigestUpdate(ctx, &seed, sizeof(seed));
-    EVP_DigestFinal_ex(ctx, hash.data(), &hash_len);
+    EVP_DigestFinal_ex(ctx, hash, &hash_len);
     EVP_MD_CTX_free(ctx);
-    *out_pseudo_device_id = Common::UUID::MakeRFC4122V5(std::span<u8, 16>{hash.begin(), hash.begin() + 16});
+    *out_pseudo_device_id = Common::UUID::MakeRFC4122V5(std::span<u8, 20>{hash, std::size(hash)});
     R_SUCCEED();
 }
 

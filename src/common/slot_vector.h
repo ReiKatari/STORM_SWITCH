@@ -109,32 +109,6 @@ public:
         delete[] values;
     }
 
-    [[nodiscard]] bool contains(SlotId id) const noexcept {
-        if (!id) {
-            return false;
-        }
-        const u32 val = id.Value();
-        const size_t word_index = val / 64;
-        if (word_index >= stored_bitset.size()) {
-            return false;
-        }
-        return ((stored_bitset[word_index] >> (val % 64)) & 1) != 0;
-    }
-
-    [[nodiscard]] T* try_get(SlotId id) noexcept {
-        if (!contains(id)) {
-            return nullptr;
-        }
-        return &values[id.Value()].object;
-    }
-
-    [[nodiscard]] const T* try_get(SlotId id) const noexcept {
-        if (!contains(id)) {
-            return nullptr;
-        }
-        return &values[id.Value()].object;
-    }
-
     [[nodiscard]] T& operator[](SlotId id) noexcept {
         ValidateIndex(id);
         return values[id.Value()].object;
@@ -155,9 +129,6 @@ public:
     }
 
     void erase(SlotId id) noexcept {
-        if (!contains(id)) {
-            return;
-        }
         values[id.Value()].object.~T();
         free_list.push_back(id.Value());
         ResetStorageBit(id.Value());
