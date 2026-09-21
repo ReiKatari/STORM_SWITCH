@@ -333,12 +333,6 @@ void PresentManager::PresentThread(std::stop_token token) {
     Common::SetCurrentThreadName("VulkanPresent");
     Common::SetCurrentThreadPriority(Common::ThreadPriority::High);
     Common::SetCurrentThreadToPerformanceCores();
-
-    // STORM Adaptive Frame Pacing Engine (EMA)
-    auto last_present_time = std::chrono::steady_clock::now();
-    double ema_frametime_us = 16666.67;
-    constexpr double EMA_SMOOTHING = 0.15;
-
     while (!token.stop_requested()) {
         std::unique_lock lock{queue_mutex};
         // Wait for presentation frames
@@ -354,15 +348,7 @@ void PresentManager::PresentThread(std::stop_token token) {
             // lock in WaitPresent is guaranteed to occur after here.
             std::exchange(lock, std::unique_lock{swapchain_mutex});
 
-            // Adaptive Frame Pacing measurement
-            const auto now = std::chrono::steady_clock::now();
-            const auto delta_us = std::chrono::duration_cast<std::chrono::microseconds>(now - last_present_time).count();
-            if (delta_us > 1000 && delta_us < 100000) {
-                ema_frametime_us = EMA_SMOOTHING * static_cast<double>(delta_us) + (1.0 - EMA_SMOOTHING) * ema_frametime_us;
-            }
-
             CopyToSwapchain(frame);
-            last_present_time = std::chrono::steady_clock::now();
 
             // Free the frame for reuse
             std::scoped_lock fl{free_mutex};

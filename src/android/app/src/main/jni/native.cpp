@@ -366,6 +366,24 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
         LOG_INFO(Frontend, "Clamped memory_layout_mode to 4GB for Android stability");
     }
+#ifdef HAS_NCE
+    // On Android ARM64, force NCE (CpuBackend::Nce) for rock-solid stability and native execution.
+    // Dynarmic on Android ARM64 causes immediate crashes/memory aborts.
+    if (Settings::values.cpu_backend.GetValue() != Settings::CpuBackend::Nce) {
+        Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
+        LOG_INFO(Frontend, "Enforced NCE CPU backend for Android stability");
+    }
+#endif
+    // Force barrier_feedback_loops to false on Android (prevents Mali and mobile Vulkan driver crashes)
+    if (Settings::values.barrier_feedback_loops.GetValue()) {
+        Settings::values.barrier_feedback_loops.SetValue(false);
+        LOG_INFO(Frontend, "Disabled barrier_feedback_loops for mobile Vulkan stability");
+    }
+    // Force enable_compute_pipelines to false on Android (prevents mobile driver crashes)
+    if (Settings::values.enable_compute_pipelines.GetValue()) {
+        Settings::values.enable_compute_pipelines.SetValue(false);
+        LOG_INFO(Frontend, "Disabled enable_compute_pipelines for mobile Vulkan stability");
+    }
 #endif
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();

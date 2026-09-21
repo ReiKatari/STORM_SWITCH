@@ -7359,6 +7359,14 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" || full_key == "System\\use_docked_mode") {
                 continue;
             }
+#ifdef __ANDROID__
+            // Never force barrier feedback loops, compute pipelines, or Dynarmic CPU on Android
+            if (full_key == "Renderer\\barrier_feedback_loops" ||
+                full_key == "Renderer\\enable_compute_pipelines" ||
+                full_key == "Cpu\\cpu_backend") {
+                continue;
+            }
+#endif
             if (full_key == "Renderer\\gpu_accuracy") {
                 apply_setting(Settings::values.gpu_accuracy, static_cast<Settings::GpuAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\barrier_feedback_loops") {

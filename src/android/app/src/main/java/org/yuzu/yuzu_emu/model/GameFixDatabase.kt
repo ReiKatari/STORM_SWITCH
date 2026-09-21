@@ -5101,27 +5101,6 @@ object GameFixDatabase {
                 // Any non-temporary, non-empty custom config file in config/custom/ is a user manual configuration
                 return true
             }
-
-            var hasUserOverrides = false
-            file.bufferedReader().useLines { lines ->
-                for (line in lines) {
-                    val trimmed = line.trim()
-                    if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith(";")) {
-                        continue
-                    }
-                    if (trimmed.contains("\\use_global", ignoreCase = true) && trimmed.contains("=")) {
-                        val value = trimmed.substringAfter("=").trim()
-                        if (value.equals("false", ignoreCase = true)) {
-                            hasUserOverrides = true
-                            break
-                        }
-                    }
-                }
-            }
-            if (hasUserOverrides) {
-                markConfigAsUserCustom(game)
-                return true
-            }
             return false
         } catch (_: Exception) {
             false
@@ -5155,6 +5134,15 @@ object GameFixDatabase {
 
     fun cleanupSession(game: Game? = null) {
         clearActiveSessionFix(game)
+        if (game != null) {
+            try {
+                val file = SettingsFile.getCustomSettingsFile(game)
+                if (file.exists() && isTemporaryFixFile(file)) {
+                    file.delete()
+                    Log.info("[GameFixDatabase] Cleaned up temporary fix file for ${game.title}")
+                }
+            } catch (_: Exception) {}
+        }
     }
 
     fun isSessionFixActive(game: Game): Boolean {
@@ -5248,9 +5236,25 @@ object GameFixDatabase {
                     sections["System"]?.remove("memory_layout_mode\\use_global")
                     sections["System"]?.remove("memory_layout_mode\\default")
                 }
+                if (sections["Renderer"]?.containsKey("barrier_feedback_loops") == true) {
+                    sections["Renderer"]?.remove("barrier_feedback_loops")
+                    sections["Renderer"]?.remove("barrier_feedback_loops\\use_global")
+                    sections["Renderer"]?.remove("barrier_feedback_loops\\default")
+                }
+                if (sections["Renderer"]?.containsKey("enable_compute_pipelines") == true) {
+                    sections["Renderer"]?.remove("enable_compute_pipelines")
+                    sections["Renderer"]?.remove("enable_compute_pipelines\\use_global")
+                    sections["Renderer"]?.remove("enable_compute_pipelines\\default")
+                }
+                if (sections["Cpu"]?.get("cpu_backend") == "0") {
+                    sections["Cpu"]?.remove("cpu_backend")
+                    sections["Cpu"]?.remove("cpu_backend\\use_global")
+                    sections["Cpu"]?.remove("cpu_backend\\default")
+                }
 
-                if (keyName == "memory_layout_mode") {
-                    // Never force 6GB/8GB DRAM into per-game config on Android to prevent lmkd SIGKILL
+                if (keyName == "memory_layout_mode" || keyName == "barrier_feedback_loops" ||
+                    keyName == "enable_compute_pipelines" || keyName == "cpu_backend") {
+                    // Never force 6GB/8GB DRAM, feedback loops, compute pipelines or Dynarmic on Android
                     continue
                 }
 
@@ -5342,7 +5346,10 @@ object GameFixDatabase {
                     if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                         fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
                         fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode") ||
-                        fullKey.endsWith("memory_layout_mode")) {
+                        fullKey.endsWith("memory_layout_mode") ||
+                        fullKey.endsWith("barrier_feedback_loops") ||
+                        fullKey.endsWith("enable_compute_pipelines") ||
+                        fullKey.endsWith("cpu_backend")) {
                         continue
                     }
                     val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"

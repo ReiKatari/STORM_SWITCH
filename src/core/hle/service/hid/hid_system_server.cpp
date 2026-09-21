@@ -101,7 +101,7 @@ IHidSystemServer::IHidSystemServer(Core::System& system_, std::shared_ptr<Resour
         {547, nullptr, "GetAllowedBluetoothLinksCount"},
         {548, &IHidSystemServer::GetRegisteredDevices, "GetRegisteredDevices"},
         {549, nullptr, "GetConnectableRegisteredDevices"},
-        {551, &IHidSystemServer::GetRegisteredDevices, "GetRegisteredDevicesForControllerSupport"}, //20.0.0+ //mocked via 548 for Diablo 3 (at least)
+        {551, nullptr, "GetRegisteredDevicesForControllerSupport"}, //20.0.0+
         {700, nullptr, "ActivateUniquePad"},
         {702, &IHidSystemServer::AcquireUniquePadConnectionEventHandle, "AcquireUniquePadConnectionEventHandle"},
         {703, &IHidSystemServer::GetUniquePadIds, "GetUniquePadIds"},
@@ -738,7 +738,7 @@ void IHidSystemServer::AcquireDeviceRegisteredEventForControllerSupport(HLEReque
 }
 
 void IHidSystemServer::GetRegisteredDevices(HLERequestContext& ctx) {
-    LOG_WARNING(Service_HID, "(STUBBED) called, command={}", ctx.GetCommand()); //548 or 551
+    LOG_WARNING(Service_HID, "(STUBBED) called");
 
     struct RegisterData {
         std::array<u8, 0x68> data;

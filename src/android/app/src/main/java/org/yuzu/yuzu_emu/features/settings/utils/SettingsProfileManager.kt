@@ -139,7 +139,7 @@ object SettingsProfileManager {
                         IntSetting.RENDERER_VRAM_USAGE_MODE.key to 0,
                         IntSetting.RENDERER_VSYNC.key to 1,
                         IntSetting.CPU_ACCURACY.key to 0,
-                        IntSetting.CPU_BACKEND.key to 0,
+                        IntSetting.CPU_BACKEND.key to 1, // NCE
                         IntSetting.FAST_GPU_TIME.key to 1
                     ),
                     shorts = mapOf(ShortSetting.RENDERER_SPEED_LIMIT.key to 100)
@@ -184,7 +184,7 @@ object SettingsProfileManager {
                         IntSetting.RENDERER_VRAM_USAGE_MODE.key to 1,
                         IntSetting.RENDERER_VSYNC.key to 0,
                         IntSetting.CPU_ACCURACY.key to 1,
-                        IntSetting.CPU_BACKEND.key to 0,
+                        IntSetting.CPU_BACKEND.key to 1, // NCE
                         IntSetting.FAST_GPU_TIME.key to 2,
                         IntSetting.FAST_CPU_TIME.key to 1
                     ),
@@ -229,7 +229,7 @@ object SettingsProfileManager {
                         IntSetting.RENDERER_VRAM_USAGE_MODE.key to 0,
                         IntSetting.RENDERER_VSYNC.key to 1,
                         IntSetting.CPU_ACCURACY.key to 0,
-                        IntSetting.CPU_BACKEND.key to 0,
+                        IntSetting.CPU_BACKEND.key to 1, // NCE
                         IntSetting.FAST_GPU_TIME.key to 0
                     ),
                     shorts = mapOf(ShortSetting.RENDERER_SPEED_LIMIT.key to 100)
@@ -274,7 +274,7 @@ object SettingsProfileManager {
                         IntSetting.RENDERER_VRAM_USAGE_MODE.key to 1,
                         IntSetting.RENDERER_VSYNC.key to 1,
                         IntSetting.CPU_ACCURACY.key to 1,
-                        IntSetting.CPU_BACKEND.key to 0,
+                        IntSetting.CPU_BACKEND.key to 1, // NCE
                         IntSetting.FAST_GPU_TIME.key to 1
                     ),
                     shorts = mapOf(ShortSetting.RENDERER_SPEED_LIMIT.key to 100)
