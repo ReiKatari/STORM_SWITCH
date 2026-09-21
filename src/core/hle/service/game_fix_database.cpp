@@ -20,43 +20,6 @@ namespace Core {
 
 static const std::vector<GameFixProfile> s_profiles = {
     {
-        0x010020D01AD24000ULL,
-        "Animal Well",
-        "• Мерцание 2D-освещения и разрывы кадрового буфера\n• Риск сбоев JIT-компилятора при динамических частицах\n• Задержки сетевых сокетов",
-        "• 2D lighting flicker and framebuffer tearing\n• JIT compilation stalls on dynamic particle effects\n• Network socket connection delays",
-        "✓ Быстрая память: Включено (стабильная адресация)\n✓ Игнорирование сбоев памяти: Включено (защита от вылетов)\n✓ Режим «В самолете»: Включено (пропуск сетевых проверок)\n✓ Точность ГПУ: Обычная\n✓ Асинхронные шейдеры: Включено",
-        "✓ Fastmem: Enabled (Stable memory addressing)\n✓ Ignore Memory Aborts: Enabled (Crash protection)\n✓ Airplane Mode: Enabled (Bypasses network checks)\n✓ GPU Accuracy: Normal\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"},
-            {"Network\\airplane_mode", "true"}
-        },
-        {0x010020D01AD24800ULL}
-    },
-    {
-        0x01008F1008DA6000ULL,
-        "Darkest Dungeon",
-        "• Черный экран при воспроизведении вступительного видеоролика\n• Просадки FPS в подземельях при отрисовке эффектов освещения факелов\n• Зависание сетевых сокетов",
-        "• Black screen during intro cinematic video playback\n• Framerate drops in dungeons during torchlight effect rendering\n• Network socket connection stalls",
-        "✓ Декодирование видео NVDEC: Гибридный (устраняет черный экран вступительного ролика)\n✓ Быстрая память: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ NVDEC Video Emulation: Hybrid (Resolves intro cinematic black screen)\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"Renderer\\nvdec_emulation", "3"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"},
-            {"Network\\airplane_mode", "true"}
-        },
-        {0x01008F1008DA6800ULL, 0x01008F1008DA7000ULL}
-    },
-    {
         0x0100DDF01A03A000ULL,
         "DAVE THE DIVER",
         "• Вылеты при смене локаций (дайвинг / суши-бар Банчо) из-за сборщика мусора Unity GC\n• Утечка дескрипторов текстур под водой\n• Просадки кадровой частоты",
@@ -4316,39 +4279,36 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\memory_layout_mode", "1"},
             {"System\\airplane_mode", "true"},
         }
-    },
-    {
-        0x01008F1008DA6000ULL,
-        "Darkest Dungeon",
-        "• Зависание на начальном экране загрузки из-за сетевой телеметрии Nintendo\n• Сбои чтения невыровненной памяти RomFS\n• Нехватка виртуальной памяти при наличии всех DLC",
-        "• Hang on initial loading screen due to Nintendo network telemetry\n• RomFS unaligned memory read aborts\n• Out of memory when all DLCs are enabled",
-        "✓ Режим полета: Включено (устраняет зависание при запуске)\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM (Windows) / 4 ГБ DRAM (Android)",
-        "✓ Airplane Mode: Enabled (Prevents boot hang)\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 6GB DRAM (Windows) / 4GB DRAM (Android)",
-        {
-            {"System\\airplane_mode", "true"},
-            {"Network\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-#ifdef __ANDROID__
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"},
-#else
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
-#endif
-            {"Renderer\\use_asynchronous_shaders", "true"}
-        },
-        {0x0100E5E01C098000ULL}
     }
 };
 
 static const std::unordered_map<std::string, std::string> s_baseline_ini = {
+    {"Cpu\\cpu_accuracy", "0"},
+    {"Renderer\\gpu_accuracy", "0"},
+    {"Renderer\\nvdec_emulation", "1"},
+    {"Renderer\\async_presentation", "true"},
+    {"Renderer\\use_asynchronous_shaders", "true"},
+    {"Renderer\\use_fast_gpu_time", "false"},
+    {"Renderer\\sync_memory_operations", "false"},
+    {"Renderer\\use_reactive_flushing", "false"},
+    {"Renderer\\use_video_framerate", "false"},
+    {"Renderer\\eco_frame_pacing", "false"},
+    {"Renderer\\dma_accuracy", "0"},
+    {"Renderer\\gpu_fence_behavior", "0"},
+    {"Renderer\\astc_recompression", "0"},
     {"Cpu\\cpuopt_fastmem", "true"},
     {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
     {"System\\airplane_mode", "true"},
     {"Services\\airplane_mode", "true"},
     {"Network\\airplane_mode", "true"},
+    {"System\\memory_layout_mode", "0"},
+    {"Core\\memory_layout_mode", "0"},
+    {"Renderer\\enable_compute_pipelines", "true"},
+    {"Renderer\\use_vulkan_driver_pipeline_cache", "true"},
+    {"Renderer\\use_disk_shader_cache", "true"},
+    {"Renderer\\enable_gpu_buffer_readback", "false"},
+    {"Renderer\\vram_garbage_collection", "false"},
+    {"Renderer\\early_release_fences", "false"}
 };
 
 static std::string GetSetting(const std::unordered_map<std::string, std::string>& settings, const std::string& key, const std::string& def) {
@@ -4532,15 +4492,13 @@ static GameFixProfile CreateEnrichedProfile(const GameFixProfile& base, u64 targ
     enriched.issues_ru = base.issues_ru;
     enriched.issues_en = base.issues_en;
 
-    enriched.ini_settings = base.ini_settings;
-    for (const auto& [k, v] : s_baseline_ini) {
-        if (enriched.ini_settings.find(k) == enriched.ini_settings.end()) {
-            enriched.ini_settings[k] = v;
-        }
+    enriched.ini_settings = s_baseline_ini;
+    for (const auto& [k, v] : base.ini_settings) {
+        enriched.ini_settings[k] = v;
     }
 
-    enriched.fixes_ru = !base.fixes_ru.empty() ? base.fixes_ru : BuildFixesRu(enriched.ini_settings);
-    enriched.fixes_en = !base.fixes_en.empty() ? base.fixes_en : BuildFixesEn(enriched.ini_settings);
+    enriched.fixes_ru = BuildFixesRu(enriched.ini_settings);
+    enriched.fixes_en = BuildFixesEn(enriched.ini_settings);
     return enriched;
 }
 
@@ -4556,22 +4514,20 @@ static GameFixProfile CreateUniversalProfile(u64 title_id, const std::string& na
     }
 
     universal.issues_ru =
+        "• Микрофризы при компиляции шейдеров во время игрового процесса\n"
+        "• Зависание вступительных видеороликов при аппаратном декодировании NVDEC\n"
         "• Сбои и задержки сетевых сервисов при поиске серверов\n"
         "• Риск аварийного завершения эмулятора при обращениях за границы буфера памяти";
 
     universal.issues_en =
+        "• Ingame stuttering caused by on-demand shader compilation\n"
+        "• Intro and cutscene freezes with hardware NVDEC decoding\n"
         "• Network socket stalls during server connection attempts\n"
         "• Risk of emulator crash on out-of-bounds guest memory accesses";
 
     universal.ini_settings = s_baseline_ini;
-    universal.fixes_ru =
-        "✓ Игнорировать прерывания памяти: Включено (защита от вылетов при обращениях за границы буфера)\n"
-        "✓ Эмуляция Host MMU (fastmem): Включено (быстрая и стабильная адресация памяти)\n"
-        "✓ Режим «В самолете»: Включено (предотвращает зависания сетевых сокетов)";
-    universal.fixes_en =
-        "✓ Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds memory accesses)\n"
-        "✓ Host MMU Emulation (fastmem): Enabled (fast and stable memory addressing)\n"
-        "✓ Airplane Mode: Enabled (prevents network socket stalls)";
+    universal.fixes_ru = BuildFixesRu(universal.ini_settings);
+    universal.fixes_en = BuildFixesEn(universal.ini_settings);
     return universal;
 }
 
@@ -4680,12 +4636,6 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         }
 
         // Custom keyword matching
-        if (game_lower.find("animal well") != std::string::npos && (lower.find("animal well") != std::string::npos || lower.find("animal_well") != std::string::npos)) {
-            return GetProfile(profile.title_id);
-        }
-        if (game_lower.find("darkest dungeon") != std::string::npos && (lower.find("darkest dungeon") != std::string::npos || lower.find("darkest_dungeon") != std::string::npos)) {
-            return GetProfile(profile.title_id);
-        }
         if (game_lower.find("streets of rage") != std::string::npos && (lower.find("streets of rage") != std::string::npos || lower.find("sor4") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
@@ -5362,9 +5312,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.early_release_fences, val == "true" || val == "1");
             } else if (full_key == "Renderer\\sync_memory_operations") {
                 apply_setting(Settings::values.sync_memory_operations, val == "true" || val == "1");
-            } else if (full_key == "Renderer\\use_fast_gpu_time") {
-                apply_setting(Settings::values.use_fast_gpu_time, val == "true" || val == "1");
-            } else if (full_key == "Renderer\\gpu_clock") {
+            } else if (full_key == "Renderer\\use_fast_gpu_time" || full_key == "Renderer\\gpu_clock") {
                 if (val == "true" || val == "1") {
                     apply_setting(Settings::values.gpu_clock, Settings::GpuClock::Boost);
                 } else if (val == "2") {
@@ -5375,7 +5323,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\dyna_state") {
                 apply_setting(Settings::values.dyna_state, static_cast<Settings::ExtendedDynamicState>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\nvdec_emulation") {
-                apply_setting(Settings::values.nvdec_emulation, static_cast<Settings::NvdecEmulation>(safe_stoi(val, static_cast<int>(Settings::NvdecEmulation::Hybrid))));
+                apply_setting(Settings::values.nvdec_emulation, static_cast<Settings::NvdecEmulation>(safe_stoi(val, 1)));
             } else if (full_key == "Renderer\\async_presentation") {
                 apply_setting(Settings::values.async_presentation, val == "true" || val == "1");
             } else if (full_key == "Renderer\\vertex_input_dynamic_state") {
