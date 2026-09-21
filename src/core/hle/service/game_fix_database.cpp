@@ -49,8 +49,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         },
         {0x0100DDF01A03A800ULL}
     },
@@ -119,8 +119,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         },
         {0x01008BA02525A800ULL}
     },
@@ -180,8 +180,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"System\\airplane_mode", "false"},
             {"System\\language_index", "10"},
             {"System\\region_index", "2"}
@@ -293,8 +293,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6GB DRAM (устраняет вылет через время)\n✓ Асинхронные шейдеры: Отключено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents crash over time)\n✓ Asynchronous Shaders: Disabled\n✓ Fastmem: Enabled",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\use_asynchronous_shaders", "false"},
             {"Cpu\\cpuopt_fastmem", "true"}
         }
@@ -310,8 +310,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
@@ -657,7 +657,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Critical for Android launch!)\n✓ Fast GPU Time: Disabled (Fixes infinite loading!)\n✓ Dynamic State: Basic\n✓ GPU Accuracy: High\n✓ CPU Accuracy: Accurate\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"System\\airplane_mode", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\dyna_state", "0"},
             {"Renderer\\gpu_accuracy", "1"},
@@ -734,8 +734,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Требуется Firmware 18.0.0+ и системные файлы Mii\n✓ Сжатие ASTC: Отключено\n✓ Реактивный сброс: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
         "✓ Firmware 18.0.0+ and Mii system files required\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 6GB DRAM",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\astc_recompression", "0"}
         }
@@ -784,8 +784,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 6 ГБ DRAM (устраняет вылет после предупреждения об эпилепсии)\n✓ Игнорировать прерывания памяти: Включено\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность DMA: Safe\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents crash after epilepsy warning)\n✓ Ignore Memory Aborts: Enabled\n✓ Dynamic State: Basic (EDS1)\n✓ DMA Accuracy: Safe\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -883,8 +883,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6GB DRAM\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Сжатие ASTC: Отключено",
         "✓ Memory Layout: 6GB DRAM\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x\n✓ ASTC Recompression: Uncompressed",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\max_anisotropy", "5"},
@@ -963,7 +963,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 6 ГБ DRAM (предотвращение переполнения памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents memory overflow)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -979,7 +979,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\dyna_state", "0"},
             {"Renderer\\gpu_accuracy", "1"},
@@ -996,7 +996,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\dyna_state", "0"},
             {"Renderer\\gpu_accuracy", "1"},
@@ -1013,7 +1013,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\dyna_state", "0"},
             {"Renderer\\gpu_accuracy", "1"},
@@ -1031,7 +1031,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ CPU Accuracy: Accurate\n✓ Memory Layout: 6GB DRAM\n✓ Dynamic State: EDS1",
         {
             {"Cpu\\cpu_accuracy", "0"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\dyna_state", "0"}
         }
     },
@@ -1046,7 +1046,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\dyna_state", "2"},
             {"Renderer\\astc_recompression", "0"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\use_fast_gpu_time", "true"}
         }
     },
@@ -1060,7 +1060,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Renderer\\dyna_state", "2"},
             {"Renderer\\astc_recompression", "0"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\use_fast_gpu_time", "true"}
         }
     },
@@ -1073,7 +1073,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ ASTC Recompression: BC3\n✓ Memory Layout: 6GB DRAM\n✓ Dynamic State: EDS2\n✓ GPU Accuracy: High",
         {
             {"Renderer\\astc_recompression", "0"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\dyna_state", "2"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_fast_gpu_time", "true"}
@@ -1087,8 +1087,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6 ГБ DRAM (устраняет падение аллокатора памяти хоста)\n✓ Fastmem Exclusives: Отключено (устраняет дедлоки диспетчера потоков)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено\n✓ Сжатие ASTC: Отключено",
         "✓ Memory Layout: 6GB DRAM (Prevents host memory allocator OOM)\n✓ Fastmem Exclusives: Disabled (Fixes REDengine thread deadlocks)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_fastmem_exclusives", "false"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
@@ -1123,7 +1123,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"System\\airplane_mode", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\astc_recompression", "0"}
         }
     },
@@ -1154,7 +1154,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1209,7 +1209,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1274,7 +1274,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1288,7 +1288,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_reactive_flushing", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1341,7 +1341,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1355,7 +1355,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1422,7 +1422,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1502,7 +1502,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1513,8 +1513,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6 ГБ DRAM (устраняет сбой аллокатора памяти)\n✓ Fastmem Exclusives: Отключено (устраняет дедлоки диспетчера потоков)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено\n✓ Анизотропная фильтрация: 16x",
         "✓ Memory Layout: 6GB DRAM (Prevents host allocator OOM)\n✓ Fastmem Exclusives: Disabled (Fixes REDengine thread deadlocks)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ Anisotropic Filtering: 16x",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_fastmem_exclusives", "false"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
@@ -1564,7 +1564,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\max_anisotropy", "5"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1589,8 +1589,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 6 ГБ DRAM (устраняет вылет после предупреждения об эпилепсии)\n✓ Игнорировать прерывания памяти: Включено\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность DMA: Safe\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено",
         "✓ Memory Layout: 6GB DRAM (Prevents crash after epilepsy warning)\n✓ Ignore Memory Aborts: Enabled\n✓ Dynamic State: Basic (EDS1)\n✓ DMA Accuracy: Safe\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -1625,7 +1625,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\max_anisotropy", "5"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -1729,7 +1729,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_reactive_flushing", "true"}
@@ -1848,7 +1848,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6GB DRAM\n✓ Точность ЦП: Точная\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ CPU Accuracy: Accurate\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -1861,7 +1861,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -2177,7 +2177,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -2191,7 +2191,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_reactive_flushing", "true"}
@@ -2286,7 +2286,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Instant offline Hero mode)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"System\\airplane_mode", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_reactive_flushing", "true"}
@@ -2313,7 +2313,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Cpu\\cpuopt_fastmem", "true"}
@@ -2340,7 +2340,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -2407,7 +2407,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Cpu\\cpuopt_fastmem", "true"}
@@ -2421,7 +2421,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Cpu\\cpuopt_fastmem", "true"}
@@ -2517,7 +2517,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -2531,7 +2531,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Cpu\\cpuopt_fastmem", "true"}
@@ -2602,7 +2602,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -2616,7 +2616,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -2675,7 +2675,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Bypasses Activision online login)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"System\\airplane_mode", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -2718,8 +2718,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
         {
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\gpu_accuracy", "1"}
@@ -2735,7 +2735,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Skips online verification)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -2750,7 +2750,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Fixes Hunter Search lobby lag)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -2792,7 +2792,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Bypasses EA online login requirement)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -2847,7 +2847,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Bypasses Conton City server)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"System\\airplane_mode", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -2861,7 +2861,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Bypasses 2K server handshake)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"System\\airplane_mode", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -2929,7 +2929,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -2957,7 +2957,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Cpu\\cpuopt_fastmem", "true"}
@@ -3013,7 +3013,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Airplane Mode: Enabled (Bypasses network connection retry)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled",
         {
             {"System\\airplane_mode", "true"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"}
         }
@@ -3061,7 +3061,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -3076,7 +3076,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -3101,7 +3101,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ GPU Accuracy: Normal\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -3117,7 +3117,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -3157,7 +3157,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ GPU Accuracy: Normal (Smooth 30 FPS)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -3172,7 +3172,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -3187,7 +3187,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -3304,7 +3304,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -3403,7 +3403,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -3432,7 +3432,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -3531,7 +3531,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpu_accuracy", "1"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -3578,7 +3578,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -3594,7 +3594,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная\n✓ Язык: Русский (Регион Европа)",
         "✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal\n✓ Language: Russian (Region Europe)",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\gpu_accuracy", "0"},
@@ -3610,7 +3610,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
         "✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\gpu_accuracy", "0"}
@@ -3624,7 +3624,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -3672,7 +3672,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 6GB DRAM\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -3743,8 +3743,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -3777,8 +3777,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -3811,8 +3811,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -3981,8 +3981,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -4015,8 +4015,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -4049,8 +4049,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -4061,7 +4061,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: Базовое\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic\n✓ Fastmem: Enabled\n✓ Auto Stub: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\dyna_state", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -4076,8 +4076,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_reactive_flushing", "true"}
         }
@@ -4090,8 +4090,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\astc_recompression", "0"}
         }
     },
@@ -4103,8 +4103,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_reactive_flushing", "true"}
         }
@@ -4132,8 +4132,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\barrier_feedback_loops", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         }
     },
     {
@@ -4163,8 +4163,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpuopt_unsafe_unfuse_fma", "false"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -4207,8 +4207,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -4275,8 +4275,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"System\\airplane_mode", "true"},
         }
     },
@@ -4286,8 +4286,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Darkest Dungeon",
         "• Зависание на чёрном экране при старте из-за таймаута проверки сетевых сервисов Nintendo\n• Падения Out of Memory при одновременной загрузке 5 дополнений (The Crimson Court, The Color of Madness и др.)\n• Сбои из-за невыровненных чтений гостевой памяти RomFS",
         "• Black screen freeze on boot caused by Nintendo network telemetry timeout\n• Out of Memory crashes when loading all 5 DLC packs simultaneously\n• Guest memory aborts due to unaligned RomFS reads",
-        "✓ Режим «В самолете»: Включено (устраняет сетевой таймаут при запуске)\n✓ Память DRAM: 6 ГБ (предотвращает исчерпание памяти при загрузке дополнений)\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-        "✓ Airplane Mode: Enabled (bypasses network boot hang)\n✓ DRAM Memory Layout: 6GB (prevents DLC out-of-memory errors)\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+        "✓ Режим «В самолете»: Включено (устраняет сетевой таймаут при запуске)\n✓ Память DRAM: 4 ГБ (Стандарт) (предотвращает исчерпание памяти при загрузке дополнений)\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
+        "✓ Airplane Mode: Enabled (bypasses network boot hang)\n✓ DRAM Memory Layout: 4GB (Standard) (prevents DLC out-of-memory errors)\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4314,8 +4314,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Darkest Dungeon II",
         "• Микрофризы и просадки кадровой частоты при компиляции шейдеров Unity в бою\n• Высокая нагрузка на VRAM при отрисовке 3D-экипажа и погодных эффектов\n• Утечки памяти при длительных заездах",
         "• Microstutter and framerate drops during Unity combat shader compilation\n• High VRAM consumption in 3D stagecoach journeys and weather passes\n• Memory leaks during prolonged expedition runs",
-        "✓ Память DRAM: 6 ГБ (предотвращает вылеты движка Unity)\n✓ Игнорирование прерываний памяти: Включено\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB (prevents Unity engine crashes)\n✓ Ignore Memory Aborts: Enabled\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт) (предотвращает вылеты движка Unity)\n✓ Игнорирование прерываний памяти: Включено\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard) (prevents Unity engine crashes)\n✓ Ignore Memory Aborts: Enabled\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4333,8 +4333,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4342,8 +4342,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario and Luigi - Brothership",
         "• Просадки FPS и статтеры в анимациях движка Unreal Engine 4\n• Размытие динамического разрешения DRS\n• Ошибки синхронизации шейдеров океана и островов",
         "• Framerate drops and animation stutters in Unreal Engine 4\n• Dynamic resolution scaling blurs\n• Ocean and island shader synchronization glitches",
-        "✓ Память DRAM: 6 ГБ\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4361,8 +4361,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4370,8 +4370,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Paper Mario - The Thousand-Year Door",
         "• Тёмные ореолы вокруг персонажей и текстур сцены\n• Артефакты постобработки в глянцевых отражениях пола\n• Задержки загрузки театральных декораций",
         "• Dark halos around paper characters and stage elements\n• Post-processing artifacts on glossy floor reflections\n• Delays when loading stage set decorations",
-        "✓ Барьеры обратной связи: Включено (устраняет тёмные ореолы)\n✓ Точность ГПУ: Высокая (идеальные отражения сцены)\n✓ Память DRAM: 6 ГБ\n✓ Асинхронные шейдеры: Включено",
-        "✓ Barrier Feedback Loops: Enabled (fixes dark halos)\n✓ GPU Accuracy: High (restores glossy reflections)\n✓ DRAM Memory Layout: 6GB\n✓ Asynchronous Shaders: Enabled",
+        "✓ Барьеры обратной связи: Включено (устраняет тёмные ореолы)\n✓ Точность ГПУ: Высокая (идеальные отражения сцены)\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Асинхронные шейдеры: Включено",
+        "✓ Barrier Feedback Loops: Enabled (fixes dark halos)\n✓ GPU Accuracy: High (restores glossy reflections)\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4389,8 +4389,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4398,8 +4398,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Party Jamboree",
         "• Зависание на сетевом поиске при входе на острова\n• Просадки кадровой частоты в мини-играх на 20 игроков\n• Микрофризы при смене игровых досок",
         "• Network matchmaking hang upon island entry\n• Framerate drops in 20-player minigames\n• Stutters during board transitions",
-        "✓ Режим «В самолете»: Включено\n✓ Память DRAM: 6 ГБ\n✓ Асинхронные шейдеры: Включено\n✓ Барьеры обратной связи: Включено",
-        "✓ Airplane Mode: Enabled\n✓ DRAM Memory Layout: 6GB\n✓ Asynchronous Shaders: Enabled\n✓ Barrier Feedback Loops: Enabled",
+        "✓ Режим «В самолете»: Включено\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Асинхронные шейдеры: Включено\n✓ Барьеры обратной связи: Включено",
+        "✓ Airplane Mode: Enabled\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Asynchronous Shaders: Enabled\n✓ Barrier Feedback Loops: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4417,8 +4417,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4426,8 +4426,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Galaxy",
         "• Графические артефакты при трансформациях гравитации планет\n• Мерцание звёздной пыли и частиц комет\n• Просадки кадровой частоты на водных и лавовых уровнях",
         "• Graphical artifacts during planet gravity field shifts\n• Star bit and comet particle flickering\n• Framerate drops in water and lava stages",
-        "✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4445,8 +4445,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4454,8 +4454,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Galaxy 2",
         "• Артефакты рендеринга космического корабля Марио Звёздолет\n• Мерцание эффектов бура и гравитационных переходов Йоши\n• Задержки компиляции шейдеров",
         "• Rendering artifacts on Starship Mario\n• Flickering during Spin Drill and Yoshi gravity transitions\n• Shader compilation stutter",
-        "✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4473,8 +4473,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4538,8 +4538,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario Golf - Super Rush",
         "• Просадки кадровой частоты при рендеринге плотных полей травы\n• Мерцание теней в динамичном режиме Speed Golf\n• Утечки памяти на открытых полях",
         "• Framerate drops when rendering dense fairway grass\n• Shadow flickering in dynamic Speed Golf mode\n• Memory exhaustion on vast 18-hole courses",
-        "✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4557,8 +4557,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4566,8 +4566,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario + Rabbids - Sparks of Hope",
         "• Вылеты при смене планет из-за переполнения VRAM движка Snowdrop\n• Просадки FPS при взрывах искр Sparks\n• Задержки тактической камеры",
         "• Crashes during planetary transitions due to Snowdrop VRAM exhaustion\n• Framerate drops on multi-Spark elemental bursts\n• Tactical free-cam stutters",
-        "✓ Память DRAM: 6 ГБ\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4585,8 +4585,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4650,8 +4650,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Pokémon Legends - Z-A",
         "• Просадки кадровой частоты в плотных городских кварталах Люмиос-Сити\n• Мерцание LOD-моделей покемонов на дальней дистанции\n• Высокая нагрузка на оперативную память при исследовании города",
         "• Framerate drops in dense Lumiose City urban districts\n• Distant Pokemon LOD model flickering\n• Heavy memory pressure during urban exploration",
-        "✓ Память DRAM: 6 ГБ\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4669,8 +4669,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4678,8 +4678,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Poppy Playtime - Chapter 1",
         "• Просадки FPS и статтеры при динамическом освещении Unreal Engine в Главе 1\n• Утечки памяти текстурного стриминга при переходе между зонами фабрики\n• Падения из-за исчерпания памяти стандартного 4 ГБ пула",
         "• Framerate drops and stutters with Unreal Engine dynamic lighting in Chapter 1\n• Texture streaming memory leaks during factory zone transitions\n• Crashes due to standard 4GB DRAM exhaustion",
-        "✓ Память DRAM: 6 ГБ (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт) (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard) (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4697,8 +4697,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4706,8 +4706,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Poppy Playtime - Chapter 2",
         "• Просадки FPS и статтеры при динамическом освещении Unreal Engine в Главе 2\n• Утечки памяти текстурного стриминга при переходе между зонами фабрики\n• Падения из-за исчерпания памяти стандартного 4 ГБ пула",
         "• Framerate drops and stutters with Unreal Engine dynamic lighting in Chapter 2\n• Texture streaming memory leaks during factory zone transitions\n• Crashes due to standard 4GB DRAM exhaustion",
-        "✓ Память DRAM: 6 ГБ (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт) (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard) (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4725,8 +4725,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4734,8 +4734,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Poppy Playtime - Chapter 3",
         "• Просадки FPS и статтеры при динамическом освещении Unreal Engine в Главе 3\n• Утечки памяти текстурного стриминга при переходе между зонами фабрики\n• Падения из-за исчерпания памяти стандартного 4 ГБ пула",
         "• Framerate drops and stutters with Unreal Engine dynamic lighting in Chapter 3\n• Texture streaming memory leaks during factory zone transitions\n• Crashes due to standard 4GB DRAM exhaustion",
-        "✓ Память DRAM: 6 ГБ (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт) (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard) (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4753,8 +4753,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4762,8 +4762,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Poppy Playtime - Chapter 4",
         "• Просадки FPS и статтеры при динамическом освещении Unreal Engine в Главе 4\n• Утечки памяти текстурного стриминга при переходе между зонами фабрики\n• Падения из-за исчерпания памяти стандартного 4 ГБ пула",
         "• Framerate drops and stutters with Unreal Engine dynamic lighting in Chapter 4\n• Texture streaming memory leaks during factory zone transitions\n• Crashes due to standard 4GB DRAM exhaustion",
-        "✓ Память DRAM: 6 ГБ (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт) (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard) (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4781,8 +4781,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4790,8 +4790,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Poppy Playtime - Chapter 5",
         "• Просадки FPS и статтеры при динамическом освещении Unreal Engine в Главе 5\n• Утечки памяти текстурного стриминга при переходе между зонами фабрики\n• Падения из-за исчерпания памяти стандартного 4 ГБ пула",
         "• Framerate drops and stutters with Unreal Engine dynamic lighting in Chapter 5\n• Texture streaming memory leaks during factory zone transitions\n• Crashes due to standard 4GB DRAM exhaustion",
-        "✓ Память DRAM: 6 ГБ (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт) (устраняет вылеты движка Unreal Engine)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование прерываний памяти: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard) (prevents Unreal Engine crashes)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4809,8 +4809,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -4958,8 +4958,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Last Faith",
         "• Просадки кадровой частоты при касте заклинаний с множеством частиц крови\n• Микрофризы при смене масштабных готических локаций\n• Утечки памяти Unity при длительных сессиях",
         "• Framerate drops during blood spell casts and heavy particle bursts\n• Microstutters during gothic map transitions\n• Unity memory leakage during extended gameplay",
-        "✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование прерываний памяти: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование прерываний памяти: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -4977,8 +4977,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5042,8 +5042,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "It Takes Two",
         "• Высокая нагрузка на ГПУ при сплит-скрин рендеринге двух камер одновременно\n• Вылеты по памяти Unreal Engine 4\n• Разрыв кадров в комплексных механических сценах",
         "• Severe GPU load from simultaneous dual-camera split-screen rendering\n• Unreal Engine 4 out-of-memory crashes\n• Tearing and desync in complex clockwork puzzle stages",
-        "✓ Память DRAM: 6 ГБ (критично для предотвращения вылетов в сплит-скрине)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB (critical for split-screen stability)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт) (критично для предотвращения вылетов в сплит-скрине)\n✓ Конвейеры вычислений: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard) (critical for split-screen stability)\n✓ Compute Pipelines: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5061,8 +5061,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5070,8 +5070,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Tales of Berseria - Remastered",
         "• Зависание аниме-опенингов и сюжетных роликов при видеодекодировании\n• Просадки FPS при активации мистических приёмов Mystic Artes\n• Утечки памяти при длительных битвах",
         "• Opening and anime video cutscene freezes during playback\n• Framerate drops during Mystic Artes particle bursts\n• Memory leaks in marathon battle encounters",
-        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5089,8 +5089,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5098,8 +5098,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Tales of Graces f - Remastered",
         "• Зависание аниме-опенингов и сюжетных роликов при видеодекодировании\n• Просадки FPS при активации мистических приёмов Mystic Artes\n• Утечки памяти при длительных битвах",
         "• Opening and anime video cutscene freezes during playback\n• Framerate drops during Mystic Artes particle bursts\n• Memory leaks in marathon battle encounters",
-        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5117,8 +5117,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5126,8 +5126,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Tales of Symphonia - Remastered",
         "• Зависание аниме-опенингов и сюжетных роликов при видеодекодировании\n• Просадки FPS при активации мистических приёмов Mystic Artes\n• Утечки памяти при длительных битвах",
         "• Opening and anime video cutscene freezes during playback\n• Framerate drops during Mystic Artes particle bursts\n• Memory leaks in marathon battle encounters",
-        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5145,8 +5145,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5154,8 +5154,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Tales of Vesperia - Definitive Edition",
         "• Зависание аниме-опенингов и сюжетных роликов при видеодекодировании\n• Просадки FPS при активации мистических приёмов Mystic Artes\n• Утечки памяти при длительных битвах",
         "• Opening and anime video cutscene freezes during playback\n• Framerate drops during Mystic Artes particle bursts\n• Memory leaks in marathon battle encounters",
-        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5173,8 +5173,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5182,8 +5182,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Tales of Xillia - Remastered",
         "• Зависание аниме-опенингов и сюжетных роликов при видеодекодировании\n• Просадки FPS при активации мистических приёмов Mystic Artes\n• Утечки памяти при длительных битвах",
         "• Opening and anime video cutscene freezes during playback\n• Framerate drops during Mystic Artes particle bursts\n• Memory leaks in marathon battle encounters",
-        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Видеодекодер NVDEC: ЦПУ (исправляет воспроизведение роликов)\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ NVDEC Video Emulation: CPU (fixes video playback)\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5201,8 +5201,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5210,8 +5210,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Ys X - Nordics",
         "• Просадки FPS при морских битвах и комбо-атаках связки персонажей\n• Микрофризы при подгрузке архивов диалогов и озвучки\n• Сбои глубины резкости в сюжетных катсценах",
         "• Framerate drops during naval battles and cross-action combo attacks\n• Voice and dialogue archive streaming stutters\n• Depth of field glitches in story cutscenes",
-        "✓ Память DRAM: 6 ГБ\n✓ Быстрая память: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Fastmem: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Быстрая память: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Fastmem: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5229,8 +5229,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5238,8 +5238,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Ys vs. Trails in the Sky - Alternative Saga",
         "• Просадки FPS при морских битвах и комбо-атаках связки персонажей\n• Микрофризы при подгрузке архивов диалогов и озвучки\n• Сбои глубины резкости в сюжетных катсценах",
         "• Framerate drops during naval battles and cross-action combo attacks\n• Voice and dialogue archive streaming stutters\n• Depth of field glitches in story cutscenes",
-        "✓ Память DRAM: 6 ГБ\n✓ Быстрая память: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Fastmem: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Быстрая память: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Fastmem: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5257,8 +5257,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5266,8 +5266,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Heroes - Trails to Azure",
         "• Просадки FPS при морских битвах и комбо-атаках связки персонажей\n• Микрофризы при подгрузке архивов диалогов и озвучки\n• Сбои глубины резкости в сюжетных катсценах",
         "• Framerate drops during naval battles and cross-action combo attacks\n• Voice and dialogue archive streaming stutters\n• Depth of field glitches in story cutscenes",
-        "✓ Память DRAM: 6 ГБ\n✓ Быстрая память: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Fastmem: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Быстрая память: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Fastmem: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5285,8 +5285,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5294,8 +5294,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "The Legend of Heroes - Trails in the Sky 2nd Chapter - Remake",
         "• Просадки FPS при морских битвах и комбо-атаках связки персонажей\n• Микрофризы при подгрузке архивов диалогов и озвучки\n• Сбои глубины резкости в сюжетных катсценах",
         "• Framerate drops during naval battles and cross-action combo attacks\n• Voice and dialogue archive streaming stutters\n• Depth of field glitches in story cutscenes",
-        "✓ Память DRAM: 6 ГБ\n✓ Быстрая память: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Fastmem: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Быстрая память: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Fastmem: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5313,8 +5313,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5322,8 +5322,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Fantasian Neo Dimension",
         "• Размытие диорамных задников сверхвысокого разрешения\n• Просадки FPS при скоплении сотен врагов в системе Dimengeon",
         "• Blurring on ultra-high-resolution handcrafted diorama backgrounds\n• Framerate drops when fighting stacked enemies in Dimengeon battles",
-        "✓ Память DRAM: 6 ГБ\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-        "✓ DRAM Memory Layout: 6GB\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5341,8 +5341,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5350,8 +5350,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Another Eden Begins",
         "• Зависание при сетевом обмене данными с сервером\n• Статтеры анимаций при смене эпох времени",
         "• Stalls during network synchronization attempts\n• Animation microstutters during time era warp transitions",
-        "✓ Режим «В самолете»: Включено\n✓ Память DRAM: 6 ГБ\n✓ Асинхронные шейдеры: Включено",
-        "✓ Airplane Mode: Enabled\n✓ DRAM Memory Layout: 6GB\n✓ Asynchronous Shaders: Enabled",
+        "✓ Режим «В самолете»: Включено\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Асинхронные шейдеры: Включено",
+        "✓ Airplane Mode: Enabled\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5369,8 +5369,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5378,8 +5378,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Shining Resonance Refrain",
         "• Просадки кадровой частоты в драконьих битвах B.A.N.D.\n• Зависание видеороликов NVDEC",
         "• Framerate drops during intense B.A.N.D. dragon transformation concerts\n• NVDEC video playback freeze",
-        "✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 6 ГБ\n✓ Асинхронные шейдеры: Включено",
-        "✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 6GB\n✓ Asynchronous Shaders: Enabled",
+        "✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Асинхронные шейдеры: Включено",
+        "✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5397,8 +5397,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5406,8 +5406,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Robot Wars 30",
         "• Падения эмулятора при переполнении списков дополнений (до 25 DLC на игру)\n• Зависание анимированных видеовставок атак роботов\n• Невыровненные обращения к памяти боевых спрайтов",
         "• Emulator crashes when processing massive DLC rosters (up to 25 DLCs per game)\n• Video cutscene animation freezes on ultimate attacks\n• Unaligned memory accesses during 2D sprite blits",
-        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 6 ГБ\n✓ Асинхронные шейдеры: Включено",
-        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 6GB\n✓ Asynchronous Shaders: Enabled",
+        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Асинхронные шейдеры: Включено",
+        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5425,8 +5425,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5434,8 +5434,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Robot Wars T",
         "• Падения эмулятора при переполнении списков дополнений (до 25 DLC на игру)\n• Зависание анимированных видеовставок атак роботов\n• Невыровненные обращения к памяти боевых спрайтов",
         "• Emulator crashes when processing massive DLC rosters (up to 25 DLCs per game)\n• Video cutscene animation freezes on ultimate attacks\n• Unaligned memory accesses during 2D sprite blits",
-        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 6 ГБ\n✓ Асинхронные шейдеры: Включено",
-        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 6GB\n✓ Asynchronous Shaders: Enabled",
+        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Асинхронные шейдеры: Включено",
+        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5453,8 +5453,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5462,8 +5462,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Robot Wars V",
         "• Падения эмулятора при переполнении списков дополнений (до 25 DLC на игру)\n• Зависание анимированных видеовставок атак роботов\n• Невыровненные обращения к памяти боевых спрайтов",
         "• Emulator crashes when processing massive DLC rosters (up to 25 DLCs per game)\n• Video cutscene animation freezes on ultimate attacks\n• Unaligned memory accesses during 2D sprite blits",
-        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 6 ГБ\n✓ Асинхронные шейдеры: Включено",
-        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 6GB\n✓ Asynchronous Shaders: Enabled",
+        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Асинхронные шейдеры: Включено",
+        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5481,8 +5481,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5490,8 +5490,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Robot Wars X",
         "• Падения эмулятора при переполнении списков дополнений (до 25 DLC на игру)\n• Зависание анимированных видеовставок атак роботов\n• Невыровненные обращения к памяти боевых спрайтов",
         "• Emulator crashes when processing massive DLC rosters (up to 25 DLCs per game)\n• Video cutscene animation freezes on ultimate attacks\n• Unaligned memory accesses during 2D sprite blits",
-        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 6 ГБ\n✓ Асинхронные шейдеры: Включено",
-        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 6GB\n✓ Asynchronous Shaders: Enabled",
+        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Асинхронные шейдеры: Включено",
+        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5509,8 +5509,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5518,8 +5518,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Robot Wars Y",
         "• Падения эмулятора при переполнении списков дополнений (до 25 DLC на игру)\n• Зависание анимированных видеовставок атак роботов\n• Невыровненные обращения к памяти боевых спрайтов",
         "• Emulator crashes when processing massive DLC rosters (up to 25 DLCs per game)\n• Video cutscene animation freezes on ultimate attacks\n• Unaligned memory accesses during 2D sprite blits",
-        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 6 ГБ\n✓ Асинхронные шейдеры: Включено",
-        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 6GB\n✓ Asynchronous Shaders: Enabled",
+        "✓ Игнорирование прерываний памяти: Включено\n✓ Видеодекодер NVDEC: ЦПУ\n✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Асинхронные шейдеры: Включено",
+        "✓ Ignore Memory Aborts: Enabled\n✓ NVDEC Video Emulation: CPU\n✓ DRAM Memory Layout: 4GB (Standard)\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5537,8 +5537,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5546,8 +5546,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Captain Tsubasa - Rise of New Champions",
         "• Просадки FPS при отрисовке аниме-суперударов с кинематографичными эффектами\n• Зависание сетевого лобби стадиона",
         "• Framerate drops during cinematic anime super shot executions\n• Stadium network lobby matchmaking hang",
-        "✓ Память DRAM: 6 ГБ\n✓ Режим «В самолете»: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Airplane Mode: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Режим «В самолете»: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Airplane Mode: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5565,8 +5565,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5574,8 +5574,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Captain Tsubasa 2 - World Fighters",
         "• Просадки FPS при отрисовке аниме-суперударов с кинематографичными эффектами\n• Зависание сетевого лобби стадиона",
         "• Framerate drops during cinematic anime super shot executions\n• Stadium network lobby matchmaking hang",
-        "✓ Память DRAM: 6 ГБ\n✓ Режим «В самолете»: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Airplane Mode: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Режим «В самолете»: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Airplane Mode: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5593,8 +5593,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5602,8 +5602,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Inazuma Eleven - Victory Road",
         "• Просадки FPS при отрисовке аниме-суперударов с кинематографичными эффектами\n• Зависание сетевого лобби стадиона",
         "• Framerate drops during cinematic anime super shot executions\n• Stadium network lobby matchmaking hang",
-        "✓ Память DRAM: 6 ГБ\n✓ Режим «В самолете»: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Airplane Mode: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Режим «В самолете»: Включено\n✓ Барьеры обратной связи: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Airplane Mode: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5621,8 +5621,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5630,8 +5630,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Dungeons 3",
         "• Просадки кадровой частоты при масштабировании карты с сотнями юнитов\n• Задержки компиляции шейдеров динамического освещения подземелий в Dungeons 3",
         "• Framerate drops when zooming out over large dungeons with hundreds of minions\n• Dynamic dungeon lighting shader compilation lag in Dungeons 3",
-        "✓ Память DRAM: 6 ГБ\n✓ Конвейеры вычислений: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Compute Pipelines: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Конвейеры вычислений: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Compute Pipelines: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5649,8 +5649,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5658,8 +5658,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Dungeons 4",
         "• Просадки кадровой частоты при масштабировании карты с сотнями юнитов\n• Задержки компиляции шейдеров динамического освещения подземелий в Dungeons 4",
         "• Framerate drops when zooming out over large dungeons with hundreds of minions\n• Dynamic dungeon lighting shader compilation lag in Dungeons 4",
-        "✓ Память DRAM: 6 ГБ\n✓ Конвейеры вычислений: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
-        "✓ DRAM Memory Layout: 6GB\n✓ Compute Pipelines: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
+        "✓ Память DRAM: 4 ГБ (Стандарт)\n✓ Конвейеры вычислений: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
+        "✓ DRAM Memory Layout: 4GB (Standard)\n✓ Compute Pipelines: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -5677,8 +5677,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -5873,8 +5873,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -6097,8 +6097,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -6125,8 +6125,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -6153,8 +6153,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
         }
     },
     {
@@ -6496,7 +6496,7 @@ static std::string BuildFixesEn(const std::unordered_map<std::string, std::strin
     if (mem_layout == "2") {
         out += "✓ DRAM Memory Layout: 8GB Extreme (critical to prevent out-of-memory engine crashes)\n";
     } else if (mem_layout == "1") {
-        out += "✓ DRAM Memory Layout: 6GB Expanded (prevents crashes during prolonged gameplay and memory leaks)\n";
+        out += "✓ DRAM Memory Layout: 4GB (Standard) Expanded (prevents crashes during prolonged gameplay and memory leaks)\n";
     } else {
         out += "✓ DRAM Memory Layout: 4GB Standard (original Switch console memory layout without extra RAM overhead)\n";
     }
@@ -7415,9 +7415,10 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
                 int mode = safe_stoi(val, 0);
 #ifdef __ANDROID__
-                if (mode >= 2) {
-                    mode = 1;
-                }
+                // On Android devices, always enforce standard 4GB DRAM (mode 0) by default.
+                // Allocating 6GB/8GB DRAM triggers the Linux kernel Low Memory Killer Daemon (lmkd)
+                // to immediately terminate the process on devices with <= 8GB RAM.
+                mode = 0;
 #endif
                 apply_setting(Settings::values.memory_layout_mode, static_cast<Settings::MemoryLayout>(mode));
             } else if (full_key == "Cpu\\cpu_backend") {

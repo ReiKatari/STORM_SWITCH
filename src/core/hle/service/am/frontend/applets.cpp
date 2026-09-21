@@ -73,16 +73,10 @@ void FrontendApplet::PushInteractiveOutData(std::shared_ptr<IStorage> storage) {
 
 void FrontendApplet::Exit() {
     auto applet_ = applet.lock();
-    {
-        std::scoped_lock lk{applet_->lock};
-        applet_->is_completed = true;
-        applet_->state_changed_event.Signal(system.Kernel());
-    }
-    if (auto caller_applet = applet_->caller_applet.lock()) {
-        std::scoped_lock lk{caller_applet->lock};
-        std::erase(caller_applet->child_applets, applet_);
-    }
-    if (auto* window_system = system.GetAppletManager().GetWindowSystem()) window_system->RequestUpdate();
+
+    std::scoped_lock lk{applet_->lock};
+    applet_->is_completed = true;
+    applet_->state_changed_event.Signal(system.Kernel());
 }
 
 FrontendAppletSet::FrontendAppletSet() = default;

@@ -359,6 +359,14 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
             LOG_INFO(Frontend, "Applied in-memory runtime GameFix for {:#016x}", prog_id);
         }
     }
+#ifdef __ANDROID__
+    // On Android devices, always clamp memory_layout_mode to standard 4GB DRAM (mode 0)
+    // to protect against Low Memory Killer Daemon (lmkd) SIGKILL on devices with <= 8GB RAM.
+    if (Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb) {
+        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+        LOG_INFO(Frontend, "Clamped memory_layout_mode to 4GB for Android stability");
+    }
+#endif
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();
     Settings::LogSettings();

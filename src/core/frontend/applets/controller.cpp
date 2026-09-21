@@ -30,39 +30,23 @@ void DefaultControllerApplet::ReconfigureControllers(ReconfigureCallback callbac
 
     const std::size_t min_supported_players =
         parameters.enable_single_mode ? 1 : parameters.min_players;
-    using Core::HID::NpadStyleIndex;
-    const std::size_t max_supported_players = parameters.enable_single_mode ? 1 : parameters.max_players;
-    std::size_t num_selected_players = 0;
-    std::array<bool, HID::HIDCore::available_controllers> keep_connected{};
 
-    // reserve existing AND valid players before filling slots. include Handheld, but not other
-    for (std::size_t index = 0; index < hid_core.available_controllers - 1; ++index) {
-        const auto* controller = hid_core.GetEmulatedControllerByIndex(index);
-        if (!parameters.keep_controllers_connected || !controller->IsConnected() || num_selected_players >= max_supported_players) continue;
-
-        const auto style = controller->GetNpadStyleIndex();
-        keep_connected[index] =
-            (style == NpadStyleIndex::Fullkey && parameters.allow_pro_controller) ||
-            (style == NpadStyleIndex::JoyconDual && parameters.allow_dual_joycons) ||
-            (style == NpadStyleIndex::JoyconLeft && parameters.allow_left_joycon) ||
-            (style == NpadStyleIndex::JoyconRight && parameters.allow_right_joycon) ||
-            (style == NpadStyleIndex::Handheld && parameters.enable_single_mode && parameters.allow_handheld && !Settings::IsDockedMode()) ||
-            (style == NpadStyleIndex::GameCube && parameters.allow_gamecube_controller);
-        num_selected_players += keep_connected[index];
-    }
+    // Disconnect Handheld first.
     auto* handheld = hid_core.GetEmulatedController(Core::HID::NpadIdType::Handheld);
-    if (!keep_connected[hid_core.available_controllers - 2]) handheld->Disconnect();
+    handheld->Disconnect();
 
     // Deduce the best configuration based on the input parameters.
     for (std::size_t index = 0; index < hid_core.available_controllers - 2; ++index) {
         auto* controller = hid_core.GetEmulatedControllerByIndex(index);
 
-        if (keep_connected[index]) continue;
+        // First, disconnect all controllers regardless of the value of keep_controllers_connected.
+        // This makes it easy to connect the desired controllers.
         controller->Disconnect();
 
-        // only add players still needed to reach the minimum
-        if (num_selected_players >= min_supported_players) continue;
-        ++num_selected_players;
+        // Only connect the minimum number of required players.
+        if (index >= min_supported_players) {
+            continue;
+        }
 
         // Connect controllers based on the following priority list from highest to lowest priority:
         // Pro Controller -> Dual Joycons -> Left Joycon/Right Joycon -> Handheld
