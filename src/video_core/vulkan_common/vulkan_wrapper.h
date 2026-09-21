@@ -485,7 +485,7 @@ protected:
 private:
     /// Destroys the held object if it exists.
     void Release() noexcept {
-        if (handle) {
+        if (handle && dld && owner) {
             Destroy(OwnerType(owner), Type(handle), *dld);
         }
     }
@@ -566,7 +566,7 @@ protected:
 private:
     /// Destroys the held object if it exists.
     void Release() noexcept {
-        if (handle) {
+        if (handle && dld) {
             Destroy(handle, *dld);
         }
     }

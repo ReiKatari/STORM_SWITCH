@@ -417,11 +417,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="3dp"
                 android:ellipsize="start"
                 android:maxLines="1"
-                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="11sp"
-                tools:text="📁 Папка: /storage/emulated/0/Switch" />
+                android:textStyle="bold"
+                tools:text="📁 Каталог: /storage/emulated/0/Switch" />
 
             <!-- Action buttons -->
             <LinearLayout

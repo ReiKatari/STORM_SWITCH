@@ -6,6 +6,7 @@ package org.yuzu.yuzu_emu.fragments
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -15,14 +16,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import org.yuzu.yuzu_emu.model.GameDir
 import kotlinx.coroutines.flow.collectLatest
 import org.yuzu.yuzu_emu.services.StormDownloadManager
 import org.yuzu.yuzu_emu.services.StormDownloadProgress
@@ -137,7 +141,10 @@ data class StormWorldGameItem(
                 hasFile = obj.optBoolean("hasFile", true),
                 regions = regList,
                 textLangs = langList,
-                description = obj.optString("description"),
+                description = let {
+                    val d = obj.optString("description")
+                    if (d == "null" || d.isBlank()) "" else d
+                },
                 fileSizeBytes = obj.optLong("fileSizeBytes"),
                 realExtension = obj.optString("realExtension", ".nsp"),
                 dlcCount = obj.optInt("dlcCount"),
@@ -154,6 +161,31 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     private val binding get() = _binding!!
 
     private val gamesViewModel: GamesViewModel by activityViewModels()
+
+    private val selectDownloadDirLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            if (uri == null) return@registerForActivityResult
+            val ctx = context ?: return@registerForActivityResult
+            try {
+                val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                ctx.contentResolver.takePersistableUriPermission(uri, takeFlags)
+            } catch (e: Exception) {
+                Log.error("[StormGamesWorld] takePersistableUriPermission error: ${e.message}")
+            }
+
+            val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+            prefs.edit().putString(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR, uri.toString()).apply()
+
+            val uriStr = uri.toString()
+            val existing = NativeConfig.getGameDirs()
+            if (existing.none { it.uriString == uriStr }) {
+                NativeConfig.addGameDir(GameDir(uriStr, true))
+            }
+
+            val friendlyName = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: "Каталог"
+            binding.detailSaveFolder.text = "📁 Каталог: $friendlyName ✏️"
+            Toast.makeText(ctx, "Каталог загрузки: $friendlyName", Toast.LENGTH_SHORT).show()
+        }
 
     enum class SortMode(val titleRes: Int, val labelRu: String, val labelEn: String) {
         TITLE_ASC(R.string.sort_by_title_asc, "А-Я", "A-Z"),
@@ -928,12 +960,19 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             binding.detailGameMod.isVisible = false
         }
 
-        binding.detailGameDescription.text = "Загрузка информации..."
+        binding.detailGameDescription.text = if (game.description.isNotBlank() && game.description != "null") {
+            game.description
+        } else {
+            "Загрузка информации..."
+        }
 
         loadCoverForGame(game, binding.detailGameCover)
 
         val targetDir = getTargetDownloadDirectoryDescription()
-        binding.detailSaveFolder.text = "📁 Каталог: $targetDir"
+        binding.detailSaveFolder.text = "📁 Каталог: $targetDir ✏️"
+        binding.detailSaveFolder.setOnClickListener {
+            showDownloadDirectoryPicker()
+        }
 
         updateDownloadUi(StormDownloadManager.state.value)
 
@@ -945,7 +984,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                    .header("User-Agent", "STORM_SWITCH/9.0.0 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
                 val body = resp.body?.string().orEmpty()
@@ -958,10 +997,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 } else null
 
                 if (obj != null) {
-                    val desc = obj.optString("description", "")
+                    val rawDesc = obj.optString("description", "")
+                    val safeDesc = if (rawDesc == "null" || rawDesc.isBlank()) "" else rawDesc
                     val bytes = obj.optLong("fileSizeBytes", 0L)
 
-                    game.description = desc
+                    game.description = safeDesc
                     game.fileSizeBytes = bytes
 
                     val dlcsArr = obj.optJSONArray("dlcs")
@@ -991,7 +1031,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
                         .head()
-                        .header("User-Agent", "STORM_SWITCH/9.0.0 (Android)")
+                        .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
@@ -1002,7 +1042,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
                 withContext(Dispatchers.Main) {
                     if (_binding == null || selectedGame?.id != game.id) return@withContext
-                    binding.detailGameDescription.text = if (game.description.isNotEmpty()) game.description else "Описание отсутствует"
+                    binding.detailGameDescription.text = if (game.description.isNotBlank() && game.description != "null") {
+                        game.description
+                    } else {
+                        "Описание отсутствует"
+                    }
                     if (game.dlcCount > 0) {
                         binding.detailGameDlc.isVisible = true
                         binding.detailGameDlc.text = "+${game.dlcCount} DLC"
@@ -1024,15 +1068,70 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
     }
 
-    private fun getTargetDownloadDirectoryDescription(): String {
-        val gameDirs = NativeConfig.getGameDirs()
-        val first = gameDirs.firstOrNull()
-        if (first != null) {
-            val uri = Uri.parse(first.uriString)
-            return uri.lastPathSegment ?: uri.toString()
+    private fun showDownloadDirectoryPicker() {
+        val ctx = context ?: return
+        val gameDirs = NativeConfig.getGameDirs().filter { it.uriString.isNotBlank() }
+        val options = mutableListOf<String>()
+        val actions = mutableListOf<() -> Unit>()
+
+        options.add("📂 Выбрать новую папку на устройстве...")
+        actions.add { selectDownloadDirLauncher.launch(null) }
+
+        for (dir in gameDirs) {
+            val uri = Uri.parse(dir.uriString)
+            val name = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: dir.uriString
+            options.add("📁 Папка игр: $name")
+            actions.add {
+                val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+                prefs.edit().putString(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR, dir.uriString).apply()
+                binding.detailSaveFolder.text = "📁 Каталог: $name ✏️"
+                Toast.makeText(ctx, "Каталог загрузки: $name", Toast.LENGTH_SHORT).show()
+            }
         }
-        val defaultDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "STORM_SWITCH_GAMES")
-        return defaultDir.name
+
+        options.add("🔄 По умолчанию (Download/STORM_SWITCH_GAMES)")
+        actions.add {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+            prefs.edit().remove(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR).apply()
+            val defName = getTargetDownloadDirectoryDescription()
+            binding.detailSaveFolder.text = "📁 Каталог: $defName ✏️"
+            Toast.makeText(ctx, "Каталог сброшен по умолчанию", Toast.LENGTH_SHORT).show()
+        }
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
+            .setTitle("Каталог для загрузки игр")
+            .setItems(options.toTypedArray()) { _, which ->
+                if (which in actions.indices) {
+                    actions[which].invoke()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun getTargetDownloadDirectoryDescription(): String {
+        val ctx = context ?: return "STORM_SWITCH_GAMES"
+        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+        val customUriStr = prefs.getString(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR, null)
+        if (!customUriStr.isNullOrBlank()) {
+            val uri = Uri.parse(customUriStr)
+            val name = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment
+            if (!name.isNullOrBlank()) return name
+        }
+
+        val gameDirs = NativeConfig.getGameDirs().filter { it.uriString.isNotBlank() }
+        val preferredDir = gameDirs.firstOrNull { dir ->
+            val s = dir.uriString.lowercase(Locale.ROOT)
+            !s.contains("mod") && !s.contains("cheat") && !s.contains("60fps") && !s.contains("patch")
+        } ?: gameDirs.firstOrNull()
+
+        if (preferredDir != null) {
+            val uri = Uri.parse(preferredDir.uriString)
+            val name = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment
+            if (!name.isNullOrBlank()) return name
+        }
+
+        return "Download/STORM_SWITCH_GAMES"
     }
 
     private fun updateDownloadUi(progress: StormDownloadProgress?) {

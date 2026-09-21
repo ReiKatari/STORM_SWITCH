@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Environment
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -201,6 +202,161 @@ object StormDownloadManager {
         }
     }
 
+    const val PREF_CUSTOM_DOWNLOAD_DIR = "storm_world_custom_download_dir"
+
+    sealed class TargetStorage {
+        data class Saf(val docTree: DocumentFile, val uri: Uri) : TargetStorage()
+        data class RegularFile(val folder: File) : TargetStorage()
+    }
+
+    data class StreamTarget(
+        var outputStream: OutputStream,
+        var existingBytes: Long,
+        val safTree: DocumentFile?,
+        val safDocFile: DocumentFile?,
+        val normalFile: File?,
+        val isSaf: Boolean,
+        val targetDescription: String
+    )
+
+    private fun tryOpenStream(
+        appContext: Context,
+        target: TargetStorage,
+        partFilename: String
+    ): StreamTarget? {
+        return try {
+            when (target) {
+                is TargetStorage.Saf -> {
+                    val safTree = target.docTree
+                    if (!safTree.exists() || !safTree.canWrite()) {
+                        Log.warning("[StormDownloadManager] SAF directory not writable or missing: ${target.uri}")
+                        return null
+                    }
+                    var targetDocPart = safTree.findFile(partFilename)
+                    var existingBytes = 0L
+                    var outputStream: OutputStream? = null
+
+                    if (targetDocPart != null && targetDocPart.exists()) {
+                        existingBytes = targetDocPart.length()
+                        outputStream = appContext.contentResolver.openOutputStream(targetDocPart.uri, "wa")
+                    }
+                    if (outputStream == null) {
+                        if (targetDocPart == null || !targetDocPart.exists()) {
+                            targetDocPart = safTree.createFile("application/octet-stream", partFilename)
+                        }
+                        if (targetDocPart != null && targetDocPart.exists()) {
+                            outputStream = appContext.contentResolver.openOutputStream(targetDocPart.uri, "w")
+                            existingBytes = 0L
+                        }
+                    }
+
+                    if (outputStream != null && targetDocPart != null) {
+                        StreamTarget(
+                            outputStream = outputStream,
+                            existingBytes = existingBytes,
+                            safTree = safTree,
+                            safDocFile = targetDocPart,
+                            normalFile = null,
+                            isSaf = true,
+                            targetDescription = safTree.name ?: "SAF"
+                        )
+                    } else {
+                        Log.warning("[StormDownloadManager] Could not open SAF stream in ${safTree.name}")
+                        null
+                    }
+                }
+                is TargetStorage.RegularFile -> {
+                    val folder = target.folder
+                    if (!folder.exists()) {
+                        folder.mkdirs()
+                    }
+                    if (!folder.exists() || !folder.canWrite()) {
+                        Log.warning("[StormDownloadManager] Directory not writable: ${folder.absolutePath}")
+                        return null
+                    }
+                    val normalFile = File(folder, partFilename)
+                    val existingBytes = if (normalFile.exists()) normalFile.length() else 0L
+                    val outputStream = FileOutputStream(normalFile, true)
+                    StreamTarget(
+                        outputStream = outputStream,
+                        existingBytes = existingBytes,
+                        safTree = null,
+                        safDocFile = null,
+                        normalFile = normalFile,
+                        isSaf = false,
+                        targetDescription = folder.name
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            Log.error("[StormDownloadManager] tryOpenStream failed: ${e.message}")
+            null
+        }
+    }
+
+    fun getCandidateTargets(context: Context): List<TargetStorage> {
+        val candidates = mutableListOf<TargetStorage>()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+        // 1. User-selected custom download directory
+        val customUriStr = prefs.getString(PREF_CUSTOM_DOWNLOAD_DIR, null)
+        if (!customUriStr.isNullOrBlank()) {
+            try {
+                val uri = Uri.parse(customUriStr)
+                if (uri.scheme == "content") {
+                    val tree = DocumentFile.fromTreeUri(context, uri)
+                    if (tree != null && tree.exists() && tree.canWrite()) {
+                        candidates.add(TargetStorage.Saf(tree, uri))
+                    }
+                } else {
+                    val path = uri.path ?: customUriStr
+                    val f = File(path)
+                    candidates.add(TargetStorage.RegularFile(f))
+                }
+            } catch (e: Exception) {
+                Log.error("[StormDownloadManager] Error resolving custom download dir: ${e.message}")
+            }
+        }
+
+        // 2. Configured game directories (prefer actual games directories over mod/cheat/patch paths)
+        val gameDirs = NativeConfig.getGameDirs().filter { it.uriString.isNotBlank() }
+        val sortedDirs = gameDirs.sortedBy { dir ->
+            val s = dir.uriString.lowercase(Locale.ROOT)
+            if (s.contains("mod") || s.contains("cheat") || s.contains("60fps") || s.contains("patch")) 1 else 0
+        }
+
+        for (dir in sortedDirs) {
+            try {
+                val uri = Uri.parse(dir.uriString)
+                if (uri.scheme == "content") {
+                    val tree = DocumentFile.fromTreeUri(context, uri)
+                    if (tree != null && tree.exists() && tree.canWrite()) {
+                        candidates.add(TargetStorage.Saf(tree, uri))
+                    }
+                } else {
+                    val path = uri.path ?: dir.uriString
+                    val f = File(path)
+                    candidates.add(TargetStorage.RegularFile(f))
+                }
+            } catch (_: Exception) {}
+        }
+
+        // 3. Standard public Downloads/STORM_SWITCH_GAMES
+        try {
+            val pubDir = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "STORM_SWITCH_GAMES"
+            )
+            candidates.add(TargetStorage.RegularFile(pubDir))
+        } catch (_: Exception) {}
+
+        // 4. Guaranteed app-specific external storage (always 100% accessible on all Android versions)
+        val appFiles = context.getExternalFilesDir("games") ?: File(context.filesDir, "games")
+        candidates.add(TargetStorage.RegularFile(appFiles))
+
+        return candidates
+    }
+
     private suspend fun runDownloadLoop(appContext: Context, game: StormWorldGameItem) {
         val cleanTitle = (if (game.finalTitle.isNotEmpty()) game.finalTitle else game.title)
             .replace(Regex("[\\\\/:*?\"<>|]"), "_")
@@ -214,31 +370,17 @@ object StormDownloadManager {
         }
         val partFilename = "$baseFilename.part"
 
-        val gameDirs = NativeConfig.getGameDirs()
-        val firstDir = gameDirs.firstOrNull()
-        var isSaf = false
-        var targetFolder: File? = null
-        var safTree: DocumentFile? = null
-        var targetDocPart: DocumentFile? = null
-        var targetNormalPart: File? = null
-
-        if (firstDir != null) {
-            val dirUri = Uri.parse(firstDir.uriString)
-            if (dirUri.scheme == "content") {
-                isSaf = true
-                safTree = DocumentFile.fromTreeUri(appContext, dirUri)
-            } else {
-                val p = dirUri.path ?: firstDir.uriString
-                targetFolder = File(p)
-                if (!targetFolder.exists()) targetFolder.mkdirs()
+        var activeTarget: StreamTarget? = null
+        for (candidate in getCandidateTargets(appContext)) {
+            val st = tryOpenStream(appContext, candidate, partFilename)
+            if (st != null) {
+                activeTarget = st
+                break
             }
         }
-        if (!isSaf && targetFolder == null) {
-            targetFolder = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                "STORM_SWITCH_GAMES"
-            )
-            if (!targetFolder.exists()) targetFolder.mkdirs()
+
+        if (activeTarget == null) {
+            throw RuntimeException("Не удалось открыть каталог для сохранения. Выберите доступную папку внизу карточки игры.")
         }
 
         var retryCount = 0
@@ -246,39 +388,27 @@ object StormDownloadManager {
         var completed = false
 
         while (retryCount <= maxRetries && !isCancelled && !isPaused && !completed) {
-            var outputStream: OutputStream? = null
             var inputStream: InputStream? = null
+            var bufferedOut: BufferedOutputStream? = null
 
             try {
-                var existingBytes = 0L
-
-                if (isSaf && safTree != null) {
-                    targetDocPart = safTree.findFile(partFilename)
-                    if (targetDocPart != null && targetDocPart.exists()) {
-                        existingBytes = targetDocPart.length()
-                        outputStream = appContext.contentResolver.openOutputStream(targetDocPart.uri, "wa")
-                    } else {
-                        targetDocPart = safTree.createFile("application/octet-stream", partFilename)
-                        if (targetDocPart != null) {
-                            outputStream = appContext.contentResolver.openOutputStream(targetDocPart.uri, "w")
+                val currentTarget = activeTarget ?: run {
+                    for (candidate in getCandidateTargets(appContext)) {
+                        val st = tryOpenStream(appContext, candidate, partFilename)
+                        if (st != null) {
+                            activeTarget = st
+                            break
                         }
                     }
-                } else if (targetFolder != null) {
-                    targetNormalPart = File(targetFolder, partFilename)
-                    if (targetNormalPart.exists()) {
-                        existingBytes = targetNormalPart.length()
-                    }
-                    outputStream = FileOutputStream(targetNormalPart, true)
+                    activeTarget ?: throw RuntimeException("Не удалось открыть целевой файл для записи")
                 }
 
-                if (outputStream == null) {
-                    throw RuntimeException("Не удалось открыть целевой файл для записи")
-                }
+                var existingBytes = currentTarget.existingBytes
 
                 val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
                 val reqBuilder = Request.Builder()
                     .url(downloadUrl)
-                    .header("User-Agent", "STORM_SWITCH/8.7.5 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")
 
                 if (existingBytes > 0L) {
                     reqBuilder.header("Range", "bytes=$existingBytes-")
@@ -290,9 +420,9 @@ object StormDownloadManager {
 
                 val resumeMsg = if (existingBytes > 0L) {
                     val mb = existingBytes / (1024 * 1024)
-                    "Возобновление загрузки с ${mb} МБ..."
+                    "Возобновление загрузки с ${mb} МБ (${currentTarget.targetDescription})..."
                 } else {
-                    "Подключение к серверу загрузки..."
+                    "Подключение к серверу загрузки (${currentTarget.targetDescription})..."
                 }
                 _state.value = _state.value?.copy(
                     status = StormDownloadStatus.DOWNLOADING,
@@ -303,7 +433,7 @@ object StormDownloadManager {
                 val resp = call.execute()
 
                 if (resp.code == 416) {
-                    outputStream.close()
+                    try { currentTarget.outputStream.close() } catch (_: Exception) {}
                     completed = true
                     break
                 }
@@ -316,13 +446,18 @@ object StormDownloadManager {
                 val isPartial = (resp.code == 206)
 
                 if (existingBytes > 0L && !isPartial) {
-                    outputStream.close()
-                    if (isSaf && targetDocPart != null) {
-                        outputStream = appContext.contentResolver.openOutputStream(targetDocPart.uri, "w")
-                    } else if (targetNormalPart != null) {
-                        outputStream = FileOutputStream(targetNormalPart, false)
+                    try { currentTarget.outputStream.close() } catch (_: Exception) {}
+                    val reopened = if (currentTarget.isSaf && currentTarget.safDocFile != null) {
+                        appContext.contentResolver.openOutputStream(currentTarget.safDocFile.uri, "w")
+                    } else if (currentTarget.normalFile != null) {
+                        FileOutputStream(currentTarget.normalFile, false)
+                    } else null
+
+                    if (reopened != null) {
+                        currentTarget.outputStream = reopened
                     }
                     existingBytes = 0L
+                    currentTarget.existingBytes = 0L
                 }
 
                 val streamLen = body.contentLength()
@@ -332,9 +467,8 @@ object StormDownloadManager {
                     if (streamLen > 0) streamLen else game.fileSizeBytes
                 }
 
-                val bufferSize = 1024 * 1024 // 1 MB buffer for maximum download throughput
-                val bufferedOut = BufferedOutputStream(outputStream, bufferSize)
-                outputStream = bufferedOut
+                val bufferSize = 1024 * 1024 // 1 MB buffer for high throughput
+                bufferedOut = BufferedOutputStream(currentTarget.outputStream, bufferSize)
                 val bufferedIn = BufferedInputStream(body.byteStream(), bufferSize)
                 inputStream = bufferedIn
                 val buffer = ByteArray(bufferSize)
@@ -389,7 +523,7 @@ object StormDownloadManager {
                     }
                 }
 
-                outputStream?.flush()
+                bufferedOut.flush()
 
                 if (!isPaused && !isCancelled) {
                     completed = true
@@ -400,9 +534,14 @@ object StormDownloadManager {
                 if (isPaused || isCancelled) break
                 Log.error("[StormDownloadManager] Interrupted: ${e.message}")
                 retryCount++
+
+                try { bufferedOut?.flush() } catch (_: Exception) {}
+                try { bufferedOut?.close() } catch (_: Exception) {}
+                activeTarget = null
+
                 if (retryCount <= maxRetries) {
                     _state.value = _state.value?.copy(
-                        statsText = "Обрыв соединения (${e.localizedMessage ?: "Сбой"}). Повтор $retryCount из $maxRetries..."
+                        statsText = "Повторное подключение (${e.localizedMessage ?: "Сбой"}). Попытка $retryCount из $maxRetries..."
                     )
                     delay(retryCount * 1200L)
                 } else {
@@ -415,23 +554,26 @@ object StormDownloadManager {
                 }
             } finally {
                 try { inputStream?.close() } catch (_: Exception) {}
-                try { outputStream?.flush() } catch (_: Exception) {}
-                try { outputStream?.close() } catch (_: Exception) {}
+                try { bufferedOut?.flush() } catch (_: Exception) {}
+                try { bufferedOut?.close() } catch (_: Exception) {}
             }
         }
 
-        if (completed) {
+        val target = activeTarget
+        if (completed && target != null) {
             try {
-                if (isSaf && safTree != null && targetDocPart != null) {
-                    val existingFinal = safTree.findFile(baseFilename)
+                val safDoc = target.safDocFile
+                val normalF = target.normalFile
+                if (target.isSaf && safDoc != null) {
+                    val existingFinal = target.safTree?.findFile(baseFilename)
                     if (existingFinal != null && existingFinal.exists()) {
                         existingFinal.delete()
                     }
-                    targetDocPart.renameTo(baseFilename)
-                } else if (targetNormalPart != null) {
-                    val finalFile = File(targetNormalPart.parentFile, baseFilename)
+                    safDoc.renameTo(baseFilename)
+                } else if (normalF != null) {
+                    val finalFile = File(normalF.parentFile, baseFilename)
                     if (finalFile.exists()) finalFile.delete()
-                    targetNormalPart.renameTo(finalFile)
+                    normalF.renameTo(finalFile)
                 }
             } catch (e: Exception) {
                 Log.error("[StormDownloadManager] Rename error: ${e.message}")
