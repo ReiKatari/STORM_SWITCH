@@ -449,18 +449,12 @@ void KScheduler::ScheduleImplFiber(KernelCore& kernel) {
         }
 
         // We want to try to lock the highest priority thread's context.
-        // Try to take it.
-        for (int spin_count = 0; !highest_priority_thread->m_context_guard.try_lock(); ++spin_count) {
+        while (!highest_priority_thread->m_context_guard.try_lock()) {
             // The highest priority thread's context is already locked.
             // Check if we need scheduling. If we don't, we can retry directly.
             if (m_state.needs_scheduling.load(std::memory_order_seq_cst)) {
                 // If we do, another core is interfering, and we must start again.
                 goto retry;
-            }
-            if (spin_count < 32) {
-                std::this_thread::yield();
-            } else {
-                std::this_thread::sleep_for(std::chrono::microseconds(1));
             }
         }
 

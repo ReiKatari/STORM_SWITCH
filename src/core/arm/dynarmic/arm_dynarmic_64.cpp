@@ -46,18 +46,11 @@ std::optional<u32> DynarmicCallbacks64::MemoryReadCode(u64 vaddr) {
     if (!m_memory.IsValidVirtualAddressRange(vaddr, sizeof(u32)))
         return std::nullopt;
     auto const aligned_vaddr = vaddr & ~Core::Memory::YUZU_PAGEMASK;
-    // Search all cached pages
-    for (auto& entry : code_cache_) {
-        if (entry.addr == aligned_vaddr) {
-            return entry.page.inst[(vaddr & Core::Memory::YUZU_PAGEMASK) / sizeof(u32)];
-        }
+    if (last_code_addr != aligned_vaddr) {
+        m_memory.ReadBlock(aligned_vaddr, &cached_code_page, sizeof(cached_code_page));
+        last_code_addr = aligned_vaddr;
     }
-    // Cache miss: load page into next slot (round-robin)
-    auto& slot = code_cache_[code_cache_next_];
-    m_memory.ReadBlock(aligned_vaddr, &slot.page, sizeof(slot.page));
-    slot.addr = aligned_vaddr;
-    code_cache_next_ = (code_cache_next_ + 1) % kCodeCachePages;
-    return slot.page.inst[(vaddr & Core::Memory::YUZU_PAGEMASK) / sizeof(u32)];
+    return cached_code_page.inst[(vaddr & Core::Memory::YUZU_PAGEMASK) / sizeof(u32)];
 }
 
 void DynarmicCallbacks64::MemoryWrite8(u64 vaddr, u8 value) {
@@ -109,7 +102,7 @@ bool DynarmicCallbacks64::MemoryWriteExclusive128(u64 vaddr, Dynarmic::A64::Vect
 }
 
 void DynarmicCallbacks64::InstructionCacheOperationRaised(Dynarmic::A64::InstructionCacheOperation op, u64 value) {
-    for (auto& entry : code_cache_) entry.addr = u64(-1); //invalidate cached pages
+    last_code_addr = u64(-1); //invalidate cached page
     switch (op) {
     case Dynarmic::A64::InstructionCacheOperation::InvalidateByVAToPoU: {
         static constexpr u64 ICACHE_LINE_SIZE = 64;
@@ -467,12 +460,12 @@ void ArmDynarmic64::SignalInterrupt(Kernel::KThread* thread) {
 }
 
 void ArmDynarmic64::ClearInstructionCache() {
-    for (auto& entry : m_cb->code_cache_) entry.addr = u64(-1);
+    m_cb->last_code_addr = u64(-1);
     m_jit->ClearCache();
 }
 
 void ArmDynarmic64::InvalidateCacheRange(u64 addr, std::size_t size) {
-    for (auto& entry : m_cb->code_cache_) entry.addr = u64(-1);
+    m_cb->last_code_addr = u64(-1);
     m_jit->InvalidateCacheRange(addr, size);
 }
 

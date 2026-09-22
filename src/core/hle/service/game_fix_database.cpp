@@ -27,7 +27,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
         "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
         {
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
@@ -35,11 +35,11 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\early_release_fences", "true"},
+            {"Renderer\\early_release_fences", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
-            {"System\\airplane_mode", "true"},
+            {"System\\airplane_mode", "false"},
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
         },
@@ -4346,8 +4346,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Bros. Remastered",
         "• Черный экран при переходе к игровой сцене\n• Задержки вывода кадров Godot\n• Сбои синхронизации видеопамяти",
         "• Black screen when transitioning to game scene\n• Godot frame presentation stalls\n• GPU memory synchronization faults",
-        "✓ Синхронизация операций памяти: Включено\n✓ Точность ГПУ: Высокая\n✓ Точность DMA: Безопасная\n✓ Асинхронный вывод кадров: Отключено",
-        "✓ Sync Memory Operations: Enabled\n✓ GPU Accuracy: High\n✓ DMA Accuracy: Safe\n✓ Async Presentation: Disabled",
+        "✓ Синхронизация операций памяти: Включено\n✓ Точность ГПУ: Высокая\n✓ Точность DMA: Безопасная\n✓ Сеть: Включено",
+        "✓ Sync Memory Operations: Enabled\n✓ GPU Accuracy: High\n✓ DMA Accuracy: Safe\n✓ Network: Enabled",
         {
             {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\gpu_accuracy", "1"},
@@ -4355,7 +4355,69 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "false"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"},
+            {"System\\airplane_mode", "false"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        }
+    },
+    {
+        0x019232F2781D0000ULL,
+        "Dr. Mario Mania",
+        "• Сбои сетевой инициализации BSD-сокетов при активном режиме «В самолете»\n• Сбои выделения кучи HB Loader",
+        "• Network socket initialization failure when airplane mode is forced\n• HB Loader applet heap allocation faults",
+        "✓ Режим «В самолете»: Отключено (сеть активна)\n✓ Точность ГПУ: Высокая\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Асинхронные шейдеры: Включено\n✓ Асинхронный вывод: Включено",
+        "✓ Airplane Mode: Disabled (Network active)\n✓ GPU Accuracy: High\n✓ Memory Layout: 6GB DRAM\n✓ Asynchronous Shaders: Enabled\n✓ Async Presentation: Enabled",
+        {
+            {"System\\airplane_mode", "false"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        }
+    },
+    {
+        0x01052BA7AC450000ULL,
+        "Gizmoduck",
+        "• Ошибки инициализации Homebrew портов и сокетов\n• Просадки FPS при низкой точности ГПУ",
+        "• Homebrew port and socket initialization errors\n• FPS drops with low GPU accuracy",
+        "✓ Режим «В самолете»: Отключено (сеть активна)\n✓ Точность ГПУ: Высокая\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Асинхронные шейдеры: Включено",
+        "✓ Airplane Mode: Disabled (Network active)\n✓ GPU Accuracy: High\n✓ Memory Layout: 6GB DRAM\n✓ Asynchronous Shaders: Enabled",
+        {
+            {"System\\airplane_mode", "false"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        }
+    },
+    {
+        0x0100F43008C44000ULL,
+        "Pokemon Legends: Z-A",
+        "• Зависание на черном экране при загрузке тяжелых текстур ASTC на ЦП\n• Вылеты по нехватке памяти (OOM) при использовании русификатора (MOD - RUS)\n• Задержки компиляции шейдеров",
+        "• Black screen hang during heavy ASTC texture decode on CPU\n• Out-of-memory crashes when using LayeredFS Russian mod\n• Shader compilation stutter",
+        "✓ Аппаратное декодирование ASTC: ГПУ (устранение зависания загрузки)\n✓ Конфигурация памяти: 6 ГБ DRAM (устранение вылетов мода)\n✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: BC1 (экономия VRAM)\n✓ Асинхронные шейдеры: Включено\n✓ Асинхронный вывод: Включено",
+        "✓ ASTC Hardware Decoding: GPU (Fixes loading black screen hang)\n✓ Memory Layout: 6GB DRAM (Prevents mod OOM crash)\n✓ GPU Accuracy: High\n✓ ASTC Recompression: BC1 (Saves VRAM)\n✓ Asynchronous Shaders: Enabled\n✓ Async Presentation: Enabled",
+        {
+            {"Renderer\\accelerate_astc", "1"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\astc_recompression", "1"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\vram_garbage_collection", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "false"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
     }
 };

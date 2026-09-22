@@ -50,10 +50,8 @@ Result IAllSystemAppletProxiesService::OpenSystemAppletProxy(
             system, applet, process_handle.Get(), m_window_system);
         R_SUCCEED();
     } else {
-        LOG_WARNING(Service_AM, "(STUBBED) called");
-        *out_system_applet_proxy = std::make_shared<ISystemAppletProxy>(
-            system, nullptr, process_handle.Get(), m_window_system);
-        R_SUCCEED();
+        UNIMPLEMENTED();
+        R_THROW(ResultUnknown);
     }
 }
 
@@ -68,10 +66,8 @@ Result IAllSystemAppletProxiesService::OpenLibraryAppletProxy(
             system, applet, process_handle.Get(), m_window_system);
         R_SUCCEED();
     } else {
-        LOG_WARNING(Service_AM, "(STUBBED) called");
-        *out_library_applet_proxy = std::make_shared<ILibraryAppletProxy>(
-            system, nullptr, process_handle.Get(), m_window_system);
-        R_SUCCEED();
+        UNIMPLEMENTED();
+        R_THROW(ResultUnknown);
     }
 }
 
@@ -86,10 +82,8 @@ Result IAllSystemAppletProxiesService::OpenOverlayAppletProxy(
             system, applet, process_handle.Get(), m_window_system);
         R_SUCCEED();
     } else {
-        LOG_WARNING(Service_AM, "(STUBBED) called");
-        *out_overlay_applet_proxy = std::make_shared<IOverlayAppletProxy>(
-            system, nullptr, process_handle.Get(), m_window_system);
-        R_SUCCEED();
+        UNIMPLEMENTED();
+        R_THROW(ResultUnknown);
     }
 }
 
@@ -104,10 +98,8 @@ Result IAllSystemAppletProxiesService::OpenSystemApplicationProxy(
             system, applet, process_handle.Get(), m_window_system);
         R_SUCCEED();
     } else {
-        LOG_WARNING(Service_AM, "(STUBBED) called");
-        *out_system_application_proxy = std::make_shared<IApplicationProxy>(
-            system, nullptr, process_handle.Get(), m_window_system);
-        R_SUCCEED();
+        UNIMPLEMENTED();
+        R_THROW(ResultUnknown);
     }
 }
 

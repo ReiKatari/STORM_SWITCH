@@ -36,7 +36,7 @@ public:
     u64 MemoryRead64(u32 vaddr) override;
     std::optional<u32> MemoryReadCode(u32 vaddr) override;
     void InstructionSynchronizationBarrierRaised() override {
-        for (auto& entry : code_cache_) entry.addr = u64(-1);
+        last_code_addr = u64(-1); //reset back, force refetch
     }
     void MemoryWrite8(u32 vaddr, u8 value) override;
     void MemoryWrite16(u32 vaddr, u16 value) override;
@@ -53,13 +53,8 @@ public:
     bool CheckMemoryAccess(u64 addr, u64 size, Kernel::DebugWatchpointType type);
     void ReturnException(u32 pc, Dynarmic::HaltReason hr);
     //
-    static constexpr size_t kCodeCachePages = 4;
-    struct CodeCacheEntry {
-        Dynarmic::CodePage page;
-        u64 addr = u64(-1);
-    };
-    std::array<CodeCacheEntry, kCodeCachePages> code_cache_;
-    size_t code_cache_next_ = 0;
+    Dynarmic::CodePage cached_code_page;
+    u64 last_code_addr = u64(-1);
     ArmDynarmic32& m_parent;
     Core::Memory::Memory& m_memory;
     Kernel::KProcess* m_process{};

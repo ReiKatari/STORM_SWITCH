@@ -244,51 +244,27 @@ struct Memory::Impl {
         std::size_t page_offset = addr & YUZU_PAGEMASK;
         bool user_accessible = true;
 
-        // Coalescing state for contiguous Memory pages
-        u8* coalesce_ptr = nullptr;
-        std::size_t coalesce_offset = 0;
-        std::size_t coalesce_size = 0;
-
-        const auto flush_coalesced = [&]() {
-            if (coalesce_size > 0) {
-                on_memory(coalesce_offset, coalesce_size, coalesce_ptr);
-                coalesce_ptr = nullptr;
-                coalesce_size = 0;
-            }
-        };
-
         while (remaining_size != 0) {
             const std::size_t copy_amount = (std::min)(std::size_t(YUZU_PAGESIZE) - page_offset, remaining_size);
             const auto current_vaddr = u64((page_index << YUZU_PAGEBITS) + page_offset);
             const auto [pointer, type] = current_page_table->entries[page_index].ptr.PointerType();
             switch (type) {
             case Common::PageType::Unmapped: {
-                flush_coalesced();
                 user_accessible = false;
                 on_unmapped(offset, copy_amount, current_vaddr);
                 break;
             }
             case Common::PageType::Memory: {
                 u8* mem_ptr = reinterpret_cast<u8*>(pointer + page_offset + (page_index << YUZU_PAGEBITS));
-                // Try to coalesce with previous contiguous Memory page
-                if (coalesce_size > 0 && mem_ptr == coalesce_ptr + coalesce_size) {
-                    coalesce_size += copy_amount;
-                } else {
-                    flush_coalesced();
-                    coalesce_ptr = mem_ptr;
-                    coalesce_offset = offset;
-                    coalesce_size = copy_amount;
-                }
+                on_memory(offset, copy_amount, mem_ptr);
                 break;
             }
             case Common::PageType::DebugMemory: {
-                flush_coalesced();
                 u8* const mem_ptr = GetPointerFromDebugMemory(current_vaddr);
                 on_memory(offset, copy_amount, mem_ptr);
                 break;
             }
             case Common::PageType::RasterizerCachedMemory: {
-                flush_coalesced();
                 u8* const host_ptr = GetPointerFromRasterizerCachedMemory(current_vaddr);
                 on_rasterizer(current_vaddr, offset, copy_amount, host_ptr);
                 break;
@@ -301,7 +277,6 @@ struct Memory::Impl {
             offset += copy_amount;
             remaining_size -= copy_amount;
         }
-        flush_coalesced();
         return user_accessible;
     }
 

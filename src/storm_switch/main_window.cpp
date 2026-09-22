@@ -471,26 +471,26 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "8.7.5";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "9.3.0";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
 
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
-        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
-        Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Cpu);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Bc1);
+        Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Gpu);
         Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Gpu);
         Settings::values.use_asynchronous_shaders.SetValue(true);
         Settings::values.use_asynchronous_gpu_emulation.SetValue(true);
         Settings::values.async_presentation.SetValue(true);
         Settings::values.eco_thermal_mode.SetValue(false);
-        Settings::values.eco_frame_pacing.SetValue(false);
+        Settings::values.eco_frame_pacing.SetValue(true);
         Settings::values.smart_shader_throttle.SetValue(false);
-        Settings::values.cpu_affinity_pinning.SetValue(false);
+        Settings::values.cpu_affinity_pinning.SetValue(true);
         Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
-        Settings::values.vram_garbage_collection.SetValue(false);
+        Settings::values.vram_garbage_collection.SetValue(true);
         Settings::values.early_release_fences.SetValue(false);
-        Settings::values.use_reactive_flushing.SetValue(true);
+        Settings::values.use_reactive_flushing.SetValue(false);
         Settings::values.sync_memory_operations.SetValue(false);
         Settings::values.enable_gpu_buffer_readback.SetValue(false);
         Settings::values.dma_accuracy.SetValue(Settings::DmaAccuracy::Default);
@@ -500,7 +500,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
         Settings::values.vram_usage_mode.SetValue(Settings::VramUsageMode::Normal);
         Settings::values.vram_budget_governor.SetValue(false);
         Settings::values.storm_lowend_turbo.SetValue(false);
-        Settings::values.storm_thermal_governor.SetValue(false);
+        Settings::values.storm_thermal_governor.SetValue(true);
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
         Settings::values.cpuopt_fastmem.SetValue(true);
         Settings::values.skip_cpu_inner_invalidation.SetValue(false);

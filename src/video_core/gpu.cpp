@@ -199,16 +199,7 @@ struct GPU::Impl {
         gpu_thread.FlushRegion(addr, size, is_async);
     }
 
-    struct RecentFlush { DAddr addr; u64 size; u64 fence_id; };
-    RecentFlush last_flush_{};
-
     VideoCore::RasterizerDownloadArea OnCPURead(DAddr addr, u64 size) {
-        if (addr == last_flush_.addr && size == last_flush_.size) {
-            auto raster_area = renderer->ReadRasterizer()->GetFlushArea(addr, size);
-            raster_area.preemtive = true;
-            return raster_area;
-        }
-
         auto raster_area = renderer->ReadRasterizer()->GetFlushArea(addr, size);
         if (raster_area.preemtive) {
             return raster_area;
@@ -219,11 +210,6 @@ struct GPU::Impl {
         });
         gpu_thread.TickGPU(is_async);
         WaitForSyncOperation(fence);
-
-        last_flush_.addr = addr;
-        last_flush_.size = size;
-        last_flush_.fence_id = fence;
-
         return raster_area;
     }
 
