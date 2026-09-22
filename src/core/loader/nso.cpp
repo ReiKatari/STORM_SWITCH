@@ -15,6 +15,7 @@
 #include "common/lz4_compression.h"
 #include "common/settings.h"
 #include "common/swap.h"
+#include "common/zbic_compression.h"
 #include "core/core.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/hle/kernel/code_set.h"
@@ -114,19 +115,66 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
                 size_t bytes_read = nso_file.Read(compressed.data(), comp_size, file_offset);
 
                 std::memset(dest_ptr, 0, segment_size);
-                int r = Common::Compression::DecompressDataLZ4(dest_ptr, segment_size, compressed.data(), bytes_read);
+                int r = -1;
 
-                // If decompression failed for segment 0, try alternative standard header offset (0x100 vs 0x108)
+                // 1. Check for Nintendo Switch 22.0.0+ ZBIC compression
+                // Segment data may start directly with 'ZBIC' (0x4349425A) or have a header prefix (e.g. module name)
+                constexpr u32 ZBIC_MAGIC = 0x4349425A;
+                size_t zbic_offset = 0;
+                bool found_zbic = false;
+                for (size_t scan = 0; scan + 4 <= bytes_read && scan <= 32; ++scan) {
+                    u32 scan_magic = 0;
+                    std::memcpy(&scan_magic, compressed.data() + scan, sizeof(u32));
+                    if (scan_magic == ZBIC_MAGIC) {
+                        zbic_offset = scan;
+                        found_zbic = true;
+                        break;
+                    }
+                }
+
+                if (found_zbic) {
+                    LOG_INFO(Loader, "NSO segment {} in '{}': detected ZBIC compression at offset +{:#x}",
+                             i, nso_file.GetName(), zbic_offset);
+                    r = Common::Compression::DecompressDataZBIC(
+                        dest_ptr, segment_size, compressed.data() + zbic_offset, bytes_read - zbic_offset);
+                    if (r == static_cast<int>(segment_size)) {
+                        LOG_INFO(Loader, "NSO segment {} in '{}' decompressed successfully via ZBIC ({} -> {} bytes)",
+                                 i, nso_file.GetName(), bytes_read - zbic_offset, segment_size);
+                    } else {
+                        LOG_WARNING(Loader, "NSO segment {} in '{}': ZBIC decompression returned {} (expected {})",
+                                    i, nso_file.GetName(), r, segment_size);
+                    }
+                }
+
+                // 2. Standard LZ4 decompression if not ZBIC or if ZBIC returned unexpected size
+                if (r != static_cast<int>(segment_size)) {
+                    r = Common::Compression::DecompressDataLZ4(dest_ptr, segment_size, compressed.data(), bytes_read);
+                }
+
+                // 3. Fallback for offset 0x100 vs 0x108
                 if (r != static_cast<int>(segment_size) && i == 0 && comp_size > 0) {
                     const u32 alt_offset = (file_offset == sizeof(NSOHeader)) ? (sizeof(NSOHeader) + 8) : static_cast<u32>(sizeof(NSOHeader));
                     if (alt_offset < file_size) {
                         const size_t alt_read = nso_file.Read(compressed.data(), comp_size, alt_offset);
                         std::memset(dest_ptr, 0, segment_size);
-                        const int r_alt = Common::Compression::DecompressDataLZ4(dest_ptr, segment_size, compressed.data(), alt_read);
-                        if (r_alt == static_cast<int>(segment_size)) {
-                            LOG_INFO(Loader, "NSO segment 0 decompressed successfully using alternative offset {:#x} (original was {:#x})",
-                                     alt_offset, file_offset);
-                            r = r_alt;
+                        found_zbic = false;
+                        for (size_t scan = 0; scan + 4 <= alt_read && scan <= 32; ++scan) {
+                            u32 scan_magic = 0;
+                            std::memcpy(&scan_magic, compressed.data() + scan, sizeof(u32));
+                            if (scan_magic == ZBIC_MAGIC) {
+                                zbic_offset = scan;
+                                found_zbic = true;
+                                break;
+                            }
+                        }
+                        if (found_zbic) {
+                            r = Common::Compression::DecompressDataZBIC(
+                                dest_ptr, segment_size, compressed.data() + zbic_offset, alt_read - zbic_offset);
+                        } else {
+                            r = Common::Compression::DecompressDataLZ4(dest_ptr, segment_size, compressed.data(), alt_read);
+                        }
+                        if (r == static_cast<int>(segment_size)) {
+                            LOG_INFO(Loader, "NSO segment 0 decompressed successfully using alternative offset {:#x}", alt_offset);
                             file_offset = alt_offset;
                         }
                     }
@@ -140,7 +188,7 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
                     for (size_t b = 0; b < std::min<size_t>(16, compressed.size()); ++b) {
                         hex_preview += fmt::format("{:02X} ", compressed[b]);
                     }
-                    LOG_WARNING(Loader, "NSO segment {} in '{}': LZ4 decompression returned {} (expected {}, "
+                    LOG_WARNING(Loader, "NSO segment {} in '{}': decompression returned {} (expected {}, "
                                 "comp_size={}, offset={:#x}, read={}, first 16 bytes: [{}])",
                                 i, nso_file.GetName(), r, segment_size, comp_size, file_offset, bytes_read, hex_preview);
 

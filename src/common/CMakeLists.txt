@@ -142,6 +142,10 @@ add_library(
     virtual_buffer.h
     zstd_compression.cpp
     zstd_compression.h
+    zbic.c
+    zbic.h
+    zbic_compression.cpp
+    zbic_compression.h
     fs/ryujinx_compat.h fs/ryujinx_compat.cpp
     fs/symlink.h fs/symlink.cpp
     cpu_features.cpp
@@ -247,6 +251,7 @@ target_link_libraries(common PRIVATE lz4::lz4 zstd::zstd)
 # Please refer to src/common/demangle.cpp
 if (WIN32)
     target_link_libraries(common PRIVATE LLVM::Demangle)
+    set_source_files_properties(zbic.c PROPERTIES COMPILE_FLAGS "/wd4242 /wd4244 /wd4267 /wd4018 /wd4100 /wd4127 /wd4996 /wd4701 /wd4702 /wd4706")
 endif()
 
 if(ANDROID)
