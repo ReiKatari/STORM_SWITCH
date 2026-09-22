@@ -58,23 +58,93 @@ std::vector<u8> CompressDataLZ4HCMax(const u8* source, std::size_t source_size) 
     return CompressDataLZ4HC(source, source_size, LZ4HC_CLEVEL_MAX);
 }
 
+#include <cstring>
+#include <lz4.h>
+#include <lz4frame.h>
+
 std::vector<u8> DecompressDataLZ4(std::span<const u8> compressed, std::size_t uncompressed_size) {
     std::vector<u8> uncompressed(uncompressed_size);
-    const int size_check = LZ4_decompress_safe(reinterpret_cast<const char*>(compressed.data()),
-                                               reinterpret_cast<char*>(uncompressed.data()),
-                                               static_cast<int>(compressed.size()),
-                                               static_cast<int>(uncompressed.size()));
-    if (static_cast<int>(uncompressed_size) != size_check) {
-        // Decompression failed
+    const int r = DecompressDataLZ4(uncompressed.data(), uncompressed_size, compressed.data(), compressed.size());
+    if (r <= 0) {
         return {};
+    }
+    if (static_cast<size_t>(r) < uncompressed_size) {
+        uncompressed.resize(static_cast<size_t>(r));
     }
     return uncompressed;
 }
 
 int DecompressDataLZ4(void* dst, size_t dst_size, const void* src, size_t src_size) {
-    // This is just a thin wrapper around LZ4.
-    return LZ4_decompress_safe(reinterpret_cast<const char*>(src), reinterpret_cast<char*>(dst),
-                               static_cast<int>(src_size), static_cast<int>(dst_size));
+    if (!dst || !src || dst_size == 0 || src_size == 0) {
+        return -1;
+    }
+
+    // 1. Check for LZ4 Frame header (magic 0x184D2204)
+    if (src_size >= 4) {
+        u32 magic = 0;
+        std::memcpy(&magic, src, sizeof(u32));
+        if (magic == LZ4F_MAGICNUMBER) {
+            LZ4F_dctx* dctx = nullptr;
+            const auto err = LZ4F_createDecompressionContext(&dctx, LZ4F_VERSION);
+            if (!LZ4F_isError(err) && dctx) {
+                size_t src_consumed = src_size;
+                size_t dst_capacity = dst_size;
+                const auto res = LZ4F_decompress(dctx, dst, &dst_capacity, src, &src_consumed, nullptr);
+                LZ4F_freeDecompressionContext(dctx);
+                if (!LZ4F_isError(res) && dst_capacity > 0) {
+                    return static_cast<int>(dst_capacity);
+                }
+            }
+        }
+    }
+
+    // 2. Standard LZ4 block decompression
+    int res = LZ4_decompress_safe(reinterpret_cast<const char*>(src), reinterpret_cast<char*>(dst),
+                                  static_cast<int>(src_size), static_cast<int>(dst_size));
+    if (res > 0) {
+        return res;
+    }
+
+    // 3. Partial safe decompression (block decoding stops when dst_size is satisfied)
+    res = LZ4_decompress_safe_partial(reinterpret_cast<const char*>(src), reinterpret_cast<char*>(dst),
+                                      static_cast<int>(src_size), static_cast<int>(dst_size),
+                                      static_cast<int>(dst_size));
+    if (res > 0) {
+        return res;
+    }
+
+    // 4. Try skipping a 4-byte prefix (e.g. uncompressed size header added by some tools)
+    if (src_size > 4) {
+        res = LZ4_decompress_safe(reinterpret_cast<const char*>(src) + 4, reinterpret_cast<char*>(dst),
+                                  static_cast<int>(src_size - 4), static_cast<int>(dst_size));
+        if (res > 0) {
+            return res;
+        }
+        res = LZ4_decompress_safe_partial(reinterpret_cast<const char*>(src) + 4, reinterpret_cast<char*>(dst),
+                                          static_cast<int>(src_size - 4), static_cast<int>(dst_size),
+                                          static_cast<int>(dst_size));
+        if (res > 0) {
+            return res;
+        }
+    }
+
+    // 5. Try skipping an 8-byte prefix
+    if (src_size > 8) {
+        res = LZ4_decompress_safe(reinterpret_cast<const char*>(src) + 8, reinterpret_cast<char*>(dst),
+                                  static_cast<int>(src_size - 8), static_cast<int>(dst_size));
+        if (res > 0) {
+            return res;
+        }
+    }
+
+    // 6. Fast decompression fallback (for blocks generated with legacy loose bounds)
+    res = LZ4_decompress_fast(reinterpret_cast<const char*>(src), reinterpret_cast<char*>(dst),
+                              static_cast<int>(dst_size));
+    if (res > 0) {
+        return static_cast<int>(dst_size);
+    }
+
+    return -1;
 }
 
 } // namespace Common::Compression

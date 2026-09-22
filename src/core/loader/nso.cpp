@@ -108,41 +108,47 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
             if (nso_header.IsSegmentCompressed(i)) {
                 const u32 comp_size = nso_header.segments_compressed_size[i];
                 const auto file_size = nso_file.GetSize();
-                const auto file_offset = nso_header.segments[i].offset;
+                auto file_offset = nso_header.segments[i].offset;
 
-                // First, try LZ4 decompression
                 std::vector<u8> compressed(comp_size);
-                nso_file.Read(compressed.data(), comp_size, file_offset);
+                size_t bytes_read = nso_file.Read(compressed.data(), comp_size, file_offset);
 
                 std::memset(dest_ptr, 0, segment_size);
-                const int r = Common::Compression::DecompressDataLZ4(dest_ptr, segment_size, compressed.data(), comp_size);
+                int r = Common::Compression::DecompressDataLZ4(dest_ptr, segment_size, compressed.data(), bytes_read);
+
+                // If decompression failed for segment 0, try alternative standard header offset (0x100 vs 0x108)
+                if (r != static_cast<int>(segment_size) && i == 0 && comp_size > 0) {
+                    const u32 alt_offset = (file_offset == sizeof(NSOHeader)) ? (sizeof(NSOHeader) + 8) : static_cast<u32>(sizeof(NSOHeader));
+                    if (alt_offset < file_size) {
+                        const size_t alt_read = nso_file.Read(compressed.data(), comp_size, alt_offset);
+                        std::memset(dest_ptr, 0, segment_size);
+                        const int r_alt = Common::Compression::DecompressDataLZ4(dest_ptr, segment_size, compressed.data(), alt_read);
+                        if (r_alt == static_cast<int>(segment_size)) {
+                            LOG_INFO(Loader, "NSO segment 0 decompressed successfully using alternative offset {:#x} (original was {:#x})",
+                                     alt_offset, file_offset);
+                            r = r_alt;
+                            file_offset = alt_offset;
+                        }
+                    }
+                }
 
                 if (r == static_cast<int>(segment_size)) {
-                    // LZ4 decompression succeeded — normal path
+                    LOG_DEBUG(Loader, "NSO segment {} in '{}' decompressed successfully ({} -> {} bytes)",
+                              i, nso_file.GetName(), comp_size, segment_size);
                 } else {
-                    // LZ4 failed — data is likely already uncompressed
-                    // This happens when ExeFS patches, mods, or updates replace compressed
-                    // NSO segments with raw ARM64 code but keep compression flags in the header
-                    LOG_WARNING(Loader, "NSO segment {} in '{}': LZ4 returned {} (expected {}, "
-                                "comp_size={}, file_offset={:#x}, file_size={:#x}). "
-                                "Treating data as uncompressed.",
-                                i, nso_file.GetName(), r, segment_size, comp_size, file_offset, file_size);
+                    std::string hex_preview;
+                    for (size_t b = 0; b < std::min<size_t>(16, compressed.size()); ++b) {
+                        hex_preview += fmt::format("{:02X} ", compressed[b]);
+                    }
+                    LOG_WARNING(Loader, "NSO segment {} in '{}': LZ4 decompression returned {} (expected {}, "
+                                "comp_size={}, offset={:#x}, read={}, first 16 bytes: [{}])",
+                                i, nso_file.GetName(), r, segment_size, comp_size, file_offset, bytes_read, hex_preview);
 
                     std::memset(dest_ptr, 0, segment_size);
-
                     if (comp_size >= segment_size) {
-                        // compressed_size >= segment_size: the "compressed" data IS the raw data
-                        // We already read comp_size bytes — just copy segment_size of them
                         std::memcpy(dest_ptr, compressed.data(), segment_size);
-                    } else {
-                        // compressed_size < segment_size: re-read segment_size bytes from file
-                        if (file_offset < file_size) {
-                            const auto read_size = std::min<size_t>(segment_size, file_size - file_offset);
-                            nso_file.Read(dest_ptr, read_size, file_offset);
-                        } else {
-                            LOG_ERROR(Loader, "NSO segment {} file_offset {:#x} beyond file_size {:#x}",
-                                      i, file_offset, file_size);
-                        }
+                    } else if (bytes_read > 0) {
+                        std::memcpy(dest_ptr, compressed.data(), std::min<size_t>(bytes_read, segment_size));
                     }
                 }
             } else {
