@@ -225,8 +225,9 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
 
     const size_t dst_size = dst_operand.pitch * regs.line_count;
 
+    const GPUVAddr src_addr = src_operand.address + static_cast<GPUVAddr>(src_params.layer) * src_size;
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
-        memory_manager, src_operand.address, src_size, &read_buffer);
+        memory_manager, src_addr, src_size, &read_buffer);
     Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadCachedWrite>
         tmp_write_buffer(memory_manager, dst_operand.address, dst_size, &write_buffer);
 
@@ -237,7 +238,6 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
 
 void MaxwellDMA::CopyPitchToBlockLinear() {
     UNIMPLEMENTED_IF_MSG(regs.dst_params.block_size.width != 0, "Block width is not one");
-    UNIMPLEMENTED_IF(regs.dst_params.layer != 0);
 
     const bool is_remapping = regs.launch_dma.remap_enable != 0;
     const u32 num_remap_components = regs.remap_const.num_dst_components_minus_one + 1;
@@ -287,8 +287,8 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
         CalculateSize(true, bytes_per_pixel, width, height, depth, block_height, block_depth);
     const size_t src_size = static_cast<size_t>(regs.pitch_in) * regs.line_count;
 
-    GPUVAddr src_addr = regs.offset_in;
-    GPUVAddr dst_addr = regs.offset_out;
+    const GPUVAddr src_addr = regs.offset_in;
+    const GPUVAddr dst_addr = regs.offset_out + static_cast<GPUVAddr>(dst_params.layer) * dst_size;
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
         memory_manager, src_addr, src_size, &read_buffer);
     Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadCachedWrite>
@@ -343,10 +343,12 @@ void MaxwellDMA::CopyBlockLinearToBlockLinear() {
 
     intermediate_buffer.resize_destructive(mid_buffer_size);
 
+    const GPUVAddr src_addr_bl = regs.offset_in + static_cast<GPUVAddr>(src.layer) * src_size;
+    const GPUVAddr dst_addr_bl = regs.offset_out + static_cast<GPUVAddr>(dst.layer) * dst_size;
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
-        memory_manager, regs.offset_in, src_size, &read_buffer);
+        memory_manager, src_addr_bl, src_size, &read_buffer);
     Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::SafeReadCachedWrite>
-        tmp_write_buffer(memory_manager, regs.offset_out, dst_size, &write_buffer);
+        tmp_write_buffer(memory_manager, dst_addr_bl, dst_size, &write_buffer);
 
     UnswizzleSubrect(intermediate_buffer, tmp_read_buffer, bytes_per_pixel, src_width, src.height,
                      src.depth, src_x_offset, src.origin.y, x_elements, regs.line_count,

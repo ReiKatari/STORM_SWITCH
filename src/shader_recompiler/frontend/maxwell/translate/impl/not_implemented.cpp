@@ -95,57 +95,6 @@ void TranslatorVisitor::IDP_imm(u64) {
     ThrowNotImplemented(Opcode::IDP_imm);
 }
 
-void TranslatorVisitor::IMAD_reg(u64) {
-    ThrowNotImplemented(Opcode::IMAD_reg);
-}
-
-void TranslatorVisitor::IMAD_rc(u64) {
-    ThrowNotImplemented(Opcode::IMAD_rc);
-}
-
-void TranslatorVisitor::IMAD_cr(u64) {
-    ThrowNotImplemented(Opcode::IMAD_cr);
-}
-
-void TranslatorVisitor::IMAD_imm(u64) {
-    ThrowNotImplemented(Opcode::IMAD_imm);
-}
-
-void TranslatorVisitor::IMAD32I(u64) {
-    ThrowNotImplemented(Opcode::IMAD32I);
-}
-
-void TranslatorVisitor::IMADSP_reg(u64) {
-    ThrowNotImplemented(Opcode::IMADSP_reg);
-}
-
-void TranslatorVisitor::IMADSP_rc(u64) {
-    ThrowNotImplemented(Opcode::IMADSP_rc);
-}
-
-void TranslatorVisitor::IMADSP_cr(u64) {
-    ThrowNotImplemented(Opcode::IMADSP_cr);
-}
-
-void TranslatorVisitor::IMADSP_imm(u64) {
-    ThrowNotImplemented(Opcode::IMADSP_imm);
-}
-
-void TranslatorVisitor::IMUL_reg(u64) {
-    ThrowNotImplemented(Opcode::IMUL_reg);
-}
-
-void TranslatorVisitor::IMUL_cbuf(u64) {
-    ThrowNotImplemented(Opcode::IMUL_cbuf);
-}
-
-void TranslatorVisitor::IMUL_imm(u64) {
-    ThrowNotImplemented(Opcode::IMUL_imm);
-}
-
-void TranslatorVisitor::IMUL32I(u64) {
-    ThrowNotImplemented(Opcode::IMUL32I);
-}
 
 void TranslatorVisitor::JCAL(u64) {
     ThrowNotImplemented(Opcode::JCAL);

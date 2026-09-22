@@ -4917,7 +4917,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     if (metadata.second != nullptr) {
         const auto bytes = metadata.second->ReadAllBytes();
         game_icon_pix.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
-    } else {
+    } else if (QtCommon::system != nullptr && QtCommon::system->HasAppLoader()) {
         std::vector<u8> bytes;
         if (QtCommon::system->GetAppLoader().ReadIcon(bytes) == Loader::ResultStatus::Success) {
             game_icon_pix.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
@@ -5007,7 +5007,9 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         game_icon_pix,
         file_ext
     );
-    loading_screen->Prepare(QtCommon::system->GetAppLoader());
+    if (QtCommon::system != nullptr && QtCommon::system->HasAppLoader()) {
+        loading_screen->Prepare(QtCommon::system->GetAppLoader());
+    }
     if (ui->action_Single_Window_Mode->isChecked()) {
         loading_screen->setGeometry(ui->centralwidget->rect());
     }
