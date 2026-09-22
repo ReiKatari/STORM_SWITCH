@@ -1479,4 +1479,9 @@ Wirklich fortfahren?</string>
     <string name="game_info_title">Spielinformationen</string>
     <string name="driver_delete_confirm">Möchten Sie den Treiber „%1$s“ wirklich löschen?</string>
     <string name="driver_deleted">Treiber gelöscht</string>
+    <string name="thermal_emergency_protection">Thermische Notpause</string>
+    <string name="thermal_emergency_protection_description">Emulation automatisch anhalten, wenn der Chipsatz oder Akku eine kritische Temperatur erreicht, um das Gerät abzukühlen</string>
+    <string name="thermal_emergency_limit">Grenzwert für thermische Pause</string>
+    <string name="thermal_emergency_limit_description">Schwellentemperatur für die thermische Notpause</string>
+    <string name="thermal_emergency_pause_toast">🌡️ Notpause: Chipsatz-Temperatur %1$s°C. Gerät kühlt ab...</string>
 </resources>

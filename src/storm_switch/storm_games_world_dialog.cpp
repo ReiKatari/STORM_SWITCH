@@ -55,29 +55,6 @@ static QString SanitizeLibretroName(QString name) {
     return name.trimmed();
 }
 
-static int ExtractDlcCount(const QString& title, u64 title_id) {
-    static const QRegularExpression dlc_regex(
-        QStringLiteral(R"((?:\+|\(|\[|\b)(\d+)\s*(?:D\b|DLC\b))"),
-        QRegularExpression::CaseInsensitiveOption);
-    const auto match = dlc_regex.match(title);
-    if (match.hasMatch()) {
-        bool ok = false;
-        const int count = match.captured(1).toInt(&ok);
-        if (ok && count > 0) {
-            return count;
-        }
-    }
-
-    if (title_id != 0) {
-        TitleDB::TitleDatabase::Instance().EnsureLoaded();
-        const int db_count = TitleDB::TitleDatabase::Instance().GetDlcCount(title_id);
-        if (db_count > 0) {
-            return db_count;
-        }
-    }
-    return 0;
-}
-
 static int ExtractModCount(const QString& title, const QString& final_title, const QStringList& text_langs) {
     static const QRegularExpression mod_regex(
         QStringLiteral(R"((?:\+|[\(\[])(\d+)\s*(?:M\b|MOD\b))"),
@@ -324,29 +301,50 @@ StormGamesWorldDialog::StormGamesWorldDialog(QWidget* parent)
     OnFetchCatalog();
 }
 
-StormGamesWorldDialog::~StormGamesWorldDialog() {
+void StormGamesWorldDialog::CancelAllNetworkRequests() {
+    is_closing = true;
+
+    if (catalog_reply) {
+        disconnect(catalog_reply, nullptr, nullptr, nullptr);
+        catalog_reply->abort();
+        catalog_reply->deleteLater();
+        catalog_reply = nullptr;
+    }
     if (download_reply) {
+        disconnect(download_reply, nullptr, nullptr, nullptr);
         download_reply->abort();
         download_reply->deleteLater();
+        download_reply = nullptr;
     }
     if (head_reply) {
+        disconnect(head_reply, nullptr, nullptr, nullptr);
         head_reply->abort();
         head_reply->deleteLater();
+        head_reply = nullptr;
     }
     if (cover_reply) {
+        disconnect(cover_reply, nullptr, nullptr, nullptr);
         cover_reply->abort();
         cover_reply->deleteLater();
+        cover_reply = nullptr;
     }
     if (details_reply) {
+        disconnect(details_reply, nullptr, nullptr, nullptr);
         details_reply->abort();
         details_reply->deleteLater();
+        details_reply = nullptr;
     }
     if (output_file && output_file->isOpen()) {
         output_file->close();
     }
 }
 
+StormGamesWorldDialog::~StormGamesWorldDialog() {
+    CancelAllNetworkRequests();
+}
+
 void StormGamesWorldDialog::closeEvent(QCloseEvent* event) {
+    CancelAllNetworkRequests();
     QSettings settings;
     settings.setValue(QStringLiteral("StormGamesWorld/geometry"), saveGeometry());
     QDialog::closeEvent(event);
@@ -825,6 +823,7 @@ void StormGamesWorldDialog::OnFetchCatalog() {
 }
 
 void StormGamesWorldDialog::OnCatalogReplyFinished() {
+    if (is_closing) return;
     refresh_btn->setEnabled(true);
     if (!catalog_reply) return;
 
@@ -847,6 +846,7 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
 }
 
 void StormGamesWorldDialog::ParseCatalogData(const QByteArray& raw_data) {
+    if (is_closing) return;
     const QJsonDocument doc = QJsonDocument::fromJson(raw_data);
     if (!doc.isArray()) {
         if (status_label) {
@@ -854,9 +854,6 @@ void StormGamesWorldDialog::ParseCatalogData(const QByteArray& raw_data) {
         }
         return;
     }
-
-    // Ensure TitleDB is loaded once before iterating catalog
-    TitleDB::TitleDatabase::Instance().EnsureLoaded();
 
     all_games.clear();
     const QJsonArray arr = doc.array();
@@ -909,9 +906,12 @@ void StormGamesWorldDialog::ParseCatalogData(const QByteArray& raw_data) {
 
             bool ok_tid = false;
             const u64 num_tid = g.serial_id.toULongLong(&ok_tid, 16);
-            g.dlc_count = ExtractDlcCount(g.title, ok_tid ? num_tid : 0ULL);
+            g.dlc_count = ExtractDlcCountFast(g.title);
             if (g.dlc_count == 0 && !g.final_title.isEmpty()) {
-                g.dlc_count = ExtractDlcCount(g.final_title, ok_tid ? num_tid : 0ULL);
+                g.dlc_count = ExtractDlcCountFast(g.final_title);
+            }
+            if (g.dlc_count == 0 && ok_tid && num_tid != 0 && TitleDB::TitleDatabase::Instance().IsLoaded()) {
+                g.dlc_count = TitleDB::TitleDatabase::Instance().GetDlcCount(num_tid);
             }
 
             const QJsonArray reg_arr = obj[QStringLiteral("regions")].toArray();
@@ -1287,19 +1287,22 @@ void StormGamesWorldDialog::ShowDlcListForCurrentGame() {
 }
 
 void StormGamesWorldDialog::FetchGameDetails(int game_id) {
+    if (is_closing) return;
     if (details_reply) {
+        disconnect(details_reply, nullptr, nullptr, nullptr);
         details_reply->abort();
         details_reply->deleteLater();
+        details_reply = nullptr;
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games?id=%1").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.5 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/9.2.0 (Windows x64)"));
     details_reply = network_mgr.get(req);
     connect(details_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnGameDetailsReplyFinished);
 }
 
 void StormGamesWorldDialog::OnGameDetailsReplyFinished() {
-    if (!details_reply) return;
+    if (is_closing || !details_reply) return;
     if (details_reply->error() == QNetworkReply::NoError) {
         const QByteArray raw_data = details_reply->readAll();
         const QJsonDocument doc = QJsonDocument::fromJson(raw_data);
@@ -1348,24 +1351,29 @@ void StormGamesWorldDialog::OnGameDetailsReplyFinished() {
             }
         }
     }
-    details_reply->deleteLater();
-    details_reply = nullptr;
+    if (details_reply) {
+        details_reply->deleteLater();
+        details_reply = nullptr;
+    }
 }
 
 void StormGamesWorldDialog::FetchRealExtension(int game_id) {
+    if (is_closing) return;
     if (head_reply) {
+        disconnect(head_reply, nullptr, nullptr, nullptr);
         head_reply->abort();
         head_reply->deleteLater();
+        head_reply = nullptr;
     }
 
     QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game_id)));
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.5 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/9.2.0 (Windows x64)"));
     head_reply = network_mgr.head(req);
     connect(head_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnHeadReplyFinished);
 }
 
 void StormGamesWorldDialog::OnHeadReplyFinished() {
-    if (!head_reply) return;
+    if (is_closing || !head_reply) return;
 
     if (head_reply->error() == QNetworkReply::NoError) {
         const QString disp = QString::fromUtf8(head_reply->rawHeader("Content-Disposition"));
@@ -1391,12 +1399,16 @@ void StormGamesWorldDialog::OnHeadReplyFinished() {
         }
     }
 
-    head_reply->deleteLater();
-    head_reply = nullptr;
+    if (head_reply) {
+        head_reply->deleteLater();
+        head_reply = nullptr;
+    }
 }
 
 void StormGamesWorldDialog::LoadCover(const StormWorldGame& game) {
+    if (is_closing) return;
     if (cover_reply) {
+        disconnect(cover_reply, nullptr, nullptr, nullptr);
         cover_reply->abort();
         cover_reply->deleteLater();
         cover_reply = nullptr;
@@ -1495,6 +1507,7 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame& game) {
 }
 
 void StormGamesWorldDialog::TryNextCoverCandidate() {
+    if (is_closing) return;
     if (current_cover_candidate_index >= current_cover_candidates.size()) {
         return;
     }
@@ -1505,7 +1518,7 @@ void StormGamesWorldDialog::TryNextCoverCandidate() {
 
     cover_reply = network_mgr.get(req);
     connect(cover_reply, &QNetworkReply::finished, this, [this]() {
-        if (!cover_reply) return;
+        if (is_closing || !cover_reply) return;
 
         if (cover_reply->error() == QNetworkReply::NoError) {
             const QByteArray data = cover_reply->readAll();
@@ -1518,7 +1531,9 @@ void StormGamesWorldDialog::TryNextCoverCandidate() {
                         out.close();
                     }
 
-                    cover_label->setPixmap(pix.scaled(160, 160, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+                    if (!is_closing && cover_label) {
+                        cover_label->setPixmap(pix.scaled(160, 160, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+                    }
                     cover_reply->deleteLater();
                     cover_reply = nullptr;
                     return;
@@ -1529,7 +1544,9 @@ void StormGamesWorldDialog::TryNextCoverCandidate() {
         cover_reply->deleteLater();
         cover_reply = nullptr;
 
-        TryNextCoverCandidate();
+        if (!is_closing) {
+            TryNextCoverCandidate();
+        }
     });
 }
 
@@ -1588,7 +1605,7 @@ void StormGamesWorldDialog::OnStartDownload() {
 
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game.id));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/8.7.5 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/9.2.0 (Windows x64)"));
     req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     req.setRawHeader("Connection", "keep-alive");
@@ -1617,6 +1634,7 @@ void StormGamesWorldDialog::OnStartDownload() {
 }
 
 void StormGamesWorldDialog::OnDownloadDataReady() {
+    if (is_closing) return;
     if (download_reply && output_file && output_file->isOpen()) {
         download_write_buffer.append(download_reply->readAll());
         if (download_write_buffer.size() >= 2 * 1024 * 1024) {
@@ -1636,6 +1654,7 @@ static QString FormatRussianNumber(double value, int precision = 1) {
 }
 
 void StormGamesWorldDialog::OnDownloadProgress(qint64 received, qint64 total) {
+    if (is_closing) return;
     int pct = 0;
     if (total > 0) {
         pct = static_cast<int>((received * 100) / total);
@@ -1691,9 +1710,6 @@ void StormGamesWorldDialog::OnCancelDownload() {
 void StormGamesWorldDialog::OnDownloadReplyFinished() {
     is_downloading = false;
     current_download_game_id = -1;
-    cancel_btn->setEnabled(false);
-    download_btn->setEnabled(true);
-    refresh_btn->setEnabled(true);
 
     if (output_file && output_file->isOpen()) {
         if (!download_write_buffer.isEmpty()) {
@@ -1704,17 +1720,33 @@ void StormGamesWorldDialog::OnDownloadReplyFinished() {
         output_file->close();
     }
 
+    if (is_closing) {
+        if (download_reply) {
+            disconnect(download_reply, nullptr, nullptr, nullptr);
+            download_reply->deleteLater();
+            download_reply = nullptr;
+        }
+        return;
+    }
+
+    cancel_btn->setEnabled(false);
+    download_btn->setEnabled(true);
+    refresh_btn->setEnabled(true);
+
     if (!download_reply) return;
 
-    if (download_reply->error() == QNetworkReply::OperationCanceledError) {
+    const auto err = download_reply->error();
+    const auto err_str = download_reply->errorString();
+
+    if (err == QNetworkReply::OperationCanceledError) {
         download_status_label->setText(tr("Загрузка отменена пользователем"));
         if (output_file) {
             output_file->remove();
         }
-    } else if (download_reply->error() != QNetworkReply::NoError) {
-        download_status_label->setText(tr("Ошибка загрузки: %1").arg(download_reply->errorString()));
+    } else if (err != QNetworkReply::NoError) {
+        download_status_label->setText(tr("Ошибка загрузки: %1").arg(err_str));
         QMessageBox::critical(this, tr("Сбой скачивания"),
-            tr("Произошла ошибка при загрузке игры с сервера:\n%1").arg(download_reply->errorString()));
+            tr("Произошла ошибка при загрузке игры с сервера:\n%1").arg(err_str));
     } else {
         progress_bar->setValue(100);
         download_status_label->setText(tr("✅ Загрузка успешно завершена! Файл сохранен в: %1").arg(current_download_path));

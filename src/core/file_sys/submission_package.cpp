@@ -309,11 +309,13 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
             continue;
         }
 
-        bool is_cnmt_ncz = outer_file->GetName().ends_with(".cnmt.ncz");
-        bool is_cnmt_nca = is_cnmt_ncz || (outer_file->GetName().size() >= 9 &&
-                           outer_file->GetName().substr(outer_file->GetName().size() - 9) == ".cnmt.nca");
+        std::string name_lower = outer_file->GetName();
+        std::transform(name_lower.begin(), name_lower.end(), name_lower.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        bool is_cnmt_ncz = name_lower.ends_with(".cnmt.ncz");
+        bool is_cnmt_nca = is_cnmt_ncz || (name_lower.size() >= 9 &&
+                           name_lower.substr(name_lower.size() - 9) == ".cnmt.nca");
 
-        const bool is_cnmt_name = is_cnmt_nca || is_cnmt_ncz || (outer_file->GetName().find(".cnmt.") != std::string::npos);
+        const bool is_cnmt_name = is_cnmt_nca || is_cnmt_ncz || (name_lower.find(".cnmt.") != std::string::npos);
         // CNMT metadata archives are small (<10MB). Skip instantiating full NCAs on large game archives during metadata discovery.
         if (!is_cnmt_name && outer_file->GetSize() > 10 * 1024 * 1024) {
             continue;

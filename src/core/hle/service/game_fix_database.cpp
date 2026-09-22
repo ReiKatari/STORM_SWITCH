@@ -20,6 +20,32 @@ namespace Core {
 
 static const std::vector<GameFixProfile> s_profiles = {
     {
+        0x01008F1008DA6000ULL,
+        "Darkest Dungeon",
+        "• Зависание и вылет вступительного видеоролика при программном декодировании NVDEC ЦП\n• Просадки кадровой частоты в подземельях\n• Сбои распределения памяти",
+        "• Freezing and crash in opening cinematic with CPU NVDEC video decoding\n• Framerate drops in dungeons\n• Memory allocation faults",
+        "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
+        "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
+        {
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\early_release_fences", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
+        },
+        {0x01008F1008DA6800ULL}
+    },
+    {
         0x0100DDF01A03A000ULL,
         "DAVE THE DIVER",
         "• Вылеты при смене локаций (дайвинг / суши-бар Банчо) из-за сборщика мусора Unity GC\n• Утечка дескрипторов текстур под водой\n• Просадки кадровой частоты",
@@ -599,7 +625,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\airplane_mode", "true"},
             {"Core\\memory_layout_mode", "0"},
             {"System\\memory_layout_mode", "0"}
-        }
+        },
+        {0x0100E5E01C098000ULL, 0x0100650017170000ULL, 0x0100C9E01B854000ULL}
     },
     {
         0x0100650017170000ULL,
@@ -4285,7 +4312,6 @@ static const std::vector<GameFixProfile> s_profiles = {
 static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     {"Cpu\\cpu_accuracy", "0"},
     {"Renderer\\gpu_accuracy", "0"},
-    {"Renderer\\nvdec_emulation", "1"},
     {"Renderer\\async_presentation", "true"},
     {"Renderer\\use_asynchronous_shaders", "true"},
     {"Renderer\\use_fast_gpu_time", "false"},
@@ -4636,6 +4662,12 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         }
 
         // Custom keyword matching
+        if (game_lower.find("darkest dungeon") != std::string::npos && (lower.find("darkest dungeon") != std::string::npos || lower.find("darkest_dungeon") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("animal well") != std::string::npos && (lower.find("animal well") != std::string::npos || lower.find("animal_well") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
         if (game_lower.find("streets of rage") != std::string::npos && (lower.find("streets of rage") != std::string::npos || lower.find("sor4") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }

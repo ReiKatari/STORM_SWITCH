@@ -2304,14 +2304,18 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         binding.buttonFloatingAutoCorrection.visibility = targetVisibility
                     }
 
-                    // Emergency thermal protection: if battery/chipset reaches critical temperature (>= 44.0°C),
-                    // trigger forced pause to allow the hardware to cool down safely, without ever throttling FPS during active gameplay.
-                    if (currentBatteryTemp >= 44.0f && this@EmulationFragment::emulationState.isInitialized && !emulationState.isPaused) {
+                    // Emergency thermal protection: if enabled and battery/chipset reaches user-configured threshold,
+                    // trigger forced pause to allow the hardware to cool down safely.
+                    val thermalProtectionEnabled = BooleanSetting.THERMAL_EMERGENCY_PROTECTION.getBoolean(NativeConfig.isPerGameConfigLoaded())
+                    val thermalLimit = IntSetting.THERMAL_EMERGENCY_LIMIT.getInt(NativeConfig.isPerGameConfigLoaded()).toFloat().coerceIn(44.0f, 60.0f)
+                    if (thermalProtectionEnabled && currentBatteryTemp >= thermalLimit && this@EmulationFragment::emulationState.isInitialized && !emulationState.isPaused) {
                         pauseEmulationAndCaptureFrame()
                         context?.let { ctx ->
+                            val tempStr = String.format(java.util.Locale.US, "%.1f", currentBatteryTemp)
+                            val toastMsg = ctx.getString(R.string.thermal_emergency_pause_toast, tempStr)
                             android.widget.Toast.makeText(
                                 ctx,
-                                "🌡️ Экстренная пауза: нагрев чипсета ${String.format(java.util.Locale.US, "%.1f", currentBatteryTemp)}°C. Охлаждение устройства...",
+                                toastMsg,
                                 android.widget.Toast.LENGTH_LONG
                             ).show()
                         }

@@ -1689,4 +1689,9 @@
     <string name="game_info_title">Информация об игре</string>
     <string name="driver_delete_confirm">Вы действительно хотите удалить драйвер «%1$s»?</string>
     <string name="driver_deleted">Драйвер удален</string>
+    <string name="thermal_emergency_protection">Экстренная термическая пауза</string>
+    <string name="thermal_emergency_protection_description">Автоматически приостанавливать эмуляцию при достижении критической температуры чипсета или батареи для охлаждения</string>
+    <string name="thermal_emergency_limit">Порог термической паузы</string>
+    <string name="thermal_emergency_limit_description">Пороговая температура для срабатывания экстренной паузы</string>
+    <string name="thermal_emergency_pause_toast">🌡️ Экстренная пауза: нагрев чипсета %1$s°C. Охлаждение устройства...</string>
 </resources>

@@ -72,13 +72,15 @@ namespace AndroidSettings {
         Settings::Setting<bool> invert_confirm_back_controller_buttons{
             linkage, false, "invert_confirm_back_controller_buttons", Settings::Category::Android};
 
-        // Optimization & Thermal Features
+        // Optimization and Thermal Features
         Settings::SwitchableSetting<bool, false> eco_thermal_mode{linkage, false, "eco_thermal_mode", Settings::Category::Android};
         Settings::SwitchableSetting<bool, false> eco_frame_pacing{linkage, false, "eco_frame_pacing", Settings::Category::Android};
         Settings::SwitchableSetting<bool, false> smart_shader_throttle{linkage, false, "smart_shader_throttle", Settings::Category::Android};
         Settings::SwitchableSetting<bool, false> cpu_affinity_pinning{linkage, false, "cpu_affinity_pinning", Settings::Category::Android};
         Settings::SwitchableSetting<bool, false> vulkan_pipeline_cache{linkage, true, "vulkan_pipeline_cache", Settings::Category::Android};
         Settings::SwitchableSetting<bool, false> vram_garbage_collection{linkage, false, "vram_garbage_collection", Settings::Category::Android};
+        Settings::SwitchableSetting<bool, false> thermal_emergency_protection{linkage, false, "thermal_emergency_protection", Settings::Category::Android};
+        Settings::SwitchableSetting<s32, false> thermal_emergency_limit{linkage, 48, "thermal_emergency_limit", Settings::Category::Android};
 
         // Input/performance overlay settings
         std::vector<OverlayControlData> overlay_control_data;

@@ -328,7 +328,11 @@ object GameHelper {
                     FileUtil.getExtension(it.uri).lowercase()
                 }
                 if (externalContentExtensions.contains(extension)) {
-                    onContainerFound(it)
+                    try {
+                        onContainerFound(it)
+                    } catch (e: Throwable) {
+                        Log.error("[GameHelper] Failed to mount container ${it.filename}: ${e.message}")
+                    }
                 }
             }
         }
@@ -357,9 +361,13 @@ object GameHelper {
                     FileUtil.getExtension(it.uri).lowercase()
                 }
                 if (Game.extensions.contains(extension)) {
-                    val game = getGame(it.uri, true, false)
-                    if (game != null) {
-                        games.add(game)
+                    try {
+                        val game = getGame(it.uri, true, false)
+                        if (game != null) {
+                            games.add(game)
+                        }
+                    } catch (e: Throwable) {
+                        Log.error("[GameHelper] Failed to parse game ${it.filename}: ${e.message}")
                     }
                 }
             }

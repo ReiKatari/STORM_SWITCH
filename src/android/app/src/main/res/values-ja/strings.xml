@@ -1314,4 +1314,9 @@
     <string name="game_info_title">ゲーム情報</string>
     <string name="driver_delete_confirm">ドライバ「%1$s」を削除してもよろしいですか？</string>
     <string name="driver_deleted">ドライバが削除されました</string>
+    <string name="thermal_emergency_protection">過熱緊急一時停止</string>
+    <string name="thermal_emergency_protection_description">チップセットまたはバッテリーが限界温度に達したときに自動的に一時停止し、機器を冷却します</string>
+    <string name="thermal_emergency_limit">過熱一時停止の温度しきい値</string>
+    <string name="thermal_emergency_limit_description">緊急一時停止を作動させるしきい値温度</string>
+    <string name="thermal_emergency_pause_toast">🌡️ 緊急一時停止：チップ温度 %1$s°C。機器を冷却中...</string>
 </resources>

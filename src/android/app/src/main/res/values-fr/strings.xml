@@ -1485,4 +1485,9 @@
     <string name="game_info_title">Informations sur le jeu</string>
     <string name="driver_delete_confirm">Voulez-vous vraiment supprimer le pilote « %1$s » ?</string>
     <string name="driver_deleted">Pilote supprimé</string>
+    <string name="thermal_emergency_protection">Pause thermique d\'urgence</string>
+    <string name="thermal_emergency_protection_description">Mettre automatiquement l\'émulation en pause lorsque le chipset ou la batterie atteint une température critique pour refroidir l\'appareil</string>
+    <string name="thermal_emergency_limit">Seuil de pause thermique</string>
+    <string name="thermal_emergency_limit_description">Température seuil pour le déclenchement de la pause d\'urgence</string>
+    <string name="thermal_emergency_pause_toast">🌡️ Pause d\'urgence : température du chipset %1$s°C. Refroidissement de l\'appareil...</string>
 </resources>

@@ -751,4 +751,23 @@
         <item>3</item>
         <item>4</item>
     </integer-array>
+
+    <!-- Thermal Emergency Limit Arrays -->
+    <string-array name="thermalEmergencyLimitEntries">
+        <item>44°C</item>
+        <item>46°C</item>
+        <item>48°C</item>
+        <item>50°C</item>
+        <item>52°C</item>
+        <item>55°C</item>
+    </string-array>
+
+    <integer-array name="thermalEmergencyLimitValues">
+        <item>44</item>
+        <item>46</item>
+        <item>48</item>
+        <item>50</item>
+        <item>52</item>
+        <item>55</item>
+    </integer-array>
 </resources>

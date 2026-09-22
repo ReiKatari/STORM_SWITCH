@@ -90,6 +90,9 @@ private:
     void FetchRealExtension(int game_id);
     void LoadCover(const StormWorldGame& game);
     void TryNextCoverCandidate();
+    void CancelAllNetworkRequests();
+
+    bool is_closing{false};
 
     struct DownloadedFileInfo {
         QString complete_base_name;

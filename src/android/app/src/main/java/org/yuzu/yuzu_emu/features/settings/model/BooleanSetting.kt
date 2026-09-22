@@ -98,13 +98,14 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     ENABLE_QUICK_SETTINGS("enable_quick_settings"),
     SHOW_FILENAME_AS_TITLE("show_filename_as_title"),
 
-    // Optimization & Thermal / Memory Features
+    // Optimization and Thermal / Memory Features
     ECO_THERMAL_MODE("eco_thermal_mode"),
     ECO_FRAME_PACING("eco_frame_pacing"),
     SMART_SHADER_THROTTLE("smart_shader_throttle"),
     CPU_AFFINITY_PINNING("cpu_affinity_pinning"),
     VULKAN_PIPELINE_CACHE("use_vulkan_driver_pipeline_cache"),
     VRAM_GARBAGE_COLLECTION("vram_garbage_collection"),
+    THERMAL_EMERGENCY_PROTECTION("thermal_emergency_protection"),
     EXT_CONTENT_FROM_GAME_DIRS("ext_content_from_game_dirs"),
 
     RENDERER_EARLY_RELEASE_FENCES("early_release_fences"),

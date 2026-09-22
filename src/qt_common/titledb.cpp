@@ -422,20 +422,13 @@ std::vector<Entry> TitleDatabase::GetDlcs(u64 base_title_id) {
 }
 
 int TitleDatabase::GetDlcCount(u64 base_title_id) {
+    if (!is_loaded.load(std::memory_order_acquire)) {
+        return 0;
+    }
+
     std::lock_guard<std::mutex> lock(db_mutex);
 
-    // 1. Direct AOC range probe count
-    int count = 0;
-    const u64 aoc_base = (base_title_id & 0xFFFFFFFFFFFFF000) | 0x1000;
-    for (u32 i = 1; i <= 500; ++i) {
-        if (db_by_id.find(aoc_base + i) != db_by_id.end()) {
-            count++;
-        }
-    }
-    if (count > 0) {
-        return count;
-    }
-
+    // 1. Fast O(1) lookup in base_to_dlc_count map
     const u64 base_clean = (base_title_id & ~0x1000ULL) & ~0xFFFULL;
     auto it = base_to_dlc_count.find(base_clean);
     if (it != base_to_dlc_count.end() && it->second > 0) {
@@ -455,6 +448,18 @@ int TitleDatabase::GetDlcCount(u64 base_title_id) {
     auto it4 = base_to_dlc_count.find(base_f000);
     if (it4 != base_to_dlc_count.end() && it4->second > 0) {
         return it4->second;
+    }
+
+    // 2. Direct AOC range probe count (fallback)
+    int count = 0;
+    const u64 aoc_base = (base_title_id & 0xFFFFFFFFFFFFF000) | 0x1000;
+    for (u32 i = 1; i <= 200; ++i) {
+        if (db_by_id.find(aoc_base + i) != db_by_id.end()) {
+            count++;
+        }
+    }
+    if (count > 0) {
+        return count;
     }
     return 0;
 }

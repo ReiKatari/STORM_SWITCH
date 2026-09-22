@@ -1189,12 +1189,24 @@ const ExternalContentProvider* ContentProviderUnion::GetExternalProvider() const
 ManualContentProvider::~ManualContentProvider() = default;
 
 void ManualContentProvider::AddEntry(TitleType title_type, ContentRecordType content_type, u64 title_id, VirtualFile file) {
+    if (!file) {
+        return;
+    }
+    auto existing = entries.find({title_type, content_type, title_id});
+    if (existing != entries.end() && existing->second != nullptr) {
+        if (file->GetSize() == 0 && existing->second->GetSize() > 0) {
+            return;
+        }
+    }
     entries.insert_or_assign({title_type, content_type, title_id}, file);
 }
 
 void ManualContentProvider::AddEntryWithVersion(TitleType title_type, ContentRecordType content_type,
                                                 u64 title_id, u32 version,
                                                 const std::string& version_string, VirtualFile file) {
+    if (!file) {
+        return;
+    }
     if (title_type == TitleType::Update) {
         auto it = std::find_if(multi_version_entries.begin(), multi_version_entries.end(), [title_id, version](const ExternalUpdateEntry& entry) {
             return entry.title_id == title_id && entry.version == version;
@@ -1202,7 +1214,9 @@ void ManualContentProvider::AddEntryWithVersion(TitleType title_type, ContentRec
 
         if (it != multi_version_entries.end()) {
             // Update existing entry
-            it->files[size_t(content_type)] = file;
+            if (file->GetSize() > 0 || !it->files[size_t(content_type)]) {
+                it->files[size_t(content_type)] = file;
+            }
             if (!version_string.empty()) {
                 it->version_string = version_string;
             }
@@ -1226,9 +1240,17 @@ void ManualContentProvider::AddEntryWithVersion(TitleType title_type, ContentRec
                     return; // Don't replace with lower version
                 }
             }
-            entries.insert_or_assign({title_type, content_type, title_id}, file);
+            if (file->GetSize() > 0 || existing->second == nullptr || existing->second->GetSize() == 0) {
+                entries.insert_or_assign({title_type, content_type, title_id}, file);
+            }
         }
     } else {
+        auto existing = entries.find({title_type, content_type, title_id});
+        if (existing != entries.end() && existing->second != nullptr) {
+            if (file->GetSize() == 0 && existing->second->GetSize() > 0) {
+                return;
+            }
+        }
         entries.insert_or_assign({title_type, content_type, title_id}, file);
     }
 }

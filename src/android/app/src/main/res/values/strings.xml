@@ -2246,5 +2246,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="game_info_title">Game information</string>
     <string name="driver_delete_confirm">Are you sure you want to delete driver \"%1$s\"?</string>
     <string name="driver_deleted">Driver deleted</string>
+    <string name="thermal_emergency_protection">Emergency thermal pause</string>
+    <string name="thermal_emergency_protection_description">Automatically pause emulation when the chipset or battery reaches a critical temperature to cool the device</string>
+    <string name="thermal_emergency_limit">Thermal pause limit</string>
+    <string name="thermal_emergency_limit_description">Threshold temperature for emergency pause</string>
+    <string name="thermal_emergency_pause_toast">🌡️ Emergency pause: chipset temperature %1$s°C. Cooling device down...</string>
 </resources>
 

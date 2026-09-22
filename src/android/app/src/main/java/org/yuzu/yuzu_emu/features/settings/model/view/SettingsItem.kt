@@ -1237,6 +1237,22 @@ abstract class SettingsItem(
             )
             put(
                 SwitchSetting(
+                    BooleanSetting.THERMAL_EMERGENCY_PROTECTION,
+                    titleId = R.string.thermal_emergency_protection,
+                    descriptionId = R.string.thermal_emergency_protection_description
+                )
+            )
+            put(
+                SingleChoiceSetting(
+                    IntSetting.THERMAL_EMERGENCY_LIMIT,
+                    titleId = R.string.thermal_emergency_limit,
+                    descriptionId = R.string.thermal_emergency_limit_description,
+                    choicesId = R.array.thermalEmergencyLimitEntries,
+                    valuesId = R.array.thermalEmergencyLimitValues
+                )
+            )
+            put(
+                SwitchSetting(
                     BooleanSetting.RENDERER_EARLY_RELEASE_FENCES,
                     titleId = R.string.renderer_early_release_fences,
                     descriptionId = R.string.renderer_early_release_fences_description

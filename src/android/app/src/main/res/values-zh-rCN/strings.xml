@@ -1489,4 +1489,9 @@
     <string name="game_info_title">游戏信息</string>
     <string name="driver_delete_confirm">您确定要删除驱动程序“%1$s”吗？</string>
     <string name="driver_deleted">驱动程序已删除</string>
+    <string name="thermal_emergency_protection">紧急过热暂停</string>
+    <string name="thermal_emergency_protection_description">当芯片或电池达到极限温度时自动暂停模拟，防止设备过热降频</string>
+    <string name="thermal_emergency_limit">过热暂停温度阈值</string>
+    <string name="thermal_emergency_limit_description">触发紧急过热保护的最高温度阈值</string>
+    <string name="thermal_emergency_pause_toast">🌡️ 紧急过热暂停：芯片温度 %1$s°C。正在冷却设备...</string>
 </resources>
