@@ -111,11 +111,27 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
                 nso_file.Read(compressed.data(), comp_size, nso_header.segments[i].offset);
 
                 const int r = Common::Compression::DecompressDataLZ4(dest_ptr, segment_size, compressed.data(), comp_size);
-                if (r != static_cast<int>(segment_size)) {
-                    LOG_WARNING(Loader, "LZ4 decompression for NSO segment {} in '{}' returned {} (expected {}). Falling back to direct read.",
+                if (r == static_cast<int>(segment_size)) {
+                    // LZ4 decompression succeeded
+                } else if (r < 0) {
+                    // LZ4 returned negative error — data is likely already uncompressed
+                    // (ExeFS patches or updates may replace compressed segments with raw data)
+                    LOG_WARNING(Loader, "LZ4 decompression for NSO segment {} in '{}' returned {} (expected {}). "
+                                "Data appears already uncompressed, reading directly.",
                                 i, nso_file.GetName(), r, segment_size);
-                    const auto read_size = std::min<size_t>(segment_size, nso_file.GetSize() > nso_header.segments[i].offset ? nso_file.GetSize() - nso_header.segments[i].offset : 0);
-                    nso_file.Read(dest_ptr, read_size, nso_header.segments[i].offset);
+                    // Read uncompressed data from the segment's file offset
+                    const auto file_size = nso_file.GetSize();
+                    const auto file_offset = nso_header.segments[i].offset;
+                    if (file_offset < file_size) {
+                        const auto read_size = std::min<size_t>(segment_size, file_size - file_offset);
+                        nso_file.Read(dest_ptr, read_size, file_offset);
+                    } else {
+                        LOG_ERROR(Loader, "NSO segment {} offset {:#x} is beyond file size {:#x}", i, file_offset, file_size);
+                    }
+                } else {
+                    // LZ4 returned positive but wrong size — partial decompression
+                    LOG_WARNING(Loader, "LZ4 partial decompression for NSO segment {} in '{}': got {} bytes, expected {}. Using partial data.",
+                                i, nso_file.GetName(), r, segment_size);
                 }
             } else {
                 const auto read_size = std::min<size_t>(segment_size, nso_file.GetSize() > nso_header.segments[i].offset ? nso_file.GetSize() - nso_header.segments[i].offset : 0);

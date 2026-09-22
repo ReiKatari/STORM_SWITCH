@@ -2227,16 +2227,23 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010091801E8B2000ULL,
         "Mario & Luigi: Brothership",
-        "• Задержка отклика в совместных Brother Attacks\n• Просадки FPS на морских островах Конкордии",
-        "• Brother Attacks timing lag\n• Concordia ocean sailing FPS dips",
-        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
-        "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "• Задержка отклика в совместных Brother Attacks\n• Просадки FPS на морских островах Конкордии\n• Зависание на загрузке у MOD версий с большим RomFS",
+        "• Brother Attacks timing lag\n• Concordia ocean sailing FPS dips\n• Loading freeze on MOD versions with large RomFS",
+        "✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Память: 6 ГБ\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory: 6 GB\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\astc_recompression", "0"}
-        }
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\async_presentation", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        },
+        {0x01006D0017F7A000ULL}
     },
     {
         0x010036B0034E4000ULL,
