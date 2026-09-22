@@ -243,8 +243,29 @@ void ConfigureDialog::ReloadAllTabs() {
     }
     s_in_reload = true;
     ConfigurationShared::ReloadAllActiveWidgets();
+    if (general_tab) {
+        general_tab->SetConfiguration();
+    }
+    if (system_tab) {
+        system_tab->SetConfiguration();
+    }
+    if (applets_tab) {
+        applets_tab->SetConfiguration();
+    }
+    if (cpu_tab) {
+        cpu_tab->SetConfiguration();
+    }
     if (graphics_tab) {
         graphics_tab->SetConfiguration();
+    }
+    if (graphics_advanced_tab) {
+        graphics_advanced_tab->SetConfiguration();
+    }
+    if (graphics_extensions_tab) {
+        graphics_extensions_tab->SetConfiguration();
+    }
+    if (audio_tab) {
+        audio_tab->SetConfiguration();
     }
     s_in_reload = false;
 }
@@ -524,33 +545,41 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
     }
 
 #ifdef _WIN32
-    HMODULE hDxgi = LoadLibraryA("dxgi.dll");
-    if (hDxgi) {
-        typedef HRESULT (WINAPI *pfnCreateDXGIFactory1)(REFIID, void**);
-        auto pCreate = reinterpret_cast<pfnCreateDXGIFactory1>(GetProcAddress(hDxgi, "CreateDXGIFactory1"));
-        if (pCreate) {
-            IDXGIFactory1* pFactory = nullptr;
-            if (SUCCEEDED(pCreate(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&pFactory)))) {
-                IDXGIAdapter1* pAdapter = nullptr;
-                for (UINT i = 0; pFactory->EnumAdapters1(i, &pAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
-                    DXGI_ADAPTER_DESC1 desc;
-                    if (SUCCEEDED(pAdapter->GetDesc1(&desc))) {
-                        QString adapter_name = QString::fromWCharArray(desc.Description);
-                        if (gpu_name.contains(adapter_name, Qt::CaseInsensitive) || adapter_name.contains(gpu_name, Qt::CaseInsensitive) || i == 0) {
-                            if (desc.DedicatedVideoMemory > vram_bytes) {
-                                vram_bytes = desc.DedicatedVideoMemory;
-                                if (gpu_name == tr("Не определено")) {
-                                    gpu_name = adapter_name;
+    try {
+        HMODULE hDxgi = LoadLibraryA("dxgi.dll");
+        if (hDxgi) {
+            typedef HRESULT (WINAPI *pfnCreateDXGIFactory1)(REFIID, void**);
+            auto pCreate = reinterpret_cast<pfnCreateDXGIFactory1>(GetProcAddress(hDxgi, "CreateDXGIFactory1"));
+            if (pCreate) {
+                IDXGIFactory1* pFactory = nullptr;
+                if (SUCCEEDED(pCreate(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&pFactory))) && pFactory != nullptr) {
+                    IDXGIAdapter1* pAdapter = nullptr;
+                    for (UINT i = 0; pFactory->EnumAdapters1(i, &pAdapter) == S_OK; ++i) {
+                        if (pAdapter != nullptr) {
+                            DXGI_ADAPTER_DESC1 desc{};
+                            if (SUCCEEDED(pAdapter->GetDesc1(&desc))) {
+                                QString adapter_name = QString::fromWCharArray(desc.Description);
+                                if (gpu_name.contains(adapter_name, Qt::CaseInsensitive) || adapter_name.contains(gpu_name, Qt::CaseInsensitive) || i == 0) {
+                                    if (desc.DedicatedVideoMemory > vram_bytes) {
+                                        vram_bytes = desc.DedicatedVideoMemory;
+                                        if (gpu_name == tr("Не определено")) {
+                                            gpu_name = adapter_name;
+                                        }
+                                    }
                                 }
                             }
+                            pAdapter->Release();
+                            pAdapter = nullptr;
                         }
                     }
-                    pAdapter->Release();
+                    pFactory->Release();
+                    pFactory = nullptr;
                 }
-                pFactory->Release();
             }
+            FreeLibrary(hDxgi);
         }
-        FreeLibrary(hDxgi);
+    } catch (...) {
+        // Fallback gracefully without crash
     }
 #endif
     double vram_gb = static_cast<double>(vram_bytes) / (1024.0 * 1024.0 * 1024.0);
@@ -601,41 +630,48 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
         tier = ProfileTier::Balanced;
     }
 
+    auto apply_auto = [](auto& setting, auto val) {
+        if constexpr (requires { setting.SetGlobal(true); }) {
+            setting.SetGlobal(true);
+        }
+        setting.SetValue(val);
+    };
+
     QString tier_name;
     QStringList applied_list;
 
     if (tier == ProfileTier::Enthusiast) {
         tier_name = tr("Максимальное качество (Enthusiast)");
 
-        Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1X);
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
-        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
-        Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Hybrid);
-        Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Hybrid);
-        Settings::values.use_asynchronous_shaders.SetValue(true);
-        Settings::values.use_asynchronous_gpu_emulation.SetValue(true);
-        Settings::values.async_presentation.SetValue(true);
-        Settings::values.use_reactive_flushing.SetValue(false);
-        Settings::values.sync_memory_operations.SetValue(false);
-        Settings::values.enable_gpu_buffer_readback.SetValue(false);
-        Settings::values.gpu_clock.SetValue(Settings::GpuClock::Normal);
-        Settings::values.eco_thermal_mode.SetValue(true);
-        Settings::values.eco_frame_pacing.SetValue(true);
-        Settings::values.smart_shader_throttle.SetValue(true);
-        Settings::values.cpu_affinity_pinning.SetValue(true);
-        Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
-        Settings::values.vram_garbage_collection.SetValue(false);
-        Settings::values.early_release_fences.SetValue(false);
-        Settings::values.optimize_spirv_output.SetValue(1);
-        Settings::values.enable_frame_skipping.SetValue(true);
-        Settings::values.max_anisotropy.SetValue(Settings::AnisotropyMode::X16);
-        Settings::values.anti_aliasing.SetValue(Settings::AntiAliasing::Smaa);
-        Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Fsr);
-        Settings::values.fsr_sharpening_slider.SetValue(85);
-        Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
-        Settings::values.cpuopt_fastmem.SetValue(true);
-        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
-        Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
+        apply_auto(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
+        apply_auto(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
+        apply_auto(Settings::values.astc_recompression, Settings::AstcRecompression::Uncompressed);
+        apply_auto(Settings::values.accelerate_astc, Settings::AstcDecodeMode::Hybrid);
+        apply_auto(Settings::values.nvdec_emulation, Settings::NvdecEmulation::Hybrid);
+        apply_auto(Settings::values.use_asynchronous_shaders, true);
+        apply_auto(Settings::values.use_asynchronous_gpu_emulation, true);
+        apply_auto(Settings::values.async_presentation, true);
+        apply_auto(Settings::values.use_reactive_flushing, false);
+        apply_auto(Settings::values.sync_memory_operations, false);
+        apply_auto(Settings::values.enable_gpu_buffer_readback, false);
+        apply_auto(Settings::values.gpu_clock, Settings::GpuClock::Normal);
+        apply_auto(Settings::values.eco_thermal_mode, true);
+        apply_auto(Settings::values.eco_frame_pacing, true);
+        apply_auto(Settings::values.smart_shader_throttle, true);
+        apply_auto(Settings::values.cpu_affinity_pinning, true);
+        apply_auto(Settings::values.use_vulkan_driver_pipeline_cache, true);
+        apply_auto(Settings::values.vram_garbage_collection, false);
+        apply_auto(Settings::values.early_release_fences, false);
+        apply_auto(Settings::values.optimize_spirv_output, 1);
+        apply_auto(Settings::values.enable_frame_skipping, true);
+        apply_auto(Settings::values.max_anisotropy, Settings::AnisotropyMode::X16);
+        apply_auto(Settings::values.anti_aliasing, Settings::AntiAliasing::Smaa);
+        apply_auto(Settings::values.scaling_filter, Settings::ScalingFilter::Fsr);
+        apply_auto(Settings::values.fsr_sharpening_slider, 85);
+        apply_auto(Settings::values.cpu_accuracy, Settings::CpuAccuracy::Auto);
+        apply_auto(Settings::values.cpuopt_fastmem, true);
+        apply_auto(Settings::values.cpuopt_ignore_memory_aborts, true);
+        apply_auto(Settings::values.use_docked_mode, Settings::ConsoleMode::Docked);
 
         applied_list << tr("Разрешение рендеринга: 1X (720p/1080p) (нативное разрешение Switch для оптимального баланса скорости и стабильности)");
         applied_list << tr("Точность ГПУ: Быстрая (Low) (высокая скорость рендеринга без микрозадержек видеокарты)");
@@ -648,33 +684,33 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
     } else if (tier == ProfileTier::Eco) {
         tier_name = tr("Энергосбережение и портативность (Eco)");
 
-        Settings::values.resolution_setup.SetValue(on_battery ? Settings::ResolutionSetup::Res1_2X : Settings::ResolutionSetup::Res3_4X);
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
-        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Bc3);
-        Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Hybrid);
-        Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Hybrid);
-        Settings::values.use_asynchronous_shaders.SetValue(true);
-        Settings::values.use_asynchronous_gpu_emulation.SetValue(true);
-        Settings::values.async_presentation.SetValue(true);
-        Settings::values.use_reactive_flushing.SetValue(false);
-        Settings::values.sync_memory_operations.SetValue(false);
-        Settings::values.gpu_clock.SetValue(Settings::GpuClock::Normal);
-        Settings::values.eco_thermal_mode.SetValue(true);
-        Settings::values.eco_frame_pacing.SetValue(true);
-        Settings::values.smart_shader_throttle.SetValue(true);
-        Settings::values.cpu_affinity_pinning.SetValue(true);
-        Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
-        Settings::values.vram_garbage_collection.SetValue(false);
-        Settings::values.early_release_fences.SetValue(false);
-        Settings::values.optimize_spirv_output.SetValue(1);
-        Settings::values.enable_frame_skipping.SetValue(true);
-        Settings::values.max_anisotropy.SetValue(Settings::AnisotropyMode::Default);
-        Settings::values.anti_aliasing.SetValue(Settings::AntiAliasing::None);
-        Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Bilinear);
-        Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
-        Settings::values.cpuopt_fastmem.SetValue(true);
-        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
-        Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Handheld);
+        apply_auto(Settings::values.resolution_setup, on_battery ? Settings::ResolutionSetup::Res1_2X : Settings::ResolutionSetup::Res3_4X);
+        apply_auto(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
+        apply_auto(Settings::values.astc_recompression, Settings::AstcRecompression::Bc3);
+        apply_auto(Settings::values.accelerate_astc, Settings::AstcDecodeMode::Hybrid);
+        apply_auto(Settings::values.nvdec_emulation, Settings::NvdecEmulation::Hybrid);
+        apply_auto(Settings::values.use_asynchronous_shaders, true);
+        apply_auto(Settings::values.use_asynchronous_gpu_emulation, true);
+        apply_auto(Settings::values.async_presentation, true);
+        apply_auto(Settings::values.use_reactive_flushing, false);
+        apply_auto(Settings::values.sync_memory_operations, false);
+        apply_auto(Settings::values.gpu_clock, Settings::GpuClock::Normal);
+        apply_auto(Settings::values.eco_thermal_mode, true);
+        apply_auto(Settings::values.eco_frame_pacing, true);
+        apply_auto(Settings::values.smart_shader_throttle, true);
+        apply_auto(Settings::values.cpu_affinity_pinning, true);
+        apply_auto(Settings::values.use_vulkan_driver_pipeline_cache, true);
+        apply_auto(Settings::values.vram_garbage_collection, false);
+        apply_auto(Settings::values.early_release_fences, false);
+        apply_auto(Settings::values.optimize_spirv_output, 1);
+        apply_auto(Settings::values.enable_frame_skipping, true);
+        apply_auto(Settings::values.max_anisotropy, Settings::AnisotropyMode::Default);
+        apply_auto(Settings::values.anti_aliasing, Settings::AntiAliasing::None);
+        apply_auto(Settings::values.scaling_filter, Settings::ScalingFilter::Bilinear);
+        apply_auto(Settings::values.cpu_accuracy, Settings::CpuAccuracy::Auto);
+        apply_auto(Settings::values.cpuopt_fastmem, true);
+        apply_auto(Settings::values.cpuopt_ignore_memory_aborts, true);
+        apply_auto(Settings::values.use_docked_mode, Settings::ConsoleMode::Handheld);
 
         applied_list << (on_battery ?
             tr("Разрешение рендеринга: 0.5X (360p/540p) (снижение разрешения для экономии заряда батареи)") :
@@ -688,34 +724,34 @@ void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
     } else {
         tier_name = tr("Сбалансированный (Balanced 60 FPS)");
 
-        Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1X);
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
-        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
-        Settings::values.accelerate_astc.SetValue(Settings::AstcDecodeMode::Hybrid);
-        Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Hybrid);
-        Settings::values.use_asynchronous_shaders.SetValue(true);
-        Settings::values.use_asynchronous_gpu_emulation.SetValue(true);
-        Settings::values.async_presentation.SetValue(true);
-        Settings::values.use_reactive_flushing.SetValue(false);
-        Settings::values.sync_memory_operations.SetValue(false);
-        Settings::values.gpu_clock.SetValue(Settings::GpuClock::Normal);
-        Settings::values.eco_thermal_mode.SetValue(true);
-        Settings::values.eco_frame_pacing.SetValue(true);
-        Settings::values.smart_shader_throttle.SetValue(true);
-        Settings::values.cpu_affinity_pinning.SetValue(true);
-        Settings::values.use_vulkan_driver_pipeline_cache.SetValue(true);
-        Settings::values.vram_garbage_collection.SetValue(false);
-        Settings::values.early_release_fences.SetValue(false);
-        Settings::values.optimize_spirv_output.SetValue(1);
-        Settings::values.enable_frame_skipping.SetValue(true);
-        Settings::values.max_anisotropy.SetValue(Settings::AnisotropyMode::Automatic);
-        Settings::values.anti_aliasing.SetValue(Settings::AntiAliasing::Fxaa);
-        Settings::values.scaling_filter.SetValue(Settings::ScalingFilter::Fsr);
-        Settings::values.fsr_sharpening_slider.SetValue(80);
-        Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
-        Settings::values.cpuopt_fastmem.SetValue(true);
-        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
-        Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Docked);
+        apply_auto(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
+        apply_auto(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
+        apply_auto(Settings::values.astc_recompression, Settings::AstcRecompression::Uncompressed);
+        apply_auto(Settings::values.accelerate_astc, Settings::AstcDecodeMode::Hybrid);
+        apply_auto(Settings::values.nvdec_emulation, Settings::NvdecEmulation::Hybrid);
+        apply_auto(Settings::values.use_asynchronous_shaders, true);
+        apply_auto(Settings::values.use_asynchronous_gpu_emulation, true);
+        apply_auto(Settings::values.async_presentation, true);
+        apply_auto(Settings::values.use_reactive_flushing, false);
+        apply_auto(Settings::values.sync_memory_operations, false);
+        apply_auto(Settings::values.gpu_clock, Settings::GpuClock::Normal);
+        apply_auto(Settings::values.eco_thermal_mode, true);
+        apply_auto(Settings::values.eco_frame_pacing, true);
+        apply_auto(Settings::values.smart_shader_throttle, true);
+        apply_auto(Settings::values.cpu_affinity_pinning, true);
+        apply_auto(Settings::values.use_vulkan_driver_pipeline_cache, true);
+        apply_auto(Settings::values.vram_garbage_collection, false);
+        apply_auto(Settings::values.early_release_fences, false);
+        apply_auto(Settings::values.optimize_spirv_output, 1);
+        apply_auto(Settings::values.enable_frame_skipping, true);
+        apply_auto(Settings::values.max_anisotropy, Settings::AnisotropyMode::Automatic);
+        apply_auto(Settings::values.anti_aliasing, Settings::AntiAliasing::Fxaa);
+        apply_auto(Settings::values.scaling_filter, Settings::ScalingFilter::Fsr);
+        apply_auto(Settings::values.fsr_sharpening_slider, 80);
+        apply_auto(Settings::values.cpu_accuracy, Settings::CpuAccuracy::Auto);
+        apply_auto(Settings::values.cpuopt_fastmem, true);
+        apply_auto(Settings::values.cpuopt_ignore_memory_aborts, true);
+        apply_auto(Settings::values.use_docked_mode, Settings::ConsoleMode::Docked);
 
         applied_list << tr("Разрешение рендеринга: 1X (720p/1080p) (нативное разрешение Switch для оптимального баланса скорости и качества)");
         applied_list << tr("Точность ГПУ: Быстрая (Low) (высокая скорость рендеринга без избыточной нагрузки на видеокарту)");

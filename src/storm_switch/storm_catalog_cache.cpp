@@ -3,6 +3,7 @@
 
 #include "storm_switch/storm_catalog_cache.h"
 #include <algorithm>
+#include <thread>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -19,7 +20,7 @@ StormCatalogCache& StormCatalogCache::Instance() {
 }
 
 StormCatalogCache::StormCatalogCache() {
-    LoadCache();
+    std::thread(&StormCatalogCache::LoadCache, this).detach();
 }
 
 QString StormCatalogCache::GetCacheFilePath() const {
@@ -29,15 +30,21 @@ QString StormCatalogCache::GetCacheFilePath() const {
 }
 
 void StormCatalogCache::LoadCache() {
+    bool expected = false;
+    if (!m_loading.compare_exchange_strong(expected, true)) {
+        return;
+    }
     const QString path = GetCacheFilePath();
     QFile file(path);
     if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
+        m_loading = false;
         return;
     }
     const QByteArray data = file.readAll();
     file.close();
     ParseCatalogJson(data);
     m_loaded = true;
+    m_loading = false;
 }
 
 void StormCatalogCache::SaveCache(const QByteArray& json_data) {
@@ -71,7 +78,7 @@ void StormCatalogCache::ParseCatalogJson(const QByteArray& data) {
         return;
     }
 
-    m_latest_versions.clear();
+    QMap<u64, QString> temp_versions;
     const QJsonArray arr = doc.array();
 
     for (const auto& val : arr) {
@@ -95,18 +102,20 @@ void StormCatalogCache::ParseCatalogJson(const QByteArray& data) {
                 const u64 tid = serial_id.toULongLong(&ok, 16);
                 if (ok && tid != 0) {
                     const u64 base_tid = (tid & ~0x800ULL);
-                    if (!m_latest_versions.contains(base_tid) ||
-                        CompareVersions(ver, m_latest_versions[base_tid]) > 0) {
-                        m_latest_versions[base_tid] = ver;
+                    if (!temp_versions.contains(base_tid) ||
+                        CompareVersions(ver, temp_versions[base_tid]) > 0) {
+                        temp_versions[base_tid] = ver;
                     }
-                    if (!m_latest_versions.contains(tid) ||
-                        CompareVersions(ver, m_latest_versions[tid]) > 0) {
-                        m_latest_versions[tid] = ver;
+                    if (!temp_versions.contains(tid) ||
+                        CompareVersions(ver, temp_versions[tid]) > 0) {
+                        temp_versions[tid] = ver;
                     }
                 }
             }
         }
     }
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_latest_versions = std::move(temp_versions);
 }
 
 bool StormCatalogCache::HasUpdate(u64 title_id, const QString& installed_ver) const {
@@ -114,6 +123,7 @@ bool StormCatalogCache::HasUpdate(u64 title_id, const QString& installed_ver) co
         return false;
     }
 
+    std::lock_guard<std::mutex> lock(m_mutex);
     QString catalog_ver;
     if (m_latest_versions.contains(title_id)) {
         catalog_ver = m_latest_versions.value(title_id);
@@ -132,6 +142,7 @@ bool StormCatalogCache::HasUpdate(u64 title_id, const QString& installed_ver) co
 }
 
 QString StormCatalogCache::GetLatestVersion(u64 title_id) const {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (m_latest_versions.contains(title_id)) {
         return m_latest_versions.value(title_id);
     }

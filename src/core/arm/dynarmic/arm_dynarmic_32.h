@@ -53,8 +53,13 @@ public:
     bool CheckMemoryAccess(u64 addr, u64 size, Kernel::DebugWatchpointType type);
     void ReturnException(u32 pc, Dynarmic::HaltReason hr);
     //
-    Dynarmic::CodePage cached_code_page;
-    u64 last_code_addr = u64(-1);
+    static constexpr size_t kCodeCachePages = 4;
+    struct CodeCacheEntry {
+        Dynarmic::CodePage page;
+        u64 addr = u64(-1);
+    };
+    std::array<CodeCacheEntry, kCodeCachePages> code_cache_;
+    size_t code_cache_next_ = 0;
     ArmDynarmic32& m_parent;
     Core::Memory::Memory& m_memory;
     Kernel::KProcess* m_process{};

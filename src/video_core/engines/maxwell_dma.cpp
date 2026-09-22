@@ -190,7 +190,7 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
 
     UNIMPLEMENTED_IF(regs.src_params.block_size.width != 0);
     UNIMPLEMENTED_IF(regs.src_params.block_size.depth != 0);
-    UNIMPLEMENTED_IF(regs.src_params.block_size.depth == 0 && regs.src_params.depth != 1);
+    UNIMPLEMENTED_IF(regs.src_params.layer == 0 && regs.src_params.block_size.depth == 0 && regs.src_params.depth != 1);
 
     // Deswizzle the input and copy it over.
     const DMA::Parameters& src_params = regs.src_params;
@@ -220,24 +220,26 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
     const u32 depth = src_params.depth;
     const u32 block_height = src_params.block_size.height;
     const u32 block_depth = src_params.block_size.depth;
-    const size_t src_size =
-        CalculateSize(true, bytes_per_pixel, width, height, depth, block_height, block_depth);
+    const u32 copy_depth = src_params.layer != 0 ? 1 : depth;
+    const size_t layer_size =
+        CalculateSize(true, bytes_per_pixel, width, height, copy_depth, block_height, block_depth);
+    const size_t src_size = layer_size;
 
     const size_t dst_size = dst_operand.pitch * regs.line_count;
 
+    GPUVAddr src_addr = regs.offset_in + static_cast<GPUVAddr>(src_params.layer) * layer_size;
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
-        memory_manager, src_operand.address, src_size, &read_buffer);
+        memory_manager, src_addr, src_size, &read_buffer);
     Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadCachedWrite>
         tmp_write_buffer(memory_manager, dst_operand.address, dst_size, &write_buffer);
 
-    UnswizzleSubrect(tmp_write_buffer, tmp_read_buffer, bytes_per_pixel, width, height, depth,
+    UnswizzleSubrect(tmp_write_buffer, tmp_read_buffer, bytes_per_pixel, width, height, copy_depth,
                      x_offset, src_params.origin.y, x_elements, regs.line_count, block_height,
                      block_depth, dst_operand.pitch);
 }
 
 void MaxwellDMA::CopyPitchToBlockLinear() {
     UNIMPLEMENTED_IF_MSG(regs.dst_params.block_size.width != 0, "Block width is not one");
-    UNIMPLEMENTED_IF(regs.dst_params.layer != 0);
 
     const bool is_remapping = regs.launch_dma.remap_enable != 0;
     const u32 num_remap_components = regs.remap_const.num_dst_components_minus_one + 1;
@@ -283,19 +285,21 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
     const u32 depth = dst_params.depth;
     const u32 block_height = dst_params.block_size.height;
     const u32 block_depth = dst_params.block_size.depth;
-    const size_t dst_size =
-        CalculateSize(true, bytes_per_pixel, width, height, depth, block_height, block_depth);
+    const u32 copy_depth = dst_params.layer != 0 ? 1 : depth;
+    const size_t layer_size =
+        CalculateSize(true, bytes_per_pixel, width, height, copy_depth, block_height, block_depth);
+    const size_t dst_size = layer_size;
     const size_t src_size = static_cast<size_t>(regs.pitch_in) * regs.line_count;
 
     GPUVAddr src_addr = regs.offset_in;
-    GPUVAddr dst_addr = regs.offset_out;
+    GPUVAddr dst_addr = regs.offset_out + static_cast<GPUVAddr>(dst_params.layer) * layer_size;
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
         memory_manager, src_addr, src_size, &read_buffer);
     Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadCachedWrite>
         tmp_write_buffer(memory_manager, dst_addr, dst_size, &write_buffer);
 
     //  If the input is linear and the output is tiled, swizzle the input and copy it over.
-    SwizzleSubrect(tmp_write_buffer, tmp_read_buffer, bytes_per_pixel, width, height, depth,
+    SwizzleSubrect(tmp_write_buffer, tmp_read_buffer, bytes_per_pixel, width, height, copy_depth,
                    x_offset, dst_params.origin.y, x_elements, regs.line_count, block_height,
                    block_depth, regs.pitch_in);
 }
@@ -333,9 +337,11 @@ void MaxwellDMA::CopyBlockLinearToBlockLinear() {
     }
 
     const u32 bytes_per_pixel = base_bpp << bpp_shift;
-    const size_t src_size = CalculateSize(true, bytes_per_pixel, src_width, src.height, src.depth,
+    const u32 src_copy_depth = src.layer != 0 ? 1 : src.depth;
+    const u32 dst_copy_depth = dst.layer != 0 ? 1 : dst.depth;
+    const size_t src_layer_size = CalculateSize(true, bytes_per_pixel, src_width, src.height, src_copy_depth,
                                           src.block_size.height, src.block_size.depth);
-    const size_t dst_size = CalculateSize(true, bytes_per_pixel, dst_width, dst.height, dst.depth,
+    const size_t dst_layer_size = CalculateSize(true, bytes_per_pixel, dst_width, dst.height, dst_copy_depth,
                                           dst.block_size.height, dst.block_size.depth);
 
     const u32 pitch = x_elements * bytes_per_pixel;
@@ -343,17 +349,20 @@ void MaxwellDMA::CopyBlockLinearToBlockLinear() {
 
     intermediate_buffer.resize_destructive(mid_buffer_size);
 
+    const GPUVAddr src_addr = regs.offset_in + static_cast<GPUVAddr>(src.layer) * src_layer_size;
+    const GPUVAddr dst_addr = regs.offset_out + static_cast<GPUVAddr>(dst.layer) * dst_layer_size;
+
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
-        memory_manager, regs.offset_in, src_size, &read_buffer);
+        memory_manager, src_addr, src_layer_size, &read_buffer);
     Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::SafeReadCachedWrite>
-        tmp_write_buffer(memory_manager, regs.offset_out, dst_size, &write_buffer);
+        tmp_write_buffer(memory_manager, dst_addr, dst_layer_size, &write_buffer);
 
     UnswizzleSubrect(intermediate_buffer, tmp_read_buffer, bytes_per_pixel, src_width, src.height,
-                     src.depth, src_x_offset, src.origin.y, x_elements, regs.line_count,
+                     src_copy_depth, src_x_offset, src.origin.y, x_elements, regs.line_count,
                      src.block_size.height, src.block_size.depth, pitch);
 
     SwizzleSubrect(tmp_write_buffer, intermediate_buffer, bytes_per_pixel, dst_width, dst.height,
-                   dst.depth, dst_x_offset, dst.origin.y, x_elements, regs.line_count,
+                   dst_copy_depth, dst_x_offset, dst.origin.y, x_elements, regs.line_count,
                    dst.block_size.height, dst.block_size.depth, pitch);
 }
 

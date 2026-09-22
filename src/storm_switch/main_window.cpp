@@ -4898,8 +4898,6 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         mouse_hide_timer.start();
     }
 
-    render_window->InitializeCamera();
-
     std::string title_name;
     std::string title_version;
     const auto res = QtCommon::system->GetGameName(title_name);
@@ -6574,7 +6572,6 @@ void MainWindow::OnConfigure() {
     // Restart camera config
     if (emulation_running) {
         render_window->FinalizeCamera();
-        render_window->InitializeCamera();
     }
 
     if (!UISettings::values.has_broken_vulkan) {

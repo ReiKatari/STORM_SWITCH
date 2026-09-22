@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <algorithm>
@@ -652,6 +652,7 @@ void GRenderWindow::FinalizeCamera() {
     if (camera) {
         camera->stop();
     }
+    camera_initialized = false;
 #endif
 }
 
@@ -659,6 +660,11 @@ void GRenderWindow::RequestCameraCapture() {
 #if YUZU_USE_QT_MULTIMEDIA
     if (!Settings::values.enable_ir_sensor) {
         return;
+    }
+
+    if (!camera_initialized) {
+        InitializeCamera();
+        camera_initialized = true;
     }
 
     // If the camera doesn't capture, test for virtual cameras

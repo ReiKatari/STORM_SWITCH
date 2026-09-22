@@ -32,8 +32,10 @@ Result IApplicationProxyService::OpenApplicationProxy(
             system, applet, process_handle.Get(), m_window_system);
         R_SUCCEED();
     } else {
-        UNIMPLEMENTED();
-        R_THROW(ResultUnknown);
+        LOG_WARNING(Service_AM, "(STUBBED) called");
+        *out_application_proxy = std::make_shared<IApplicationProxy>(
+            system, nullptr, process_handle.Get(), m_window_system);
+        R_SUCCEED();
     }
 }
 

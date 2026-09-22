@@ -142,35 +142,35 @@ struct Values {
     Linkage linkage{};
 
     // Applet
-    SwitchableSetting<AppletMode> cabinet_applet_mode{linkage, AppletMode::LLE, "cabinet_applet_mode",
+    SwitchableSetting<AppletMode> cabinet_applet_mode{linkage, AppletMode::HLE, "cabinet_applet_mode",
                                             Category::LibraryApplet};
     SwitchableSetting<AppletMode> controller_applet_mode{linkage, AppletMode::HLE, "controller_applet_mode",
                                                Category::LibraryApplet};
     Setting<AppletMode> data_erase_applet_mode{linkage, AppletMode::HLE, "data_erase_applet_mode",
                                                Category::LibraryApplet};
-    SwitchableSetting<AppletMode> error_applet_mode{linkage, AppletMode::LLE, "error_applet_mode",
+    SwitchableSetting<AppletMode> error_applet_mode{linkage, AppletMode::HLE, "error_applet_mode",
                                           Category::LibraryApplet};
-    Setting<AppletMode> net_connect_applet_mode{linkage, AppletMode::LLE, "net_connect_applet_mode",
+    Setting<AppletMode> net_connect_applet_mode{linkage, AppletMode::HLE, "net_connect_applet_mode",
                                                 Category::LibraryApplet};
     SwitchableSetting<AppletMode> player_select_applet_mode{
-                                                  linkage, AppletMode::LLE, "player_select_applet_mode", Category::LibraryApplet};
+                                                  linkage, AppletMode::HLE, "player_select_applet_mode", Category::LibraryApplet};
     SwitchableSetting<AppletMode> swkbd_applet_mode{linkage, AppletMode::HLE, "swkbd_applet_mode",
                                           Category::LibraryApplet};
-    SwitchableSetting<AppletMode> mii_edit_applet_mode{linkage, AppletMode::LLE, "mii_edit_applet_mode",
+    SwitchableSetting<AppletMode> mii_edit_applet_mode{linkage, AppletMode::HLE, "mii_edit_applet_mode",
                                              Category::LibraryApplet};
     SwitchableSetting<AppletMode> web_applet_mode{linkage, AppletMode::HLE, "web_applet_mode",
                                         Category::LibraryApplet};
     Setting<AppletMode> shop_applet_mode{linkage, AppletMode::HLE, "shop_applet_mode",
                                          Category::LibraryApplet};
     SwitchableSetting<AppletMode> photo_viewer_applet_mode{
-                                                 linkage, AppletMode::LLE, "photo_viewer_applet_mode", Category::LibraryApplet};
-    SwitchableSetting<AppletMode> offline_web_applet_mode{linkage, AppletMode::LLE, "offline_web_applet_mode",
+                                                  linkage, AppletMode::HLE, "photo_viewer_applet_mode", Category::LibraryApplet};
+    SwitchableSetting<AppletMode> offline_web_applet_mode{linkage, AppletMode::HLE, "offline_web_applet_mode",
                                                 Category::LibraryApplet};
     Setting<AppletMode> login_share_applet_mode{linkage, AppletMode::HLE, "login_share_applet_mode",
                                                 Category::LibraryApplet};
     Setting<AppletMode> wifi_web_auth_applet_mode{
                                                   linkage, AppletMode::HLE, "wifi_web_auth_applet_mode", Category::LibraryApplet};
-    Setting<AppletMode> my_page_applet_mode{linkage, AppletMode::LLE, "my_page_applet_mode",
+    Setting<AppletMode> my_page_applet_mode{linkage, AppletMode::HLE, "my_page_applet_mode",
                                             Category::LibraryApplet};
     SwitchableSetting<bool> enable_overlay{linkage, false, "enable_overlay", Category::LibraryApplet};
 
@@ -202,7 +202,7 @@ struct Values {
     // Core
     SwitchableSetting<bool> use_multi_core{linkage, true, "use_multi_core", Category::Core};
     SwitchableSetting<MemoryLayout, true> memory_layout_mode{linkage,
-                                                             MemoryLayout::Memory_4Gb,
+                                                             MemoryLayout::Memory_6Gb,
                                                              "memory_layout_mode",
                                                              Category::Core,
                                                              Specialization::Default,
@@ -476,14 +476,14 @@ struct Values {
                                          linkage, 0, "bg_blue", Category::Renderer, Specialization::Default, true, true};
 
     SwitchableSetting<GpuAccuracy, true> gpu_accuracy{linkage,
-                                                      GpuAccuracy::Low,
+                                                      GpuAccuracy::High,
                                                       "gpu_accuracy",
                                                       Category::RendererAdvanced,
                                                       Specialization::Default,
                                                       true,
                                                       true};
 
-    GpuAccuracy current_gpu_accuracy{GpuAccuracy::Low};
+    GpuAccuracy current_gpu_accuracy{GpuAccuracy::High};
 
     SwitchableSetting<DmaAccuracy, true> dma_accuracy{linkage,
                                                       DmaAccuracy::Default,
@@ -531,7 +531,7 @@ struct Values {
                                                                true};
 
     SwitchableSetting<AstcRecompression, true> astc_recompression{linkage,
-                                                                  AstcRecompression::Uncompressed,
+                                                                  AstcRecompression::Bc1,
                                                                   "astc_recompression",
                                                                   Category::RendererAdvanced};
 
@@ -606,7 +606,7 @@ struct Values {
                                              true,
                                              true};
     SwitchableSetting<bool> eco_frame_pacing{linkage,
-                                             false,
+                                             true,
                                              "eco_frame_pacing",
                                              Category::Renderer,
                                              Specialization::Default,
@@ -620,14 +620,14 @@ struct Values {
                                                   true,
                                                   true};
     SwitchableSetting<bool> cpu_affinity_pinning{linkage,
-                                                 false,
+                                                 true,
                                                  "cpu_affinity_pinning",
                                                  Category::Cpu,
                                                  Specialization::Default,
                                                  true,
                                                  true};
     SwitchableSetting<bool> vram_garbage_collection{linkage,
-                                                    false,
+                                                    true,
                                                     "vram_garbage_collection",
                                                     Category::RendererAdvanced,
                                                     Specialization::Default,
@@ -655,7 +655,7 @@ struct Values {
                                                true,
                                                true};
     SwitchableSetting<bool> storm_thermal_governor{linkage,
-                                                  false,
+                                                   true,
                                                   "storm_thermal_governor",
                                                   Category::System,
                                                   Specialization::Default,

@@ -178,7 +178,8 @@ QWidget* Widget::CreateCheckBox(Settings::BasicSetting* bool_setting, const QStr
     };
 
     checkbox->connect(checkbox, &QCheckBox::stateChanged, [serializer, bool_setting](int) {
-        if (Settings::IsConfiguringGlobal() && bool_setting->UsingGlobal()) {
+        if (Settings::IsConfiguringGlobal()) {
+            bool_setting->SetGlobal(true);
             bool_setting->LoadString(serializer());
             NotifyGlobalSettingChanged();
         }
@@ -243,7 +244,8 @@ QWidget* Widget::CreateCombobox(std::function<std::string()>& serializer,
     };
 
     combobox->connect(combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this, serializer](int) {
-        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+        if (Settings::IsConfiguringGlobal()) {
+            setting.SetGlobal(true);
             setting.LoadString(serializer());
             NotifyGlobalSettingChanged();
         }
@@ -314,7 +316,8 @@ QWidget* Widget::CreateRadioGroup(std::function<std::string()>& serializer,
 
     for (const auto& [id, button] : radio_buttons) {
         button->connect(button, &QRadioButton::toggled, [this, serializer](bool checked) {
-            if (checked && Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+            if (checked && Settings::IsConfiguringGlobal()) {
+                setting.SetGlobal(true);
                 setting.LoadString(serializer());
                 NotifyGlobalSettingChanged();
             }
@@ -353,7 +356,8 @@ QWidget* Widget::CreateLineEdit(std::function<std::string()>& serializer,
     };
 
     line_edit->connect(line_edit, &QLineEdit::editingFinished, [this, serializer]() {
-        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+        if (Settings::IsConfiguringGlobal()) {
+            setting.SetGlobal(true);
             setting.LoadString(serializer());
             NotifyGlobalSettingChanged();
         }
@@ -396,7 +400,8 @@ static void CreateIntSlider(Settings::BasicSetting& setting, bool reversed, floa
     };
 
     slider->connect(slider, &QAbstractSlider::valueChanged, [&setting, serializer](int) {
-        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+        if (Settings::IsConfiguringGlobal()) {
+            setting.SetGlobal(true);
             setting.LoadString(serializer());
             NotifyGlobalSettingChanged();
         }
@@ -438,7 +443,8 @@ static void CreateFloatSlider(Settings::BasicSetting& setting, bool reversed, fl
     };
 
     slider->connect(slider, &QAbstractSlider::valueChanged, [&setting, serializer](int) {
-        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+        if (Settings::IsConfiguringGlobal()) {
+            setting.SetGlobal(true);
             setting.LoadString(serializer());
             NotifyGlobalSettingChanged();
         }
@@ -519,7 +525,8 @@ QWidget* Widget::CreateSpinBox(const QString& given_suffix,
     };
 
     spinbox->connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), [this, serializer](int) {
-        if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+        if (Settings::IsConfiguringGlobal()) {
+            setting.SetGlobal(true);
             setting.LoadString(serializer());
             NotifyGlobalSettingChanged();
         }
@@ -567,7 +574,8 @@ QWidget* Widget::CreateDoubleSpinBox(const QString& given_suffix,
 
     double_spinbox->connect(
         double_spinbox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this, serializer](double) {
-            if (Settings::IsConfiguringGlobal() && setting.UsingGlobal()) {
+            if (Settings::IsConfiguringGlobal()) {
+                setting.SetGlobal(true);
                 setting.LoadString(serializer());
                 NotifyGlobalSettingChanged();
             }
@@ -616,6 +624,20 @@ QWidget* Widget::CreateHexEdit(std::function<std::string()>& serializer,
 
     restore_func = [this, to_hex]() { line_edit->setText(to_hex(RelevantDefault(setting))); };
 
+    reload_func = [this, to_hex]() {
+        const bool blocked = line_edit->blockSignals(true);
+        line_edit->setText(to_hex(setting.ToString()));
+        line_edit->blockSignals(blocked);
+    };
+
+    line_edit->connect(line_edit, &QLineEdit::editingFinished, [this, serializer]() {
+        if (Settings::IsConfiguringGlobal()) {
+            setting.SetGlobal(true);
+            setting.LoadString(serializer());
+            NotifyGlobalSettingChanged();
+        }
+    });
+
     if (!Settings::IsConfiguringGlobal()) {
         line_edit->connect(line_edit, &QLineEdit::textChanged, [touch]() { touch(); });
     }
@@ -641,7 +663,7 @@ QWidget* Widget::CreateDateTimeEdit(bool disabled, bool restrict,
 
     auto get_clear_val = [this, restrict, current_time]() {
         return QDateTime::fromSecsSinceEpoch([this, restrict, current_time]() {
-            if (restrict && checkbox->checkState() == Qt::Checked) {
+            if (restrict && checkbox != nullptr && checkbox->checkState() == Qt::Checked) {
                 return std::strtoll(RelevantDefault(setting).c_str(), nullptr, 0);
             }
             return current_time;
@@ -649,6 +671,23 @@ QWidget* Widget::CreateDateTimeEdit(bool disabled, bool restrict,
     };
 
     restore_func = [this, get_clear_val]() { date_time_edit->setDateTime(get_clear_val()); };
+
+    reload_func = [this, disabled]() {
+        const long long cur_time = QDateTime::currentSecsSinceEpoch();
+        const s64 t = disabled ? cur_time : std::strtoll(setting.ToString().c_str(), nullptr, 0);
+        const bool blocked = date_time_edit->blockSignals(true);
+        date_time_edit->setDateTime(QDateTime::fromSecsSinceEpoch(t));
+        date_time_edit->blockSignals(blocked);
+    };
+
+    date_time_edit->connect(
+        date_time_edit, &QDateTimeEdit::dateTimeChanged, [this, serializer](const QDateTime&) {
+            if (Settings::IsConfiguringGlobal()) {
+                setting.SetGlobal(true);
+                setting.LoadString(serializer());
+                NotifyGlobalSettingChanged();
+            }
+        });
 
     if (!Settings::IsConfiguringGlobal()) {
         date_time_edit->connect(date_time_edit, &QDateTimeEdit::editingFinished,
@@ -731,6 +770,7 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
     }
 
     paired_other_setting = other_setting;
+    std::function<void()> lhs_reload_func = nullptr;
     if (require_checkbox) {
         QString check_label = label;
         if (check_label.trimmed().isEmpty() && other_setting && translations.contains(other_setting->Id())) {
@@ -752,6 +792,8 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
             CreateCheckBox(other_setting, check_label, checkbox_serializer, checkbox_restore_func, touch);
         lhs_checkbox = qobject_cast<QCheckBox*>(lhs);
         layout->addWidget(lhs, 1);
+        lhs_reload_func = reload_func;
+        reload_func = nullptr;
     } else if (type_id != "bool") {
         label_widget = CreateLabel(label);
         layout->addWidget(label_widget, 1);
@@ -826,6 +868,18 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
         return;
     }
 
+    if (lhs_reload_func) {
+        auto rhs_reload = reload_func;
+        reload_func = [lhs_reload_func, rhs_reload]() {
+            if (lhs_reload_func) {
+                lhs_reload_func();
+            }
+            if (rhs_reload) {
+                rhs_reload();
+            }
+        };
+    }
+
     layout->addWidget(data_component, 1);
 
     if (!managed) {
@@ -834,12 +888,12 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
 
     if (Settings::IsConfiguringGlobal()) {
         load_func = [this, serializer, checkbox_serializer, require_checkbox, other_setting]() {
-            if (require_checkbox && other_setting->UsingGlobal()) {
+            if (require_checkbox && other_setting != nullptr) {
+                other_setting->SetGlobal(true);
                 other_setting->LoadString(checkbox_serializer());
             }
-            if (setting.UsingGlobal()) {
-                setting.LoadString(serializer());
-            }
+            setting.SetGlobal(true);
+            setting.LoadString(serializer());
         };
     } else {
         layout->addWidget(restore_button);

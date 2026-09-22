@@ -1080,7 +1080,7 @@ std::pair<typename TextureCache<P>::Image*, BufferImageCopy> TextureCache<P>::Dm
         .image_subresource =
             {
                 .base_level = static_cast<s32>(level),
-                .base_layer = static_cast<s32>(base),
+                .base_layer = static_cast<s32>(base) + (base == 0 ? static_cast<s32>(image_operand.params.layer) : 0),
                 .num_layers = 1,
             },
         .image_offset =

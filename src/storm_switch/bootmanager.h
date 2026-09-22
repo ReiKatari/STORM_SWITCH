@@ -176,6 +176,7 @@ private:
     InputCommon::TasInput::TasState last_tas_state;
 
 #if YUZU_USE_QT_MULTIMEDIA
+    bool camera_initialized = false;
     bool is_virtual_camera;
     int pending_camera_snapshots;
     std::vector<u32> camera_data;

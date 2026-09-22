@@ -4306,6 +4306,57 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\memory_layout_mode", "1"},
             {"System\\airplane_mode", "true"},
         }
+    },
+    {
+        0x019232F2781D0000ULL,
+        "Dr. Mario Mania",
+        "• Черный экран при загрузке 2D-слоев текстур Godot\n• Сбои синхронизации видеобуферов\n• Риск вызова системных LLE апплетов",
+        "• Black screen during Godot 2D texture layer uploads\n• Framebuffer synchronization stalls\n• LLE applet invocation risk",
+        "✓ Синхронизация операций памяти: Включено\n✓ Точность ГПУ: Высокая\n✓ Точность DMA: Безопасная\n✓ Асинхронный вывод кадров: Отключено\n✓ Апплеты: Полная HLE эмуляция",
+        "✓ Sync Memory Operations: Enabled\n✓ GPU Accuracy: High\n✓ DMA Accuracy: Safe\n✓ Async Presentation: Disabled\n✓ Applets: Full HLE Emulation",
+        {
+            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\dma_accuracy", "1"},
+            {"Renderer\\async_presentation", "false"},
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+        }
+    },
+    {
+        0x01052BA7AC450000ULL,
+        "Gizmoduck",
+        "• Черный экран при инициализации графического движка Godot\n• Рассинхронизация буферов Nouveau\n• Сбои отрисовки шрифтовых атласов",
+        "• Black screen on Godot engine initialization\n• Nouveau buffer desynchronization\n• Font atlas rendering stalls",
+        "✓ Синхронизация операций памяти: Включено\n✓ Точность ГПУ: Высокая\n✓ Точность DMA: Безопасная\n✓ Асинхронный вывод кадров: Отключено",
+        "✓ Sync Memory Operations: Enabled\n✓ GPU Accuracy: High\n✓ DMA Accuracy: Safe\n✓ Async Presentation: Disabled",
+        {
+            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\dma_accuracy", "1"},
+            {"Renderer\\async_presentation", "false"},
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+        }
+    },
+    {
+        0x01542031DCEC0000ULL,
+        "Super Mario Bros. Remastered",
+        "• Черный экран при переходе к игровой сцене\n• Задержки вывода кадров Godot\n• Сбои синхронизации видеопамяти",
+        "• Black screen when transitioning to game scene\n• Godot frame presentation stalls\n• GPU memory synchronization faults",
+        "✓ Синхронизация операций памяти: Включено\n✓ Точность ГПУ: Высокая\n✓ Точность DMA: Безопасная\n✓ Асинхронный вывод кадров: Отключено",
+        "✓ Sync Memory Operations: Enabled\n✓ GPU Accuracy: High\n✓ DMA Accuracy: Safe\n✓ Async Presentation: Disabled",
+        {
+            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\dma_accuracy", "1"},
+            {"Renderer\\async_presentation", "false"},
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"},
+        }
     }
 };
 
@@ -5124,14 +5175,19 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
 
     // Merge settings from profile
     for (const auto& [full_key, val] : profile->ini_settings) {
-        if (full_key == "Renderer\\aspect_ratio") {
+        if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" ||
+            full_key == "System\\use_docked_mode" || full_key == "Renderer\\anti_aliasing" ||
+            full_key == "Renderer\\scaling_filter" || full_key == "Renderer\\fsr_sharpening_slider" ||
+            full_key == "Renderer\\max_anisotropy") {
             continue;
         }
         auto slash = full_key.find('\\');
         if (slash != std::string::npos) {
             auto sec = full_key.substr(0, slash);
             auto key = full_key.substr(slash + 1);
-            if (key == "aspect_ratio") {
+            if (key == "aspect_ratio" || key == "resolution_setup" || key == "use_docked_mode" ||
+                key == "anti_aliasing" || key == "scaling_filter" || key == "fsr_sharpening_slider" ||
+                key == "max_anisotropy") {
                 continue;
             }
             std::string sanitized_val = val;
@@ -5315,7 +5371,10 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
         };
 
         for (const auto& [full_key, val] : profile->ini_settings) {
-            if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" || full_key == "System\\use_docked_mode") {
+            if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" ||
+                full_key == "System\\use_docked_mode" || full_key == "Renderer\\anti_aliasing" ||
+                full_key == "Renderer\\scaling_filter" || full_key == "Renderer\\fsr_sharpening_slider" ||
+                full_key == "Renderer\\max_anisotropy") {
                 continue;
             }
             if (full_key == "Renderer\\gpu_accuracy") {
@@ -5417,6 +5476,20 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.language_index, static_cast<Settings::Language>(safe_stoi(val, static_cast<int>(Settings::Language::Russian))));
             } else if (full_key == "System\\region_index") {
                 apply_setting(Settings::values.region_index, static_cast<Settings::Region>(safe_stoi(val, static_cast<int>(Settings::Region::Europe))));
+            } else if (full_key == "LibraryApplet\\cabinet_applet_mode") {
+                apply_setting(Settings::values.cabinet_applet_mode, static_cast<Settings::AppletMode>(safe_stoi(val, 0)));
+            } else if (full_key == "LibraryApplet\\controller_applet_mode") {
+                apply_setting(Settings::values.controller_applet_mode, static_cast<Settings::AppletMode>(safe_stoi(val, 0)));
+            } else if (full_key == "LibraryApplet\\error_applet_mode") {
+                apply_setting(Settings::values.error_applet_mode, static_cast<Settings::AppletMode>(safe_stoi(val, 0)));
+            } else if (full_key == "LibraryApplet\\swkbd_applet_mode") {
+                apply_setting(Settings::values.swkbd_applet_mode, static_cast<Settings::AppletMode>(safe_stoi(val, 0)));
+            } else if (full_key == "LibraryApplet\\mii_edit_applet_mode") {
+                apply_setting(Settings::values.mii_edit_applet_mode, static_cast<Settings::AppletMode>(safe_stoi(val, 0)));
+            } else if (full_key == "LibraryApplet\\photo_viewer_applet_mode") {
+                apply_setting(Settings::values.photo_viewer_applet_mode, static_cast<Settings::AppletMode>(safe_stoi(val, 0)));
+            } else if (full_key == "LibraryApplet\\offline_web_applet_mode") {
+                apply_setting(Settings::values.offline_web_applet_mode, static_cast<Settings::AppletMode>(safe_stoi(val, 0)));
             }
         }
         Settings::UpdateGPUAccuracy();

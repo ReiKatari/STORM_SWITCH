@@ -382,6 +382,20 @@ if (CXX_GCC OR CXX_CLANG)
     endif()
 endif()
 
+# Fast floating-point math for Release builds
+# ===========================
+if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    if (CXX_GCC OR CXX_CLANG)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math")
+        message(STATUS "Enabled -ffast-math for ${CMAKE_BUILD_TYPE} build")
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast")
+        message(STATUS "Enabled /fp:fast for ${CMAKE_BUILD_TYPE} build")
+    endif()
+endif()
+
 # Configure C++ standard
 # ===========================
 

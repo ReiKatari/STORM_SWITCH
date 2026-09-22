@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
@@ -41,7 +41,9 @@ ConfigureCpu::ConfigureCpu(const Core::System& system_,
 
 ConfigureCpu::~ConfigureCpu() = default;
 
-void ConfigureCpu::SetConfiguration() {}
+void ConfigureCpu::SetConfiguration() {
+    UpdateGroup();
+}
 void ConfigureCpu::Setup(const ConfigurationShared::Builder& builder) {
     auto* accuracy_layout = ui->widget_accuracy->layout();
     auto* backend_layout = ui->widget_backend->layout();

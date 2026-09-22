@@ -441,7 +441,7 @@ CFG::AnalysisState CFG::AnalyzeBRX(Block* block, Location pc, Instruction inst, 
     if (flow_test != IR::FlowTest::T || pred != Predicate{true}) {
         throw NotImplementedException("Conditional indirect branch");
     }
-    std::vector<u32> targets;
+    boost::container::small_vector<u32, 32> targets;
     targets.reserve(brx_table->num_entries);
     for (u32 i = 0; i < brx_table->num_entries; ++i) {
         u32 target{env.ReadCbufValue(brx_table->cbuf_index, brx_table->cbuf_offset + i * 4)};

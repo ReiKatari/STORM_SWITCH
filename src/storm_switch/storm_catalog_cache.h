@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <atomic>
+#include <mutex>
 #include <tuple>
 #include <vector>
 #include <QMap>
@@ -27,6 +29,8 @@ private:
     QString GetCacheFilePath() const;
     void ParseCatalogJson(const QByteArray& data);
 
+    mutable std::mutex m_mutex;
     QMap<u64, QString> m_latest_versions;
-    bool m_loaded{false};
+    std::atomic<bool> m_loaded{false};
+    std::atomic<bool> m_loading{false};
 };

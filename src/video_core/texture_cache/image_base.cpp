@@ -100,8 +100,8 @@ std::optional<SubresourceBase> ImageBase::TryFindBase(GPUVAddr other_addr) const
         };
     } else {
         // TODO: Consider using binary_search after a threshold
-        const auto it = std::ranges::find(slice_offsets, diff);
-        if (it == slice_offsets.cend()) {
+        const auto it = std::ranges::lower_bound(slice_offsets, diff);
+        if (it == slice_offsets.cend() || *it != diff) {
             return std::nullopt;
         }
         return slice_subresources[std::distance(slice_offsets.begin(), it)];

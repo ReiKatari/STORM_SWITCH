@@ -432,7 +432,7 @@ object GpuDriverHelper {
     fun isAdrenoGpu(): Boolean {
         return try {
             supportsCustomDriverLoading()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }
