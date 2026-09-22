@@ -96,7 +96,7 @@ GetAddrInfoError Translate(Network::GetAddrInfoError error) {
     case Network::GetAddrInfoError::OTHER:
         return GetAddrInfoError::OTHER;
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented GetAddrInfoError={}", error);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented GetAddrInfoError={}", error);
         return GetAddrInfoError::OTHER;
     }
 }
@@ -146,7 +146,7 @@ Network::Domain Translate(Domain domain) {
     case Domain::INET:
         return Network::Domain::INET;
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented domain={}", domain);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented domain={}", domain);
         return {};
     }
 }
@@ -158,7 +158,7 @@ Domain Translate(Network::Domain domain) {
     case Network::Domain::INET:
         return Domain::INET;
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented domain={}", domain);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented domain={}", domain);
         return {};
     }
 }
@@ -176,7 +176,7 @@ Network::Type Translate(Type type) {
     case Type::SEQPACKET:
         return Network::Type::SEQPACKET;
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented type={}", type);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented type={}", type);
         return Network::Type{};
     }
 }
@@ -189,7 +189,7 @@ Type Translate(Network::Type type) {
     case Network::Type::RAW: return Type::RAW;
     case Network::Type::SEQPACKET: return Type::SEQPACKET;
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented type={}", type);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented type={}", type);
         return Type{};
     }
 }
@@ -313,7 +313,7 @@ Type Translate(Network::Type type) {
     NETWORK_PROTOCOL_TRANSLATE_LIST
 #undef NETWORK_PROTOCOL_TRANSLATE_ELEM
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented protocol={}", protocol);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented protocol={}", protocol);
         return {};
     }
 }
@@ -323,7 +323,7 @@ Type Translate(Network::Type type) {
     NETWORK_PROTOCOL_TRANSLATE_LIST
 #undef NETWORK_PROTOCOL_TRANSLATE_ELEM
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented protocol={}", protocol);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented protocol={}", protocol);
         return {};
     }
 }
@@ -402,7 +402,7 @@ Network::ShutdownHow Translate(ShutdownHow how) {
     case ShutdownHow::RDWR:
         return Network::ShutdownHow::RDWR;
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented how={}", how);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented how={}", how);
         return {};
     }
 }
