@@ -28,7 +28,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
         {
             {"Renderer\\nvdec_emulation", "3"},
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
@@ -40,8 +40,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         },
         {0x01008F1008DA6800ULL}
     },
@@ -110,8 +110,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         },
         {0x010077001A8D4800ULL}
     },
@@ -244,8 +244,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         },
         {0x010085800E33E000ULL, 0x01000BD011936000ULL, 0x0100F7A011938000ULL, 0x0100BA700E340000ULL, 0x0100C60010228000ULL, 0x0100AC300919A000ULL}
     },
@@ -521,8 +521,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -555,8 +555,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -589,8 +589,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -623,8 +623,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         },
         {0x0100E5E01C098000ULL, 0x0100650017170000ULL, 0x0100C9E01B854000ULL}
     },
@@ -658,8 +658,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
 
     },
@@ -975,7 +975,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Конфигурация памяти: 4 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 кадров/с)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -1705,7 +1705,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"System\\memory_layout_mode", "0"}
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -1719,7 +1719,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"System\\memory_layout_mode", "0"}
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -1770,7 +1770,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 4GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
@@ -1849,7 +1849,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 4GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено",
         "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"}
         }
@@ -1919,7 +1919,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\max_anisotropy", "5"},
-            {"System\\memory_layout_mode", "0"}
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -1951,8 +1951,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -1984,8 +1984,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         },
         {0x0100C1F0051B2000ULL}
     },
@@ -2023,7 +2023,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 4GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено",
         "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
         {
-            {"System\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
@@ -3686,8 +3686,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         },
         {0x01005AF00BA7A000ULL}
     },
@@ -3872,8 +3872,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -3906,8 +3906,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -3940,8 +3940,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -3974,8 +3974,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "true"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -4263,8 +4263,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -4362,29 +4362,29 @@ static const std::vector<GameFixProfile> s_profiles = {
 
 static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     {"Cpu\\cpu_accuracy", "0"},
-    {"Renderer\\gpu_accuracy", "0"},
+    {"Renderer\\gpu_accuracy", "1"},
     {"Renderer\\async_presentation", "true"},
     {"Renderer\\use_asynchronous_shaders", "true"},
     {"Renderer\\use_fast_gpu_time", "false"},
     {"Renderer\\sync_memory_operations", "false"},
     {"Renderer\\use_reactive_flushing", "false"},
     {"Renderer\\use_video_framerate", "false"},
-    {"Renderer\\eco_frame_pacing", "false"},
+    {"Renderer\\eco_frame_pacing", "true"},
     {"Renderer\\dma_accuracy", "0"},
     {"Renderer\\gpu_fence_behavior", "0"},
-    {"Renderer\\astc_recompression", "0"},
+    {"Renderer\\astc_recompression", "1"},
     {"Cpu\\cpuopt_fastmem", "true"},
     {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-    {"System\\airplane_mode", "true"},
-    {"Services\\airplane_mode", "true"},
-    {"Network\\airplane_mode", "true"},
-    {"System\\memory_layout_mode", "0"},
-    {"Core\\memory_layout_mode", "0"},
+    {"System\\airplane_mode", "false"},
+    {"Services\\airplane_mode", "false"},
+    {"Network\\airplane_mode", "false"},
+    {"System\\memory_layout_mode", "1"},
+    {"Core\\memory_layout_mode", "1"},
     {"Renderer\\enable_compute_pipelines", "true"},
     {"Renderer\\use_vulkan_driver_pipeline_cache", "true"},
     {"Renderer\\use_disk_shader_cache", "true"},
     {"Renderer\\enable_gpu_buffer_readback", "false"},
-    {"Renderer\\vram_garbage_collection", "false"},
+    {"Renderer\\vram_garbage_collection", "true"},
     {"Renderer\\early_release_fences", "false"}
 };
 
