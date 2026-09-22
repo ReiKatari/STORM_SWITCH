@@ -35,7 +35,7 @@ bool IsConnectionBased(Type type) {
     case Type::DGRAM:
         return false;
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented type={}", type);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented type={}", type);
         return false;
     }
 }
@@ -824,7 +824,7 @@ std::pair<s32, Errno> BSD::FcntlImpl(s32 fd, FcntlCmd cmd, s32 arg) {
         return {0, Errno::SUCCESS};
     }
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented cmd={}", cmd);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented cmd={}", cmd);
         return {-1, Errno::SUCCESS};
     }
 }
@@ -839,7 +839,7 @@ Errno BSD::GetSockOptImpl(s32 fd, u32 level, OptName optname, std::vector<u8>& o
     }
 
     if (level != static_cast<u32>(SocketLevel::SOCKET)) {
-        LOG_WARNING(Service_BSD, "(STUBBED) Unknown getsockopt level");
+        LOG_WARNING(Service, "(STUBBED) Unknown getsockopt level");
         return Errno::SUCCESS;
     }
 
@@ -859,7 +859,7 @@ Errno BSD::GetSockOptImpl(s32 fd, u32 level, OptName optname, std::vector<u8>& o
         return Translate(getsockopt_err);
     }
     default:
-        LOG_WARNING(Service_BSD, "(STUBBED) Unimplemented optname={}", optname);
+        LOG_WARNING(Service, "(STUBBED) Unimplemented optname={}", optname);
         return Errno::SUCCESS;
     }
 }
