@@ -155,8 +155,8 @@ VirtualDir ExtractRomFS(VirtualFile file) {
         return root;
     }
 
-    ASSERT(false);
-    return nullptr;
+    LOG_WARNING(Service_FS, "RomFS root directory is non-standard; returning root container");
+    return root_container;
 }
 
 VirtualFile CreateRomFS(VirtualDir dir, VirtualDir ext) {

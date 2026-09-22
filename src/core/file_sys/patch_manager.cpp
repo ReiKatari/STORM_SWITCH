@@ -434,8 +434,18 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
 
     auto out = nso;
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
+    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+
+    std::vector<VirtualDir> patch_dirs;
+    if (sdmc_load_dir != nullptr) {
+        patch_dirs.push_back(sdmc_load_dir);
+    }
     if (load_dir != nullptr) {
-        auto patch_dirs = load_dir->GetSubdirectories();
+        const auto load_patch_dirs = load_dir->GetSubdirectories();
+        patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
+    }
+
+    if (!patch_dirs.empty()) {
         std::sort(patch_dirs.begin(), patch_dirs.end(),
                   [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
         const auto patches = CollectPatches(patch_dirs, build_id);
@@ -457,7 +467,7 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
             }
         }
     } else {
-        LOG_WARNING(Loader, "Cannot load mods for title_id={:016X}", title_id);
+        LOG_DEBUG(Loader, "No mod directories found for title_id={:016X}", title_id);
     }
 
 
@@ -528,12 +538,20 @@ bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) 
     LOG_INFO(Loader, "Querying NSO patch existence for build_id={}, name={}", build_id, name);
 
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
-    if (load_dir == nullptr) {
-        LOG_ERROR(Loader, "Cannot load mods for invalid title_id={:016X}", title_id);
+    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+    if (load_dir == nullptr && sdmc_load_dir == nullptr) {
+        LOG_DEBUG(Loader, "Cannot load mods for title_id={:016X}", title_id);
         return false;
     }
 
-    auto patch_dirs = load_dir->GetSubdirectories();
+    std::vector<VirtualDir> patch_dirs;
+    if (sdmc_load_dir != nullptr) {
+        patch_dirs.push_back(sdmc_load_dir);
+    }
+    if (load_dir != nullptr) {
+        const auto load_patch_dirs = load_dir->GetSubdirectories();
+        patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
+    }
     std::sort(patch_dirs.begin(), patch_dirs.end(),
               [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
 
@@ -542,13 +560,21 @@ bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) 
 
 std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildID& build_id_) const {
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
-    if (load_dir == nullptr) {
-        LOG_ERROR(Loader, "Cannot load mods for invalid title_id={:016X}", title_id);
+    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+    if (load_dir == nullptr && sdmc_load_dir == nullptr) {
+        LOG_DEBUG(Loader, "Cannot load mods for title_id={:016X}", title_id);
         return {};
     }
 
     const auto& disabled = Settings::values.disabled_addons[title_id];
-    auto patch_dirs = load_dir->GetSubdirectories();
+    std::vector<VirtualDir> patch_dirs;
+    if (sdmc_load_dir != nullptr) {
+        patch_dirs.push_back(sdmc_load_dir);
+    }
+    if (load_dir != nullptr) {
+        const auto load_patch_dirs = load_dir->GetSubdirectories();
+        patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
+    }
     std::sort(patch_dirs.begin(), patch_dirs.end(), [](auto const& l, auto const& r) { return l->GetName() < r->GetName(); });
 
     // <mod dir> / <folder> / cheats / <build id>.txt

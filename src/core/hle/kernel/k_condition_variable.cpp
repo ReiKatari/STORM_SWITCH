@@ -4,6 +4,7 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <atomic>
 #include "core/arm/exclusive_monitor.h"
 #include "core/core.h"
 #include "core/hle/kernel/k_condition_variable.h"
@@ -33,6 +34,19 @@ bool WriteToUser(KernelCore& kernel, KProcessAddress address, u32 val) {
 
 bool UpdateLockAtomic(KernelCore& kernel, u32* out, KProcessAddress address, u32 if_zero,
                       u32 new_orr_mask) {
+    auto& memory = GetCurrentMemory(kernel);
+    if (u8* ptr = memory.GetPointer(GetInteger(address)); ptr != nullptr) {
+        std::atomic_ref<u32> atom(*reinterpret_cast<u32*>(ptr));
+        u32 expected = atom.load(std::memory_order_relaxed);
+        while (true) {
+            const u32 value = expected ? (expected | new_orr_mask) : if_zero;
+            if (atom.compare_exchange_weak(expected, value, std::memory_order_acq_rel, std::memory_order_relaxed)) {
+                *out = expected;
+                return true;
+            }
+        }
+    }
+
     auto& monitor = GetCurrentProcess(kernel).GetExclusiveMonitor();
     const auto current_core = kernel.CurrentPhysicalCoreIndex();
 

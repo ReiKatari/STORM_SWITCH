@@ -203,7 +203,10 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
     // Use the NSO module loader to figure out the code layout
     for (size_t i = 0; i < static_modules.size(); i++) {
         const auto& module = static_modules[i];
-        const FileSys::VirtualFile module_file{dir->GetFile(module)};
+        FileSys::VirtualFile module_file{dir->GetFile(module)};
+        if (!module_file) {
+            module_file = dir->GetFile(fmt::format("{}.nso", module));
+        }
         if (!module_file) {
             continue;
         }
@@ -218,6 +221,26 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
 
         patch_ctx.SaveIndex(i);
         code_size = *tentative_next_load_addr;
+    }
+
+    // Load any additional Atmosphere ExeFS plugins or modules (*.nso)
+    for (const auto& extra_file : dir->GetFiles()) {
+        const auto module_name = extra_file->GetName();
+        if (!module_name.ends_with(".nso") && extra_file->GetExtension() != "nso") {
+            continue;
+        }
+        const auto base_name = module_name.substr(0, module_name.find_last_of('.'));
+        if (std::find(static_modules.begin(), static_modules.end(), base_name) != static_modules.end() ||
+            std::find(static_modules.begin(), static_modules.end(), module_name) != static_modules.end()) {
+            continue;
+        }
+        LOG_INFO(Loader, "Loading Atmosphere ExeFS module '{}'", module_name);
+        const auto tentative_next_load_addr = AppLoader_NSO::LoadModule(
+            process, system, *extra_file, code_size, false, false, patch_manager,
+            patch_ctx.GetPatchers(), patch_ctx.GetLastIndex());
+        if (tentative_next_load_addr) {
+            code_size = *tentative_next_load_addr;
+        }
     }
 
     // Enable direct memory mapping in case of NCE.
