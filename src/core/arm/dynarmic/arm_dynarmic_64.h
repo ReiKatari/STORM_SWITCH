@@ -43,7 +43,7 @@ public:
     Dynarmic::A64::Vector MemoryRead128(u64 vaddr) override;
     std::optional<u32> MemoryReadCode(u64 vaddr) override;
     void InstructionSynchronizationBarrierRaised() override {
-        last_code_addr = u64(-1); //reset back, force refetch
+        for (auto& entry : code_cache_) entry.addr = u64(-1);
     }
     void MemoryWrite8(u64 vaddr, u8 value) override;
     void MemoryWrite16(u64 vaddr, u16 value) override;

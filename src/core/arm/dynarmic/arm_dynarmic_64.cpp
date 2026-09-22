@@ -109,7 +109,7 @@ bool DynarmicCallbacks64::MemoryWriteExclusive128(u64 vaddr, Dynarmic::A64::Vect
 }
 
 void DynarmicCallbacks64::InstructionCacheOperationRaised(Dynarmic::A64::InstructionCacheOperation op, u64 value) {
-    last_code_addr = u64(-1); //invalidate cached page
+    for (auto& entry : code_cache_) entry.addr = u64(-1); //invalidate cached pages
     switch (op) {
     case Dynarmic::A64::InstructionCacheOperation::InvalidateByVAToPoU: {
         static constexpr u64 ICACHE_LINE_SIZE = 64;
@@ -467,12 +467,12 @@ void ArmDynarmic64::SignalInterrupt(Kernel::KThread* thread) {
 }
 
 void ArmDynarmic64::ClearInstructionCache() {
-    m_cb->last_code_addr = u64(-1);
+    for (auto& entry : m_cb->code_cache_) entry.addr = u64(-1);
     m_jit->ClearCache();
 }
 
 void ArmDynarmic64::InvalidateCacheRange(u64 addr, std::size_t size) {
-    m_cb->last_code_addr = u64(-1);
+    for (auto& entry : m_cb->code_cache_) entry.addr = u64(-1);
     m_jit->InvalidateCacheRange(addr, size);
 }
 
