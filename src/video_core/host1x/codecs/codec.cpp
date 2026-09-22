@@ -58,7 +58,7 @@ void Codec::Decode() {
             vp9_hidden_frame = vp9_decoder.WasFrameHidden();
             return vp9_decoder.GetFrameBytes();
         default:
-            ASSERT(false);
+            LOG_ERROR(HW_GPU, "Unsupported video codec {}", current_codec);
             return std::span<const u8>{};
         }
     }();

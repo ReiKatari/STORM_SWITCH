@@ -102,13 +102,13 @@ Result SessionRequestManager::HandleDomainSyncRequest(Kernel::KServerSession* se
                          "object_id {} is too big! This probably means a recent service call "
                          "needed to return a new interface!",
                          object_id);
-            ASSERT(false);
+            LOG_CRITICAL(IPC, "Returning error for out-of-bounds object_id");
             return ResultSuccess; // Ignore error if asserts are off
         }
         if (auto strong_ptr = this->DomainHandler(object_id - 1).lock()) {
             return strong_ptr->HandleSyncRequest(*server_session, context);
         } else {
-            ASSERT(false);
+            LOG_CRITICAL(IPC, "Domain handler expired for object_id={}", object_id);
             return ResultSuccess;
         }
 
@@ -124,7 +124,7 @@ Result SessionRequestManager::HandleDomainSyncRequest(Kernel::KServerSession* se
     }
 
     LOG_CRITICAL(IPC, "Unknown domain command={}", domain_message_header.command.Value());
-    ASSERT(false);
+    LOG_CRITICAL(IPC, "Returning error for unknown domain command");
     return ResultSuccess;
 }
 

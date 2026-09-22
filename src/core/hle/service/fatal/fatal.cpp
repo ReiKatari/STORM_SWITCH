@@ -120,7 +120,7 @@ static void ThrowFatalError(Core::System& system, Result error_code, FatalType f
         [[fallthrough]];
     case FatalType::ErrorScreen:
         // Since we have no fatal:u error screen. We should just kill execution instead
-        ASSERT(false);
+        LOG_ERROR(Service_Fatal, "Guest application threw a fatal error");
         break;
         // Should not throw a fatal screen but should generate an error report
     case FatalType::ErrorReport:

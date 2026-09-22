@@ -238,7 +238,7 @@ T MemoryManager::Read(GPUVAddr addr) const {
         return value;
     }
 
-    ASSERT(false);
+    LOG_WARNING(HW_GPU, "Unmapped GPU read at addr={:#x}", addr);
 
     return {};
 }
@@ -251,7 +251,7 @@ void MemoryManager::Write(GPUVAddr addr, T data) {
         return;
     }
 
-    ASSERT(false);
+    LOG_WARNING(HW_GPU, "Unmapped GPU write at addr={:#x}", addr);
 }
 
 template u8 MemoryManager::Read<u8>(GPUVAddr addr) const;

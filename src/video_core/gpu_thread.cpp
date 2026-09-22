@@ -49,7 +49,7 @@ void ThreadManager::StartThread(VideoCore::RendererBase& renderer, Core::Fronten
             } else if (const auto* invalidate = std::get_if<InvalidateRegionCommand>(&next.data)) {
                 renderer.ReadRasterizer()->OnCacheInvalidation(invalidate->addr, invalidate->size);
             } else {
-                ASSERT(false);
+                LOG_WARNING(HW_GPU, "Unknown GPU thread command variant index={}", next.data.index());
             }
             state.signaled_fence.store(next.fence);
             if (next.block) {

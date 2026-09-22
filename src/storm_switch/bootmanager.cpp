@@ -667,6 +667,11 @@ void GRenderWindow::RequestCameraCapture() {
         camera_initialized = true;
     }
 
+    // If camera or capture objects are not available, skip
+    if (!camera || !camera_capture) {
+        return;
+    }
+
     // If the camera doesn't capture, test for virtual cameras
     if (pending_camera_snapshots > 5) {
         is_virtual_camera = true;

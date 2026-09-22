@@ -620,7 +620,7 @@ Status BufferQueueProducer::Query(NativeWindow what, s32* out_value) {
         value = core->GetMaxBufferCountLocked(false);
         break;
     default:
-        ASSERT(false);
+        LOG_WARNING(Service_Nvnflinger, "Unknown NativeWindow query what={}", what);
         return Status::BadValue;
     }
 

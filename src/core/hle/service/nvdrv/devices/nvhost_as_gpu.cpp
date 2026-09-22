@@ -343,7 +343,7 @@ NvResult nvhost_as_gpu::MapBufferEx(IoctlMapBufferEx& params) {
         } else if (Common::IsAligned(handle->align, VM::YUZU_PAGESIZE)) {
             return false;
         } else {
-            ASSERT(false);
+            LOG_WARNING(Service_NVDRV, "Handle alignment {:#x} is not a multiple of big_page_size or YUZU_PAGESIZE", handle->align);
             return false;
         }
     }()};

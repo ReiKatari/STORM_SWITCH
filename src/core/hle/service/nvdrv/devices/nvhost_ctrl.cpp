@@ -304,7 +304,7 @@ Kernel::KEvent* nvhost_ctrl::QueryEvent(u32 event_id) {
     const u32 slot{allocated ? desired_event.partial_slot.Value()
                              : static_cast<u32>(desired_event.slot)};
     if (slot >= MaxNvEvents) {
-        ASSERT(false);
+        LOG_WARNING(Service_NVDRV, "Event slot {} >= MaxNvEvents, event_id={:#x}", slot, event_id);
         return nullptr;
     }
 

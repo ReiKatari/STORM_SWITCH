@@ -54,7 +54,8 @@ AppletMessage LifecycleManager::PopMessageInOrderOfPriority() {
                 case FocusState::NotInFocus:
                     return AppletMessage::ChangeIntoBackground;
                 default:
-                    ASSERT(false);
+                    LOG_WARNING(Service_AM, "Unknown FocusState {}", m_requested_focus_state);
+                    return AppletMessage::ChangeIntoBackground;
                 }
             }
         } else if (m_has_focus_state_changed) {

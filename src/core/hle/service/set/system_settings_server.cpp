@@ -1496,22 +1496,22 @@ Result ISystemSettingsServer::GetDefaultAccountUserSettings(Out<AccountUserSetti
 void ISystemSettingsServer::SetupSettings() {
     auto system_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::NANDDir) / "system/save/8000000000000050";
     if (!LoadSettingsFile(system_dir, []() { return DefaultSystemSettings(); })) {
-        ASSERT(false);
+        LOG_ERROR(Service_SET, "Failed to load system settings from NAND");
     }
 
     auto private_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::NANDDir) / "system/save/8000000000000052";
     if (!LoadSettingsFile(private_dir, []() { return DefaultPrivateSettings(); })) {
-        ASSERT(false);
+        LOG_ERROR(Service_SET, "Failed to load private settings from NAND");
     }
 
     auto device_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::NANDDir) / "system/save/8000000000000053";
     if (!LoadSettingsFile(device_dir, []() { return DefaultDeviceSettings(); })) {
-        ASSERT(false);
+        LOG_ERROR(Service_SET, "Failed to load device settings from NAND");
     }
 
     auto appln_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::NANDDir) / "system/save/8000000000000054";
     if (!LoadSettingsFile(appln_dir, []() { return DefaultApplnSettings(); })) {
-        ASSERT(false);
+        LOG_ERROR(Service_SET, "Failed to load application settings from NAND");
     }
 }
 

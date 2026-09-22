@@ -253,7 +253,7 @@ Result TimeZone::ToPosixTimeImpl(u32& out_count, std::span<s64> out_times,
     }
 
     if (res != 0) {
-        ASSERT(false);
+        LOG_WARNING(Service_Time, "Unexpected ToPosixTime result res={}", res);
     }
 
     out_times[0] = time;
