@@ -97,22 +97,33 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
     Kernel::CodeSet codeset;
     codeset.memory.resize(module_start + last_segment_it->location + last_segment_it->size);
     {
-        std::vector<u8> compressed_data(*std::ranges::max_element(nso_header.segments_compressed_size));
-        std::vector<u8> decompressed_size(std::ranges::max_element(nso_header.segments, [](auto const& a, auto const& b) {
-            return a.size < b.size;
-        })->size);
         for (std::size_t i = 0; i < nso_header.segments.size(); ++i) {
-            nso_file.Read(compressed_data.data(), nso_header.segments_compressed_size[i], nso_header.segments[i].offset);
+            const u32 segment_size = nso_header.segments[i].size;
+            if (segment_size == 0) {
+                continue;
+            }
+
+            u8* const dest_ptr = codeset.memory.data() + module_start + nso_header.segments[i].location;
+
             if (nso_header.IsSegmentCompressed(i)) {
-                int r = Common::Compression::DecompressDataLZ4(decompressed_size.data(), nso_header.segments[i].size, compressed_data.data(), nso_header.segments_compressed_size[i]);
-                ASSERT(r == int(nso_header.segments[i].size));
-                std::memcpy(codeset.memory.data() + module_start + nso_header.segments[i].location, decompressed_size.data(), nso_header.segments[i].size);
+                const u32 comp_size = nso_header.segments_compressed_size[i];
+                std::vector<u8> compressed(comp_size);
+                nso_file.Read(compressed.data(), comp_size, nso_header.segments[i].offset);
+
+                const int r = Common::Compression::DecompressDataLZ4(dest_ptr, segment_size, compressed.data(), comp_size);
+                if (r != static_cast<int>(segment_size)) {
+                    LOG_WARNING(Loader, "LZ4 decompression for NSO segment {} in '{}' returned {} (expected {}). Falling back to direct read.",
+                                i, nso_file.GetName(), r, segment_size);
+                    const auto read_size = std::min<size_t>(segment_size, nso_file.GetSize() > nso_header.segments[i].offset ? nso_file.GetSize() - nso_header.segments[i].offset : 0);
+                    nso_file.Read(dest_ptr, read_size, nso_header.segments[i].offset);
+                }
             } else {
-                std::memcpy(codeset.memory.data() + module_start + nso_header.segments[i].location, compressed_data.data(), nso_header.segments[i].size);
+                const auto read_size = std::min<size_t>(segment_size, nso_file.GetSize() > nso_header.segments[i].offset ? nso_file.GetSize() - nso_header.segments[i].offset : 0);
+                nso_file.Read(dest_ptr, read_size, nso_header.segments[i].offset);
             }
             codeset.segments[i].addr = module_start + nso_header.segments[i].location;
             codeset.segments[i].offset = module_start + nso_header.segments[i].location;
-            codeset.segments[i].size = nso_header.segments[i].size;
+            codeset.segments[i].size = segment_size;
         }
     }
 

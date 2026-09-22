@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "common/assert.h"
+#include "common/logging.h"
 #include "core/hle/service/nvdrv/core/syncpoint_manager.h"
 #include "video_core/host1x/host1x.h"
 
@@ -71,7 +72,7 @@ bool SyncpointManager::HasSyncpointExpired(u32 id, u32 threshold) const {
     const SyncpointInfo& syncpoint{syncpoints.at(id)};
 
     if (!syncpoint.reserved) {
-        ASSERT(false);
+        LOG_WARNING(Service_NVDRV, "Syncpoint {} is not reserved", id);
         return false;
     }
 
@@ -88,7 +89,7 @@ u32 SyncpointManager::IncrementSyncpointMaxExt(u32 id, u32 amount) {
     auto& syncpoint = syncpoints.at(id);
 
     if (!syncpoint.reserved) {
-        ASSERT(false);
+        LOG_WARNING(Service_NVDRV, "Syncpoint {} is not reserved", id);
         return 0;
     }
 
@@ -99,7 +100,7 @@ u32 SyncpointManager::ReadSyncpointMinValue(u32 id) {
     auto& syncpoint = syncpoints.at(id);
 
     if (!syncpoint.reserved) {
-        ASSERT(false);
+        LOG_WARNING(Service_NVDRV, "Syncpoint {} is not reserved", id);
         return 0;
     }
 
@@ -110,7 +111,7 @@ u32 SyncpointManager::UpdateMin(u32 id) {
     auto& syncpoint = syncpoints.at(id);
 
     if (!syncpoint.reserved) {
-        ASSERT(false);
+        LOG_WARNING(Service_NVDRV, "Syncpoint {} is not reserved", id);
         return 0;
     }
 
@@ -122,7 +123,7 @@ NvFence SyncpointManager::GetSyncpointFence(u32 id) {
     auto& syncpoint = syncpoints.at(id);
 
     if (!syncpoint.reserved) {
-        ASSERT(false);
+        LOG_WARNING(Service_NVDRV, "Syncpoint {} is not reserved", id);
         return NvFence{};
     }
 

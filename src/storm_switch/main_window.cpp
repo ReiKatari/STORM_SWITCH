@@ -4730,26 +4730,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     u64 title_id{0};
     if (params.program_id != 0) {
         title_id = params.program_id;
-    }
-
-    last_filename_booted = filename;
-
-    const auto utf8_str = filename.toUtf8();
-    QtCommon::Content::configureFilesystemProvider(filename.toStdString());
-    const auto v_file = Core::GetGameFileFromPath(QtCommon::vfs, utf8_str.constData());
-    const auto loader =
-        Loader::GetLoader(*QtCommon::system, v_file, params.program_id, params.program_index);
-
-    if (loader != nullptr && title_id == 0) {
-        loader->ReadProgramId(title_id);
-    }
-    if (loader != nullptr && title_id == 0) {
-        std::vector<u64> pids;
-        if (loader->ReadProgramIds(pids) == Loader::ResultStatus::Success && !pids.empty()) {
-            title_id = pids[0];
-        }
-    }
-    if (title_id == 0) {
+    } else {
         static const QRegularExpression tid_regex(QStringLiteral(R"(([0-9a-fA-F]{16}))"));
         const auto match = tid_regex.match(filename);
         if (match.hasMatch()) {
@@ -4757,6 +4738,27 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
             const u64 parsed = match.captured(1).toULongLong(&ok, 16);
             if (ok && parsed != 0) {
                 title_id = parsed;
+            }
+        }
+    }
+
+    last_filename_booted = filename;
+
+    const auto utf8_str = filename.toUtf8();
+    QtCommon::Content::configureFilesystemProvider(filename.toStdString());
+
+    if (title_id == 0) {
+        const auto v_file = Core::GetGameFileFromPath(QtCommon::vfs, utf8_str.constData());
+        const auto loader =
+            Loader::GetLoader(*QtCommon::system, v_file, params.program_id, params.program_index);
+
+        if (loader != nullptr) {
+            loader->ReadProgramId(title_id);
+            if (title_id == 0) {
+                std::vector<u64> pids;
+                if (loader->ReadProgramIds(pids) == Loader::ResultStatus::Success && !pids.empty()) {
+                    title_id = pids[0];
+                }
             }
         }
     }
@@ -4917,7 +4919,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         game_icon_pix.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
     } else {
         std::vector<u8> bytes;
-        if (loader != nullptr && loader->ReadIcon(bytes) == Loader::ResultStatus::Success) {
+        if (QtCommon::system->GetAppLoader().ReadIcon(bytes) == Loader::ResultStatus::Success) {
             game_icon_pix.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
         }
     }
