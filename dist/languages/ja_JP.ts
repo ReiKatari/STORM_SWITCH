@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-<!DOCTYPE TS[]>
+<?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="ja_JP" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
@@ -872,7 +871,7 @@ Use 256 for maximal performance and 512 for maximal graphics fidelity.</translat
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="236" />
       <source>GPU Unswizzle</source>
-      <translation>GPU Unswizzle</translation>
+      <translation>GPU アンスウィズル</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="237" />
@@ -884,7 +883,7 @@ Disable if experiencing crashes or graphical glitches.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="239" />
       <source>GPU Unswizzle Max Texture Size</source>
-      <translation>GPU Unswizzle Max Texture Size</translation>
+      <translation>GPU アンスウィズル最大テクスチャサイズ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="240" />
@@ -898,7 +897,7 @@ Adjust this to find the balance between GPU acceleration and CPU overhead.</tran
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="244" />
       <source>GPU Unswizzle Stream Size</source>
-      <translation>GPU Unswizzle Stream Size</translation>
+      <translation>GPU アンスウィズルストリームサイズ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="245" />
@@ -910,7 +909,7 @@ Higher values can reduce stutter during texture loading but may impact frame con
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="248" />
       <source>GPU Unswizzle Chunk Size</source>
-      <translation>GPU Unswizzle Chunk Size</translation>
+      <translation>GPU アンスウィズルチャンクサイズ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="249" />
@@ -1012,7 +1011,7 @@ Legacy behavior workaround that fixes line artifacts on AMD and Intel GPUs, and 
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
       <source>Extended Dynamic State</source>
-      <translation>Extended Dynamic State</translation>
+      <translation>拡張ダイナミックステート</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1024,7 +1023,7 @@ Higher states allow for more features and can increase performance, but may caus
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="287" />
       <source>Vertex Input Dynamic State</source>
-      <translation>Vertex Input Dynamic State</translation>
+      <translation>頂点入力ダイナミックステート</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="288" />
@@ -1034,7 +1033,7 @@ Higher states allow for more features and can increase performance, but may caus
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="291" />
       <source>Sample Shading</source>
-      <translation>Sample Shading</translation>
+      <translation>サンプルシェーディング</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="292" />
@@ -2192,7 +2191,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+  <message><source>CPU Affinity Pinning</source><translation>CPU アフィニティ固定</translation></message><message><source>Low-End Turbo</source><translation>低スペック高速化</translation></message><message><source>Thermal Governor</source><translation>温度ガバナー</translation></message><message><source>FP16 Frame Generation</source><translation>FP16 フレーム生成</translation></message><message><source>Auto Optical Flow Scale</source><translation>自動オプティカルフロースケール</translation></message><message><source>Emulate BGR565</source><translation>BGR565 をエミュレート</translation></message></context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2305,7 +2304,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>These settings reduce accuracy for speed.</source>
       <translation>これらの設定は高速化のために精度を犠牲にします.</translation>
     </message>
-  </context>
+  <message><source>Backend</source><translation>バックエンド</translation></message><message><source>Unsafe CPU Optimization</source><translation>非安全な CPU 最適化</translation></message></context>
   <context>
     <name>ConfigureCpuDebug</name>
     <message>
@@ -2519,7 +2518,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>CPU settings are available only when game is not running.</source>
       <translation>CPUの設定はゲームを実行していない時にのみ変更できます。</translation>
     </message>
-  </context>
+  <message><source>CPU Optimizations</source><translation>CPU 最適化</translation></message><message><source>CPU settings are only available when a game is not running.</source><translation>CPU 設定はゲームが実行されていない場合にのみ利用可能です。</translation></message></context>
   <context>
     <name>ConfigureDebug</name>
     <message>
@@ -3403,7 +3402,7 @@ Would you like to delete the old save data?</translation>
       <source>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</source>
       <translation>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</translation>
     </message>
-  </context>
+  <message><source>Extensions</source><translation>拡張機能</translation></message><message><source>Modifying these settings can cause problems. For advanced users only!</source><translation>これらの設定を変更すると問題が発生する可能性があります。上級ユーザー専用です！</translation></message></context>
   <context>
     <name>ConfigureHotkeys</name>
     <message>
@@ -3863,7 +3862,7 @@ Would you like to delete the old save data?</translation>
       <source>Motion / Touch</source>
       <translation>モーション / タッチ</translation>
     </message>
-  </context>
+  <message><source>Disable SDL WGI/XInput (restart required)</source><translation>SDL WGI/XInput を無効化 (再起動が必要)</translation></message></context>
   <context>
     <name>ConfigureInputPerGame</name>
     <message>
@@ -5255,12 +5254,12 @@ UUID: %2</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="60" />
       <source>Enable TAS features</source>
-      <translation>TAS機能の有効化</translation>
+      <translation>TAS 機能を有効化</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="67" />
       <source>Loop script</source>
-      <translation>スクリプトを繰り返し実行</translation>
+      <translation>スクリプトをループ</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="77" />
@@ -5270,7 +5269,7 @@ UUID: %2</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="84" />
       <source>Show recording dialog</source>
-      <translation>Show recording dialog</translation>
+      <translation>録画ダイアログを表示</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="98" />
@@ -5598,7 +5597,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Screenshot width value</comment>
       <translation>自動 (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+  <message><source>Screenshots Path:</source><translation>スクリーンショットのパス:</translation></message></context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5745,7 +5744,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+  <message><source>Token:</source><translation>トークン:</translation></message><message><source>Username:</source><translation>ユーザー名:</translation></message></context>
   <context>
     <name>ControllerDialog</name>
     <message>

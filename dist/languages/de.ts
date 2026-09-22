@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-<!DOCTYPE TS[]>
+<?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="de" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
@@ -882,7 +881,7 @@ Deaktiviere diese Option, falls Abstürze oder Grafikfehler auftreten.</translat
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="239" />
       <source>GPU Unswizzle Max Texture Size</source>
-      <translation>GPU-Unswizzle max. Texturgröße</translation>
+      <translation>Maximale Texturgröße für GPU-Unswizzle</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="240" />
@@ -896,7 +895,7 @@ Passen Sie diesen Wert an, um das Gleichgewicht zwischen GPU-Beschleunigung und 
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="244" />
       <source>GPU Unswizzle Stream Size</source>
-      <translation>GPU-Unswizzle-Streamgröße</translation>
+      <translation>Stream-Größe für GPU-Unswizzle</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="245" />
@@ -908,7 +907,7 @@ Höhere Werte können Ruckeln beim Laden von Texturen verringern, können sich j
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="248" />
       <source>GPU Unswizzle Chunk Size</source>
-      <translation>GPU-Unswizzle Chunk-Größe</translation>
+      <translation>Blockgröße für GPU-Unswizzle</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="249" />
@@ -1010,7 +1009,7 @@ Eine Umgehungslösung für das alte Verhalten, die Linienartefakte auf AMD- und 
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
       <source>Extended Dynamic State</source>
-      <translation>Erweiterter dynamischer Zustand</translation>
+      <translation>Extended Dynamic State</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1022,7 +1021,7 @@ Höhere Stufen ermöglichen mehr Funktionen und können die Leistung steigern, k
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="287" />
       <source>Vertex Input Dynamic State</source>
-      <translation>Dynamischer Zustand der Scheitelpunkteingabe</translation>
+      <translation>Vertex Input Dynamic State</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="288" />
@@ -1032,7 +1031,7 @@ Höhere Stufen ermöglichen mehr Funktionen und können die Leistung steigern, k
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="291" />
       <source>Sample Shading</source>
-      <translation>Probe-Schattierung</translation>
+      <translation>Sample-Shading</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="292" />
@@ -2190,7 +2189,7 @@ Wenn ein Programm versucht, das Controller-Applet zu öffnen, wird es sofort ges
       <source>Grid View</source>
       <translation>Rasteransicht</translation>
     </message>
-  </context>
+  <message><source>CPU Affinity Pinning</source><translation>CPU-Affinity Pinning</translation></message><message><source>Low-End Turbo</source><translation>Low-End-Turbo</translation></message><message><source>Thermal Governor</source><translation>Thermal Governor</translation></message><message><source>FP16 Frame Generation</source><translation>FP16-Frame-Generierung</translation></message><message><source>Auto Optical Flow Scale</source><translation>Automatische Skalierung des optischen Flusses</translation></message><message><source>Emulate BGR565</source><translation>BGR565 emulieren</translation></message></context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2303,7 +2302,7 @@ Wenn ein Programm versucht, das Controller-Applet zu öffnen, wird es sofort ges
       <source>These settings reduce accuracy for speed.</source>
       <translation>Diese Optionen reduzieren die Genauigkeit, können jedoch die Geschwindigkeit erhöhen.</translation>
     </message>
-  </context>
+  <message><source>Backend</source><translation>Backend</translation></message><message><source>Unsafe CPU Optimization</source><translation>Unsichere CPU-Optimierung</translation></message></context>
   <context>
     <name>ConfigureCpuDebug</name>
     <message>
@@ -2517,7 +2516,7 @@ Wenn ein Programm versucht, das Controller-Applet zu öffnen, wird es sofort ges
       <source>CPU settings are available only when game is not running.</source>
       <translation>Die CPU-Einstellungen sind nur verfügbar, wenn kein Spiel aktiv ist.</translation>
     </message>
-  </context>
+  <message><source>CPU Optimizations</source><translation>CPU-Optimierungen</translation></message><message><source>CPU settings are only available when a game is not running.</source><translation>CPU-Einstellungen sind nur verfügbar, wenn kein Spiel ausgeführt wird.</translation></message></context>
   <context>
     <name>ConfigureDebug</name>
     <message>
@@ -3401,7 +3400,7 @@ Möchtest du die alten Speicherdaten löschen?</translation>
       <source>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</source>
       <translation>„Erweiterter Dynamischer Zustand“ ist unter macOS deaktiviert, da es aufgrund von Kompatibilitätsproblemen mit MoltenVK zu schwarzen Bildschirmen kommt.</translation>
     </message>
-  </context>
+  <message><source>Extensions</source><translation>Erweiterungen</translation></message><message><source>Modifying these settings can cause problems. For advanced users only!</source><translation>Das Ändern dieser Einstellungen kann Probleme verursachen. Nur für fortgeschrittene Benutzer!</translation></message></context>
   <context>
     <name>ConfigureHotkeys</name>
     <message>
@@ -3861,7 +3860,7 @@ Möchtest du die alten Speicherdaten löschen?</translation>
       <source>Motion / Touch</source>
       <translation>Bewegung / Berührung</translation>
     </message>
-  </context>
+  <message><source>Disable SDL WGI/XInput (restart required)</source><translation>SDL WGI/XInput deaktivieren (Neustart erforderlich)</translation></message></context>
   <context>
     <name>ConfigureInputPerGame</name>
     <message>
@@ -5261,12 +5260,12 @@ UUID: %2</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="67" />
       <source>Loop script</source>
-      <translation>Schleifen-Skript</translation>
+      <translation>Skript wiederholen</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="77" />
       <source>Pause execution during loads</source>
-      <translation>Pausiere Ausführung während des Ladens</translation>
+      <translation>Ausführung beim Laden anhalten</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="84" />
@@ -5599,7 +5598,7 @@ Ziehe die Punkte, um ihre Position zu ändern, oder doppelklicke auf Tabellenzel
       <comment>Screenshot width value</comment>
       <translation>Auto (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+  <message><source>Screenshots Path:</source><translation>Screenshot-Pfad:</translation></message></context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5746,7 +5745,7 @@ Ziehe die Punkte, um ihre Position zu ändern, oder doppelklicke auf Tabellenzel
       <comment>Tooltip</comment>
       <translation>Muss 48 Zeichen lang sein und nur Kleinbuchstaben a-z enthalten</translation>
     </message>
-  </context>
+  <message><source>Token:</source><translation>Token:</translation></message><message><source>Username:</source><translation>Benutzername:</translation></message></context>
   <context>
     <name>ControllerDialog</name>
     <message>

@@ -228,6 +228,8 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
             graphics_tab->SetConfiguration();
         }
     });
+
+    RetranslateUI();
 }
 
 ConfigureDialog::~ConfigureDialog() {

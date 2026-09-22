@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-<!DOCTYPE TS[]>
+<?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="ru_RU" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
@@ -310,7 +309,7 @@ This would ban both their forum username and their IP address.</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="50" />
       <source>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</source>
-      <translation>Активирует встроенный в Horizon оверлейный апплет. Для его отображения нажмите и удерживайте кнопку «HOME» в течение одной секунды.</translation>
+      <translation>Включает встроенный оверлей Horizon. Нажмите и удерживайте кнопку Home в течение 1 секунды для отображения.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="54" />
@@ -351,7 +350,7 @@ This would ban both their forum username and their IP address.</source>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="64" />
       <source>This option increases CPU emulation thread use from 1 to the maximum of 4.
 This is mainly a debug option and shouldn't be disabled.</source>
-      <translation>Этот параметр увеличивает количество потоков эмуляции CPU с 1 до 4.
+      <translation>Этот параметр увеличивает количество потоков эмуляции ЦП с 1 до 4.
 В основном это параметр отладки и его не следует отключать.</translation>
     </message>
     <message>
@@ -409,8 +408,8 @@ Disabling it means unlocking the framerate to the maximum your PC can reach.</so
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="86" />
       <source>Synchronizes CPU core speed with the game's maximum rendering speed to boost FPS without affecting game speed (animations, physics, etc.).
 Can help reduce stuttering at lower framerates.</source>
-      <translation>Синхронизирует скорость ядер CPU с максимальной скоростью рендеринга игры, чтобы повысить FPS без влияния на игровой процесс (анимации, физика и т. д.).
-Может помочь уменьшить фризы при низкой частоте кадров.</translation>
+      <translation>Синхронизирует скорость ядер ЦП с максимальной скоростью рендеринга игры для повышения FPS без влияния на скорость игры (анимации, физика и т. д.).
+Помогает уменьшить рывки при низкой частоте кадров.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="91" />
@@ -431,24 +430,24 @@ Can help reduce stuttering at lower framerates.</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="95" />
       <source>CPU Overclock</source>
-      <translation>Разгон CPU</translation>
+      <translation>Разгон ЦП</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="96" />
       <source>Overclocks the emulated CPU to remove some FPS limiters. Weaker CPUs may see reduced performance, and certain games may behave improperly.
 Use Boost (1700MHz) to run at the Switch's highest native clock, or Fast (2000MHz) to run at 2x clock.</source>
-      <translation>Разгоняет эмулируемый CPU для снятия некоторых ограничителей FPS. На более слабых процессорах это может снизить производительность, а некоторые игры могут работать некорректно.
+      <translation>Разгоняет эмулируемый ЦП для снятия некоторых ограничителей FPS. На более слабых процессорах это может снизить производительность, а некоторые игры могут работать некорректно.
 Используйте режим Boost (1700 МГц), чтобы запускать игры на максимальной штатной частоте Switch, или режим Fast (2000 МГц), чтобы работать на удвоенной частоте.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="103" />
       <source>Custom CPU Ticks</source>
-      <translation>Пользовательские тики CPU</translation>
+      <translation>Пользовательские такты ЦП</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="104" />
       <source>Set a custom value of CPU ticks. Higher values can increase performance, but may cause deadlocks. A range of 77-21000 is recommended.</source>
-      <translation>Задает пользовательское значение тиков CPU. Более высокие значения могут повысить производительность, но могут вызвать взаимные блокировки. Рекомендуемый диапазон: 77–21000.</translation>
+      <translation>Задает пользовательское значение тиков ЦП. Более высокие значения могут повысить производительность, но могут вызвать взаимные блокировки. Рекомендуемый диапазон: 77–21000.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="112" />
@@ -548,7 +547,7 @@ Vulkan is recommended.</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="145" />
       <source>This setting selects the GPU to use (Vulkan only).</source>
-      <translation>Этот параметр определяет используемый GPU (только Vulkan).</translation>
+      <translation>Этот параметр определяет используемый ГПУ (только Vulkan).</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="146" />
@@ -641,7 +640,7 @@ Disabling it is only intended for debugging.</source>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="170" />
       <source>Uses an extra CPU thread for rendering.
 This option should always remain enabled.</source>
-      <translation>Использует дополнительный поток CPU для рендеринга.
+      <translation>Использует дополнительный поток ЦП для рендеринга.
 Эта опция всегда должна оставаться включенной.</translation>
     </message>
     <message>
@@ -654,9 +653,9 @@ This option should always remain enabled.</source>
       <source>Specifies how videos should be decoded.
 It can either use the CPU or the GPU for decoding, or perform no decoding at all (black screen on videos).
 In most cases, GPU decoding provides the best performance.</source>
-      <translation>Указывает, как должны быть декодированы видео.
-Можно использовать либо ЦП, либо ГП для декодирования, или вообще не выполнять декодирование (черный экран на видео).
-В большинстве случаев декодирование с использованием ГП обеспечивает лучшую производительность.</translation>
+      <translation>Определяет способ декодирования видео.
+Может использовать ЦП или ГПУ для декодирования, либо отключить его полностью (черный экран в видеороликах).
+В большинстве случаев декодирование на ГПУ обеспечивает наилучшую производительность.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="175" />
@@ -670,10 +669,10 @@ CPU: Use the CPU for decoding.
 GPU: Use the GPU's compute shaders to decode ASTC textures (recommended).
 CPU Asynchronously: Use the CPU to decode ASTC textures on demand. EliminatesASTC decoding
 stuttering but may present artifacts.</source>
-      <translation>Этот параметр определяет, как будут декодироваться текстуры ASTC.
-CPU: использовать ЦП для декодирования.
-GPU: использовать вычислительные шейдеры ГП для декодирования текстур ASTC (рекомендуется).
-Асинхронный CPU: использовать ЦП для декодирования текстур ASTC по мере необходимости. Устраняет фризы при декодировании ASTC, но может вызывать артефакты.</translation>
+      <translation>Определяет метод декодирования текстур ASTC.
+ЦП: декодирование силами ЦП.
+ГПУ: декодирование вычислительными шейдерами ГПУ (рекомендуется).
+ЦП (Асинхронно): декодирование на ЦП по требованию. Устраняет заикания, но возможны временные артефакты.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="181" />
@@ -685,7 +684,7 @@ GPU: использовать вычислительные шейдеры ГП �
       <source>Most GPUs lack support for ASTC textures and must decompress to anintermediate format: RGBA8.
 BC1/BC3: The intermediate format will be recompressed to BC1 or BC3 format,
  saving VRAM but degrading image quality.</source>
-      <translation>Большинство GPU не поддерживают текстуры ASTC и вынуждены распаковывать их в промежуточный формат RGBA8.
+      <translation>Большинство ГПУ не поддерживают текстуры ASTC и вынуждены распаковывать их в промежуточный формат RGBA8.
 BC1/BC3: промежуточный формат будет перекодирован в BC1 или BC3, экономя видеопамять, но снижая качество изображения.</translation>
     </message>
     <message>
@@ -713,7 +712,7 @@ Aggressive mode may impact performance of other applications such as recording s
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="193" />
       <source>Skip CPU Inner Invalidation</source>
-      <translation>Пропуск внутренней инвалидизации CPU</translation>
+      <translation>Пропуск внутренней инвалидации ЦП</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="194" />
@@ -758,7 +757,7 @@ Unreal Engine 4 games often see the most significant changes thereof.</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="214" />
       <source>Slightly improves performance by moving presentation to a separate CPU thread.</source>
-      <translation>Немного повышает производительность, перенося вывод кадра в отдельный поток CPU.</translation>
+      <translation>Немного повышает производительность, перенося вывод кадра в отдельный поток ЦП.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="216" />
@@ -768,7 +767,7 @@ Unreal Engine 4 games often see the most significant changes thereof.</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="217" />
       <source>Runs work in the background while waiting for graphics commands to keep the GPU from lowering its clock speed.</source>
-      <translation>Выполняет фоновые операции во время ожидания графических команд, предотвращая снижение тактовой частоты GPU.</translation>
+      <translation>Выполняет фоновые операции во время ожидания графических команд, предотвращая снижение тактовой частоты ГПУ.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="219" />
@@ -780,19 +779,19 @@ Unreal Engine 4 games often see the most significant changes thereof.</source>
       <source>Controls the quality of texture rendering at oblique angles.
 Safe to set at 16x on most GPUs.</source>
       <translation>Управляет качеством отображения текстур под наклонными углами.
-На большинстве GPU безопасно использовать значение 16x.</translation>
+На большинстве ГПУ безопасно использовать значение 16x.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="222" />
       <source>GPU Mode:</source>
-      <translation>Режим GPU:</translation>
+      <translation>Режим ГПУ:</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="223" />
       <source>Controls the GPU emulation mode.
 Most games render fine with Fast, but Accurate is still required for some.
 Particles tend to only render correctly with Accurate mode.</source>
-      <translation>Управляет режимом эмуляции GPU.
+      <translation>Управляет режимом эмуляции ГПУ.
 Большинство игр отлично работают в режиме «Быстрый», но для некоторых требуется «Точный».
 Частицы обычно корректно отображаются только в «Точном» режиме.</translation>
     </message>
@@ -808,7 +807,7 @@ Unsafe is faster, while Safe is more stable and can fix issues in some games.
 Default follows the GPU Accuracy setting.</source>
       <translation>Управляет режимом прямого доступа к памяти (DMA).
 «Небезопасный» работает быстрее, а «Безопасный» обеспечивает большую стабильность и устраняет сбои.
-«По умолчанию» следует общей точности GPU.</translation>
+«По умолчанию» следует общей точности ГПУ.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="227" />
@@ -823,12 +822,12 @@ Balanced offers better compatibility and may fix issues in some games.
 Accurate further improves compatibility at the cost of some performance.
 Strict is the slowest option, but can fix issues that require stricter synchronization.
 Default follows the GPU Accuracy setting.</source>
-      <translation>Управляет поведением синхронизации барьеров GPU (Fence).
+      <translation>Управляет поведением синхронизации барьеров ГПУ (Fence).
 «Немедленно» — самый быстрый вариант, но может вызывать артефакты.
 «Сбалансированно» — улучшенная совместимость.
 «Точно» — повышает стабильность ценой небольшой производительности.
 «Строго» — максимальная строгость синхронизации для проблемных игр.
-«По умолчанию» следует общей точности GPU.</translation>
+«По умолчанию» следует общей точности ГПУ.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="229" />
@@ -839,7 +838,7 @@ Default follows the GPU Accuracy setting.</source>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="230" />
       <source>Preserves GPU-modified data by reading it back before uploading.
 Some games require this to render certain effects properly.</source>
-      <translation>Сохраняет измененные GPU данные, считывая их обратно перед загрузкой.
+      <translation>Сохраняет измененные ГПУ данные, считывая их обратно перед загрузкой.
 Необходимо для корректного отображения спецэффектов в некоторых играх.</translation>
     </message>
     <message>
@@ -861,39 +860,39 @@ Some games require this to render certain effects properly.</source>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="234" />
       <source>Overclocks the emulated GPU to increase dynamic resolution and render distance.
 Use 256 for maximal performance and 512 for maximal graphics fidelity.</source>
-      <translation>Разгоняет эмулируемый GPU для увеличения динамического разрешения и дальности прорисовки.
+      <translation>Разгоняет эмулируемый ГПУ для увеличения динамического разрешения и дальности прорисовки.
 Используйте значение 256 для максимальной производительности и 512 для максимального качества графики.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="236" />
       <source>GPU Unswizzle</source>
-      <translation>GPU-десвиззлинг (GPU Unswizzle)</translation>
+      <translation>Десвиззлинг ГПУ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="237" />
       <source>Accelerates BCn 3D texture decoding using GPU compute.
 Disable if experiencing crashes or graphical glitches.</source>
-      <translation>Ускоряет декодирование 3D-текстур BCn с использованием вычислений GPU.
+      <translation>Ускоряет декодирование 3D-текстур BCn с использованием вычислений ГПУ.
 Отключите при возникновении сбоев или графических артефактов.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="239" />
       <source>GPU Unswizzle Max Texture Size</source>
-      <translation>Максимальный размер текстур для GPU-десвиззлинга</translation>
+      <translation>Максимальный размер текстур для десвиззлинга ГПУ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="240" />
       <source>Sets the maximum size (MiB) for GPU-based texture unswizzling.
 While the GPU is faster for medium and large textures, the CPU may be more efficient for very small ones.
 Adjust this to find the balance between GPU acceleration and CPU overhead.</source>
-      <translation>Задает максимальный размер (в МиБ) для развертки текстур с использованием GPU.
-Хотя GPU быстрее для средних и крупных текстур, для очень маленьких CPU может быть эффективнее.
-Изменяйте этот параметр, чтобы найти баланс между ускорением на GPU и нагрузкой на CPU.</translation>
+      <translation>Задает максимальный размер (в МиБ) для развертки текстур с использованием ГПУ.
+Хотя ГПУ быстрее для средних и крупных текстур, для очень маленьких ЦП может быть эффективнее.
+Изменяйте этот параметр, чтобы найти баланс между ускорением на ГПУ и нагрузкой на ЦП.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="244" />
       <source>GPU Unswizzle Stream Size</source>
-      <translation>Размер потока GPU-десвиззлинга</translation>
+      <translation>Размер потока десвиззлинга ГПУ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="245" />
@@ -905,14 +904,14 @@ Higher values can reduce stutter during texture loading but may impact frame con
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="248" />
       <source>GPU Unswizzle Chunk Size</source>
-      <translation>Размер блока GPU-десвиззлинга</translation>
+      <translation>Размер блока десвиззлинга ГПУ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="249" />
       <source>Determines the number of depth slices processed in a single dispatch.
 Increasing this can improve throughput on high-end GPUs but may cause TDR or driver timeouts on weaker hardware.</source>
       <translation>Определяет количество слоев глубины, обрабатываемых за один вызов.
-Увеличение этого значения может повысить пропускную способность на производительных GPU, но на слабом оборудовании способно вызвать TDR или тайм-ауты драйвера.</translation>
+Увеличение этого значения может повысить пропускную способность на производительных ГПУ, но на слабом оборудовании способно вызвать TDR или тайм-ауты драйвера.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="253" />
@@ -923,7 +922,7 @@ Increasing this can improve throughput on high-end GPUs but may cause TDR or dri
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="254" />
       <source>Enables GPU vendor-specific pipeline cache.
 This option can improve shader loading time significantly in cases where the Vulkan driver does not store pipeline cache files internally.</source>
-      <translation>Включает кэш конвейеров, зависящий от производителя GPU.
+      <translation>Включает кэш конвейеров, зависящий от производителя ГПУ.
 Эта опция может значительно ускорить загрузку шейдеров в тех случаях, когда драйвер Vulkan не сохраняет такие файлы кэша внутри себя.</translation>
     </message>
     <message>
@@ -1002,12 +1001,12 @@ This option may improve rendering quality and performance consistency in some ga
       <source>May fix rescale issues in some games by relying on behavior from the previous implementation.
 Legacy behavior workaround that fixes line artifacts on AMD and Intel GPUs, and grey texture flicker on Nvidia GPUs in Luigis Mansion 3.</source>
       <translation>Может исправить проблемы масштабирования в некоторых играх, используя поведение предыдущей реализации.
-Это обходное решение устраняет артефакты линий на GPU AMD и Intel, а также мерцание серых текстур на GPU Nvidia в Luigis Mansion 3.</translation>
+Это обходное решение устраняет артефакты линий на ГПУ AMD и Intel, а также мерцание серых текстур на ГПУ Nvidia в Luigis Mansion 3.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
       <source>Extended Dynamic State</source>
-      <translation>Расширенное динамическое состояние (Extended Dynamic State)</translation>
+      <translation>Расширенное динамическое состояние</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1019,7 +1018,7 @@ Higher states allow for more features and can increase performance, but may caus
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="287" />
       <source>Vertex Input Dynamic State</source>
-      <translation>Динамическое состояние ввода вершин (Vertex Input Dynamic State)</translation>
+      <translation>Динамическое состояние ввода вершин</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="288" />
@@ -1029,7 +1028,7 @@ Higher states allow for more features and can increase performance, but may caus
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="291" />
       <source>Sample Shading</source>
-      <translation>Множественное затенение (Sample Shading)</translation>
+      <translation>Множественное затенение</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="292" />
@@ -1238,17 +1237,17 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="394" />
       <source>CPU</source>
-      <translation>CPU</translation>
+      <translation>ЦП</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="395" />
       <source>GPU</source>
-      <translation>GPU</translation>
+      <translation>ГПУ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="396" />
       <source>CPU Asynchronous</source>
-      <translation>Асинхронный CPU</translation>
+      <translation>ЦП (Асинхронно)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="401" />
@@ -1413,12 +1412,12 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="468" />
       <source>CPU Video Decoding</source>
-      <translation>Декодирование видео на CPU</translation>
+      <translation>Декодирование видео на ЦП</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="469" />
       <source>GPU Video Decoding (Default)</source>
-      <translation>Декодирование видео на GPU (По умолчанию)</translation>
+      <translation>Декодирование видео на ГПУ (По умолчанию)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="474" />
@@ -2651,7 +2650,9 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Проверка обновлений</source>
       <translation>Проверка обновлений</translation>
     </message>
-  </context>
+  <message><source>CPU Affinity Pinning</source><translation>Привязка потоков ЦП</translation></message><message><source>FP16 Frame Generation</source><translation>Генерация кадров FP16</translation></message><message><source>Auto Optical Flow Scale</source><translation>Авто-масштаб оптического потока</translation></message><message><source>Emulate BGR565</source><translation>Эмуляция BGR565</translation></message><message><source>Low-End Turbo</source><translation>Турбо для слабых ПК</translation></message><message><source>Thermal Governor</source><translation>Термоконтроллер</translation></message><message><source>Raises the clock the emulated CPU reports, which removes some FPS limiters.
+Weaker CPUs may see reduced performance, and certain games may behave improperly.</source><translation>Повышает тактовую частоту, которую сообщает эмулируемый ЦП, снимая некоторые ограничители FPS.
+На слабых ЦП производительность может снизиться, а некоторые игры могут работать некорректно.</translation></message><message><source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source><translation>Заставляет игру считать, что задачи ГПУ выполняются быстрее, предотвращая снижение динамического разрешения и дальности прорисовки.</translation></message><message><source>Pins emulation threads to physical performance cores.</source><translation>Привязывает потоки эмуляции к физическим производительным ядрам ЦП.</translation></message><message><source>Reduces power draw and frame stuttering with adaptive delivery.</source><translation>Снижает энергопотребление и рывки кадров за счет адаптивной подачи.</translation></message><message><source>Locks dynamic resolution scale to prevent resolution drops.</source><translation>Блокирует динамическое масштабирование разрешения, предотвращая падение четкости.</translation></message><message><source>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</source><translation>Динамически регулирует приоритет фоновых потоков компиляции шейдеров для предотвращения микрофризов.</translation></message><message><source>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</source><translation>Периодическая фоновая очистка неиспользуемых текстурных буферов и кэша ASTC для предотвращения утечек видеопамяти.</translation></message><message><source>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</source><translation>Предотвращает вылеты из-за нехватки памяти, выгружая неактивные текстуры при заполнении видеопамяти выше 85%.</translation></message><message><source>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</source><translation>Максимизирует плавность работы на начальных многоядерных процессорах и слабых ГПУ.</translation></message><message><source>Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.</source><translation>Снижает температуру ЦП и ГПУ на 10-15°C во время интервалов ожидания кадров без падения целевого фреймрейта.</translation></message><message><source>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</source><translation>Фиксирует максимальную производительность для ЦП и ГПУ, отключает агрессивный троттлинг и энергосбережение.</translation></message><message><source>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</source><translation>Включает цветовое пространство HDR10 (BT.2020 PQ / ST2084) для совместимых дисплеев HDR и OLED.</translation></message><message><source>Uses 16-bit half precision floating point for frame generation.</source><translation>Использует 16-битные вычисления с плавающей запятой половинной точности для генерации кадров.</translation></message><message><source>Automatically calculates optical flow grid scale for frame generation.</source><translation>Автоматически рассчитывает масштаб сетки оптического потока для генерации кадров.</translation></message><message><source>Emulates BGR565 color format by software swapping red and blue channels.</source><translation>Эмулирует цветовой формат BGR565 путем программной перестановки красного и синего каналов.</translation></message><message><source>Releases synchronization fences earlier to reduce frame presentation latency.</source><translation>Освобождает барьеры синхронизации раньше для снижения задержки вывода кадров.</translation></message><message><source>Runs optimization passes on compiled SPIR-V shaders.</source><translation>Выполняет проходы оптимизации для скомпилированных шейдеров SPIR-V.</translation></message><message><source>Uses fast monotonic GPU timer queries for frame pacing.</source><translation>Использует быстрые монотонные запросы таймера ГПУ для выравнивания кадров.</translation></message><message><source>Skips rendering non-critical frames when emulation falls behind target rate.</source><translation>Пропускает рендеринг некритичных кадров при отставании эмуляции от целевой скорости.</translation></message><message><source>Reduces power consumption and fan noise on portable devices.</source><translation>Снижает энергопотребление и шум вентилятора на портативных устройствах.</translation></message><message><source>Displays floating quick translation overlay button.</source><translation>Отображает плавающую кнопку быстрого перевода.</translation></message></context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2757,7 +2758,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_cpu.ui" line="17" />
       <source>CPU</source>
-      <translation>CPU</translation>
+      <translation>ЦП</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_cpu.ui" line="28" />
@@ -2772,7 +2773,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_cpu.ui" line="68" />
       <source>CPU Backend</source>
-      <translation>Бэкэнд CPU</translation>
+      <translation>Бэкенд ЦП</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_cpu.ui" line="95" />
@@ -2800,7 +2801,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Привязка к ядрам ЦП</source>
       <translation>Привязка к ядрам ЦП</translation>
     </message>
-  </context>
+  <message><source>Backend</source><translation>Бэкенд</translation></message><message><source>Unsafe CPU Optimization</source><translation>Небезопасная оптимизация ЦП</translation></message></context>
   <context>
     <name>ConfigureCpuDebug</name>
     <message>
@@ -3014,7 +3015,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>CPU settings are available only when game is not running.</source>
       <translation>Настройки ЦП доступны только тогда, когда игра не запущена.</translation>
     </message>
-  </context>
+  <message><source>CPU Optimizations</source><translation>Оптимизации ЦП</translation></message><message><source>CPU settings are only available when a game is not running.</source><translation>Настройки ЦП доступны только когда игра не запущена.</translation></message></context>
   <context>
     <name>ConfigureDebug</name>
     <message>
@@ -3050,7 +3051,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="231" />
       <source>Detail level for GPU logs. Off disables logging entirely.</source>
-      <translation>Уровень детализации логов GPU. «Выкл» полностью отключает запись логов.</translation>
+      <translation>Уровень детализации логов ГПУ. «Выкл» полностью отключает запись логов.</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
@@ -3353,7 +3354,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>GPU Log Level</source>
       <translation>Уровень логирования ГПУ</translation>
     </message>
-  </context>
+  <message><source>(bitmask)</source><translation>(битовая маска)</translation></message></context>
   <context>
     <name>ConfigureDebugController</name>
     <message>
@@ -4234,7 +4235,7 @@ Would you like to delete the old save data?</source>
       <source>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</source>
       <translation>Функция Extended Dynamic State отключена в macOS из-за проблем совместимости с MoltenVK, вызывающих черные экраны.</translation>
     </message>
-  </context>
+  <message><source>Extensions</source><translation>Дополнительно</translation></message><message><source>Modifying these settings can cause problems. For advanced users only!</source><translation>Изменение этих параметров может вызвать проблемы. Только для опытных пользователей!</translation></message></context>
   <context>
     <name>ConfigureHotkeys</name>
     <message>
@@ -4702,7 +4703,7 @@ Would you like to delete the old save data?</source>
       <source>Движение и сенсор</source>
       <translation>Гироскоп хоста и контроллера</translation>
     </message>
-  </context>
+  <message><source>Disable SDL WGI/XInput (restart required)</source><translation>Отключить SDL WGI/XInput (требуется перезапуск)</translation></message><message><source>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</source><translation>Отключает драйверы контроллеров SDL WGI и XInput. Предотвращает конфликты триггеров, проблемы с вибрацией и фантомные нажатия кнопки Home. Требуется перезапуск эмулятора.</translation></message></context>
   <context>
     <name>ConfigureInputPerGame</name>
     <message>
@@ -6216,7 +6217,7 @@ UUID: %2</translation>
       <source>...</source>
       <translation>...</translation>
     </message>
-  </context>
+  <message><source>WARNING: This is an experimental feature.&lt;br/&gt;It will not play back scripts frame perfectly with the current, imperfect syncing method.</source><translation>ВНИМАНИЕ: Это экспериментальная функция.&lt;br/&gt;Она не воспроизводит скрипты с покадровой точностью при текущем несовершенном методе синхронизации.</translation></message><message><source>Settings</source><translation>Настройки</translation></message><message><source>Enable TAS features</source><translation>Включить функции TAS</translation></message><message><source>Loop script</source><translation>Зациклить скрипт</translation></message><message><source>Pause execution during loads</source><translation>Приостанавливать выполнение во время загрузок</translation></message><message><source>Show recording dialog</source><translation>Показывать диалог записи</translation></message></context>
   <context>
     <name>ConfigureTasDialog</name>
     <message>
@@ -6555,7 +6556,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <source>Язык интерфейса:</source>
       <translation>Язык приложения</translation>
     </message>
-  </context>
+  <message><source>Screenshots Path:</source><translation>Путь к скриншотам:</translation></message></context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -6702,7 +6703,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Tooltip</comment>
       <translation>Должно быть 48 символов в нижнем регистре (a–z)</translation>
     </message>
-  </context>
+  <message><source>Token:</source><translation>Токен:</translation></message><message><source>Username:</source><translation>Имя пользователя:</translation></message></context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -7489,7 +7490,7 @@ Debug Message: </source>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="40" />
       <source>Change GPU Mode</source>
-      <translation>Изменить режим GPU</translation>
+      <translation>Изменить режим ГПУ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
@@ -8347,7 +8348,7 @@ Debug Message: </source>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1840" />
       <source>Eden has encountered an error while running the video core. This is usually caused by outdated GPU drivers, including integrated ones. Please see the log for more details. For more information on accessing the log, please see the following page: &lt;a href='https://yuzu-mirror.github.io/help/reference/log-files/'&gt;How to Upload the Log File&lt;/a&gt;. </source>
-      <translation>Eden столкнулся с ошибкой при работе видеоядра. Обычно это вызвано устаревшими драйверами GPU, включая интегрированные. Проверьте журнал для получения подробностей. Информацию о том, как получить доступ к журналу, см. на странице: &lt;a href='https://yuzu-mirror.github.io/help/reference/log-files/'&gt;Как загрузить файл журнала&lt;/a&gt;.</translation>
+      <translation>Eden столкнулся с ошибкой при работе видеоядра. Обычно это вызвано устаревшими драйверами ГПУ, включая интегрированные. Проверьте журнал для получения подробностей. Информацию о том, как получить доступ к журналу, см. на странице: &lt;a href='https://yuzu-mirror.github.io/help/reference/log-files/'&gt;Как загрузить файл журнала&lt;/a&gt;.</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1855" />

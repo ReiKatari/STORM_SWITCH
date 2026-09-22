@@ -54,6 +54,17 @@ void StormCatalogCache::SaveCache(const QByteArray& json_data) {
     m_loaded = true;
 }
 
+QByteArray StormCatalogCache::GetRawCacheData() const {
+    const QString path = GetCacheFilePath();
+    QFile file(path);
+    if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
+        return QByteArray();
+    }
+    const QByteArray data = file.readAll();
+    file.close();
+    return data;
+}
+
 void StormCatalogCache::ParseCatalogJson(const QByteArray& data) {
     const QJsonDocument doc = QJsonDocument::fromJson(data);
     if (!doc.isArray()) {

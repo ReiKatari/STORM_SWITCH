@@ -59,6 +59,7 @@ public:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 signals:
     void GameDownloaded(const QString& file_path);
@@ -81,15 +82,34 @@ private slots:
 private:
     void SetupUI();
     void ApplyStormStyles();
+    void LoadCachedCatalog();
+    void ParseCatalogData(const QByteArray& raw_data);
     void PopulateGameList(const QString& filter = QString());
     void DisplayGameDetails(const StormWorldGame& game);
     void FetchGameDetails(int game_id);
     void FetchRealExtension(int game_id);
     void LoadCover(const StormWorldGame& game);
     void TryNextCoverCandidate();
-    bool IsGameDownloaded(const StormWorldGame& game, const QString& dir_path) const;
+
+    struct DownloadedFileInfo {
+        QString complete_base_name;
+        QString lower_name;
+        qint64 size{0};
+        int mod_count{0};
+        int dlc_count{0};
+        bool has_rus{false};
+        bool has_mod{false};
+        bool has_dlc{false};
+    };
+
+    void RefreshDownloadedFilesCache(const QString& dir_path) const;
+    bool IsGameDownloaded(const StormWorldGame& game, const QString& dir_path, const QMap<QString, int>& group_counts) const;
     QString GetDefaultDownloadDir() const;
     void SaveDownloadDir(const QString& dir);
+
+    mutable std::vector<DownloadedFileInfo> cached_dir_files;
+    mutable QString cached_dir_path;
+    mutable qint64 cached_dir_scan_time{0};
 
     QNetworkAccessManager network_mgr;
     QNetworkReply* catalog_reply{nullptr};

@@ -15,6 +15,7 @@ public:
 
     void LoadCache();
     void SaveCache(const QByteArray& json_data);
+    QByteArray GetRawCacheData() const;
 
     bool HasUpdate(u64 title_id, const QString& installed_ver) const;
     QString GetLatestVersion(u64 title_id) const;

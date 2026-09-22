@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-<!DOCTYPE TS[]>
+<?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="fr" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
@@ -882,7 +881,7 @@ Disable if experiencing crashes or graphical glitches.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="239" />
       <source>GPU Unswizzle Max Texture Size</source>
-      <translation>GPU Unswizzle Max Texture Size</translation>
+      <translation>Taille max de texture pour GPU Unswizzle</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="240" />
@@ -896,7 +895,7 @@ Adjust this to find the balance between GPU acceleration and CPU overhead.</tran
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="244" />
       <source>GPU Unswizzle Stream Size</source>
-      <translation>GPU Unswizzle Stream Size</translation>
+      <translation>Taille du flux GPU Unswizzle</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="245" />
@@ -908,7 +907,7 @@ Higher values can reduce stutter during texture loading but may impact frame con
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="248" />
       <source>GPU Unswizzle Chunk Size</source>
-      <translation>GPU Unswizzle Chunk Size</translation>
+      <translation>Taille de bloc GPU Unswizzle</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="249" />
@@ -1010,7 +1009,7 @@ Legacy behavior workaround that fixes line artifacts on AMD and Intel GPUs, and 
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
       <source>Extended Dynamic State</source>
-      <translation>État dynamique étendu</translation>
+      <translation>Extended Dynamic State</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1032,7 +1031,7 @@ Higher states allow for more features and can increase performance, but may caus
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="291" />
       <source>Sample Shading</source>
-      <translation>Échantillonnage de shading</translation>
+      <translation>Ombrage d'échantillon</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="292" />
@@ -2191,7 +2190,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
       <source>Grid View</source>
       <translation>Vue en grille</translation>
     </message>
-  </context>
+  <message><source>CPU Affinity Pinning</source><translation>Affinité des cœurs CPU</translation></message><message><source>Low-End Turbo</source><translation>Turbo pour machines modestes</translation></message><message><source>Thermal Governor</source><translation>Régulateur thermique</translation></message><message><source>FP16 Frame Generation</source><translation>Génération d'images FP16</translation></message><message><source>Auto Optical Flow Scale</source><translation>Échelle de flux optique automatique</translation></message><message><source>Emulate BGR565</source><translation>Émuler BGR565</translation></message></context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2304,7 +2303,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
       <source>These settings reduce accuracy for speed.</source>
       <translation>Ces réglages réduisent la précision au profit de la vitesse.</translation>
     </message>
-  </context>
+  <message><source>Backend</source><translation>Backend</translation></message><message><source>Unsafe CPU Optimization</source><translation>Optimisation CPU non sécurisée</translation></message></context>
   <context>
     <name>ConfigureCpuDebug</name>
     <message>
@@ -2518,7 +2517,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
       <source>CPU settings are available only when game is not running.</source>
       <translation>Les réglages du CPU ne sont disponibles que lorsqu'un jeu n'est pas en cours d'exécution.</translation>
     </message>
-  </context>
+  <message><source>CPU Optimizations</source><translation>Optimisations CPU</translation></message><message><source>CPU settings are only available when a game is not running.</source><translation>Les paramètres CPU ne sont disponibles que lorsqu'aucun jeu n'est lancé.</translation></message></context>
   <context>
     <name>ConfigureDebug</name>
     <message>
@@ -3402,7 +3401,7 @@ Would you like to delete the old save data?</translation>
       <source>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</source>
       <translation>Le mode Extended Dynamic State est désactivé sur macOS en raison des problèmes de compatibilité avec MoltenVK qui provoquent des écrans noirs.</translation>
     </message>
-  </context>
+  <message><source>Extensions</source><translation>Extensions</translation></message><message><source>Modifying these settings can cause problems. For advanced users only!</source><translation>La modification de ces paramètres peut causer des problèmes. Réservé aux utilisateurs avancés !</translation></message></context>
   <context>
     <name>ConfigureHotkeys</name>
     <message>
@@ -3862,7 +3861,7 @@ Would you like to delete the old save data?</translation>
       <source>Motion / Touch</source>
       <translation>Mouvement / Tactile</translation>
     </message>
-  </context>
+  <message><source>Disable SDL WGI/XInput (restart required)</source><translation>Désactiver SDL WGI/XInput (redémarrage requis)</translation></message></context>
   <context>
     <name>ConfigureInputPerGame</name>
     <message>
@@ -5260,17 +5259,17 @@ UUID : %2</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="67" />
       <source>Loop script</source>
-      <translation>Script de boucle</translation>
+      <translation>Répéter le script</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="77" />
       <source>Pause execution during loads</source>
-      <translation>Mettre en pause l'exécution pendant le chargement</translation>
+      <translation>Suspendre l'exécution pendant les chargements</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="84" />
       <source>Show recording dialog</source>
-      <translation>Show recording dialog</translation>
+      <translation>Afficher la boîte de dialogue d'enregistrement</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="98" />
@@ -5598,7 +5597,7 @@ Faites glisser les points pour modifier la position ou double-cliquez sur les ce
       <comment>Screenshot width value</comment>
       <translation>Auto (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+  <message><source>Screenshots Path:</source><translation>Chemin des captures d'écran :</translation></message></context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5745,7 +5744,7 @@ Faites glisser les points pour modifier la position ou double-cliquez sur les ce
       <comment>Tooltip</comment>
       <translation>Doit comporter 48 caractères, en minuscules (a-z).</translation>
     </message>
-  </context>
+  <message><source>Token:</source><translation>Jeton :</translation></message><message><source>Username:</source><translation>Nom d'utilisateur :</translation></message></context>
   <context>
     <name>ControllerDialog</name>
     <message>

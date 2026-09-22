@@ -320,6 +320,7 @@ StormGamesWorldDialog::StormGamesWorldDialog(QWidget* parent)
     : QDialog(parent) {
     SetupUI();
     ApplyStormStyles();
+    LoadCachedCatalog();
     OnFetchCatalog();
 }
 
@@ -345,6 +346,22 @@ StormGamesWorldDialog::~StormGamesWorldDialog() {
     }
 }
 
+void StormGamesWorldDialog::closeEvent(QCloseEvent* event) {
+    QSettings settings;
+    settings.setValue(QStringLiteral("StormGamesWorld/geometry"), saveGeometry());
+    QDialog::closeEvent(event);
+}
+
+void StormGamesWorldDialog::LoadCachedCatalog() {
+    const QByteArray cached_data = StormCatalogCache::Instance().GetRawCacheData();
+    if (!cached_data.isEmpty()) {
+        ParseCatalogData(cached_data);
+        if (status_label && !all_games.empty()) {
+            status_label->setText(tr("Каталог загружен из кэша (доступно: %1)").arg(all_games.size()));
+        }
+    }
+}
+
 QString StormGamesWorldDialog::GetDefaultDownloadDir() const {
     QSettings settings;
     QString dir = settings.value(QStringLiteral("StormGamesWorld/download_dir")).toString();
@@ -360,11 +377,73 @@ void StormGamesWorldDialog::SaveDownloadDir(const QString& dir) {
     settings.setValue(QStringLiteral("StormGamesWorld/download_dir"), dir);
 }
 
-bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const QString& dir_path) const {
-    if (dir_path.isEmpty() || !QDir(dir_path).exists()) return false;
+static int ExtractModCountFast(const QString& str) {
+    static const QRegularExpression m_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)m(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
+    const auto match = m_regex.match(str);
+    if (match.hasMatch()) {
+        return match.captured(1).toInt();
+    }
+    static const QRegularExpression word_regex(QStringLiteral(R"((?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка)"), QRegularExpression::CaseInsensitiveOption);
+    if (str.contains(word_regex)) {
+        return 1;
+    }
+    return 0;
+}
+
+static int ExtractDlcCountFast(const QString& str) {
+    static const QRegularExpression d_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)d(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
+    const auto match = d_regex.match(str);
+    if (match.hasMatch()) {
+        return match.captured(1).toInt();
+    }
+    if (str.contains(QStringLiteral("dlc"), Qt::CaseInsensitive)) {
+        return 1;
+    }
+    return 0;
+}
+
+void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString& dir_path) const {
+    if (dir_path.isEmpty() || !QDir(dir_path).exists()) {
+        cached_dir_files.clear();
+        cached_dir_path = dir_path;
+        return;
+    }
+    if (cached_dir_path == dir_path && !cached_dir_files.empty()) {
+        return;
+    }
+
+    cached_dir_files.clear();
+    cached_dir_path = dir_path;
 
     QDir dir(dir_path);
-    const QStringList files = dir.entryList(QDir::Files);
+    const auto entry_info_list = dir.entryInfoList(QDir::Files);
+    cached_dir_files.reserve(entry_info_list.size());
+
+    for (const auto& fi : entry_info_list) {
+        const QString lower_file = fi.fileName().toLower();
+        if (!lower_file.endsWith(QStringLiteral(".nsp")) &&
+            !lower_file.endsWith(QStringLiteral(".xci")) &&
+            !lower_file.endsWith(QStringLiteral(".nsz"))) {
+            continue;
+        }
+        if (fi.size() < 1024 * 1024) continue;
+
+        DownloadedFileInfo info;
+        info.complete_base_name = fi.completeBaseName().toLower();
+        info.lower_name = lower_file;
+        info.size = fi.size();
+        info.mod_count = ExtractModCountFast(lower_file);
+        info.dlc_count = ExtractDlcCountFast(lower_file);
+        info.has_rus = lower_file.contains(QStringLiteral("rus")) || lower_file.contains(QStringLiteral("рус"));
+        info.has_mod = (info.mod_count > 0);
+        info.has_dlc = (info.dlc_count > 0);
+        cached_dir_files.push_back(std::move(info));
+    }
+}
+
+bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const QString& dir_path, const QMap<QString, int>& group_counts) const {
+    RefreshDownloadedFilesCache(dir_path);
+    if (cached_dir_files.empty()) return false;
 
     const QString clean_final = SanitizeFileName(game.final_title.isEmpty() ? game.title : game.final_title).toLower();
     const QString clean_title = SanitizeFileName(game.title).toLower();
@@ -373,112 +452,60 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
     const QString int_ver = game.internal_version.trimmed();
 
     const QString full_game_name = (game.final_title + QLatin1Char(' ') + game.title).toLower();
-
-    auto extract_mod_count = [](const QString& str) -> int {
-        static const QRegularExpression m_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)m(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
-        const auto match = m_regex.match(str);
-        if (match.hasMatch()) {
-            return match.captured(1).toInt();
-        }
-        static const QRegularExpression word_regex(QStringLiteral(R"((?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка)"), QRegularExpression::CaseInsensitiveOption);
-        if (str.contains(word_regex)) {
-            return 1;
-        }
-        return 0;
-    };
-
-    auto extract_dlc_count = [](const QString& str) -> int {
-        static const QRegularExpression d_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)d(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
-        const auto match = d_regex.match(str);
-        if (match.hasMatch()) {
-            return match.captured(1).toInt();
-        }
-        if (str.contains(QStringLiteral("dlc"), Qt::CaseInsensitive)) {
-            return 1;
-        }
-        return 0;
-    };
-
     const bool game_is_rus = full_game_name.contains(QStringLiteral("rus")) || full_game_name.contains(QStringLiteral("рус"));
-    const int game_mod_count = std::max(game.mod_count, extract_mod_count(full_game_name));
-    const int game_dlc_count = std::max(game.dlc_count, extract_dlc_count(full_game_name));
+    const int game_mod_count = std::max(game.mod_count, ExtractModCountFast(full_game_name));
+    const int game_dlc_count = std::max(game.dlc_count, ExtractDlcCountFast(full_game_name));
     const bool game_is_mod = (game_mod_count > 0);
     const bool game_has_dlc = (game_dlc_count > 0);
 
-    int same_group_count = 0;
-    for (const auto& other : all_games) {
-        const QString other_tid = other.serial_id.trimmed().toLower();
-        const QString other_clean_title = SanitizeFileName(other.title).toLower();
-        if ((!tid.isEmpty() && tid != QStringLiteral("—") && tid == other_tid) ||
-            (!clean_title.isEmpty() && clean_title == other_clean_title)) {
-            same_group_count++;
-        }
-    }
-
+    const QString key = !tid.isEmpty() && tid != QStringLiteral("—") ? tid : clean_title;
+    const int same_group_count = group_counts.value(key, 1);
     const bool is_single = (same_group_count <= 1);
 
-    for (const auto& file : files) {
-        const QString lower_file = file.toLower();
-        if (!lower_file.endsWith(QStringLiteral(".nsp")) &&
-            !lower_file.endsWith(QStringLiteral(".xci")) &&
-            !lower_file.endsWith(QStringLiteral(".nsz"))) {
-            continue;
-        }
-
-        const QFileInfo fi(dir.filePath(file));
-        if (fi.size() < 1024 * 1024) continue;
-
-        const QString file_stem = fi.completeBaseName().toLower();
-
-        // 1. Exact match with final_title (how Storm Games World saves downloaded files)
-        if (!clean_final.isEmpty() && file_stem == clean_final) {
+    for (const auto& file : cached_dir_files) {
+        // 1. Exact match with final_title
+        if (!clean_final.isEmpty() && file.complete_base_name == clean_final) {
             return true;
         }
 
-        const int file_mod_count = extract_mod_count(lower_file);
-        const int file_dlc_count = extract_dlc_count(lower_file);
-        const bool file_has_rus = lower_file.contains(QStringLiteral("rus")) || lower_file.contains(QStringLiteral("рус"));
-        const bool file_has_mod = (file_mod_count > 0);
-        const bool file_has_dlc = (file_dlc_count > 0);
-
         if (!is_single) {
             // Multiple versions in catalog: must verify exact version/mod/dlc/rus
-            if (game_is_mod != file_has_mod) continue;
-            if (game_is_mod && game_mod_count != file_mod_count) continue;
-            if (game_has_dlc != file_has_dlc) continue;
-            if (game_has_dlc && game_dlc_count != file_dlc_count) continue;
-            if (game_is_rus != file_has_rus) continue;
+            if (game_is_mod != file.has_mod) continue;
+            if (game_is_mod && game_mod_count != file.mod_count) continue;
+            if (game_has_dlc != file.has_dlc) continue;
+            if (game_has_dlc && game_dlc_count != file.dlc_count) continue;
+            if (game_is_rus != file.has_rus) continue;
 
-            if (!clean_final.isEmpty() && (file_stem == clean_final || lower_file.contains(clean_final))) {
+            if (!clean_final.isEmpty() && (file.complete_base_name == clean_final || file.lower_name.contains(clean_final))) {
                 return true;
             }
 
-            if (!tid.isEmpty() && tid != QStringLiteral("—") && lower_file.contains(tid)) {
+            if (!tid.isEmpty() && tid != QStringLiteral("—") && file.lower_name.contains(tid)) {
                 if (!int_ver.isEmpty() && int_ver != QStringLiteral("0")) {
-                    if (lower_file.contains(int_ver) || lower_file.contains(QStringLiteral("v%1").arg(int_ver)) ||
-                        lower_file.contains(QStringLiteral("-%1-").arg(int_ver))) {
+                    if (file.lower_name.contains(int_ver) || file.lower_name.contains(QStringLiteral("v%1").arg(int_ver)) ||
+                        file.lower_name.contains(QStringLiteral("-%1-").arg(int_ver))) {
                         return true;
                     }
                 }
 
                 if (!ver.isEmpty() && ver != QStringLiteral("1.0.0")) {
-                    if (lower_file.contains(ver) || lower_file.contains(QStringLiteral("v%1").arg(ver))) {
+                    if (file.lower_name.contains(ver) || file.lower_name.contains(QStringLiteral("v%1").arg(ver))) {
                         return true;
                     }
                 }
 
                 if ((ver.isEmpty() || ver == QStringLiteral("1.0.0")) && (int_ver.isEmpty() || int_ver == QStringLiteral("0"))) {
                     static const QRegularExpression ver_regex(QStringLiteral(R"((?:v|\-|\b)(\d+\.\d+(?:\.\d+)?|\d{5,8})(?:\b|\]|\)))"));
-                    if (!lower_file.contains(ver_regex)) {
+                    if (!file.lower_name.contains(ver_regex)) {
                         return true;
                     }
                 }
             }
         } else {
             // Single version in catalog
-            if (!clean_final.isEmpty() && lower_file.contains(clean_final)) return true;
-            if (!tid.isEmpty() && tid != QStringLiteral("—") && lower_file.contains(tid)) return true;
-            if (!clean_title.isEmpty() && clean_title.length() >= 4 && lower_file.contains(clean_title)) return true;
+            if (!clean_final.isEmpty() && file.lower_name.contains(clean_final)) return true;
+            if (!tid.isEmpty() && tid != QStringLiteral("—") && file.lower_name.contains(tid)) return true;
+            if (!clean_title.isEmpty() && clean_title.length() >= 4 && file.lower_name.contains(clean_title)) return true;
         }
     }
 
@@ -487,8 +514,18 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame& game, const Q
 
 void StormGamesWorldDialog::SetupUI() {
     setWindowTitle(tr("🌐 STORM SWITCH — Каталог и менеджер игр STORM GAMES WORLD"));
-    resize(1380, 800);
-    setMinimumSize(1160, 680);
+
+    QSettings settings;
+    const QByteArray saved_geo = settings.value(QStringLiteral("StormGamesWorld/geometry")).toByteArray();
+    if (!saved_geo.isEmpty()) {
+        restoreGeometry(saved_geo);
+    } else if (parentWidget()) {
+        const QRect parent_geom = parentWidget()->geometry();
+        setGeometry(parent_geom);
+    } else {
+        resize(1380, 800);
+    }
+    setMinimumSize(960, 600);
 
     auto* root_layout = new QVBoxLayout(this);
     root_layout->setContentsMargins(12, 12, 12, 12);
@@ -550,13 +587,10 @@ void StormGamesWorldDialog::SetupUI() {
     games_tree->setAlternatingRowColors(true);
     games_tree->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    games_tree->headerItem()->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
-    games_tree->headerItem()->setTextAlignment(1, Qt::AlignCenter);
-    games_tree->headerItem()->setTextAlignment(2, Qt::AlignCenter);
-    games_tree->headerItem()->setTextAlignment(3, Qt::AlignCenter);
-    games_tree->headerItem()->setTextAlignment(4, Qt::AlignCenter);
-    games_tree->headerItem()->setTextAlignment(5, Qt::AlignCenter);
-    games_tree->headerItem()->setTextAlignment(6, Qt::AlignCenter);
+    for (int col = 0; col < games_tree->columnCount(); ++col) {
+        games_tree->headerItem()->setTextAlignment(col, Qt::AlignCenter);
+    }
+    games_tree->header()->setDefaultAlignment(Qt::AlignCenter);
 
     games_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     games_tree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -795,7 +829,9 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
     if (!catalog_reply) return;
 
     if (catalog_reply->error() != QNetworkReply::NoError) {
-        status_label->setText(tr("Ошибка подключения: %1").arg(catalog_reply->errorString()));
+        if (all_games.empty()) {
+            status_label->setText(tr("Ошибка подключения: %1").arg(catalog_reply->errorString()));
+        }
         catalog_reply->deleteLater();
         catalog_reply = nullptr;
         return;
@@ -805,11 +841,22 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
     catalog_reply->deleteLater();
     catalog_reply = nullptr;
 
+    ParseCatalogData(raw_data);
+    StormCatalogCache::Instance().SaveCache(raw_data);
+    status_label->setText(tr("Каталог обновлен. Доступно для загрузки игр Nintendo Switch: %1").arg(all_games.size()));
+}
+
+void StormGamesWorldDialog::ParseCatalogData(const QByteArray& raw_data) {
     const QJsonDocument doc = QJsonDocument::fromJson(raw_data);
     if (!doc.isArray()) {
-        status_label->setText(tr("Некорректный формат ответа сервера"));
+        if (status_label) {
+            status_label->setText(tr("Некорректный формат ответа сервера"));
+        }
         return;
     }
+
+    // Ensure TitleDB is loaded once before iterating catalog
+    TitleDB::TitleDatabase::Instance().EnsureLoaded();
 
     all_games.clear();
     const QJsonArray arr = doc.array();
@@ -879,9 +926,6 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
         }
     }
 
-    // Save catalog to cache for update notifications across main screen and cards
-    StormCatalogCache::Instance().SaveCache(raw_data);
-
     // Group games by key to determine recommendations
     QMap<QString, QVector<int>> game_groups;
     for (int i = 0; i < static_cast<int>(all_games.size()); ++i) {
@@ -920,9 +964,6 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
             continue;
         }
 
-        // Multiple versions exist: pick strictly ONE recommended version based on priority:
-        // Priority: MOD - RUS / MOD - M. RUS (300) > RUS (200) > ENG / other (100)
-        // Tie-breaker: highest version -> highest ID
         int best_idx = -1;
         int best_priority = -1;
         QString best_version;
@@ -978,16 +1019,30 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
         return false;
     });
 
-    PopulateGameList(search_edit->text());
-    status_label->setText(tr("Каталог обновлен. Доступно для загрузки игр Nintendo Switch: %1").arg(all_games.size()));
+    PopulateGameList(search_edit ? search_edit->text() : QString());
 }
 
 void StormGamesWorldDialog::PopulateGameList(const QString& filter) {
+    games_tree->setUpdatesEnabled(false);
     games_tree->clear();
     filtered_games.clear();
 
     const QString lower_filter = filter.trimmed().toLower();
     const QString current_dir = download_dir_edit ? download_dir_edit->text() : QString();
+
+    RefreshDownloadedFilesCache(current_dir);
+
+    // Precalculate group counts in O(N)
+    QMap<QString, int> group_counts;
+    for (const auto& g : all_games) {
+        const QString tid = g.serial_id.trimmed().toLower();
+        const QString clean_title = SanitizeFileName(g.title).toLower();
+        const QString key = (!tid.isEmpty() && tid != QStringLiteral("—")) ? tid : clean_title;
+        group_counts[key]++;
+    }
+
+    QList<QTreeWidgetItem*> items_to_add;
+    items_to_add.reserve(all_games.size());
 
     for (const auto& g : all_games) {
         if (!lower_filter.isEmpty()) {
@@ -1004,7 +1059,7 @@ void StormGamesWorldDialog::PopulateGameList(const QString& filter) {
         const QString disp_title = g.final_title.isEmpty() ? g.title : g.final_title;
         const QString langs = g.text_langs.isEmpty() ? tr("Multi") : g.text_langs.join(QStringLiteral(", "));
 
-        auto* item = new QTreeWidgetItem(games_tree);
+        auto* item = new QTreeWidgetItem();
         item->setText(0, disp_title);
         item->setForeground(0, QBrush(QColor(QStringLiteral("#FFFFFF"))));
 
@@ -1051,8 +1106,8 @@ void StormGamesWorldDialog::PopulateGameList(const QString& filter) {
         item->setTextAlignment(5, Qt::AlignCenter);
         item->setTextAlignment(6, Qt::AlignCenter);
 
-        // Check download status
-        if (IsGameDownloaded(g, current_dir)) {
+        // Check download status fast
+        if (IsGameDownloaded(g, current_dir, group_counts)) {
             item->setText(6, tr("✅ Скачано"));
             item->setForeground(6, QBrush(QColor(QStringLiteral("#00FF66"))));
         } else if (is_downloading && current_download_game_id == g.id) {
@@ -1064,7 +1119,11 @@ void StormGamesWorldDialog::PopulateGameList(const QString& filter) {
         }
 
         item->setData(0, Qt::UserRole, static_cast<int>(filtered_games.size() - 1));
+        items_to_add.append(item);
     }
+
+    games_tree->addTopLevelItems(items_to_add);
+    games_tree->setUpdatesEnabled(true);
 
     if (!filtered_games.empty()) {
         games_tree->setCurrentItem(games_tree->topLevelItem(0));

@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-<!DOCTYPE TS[]>
+<?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="zh_CN" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
@@ -874,7 +873,7 @@ Use 256 for maximal performance and 512 for maximal graphics fidelity.</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="236" />
       <source>GPU Unswizzle</source>
-      <translation>GPU 还原</translation>
+      <translation>GPU 反交织</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="237" />
@@ -885,7 +884,7 @@ Disable if experiencing crashes or graphical glitches.</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="239" />
       <source>GPU Unswizzle Max Texture Size</source>
-      <translation>GPU 还原最大纹理尺寸</translation>
+      <translation>GPU 反交织最大纹理尺寸</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="240" />
@@ -899,7 +898,7 @@ Adjust this to find the balance between GPU acceleration and CPU overhead.</sour
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="244" />
       <source>GPU Unswizzle Stream Size</source>
-      <translation>GPU 还原流大小</translation>
+      <translation>GPU 反交织流大小</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="245" />
@@ -911,7 +910,7 @@ Higher values can reduce stutter during texture loading but may impact frame con
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="248" />
       <source>GPU Unswizzle Chunk Size</source>
-      <translation>GPU 还原块大小</translation>
+      <translation>GPU 反交织块大小</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="249" />
@@ -2192,7 +2191,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>网格视图</translation>
     </message>
-  </context>
+  <message><source>CPU Affinity Pinning</source><translation>CPU 核心亲和性绑定</translation></message><message><source>Low-End Turbo</source><translation>低端设备加速</translation></message><message><source>Thermal Governor</source><translation>温度调节器</translation></message><message><source>FP16 Frame Generation</source><translation>FP16 帧生成</translation></message><message><source>Auto Optical Flow Scale</source><translation>自动光流缩放</translation></message><message><source>Emulate BGR565</source><translation>模拟 BGR565</translation></message></context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2305,7 +2304,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>These settings reduce accuracy for speed.</source>
       <translation>这些设置项提高了运行速度，但精度有所降低。</translation>
     </message>
-  </context>
+  <message><source>Backend</source><translation>后端</translation></message><message><source>Unsafe CPU Optimization</source><translation>不安全的 CPU 优化</translation></message></context>
   <context>
     <name>ConfigureCpuDebug</name>
     <message>
@@ -2519,7 +2518,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>CPU settings are available only when game is not running.</source>
       <translation>只有当游戏不在运行时，CPU 设置才可用。</translation>
     </message>
-  </context>
+  <message><source>CPU Optimizations</source><translation>CPU 优化</translation></message><message><source>CPU settings are only available when a game is not running.</source><translation>CPU 设置仅在游戏未运行时可用。</translation></message></context>
   <context>
     <name>ConfigureDebug</name>
     <message>
@@ -3391,7 +3390,7 @@ Would you like to delete the old save data?</source>
       <source>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</source>
       <translation>由于 MoltenVK 兼容性问题会导致黑屏,macOS 上已禁用扩展动态状态。</translation>
     </message>
-  </context>
+  <message><source>Extensions</source><translation>扩展</translation></message><message><source>Modifying these settings can cause problems. For advanced users only!</source><translation>修改这些设置可能会导致问题。仅供高级用户使用！</translation></message></context>
   <context>
     <name>ConfigureHotkeys</name>
     <message>
@@ -3851,7 +3850,7 @@ Would you like to delete the old save data?</source>
       <source>Motion / Touch</source>
       <translation>体感/触摸</translation>
     </message>
-  </context>
+  <message><source>Disable SDL WGI/XInput (restart required)</source><translation>禁用 SDL WGI/XInput (需要重启)</translation></message></context>
   <context>
     <name>ConfigureInputPerGame</name>
     <message>
@@ -5255,7 +5254,7 @@ UUID: %2</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="77" />
       <source>Pause execution during loads</source>
-      <translation>遇到载入画面时暂停执行</translation>
+      <translation>在加载时暂停执行</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_tas.ui" line="84" />
@@ -5588,7 +5587,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Screenshot width value</comment>
       <translation>自动 (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+  <message><source>Screenshots Path:</source><translation>截图路径:</translation></message></context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5735,7 +5734,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Tooltip</comment>
       <translation>必须为48个字符，且a-z为小写</translation>
     </message>
-  </context>
+  <message><source>Token:</source><translation>令牌:</translation></message><message><source>Username:</source><translation>用户名:</translation></message></context>
   <context>
     <name>ControllerDialog</name>
     <message>

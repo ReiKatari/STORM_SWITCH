@@ -44,6 +44,8 @@ ConfigureGraphicsExtensions::ConfigureGraphicsExtensions(
     Setup(builder);
 
     SetConfiguration();
+
+    RetranslateUI();
 }
 
 ConfigureGraphicsExtensions::~ConfigureGraphicsExtensions() = default;
