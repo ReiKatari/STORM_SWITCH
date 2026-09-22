@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <cstring>
+#include "common/logging.h"
 #include "common/zbic.h"
 #include "common/zbic_compression.h"
 
@@ -22,6 +23,7 @@ int DecompressDataZBIC(void* dst, size_t dst_size, const void* src, size_t src_s
     }
     const size_t res = ZBIC_decompress(dst, dst_size, src, src_size);
     if (ZBIC_isError(res)) {
+        LOG_ERROR(Common, "ZBIC_decompress failed: {} (code: {:#x})", ZBIC_getErrorString(ZBIC_getErrorCode(res)), res);
         return -1;
     }
     return static_cast<int>(res);

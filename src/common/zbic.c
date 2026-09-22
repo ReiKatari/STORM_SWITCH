@@ -2,6 +2,10 @@
 #pragma warning(disable: 4242 4244 4267 4018 4100 4127 4996 4701 4702 4706)
 #endif
 
+#ifndef ZBIC_ZBIC_SUPPORT
+#define ZBIC_ZBIC_SUPPORT 1
+#endif
+
 /**
  * \file zstd.c
  * Single-file Zstandard library.
