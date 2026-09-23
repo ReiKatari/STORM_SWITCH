@@ -139,9 +139,12 @@ Result IApplicationFunctions::EnsureSaveData(Out<u64> out_size, Common::UUID use
     attribute.user_id = user_id.AsU128();
     attribute.type = FileSys::SaveDataType::Account;
 
+    auto controller = system.GetFileSystemController().OpenSaveDataController();
     FileSys::VirtualDir save_data{};
-    R_TRY(system.GetFileSystemController().OpenSaveDataController()->CreateSaveData(
-        &save_data, FileSys::SaveDataSpaceId::User, attribute));
+    auto res = controller->OpenSaveData(&save_data, FileSys::SaveDataSpaceId::User, attribute);
+    if (R_FAILED(res)) {
+        res = controller->CreateSaveData(&save_data, FileSys::SaveDataSpaceId::User, attribute);
+    }
 
     *out_size = 0;
     R_SUCCEED();

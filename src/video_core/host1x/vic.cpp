@@ -61,27 +61,6 @@ static bool HasSSE41() {
     return false;
 #endif
 }
-
-void SwizzleSurface(std::span<u8> output, u32 out_stride, std::span<const u8> input, u32 in_stride, u32 height) noexcept {
-    //// Taken from https://github.com/averne/FFmpeg/blob/nvtegra/libavutil/hwcontext_nvtegra.c#L949
-    /// Can only handle block height == 1.
-    u32 const x_mask = 0xFFFFFFD2u, y_mask = 0x2Cu;
-    u32 offs_x = 0, offs_y = 0;
-    for (size_t y = 0; y < height; y += 2) {
-        auto dst_line = output.data() + offs_y * 16;
-        auto const src_line = input.data() + u32(y) * (in_stride / 16) * 16;
-
-        auto offs_line = offs_x;
-        for (u32 x = 0; x < in_stride; x += 16) {
-            std::memcpy(&dst_line[offs_line * 16], &src_line[x], 16);
-            std::memcpy(&dst_line[offs_line * 16 + 16], &src_line[x + in_stride], 16);
-            offs_line = (offs_line - x_mask) & x_mask;
-        }
-        offs_y = (offs_y - y_mask) & y_mask;
-        offs_x += offs_y ? 0 : out_stride; // Wrap into next tile row
-    }
-}
-
 } // namespace
 
 Vic::Vic(Host1x& host1x_, s32 id_, u32 syncpt) noexcept
@@ -236,7 +215,7 @@ void Vic::ReadProgressiveY8__V8U8_N420(const SlotStruct& slot, std::span<const P
 
                     // Chroma is already interleaved in semiplanar format, just load 16 bytes
                     // chroma = VV UU VV UU VV UU VV UU VV UU VV UU VV UU VV UU
-                    chroma = _mm_load_si128((__m128i*)&chroma_u_buffer[src_chroma + x]);
+                    chroma = _mm_loadu_si128((__m128i*)&chroma_u_buffer[src_chroma + x]);
                 }
 
                 // Convert the low 8 bytes of 8-bit luma into 16-bit luma
@@ -548,20 +527,20 @@ void Vic::Blend(const ConfigStruct& config, const SlotStruct& slot, VideoPixelFo
                 return _mm_srai_epi32(out, 8);
             };
 
-            for (u32 y = source_top; y < source_bottom; y++) {
-                auto const src{y * in_surface_width + source_left};
-                auto const dst{y * out_surface_width + rect_left};
-                for (u32 x = source_left; x < source_right; x += 8) {
+            for (u32 y = 0; y < work_height; y++) {
+                auto const src{(y + source_top) * in_surface_width + source_left};
+                auto const dst{(y + rect_top) * out_surface_width + rect_left};
+                for (u32 x = 0; x < work_width; x += 8) {
                     // clang-format off
                     // Prefetch the next iteration's memory
                     _mm_prefetch((const char*)&slot_surface[src + x + 8], _MM_HINT_T0);
 
                     // Load in pixels
                     // p01 = [AA AA] [BB BB] [GG GG] [RR RR] [AA AA] [BB BB] [GG GG] [RR RR]
-                    auto p01 = _mm_load_si128((__m128i*)&slot_surface[src + x + 0]);
-                    auto p23 = _mm_load_si128((__m128i*)&slot_surface[src + x + 2]);
-                    auto p45 = _mm_load_si128((__m128i*)&slot_surface[src + x + 4]);
-                    auto p67 = _mm_load_si128((__m128i*)&slot_surface[src + x + 6]);
+                    auto p01 = _mm_loadu_si128((__m128i*)&slot_surface[src + x + 0]);
+                    auto p23 = _mm_loadu_si128((__m128i*)&slot_surface[src + x + 2]);
+                    auto p45 = _mm_loadu_si128((__m128i*)&slot_surface[src + x + 4]);
+                    auto p67 = _mm_loadu_si128((__m128i*)&slot_surface[src + x + 6]);
 
                     // Convert the 16-bit channels into 32-bit (unsigned), as the matrix values are
                     // 32-bit and to avoid overflow.
@@ -621,10 +600,10 @@ void Vic::Blend(const ConfigStruct& config, const SlotStruct& slot, VideoPixelFo
                     done3 = _mm_min_epu16(done3, clamp_max);
 
                     // Store the pixels to the output surface.
-                    _mm_store_si128((__m128i*)&output_surface[dst + x + 0], done0);
-                    _mm_store_si128((__m128i*)&output_surface[dst + x + 2], done1);
-                    _mm_store_si128((__m128i*)&output_surface[dst + x + 4], done2);
-                    _mm_store_si128((__m128i*)&output_surface[dst + x + 6], done3);
+                    _mm_storeu_si128((__m128i*)&output_surface[dst + x + 0], done0);
+                    _mm_storeu_si128((__m128i*)&output_surface[dst + x + 2], done1);
+                    _mm_storeu_si128((__m128i*)&output_surface[dst + x + 4], done2);
+                    _mm_storeu_si128((__m128i*)&output_surface[dst + x + 6], done3);
 
                 }
             }
@@ -668,10 +647,10 @@ void Vic::Blend(const ConfigStruct& config, const SlotStruct& slot, VideoPixelFo
                 b >>= 8;
                 return {r, g, b, s32(in_pixel.a)};
             };
-            for (u32 y = source_top; y < source_bottom; y++) {
-                const auto src{y * in_surface_width + source_left};
-                const auto dst{y * out_surface_width + rect_left};
-                for (u32 x = source_left; x < source_right; x++) {
+            for (u32 y = 0; y < work_height; y++) {
+                const auto src{(y + source_top) * in_surface_width + source_left};
+                const auto dst{(y + rect_top) * out_surface_width + rect_left};
+                for (u32 x = 0; x < work_width; x++) {
                     auto [r, g, b, a] = MatMul(slot_surface[src + x]);
                     r = std::clamp(r, clamp_min, clamp_max);
                     g = std::clamp(g, clamp_min, clamp_max);
@@ -684,7 +663,7 @@ void Vic::Blend(const ConfigStruct& config, const SlotStruct& slot, VideoPixelFo
     } else {
         auto const copy_width = (std::min)(source_right - source_left, rect_right - rect_left);
         for (u32 y = 0; y < work_height; y++) {
-            auto const dst_line = (y + source_top) * out_surface_width;
+            auto const dst_line = (y + rect_top) * out_surface_width;
             auto const src_line = (y + source_top) * in_surface_width;
             std::memcpy(&output_surface[dst_line + rect_left], &slot_surface[src_line + source_left], copy_width * sizeof(Pixel));
         }
@@ -888,13 +867,8 @@ void Vic::WriteY8__V8U8_N420(const OutputSurfaceConfig& output_surface_config) n
 
         Tegra::Memory::GpuGuestMemoryScoped<u8, Core::Memory::GuestMemoryFlags::SafeWrite> out_luma(host1x.gmmu_manager, regs.output_surface.luma.Address(), out_luma_swizzle_size, &swizzle_scratch);
         Tegra::Memory::GpuGuestMemoryScoped<u8, Core::Memory::GuestMemoryFlags::SafeWrite> out_chroma(host1x.gmmu_manager, regs.output_surface.chroma_u.Address(), out_chroma_swizzle_size, &swizzle_scratch);
-        if (block_height == 1) {
-            SwizzleSurface(out_luma, out_luma_stride, luma_scratch, out_luma_stride, out_luma_height);
-            SwizzleSurface(out_chroma, out_chroma_stride, chroma_scratch, out_chroma_stride, out_chroma_height);
-        } else {
-            Texture::SwizzleTexture(out_luma, luma_scratch, BytesPerPixel, out_luma_width, out_luma_height, 1, block_height, 0, 1);
-            Texture::SwizzleTexture(out_chroma, chroma_scratch, BytesPerPixel, out_chroma_width, out_chroma_height, 1, block_height, 0, 1);
-        }
+        Texture::SwizzleTexture(out_luma, luma_scratch, BytesPerPixel, out_luma_width, out_luma_height, 1, block_height, 0, 1);
+        Texture::SwizzleTexture(out_chroma, chroma_scratch, BytesPerPixel * 2, out_chroma_width, out_chroma_height, 1, block_height, 0, 1);
     } break;
     case BlkKind::Pitch: {
         LOG_TRACE(HW_GPU, "Writing Y8__V8U8_N420 swizzled frame\n"
@@ -1052,11 +1026,7 @@ void Vic::WriteABGR(const OutputSurfaceConfig& output_surface_config, VideoPixel
         Decode(luma_scratch.data(), output_surface.data());
 
         Tegra::Memory::GpuGuestMemoryScoped<u8, Core::Memory::GuestMemoryFlags::SafeWrite> out_luma(host1x.gmmu_manager, regs.output_surface.luma.Address(), out_swizzle_size, &swizzle_scratch);
-        if (block_height == 1) {
-            SwizzleSurface(out_luma, out_luma_stride, luma_scratch, out_luma_stride, out_luma_height);
-        } else {
-            Texture::SwizzleTexture(out_luma, luma_scratch, BytesPerPixel, out_luma_width, out_luma_height, 1, block_height, 0, 1);
-        }
+        Texture::SwizzleTexture(out_luma, luma_scratch, BytesPerPixel, out_luma_width, out_luma_height, 1, block_height, 0, 1);
     } break;
     case BlkKind::Pitch: {
         LOG_TRACE(HW_GPU, "Writing ABGR pitch frame\n"

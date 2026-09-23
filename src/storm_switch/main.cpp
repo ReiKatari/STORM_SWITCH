@@ -31,7 +31,26 @@
 #include <QScreen>
 #include "common/logging.h"
 
+#include <atomic>
+
 static LONG WINAPI StormCrashHandler(EXCEPTION_POINTERS* exception_info) {
+    if (!exception_info || !exception_info->ExceptionRecord) {
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+    const DWORD code = exception_info->ExceptionRecord->ExceptionCode;
+    if (code != EXCEPTION_ACCESS_VIOLATION &&
+        code != EXCEPTION_ILLEGAL_INSTRUCTION &&
+        code != EXCEPTION_ARRAY_BOUNDS_EXCEEDED &&
+        code != EXCEPTION_DATATYPE_MISALIGNMENT &&
+        code != EXCEPTION_STACK_OVERFLOW) {
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    static std::atomic<bool> s_dumped{false};
+    if (s_dumped.exchange(true)) {
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
     Common::Log::Stop();
 
     HMODULE dbghelp = LoadLibraryA("dbghelp.dll");
@@ -50,6 +69,8 @@ static LONG WINAPI StormCrashHandler(EXCEPTION_POINTERS* exception_info) {
             snprintf(dump_path, sizeof(dump_path),
                      "user\\crash_dumps\\crash_%04d%02d%02d_%02d%02d%02d.dmp",
                      st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+            CreateDirectoryA("user", nullptr);
+            CreateDirectoryA("user\\crash_dumps", nullptr);
             HANDLE file = CreateFileA(dump_path, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
             if (file != INVALID_HANDLE_VALUE) {
                 MINIDUMP_EXCEPTION_INFORMATION mei{};
@@ -62,6 +83,8 @@ static LONG WINAPI StormCrashHandler(EXCEPTION_POINTERS* exception_info) {
         }
     }
 
+    CreateDirectoryA("user", nullptr);
+    CreateDirectoryA("user\\crash_dumps", nullptr);
     FILE* f = fopen("user\\crash_dumps\\crash_report.txt", "w");
     if (f) {
         if (exception_info && exception_info->ExceptionRecord) {
@@ -140,6 +163,7 @@ static Qt::HighDpiScaleFactorRoundingPolicy GetHighDpiRoundingPolicy() {
 int main(int argc, char* argv[]) {
 #ifdef _WIN32
     SetUnhandledExceptionFilter(StormCrashHandler);
+    AddVectoredExceptionHandler(1, StormCrashHandler);
 #endif
     // Start background loading of TitleDB immediately at application startup
     TitleDB::TitleDatabase::Instance().EnsureLoaded();
