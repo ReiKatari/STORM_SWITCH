@@ -752,12 +752,8 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
         state->has_loaded.store(true, std::memory_order_release);
     }
 
-    if (!use_asynchronous_shaders) {
-        workers.WaitForRequests(stop_loading);
-        callback(VideoCore::LoadCallbackStage::Build, state->total, state->total);
-    } else {
-        LOG_INFO(Render_Vulkan, "Asynchronous shader building active: continuing startup while background workers compile pipelines");
-    }
+    workers.WaitForRequests(stop_loading);
+    callback(VideoCore::LoadCallbackStage::Build, state->total, state->total);
 
     if (use_vulkan_pipeline_cache) {
         serialization_thread.QueueWork([this]() {

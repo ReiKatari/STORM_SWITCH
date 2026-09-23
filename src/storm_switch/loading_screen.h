@@ -33,6 +33,7 @@ class QByteArray;
 class QGraphicsOpacityEffect;
 class QMovie;
 class QPropertyAnimation;
+class QTimer;
 
 class LoadingScreen : public QWidget {
     Q_OBJECT
@@ -85,6 +86,9 @@ private:
 
     QGraphicsOpacityEffect* opacity_effect = nullptr;
     std::unique_ptr<QPropertyAnimation> fadeout_animation;
+    std::unique_ptr<QPropertyAnimation> progress_animation;
+    QTimer* watchdog_timer = nullptr;
+    bool load_completed = false;
 
     // Definitions for the differences in text and styling for each stage
     ankerl::unordered_dense::map<VideoCore::LoadCallbackStage, const char*> progressbar_style;

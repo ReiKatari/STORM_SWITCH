@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QBuffer>
@@ -44,6 +44,18 @@ LoadingScreen::LoadingScreen(QWidget* parent)
         opacity_effect->setOpacity(1);
         emit Hidden();
     });
+
+    progress_animation = std::make_unique<QPropertyAnimation>(ui->progress_bar, "value");
+    progress_animation->setEasingCurve(QEasingCurve::OutQuad);
+
+    watchdog_timer = new QTimer(this);
+    watchdog_timer->setSingleShot(true);
+    connect(watchdog_timer, &QTimer::timeout, this, [this] {
+        if (isVisible()) {
+            OnLoadComplete();
+        }
+    });
+
     connect(this, &LoadingScreen::LoadProgress, this, &LoadingScreen::OnLoadProgress,
             Qt::QueuedConnection);
     qRegisterMetaType<VideoCore::LoadCallbackStage>();
@@ -137,17 +149,35 @@ void LoadingScreen::Prepare(Loader::AppLoader& loader) {
         }
     }
 
+    load_completed = false;
+    previous_total = 0;
     slow_shader_compile_start = false;
+    if (watchdog_timer) {
+        watchdog_timer->stop();
+    }
+    if (progress_animation) {
+        progress_animation->stop();
+    }
+    opacity_effect->setOpacity(1.0);
     OnLoadProgress(VideoCore::LoadCallbackStage::Prepare, 0, 0);
 }
 
 void LoadingScreen::OnLoadComplete() {
+    if (watchdog_timer) {
+        watchdog_timer->stop();
+    }
     if (fadeout_animation->state() != QAbstractAnimation::Running && isVisible()) {
         fadeout_animation->start(QPropertyAnimation::KeepWhenStopped);
     }
 }
 
 void LoadingScreen::ShowShutdownState() {
+    if (watchdog_timer) {
+        watchdog_timer->stop();
+    }
+    if (progress_animation) {
+        progress_animation->stop();
+    }
     fadeout_animation->stop();
     opacity_effect->setOpacity(1.0);
     ui->stage->setText(tr("ЗАВЕРШЕНИЕ ЭМУЛЯЦИИ И СОХРАНЕНИЕ ДАННЫХ..."));
@@ -162,21 +192,48 @@ void LoadingScreen::OnLoadProgress(VideoCore::LoadCallbackStage stage, std::size
     using namespace std::chrono;
     const auto now = steady_clock::now();
 
+    if (load_completed && stage != VideoCore::LoadCallbackStage::Prepare) {
+        return;
+    }
+
     if (stage != previous_stage) {
         previous_stage = stage;
         slow_shader_compile_start = false;
     }
 
     if (stage == VideoCore::LoadCallbackStage::Prepare) {
+        load_completed = false;
+        if (progress_animation) {
+            progress_animation->stop();
+        }
+        if (watchdog_timer) {
+            watchdog_timer->stop();
+        }
         ui->progress_bar->setRange(0, 0);
         ui->stage->setText(stage_translations[stage]);
         ui->value->setText(QString{});
     } else if (stage == VideoCore::LoadCallbackStage::Build) {
-        if (total != previous_total) {
-            ui->progress_bar->setMaximum(static_cast<int>(total));
-            previous_total = total;
+        ui->progress_bar->setRange(0, 1000);
+        const int target_value = (total > 0)
+            ? static_cast<int>(std::clamp((static_cast<double>(value) / static_cast<double>(total)) * 1000.0, 0.0, 1000.0))
+            : 1000;
+
+        const int current_value = ui->progress_bar->value();
+        if (target_value > current_value) {
+            if (progress_animation) {
+                progress_animation->stop();
+                progress_animation->setStartValue(current_value);
+                progress_animation->setEndValue(target_value);
+                const int duration = (value == total) ? 400 : 150;
+                progress_animation->setDuration(duration);
+                progress_animation->start();
+            } else {
+                ui->progress_bar->setValue(target_value);
+            }
+        } else {
+            ui->progress_bar->setValue(target_value);
         }
-        ui->progress_bar->setValue(static_cast<int>(value));
+
         ui->stage->setText(stage_translations[stage].arg(value).arg(total));
 
         QString estimate;
@@ -187,7 +244,7 @@ void LoadingScreen::OnLoadProgress(VideoCore::LoadCallbackStage stage, std::size
                 slow_shader_first_value = value;
             }
             const auto diff = duration_cast<milliseconds>(now - slow_shader_start);
-            if (diff > seconds{1} && (value > slow_shader_first_value)) {
+            if (diff > seconds{1} && (value > slow_shader_first_value) && total > value) {
                 const auto eta_mseconds =
                     static_cast<long>(static_cast<double>(total - slow_shader_first_value) /
                                       (value - slow_shader_first_value) * diff.count());
@@ -200,15 +257,28 @@ void LoadingScreen::OnLoadProgress(VideoCore::LoadCallbackStage stage, std::size
         }
         ui->value->setText(estimate);
     } else if (stage == VideoCore::LoadCallbackStage::Complete) {
-        ui->progress_bar->setRange(0, 100);
-        ui->progress_bar->setValue(100);
+        load_completed = true;
+        ui->progress_bar->setRange(0, 1000);
+        const int current_value = ui->progress_bar->value();
+        if (current_value < 1000 && progress_animation) {
+            progress_animation->stop();
+            progress_animation->setStartValue(current_value);
+            progress_animation->setEndValue(1000);
+            progress_animation->setDuration(350);
+            progress_animation->start();
+        } else {
+            ui->progress_bar->setValue(1000);
+        }
+
         ui->stage->setText(stage_translations[stage]);
         ui->value->setText(QString{});
-        QTimer::singleShot(2500, this, [this] {
-            if (isVisible()) {
-                OnLoadComplete();
-            }
-        });
+
+        // Launch data card remains displayed until the game actually starts rendering frames
+        // (MainWindow::OnLoadComplete connected to GRenderWindow::FirstFrameDisplayed).
+        // Long watchdog (35s) ensures the screen doesn't stay indefinitely if video output hangs.
+        if (watchdog_timer) {
+            watchdog_timer->start(35000);
+        }
     }
 
     previous_time = now;
@@ -228,6 +298,13 @@ void LoadingScreen::Clear() {
     backing_buf.reset();
     backing_mem.reset();
 #endif
+    if (watchdog_timer) {
+        watchdog_timer->stop();
+    }
+    if (progress_animation) {
+        progress_animation->stop();
+    }
+    load_completed = false;
     ui->game_icon->clear();
     ui->game_title->clear();
     ui->game_meta->clear();
