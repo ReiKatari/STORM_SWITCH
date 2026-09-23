@@ -20,6 +20,33 @@ namespace Core {
 
 static const std::vector<GameFixProfile> s_profiles = {
     {
+        0x010033001F050000ULL,
+        "Ys vs. Trails in the Sky: Alternative Saga",
+        "• Зависание вступительного видеоролика при аппаратном декодировании NVDEC\n• Просадки кадровой частоты во время динамичных сражений\n• Сбои распределения памяти при переходе между аренами",
+        "• Opening cinematic freeze with hardware NVDEC decoding\n• Framerate drops during fast-paced combat\n• Memory allocation faults during arena transitions",
+        "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание роликов)\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Обратная связь барьеров: Включено\n✓ Точность ГПУ: Обычная (стабильные 60 FPS)",
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents cutscene freezes)\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ GPU Accuracy: Normal (Stable 60 FPS)",
+        {
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "false"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        },
+        {0x010033001F050800ULL}
+    },
+    {
         0x01008F1008DA6000ULL,
         "Darkest Dungeon",
         "• Зависание и вылет вступительного видеоролика при программном декодировании NVDEC ЦП\n• Просадки кадровой частоты в подземельях\n• Сбои распределения памяти",
@@ -4786,6 +4813,9 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         }
 
         // Custom keyword matching
+        if (game_lower.find("ys vs") != std::string::npos && (lower.find("ys vs") != std::string::npos || lower.find("alternative saga") != std::string::npos || lower.find("sora no kiseki") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
         if (game_lower.find("darkest dungeon") != std::string::npos && (lower.find("darkest dungeon") != std::string::npos || lower.find("darkest_dungeon") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }

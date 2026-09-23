@@ -1119,6 +1119,8 @@ void KernelCore::RunOnGuestCoreProcess(std::string&& process_name, std::function
     // Register the new thread.
     KThread::Register(*this, thread);
 
+    LOG_INFO(Service, "Guest service '{}' registered with process={}, thread_id={}", process_name, process->GetId(), thread->GetId());
+
     // Begin running the thread.
     ASSERT(R_SUCCEEDED(thread->Run(*this)));
 }

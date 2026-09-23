@@ -41,7 +41,8 @@ Result IAudioRendererManager::OpenAudioRenderer(
     AudioCore::AudioRendererParameterInternal parameter,
     InCopyHandle<Kernel::KTransferMemory> tmem_handle, u64 tmem_size,
     InCopyHandle<Kernel::KProcess> process_handle, ClientAppletResourceUserId aruid) {
-    LOG_DEBUG(Service_Audio, "called");
+    LOG_INFO(Service_Audio, "OpenAudioRenderer called: raw_revision={:#010x}, revision_num={}",
+             parameter.revision, AudioCore::GetRevisionNum(parameter.revision));
 
     if (impl->GetSessionCount() + 1 > AudioCore::MaxRendererSessions) {
         LOG_ERROR(Service_Audio, "Too many AudioRenderer sessions open!");
@@ -65,7 +66,8 @@ Result IAudioRendererManager::OpenAudioRenderer(
 
 Result IAudioRendererManager::GetWorkBufferSize(Out<u64> out_size,
                                                 AudioCore::AudioRendererParameterInternal params) {
-    LOG_DEBUG(Service_Audio, "called");
+    LOG_INFO(Service_Audio, "GetWorkBufferSize called: raw_revision={:#010x}, revision_num={}",
+             params.revision, AudioCore::GetRevisionNum(params.revision));
 
     R_TRY(impl->GetWorkBufferSize(params, *out_size))
 

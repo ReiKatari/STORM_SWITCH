@@ -71,6 +71,7 @@ void CpuManager::HandleInterrupt(Kernel::KernelCore& kernel) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void CpuManager::MultiCoreRunGuestThread(Kernel::KernelCore& kernel) {
+    LOG_INFO(Core_ARM, "MultiCoreRunGuestThread entered on core {}", kernel.CurrentPhysicalCoreIndex());
     // Similar to UserModeThreadStarter in HOS
     auto* thread = Kernel::GetCurrentThreadPointer(kernel);
     kernel.CurrentScheduler()->OnThreadStart(kernel);

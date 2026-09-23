@@ -31,8 +31,12 @@ public:
     void EnableAppletToGetInput(bool enable);
 
 private:
+    void EnsureHidServer();
+
+    Core::System& m_system;
     Process& m_process;
     std::shared_ptr<Service::HID::IHidServer> m_hid_server;
+    bool m_is_registered{false};
 };
 
 } // namespace Service::AM

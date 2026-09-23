@@ -214,61 +214,64 @@ void LoadingScreen::OnLoadProgress(VideoCore::LoadCallbackStage stage, std::size
         ui->value->setText(QString{});
     } else if (stage == VideoCore::LoadCallbackStage::Build) {
         ui->progress_bar->setRange(0, 1000);
-        const int target_value = (total > 0)
-            ? static_cast<int>(std::clamp((static_cast<double>(value) / static_cast<double>(total)) * 1000.0, 0.0, 1000.0))
-            : 1000;
 
-        const int current_value = ui->progress_bar->value();
-        if (target_value > current_value) {
+        if (total > 0 && value >= total) {
             if (progress_animation) {
                 progress_animation->stop();
-                progress_animation->setStartValue(current_value);
-                progress_animation->setEndValue(target_value);
-                const int duration = (value == total) ? 400 : 150;
-                progress_animation->setDuration(duration);
-                progress_animation->start();
+            }
+            ui->progress_bar->setValue(1000);
+            ui->stage->setText(stage_translations[VideoCore::LoadCallbackStage::Complete]);
+            ui->value->setText(QString{});
+        } else {
+            const int target_value = (total > 0)
+                ? static_cast<int>(std::clamp((static_cast<double>(value) / static_cast<double>(total)) * 1000.0, 0.0, 1000.0))
+                : 1000;
+
+            const int current_value = ui->progress_bar->value();
+            if (target_value > current_value) {
+                if (progress_animation) {
+                    progress_animation->stop();
+                    progress_animation->setStartValue(current_value);
+                    progress_animation->setEndValue(target_value);
+                    progress_animation->setDuration(120);
+                    progress_animation->start();
+                } else {
+                    ui->progress_bar->setValue(target_value);
+                }
             } else {
                 ui->progress_bar->setValue(target_value);
             }
-        } else {
-            ui->progress_bar->setValue(target_value);
-        }
 
-        ui->stage->setText(stage_translations[stage].arg(value).arg(total));
+            ui->stage->setText(stage_translations[stage].arg(value).arg(total));
 
-        QString estimate;
-        if (now - previous_time > milliseconds{50} || slow_shader_compile_start) {
-            if (!slow_shader_compile_start) {
-                slow_shader_start = steady_clock::now();
-                slow_shader_compile_start = true;
-                slow_shader_first_value = value;
+            QString estimate;
+            if (now - previous_time > milliseconds{50} || slow_shader_compile_start) {
+                if (!slow_shader_compile_start) {
+                    slow_shader_start = steady_clock::now();
+                    slow_shader_compile_start = true;
+                    slow_shader_first_value = value;
+                }
+                const auto diff = duration_cast<milliseconds>(now - slow_shader_start);
+                if (diff > seconds{1} && (value > slow_shader_first_value) && total > value) {
+                    const auto eta_mseconds =
+                        static_cast<long>(static_cast<double>(total - slow_shader_first_value) /
+                                          (value - slow_shader_first_value) * diff.count());
+                    estimate =
+                        tr("Осталось: %1")
+                            .arg(QTime(0, 0, 0, 0)
+                                     .addMSecs(std::max<long>(eta_mseconds - diff.count() + 1000, 1000))
+                                     .toString(QStringLiteral("mm:ss")));
+                }
             }
-            const auto diff = duration_cast<milliseconds>(now - slow_shader_start);
-            if (diff > seconds{1} && (value > slow_shader_first_value) && total > value) {
-                const auto eta_mseconds =
-                    static_cast<long>(static_cast<double>(total - slow_shader_first_value) /
-                                      (value - slow_shader_first_value) * diff.count());
-                estimate =
-                    tr("Осталось: %1")
-                        .arg(QTime(0, 0, 0, 0)
-                                 .addMSecs(std::max<long>(eta_mseconds - diff.count() + 1000, 1000))
-                                 .toString(QStringLiteral("mm:ss")));
-            }
+            ui->value->setText(estimate);
         }
-        ui->value->setText(estimate);
     } else if (stage == VideoCore::LoadCallbackStage::Complete) {
         load_completed = true;
-        ui->progress_bar->setRange(0, 1000);
-        const int current_value = ui->progress_bar->value();
-        if (current_value < 1000 && progress_animation) {
+        if (progress_animation) {
             progress_animation->stop();
-            progress_animation->setStartValue(current_value);
-            progress_animation->setEndValue(1000);
-            progress_animation->setDuration(350);
-            progress_animation->start();
-        } else {
-            ui->progress_bar->setValue(1000);
         }
+        ui->progress_bar->setRange(0, 1000);
+        ui->progress_bar->setValue(1000);
 
         ui->stage->setText(stage_translations[stage]);
         ui->value->setText(QString{});

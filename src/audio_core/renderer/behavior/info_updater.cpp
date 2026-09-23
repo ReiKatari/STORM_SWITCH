@@ -588,7 +588,7 @@ Result InfoUpdater::UpdateBehaviorInfo(BehaviorInfo& behaviour_) {
         return Service::Audio::ResultInvalidUpdateInfo;
     }
 
-    if (in_params->revision != behaviour_.GetUserRevision()) {
+    if (GetRevisionNum(in_params->revision) != behaviour_.GetUserRevisionNum()) {
         return Service::Audio::ResultInvalidUpdateInfo;
     }
 

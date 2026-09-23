@@ -189,8 +189,16 @@ Result ResourceManager::CreateAppletResource(u64 aruid) {
         return GetNpad()->ActivateNpadResource();
     }
 
+    {
+        std::scoped_lock lock{shared_mutex};
+        if (applet_resource->GetIndexFromAruid(aruid) >= AruidIndexMax) {
+            applet_resource->RegisterAppletResourceUserId(aruid, true);
+            npad->RegisterAppletResourceUserId(aruid);
+        }
+    }
+
     const auto result = CreateAppletResourceImpl(aruid);
-    if (result.IsError()) {
+    if (result.IsError() && result != ResultAruidAlreadyRegistered) {
         return result;
     }
 
@@ -321,6 +329,11 @@ void ResourceManager::UnregisterAppletResourceUserId(u64 aruid) {
 
 Result ResourceManager::GetSharedMemoryHandle(Kernel::KSharedMemory** out_handle, u64 aruid) {
     std::scoped_lock lock{shared_mutex};
+    if (applet_resource->GetIndexFromAruid(aruid) >= AruidIndexMax) {
+        applet_resource->RegisterAppletResourceUserId(aruid, true);
+        npad->RegisterAppletResourceUserId(aruid);
+        applet_resource->CreateAppletResource(aruid);
+    }
     return applet_resource->GetSharedMemoryHandle(out_handle, aruid);
 }
 

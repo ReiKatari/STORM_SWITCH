@@ -56,14 +56,36 @@ enum class SupportTags {
     Size
 };
 
+constexpr u32 MaxSupportedRevision = 32;
+
 constexpr u32 GetRevisionNum(u32 user_revision) {
     if (user_revision >= 0x100) {
+        const u8 magic0 = static_cast<u8>(user_revision & 0xFF);
+        const u8 magic1 = static_cast<u8>((user_revision >> 8) & 0xFF);
+        const u8 magic2 = static_cast<u8>((user_revision >> 16) & 0xFF);
+        const u8 rev_byte = static_cast<u8>((user_revision >> 24) & 0xFF);
+
+        if (magic0 == 'R' && magic1 == 'E' && (magic2 == 'V' || magic2 == 'v')) {
+            if (rev_byte >= '0' && rev_byte <= '9') {
+                return rev_byte - '0';
+            }
+            if (rev_byte >= ':' && rev_byte <= '@') {
+                return rev_byte - '0';
+            }
+            if (rev_byte >= 'A' && rev_byte <= 'Z') {
+                return rev_byte - '0';
+            }
+            if (rev_byte > 0 && rev_byte <= 64) {
+                return rev_byte;
+            }
+        }
+
         user_revision -= Common::MakeMagic('R', 'E', 'V', '0');
         user_revision >>= 24;
     }
 
     return user_revision;
-};
+}
 
 constexpr bool CheckFeatureSupported(SupportTags tag, u32 user_revision) {
     constexpr std::array<std::pair<SupportTags, u32>, static_cast<u32>(SupportTags::Size)> features{
@@ -112,7 +134,8 @@ constexpr bool CheckFeatureSupported(SupportTags tag, u32 user_revision) {
 }
 
 constexpr bool CheckValidRevision(u32 user_revision) {
-    return GetRevisionNum(user_revision) <= CurrentRevision;
+    const auto rev = GetRevisionNum(user_revision);
+    return rev <= MaxSupportedRevision;
 };
 
 } // namespace AudioCore

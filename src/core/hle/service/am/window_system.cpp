@@ -21,6 +21,7 @@ WindowSystem::~WindowSystem() {
 }
 
 void WindowSystem::SetEventObserver(EventObserver* observer) {
+    LOG_INFO(Service_AM, "WindowSystem::SetEventObserver called");
     m_event_observer = observer;
     m_system.GetAppletManager().SetWindowSystem(this);
 }

@@ -19,8 +19,10 @@ Applet::Applet(Core::System& system, std::unique_ptr<Process> process_, bool is_
       library_applet_launchable_event(context), accumulated_suspended_tick_changed_event(context),
       sleep_lock_event(context), state_changed_event(context) {
 
+    LOG_INFO(Service_AM, "Applet::Applet: enter constructor body");
     aruid.pid = process->GetProcessId();
     program_id = process->GetProgramId();
+    LOG_INFO(Service_AM, "Applet::Applet: exit constructor body, pid={:016X}", aruid.pid);
 }
 
 Applet::~Applet() = default;

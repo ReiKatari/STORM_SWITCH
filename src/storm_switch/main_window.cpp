@@ -4858,48 +4858,6 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     QtCommon::system->SetShuttingDown(false);
     game_list->setDisabled(true);
 
-    // Create and start the emulation thread
-    QtCommon::emu_thread = std::make_unique<EmuThread>();
-    emit EmulationStarting();
-    QtCommon::emu_thread->start();
-
-    // Register an ExecuteProgram callback such that Core can execute a sub-program
-    QtCommon::system->RegisterExecuteProgramCallback(
-        [this](std::size_t program_index_) { render_window->ExecuteProgram(program_index_); });
-
-    QtCommon::system->RegisterExitCallback([this] {
-        QtCommon::emu_thread->ForceStop();
-        render_window->Exit();
-    });
-
-    connect(render_window, &GRenderWindow::Closed, this, &MainWindow::OnStopGame);
-    connect(render_window, &GRenderWindow::MouseActivity, this, &MainWindow::OnMouseActivity);
-
-    connect(QtCommon::emu_thread.get(), &EmuThread::LoadProgress, loading_screen,
-            &LoadingScreen::OnLoadProgress, Qt::QueuedConnection);
-
-    // Update the GUI
-    UpdateStatusButtons();
-    if (ui->action_Single_Window_Mode->isChecked()) {
-        game_list->hide();
-        game_list_placeholder->hide();
-        render_window->show();
-        render_window->setFocus();
-    }
-    status_bar_update_timer.start(250);
-    renderer_status_button->setDisabled(true);
-    refresh_button->setDisabled(true);
-    SetFPSSuffix();
-
-    if (UISettings::values.hide_mouse || Settings::values.mouse_panning) {
-        render_window->installEventFilter(render_window);
-        render_window->setAttribute(Qt::WA_Hover, true);
-    }
-
-    if (UISettings::values.hide_mouse) {
-        mouse_hide_timer.start();
-    }
-
     std::string title_name;
     std::string title_version;
     const auto res = QtCommon::system->GetGameName(title_name);
@@ -5015,6 +4973,47 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     }
     loading_screen->show();
     loading_screen->raise();
+
+    // Create emulation thread and connect progress signals BEFORE starting execution
+    QtCommon::emu_thread = std::make_unique<EmuThread>();
+    connect(QtCommon::emu_thread.get(), &EmuThread::LoadProgress, loading_screen,
+            &LoadingScreen::OnLoadProgress, Qt::QueuedConnection);
+    emit EmulationStarting();
+    QtCommon::emu_thread->start();
+
+    // Register an ExecuteProgram callback such that Core can execute a sub-program
+    QtCommon::system->RegisterExecuteProgramCallback(
+        [this](std::size_t program_index_) { render_window->ExecuteProgram(program_index_); });
+
+    QtCommon::system->RegisterExitCallback([this] {
+        QtCommon::emu_thread->ForceStop();
+        render_window->Exit();
+    });
+
+    connect(render_window, &GRenderWindow::Closed, this, &MainWindow::OnStopGame);
+    connect(render_window, &GRenderWindow::MouseActivity, this, &MainWindow::OnMouseActivity);
+
+    // Update the GUI
+    UpdateStatusButtons();
+    if (ui->action_Single_Window_Mode->isChecked()) {
+        game_list->hide();
+        game_list_placeholder->hide();
+        render_window->show();
+        render_window->setFocus();
+    }
+    status_bar_update_timer.start(250);
+    renderer_status_button->setDisabled(true);
+    refresh_button->setDisabled(true);
+    SetFPSSuffix();
+
+    if (UISettings::values.hide_mouse || Settings::values.mouse_panning) {
+        render_window->installEventFilter(render_window);
+        render_window->setAttribute(Qt::WA_Hover, true);
+    }
+
+    if (UISettings::values.hide_mouse) {
+        mouse_hide_timer.start();
+    }
 
     emulation_running = true;
     if (ui->action_Fullscreen->isChecked()) {

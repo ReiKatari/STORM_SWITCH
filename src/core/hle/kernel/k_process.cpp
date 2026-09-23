@@ -914,6 +914,9 @@ size_t KProcess::GetTotalNonSystemUserPhysicalMemorySize(KernelCore& kernel) con
 }
 
 Result KProcess::Run(KernelCore& kernel, s32 priority, size_t stack_size) {
+    LOG_INFO(Kernel, "KProcess::Run: starting process entry={:#x} ideal_core={} prio={} stack_size={:#x}",
+             GetInteger(this->GetEntryPoint()), m_ideal_core_id, priority, stack_size);
+
     // Lock ourselves, to prevent concurrent access.
     KScopedLightLock lk(m_state_lock);
 
@@ -1036,6 +1039,9 @@ Result KProcess::Run(KernelCore& kernel, s32 priority, size_t stack_size) {
 
     // We succeeded! Commit our memory reservation.
     mem_reservation.Commit();
+
+    LOG_INFO(Kernel, "KProcess::Run: main_thread {:p} successfully scheduled on core {}",
+             static_cast<void*>(main_thread), m_ideal_core_id);
 
     R_SUCCEED();
 }

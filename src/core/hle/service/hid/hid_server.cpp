@@ -254,6 +254,10 @@ Result IHidServer::CreateAppletResource(OutInterface<IAppletResource> out_applet
     LOG_DEBUG(Service_HID, "called, applet_resource_user_id={}, result={:#x}", aruid.pid,
               result.raw);
 
+    if (result.IsError() && result != ResultAruidAlreadyRegistered) {
+        R_RETURN(result);
+    }
+
     *out_applet_resource = std::make_shared<IAppletResource>(system, resource_manager, aruid.pid);
     R_SUCCEED();
 }

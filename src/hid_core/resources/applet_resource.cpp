@@ -20,10 +20,17 @@ AppletResource::~AppletResource() {
 }
 
 Result AppletResource::CreateAppletResource(u64 aruid) {
-    const u64 index = GetIndexFromAruid(aruid);
+    u64 index = GetIndexFromAruid(aruid);
 
     if (index >= AruidIndexMax) {
-        return ResultAruidNotRegistered;
+        const auto reg_res = RegisterAppletResourceUserId(aruid, true);
+        if (reg_res.IsError() && reg_res != ResultAruidAlreadyRegistered) {
+            return reg_res;
+        }
+        index = GetIndexFromAruid(aruid);
+        if (index >= AruidIndexMax) {
+            return ResultAruidNotRegistered;
+        }
     }
 
     if (data[index].flag.is_assigned) {
@@ -151,9 +158,16 @@ u64 AppletResource::GetActiveAruid() {
 }
 
 Result AppletResource::GetSharedMemoryHandle(Kernel::KSharedMemory** out_handle, u64 aruid) {
-    const u64 index = GetIndexFromAruid(aruid);
-    if (index >= AruidIndexMax) {
-        return ResultAruidNotRegistered;
+    u64 index = GetIndexFromAruid(aruid);
+    if (index >= AruidIndexMax || !shared_memory_holder[index].IsMapped()) {
+        const auto create_res = CreateAppletResource(aruid);
+        if (create_res.IsError() && create_res != ResultAruidAlreadyRegistered) {
+            return create_res;
+        }
+        index = GetIndexFromAruid(aruid);
+        if (index >= AruidIndexMax) {
+            return ResultAruidNotRegistered;
+        }
     }
 
     *out_handle = shared_memory_holder[index].GetHandle();
@@ -162,9 +176,16 @@ Result AppletResource::GetSharedMemoryHandle(Kernel::KSharedMemory** out_handle,
 
 Result AppletResource::GetSharedMemoryFormat(SharedMemoryFormat** out_shared_memory_format,
                                              u64 aruid) {
-    const u64 index = GetIndexFromAruid(aruid);
-    if (index >= AruidIndexMax) {
-        return ResultAruidNotRegistered;
+    u64 index = GetIndexFromAruid(aruid);
+    if (index >= AruidIndexMax || data[index].shared_memory_format == nullptr) {
+        const auto create_res = CreateAppletResource(aruid);
+        if (create_res.IsError() && create_res != ResultAruidAlreadyRegistered) {
+            return create_res;
+        }
+        index = GetIndexFromAruid(aruid);
+        if (index >= AruidIndexMax) {
+            return ResultAruidNotRegistered;
+        }
     }
 
     *out_shared_memory_format = data[index].shared_memory_format;
@@ -172,9 +193,13 @@ Result AppletResource::GetSharedMemoryFormat(SharedMemoryFormat** out_shared_mem
 }
 
 AruidData* AppletResource::GetAruidData(u64 aruid) {
-    const u64 aruid_index = GetIndexFromAruid(aruid);
+    u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index == AruidIndexMax) {
-        return nullptr;
+        RegisterAppletResourceUserId(aruid, true);
+        aruid_index = GetIndexFromAruid(aruid);
+        if (aruid_index == AruidIndexMax) {
+            return nullptr;
+        }
     }
     return &data[aruid_index];
 }

@@ -13,31 +13,42 @@
 
 namespace Service::AM {
 
-HidRegistration::HidRegistration(Core::System& system, Process& process) : m_process(process) {
-    m_hid_server = system.ServiceManager().GetService<HID::IHidServer>("hid", true);
+HidRegistration::HidRegistration(Core::System& system, Process& process)
+    : m_system(system), m_process(process) {
     this->RegisterCurrentProcess();
 }
 
+void HidRegistration::EnsureHidServer() {
+    if (!m_hid_server) {
+        m_hid_server = m_system.ServiceManager().GetService<HID::IHidServer>("hid", true);
+    }
+}
+
 void HidRegistration::RegisterCurrentProcess() {
-    if (m_process.IsInitialized()) {
-        m_hid_server->GetResourceManager()->RegisterAppletResourceUserId(m_process.GetProcessId(),
-                                                                         true);
-        m_hid_server->GetResourceManager()->SetAruidValidForVibration(m_process.GetProcessId(),
-                                                                      true);
+    this->EnsureHidServer();
+    if (m_hid_server && m_process.IsInitialized() && !m_is_registered) {
+        const u64 pid = m_process.GetProcessId();
+        LOG_INFO(Service_AM, "HidRegistration: Registering ARUID {:016X} with HID resource manager", pid);
+        m_hid_server->GetResourceManager()->RegisterAppletResourceUserId(pid, true);
+        m_hid_server->GetResourceManager()->SetAruidValidForVibration(pid, true);
+        m_is_registered = true;
     }
 }
 
 HidRegistration::~HidRegistration() {
-    if (m_process.IsInitialized()) {
+    this->EnsureHidServer();
+    if (m_hid_server && m_process.IsInitialized() && m_is_registered) {
         m_hid_server->GetResourceManager()->SetAruidValidForVibration(m_process.GetProcessId(),
                                                                       false);
         m_hid_server->GetResourceManager()->UnregisterAppletResourceUserId(
             m_process.GetProcessId());
+        m_is_registered = false;
     }
 }
 
 void HidRegistration::EnableAppletToGetInput(bool enable) {
-    if (m_process.IsInitialized()) {
+    this->RegisterCurrentProcess();
+    if (m_hid_server && m_process.IsInitialized()) {
         m_hid_server->GetResourceManager()->SetAruidValidForVibration(m_process.GetProcessId(),
                                                                       enable);
         m_hid_server->GetResourceManager()->EnableInput(m_process.GetProcessId(), enable);

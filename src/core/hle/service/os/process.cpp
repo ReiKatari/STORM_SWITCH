@@ -74,12 +74,20 @@ void Process::Finalize() {
 bool Process::Run() {
     // If we already started the process, don't start again.
     if (m_process_started) {
+        LOG_WARNING(Core, "Process::Run: already started!");
         return false;
     }
 
+    LOG_INFO(Core, "Process::Run: starting process {:p} (prio={}, stack={:#x})",
+             static_cast<void*>(m_process), m_main_thread_priority, m_main_thread_stack_size);
+
     // Start.
     if (m_process) {
-        m_process->Run(m_system.Kernel(), m_main_thread_priority, m_main_thread_stack_size);
+        const auto res = m_process->Run(m_system.Kernel(), m_main_thread_priority, m_main_thread_stack_size);
+        if (res.IsError()) {
+            LOG_CRITICAL(Core, "Process::Run failed! Result={:#x}", res.raw);
+            return false;
+        }
     }
 
     // Mark as started.

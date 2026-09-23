@@ -49,7 +49,7 @@ IBtmSystemCore::IBtmSystemCore(Core::System& system_)
         service_context.CreateEvent("IBtmSystemCore::AudioDeviceConnectionEvent");
 
     m_set_sys =
-        system.ServiceManager().GetService<Service::Set::ISystemSettingsServer>("set:sys", true);
+        system.ServiceManager().GetService<Service::Set::ISystemSettingsServer>("set:sys", false);
 }
 
 IBtmSystemCore::~IBtmSystemCore() {
@@ -69,19 +69,35 @@ Result IBtmSystemCore::CancelGamepadPairing() {
 
 Result IBtmSystemCore::EnableRadio() {
     LOG_DEBUG(Service_BTM, "called");
-
-    R_RETURN(m_set_sys->SetBluetoothEnableFlag(true));
+    if (!m_set_sys) {
+        m_set_sys = system.ServiceManager().GetService<Service::Set::ISystemSettingsServer>("set:sys", false);
+    }
+    if (m_set_sys) {
+        R_RETURN(m_set_sys->SetBluetoothEnableFlag(true));
+    }
+    R_SUCCEED();
 }
 Result IBtmSystemCore::DisableRadio() {
     LOG_DEBUG(Service_BTM, "called");
-
-    R_RETURN(m_set_sys->SetBluetoothEnableFlag(false));
+    if (!m_set_sys) {
+        m_set_sys = system.ServiceManager().GetService<Service::Set::ISystemSettingsServer>("set:sys", false);
+    }
+    if (m_set_sys) {
+        R_RETURN(m_set_sys->SetBluetoothEnableFlag(false));
+    }
+    R_SUCCEED();
 }
 
 Result IBtmSystemCore::IsRadioEnabled(Out<bool> out_is_enabled) {
     LOG_DEBUG(Service_BTM, "called");
-
-    R_RETURN(m_set_sys->GetBluetoothEnableFlag(out_is_enabled));
+    if (!m_set_sys) {
+        m_set_sys = system.ServiceManager().GetService<Service::Set::ISystemSettingsServer>("set:sys", false);
+    }
+    if (m_set_sys) {
+        R_RETURN(m_set_sys->GetBluetoothEnableFlag(out_is_enabled));
+    }
+    *out_is_enabled = true;
+    R_SUCCEED();
 }
 
 Result IBtmSystemCore::AcquireRadioEvent(Out<bool> out_is_valid,

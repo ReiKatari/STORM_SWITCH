@@ -34,6 +34,7 @@ IWindowController::~IWindowController() = default;
 Result IWindowController::GetAppletResourceUserId(Out<AppletResourceUserId> out_aruid) {
     LOG_INFO(Service_AM, "called");
     *out_aruid = m_applet->aruid;
+    m_applet->hid_registration.RegisterCurrentProcess();
     R_SUCCEED();
 }
 
@@ -43,6 +44,7 @@ Result IWindowController::GetAppletResourceUserIdOfCallerApplet(
 
     if (auto caller_applet = m_applet->caller_applet.lock(); caller_applet != nullptr) {
         *out_aruid = caller_applet->aruid;
+        caller_applet->hid_registration.RegisterCurrentProcess();
     } else {
         *out_aruid = AppletResourceUserId{};
     }

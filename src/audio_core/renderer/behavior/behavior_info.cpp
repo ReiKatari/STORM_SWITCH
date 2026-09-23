@@ -31,6 +31,9 @@ u32 BehaviorInfo::GetUserRevision() const {
 
 void BehaviorInfo::SetUserLibRevision(const u32 user_revision_) {
     user_revision = GetRevisionNum(user_revision_);
+    if (user_revision > process_revision) {
+        process_revision = user_revision;
+    }
 }
 
 void BehaviorInfo::ClearError() {

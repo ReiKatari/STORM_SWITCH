@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <cstring>
-#include <future>
 #include <vector>
 #include "common/logging.h"
 #include "common/random.h"
@@ -292,53 +291,29 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
         return {ResultStatus::ErrorUnableToParseKernelMetadata, {}};
     }
 
-    // Load NSO modules with parallel decompression
+    // Load NSO modules
     modules.clear();
     const VAddr base_address{GetInteger(process.GetEntryPoint())};
+    VAddr next_load_addr{base_address};
     const FileSys::PatchManager pm{metadata.GetTitleID(), system.GetFileSystemController(),
                                    system.GetContentProvider()};
 
-    struct DecompressTask {
-        std::string name;
-        VAddr load_addr{};
-        std::future<std::optional<AppLoader_NSO::DecompressedModule>> future;
-    };
-
-    std::vector<DecompressTask> tasks;
-    tasks.reserve(modules_to_load.size());
-
-    VAddr current_load_addr = base_address;
-    for (size_t i = 0; i < modules_to_load.size(); i++) {
-        const auto& item = modules_to_load[i];
-        const VAddr load_addr = current_load_addr;
-        current_load_addr += item.image_size;
-
-        tasks.push_back({
-            .name = item.name,
-            .load_addr = load_addr,
-            .future = std::async(std::launch::async, [&system, &process, &item, load_addr, pm, &patch_ctx]() {
-                return AppLoader_NSO::DecompressModule(
-                    &process, system, *item.file, load_addr, item.should_pass_arguments, true, pm,
-                    patch_ctx.GetPatchers(), item.patch_index);
-            }),
-        });
-    }
-
-    for (auto& task : tasks) {
-        auto decompressed = task.future.get();
-        if (!decompressed) {
-            LOG_CRITICAL(Loader, "Failed to decompress NSO module '{}'", task.name);
+    for (const auto& item : modules_to_load) {
+        const VAddr load_addr = next_load_addr;
+        const auto tentative_next_load_addr = AppLoader_NSO::LoadModule(
+            process, system, *item.file, load_addr, item.should_pass_arguments, true, pm,
+            patch_ctx.GetPatchers(), item.patch_index);
+        if (!tentative_next_load_addr) {
+            LOG_CRITICAL(Loader, "Failed to load NSO module '{}'", item.name);
             return {ResultStatus::ErrorLoadingNSO, {}};
         }
 
-        if (!AppLoader_NSO::InstallModule(process, system, std::move(*decompressed), pm)) {
-            LOG_CRITICAL(Loader, "Failed to install NSO module '{}'", task.name);
-            return {ResultStatus::ErrorLoadingNSO, {}};
-        }
-
-        modules.insert_or_assign(task.load_addr, task.name);
-        LOG_DEBUG(Loader, "loaded module {} @ {:#x}", task.name, task.load_addr);
+        next_load_addr = *tentative_next_load_addr;
+        modules.insert_or_assign(load_addr, item.name);
+        LOG_INFO(Loader, "Loaded module {:<10} @ {:#012x} (size: {:#x})", item.name, load_addr, item.image_size);
     }
+
+    LOG_INFO(Loader, "All modules loaded. Entry point: {:#012x}", base_address);
 
     is_loaded = true;
     return {ResultStatus::Success,

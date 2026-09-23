@@ -106,10 +106,14 @@ void NPadResource::FreeAppletResourceId(u64 aruid) {
 }
 
 Result NPadResource::Activate(u64 aruid) {
-    const u64 aruid_index = GetIndexFromAruid(aruid);
+    u64 aruid_index = GetIndexFromAruid(aruid);
 
     if (aruid_index >= AruidIndexMax) {
-        return ResultSuccess;
+        RegisterAppletResourceUserId(aruid);
+        aruid_index = GetIndexFromAruid(aruid);
+        if (aruid_index >= AruidIndexMax) {
+            return ResultSuccess;
+        }
     }
 
     auto& state_data = state[aruid_index];
