@@ -67,7 +67,12 @@ FileType AppLoader_NSO::IdentifyType(const FileSys::VirtualFile& in_file) {
     return FileType::NSO;
 }
 
-std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::System& system, const FileSys::VfsFile& nso_file, VAddr load_base, bool should_pass_arguments, bool load_into_process, std::optional<FileSys::PatchManager> pm, std::vector<Core::NCE::Patcher>* patches, s32 patch_index) {
+std::optional<AppLoader_NSO::DecompressedModule> AppLoader_NSO::DecompressModule(
+    Kernel::KProcess* process, Core::System& system, const FileSys::VfsFile& nso_file,
+    VAddr load_base, bool should_pass_arguments, bool load_into_process,
+    std::optional<FileSys::PatchManager> pm, std::vector<Core::NCE::Patcher>* patches,
+    s32 patch_index) {
+
     if (nso_file.GetSize() < sizeof(NSOHeader))
         return std::nullopt;
     NSOHeader nso_header{};
@@ -254,11 +259,11 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
             patch = &patches->emplace_back();
             patch->SetModuleID(nso_header.build_id);  // In case the patcher is changed for big modules, the new patcher should also have the build_id
         }
-    } else if (patch) {
+    } else if (patch && process) {
         // Relocate code patch and copy to the program image.
         // Save size before RelocateAndCopy (which may resize)
         const size_t size_before_relocate = codeset.memory.size();
-        if (patch->RelocateAndCopy(load_base, code, codeset.memory, &process.GetPostHandlers())) {
+        if (patch->RelocateAndCopy(load_base, code, codeset.memory, &process->GetPostHandlers())) {
             // Update patch section.
             auto& patch_segment = codeset.PatchSegment();
             auto& post_patch_segment = codeset.PostPatchSegment();
@@ -283,28 +288,37 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
     }
 #endif
 
-    // If we aren't actually loading (i.e. just computing the process code layout), we are done
-    if (!load_into_process) {
-#ifdef HAS_NCE
-        // Ok, so for Split mode, we need to account for pre-patch and post-patch space
-        // which will be added during RelocateAndCopy in the second pass. Where it crashed
-        // in Android Studio at PreText. May be a better way. Works for now.
-        if (patch && patch->GetPatchMode() == Core::NCE::PatchMode::Split) {
-            return load_base + patch->GetPreSectionSize() + image_size + patch->GetSectionSize();
-        } else if (patch && patch->GetPatchMode() == Core::NCE::PatchMode::PreText) {
-            return load_base + patch->GetSectionSize() + image_size;
-        } else if (patch && patch->GetPatchMode() == Core::NCE::PatchMode::PostData) {
-            return load_base + image_size + patch->GetSectionSize();
-        }
-#endif
-        return load_base + image_size;
-    }
-
-    // Apply cheats if they exist and this is the main game module (or standalone NSO)
     const std::string module_name = nso_file.GetName();
     const bool is_main_module = (module_name == "main" || module_name == "main.nso" ||
                                  module_name == "MAIN" || module_name == "MAIN.NSO" ||
-                                 module_name.empty() || module_name.ends_with(".nso") || module_name.ends_with(".NSO"));
+                                 module_name.empty() || module_name.ends_with(".nso") ||
+                                 module_name.ends_with(".NSO"));
+
+    DecompressedModule result;
+    result.codeset = std::move(codeset);
+    result.nso_header = nso_header;
+    result.load_base = load_base;
+    result.image_size = image_size;
+    result.module_name = module_name;
+    result.should_pass_arguments = should_pass_arguments;
+    result.is_main_module = is_main_module;
+    result.valid = true;
+    return result;
+}
+
+bool AppLoader_NSO::InstallModule(Kernel::KProcess& process, Core::System& system,
+                                  DecompressedModule&& decompressed,
+                                  std::optional<FileSys::PatchManager> pm) {
+    if (!decompressed.valid) {
+        return false;
+    }
+
+    const VAddr load_base = decompressed.load_base;
+    const u32 image_size = decompressed.image_size;
+    const auto& nso_header = decompressed.nso_header;
+    const bool is_main_module = decompressed.is_main_module;
+
+    // Apply cheats if they exist and this is the main game module (or standalone NSO)
     if (is_main_module || system.GetMainNsoBase() == 0) {
         system.SetMainNsoParameters(load_base, image_size);
     }
@@ -317,7 +331,86 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
     }
 
     // Load codeset for current process
-    process.LoadModule(system.Kernel(), std::move(codeset), load_base);
+    process.LoadModule(system.Kernel(), std::move(decompressed.codeset), load_base);
+    return true;
+}
+
+std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::System& system,
+                                               const FileSys::VfsFile& nso_file, VAddr load_base,
+                                               bool should_pass_arguments, bool load_into_process,
+                                               std::optional<FileSys::PatchManager> pm,
+                                               std::vector<Core::NCE::Patcher>* patches,
+                                               s32 patch_index) {
+    if (nso_file.GetSize() < sizeof(NSOHeader))
+        return std::nullopt;
+    NSOHeader nso_header{};
+    if (sizeof(NSOHeader) != nso_file.ReadObject(&nso_header))
+        return std::nullopt;
+    if (nso_header.magic != Common::MakeMagic('N', 'S', 'O', '0'))
+        return std::nullopt;
+    if (nso_header.segments.empty())
+        return std::nullopt;
+
+    const size_t module_start = [&]() -> size_t {
+#ifdef HAS_NCE
+        if (patches && load_into_process) {
+            auto* patch = &patches->operator[](patch_index);
+            if (patch->GetPatchMode() == Core::NCE::PatchMode::PreText) {
+                return patch->GetSectionSize();
+            } else if (patch->GetPatchMode() == Core::NCE::PatchMode::Split) {
+                return patch->GetPreSectionSize();
+            }
+        }
+#endif
+        return 0;
+    }();
+
+    auto const last_segment_it = &nso_header.segments[nso_header.segments.size() - 1];
+
+#ifdef HAS_NCE
+    const bool needs_nce_patching = (patches != nullptr && patch_index >= 0);
+#else
+    constexpr bool needs_nce_patching = false;
+#endif
+
+    // Fast path for Pass 1 (layout measurement):
+    // On systems without NCE patching (Windows x86_64), calculate memory layout
+    // directly from the NSOHeader in microseconds without reading or decompressing.
+    if (!load_into_process && !needs_nce_patching) {
+        u32 memory_size = static_cast<u32>(module_start + last_segment_it->location + last_segment_it->size);
+        if (should_pass_arguments && !Settings::values.program_args.GetValue().empty()) {
+            memory_size += NSO_ARGUMENT_DATA_ALLOCATION_SIZE;
+        }
+        const u32 bss_size = (nso_header.segments.size() > 2) ? nso_header.segments[2].bss_size : 0;
+        const u32 image_size = PageAlignSize(memory_size + bss_size);
+        return load_base + image_size;
+    }
+
+    auto decompressed = DecompressModule(&process, system, nso_file, load_base, should_pass_arguments,
+                                         load_into_process, pm, patches, patch_index);
+    if (!decompressed) {
+        return std::nullopt;
+    }
+
+    const u32 image_size = decompressed->image_size;
+    if (!load_into_process) {
+#ifdef HAS_NCE
+        auto* patch = patches ? &patches->operator[](patch_index) : nullptr;
+        if (patch && patch->GetPatchMode() == Core::NCE::PatchMode::Split) {
+            return load_base + patch->GetPreSectionSize() + image_size + patch->GetSectionSize();
+        } else if (patch && patch->GetPatchMode() == Core::NCE::PatchMode::PreText) {
+            return load_base + patch->GetSectionSize() + image_size;
+        } else if (patch && patch->GetPatchMode() == Core::NCE::PatchMode::PostData) {
+            return load_base + image_size + patch->GetSectionSize();
+        }
+#endif
+        return load_base + image_size;
+    }
+
+    if (!InstallModule(process, system, std::move(*decompressed), pm)) {
+        return std::nullopt;
+    }
+
     return load_base + image_size;
 }
 

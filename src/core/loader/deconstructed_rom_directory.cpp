@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <cstring>
+#include <future>
+#include <vector>
 #include "common/logging.h"
 #include "common/random.h"
 #include "common/settings.h"
@@ -200,6 +202,15 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
     // Define an nce patch context for each potential module.
     PatchCollection patch_ctx{is_application};
 
+    struct ModuleLoadItem {
+        std::string name;
+        FileSys::VirtualFile file;
+        bool should_pass_arguments{false};
+        s32 patch_index{-1};
+        u32 image_size{0};
+    };
+    std::vector<ModuleLoadItem> modules_to_load;
+
     // Use the NSO module loader to figure out the code layout
     for (size_t i = 0; i < static_modules.size(); i++) {
         const auto& module = static_modules[i];
@@ -220,6 +231,14 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
         }
 
         patch_ctx.SaveIndex(i);
+        const u32 mod_size = static_cast<u32>(*tentative_next_load_addr - code_size);
+        modules_to_load.push_back({
+            .name = std::string(module),
+            .file = std::move(module_file),
+            .should_pass_arguments = should_pass_arguments,
+            .patch_index = patch_ctx.GetIndex(i),
+            .image_size = mod_size,
+        });
         code_size = *tentative_next_load_addr;
     }
 
@@ -239,6 +258,14 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
             process, system, *extra_file, code_size, false, false, patch_manager,
             patch_ctx.GetPatchers(), patch_ctx.GetLastIndex());
         if (tentative_next_load_addr) {
+            const u32 mod_size = static_cast<u32>(*tentative_next_load_addr - code_size);
+            modules_to_load.push_back({
+                .name = module_name,
+                .file = extra_file,
+                .should_pass_arguments = false,
+                .patch_index = patch_ctx.GetLastIndex(),
+                .image_size = mod_size,
+            });
             code_size = *tentative_next_load_addr;
         }
     }
@@ -265,31 +292,52 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
         return {ResultStatus::ErrorUnableToParseKernelMetadata, {}};
     }
 
-    // Load NSO modules
+    // Load NSO modules with parallel decompression
     modules.clear();
     const VAddr base_address{GetInteger(process.GetEntryPoint())};
-    VAddr next_load_addr{base_address};
     const FileSys::PatchManager pm{metadata.GetTitleID(), system.GetFileSystemController(),
                                    system.GetContentProvider()};
-    for (size_t i = 0; i < static_modules.size(); i++) {
-        const auto& module = static_modules[i];
-        const FileSys::VirtualFile module_file{dir->GetFile(module)};
-        if (!module_file) {
-            continue;
-        }
 
-        const VAddr load_addr{next_load_addr};
-        const bool should_pass_arguments = std::strcmp(module, "rtld") == 0;
-        const auto tentative_next_load_addr = AppLoader_NSO::LoadModule(
-            process, system, *module_file, load_addr, should_pass_arguments, true, pm,
-            patch_ctx.GetPatchers(), patch_ctx.GetIndex(i));
-        if (!tentative_next_load_addr) {
+    struct DecompressTask {
+        std::string name;
+        VAddr load_addr{};
+        std::future<std::optional<AppLoader_NSO::DecompressedModule>> future;
+    };
+
+    std::vector<DecompressTask> tasks;
+    tasks.reserve(modules_to_load.size());
+
+    VAddr current_load_addr = base_address;
+    for (size_t i = 0; i < modules_to_load.size(); i++) {
+        const auto& item = modules_to_load[i];
+        const VAddr load_addr = current_load_addr;
+        current_load_addr += item.image_size;
+
+        tasks.push_back({
+            .name = item.name,
+            .load_addr = load_addr,
+            .future = std::async(std::launch::async, [&system, &process, &item, load_addr, pm, &patch_ctx]() {
+                return AppLoader_NSO::DecompressModule(
+                    &process, system, *item.file, load_addr, item.should_pass_arguments, true, pm,
+                    patch_ctx.GetPatchers(), item.patch_index);
+            }),
+        });
+    }
+
+    for (auto& task : tasks) {
+        auto decompressed = task.future.get();
+        if (!decompressed) {
+            LOG_CRITICAL(Loader, "Failed to decompress NSO module '{}'", task.name);
             return {ResultStatus::ErrorLoadingNSO, {}};
         }
 
-        next_load_addr = *tentative_next_load_addr;
-        modules.insert_or_assign(load_addr, module);
-        LOG_DEBUG(Loader, "loaded module {} @ {:#x}", module, load_addr);
+        if (!AppLoader_NSO::InstallModule(process, system, std::move(*decompressed), pm)) {
+            LOG_CRITICAL(Loader, "Failed to install NSO module '{}'", task.name);
+            return {ResultStatus::ErrorLoadingNSO, {}};
+        }
+
+        modules.insert_or_assign(task.load_addr, task.name);
+        LOG_DEBUG(Loader, "loaded module {} @ {:#x}", task.name, task.load_addr);
     }
 
     is_loaded = true;

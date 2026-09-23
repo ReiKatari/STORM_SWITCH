@@ -8,8 +8,10 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include "common/common_types.h"
 #include "core/file_sys/nca_metadata.h"
 #include "core/file_sys/vfs/vfs_types.h"
@@ -109,12 +111,21 @@ public:
     [[nodiscard]] static PatchManager::Metadata GetMetadataFromBaseOrUpdate(Core::System& system, u64 application_id) noexcept;
 
 private:
+    [[nodiscard]] std::vector<VirtualDir> GetPatchDirs() const;
     [[nodiscard]] std::vector<VirtualFile> CollectPatches(const std::vector<VirtualDir>& patch_dirs,
                                                           const std::string& build_id) const;
 
     u64 title_id;
     const Service::FileSystem::FileSystemController& fs_controller;
     const ContentProvider& content_provider;
+
+    struct PatchCache {
+        std::mutex mutex;
+        bool patch_dirs_cached{false};
+        std::vector<VirtualDir> cached_patch_dirs;
+        std::unordered_map<std::string, std::vector<VirtualFile>> cached_collected_patches;
+    };
+    std::shared_ptr<PatchCache> patch_cache;
 };
 
 } // namespace FileSys

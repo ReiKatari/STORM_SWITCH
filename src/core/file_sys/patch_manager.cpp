@@ -181,7 +181,8 @@ std::string GetUpdateVersionStringFromSlot(const ContentProvider* provider, u64 
 PatchManager::PatchManager(u64 title_id_,
                            const Service::FileSystem::FileSystemController& fs_controller_,
                            const ContentProvider& content_provider_)
-    : title_id{title_id_}, fs_controller{fs_controller_}, content_provider{content_provider_} {}
+    : title_id{title_id_}, fs_controller{fs_controller_}, content_provider{content_provider_},
+      patch_cache{std::make_shared<PatchCache>()} {}
 
 PatchManager::~PatchManager() = default;
 
@@ -365,8 +366,39 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
     return exefs;
 }
 
+std::vector<VirtualDir> PatchManager::GetPatchDirs() const {
+    if (!patch_cache) {
+        return {};
+    }
+    std::scoped_lock lock{patch_cache->mutex};
+    if (patch_cache->patch_dirs_cached) {
+        return patch_cache->cached_patch_dirs;
+    }
+    const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
+    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+    if (sdmc_load_dir != nullptr) {
+        patch_cache->cached_patch_dirs.push_back(sdmc_load_dir);
+    }
+    if (load_dir != nullptr) {
+        const auto load_patch_dirs = load_dir->GetSubdirectories();
+        patch_cache->cached_patch_dirs.insert(patch_cache->cached_patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
+    }
+    std::sort(patch_cache->cached_patch_dirs.begin(), patch_cache->cached_patch_dirs.end(),
+              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+    patch_cache->patch_dirs_cached = true;
+    return patch_cache->cached_patch_dirs;
+}
+
 std::vector<VirtualFile> PatchManager::CollectPatches(const std::vector<VirtualDir>& patch_dirs,
                                                       const std::string& build_id) const {
+    if (patch_cache) {
+        std::scoped_lock lock{patch_cache->mutex};
+        const auto it = patch_cache->cached_collected_patches.find(build_id);
+        if (it != patch_cache->cached_collected_patches.end()) {
+            return it->second;
+        }
+    }
+
     const auto& disabled = Settings::values.disabled_addons[title_id];
     const auto nso_build_id = fmt::format("{:0<64}", build_id);
 
@@ -399,6 +431,10 @@ std::vector<VirtualFile> PatchManager::CollectPatches(const std::vector<VirtualD
         }
     }
 
+    if (patch_cache) {
+        std::scoped_lock lock{patch_cache->mutex};
+        patch_cache->cached_collected_patches.emplace(build_id, out);
+    }
     return out;
 }
 
@@ -433,21 +469,9 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
     LOG_INFO(Loader, "Patching NSO for name={}, build_id={}", name, build_id);
 
     auto out = nso;
-    const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
-    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
-
-    std::vector<VirtualDir> patch_dirs;
-    if (sdmc_load_dir != nullptr) {
-        patch_dirs.push_back(sdmc_load_dir);
-    }
-    if (load_dir != nullptr) {
-        const auto load_patch_dirs = load_dir->GetSubdirectories();
-        patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
-    }
+    const auto patch_dirs = GetPatchDirs();
 
     if (!patch_dirs.empty()) {
-        std::sort(patch_dirs.begin(), patch_dirs.end(),
-                  [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
         const auto patches = CollectPatches(patch_dirs, build_id);
 
         for (const auto& patch_file : patches) {
@@ -537,45 +561,23 @@ bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) 
 
     LOG_INFO(Loader, "Querying NSO patch existence for build_id={}, name={}", build_id, name);
 
-    const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
-    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
-    if (load_dir == nullptr && sdmc_load_dir == nullptr) {
+    const auto patch_dirs = GetPatchDirs();
+    if (patch_dirs.empty()) {
         LOG_DEBUG(Loader, "Cannot load mods for title_id={:016X}", title_id);
         return false;
     }
-
-    std::vector<VirtualDir> patch_dirs;
-    if (sdmc_load_dir != nullptr) {
-        patch_dirs.push_back(sdmc_load_dir);
-    }
-    if (load_dir != nullptr) {
-        const auto load_patch_dirs = load_dir->GetSubdirectories();
-        patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
-    }
-    std::sort(patch_dirs.begin(), patch_dirs.end(),
-              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
 
     return !CollectPatches(patch_dirs, build_id).empty();
 }
 
 std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildID& build_id_) const {
-    const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
-    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
-    if (load_dir == nullptr && sdmc_load_dir == nullptr) {
+    const auto patch_dirs = GetPatchDirs();
+    if (patch_dirs.empty()) {
         LOG_DEBUG(Loader, "Cannot load mods for title_id={:016X}", title_id);
         return {};
     }
 
     const auto& disabled = Settings::values.disabled_addons[title_id];
-    std::vector<VirtualDir> patch_dirs;
-    if (sdmc_load_dir != nullptr) {
-        patch_dirs.push_back(sdmc_load_dir);
-    }
-    if (load_dir != nullptr) {
-        const auto load_patch_dirs = load_dir->GetSubdirectories();
-        patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
-    }
-    std::sort(patch_dirs.begin(), patch_dirs.end(), [](auto const& l, auto const& r) { return l->GetName() < r->GetName(); });
 
     // <mod dir> / <folder> / cheats / <build id>.txt
     std::vector<Core::Memory::CheatEntry> out;
@@ -591,16 +593,19 @@ std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildI
     }
     // Uncareless user-friendly loading of patches (must start with 'cheat_')
     // <mod dir> / <cheat file>.txt
-    for (auto const& f : load_dir->GetFiles()) {
-        auto const name = f->GetName();
-        if (name.starts_with("cheat_") && std::find(disabled.cbegin(), disabled.cend(), name) == disabled.cend()) {
-            std::vector<u8> data(f->GetSize());
-            if (f->Read(data.data(), data.size()) == data.size()) {
-                const Core::Memory::TextCheatParser parser;
-                auto const res = parser.Parse(std::string_view(reinterpret_cast<const char*>(data.data()), data.size()));
-                std::copy(res.begin(), res.end(), std::back_inserter(out));
-            } else {
-                LOG_INFO(Common_Filesystem, "Failed to read cheats file for title_id={:016X}", title_id);
+    const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
+    if (load_dir != nullptr) {
+        for (auto const& f : load_dir->GetFiles()) {
+            auto const name = f->GetName();
+            if (name.starts_with("cheat_") && std::find(disabled.cbegin(), disabled.cend(), name) == disabled.cend()) {
+                std::vector<u8> data(f->GetSize());
+                if (f->Read(data.data(), data.size()) == data.size()) {
+                    const Core::Memory::TextCheatParser parser;
+                    auto const res = parser.Parse(std::string_view(reinterpret_cast<const char*>(data.data()), data.size()));
+                    std::copy(res.begin(), res.end(), std::back_inserter(out));
+                } else {
+                    LOG_INFO(Common_Filesystem, "Failed to read cheats file for title_id={:016X}", title_id);
+                }
             }
         }
     }

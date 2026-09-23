@@ -9,6 +9,7 @@
 #include "common/common_types.h"
 #include "common/swap.h"
 #include "core/file_sys/patch_manager.h"
+#include "core/hle/kernel/code_set.h"
 #include "core/loader/loader.h"
 
 namespace Core {
@@ -88,6 +89,30 @@ public:
     FileType GetFileType() const override {
         return IdentifyType(file);
     }
+
+    struct DecompressedModule {
+        Kernel::CodeSet codeset;
+        NSOHeader nso_header{};
+        VAddr load_base{};
+        u32 image_size{};
+        std::string module_name;
+        bool should_pass_arguments{false};
+        bool is_main_module{false};
+        bool valid{false};
+    };
+
+    static std::optional<DecompressedModule> DecompressModule(
+        Kernel::KProcess* process, Core::System& system,
+        const FileSys::VfsFile& nso_file, VAddr load_base,
+        bool should_pass_arguments, bool load_into_process = true,
+        std::optional<FileSys::PatchManager> pm = {},
+        std::vector<Core::NCE::Patcher>* patches = nullptr,
+        s32 patch_index = -1);
+
+    static bool InstallModule(
+        Kernel::KProcess& process, Core::System& system,
+        DecompressedModule&& decompressed,
+        std::optional<FileSys::PatchManager> pm = {});
 
     static std::optional<VAddr> LoadModule(Kernel::KProcess& process, Core::System& system,
                                            const FileSys::VfsFile& nso_file, VAddr load_base,

@@ -6455,12 +6455,12 @@ Drag points to change position, or double-click table cells to edit values.</sou
     <message>
       <location filename="../../src/yuzu/configuration/configure_ui.ui" line="96" />
       <source>Show File Types Column</source>
-      <translation>Показвыать столбец типа файлов</translation>
+      <translation>Показывать столбец типа файлов</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ui.ui" line="103" />
       <source>Show Play Time Column</source>
-      <translation>Показать столбец времени воспроизведения</translation>
+      <translation>Показывать столбец времени воспроизведения</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ui.ui" line="112" />
@@ -8111,7 +8111,7 @@ Debug Message: </source>
     <message>
       <location filename="../../src/yuzu/main.ui" line="503" />
       <source>Open &amp;Controller Menu</source>
-      <translation>Открыть &amp;Меню контроллеров</translation>
+      <translation>Открыть &amp;меню контроллеров</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main.ui" line="508" />
