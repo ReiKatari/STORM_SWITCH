@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QApplication>
@@ -26,7 +26,66 @@
 #include "qt_common/titledb.h"
 
 #ifdef _WIN32
+#include <windows.h>
+#include <dbghelp.h>
 #include <QScreen>
+#include "common/logging.h"
+
+static LONG WINAPI StormCrashHandler(EXCEPTION_POINTERS* exception_info) {
+    Common::Log::Stop();
+
+    HMODULE dbghelp = LoadLibraryA("dbghelp.dll");
+    if (dbghelp) {
+        using MiniDumpWriteDumpFn = BOOL(WINAPI*)(
+            HANDLE, DWORD, HANDLE, MINIDUMP_TYPE,
+            PMINIDUMP_EXCEPTION_INFORMATION,
+            PMINIDUMP_USER_STREAM_INFORMATION,
+            PMINIDUMP_CALLBACK_INFORMATION);
+        auto pfn = reinterpret_cast<MiniDumpWriteDumpFn>(
+            GetProcAddress(dbghelp, "MiniDumpWriteDump"));
+        if (pfn) {
+            SYSTEMTIME st;
+            GetLocalTime(&st);
+            char dump_path[MAX_PATH];
+            snprintf(dump_path, sizeof(dump_path),
+                     "user\\crash_dumps\\crash_%04d%02d%02d_%02d%02d%02d.dmp",
+                     st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+            HANDLE file = CreateFileA(dump_path, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+            if (file != INVALID_HANDLE_VALUE) {
+                MINIDUMP_EXCEPTION_INFORMATION mei{};
+                mei.ThreadId = GetCurrentThreadId();
+                mei.ExceptionPointers = exception_info;
+                mei.ClientPointers = FALSE;
+                pfn(GetCurrentProcess(), GetCurrentProcessId(), file, MiniDumpNormal, &mei, nullptr, nullptr);
+                CloseHandle(file);
+            }
+        }
+    }
+
+    FILE* f = fopen("user\\crash_dumps\\crash_report.txt", "w");
+    if (f) {
+        if (exception_info && exception_info->ExceptionRecord) {
+            fprintf(f, "Exception Code: 0x%08X\n", exception_info->ExceptionRecord->ExceptionCode);
+            fprintf(f, "Exception Address: %p\n", exception_info->ExceptionRecord->ExceptionAddress);
+            HMODULE mod = nullptr;
+            if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                                   (LPCSTR)exception_info->ExceptionRecord->ExceptionAddress, &mod)) {
+                char mod_name[MAX_PATH];
+                GetModuleFileNameA(mod, mod_name, sizeof(mod_name));
+                fprintf(f, "Faulting Module: %s\n", mod_name);
+                fprintf(f, "Module Base: %p, Offset: 0x%llx\n", mod, (uintptr_t)exception_info->ExceptionRecord->ExceptionAddress - (uintptr_t)mod);
+            }
+            if (exception_info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION &&
+                exception_info->ExceptionRecord->NumberParameters >= 2) {
+                fprintf(f, "Access Type: %s\n", exception_info->ExceptionRecord->ExceptionInformation[0] == 0 ? "Read" : (exception_info->ExceptionRecord->ExceptionInformation[0] == 1 ? "Write" : "Execute"));
+                fprintf(f, "Faulting Address: 0x%llx\n", (unsigned long long)exception_info->ExceptionRecord->ExceptionInformation[1]);
+            }
+        }
+        fclose(f);
+    }
+
+    return EXCEPTION_CONTINUE_SEARCH;
+}
 
 static void OverrideWindowsFont() {
     // Qt5 chooses these fonts on Windows and they have fairly ugly alphanumeric/cyrillic characters
@@ -79,6 +138,9 @@ static Qt::HighDpiScaleFactorRoundingPolicy GetHighDpiRoundingPolicy() {
 }
 
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
+    SetUnhandledExceptionFilter(StormCrashHandler);
+#endif
     // Start background loading of TitleDB immediately at application startup
     TitleDB::TitleDatabase::Instance().EnsureLoaded();
 

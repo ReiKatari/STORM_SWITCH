@@ -20,7 +20,7 @@ HidRegistration::HidRegistration(Core::System& system, Process& process)
 
 void HidRegistration::EnsureHidServer() {
     if (!m_hid_server) {
-        m_hid_server = m_system.ServiceManager().GetService<HID::IHidServer>("hid", true);
+        m_hid_server = m_system.ServiceManager().GetService<HID::IHidServer>("hid", false);
     }
 }
 

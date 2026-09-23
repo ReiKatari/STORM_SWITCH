@@ -92,7 +92,6 @@ Services::Services(std::shared_ptr<SM::ServiceManager>& sm, Core::System& system
         {"ldn",        &LDN::LoopProcess},
         {"nvservices", &Nvidia::LoopProcess},
         {"bsdsocket",  &Sockets::LoopProcess},
-        {"nvnflinger", &Nvnflinger::LoopProcess},
     })
         kernel.RunOnHostCoreProcess(std::string(e.first), [&system, f = e.second] { f(system); }).detach();
     kernel.RunOnHostCoreProcess("vi", [&, token] { VI::LoopProcess(system, token); }).detach();
@@ -134,6 +133,7 @@ Services::Services(std::shared_ptr<SM::ServiceManager>& sm, Core::System& system
         {"ngc",        &NGC::LoopProcess},
         {"nifm",       &NIFM::LoopProcess},
         {"nim",        &NIM::LoopProcess},
+        {"nvnflinger", &Nvnflinger::LoopProcess},
         {"npns",       &NPNS::LoopProcess},
         {"ns",         &NS::LoopProcess},
         {"olsc",       &OLSC::LoopProcess},
@@ -150,9 +150,8 @@ Services::Services(std::shared_ptr<SM::ServiceManager>& sm, Core::System& system
         {"usb",        &USB::LoopProcess},
         {"i2c",        &I2C::LoopProcess},
         {"gpio",        &GPIO::LoopProcess},
-    }) {
-        kernel.RunOnHostCoreProcess(std::string(e.first), [&system, f = e.second] { f(system); }).detach();
-    }
+    })
+        kernel.RunOnGuestCoreProcess(std::string(e.first), [&system, f = e.second] { f(system); });
 }
 
 } // namespace Service

@@ -23,32 +23,34 @@ namespace Kernel {
 namespace {
 
 bool ReadFromUser(KernelCore& kernel, u32* out, KProcessAddress address) {
-    *out = GetCurrentMemory(kernel).Read32(GetInteger(address));
+    auto* process = GetCurrentProcessPointer(kernel);
+    if (!process) {
+        return false;
+    }
+    *out = process->GetMemory().Read32(GetInteger(address));
     return true;
 }
 
 bool WriteToUser(KernelCore& kernel, KProcessAddress address, u32 val) {
-    GetCurrentMemory(kernel).Write32(GetInteger(address), val);
+    auto* process = GetCurrentProcessPointer(kernel);
+    if (!process) {
+        return false;
+    }
+    process->GetMemory().Write32(GetInteger(address), val);
     return true;
 }
 
 bool UpdateLockAtomic(KernelCore& kernel, u32* out, KProcessAddress address, u32 if_zero,
                       u32 new_orr_mask) {
-    auto& memory = GetCurrentMemory(kernel);
-    if (u8* ptr = memory.GetPointer(GetInteger(address)); ptr != nullptr) {
-        std::atomic_ref<u32> atom(*reinterpret_cast<u32*>(ptr));
-        u32 expected = atom.load(std::memory_order_relaxed);
-        while (true) {
-            const u32 value = expected ? (expected | new_orr_mask) : if_zero;
-            if (atom.compare_exchange_weak(expected, value, std::memory_order_acq_rel, std::memory_order_relaxed)) {
-                *out = expected;
-                return true;
-            }
-        }
+    auto* process = GetCurrentProcessPointer(kernel);
+    if (!process) {
+        return false;
     }
-
-    auto& monitor = GetCurrentProcess(kernel).GetExclusiveMonitor();
+    auto& monitor = process->GetExclusiveMonitor();
     const auto current_core = kernel.CurrentPhysicalCoreIndex();
+    if (current_core >= Core::Hardware::NUM_CPU_CORES) {
+        return false;
+    }
 
     u32 expected{};
 

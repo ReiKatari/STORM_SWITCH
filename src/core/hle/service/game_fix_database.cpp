@@ -22,13 +22,41 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010033001F050000ULL,
         "Ys vs. Trails in the Sky: Alternative Saga",
-        "• Зависание вступительного видеоролика при аппаратном декодировании NVDEC\n• Просадки кадровой частоты во время динамичных сражений\n• Сбои распределения памяти при переходе между аренами",
-        "• Opening cinematic freeze with hardware NVDEC decoding\n• Framerate drops during fast-paced combat\n• Memory allocation faults during arena transitions",
-        "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание роликов)\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Обратная связь барьеров: Включено\n✓ Точность ГПУ: Обычная (стабильные 60 FPS)",
-        "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents cutscene freezes)\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ GPU Accuracy: Normal (Stable 60 FPS)",
+        "• Зависание и артефакты макроблоков вступительного видеоролика\n• Искажения 2D-спрайтов и шрифтов при пересжатии текстур ASTC\n• Просадки кадровой частоты во время динамичных сражений\n• Сбои распределения памяти при переходе между аренами",
+        "• Opening cinematic freeze and macroblock artifacts\n• 2D sprite and font distortion with ASTC texture recompression\n• Framerate drops during fast-paced combat\n• Memory allocation faults during arena transitions",
+        "✓ Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависание роликов)\n✓ Пересжатие текстур ASTC: Без сжатия (устранение искажений 2D-графики)\n✓ Точность ГПУ: Высокая (стабильная геометрия и Z-буфер)\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ NVDEC Video Emulation: CPU (software FFmpeg decoder prevents cutscene freezes)\n✓ ASTC Texture Recompression: Uncompressed (Fixes 2D graphics distortion)\n✓ GPU Accuracy: High (Stable geometry and Z-buffer)\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\barrier_feedback_loops", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "false"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        },
+        {0x010033001F050800ULL}
+    },
+    {
+        0x010034B00E14C000ULL,
+        "Tokyo 2020 Olympics - The Official Video Game",
+        "• Черный экран и зависание при запуске из-за инициализации сервисов и пересжатия текстур\n• Просадки кадровой частоты во время соревнований\n• Сбои синхронизации потоков",
+        "• Black screen and boot freeze caused by service initialization and texture compression\n• Framerate drops during competitions\n• Thread synchronization faults",
+        "✓ Точность ГПУ: Высокая (устранение черного экрана)\n✓ Пересжатие текстур ASTC: Без сжатия\n✓ Асинхронная презентация и шейдеры: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
+        "✓ GPU Accuracy: High (Fixes black screen)\n✓ ASTC Texture Recompression: Uncompressed\n✓ Async Presentation and Shaders: Enabled\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Memory Layout: 6GB DRAM",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\astc_recompression", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
@@ -44,7 +72,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
         },
-        {0x010033001F050800ULL}
+        {0x010034B00E14C800ULL}
     },
     {
         0x01008F1008DA6000ULL,
@@ -480,8 +508,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"System\\airplane_mode", "false"},
-            {"Core\\memory_layout_mode", "2"},
-            {"System\\memory_layout_mode", "2"}
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
         },
         {0x0100F2C0115B6800ULL}
     },
@@ -5063,6 +5091,9 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
             return GetProfile(profile.title_id);
         }
         if (game_lower.find("just dance") != std::string::npos && lower.find("just dance") != std::string::npos) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("tokyo 2020") != std::string::npos && (lower.find("tokyo 2020") != std::string::npos || lower.find("olympic") != std::string::npos || lower.find("tokyo_2020") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
         if (game_lower.find("51 worldwide") != std::string::npos && (lower.find("clubhouse") != std::string::npos || lower.find("51 worldwide") != std::string::npos)) {
