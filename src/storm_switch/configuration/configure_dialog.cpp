@@ -14,8 +14,7 @@
 #include "common/cpu_features.h"
 #include "common/memory_detect.h"
 #ifdef _WIN32
-#include <windows.h>
-#include <dxgi.h>
+#undef LoadString
 #endif
 #include "common/logging.h"
 #include "common/settings.h"
@@ -23,6 +22,7 @@
 #include "core/core.h"
 #include "qt_common/config/uisettings.h"
 #include "qt_common/util/vk.h"
+#undef LoadString
 #include "ui_configure.h"
 #include "storm_switch/configuration/configure_applets.h"
 #include "storm_switch/configuration/configure_audio.h"
@@ -189,33 +189,41 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
                 &ConfigureDialog::HandleApplyButtonClicked);
     }
 
-    m_auto_settings_btn = ui->buttonBox->addButton(tr("⚡ Auto Settings"), QDialogButtonBox::ActionRole);
-    m_auto_settings_btn->setObjectName(QStringLiteral("AutoSettingsButton"));
-    m_auto_settings_btn->setCursor(Qt::PointingHandCursor);
-    m_auto_settings_btn->setStyleSheet(QStringLiteral(
-        "QPushButton#AutoSettingsButton {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
-        "    color: #050B14;"
-        "    font-weight: bold;"
+    m_restore_defaults_btn = ui->buttonBox->addButton(StormLang(
+        QStringLiteral("↺ Сбросить настройки"),
+        QStringLiteral("↺ Restore Defaults"),
+        QStringLiteral("↺ Standardeinstellungen"),
+        QStringLiteral("↺ Paramètres par défaut"),
+        QStringLiteral("↺ 恢复默认设置"),
+        QStringLiteral("↺ デフォルトに戻す")
+    ), QDialogButtonBox::ActionRole);
+    m_restore_defaults_btn->setObjectName(QStringLiteral("RestoreDefaultsButton"));
+    m_restore_defaults_btn->setCursor(Qt::PointingHandCursor);
+    m_restore_defaults_btn->setStyleSheet(QStringLiteral(
+        "QPushButton#RestoreDefaultsButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1E293B, stop:1 #334155);"
+        "    color: #F8FAFC;"
+        "    font-weight: 600;"
         "    font-size: 12px;"
         "    padding: 6px 16px;"
         "    border-radius: 6px;"
-        "    border: 1px solid #00F0FF;"
+        "    border: 1px solid #64748B;"
         "}"
-        "QPushButton#AutoSettingsButton:hover {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #00D2FF);"
+        "QPushButton#RestoreDefaultsButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #EF4444, stop:1 #DC2626);"
         "    color: #FFFFFF;"
+        "    border: 1px solid #F87171;"
         "}"
-        "QPushButton#AutoSettingsButton:pressed {"
-        "    background: #0284C7;"
+        "QPushButton#RestoreDefaultsButton:pressed {"
+        "    background: #B91C1C;"
         "}"
     ));
-    auto* shadow = new QGraphicsDropShadowEffect(m_auto_settings_btn);
-    shadow->setBlurRadius(10);
+    auto* shadow = new QGraphicsDropShadowEffect(m_restore_defaults_btn);
+    shadow->setBlurRadius(8);
     shadow->setOffset(0, 2);
-    shadow->setColor(QColor(0, 210, 255, 120));
-    m_auto_settings_btn->setGraphicsEffect(shadow);
-    connect(m_auto_settings_btn, &QPushButton::clicked, this, &ConfigureDialog::OnAutoSettingsClicked);
+    shadow->setColor(QColor(0, 0, 0, 160));
+    m_restore_defaults_btn->setGraphicsEffect(shadow);
+    connect(m_restore_defaults_btn, &QPushButton::clicked, this, &ConfigureDialog::OnRestoreDefaultsClicked);
 
     adjustSize();
     ui->selectorList->setCurrentRow(0);
@@ -309,14 +317,22 @@ void ConfigureDialog::RetranslateUI() {
 
     ui->retranslateUi(this);
 
-    if (m_auto_settings_btn) {
-        m_auto_settings_btn->setText(StormLang(
-            QStringLiteral("⚡ Авто-настройки"),
-            QStringLiteral("⚡ Auto Settings"),
-            QStringLiteral("⚡ Automatische Einstellungen"),
-            QStringLiteral("⚡ Paramètres automatiques"),
-            QStringLiteral("⚡ 自动设置"),
-            QStringLiteral("⚡ 自動設定")
+    if (m_restore_defaults_btn) {
+        m_restore_defaults_btn->setText(StormLang(
+            QStringLiteral("↺ Сбросить настройки"),
+            QStringLiteral("↺ Restore Defaults"),
+            QStringLiteral("↺ Standardeinstellungen"),
+            QStringLiteral("↺ Paramètres par défaut"),
+            QStringLiteral("↺ 恢复默认设置"),
+            QStringLiteral("↺ デフォルトに戻す")
+        ));
+        m_restore_defaults_btn->setToolTip(StormLang(
+            QStringLiteral("Сбросить все параметры эмуляции на стандартные значения"),
+            QStringLiteral("Restore all emulation settings to default values"),
+            QStringLiteral("Alle Emulationseinstellungen auf Standardwerte zurücksetzen"),
+            QStringLiteral("Restaurer tous les paramètres d'émulation aux valeurs par défaut"),
+            QStringLiteral("将所有模拟设置恢复为默认值"),
+            QStringLiteral("すべてのエミュレーション設定をデフォルトに戻す")
         ));
     }
 
@@ -500,416 +516,103 @@ void ConfigureDialog::UpdateVisibleTabs() {
     }
 }
 
-void ConfigureDialog::OnAutoSettingsClicked() {
-    DetectHardwareAndApplyAutoSettings();
-}
+void ConfigureDialog::OnRestoreDefaultsClicked() {
+    QMessageBox ask_box(this);
+    ask_box.setWindowTitle(StormLang(
+        QStringLiteral("Сброс настроек"),
+        QStringLiteral("Reset Settings"),
+        QStringLiteral("Einstellungen zurücksetzen"),
+        QStringLiteral("Réinitialiser les paramètres"),
+        QStringLiteral("重置设置"),
+        QStringLiteral("設定のリセット")
+    ));
+    ask_box.setText(StormLang(
+        QStringLiteral("<b>Вы уверены, что хотите сбросить все параметры эмуляции на стандартные значения?</b><br><br>Параметры графики, процессора, звука и системы будут возвращены к исходным настройкам по умолчанию."),
+        QStringLiteral("<b>Are you sure you want to restore all emulation settings to default values?</b><br><br>Graphics, CPU, audio, and system settings will be restored to clean factory defaults."),
+        QStringLiteral("<b>Möchten Sie wirklich alle Emulationseinstellungen auf die Standardwerte zurücksetzen?</b><br><br>Grafik-, CPU-, Audio- und Systemeinstellungen werden auf die Standardwerte zurückgesetzt."),
+        QStringLiteral("<b>Êtes-vous sûr de vouloir restaurer tous les paramètres d'émulation aux valeurs par défaut ?</b><br><br>Les paramètres graphiques, processeur, audio et système seront réinitialisés."),
+        QStringLiteral("<b>您确定要将所有模拟设置恢复为默认值吗？</b><br><br>图形、CPU、音频和系统设置将恢复为出厂默认值。"),
+        QStringLiteral("<b>すべてのエミュレーション設定をデフォルト値に戻してもよろしいですか？</b><br><br>グラフィックス、CPU、オーディオ、システム設定が初期設定に戻ります。")
+    ));
+    ask_box.setIcon(QMessageBox::Question);
+    auto* yes_btn = ask_box.addButton(StormLang(
+        QStringLiteral("Сбросить"),
+        QStringLiteral("Reset"),
+        QStringLiteral("Zurücksetzen"),
+        QStringLiteral("Réinitialiser"),
+        QStringLiteral("重置"),
+        QStringLiteral("リセット")
+    ), QMessageBox::YesRole);
+    ask_box.addButton(StormLang(
+        QStringLiteral("Отмена"),
+        QStringLiteral("Cancel"),
+        QStringLiteral("Abbrechen"),
+        QStringLiteral("Annuler"),
+        QStringLiteral("取消"),
+        QStringLiteral("キャンセル")
+    ), QMessageBox::NoRole);
+    ask_box.setDefaultButton(yes_btn);
+    ask_box.exec();
 
-void ConfigureDialog::DetectHardwareAndApplyAutoSettings() {
-    // 1. CPU detection
-    QString cpu_name;
-#ifdef ARCHITECTURE_x86_64
-    if (std::strlen(Common::g_cpu_caps.cpu_string) > 0) {
-        cpu_name = QString::fromUtf8(Common::g_cpu_caps.cpu_string).trimmed();
-    }
-#endif
-    const int thread_count = static_cast<int>(std::thread::hardware_concurrency());
-    const int core_count = Common::GetProcessorCount().value_or(thread_count > 2 ? thread_count / 2 : thread_count);
-    if (cpu_name.isEmpty()) {
-        cpu_name = tr("Процессор (%1 ядер, %2 потоков)").arg(core_count).arg(thread_count);
-    }
-
-    // 2. RAM detection
-    u64 total_ram_bytes = Common::GetMemInfo().TotalPhysicalMemory;
-    u64 avail_ram_bytes = 0;
-#ifdef _WIN32
-    MEMORYSTATUSEX mem_status;
-    mem_status.dwLength = sizeof(mem_status);
-    if (GlobalMemoryStatusEx(&mem_status)) {
-        total_ram_bytes = mem_status.ullTotalPhys;
-        avail_ram_bytes = mem_status.ullAvailPhys;
-    }
-#endif
-    double total_ram_gb = static_cast<double>(total_ram_bytes) / (1024.0 * 1024.0 * 1024.0);
-    double avail_ram_gb = static_cast<double>(avail_ram_bytes) / (1024.0 * 1024.0 * 1024.0);
-
-    // 3. GPU and VRAM detection
-    QString gpu_name = tr("Не определено");
-    u64 vram_bytes = 0;
-    if (!vk_records.empty()) {
-        int dev_idx = Settings::values.vulkan_device.GetValue();
-        if (dev_idx >= 0 && static_cast<size_t>(dev_idx) < vk_records.size()) {
-            gpu_name = QString::fromStdString(vk_records[dev_idx].name);
-        } else {
-            gpu_name = QString::fromStdString(vk_records[0].name);
-        }
+    if (ask_box.clickedButton() != yes_btn) {
+        return;
     }
 
-#ifdef _WIN32
-    try {
-        HMODULE hDxgi = LoadLibraryA("dxgi.dll");
-        if (hDxgi) {
-            typedef HRESULT (WINAPI *pfnCreateDXGIFactory1)(REFIID, void**);
-            auto pCreate = reinterpret_cast<pfnCreateDXGIFactory1>(GetProcAddress(hDxgi, "CreateDXGIFactory1"));
-            if (pCreate) {
-                IDXGIFactory1* pFactory = nullptr;
-                if (SUCCEEDED(pCreate(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&pFactory))) && pFactory != nullptr) {
-                    IDXGIAdapter1* pAdapter = nullptr;
-                    for (UINT i = 0; pFactory->EnumAdapters1(i, &pAdapter) == S_OK; ++i) {
-                        if (pAdapter != nullptr) {
-                            DXGI_ADAPTER_DESC1 desc{};
-                            if (SUCCEEDED(pAdapter->GetDesc1(&desc))) {
-                                QString adapter_name = QString::fromWCharArray(desc.Description);
-                                if (gpu_name.contains(adapter_name, Qt::CaseInsensitive) || adapter_name.contains(gpu_name, Qt::CaseInsensitive) || i == 0) {
-                                    if (desc.DedicatedVideoMemory > vram_bytes) {
-                                        vram_bytes = desc.DedicatedVideoMemory;
-                                        if (gpu_name == tr("Не определено")) {
-                                            gpu_name = adapter_name;
-                                        }
-                                    }
-                                }
-                            }
-                            pAdapter->Release();
-                            pAdapter = nullptr;
-                        }
-                    }
-                    pFactory->Release();
-                    pFactory = nullptr;
+    static const std::vector<Settings::Category> emulation_categories = {
+        Settings::Category::Audio,
+        Settings::Category::Core,
+        Settings::Category::Cpu,
+        Settings::Category::CpuDebug,
+        Settings::Category::CpuUnsafe,
+        Settings::Category::Overlay,
+        Settings::Category::Renderer,
+        Settings::Category::RendererAdvanced,
+        Settings::Category::RendererHacks,
+        Settings::Category::RendererExtensions,
+        Settings::Category::RendererDebug,
+        Settings::Category::System,
+        Settings::Category::SystemAudio,
+        Settings::Category::Network,
+        Settings::Category::Debugging,
+        Settings::Category::DebuggingGraphics,
+        Settings::Category::Services,
+    };
+
+#undef LoadString
+    for (auto cat : emulation_categories) {
+        auto it = Settings::values.linkage.by_category.find(cat);
+        if (it != Settings::values.linkage.by_category.end()) {
+            for (const auto& setting : it->second) {
+                (setting->LoadString)(setting->DefaultToString());
+                if (setting->Switchable()) {
+                    setting->SetGlobal(true);
                 }
             }
-            FreeLibrary(hDxgi);
-        }
-    } catch (...) {
-        // Fallback gracefully without crash
-    }
-#endif
-    double vram_gb = static_cast<double>(vram_bytes) / (1024.0 * 1024.0 * 1024.0);
-
-    // 4. Screen detection
-    QScreen* screen = QGuiApplication::primaryScreen();
-    QSize screen_res = screen ? screen->size() : QSize(1920, 1080);
-    int refresh_rate = screen ? static_cast<int>(std::round(screen->refreshRate())) : 60;
-
-    // 5. Power status
-    QString power_text = tr("Питание от сети");
-    bool on_battery = false;
-#ifdef _WIN32
-    SYSTEM_POWER_STATUS power_status;
-    if (GetSystemPowerStatus(&power_status)) {
-        if (power_status.ACLineStatus == 0) {
-            on_battery = true;
-            power_text = tr("Работа от батареи (%1%)").arg(static_cast<int>(power_status.BatteryLifePercent));
-        } else if (power_status.BatteryFlag & 128) {
-            power_text = tr("Стационарный ПК (сеть 220V)");
-        } else {
-            power_text = tr("Ноутбук от сети (зарядка %1%)").arg(static_cast<int>(power_status.BatteryLifePercent));
         }
     }
-#endif
 
-    // 6. Optimal profile tier determination
-    enum class ProfileTier {
-        Eco,
-        Balanced,
-        Enthusiast
-    };
-
-    ProfileTier tier = ProfileTier::Balanced;
-    const bool is_integrated = gpu_name.contains(QStringLiteral("Intel"), Qt::CaseInsensitive) ||
-                               (gpu_name.contains(QStringLiteral("Vega"), Qt::CaseInsensitive) && vram_gb < 2.0) ||
-                               (gpu_name.contains(QStringLiteral("Radeon Graphics"), Qt::CaseInsensitive) && vram_gb < 2.0);
-
-    if (on_battery || is_integrated || core_count <= 4 || total_ram_gb < 7.5) {
-        tier = ProfileTier::Eco;
-    } else if (vram_gb >= 7.5 || (vram_gb >= 5.5 && (gpu_name.contains(QStringLiteral("RTX"), Qt::CaseInsensitive) || gpu_name.contains(QStringLiteral("RX"), Qt::CaseInsensitive)))) {
-        if (core_count >= 6 && total_ram_gb >= 15.0) {
-            tier = ProfileTier::Enthusiast;
-        } else {
-            tier = ProfileTier::Balanced;
-        }
-    } else {
-        tier = ProfileTier::Balanced;
-    }
-
-    auto apply_auto = [](auto& setting, auto val) {
-        if constexpr (requires { setting.SetGlobal(true); }) {
-            setting.SetGlobal(true);
-        }
-        setting.SetValue(val);
-    };
-
-    QString tier_name;
-    QStringList applied_list;
-
-    if (tier == ProfileTier::Enthusiast) {
-        tier_name = tr("Максимальное качество (Enthusiast)");
-
-        apply_auto(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
-        apply_auto(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
-        apply_auto(Settings::values.astc_recompression, Settings::AstcRecompression::Uncompressed);
-        apply_auto(Settings::values.accelerate_astc, Settings::AstcDecodeMode::Hybrid);
-        apply_auto(Settings::values.nvdec_emulation, Settings::NvdecEmulation::Hybrid);
-        apply_auto(Settings::values.use_asynchronous_shaders, true);
-        apply_auto(Settings::values.use_asynchronous_gpu_emulation, true);
-        apply_auto(Settings::values.async_presentation, true);
-        apply_auto(Settings::values.use_reactive_flushing, false);
-        apply_auto(Settings::values.sync_memory_operations, false);
-        apply_auto(Settings::values.enable_gpu_buffer_readback, false);
-        apply_auto(Settings::values.gpu_clock, Settings::GpuClock::Normal);
-        apply_auto(Settings::values.eco_thermal_mode, true);
-        apply_auto(Settings::values.eco_frame_pacing, true);
-        apply_auto(Settings::values.smart_shader_throttle, true);
-        apply_auto(Settings::values.cpu_affinity_pinning, true);
-        apply_auto(Settings::values.use_vulkan_driver_pipeline_cache, true);
-        apply_auto(Settings::values.vram_garbage_collection, false);
-        apply_auto(Settings::values.early_release_fences, false);
-        apply_auto(Settings::values.optimize_spirv_output, 1);
-        apply_auto(Settings::values.enable_frame_skipping, true);
-        apply_auto(Settings::values.max_anisotropy, Settings::AnisotropyMode::X16);
-        apply_auto(Settings::values.anti_aliasing, Settings::AntiAliasing::Smaa);
-        apply_auto(Settings::values.scaling_filter, Settings::ScalingFilter::Fsr);
-        apply_auto(Settings::values.fsr_sharpening_slider, 85);
-        apply_auto(Settings::values.cpu_accuracy, Settings::CpuAccuracy::Auto);
-        apply_auto(Settings::values.cpuopt_fastmem, true);
-        apply_auto(Settings::values.cpuopt_ignore_memory_aborts, true);
-        apply_auto(Settings::values.use_docked_mode, Settings::ConsoleMode::Docked);
-
-        applied_list << tr("Разрешение рендеринга: 1X (720p/1080p) (нативное разрешение Switch для оптимального баланса скорости и стабильности)");
-        applied_list << tr("Точность ГПУ: Быстрая (Low) (высокая скорость рендеринга без микрозадержек видеокарты)");
-        applied_list << tr("Пересжатие текстур ASTC: Без сжатия (оригинальное бескомпромиссное качество текстур)");
-        applied_list << tr("Декодирование ASTC: Гибридный (оптимальная аппаратная и программная распаковка)");
-        applied_list << tr("Сглаживание: SMAA (высококачественное субпиксельное сглаживание без замыливания)");
-        applied_list << tr("Масштабирование: AMD FSR (пространственный апскейлинг с резкостью 85% для идеальной картинки)");
-        applied_list << tr("Анизотропная фильтрация: 16x (максимальная четкость текстур на наклонных поверхностях)");
-        applied_list << tr("Режим консоли: В док-станции (максимальные тактовые частоты ЦП/ГПУ и повышенное разрешение)");
-    } else if (tier == ProfileTier::Eco) {
-        tier_name = tr("Энергосбережение и портативность (Eco)");
-
-        apply_auto(Settings::values.resolution_setup, on_battery ? Settings::ResolutionSetup::Res1_2X : Settings::ResolutionSetup::Res3_4X);
-        apply_auto(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
-        apply_auto(Settings::values.astc_recompression, Settings::AstcRecompression::Bc3);
-        apply_auto(Settings::values.accelerate_astc, Settings::AstcDecodeMode::Hybrid);
-        apply_auto(Settings::values.nvdec_emulation, Settings::NvdecEmulation::Hybrid);
-        apply_auto(Settings::values.use_asynchronous_shaders, true);
-        apply_auto(Settings::values.use_asynchronous_gpu_emulation, true);
-        apply_auto(Settings::values.async_presentation, true);
-        apply_auto(Settings::values.use_reactive_flushing, false);
-        apply_auto(Settings::values.sync_memory_operations, false);
-        apply_auto(Settings::values.gpu_clock, Settings::GpuClock::Normal);
-        apply_auto(Settings::values.eco_thermal_mode, true);
-        apply_auto(Settings::values.eco_frame_pacing, true);
-        apply_auto(Settings::values.smart_shader_throttle, true);
-        apply_auto(Settings::values.cpu_affinity_pinning, true);
-        apply_auto(Settings::values.use_vulkan_driver_pipeline_cache, true);
-        apply_auto(Settings::values.vram_garbage_collection, false);
-        apply_auto(Settings::values.early_release_fences, false);
-        apply_auto(Settings::values.optimize_spirv_output, 1);
-        apply_auto(Settings::values.enable_frame_skipping, true);
-        apply_auto(Settings::values.max_anisotropy, Settings::AnisotropyMode::Default);
-        apply_auto(Settings::values.anti_aliasing, Settings::AntiAliasing::None);
-        apply_auto(Settings::values.scaling_filter, Settings::ScalingFilter::Bilinear);
-        apply_auto(Settings::values.cpu_accuracy, Settings::CpuAccuracy::Auto);
-        apply_auto(Settings::values.cpuopt_fastmem, true);
-        apply_auto(Settings::values.cpuopt_ignore_memory_aborts, true);
-        apply_auto(Settings::values.use_docked_mode, Settings::ConsoleMode::Handheld);
-
-        applied_list << (on_battery ?
-            tr("Разрешение рендеринга: 0.5X (360p/540p) (снижение разрешения для экономии заряда батареи)") :
-            tr("Разрешение рендеринга: 0.75X (540p/810p) (пониженное разрешение для слабых ГПУ и снижения нагрева)"));
-        applied_list << tr("Точность ГПУ: Быстрая (Low) (высокая скорость рендеринга и максимальная разгрузка видеокарты)");
-        applied_list << tr("Пересжатие текстур ASTC: BC3 (аппаратное пересжатие с альфа-каналом снижает расход видеопамяти)");
-        applied_list << tr("Декодирование ASTC: Гибридный (оптимальная аппаратная и программная распаковка)");
-        applied_list << tr("Эко-выравнивание кадров: Включено (устранение микролагов и холостой нагрузки ЦП)");
-        applied_list << tr("Масштабирование: Билинейное (минимальная нагрузка на вычислительные блоки ГПУ)");
-        applied_list << tr("Режим консоли: В портативном режиме (сниженное энергопотребление и продление работы от батареи)");
-    } else {
-        tier_name = tr("Сбалансированный (Balanced 60 FPS)");
-
-        apply_auto(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
-        apply_auto(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
-        apply_auto(Settings::values.astc_recompression, Settings::AstcRecompression::Uncompressed);
-        apply_auto(Settings::values.accelerate_astc, Settings::AstcDecodeMode::Hybrid);
-        apply_auto(Settings::values.nvdec_emulation, Settings::NvdecEmulation::Hybrid);
-        apply_auto(Settings::values.use_asynchronous_shaders, true);
-        apply_auto(Settings::values.use_asynchronous_gpu_emulation, true);
-        apply_auto(Settings::values.async_presentation, true);
-        apply_auto(Settings::values.use_reactive_flushing, false);
-        apply_auto(Settings::values.sync_memory_operations, false);
-        apply_auto(Settings::values.gpu_clock, Settings::GpuClock::Normal);
-        apply_auto(Settings::values.eco_thermal_mode, true);
-        apply_auto(Settings::values.eco_frame_pacing, true);
-        apply_auto(Settings::values.smart_shader_throttle, true);
-        apply_auto(Settings::values.cpu_affinity_pinning, true);
-        apply_auto(Settings::values.use_vulkan_driver_pipeline_cache, true);
-        apply_auto(Settings::values.vram_garbage_collection, false);
-        apply_auto(Settings::values.early_release_fences, false);
-        apply_auto(Settings::values.optimize_spirv_output, 1);
-        apply_auto(Settings::values.enable_frame_skipping, true);
-        apply_auto(Settings::values.max_anisotropy, Settings::AnisotropyMode::Automatic);
-        apply_auto(Settings::values.anti_aliasing, Settings::AntiAliasing::Fxaa);
-        apply_auto(Settings::values.scaling_filter, Settings::ScalingFilter::Fsr);
-        apply_auto(Settings::values.fsr_sharpening_slider, 80);
-        apply_auto(Settings::values.cpu_accuracy, Settings::CpuAccuracy::Auto);
-        apply_auto(Settings::values.cpuopt_fastmem, true);
-        apply_auto(Settings::values.cpuopt_ignore_memory_aborts, true);
-        apply_auto(Settings::values.use_docked_mode, Settings::ConsoleMode::Docked);
-
-        applied_list << tr("Разрешение рендеринга: 1X (720p/1080p) (нативное разрешение Switch для оптимального баланса скорости и качества)");
-        applied_list << tr("Точность ГПУ: Быстрая (Low) (высокая скорость рендеринга без избыточной нагрузки на видеокарту)");
-        applied_list << tr("Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур без артефактов)");
-        applied_list << tr("Декодирование ASTC: ЦП асинхронно (фоновое декодирование процессором без задержек ГПУ)");
-        applied_list << tr("Сглаживание: FXAA (быстрое сглаживание краев геометрии с минимальным расходом ресурсов)");
-        applied_list << tr("Масштабирование: AMD FSR (пространственный апскейлинг с резкостью 80% для четкости)");
-        applied_list << tr("Анизотропная фильтрация: Автоматически (адаптивная фильтрация текстур)");
-        applied_list << tr("Режим консоли: В док-станции (стандартный режим полной производительности)");
-    }
-
-    applied_list << tr("Эмуляция Host MMU (fastmem): Включено (прямой маппинг виртуальной памяти для максимального FPS)");
-    applied_list << tr("Точность ЦП: Авто (максимальная скорость и совместимость JIT-компилятора Dynarmic)");
-    applied_list << tr("Асинхронная компиляция шейдеров: Включено (фоновая сборка конвейеров исключает внутриигровые микрофризы)");
-    applied_list << tr("Асинхронный вывод: Включено (устраняет дедлоки потока Vulkan и зацикливание видеоряда)");
-    applied_list << tr("Игнорирование прерываний памяти: Включено (защита от падений и аварийных вылетов при обращениях за границы буфера)");
+    Settings::UpdateGPUAccuracy();
+    Settings::UpdateRescalingInfo();
 
     ReloadAllTabs();
 
-    // Display stylized modal summary dialog
-    QDialog reportDialog(this);
-    reportDialog.setWindowTitle(tr("⚡ Авто-настройки системы"));
-    reportDialog.setMinimumWidth(560);
-    reportDialog.setModal(true);
-    reportDialog.setStyleSheet(QStringLiteral(
-        "QDialog {"
-        "    background: #0B111A;"
-        "    color: #F0F6FC;"
-        "    border: 1px solid rgba(0, 210, 255, 0.35);"
-        "    border-radius: 10px;"
-        "}"
-        "QLabel { color: #E2E8F0; font-family: 'Segoe UI', sans-serif; }"
+    QMessageBox info_box(this);
+    info_box.setWindowTitle(StormLang(
+        QStringLiteral("Настройки сброшены"),
+        QStringLiteral("Settings Reset"),
+        QStringLiteral("Einstellungen zurückgesetzt"),
+        QStringLiteral("Paramètres réinitialisés"),
+        QStringLiteral("设置已重置"),
+        QStringLiteral("設定がリセットされました")
     ));
-
-    auto* dlg_layout = new QVBoxLayout(&reportDialog);
-    dlg_layout->setContentsMargins(18, 16, 18, 16);
-    dlg_layout->setSpacing(12);
-
-    auto* headerCard = new QFrame(&reportDialog);
-    headerCard->setStyleSheet(QStringLiteral(
-        "QFrame {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 210, 255, 0.15), stop:1 rgba(2, 132, 199, 0.05));"
-        "    border: 1px solid rgba(0, 210, 255, 0.35);"
-        "    border-radius: 8px;"
-        "}"
+    info_box.setText(StormLang(
+        QStringLiteral("Все параметры эмуляции успешно возвращены к значениям по умолчанию."),
+        QStringLiteral("All emulation settings have been successfully restored to defaults."),
+        QStringLiteral("Alle Emulationseinstellungen wurden erfolgreich auf die Standardwerte zurückgesetzt."),
+        QStringLiteral("Tous les paramètres d'émulation ont été restaurés avec succès aux valeurs par défaut."),
+        QStringLiteral("所有模拟设置已成功恢复为默认值。"),
+        QStringLiteral("すべてのエミュレーション設定が正常にデフォルトに戻されました。")
     ));
-    auto* headerLayout = new QHBoxLayout(headerCard);
-    headerLayout->setContentsMargins(12, 10, 12, 10);
-    headerLayout->setSpacing(10);
-
-    auto* iconLabel = new QLabel(QStringLiteral("⚡"), headerCard);
-    iconLabel->setStyleSheet(QStringLiteral("font-size: 24px; background: transparent; border: none;"));
-    headerLayout->addWidget(iconLabel);
-
-    auto* titleLayout = new QVBoxLayout();
-    auto* titleLabel = new QLabel(tr("<b>Авто-настройки успешно рассчитаны и применены</b>"), headerCard);
-    titleLabel->setStyleSheet(QStringLiteral("font-size: 14px; color: #FFFFFF; background: transparent; border: none;"));
-    auto* subtitleLabel = new QLabel(tr("Профиль: <b style='color: #00D2FF;'>%1</b>").arg(tier_name), headerCard);
-    subtitleLabel->setStyleSheet(QStringLiteral("font-size: 12px; color: #94A3B8; background: transparent; border: none;"));
-    titleLayout->addWidget(titleLabel);
-    titleLayout->addWidget(subtitleLabel);
-    headerLayout->addLayout(titleLayout, 1);
-    dlg_layout->addWidget(headerCard);
-
-    // Hardware Card
-    auto* hwCard = new QFrame(&reportDialog);
-    hwCard->setStyleSheet(QStringLiteral(
-        "QFrame {"
-        "    background: rgba(15, 23, 42, 0.65);"
-        "    border: 1px solid rgba(148, 163, 184, 0.20);"
-        "    border-radius: 8px;"
-        "}"
-    ));
-    auto* hwLayout = new QVBoxLayout(hwCard);
-    hwLayout->setContentsMargins(12, 10, 12, 10);
-    hwLayout->setSpacing(4);
-
-    auto* hwTitle = new QLabel(tr("🖥️ <b>Характеристики обнаруженного оборудования:</b>"), hwCard);
-    hwTitle->setStyleSheet(QStringLiteral("color: #38BDF8; font-size: 12px; background: transparent; border: none;"));
-    hwLayout->addWidget(hwTitle);
-
-    QString vram_str = vram_bytes > 0 ? QStringLiteral(" (%1 ГБ VRAM)").arg(vram_gb, 0, 'f', 1) : QString();
-    QString hw_text = QStringLiteral(
-        "• <b>ЦП:</b> %1 (%2 ядер / %3 потоков)<br>"
-        "• <b>ГПУ:</b> %4%5<br>"
-        "• <b>ОЗУ:</b> %6 ГБ (доступно: %7 ГБ)<br>"
-        "• <b>Экран:</b> %8x%9 @ %10 Гц<br>"
-        "• <b>Питание:</b> %11"
-    ).arg(cpu_name)
-     .arg(core_count)
-     .arg(thread_count)
-     .arg(gpu_name)
-     .arg(vram_str)
-     .arg(total_ram_gb, 0, 'f', 1)
-     .arg(avail_ram_gb, 0, 'f', 1)
-     .arg(screen_res.width())
-     .arg(screen_res.height())
-     .arg(refresh_rate)
-     .arg(power_text);
-
-    auto* hwLabel = new QLabel(hw_text, hwCard);
-    hwLabel->setTextFormat(Qt::RichText);
-    hwLabel->setStyleSheet(QStringLiteral("color: #CBD5E1; font-size: 11.5px; line-height: 1.4; background: transparent; border: none;"));
-    hwLayout->addWidget(hwLabel);
-    dlg_layout->addWidget(hwCard);
-
-    // Settings Card
-    auto* settingsCard = new QFrame(&reportDialog);
-    settingsCard->setStyleSheet(QStringLiteral(
-        "QFrame {"
-        "    background: rgba(0, 210, 255, 0.05);"
-        "    border: 1px solid rgba(0, 210, 255, 0.25);"
-        "    border-radius: 8px;"
-        "}"
-    ));
-    auto* sLayout = new QVBoxLayout(settingsCard);
-    sLayout->setContentsMargins(12, 10, 12, 10);
-    sLayout->setSpacing(4);
-
-    auto* sTitle = new QLabel(tr("⚙️ <b>Параметры авто-настроек (производительность оборудования):</b>"), settingsCard);
-    sTitle->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 12px; background: transparent; border: none;"));
-    sLayout->addWidget(sTitle);
-
-    QString s_text;
-    for (const auto& item : applied_list) {
-        s_text += QStringLiteral("✓ %1<br>").arg(item);
-    }
-    auto* sLabel = new QLabel(s_text, settingsCard);
-    sLabel->setTextFormat(Qt::RichText);
-    sLabel->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.4; background: transparent; border: none;"));
-    sLayout->addWidget(sLabel);
-    dlg_layout->addWidget(settingsCard);
-
-    auto* okBtn = new QPushButton(tr("Готово"), &reportDialog);
-    okBtn->setStyleSheet(QStringLiteral(
-        "QPushButton {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
-        "    color: #050B14;"
-        "    font-weight: bold;"
-        "    font-size: 13px;"
-        "    padding: 8px 24px;"
-        "    border-radius: 6px;"
-        "    border: 1px solid #00F0FF;"
-        "}"
-        "QPushButton:hover {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #00D2FF);"
-        "    color: #FFFFFF;"
-        "}"
-        "QPushButton:pressed {"
-        "    background: #0284C7;"
-        "}"
-    ));
-    connect(okBtn, &QPushButton::clicked, &reportDialog, &QDialog::accept);
-
-    auto* btn_layout = new QHBoxLayout();
-    btn_layout->setAlignment(Qt::AlignCenter);
-    btn_layout->addWidget(okBtn);
-    dlg_layout->addLayout(btn_layout);
-
-    reportDialog.exec();
+    info_box.setIcon(QMessageBox::Information);
+    info_box.exec();
 }

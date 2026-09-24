@@ -19,7 +19,6 @@
 #include "core/core.h"
 
 #include "launch_timestamp_cache.h"
-#include "core/hle/service/game_fix_database.h"
 #include "core/core_timing.h"
 #include "core/cpu_manager.h"
 #include "core/debugger/debugger.h"
@@ -329,9 +328,6 @@ struct System::Impl {
 
         if (params.program_id != 0) {
             Settings::SetCurrentProgramID(params.program_id);
-            if (Core::GameFixDatabase::AreFixesEnabled()) {
-                Core::GameFixDatabase::ApplyProfileDirectly(params.program_id);
-            }
         }
 
         InitializeKernel(system);

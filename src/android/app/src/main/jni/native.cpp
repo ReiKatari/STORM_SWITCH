@@ -348,17 +348,6 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     if (per_game_config != nullptr) {
         per_game_config->ReloadAllValues();
     }
-    if (Core::GameFixDatabase::AreFixesEnabled()) {
-        u64 prog_id = 0;
-        auto loader = Loader::GetLoader(m_system, m_vfs->OpenFile(filepath, FileSys::OpenMode::Read));
-        if (loader) {
-            loader->ReadProgramId(prog_id);
-        }
-        if (prog_id != 0) {
-            Core::GameFixDatabase::ApplyProfileDirectly(prog_id);
-            LOG_INFO(Frontend, "Applied in-memory runtime GameFix for {:#016x}", prog_id);
-        }
-    }
 #ifdef __ANDROID__
     // On Android devices, always clamp memory_layout_mode to standard 4GB DRAM (mode 0)
     // to protect against Low Memory Killer Daemon (lmkd) SIGKILL on devices with <= 8GB RAM.

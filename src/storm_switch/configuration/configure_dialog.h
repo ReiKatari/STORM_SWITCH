@@ -104,8 +104,7 @@ private:
 
     std::vector<VkDeviceInfo::Record>& vk_records;
     bool m_is_changing_language{false};
-    QPushButton* m_auto_settings_btn{nullptr};
+    QPushButton* m_restore_defaults_btn{nullptr};
 
-    void OnAutoSettingsClicked();
-    void DetectHardwareAndApplyAutoSettings();
+    void OnRestoreDefaultsClicked();
 };

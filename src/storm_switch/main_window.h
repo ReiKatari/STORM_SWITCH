@@ -278,19 +278,9 @@ private:
     void BootGame(const QString& filename, Service::AM::FrontendAppletParameters params,
                   StartGameType with_config = StartGameType::Normal);
     void BootGameFromList(const QString& filename, StartGameType with_config);
-    enum class GameFixDialogResult {
-        ApplyAndLaunch,
-        LaunchWithoutChanges,
-        Cancel,
-    };
-
-    GameFixDialogResult ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show = false);
-    void OnResetGameFixSuppression();
-    void OnAutoTuneSettings();
     void OnOpenStormGamesWorld();
     void OnOpenStormSaveSync(u64 target_program_id = 0);
     void OnOpenLogViewer();
-    void OnApplyAutoCorrection();
     void RestoreSessionSettings();
     void ShutdownGame();
 
@@ -608,8 +598,6 @@ private:
     };
 
     StormSessionBackup m_session_backup;
-    QPushButton* auto_correction_button = nullptr;
-    bool m_auto_correction_applied = false;
 
     // Status bar elements
     QLabel* message_label = nullptr;
@@ -731,8 +719,6 @@ private:
     FloatingTranslateButton* floating_translate_button{nullptr};
     GameTranslator* m_game_translator{nullptr};
     InGameNotificationOverlay* in_game_notification{nullptr};
-    QAction* reset_gamefix_action{nullptr};
-    QAction* autotune_action{nullptr};
     QAction* storm_games_world_action{nullptr};
     QAction* storm_save_sync_action{nullptr};
     QAction* log_viewer_action{nullptr};

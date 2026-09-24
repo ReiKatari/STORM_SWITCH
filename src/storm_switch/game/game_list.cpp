@@ -563,7 +563,6 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         shortcut_menu->addAction(tr("В меню приложений"));
 #endif
     context_menu.addSeparator();
-    QAction* game_fix_action = context_menu.addAction(tr("🛡️ Авто-исправление..."));
     QAction* mod_manager_action = context_menu.addAction(tr("🧩 Менеджер модов..."));
     QAction* cheats_action = context_menu.addAction(tr("✨ Чит-коды..."));
     QAction* properties = context_menu.addAction(tr("⚙️ Свойства / Настройки игры..."));
@@ -572,7 +571,6 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     favorite->setVisible(program_id != 0);
     favorite->setCheckable(true);
     favorite->setChecked(UISettings::values.favorited_ids.contains(program_id));
-    game_fix_action->setVisible(program_id != 0);
     reset_game_settings->setVisible(program_id != 0);
     mod_manager_action->setVisible(program_id != 0);
     cheats_action->setVisible(program_id != 0);
@@ -586,10 +584,6 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     remove_vk_shader_cache->setVisible(program_id != 0);
     remove_shader_cache->setVisible(program_id != 0);
     remove_all_content->setVisible(program_id != 0);
-
-    connect(game_fix_action, &QAction::triggered, this, [this, program_id, path]() {
-        emit OpenGameFixRequested(program_id, QString::fromStdString(path));
-    });
 
     connect(mod_manager_action, &QAction::triggered, this, [this, program_id, path]() {
         emit OpenModManagerRequested(program_id, QString::fromStdString(path));
