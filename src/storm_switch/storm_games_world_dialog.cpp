@@ -1032,12 +1032,61 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
     catalog_reply->deleteLater();
     catalog_reply = nullptr;
 
-    ParseCatalogData(raw_data);
-    StormCatalogCache::Instance().SaveCache(raw_data);
+    auto parse_bool_val = [](const QJsonValue bitand v) -> bool {
+        if (v.isBool()) return v.toBool();
+        if (v.isDouble()) return v.toInt() > 0;
+        if (v.isString()) {
+            const QString s = v.toString().trimmed().toLower();
+            return s == QStringLiteral("true") or s == QStringLiteral("1") or s == QStringLiteral("yes");
+        }
+        return false;
+    };
+
+    // Filter incoming catalog strictly so only Nintendo Switch games with real existing files are kept
+    QJsonArray filtered_arr;
+    const QJsonDocument incoming_doc = QJsonDocument::fromJson(raw_data);
+    if (incoming_doc.isArray()) {
+        for (const auto bitand val : incoming_doc.array()) {
+            if (!val.isObject()) continue;
+            const QJsonObject obj = val.toObject();
+            const QString platform = obj[QStringLiteral("platformName")].toString();
+            const QString platform_type = obj[QStringLiteral("platformTypeName")].toString();
+            const bool fe = parse_bool_val(obj[QStringLiteral("fileExists")]);
+            const bool hf = parse_bool_val(obj[QStringLiteral("hasFile")]);
+            const QString sz = obj[QStringLiteral("size")].toString().trimmed();
+            const bool sz_ok = !sz.isEmpty() and
+                               sz != QStringLiteral("—") and
+                               sz != QStringLiteral("null") and
+                               sz != QStringLiteral("0") and
+                               sz != QStringLiteral("0 B") and
+                               sz != QStringLiteral("0,00 B") and
+                               sz != QStringLiteral("0.00 B") and
+                               sz != QStringLiteral("0,00 MB") and
+                               sz != QStringLiteral("0.00 MB") and
+                               !sz.startsWith(QStringLiteral("0 B")) and
+                               !sz.startsWith(QStringLiteral("0.00")) and
+                               !sz.startsWith(QStringLiteral("0,00"));
+
+            bool pos_bytes = true;
+            if (obj.contains(QStringLiteral("fileSizeBytes")) and !obj[QStringLiteral("fileSizeBytes")].isNull()) {
+                pos_bytes = (obj[QStringLiteral("fileSizeBytes")].toVariant().toLongLong() > 0);
+            }
+
+            if (platform == QStringLiteral("Nintendo Switch") and
+                platform_type == QStringLiteral("CONSOLES") and
+                fe and hf and sz_ok and pos_bytes) {
+                filtered_arr.append(obj);
+            }
+        }
+    }
+
+    const QByteArray filtered_bytes = QJsonDocument(filtered_arr).toJson(QJsonDocument::Compact);
+    ParseCatalogData(filtered_bytes);
+    StormCatalogCache::Instance().SaveCache(filtered_bytes);
     status_label->setText(tr("Каталог обновлен. Доступно для загрузки игр Nintendo Switch: %1").arg(all_games.size()));
 }
 
-void StormGamesWorldDialog::ParseCatalogData(const QByteArray& raw_data) {
+void StormGamesWorldDialog::ParseCatalogData(const QByteArray bitand raw_data) {
     if (is_closing) return;
     const QJsonDocument doc = QJsonDocument::fromJson(raw_data);
     if (!doc.isArray()) {
@@ -1050,21 +1099,51 @@ void StormGamesWorldDialog::ParseCatalogData(const QByteArray& raw_data) {
     all_games.clear();
     const QJsonArray arr = doc.array();
 
-    for (const auto& val : arr) {
+    auto parse_bool_val = [](const QJsonValue bitand v) -> bool {
+        if (v.isBool()) return v.toBool();
+        if (v.isDouble()) return v.toInt() > 0;
+        if (v.isString()) {
+            const QString s = v.toString().trimmed().toLower();
+            return s == QStringLiteral("true") or s == QStringLiteral("1") or s == QStringLiteral("yes");
+        }
+        return false;
+    };
+
+    for (const auto bitand val : arr) {
         if (!val.isObject()) continue;
         const QJsonObject obj = val.toObject();
 
         const QString platform = obj[QStringLiteral("platformName")].toString();
         const QString platform_type = obj[QStringLiteral("platformTypeName")].toString();
-        const bool file_exists = obj[QStringLiteral("fileExists")].toBool();
-        const bool has_file = obj[QStringLiteral("hasFile")].toBool();
+        const bool file_exists = parse_bool_val(obj[QStringLiteral("fileExists")]);
+        const bool has_file = parse_bool_val(obj[QStringLiteral("hasFile")]);
         const QString size_str = obj[QStringLiteral("size")].toString().trimmed();
 
-        // Strict requirement: Nintendo Switch CONSOLES only, and ONLY games with existing files!
-        if (platform == QStringLiteral("Nintendo Switch") &&
-            platform_type == QStringLiteral("CONSOLES") &&
-            file_exists && has_file &&
-            !size_str.isEmpty() && size_str != QStringLiteral("—")) {
+        const bool size_valid = !size_str.isEmpty() and
+                                size_str != QStringLiteral("—") and
+                                size_str != QStringLiteral("null") and
+                                size_str != QStringLiteral("0") and
+                                size_str != QStringLiteral("0 B") and
+                                size_str != QStringLiteral("0,00 B") and
+                                size_str != QStringLiteral("0.00 B") and
+                                size_str != QStringLiteral("0,00 MB") and
+                                size_str != QStringLiteral("0.00 MB") and
+                                !size_str.startsWith(QStringLiteral("0 B")) and
+                                !size_str.startsWith(QStringLiteral("0.00")) and
+                                !size_str.startsWith(QStringLiteral("0,00"));
+
+        bool has_positive_bytes = true;
+        if (obj.contains(QStringLiteral("fileSizeBytes")) and !obj[QStringLiteral("fileSizeBytes")].isNull()) {
+            has_positive_bytes = (obj[QStringLiteral("fileSizeBytes")].toVariant().toLongLong() > 0);
+        }
+
+        // Strict requirement: Nintendo Switch CONSOLES only, and ONLY games with verified existing files!
+        if (platform == QStringLiteral("Nintendo Switch") and
+            platform_type == QStringLiteral("CONSOLES") and
+            file_exists and
+            has_file and
+            size_valid and
+            has_positive_bytes) {
 
             StormWorldGame g;
             g.id = obj[QStringLiteral("id")].toInt();
@@ -1240,6 +1319,10 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
     items_to_add.reserve(all_games.size());
 
     for (const auto bitand g : all_games) {
+        if (g.id >= 0 and (!g.file_exists or !g.has_file or g.size.trimmed().isEmpty() or g.size.trimmed() == QStringLiteral("—"))) {
+            continue;
+        }
+
         if (!lower_filter.isEmpty()) {
             const bool match_title = g.title.toLower().contains(lower_filter);
             const bool match_final = g.final_title.toLower().contains(lower_filter);

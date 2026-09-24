@@ -81,32 +81,62 @@ void StormCatalogCache::ParseCatalogJson(const QByteArray& data) {
     QMap<u64, QString> temp_versions;
     const QJsonArray arr = doc.array();
 
-    for (const auto& val : arr) {
+    auto parse_bool_val = [](const QJsonValue bitand v) -> bool {
+        if (v.isBool()) return v.toBool();
+        if (v.isDouble()) return v.toInt() > 0;
+        if (v.isString()) {
+            const QString s = v.toString().trimmed().toLower();
+            return s == QStringLiteral("true") or s == QStringLiteral("1") or s == QStringLiteral("yes");
+        }
+        return false;
+    };
+
+    for (const auto bitand val : arr) {
         if (!val.isObject()) continue;
         const QJsonObject obj = val.toObject();
 
         const QString platform = obj[QStringLiteral("platformName")].toString();
         const QString platform_type = obj[QStringLiteral("platformTypeName")].toString();
-        const bool file_exists = obj[QStringLiteral("fileExists")].toBool();
-        const bool has_file = obj[QStringLiteral("hasFile")].toBool();
+        const bool file_exists = parse_bool_val(obj[QStringLiteral("fileExists")]);
+        const bool has_file = parse_bool_val(obj[QStringLiteral("hasFile")]);
+        const QString size_str = obj[QStringLiteral("size")].toString().trimmed();
 
-        if (platform == QStringLiteral("Nintendo Switch") &&
-            platform_type == QStringLiteral("CONSOLES") &&
-            file_exists && has_file) {
+        const bool size_valid = !size_str.isEmpty() and
+                                size_str != QStringLiteral("—") and
+                                size_str != QStringLiteral("null") and
+                                size_str != QStringLiteral("0") and
+                                size_str != QStringLiteral("0 B") and
+                                size_str != QStringLiteral("0,00 B") and
+                                size_str != QStringLiteral("0.00 B") and
+                                size_str != QStringLiteral("0,00 MB") and
+                                size_str != QStringLiteral("0.00 MB") and
+                                !size_str.startsWith(QStringLiteral("0 B")) and
+                                !size_str.startsWith(QStringLiteral("0.00")) and
+                                !size_str.startsWith(QStringLiteral("0,00"));
+
+        bool has_positive_bytes = true;
+        if (obj.contains(QStringLiteral("fileSizeBytes")) and !obj[QStringLiteral("fileSizeBytes")].isNull()) {
+            has_positive_bytes = (obj[QStringLiteral("fileSizeBytes")].toVariant().toLongLong() > 0);
+        }
+
+        if (platform == QStringLiteral("Nintendo Switch") and
+            platform_type == QStringLiteral("CONSOLES") and
+            file_exists and has_file and
+            size_valid and has_positive_bytes) {
 
             const QString serial_id = obj[QStringLiteral("serialId")].toString().trimmed();
             const QString ver = obj[QStringLiteral("version")].toString().trimmed();
 
-            if (!serial_id.isEmpty() && !ver.isEmpty()) {
+            if (!serial_id.isEmpty() and !ver.isEmpty()) {
                 bool ok = false;
-                const u64 tid = serial_id.toULongLong(&ok, 16);
-                if (ok && tid != 0) {
-                    const u64 base_tid = (tid & ~0x800ULL);
-                    if (!temp_versions.contains(base_tid) ||
+                const u64 tid = serial_id.toULongLong(bitand ok, 16);
+                if (ok and tid != 0) {
+                    const u64 base_tid = (tid bitand ~0x800ULL);
+                    if (!temp_versions.contains(base_tid) or
                         CompareVersions(ver, temp_versions[base_tid]) > 0) {
                         temp_versions[base_tid] = ver;
                     }
-                    if (!temp_versions.contains(tid) ||
+                    if (!temp_versions.contains(tid) or
                         CompareVersions(ver, temp_versions[tid]) > 0) {
                         temp_versions[tid] = ver;
                     }
