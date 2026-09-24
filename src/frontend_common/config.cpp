@@ -1058,8 +1058,9 @@ int Config::BeginArray(const std::string& array) {
 }
 
 void Config::EndArray() {
-    // You can't end a config array before starting one
-    ASSERT(!array_stack.empty());
+    if (array_stack.empty()) {
+        return;
+    }
 
     // Set the array size to 0 if the array is ended without changing the index
     int size = 0;
@@ -1087,17 +1088,13 @@ void Config::EndArray() {
 }
 
 void Config::SetArrayIndex(const int index) {
-    // You can't set the array index if you haven't started one yet
-    ASSERT(!array_stack.empty());
+    if (array_stack.empty()) {
+        return;
+    }
 
     const int array_index = index + 1;
-
-    // You can't exceed the known max size of the array by more than 1
-    ASSERT(array_stack.front().size + 1 >= array_index);
-
-    // Change the config array size to the current index since you may want
-    // to reduce the number of elements that you read back from the config
-    // in the future.
-    array_stack.back().size = array_index;
+    if (array_stack.back().size < array_index) {
+        array_stack.back().size = array_index;
+    }
     array_stack.back().index = array_index;
 }
