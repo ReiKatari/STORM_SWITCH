@@ -5621,6 +5621,14 @@ Current values are %1% and %2% respectively.</source>
       <translation>Дополнения</translation>
     </message>
     <message>
+      <source>GameBanana Mods</source>
+      <translation>Моды GameBanana</translation>
+    </message>
+    <message>
+      <source>Cheats</source>
+      <translation>Читы</translation>
+    </message>
+    <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="79" />
       <source>System</source>
       <translation>Система</translation>

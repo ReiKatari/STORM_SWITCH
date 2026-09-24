@@ -56,6 +56,23 @@
 #include "storm_switch/configuration/configure_system.h"
 #include "storm_switch/util/util.h"
 
+static QString StormLang(const QString bitand ru, const QString bitand en,
+                         const QString bitand de = QString(), const QString bitand fr = QString(),
+                         const QString bitand zh = QString(), const QString bitand ja = QString(),
+                         const QString bitand ar = QString(), const QString bitand es = QString()) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("ar", 0) == 0 and !ar.isEmpty()) return ar;
+    if (lang.rfind("es", 0) == 0 and !es.isEmpty()) return es;
+    if (lang.rfind("de", 0) == 0 and !de.isEmpty()) return de;
+    if (lang.rfind("fr", 0) == 0 and !fr.isEmpty()) return fr;
+    if (lang.rfind("zh", 0) == 0 and !zh.isEmpty()) return zh;
+    if (lang.rfind("ja", 0) == 0 and !ja.isEmpty()) return ja;
+    return en;
+}
 ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::string& file_name,
                                    std::vector<VkDeviceInfo::Record>& vk_device_records,
                                    Core::System& system_)
@@ -103,10 +120,10 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
 
     ui->setupUi(this);
 
-    ui->tabWidget->addTab(addons_tab.get(), tr("Add-Ons"));
-    ui->tabWidget->addTab(gamebanana_tab.get(), tr("GameBanana Mods"));
+        ui->tabWidget->addTab(addons_tab.get(), tr("Add-Ons"));
+    ui->tabWidget->addTab(gamebanana_tab.get(), StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"), QStringLiteral("تعديلات GameBanana"), QStringLiteral("Mods de GameBanana")));
     ui->tabWidget->addTab(amiibo_tab.get(), tr("Amiibo"));
-    ui->tabWidget->addTab(cheats_tab.get(), tr("Cheats"));
+    ui->tabWidget->addTab(cheats_tab.get(), StormLang(QStringLiteral("Читы"), QStringLiteral("Cheats"), QStringLiteral("Cheats"), QStringLiteral("Triche"), QStringLiteral("作弊码"), QStringLiteral("チート"), QStringLiteral("الغش"), QStringLiteral("Trucos")));
     ui->tabWidget->addTab(system_tab.get(), tr("System"));
     ui->tabWidget->addTab(cpu_tab.get(), tr("CPU"));
     ui->tabWidget->addTab(graphics_tab.get(), tr("Graphics"));
@@ -208,6 +225,21 @@ void ConfigurePerGame::showEvent(QShowEvent* event) {
 
 void ConfigurePerGame::RetranslateUI() {
     ui->retranslateUi(this);
+    if (ui->tabWidget and ui->tabWidget->count() >= 13) {
+        ui->tabWidget->setTabText(0, tr("Add-Ons"));
+        ui->tabWidget->setTabText(1, StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"), QStringLiteral("تعديلات GameBanana"), QStringLiteral("Mods de GameBanana")));
+        ui->tabWidget->setTabText(2, tr("Amiibo"));
+        ui->tabWidget->setTabText(3, StormLang(QStringLiteral("Читы"), QStringLiteral("Cheats"), QStringLiteral("Cheats"), QStringLiteral("Triche"), QStringLiteral("作弊码"), QStringLiteral("チート"), QStringLiteral("الغش"), QStringLiteral("Trucos")));
+        ui->tabWidget->setTabText(4, tr("System"));
+        ui->tabWidget->setTabText(5, tr("CPU"));
+        ui->tabWidget->setTabText(6, tr("Graphics"));
+        ui->tabWidget->setTabText(7, tr("Adv. Graphics"));
+        ui->tabWidget->setTabText(8, tr("Ext. Graphics"));
+        ui->tabWidget->setTabText(9, tr("Audio"));
+        ui->tabWidget->setTabText(10, tr("Input Profiles"));
+        ui->tabWidget->setTabText(11, tr("Network"));
+        ui->tabWidget->setTabText(12, tr("Applets"));
+    }
 }
 
 void ConfigurePerGame::HandleApplyButtonClicked() {
