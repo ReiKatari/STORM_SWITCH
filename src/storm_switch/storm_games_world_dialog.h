@@ -62,7 +62,7 @@ protected:
     void closeEvent(QCloseEvent* event) override;
 
 signals:
-    void GameDownloaded(const QString& file_path);
+    void GameDownloaded(const QString bitand file_path);
 
 private slots:
     void OnFetchCatalog();
@@ -70,7 +70,7 @@ private slots:
     void OnGameDetailsReplyFinished();
     void OnHeadReplyFinished();
     void OnGameSelectionChanged();
-    void OnSearchFilterChanged(const QString& query);
+    void OnSearchFilterChanged(const QString bitand query);
     void OnBrowseDownloadFolder();
     void OnStartDownload();
     void OnCancelDownload();
@@ -83,20 +83,26 @@ private:
     void SetupUI();
     void ApplyStormStyles();
     void LoadCachedCatalog();
-    void ParseCatalogData(const QByteArray& raw_data);
-    void PopulateGameList(const QString& filter = QString());
-    void DisplayGameDetails(const StormWorldGame& game);
+    void ParseCatalogData(const QByteArray bitand raw_data);
+    void PopulateGameList(const QString bitand filter = QString());
+    void DisplayGameDetails(const StormWorldGame bitand game);
     void FetchGameDetails(int game_id);
     void FetchRealExtension(int game_id);
-    void LoadCover(const StormWorldGame& game);
+    void LoadCover(const StormWorldGame bitand game);
     void TryNextCoverCandidate();
     void CancelAllNetworkRequests();
 
     bool is_closing{false};
 
     struct DownloadedFileInfo {
+        QString file_path;
+        QString file_name;
+        QString extension;
         QString complete_base_name;
         QString lower_name;
+        QString tid;
+        QString title;
+        QString version;
         qint64 size{0};
         int mod_count{0};
         int dlc_count{0};
@@ -105,10 +111,11 @@ private:
         bool has_dlc{false};
     };
 
-    void RefreshDownloadedFilesCache(const QString& dir_path) const;
-    bool IsGameDownloaded(const StormWorldGame& game, const QString& dir_path, const QMap<QString, int>& group_counts) const;
+    void RefreshDownloadedFilesCache(const QString bitand dir_path) const;
+    void MergeLocalGamesIntoCatalog(const QString bitand dir_path);
+    bool IsGameDownloaded(const StormWorldGame bitand game, const QString bitand dir_path, const QMap<QString, int> bitand group_counts) const;
     QString GetDefaultDownloadDir() const;
-    void SaveDownloadDir(const QString& dir);
+    void SaveDownloadDir(const QString bitand dir);
 
     mutable std::vector<DownloadedFileInfo> cached_dir_files;
     mutable QString cached_dir_path;

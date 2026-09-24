@@ -167,17 +167,12 @@ void KScheduler::Initialize(KernelCore& kernel, KThread* main_thread, KThread* i
 
     // Set the current thread.
     m_current_thread = main_thread;
-    m_consecutive_quanta.store(0, std::memory_order_relaxed);
-    m_starving_thread = nullptr;
-    m_monopolizing_thread = nullptr;
-    m_last_starved_thread = nullptr;
 }
 
 void KScheduler::Activate(KernelCore bitand kernel) {
     ASSERT(GetCurrentThread(kernel).GetDisableDispatchCount() == 1);
 
     m_is_active = true;
-    m_state.needs_scheduling = true;
     RescheduleCurrentCore(kernel);
 }
 
@@ -226,18 +221,6 @@ u64 KScheduler::UpdateHighestPriorityThreadsImpl(KernelCore& kernel) {
     for (size_t core_id = 0; core_id < Core::Hardware::NUM_CPU_CORES; core_id++) {
         KThread* top_thread = priority_queue.GetScheduledFront(static_cast<s32>(core_id));
         if (top_thread != nullptr) {
-            auto bitand core_scheduler = kernel.Scheduler(core_id);
-            if (core_scheduler.m_starving_thread != nullptr) {
-                if (top_thread == core_scheduler.m_monopolizing_thread and
-                    core_scheduler.m_starving_thread->GetRawState() == ThreadState::Runnable and
-                    core_scheduler.m_starving_thread->GetActiveCore() == static_cast<s32>(core_id)) {
-                    top_thread = core_scheduler.m_starving_thread;
-                } else {
-                    core_scheduler.m_starving_thread = nullptr;
-                    core_scheduler.m_monopolizing_thread = nullptr;
-                }
-            }
-
             // We need to check if the thread's process has a pinned thread.
             if (KProcess* parent = top_thread->GetOwnerProcess()) {
                 // Check that there's a pinned thread other than the current top thread.
@@ -357,8 +340,6 @@ void KScheduler::SwitchThread(KernelCore& kernel, KThread* next_thread) {
     if (next_thread == cur_thread) {
         return;
     }
-
-    m_consecutive_quanta.store(0, std::memory_order_relaxed);
 
     // Next thread is now known not to be nullptr, and must not be dispatchable.
     ASSERT(next_thread->GetDisableDispatchCount() == 1);
@@ -540,18 +521,6 @@ void KScheduler::OnThreadStateChanged(KernelCore& kernel, KThread* thread, Threa
     if (const ThreadState cur_state = thread->GetRawState(); cur_state != old_state) {
         // Update the priority queues.
         if (old_state == ThreadState::Runnable) {
-            for (size_t i = 0; i < Core::Hardware::NUM_CPU_CORES; ++i) {
-                auto bitand sched = kernel.Scheduler(i);
-                if (sched.m_starving_thread == thread) {
-                    sched.m_starving_thread = nullptr;
-                }
-                if (sched.m_monopolizing_thread == thread) {
-                    sched.m_monopolizing_thread = nullptr;
-                }
-                if (sched.m_last_starved_thread == thread) {
-                    sched.m_last_starved_thread = nullptr;
-                }
-            }
             // If we were previously runnable, then we're not runnable now, and we should remove.
             GetPriorityQueue(kernel).Remove(thread);
             IncrementScheduledCount(thread);
@@ -913,66 +882,5 @@ void KScheduler::RescheduleCores(KernelCore& kernel, u64 core_mask) {
     }
 }
 
-void KScheduler::ResetStarvation() {
-    m_consecutive_quanta.store(0, std::memory_order_relaxed);
-    m_starving_thread = nullptr;
-    m_monopolizing_thread = nullptr;
-}
-
-void KScheduler::CheckStarvation(KernelCore* kernel) {
-    if (kernel == nullptr) {
-        return;
-    }
-    ASSERT(IsSchedulerLockedByCurrentThread(*kernel));
-
-    auto bitand priority_queue = GetPriorityQueue(*kernel);
-    KThread* top = priority_queue.GetScheduledFront(m_core_id);
-    KThread* cur = m_current_thread.load(std::memory_order_relaxed);
-
-    if (top == nullptr or cur == nullptr or cur == m_idle_thread) {
-        m_consecutive_quanta.store(0, std::memory_order_relaxed);
-        m_starving_thread = nullptr;
-        m_monopolizing_thread = nullptr;
-        return;
-    }
-
-    if (m_starving_thread != nullptr) {
-        m_consecutive_quanta.store(0, std::memory_order_relaxed);
-        m_starving_thread = nullptr;
-        m_monopolizing_thread = nullptr;
-        SetSchedulerUpdateNeeded(*kernel);
-        return;
-    }
-
-    if (cur == top) {
-        KThread* candidate = nullptr;
-        if (m_last_starved_thread != nullptr and
-            m_last_starved_thread->GetRawState() == ThreadState::Runnable and
-            m_last_starved_thread->GetActiveCore() == m_core_id) {
-            candidate = priority_queue.GetScheduledNext(m_core_id, m_last_starved_thread);
-        }
-        if (candidate == nullptr) {
-            candidate = priority_queue.GetScheduledNext(m_core_id, top);
-        }
-
-        if (candidate != nullptr and candidate != top) {
-            u32 quanta = m_consecutive_quanta.fetch_add(1, std::memory_order_relaxed) + 1;
-            if (quanta >= 2) {
-                m_starving_thread = candidate;
-                m_monopolizing_thread = top;
-                m_last_starved_thread = candidate;
-                m_consecutive_quanta.store(0, std::memory_order_relaxed);
-                SetSchedulerUpdateNeeded(*kernel);
-                LOG_INFO(Kernel, "Starvation avoidance: core {} granting quantum to starving TID {} (prio {}) over TID {} (prio {})",
-                         m_core_id, candidate->GetThreadId(), candidate->GetPriority(),
-                         top->GetThreadId(), top->GetPriority());
-            }
-        } else {
-            m_consecutive_quanta.store(0, std::memory_order_relaxed);
-        }
-    } else {
-        m_consecutive_quanta.store(0, std::memory_order_relaxed);
-    }
-}
 
 } // namespace Kernel

@@ -125,6 +125,8 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
     switch (exception) {
     case Dynarmic::A64::Exception::WaitForInterrupt:
     case Dynarmic::A64::Exception::WaitForEvent:
+        m_parent.m_jit->HaltExecution(BreakLoop);
+        return;
     case Dynarmic::A64::Exception::SendEvent:
     case Dynarmic::A64::Exception::SendEventLocal:
     case Dynarmic::A64::Exception::Yield:

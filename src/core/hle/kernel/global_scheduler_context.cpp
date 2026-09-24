@@ -50,7 +50,6 @@ void GlobalSchedulerContext::PreemptThreads(KernelCore& kernel) noexcept {
 
     for (u32 core_id = 0; core_id < per_core.size(); core_id++) {
         KScheduler::RotateScheduledQueue(kernel, core_id, per_core[core_id]);
-        kernel.Scheduler(core_id).CheckStarvation(std::addressof(kernel));
     }
 }
 

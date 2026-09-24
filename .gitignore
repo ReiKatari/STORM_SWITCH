@@ -9,6 +9,7 @@
 doc-build/
 AppDir/
 uruntime
+compile.bat
 
 # dtrace and ktrace stuffs
 [dk]trace-out/
