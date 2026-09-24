@@ -283,16 +283,6 @@ QProgressBar::chunk {
       <item>
        <layout class="QHBoxLayout" name="bottom_layout">
         <item>
-         <widget class="QLabel" name="sys_footer">
-          <property name="styleSheet">
-           <string notr="true">color: #4b5563; font-size: 8.5pt; font-weight: 500; background: transparent;</string>
-          </property>
-          <property name="text">
-           <string>Nintendo Switch Emulation Layer • High Performance Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <spacer name="spacer_bottom">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>

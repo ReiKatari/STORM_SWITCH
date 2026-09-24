@@ -130,7 +130,8 @@ void CoreTiming::SyncPause(bool is_paused) {
             pause_event.Set();
         }
         event.Set();
-        while (paused_set != is_paused) {
+        int timeout_spins = 100000;
+        while (paused_set != is_paused and --timeout_spins > 0) {
             std::this_thread::yield();
         }
     }

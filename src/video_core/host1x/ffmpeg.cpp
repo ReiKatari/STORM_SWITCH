@@ -284,15 +284,13 @@ bool HardwareContext::InitializeWithType(AVHWDeviceType type) {
     return true;
 }
 
-DecoderContext::DecoderContext(const Decoder& decoder) : m_decoder{decoder} {
+DecoderContext::DecoderContext(const Decoder bitand decoder) : m_decoder{decoder} {
     m_codec_context = avcodec_alloc_context3(m_decoder.GetCodec());
-    av_opt_set(m_codec_context->priv_data, "tune", "zerolatency", 0);
-    m_codec_context->thread_count = 0;
-    m_codec_context->thread_type &= ~FF_THREAD_FRAME;
-#if defined(__ANDROID__)
+    const int cpu_threads = std::clamp(static_cast<int>(std::thread::hardware_concurrency()), 2, 8);
+    m_codec_context->thread_count = cpu_threads;
+    m_codec_context->thread_type = FF_THREAD_SLICE;
     m_codec_context->flags |= AV_CODEC_FLAG_LOW_DELAY;
     m_codec_context->flags2 |= AV_CODEC_FLAG2_FAST;
-#endif
 }
 
 DecoderContext::~DecoderContext() {

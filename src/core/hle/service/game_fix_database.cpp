@@ -1833,6 +1833,27 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
+        0x0100600017F7A000ULL,
+        "Mario and Luigi: Brothership",
+        "• Отображение сырых идентификаторов локализации (MES_SYS_UI_SAVELOAD_SUPPORTSAUTOSAVE) при русской системной локализации\n• Микрофризы и утечки памяти Unreal Engine 4\n• Просадки кадровой частоты",
+        "• Raw localization keys (MES_SYS_UI_SAVELOAD_SUPPORTSAUTOSAVE) displayed with Russian system language\n• Unreal Engine 4 memory pressure and micro-stutters\n• Framerate drops",
+        "✓ Память DRAM: 6 ГБ (устранение микрофризов UE4)\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ DRAM Memory Layout: 6GB (Fixes UE4 micro-stutters)\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "1"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\async_presentation", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "false"}
+        },
+        {0x0100600017F7A800ULL}
+    },
+    {
         0x010069200E60E000ULL,
         "Pikmin 4",
         "• Утечки памяти в открытых садах Unreal Engine 4\n• Микрофризы при спавне отряда Пикминов",

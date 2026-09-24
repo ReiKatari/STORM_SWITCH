@@ -5114,7 +5114,11 @@ void MainWindow::OnEmulationStopped() {
         QtCommon::emu_thread->disconnect();
         if (QtCommon::emu_thread->isRunning()) {
             QtCommon::emu_thread->ForceStop();
-            QtCommon::emu_thread->wait();
+            if (!QtCommon::emu_thread->wait(3000)) {
+                LOG_ERROR(Frontend, "EmuThread did not terminate in 3 seconds, terminating...");
+                QtCommon::emu_thread->terminate();
+                QtCommon::emu_thread->wait(1000);
+            }
         }
         QtCommon::emu_thread.reset();
     }

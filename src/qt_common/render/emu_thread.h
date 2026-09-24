@@ -61,6 +61,12 @@ public:
     void ForceStop() {
         LOG_WARNING(Frontend, "Force stopping EmuThread");
         m_stop_source.request_stop();
+        {
+            std::unique_lock run_lk{m_should_run_mutex};
+            m_should_run = false;
+        }
+        m_should_run_cv.notify_all();
+        m_stopped.Set();
     }
 
 private:
