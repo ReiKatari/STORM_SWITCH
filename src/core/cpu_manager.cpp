@@ -155,11 +155,18 @@ void CpuManager::PreemptSingleCore(Kernel::KernelCore& kernel, bool from_running
     }
 }
 
-void CpuManager::GuestActivate(Kernel::KernelCore& kernel) {
+void CpuManager::GuestActivate(Kernel::KernelCore bitand kernel) {
     // Similar to the HorizonKernelMain callback in HOS
     auto* scheduler = kernel.CurrentScheduler();
+    auto core_idx = kernel.CurrentPhysicalCoreIndex();
+    auto* cur_emu = kernel.GetCurrentEmuThread();
+    LOG_INFO(Kernel, "GuestActivate: entering on core {}, cur_emu_tid={}", core_idx, cur_emu ? cur_emu->GetThreadId() : 0);
     scheduler->Activate(kernel);
-    UNREACHABLE();
+    LOG_INFO(Kernel, "GuestActivate: returned from Activate on core {}, transitioning to IdleThreadFunction", core_idx);
+    if (Kernel::GetCurrentThread(kernel).GetDisableDispatchCount() == 0) {
+        Kernel::GetCurrentThread(kernel).DisableDispatch(kernel);
+    }
+    IdleThreadFunction(kernel);
 }
 
 void CpuManager::ShutdownThread(Kernel::KernelCore& kernel) {

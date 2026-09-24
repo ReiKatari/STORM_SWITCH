@@ -115,6 +115,9 @@ public:
     static void YieldWithCoreMigration(KernelCore& kernel);
     static void YieldToAnyThread(KernelCore& kernel);
 
+    void CheckStarvation(KernelCore* kernel);
+    void ResetStarvation();
+
 private:
     // Static private API.
     static KSchedulerPriorityQueue& GetPriorityQueue(KernelCore& kernel) {
@@ -140,6 +143,7 @@ private:
 
 private:
     friend class KScopedDisableDispatch;
+    friend class GlobalSchedulerContext;
 
     struct SchedulingState {
         std::atomic<bool> needs_scheduling{false};
@@ -162,6 +166,10 @@ private:
     KThread* m_switch_cur_thread{};
     KThread* m_switch_highest_priority_thread{};
     bool m_switch_from_schedule{};
+    std::atomic<u32> m_consecutive_quanta{0};
+    KThread* m_starving_thread{nullptr};
+    KThread* m_monopolizing_thread{nullptr};
+    KThread* m_last_starved_thread{nullptr};
 };
 
 class KScopedSchedulerLock : public KScopedLock<KScheduler::LockType> {

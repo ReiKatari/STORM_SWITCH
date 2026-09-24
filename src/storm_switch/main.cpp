@@ -38,11 +38,12 @@ static LONG WINAPI StormCrashHandler(EXCEPTION_POINTERS* exception_info) {
         return EXCEPTION_CONTINUE_SEARCH;
     }
     const DWORD code = exception_info->ExceptionRecord->ExceptionCode;
-    if (code != EXCEPTION_ACCESS_VIOLATION &&
-        code != EXCEPTION_ILLEGAL_INSTRUCTION &&
-        code != EXCEPTION_ARRAY_BOUNDS_EXCEEDED &&
-        code != EXCEPTION_DATATYPE_MISALIGNMENT &&
-        code != EXCEPTION_STACK_OVERFLOW) {
+    if (code != EXCEPTION_ACCESS_VIOLATION and
+        code != EXCEPTION_ILLEGAL_INSTRUCTION and
+        code != EXCEPTION_ARRAY_BOUNDS_EXCEEDED and
+        code != EXCEPTION_DATATYPE_MISALIGNMENT and
+        code != EXCEPTION_STACK_OVERFLOW and
+        code != 0xE06D7363) {
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
@@ -98,10 +99,21 @@ static LONG WINAPI StormCrashHandler(EXCEPTION_POINTERS* exception_info) {
                 fprintf(f, "Faulting Module: %s\n", mod_name);
                 fprintf(f, "Module Base: %p, Offset: 0x%llx\n", mod, (uintptr_t)exception_info->ExceptionRecord->ExceptionAddress - (uintptr_t)mod);
             }
-            if (exception_info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION &&
+            if (exception_info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION and
                 exception_info->ExceptionRecord->NumberParameters >= 2) {
                 fprintf(f, "Access Type: %s\n", exception_info->ExceptionRecord->ExceptionInformation[0] == 0 ? "Read" : (exception_info->ExceptionRecord->ExceptionInformation[0] == 1 ? "Write" : "Execute"));
                 fprintf(f, "Faulting Address: 0x%llx\n", (unsigned long long)exception_info->ExceptionRecord->ExceptionInformation[1]);
+            }
+            if (exception_info->ExceptionRecord->ExceptionCode == 0xE06D7363 and
+                exception_info->ExceptionRecord->NumberParameters >= 2) {
+                __try {
+                    auto* exc = reinterpret_cast<std::exception*>(exception_info->ExceptionRecord->ExceptionInformation[1]);
+                    if (exc) {
+                        fprintf(f, "C++ Exception: %s\n", exc->what());
+                    }
+                } __except (EXCEPTION_EXECUTE_HANDLER) {
+                    fprintf(f, "C++ Exception object could not be read\n");
+                }
             }
         }
         fclose(f);
@@ -162,9 +174,37 @@ static Qt::HighDpiScaleFactorRoundingPolicy GetHighDpiRoundingPolicy() {
 
 int main(int argc, char* argv[]) {
 #ifdef _WIN32
+    char exe_path[MAX_PATH];
+    if (GetModuleFileNameA(nullptr, exe_path, sizeof(exe_path)) > 0) {
+        char* last_slash = strrchr(exe_path, '\\');
+        if (last_slash != nullptr) {
+            *last_slash = '\0';
+            SetCurrentDirectoryA(exe_path);
+        }
+    }
     SetUnhandledExceptionFilter(StormCrashHandler);
-    AddVectoredExceptionHandler(1, StormCrashHandler);
 #endif
+    std::set_terminate([]() {
+        std::string msg = "Unknown terminate reason";
+        if (auto e = std::current_exception()) {
+            try {
+                std::rethrow_exception(e);
+            } catch (const std::exception bitand ex) {
+                msg = ex.what();
+            } catch (...) {
+                msg = "Non-std exception";
+            }
+        }
+        CreateDirectoryA("user", nullptr);
+        CreateDirectoryA("user\\crash_dumps", nullptr);
+        FILE* f = fopen("user\\crash_dumps\\crash_report.txt", "w");
+        if (f) {
+            fprintf(f, "std::terminate called on thread %lu: %s\n", GetCurrentThreadId(), msg.c_str());
+            fflush(f);
+            fclose(f);
+        }
+        abort();
+    });
     // Start background loading of TitleDB immediately at application startup
     TitleDB::TitleDatabase::Instance().EnsureLoaded();
 

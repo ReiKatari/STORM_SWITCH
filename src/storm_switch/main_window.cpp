@@ -761,6 +761,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
         LaunchFirmwareApplet(u64(Service::AM::AppletProgramId::Starter), std::nullopt);
     } else {
         if (!game_path.isEmpty()) {
+            m_is_cmd_line_launch = true;
             LOG_INFO(Frontend, "Identified game path to boot: '{}'", game_path.toStdString());
             BootGame(game_path, ApplicationAppletParameters());
         } else if (should_launch_qlaunch) {
@@ -4057,7 +4058,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         }
     }
 
-    if (dont_ask && !force_show) {
+    if ((dont_ask || m_is_cmd_line_launch) and !force_show) {
         Core::GameFixDatabase::SetFixesEnabled(true);
         Core::GameFixDatabase::ApplyProfileDirectly(title_id);
         return GameFixDialogResult::ApplyAndLaunch;
@@ -4847,6 +4848,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     // game startup only. If the user stops emulation and starts a new one, go back to the expected
     // behavior of asking.
     user_flag_cmd_line = false;
+    m_is_cmd_line_launch = false;
 
     if (!LoadROM(filename, params)) {
         RestoreSessionSettings();

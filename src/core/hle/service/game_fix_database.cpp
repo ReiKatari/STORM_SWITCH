@@ -75,6 +75,34 @@ static const std::vector<GameFixProfile> s_profiles = {
         {0x010034B00E14C800ULL}
     },
     {
+        0x010003000E146000ULL,
+        "Mario and Sonic at the Olympic Games Tokyo 2020",
+        "• Черный экран и зависание при запуске из-за задач Hedgehog Engine 2\n• Просадки кадровой частоты во время соревнований\n• Сбои синхронизации потоков",
+        "• Black screen and boot freeze in Hedgehog Engine 2 task scheduler\n• Framerate drops during competitions\n• Thread synchronization faults",
+        "✓ Точность ГПУ: Высокая (устранение черного экрана)\n✓ Пересжатие текстур ASTC: Без сжатия\n✓ Асинхронная презентация и шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
+        "✓ GPU Accuracy: High (Fixes black screen)\n✓ ASTC Texture Recompression: Uncompressed\n✓ Async Presentation and Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Memory Layout: 6GB DRAM",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\barrier_feedback_loops", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpuopt_unsafe_ignore_global_monitor", "true"},
+            {"System\\airplane_mode", "false"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        },
+        {0x010003000E146800ULL}
+    },
+    {
         0x01008F1008DA6000ULL,
         "Darkest Dungeon",
         "• Зависание и вылет вступительного видеоролика при программном декодировании NVDEC ЦП\n• Просадки кадровой частоты в подземельях\n• Сбои распределения памяти",
@@ -5584,6 +5612,8 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.cpuopt_recompile_exclusives, val == "true" || val == "1");
             } else if (full_key == "Cpu\\cpuopt_fastmem_exclusives") {
                 apply_setting(Settings::values.cpuopt_fastmem_exclusives, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_unsafe_ignore_global_monitor") {
+                apply_setting(Settings::values.cpuopt_unsafe_ignore_global_monitor, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_vulkan_driver_pipeline_cache") {
                 apply_setting(Settings::values.use_vulkan_driver_pipeline_cache, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_disk_shader_cache") {

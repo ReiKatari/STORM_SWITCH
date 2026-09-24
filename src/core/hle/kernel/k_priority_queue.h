@@ -263,6 +263,10 @@ public:
             }
         }
 
+        constexpr u64 GetAvailablePriorities(s32 core) const {
+            return m_available_priorities[core].to_ullong();
+        }
+
     private:
         std::array<KPerCoreQueue, NumPriority> m_queues{};
         std::array<std::bitset<NumPriority>, NumCores> m_available_priorities{};
@@ -271,6 +275,15 @@ public:
 private:
     KPriorityQueueImpl m_scheduled_queue;
     KPriorityQueueImpl m_suggested_queue;
+
+public:
+    constexpr u64 GetScheduledPriorities(s32 core) const {
+        return m_scheduled_queue.GetAvailablePriorities(core);
+    }
+
+    constexpr u64 GetSuggestedPriorities(s32 core) const {
+        return m_suggested_queue.GetAvailablePriorities(core);
+    }
 
 private:
     static constexpr void ClearAffinityBit(u64& affinity, s32 core) {

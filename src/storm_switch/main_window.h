@@ -671,6 +671,7 @@ private:
     QString current_game_path;
     // Whether a user was set on the command line (skips UserSelector if it's forced to show up)
     bool user_flag_cmd_line = false;
+    bool m_is_cmd_line_launch = false;
 
     bool auto_paused = false;
     bool auto_muted = false;

@@ -271,9 +271,9 @@ PixelFormat PixelFormatFromTextureInfo(TextureFormat format, ComponentType red, 
     case Hash(TextureFormat::ASTC_2D_6X5, UNORM, SRGB):
         return PixelFormat::ASTC_2D_6X5_SRGB;
     }
-    UNIMPLEMENTED_MSG("texture format={} srgb={} components={{{} {} {} {}}}",
-                      static_cast<int>(format), is_srgb, static_cast<int>(red),
-                      static_cast<int>(green), static_cast<int>(blue), static_cast<int>(alpha));
+    LOG_WARNING(Render, "Unknown texture format={} srgb={} components={{{} {} {} {}}}, falling back to A8B8G8R8_UNORM",
+                static_cast<int>(format), is_srgb, static_cast<int>(red),
+                static_cast<int>(green), static_cast<int>(blue), static_cast<int>(alpha));
     return PixelFormat::A8B8G8R8_UNORM;
 }
 
