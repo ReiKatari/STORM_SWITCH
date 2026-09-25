@@ -253,8 +253,8 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
 StormSaveSyncDialog::StormSaveSyncDialog(QWidget* parent, u64 target_program_id)
     : QDialog(parent), m_target_program_id(target_program_id) {
     setWindowTitle(tr("STORM SAVE SYNC — Кроссплатформенная синхронизация сохранений"));
-    resize(1280, 760);
-    setMinimumSize(1100, 640);
+    resize(1360, 780);
+    setMinimumSize(1150, 650);
 
     m_network_mgr = new QNetworkAccessManager(this);
 

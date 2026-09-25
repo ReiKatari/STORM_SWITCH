@@ -37,6 +37,10 @@ public:
     void SetExpanded(bool expanded);
     bool IsExpanded() const { return m_is_expanded; }
 
+    void OnSaveSlot(int slot);
+    void OnLoadSlot(int slot);
+    void RefreshSaveSlots();
+
 protected:
     void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
@@ -47,8 +51,6 @@ private slots:
     void OnToggleExpand();
     void OnCheatToggled(int row);
     void OnReloadCheats();
-    void OnSaveSlot(int slot);
-    void OnLoadSlot(int slot);
     void OnInjectAmiibo();
     void OnEjectAmiibo();
     void OnBrowseAmiibo();
@@ -69,7 +71,6 @@ private:
     void updateStats(const Core::PerfStatsResults& results, const VideoCore::ShaderNotify& shaders);
 
     void RefreshCheats();
-    void RefreshSaveSlots();
     void RefreshAmiiboList();
     void RefreshCfwInfo();
 

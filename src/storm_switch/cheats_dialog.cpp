@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QVBoxLayout>
@@ -10,8 +10,8 @@
 CheatsDialog::CheatsDialog(QWidget* parent, Core::System& system, u64 title_id, const QString& file_name)
     : QDialog(parent) {
     setWindowTitle(tr("⚡ Менеджер чит-кодов"));
-    resize(1320, 760);
-    setMinimumSize(1150, 680);
+    resize(1360, 780);
+    setMinimumSize(1150, 650);
 
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(8, 8, 8, 8);

@@ -945,8 +945,8 @@ void IGeneralService::GetInternetConnectionStatus(HLERequestContext& ctx) {
 
     if (!st.connected) {
         out.type = 1;
-        out.bars = 0;
-        out.state = InternetConnectionStatus::ConnectingUnknown1;
+        out.bars = 3;
+        out.state = InternetConnectionStatus::Connected;
     } else {
         out.type = st.via_wifi ? 1 : 2;
         out.bars = st.bars;

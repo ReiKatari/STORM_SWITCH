@@ -16,6 +16,7 @@
 #include "common/settings_enums.h"
 #include "frontend_common/settings_generator.h"
 #include "render/performance_overlay.h"
+#include "core/save_state.h"
 #include "updater/update_dialog.h"
 
 #include <QDesktopServices>
@@ -2809,8 +2810,7 @@ void MainWindow::InitializeHotkeys() {
     LinkActionShortcut(ui->action_Configure, QStringLiteral("Configure"));
     LinkActionShortcut(ui->action_Configure_Current_Game, QStringLiteral("Configure Current Game"));
 
-    auto* tesla_f10 = new QShortcut(QKeySequence(Qt::Key_F10), this);
-    connect(tesla_f10, &QShortcut::activated, this, [this]() {
+    auto tesla_toggle = [this]() {
         if (!perf_overlay) return;
         if (!perf_overlay->isVisible()) {
             perf_overlay->SetExpanded(true);
@@ -2822,10 +2822,19 @@ void MainWindow::InitializeHotkeys() {
             ui->action_Show_Performance_Overlay->setChecked(false);
             perf_overlay->hide();
         }
-    });
+    };
 
-    auto* tesla_alt_f1 = new QShortcut(QKeySequence(QStringLiteral("Alt+F1")), this);
-    connect(tesla_alt_f1, &QShortcut::activated, tesla_f10, &QShortcut::activated);
+    auto* tesla_f6 = new QShortcut(QKeySequence(Qt::Key_F6), this);
+    connect(tesla_f6, &QShortcut::activated, this, tesla_toggle);
+
+    auto* tesla_ctrl_f1 = new QShortcut(QKeySequence(QStringLiteral("Ctrl+F1")), this);
+    connect(tesla_ctrl_f1, &QShortcut::activated, this, tesla_toggle);
+
+    auto* quick_save_f5 = new QShortcut(QKeySequence(Qt::Key_F5), this);
+    connect(quick_save_f5, &QShortcut::activated, this, &MainWindow::OnQuickSave);
+
+    auto* quick_load_f7 = new QShortcut(QKeySequence(Qt::Key_F7), this);
+    connect(quick_load_f7, &QShortcut::activated, this, &MainWindow::OnQuickLoad);
 
     static const QString main_window = QStringLiteral("Main Window");
     const auto connect_shortcut = [&]<typename Fn>(const QString& action_name, const Fn& function) {
@@ -6234,8 +6243,53 @@ void MainWindow::OnToggleStatusBar() {
 }
 
 void MainWindow::OnTogglePerfOverlay() {
-    if (perf_overlay)
-        perf_overlay->setVisible(ui->action_Show_Performance_Overlay->isChecked());
+    if (!perf_overlay) return;
+    if (ui->action_Show_Performance_Overlay->isChecked()) {
+        perf_overlay->SetExpanded(true);
+        perf_overlay->show();
+    } else {
+        perf_overlay->hide();
+    }
+}
+
+void MainWindow::OnQuickSave() {
+    if (!emulation_running || !QtCommon::system || !QtCommon::system->IsPoweredOn()) {
+        return;
+    }
+    if (perf_overlay) {
+        perf_overlay->OnSaveSlot(1);
+        statusBar()->showMessage(tr("Быстрое сохранение: Слот 1 сохранен"), 4000);
+    } else {
+        const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
+        if (title_id == 0) return;
+        const auto path = Core::GetSaveStatePath(title_id, 1);
+        auto res = Core::CreateSaveState(*QtCommon::system, path);
+        if (res == Core::SaveStateResult::Success) {
+            statusBar()->showMessage(tr("Быстрое сохранение: Слот 1 сохранен"), 4000);
+        } else {
+            statusBar()->showMessage(tr("Ошибка быстрого сохранения"), 4000);
+        }
+    }
+}
+
+void MainWindow::OnQuickLoad() {
+    if (!emulation_running || !QtCommon::system || !QtCommon::system->IsPoweredOn()) {
+        return;
+    }
+    if (perf_overlay) {
+        perf_overlay->OnLoadSlot(1);
+        statusBar()->showMessage(tr("Быстрая загрузка: Слот 1 загружен"), 4000);
+    } else {
+        const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
+        if (title_id == 0) return;
+        const auto path = Core::GetSaveStatePath(title_id, 1);
+        auto res = Core::LoadSaveState(*QtCommon::system, path);
+        if (res == Core::SaveStateResult::Success) {
+            statusBar()->showMessage(tr("Быстрая загрузка: Слот 1 загружен"), 4000);
+        } else {
+            statusBar()->showMessage(tr("Ошибка быстрой загрузки (Слот 1 пуст или поврежден)"), 4000);
+        }
+    }
 }
 
 void MainWindow::OnGameListRefresh() {

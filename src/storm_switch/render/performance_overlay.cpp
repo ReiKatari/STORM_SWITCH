@@ -175,7 +175,7 @@ void PerformanceOverlay::SetupUI() {
     compact_header->addWidget(compact_title);
     compact_header->addStretch(1);
 
-    auto* btn_to_expanded = new QPushButton(tr("⚡ Меню (F10)"), m_compact_widget);
+    auto* btn_to_expanded = new QPushButton(tr("⚡ Меню (F6)"), m_compact_widget);
     btn_to_expanded->setStyleSheet(QStringLiteral("padding: 2px 8px; font-size: 10px; font-weight: bold; border-color: #00D2FF; color: #00D2FF;"));
     compact_header->addWidget(btn_to_expanded);
 
@@ -372,7 +372,7 @@ void PerformanceOverlay::SetupSaveStatesTab(QWidget* tab) {
     layout->setContentsMargins(12, 12, 12, 12);
     layout->setSpacing(8);
 
-    auto* info_lbl = new QLabel(tr("💡 Быстрые сохранения (Save States) работают мгновенно без выхода из игры:"), tab);
+    auto* info_lbl = new QLabel(tr("💡 Быстрые сохранения (Save States) работают мгновенно без выхода из игры (F5 — сохранить, F7 — загрузить):"), tab);
     info_lbl->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11px;"));
     layout->addWidget(info_lbl);
 

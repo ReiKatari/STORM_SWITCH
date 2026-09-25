@@ -447,6 +447,8 @@ private slots:
     void OnTranslateScreen();
     void OnOpenTranslatorSettings();
     void OnCheckFirmwareDecryption();
+    void OnQuickSave();
+    void OnQuickLoad();
 #ifdef __unix__
     void OnCheckGraphicsBackend();
 #endif
