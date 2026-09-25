@@ -662,14 +662,6 @@ struct Values {
                                                   true,
                                                   true};
 
-    SwitchableSetting<bool> dynamic_performance_scaler{linkage,
-                                                       false,
-                                                       "dynamic_performance_scaler",
-                                                       Category::RendererAdvanced,
-                                                       Specialization::Default,
-                                                       true,
-                                                       true};
-
     // Renderer Hacks //
     SwitchableSetting<GpuClock> gpu_clock{linkage,
                                           GpuClock::Normal,
@@ -980,6 +972,14 @@ struct Values {
     // Per-game overrides
     bool use_squashed_iterated_blend;
 
+    // Dynamic Performance Scaler
+    SwitchableSetting<bool> dynamic_performance_scaler{linkage,
+                                                       false,
+                                                       "dynamic_performance_scaler",
+                                                       Category::RendererAdvanced,
+                                                       Specialization::Default,
+                                                       true,
+                                                       true};
 };
 
 extern Values values;

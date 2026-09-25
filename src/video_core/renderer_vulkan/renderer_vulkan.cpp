@@ -18,6 +18,8 @@
 #include <ranges>
 #include "common/scope_exit.h"
 #include "common/settings.h"
+#include "core/dynamic_performance_scaler.h"
+#include <chrono>
 #include "core/core_timing.h"
 #include "core/frontend/graphics_context.h"
 #include "video_core/capture.h"
@@ -43,6 +45,9 @@
 #endif
 namespace Vulkan {
 namespace {
+
+std::unique_ptr<Core::DynamicPerformanceScaler> s_performance_scaler;
+std::chrono::steady_clock::time_point s_last_composite_time{};
 
 constexpr VkExtent2D CaptureImageSize{
     .width = VideoCore::Capture::LinearWidth,
@@ -216,12 +221,14 @@ try
             target_fps = 60.0f;
             break;
         }
-        performance_scaler.emplace();
-        performance_scaler->Initialize(
+        s_performance_scaler = std::make_unique<Core::DynamicPerformanceScaler>();
+        s_performance_scaler->Initialize(
             Settings::values.resolution_setup.GetValue(), target_fps);
-        last_composite_time = std::chrono::steady_clock::now();
+        s_last_composite_time = std::chrono::steady_clock::now();
         LOG_INFO(Render_Vulkan, "Dynamic Performance Scaler enabled (target {:.0f} FPS)",
                  target_fps);
+    } else {
+        s_performance_scaler.reset();
     }
 
     Report();
@@ -234,6 +241,7 @@ RendererVulkan::~RendererVulkan() {
     scheduler.RegisterOnSubmit([] {});
     present_manager.WaitPresent();
     void(device.GetLogical().WaitIdle());
+    s_performance_scaler.reset();
 }
 
 void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebuffers) {
@@ -400,14 +408,14 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     rasterizer.TickFrame();
 
     // Dynamic Performance Scaler — feed frame time
-    if (performance_scaler) {
+    if (s_performance_scaler) {
         const auto now = std::chrono::steady_clock::now();
-        if (last_composite_time.time_since_epoch().count() != 0) {
+        if (s_last_composite_time.time_since_epoch().count() != 0) {
             const double frame_ms =
-                std::chrono::duration<double, std::milli>(now - last_composite_time).count();
-            performance_scaler->ReportFrameTime(frame_ms);
+                std::chrono::duration<double, std::milli>(now - s_last_composite_time).count();
+            s_performance_scaler->ReportFrameTime(frame_ms);
         }
-        last_composite_time = now;
+        s_last_composite_time = now;
     }
 }
 
