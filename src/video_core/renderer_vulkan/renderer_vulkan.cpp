@@ -195,6 +195,35 @@ try
         scheduler.RegisterOnSubmit([this] { turbo_mode->QueueSubmitted(); });
     }
 
+    // Dynamic Performance Scaler — Atmosphere-style adaptive resolution
+    if (Settings::values.dynamic_performance_scaler.GetValue()) {
+        float target_fps = 60.0f;
+        switch (Settings::values.frame_pacing_mode.GetValue()) {
+        case Settings::FramePacingMode::Target_30:
+            target_fps = 30.0f;
+            break;
+        case Settings::FramePacingMode::Target_60:
+        case Settings::FramePacingMode::Target_Auto:
+            target_fps = 60.0f;
+            break;
+        case Settings::FramePacingMode::Target_90:
+            target_fps = 90.0f;
+            break;
+        case Settings::FramePacingMode::Target_120:
+            target_fps = 120.0f;
+            break;
+        default:
+            target_fps = 60.0f;
+            break;
+        }
+        performance_scaler.emplace();
+        performance_scaler->Initialize(
+            Settings::values.resolution_setup.GetValue(), target_fps);
+        last_composite_time = std::chrono::steady_clock::now();
+        LOG_INFO(Render_Vulkan, "Dynamic Performance Scaler enabled (target {:.0f} FPS)",
+                 target_fps);
+    }
+
     Report();
 } catch (const vk::Exception& exception) {
     LOG_ERROR(Render_Vulkan, "Vulkan initialization failed with error: {}", exception.what());
@@ -369,6 +398,17 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
 
     gpu.RendererFrameEndNotify();
     rasterizer.TickFrame();
+
+    // Dynamic Performance Scaler — feed frame time
+    if (performance_scaler) {
+        const auto now = std::chrono::steady_clock::now();
+        if (last_composite_time.time_since_epoch().count() != 0) {
+            const double frame_ms =
+                std::chrono::duration<double, std::milli>(now - last_composite_time).count();
+            performance_scaler->ReportFrameTime(frame_ms);
+        }
+        last_composite_time = now;
+    }
 }
 
 void RendererVulkan::Report() const {

@@ -95,6 +95,23 @@
     </layout>
    </item>
    <item>
+    <widget class="QLabel" name="dps_status">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>9</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #00d2ff;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="fps_label_layout">
      <item>
       <widget class="QLabel" name="label_4">

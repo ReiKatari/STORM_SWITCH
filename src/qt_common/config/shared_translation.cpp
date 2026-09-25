@@ -806,6 +806,10 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Skips rendering non-critical frames when emulation falls behind target rate."));
     INSERT(Settings, eco_thermal_mode, tr("Eco Thermal Mode"),
            tr("Reduces power consumption and fan noise on portable devices."));
+    INSERT(Settings, dynamic_performance_scaler, tr("Dynamic performance scaler"),
+           tr("Automatically adjusts rendering resolution to maintain the target frame rate. "
+              "When frames take too long, resolution steps down; when frames are fast, it recovers. "
+              "Inspired by Atmosphere's dynamic resolution system."));
     INSERT(UISettings, enable_floating_translate_button, tr("Floating Translate Button"),
            tr("Displays floating quick translation overlay button."));
 

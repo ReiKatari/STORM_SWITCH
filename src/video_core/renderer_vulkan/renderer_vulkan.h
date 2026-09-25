@@ -23,6 +23,8 @@
 #include "video_core/renderer_vulkan/vk_state_tracker.h"
 #include "video_core/renderer_vulkan/vk_swapchain.h"
 #include "video_core/renderer_vulkan/vk_turbo_mode.h"
+#include "core/dynamic_performance_scaler.h"
+#include <chrono>
 #include "video_core/vulkan_common/vulkan_device.h"
 #include "video_core/vulkan_common/vulkan_memory_allocator.h"
 #include "video_core/vulkan_common/vulkan_wrapper.h"
@@ -103,6 +105,10 @@ private:
     FrameGen frame_gen;
 #endif
     std::optional<TurboMode> turbo_mode;
+
+    // Dynamic Performance Scaler (Atmosphere-style adaptive resolution)
+    std::optional<Core::DynamicPerformanceScaler> performance_scaler;
+    std::chrono::steady_clock::time_point last_composite_time{};
 
     Frame applet_frame;
 };

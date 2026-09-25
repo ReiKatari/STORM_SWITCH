@@ -662,6 +662,14 @@ struct Values {
                                                   true,
                                                   true};
 
+    SwitchableSetting<bool> dynamic_performance_scaler{linkage,
+                                                       false,
+                                                       "dynamic_performance_scaler",
+                                                       Category::RendererAdvanced,
+                                                       Specialization::Default,
+                                                       true,
+                                                       true};
+
     // Renderer Hacks //
     SwitchableSetting<GpuClock> gpu_clock{linkage,
                                           GpuClock::Normal,

@@ -4,6 +4,7 @@
 #include "core/perf_stats.h"
 #include "performance_overlay.h"
 #include "ui_performance_overlay.h"
+#include "common/settings.h"
 
 #include "main_window.h"
 #include <algorithm>
@@ -187,6 +188,21 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
 
             ui->ft_avg->setText(tr("Avg: %1").arg(avg, 0, 'f', 1));
         }
+    }
+
+    // Dynamic Performance Scaler status
+    if (Settings::values.dynamic_performance_scaler.GetValue()) {
+        const auto& ri = Settings::values.resolution_info;
+        const float scale = static_cast<float>(ri.up_scale) /
+                            static_cast<float>(1U << ri.down_shift);
+        if (scale < 1.0f) {
+            ui->dps_status->setText(tr("DPS: %1x").arg(scale, 0, 'f', 2));
+        } else {
+            ui->dps_status->setText(tr("DPS: %1x").arg(scale, 0, 'f', 1));
+        }
+        ui->dps_status->setVisible(true);
+    } else {
+        ui->dps_status->setVisible(false);
     }
 }
 
