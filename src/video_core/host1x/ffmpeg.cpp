@@ -355,8 +355,17 @@ std::shared_ptr<Frame> DecoderContext::ReceiveFrame() {
     if (m_codec_context->hw_device_ctx) {
         m_final_frame->SetFormat(PreferredGpuFormat);
         if (const int ret = av_hwframe_transfer_data(m_final_frame->GetFrame(), intermediate_frame->GetFrame(), 0); ret < 0) {
-            LOG_ERROR(HW_GPU, "av_hwframe_transfer_data error: {}", AVError(ret));
-            return {};
+            LOG_WARNING(HW_GPU, "av_hwframe_transfer_data failed ({}), falling back to software copy", AVError(ret));
+            // Fallback: use software frame directly if it has valid data
+            AVFrame* hw_frame = intermediate_frame->GetFrame();
+            if (hw_frame->format != AV_PIX_FMT_NONE && hw_frame->width > 0 && hw_frame->height > 0) {
+                // Try SW fallback via sws_scale or direct format use
+                m_final_frame = std::move(intermediate_frame);
+                LOG_INFO(HW_GPU, "NVDEC fallback: using intermediate frame directly (format={})", hw_frame->format);
+            } else {
+                LOG_ERROR(HW_GPU, "NVDEC fallback: intermediate frame has no usable data, dropping frame");
+                return {};
+            }
         }
     } else {
         m_final_frame = std::move(intermediate_frame);
@@ -396,7 +405,10 @@ bool DecodeApi::Initialize(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
         (Settings::values.nvdec_emulation.GetValue() == Settings::NvdecEmulation::Gpu ||
          Settings::values.nvdec_emulation.GetValue() == Settings::NvdecEmulation::Hybrid)) {
         m_hardware_context.emplace();
-        m_hardware_context->InitializeForDecoder(*m_decoder_context, *m_decoder);
+        if (!m_hardware_context->InitializeForDecoder(*m_decoder_context, *m_decoder)) {
+            LOG_WARNING(HW_GPU, "Hardware decoder initialization failed, falling back to software decoding");
+            m_hardware_context.reset();
+        }
     }
 
 #if defined(__ANDROID__)

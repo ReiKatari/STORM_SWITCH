@@ -209,11 +209,18 @@ static bool LoadNroImpl(Core::System& system, Kernel::KProcess& process,
     size_t args_offset_in_image = 0;
     std::optional<size_t> exit_process_offset_in_image;
     const auto& program_args = Settings::values.program_args.GetValue();
-    if (!program_args.empty()) {
-        argv_string = "homebrew ";
-        argv_string += program_args;
-        argv_string.push_back('\0');
 
+    // Always build an argv string for the libnx config table.
+    // Without it, libnx crt0 cannot resolve MainThreadHandle/AppletType and crashes.
+    argv_string = "homebrew";
+    if (!program_args.empty()) {
+        argv_string.push_back(' ');
+        argv_string += program_args;
+    }
+    argv_string.push_back('\0');
+
+    // Scan for svcExitProcess instruction in code segment
+    {
         const auto& code = codeset.CodeSegment();
         const size_t code_end = (std::min)(program_image.size(), code.offset + code.size);
         for (size_t offset = code.offset; offset + sizeof(u32) <= code_end; offset += sizeof(u32)) {
@@ -228,14 +235,14 @@ static bool LoadNroImpl(Core::System& system, Kernel::KProcess& process,
             LOG_WARNING(Loader,
                         "Unable to find svcExitProcess in NRO; returning from main may fault");
         }
-
-        const size_t entries_and_argv =
-            Common::AlignUp(kConfigTableSize + argv_string.size(), Core::Memory::YUZU_PAGESIZE);
-
-        args_offset_in_image = program_image.size();
-        codeset.DataSegment().size += static_cast<u32>(entries_and_argv);
-        program_image.resize(args_offset_in_image + entries_and_argv);
     }
+
+    const size_t entries_and_argv =
+        Common::AlignUp(kConfigTableSize + argv_string.size(), Core::Memory::YUZU_PAGESIZE);
+
+    args_offset_in_image = program_image.size();
+    codeset.DataSegment().size += static_cast<u32>(entries_and_argv);
+    program_image.resize(args_offset_in_image + entries_and_argv);
     size_t image_size = program_image.size();
 
 #ifdef HAS_NCE
@@ -339,6 +346,12 @@ AppLoader_NRO::LoadResult AppLoader_NRO::Load(Kernel::KProcess& process, Core::S
 
     if (!LoadNro(system, process, *file)) {
         return {ResultStatus::ErrorLoadingNRO, {}};
+    }
+
+    // Homebrew NRO: ensure airplane_mode is disabled so networking works
+    if (Settings::values.airplane_mode.GetValue()) {
+        Settings::values.airplane_mode.SetValue(false);
+        LOG_INFO(Loader, "NRO: Disabled airplane_mode for homebrew compatibility");
     }
 
     u64 program_id{};

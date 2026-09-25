@@ -66,8 +66,8 @@ ConfigurePerGameAddons::ConfigurePerGameAddons(Core::System& system_, QWidget* p
 
     ui->folder->setText(tr("📁 Установить мод из папки..."));
     ui->zip->setText(tr("📦 Установить мод из архива (ZIP)..."));
-    ui->folder->setVisible(false);
-    ui->zip->setVisible(false);
+    ui->folder->setVisible(true);
+    ui->zip->setVisible(true);
 
     // We must register all custom types with the Qt Automoc system so that we are able to use it
     // with signals/slots. In this case, QList falls under the umbrella of custom types.
@@ -510,7 +510,7 @@ void ConfigurePerGameAddons::LoadConfiguration() {
                 version_display = QStringLiteral("1.0.0");
             }
         } else if (patch.type == FileSys::PatchType::Mod) {
-            continue;
+            // Mods are displayed in the list and can be toggled on/off
         }
 
         auto* const first_item = new QStandardItem;

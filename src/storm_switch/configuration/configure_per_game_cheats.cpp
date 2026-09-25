@@ -645,7 +645,7 @@ void ConfigurePerGameCheats::ApplyConfiguration() {
     Settings::values.disabled_addons[title_id] = std::move(new_disabled);
 
     // If game is actively running, reload cheat engine in real-time!
-    if (system.IsPoweredOn() && system.HasCheatEngine()) {
+    if (system.IsPoweredOn()) {
         system.ReloadCheatList(active_cheat_entries);
         LOG_INFO(Common, "Dynamically reloaded {} active cheat entries during gameplay for title_id=0x{:016X}",
                  active_cheat_entries.size(), title_id);

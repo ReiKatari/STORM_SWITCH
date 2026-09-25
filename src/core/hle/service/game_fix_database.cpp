@@ -5288,7 +5288,7 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
 }
 
 bool GameFixDatabase::HasProfile(u64 title_id) {
-    return false;
+    return GetProfile(title_id) != nullptr;
 }
 
 const std::vector<GameFixProfile>& GameFixDatabase::GetAllProfiles() {

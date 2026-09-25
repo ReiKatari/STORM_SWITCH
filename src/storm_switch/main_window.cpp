@@ -3654,6 +3654,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         QtCommon::system->HIDCore().ReloadInputDevices();
         QtCommon::system->ApplySettings();
         UpdateStatusButtons();
+
     }
 
     Settings::LogSettings();
@@ -3679,7 +3680,21 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     user_flag_cmd_line = false;
     m_is_cmd_line_launch = false;
 
+    // Show loading screen IMMEDIATELY with filename-based info for instant visual feedback
+    {
+        const QString base_name = QFileInfo(filename).completeBaseName();
+        loading_screen->SetGameInfo(base_name, QString{}, QString{}, title_id, QPixmap{},
+                                    QFileInfo(filename).suffix().toUpper());
+        if (ui->action_Single_Window_Mode->isChecked()) {
+            loading_screen->setGeometry(ui->centralwidget->rect());
+        }
+        loading_screen->show();
+        loading_screen->raise();
+        QApplication::processEvents();  // Force immediate repaint
+    }
+
     if (!LoadROM(filename, params)) {
+        loading_screen->hide();
         RestoreSessionSettings();
         m_session_backup.is_active = false;
         game_list->setEnabled(true);
