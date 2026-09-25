@@ -11,8 +11,10 @@
 #include "core/hle/kernel/k_process.h"
 #include "core/hle/kernel/k_thread.h"
 #include "core/hle/kernel/kernel.h"
+#include "core/arm/arm_interface.h"
 #include "core/hle/kernel/board/nintendo/nx/k_system_control.h"
 #include "core/save_state.h"
+#include "video_core/gpu.h"
 
 namespace Core {
 
@@ -55,7 +57,14 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
             snap.core_id = static_cast<u32>(thread.GetActiveCore());
             snap.tls_address = GetInteger(thread.GetTlsAddress());
 
-            const auto& ctx = thread.GetContext();
+            auto ctx = thread.GetContext();
+            const auto core_id = thread.GetActiveCore();
+            if (core_id >= 0 && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES)) {
+                auto* arm = process->GetArmInterface(core_id);
+                if (arm) {
+                    arm->GetContext(ctx);
+                }
+            }
             std::memcpy(snap.context_data, &ctx, std::min(sizeof(ctx), sizeof(snap.context_data)));
 
             thread_snapshots.push_back(snap);
@@ -156,6 +165,10 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
     u8* dram_ptr = device_memory.buffer.BackingBasePointer();
     std::memcpy(dram_ptr, decompressed.data(), header.dram_size);
 
+    // Invalidate GPU Cache and rasterizer buffers
+    system.GPU().FlushAndInvalidateRegion(0, header.dram_size);
+    system.GPU().InvalidateGPUCache();
+
     // Restore thread contexts
     auto& kernel = system.Kernel();
     auto* process = kernel.ApplicationProcess();
@@ -167,6 +180,13 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                     auto& ctx = thread.GetContext();
                     std::memcpy(&ctx, snap.context_data,
                                 std::min(sizeof(ctx), sizeof(snap.context_data)));
+                    const auto core_id = thread.GetActiveCore();
+                    if (core_id >= 0 && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES)) {
+                        auto* arm = process->GetArmInterface(core_id);
+                        if (arm) {
+                            arm->SetContext(ctx);
+                        }
+                    }
                     break;
                 }
             }

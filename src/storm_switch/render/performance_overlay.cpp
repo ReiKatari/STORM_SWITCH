@@ -210,14 +210,14 @@ void PerformanceOverlay::SetupUI() {
     // 2. Expanded Mode Widget (Full Tesla OSD Menu)
     // ==========================================
     m_expanded_widget = new QWidget(this);
-    m_expanded_widget->setFixedSize(580, 460);
+    m_expanded_widget->setFixedSize(650, 470);
     auto* exp_layout = new QVBoxLayout(m_expanded_widget);
     exp_layout->setContentsMargins(12, 10, 12, 10);
     exp_layout->setSpacing(8);
 
     // Header bar
     auto* exp_header = new QHBoxLayout();
-    auto* exp_title = new QLabel(tr("⚡ STORM SWITCH — Tesla OSD"), m_expanded_widget);
+    auto* exp_title = new QLabel(tr("⚡ STORM SWITCH - Tesla OSD"), m_expanded_widget);
     exp_title->setStyleSheet(QStringLiteral("font-size: 14px; font-weight: bold; color: #00D2FF;"));
     exp_header->addWidget(exp_title);
 
@@ -372,7 +372,7 @@ void PerformanceOverlay::SetupSaveStatesTab(QWidget* tab) {
     layout->setContentsMargins(12, 12, 12, 12);
     layout->setSpacing(8);
 
-    auto* info_lbl = new QLabel(tr("💡 Быстрые сохранения (Save States) работают мгновенно без выхода из игры (F5 — сохранить, F7 — загрузить):"), tab);
+    auto* info_lbl = new QLabel(tr("💡 Быстрые сохранения работают мгновенно без выхода из игры (F5 - сохранить, F7 - загрузить):"), tab);
     info_lbl->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11px;"));
     layout->addWidget(info_lbl);
 
@@ -381,7 +381,7 @@ void PerformanceOverlay::SetupSaveStatesTab(QWidget* tab) {
         row->setSpacing(8);
 
         m_slots[i].label = new QLabel(tr("Слот %1: [Пусто]").arg(i + 1), tab);
-        m_slots[i].label->setStyleSheet(QStringLiteral("font-weight: 500; min-width: 250px;"));
+        m_slots[i].label->setStyleSheet(QStringLiteral("font-weight: 500; min-width: 280px;"));
         row->addWidget(m_slots[i].label, 1);
 
         m_slots[i].btn_save = new QPushButton(tr("💾 Сохранить"), tab);
@@ -500,7 +500,7 @@ void PerformanceOverlay::SetExpanded(bool expanded) {
     m_is_expanded = expanded;
     if (m_is_expanded) {
         m_stack->setCurrentWidget(m_expanded_widget);
-        setFixedSize(580, 460);
+        setFixedSize(650, 470);
         RefreshCheats();
         RefreshSaveSlots();
         RefreshAmiiboList();
@@ -523,6 +523,8 @@ void PerformanceOverlay::resetPosition(const QPoint& _) {
 
 void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
                                      const VideoCore::ShaderNotify& shaders) {
+    if (!isVisible()) return;
+
     auto fps = results.average_game_fps;
     if (!std::isnan(fps)) {
         static constexpr double FPS_SAMPLE_THRESHOLD = 3.0;

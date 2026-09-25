@@ -14,9 +14,9 @@
 #pragma comment(lib, "wlanapi.lib")
 #endif
 #endif
-#include <common/settings.h>
-
+#include <chrono>
 #include <mutex>
+#include "common/settings.h"
 
 namespace Network {
 
@@ -37,6 +37,14 @@ u8 QualityToBars(u8 q) {
 }
 
 void RefreshFromHost() {
+    static auto s_last_refresh = std::chrono::steady_clock::time_point{};
+    const auto now = std::chrono::steady_clock::now();
+    if (s_last_refresh.time_since_epoch().count() != 0 &&
+        now - s_last_refresh < std::chrono::seconds(5)) {
+        return;
+    }
+    s_last_refresh = now;
+
     auto& st = Network::EmuNetState::Get();
     std::scoped_lock lk{st.mtx};
 

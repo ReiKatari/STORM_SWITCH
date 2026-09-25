@@ -136,8 +136,8 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
 
     setFocusPolicy(Qt::ClickFocus);
     setWindowTitle(tr("Properties"));
-    resize(1360, 760);
-    setMinimumSize(1200, 700);
+    resize(1440, 800);
+    setMinimumSize(1350, 740);
 
     ui->display_name->setLineWrapMode(QTextEdit::WidgetWidth);
     ui->display_filename->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -342,6 +342,9 @@ void ConfigurePerGame::LoadConfiguration() {
 
     if (gamebanana_tab) {
         gamebanana_tab->SetGameInfo(title_id, title_text);
+    }
+    if (amiibo_tab) {
+        amiibo_tab->SetGameInfo(title_id, title_text);
     }
 
     if (control.second != nullptr) {

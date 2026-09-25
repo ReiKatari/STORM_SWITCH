@@ -348,7 +348,7 @@ struct Values {
                                                         "resolution_setup", Category::Renderer};
 
     SwitchableSetting<VSyncMode, true> vsync_mode{linkage,
-                                                  VSyncMode::Fifo,
+                                                  VSyncMode::Mailbox,
                                                   "use_vsync",
                                                   Category::Renderer,
                                                   Specialization::RuntimeList,
@@ -381,7 +381,7 @@ struct Values {
                                                       true};
 
     SwitchableSetting<AntiAliasing> anti_aliasing{linkage,
-                                                  AntiAliasing::Smaa,
+                                                  AntiAliasing::None,
                                                   "anti_aliasing",
                                                   Category::Renderer,
                                                   Specialization::Default,

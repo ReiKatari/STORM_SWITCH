@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -36,6 +36,7 @@ public:
     ~ConfigurePerGameAmiibo() override;
 
     void ApplyConfiguration();
+    void SetGameInfo(u64 title_id, const QString& game_name);
 
 private slots:
     void OnSearchFilterChanged();
@@ -59,6 +60,7 @@ private:
     Core::System& m_system;
     u64 m_title_id{0};
     QString m_file_name;
+    QString m_game_name;
     QNetworkAccessManager* m_network_mgr{nullptr};
     std::vector<AmiiboEntry> m_all_amiibos;
     std::vector<int> m_filtered_indices;
@@ -78,6 +80,10 @@ private:
     QLabel* m_series_label{nullptr};
     QLabel* m_type_label{nullptr};
     QLabel* m_status_badge{nullptr};
+    QWidget* m_reward_card{nullptr};
+    QLabel* m_reward_category_badge{nullptr};
+    QLabel* m_reward_name_label{nullptr};
+    QLabel* m_reward_desc_label{nullptr};
     QTextEdit* m_games_text{nullptr};
     QPushButton* m_install_btn{nullptr};
     QPushButton* m_open_folder_btn{nullptr};

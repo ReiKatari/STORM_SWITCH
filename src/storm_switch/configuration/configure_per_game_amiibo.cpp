@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "storm_switch/configuration/configure_per_game_amiibo.h"
@@ -143,6 +143,44 @@ void ConfigurePerGameAmiibo::SetupUi() {
     m_status_badge = new QLabel(tr("Статус: Ожидание"), this);
     m_status_badge->setStyleSheet(QStringLiteral("color: #a0aec0; font-weight: bold; padding: 2px 6px; background-color: #1a2336; border-radius: 3px;"));
     details_layout->addWidget(m_status_badge);
+
+    // Elevated 3D Reward Card
+    m_reward_card = new QWidget(this);
+    m_reward_card->setStyleSheet(QStringLiteral(
+        "QWidget#AmiiboRewardCard {"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #121a29, stop:1 #0c121d);"
+        "  border: 1px solid #00f0ff;"
+        "  border-radius: 8px;"
+        "}"
+    ));
+    m_reward_card->setObjectName(QStringLiteral("AmiiboRewardCard"));
+    auto* card_layout = new QVBoxLayout(m_reward_card);
+    card_layout->setContentsMargins(10, 8, 10, 8);
+    card_layout->setSpacing(4);
+
+    auto* card_header = new QHBoxLayout();
+    auto* card_title = new QLabel(tr("🎁 Награда в этой игре:"), m_reward_card);
+    card_title->setStyleSheet(QStringLiteral("font-weight: bold; color: #ffca28; font-size: 9.5pt;"));
+    card_header->addWidget(card_title);
+
+    m_reward_category_badge = new QLabel(tr("УНИВЕРСАЛЬНЫЙ БОНУС"), m_reward_card);
+    m_reward_category_badge->setStyleSheet(QStringLiteral(
+        "background-color: #004d40; color: #00f0ff; border: 1px solid #00f0ff; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8pt;"
+    ));
+    card_header->addWidget(m_reward_category_badge, 0, Qt::AlignRight);
+    card_layout->addLayout(card_header);
+
+    m_reward_name_label = new QLabel(tr("Выберите фигурку для просмотра наград"), m_reward_card);
+    m_reward_name_label->setStyleSheet(QStringLiteral("font-size: 10pt; font-weight: bold; color: #00f0ff;"));
+    m_reward_name_label->setWordWrap(true);
+    card_layout->addWidget(m_reward_name_label);
+
+    m_reward_desc_label = new QLabel(m_reward_card);
+    m_reward_desc_label->setStyleSheet(QStringLiteral("color: #cbd5e1; font-size: 8.5pt; line-height: 1.3;"));
+    m_reward_desc_label->setWordWrap(true);
+    card_layout->addWidget(m_reward_desc_label);
+
+    details_layout->addWidget(m_reward_card);
 
     auto* games_label = new QLabel(tr("🎮 Эффект и совместимость в этой игре:"), this);
     games_label->setStyleSheet(QStringLiteral("font-weight: bold; color: #ffca28; margin-top: 4px;"));
@@ -560,6 +598,9 @@ void ConfigurePerGameAmiibo::ApplyFilters() {
         m_games_text->clear();
         m_image_label->setText(tr("Нет данных"));
         m_install_btn->setEnabled(false);
+        if (m_reward_card) {
+            m_reward_card->setVisible(false);
+        }
     }
 }
 
@@ -607,6 +648,15 @@ void ConfigurePerGameAmiibo::DisplayAmiiboDetails(const AmiiboEntry& entry) {
         m_status_badge->setText(tr("Статус: 🌐 Нажмите галочку для скачивания и включения"));
         m_status_badge->setStyleSheet(QStringLiteral("color: #00e5ff; font-weight: bold; padding: 3px 8px; background-color: #006064; border-radius: 4px;"));
         m_install_btn->setText(tr("⚡ Скачать и включить"));
+    }
+
+    const QString game = m_game_name.isEmpty() ? m_file_name : m_game_name;
+    const auto reward = AmiiboBrowserDialog::GetRewardForGame(entry, game);
+    if (m_reward_card && m_reward_category_badge && m_reward_name_label && m_reward_desc_label) {
+        m_reward_category_badge->setText(QStringLiteral("%1 %2").arg(reward.icon_emoji, reward.category.toUpper()));
+        m_reward_name_label->setText(reward.item_name);
+        m_reward_desc_label->setText(reward.description);
+        m_reward_card->setVisible(true);
     }
 
     if (entry.switch_games.isEmpty()) {
@@ -785,5 +835,13 @@ void ConfigurePerGameAmiibo::ApplyConfiguration() {
                 QFile::remove(bin_path);
             }
         }
+    }
+}
+
+void ConfigurePerGameAmiibo::SetGameInfo(u64 title_id, const QString& game_name) {
+    m_title_id = title_id;
+    m_game_name = game_name;
+    if (m_amiibo_list && m_amiibo_list->currentItem()) {
+        OnItemSelected(m_amiibo_list->currentItem(), nullptr);
     }
 }

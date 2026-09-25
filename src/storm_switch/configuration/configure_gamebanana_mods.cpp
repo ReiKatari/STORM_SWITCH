@@ -383,11 +383,10 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     }
     installed_tree->header()->setStretchLastSection(true);
     installed_tree->header()->setSectionResizeMode(0, QHeaderView::Interactive);
-    installed_tree->header()->resizeSection(0, 380);
-    installed_tree->header()->setSectionResizeMode(1, QHeaderView::Interactive);
-    installed_tree->header()->resizeSection(1, 160);
-    installed_tree->header()->setSectionResizeMode(2, QHeaderView::Interactive);
-    installed_tree->header()->resizeSection(2, 140);
+    installed_tree->header()->resizeSection(0, 320);
+    installed_tree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    installed_tree->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    installed_tree->header()->setSectionResizeMode(3, QHeaderView::Stretch);
     installed_layout->addWidget(installed_tree, 1);
 
     view_stack->addWidget(online_page);
