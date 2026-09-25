@@ -138,6 +138,10 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
         {"Uncompressed (Best quality)", "Без сжатия (наилучшее качество)", "غير مضغوط (أفضل جودة)", "Unkomprimiert (Beste Qualität)", "Non compressé (Meilleure qualité)", "未压缩 (最高质量)", "非圧縮 (最高品質)", "Sin comprimir (mejor calidad)"},
         {"BC1 (Low quality)", "BC1 (Низкое качество)", "BC1 (جودة منخفضة)", "BC1 (Geringe Qualität)", "BC1 (Basse qualité)", "BC1 (低质量)", "BC1 (低品質)", "BC1 (baja calidad)"},
         {"BC3 (Medium quality)", "BC3 (Среднее качество)", "BC3 (جودة متوسطة)", "BC3 (Mittlere Qualität)", "BC3 (Qualité moyenne)", "BC3 (中等质量)", "BC3 (中品質)", "BC3 (calidad media)"},
+        {"BC5 (High quality)", "BC5 (Высокое качество)", "BC5 (جودة عالية)", "BC5 (Hohe Qualität)", "BC5 (Haute qualité)", "BC5 (高质量)", "BC5 (高品質)", "BC5 (alta calidad)"},
+        {"Hybrid Video Decoding", "Гибридное декодирование видео", "فك تشفير الفيديو الهجين", "Hybride Videodekodierung", "Décodage vidéo hybride", "混合视频解码", "ハイブリッド動画デコード", "Decodificación de video híbrida"},
+        {"Hybrid", "Гибридный", "هجين", "Hybrid", "Hybride", "混合", "ハイブリッド", "Híbrido"},
+        {"Carousel View", "Карусель", "عرض دوار", "Karussellansicht", "Vue carrousel", "旋转木马视图", "カルーセル表示", "Vista de carrusel"},
         {"Fast", "Быстро", "سريع", "Schnell", "Rapide", "快速", "高速", "Rápido"},
         {"Strict", "Строго", "صارم", "Strikt", "Strict", "严格", "厳格", "Estricto"},
         {"Immediate", "Немедленно", "فوري", "Sofort", "Immédiat", "立即", "即時", "Inmediato"},
@@ -411,6 +415,24 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
          "在界面上显示悬浮快速翻译按钮。",
          "フローティングクイック翻訳ボタンを表示します。",
          "Muestra un botón flotante de traducción rápida."},
+
+        {"Dynamic performance scaler",
+         "Динамическое масштабирование производительности",
+         "مقياس الأداء الديناميكي",
+         "Dynamische Leistungsskalierung",
+         "Mise à l'échelle dynamique des performances",
+         "动态性能缩放",
+         "動的パフォーマンススケーラー",
+         "Escalador dinámico de rendimiento"},
+
+        {"Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.",
+         "Автоматически регулирует разрешение рендеринга для поддержания целевой частоты кадров. При падении производительности разрешение снижается, а при стабильном фреймрейте — восстанавливается.",
+         "يضبط دقة العرض تلقائياً للحفاظ على معدل الإطارات المستهدف. عندما تستغرق الإطارات وقتاً طويلاً، تنخفض الدقة، وعندما تكون سريعة، تستعيد عافيتها.",
+         "Passt die Renderauflösung automatisch an, um die Zielbildrate zu halten. Wenn Frames zu lange dauern, sinkt die Auflösung; wenn Frames schnell sind, wird sie wiederhergestellt.",
+         "Ajuste automatiquement la résolution de rendu pour maintenir la fréquence d'images cible. Lorsque les images prennent trop de temps, la résolution diminue ; lorsque les images sont rapides, elle est rétablie.",
+         "自动调整渲染分辨率以保持目标帧率。当帧生成时间过长时降低分辨率，当帧率充裕时恢复分辨率。",
+         "ターゲットフレームレートを維持するために描画解像度を自動的に調整します。負荷が高い時は解像度を下げ、余裕がある時は復元します。",
+         "Ajusta automáticamente la resolución de renderizado para mantener los FPS objetivo. Cuando los fotogramas tardan más, la resolución se reduce; cuando van rápido, se restablece."},
 
     };
 
@@ -845,6 +867,7 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                               PAIR(AstcDecodeMode, Cpu, tr("CPU")),
                               PAIR(AstcDecodeMode, Gpu, tr("GPU")),
                               PAIR(AstcDecodeMode, CpuAsynchronous, tr("CPU Asynchronous")),
+                              PAIR(AstcDecodeMode, Hybrid, tr("Hybrid")),
                           }});
     translations->insert(
         {Settings::EnumMetadata<Settings::AstcRecompression>::Index(),
@@ -852,6 +875,7 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
              PAIR(AstcRecompression, Uncompressed, tr("Uncompressed (Best quality)")),
              PAIR(AstcRecompression, Bc1, tr("BC1 (Low quality)")),
              PAIR(AstcRecompression, Bc3, tr("BC3 (Medium quality)")),
+             PAIR(AstcRecompression, Bc5, tr("BC5 (High quality)")),
          }});
     translations->insert({Settings::EnumMetadata<Settings::FramePacingMode>::Index(),
                           {
@@ -884,6 +908,7 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
     translations->insert({Settings::EnumMetadata<Settings::DmaAccuracy>::Index(),
                           {
                               PAIR(DmaAccuracy, Default, tr("Default")),
+                              PAIR(DmaAccuracy, Normal, tr("Normal")),
                               PAIR(DmaAccuracy, Unsafe, tr("Unsafe (fast)")),
                               PAIR(DmaAccuracy, Safe, tr("Safe (stable)")),
                           }});
@@ -919,6 +944,7 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                               PAIR(NvdecEmulation, Off, tr("No Video Output")),
                               PAIR(NvdecEmulation, Cpu, tr("CPU Video Decoding")),
                               PAIR(NvdecEmulation, Gpu, tr("GPU Video Decoding (Default)")),
+                              PAIR(NvdecEmulation, Hybrid, tr("Hybrid Video Decoding")),
                           }});
     translations->insert(
         {Settings::EnumMetadata<Settings::ResolutionSetup>::Index(),
@@ -1145,6 +1171,7 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                           {
                               PAIR(GameListMode, TreeView, tr("Tree View")),
                               PAIR(GameListMode, GridView, tr("Grid View")),
+                              PAIR(GameListMode, CarouselView, tr("Carousel View")),
                           }});
 
 #undef PAIR

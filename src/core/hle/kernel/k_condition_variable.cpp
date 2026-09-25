@@ -48,6 +48,7 @@ bool UpdateLockAtomic(KernelCore& kernel, u32* out, KProcessAddress address, u32
     }
 
     if (u8* ptr = process->GetMemory().GetPointer(GetInteger(address)); ptr != nullptr) {
+#if defined(__cpp_lib_atomic_ref)
         std::atomic_ref<u32> atom(*reinterpret_cast<u32*>(ptr));
         u32 expected = atom.load(std::memory_order_relaxed);
         while (true) {
@@ -57,6 +58,17 @@ bool UpdateLockAtomic(KernelCore& kernel, u32* out, KProcessAddress address, u32
                 return true;
             }
         }
+#else
+        auto* atom_ptr = reinterpret_cast<u32*>(ptr);
+        u32 expected = __atomic_load_n(atom_ptr, __ATOMIC_RELAXED);
+        while (true) {
+            const u32 value = expected ? (expected | new_orr_mask) : if_zero;
+            if (__atomic_compare_exchange_n(atom_ptr, &expected, value, true, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED)) {
+                *out = expected;
+                return true;
+            }
+        }
+#endif
     }
 
     auto& monitor = process->GetExclusiveMonitor();
