@@ -24,6 +24,9 @@ struct NandProfileItem {
     int save_count{0};
 };
 
+std::string GetActiveNandProfileName();
+void SetActiveNandProfileName(const std::string& name);
+
 class NandManagerDialog : public QDialog {
     Q_OBJECT
 

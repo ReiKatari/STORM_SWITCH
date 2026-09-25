@@ -535,7 +535,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 #endif
 
     // Multi-NAND Profile support: apply active NAND profile if configured
-    const std::string active_nand_p = UISettings::values.active_nand_profile.GetValue();
+    const std::string active_nand_p = GetActiveNandProfileName();
     if (!active_nand_p.empty() && active_nand_p != "Default") {
         const auto custom_nand_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::EdenDir) / "nand_profiles" / active_nand_p;
         if (std::filesystem::exists(custom_nand_dir)) {

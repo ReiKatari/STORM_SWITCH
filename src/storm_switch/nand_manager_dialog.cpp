@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <filesystem>
+#include <fstream>
 #include <QDesktopServices>
 #include <QDir>
 #include <QDirIterator>
@@ -21,6 +22,29 @@
 #include "core/core.h"
 #include "qt_common/config/uisettings.h"
 #include "storm_switch/nand_manager_dialog.h"
+
+std::string GetActiveNandProfileName() {
+    const auto active_file = Common::FS::GetEdenPath(Common::FS::EdenPath::EdenDir) / "nand_profiles" / "active_profile.txt";
+    std::ifstream in(active_file);
+    if (in.is_open()) {
+        std::string name;
+        std::getline(in, name);
+        if (!name.empty()) {
+            return name;
+        }
+    }
+    return "Default";
+}
+
+void SetActiveNandProfileName(const std::string& name) {
+    const auto prof_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::EdenDir) / "nand_profiles";
+    std::error_code ec;
+    std::filesystem::create_directories(prof_dir, ec);
+    std::ofstream out(prof_dir / "active_profile.txt", std::ios::trunc);
+    if (out.is_open()) {
+        out << name << std::endl;
+    }
+}
 
 NandManagerDialog::NandManagerDialog(QWidget* parent, Core::System& system_)
     : QDialog(parent), system{system_} {
@@ -166,7 +190,7 @@ void NandManagerDialog::RefreshProfiles() {
     table->blockSignals(true);
     table->setRowCount(0);
 
-    const QString active_name = QString::fromStdString(UISettings::values.active_nand_profile.GetValue());
+    const QString active_name = QString::fromStdString(GetActiveNandProfileName());
     lbl_active_name->setText(tr("Текущий активный профиль: <b>%1</b>").arg(active_name.isEmpty() ? QStringLiteral("Default") : active_name));
 
     // 1. Default NAND Profile
@@ -274,7 +298,7 @@ void NandManagerDialog::OnSetActive() {
 
     const auto& p = profiles[row];
     const std::string new_active = p.is_default ? "Default" : p.name.toStdString();
-    UISettings::values.active_nand_profile.SetValue(new_active);
+    SetActiveNandProfileName(new_active);
 
     Common::FS::SetEdenPath(Common::FS::EdenPath::NANDDir, p.path.toStdString());
     QMessageBox::information(

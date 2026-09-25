@@ -234,8 +234,8 @@ int main(int argc, char* argv[]) {
     }
 
 #ifdef _WIN32
-    HANDLE hSingleInstanceMutex = CreateMutexW(nullptr, TRUE, L"Global\\STORM_SWITCH_SingleInstanceMutex");
-    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+    HANDLE hSingleInstanceMutex = CreateMutexW(nullptr, TRUE, L"Local\\STORM_SWITCH_SingleInstanceMutex");
+    if (hSingleInstanceMutex && GetLastError() == ERROR_ALREADY_EXISTS) {
         HWND existingWnd = nullptr;
         EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
             wchar_t title[256];
