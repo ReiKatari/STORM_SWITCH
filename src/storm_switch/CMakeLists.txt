@@ -43,6 +43,10 @@ add_executable(yuzu
     cheats_dialog.h
     mod_manager_dialog.cpp
     mod_manager_dialog.h
+    crash_report_dialog.cpp
+    crash_report_dialog.h
+    nand_manager_dialog.cpp
+    nand_manager_dialog.h
     configuration/configuration_shared.cpp
     configuration/configuration_shared.h
     configuration/configure.ui

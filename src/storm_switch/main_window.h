@@ -180,6 +180,13 @@ public:
     std::filesystem::path GetShortcutPath(QtCommon::Game::ShortcutTarget target);
     QString GetGameTitleByProgramId(u64 program_id) const;
 
+    void LoadAmiibo(const QString& filename);
+    void EjectAmiibo();
+    bool IsAmiiboActive() const;
+    void OnToggleDockedMode();
+    void OnToggleGpuAccuracy();
+
+
 signals:
 
     /**
@@ -285,7 +292,6 @@ private:
     void ShutdownGame();
 
     void SetDiscordEnabled(bool state);
-    void LoadAmiibo(const QString& filename);
 
     bool SelectAndSetCurrentUser(const Core::Frontend::ProfileSelectParameters& parameters);
 
@@ -386,12 +392,11 @@ private slots:
     void OnTasRecord();
     void OnTasReset();
     void OnToggleGraphicsAPI();
-    void OnToggleDockedMode();
-    void OnToggleGpuAccuracy();
     void OnToggleAdaptingFilter();
     void OnConfigurePerGame();
     void OnModManagerDialog();
     void OnCheatsDialog();
+    void OnNandManagerDialog();
     void StartSilentCheatsSync();
     void OnLoadAmiibo();
     void OnAmiiboOnlineDatabase();

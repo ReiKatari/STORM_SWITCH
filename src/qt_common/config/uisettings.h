@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2016 Citra Emulator Project
@@ -233,6 +233,7 @@ struct Values {
 
     // misc
     Setting<bool> show_fw_warning{linkage, true, "show_fw_warning", Category::Miscellaneous};
+    Setting<std::string> active_nand_profile{linkage, "Default", "active_nand_profile", Category::Miscellaneous};
 
     bool configuration_applied;
     bool reset_to_defaults;

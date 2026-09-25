@@ -20,6 +20,7 @@
 #include "common/settings.h"
 #include "common/string_util.h"
 #include <fmt/format.h>
+#include <nlohmann/json.hpp>
 
 #include "core/core.h"
 #include "core/file_sys/common_funcs.h"
@@ -190,6 +191,53 @@ u64 PatchManager::GetTitleID() const {
     return title_id;
 }
 
+static void SortPatchDirsByPriority(std::vector<VirtualDir>& patch_dirs, const VirtualDir& load_dir) {
+    if (patch_dirs.empty()) return;
+
+    std::vector<std::string> priority_order;
+    if (load_dir != nullptr) {
+        const auto prio_file = load_dir->GetFile("mod_priorities.json");
+        if (prio_file != nullptr) {
+            std::vector<u8> prio_data(prio_file->GetSize());
+            if (prio_file->Read(prio_data.data(), prio_data.size()) == prio_data.size()) {
+                try {
+                    auto j = nlohmann::json::parse(prio_data.begin(), prio_data.end());
+                    if (j.contains("priorities") && j["priorities"].is_array()) {
+                        for (const auto& item : j["priorities"]) {
+                            if (item.is_string()) {
+                                priority_order.push_back(item.get<std::string>());
+                            }
+                        }
+                    }
+                } catch (...) {}
+            }
+        }
+    }
+
+    if (priority_order.empty()) {
+        std::sort(patch_dirs.begin(), patch_dirs.end(),
+                  [](const VirtualDir& l, const VirtualDir& r) {
+                      if (!l || !r) return l < r;
+                      return l->GetName() < r->GetName();
+                  });
+        return;
+    }
+
+    std::stable_sort(patch_dirs.begin(), patch_dirs.end(),
+                     [&priority_order](const VirtualDir& l, const VirtualDir& r) {
+                         if (!l || !r) return l < r;
+                         const auto l_it = std::find(priority_order.begin(), priority_order.end(), l->GetName());
+                         const auto r_it = std::find(priority_order.begin(), priority_order.end(), r->GetName());
+
+                         if (l_it != priority_order.end() && r_it != priority_order.end()) {
+                             return (l_it - priority_order.begin()) < (r_it - priority_order.begin());
+                         }
+                         if (l_it != priority_order.end()) return true;
+                         if (r_it != priority_order.end()) return false;
+                         return l->GetName() < r->GetName();
+                     });
+}
+
 VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
     LOG_INFO(Loader, "Patching ExeFS for title_id={:016X}", title_id);
 
@@ -333,8 +381,7 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
         patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
     }
 
-    std::sort(patch_dirs.begin(), patch_dirs.end(),
-              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+    SortPatchDirsByPriority(patch_dirs, load_dir);
 
     std::vector<VirtualDir> layers;
     layers.reserve(patch_dirs.size() + 1);
@@ -755,8 +802,7 @@ static void ApplyLayeredFS(VirtualFile& romfs, u64 title_id, ContentRecordType t
     if (std::find(disabled.cbegin(), disabled.cend(), "SDMC") == disabled.cend()) {
         patch_dirs.push_back(sdmc_load_dir);
     }
-    std::sort(patch_dirs.begin(), patch_dirs.end(),
-              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+    SortPatchDirsByPriority(patch_dirs, load_dir);
 
     std::vector<VirtualDir> layers;
     std::vector<VirtualDir> layers_ext;

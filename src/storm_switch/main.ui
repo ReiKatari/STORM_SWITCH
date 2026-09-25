@@ -240,6 +240,7 @@
     <addaction name="action_Translate_Screen"/>
     <addaction name="action_Mod_Manager"/>
     <addaction name="action_Cheats"/>
+    <addaction name="action_Nand_Manager"/>
     <addaction name="menuTAS"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -501,6 +502,17 @@
    </property>
    <property name="text">
     <string>&amp;Mod Manager...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="action_Nand_Manager">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;NAND Profiles Manager...</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

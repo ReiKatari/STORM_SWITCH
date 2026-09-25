@@ -85,14 +85,20 @@ public:
     }
 
     std::shared_ptr<FFmpeg::Frame> GetFrame(s32 fd, u64 offset) {
+        std::scoped_lock l{m_mutex};
         if (fd != -1) {
-            std::scoped_lock l{m_mutex};
             if (auto const it = m_frame_devices.find(fd); it != m_frame_devices.end()) {
                 if (it->second.m_presentation_order.size() > 0)
                     return GetPresentOrderLocked(fd);
                 if (it->second.m_decode_order.size() > 0)
                     return GetDecodeOrderLocked(fd, offset);
             }
+        }
+        for (auto const& [device_fd, dev] : m_frame_devices) {
+            if (dev.m_presentation_order.size() > 0)
+                return GetPresentOrderLocked(device_fd);
+            if (dev.m_decode_order.contains(offset))
+                return GetDecodeOrderLocked(device_fd, offset);
         }
         return {};
     }

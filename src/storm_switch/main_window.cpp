@@ -46,6 +46,8 @@
 #include "amiibo_browser_dialog.h"
 #include "cheats_dialog.h"
 #include "mod_manager_dialog.h"
+#include "crash_report_dialog.h"
+#include "nand_manager_dialog.h"
 #include "data_dialog.h"
 #include "deps_dialog.h"
 #include "install_dialog.h"
@@ -471,7 +473,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "9.5.0";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "9.6.0";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
@@ -531,6 +533,16 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 #ifdef __unix__
     SetupSigInterrupts();
 #endif
+
+    // Multi-NAND Profile support: apply active NAND profile if configured
+    const std::string active_nand_p = UISettings::values.active_nand_profile.GetValue();
+    if (!active_nand_p.empty() && active_nand_p != "Default") {
+        const auto custom_nand_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::EdenDir) / "nand_profiles" / active_nand_p;
+        if (std::filesystem::exists(custom_nand_dir)) {
+            Common::FS::SetEdenPath(Common::FS::EdenPath::NANDDir, custom_nand_dir);
+            LOG_INFO(Frontend, "Using custom active NAND profile: '{}' at '{}'", active_nand_p, custom_nand_dir.string());
+        }
+    }
 
     SetGamemodeEnabled(UISettings::values.enable_gamemode.GetValue());
 
@@ -2649,6 +2661,7 @@ void MainWindow::SetupMenuIcons() {
     apply_action(ui->action_Show_Filter_Bar, QStringLiteral("search"), col_cyan);
     apply_action(ui->action_Show_Status_Bar, QStringLiteral("stats"), col_lime);
     apply_action(ui->action_Show_Performance_Overlay, QStringLiteral("chart"), col_amber);
+    apply_action(ui->action_Nand_Manager, QStringLiteral("database"), col_cyan);
 
     // Tools Menu
     apply_menu(ui->menuInstall_Keys, QStringLiteral("key"), col_cyan);
@@ -2795,6 +2808,24 @@ void MainWindow::InitializeHotkeys() {
     LinkActionShortcut(ui->action_Leave_Room, QStringLiteral("Leave Room"));
     LinkActionShortcut(ui->action_Configure, QStringLiteral("Configure"));
     LinkActionShortcut(ui->action_Configure_Current_Game, QStringLiteral("Configure Current Game"));
+
+    auto* tesla_f10 = new QShortcut(QKeySequence(Qt::Key_F10), this);
+    connect(tesla_f10, &QShortcut::activated, this, [this]() {
+        if (!perf_overlay) return;
+        if (!perf_overlay->isVisible()) {
+            perf_overlay->SetExpanded(true);
+            ui->action_Show_Performance_Overlay->setChecked(true);
+            perf_overlay->show();
+        } else if (!perf_overlay->IsExpanded()) {
+            perf_overlay->SetExpanded(true);
+        } else {
+            ui->action_Show_Performance_Overlay->setChecked(false);
+            perf_overlay->hide();
+        }
+    });
+
+    auto* tesla_alt_f1 = new QShortcut(QKeySequence(QStringLiteral("Alt+F1")), this);
+    connect(tesla_alt_f1, &QShortcut::activated, tesla_f10, &QShortcut::activated);
 
     static const QString main_window = QStringLiteral("Main Window");
     const auto connect_shortcut = [&]<typename Fn>(const QString& action_name, const Fn& function) {
@@ -3023,6 +3054,7 @@ void MainWindow::ConnectMenuEvents() {
     connect_menu(ui->action_Configure_Current_Game, &MainWindow::OnConfigurePerGame);
     connect_menu(ui->action_Mod_Manager, &MainWindow::OnModManagerDialog);
     connect_menu(ui->action_Cheats, &MainWindow::OnCheatsDialog);
+    connect_menu(ui->action_Nand_Manager, &MainWindow::OnNandManagerDialog);
 
     // View
     connect_menu(ui->action_Fullscreen, &MainWindow::ToggleFullscreen);
@@ -5343,7 +5375,7 @@ void MainWindow::OnConfigure() {
         SetDiscordEnabled(UISettings::values.enable_discord_presence.GetValue());
     }
     if (UISettings::values.enable_gamemode.GetValue() != old_gamemode) {
-        SetGamemodeEnabled(UISettings::values.enable_gamemode.GetValue());
+    SetGamemodeEnabled(UISettings::values.enable_gamemode.GetValue());
     }
 #ifdef __unix__
     if (UISettings::values.gui_force_x11.GetValue() != old_force_x11) {
@@ -5607,6 +5639,30 @@ void MainWindow::OnModManagerDialog() {
 
     ModManagerDialog dialog(this, *QtCommon::system, title_id, game_path, game_name);
     dialog.exec();
+}
+
+void MainWindow::OnNandManagerDialog() {
+    NandManagerDialog dialog(this, *QtCommon::system);
+    dialog.exec();
+}
+
+void MainWindow::EjectAmiibo() {
+    if (input_subsystem) {
+        auto* virtual_amiibo = input_subsystem->GetVirtualAmiibo();
+        if (virtual_amiibo) {
+            virtual_amiibo->CloseAmiibo();
+        }
+    }
+}
+
+bool MainWindow::IsAmiiboActive() const {
+    if (input_subsystem) {
+        auto* virtual_amiibo = input_subsystem->GetVirtualAmiibo();
+        if (virtual_amiibo) {
+            return virtual_amiibo->GetCurrentState() == InputCommon::VirtualAmiibo::State::TagNearby;
+        }
+    }
+    return false;
 }
 
 void MainWindow::OnCheatsDialog() {
@@ -9783,6 +9839,16 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
             QStringLiteral("Base de données Amiibo en ligne..."),
             QStringLiteral("在线 Amiibo 数据库..."),
             QStringLiteral("オンライン Amiibo データベース...")
+        ));
+    }
+    if (ui->action_Nand_Manager) {
+        ui->action_Nand_Manager->setText(StormLang(
+            QStringLiteral("Менеджер профилей NAND..."),
+            QStringLiteral("NAND Profiles Manager..."),
+            QStringLiteral("NAND-Profilmanager..."),
+            QStringLiteral("Gestionnaire de profils NAND..."),
+            QStringLiteral("NAND 配置文件管理器..."),
+            QStringLiteral("NANDプロファイルマネージャー...")
         ));
     }
     if (ui->action_Show_Performance_Overlay) {

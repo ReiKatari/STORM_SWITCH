@@ -233,6 +233,35 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+#ifdef _WIN32
+    HANDLE hSingleInstanceMutex = CreateMutexW(nullptr, TRUE, L"Global\\STORM_SWITCH_SingleInstanceMutex");
+    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        HWND existingWnd = nullptr;
+        EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
+            wchar_t title[256];
+            if (GetWindowTextW(hwnd, title, 256) > 0) {
+                if (wcsstr(title, L"STORM SWITCH") != nullptr) {
+                    *reinterpret_cast<HWND*>(lParam) = hwnd;
+                    return FALSE;
+                }
+            }
+            return TRUE;
+        }, reinterpret_cast<LPARAM>(&existingWnd));
+
+        if (existingWnd) {
+            ShowWindow(existingWnd, SW_RESTORE);
+            SetForegroundWindow(existingWnd);
+        }
+        MessageBoxW(nullptr,
+            L"Экземпляр STORM SWITCH уже запущен!\nГлавное окно активировано и выведено на передний план.",
+            L"STORM SWITCH", MB_OK | MB_ICONINFORMATION);
+        if (hSingleInstanceMutex) {
+            CloseHandle(hSingleInstanceMutex);
+        }
+        return 0;
+    }
+#endif
+
 #ifdef YUZU_CRASH_DUMPS
     Breakpad::InstallCrashHandler();
 #endif

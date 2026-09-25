@@ -30,6 +30,11 @@
 
 namespace {
 
+std::filesystem::path GetDedicatedCrashPath(u64 title_id, std::string_view timestamp) {
+    return Common::FS::GetEdenPath(Common::FS::EdenPath::EdenDir) / "crash_reports" /
+           fmt::format("{:016X}", title_id) / fmt::format("crash_{}.json", timestamp);
+}
+
 std::filesystem::path GetPath(std::string_view type, u64 title_id, std::string_view timestamp) {
     return Common::FS::GetEdenPath(Common::FS::EdenPath::LogDir) / type /
            fmt::format("{:016X}_{}.json", title_id, timestamp);
@@ -178,13 +183,10 @@ void Reporter::SaveCrashReport(u64 title_id, Result result, u64 set_flags, u64 e
                                const std::array<u64, 31>& registers,
                                const std::array<u64, 32>& backtrace, u32 backtrace_size,
                                const std::string& arch, u32 unk10) const {
-    if (!IsReportingEnabled()) {
-        return;
-    }
-
     const auto timestamp = GetTimestamp();
     json out;
 
+    out["emulator_version"] = std::string(Common::g_build_fullname);
     out["yuzu_version"] = GetYuzuVersionData();
     out["report_common"] = GetReportCommonData(title_id, result, timestamp);
 
@@ -199,7 +201,12 @@ void Reporter::SaveCrashReport(u64 title_id, Result result, u64 set_flags, u64 e
 
     out["processor_state"] = std::move(proc_out);
 
-    SaveToFile(out, GetPath("crash_report", title_id, timestamp));
+    // Unconditionally save local structured JSON dump for user diagnostics
+    SaveToFile(out, GetDedicatedCrashPath(title_id, timestamp));
+
+    if (IsReportingEnabled()) {
+        SaveToFile(out, GetPath("crash_report", title_id, timestamp));
+    }
 }
 
 void Reporter::SaveSvcBreakReport(u32 type, bool signal_debugger, u64 info1, u64 info2,
