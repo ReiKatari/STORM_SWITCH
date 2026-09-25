@@ -1009,7 +1009,7 @@ ImageId TextureCache<P>::DmaImageId(const Tegra::DMA::ImageOperand& operand, boo
         return NULL_IMAGE_ID;
     }
     auto& image = slot_images[dst_id];
-    if (False(image.flags & ImageFlagBits::GpuModified)) {
+    if (!is_upload && False(image.flags & ImageFlagBits::GpuModified)) {
         // No need to waste time on an image that's synced with guest
         return NULL_IMAGE_ID;
     }

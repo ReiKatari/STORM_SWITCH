@@ -63,9 +63,9 @@ vec4 AreaSampling(sampler2D textureSampler, vec2 texCoords, vec2 source_size, ve
     avg_color += area_sw * texelFetch(textureSampler, ivec2(f_beg.x, f_end.y), 0);
     avg_color += area_se * texelFetch(textureSampler, ivec2(f_end.x, f_end.y), 0);
 
-    // Determine the size of the pixel box.
-    int x_range = int(f_end.x - f_beg.x - 0.5);
-    int y_range = int(f_end.y - f_beg.y - 0.5);
+    // Determine the size of the pixel box. Clamp to prevent GPU loop explosion or negative iterations.
+    int x_range = clamp(int(f_end.x - f_beg.x - 0.5), 0, 32);
+    int y_range = clamp(int(f_end.y - f_beg.y - 0.5), 0, 32);
 
     // Accumulate top and bottom edge pixels.
     for (int x = f_beg.x + 1; x <= f_beg.x + x_range; ++x) {
@@ -87,21 +87,31 @@ vec4 AreaSampling(sampler2D textureSampler, vec2 texCoords, vec2 source_size, ve
     float area_corners = area_nw + area_ne + area_sw + area_se;
     float area_edges = float(x_range) * (area_n + area_s) + float(y_range) * (area_w + area_e);
     float area_center = float(x_range) * float(y_range);
+    float total_area = area_corners + area_edges + area_center;
+
+    if (total_area <= 0.00001) {
+        return texture(textureSampler, texCoords);
+    }
 
     // Return the normalized average color.
-    return avg_color / (area_corners + area_edges + area_center);
+    return avg_color / total_area;
 }
 
 void main() {
-    vec2 source_image_size = textureSize(color_texture, 0);
+    vec2 source_image_size = vec2(textureSize(color_texture, 0));
     vec2 window_size;
 
     #ifdef VULKAN
-    window_size.x = vertices[1].position.x - vertices[0].position.x;
-    window_size.y = vertices[2].position.y - vertices[0].position.y;
+    window_size.x = abs(vertices[1].position.x - vertices[0].position.x);
+    window_size.y = abs(vertices[2].position.y - vertices[0].position.y);
     #else // OpenGL
-    window_size = screen_size;
+    window_size = vec2(screen_size);
     #endif
+
+    if (window_size.x <= 1.0 || window_size.y <= 1.0 || source_image_size.x <= 1.0 || source_image_size.y <= 1.0) {
+        color = texture(color_texture, frag_tex_coord);
+        return;
+    }
 
     color = AreaSampling(color_texture, frag_tex_coord, source_image_size, window_size);
 }

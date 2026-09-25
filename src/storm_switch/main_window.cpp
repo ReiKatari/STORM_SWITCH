@@ -1369,18 +1369,28 @@ void MainWindow::InitializeWidgets() {
     volume_button->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(volume_button, &QPushButton::customContextMenuRequested,
             [this](const QPoint& menu_location) {
-                QMenu context_menu;
-                context_menu.addAction(
-                    Settings::values.audio_muted.GetValue() ? tr("Unmute") : tr("Mute"), [this] {
+                QMenu context_menu(this);
+                const bool muted = Settings::values.audio_muted.GetValue();
+                context_menu.addAction(muted
+                    ? StormLang(QStringLiteral("Включить звук"), QStringLiteral("Unmute"), QStringLiteral("Ton einschalten"), QStringLiteral("Activer le son"), QStringLiteral("取消静音"), QStringLiteral("ミュート解除"))
+                    : StormLang(QStringLiteral("Отключить звук"), QStringLiteral("Mute"), QStringLiteral("Stummschalten"), QStringLiteral("Couper le son"), QStringLiteral("静音"), QStringLiteral("ミュート")),
+                    [this] {
                         OnMute();
                         ApplyDynamicSettingChange();
                     });
 
-                context_menu.addAction(tr("Reset volume (100%)"), [this] {
-                    Settings::values.volume.SetValue(100);
-                    UpdateVolumeUI();
-                    ApplyDynamicSettingChange();
-                });
+                context_menu.addAction(StormLang(
+                    QStringLiteral("Сбросить громкость (100%)"),
+                    QStringLiteral("Reset volume (100%)"),
+                    QStringLiteral("Lautstärke zurücksetzen (100%)"),
+                    QStringLiteral("Réinitialiser le volume (100 %)"),
+                    QStringLiteral("重置音量 (100%)"),
+                    QStringLiteral("音量をリセット (100%)")),
+                    [this] {
+                        Settings::values.volume.SetValue(100);
+                        UpdateVolumeUI();
+                        ApplyDynamicSettingChange();
+                    });
 
                 ShowMenuAtWidget(context_menu, volume_button);
                 volume_button->repaint();
@@ -1397,14 +1407,19 @@ void MainWindow::InitializeWidgets() {
     auto show_aa_menu = [this]() {
         QMenu context_menu(this);
         const auto cur_aa = Settings::values.anti_aliasing.GetValue();
-        for (auto const& aa_text_pair : ConfigurationShared::anti_aliasing_texts_map) {
-            auto* act = context_menu.addAction(aa_text_pair.second, [this, aa_text_pair] {
-                Settings::values.anti_aliasing.SetValue(aa_text_pair.first);
+        const std::vector<std::pair<Settings::AntiAliasing, QString>> aa_options = {
+            {Settings::AntiAliasing::None, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
+            {Settings::AntiAliasing::Fxaa, QStringLiteral("FXAA")},
+            {Settings::AntiAliasing::Smaa, QStringLiteral("SMAA")},
+        };
+        for (const auto& opt : aa_options) {
+            auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.anti_aliasing.SetValue(opt.first);
                 UpdateAAText();
                 ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
-            act->setChecked(aa_text_pair.first == cur_aa);
+            act->setChecked(opt.first == cur_aa);
         }
         ShowMenuAtWidget(context_menu, aa_status_button);
         aa_status_button->repaint();
@@ -1423,14 +1438,31 @@ void MainWindow::InitializeWidgets() {
     auto show_filter_menu = [this]() {
         QMenu context_menu(this);
         const auto cur_filter = Settings::values.scaling_filter.GetValue();
-        for (auto const& filter_text_pair : ConfigurationShared::scaling_filter_texts_map) {
-            auto* act = context_menu.addAction(filter_text_pair.second, [this, filter_text_pair] {
-                Settings::values.scaling_filter.SetValue(filter_text_pair.first);
+        const std::vector<std::pair<Settings::ScalingFilter, QString>> filter_options = {
+            {Settings::ScalingFilter::NearestNeighbor, StormLang(QStringLiteral("Ближайший сосед"), QStringLiteral("Nearest Neighbor"), QStringLiteral("Nächster Nachbar"), QStringLiteral("Plus proche voisin"), QStringLiteral("最近邻"), QStringLiteral("最近傍"))},
+            {Settings::ScalingFilter::Bilinear, StormLang(QStringLiteral("Билинейный"), QStringLiteral("Bilinear"), QStringLiteral("Bilinear"), QStringLiteral("Bilinéaire"), QStringLiteral("双线性"), QStringLiteral("バイリニア"))},
+            {Settings::ScalingFilter::Bicubic, StormLang(QStringLiteral("Бикубический"), QStringLiteral("Bicubic"), QStringLiteral("Bikubisch"), QStringLiteral("Bicubique"), QStringLiteral("双三次"), QStringLiteral("バイキュービック"))},
+            {Settings::ScalingFilter::Gaussian, StormLang(QStringLiteral("Гаусс"), QStringLiteral("Gaussian"), QStringLiteral("Gauß"), QStringLiteral("Gauss"), QStringLiteral("高斯"), QStringLiteral("ガウス"))},
+            {Settings::ScalingFilter::Lanczos, StormLang(QStringLiteral("Ланцош"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("兰索斯"), QStringLiteral("ランツォシュ"))},
+            {Settings::ScalingFilter::ScaleForce, QStringLiteral("ScaleForce")},
+            {Settings::ScalingFilter::Fsr, QStringLiteral("FSR")},
+            {Settings::ScalingFilter::Area, QStringLiteral("Area")},
+            {Settings::ScalingFilter::Mmpx, QStringLiteral("MMPX")},
+            {Settings::ScalingFilter::ZeroTangent, QStringLiteral("Zero-Tangent")},
+            {Settings::ScalingFilter::BSpline, QStringLiteral("B-Spline")},
+            {Settings::ScalingFilter::Mitchell, QStringLiteral("Mitchell")},
+            {Settings::ScalingFilter::Spline1, QStringLiteral("Spline-1")},
+            {Settings::ScalingFilter::Sgsr, QStringLiteral("SGSR")},
+            {Settings::ScalingFilter::SgsrEdge, QStringLiteral("SGSR EdgeDir")},
+        };
+        for (const auto& opt : filter_options) {
+            auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.scaling_filter.SetValue(opt.first);
                 UpdateFilterText();
                 ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
-            act->setChecked(filter_text_pair.first == cur_filter);
+            act->setChecked(opt.first == cur_filter);
         }
         ShowMenuAtWidget(context_menu, filter_status_button);
         filter_status_button->repaint();
@@ -1448,15 +1480,19 @@ void MainWindow::InitializeWidgets() {
     auto show_dock_menu = [this]() {
         QMenu context_menu(this);
         const auto cur_dock = Settings::values.use_docked_mode.GetValue();
-        for (auto const& pair : ConfigurationShared::use_docked_mode_texts_map) {
-            auto* act = context_menu.addAction(pair.second, [this, pair] {
-                if (pair.first != Settings::values.use_docked_mode.GetValue()) {
+        const std::vector<std::pair<Settings::ConsoleMode, QString>> dock_options = {
+            {Settings::ConsoleMode::Docked, StormLang(QStringLiteral("В док-станции"), QStringLiteral("Docked"), QStringLiteral("Im Dock"), QStringLiteral("En station d'accueil"), QStringLiteral("底座模式"), QStringLiteral("ドックモード"))},
+            {Settings::ConsoleMode::Handheld, StormLang(QStringLiteral("Портативный"), QStringLiteral("Handheld"), QStringLiteral("Handheld"), QStringLiteral("Portable"), QStringLiteral("掌机模式"), QStringLiteral("携帯モード"))},
+        };
+        for (const auto& opt : dock_options) {
+            auto* act = context_menu.addAction(opt.second, [this, opt] {
+                if (opt.first != Settings::values.use_docked_mode.GetValue()) {
                     OnToggleDockedMode();
                     ApplyDynamicSettingChange();
                 }
             });
             act->setCheckable(true);
-            act->setChecked(pair.first == cur_dock);
+            act->setChecked(opt.first == cur_dock);
         }
         ShowMenuAtWidget(context_menu, dock_status_button);
         dock_status_button->repaint();
@@ -1474,14 +1510,18 @@ void MainWindow::InitializeWidgets() {
     auto show_gpu_menu = [this]() {
         QMenu context_menu(this);
         const auto cur_gpu = Settings::values.gpu_accuracy.GetValue();
-        for (auto const& gpu_accuracy_pair : ConfigurationShared::gpu_accuracy_texts_map) {
-            auto* act = context_menu.addAction(gpu_accuracy_pair.second, [this, gpu_accuracy_pair] {
-                Settings::values.gpu_accuracy.SetValue(gpu_accuracy_pair.first);
+        const std::vector<std::pair<Settings::GpuAccuracy, QString>> gpu_options = {
+            {Settings::GpuAccuracy::Low, StormLang(QStringLiteral("Быстрый (низкая точность)"), QStringLiteral("Fast (low accuracy)"), QStringLiteral("Schnell (niedrige Genauigkeit)"), QStringLiteral("Rapide (faible précision)"), QStringLiteral("快速 (低精度)"), QStringLiteral("高速 (低精度)"))},
+            {Settings::GpuAccuracy::High, StormLang(QStringLiteral("Высокая точность"), QStringLiteral("High accuracy"), QStringLiteral("Hohe Genauigkeit"), QStringLiteral("Haute précision"), QStringLiteral("高精度"), QStringLiteral("高精度"))},
+        };
+        for (const auto& opt : gpu_options) {
+            auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.gpu_accuracy.SetValue(opt.first);
                 UpdateGPUAccuracyButton();
                 ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
-            act->setChecked(gpu_accuracy_pair.first == cur_gpu);
+            act->setChecked(opt.first == cur_gpu);
         }
         ShowMenuAtWidget(context_menu, gpu_accuracy_button);
         gpu_accuracy_button->repaint();
@@ -1501,17 +1541,20 @@ void MainWindow::InitializeWidgets() {
     auto show_renderer_menu = [this]() {
         QMenu context_menu(this);
         const auto cur_api = Settings::values.renderer_backend.GetValue();
-        for (auto const& renderer_backend_pair : ConfigurationShared::renderer_backend_texts_map) {
-            if (renderer_backend_pair.first == Settings::RendererBackend::Null) {
-                continue;
-            }
-            auto* act = context_menu.addAction(renderer_backend_pair.second, [this, renderer_backend_pair] {
-                Settings::values.renderer_backend.SetValue(renderer_backend_pair.first);
+        const std::vector<std::pair<Settings::RendererBackend, QString>> api_options = {
+            {Settings::RendererBackend::Vulkan, QStringLiteral("Vulkan")},
+            {Settings::RendererBackend::OpenGL_GLSL, QStringLiteral("OpenGL GLSL")},
+            {Settings::RendererBackend::OpenGL_SPIRV, QStringLiteral("OpenGL SPIRV")},
+            {Settings::RendererBackend::OpenGL_GLASM, QStringLiteral("OpenGL GLASM")},
+        };
+        for (const auto& opt : api_options) {
+            auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.renderer_backend.SetValue(opt.first);
                 UpdateAPIText();
                 ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
-            act->setChecked(renderer_backend_pair.first == cur_api);
+            act->setChecked(opt.first == cur_api);
         }
         ShowMenuAtWidget(context_menu, renderer_status_button);
         renderer_status_button->repaint();
@@ -1533,7 +1576,7 @@ void MainWindow::InitializeWidgets() {
             {Settings::AspectRatio::R4_3, QStringLiteral("4:3")},
             {Settings::AspectRatio::R21_9, QStringLiteral("21:9")},
             {Settings::AspectRatio::R16_10, QStringLiteral("16:10")},
-            {Settings::AspectRatio::Stretch, tr("Stretch to Window")},
+            {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"))},
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
@@ -1559,10 +1602,10 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_dma = Settings::values.dma_accuracy.GetValue();
         const std::vector<std::pair<Settings::DmaAccuracy, QString>> items = {
-            {Settings::DmaAccuracy::Default, tr("Default")},
-            {Settings::DmaAccuracy::Normal, tr("Normal")},
-            {Settings::DmaAccuracy::Unsafe, tr("Unsafe")},
-            {Settings::DmaAccuracy::Safe, tr("Safe")},
+            {Settings::DmaAccuracy::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
+            {Settings::DmaAccuracy::Normal, StormLang(QStringLiteral("Нормально"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("正常"), QStringLiteral("通常"))},
+            {Settings::DmaAccuracy::Unsafe, StormLang(QStringLiteral("Небезопасно"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisé"), QStringLiteral("不安全"), QStringLiteral("非安全"))},
+            {Settings::DmaAccuracy::Safe, StormLang(QStringLiteral("Безопасно"), QStringLiteral("Safe"), QStringLiteral("Sicher"), QStringLiteral("Sécurisé"), QStringLiteral("安全"), QStringLiteral("安全"))},
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
@@ -1588,11 +1631,11 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_fence = Settings::values.gpu_fence_behavior.GetValue();
         const std::vector<std::pair<Settings::GpuFenceBehavior, QString>> items = {
-            {Settings::GpuFenceBehavior::Default, tr("Default")},
-            {Settings::GpuFenceBehavior::Immediate, tr("Immediate")},
-            {Settings::GpuFenceBehavior::Balanced, tr("Balanced")},
-            {Settings::GpuFenceBehavior::Accurate, tr("Accurate")},
-            {Settings::GpuFenceBehavior::Strict, tr("Strict")},
+            {Settings::GpuFenceBehavior::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
+            {Settings::GpuFenceBehavior::Immediate, StormLang(QStringLiteral("Мгновенно"), QStringLiteral("Immediate"), QStringLiteral("Sofort"), QStringLiteral("Immédiat"), QStringLiteral("立即"), QStringLiteral("即時"))},
+            {Settings::GpuFenceBehavior::Balanced, StormLang(QStringLiteral("Сбалансированно"), QStringLiteral("Balanced"), QStringLiteral("Ausgewogen"), QStringLiteral("Équilibré"), QStringLiteral("平衡"), QStringLiteral("バランス"))},
+            {Settings::GpuFenceBehavior::Accurate, StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Präzise"), QStringLiteral("Précis"), QStringLiteral("精确"), QStringLiteral("高精度"))},
+            {Settings::GpuFenceBehavior::Strict, StormLang(QStringLiteral("Строго"), QStringLiteral("Strict"), QStringLiteral("Strikt"), QStringLiteral("Strict"), QStringLiteral("严格"), QStringLiteral("厳格"))},
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
@@ -1618,9 +1661,9 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_vram = Settings::values.vram_usage_mode.GetValue();
         const std::vector<std::pair<Settings::VramUsageMode, QString>> options = {
-            {Settings::VramUsageMode::Conservative, tr("Conservative")},
-            {Settings::VramUsageMode::Normal, tr("Normal")},
-            {Settings::VramUsageMode::Aggressive, tr("Aggressive")},
+            {Settings::VramUsageMode::Conservative, StormLang(QStringLiteral("Консервативный"), QStringLiteral("Conservative"), QStringLiteral("Konservativ"), QStringLiteral("Conservateur"), QStringLiteral("保守"), QStringLiteral("控えめ"))},
+            {Settings::VramUsageMode::Normal, StormLang(QStringLiteral("Нормальный"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("正常"), QStringLiteral("通常"))},
+            {Settings::VramUsageMode::Aggressive, StormLang(QStringLiteral("Агрессивный"), QStringLiteral("Aggressive"), QStringLiteral("Aggressiv"), QStringLiteral("Agressif"), QStringLiteral("激进"), QStringLiteral("積極的"))},
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1646,15 +1689,15 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_aniso = Settings::values.max_anisotropy.GetValue();
         const std::vector<std::pair<Settings::AnisotropyMode, QString>> options = {
-            {Settings::AnisotropyMode::Automatic, tr("Automatic")},
-            {Settings::AnisotropyMode::Default, tr("Default")},
+            {Settings::AnisotropyMode::Automatic, StormLang(QStringLiteral("Автоматически"), QStringLiteral("Automatic"), QStringLiteral("Automatisch"), QStringLiteral("Automatique"), QStringLiteral("自动"), QStringLiteral("自動"))},
+            {Settings::AnisotropyMode::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
             {Settings::AnisotropyMode::X2, QStringLiteral("2x")},
             {Settings::AnisotropyMode::X4, QStringLiteral("4x")},
             {Settings::AnisotropyMode::X8, QStringLiteral("8x")},
             {Settings::AnisotropyMode::X16, QStringLiteral("16x")},
             {Settings::AnisotropyMode::X32, QStringLiteral("32x")},
             {Settings::AnisotropyMode::X64, QStringLiteral("64x")},
-            {Settings::AnisotropyMode::None, tr("Disabled")},
+            {Settings::AnisotropyMode::None, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1680,10 +1723,10 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_dec = Settings::values.accelerate_astc.GetValue();
         const std::vector<std::pair<Settings::AstcDecodeMode, QString>> options = {
-            {Settings::AstcDecodeMode::CpuAsynchronous, tr("CPU Asynchronous")},
-            {Settings::AstcDecodeMode::Cpu, tr("CPU")},
-            {Settings::AstcDecodeMode::Gpu, tr("GPU")},
-            {Settings::AstcDecodeMode::Hybrid, tr("Hybrid")},
+            {Settings::AstcDecodeMode::CpuAsynchronous, StormLang(QStringLiteral("ЦП асинхронно"), QStringLiteral("CPU asynchronous"), QStringLiteral("CPU asynchron"), QStringLiteral("CPU asynchrone"), QStringLiteral("CPU 异步"), QStringLiteral("CPU 非同期"))},
+            {Settings::AstcDecodeMode::Cpu, StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"))},
+            {Settings::AstcDecodeMode::Gpu, StormLang(QStringLiteral("ГПУ"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"))},
+            {Settings::AstcDecodeMode::Hybrid, StormLang(QStringLiteral("Гибридный"), QStringLiteral("Hybrid"), QStringLiteral("Hybrid"), QStringLiteral("Hybride"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"))},
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1709,10 +1752,10 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_rec = Settings::values.astc_recompression.GetValue();
         const std::vector<std::pair<Settings::AstcRecompression, QString>> options = {
-            {Settings::AstcRecompression::Uncompressed, tr("Uncompressed (Best Quality)")},
-            {Settings::AstcRecompression::Bc1, tr("BC1 (Low Quality)")},
-            {Settings::AstcRecompression::Bc3, tr("BC3 (Medium Quality)")},
-            {Settings::AstcRecompression::Bc5, tr("BC5 (High Quality)")},
+            {Settings::AstcRecompression::Uncompressed, StormLang(QStringLiteral("Без сжатия (лучшее качество)"), QStringLiteral("Uncompressed (best quality)"), QStringLiteral("Unkomprimiert (beste Qualität)"), QStringLiteral("Non compressé (meilleure qualité)"), QStringLiteral("未压缩 (最佳画质)"), QStringLiteral("非圧縮 (最高品質)"))},
+            {Settings::AstcRecompression::Bc1, StormLang(QStringLiteral("BC1 (низкое качество)"), QStringLiteral("BC1 (low quality)"), QStringLiteral("BC1 (niedrige Qualität)"), QStringLiteral("BC1 (faible qualité)"), QStringLiteral("BC1 (低画质)"), QStringLiteral("BC1 (低品質)"))},
+            {Settings::AstcRecompression::Bc3, StormLang(QStringLiteral("BC3 (среднее качество)"), QStringLiteral("BC3 (medium quality)"), QStringLiteral("BC3 (mittlere Qualität)"), QStringLiteral("BC3 (qualité moyenne)"), QStringLiteral("BC3 (中画质)"), QStringLiteral("BC3 (中品質)"))},
+            {Settings::AstcRecompression::Bc5, StormLang(QStringLiteral("BC5 (высокое качество)"), QStringLiteral("BC5 (high quality)"), QStringLiteral("BC5 (hohe Qualität)"), QStringLiteral("BC5 (haute qualité)"), QStringLiteral("BC5 (高画质)"), QStringLiteral("BC5 (高品質)"))},
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1758,40 +1801,81 @@ void MainWindow::InitializeWidgets() {
         }
         QMenu context_menu(this);
         if (m_current_addons_title_id == 0) {
-            auto* act = context_menu.addAction(tr("⚠️ No game selected or running"));
+            auto* act = context_menu.addAction(StormLang(
+                QStringLiteral("⚠️ Игра не выбрана или не запущена"),
+                QStringLiteral("⚠️ No game selected or running"),
+                QStringLiteral("⚠️ Kein Spiel ausgewählt oder wird ausgeführt"),
+                QStringLiteral("⚠️ Aucun jeu sélectionné ou en cours d'exécution"),
+                QStringLiteral("⚠️ 未选择或未运行游戏"),
+                QStringLiteral("⚠️ ゲームが選択されていないか実行されていません")
+            ));
             act->setEnabled(false);
         } else {
             const FileSys::PatchManager patch_manager(m_current_addons_title_id, QtCommon::system->GetFileSystemController(), QtCommon::system->GetContentProvider());
             auto patches = patch_manager.GetPatches();
 
-            auto* title_act = context_menu.addAction(tr("🎮 Add-ons and Patches (ID: 0x%1)")
-                .arg(QStringLiteral("%1").arg(m_current_addons_title_id, 16, 16, QLatin1Char('0')).toUpper()));
+            auto* title_act = context_menu.addAction(StormLang(
+                QStringLiteral("🎮 Дополнения и патчи (ID: 0x%1)"),
+                QStringLiteral("🎮 Add-ons and Patches (ID: 0x%1)"),
+                QStringLiteral("🎮 Add-ons und Patches (ID: 0x%1)"),
+                QStringLiteral("🎮 Extensions et patchs (ID: 0x%1)"),
+                QStringLiteral("🎮 附加组件和补丁 (ID: 0x%1)"),
+                QStringLiteral("🎮 アドオンとパッチ (ID: 0x%1)")
+            ).arg(QStringLiteral("%1").arg(m_current_addons_title_id, 16, 16, QLatin1Char('0')).toUpper()));
             title_act->setEnabled(false);
             context_menu.addSeparator();
 
-            context_menu.addAction(tr("📋 Open Add-ons Manager..."), [this] {
+            context_menu.addAction(StormLang(
+                QStringLiteral("📋 Открыть менеджер дополнений..."),
+                QStringLiteral("📋 Open Add-ons Manager..."),
+                QStringLiteral("📋 Add-ons-Manager öffnen..."),
+                QStringLiteral("📋 Ouvrir le gestionnaire d'extensions..."),
+                QStringLiteral("📋 打开附加组件管理器..."),
+                QStringLiteral("📋 アドオンマネージャーを開く...")
+            ), [this] {
                 ShowDLCDialog(m_current_addons_title_id, m_current_addons_game_name);
             });
 
-            context_menu.addAction(tr("📑 Copy Add-ons List"), [this] {
+            context_menu.addAction(StormLang(
+                QStringLiteral("📑 Скопировать список дополнений"),
+                QStringLiteral("📑 Copy Add-ons List"),
+                QStringLiteral("📑 Add-ons-Liste kopieren"),
+                QStringLiteral("📑 Copier la liste des extensions"),
+                QStringLiteral("📑 复制附加组件列表"),
+                QStringLiteral("📑 アドオンリストをコピー")
+            ), [this] {
                 const FileSys::PatchManager pm(m_current_addons_title_id, QtCommon::system->GetFileSystemController(), QtCommon::system->GetContentProvider());
                 const auto pts = pm.GetPatches();
                 QStringList lines;
-                lines << QStringLiteral("STORM SWITCH — Список дополнений");
-                lines << QStringLiteral("Игра: %1 (ID: 0x%2)").arg(m_current_addons_game_name, QStringLiteral("%1").arg(m_current_addons_title_id, 16, 16, QLatin1Char('0')).toUpper());
+                lines << QStringLiteral("STORM SWITCH - ") + StormLang(
+                    QStringLiteral("Список дополнений"), QStringLiteral("Add-ons List"),
+                    QStringLiteral("Add-ons-Liste"), QStringLiteral("Liste des extensions"),
+                    QStringLiteral("附加组件列表"), QStringLiteral("アドオンリスト"));
+                lines << QStringLiteral("%1: %2 (ID: 0x%3)")
+                    .arg(StormLang(QStringLiteral("Игра"), QStringLiteral("Game"), QStringLiteral("Spiel"), QStringLiteral("Jeu"), QStringLiteral("游戏"), QStringLiteral("ゲーム")),
+                         m_current_addons_game_name, QStringLiteral("%1").arg(m_current_addons_title_id, 16, 16, QLatin1Char('0')).toUpper());
                 lines << QStringLiteral("------------------------------------------------------------");
                 int idx = 1;
                 for (const auto& p : pts) {
                     if (p.type == FileSys::PatchType::DLC || p.type == FileSys::PatchType::Mod || p.type == FileSys::PatchType::Update) {
-                        QString ptype = (p.type == FileSys::PatchType::Update) ? tr("Update") :
-                                        (p.type == FileSys::PatchType::DLC) ? tr("DLC") : tr("Mod");
-                        lines << QStringLiteral("%1. 0x%2 — [%3] %4 (%5)")
+                        QString ptype = (p.type == FileSys::PatchType::Update) ? StormLang(QStringLiteral("Обновление"), QStringLiteral("Update"), QStringLiteral("Update"), QStringLiteral("Mise à jour"), QStringLiteral("更新"), QStringLiteral("更新")) :
+                                        (p.type == FileSys::PatchType::DLC) ? QStringLiteral("DLC") : QStringLiteral("Mod");
+                        lines << QStringLiteral("%1. 0x%2 - [%3] %4 (%5)")
                             .arg(QString::number(idx++), QStringLiteral("%1").arg(p.title_id, 16, 16, QLatin1Char('0')).toUpper(),
-                                 ptype, QString::fromStdString(p.name), p.enabled ? tr("Enabled") : tr("Disabled"));
+                                 ptype, QString::fromStdString(p.name), p.enabled ?
+                                 StormLang(QStringLiteral("Включено"), QStringLiteral("Enabled"), QStringLiteral("Aktiviert"), QStringLiteral("Activé"), QStringLiteral("已启用"), QStringLiteral("有効")) :
+                                 StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効")));
                     }
                 }
                 QGuiApplication::clipboard()->setText(lines.join(QLatin1Char('\n')));
-                statusBar()->showMessage(tr("Add-ons list copied to clipboard."), 3000);
+                statusBar()->showMessage(StormLang(
+                    QStringLiteral("Список дополнений скопирован в буфер обмена."),
+                    QStringLiteral("Add-ons list copied to clipboard."),
+                    QStringLiteral("Add-ons-Liste in die Zwischenablage kopiert."),
+                    QStringLiteral("Liste des extensions copiée dans le presse-papiers."),
+                    QStringLiteral("附加组件列表已复制到剪贴板。"),
+                    QStringLiteral("アドオンリストをクリップボードにコピーしました。")
+                ), 3000);
             });
 
             context_menu.addSeparator();
@@ -1803,10 +1887,10 @@ void MainWindow::InitializeWidgets() {
                 QString icon = QStringLiteral("📦");
                 if (patch.type == FileSys::PatchType::Update) {
                     icon = QStringLiteral("🆙");
-                    name = tr("Update");
+                    name = StormLang(QStringLiteral("Обновление"), QStringLiteral("Update"), QStringLiteral("Update"), QStringLiteral("Mise à jour"), QStringLiteral("更新"), QStringLiteral("更新"));
                 } else if (patch.type == FileSys::PatchType::DLC) {
                     icon = QStringLiteral("🧩");
-                    name = tr("DLC");
+                    name = QStringLiteral("DLC");
                 } else if (patch.type == FileSys::PatchType::Mod) {
                     icon = QStringLiteral("⚡");
                 }
@@ -1821,12 +1905,26 @@ void MainWindow::InitializeWidgets() {
             }
 
             if (addon_count == 0) {
-                auto* empty_act = context_menu.addAction(tr("Нет установленных дополнений"));
+                auto* empty_act = context_menu.addAction(StormLang(
+                    QStringLiteral("Нет установленных дополнений"),
+                    QStringLiteral("No add-ons installed"),
+                    QStringLiteral("Keine Add-ons installiert"),
+                    QStringLiteral("Aucune extension installée"),
+                    QStringLiteral("未安装附加组件"),
+                    QStringLiteral("アドオンがインストールされていません")
+                ));
                 empty_act->setEnabled(false);
             }
 
             context_menu.addSeparator();
-            context_menu.addAction(tr("⚙️ Свойства игры (Управление дополнениями)..."), [this] {
+            context_menu.addAction(StormLang(
+                QStringLiteral("⚙️ Свойства игры (Управление дополнениями)..."),
+                QStringLiteral("⚙️ Game properties (Manage add-ons)..."),
+                QStringLiteral("⚙️ Spieleigenschaften (Add-ons verwalten)..."),
+                QStringLiteral("⚙️ Propriétés du jeu (Gérer les extensions)..."),
+                QStringLiteral("⚙️ 游戏属性 (管理附加组件)..."),
+                QStringLiteral("⚙️ ゲームのプロパティ (アドオンの管理)...")
+            ), [this] {
                 OpenPerGameConfiguration(m_current_addons_title_id, m_current_addons_game_path);
             });
         }
@@ -1845,19 +1943,19 @@ void MainWindow::InitializeWidgets() {
         const auto cur_res = Settings::values.resolution_setup.GetValue();
         const bool is_docked = Settings::values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked;
         const std::vector<std::pair<Settings::ResolutionSetup, QString>> res_options = {
-            {Settings::ResolutionSetup::Res1_4X, is_docked ? tr("0.25X (270p)") : tr("0.25X (180p)")},
-            {Settings::ResolutionSetup::Res1_2X, is_docked ? tr("0.5X (540p)") : tr("0.5X (360p)")},
-            {Settings::ResolutionSetup::Res3_4X, is_docked ? tr("0.75X (810p)") : tr("0.75X (540p)")},
-            {Settings::ResolutionSetup::Res1X, is_docked ? tr("1X (1080p)") : tr("1X (720p)")},
-            {Settings::ResolutionSetup::Res5_4X, is_docked ? tr("1.25X (1350p)") : tr("1.25X (900p)")},
-            {Settings::ResolutionSetup::Res3_2X, is_docked ? tr("1.5X (1620p)") : tr("1.5X (1080p)")},
-            {Settings::ResolutionSetup::Res2X, is_docked ? tr("2X (2160p / 4K)") : tr("2X (1440p / 2K)")},
-            {Settings::ResolutionSetup::Res3X, is_docked ? tr("3X (3240p / 6K)") : tr("3X (2160p / 4K)")},
-            {Settings::ResolutionSetup::Res4X, is_docked ? tr("4X (4320p / 8K)") : tr("4X (2880p)")},
-            {Settings::ResolutionSetup::Res5X, is_docked ? tr("5X (5400p)") : tr("5X (3600p)")},
-            {Settings::ResolutionSetup::Res6X, is_docked ? tr("6X (6480p)") : tr("6X (4320p)")},
-            {Settings::ResolutionSetup::Res7X, is_docked ? tr("7X (7560p)") : tr("7X (5040p)")},
-            {Settings::ResolutionSetup::Res8X, is_docked ? tr("8X (8640p)") : tr("8X (5760p)")},
+            {Settings::ResolutionSetup::Res1_4X, is_docked ? QStringLiteral("0.25X (270p)") : QStringLiteral("0.25X (180p)")},
+            {Settings::ResolutionSetup::Res1_2X, is_docked ? QStringLiteral("0.5X (540p)") : QStringLiteral("0.5X (360p)")},
+            {Settings::ResolutionSetup::Res3_4X, is_docked ? QStringLiteral("0.75X (810p)") : QStringLiteral("0.75X (540p)")},
+            {Settings::ResolutionSetup::Res1X, is_docked ? QStringLiteral("1X (1080p)") : QStringLiteral("1X (720p)")},
+            {Settings::ResolutionSetup::Res5_4X, is_docked ? QStringLiteral("1.25X (1350p)") : QStringLiteral("1.25X (900p)")},
+            {Settings::ResolutionSetup::Res3_2X, is_docked ? QStringLiteral("1.5X (1620p)") : QStringLiteral("1.5X (1080p)")},
+            {Settings::ResolutionSetup::Res2X, is_docked ? QStringLiteral("2X (2160p / 4K)") : QStringLiteral("2X (1440p / 2K)")},
+            {Settings::ResolutionSetup::Res3X, is_docked ? QStringLiteral("3X (3240p / 6K)") : QStringLiteral("3X (2160p / 4K)")},
+            {Settings::ResolutionSetup::Res4X, is_docked ? QStringLiteral("4X (4320p / 8K)") : QStringLiteral("4X (2880p)")},
+            {Settings::ResolutionSetup::Res5X, is_docked ? QStringLiteral("5X (5400p)") : QStringLiteral("5X (3600p)")},
+            {Settings::ResolutionSetup::Res6X, is_docked ? QStringLiteral("6X (6480p)") : QStringLiteral("6X (4320p)")},
+            {Settings::ResolutionSetup::Res7X, is_docked ? QStringLiteral("7X (7560p)") : QStringLiteral("7X (5040p)")},
+            {Settings::ResolutionSetup::Res8X, is_docked ? QStringLiteral("8X (8640p)") : QStringLiteral("8X (5760p)")},
         };
         for (const auto& opt : res_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1908,10 +2006,10 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_vsync = Settings::values.vsync_mode.GetValue();
         const std::vector<std::pair<Settings::VSyncMode, QString>> vsync_options = {
-            {Settings::VSyncMode::Fifo, tr("FIFO")},
-            {Settings::VSyncMode::FifoRelaxed, tr("FIFO Relaxed")},
-            {Settings::VSyncMode::Mailbox, tr("Mailbox")},
-            {Settings::VSyncMode::Immediate, tr("Immediate")},
+            {Settings::VSyncMode::Fifo, QStringLiteral("FIFO (VSync)")},
+            {Settings::VSyncMode::FifoRelaxed, QStringLiteral("FIFO Relaxed")},
+            {Settings::VSyncMode::Mailbox, QStringLiteral("Mailbox")},
+            {Settings::VSyncMode::Immediate, StormLang(QStringLiteral("Immediate (Без VSync)"), QStringLiteral("Immediate (No VSync)"), QStringLiteral("Immediate (Ohne VSync)"), QStringLiteral("Immediate (Sans VSync)"), QStringLiteral("Immediate (无垂直同步)"), QStringLiteral("Immediate (垂直同期なし)"))},
         };
         for (const auto& opt : vsync_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -1938,7 +2036,7 @@ void MainWindow::InitializeWidgets() {
         const bool use_limit = Settings::values.use_speed_limit.GetValue();
         const u16 speed_val = Settings::values.speed_limit.GetValue();
 
-        auto* act100 = context_menu.addAction(tr("100%"), [this] {
+        auto* act100 = context_menu.addAction(QStringLiteral("100%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(100);
             UpdateSpeedLimitText();
@@ -1947,7 +2045,7 @@ void MainWindow::InitializeWidgets() {
         act100->setCheckable(true);
         act100->setChecked(use_limit && speed_val == 100);
 
-        auto* act150 = context_menu.addAction(tr("150%"), [this] {
+        auto* act150 = context_menu.addAction(QStringLiteral("150%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(150);
             UpdateSpeedLimitText();
@@ -1956,7 +2054,7 @@ void MainWindow::InitializeWidgets() {
         act150->setCheckable(true);
         act150->setChecked(use_limit && speed_val == 150);
 
-        auto* act200 = context_menu.addAction(tr("200%"), [this] {
+        auto* act200 = context_menu.addAction(QStringLiteral("200%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(200);
             UpdateSpeedLimitText();
@@ -1965,7 +2063,7 @@ void MainWindow::InitializeWidgets() {
         act200->setCheckable(true);
         act200->setChecked(use_limit && speed_val == 200);
 
-        auto* act300 = context_menu.addAction(tr("300%"), [this] {
+        auto* act300 = context_menu.addAction(QStringLiteral("300%"), [this] {
             Settings::values.use_speed_limit.SetValue(true);
             Settings::values.speed_limit.SetValue(300);
             UpdateSpeedLimitText();
@@ -1974,7 +2072,14 @@ void MainWindow::InitializeWidgets() {
         act300->setCheckable(true);
         act300->setChecked(use_limit && speed_val == 300);
 
-        auto* act_unlimit = context_menu.addAction(tr("Без лимита скорости"), [this] {
+        auto* act_unlimit = context_menu.addAction(StormLang(
+            QStringLiteral("Без лимита скорости"),
+            QStringLiteral("No speed limit"),
+            QStringLiteral("Keine Geschwindigkeitsbegrenzung"),
+            QStringLiteral("Aucune limite de vitesse"),
+            QStringLiteral("无速度限制"),
+            QStringLiteral("速度制限なし")
+        ), [this] {
             Settings::values.use_speed_limit.SetValue(false);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
@@ -1997,10 +2102,10 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_nvdec = Settings::values.nvdec_emulation.GetValue();
         const std::vector<std::pair<Settings::NvdecEmulation, QString>> nvdec_options = {
-            {Settings::NvdecEmulation::Gpu, tr("ГПУ")},
-            {Settings::NvdecEmulation::Hybrid, tr("Гибридный")},
-            {Settings::NvdecEmulation::Cpu, tr("ЦП")},
-            {Settings::NvdecEmulation::Off, tr("Отключено")},
+            {Settings::NvdecEmulation::Gpu, StormLang(QStringLiteral("ГПУ"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"))},
+            {Settings::NvdecEmulation::Hybrid, StormLang(QStringLiteral("Гибридный"), QStringLiteral("Hybrid"), QStringLiteral("Hybrid"), QStringLiteral("Hybride"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"))},
+            {Settings::NvdecEmulation::Cpu, StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"))},
+            {Settings::NvdecEmulation::Off, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
         };
         for (const auto& opt : nvdec_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -2026,9 +2131,9 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_cpu = Settings::values.cpu_accuracy.GetValue();
         const std::vector<std::pair<Settings::CpuAccuracy, QString>> cpu_options = {
-            {Settings::CpuAccuracy::Auto, tr("Авто")},
-            {Settings::CpuAccuracy::Accurate, tr("Точно")},
-            {Settings::CpuAccuracy::Unsafe, tr("Небезопасно")},
+            {Settings::CpuAccuracy::Auto, StormLang(QStringLiteral("Авто"), QStringLiteral("Auto"), QStringLiteral("Automatisch"), QStringLiteral("Auto"), QStringLiteral("自动"), QStringLiteral("自動"))},
+            {Settings::CpuAccuracy::Accurate, StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Genau"), QStringLiteral("Précis"), QStringLiteral("准确"), QStringLiteral("正確"))},
+            {Settings::CpuAccuracy::Unsafe, StormLang(QStringLiteral("Небезопасно"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisé"), QStringLiteral("不安全"), QStringLiteral("非安全"))},
         };
         for (const auto& opt : cpu_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -6704,8 +6809,24 @@ void MainWindow::UpdateDockedButton() {
 void MainWindow::UpdateAPIText() {
     if (!renderer_status_button) return;
     const auto api = Settings::values.renderer_backend.GetValue();
-    const auto renderer_status_text =
-        ConfigurationShared::renderer_backend_texts_map.find(api)->second;
+    QString api_text;
+    switch (api) {
+    case Settings::RendererBackend::Vulkan:
+        api_text = QStringLiteral("VULKAN");
+        break;
+    case Settings::RendererBackend::OpenGL_GLSL:
+        api_text = QStringLiteral("OPENGL GLSL");
+        break;
+    case Settings::RendererBackend::OpenGL_SPIRV:
+        api_text = QStringLiteral("OPENGL SPIRV");
+        break;
+    case Settings::RendererBackend::OpenGL_GLASM:
+        api_text = QStringLiteral("OPENGL GLASM");
+        break;
+    default:
+        api_text = QStringLiteral("VULKAN");
+        break;
+    }
     renderer_status_button->setText(StormLang(
         QStringLiteral("РЕНДЕР:\n%1"),
         QStringLiteral("RENDER:\n%1"),
@@ -6713,14 +6834,63 @@ void MainWindow::UpdateAPIText() {
         QStringLiteral("RENDU:\n%1"),
         QStringLiteral("渲染:\n%1"),
         QStringLiteral("レンダー:\n%1")
-    ).arg(renderer_status_text.toUpper()));
+    ).arg(api_text));
 }
 
 void MainWindow::UpdateFilterText() {
     if (!filter_status_button) return;
     const auto filter = Settings::values.scaling_filter.GetValue();
-    const auto it = ConfigurationShared::scaling_filter_texts_map.find(filter);
-    const auto filter_text = it != ConfigurationShared::scaling_filter_texts_map.end() ? it->second : QStringLiteral("FSR");
+    QString filter_text;
+    switch (filter) {
+    case Settings::ScalingFilter::NearestNeighbor:
+        filter_text = StormLang(QStringLiteral("Ближайший"), QStringLiteral("Nearest"), QStringLiteral("Nächster"), QStringLiteral("Plus proche"), QStringLiteral("最近邻"), QStringLiteral("最近傍"));
+        break;
+    case Settings::ScalingFilter::Bilinear:
+        filter_text = StormLang(QStringLiteral("Билинейный"), QStringLiteral("Bilinear"), QStringLiteral("Bilinear"), QStringLiteral("Bilinéaire"), QStringLiteral("双线性"), QStringLiteral("バイリニア"));
+        break;
+    case Settings::ScalingFilter::Bicubic:
+        filter_text = StormLang(QStringLiteral("Бикубический"), QStringLiteral("Bicubic"), QStringLiteral("Bikubisch"), QStringLiteral("Bicubique"), QStringLiteral("双三次"), QStringLiteral("バイキュービック"));
+        break;
+    case Settings::ScalingFilter::Gaussian:
+        filter_text = StormLang(QStringLiteral("Гаусс"), QStringLiteral("Gaussian"), QStringLiteral("Gauß"), QStringLiteral("Gauss"), QStringLiteral("高斯"), QStringLiteral("ガウス"));
+        break;
+    case Settings::ScalingFilter::Lanczos:
+        filter_text = StormLang(QStringLiteral("Ланцош"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("兰索斯"), QStringLiteral("ランツォシュ"));
+        break;
+    case Settings::ScalingFilter::ScaleForce:
+        filter_text = QStringLiteral("ScaleForce");
+        break;
+    case Settings::ScalingFilter::Fsr:
+        filter_text = QStringLiteral("FSR");
+        break;
+    case Settings::ScalingFilter::Area:
+        filter_text = QStringLiteral("Area");
+        break;
+    case Settings::ScalingFilter::Mmpx:
+        filter_text = QStringLiteral("MMPX");
+        break;
+    case Settings::ScalingFilter::ZeroTangent:
+        filter_text = QStringLiteral("Zero-Tangent");
+        break;
+    case Settings::ScalingFilter::BSpline:
+        filter_text = QStringLiteral("B-Spline");
+        break;
+    case Settings::ScalingFilter::Mitchell:
+        filter_text = QStringLiteral("Mitchell");
+        break;
+    case Settings::ScalingFilter::Spline1:
+        filter_text = QStringLiteral("Spline-1");
+        break;
+    case Settings::ScalingFilter::Sgsr:
+        filter_text = QStringLiteral("SGSR");
+        break;
+    case Settings::ScalingFilter::SgsrEdge:
+        filter_text = QStringLiteral("SGSR EdgeDir");
+        break;
+    default:
+        filter_text = QStringLiteral("FSR");
+        break;
+    }
     filter_status_button->setText(StormLang(
         QStringLiteral("ФИЛЬТР:\n%1"),
         QStringLiteral("FILTER:\n%1"),
@@ -6734,11 +6904,21 @@ void MainWindow::UpdateFilterText() {
 void MainWindow::UpdateAAText() {
     if (!aa_status_button) return;
     const auto aa_mode = Settings::values.anti_aliasing.GetValue();
-    const auto it = ConfigurationShared::anti_aliasing_texts_map.find(aa_mode);
-    const auto aa_text = it != ConfigurationShared::anti_aliasing_texts_map.end() ? it->second : QStringLiteral("None");
-    const QString val_text = (aa_mode == Settings::AntiAliasing::None)
-        ? StormLang(QStringLiteral("ВЫКЛ"), QStringLiteral("OFF"), QStringLiteral("AUS"), QStringLiteral("DÉSACTIVÉ"), QStringLiteral("关闭"), QStringLiteral("オフ"))
-        : aa_text.toUpper();
+    QString val_text;
+    switch (aa_mode) {
+    case Settings::AntiAliasing::None:
+        val_text = StormLang(QStringLiteral("ВЫКЛ"), QStringLiteral("OFF"), QStringLiteral("AUS"), QStringLiteral("DÉSACTIVÉ"), QStringLiteral("关闭"), QStringLiteral("オフ"));
+        break;
+    case Settings::AntiAliasing::Fxaa:
+        val_text = QStringLiteral("FXAA");
+        break;
+    case Settings::AntiAliasing::Smaa:
+        val_text = QStringLiteral("SMAA");
+        break;
+    default:
+        val_text = StormLang(QStringLiteral("ВЫКЛ"), QStringLiteral("OFF"), QStringLiteral("AUS"), QStringLiteral("DÉSACTIVÉ"), QStringLiteral("关闭"), QStringLiteral("オフ"));
+        break;
+    }
     aa_status_button->setText(StormLang(
         QStringLiteral("СГЛАЖИВАНИЕ:\n%1"),
         QStringLiteral("ANTI-ALIASING:\n%1"),
@@ -7761,8 +7941,13 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             QStringLiteral("🎮 グラフィックス API")
         ));
         const auto cur_api = Settings::values.renderer_backend.GetValue();
-        for (const auto& pair : ConfigurationShared::renderer_backend_texts_map) {
-            if (pair.first == Settings::RendererBackend::Null) continue;
+        const std::vector<std::pair<Settings::RendererBackend, QString>> api_options = {
+            {Settings::RendererBackend::Vulkan, QStringLiteral("Vulkan")},
+            {Settings::RendererBackend::OpenGL_GLSL, QStringLiteral("OpenGL GLSL")},
+            {Settings::RendererBackend::OpenGL_SPIRV, QStringLiteral("OpenGL SPIRV")},
+            {Settings::RendererBackend::OpenGL_GLASM, QStringLiteral("OpenGL GLASM")},
+        };
+        for (const auto& pair : api_options) {
             auto* act = api_menu->addAction(pair.second, [this, pair] {
                 Settings::values.renderer_backend.SetValue(pair.first);
                 UpdateAPIText();
@@ -7781,7 +7966,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             QStringLiteral("🎯 GPU 精度")
         ));
         const auto cur_gpu_acc = Settings::values.gpu_accuracy.GetValue();
-        for (const auto& pair : ConfigurationShared::gpu_accuracy_texts_map) {
+        const std::vector<std::pair<Settings::GpuAccuracy, QString>> gpu_acc_options = {
+            {Settings::GpuAccuracy::Low, StormLang(QStringLiteral("Быстрый (низкая точность)"), QStringLiteral("Fast (low accuracy)"), QStringLiteral("Schnell (niedrige Genauigkeit)"), QStringLiteral("Rapide (faible précision)"), QStringLiteral("快速 (低精度)"), QStringLiteral("高速 (低精度)"))},
+            {Settings::GpuAccuracy::High, StormLang(QStringLiteral("Высокая точность"), QStringLiteral("High accuracy"), QStringLiteral("Hohe Genauigkeit"), QStringLiteral("Haute précision"), QStringLiteral("高精度"), QStringLiteral("高精度"))},
+        };
+        for (const auto& pair : gpu_acc_options) {
             auto* act = gpu_acc_menu->addAction(pair.second, [this, pair] {
                 Settings::values.gpu_accuracy.SetValue(pair.first);
                 UpdateGPUAccuracyButton();
@@ -8051,7 +8240,12 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             QStringLiteral("✨ アンチエイリアス")
         ));
         const auto cur_aa = Settings::values.anti_aliasing.GetValue();
-        for (const auto& pair : ConfigurationShared::anti_aliasing_texts_map) {
+        const std::vector<std::pair<Settings::AntiAliasing, QString>> aa_options = {
+            {Settings::AntiAliasing::None, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
+            {Settings::AntiAliasing::Fxaa, QStringLiteral("FXAA")},
+            {Settings::AntiAliasing::Smaa, QStringLiteral("SMAA")},
+        };
+        for (const auto& pair : aa_options) {
             auto* act = aa_menu->addAction(pair.second, [this, pair] {
                 Settings::values.anti_aliasing.SetValue(pair.first);
                 UpdateAAText();
@@ -8070,7 +8264,24 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             QStringLiteral("🔬 スケーリングフィルター")
         ));
         const auto cur_filter = Settings::values.scaling_filter.GetValue();
-        for (const auto& pair : ConfigurationShared::scaling_filter_texts_map) {
+        const std::vector<std::pair<Settings::ScalingFilter, QString>> filter_options = {
+            {Settings::ScalingFilter::NearestNeighbor, StormLang(QStringLiteral("Ближайший сосед"), QStringLiteral("Nearest Neighbor"), QStringLiteral("Nächster Nachbar"), QStringLiteral("Plus proche voisin"), QStringLiteral("最近邻"), QStringLiteral("最近傍"))},
+            {Settings::ScalingFilter::Bilinear, StormLang(QStringLiteral("Билинейный"), QStringLiteral("Bilinear"), QStringLiteral("Bilinear"), QStringLiteral("Bilinéaire"), QStringLiteral("双线性"), QStringLiteral("バイリニア"))},
+            {Settings::ScalingFilter::Bicubic, StormLang(QStringLiteral("Бикубический"), QStringLiteral("Bicubic"), QStringLiteral("Bikubisch"), QStringLiteral("Bicubique"), QStringLiteral("双三次"), QStringLiteral("バイキュービック"))},
+            {Settings::ScalingFilter::Gaussian, StormLang(QStringLiteral("Гаусс"), QStringLiteral("Gaussian"), QStringLiteral("Gauß"), QStringLiteral("Gauss"), QStringLiteral("高斯"), QStringLiteral("ガウス"))},
+            {Settings::ScalingFilter::Lanczos, StormLang(QStringLiteral("Ланцош"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("兰索斯"), QStringLiteral("ランツォシュ"))},
+            {Settings::ScalingFilter::ScaleForce, QStringLiteral("ScaleForce")},
+            {Settings::ScalingFilter::Fsr, QStringLiteral("FSR")},
+            {Settings::ScalingFilter::Area, QStringLiteral("Area")},
+            {Settings::ScalingFilter::Mmpx, QStringLiteral("MMPX")},
+            {Settings::ScalingFilter::ZeroTangent, QStringLiteral("Zero-Tangent")},
+            {Settings::ScalingFilter::BSpline, QStringLiteral("B-Spline")},
+            {Settings::ScalingFilter::Mitchell, QStringLiteral("Mitchell")},
+            {Settings::ScalingFilter::Spline1, QStringLiteral("Spline-1")},
+            {Settings::ScalingFilter::Sgsr, QStringLiteral("SGSR")},
+            {Settings::ScalingFilter::SgsrEdge, QStringLiteral("SGSR EdgeDir")},
+        };
+        for (const auto& pair : filter_options) {
             auto* act = filter_menu->addAction(pair.second, [this, pair] {
                 Settings::values.scaling_filter.SetValue(pair.first);
                 UpdateFilterText();
@@ -8115,7 +8326,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             QStringLiteral("📺 ドックモード")
         ));
         const auto cur_dock = Settings::values.use_docked_mode.GetValue();
-        for (const auto& pair : ConfigurationShared::use_docked_mode_texts_map) {
+        const std::vector<std::pair<Settings::ConsoleMode, QString>> dock_options = {
+            {Settings::ConsoleMode::Docked, StormLang(QStringLiteral("В док-станции"), QStringLiteral("Docked"), QStringLiteral("Im Dock"), QStringLiteral("En station d'accueil"), QStringLiteral("底座模式"), QStringLiteral("ドックモード"))},
+            {Settings::ConsoleMode::Handheld, StormLang(QStringLiteral("Портативный"), QStringLiteral("Handheld"), QStringLiteral("Handheld"), QStringLiteral("Portable"), QStringLiteral("掌机模式"), QStringLiteral("携帯モード"))},
+        };
+        for (const auto& pair : dock_options) {
             auto* act = dock_menu->addAction(pair.second, [this, pair] {
                 if (pair.first != Settings::values.use_docked_mode.GetValue()) {
                     OnToggleDockedMode();

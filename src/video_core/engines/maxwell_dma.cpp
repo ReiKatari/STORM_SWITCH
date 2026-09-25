@@ -236,14 +236,6 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
 }
 
 void MaxwellDMA::CopyPitchToBlockLinear() {
-    UNIMPLEMENTED_IF_MSG(regs.dst_params.block_size.width != 0, "Block width is not one");
-
-    UNIMPLEMENTED_IF(regs.dst_params.layer != 0);
-
-    const bool is_remapping = regs.launch_dma.remap_enable != 0;
-    const u32 num_remap_components = regs.remap_const.num_dst_components_minus_one + 1;
-    const u32 remap_components_size = regs.remap_const.component_size_minus_one + 1;
-
     u32 bytes_per_pixel = 1;
     DMA::ImageOperand dst_operand;
     dst_operand.bytes_per_pixel = bytes_per_pixel;
@@ -261,6 +253,12 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
     if (accelerate.BufferToImage(copy_info, src_operand, dst_operand)) {
         return;
     }
+
+    UNIMPLEMENTED_IF_MSG(regs.dst_params.block_size.width != 0, "Block width is not one");
+
+    const bool is_remapping = regs.launch_dma.remap_enable != 0;
+    const u32 num_remap_components = regs.remap_const.num_dst_components_minus_one + 1;
+    const u32 remap_components_size = regs.remap_const.component_size_minus_one + 1;
 
     const auto& dst_params = regs.dst_params;
 
@@ -289,7 +287,7 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
     const size_t src_size = static_cast<size_t>(regs.pitch_in) * regs.line_count;
 
     const GPUVAddr src_addr = regs.offset_in;
-    const GPUVAddr dst_addr = regs.offset_out;
+    const GPUVAddr dst_addr = regs.offset_out + static_cast<GPUVAddr>(regs.dst_params.layer) * dst_size;
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
         memory_manager, src_addr, src_size, &read_buffer);
     Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadCachedWrite>

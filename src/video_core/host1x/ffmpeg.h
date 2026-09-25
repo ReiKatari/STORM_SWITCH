@@ -243,6 +243,7 @@ private:
     bool m_needs_h264_extradata{};
     s64 m_next_pts{};
     std::queue<FrameOffsets> m_pending_offsets;
+    FrameOffsets m_last_offsets{};
 };
 
 } // namespace FFmpeg

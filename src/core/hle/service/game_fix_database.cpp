@@ -38,6 +38,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\early_release_fences", "false"},
             {"Renderer\\barrier_feedback_loops", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
@@ -328,10 +329,10 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         },
-        {0x010085800E33E000ULL, 0x01000BD011936000ULL, 0x0100F7A011938000ULL, 0x0100BA700E340000ULL, 0x0100C60010228000ULL, 0x0100AC300919A000ULL}
+        {0x010085800E33E000ULL, 0x01000BD011936000ULL, 0x0100F7A011938000ULL, 0x0100BA700E340000ULL, 0x0100C60010228000ULL, 0x0100AC300919A000ULL, 0x01008F400E75A000ULL}
     },
     {
         0x01007EF00011E000ULL,
