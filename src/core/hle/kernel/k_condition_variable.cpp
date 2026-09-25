@@ -46,10 +46,23 @@ bool UpdateLockAtomic(KernelCore& kernel, u32* out, KProcessAddress address, u32
     if (!process) {
         return false;
     }
+
+    if (u8* ptr = process->GetMemory().GetPointer(GetInteger(address)); ptr != nullptr) {
+        std::atomic_ref<u32> atom(*reinterpret_cast<u32*>(ptr));
+        u32 expected = atom.load(std::memory_order_relaxed);
+        while (true) {
+            const u32 value = expected ? (expected | new_orr_mask) : if_zero;
+            if (atom.compare_exchange_weak(expected, value, std::memory_order_acq_rel, std::memory_order_relaxed)) {
+                *out = expected;
+                return true;
+            }
+        }
+    }
+
     auto& monitor = process->GetExclusiveMonitor();
-    const auto current_core = kernel.CurrentPhysicalCoreIndex();
+    auto current_core = kernel.CurrentPhysicalCoreIndex();
     if (current_core >= Core::Hardware::NUM_CPU_CORES) {
-        return false;
+        current_core = 0;
     }
 
     u32 expected{};
