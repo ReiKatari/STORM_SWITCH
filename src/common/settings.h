@@ -742,7 +742,7 @@ struct Values {
                                                 Specialization::Scalar};
 
     SwitchableSetting<bool> vertex_input_dynamic_state{linkage,
-                                                       true,
+                                                       false,
                                                        "vertex_input_dynamic_state", Category::RendererExtensions};
 
     Setting<bool> renderer_debug{linkage, false, "debug", Category::RendererDebug};
