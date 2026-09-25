@@ -84,35 +84,50 @@ void LoadingScreen::SetGameInfo(const QString& name, const QString& version, con
     }
     ui->game_title->setText(display_name);
 
-    QStringList meta_lines;
+    // Build structured metadata with grouped sections
+    QString meta_html;
+
+    // --- Game information section ---
+    QStringList game_info;
     if (!version.isEmpty()) {
-        meta_lines << QStringLiteral("<b>Версия:</b> %1").arg(version);
+        game_info << QStringLiteral("<span style='color:#94a3b8;'>Версия:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>").arg(version);
     }
     if (!dev.isEmpty()) {
-        meta_lines << QStringLiteral("<b>Разработчик:</b> %1").arg(dev);
+        game_info << QStringLiteral("<span style='color:#94a3b8;'>Разработчик:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>").arg(dev);
     }
     if (title_id != 0) {
-        meta_lines << QStringLiteral("<b>ID приложения:</b> %1").arg(
+        game_info << QStringLiteral("<span style='color:#94a3b8;'>ID:</span> <span style='color:#00d2ff; font-weight:600; font-family:monospace;'>%1</span>").arg(
             QString::number(title_id, 16).toUpper().rightJustified(16, QLatin1Char('0')));
     }
     if (!format.isEmpty()) {
-        meta_lines << QStringLiteral("<b>Формат:</b> %1").arg(format.toUpper());
+        game_info << QStringLiteral("<span style='color:#94a3b8;'>Формат:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>").arg(format.toUpper());
     }
 
-    meta_lines << QStringLiteral("<b>Архитектура:</b> 64-bit ARM");
+    if (!game_info.isEmpty()) {
+        meta_html += game_info.join(QStringLiteral("&nbsp;&nbsp;·&nbsp;&nbsp;"));
+    }
 
+    // --- Separator ---
+    meta_html += QStringLiteral("<br/><hr style='border: none; border-top: 1px solid #1e293b; margin: 6px 40px;'/>");
+
+    // --- System configuration section ---
     const QString backend_str = (Settings::values.renderer_backend.GetValue() == Settings::RendererBackend::Vulkan)
                                     ? QStringLiteral("Vulkan")
                                     : QStringLiteral("OpenGL");
-    meta_lines << QStringLiteral("<b>Рендерер:</b> %1").arg(backend_str);
-
     const QString cpu_backend_str = (Settings::values.cpu_accuracy.GetValue() == Settings::CpuAccuracy::Auto ||
                                      Settings::values.cpu_accuracy.GetValue() == Settings::CpuAccuracy::Accurate)
                                         ? QStringLiteral("Dynarmic JIT")
                                         : QStringLiteral("Dynarmic JIT (Unsafe)");
-    meta_lines << QStringLiteral("<b>Бэкенд ЦП:</b> %1").arg(cpu_backend_str);
 
-    ui->game_meta->setText(meta_lines.join(QStringLiteral("<br/>")));
+    meta_html += QStringLiteral(
+        "<span style='color:#94a3b8;'>Архитектура:</span> <span style='color:#e2e8f0; font-weight:600;'>64-bit ARM</span>"
+        "&nbsp;&nbsp;·&nbsp;&nbsp;"
+        "<span style='color:#94a3b8;'>Рендерер:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>"
+        "&nbsp;&nbsp;·&nbsp;&nbsp;"
+        "<span style='color:#94a3b8;'>Бэкенд ЦП:</span> <span style='color:#e2e8f0; font-weight:600;'>%2</span>"
+    ).arg(backend_str, cpu_backend_str);
+
+    ui->game_meta->setText(meta_html);
 }
 
 void LoadingScreen::Prepare(Loader::AppLoader& loader) {

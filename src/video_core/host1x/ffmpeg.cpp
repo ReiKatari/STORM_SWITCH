@@ -288,8 +288,7 @@ DecoderContext::DecoderContext(const Decoder bitand decoder) : m_decoder{decoder
     m_codec_context = avcodec_alloc_context3(m_decoder.GetCodec());
     const int cpu_threads = std::clamp(static_cast<int>(std::thread::hardware_concurrency()), 2, 8);
     m_codec_context->thread_count = cpu_threads;
-    m_codec_context->thread_type = FF_THREAD_SLICE;
-    m_codec_context->flags |= AV_CODEC_FLAG_LOW_DELAY;
+    m_codec_context->thread_type = FF_THREAD_FRAME | FF_THREAD_SLICE;
     m_codec_context->flags2 |= AV_CODEC_FLAG2_FAST;
 }
 
@@ -322,7 +321,6 @@ bool DecoderContext::OpenContext(const Decoder& decoder, std::span<const u8> ext
         return false;
     }
 
-    m_codec_context->delay = 0;
     LOG_INFO(HW_GPU, "Using decoder {}", decoder.GetCodec()->name);
 
     return true;
