@@ -36,6 +36,10 @@ GameListModel::GameListModel(std::shared_ptr<FileSys::VfsFilesystem> vfs_,
     connect(external_watcher, &QFileSystemWatcher::directoryChanged, this,
             &GameListModel::RefreshExternalContent);
 
+    refresh_timer = new QTimer(this);
+    refresh_timer->setSingleShot(true);
+    connect(refresh_timer, &QTimer::timeout, this, &GameListModel::Repopulate);
+
     ResetExternalWatcher();
 
     insertColumns(0, COLUMN_COUNT);
@@ -47,6 +51,9 @@ GameListModel::GameListModel(std::shared_ptr<FileSys::VfsFilesystem> vfs_,
 GameListModel::~GameListModel() = default;
 
 void GameListModel::PopulateAsync(QVector<UISettings::GameDir>& game_dirs) {
+    if (refresh_timer) {
+        refresh_timer->stop();
+    }
     emit PopulatingStarted();
 
     current_worker.reset();
@@ -158,6 +165,7 @@ void GameListModel::RemoveFavorite(u64 program_id) {
 }
 
 void GameListModel::Repopulate() {
+    LOG_INFO(Frontend, "Executing debounced game list reload.");
     current_worker.reset();
     QtCommon::system->GetFileSystemController().CreateFactories(*QtCommon::vfs);
     PopulateAsync(UISettings::values.game_dirs);
@@ -165,17 +173,21 @@ void GameListModel::Repopulate() {
 
 void GameListModel::RefreshGameDirectory() {
     ResetExternalWatcher();
-    if (!UISettings::values.game_dirs.empty() && current_worker != nullptr) {
-        LOG_INFO(Frontend, "Change detected in the games directory. Reloading game list.");
-        Repopulate();
+    if (!UISettings::values.game_dirs.empty()) {
+        if (!refresh_timer->isActive()) {
+            LOG_INFO(Frontend, "Change detected in the games directory. Debouncing reload (2.5s)...");
+        }
+        refresh_timer->start(2500);
     }
 }
 
 void GameListModel::RefreshExternalContent() {
-    if (!UISettings::values.game_dirs.empty() && current_worker != nullptr) {
-        LOG_INFO(Frontend, "External content directory changed. Clearing metadata cache.");
+    if (!UISettings::values.game_dirs.empty()) {
         QtCommon::Game::ResetMetadata(false);
-        Repopulate();
+        if (!refresh_timer->isActive()) {
+            LOG_INFO(Frontend, "External content changed. Debouncing reload (2.5s)...");
+        }
+        refresh_timer->start(2500);
     }
 }
 

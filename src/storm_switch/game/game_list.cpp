@@ -349,41 +349,34 @@ void GameList::OnPopulatingCompleted(const QStringList& watch_list) {
 
     // Watcher updates
     auto* watcher = item_model->GetWatcher();
-    auto current_watch_list = watcher->directories();
+    if (watcher) {
+        const QSignalBlocker blocker(watcher);
+        const auto current_watch_list = watcher->directories();
 
-    constexpr qsizetype LIMIT_WATCH_DIRECTORIES = 5000;
-    constexpr int SLICE_SIZE = 25;
+        constexpr qsizetype LIMIT_WATCH_DIRECTORIES = 5000;
+        QStringList to_remove, to_add;
 
-    QStringList to_remove, to_add;
-
-    const auto slice = [&](const QStringList& list, std::function<void(const QStringList&)> callback) {
-        const int len = (std::min)(list.size(), LIMIT_WATCH_DIRECTORIES);
-        for (int i = 0; i < len; i += SLICE_SIZE) {
-            auto chunk = list.mid(i, SLICE_SIZE);
-            if (!chunk.isEmpty()) {
-                callback(chunk);
+        // remove any paths not in the new watch list
+        for (const auto& path : std::as_const(current_watch_list)) {
+            if (!watch_list.contains(path)) {
+                to_remove.emplaceBack(path);
             }
-            QCoreApplication::processEvents();
         }
-    };
-
-    // remove any paths not in the new watch list
-    for (const auto& path : std::as_const(current_watch_list)) {
-        if (!watch_list.contains(path)) {
-            to_remove.emplaceBack(path);
+        if (!to_remove.isEmpty()) {
+            watcher->removePaths(to_remove);
         }
-    }
 
-    slice(to_remove, [watcher](const QStringList& chunk) { watcher->removePaths(chunk); });
-
-    // add any paths not in the old watch list
-    for (const auto& path : std::as_const(watch_list)) {
-        if (!current_watch_list.contains(path)) {
-            to_add.emplaceBack(path);
+        // add any paths not in the old watch list
+        for (const auto& path : std::as_const(watch_list)) {
+            if (!current_watch_list.contains(path)) {
+                to_add.emplaceBack(path);
+            }
+        }
+        if (!to_add.isEmpty()) {
+            const qsizetype len = (std::min)(to_add.size(), LIMIT_WATCH_DIRECTORIES);
+            watcher->addPaths(to_add.mid(0, len));
         }
     }
-
-    slice(to_add, [watcher](const QStringList& chunk) { watcher->addPaths(chunk); });
 
     m_currentView->setEnabled(true);
 

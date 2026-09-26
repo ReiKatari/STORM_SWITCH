@@ -7,6 +7,7 @@
 #include <QFileSystemWatcher>
 #include <QStandardItemModel>
 #include <QStringList>
+#include <QTimer>
 #include <QVector>
 
 #include "common/common_types.h"
@@ -89,4 +90,5 @@ private:
     std::unique_ptr<GameListWorker> current_worker;
     QFileSystemWatcher* watcher = nullptr;
     QFileSystemWatcher* external_watcher = nullptr;
+    QTimer* refresh_timer = nullptr;
 };
