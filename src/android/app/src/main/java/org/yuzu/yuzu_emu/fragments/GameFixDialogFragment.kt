@@ -68,7 +68,10 @@ class GameFixDialogFragment : DialogFragment() {
             val issues = if (isRu) profile.issuesRu else profile.issuesEn
             val fixes = GameFixDatabase.getFormattedFixes(profile, isRu)
             binding.textGameFixIssues.text = sanitizeText(issues)
-            binding.textGameFixRecommended.text = sanitizeText(fixes)
+            binding.textGameFixRecommended.text = androidx.core.text.HtmlCompat.fromHtml(
+                sanitizeText(fixes).replace("\n", "<br>"),
+                androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
+            )
         }
 
         val isRu = Locale.getDefault().language == "ru"

@@ -4568,187 +4568,187 @@ static std::string BuildFixesRu(const std::unordered_map<std::string, std::strin
     std::string out;
 
     // Секция 1: Графика и видео (15 пунктов)
-    out += "🎮 Графика и видео:\n";
+    out += "🎮 <b>Графика и видео:</b>\n";
 
     // 1. Графический API
-    out += "• Графический API: Vulkan (наивысшая производительность и стабильность)\n";
+    out += "• <b>Графический API:</b> Vulkan (наивысшая производительность и стабильность)\n";
 
     // 2. Точность ГПУ
     const auto gpu_acc = GetSetting(settings, "Renderer\\gpu_accuracy", "1");
     if (gpu_acc == "0") {
-        out += "• Точность ГПУ: Обычная (максимальная кадровая частота)\n";
+        out += "• <b>Точность ГПУ:</b> Обычная (максимальная кадровая частота)\n";
     } else if (gpu_acc == "2") {
-        out += "• Точность ГПУ: Экстремальная (максимальная точность расчетов)\n";
+        out += "• <b>Точность ГПУ:</b> Экстремальная (максимальная точность расчетов)\n";
     } else {
-        out += "• Точность ГПУ: Высокая (стабильная геометрия и Z-буфер)\n";
+        out += "• <b>Точность ГПУ:</b> Высокая (стабильная геометрия и Z-буфер)\n";
     }
 
     // 3. Декодирование видео NVDEC
     const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "1");
     if (nvdec == "0") {
-        out += "• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n";
+        out += "• <b>Декодирование видео NVDEC:</b> Отключено (пропуск проблемных видеопотоков)\n";
     } else if (nvdec == "2") {
-        out += "• Декодирование видео NVDEC: ГПУ (аппаратное декодирование видеокадров)\n";
+        out += "• <b>Декодирование видео NVDEC:</b> ГПУ (аппаратное декодирование видеокадров)\n";
     } else if (nvdec == "3") {
-        out += "• Декодирование видео NVDEC: Гибридное (аппаратное с ЦП-подстраховкой)\n";
+        out += "• <b>Декодирование видео NVDEC:</b> Гибридное (аппаратное с ЦП-подстраховкой)\n";
     } else {
-        out += "• Декодирование видео NVDEC: ЦП (программный декодер FFmpeg устраняет зависания)\n";
+        out += "• <b>Декодирование видео NVDEC:</b> ЦП (программный декодер FFmpeg устраняет зависания)\n";
     }
 
     // 4. Декодирование текстур ASTC
     const auto astc_dec = GetSetting(settings, "Renderer\\accelerate_astc", "1");
     if (astc_dec == "0") {
-        out += "• Декодирование текстур ASTC: ЦП (декодирование силами процессора)\n";
+        out += "• <b>Декодирование текстур ASTC:</b> ЦП (декодирование силами процессора)\n";
     } else if (astc_dec == "2") {
-        out += "• Декодирование текстур ASTC: ЦП (Асинхронно, декодирование по требованию)\n";
+        out += "• <b>Декодирование текстур ASTC:</b> ЦП (Асинхронно, декодирование по требованию)\n";
     } else if (astc_dec == "3") {
-        out += "• Декодирование текстур ASTC: Гибридное (оптимальное распределение нагрузки)\n";
+        out += "• <b>Декодирование текстур ASTC:</b> Гибридное (оптимальное распределение нагрузки)\n";
     } else {
-        out += "• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n";
+        out += "• <b>Декодирование текстур ASTC:</b> ГПУ (вычислительные шейдеры)\n";
     }
 
     // 5. Пересжатие текстур ASTC
     const auto astc_rec = GetSetting(settings, "Renderer\\astc_recompression", "0");
     if (astc_rec == "1") {
-        out += "• Пересжатие текстур ASTC: BC1 (низкое качество, экономия памяти)\n";
+        out += "• <b>Пересжатие текстур ASTC:</b> BC1 (низкое качество, экономия памяти)\n";
     } else if (astc_rec == "2") {
-        out += "• Пересжатие текстур ASTC: BC3 (среднее качество, баланс)\n";
+        out += "• <b>Пересжатие текстур ASTC:</b> BC3 (среднее качество, баланс)\n";
     } else if (astc_rec == "3") {
-        out += "• Пересжатие текстур ASTC: BC5 (высокое качество карт нормалей)\n";
+        out += "• <b>Пересжатие текстур ASTC:</b> BC5 (высокое качество карт нормалей)\n";
     } else {
-        out += "• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n";
+        out += "• <b>Пересжатие текстур ASTC:</b> Без сжатия (оригинальное качество текстур)\n";
     }
 
     // 6. Асинхронные шейдеры
     const auto async_shaders = GetSetting(settings, "Renderer\\use_asynchronous_shaders", "true");
     if (async_shaders == "false" || async_shaders == "0") {
-        out += "• Асинхронная компиляция шейдеров: Отключено (синхронная сборка пайплайнов)\n";
+        out += "• <b>Асинхронная компиляция шейдеров:</b> Отключено (синхронная сборка пайплайнов)\n";
     } else {
-        out += "• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n";
+        out += "• <b>Асинхронная компиляция шейдеров:</b> Включено (устранение микрофризов)\n";
     }
 
     // 7. Дисковый кэш шейдеров
     const auto disk_cache = GetSetting(settings, "Renderer\\use_disk_shader_cache", "true");
     if (disk_cache == "false" || disk_cache == "0") {
-        out += "• Дисковый кэш шейдеров: Отключено (шейдеры собираются заново)\n";
+        out += "• <b>Дисковый кэш шейдеров:</b> Отключено (шейдеры собираются заново)\n";
     } else {
-        out += "• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n";
+        out += "• <b>Дисковый кэш шейдеров:</b> Включено (быстрая повторная загрузка сцен)\n";
     }
 
     // 8. Быстрое время ГПУ
     const auto fast_gpu_time = GetSetting(settings, "Renderer\\use_fast_gpu_time", "false");
     if (fast_gpu_time == "true" || fast_gpu_time == "1") {
-        out += "• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n";
+        out += "• <b>Быстрое время ГПУ:</b> Включено (предотвращает дроп динамического разрешения)\n";
     } else {
-        out += "• Быстрое время ГПУ: Отключено (стандартная синхронизация времени)\n";
+        out += "• <b>Быстрое время ГПУ:</b> Отключено (стандартная синхронизация времени)\n";
     }
 
     // 9. Асинхронная презентация
     const auto async_pres = GetSetting(settings, "Renderer\\async_presentation", "true");
     if (async_pres == "false" || async_pres == "0") {
-        out += "• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n";
+        out += "• <b>Асинхронный вывод кадров:</b> Отключено (синхронный кадровый пейсинг)\n";
     } else {
-        out += "• Асинхронный вывод кадров: Включено (плавный вывод кадрового буфера)\n";
+        out += "• <b>Асинхронный вывод кадров:</b> Включено (плавный вывод кадрового буфера)\n";
     }
 
     // 10. Синхронизация операций памяти
     const auto sync_mem = GetSetting(settings, "Renderer\\sync_memory_operations", "false");
     if (sync_mem == "true" || sync_mem == "1") {
-        out += "• Синхронизация операций памяти: Включено (целостность буферов)\n";
+        out += "• <b>Синхронизация операций памяти:</b> Включено (целостность буферов)\n";
     } else {
-        out += "• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n";
+        out += "• <b>Синхронизация операций памяти:</b> Отключено (высокая пропускная способность)\n";
     }
 
     // 11. Реактивный сброс памяти
     const auto react_flush = GetSetting(settings, "Renderer\\use_reactive_flushing", "false");
     if (react_flush == "true" || react_flush == "1") {
-        out += "• Реактивный сброс памяти: Включено (своевременный сброс буферов)\n";
+        out += "• <b>Реактивный сброс памяти:</b> Включено (своевременный сброс буферов)\n";
     } else {
-        out += "• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n";
+        out += "• <b>Реактивный сброс памяти:</b> Отключено (устранение задержек рендеринга)\n";
     }
 
     // 12. Сборщик мусора VRAM
     const auto vram_gc = GetSetting(settings, "Renderer\\vram_garbage_collection", "false");
     if (vram_gc == "true" || vram_gc == "1") {
-        out += "• Сборщик мусора VRAM: Включено (периодическое высвобождение видеопамяти)\n";
+        out += "• <b>Сборщик мусора VRAM:</b> Включено (периодическое высвобождение видеопамяти)\n";
     } else {
-        out += "• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n";
+        out += "• <b>Сборщик мусора VRAM:</b> Отключено (устраняет просадки и задержки 200 мс)\n";
     }
 
     // 13. Досрочное освобождение фенсов
     const auto early_fences = GetSetting(settings, "Renderer\\early_release_fences", "false");
     if (early_fences == "true" || early_fences == "1") {
-        out += "• Досрочное освобождение фенсов: Включено (снижение латентности команд)\n";
+        out += "• <b>Досрочное освобождение фенсов:</b> Включено (снижение латентности команд)\n";
     } else {
-        out += "• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n";
+        out += "• <b>Досрочное освобождение фенсов:</b> Отключено (стабильная синхронизация очереди)\n";
     }
 
     // 14. Поведение барьеров ГПУ
     const auto fence_beh = GetSetting(settings, "Renderer\\gpu_fence_behavior", "0");
     if (fence_beh == "1") {
-        out += "• Поведение барьеров ГПУ: Принудительный сброс (Flush)\n";
+        out += "• <b>Поведение барьеров ГПУ:</b> Принудительный сброс (Flush)\n";
     } else if (fence_beh == "2") {
-        out += "• Поведение барьеров ГПУ: Досрочное (Early)\n";
+        out += "• <b>Поведение барьеров ГПУ:</b> Досрочное (Early)\n";
     } else {
-        out += "• Поведение барьеров ГПУ: По умолчанию (Default)\n";
+        out += "• <b>Поведение барьеров ГПУ:</b> По умолчанию (Default)\n";
     }
 
     // 15. Точность DMA
     const auto dma_acc = GetSetting(settings, "Renderer\\dma_accuracy", "0");
     if (dma_acc == "1") {
-        out += "• Точность DMA: Обычная (Normal, точная передача блоков памяти)\n";
+        out += "• <b>Точность DMA:</b> Обычная (Normal, точная передача блоков памяти)\n";
     } else {
-        out += "• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n";
+        out += "• <b>Точность DMA:</b> Быстрая (Fast, максимальная скорость передачи)\n";
     }
 
     // Секция 2: Процессор и память (4 пункта)
-    out += "\n⚙️ Процессор и память:\n";
+    out += "\n⚙️ <b>Процессор и память:</b>\n";
 
     // 16. Точность ЦП
     const auto cpu_acc = GetSetting(settings, "Cpu\\cpu_accuracy", "0");
     if (cpu_acc == "1") {
-        out += "• Точность ЦП: Точный (Accurate, исключение рассинхронизации)\n";
+        out += "• <b>Точность ЦП:</b> Точный (Accurate, исключение рассинхронизации)\n";
     } else if (cpu_acc == "2") {
-        out += "• Точность ЦП: Небезопасный (Unsafe, максимальный разгон)\n";
+        out += "• <b>Точность ЦП:</b> Небезопасный (Unsafe, максимальный разгон)\n";
     } else {
-        out += "• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n";
+        out += "• <b>Точность ЦП:</b> Авто (Auto, автоматическая адаптация Dynarmic)\n";
     }
 
     // 17. Быстрая память (Fastmem)
     const auto fastmem = GetSetting(settings, "Cpu\\cpuopt_fastmem", "true");
     if (fastmem == "false" || fastmem == "0") {
-        out += "• Быстрая память (Fastmem): Отключено (программный контроль памяти)\n";
+        out += "• <b>Быстрая память (Fastmem):</b> Отключено (программный контроль памяти)\n";
     } else {
-        out += "• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n";
+        out += "• <b>Быстрая память (Fastmem):</b> Включено (прямой доступ Host MMU)\n";
     }
 
     // 18. Игнорировать прерывания памяти
     const auto ign_aborts = GetSetting(settings, "Cpu\\cpuopt_ignore_memory_aborts", "true");
     if (ign_aborts == "false" || ign_aborts == "0") {
-        out += "• Игнорировать прерывания памяти: Отключено (стандартная обработка сбоев)\n";
+        out += "• <b>Игнорировать прерывания памяти:</b> Отключено (стандартная обработка сбоев)\n";
     } else {
-        out += "• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n";
+        out += "• <b>Игнорировать прерывания памяти:</b> Включено (защита от крашей за границами буфера)\n";
     }
 
     // 19. Конфигурация памяти DRAM
     const auto mem_layout = GetSetting(settings, "System\\memory_layout_mode", GetSetting(settings, "Core\\memory_layout_mode", "0"));
     if (mem_layout == "2") {
-        out += "• Конфигурация памяти DRAM: Экстремальная 8 ГБ (защита от вылетов OOM)\n";
+        out += "• <b>Конфигурация памяти DRAM:</b> Экстремальная 8 ГБ (защита от вылетов OOM)\n";
     } else if (mem_layout == "1") {
-        out += "• Конфигурация памяти DRAM: Расширенная 6 ГБ (устраняет вылеты при утечках)\n";
+        out += "• <b>Конфигурация памяти DRAM:</b> Расширенная 6 ГБ (устраняет вылеты при утечках)\n";
     } else {
-        out += "• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n";
+        out += "• <b>Конфигурация памяти DRAM:</b> Стандартная 4 ГБ (оригинальный объем памяти Switch)\n";
     }
 
     // Секция 3: Система и сеть (1 пункт)
-    out += "\n🌐 Система и сеть:\n";
+    out += "\n🌐 <b>Система и сеть:</b>\n";
 
     // 20. Режим «В самолете»
     const auto airplane = GetSetting(settings, "System\\airplane_mode", "false");
     if (airplane == "true" || airplane == "1") {
-        out += "• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)\n";
+        out += "• <b>Режим «В самолете»:</b> Включено (предотвращает дедлоки сетевых сокетов)\n";
     } else {
-        out += "• Режим «В самолете»: Отключено (сетевые интерфейсы активны)\n";
+        out += "• <b>Режим «В самолете»:</b> Отключено (сетевые интерфейсы активны)\n";
     }
 
     while (!out.empty() && (out.back() == '\n' || out.back() == '\r')) {
@@ -4762,187 +4762,187 @@ static std::string BuildFixesEn(const std::unordered_map<std::string, std::strin
     std::string out;
 
     // Section 1: Graphics and Video (15 items)
-    out += "🎮 Graphics and Video:\n";
+    out += "🎮 <b>Graphics and Video:</b>\n";
 
     // 1. Graphics API
-    out += "• Graphics API: Vulkan (highest performance and stability)\n";
+    out += "• <b>Graphics API:</b> Vulkan (highest performance and stability)\n";
 
     // 2. GPU Accuracy
     const auto gpu_acc = GetSetting(settings, "Renderer\\gpu_accuracy", "1");
     if (gpu_acc == "0") {
-        out += "• GPU Accuracy: Normal (maximum framerate)\n";
+        out += "• <b>GPU Accuracy:</b> Normal (maximum framerate)\n";
     } else if (gpu_acc == "2") {
-        out += "• GPU Accuracy: Extreme (maximum calculation precision)\n";
+        out += "• <b>GPU Accuracy:</b> Extreme (maximum calculation precision)\n";
     } else {
-        out += "• GPU Accuracy: High (stable geometry and Z-buffer)\n";
+        out += "• <b>GPU Accuracy:</b> High (stable geometry and Z-buffer)\n";
     }
 
     // 3. NVDEC Video Emulation
     const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "1");
     if (nvdec == "0") {
-        out += "• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n";
+        out += "• <b>NVDEC Video Emulation:</b> Disabled (bypass problematic video streams)\n";
     } else if (nvdec == "2") {
-        out += "• NVDEC Video Emulation: GPU (hardware video decoding)\n";
+        out += "• <b>NVDEC Video Emulation:</b> GPU (hardware video decoding)\n";
     } else if (nvdec == "3") {
-        out += "• NVDEC Video Emulation: Hybrid (hardware decoding with CPU fallback)\n";
+        out += "• <b>NVDEC Video Emulation:</b> Hybrid (hardware decoding with CPU fallback)\n";
     } else {
-        out += "• NVDEC Video Emulation: CPU (software FFmpeg decoder prevents cutscene freezes)\n";
+        out += "• <b>NVDEC Video Emulation:</b> CPU (software FFmpeg decoder prevents cutscene freezes)\n";
     }
 
     // 4. ASTC Texture Decoding
     const auto astc_dec = GetSetting(settings, "Renderer\\accelerate_astc", "1");
     if (astc_dec == "0") {
-        out += "• ASTC Texture Decoding: CPU (software processor decoding)\n";
+        out += "• <b>ASTC Texture Decoding:</b> CPU (software processor decoding)\n";
     } else if (astc_dec == "2") {
-        out += "• ASTC Texture Decoding: CPU Asynchronous (demand decoding)\n";
+        out += "• <b>ASTC Texture Decoding:</b> CPU Asynchronous (demand decoding)\n";
     } else if (astc_dec == "3") {
-        out += "• ASTC Texture Decoding: Hybrid (optimal workload distribution)\n";
+        out += "• <b>ASTC Texture Decoding:</b> Hybrid (optimal workload distribution)\n";
     } else {
-        out += "• ASTC Texture Decoding: GPU (compute shaders)\n";
+        out += "• <b>ASTC Texture Decoding:</b> GPU (compute shaders)\n";
     }
 
     // 5. ASTC Texture Recompression
     const auto astc_rec = GetSetting(settings, "Renderer\\astc_recompression", "0");
     if (astc_rec == "1") {
-        out += "• ASTC Texture Recompression: BC1 (low quality, maximum RAM savings)\n";
+        out += "• <b>ASTC Texture Recompression:</b> BC1 (low quality, maximum RAM savings)\n";
     } else if (astc_rec == "2") {
-        out += "• ASTC Texture Recompression: BC3 (medium quality, balanced)\n";
+        out += "• <b>ASTC Texture Recompression:</b> BC3 (medium quality, balanced)\n";
     } else if (astc_rec == "3") {
-        out += "• ASTC Texture Recompression: BC5 (high quality normal maps)\n";
+        out += "• <b>ASTC Texture Recompression:</b> BC5 (high quality normal maps)\n";
     } else {
-        out += "• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n";
+        out += "• <b>ASTC Texture Recompression:</b> Uncompressed (original texture fidelity)\n";
     }
 
     // 6. Asynchronous Shaders
     const auto async_shaders = GetSetting(settings, "Renderer\\use_asynchronous_shaders", "true");
     if (async_shaders == "false" || async_shaders == "0") {
-        out += "• Asynchronous Shaders: Disabled (synchronous pipeline compilation)\n";
+        out += "• <b>Asynchronous Shaders:</b> Disabled (synchronous pipeline compilation)\n";
     } else {
-        out += "• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n";
+        out += "• <b>Asynchronous Shaders:</b> Enabled (eliminates ingame stuttering)\n";
     }
 
     // 7. Disk Shader Cache
     const auto disk_cache = GetSetting(settings, "Renderer\\use_disk_shader_cache", "true");
     if (disk_cache == "false" || disk_cache == "0") {
-        out += "• Disk Shader Cache: Disabled (shaders recompiled on each run)\n";
+        out += "• <b>Disk Shader Cache:</b> Disabled (shaders recompiled on each run)\n";
     } else {
-        out += "• Disk Shader Cache: Enabled (fast subsequent scene loading)\n";
+        out += "• <b>Disk Shader Cache:</b> Enabled (fast subsequent scene loading)\n";
     }
 
     // 8. Fast GPU Time
     const auto fast_gpu_time = GetSetting(settings, "Renderer\\use_fast_gpu_time", "false");
     if (fast_gpu_time == "true" || fast_gpu_time == "1") {
-        out += "• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n";
+        out += "• <b>Fast GPU Time:</b> Enabled (prevents dynamic resolution drops)\n";
     } else {
-        out += "• Fast GPU Time: Disabled (standard timing synchronization)\n";
+        out += "• <b>Fast GPU Time:</b> Disabled (standard timing synchronization)\n";
     }
 
     // 9. Async Presentation
     const auto async_pres = GetSetting(settings, "Renderer\\async_presentation", "true");
     if (async_pres == "false" || async_pres == "0") {
-        out += "• Async Presentation: Disabled (synchronous frame presentation)\n";
+        out += "• <b>Async Presentation:</b> Disabled (synchronous frame presentation)\n";
     } else {
-        out += "• Async Presentation: Enabled (smooth frame pacing)\n";
+        out += "• <b>Async Presentation:</b> Enabled (smooth frame pacing)\n";
     }
 
     // 10. Sync Memory Operations
     const auto sync_mem = GetSetting(settings, "Renderer\\sync_memory_operations", "false");
     if (sync_mem == "true" || sync_mem == "1") {
-        out += "• Sync Memory Operations: Enabled (buffer data consistency)\n";
+        out += "• <b>Sync Memory Operations:</b> Enabled (buffer data consistency)\n";
     } else {
-        out += "• Sync Memory Operations: Disabled (high bandwidth throughput)\n";
+        out += "• <b>Sync Memory Operations:</b> Disabled (high bandwidth throughput)\n";
     }
 
     // 11. Reactive Flushing
     const auto react_flush = GetSetting(settings, "Renderer\\use_reactive_flushing", "false");
     if (react_flush == "true" || react_flush == "1") {
-        out += "• Reactive Flushing: Enabled (prompt render target flushing)\n";
+        out += "• <b>Reactive Flushing:</b> Enabled (prompt render target flushing)\n";
     } else {
-        out += "• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n";
+        out += "• <b>Reactive Flushing:</b> Disabled (prevents rendering pipeline stalls)\n";
     }
 
     // 12. VRAM Garbage Collection
     const auto vram_gc = GetSetting(settings, "Renderer\\vram_garbage_collection", "false");
     if (vram_gc == "true" || vram_gc == "1") {
-        out += "• VRAM Garbage Collection: Enabled (periodic video memory reclamation)\n";
+        out += "• <b>VRAM Garbage Collection:</b> Enabled (periodic video memory reclamation)\n";
     } else {
-        out += "• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n";
+        out += "• <b>VRAM Garbage Collection:</b> Disabled (eliminates FPS drops and 200ms queue stalls)\n";
     }
 
     // 13. Early Release Fences
     const auto early_fences = GetSetting(settings, "Renderer\\early_release_fences", "false");
     if (early_fences == "true" || early_fences == "1") {
-        out += "• Early Release Fences: Enabled (lower command latency)\n";
+        out += "• <b>Early Release Fences:</b> Enabled (lower command latency)\n";
     } else {
-        out += "• Early Release Fences: Disabled (stable queue synchronization)\n";
+        out += "• <b>Early Release Fences:</b> Disabled (stable queue synchronization)\n";
     }
 
     // 14. GPU Fence Behavior
     const auto fence_beh = GetSetting(settings, "Renderer\\gpu_fence_behavior", "0");
     if (fence_beh == "1") {
-        out += "• GPU Fence Behavior: Flush (immediate flush)\n";
+        out += "• <b>GPU Fence Behavior:</b> Flush (immediate flush)\n";
     } else if (fence_beh == "2") {
-        out += "• GPU Fence Behavior: Early (early signaling)\n";
+        out += "• <b>GPU Fence Behavior:</b> Early (early signaling)\n";
     } else {
-        out += "• GPU Fence Behavior: Default (driver recommended)\n";
+        out += "• <b>GPU Fence Behavior:</b> Default (driver recommended)\n";
     }
 
     // 15. DMA Accuracy
     const auto dma_acc = GetSetting(settings, "Renderer\\dma_accuracy", "0");
     if (dma_acc == "1") {
-        out += "• DMA Accuracy: Normal (accurate memory block transfer)\n";
+        out += "• <b>DMA Accuracy:</b> Normal (accurate memory block transfer)\n";
     } else {
-        out += "• DMA Accuracy: Fast (maximum transfer speed)\n";
+        out += "• <b>DMA Accuracy:</b> Fast (maximum transfer speed)\n";
     }
 
     // Section 2: CPU and Memory (4 items)
-    out += "\n⚙️ CPU and Memory:\n";
+    out += "\n⚙️ <b>CPU and Memory:</b>\n";
 
     // 16. CPU Accuracy
     const auto cpu_acc = GetSetting(settings, "Cpu\\cpu_accuracy", "0");
     if (cpu_acc == "1") {
-        out += "• CPU Accuracy: Accurate (enhanced precision to prevent logic desynchronization)\n";
+        out += "• <b>CPU Accuracy:</b> Accurate (enhanced precision to prevent logic desynchronization)\n";
     } else if (cpu_acc == "2") {
-        out += "• CPU Accuracy: Unsafe (maximum throughput with relaxed checks)\n";
+        out += "• <b>CPU Accuracy:</b> Unsafe (maximum throughput with relaxed checks)\n";
     } else {
-        out += "• CPU Accuracy: Auto (dynamic JIT adaptation)\n";
+        out += "• <b>CPU Accuracy:</b> Auto (dynamic JIT adaptation)\n";
     }
 
     // 17. Fastmem
     const auto fastmem = GetSetting(settings, "Cpu\\cpuopt_fastmem", "true");
     if (fastmem == "false" || fastmem == "0") {
-        out += "• Fastmem (Host MMU): Disabled (software memory control)\n";
+        out += "• <b>Fastmem (Host MMU):</b> Disabled (software memory control)\n";
     } else {
-        out += "• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n";
+        out += "• <b>Fastmem (Host MMU):</b> Enabled (direct hardware page mapping)\n";
     }
 
     // 18. Ignore Memory Aborts
     const auto ign_aborts = GetSetting(settings, "Cpu\\cpuopt_ignore_memory_aborts", "true");
     if (ign_aborts == "false" || ign_aborts == "0") {
-        out += "• Ignore Memory Aborts: Disabled (standard memory abort handling)\n";
+        out += "• <b>Ignore Memory Aborts:</b> Disabled (standard memory abort handling)\n";
     } else {
-        out += "• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n";
+        out += "• <b>Ignore Memory Aborts:</b> Enabled (prevents crashes on out-of-bounds guest memory accesses)\n";
     }
 
     // 19. Memory Layout
     const auto mem_layout = GetSetting(settings, "System\\memory_layout_mode", GetSetting(settings, "Core\\memory_layout_mode", "0"));
     if (mem_layout == "2") {
-        out += "• DRAM Memory Layout: 8GB Extreme (prevents out-of-memory engine crashes)\n";
+        out += "• <b>DRAM Memory Layout:</b> 8GB Extreme (prevents out-of-memory engine crashes)\n";
     } else if (mem_layout == "1") {
-        out += "• DRAM Memory Layout: 6GB Expanded (prevents memory exhaustion during long sessions)\n";
+        out += "• <b>DRAM Memory Layout:</b> 6GB Expanded (prevents memory exhaustion during long sessions)\n";
     } else {
-        out += "• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n";
+        out += "• <b>DRAM Memory Layout:</b> 4GB Standard (original Switch console memory layout)\n";
     }
 
     // Section 3: System and Network (1 item)
-    out += "\n🌐 System and Network:\n";
+    out += "\n🌐 <b>System and Network:</b>\n";
 
     // 20. Airplane Mode
     const auto airplane = GetSetting(settings, "System\\airplane_mode", "false");
     if (airplane == "true" || airplane == "1") {
-        out += "• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)\n";
+        out += "• <b>Airplane Mode:</b> Enabled (prevents network socket hangs and server matchmaking delays)\n";
     } else {
-        out += "• Airplane Mode: Disabled (active network interfaces)\n";
+        out += "• <b>Airplane Mode:</b> Disabled (active network interfaces)\n";
     }
 
     while (!out.empty() && (out.back() == '\n' || out.back() == '\r')) {

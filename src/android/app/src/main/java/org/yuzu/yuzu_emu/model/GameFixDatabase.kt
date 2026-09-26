@@ -5550,83 +5550,83 @@ object GameFixDatabase {
 
         val gpuAcc = map["Renderer\\gpu_accuracy"] ?: "0"
         if (isRu) {
-            lines.add("🎮 Графика и видео:")
-            lines.add(if (gpuAcc == "1") "  • Точность ГПУ: Высокая (стабильная геометрия и текстуры)" else "  • Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)")
-            lines.add("  • Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)")
-            lines.add("  • Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)")
-            lines.add("  • Асинхронный вывод: Включено (плавные 60 FPS)")
-            lines.add("  • Барьеры ГПУ: По умолчанию")
+            lines.add("🎮 <b>Графика и видео:</b>")
+            lines.add(if (gpuAcc == "1") "  • <b>Точность ГПУ:</b> Высокая (стабильная геометрия и текстуры)" else "  • <b>Точность ГПУ:</b> Обычная (плавные 60 FPS, устранение задержек 200 ms)")
+            lines.add("  • <b>Фиксация разрешения DRS:</b> Отключено (устранение смещения и обрезки экрана 320x180)")
+            lines.add("  • <b>Реактивная очистка:</b> Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)")
+            lines.add("  • <b>Асинхронный вывод:</b> Включено (плавные 60 FPS)")
+            lines.add("  • <b>Барьеры ГПУ:</b> По умолчанию")
             val dma = map["Renderer\\dma_accuracy"] ?: "0"
-            lines.add("  • Точность DMA: " + (if (dma == "1") "Нормальная" else "По умолчанию (Безопасно)"))
+            lines.add("  • <b>Точность DMA:</b> " + (if (dma == "1") "Нормальная" else "По умолчанию (Безопасно)"))
             val bfl = map["Renderer\\barrier_feedback_loops"] ?: "false"
-            lines.add(if (bfl == "true" || bfl == "1") "  • Барьеры обратной связи: Включено (корректные тени и эффекты)" else "  • Барьеры обратной связи: Отключено (устранение черных тайлов)")
-            lines.add("  • Динамическое состояние: Базовое (EDS 1)")
-            lines.add("  • Сглаживание: Отключено (сохранение пиксель-арта и четкости)")
-            lines.add("  • Фильтр масштабирования: Билинейный")
-            lines.add("  • Асинхронные шейдеры: Включено (плавный геймплей)")
-            lines.add("  • Обратное чтение буферов ГПУ: Отключено")
-            lines.add("  • Вычислительные конвейеры: Включено")
-            lines.add("  • Синхронизация памяти ГПУ: Отключено")
+            lines.add(if (bfl == "true" || bfl == "1") "  • <b>Барьеры обратной связи:</b> Включено (корректные тени и эффекты)" else "  • <b>Барьеры обратной связи:</b> Отключено (устранение черных тайлов)")
+            lines.add("  • <b>Динамическое состояние:</b> Базовое (EDS 1)")
+            lines.add("  • <b>Сглаживание:</b> Отключено (сохранение пиксель-арта и четкости)")
+            lines.add("  • <b>Фильтр масштабирования:</b> Билинейный")
+            lines.add("  • <b>Асинхронные шейдеры:</b> Включено (плавный геймплей)")
+            lines.add("  • <b>Обратное чтение буферов ГПУ:</b> Отключено")
+            lines.add("  • <b>Вычислительные конвейеры:</b> Включено")
+            lines.add("  • <b>Синхронизация памяти ГПУ:</b> Отключено")
             val fastGpu = map["Renderer\\use_fast_gpu_time"] ?: "true"
-            lines.add(if (fastGpu == "false" || fastGpu == "0") "  • Быстрое время ГПУ: Отключено (синхронизация кадров)" else "  • Быстрое время ГПУ: Включено")
+            lines.add(if (fastGpu == "false" || fastGpu == "0") "  • <b>Быстрое время ГПУ:</b> Отключено (синхронизация кадров)" else "  • <b>Быстрое время ГПУ:</b> Включено")
             val earlyFences = map["Renderer\\early_release_fences"] ?: "true"
-            lines.add(if (earlyFences == "false" || earlyFences == "0") "  • Раннее освобождение барьеров: Отключено" else "  • Раннее освобождение барьеров: Включено")
-            lines.add("  • Сжатие ASTC: Без сжатия")
-            lines.add("  • Очистка VRAM: Отключено (устраняет микрофризы)")
+            lines.add(if (earlyFences == "false" || earlyFences == "0") "  • <b>Раннее освобождение барьеров:</b> Отключено" else "  • <b>Раннее освобождение барьеров:</b> Включено")
+            lines.add("  • <b>Сжатие ASTC:</b> Без сжатия")
+            lines.add("  • <b>Очистка VRAM:</b> Отключено (устраняет микрофризы)")
             val nvdec = map["Renderer\\nvdec_emulation"] ?: "3"
-            lines.add("  • Декодирование видео NVDEC: " + when (nvdec) {
+            lines.add("  • <b>Декодирование видео NVDEC:</b> " + when (nvdec) {
                 "1" -> "ЦП (FFmpeg)"
                 "2" -> "ГПУ (аппаратное)"
                 else -> "Гибридное (Hybrid 3)"
             })
-            lines.add("\n⚡ Процессор и память:")
-            lines.add("  • Быстрая память Fastmem: Включено")
-            lines.add("  • Игнорирование сбоев памяти: Включено")
-            lines.add("  • Точность ЦП: Авто")
+            lines.add("\n⚡ <b>Процессор и память:</b>")
+            lines.add("  • <b>Быстрая память Fastmem:</b> Включено")
+            lines.add("  • <b>Игнорирование сбоев памяти:</b> Включено")
+            lines.add("  • <b>Точность ЦП:</b> Авто")
             val mem = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
-            lines.add("  • Конфигурация памяти: " + (if (mem == "1") "6 ГБ DRAM" else "4 ГБ DRAM"))
-            lines.add("\n🛠️ Система и сеть:")
+            lines.add("  • <b>Конфигурация памяти:</b> " + (if (mem == "1") "6 ГБ DRAM" else "4 ГБ DRAM"))
+            lines.add("\n🛠️ <b>Система и сеть:</b>")
             val airplane = map["System\\airplane_mode"] ?: "true"
-            lines.add(if (airplane == "false" || airplane == "0") "  • Режим «В самолете»: Отключено (сеть активна)" else "  • Режим «В самолете»: Включено")
+            lines.add(if (airplane == "false" || airplane == "0") "  • <b>Режим «В самолете»:</b> Отключено (сеть активна)" else "  • <b>Режим «В самолете»:</b> Включено")
         } else {
-            lines.add("🎮 Graphics and video:")
-            lines.add(if (gpuAcc == "1") "  • GPU accuracy: High (stable geometry and textures)" else "  • GPU accuracy: Normal (smooth 60 FPS, eliminates 200 ms latency)")
-            lines.add("  • DRS resolution lock: Disabled (fixes 320x180 viewport offset and clipping)")
-            lines.add("  • Reactive flushing: Disabled (eliminates 4 FPS and 200 ms latency stalls)")
-            lines.add("  • Async presentation: Enabled (smooth 60 FPS)")
-            lines.add("  • GPU fence behavior: Default")
+            lines.add("🎮 <b>Graphics and video:</b>")
+            lines.add(if (gpuAcc == "1") "  • <b>GPU accuracy:</b> High (stable geometry and textures)" else "  • <b>GPU accuracy:</b> Normal (smooth 60 FPS, eliminates 200 ms latency)")
+            lines.add("  • <b>DRS resolution lock:</b> Disabled (fixes 320x180 viewport offset and clipping)")
+            lines.add("  • <b>Reactive flushing:</b> Disabled (eliminates 4 FPS and 200 ms latency stalls)")
+            lines.add("  • <b>Async presentation:</b> Enabled (smooth 60 FPS)")
+            lines.add("  • <b>GPU fence behavior:</b> Default")
             val dma = map["Renderer\\dma_accuracy"] ?: "0"
-            lines.add("  • DMA accuracy: " + (if (dma == "1") "Normal" else "Default (safe)"))
+            lines.add("  • <b>DMA accuracy:</b> " + (if (dma == "1") "Normal" else "Default (safe)"))
             val bfl = map["Renderer\\barrier_feedback_loops"] ?: "false"
-            lines.add(if (bfl == "true" || bfl == "1") "  • Barrier feedback loops: Enabled (correct shadows and effects)" else "  • Barrier feedback loops: Disabled (eliminates black tiles)")
-            lines.add("  • Dynamic state: Basic (EDS 1)")
-            lines.add("  • Anti-aliasing: None (preserves pixel-art and clarity)")
-            lines.add("  • Scaling filter: Bilinear")
-            lines.add("  • Async shaders: Enabled (smooth gameplay)")
-            lines.add("  • GPU buffer readback: Disabled")
-            lines.add("  • Compute pipelines: Enabled")
-            lines.add("  • Sync GPU memory operations: Disabled")
+            lines.add(if (bfl == "true" || bfl == "1") "  • <b>Barrier feedback loops:</b> Enabled (correct shadows and effects)" else "  • <b>Barrier feedback loops:</b> Disabled (eliminates black tiles)")
+            lines.add("  • <b>Dynamic state:</b> Basic (EDS 1)")
+            lines.add("  • <b>Anti-aliasing:</b> None (preserves pixel-art and clarity)")
+            lines.add("  • <b>Scaling filter:</b> Bilinear")
+            lines.add("  • <b>Async shaders:</b> Enabled (smooth gameplay)")
+            lines.add("  • <b>GPU buffer readback:</b> Disabled")
+            lines.add("  • <b>Compute pipelines:</b> Enabled")
+            lines.add("  • <b>Sync GPU memory operations:</b> Disabled")
             val fastGpu = map["Renderer\\use_fast_gpu_time"] ?: "true"
-            lines.add(if (fastGpu == "false" || fastGpu == "0") "  • Fast GPU time: Disabled (frame pacing)" else "  • Fast GPU time: Enabled")
+            lines.add(if (fastGpu == "false" || fastGpu == "0") "  • <b>Fast GPU time:</b> Disabled (frame pacing)" else "  • <b>Fast GPU time:</b> Enabled")
             val earlyFences = map["Renderer\\early_release_fences"] ?: "true"
-            lines.add(if (earlyFences == "false" || earlyFences == "0") "  • Early release fences: Disabled" else "  • Early release fences: Enabled")
-            lines.add("  • ASTC recompression: Uncompressed")
-            lines.add("  • VRAM garbage collection: Disabled (prevents micro-stutters)")
+            lines.add(if (earlyFences == "false" || earlyFences == "0") "  • <b>Early release fences:</b> Disabled" else "  • <b>Early release fences:</b> Enabled")
+            lines.add("  • <b>ASTC recompression:</b> Uncompressed")
+            lines.add("  • <b>VRAM garbage collection:</b> Disabled (prevents micro-stutters)")
             val nvdec = map["Renderer\\nvdec_emulation"] ?: "3"
-            lines.add("  • NVDEC video decoding: " + when (nvdec) {
+            lines.add("  • <b>NVDEC video decoding:</b> " + when (nvdec) {
                 "1" -> "CPU (FFmpeg)"
                 "2" -> "GPU (hardware)"
                 else -> "Hybrid (Hybrid 3)"
             })
-            lines.add("\n⚡ CPU and memory:")
-            lines.add("  • Fastmem memory: Enabled")
-            lines.add("  • Ignore memory aborts: Enabled")
-            lines.add("  • CPU accuracy: Auto")
+            lines.add("\n⚡ <b>CPU and memory:</b>")
+            lines.add("  • <b>Fastmem memory:</b> Enabled")
+            lines.add("  • <b>Ignore memory aborts:</b> Enabled")
+            lines.add("  • <b>CPU accuracy:</b> Auto")
             val mem = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
-            lines.add("  • Memory layout: " + (if (mem == "1") "6GB DRAM" else "4GB DRAM"))
-            lines.add("\n🛠️ System and network:")
+            lines.add("  • <b>Memory layout:</b> " + (if (mem == "1") "6GB DRAM" else "4GB DRAM"))
+            lines.add("\n🛠️ <b>System and network:</b>")
             val airplane = map["System\\airplane_mode"] ?: "true"
-            lines.add(if (airplane == "false" || airplane == "0") "  • Airplane mode: Disabled (network active)" else "  • Airplane mode: Enabled")
+            lines.add(if (airplane == "false" || airplane == "0") "  • <b>Airplane mode:</b> Disabled (network active)" else "  • <b>Airplane mode:</b> Enabled")
         }
         return lines.joinToString("\n")
     }

@@ -3869,7 +3869,12 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     scrollLayout->setSpacing(8);
 
     // 2. Issues Card
-    QString issues_formatted = QString::fromStdString(profile->issues_ru);
+    const bool is_russian = UISettings::values.language.GetValue().starts_with("ru") || UISettings::values.language.GetValue().empty();
+    QString issues_raw = QString::fromStdString(is_russian ? profile->issues_ru : profile->issues_en);
+    if (issues_raw.isEmpty()) {
+        issues_raw = QString::fromStdString(profile->issues_ru);
+    }
+    QString issues_formatted = issues_raw;
     issues_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
 
     auto* issueCard = new QFrame(scrollWidget);
@@ -3884,7 +3889,9 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     issueLayout->setContentsMargins(12, 8, 12, 8);
     issueLayout->setSpacing(4);
 
-    auto* issueHeader = new QLabel(QStringLiteral("⚠️ <b>Обнаружены известные проблемы в игре:</b>"), issueCard);
+    auto* issueHeader = new QLabel(is_russian ?
+        QStringLiteral("⚠️ <b>Обнаружены известные проблемы в игре:</b>") :
+        QStringLiteral("⚠️ <b>Known game issues detected:</b>"), issueCard);
     issueHeader->setStyleSheet(QStringLiteral("color: #F87171; font-size: 12.5px; background: transparent; border: none;"));
     issueLayout->addWidget(issueHeader);
 
@@ -3896,7 +3903,15 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     scrollLayout->addWidget(issueCard);
 
     // 3. Recommended Fixes Card
-    QString fixes_formatted = QString::fromStdString(profile->fixes_ru);
+    QString fixes_raw = QString::fromStdString(is_russian ? profile->fixes_ru : profile->fixes_en);
+    if (fixes_raw.isEmpty()) {
+        fixes_raw = QString::fromStdString(profile->fixes_ru);
+    }
+    QString fixes_formatted = fixes_raw;
+    if (!fixes_formatted.contains(QStringLiteral("<b>"))) {
+        fixes_formatted.replace(QRegularExpression(QStringLiteral(R"((•|\-)\s*([^:\n<]+):)")), QStringLiteral("• <b>\\2:</b>"));
+        fixes_formatted.replace(QRegularExpression(QStringLiteral(R"(^(🎮|⚙️|🌐|⚡|🛠️)\s*([^:\n<]+):)"), QRegularExpression::MultilineOption), QStringLiteral("\\1 <b>\\2:</b>"));
+    }
     fixes_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
 
     auto* fixCard = new QFrame(scrollWidget);
@@ -3911,7 +3926,9 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     fixLayout->setContentsMargins(12, 8, 12, 8);
     fixLayout->setSpacing(4);
 
-    auto* fixHeader = new QLabel(QStringLiteral("🛡️ <b>Параметры авто-исправления (совместимость и стабильность):</b>"), fixCard);
+    auto* fixHeader = new QLabel(is_russian ?
+        QStringLiteral("🛡️ <b>Параметры авто-исправления (совместимость и стабильность):</b>") :
+        QStringLiteral("🛡️ <b>Recommended auto-fix parameters (compatibility and stability):</b>"), fixCard);
     fixHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 12.5px; background: transparent; border: none;"));
     fixLayout->addWidget(fixHeader);
 
