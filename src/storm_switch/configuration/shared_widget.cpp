@@ -181,10 +181,10 @@ QWidget* Widget::CreateCheckBox(Settings::BasicSetting* bool_setting, const QStr
         checkbox->blockSignals(blocked);
     };
 
-    checkbox->connect(checkbox, &QCheckBox::stateChanged, [serializer, bool_setting](int) {
+    checkbox->connect(checkbox, &QCheckBox::stateChanged, [bool_setting](int state) {
         if (Settings::IsConfiguringGlobal()) {
             bool_setting->SetGlobal(true);
-            bool_setting->LoadString(serializer());
+            bool_setting->LoadString(state == Qt::Checked ? "true" : "false");
             NotifyGlobalSettingChanged();
         }
     });
@@ -205,32 +205,37 @@ QWidget* Widget::CreateCombobox(std::function<std::string()>& serializer,
     combobox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     combobox->setMinimumHeight(28);
 
-    const ComboboxTranslations* enumeration{nullptr};
     if (combobox_enumerations.contains(type)) {
-        enumeration = &combobox_enumerations.at(type);
-        for (const auto& [id, name] : *enumeration) {
-            combobox->addItem(name);
+        const auto& enumeration = combobox_enumerations.at(type);
+        for (const auto& [id, name] : enumeration) {
+            combobox->addItem(name, static_cast<uint>(id));
         }
     } else {
         return combobox;
     }
 
-    const auto find_index = [=](u32 value) -> int {
-        for (u32 i = 0; i < enumeration->size(); i++) {
-            if (enumeration->at(i).first == value) {
-                return i;
-            }
+    const auto find_index = [this](u32 value) -> int {
+        int idx = combobox->findData(static_cast<uint>(value));
+        if (idx >= 0) {
+            return idx;
         }
-        return -1;
+        if (value < static_cast<u32>(combobox->count())) {
+            return static_cast<int>(value);
+        }
+        return combobox->count() > 0 ? 0 : -1;
     };
 
     const u32 setting_value = std::strtoul(setting.ToString().c_str(), nullptr, 0);
     combobox->setCurrentIndex(find_index(setting_value));
 
-    serializer = [this, enumeration]() {
+    serializer = [this]() {
         int current = combobox->currentIndex();
-        if (current >= 0 && current < static_cast<int>(enumeration->size())) {
-            return std::to_string(enumeration->at(current).first);
+        if (current >= 0) {
+            QVariant data = combobox->itemData(current);
+            if (data.isValid()) {
+                return std::to_string(data.toUInt());
+            }
+            return std::to_string(current);
         }
         return std::string{};
     };
@@ -247,10 +252,15 @@ QWidget* Widget::CreateCombobox(std::function<std::string()>& serializer,
         combobox->blockSignals(blocked);
     };
 
-    combobox->connect(combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this, serializer](int) {
-        if (Settings::IsConfiguringGlobal()) {
+    combobox->connect(combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int current) {
+        if (current >= 0 && Settings::IsConfiguringGlobal()) {
             setting.SetGlobal(true);
-            setting.LoadString(serializer());
+            QVariant data = combobox->itemData(current);
+            if (data.isValid()) {
+                setting.LoadString(std::to_string(data.toUInt()));
+            } else {
+                setting.LoadString(std::to_string(current));
+            }
             NotifyGlobalSettingChanged();
         }
     });
@@ -970,10 +980,16 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
         load_func = [this, serializer, checkbox_serializer, require_checkbox, other_setting]() {
             if (require_checkbox && other_setting != nullptr) {
                 other_setting->SetGlobal(true);
-                other_setting->LoadString(checkbox_serializer());
+                const auto check_str = checkbox_serializer();
+                if (!check_str.empty()) {
+                    other_setting->LoadString(check_str);
+                }
             }
             setting.SetGlobal(true);
-            setting.LoadString(serializer());
+            const auto ser_str = serializer();
+            if (!ser_str.empty()) {
+                setting.LoadString(ser_str);
+            }
         };
     } else {
         layout->addWidget(restore_button);
@@ -994,12 +1010,18 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
             bool using_global = !restore_button->isEnabled();
             setting.SetGlobal(using_global);
             if (!using_global) {
-                setting.LoadString(serializer());
+                const auto ser_str = serializer();
+                if (!ser_str.empty()) {
+                    setting.LoadString(ser_str);
+                }
             }
             if (require_checkbox) {
                 other_setting->SetGlobal(using_global);
                 if (!using_global) {
-                    other_setting->LoadString(checkbox_serializer());
+                    const auto check_str = checkbox_serializer();
+                    if (!check_str.empty()) {
+                        other_setting->LoadString(check_str);
+                    }
                 }
             }
         };
@@ -1042,6 +1064,7 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
                 const bool blocked = combobox->blockSignals(true);
                 for (u32 i = 0; i < enumeration.size() && i < static_cast<u32>(combobox->count()); ++i) {
                     combobox->setItemText(i, enumeration.at(i).second);
+                    combobox->setItemData(i, static_cast<uint>(enumeration.at(i).first));
                 }
                 combobox->blockSignals(blocked);
             }

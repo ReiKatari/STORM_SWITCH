@@ -224,7 +224,9 @@ void ConfigureSystem::UpdateRtcTime() {
     date_rtc->setDateTime(date);
 }
 
-void ConfigureSystem::SetConfiguration() {}
+void ConfigureSystem::SetConfiguration() {
+    UpdateRtcTime();
+}
 
 void ConfigureSystem::ApplyConfiguration() {
     const bool powered_on = system.IsPoweredOn();
