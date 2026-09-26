@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navArgs
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.yuzu.yuzu_emu.NativeLibrary
 import java.io.IOException
 import org.yuzu.yuzu_emu.R
@@ -96,6 +97,29 @@ class SettingsActivity : AppCompatActivity() {
                     supportFragmentManager,
                     ResetSettingsDialogFragment.TAG
                 )
+            }
+        }
+        settingsViewModel.shouldShowApplyGlobalToAllDialog.collect(
+            this,
+            resetState = { settingsViewModel.setShouldShowApplyGlobalToAllDialog(false) }
+        ) {
+            if (it) {
+                MaterialAlertDialogBuilder(this, R.style.EdenMaterialDialog)
+                    .setTitle(R.string.apply_global_to_all_games_confirm_title)
+                    .setMessage(R.string.apply_global_to_all_games_confirm_message)
+                    .setPositiveButton(R.string.apply_global_to_all_games_positive) { _, _ ->
+                        NativeConfig.saveGlobalConfig()
+                        NativeLibrary.applySettings()
+                        val resetCount = GameFixDatabase.resetAllPerGameConfigs()
+                        Toast.makeText(
+                            this,
+                            getString(R.string.apply_global_to_all_games_success),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        Log.info("[SettingsActivity] Applied global settings to all games. Reset configs count: $resetCount")
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
             }
         }
 

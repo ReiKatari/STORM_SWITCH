@@ -1241,6 +1241,23 @@
     <string name="game_fix_recommended_header">⚡ STORM SWITCH 推荐设置</string>
     <string name="game_fix_skip_and_launch">直接启动（不修改）</string>
     <string name="game_fix_issues_header">⚠️ 已知问题与错误</string>
+
+    <!-- 启动模式与全局设置 -->
+    <string name="launch_method_title">启动模式</string>
+    <string name="launch_mode_auto_fix">自动修复</string>
+    <string name="launch_mode_auto_fix_description">纯净 STORM SOFT 参考配置，确保最高稳定性</string>
+    <string name="launch_mode_auto_fix_with_custom">自动修复与个性化设置</string>
+    <string name="launch_mode_auto_fix_with_custom_description">在保留手动个性化设置的同时优化游戏体验</string>
+    <string name="launch_mode_custom">个性化设置</string>
+    <string name="launch_mode_custom_description">仅使用该游戏专属配置启动</string>
+    <string name="launch_mode_global">全局设置</string>
+    <string name="launch_mode_global_description">使用模拟器标准全局设置启动</string>
+    <string name="apply_global_to_all_games">应用全局设置到所有游戏</string>
+    <string name="apply_global_to_all_games_description">重置游戏独立配置并将当前全局设置同步到所有游戏</string>
+    <string name="apply_global_to_all_games_confirm_title">应用到所有游戏？</string>
+    <string name="apply_global_to_all_games_confirm_message">确定要重置所有游戏的独立配置吗？当前全局设置将立即应用到库中所有游戏。</string>
+    <string name="apply_global_to_all_games_positive">全部应用</string>
+    <string name="apply_global_to_all_games_success">⚡ 全局设置已成功应用到所有游戏（重置了 %d 个配置）</string>
     <string name="memory_12gb">12GB (极高风险)</string>
     <!-- 100% Full Localization -->
     <string name="copy_to_clipboard">复制信息</string>

@@ -38,6 +38,7 @@ import org.yuzu.yuzu_emu.features.settings.model.Settings
 import org.yuzu.yuzu_emu.features.settings.ui.SettingsSubscreen
 import org.yuzu.yuzu_emu.model.AddonViewModel
 import org.yuzu.yuzu_emu.model.DriverViewModel
+import org.yuzu.yuzu_emu.model.GameFixDatabase
 import org.yuzu.yuzu_emu.model.GameProperty
 import org.yuzu.yuzu_emu.model.GamesViewModel
 import org.yuzu.yuzu_emu.model.HomeViewModel
@@ -124,10 +125,18 @@ class GamePropertiesFragment : Fragment() {
 
             binding.buttonStart.setOnClickListener {
                 try {
-                    LaunchGameDialogFragment.newInstance(args.game)
-                        .show(childFragmentManager, LaunchGameDialogFragment.TAG)
+                    val dialog = GameFixDialogFragment.newInstance(args.game) { mode ->
+                        if (mode != GameFixDatabase.LaunchMode.CANCEL) {
+                            val action = HomeNavigationDirections.actionGlobalEmulationActivity(
+                                args.game,
+                                mode != GameFixDatabase.LaunchMode.GLOBAL
+                            )
+                            binding.root.findNavController().navigate(action)
+                        }
+                    }
+                    dialog.show(childFragmentManager, GameFixDialogFragment.TAG)
                 } catch (e: Throwable) {
-                    org.yuzu.yuzu_emu.utils.Log.error("[GamePropertiesFragment] Failed to show LaunchGameDialogFragment: ${e.message}")
+                    org.yuzu.yuzu_emu.utils.Log.error("[GamePropertiesFragment] Failed to show GameFixDialogFragment: ${e.message}")
                 }
             }
 

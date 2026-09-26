@@ -1120,7 +1120,24 @@ Wirklich fortfahren?</string>
     <string name="game_fix_dont_ask_again">Für dieses Spiel nicht mehr nachfragen</string>
     <string name="game_fix_recommended_header">⚡ Empfohlene STORM SWITCH Optimierungen</string>
     <string name="game_fix_skip_and_launch">Ohne Änderungen starten</string>
-    <string name="game_fix_issues_header">⚠️ Bekannte Probleme &amp; Fehler</string>
+    <string name="game_fix_issues_header">⚠️ Bekannte Probleme und Fehler</string>
+
+    <!-- Startmodi und globale Einstellungen -->
+    <string name="launch_method_title">Startmethode</string>
+    <string name="launch_mode_auto_fix">Automatische Korrektur</string>
+    <string name="launch_mode_auto_fix_description">Sauberes STORM SOFT-Referenzprofil für maximale Stabilität</string>
+    <string name="launch_mode_auto_fix_with_custom">Automatische Korrektur mit benutzerdefinierten Einstellungen</string>
+    <string name="launch_mode_auto_fix_with_custom_description">Spieloptimierung unter Beibehaltung manueller Einstellungen</string>
+    <string name="launch_mode_custom">Benutzerdefinierte Einstellungen</string>
+    <string name="launch_mode_custom_description">Ausschließlich mit individuellen Spielprofileinstellungen starten</string>
+    <string name="launch_mode_global">Globale Einstellungen</string>
+    <string name="launch_mode_global_description">Mit globalen Standardeinstellungen des Emulators starten</string>
+    <string name="apply_global_to_all_games">Globale Einstellungen für alle Spiele übernehmen</string>
+    <string name="apply_global_to_all_games_description">Benutzerdefinierte Profile zurücksetzen und globale Einstellungen anwenden</string>
+    <string name="apply_global_to_all_games_confirm_title">Für alle Spiele übernehmen?</string>
+    <string name="apply_global_to_all_games_confirm_message">Möchten Sie benutzerdefinierte Profile für alle Spiele zurücksetzen? Aktuelle globale Einstellungen werden auf die gesamte Spielebibliothek angewendet.</string>
+    <string name="apply_global_to_all_games_positive">Für alle übernehmen</string>
+    <string name="apply_global_to_all_games_success">⚡ Globale Einstellungen erfolgreich für alle Spiele übernommen (%d Profile zurückgesetzt)</string>
     <string name="memory_12gb">12 GB (Extrem)</string>
     <!-- 100% Full Localization -->
     <string name="copy_to_clipboard">Informationen kopieren</string>

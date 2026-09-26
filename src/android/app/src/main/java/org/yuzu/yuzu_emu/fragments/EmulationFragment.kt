@@ -311,38 +311,83 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     private fun continueGameSetupAfterFix() {
         try {
             val gameToUse = game ?: return
-            val hasBuiltInFix = GameFixDatabase.hasFix(gameToUse)
-            val isUserCustom = GameFixDatabase.isUserCustomConfig(gameToUse)
-            val isFixRequested = hasBuiltInFix || (gameToUse == args.game && args.custom) || GameFixDatabase.isSessionFixActive(gameToUse)
+            val launchMode = GameFixDatabase.selectedLaunchMode
+            GameFixDatabase.selectedLaunchMode = null
 
-            NativeLibrary.setGameFixesEnabled(isFixRequested)
+            if (launchMode == GameFixDatabase.LaunchMode.CANCEL) {
+                Log.info("[EmulationFragment] Launch cancelled by user for ${gameToUse.title}")
+                requireActivity().finish()
+                return
+            }
+
             if (!org.yuzu.yuzu_emu.utils.LosslessScalingHelper.isInstalled()) {
                 BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
             }
 
-            if (isUserCustom) {
-                // User manual per-game settings take absolute priority over built-in GameFix profiles
-                shouldUseCustom = true
-                SettingsFile.loadCustomConfig(gameToUse)
-                Log.info("[EmulationFragment] Loaded user manual per-game config for ${gameToUse.title} (user custom takes priority)")
-            } else if (isFixRequested && hasBuiltInFix) {
-                // Apply GameFix profile (only when no user custom config exists)
-                shouldUseCustom = true
-                val overrides = GameFixDatabase.getManualOverrides(gameToUse)
-                GameFixDatabase.applyFix(gameToUse)
-                SettingsFile.loadCustomConfig(gameToUse)
-                if (overrides.isNotEmpty()) {
-                    Log.info("[EmulationFragment] GameFix active with user manual overrides: $overrides")
-                } else {
-                    Log.info("[EmulationFragment] Loaded GameFix profile for ${gameToUse.title}")
+            when (launchMode) {
+                GameFixDatabase.LaunchMode.AUTO_FIX -> {
+                    NativeLibrary.setGameFixesEnabled(true)
+                    shouldUseCustom = true
+                    GameFixDatabase.applyCleanFix(gameToUse)
+                    SettingsFile.loadCustomConfig(gameToUse)
+                    Log.info("[EmulationFragment] Loaded clean Auto-Fix profile for ${gameToUse.title}")
                 }
-            } else {
-                // Clean launch: remove any temporary fix file and use global config
-                shouldUseCustom = false
-                GameFixDatabase.cleanupSession(gameToUse)
-                NativeConfig.unloadPerGameConfig()
-                NativeConfig.reloadGlobalConfig()
-                Log.info("[EmulationFragment] Using clean global config for ${gameToUse.title}")
+                GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM -> {
+                    NativeLibrary.setGameFixesEnabled(true)
+                    shouldUseCustom = true
+                    GameFixDatabase.applyFixWithCustomOverrides(gameToUse)
+                    SettingsFile.loadCustomConfig(gameToUse)
+                    Log.info("[EmulationFragment] Loaded Auto-Fix profile with custom overrides for ${gameToUse.title}")
+                }
+                GameFixDatabase.LaunchMode.CUSTOM -> {
+                    NativeLibrary.setGameFixesEnabled(false)
+                    shouldUseCustom = true
+                    GameFixDatabase.prepareCustomLaunch(gameToUse)
+                    SettingsFile.loadCustomConfig(gameToUse)
+                    Log.info("[EmulationFragment] Loaded pure custom config for ${gameToUse.title}")
+                }
+                GameFixDatabase.LaunchMode.GLOBAL -> {
+                    NativeLibrary.setGameFixesEnabled(false)
+                    shouldUseCustom = false
+                    GameFixDatabase.prepareGlobalLaunch(gameToUse)
+                    NativeConfig.unloadPerGameConfig()
+                    NativeConfig.reloadGlobalConfig()
+                    Log.info("[EmulationFragment] Using global config for ${gameToUse.title}")
+                }
+                GameFixDatabase.LaunchMode.CANCEL -> {
+                    Log.info("[EmulationFragment] Launch cancelled for ${gameToUse.title}")
+                    requireActivity().finish()
+                    return
+                }
+                null -> {
+                    val hasBuiltInFix = GameFixDatabase.hasFix(gameToUse)
+                    val isUserCustom = GameFixDatabase.isUserCustomConfig(gameToUse)
+                    val isFixRequested = hasBuiltInFix || (gameToUse == args.game && args.custom) || GameFixDatabase.isSessionFixActive(gameToUse)
+
+                    NativeLibrary.setGameFixesEnabled(isFixRequested)
+
+                    if (isUserCustom) {
+                        shouldUseCustom = true
+                        SettingsFile.loadCustomConfig(gameToUse)
+                        Log.info("[EmulationFragment] Loaded user manual per-game config for ${gameToUse.title} (user custom takes priority)")
+                    } else if (isFixRequested && hasBuiltInFix) {
+                        shouldUseCustom = true
+                        val overrides = GameFixDatabase.getManualOverrides(gameToUse)
+                        GameFixDatabase.applyFix(gameToUse)
+                        SettingsFile.loadCustomConfig(gameToUse)
+                        if (overrides.isNotEmpty()) {
+                            Log.info("[EmulationFragment] GameFix active with user manual overrides: $overrides")
+                        } else {
+                            Log.info("[EmulationFragment] Loaded GameFix profile for ${gameToUse.title}")
+                        }
+                    } else {
+                        shouldUseCustom = false
+                        GameFixDatabase.cleanupSession(gameToUse)
+                        NativeConfig.unloadPerGameConfig()
+                        NativeConfig.reloadGlobalConfig()
+                        Log.info("[EmulationFragment] Using clean global config for ${gameToUse.title}")
+                    }
+                }
             }
 
             runCatching { GameHelper.restoreContentForGame(gameToUse) }

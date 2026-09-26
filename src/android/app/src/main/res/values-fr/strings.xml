@@ -1175,6 +1175,23 @@
     <string name="game_fix_recommended_header">⚡ Paramètres recommandés STORM SWITCH</string>
     <string name="game_fix_skip_and_launch">Lancer sans modifications</string>
     <string name="game_fix_issues_header">⚠️ Problèmes et bugs connus</string>
+
+    <!-- Modes de lancement et paramètres globaux -->
+    <string name="launch_method_title">Mode de lancement</string>
+    <string name="launch_mode_auto_fix">Correction automatique</string>
+    <string name="launch_mode_auto_fix_description">Profil de référence STORM SOFT propre pour une stabilité maximale</string>
+    <string name="launch_mode_auto_fix_with_custom">Correction automatique avec paramètres personnalisés</string>
+    <string name="launch_mode_auto_fix_with_custom_description">Optimisation tout en préservant vos réglages manuels</string>
+    <string name="launch_mode_custom">Paramètres personnalisés</string>
+    <string name="launch_mode_custom_description">Lancer uniquement avec les paramètres personnalisés du jeu</string>
+    <string name="launch_mode_global">Paramètres globaux</string>
+    <string name="launch_mode_global_description">Lancer avec les paramètres globaux de l\'émulateur</string>
+    <string name="apply_global_to_all_games">Appliquer les paramètres globaux à tous les jeux</string>
+    <string name="apply_global_to_all_games_description">Réinitialiser les profils de jeu et propager les paramètres globaux</string>
+    <string name="apply_global_to_all_games_confirm_title">Appliquer à tous les jeux ?</string>
+    <string name="apply_global_to_all_games_confirm_message">Voulez-vous réinitialiser les profils personnalisés ? Les réglages globaux actuels seront appliqués à l\'ensemble de votre bibliothèque.</string>
+    <string name="apply_global_to_all_games_positive">Appliquer à tous</string>
+    <string name="apply_global_to_all_games_success">⚡ Paramètres globaux appliqués avec succès à tous les jeux (%d profils réinitialisés)</string>
     <string name="memory_12gb">12 Go (Extrême)</string>
     <!-- 100% Full Localization -->
     <string name="copy_to_clipboard">Copier les informations</string>

@@ -294,6 +294,16 @@ class SettingsFragmentPresenter(
                     iconId = R.drawable.ic_restore
                 ) { settingsViewModel.setShouldShowResetSettingsDialog(true) }
             )
+            if (!NativeConfig.isPerGameConfigLoaded()) {
+                add(
+                    RunnableSetting(
+                        titleId = R.string.apply_global_to_all_games,
+                        descriptionId = R.string.apply_global_to_all_games_description,
+                        isRunnable = !NativeLibrary.isRunning(),
+                        iconId = R.drawable.ic_check_circle
+                    ) { settingsViewModel.setShouldShowApplyGlobalToAllDialog(true) }
+                )
+            }
         }
     }
 

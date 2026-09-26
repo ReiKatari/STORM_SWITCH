@@ -4,6 +4,7 @@
 package org.yuzu.yuzu_emu.fragments
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
@@ -20,12 +21,12 @@ class GameFixDialogFragment : DialogFragment() {
     private val binding get() = _binding!!
 
     private var game: Game? = null
-    private var onLaunchCallback: ((Boolean) -> Unit)? = null
+    private var onLaunchCallback: ((GameFixDatabase.LaunchMode) -> Unit)? = null
 
     companion object {
         const val TAG = "GameFixDialogFragment"
 
-        fun newInstance(game: Game, onLaunch: (Boolean) -> Unit): GameFixDialogFragment {
+        fun newInstance(game: Game, onLaunch: (GameFixDatabase.LaunchMode) -> Unit): GameFixDialogFragment {
             val fragment = GameFixDialogFragment()
             fragment.game = game
             fragment.onLaunchCallback = onLaunch
@@ -70,36 +71,89 @@ class GameFixDialogFragment : DialogFragment() {
             binding.textGameFixRecommended.text = sanitizeText(fixes)
         }
 
-        binding.btnApplyGameFix.setOnClickListener {
+        val isRu = Locale.getDefault().language == "ru"
+
+        binding.cardLaunchAutoFix.setOnClickListener {
             val ctx = context
             try {
-                GameFixDatabase.applyFix(currentGame)
+                GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.AUTO_FIX
+                GameFixDatabase.applyCleanFix(currentGame)
                 if (ctx != null) {
-                    Toast.makeText(ctx, "⚡ Оптимизации STORM SWITCH: Применено", Toast.LENGTH_SHORT).show()
+                    val msg = if (isRu) {
+                        "⚡ Авто-исправление: Применен чистый эталонный профиль"
+                    } else {
+                        "⚡ Auto-Fix: Clean profile applied"
+                    }
+                    Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                // Log and continue launching
-            }
+            } catch (_: Exception) {}
             val cb = onLaunchCallback
             dismissAllowingStateLoss()
-            cb?.invoke(true)
+            cb?.invoke(GameFixDatabase.LaunchMode.AUTO_FIX)
         }
 
-        binding.btnSkipGameFix.setOnClickListener {
+        binding.cardLaunchAutoFixCustom.setOnClickListener {
             val ctx = context
             try {
-                GameFixDatabase.clearActiveSessionFix(currentGame)
+                GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM
+                GameFixDatabase.applyFixWithCustomOverrides(currentGame)
                 if (ctx != null) {
-                    Toast.makeText(ctx, "⚠️ Оптимизации STORM SWITCH: Не применено", Toast.LENGTH_SHORT).show()
+                    val msg = if (isRu) {
+                        "⚡ Авто-исправление: Индивидуальные настройки сохранены"
+                    } else {
+                        "⚡ Auto-Fix: Custom settings preserved"
+                    }
+                    Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {}
+            } catch (_: Exception) {}
             val cb = onLaunchCallback
             dismissAllowingStateLoss()
-            cb?.invoke(false)
+            cb?.invoke(GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM)
         }
 
-        binding.btnCancelGameFix.setOnClickListener {
+        binding.cardLaunchCustom.setOnClickListener {
+            val ctx = context
+            try {
+                GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.CUSTOM
+                GameFixDatabase.prepareCustomLaunch(currentGame)
+                if (ctx != null) {
+                    val msg = if (isRu) {
+                        "🎮 Персональные настройки: Запуск с вашим профилем"
+                    } else {
+                        "🎮 Custom Settings: Launching with user profile"
+                    }
+                    Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+                }
+            } catch (_: Exception) {}
+            val cb = onLaunchCallback
             dismissAllowingStateLoss()
+            cb?.invoke(GameFixDatabase.LaunchMode.CUSTOM)
+        }
+
+        binding.cardLaunchGlobal.setOnClickListener {
+            val ctx = context
+            try {
+                GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.GLOBAL
+                GameFixDatabase.prepareGlobalLaunch(currentGame)
+                if (ctx != null) {
+                    val msg = if (isRu) {
+                        "🌐 Глобальные настройки: Запуск с общими настройками"
+                    } else {
+                        "🌐 Global Settings: Launching with global profile"
+                    }
+                    Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+                }
+            } catch (_: Exception) {}
+            val cb = onLaunchCallback
+            dismissAllowingStateLoss()
+            cb?.invoke(GameFixDatabase.LaunchMode.GLOBAL)
+        }
+
+        binding.btnCancelLaunch.setOnClickListener {
+            GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.CANCEL
+            val cb = onLaunchCallback
+            dismissAllowingStateLoss()
+            cb?.invoke(GameFixDatabase.LaunchMode.CANCEL)
         }
 
         val dialog = MaterialAlertDialogBuilder(requireContext())
@@ -108,6 +162,12 @@ class GameFixDialogFragment : DialogFragment() {
 
         dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         return dialog
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.CANCEL
+        onLaunchCallback?.invoke(GameFixDatabase.LaunchMode.CANCEL)
     }
 
     override fun onDestroyView() {

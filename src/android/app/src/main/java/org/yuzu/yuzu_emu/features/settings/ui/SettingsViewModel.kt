@@ -33,6 +33,9 @@ class SettingsViewModel : ViewModel() {
     val shouldShowResetSettingsDialog: StateFlow<Boolean> get() = _shouldShowResetSettingsDialog
     private val _shouldShowResetSettingsDialog = MutableStateFlow(false)
 
+    val shouldShowApplyGlobalToAllDialog: StateFlow<Boolean> get() = _shouldShowApplyGlobalToAllDialog
+    private val _shouldShowApplyGlobalToAllDialog = MutableStateFlow(false)
+
     val shouldReloadSettingsList: StateFlow<Boolean> get() = _shouldReloadSettingsList
     private val _shouldReloadSettingsList = MutableStateFlow(false)
 
@@ -79,6 +82,10 @@ class SettingsViewModel : ViewModel() {
 
     fun setShouldShowResetSettingsDialog(value: Boolean) {
         _shouldShowResetSettingsDialog.value = value
+    }
+
+    fun setShouldShowApplyGlobalToAllDialog(value: Boolean) {
+        _shouldShowApplyGlobalToAllDialog.value = value
     }
 
     fun setShouldReloadSettingsList(value: Boolean) {

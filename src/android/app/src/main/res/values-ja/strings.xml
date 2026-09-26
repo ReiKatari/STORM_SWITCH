@@ -760,6 +760,23 @@
     <string name="game_fix_recommended_header">⚡ STORM SWITCH 推奨設定</string>
     <string name="game_fix_skip_and_launch">変更せずに起動</string>
     <string name="game_fix_issues_header">⚠️ 既知の問題と不具合</string>
+
+    <!-- 起動モードと全体設定 -->
+    <string name="launch_method_title">起動モード</string>
+    <string name="launch_mode_auto_fix">自動修復</string>
+    <string name="launch_mode_auto_fix_description">最大の安定性を確保するクリーンな STORM SOFT 参照プロファイル</string>
+    <string name="launch_mode_auto_fix_with_custom">カスタム設定付き自動修復</string>
+    <string name="launch_mode_auto_fix_with_custom_description">手動設定を保持しながらゲームを最適化</string>
+    <string name="launch_mode_custom">カスタム設定</string>
+    <string name="launch_mode_custom_description">ゲーム個別のプロファイル設定のみで起動</string>
+    <string name="launch_mode_global">全体設定</string>
+    <string name="launch_mode_global_description">エミュレーターの標準全体設定で起動</string>
+    <string name="apply_global_to_all_games">全体設定をすべてのゲームに適用</string>
+    <string name="apply_global_to_all_games_description">個別プロファイルをリセットし全体設定をライブラリ全体に反映</string>
+    <string name="apply_global_to_all_games_confirm_title">すべてのゲームに適用しますか？</string>
+    <string name="apply_global_to_all_games_confirm_message">すべてのゲームの個別設定をリセットしますか？現在の全体設定がすべてのゲームに適用されます。</string>
+    <string name="apply_global_to_all_games_positive">すべてに適用</string>
+    <string name="apply_global_to_all_games_success">⚡ 全体設定がすべてのゲームに正常に適用されました（%d 件のプロファイルをリセット）</string>
     <string name="memory_12gb">12GB (極度)</string>
     <!-- 100% Full Localization -->
     <string name="copy_to_clipboard">情報をコピー</string>

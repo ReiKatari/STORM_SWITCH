@@ -1409,6 +1409,23 @@
     <string name="game_fix_apply_and_launch">⚡ Применить исправления и запустить</string>
     <string name="game_fix_skip_and_launch">Запустить без изменений</string>
 
+    <!-- Методы запуска и глобальные настройки -->
+    <string name="launch_method_title">Метод запуска</string>
+    <string name="launch_mode_auto_fix">Авто-исправление</string>
+    <string name="launch_mode_auto_fix_description">Чистый эталонный профиль STORM SOFT для максимальной стабильности</string>
+    <string name="launch_mode_auto_fix_with_custom">Авто-исправление с персональными настройками</string>
+    <string name="launch_mode_auto_fix_with_custom_description">Оптимизация игры с сохранением ваших ручных настроек (User Priority)</string>
+    <string name="launch_mode_custom">Персональные настройки</string>
+    <string name="launch_mode_custom_description">Запуск исключительно с индивидуальными настройками из профиля игры</string>
+    <string name="launch_mode_global">Глобальные настройки</string>
+    <string name="launch_mode_global_description">Запуск со стандартными глобальными настройками эмулятора</string>
+    <string name="apply_global_to_all_games">Применить глобальные настройки ко всем играм</string>
+    <string name="apply_global_to_all_games_description">Сбросить персональные профили игр и распространить глобальные настройки на всю библиотеку</string>
+    <string name="apply_global_to_all_games_confirm_title">Применить ко всем играм?</string>
+    <string name="apply_global_to_all_games_confirm_message">Вы действительно хотите сбросить индивидуальные профили всех игр? Текущие глобальные настройки будут мгновенно применены ко всей вашей библиотеке.</string>
+    <string name="apply_global_to_all_games_positive">Применить ко всем</string>
+    <string name="apply_global_to_all_games_success">⚡ Глобальные настройки успешно применены ко всем играм (сброшено профилей: %d)</string>
+
     <!-- Генерация кадров -->
     <string name="lossless_scaling">Генерация кадров</string>
     <string name="lossless_scaling_description">Установка библиотеки Lossless.dll для аппаратной генерации промежуточных кадров</string>

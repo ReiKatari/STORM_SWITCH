@@ -2126,6 +2126,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="game_fix_apply_and_launch">⚡ Apply Fixes and Launch</string>
     <string name="game_fix_skip_and_launch">Launch Without Changes</string>
 
+    <!-- Launch Modes and Global Settings -->
+    <string name="launch_method_title">Launch method</string>
+    <string name="launch_mode_auto_fix">Auto-fix</string>
+    <string name="launch_mode_auto_fix_description">Clean reference STORM SOFT profile for maximum stability</string>
+    <string name="launch_mode_auto_fix_with_custom">Auto-fix with custom settings</string>
+    <string name="launch_mode_auto_fix_with_custom_description">Game optimization while preserving your manual settings (User Priority)</string>
+    <string name="launch_mode_custom">Custom settings</string>
+    <string name="launch_mode_custom_description">Launch exclusively with custom per-game profile settings</string>
+    <string name="launch_mode_global">Global settings</string>
+    <string name="launch_mode_global_description">Launch with standard global emulator settings</string>
+    <string name="apply_global_to_all_games">Apply global settings to all games</string>
+    <string name="apply_global_to_all_games_description">Reset per-game profiles and propagate global settings to entire library</string>
+    <string name="apply_global_to_all_games_confirm_title">Apply to all games?</string>
+    <string name="apply_global_to_all_games_confirm_message">Do you want to reset custom profiles for all games? Current global settings will be applied across your entire game library.</string>
+    <string name="apply_global_to_all_games_positive">Apply to all</string>
+    <string name="apply_global_to_all_games_success">⚡ Global settings successfully applied to all games (%d profiles reset)</string>
+
     <!-- Settings Profiles -->
     <string name="settings_profiles_title">Settings Profiles</string>
     <string name="settings_profiles_description">Create, save, quickly load, rename, export and share settings profiles.</string>

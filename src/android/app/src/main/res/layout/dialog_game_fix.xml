@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="22dp"
+    app:cardCornerRadius="24dp"
     app:cardElevation="0dp"
     app:strokeColor="?attr/colorPrimary"
     app:strokeWidth="1.5dp">
@@ -14,7 +14,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxHeight="620dp"
+        android:maxHeight="680dp"
         android:fillViewport="true"
         android:scrollbars="vertical">
 
@@ -82,7 +82,7 @@
 
             </LinearLayout>
 
-            <!-- Card 1: Known Issues & Bugs -->
+            <!-- Card 1: Known Issues and Bugs -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -136,7 +136,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card 2: Recommended Fixes & Settings -->
+            <!-- Card 2: Recommended Fixes and Settings (24 parameters) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -190,50 +190,284 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action Buttons -->
-            <LinearLayout
+            <!-- Launch Methods Section Header -->
+            <com.google.android.material.textview.MaterialTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:text="@string/launch_method_title"
+                android:textSize="14.5sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="10dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_apply_game_fix"
-                    style="@style/Widget.Material3.Button"
+            <!-- 1. Auto-Fix Card (Plashka 1) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_launch_auto_fix"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="?attr/colorPrimary"
+                app:strokeWidth="1.5dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:text="@string/game_fix_apply_and_launch"
-                    android:textColor="?attr/colorOnPrimary"
-                    android:textSize="13.5sp"
-                    android:textStyle="bold"
-                    app:backgroundTint="?attr/colorPrimary"
-                    app:cornerRadius="12dp"
-                    app:icon="@drawable/ic_settings"
-                    app:iconTint="?attr/colorOnPrimary"
-                    app:iconSize="18dp"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_skip_game_fix"
-                    style="@style/Widget.Material3.Button.TonalButton"
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_check_circle"
+                        app:tint="?attr/colorPrimary"
+                        android:layout_marginEnd="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/launch_mode_auto_fix"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/launch_mode_auto_fix_description"
+                            android:textSize="11.5sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="2dp" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_arrow_forward"
+                        app:tint="?attr/colorPrimary"
+                        android:layout_marginStart="8dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 2. Auto-Fix with Custom Settings Card (Plashka 2) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_launch_auto_fix_custom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="#A855F7"
+                app:strokeWidth="1.2dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:text="@string/game_fix_skip_and_launch"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp"
-                    app:cornerRadius="12dp"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_cancel_game_fix"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_tune"
+                        app:tint="#A855F7"
+                        android:layout_marginEnd="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/launch_mode_auto_fix_with_custom"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/launch_mode_auto_fix_with_custom_description"
+                            android:textSize="11.5sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="2dp" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_arrow_forward"
+                        app:tint="#A855F7"
+                        android:layout_marginStart="8dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 3. Custom Settings Card (Plashka 3) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_launch_custom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="#0284C7"
+                app:strokeWidth="1.2dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:text="@string/cancel"
-                    android:textColor="?attr/colorError"
-                    android:textSize="13sp"
-                    app:cornerRadius="12dp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
 
-            </LinearLayout>
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_controller"
+                        app:tint="#0284C7"
+                        android:layout_marginEnd="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/launch_mode_custom"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/launch_mode_custom_description"
+                            android:textSize="11.5sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="2dp" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_arrow_forward"
+                        app:tint="#0284C7"
+                        android:layout_marginStart="8dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 4. Global Settings Card (Plashka 4) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_launch_global"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_system"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        android:layout_marginEnd="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/launch_mode_global"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/launch_mode_global_description"
+                            android:textSize="11.5sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="2dp" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_arrow_forward"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        android:layout_marginStart="8dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 5. Cancel Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cancel_launch"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="@string/cancel"
+                android:textColor="?attr/colorError"
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
 
         </LinearLayout>
 

@@ -382,14 +382,14 @@ class GameAdapter(private val activity: AppCompatActivity) :
             }
 
             val checkGameFixAndLaunch: () -> Unit = {
-                if (GameFixDatabase.hasFix(game)) {
-                    val dialog = GameFixDialogFragment.newInstance(game) { wasApplied ->
-                        launch(wasApplied)
+                val dialog = GameFixDialogFragment.newInstance(game) { mode ->
+                    when (mode) {
+                        GameFixDatabase.LaunchMode.GLOBAL -> launch(false)
+                        GameFixDatabase.LaunchMode.CANCEL -> { /* User cancelled launch */ }
+                        else -> launch(true)
                     }
-                    dialog.show(activity.supportFragmentManager, GameFixDialogFragment.TAG)
-                } else {
-                    launch(false)
                 }
+                dialog.show(activity.supportFragmentManager, GameFixDialogFragment.TAG)
             }
 
             if (NativeLibrary.gameRequiresFirmware(game.programId) && !NativeLibrary.isFirmwareAvailable()) {
