@@ -98,25 +98,18 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         dialog?.window?.let { window ->
             val dm = resources.displayMetrics
             val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) {
-                (dm.widthPixels * 0.96).toInt()
-            } else {
-                (dm.widthPixels * 0.95).toInt()
-            }
-            val height = if (isLandscape) {
-                (dm.heightPixels * 0.95).toInt()
-            } else {
-                (dm.heightPixels * 0.88).toInt()
-            }
+            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else ViewGroup.LayoutParams.MATCH_PARENT
+            val height = ViewGroup.LayoutParams.MATCH_PARENT
             window.setLayout(width, height)
-            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             window.setGravity(Gravity.CENTER)
-            val lp = window.attributes
-            lp.width = width
-            lp.height = height
-            lp.gravity = Gravity.CENTER
-            window.attributes = lp
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
+    }
+
+    override fun onDismiss(dialog: android.content.DialogInterface) {
+        super.onDismiss(dialog)
+        activity?.let { ThemeHelper.applySystemBarsTheme(it.window, it) }
     }
 
     private fun detectAndDisplayHardwareInfo() {

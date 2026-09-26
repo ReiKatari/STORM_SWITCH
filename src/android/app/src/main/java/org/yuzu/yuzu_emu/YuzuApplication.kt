@@ -28,7 +28,7 @@ import org.yuzu.yuzu_emu.utils.ControllerNavigationGlobalHook
 import org.yuzu.yuzu_emu.utils.FullscreenHelper
 import java.util.Locale
 
-fun Context.getPublicFilesDir(): File = getExternalFilesDir(null) ?: filesDir
+fun Context.getPublicFilesDir(): File = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH")
 
 class YuzuApplication : Application() {
     private fun createNotificationChannels() {

@@ -407,6 +407,11 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         return m_load_result;
     }
 
+    if (Core::GameFixDatabase::AreFixesEnabled()) {
+        Core::GameFixDatabase::ApplyProfileDirectly(params.program_id);
+        m_system.ApplySettings();
+    }
+
     // Complete initialization.
     m_system.GPU().Start();
     m_system.GetCpuManager().OnGpuReady();

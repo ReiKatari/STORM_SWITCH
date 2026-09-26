@@ -3799,8 +3799,13 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
         QtCommon::system->HIDCore().ReloadInputDevices();
         QtCommon::system->ApplySettings();
-        UpdateStatusButtons();
 
+        if (Core::GameFixDatabase::AreFixesEnabled()) {
+            Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+            QtCommon::system->ApplySettings();
+            statusBar()->showMessage(tr("🛡️ Авто-исправление: Применено"), 8000);
+        }
+        UpdateStatusButtons();
     }
 
     Settings::LogSettings();

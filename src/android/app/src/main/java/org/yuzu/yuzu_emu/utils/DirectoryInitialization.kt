@@ -160,53 +160,45 @@ object DirectoryInitialization {
                     }
                 }
             }
-        } catch (_: Throwable) {}
+            if (sourceDir.canonicalPath.contains("dev.storm_switch/files") || sourceDir.canonicalPath.contains("Android/data/dev.storm_switch")) {
+                try {
+                    sourceDir.deleteRecursively()
+                } catch (t: Throwable) {}
+            }
+        } catch (t: Throwable) {}
     }
 
     private fun initializeInternalStorage() {
+        val stormExternalDir = File(Environment.getExternalStorageDirectory(), "STORM SWITCH")
         try {
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R || android.os.Environment.isExternalStorageManager()) {
-                val stormExternalDir = File(Environment.getExternalStorageDirectory(), "STORM SWITCH")
-                if (stormExternalDir.exists() || stormExternalDir.mkdirs()) {
-                    val subdirs = arrayOf(
-                        "config",
-                        "config/custom",
-                        "load",
-                        "nand",
-                        "nand/user/save",
-                        "sdmc",
-                        "cache",
-                        "amiibo",
-                        "cheats",
-                        "gpu_drivers",
-                        "crash_reports",
-                        "screenshots",
-                        "profiles",
-                        "keys"
-                    )
-                    for (subdir in subdirs) {
-                        File(stormExternalDir, subdir).mkdirs()
-                    }
-                    userPath = stormExternalDir.canonicalPath
-                    NativeLibrary.setAppDirectory(userPath!!)
-                    return
-                }
+            if (!stormExternalDir.exists()) {
+                stormExternalDir.mkdirs()
+            }
+            val subdirs = arrayOf(
+                "config",
+                "config/custom",
+                "load",
+                "nand",
+                "nand/user/save",
+                "sdmc",
+                "cache",
+                "amiibo",
+                "cheats",
+                "gpu_drivers",
+                "crash_reports",
+                "screenshots",
+                "profiles",
+                "keys"
+            )
+            for (subdir in subdirs) {
+                File(stormExternalDir, subdir).mkdirs()
             }
         } catch (e: Exception) {
             android.util.Log.e("STORM_SWITCH", "Failed to initialize /sdcard/STORM SWITCH/: ${e.message}")
         }
 
-        try {
-            val baseDir = YuzuApplication.appContext.getExternalFilesDir(null) ?: YuzuApplication.appContext.filesDir
-            userPath = baseDir.canonicalPath
-            NativeLibrary.setAppDirectory(userPath!!)
-        } catch (e: Exception) {
-            CrashHandler.logError(YuzuApplication.appContext, "DirectoryInitialization.initializeInternalStorage", e)
-            try {
-                userPath = YuzuApplication.appContext.filesDir.absolutePath
-                NativeLibrary.setAppDirectory(userPath!!)
-            } catch (ignored: Exception) {}
-        }
+        userPath = stormExternalDir.canonicalPath
+        NativeLibrary.setAppDirectory(userPath!!)
     }
 
     private fun migrateSettings() {

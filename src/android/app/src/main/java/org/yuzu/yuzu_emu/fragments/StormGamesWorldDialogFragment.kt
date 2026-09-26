@@ -232,6 +232,25 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             return
         }
         val tid = item.serialId.uppercase(Locale.ROOT)
+        val localCoverRes = when (tid) {
+            "058E630A38C70000" -> R.drawable.cover_diablo_hellfire
+            "9B485EB8" -> R.drawable.cover_gta_v
+            "010034B00E14C000" -> R.drawable.cover_tokyo_2020
+            else -> {
+                val lt = (item.title.ifEmpty { item.finalTitle }).lowercase(Locale.ROOT)
+                when {
+                    lt.contains("hellfire") || (lt.contains("diablo") && lt.contains("hell")) -> R.drawable.cover_diablo_hellfire
+                    lt.contains("grand theft auto v") || lt.contains("gta v") || lt.contains("gta 5") -> R.drawable.cover_gta_v
+                    lt.contains("tokyo 2020 olympics") || lt.contains("olympic games tokyo 2020") -> R.drawable.cover_tokyo_2020
+                    else -> null
+                }
+            }
+        }
+        if (localCoverRes != null) {
+            imageView.setImageResource(localCoverRes)
+            return
+        }
+
         val url = if (item.cover.isNotBlank() && item.cover.startsWith("http")) {
             item.cover
         } else {
@@ -245,6 +264,12 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
         } else {
             imageView.setImageResource(R.drawable.default_icon)
+            val isHomebrew = item.finalTitle.contains("Homebrew", ignoreCase = true) ||
+                             item.title.contains("Homebrew", ignoreCase = true)
+            if (isHomebrew) {
+                // Never query Nintendo Europe for homebrew ports
+                return
+            }
             val cleanTitle = (item.title.ifEmpty { item.finalTitle })
                 .replace(Regex("""\([^\)]*\)"""), "")
                 .replace(Regex("""\[[^\]]*\]"""), "")
@@ -257,7 +282,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                     try {
                         val searchUrl = "https://search.nintendo-europe.com/en/select?q=${Uri.encode(cleanTitle)}&fq=type:GAME&rows=1&wt=json"
-                        val req = Request.Builder().url(searchUrl).header("User-Agent", "STORM_SWITCH/9.1.0").build()
+                        val req = Request.Builder().url(searchUrl).header("User-Agent", "STORM_SWITCH/9.7.0").build()
                         val resp = sharedHttpClient.newCall(req).execute()
                         val body = resp.body?.string().orEmpty()
                         resp.close()
@@ -1449,6 +1474,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val dynamicCoverCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
         val SWITCH_CDN_ICONS = mapOf(
+            "058E630A38C70000" to "https://upload.wikimedia.org/wikipedia/en/d/d9/HellfireCoverSmall.jpg",
+            "9B485EB8" to "https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_V.png",
+            "010034B00E14C000" to "https://upload.wikimedia.org/wikipedia/en/8/80/Tokyo_2020_game_cover.png",
             "01000B900D8B0000" to "https://img-eshop.cdn.nintendo.net/i/1972ebb4a507e7d83c7d4592ae4702ebdc5bf3738659644bc29c243b144782ee.jpg",
             "010013F009B88000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_XenoCrisis_image500w.jpg",
             "010015100B514000" to "https://img-eshop.cdn.nintendo.net/i/bf2fca7eed5ad7ec96d03025907ea52c3efe168e02c8be96e868d8430a247a57.jpg",
@@ -1564,7 +1592,15 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val obj = jsonArr.optJSONObject(i) ?: continue
                     list.add(StormWorldGameItem.fromJson(obj))
                 }
-                list
+                list.filterNot { item ->
+                    val t = "${item.finalTitle} ${item.title} ${item.version}".lowercase(Locale.ROOT)
+                    t.contains("копия") || t.contains("рљропрёсџ") || t.contains("(copy)")
+                }.distinctBy { item ->
+                    val k = (item.serialId.ifEmpty { item.title }).uppercase(Locale.ROOT)
+                    val cleanVer = item.version.split(" ").firstOrNull().orEmpty()
+                    val langs = item.textLangs.sorted().joinToString(",")
+                    "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}"
+                }
             } catch (e: Exception) {
                 Log.error("[StormGamesWorld] Failed to read cached catalog: ${e.message}")
                 emptyList()
@@ -1670,8 +1706,17 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     }
                 }
 
-                // Fast catalog compilation: candidateList already filters games with valid sizes and files
                 val verifiedGames = candidateList
+                    .filterNot { item ->
+                        val t = "${item.finalTitle} ${item.title} ${item.version}".lowercase(Locale.ROOT)
+                        t.contains("копия") || t.contains("рљропрёсџ") || t.contains("(copy)")
+                    }
+                    .distinctBy { item ->
+                        val k = (item.serialId.ifEmpty { item.title }).uppercase(Locale.ROOT)
+                        val cleanVer = item.version.split(" ").firstOrNull().orEmpty()
+                        val langs = item.textLangs.sorted().joinToString(",")
+                        "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}"
+                    }
 
                 fun compareVers(v1: String, v2: String): Int {
                     val p1 = v1.removePrefix("v").removePrefix("V").split(".").mapNotNull { it.toIntOrNull() }

@@ -80,8 +80,8 @@ object GameFixDatabase {
             "Animal Well",
             "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
             "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-            "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-            "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+            "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию (Безопасно)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Сжатие ASTC: Без сжатия\n✓ Очистка VRAM: Отключено\n✓ Декодирование видео NVDEC: Гибридное\n✓ Быстрая память Fastmem: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ЦП: Авто\n✓ Режим «В самолете»: Включено\n✓ Конфигурация памяти: 4 ГБ DRAM",
+            "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default (Safe)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ VRAM Garbage Collection: Disabled\n✓ NVDEC Video Emulation: Hybrid\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ CPU Accuracy: Auto\n✓ Airplane Mode: Enabled\n✓ Memory Layout: 4GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -101,6 +101,7 @@ object GameFixDatabase {
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "true",
                 "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "3",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -371,17 +372,18 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100EC9010258000L,
             "Streets of Rage 4",
-            "• Зависание на Windows при запуске (0 FPS / дедлок сетевого сокета)\n• Вылет при старте на Android\n• Сбои синхронизации видеороликов NVDEC",
-            "• Boot hang on Windows (0 FPS network socket deadlock)\n• Crash on startup on Android\n• NVDEC video playback desync",
-            "✓ Режим полета: Отключено (устраняет дедлок сетевого опроса DotEmu)\n✓ Декодирование видео: NVDEC ГПУ\n✓ Синхронизация памяти ГПУ: Отключено (предотвращает зависание на 0 FPS)\n✓ Игнорирование сбоев памяти: Включено\n✓ Реактивная очистка: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено",
-            "✓ Airplane Mode: Disabled (Fixes DotEmu network deadlock)\n✓ NVDEC Emulation: GPU Video Decoding\n✓ Sync Memory Operations: Disabled (prevents 0 FPS hang)\n✓ Ignore Memory Aborts: Enabled\n✓ Reactive Flushing: Disabled\n✓ GPU Buffer Readback: Disabled",
+            "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
+            "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
-                "System\\airplane_mode" to "false",
-                "Network\\airplane_mode" to "false",
-                "Services\\airplane_mode" to "false",
-                "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\async_presentation" to "true",
+                "System\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
+                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\sync_memory_operations" to "false",
@@ -389,15 +391,14 @@ object GameFixDatabase {
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\use_disk_shader_cache" to "true",
-                "Renderer\\enable_compute_pipelines" to "false",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\astc_recompression" to "0",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\gpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\gpu_accuracy" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -405,17 +406,18 @@ object GameFixDatabase {
         GameFixProfile(
             0x010085800E33E000L,
             "Streets of Rage 4",
-            "• Зависание на Windows при запуске (0 FPS / дедлок сетевого сокета)\n• Вылет при старте на Android\n• Сбои синхронизации видеороликов NVDEC",
-            "• Boot hang on Windows (0 FPS network socket deadlock)\n• Crash on startup on Android\n• NVDEC video playback desync",
-            "✓ Режим полета: Отключено (устраняет дедлок сетевого опроса DotEmu)\n✓ Декодирование видео: NVDEC ГПУ\n✓ Синхронизация памяти ГПУ: Отключено (предотвращает зависание на 0 FPS)\n✓ Игнорирование сбоев памяти: Включено\n✓ Реактивная очистка: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено",
-            "✓ Airplane Mode: Disabled (Fixes DotEmu network deadlock)\n✓ NVDEC Emulation: GPU Video Decoding\n✓ Sync Memory Operations: Disabled (prevents 0 FPS hang)\n✓ Ignore Memory Aborts: Enabled\n✓ Reactive Flushing: Disabled\n✓ GPU Buffer Readback: Disabled",
+            "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
+            "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
-                "System\\airplane_mode" to "false",
-                "Network\\airplane_mode" to "false",
-                "Services\\airplane_mode" to "false",
-                "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\async_presentation" to "true",
+                "System\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
+                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\sync_memory_operations" to "false",
@@ -423,15 +425,14 @@ object GameFixDatabase {
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\use_disk_shader_cache" to "true",
-                "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\astc_recompression" to "0",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\gpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\gpu_accuracy" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -439,17 +440,18 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100BA700E340000L,
             "Streets of Rage 4",
-            "• Зависание на Windows при запуске (0 FPS / дедлок сетевого сокета)\n• Вылет при старте на Android\n• Сбои синхронизации видеороликов NVDEC",
-            "• Boot hang on Windows (0 FPS network socket deadlock)\n• Crash on startup on Android\n• NVDEC video playback desync",
-            "✓ Режим полета: Отключено (устраняет дедлок сетевого опроса DotEmu)\n✓ Декодирование видео: NVDEC ГПУ\n✓ Синхронизация памяти ГПУ: Отключено (предотвращает зависание на 0 FPS)\n✓ Игнорирование сбоев памяти: Включено\n✓ Реактивная очистка: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено",
-            "✓ Airplane Mode: Disabled (Fixes DotEmu network deadlock)\n✓ NVDEC Emulation: GPU Video Decoding\n✓ Sync Memory Operations: Disabled (prevents 0 FPS hang)\n✓ Ignore Memory Aborts: Enabled\n✓ Reactive Flushing: Disabled\n✓ GPU Buffer Readback: Disabled",
+            "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
+            "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
-                "System\\airplane_mode" to "false",
-                "Network\\airplane_mode" to "false",
-                "Services\\airplane_mode" to "false",
-                "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\async_presentation" to "true",
+                "System\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
+                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\sync_memory_operations" to "false",
@@ -457,15 +459,14 @@ object GameFixDatabase {
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\use_disk_shader_cache" to "true",
-                "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\astc_recompression" to "0",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\gpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\gpu_accuracy" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -473,17 +474,18 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100C60010228000L,
             "Streets of Rage 4",
-            "• Зависание на Windows при запуске (0 FPS / дедлок сетевого сокета)\n• Вылет при старте на Android\n• Сбои синхронизации видеороликов NVDEC",
-            "• Boot hang on Windows (0 FPS network socket deadlock)\n• Crash on startup on Android\n• NVDEC video playback desync",
-            "✓ Режим полета: Отключено (устраняет дедлок сетевого опроса DotEmu)\n✓ Декодирование видео: NVDEC ГПУ\n✓ Синхронизация памяти ГПУ: Отключено (предотвращает зависание на 0 FPS)\n✓ Игнорирование сбоев памяти: Включено\n✓ Реактивная очистка: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено",
-            "✓ Airplane Mode: Disabled (Fixes DotEmu network deadlock)\n✓ NVDEC Emulation: GPU Video Decoding\n✓ Sync Memory Operations: Disabled (prevents 0 FPS hang)\n✓ Ignore Memory Aborts: Enabled\n✓ Reactive Flushing: Disabled\n✓ GPU Buffer Readback: Disabled",
+            "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
+            "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
-                "System\\airplane_mode" to "false",
-                "Network\\airplane_mode" to "false",
-                "Services\\airplane_mode" to "false",
-                "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\async_presentation" to "true",
+                "System\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
+                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\sync_memory_operations" to "false",
@@ -491,15 +493,14 @@ object GameFixDatabase {
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\use_disk_shader_cache" to "true",
-                "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\astc_recompression" to "0",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\gpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\gpu_accuracy" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -3825,15 +3826,36 @@ object GameFixDatabase {
         GameFixProfile(
             0x01002EF01A316000L,
             "Brotato",
-            "• Просадки FPS при спавне волн врагов\n• Микрофризы расчёта физики снарядов",
-            "• Framerate drops during massive horde waves\n• Projectile physics calculation micro-stutters",
-            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+            "• Просадки FPS при спавне тысяч снарядов и врагов на поздних волнах (15-20)\n• Микрофризы рендеринга Godot Engine\n• Задержка отклика ввода",
+            "• Framerate drops during massive bullet/enemy swarms on waves 15-20\n• Godot Engine pipeline stalls\n• Input latency during intense combat",
+            "✓ Точность ГПУ: Обычная (идеальные 60 FPS)\n✓ Фиксация разрешения DRS: Отключено\n✓ Реактивная очистка: Отключено\n✓ Асинхронный вывод: Включено\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию (Безопасно)\n✓ Барьеры обратной связи: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Сжатие ASTC: Без сжатия\n✓ Очистка VRAM: Отключено\n✓ Декодирование видео NVDEC: Гибридное\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ЦП: Авто\n✓ Режим «В самолете»: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
+            "✓ GPU Accuracy: Normal (Perfect 60 FPS)\n✓ DRS Resolution Lock: Disabled\n✓ Reactive Flushing: Disabled\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default (Safe)\n✓ Barrier Feedback Loops: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ VRAM Garbage Collection: Disabled\n✓ NVDEC Video Emulation: Hybrid\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ CPU Accuracy: Auto\n✓ Airplane Mode: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
-                "System\\memory_layout_mode" to "1",
-                "Cpu\\cpuopt_fastmem" to "true",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\barrier_feedback_loops" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\gpu_accuracy" to "0"
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "3",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
             )
         ),
         GameFixProfile(
@@ -3841,13 +3863,34 @@ object GameFixDatabase {
             "Vampire Survivors",
             "• Микрофризы и просадки кадров на 25+ минуте при тысячах спрайтов на экране\n• Утечки памяти движка Phaser",
             "• Micro-stutters and framerate drops at 25+ min with thousands of sprites\n• Phaser engine memory leaks",
-            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: Normal",
+            "✓ Точность ГПУ: Обычная (стабильные 60 FPS)\n✓ Фиксация разрешения DRS: Отключено\n✓ Реактивная очистка: Отключено\n✓ Асинхронный вывод: Включено\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию (Безопасно)\n✓ Барьеры обратной связи: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Сжатие ASTC: Без сжатия\n✓ Очистка VRAM: Отключено\n✓ Декодирование видео NVDEC: Гибридное\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ЦП: Авто\n✓ Режим «В самолете»: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
+            "✓ GPU Accuracy: Normal (Stable 60 FPS)\n✓ DRS Resolution Lock: Disabled\n✓ Reactive Flushing: Disabled\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default (Safe)\n✓ Barrier Feedback Loops: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ VRAM Garbage Collection: Disabled\n✓ NVDEC Video Emulation: Hybrid\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ CPU Accuracy: Auto\n✓ Airplane Mode: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
-                "System\\memory_layout_mode" to "1",
-                "Cpu\\cpuopt_fastmem" to "true",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\barrier_feedback_loops" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\gpu_accuracy" to "0"
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "3",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
             )
         ),
         GameFixProfile(
@@ -3855,13 +3898,34 @@ object GameFixDatabase {
             "Dave the Diver",
             "• Просадки кадровой частоты во время ночной охоты и шторма\n• Утечки VRAM в суши-баре Bancho Sushi",
             "• Framerate drops during stormy dives and night hunting\n• VRAM memory spikes in Bancho Sushi restaurant",
-            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+            "✓ Точность ГПУ: Высокая (стабильная графика)\n✓ Фиксация разрешения DRS: Отключено\n✓ Реактивная очистка: Отключено\n✓ Асинхронный вывод: Включено\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию (Безопасно)\n✓ Барьеры обратной связи: Включено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Сжатие ASTC: Без сжатия\n✓ Очистка VRAM: Отключено\n✓ Декодирование видео NVDEC: Гибридное\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ЦП: Авто\n✓ Режим «В самолете»: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
+            "✓ GPU Accuracy: High (Stable graphics)\n✓ DRS Resolution Lock: Disabled\n✓ Reactive Flushing: Disabled\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default (Safe)\n✓ Barrier Feedback Loops: Enabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ VRAM Garbage Collection: Disabled\n✓ NVDEC Video Emulation: Hybrid\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ CPU Accuracy: Auto\n✓ Airplane Mode: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
-                "System\\memory_layout_mode" to "1",
                 "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "3",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
             )
         ),
         GameFixProfile(
@@ -4329,23 +4393,33 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100AC300919A000L,
             "Streets of Rage 4",
-            "• Зависание на вступительных видеороликах при декодировании NVDEC\n• Просадки кадровой частоты (4 FPS / 200 ms) из-за обратного чтения буферов\n• Рассинхронизация буфера презентации",
-            "• Intro NVDEC video stream freeze\n• Frame drops (4 FPS / 200 ms) caused by buffer readback\n• Presentation buffer desync and low framerate",
-            "✓ Точность ЦП: Авто (JIT-компилятор Dynarmic)\n✓ Декодирование видео NVDEC: Гибридный (аппаратное декодирование на ГПУ с поддержкой ЦП)\n✓ Асинхронный вывод: Включено\n✓ Синхронизация операций памяти: Включено (устраняет разбалансировку буферов nvmap)\n✓ Реактивный сброс памяти: Включено (стабильный кэш поверхностей)\n✓ Режим «В самолете»: Включено\n✓ Быстрая память: Включено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)",
-            "✓ CPU Accuracy: Auto (Dynarmic JIT)\n✓ NVDEC Video Emulation: Hybrid (GPU decoding with CPU fallback)\n✓ Async Presentation: Enabled\n✓ Sync Memory Operations: Enabled (fixes nvmap buffer desync)\n✓ Reactive Flushing: Enabled\n✓ Airplane Mode: Enabled\n✓ Fastmem: Enabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)",
+            "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
+            "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
-                "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\nvdec_emulation" to "3",
-                "Renderer\\async_presentation" to "true",
+                "System\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
+                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "true",
-                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\gpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "System\\airplane_mode" to "true",
+                "Cpu\\cpu_accuracy" to "0",
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
@@ -5301,7 +5375,7 @@ object GameFixDatabase {
                 "audio_sink_id", "vsync_mode", "use_docked_mode"
             )
 
-            for ((fullKey, value) in fix.settingsMap) {
+            for ((fullKey, value) in getFullSettingsMap(fix)) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") || fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") || fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) { continue }
                 val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
                 val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
@@ -5398,7 +5472,7 @@ object GameFixDatabase {
                     sections.getOrPut(currentSection) { mutableMapOf() }[k] = v
                 }
             }
-            for ((fullKey, fixValue) in fix.settingsMap) {
+            for ((fullKey, fixValue) in getFullSettingsMap(fix)) {
                 val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
                 val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
                 val section = sections[sectionName] ?: continue
@@ -5409,6 +5483,119 @@ object GameFixDatabase {
             }
         } catch (_: Exception) {}
         return overrides
+    }
+
+    fun getFullSettingsMap(profile: GameFixProfile): Map<String, String> {
+        val fullMap = mutableMapOf(
+            "Renderer\\gpu_accuracy" to "0",
+            "Renderer\\vram_garbage_collection" to "false",
+            "Renderer\\gpu_fence_behavior" to "0",
+            "Renderer\\dma_accuracy" to "0",
+            "Renderer\\async_presentation" to "true",
+            "Renderer\\drs_resolution_lock" to "false",
+            "Renderer\\barrier_feedback_loops" to "false",
+            "Renderer\\use_reactive_flushing" to "false",
+            "Renderer\\use_asynchronous_shaders" to "true",
+            "Renderer\\scaling_filter" to "1",
+            "Renderer\\anti_aliasing" to "0",
+            "Renderer\\dyna_state" to "1",
+            "Renderer\\enable_gpu_buffer_readback" to "false",
+            "Renderer\\enable_compute_pipelines" to "true",
+            "Renderer\\sync_memory_operations" to "false",
+            "Renderer\\use_fast_gpu_time" to "true",
+            "Renderer\\early_release_fences" to "true",
+            "Renderer\\astc_recompression" to "0",
+            "Renderer\\nvdec_emulation" to "3",
+            "Cpu\\cpuopt_fastmem" to "true",
+            "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+            "Cpu\\cpu_accuracy" to "0",
+            "System\\airplane_mode" to "true",
+            "Core\\memory_layout_mode" to "0",
+            "System\\memory_layout_mode" to "0"
+        )
+        fullMap.putAll(profile.settingsMap)
+        return fullMap
+    }
+
+    fun getFormattedFixes(profile: GameFixProfile, isRu: Boolean): String {
+        val map = getFullSettingsMap(profile)
+        val lines = mutableListOf<String>()
+
+        val gpuAcc = map["Renderer\\gpu_accuracy"] ?: "0"
+        if (isRu) {
+            lines.add(if (gpuAcc == "1") "✓ Точность ГПУ: Высокая (стабильная геометрия и текстуры)" else "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)")
+            lines.add("✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)")
+            lines.add("✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)")
+            lines.add("✓ Асинхронный вывод: Включено (плавные 60 FPS)")
+            lines.add("✓ Барьеры ГПУ: По умолчанию")
+            val dma = map["Renderer\\dma_accuracy"] ?: "0"
+            lines.add("✓ Точность DMA: " + (if (dma == "1") "Нормальная" else "По умолчанию (Безопасно)"))
+            val bfl = map["Renderer\\barrier_feedback_loops"] ?: "false"
+            lines.add(if (bfl == "true" || bfl == "1") "✓ Барьеры обратной связи: Включено (корректные тени и эффекты)" else "✓ Барьеры обратной связи: Отключено (устранение черных тайлов)")
+            lines.add("✓ Динамическое состояние: Базовое (EDS 1)")
+            lines.add("✓ Сглаживание: Отключено (сохранение пиксель-арта и четкости)")
+            lines.add("✓ Фильтр масштабирования: Билинейный")
+            lines.add("✓ Асинхронные шейдеры: Включено (плавный геймплей)")
+            lines.add("✓ Обратное чтение буферов ГПУ: Отключено")
+            lines.add("✓ Вычислительные конвейеры: Включено")
+            lines.add("✓ Синхронизация памяти ГПУ: Отключено")
+            val fastGpu = map["Renderer\\use_fast_gpu_time"] ?: "true"
+            lines.add(if (fastGpu == "false" || fastGpu == "0") "✓ Быстрое время ГПУ: Отключено (синхронизация кадров)" else "✓ Быстрое время ГПУ: Включено")
+            val earlyFences = map["Renderer\\early_release_fences"] ?: "true"
+            lines.add(if (earlyFences == "false" || earlyFences == "0") "✓ Раннее освобождение барьеров: Отключено" else "✓ Раннее освобождение барьеров: Включено")
+            lines.add("✓ Сжатие ASTC: Без сжатия")
+            lines.add("✓ Очистка VRAM: Отключено (устраняет микрофризы)")
+            val nvdec = map["Renderer\\nvdec_emulation"] ?: "3"
+            lines.add("✓ Декодирование видео NVDEC: " + when (nvdec) {
+                "1" -> "ЦП (FFmpeg)"
+                "2" -> "ГПУ (аппаратное)"
+                else -> "Гибридное (Hybrid 3)"
+            })
+            lines.add("✓ Быстрая память Fastmem: Включено")
+            lines.add("✓ Игнорирование сбоев памяти: Включено")
+            lines.add("✓ Точность ЦП: Авто")
+            val airplane = map["System\\airplane_mode"] ?: "true"
+            lines.add(if (airplane == "false" || airplane == "0") "✓ Режим «В самолете»: Отключено (сеть активна)" else "✓ Режим «В самолете»: Включено")
+            val mem = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
+            lines.add("✓ Конфигурация памяти: " + (if (mem == "1") "6 ГБ DRAM" else "4 ГБ DRAM"))
+        } else {
+            lines.add(if (gpuAcc == "1") "✓ GPU Accuracy: High (Stable geometry and textures)" else "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)")
+            lines.add("✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)")
+            lines.add("✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)")
+            lines.add("✓ Async Presentation: Enabled (Smooth 60 FPS)")
+            lines.add("✓ GPU Fence Behavior: Default")
+            val dma = map["Renderer\\dma_accuracy"] ?: "0"
+            lines.add("✓ DMA Accuracy: " + (if (dma == "1") "Normal" else "Default (Safe)"))
+            val bfl = map["Renderer\\barrier_feedback_loops"] ?: "false"
+            lines.add(if (bfl == "true" || bfl == "1") "✓ Barrier Feedback Loops: Enabled (Correct shadows and effects)" else "✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)")
+            lines.add("✓ Dynamic State: Basic (EDS 1)")
+            lines.add("✓ Anti-Aliasing: None (Pixel-art and clarity preservation)")
+            lines.add("✓ Scaling Filter: Bilinear")
+            lines.add("✓ Async Shaders: Enabled (Smooth gameplay)")
+            lines.add("✓ GPU Buffer Readback: Disabled")
+            lines.add("✓ Compute Pipelines: Enabled")
+            lines.add("✓ Sync Memory Operations: Disabled")
+            val fastGpu = map["Renderer\\use_fast_gpu_time"] ?: "true"
+            lines.add(if (fastGpu == "false" || fastGpu == "0") "✓ Fast GPU Time: Disabled (Frame pacing)" else "✓ Fast GPU Time: Enabled")
+            val earlyFences = map["Renderer\\early_release_fences"] ?: "true"
+            lines.add(if (earlyFences == "false" || earlyFences == "0") "✓ Early Release Fences: Disabled" else "✓ Early Release Fences: Enabled")
+            lines.add("✓ ASTC Recompression: Uncompressed")
+            lines.add("✓ VRAM Garbage Collection: Disabled (Prevents micro-stutters)")
+            val nvdec = map["Renderer\\nvdec_emulation"] ?: "3"
+            lines.add("✓ NVDEC Video Emulation: " + when (nvdec) {
+                "1" -> "CPU (FFmpeg)"
+                "2" -> "GPU"
+                else -> "Hybrid (Hybrid 3)"
+            })
+            lines.add("✓ Fastmem: Enabled")
+            lines.add("✓ Ignore Memory Aborts: Enabled")
+            lines.add("✓ CPU Accuracy: Auto")
+            val airplane = map["System\\airplane_mode"] ?: "true"
+            lines.add(if (airplane == "false" || airplane == "0") "✓ Airplane Mode: Disabled (Network active)" else "✓ Airplane Mode: Enabled")
+            val mem = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
+            lines.add("✓ Memory Layout: " + (if (mem == "1") "6GB DRAM" else "4GB DRAM"))
+        }
+        return lines.joinToString("\n")
     }
 
     fun applyFix(game: Game, forceOverwrite: Boolean = false): Boolean {
@@ -5426,7 +5613,7 @@ object GameFixDatabase {
                 val sb = StringBuilder()
                 sb.append(TEMPORARY_FIX_HEADER).append(" - Auto-generated by STORM SWITCH GameFix\n\n")
                 val sections = mutableMapOf<String, MutableMap<String, String>>()
-                for ((fullKey, value) in fix.settingsMap) {
+                for ((fullKey, value) in getFullSettingsMap(fix)) {
                     if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                         fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
                         fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode") ||
