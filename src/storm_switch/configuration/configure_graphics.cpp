@@ -129,6 +129,9 @@ ConfigureGraphics::ConfigureGraphics(
 }
 
 void ConfigureGraphics::PopulateVSyncModeSelection(bool use_setting) {
+    if (!vsync_mode_combobox) {
+        return;
+    }
     const Settings::RendererBackend backend{GetCurrentGraphicsBackend()};
     if (backend == Settings::RendererBackend::Null) {
         vsync_mode_combobox->setEnabled(false);
@@ -136,19 +139,20 @@ void ConfigureGraphics::PopulateVSyncModeSelection(bool use_setting) {
     }
     vsync_mode_combobox->setEnabled(true);
 
-    const int current_index = //< current selected vsync mode from combobox
-        vsync_mode_combobox->currentIndex();
-    const auto current_mode = //< current selected vsync mode as a VkPresentModeKHR
-        current_index == -1 || use_setting
+    const int current_index = vsync_mode_combobox->currentIndex();
+    const auto current_mode =
+        current_index < 0 || static_cast<size_t>(current_index) >= vsync_mode_combobox_enum_map.size() || use_setting
             ? VSyncSettingToMode(Settings::values.vsync_mode.GetValue())
             : vsync_mode_combobox_enum_map[current_index];
     int index{};
-    const int device{vulkan_device_combobox->currentIndex()}; //< current selected Vulkan device
+    const int device{vulkan_device_combobox ? vulkan_device_combobox->currentIndex() : -1};
 
-    const auto& present_modes = //< relevant vector of present modes for the selected device or API
-        backend == Settings::RendererBackend::Vulkan && device > -1 ? device_present_modes[device]
-                                                                    : default_present_modes;
+    const auto& present_modes =
+        backend == Settings::RendererBackend::Vulkan && device > -1 && static_cast<size_t>(device) < device_present_modes.size()
+            ? device_present_modes[device]
+            : default_present_modes;
 
+    const bool blocked = vsync_mode_combobox->blockSignals(true);
     vsync_mode_combobox->clear();
     vsync_mode_combobox_enum_map.clear();
     vsync_mode_combobox_enum_map.reserve(present_modes.size());
@@ -165,8 +169,9 @@ void ConfigureGraphics::PopulateVSyncModeSelection(bool use_setting) {
         }
         index++;
     }
+    vsync_mode_combobox->blockSignals(blocked);
 
-    if (!Settings::IsConfiguringGlobal()) {
+    if (!Settings::IsConfiguringGlobal() && vsync_restore_global_button) {
         vsync_restore_global_button->setVisible(!Settings::values.vsync_mode.UsingGlobal());
 
         const Settings::VSyncMode global_vsync_mode = Settings::values.vsync_mode.GetValue(true);
@@ -182,12 +187,20 @@ void ConfigureGraphics::PopulateVSyncModeSelection(bool use_setting) {
 
 void ConfigureGraphics::UpdateVsyncSetting() const {
     const Settings::RendererBackend backend{GetCurrentGraphicsBackend()};
-    if (backend == Settings::RendererBackend::Null) {
+    if (backend == Settings::RendererBackend::Null || !vsync_mode_combobox) {
         return;
     }
 
-    const auto mode = vsync_mode_combobox_enum_map[vsync_mode_combobox->currentIndex()];
+    const int current_index = vsync_mode_combobox->currentIndex();
+    if (current_index < 0 || static_cast<size_t>(current_index) >= vsync_mode_combobox_enum_map.size()) {
+        return;
+    }
+
+    const auto mode = vsync_mode_combobox_enum_map[current_index];
     const auto vsync_mode = PresentModeToSetting(mode);
+    if (Settings::IsConfiguringGlobal()) {
+        Settings::values.vsync_mode.SetGlobal(true);
+    }
     Settings::values.vsync_mode.SetValue(vsync_mode);
 }
 
@@ -403,11 +416,14 @@ const QString ConfigureGraphics::TranslateVSyncMode(VkPresentModeKHR mode,
 }
 
 int ConfigureGraphics::FindIndex(u32 enumeration, int value) const {
-    for (u32 i = 0; enumeration < combobox_translations.size() &&
-                    i < combobox_translations.at(enumeration).size();
-         i++)
-        if (combobox_translations.at(enumeration)[i].first == u32(value))
-            return i;
+    const auto it = combobox_translations.find(enumeration);
+    if (it != combobox_translations.end()) {
+        for (u32 i = 0; i < it->second.size(); i++) {
+            if (it->second[i].first == u32(value)) {
+                return i;
+            }
+        }
+    }
     return -1;
 }
 
@@ -422,17 +438,19 @@ void ConfigureGraphics::ApplyConfiguration() {
     Settings::values.vulkan_device.SetGlobal(true);
     auto const index = Settings::EnumMetadata<Settings::RendererBackend>::Index();
     if (Settings::IsConfiguringGlobal() ||
-        (!Settings::IsConfiguringGlobal() && api_restore_global_button->isEnabled())) {
-        auto backend =
-            index >= combobox_translations.size() ||
-                    size_t(api_combobox->currentIndex()) >= combobox_translations.at(index).size()
-                ? Settings::values.renderer_backend.GetValue()
-                : Settings::RendererBackend(
-                      combobox_translations.at(index)[api_combobox->currentIndex()].first);
+        (!Settings::IsConfiguringGlobal() && api_restore_global_button && api_restore_global_button->isEnabled())) {
+        Settings::RendererBackend backend = Settings::values.renderer_backend.GetValue();
+        const auto it = combobox_translations.find(index);
+        if (it != combobox_translations.end() && api_combobox && api_combobox->currentIndex() >= 0 &&
+            static_cast<size_t>(api_combobox->currentIndex()) < it->second.size()) {
+            backend = Settings::RendererBackend(it->second[api_combobox->currentIndex()].first);
+        }
         switch (backend) {
         case Settings::RendererBackend::Vulkan:
             Settings::values.vulkan_device.SetGlobal(Settings::IsConfiguringGlobal());
-            Settings::values.vulkan_device.SetValue(vulkan_device_combobox->currentIndex());
+            if (vulkan_device_combobox && vulkan_device_combobox->currentIndex() >= 0) {
+                Settings::values.vulkan_device.SetValue(vulkan_device_combobox->currentIndex());
+            }
             break;
         case Settings::RendererBackend::OpenGL_GLSL:
         case Settings::RendererBackend::OpenGL_SPIRV:
@@ -523,13 +541,14 @@ void ConfigureGraphics::RetrieveVulkanDevices() {
 Settings::RendererBackend ConfigureGraphics::GetCurrentGraphicsBackend() const {
     const auto selected_backend = [&]() {
         auto const index = Settings::EnumMetadata<Settings::RendererBackend>::Index();
-        if (!Settings::IsConfiguringGlobal() && !api_restore_global_button->isEnabled())
+        if (!Settings::IsConfiguringGlobal() && api_restore_global_button && !api_restore_global_button->isEnabled())
             return Settings::values.renderer_backend.GetValue(true);
-        return index >= combobox_translations.size() || size_t(api_combobox->currentIndex()) >=
-                                                            combobox_translations.at(index).size()
-                   ? Settings::values.renderer_backend.GetValue()
-                   : Settings::RendererBackend(
-                         combobox_translations.at(index).at(api_combobox->currentIndex()).first);
+        const auto it = combobox_translations.find(index);
+        if (it != combobox_translations.end() && api_combobox && api_combobox->currentIndex() >= 0 &&
+            static_cast<size_t>(api_combobox->currentIndex()) < it->second.size()) {
+            return Settings::RendererBackend(it->second[api_combobox->currentIndex()].first);
+        }
+        return Settings::values.renderer_backend.GetValue();
     }();
 
     if (selected_backend == Settings::RendererBackend::Vulkan &&

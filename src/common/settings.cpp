@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
@@ -31,6 +31,13 @@
 #include <unistd.h>
 #endif
 
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
+
 namespace Settings {
 
 // Clang 14 and earlier have errors when explicitly instantiating these classes
@@ -52,8 +59,10 @@ SWITCHABLE(AstcRecompression, true);
 SWITCHABLE(AudioMode, true);
 SWITCHABLE(CpuBackend, true);
 SWITCHABLE(CpuAccuracy, true);
+SWITCHABLE(CpuClock, true);
 SWITCHABLE(FullscreenMode, true);
 SWITCHABLE(GpuAccuracy, true);
+SWITCHABLE(GpuClock, true);
 SWITCHABLE(Language, true);
 SWITCHABLE(MemoryLayout, true);
 SWITCHABLE(NvdecEmulation, false);
@@ -81,6 +90,91 @@ SWITCHABLE(ConfirmStop, true);
 #endif
 
 Values values;
+
+Language GetDefaultSystemLanguage() {
+#ifdef _WIN32
+    LANGID lang_id = GetUserDefaultUILanguage();
+    WORD primary_lang = PRIMARYLANGID(lang_id);
+    switch (primary_lang) {
+    case LANG_JAPANESE:
+        return Language::Japanese;
+    case LANG_ENGLISH:
+        if (SUBLANGID(lang_id) == SUBLANG_ENGLISH_UK) {
+            return Language::EnglishBritish;
+        }
+        return Language::EnglishAmerican;
+    case LANG_FRENCH:
+        if (SUBLANGID(lang_id) == SUBLANG_FRENCH_CANADIAN) {
+            return Language::FrenchCanadian;
+        }
+        return Language::French;
+    case LANG_GERMAN:
+        return Language::German;
+    case LANG_ITALIAN:
+        return Language::Italian;
+    case LANG_SPANISH:
+        if (SUBLANGID(lang_id) != SUBLANG_SPANISH_MODERN && SUBLANGID(lang_id) != SUBLANG_SPANISH) {
+            return Language::SpanishLatin;
+        }
+        return Language::Spanish;
+    case LANG_CHINESE:
+        if (SUBLANGID(lang_id) == SUBLANG_CHINESE_TRADITIONAL || SUBLANGID(lang_id) == SUBLANG_CHINESE_HONGKONG) {
+            return Language::ChineseTraditional;
+        }
+        return Language::ChineseSimplified;
+    case LANG_KOREAN:
+        return Language::Korean;
+    case LANG_DUTCH:
+        return Language::Dutch;
+    case LANG_PORTUGUESE:
+        if (SUBLANGID(lang_id) == SUBLANG_PORTUGUESE_BRAZILIAN) {
+            return Language::PortugueseBrazilian;
+        }
+        return Language::Portuguese;
+    case LANG_RUSSIAN:
+    case LANG_BELARUSIAN:
+    case LANG_UKRAINIAN:
+    case LANG_KAZAK:
+        return Language::Russian;
+    case LANG_POLISH:
+        return Language::Polish;
+    case LANG_THAI:
+        return Language::Thai;
+    default:
+        return Language::EnglishAmerican;
+    }
+#else
+    const char* lang_env = std::getenv("LC_ALL");
+    if (!lang_env || !*lang_env) {
+        lang_env = std::getenv("LANG");
+    }
+    if (lang_env) {
+        std::string_view lang_str(lang_env);
+        if (lang_str.starts_with("ru") || lang_str.starts_with("be") || lang_str.starts_with("uk")) {
+            return Language::Russian;
+        } else if (lang_str.starts_with("de")) {
+            return Language::German;
+        } else if (lang_str.starts_with("fr")) {
+            return Language::French;
+        } else if (lang_str.starts_with("it")) {
+            return Language::Italian;
+        } else if (lang_str.starts_with("es")) {
+            return Language::Spanish;
+        } else if (lang_str.starts_with("zh")) {
+            return Language::ChineseSimplified;
+        } else if (lang_str.starts_with("ja")) {
+            return Language::Japanese;
+        } else if (lang_str.starts_with("ko")) {
+            return Language::Korean;
+        } else if (lang_str.starts_with("pt")) {
+            return Language::Portuguese;
+        } else if (lang_str.starts_with("pl")) {
+            return Language::Polish;
+        }
+    }
+    return Language::EnglishAmerican;
+#endif
+}
 
 std::string GetTimeZoneString(TimeZone time_zone) {
     const auto time_zone_index = static_cast<std::size_t>(time_zone);

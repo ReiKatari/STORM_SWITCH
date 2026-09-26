@@ -73,8 +73,10 @@ SWITCHABLE(AstcRecompression, true);
 SWITCHABLE(AudioMode, true);
 SWITCHABLE(CpuBackend, true);
 SWITCHABLE(CpuAccuracy, true);
+SWITCHABLE(CpuClock, true);
 SWITCHABLE(FullscreenMode, true);
 SWITCHABLE(GpuAccuracy, true);
+SWITCHABLE(GpuClock, true);
 SWITCHABLE(Language, true);
 SWITCHABLE(MemoryLayout, true);
 SWITCHABLE(NvdecEmulation, false);
@@ -137,6 +139,8 @@ struct TouchFromButtonMap {
     std::string name;
     std::vector<std::string> buttons;
 };
+
+Language GetDefaultSystemLanguage();
 
 struct Values {
     Linkage linkage{};
@@ -264,13 +268,13 @@ struct Values {
                                                     Category::Cpu};
     SwitchableSetting<CpuAccuracy, true> cpu_accuracy{linkage, CpuAccuracy::Auto,
                                                       "cpu_accuracy", Category::Cpu};
-    SwitchableSetting<CpuClock> cpu_clock{linkage,
-                                              CpuClock::Normal,
-                                              "fast_cpu_time",
-                                              Category::System,
-                                              Specialization::Default,
-                                              true,
-                                              true};
+    SwitchableSetting<CpuClock, true> cpu_clock{linkage,
+                                                CpuClock::Normal,
+                                                "cpu_clock",
+                                                Category::Cpu,
+                                                Specialization::Default,
+                                                true,
+                                                true};
 
     SwitchableSetting<bool> use_custom_cpu_ticks{linkage,
                                                  false,
@@ -663,13 +667,13 @@ struct Values {
                                                   true};
 
     // Renderer Hacks //
-    SwitchableSetting<GpuClock> gpu_clock{linkage,
-                                          GpuClock::Normal,
-                                          "fast_gpu_time",
-                                          Category::System,
-                                          Specialization::Default,
-                                          true,
-                                          true};
+    SwitchableSetting<GpuClock, true> gpu_clock{linkage,
+                                                GpuClock::Normal,
+                                                "gpu_clock",
+                                                Category::RendererAdvanced,
+                                                Specialization::Default,
+                                                true,
+                                                true};
 
     SwitchableSetting<bool> skip_cpu_inner_invalidation{linkage,
                                                         false,
@@ -767,10 +771,10 @@ struct Values {
 
     // System
     SwitchableSetting<Language, true> language_index{linkage,
-                                                     Language::Russian,
+                                                     GetDefaultSystemLanguage(),
                                                      "language_index",
                                                      Category::System};
-    SwitchableSetting<Region, true> region_index{linkage, Region::Europe, "region_index", Category::System};
+    SwitchableSetting<Region, true> region_index{linkage, Region::Usa, "region_index", Category::System};
     SwitchableSetting<TimeZone, true> time_zone_index{linkage, TimeZone::Auto, "time_zone_index", Category::System};
     Setting<u32> serial_battery{linkage, 0, "serial_battery", Category::Debugging};
     Setting<u32> serial_unit{linkage, 0, "serial_unit", Category::Debugging};

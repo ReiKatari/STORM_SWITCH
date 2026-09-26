@@ -79,12 +79,14 @@ void ReloadAllActiveWidgets() {
         return;
     }
     s_is_reloading = true;
-    for (auto* w : s_active_widgets) {
+    auto active_copy = s_active_widgets;
+    for (auto* w : active_copy) {
         if (w) {
             w->ReloadFromSetting();
         }
     }
-    for (const auto& [id, cb] : s_reload_callbacks) {
+    auto callbacks_copy = s_reload_callbacks;
+    for (const auto& [id, cb] : callbacks_copy) {
         if (cb) {
             cb();
         }
@@ -93,7 +95,8 @@ void ReloadAllActiveWidgets() {
 }
 
 void RetranslateAllActiveWidgets() {
-    for (auto* w : s_active_widgets) {
+    auto active_copy = s_active_widgets;
+    for (auto* w : active_copy) {
         if (w) {
             w->RetranslateUI();
         }
@@ -1014,8 +1017,6 @@ Widget::Widget(Settings::BasicSetting* setting_, const TranslationMap& translati
     : QWidget(parent_), parent{parent_}, translations{translations_},
       combobox_enumerations{combobox_translations_}, setting{*setting_}, apply_funcs{apply_funcs_},
       runtime_lock{runtime_lock_} {
-    s_active_widgets.push_back(this);
-
     if (!Settings::IsConfiguringGlobal() && !setting.Switchable()) {
         LOG_DEBUG(Frontend, "\"{}\" is not switchable, skipping...", setting.GetLabel());
         return;
@@ -1061,6 +1062,8 @@ Widget::Widget(Settings::BasicSetting* setting_, const TranslationMap& translati
     this->setEnabled(enable);
 
     this->setToolTip(tooltip);
+
+    s_active_widgets.push_back(this);
 }
 
 Builder::Builder(QWidget* parent_, bool runtime_lock_)

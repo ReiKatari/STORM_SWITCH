@@ -474,7 +474,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "9.6.0";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "9.8.0";
     if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
                  UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
@@ -5934,6 +5934,9 @@ void MainWindow::OnConfigure() {
 #endif
 
     Settings::SetConfiguringGlobal(true);
+    if (!emulation_running) {
+        Settings::RestoreGlobalState(false);
+    }
     ConfigureDialog configure_dialog(this, hotkey_registry, input_subsystem.get(),
                                      vk_device_records, *QtCommon::system,
                                      !multiplayer_state->IsHostingPublicRoom());
@@ -5969,7 +5972,6 @@ void MainWindow::OnConfigure() {
         }
         config->SaveAllValues();
         UpdateStatusButtons();
-        ConfigurationShared::ReloadAllActiveWidgets();
     } else if (UISettings::values.reset_to_defaults) {
         LOG_INFO(Frontend, "Resetting all settings to defaults");
         if (!Common::FS::RemoveFile(config->GetConfigFilePath())) {
@@ -6034,7 +6036,6 @@ void MainWindow::OnConfigure() {
 
     config->SaveAllValues();
     UpdateStatusButtons();
-    ConfigurationShared::ReloadAllActiveWidgets();
 
     if ((UISettings::values.hide_mouse || Settings::values.mouse_panning) && emulation_running) {
         render_window->installEventFilter(render_window);
