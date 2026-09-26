@@ -106,6 +106,15 @@ public:
     void ReloadFromSetting();
     void RetranslateUI();
 
+    [[nodiscard]] bool IsInputOrSelectionControl() const {
+        return combobox != nullptr || spinbox != nullptr || double_spinbox != nullptr ||
+               slider != nullptr || line_edit != nullptr || date_time_edit != nullptr ||
+               !radio_buttons.empty();
+    }
+    [[nodiscard]] bool IsStandaloneCheckBox() const {
+        return (checkbox != nullptr || lhs_checkbox != nullptr) && !IsInputOrSelectionControl();
+    }
+
     // Direct handles to sub components created
     QPushButton* restore_button{}; ///< Restore button for custom configurations
     QLineEdit* line_edit{};        ///< QLineEdit, used for LineEdit and HexEdit

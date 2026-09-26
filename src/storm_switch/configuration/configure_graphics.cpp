@@ -339,7 +339,16 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     }
 
     for (const auto& [id, widget] : hold_graphics) {
-        graphics_layout.addWidget(widget);
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (w && w->IsInputOrSelectionControl()) {
+            graphics_layout.addWidget(widget);
+        }
+    }
+    for (const auto& [id, widget] : hold_graphics) {
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (!w || !w->IsInputOrSelectionControl()) {
+            graphics_layout.addWidget(widget);
+        }
     }
 
     UpdateResolutionItems();

@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2016 Citra Emulator Project
@@ -87,7 +87,16 @@ void ConfigureGeneral::Setup(const ConfigurationShared::Builder& builder) {
     }
 
     for (const auto& [id, widget] : general_hold) {
-        general_layout.addWidget(widget);
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (w && w->IsInputOrSelectionControl()) {
+            general_layout.addWidget(widget);
+        }
+    }
+    for (const auto& [id, widget] : general_hold) {
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (!w || !w->IsInputOrSelectionControl()) {
+            general_layout.addWidget(widget);
+        }
     }
 }
 

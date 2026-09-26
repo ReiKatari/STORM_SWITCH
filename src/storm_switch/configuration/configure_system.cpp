@@ -186,10 +186,28 @@ void ConfigureSystem::Setup(const ConfigurationShared::Builder& builder) {
         }
     }
     for (const auto& [label, widget] : core_hold) {
-        core_layout.addWidget(widget);
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (w && w->IsInputOrSelectionControl()) {
+            core_layout.addWidget(widget);
+        }
+    }
+    for (const auto& [label, widget] : core_hold) {
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (!w || !w->IsInputOrSelectionControl()) {
+            core_layout.addWidget(widget);
+        }
     }
     for (const auto& [id, widget] : system_hold) {
-        system_layout.addWidget(widget);
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (w && w->IsInputOrSelectionControl()) {
+            system_layout.addWidget(widget);
+        }
+    }
+    for (const auto& [id, widget] : system_hold) {
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (!w || !w->IsInputOrSelectionControl()) {
+            system_layout.addWidget(widget);
+        }
     }
 }
 

@@ -6,6 +6,7 @@
 
 #include "storm_switch/configuration/shared_widget.h"
 
+#include <algorithm>
 #include <functional>
 #include <limits>
 #include <typeindex>
@@ -498,6 +499,82 @@ QWidget* Widget::CreateSlider(bool reversed, float multiplier, const QString& gi
     return container;
 }
 
+class StormSpinBox : public QSpinBox {
+public:
+    using QSpinBox::QSpinBox;
+
+    QString textFromValue(int val) const override {
+        QString s = QString::number(val);
+        int pos = s.length() - 3;
+        const int min_pos = (val < 0) ? 2 : 1;
+        while (pos >= min_pos) {
+            s.insert(pos, QLatin1Char(' '));
+            pos -= 3;
+        }
+        return s;
+    }
+
+    int valueFromText(const QString& text) const override {
+        QString clean = text;
+        clean.remove(QLatin1Char(' '));
+        clean.remove(QChar(ushort(0x00A0)));
+        clean.remove(QChar(ushort(0x202F)));
+        if (!prefix().isEmpty() && clean.startsWith(prefix())) {
+            clean.remove(0, prefix().length());
+        }
+        if (!suffix().isEmpty() && clean.endsWith(suffix())) {
+            clean.chop(suffix().length());
+        }
+        return clean.trimmed().toInt();
+    }
+
+    QValidator::State validate(QString& input, int& pos) const override {
+        QString clean = input;
+        clean.remove(QLatin1Char(' '));
+        clean.remove(QChar(ushort(0x00A0)));
+        clean.remove(QChar(ushort(0x202F)));
+        if (!prefix().isEmpty() && clean.startsWith(prefix())) {
+            clean.remove(0, prefix().length());
+        }
+        if (!suffix().isEmpty() && clean.endsWith(suffix())) {
+            clean.chop(suffix().length());
+        }
+        clean = clean.trimmed();
+        if (clean.isEmpty() || clean == QStringLiteral("-") || clean == QStringLiteral("+")) {
+            return QValidator::Intermediate;
+        }
+        bool ok = false;
+        int val = clean.toInt(&ok);
+        if (!ok) {
+            return QValidator::Invalid;
+        }
+        if (val >= minimum() && val <= maximum()) {
+            return QValidator::Acceptable;
+        }
+        return QValidator::Intermediate;
+    }
+
+    void fixup(QString& input) const override {
+        QString clean = input;
+        clean.remove(QLatin1Char(' '));
+        clean.remove(QChar(ushort(0x00A0)));
+        clean.remove(QChar(ushort(0x202F)));
+        if (!prefix().isEmpty() && clean.startsWith(prefix())) {
+            clean.remove(0, prefix().length());
+        }
+        if (!suffix().isEmpty() && clean.endsWith(suffix())) {
+            clean.chop(suffix().length());
+        }
+        clean = clean.trimmed();
+        bool ok = false;
+        int val = clean.toInt(&ok);
+        if (ok) {
+            val = std::clamp(val, minimum(), maximum());
+            input = prefix() + textFromValue(val) + suffix();
+        }
+    }
+};
+
 QWidget* Widget::CreateSpinBox(const QString& given_suffix,
                                std::function<std::string()>& serializer,
                                std::function<void()>& restore_func,
@@ -508,7 +585,7 @@ QWidget* Widget::CreateSpinBox(const QString& given_suffix,
 
     QString suffix = given_suffix == default_suffix ? DefaultSuffix(this, setting) : given_suffix;
 
-    spinbox = new QSpinBox(this);
+    spinbox = new StormSpinBox(this);
     spinbox->setRange(min_val, max_val);
     spinbox->setValue(default_val);
     spinbox->setSuffix(suffix);

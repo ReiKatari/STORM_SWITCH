@@ -42,6 +42,14 @@ ConfigureCpu::ConfigureCpu(const Core::System& system_,
 ConfigureCpu::~ConfigureCpu() = default;
 
 void ConfigureCpu::SetConfiguration() {
+    if (accuracy_combobox) {
+        const auto val = static_cast<int>(Settings::values.cpu_accuracy.GetValue());
+        if (val >= 0 && val < accuracy_combobox->count()) {
+            const bool blocked = accuracy_combobox->blockSignals(true);
+            accuracy_combobox->setCurrentIndex(val);
+            accuracy_combobox->blockSignals(blocked);
+        }
+    }
     UpdateGroup();
 }
 void ConfigureCpu::Setup(const ConfigurationShared::Builder& builder) {
@@ -49,6 +57,8 @@ void ConfigureCpu::Setup(const ConfigurationShared::Builder& builder) {
     auto* backend_layout = ui->widget_backend->layout();
     auto* unsafe_layout = ui->unsafe_widget->layout();
     std::map<u32, QWidget*> unsafe_hold{};
+    std::vector<QWidget*> general_inputs{};
+    std::vector<QWidget*> general_checkboxes{};
 
     std::vector<Settings::BasicSetting*> settings;
     const auto push = [&](Settings::Category category) {
@@ -81,15 +91,35 @@ void ConfigureCpu::Setup(const ConfigurationShared::Builder& builder) {
         } else if (setting->Id() == Settings::values.cpu_ticks.Id() ||
                    setting->Id() == Settings::values.cpu_affinity_pinning.Id() ||
                    setting->Id() == Settings::values.cpu_clock.Id()) {
-            ui->general_layout->addWidget(widget);
+            if (widget->IsInputOrSelectionControl()) {
+                general_inputs.push_back(widget);
+            } else {
+                general_checkboxes.push_back(widget);
+            }
         } else {
             // Presently, all other settings here are unsafe checkboxes
             unsafe_hold.insert({setting->Id(), widget});
         }
     }
 
+    for (auto* widget : general_inputs) {
+        ui->general_layout->addWidget(widget);
+    }
+    for (auto* widget : general_checkboxes) {
+        ui->general_layout->addWidget(widget);
+    }
+
     for (const auto& [label, widget] : unsafe_hold) {
-        unsafe_layout->addWidget(widget);
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (w && w->IsInputOrSelectionControl()) {
+            unsafe_layout->addWidget(widget);
+        }
+    }
+    for (const auto& [label, widget] : unsafe_hold) {
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (!w || !w->IsInputOrSelectionControl()) {
+            unsafe_layout->addWidget(widget);
+        }
     }
 
     UpdateGroup();
@@ -107,6 +137,13 @@ void ConfigureCpu::ApplyConfiguration() {
     const bool is_powered_on = system.IsPoweredOn();
     for (const auto& apply_func : apply_funcs) {
         apply_func(is_powered_on);
+    }
+    if (Settings::IsConfiguringGlobal() && accuracy_combobox) {
+        const int idx = accuracy_combobox->currentIndex();
+        if (idx >= 0 && idx <= 4) {
+            Settings::values.cpu_accuracy.SetGlobal(true);
+            Settings::values.cpu_accuracy.SetValue(static_cast<Settings::CpuAccuracy>(idx));
+        }
     }
 }
 

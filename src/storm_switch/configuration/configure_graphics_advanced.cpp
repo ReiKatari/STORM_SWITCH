@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
@@ -62,7 +62,16 @@ void ConfigureGraphicsAdvanced::Setup(const ConfigurationShared::Builder& builde
     }
 
     for (const auto& [id, widget] : normal_hold) {
-        normal_layout.addWidget(widget);
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (w && w->IsInputOrSelectionControl()) {
+            normal_layout.addWidget(widget);
+        }
+    }
+    for (const auto& [id, widget] : normal_hold) {
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (!w || !w->IsInputOrSelectionControl()) {
+            normal_layout.addWidget(widget);
+        }
     }
 }
 

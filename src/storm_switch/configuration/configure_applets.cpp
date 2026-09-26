@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2024 yuzu Emulator Project
+// SPDX-FileCopyrightText: 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "common/settings.h"
@@ -70,7 +70,16 @@ void ConfigureApplets::Setup(const ConfigurationShared::Builder& builder) {
         applets_hold.emplace(setting->Id(), widget);
     }
     for (const auto& [label, widget] : applets_hold) {
-        library_applets_layout.addWidget(widget);
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (w && w->IsInputOrSelectionControl()) {
+            library_applets_layout.addWidget(widget);
+        }
+    }
+    for (const auto& [label, widget] : applets_hold) {
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (!w || !w->IsInputOrSelectionControl()) {
+            library_applets_layout.addWidget(widget);
+        }
     }
 }
 

@@ -90,7 +90,16 @@ void ConfigureGraphicsExtensions::Setup(const ConfigurationShared::Builder& buil
     }
 
     for (const auto& [id, widget] : hold) {
-        layout.addWidget(widget);
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (w && w->IsInputOrSelectionControl()) {
+            layout.addWidget(widget);
+        }
+    }
+    for (const auto& [id, widget] : hold) {
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (!w || !w->IsInputOrSelectionControl()) {
+            layout.addWidget(widget);
+        }
     }
 
     auto& hacks = *ui->hacks_target->layout();
@@ -112,7 +121,16 @@ void ConfigureGraphicsExtensions::Setup(const ConfigurationShared::Builder& buil
     }
 
     for (const auto& [id, widget] : hacks_hold) {
-        hacks.addWidget(widget);
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (w && w->IsInputOrSelectionControl()) {
+            hacks.addWidget(widget);
+        }
+    }
+    for (const auto& [id, widget] : hacks_hold) {
+        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
+        if (!w || !w->IsInputOrSelectionControl()) {
+            hacks.addWidget(widget);
+        }
     }
 }
 
