@@ -369,6 +369,7 @@ QString StormSaveSyncDialog::ResolveGameTitle(const QString& title_id) const {
             {0x0100B11027658000ULL, "Defender of the Crown: The Legend Returns"},
             {0x010059D020C26000ULL, "Marvel Cosmic Invasion"},
             {0x010057901E9E6000ULL, "Underling Uprising"},
+            {0x01002D001AD24000ULL, "Animal Well"},
             {0x010020D01AD24000ULL, "Animal Well"},
             {0x0100650017170000ULL, "Animal Well"},
             {0x0100C9E01B854000ULL, "Animal Well"},

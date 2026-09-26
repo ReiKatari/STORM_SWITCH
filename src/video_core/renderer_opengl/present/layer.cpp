@@ -74,7 +74,14 @@ GLuint Layer::ConfigureDraw(std::array<GLfloat, 3 * 2>& out_matrix,
             fsr.emplace(layout.screen.GetWidth(), layout.screen.GetHeight());
         }
 
-        texture = fsr->Draw(program_manager, texture, info.scaled_width, info.scaled_height, crop);
+        const u32 input_width = (anti_aliasing != Settings::AntiAliasing::None)
+                                    ? Settings::values.resolution_info.ScaleUp(framebuffer_texture.width)
+                                    : info.scaled_width;
+        const u32 input_height = (anti_aliasing != Settings::AntiAliasing::None)
+                                     ? Settings::values.resolution_info.ScaleUp(framebuffer_texture.height)
+                                     : info.scaled_height;
+
+        texture = fsr->Draw(program_manager, texture, input_width, input_height, crop);
         crop = {0, 0, 1, 1};
     }
 

@@ -1337,6 +1337,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             "01000B900D8B0000" to "Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda",
             "010015100B514000" to "Super Mario Bros. Wonder",
             "01001B300B9BE000" to "Diablo III: Eternal Collection",
+            "01002D001AD24000" to "Animal Well",
             "010020D01AD24000" to "Animal Well",
             "010022201229A000" to "Super Robot Wars 30",
             "010026800E304000" to "Super Robot Wars X",

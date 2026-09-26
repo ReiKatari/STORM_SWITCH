@@ -93,11 +93,11 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
     }
 
     if (Settings::values.drs_resolution_lock) {
-        // Only apply DRS resolution lock if the target framebuffer is actually at least 720p.
+        // Only apply DRS resolution lock if the target framebuffer is actually at least 720p natively in guest coordinates.
         // Never distort games or passes with small native framebuffers (e.g. 320x180 in Animal Well, shadow maps, LUTs).
-        const float target_fb_w = conv(static_cast<f32>(regs.surface_clip.width));
-        const float target_fb_h = conv(static_cast<f32>(regs.surface_clip.height));
-        if (target_fb_w >= 1200.0f && target_fb_h >= 680.0f) {
+        const float raw_fb_w = static_cast<f32>(regs.surface_clip.width);
+        const float raw_fb_h = static_cast<f32>(regs.surface_clip.height);
+        if (raw_fb_w >= 1200.0f && raw_fb_h >= 680.0f) {
             const float min_width = 1280.0f * scale;
             const float min_height = 720.0f * scale;
             if (width > 0 && width < min_width) {

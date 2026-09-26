@@ -1086,7 +1086,7 @@ object GameFixDatabase {
             )
         ),
         GameFixProfile(
-            0x010020D01AD24000L,
+            0x01002D001AD24000L,
             "Animal Well",
             "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
             "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
@@ -6067,7 +6067,7 @@ object GameFixDatabase {
                 nameLower.contains("violet") -> listOf("violet", "01008f6008c5e000")
                 nameLower.contains("arkham knight") -> listOf("arkham knight", "010023a017e94000")
                 nameLower.contains("doom eternal") -> listOf("doom eternal", "0100bb600dc30000")
-                nameLower.contains("animal well") -> listOf("animal well", "010020d01ad24000", "010092c01d9f8000", "0100c9e01b854000")
+                nameLower.contains("animal well") -> listOf("animal well", "01002d001ad24000", "010020d01ad24000", "010092c01d9f8000", "0100c9e01b854000")
                 nameLower.contains("mortal kombat 1") || nameLower.contains("mk1") -> listOf("mortal kombat 1", "mk1", "01006560184e6000", "0100d2800d5c2000", "010066b019e0e000")
                 nameLower.contains("mortal kombat") -> listOf("mortal kombat", "mk11", "0100b1100c4d0000", "0100f2200c984000")
                 nameLower.contains("hot pursuit") || nameLower.contains("need for speed") -> listOf("need for speed", "hot pursuit", "nfs", "010074600ee26000", "0100b9000d000000")
@@ -6220,7 +6220,7 @@ object GameFixDatabase {
                 nameLower.contains("openra") -> listOf("openra", "dune legacy", "command & conquer", "red alert", "0100000000000091")
                 nameLower.contains("retroarch") -> listOf("retroarch", "ppsspp", "flycast", "scummvm", "melonds", "mgba", "duckstation", "0100000000001000")
                 nameLower.contains("homebrew utilities") -> listOf("nx-shell", "dbi", "goldleaf", "jksv", "checkpoint", "edizon", "awoo", "tesla", "0100000000003000")
-                nameLower.contains("animal well") -> listOf("animal well", "animal_well", "010020d01ad24000", "0100650017170000", "0100c9e01b854000")
+                nameLower.contains("animal well") -> listOf("animal well", "animal_well", "01002d001ad24000", "010020d01ad24000", "0100650017170000", "0100c9e01b854000")
                 nameLower.contains("defender of the crown") -> listOf("defender of the crown", "defender_of_the_crown", "0100b11027658000")
                 nameLower.contains("marvel cosmic invasion") -> listOf("marvel cosmic invasion", "cosmic invasion", "010059d020c26000")
                 nameLower.contains("underling uprising") -> listOf("underling uprising", "underling", "010057901e9e6000")

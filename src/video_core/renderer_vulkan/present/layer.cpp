@@ -109,23 +109,32 @@ void Layer::ConfigureDraw(const Device& device, PresentPushConstants* out_push_c
     VkImageView source_image_view =
         texture_info ? texture_info->image_view : *raw_image_views[image_index];
 
-    if (auto* fxaa = std::get_if<FXAA>(&anti_alias)) {
-        fxaa->Draw(device, scheduler, image_index, &source_image, &source_image_view);
-    } else if (auto* smaa = std::get_if<SMAA>(&anti_alias)) {
-        smaa->Draw(device, scheduler, image_index, &source_image, &source_image_view);
-    }
-
-    auto crop_rect = Tegra::NormalizeCrop(framebuffer, texture_width, texture_height);
-    const VkExtent2D render_extent{
+    VkExtent2D current_render_extent{
         .width = scaled_width,
         .height = scaled_height,
     };
 
+    if (auto* fxaa = std::get_if<FXAA>(&anti_alias)) {
+        fxaa->Draw(device, scheduler, image_index, &source_image, &source_image_view);
+        current_render_extent = {
+            .width = Settings::values.resolution_info.ScaleUp(raw_width),
+            .height = Settings::values.resolution_info.ScaleUp(raw_height),
+        };
+    } else if (auto* smaa = std::get_if<SMAA>(&anti_alias)) {
+        smaa->Draw(device, scheduler, image_index, &source_image, &source_image_view);
+        current_render_extent = {
+            .width = Settings::values.resolution_info.ScaleUp(raw_width),
+            .height = Settings::values.resolution_info.ScaleUp(raw_height),
+        };
+    }
+
+    auto crop_rect = Tegra::NormalizeCrop(framebuffer, texture_width, texture_height);
+
     if (auto* fsr = std::get_if<FSR>(&sr_filter)) {
-        source_image_view = fsr->Draw(device, scheduler, image_index, source_image, source_image_view, render_extent, crop_rect);
+        source_image_view = fsr->Draw(device, scheduler, image_index, source_image, source_image_view, current_render_extent, crop_rect);
         crop_rect = {0, 0, 1, 1};
     } else if (auto* sgsr = std::get_if<SGSR>(&sr_filter)) {
-        source_image_view = sgsr->Draw(device, scheduler, image_index, source_image, source_image_view, render_extent, crop_rect);
+        source_image_view = sgsr->Draw(device, scheduler, image_index, source_image, source_image_view, current_render_extent, crop_rect);
         crop_rect = {0, 0, 1, 1};
     }
 
