@@ -6793,7 +6793,17 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" ||
                 full_key == "System\\use_docked_mode" || full_key == "Renderer\\anti_aliasing" ||
                 full_key == "Renderer\\scaling_filter" || full_key == "Renderer\\fsr_sharpening_slider" ||
-                full_key == "Renderer\\max_anisotropy") {
+                full_key == "Renderer\\max_anisotropy" || full_key == "Renderer\\frame_pacing_mode" ||
+                full_key == "Renderer\\dynamic_performance_scaler") {
+                continue;
+            }
+            if (full_key == "Renderer\\dma_accuracy" && val == "0") {
+                continue;
+            }
+            if (full_key == "Renderer\\gpu_fence_behavior" && val == "0") {
+                continue;
+            }
+            if (full_key == "Renderer\\nvdec_emulation" && val == "1") {
                 continue;
             }
             if (full_key == "Renderer\\gpu_accuracy") {

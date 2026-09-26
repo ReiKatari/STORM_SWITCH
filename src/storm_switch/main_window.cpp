@@ -1457,7 +1457,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : filter_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.scaling_filter.SetGlobal(true);
                 Settings::values.scaling_filter.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.scaling_filter = {opt.first, true};
+                }
                 UpdateFilterText();
                 ApplyDynamicSettingChange();
             });
@@ -1516,7 +1520,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : gpu_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.gpu_accuracy.SetGlobal(true);
                 Settings::values.gpu_accuracy.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.gpu_accuracy = {opt.first, true};
+                }
                 UpdateGPUAccuracyButton();
                 ApplyDynamicSettingChange();
             });
@@ -1580,7 +1588,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
+                Settings::values.aspect_ratio.SetGlobal(true);
                 Settings::values.aspect_ratio.SetValue(item.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.aspect_ratio = {item.first, true};
+                }
                 UpdateAspectText();
                 ApplyDynamicSettingChange();
             });
@@ -1609,7 +1621,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
+                Settings::values.dma_accuracy.SetGlobal(true);
                 Settings::values.dma_accuracy.SetValue(item.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.dma_accuracy = {item.first, true};
+                }
                 UpdateDmaText();
                 ApplyDynamicSettingChange();
             });
@@ -1639,7 +1655,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
+                Settings::values.gpu_fence_behavior.SetGlobal(true);
                 Settings::values.gpu_fence_behavior.SetValue(item.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.gpu_fence_behavior = {item.first, true};
+                }
                 UpdateGpuFenceText();
                 ApplyDynamicSettingChange();
             });
@@ -1667,7 +1687,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.vram_usage_mode.SetGlobal(true);
                 Settings::values.vram_usage_mode.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.vram_usage_mode = {opt.first, true};
+                }
                 UpdateVramText();
                 ApplyDynamicSettingChange();
             });
@@ -1701,7 +1725,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.max_anisotropy.SetGlobal(true);
                 Settings::values.max_anisotropy.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.max_anisotropy = {opt.first, true};
+                }
                 UpdateAnisotropyText();
                 ApplyDynamicSettingChange();
             });
@@ -1730,7 +1758,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.accelerate_astc.SetGlobal(true);
                 Settings::values.accelerate_astc.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.accelerate_astc = {opt.first, true};
+                }
                 UpdateAstcDecodeText();
                 ApplyDynamicSettingChange();
             });
@@ -1759,7 +1791,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.astc_recompression.SetGlobal(true);
                 Settings::values.astc_recompression.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.astc_recompression = {opt.first, true};
+                }
                 UpdateAstcRecompressText();
                 ApplyDynamicSettingChange();
             });
@@ -1959,7 +1995,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : res_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.resolution_setup.SetGlobal(true);
                 Settings::values.resolution_setup.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.resolution_setup = {opt.first, true};
+                }
                 UpdateResScaleText();
                 ApplyDynamicSettingChange();
             });
@@ -1986,13 +2026,21 @@ void MainWindow::InitializeWidgets() {
     airplane_mode_button->setFocusPolicy(Qt::NoFocus);
     UpdateAirplaneModeButton();
     connect(airplane_mode_button, &QPushButton::clicked, this, [this] {
+        Settings::values.airplane_mode.SetGlobal(true);
         Settings::values.airplane_mode.SetValue(!Settings::values.airplane_mode.GetValue());
+        if (m_session_backup.is_active) {
+            m_session_backup.airplane_mode = {Settings::values.airplane_mode.GetValue(), true};
+        }
         UpdateAirplaneModeButton();
         ApplyDynamicSettingChange();
     });
     airplane_mode_button->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(airplane_mode_button, &QPushButton::customContextMenuRequested, [this] {
+        Settings::values.airplane_mode.SetGlobal(true);
         Settings::values.airplane_mode.SetValue(!Settings::values.airplane_mode.GetValue());
+        if (m_session_backup.is_active) {
+            m_session_backup.airplane_mode = {Settings::values.airplane_mode.GetValue(), true};
+        }
         UpdateAirplaneModeButton();
         ApplyDynamicSettingChange();
     });
@@ -2013,6 +2061,7 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : vsync_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.vsync_mode.SetGlobal(true);
                 Settings::values.vsync_mode.SetValue(opt.first);
                 UpdateVSyncText();
                 ApplyDynamicSettingChange();
@@ -2109,7 +2158,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : nvdec_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.nvdec_emulation.SetGlobal(true);
                 Settings::values.nvdec_emulation.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.nvdec_emulation = {opt.first, true};
+                }
                 UpdateNvdecText();
                 ApplyDynamicSettingChange();
             });
@@ -2137,7 +2190,11 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : cpu_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
+                Settings::values.cpu_accuracy.SetGlobal(true);
                 Settings::values.cpu_accuracy.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.cpu_accuracy = {opt.first, true};
+                }
                 UpdateCpuAccuracyText();
                 ApplyDynamicSettingChange();
             });
@@ -3635,6 +3692,8 @@ void MainWindow::StormSessionBackup::Capture() {
     skip_cpu_inner_invalidation = capture_switchable(Settings::values.skip_cpu_inner_invalidation);
     cpu_clock = capture_switchable(Settings::values.cpu_clock);
     use_custom_cpu_ticks = capture_switchable(Settings::values.use_custom_cpu_ticks);
+    frame_pacing_mode = capture_switchable(Settings::values.frame_pacing_mode);
+    dynamic_performance_scaler = capture_switchable(Settings::values.dynamic_performance_scaler);
     is_active = true;
 }
 
@@ -3686,6 +3745,8 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.skip_cpu_inner_invalidation, skip_cpu_inner_invalidation);
     restore_switchable(Settings::values.cpu_clock, cpu_clock);
     restore_switchable(Settings::values.use_custom_cpu_ticks, use_custom_cpu_ticks);
+    restore_switchable(Settings::values.frame_pacing_mode, frame_pacing_mode);
+    restore_switchable(Settings::values.dynamic_performance_scaler, dynamic_performance_scaler);
 
     Settings::UpdateGPUAccuracy();
     Settings::UpdateRescalingInfo();
@@ -3697,7 +3758,7 @@ void MainWindow::RestoreSessionSettings() {
         m_session_backup.Restore();
         Settings::RestoreGlobalState(false);
         if (config) {
-            config->ReloadAllValues();
+            config->SaveAllValues();
         }
         Core::GameFixDatabase::SetFixesEnabled(false);
         UpdateStatusButtons();
@@ -4450,6 +4511,14 @@ bool MainWindow::OnShutdownBegin() {
 
     AllowOSSleep();
 
+    // Immediately halt performance stats updates to prevent accessing destroyed GPU cores
+    status_bar_update_timer.stop();
+    shader_building_label->setVisible(false);
+    res_scale_label->setVisible(false);
+    emu_speed_label->setVisible(false);
+    game_fps_label->setVisible(false);
+    emu_frametime_label->setVisible(false);
+
     // Disable unlimited frame rate and turbo/slow modes
     Settings::values.use_speed_limit.SetValue(true);
     Settings::values.current_speed_mode = Settings::SpeedMode::Standard;
@@ -4519,29 +4588,31 @@ void MainWindow::OnEmulationStopTimeExpired() {
 }
 
 void MainWindow::OnEmulationStopped() {
+    static bool s_is_stopping = false;
+    if (s_is_stopping) {
+        return;
+    }
+    s_is_stopping = true;
+    SCOPE_EXIT {
+        s_is_stopping = false;
+    };
+
+    status_bar_update_timer.stop();
     shutdown_timer.stop();
     shutdown_timer.disconnect();
     if (QtCommon::emu_thread) {
         QtCommon::emu_thread->disconnect();
         if (QtCommon::emu_thread->isRunning()) {
             QtCommon::emu_thread->ForceStop();
-            // Allow thread to gracefully unwind its loops and shut down cleanly with GUI responsiveness
-            for (int i = 0; i < 50 && QtCommon::emu_thread->isRunning(); ++i) {
-                if (QtCommon::emu_thread->wait(100)) {
-                    break;
-                }
-                QCoreApplication::processEvents();
+            // Wait synchronously for EmuThread to exit cleanly without re-entrant event pumping
+            if (!QtCommon::emu_thread->wait(5000)) {
+                LOG_ERROR(Frontend, "EmuThread did not exit within limit; detaching handle to prevent MSVCP140 crash");
+                QtCommon::emu_thread.release();
+            } else {
+                QtCommon::emu_thread.reset();
             }
-            if (QtCommon::emu_thread->isRunning()) {
-                LOG_WARNING(Frontend, "EmuThread is still executing after timeout; waiting synchronously...");
-                QtCommon::emu_thread->wait(5000);
-            }
-        }
-        if (!QtCommon::emu_thread->isRunning()) {
-            QtCommon::emu_thread.reset();
         } else {
-            LOG_ERROR(Frontend, "EmuThread did not exit within limit; detaching handle to prevent MSVCP140 crash");
-            QtCommon::emu_thread.release();
+            QtCommon::emu_thread.reset();
         }
     }
 
@@ -4614,7 +4685,7 @@ void MainWindow::OnEmulationStopped() {
     RestoreSessionSettings();
     Settings::RestoreGlobalState(false);
     if (config) {
-        config->ReloadAllValues();
+        config->SaveAllValues();
     }
     QtCommon::system->HIDCore().ReloadInputDevices();
     UpdateStatusButtons();
@@ -5893,7 +5964,12 @@ void MainWindow::OnConfigure() {
         // This is here to avoid applying changes if the user hit Apply, made some changes, then hit
         // Cancel
         configure_dialog.ApplyConfiguration();
+        if (m_session_backup.is_active) {
+            m_session_backup.Capture();
+        }
         config->SaveAllValues();
+        UpdateStatusButtons();
+        ConfigurationShared::ReloadAllActiveWidgets();
     } else if (UISettings::values.reset_to_defaults) {
         LOG_INFO(Frontend, "Resetting all settings to defaults");
         if (!Common::FS::RemoveFile(config->GetConfigFilePath())) {
@@ -5957,6 +6033,8 @@ void MainWindow::OnConfigure() {
     UISettings::values.configuration_applied = false;
 
     config->SaveAllValues();
+    UpdateStatusButtons();
+    ConfigurationShared::ReloadAllActiveWidgets();
 
     if ((UISettings::values.hide_mouse || Settings::values.mouse_panning) && emulation_running) {
         render_window->installEventFilter(render_window);
@@ -7071,7 +7149,8 @@ void MainWindow::OnTasStateChanged() {
 }
 
 void MainWindow::UpdateStatusBar() {
-    if (QtCommon::emu_thread == nullptr || !QtCommon::system->IsPoweredOn()) {
+    if (QtCommon::emu_thread == nullptr || !QtCommon::system || !QtCommon::system->IsPoweredOn() ||
+        QtCommon::system->IsShuttingDown() || m_is_stopping_emulation || !emulation_running) {
         status_bar_update_timer.stop();
         return;
     }
@@ -7191,10 +7270,9 @@ void MainWindow::ApplyDynamicSettingChange() {
                 per_game_config.SaveAllValues();
             }
         }
-    } else {
-        if (config) {
-            config->SaveAllValues();
-        }
+    }
+    if (config) {
+        config->SaveAllValues();
     }
     UpdateStatusButtons();
     ConfigurationShared::ReloadAllActiveWidgets();
@@ -8442,7 +8520,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : cpu_options) {
             auto* act = cpu_acc_menu->addAction(opt.second, [this, opt] {
+                Settings::values.cpu_accuracy.SetGlobal(true);
                 Settings::values.cpu_accuracy.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.cpu_accuracy = {opt.first, true};
+                }
                 UpdateCpuAccuracyText();
                 ApplyDynamicSettingChange();
             });
@@ -8467,6 +8549,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : vsync_options) {
             auto* act = vsync_menu->addAction(opt.second, [this, opt] {
+                Settings::values.vsync_mode.SetGlobal(true);
                 Settings::values.vsync_mode.SetValue(opt.first);
                 UpdateVSyncText();
                 ApplyDynamicSettingChange();
@@ -8492,7 +8575,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : nvdec_options) {
             auto* act = nvdec_menu->addAction(opt.second, [this, opt] {
+                Settings::values.nvdec_emulation.SetGlobal(true);
                 Settings::values.nvdec_emulation.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.nvdec_emulation = {opt.first, true};
+                }
                 UpdateNvdecText();
                 ApplyDynamicSettingChange();
             });
@@ -8517,7 +8604,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& item : dma_options) {
             auto* act = dma_menu->addAction(item.second, [this, item] {
+                Settings::values.dma_accuracy.SetGlobal(true);
                 Settings::values.dma_accuracy.SetValue(item.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.dma_accuracy = {item.first, true};
+                }
                 UpdateDmaText();
                 ApplyDynamicSettingChange();
             });
@@ -8543,12 +8634,45 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& item : fence_options) {
             auto* act = fence_menu->addAction(item.second, [this, item] {
+                Settings::values.gpu_fence_behavior.SetGlobal(true);
                 Settings::values.gpu_fence_behavior.SetValue(item.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.gpu_fence_behavior = {item.first, true};
+                }
                 UpdateGpuFenceText();
                 ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
             act->setChecked(item.first == cur_fence);
+        }
+
+        auto* pacing_menu = context_menu.addMenu(StormLang(
+            QStringLiteral("⏱️ Тайминг кадров"),
+            QStringLiteral("⏱️ Frame Pacing"),
+            QStringLiteral("⏱️ Frame-Pacing"),
+            QStringLiteral("⏱️ Synchronisation des images"),
+            QStringLiteral("⏱️ 帧步调"),
+            QStringLiteral("⏱️ フレームペーシング")
+        ));
+        const auto cur_pacing = Settings::values.frame_pacing_mode.GetValue();
+        const std::vector<std::pair<Settings::FramePacingMode, QString>> pacing_options = {
+            {Settings::FramePacingMode::Target_Auto, StormLang(QStringLiteral("Автоматически"), QStringLiteral("Auto"), QStringLiteral("Automatisch"), QStringLiteral("Automatique"), QStringLiteral("自动"), QStringLiteral("自動"))},
+            {Settings::FramePacingMode::Target_30, QStringLiteral("30 FPS")},
+            {Settings::FramePacingMode::Target_60, QStringLiteral("60 FPS")},
+            {Settings::FramePacingMode::Target_90, QStringLiteral("90 FPS")},
+            {Settings::FramePacingMode::Target_120, QStringLiteral("120 FPS")},
+        };
+        for (const auto& item : pacing_options) {
+            auto* act = pacing_menu->addAction(item.second, [this, item] {
+                Settings::values.frame_pacing_mode.SetGlobal(true);
+                Settings::values.frame_pacing_mode.SetValue(item.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.frame_pacing_mode = {item.first, true};
+                }
+                ApplyDynamicSettingChange();
+            });
+            act->setCheckable(true);
+            act->setChecked(item.first == cur_pacing);
         }
     } else if (group_index == 3) {
         auto* header_act = context_menu.addAction(StormLang(
@@ -8589,7 +8713,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : res_options) {
             auto* act = res_menu->addAction(opt.second, [this, opt] {
+                Settings::values.resolution_setup.SetGlobal(true);
                 Settings::values.resolution_setup.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.resolution_setup = {opt.first, true};
+                }
                 UpdateResScaleText();
                 ApplyDynamicSettingChange();
             });
@@ -8615,7 +8743,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : aspect_options) {
             auto* act = aspect_menu->addAction(opt.second, [this, opt] {
+                Settings::values.aspect_ratio.SetGlobal(true);
                 Settings::values.aspect_ratio.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.aspect_ratio = {opt.first, true};
+                }
                 UpdateAspectText();
                 ApplyDynamicSettingChange();
             });
@@ -8639,7 +8771,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : vram_options) {
             auto* act = vram_menu->addAction(opt.second, [this, opt] {
+                Settings::values.vram_usage_mode.SetGlobal(true);
                 Settings::values.vram_usage_mode.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.vram_usage_mode = {opt.first, true};
+                }
                 UpdateVramText();
                 ApplyDynamicSettingChange();
             });
@@ -8669,7 +8805,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : aniso_options) {
             auto* act = aniso_menu->addAction(opt.second, [this, opt] {
+                Settings::values.max_anisotropy.SetGlobal(true);
                 Settings::values.max_anisotropy.SetValue(opt.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.max_anisotropy = {opt.first, true};
+                }
                 UpdateAnisotropyText();
                 ApplyDynamicSettingChange();
             });
@@ -8693,7 +8833,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& pair : aa_options) {
             auto* act = aa_menu->addAction(pair.second, [this, pair] {
+                Settings::values.anti_aliasing.SetGlobal(true);
                 Settings::values.anti_aliasing.SetValue(pair.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.anti_aliasing = {pair.first, true};
+                }
                 UpdateAAText();
                 ApplyDynamicSettingChange();
             });
@@ -8729,7 +8873,11 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& pair : filter_options) {
             auto* act = filter_menu->addAction(pair.second, [this, pair] {
+                Settings::values.scaling_filter.SetGlobal(true);
                 Settings::values.scaling_filter.SetValue(pair.first);
+                if (m_session_backup.is_active) {
+                    m_session_backup.scaling_filter = {pair.first, true};
+                }
                 UpdateFilterText();
                 ApplyDynamicSettingChange();
             });

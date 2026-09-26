@@ -606,6 +606,8 @@ private:
         std::pair<bool, bool> skip_cpu_inner_invalidation;
         std::pair<Settings::CpuClock, bool> cpu_clock;
         std::pair<bool, bool> use_custom_cpu_ticks;
+        std::pair<Settings::FramePacingMode, bool> frame_pacing_mode;
+        std::pair<bool, bool> dynamic_performance_scaler;
 
         void Capture();
         void Restore();
