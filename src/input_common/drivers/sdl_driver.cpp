@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2018 Citra Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
@@ -493,7 +493,7 @@ void SDLDriver::InitJoystick(SDL_JoystickID joystick_id) {
     }
 
     if (!sdl_joystick) {
-        LOG_ERROR(Input, "Failed to open joystick {}", joystick_id);
+        LOG_DEBUG(Input, "Could not open joystick {}: {}", joystick_id, SDL_GetError());
         return;
     }
 

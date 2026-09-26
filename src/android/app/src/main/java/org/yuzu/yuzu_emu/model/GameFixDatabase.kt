@@ -374,13 +374,13 @@ object GameFixDatabase {
             "Streets of Rage 4",
             "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
             "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
-            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
-            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: ЦП (стабильное воспроизведение вступительных и сюжетных видеороликов)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: CPU (stable intro and cutscene video playback)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -408,13 +408,13 @@ object GameFixDatabase {
             "Streets of Rage 4",
             "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
             "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
-            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
-            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: ЦП (стабильное воспроизведение вступительных и сюжетных видеороликов)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: CPU (stable intro and cutscene video playback)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -442,13 +442,13 @@ object GameFixDatabase {
             "Streets of Rage 4",
             "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
             "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
-            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
-            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: ЦП (стабильное воспроизведение вступительных и сюжетных видеороликов)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: CPU (stable intro and cutscene video playback)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -476,13 +476,13 @@ object GameFixDatabase {
             "Streets of Rage 4",
             "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
             "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
-            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
-            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: ЦП (стабильное воспроизведение вступительных и сюжетных видеороликов)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: CPU (stable intro and cutscene video playback)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -4395,13 +4395,13 @@ object GameFixDatabase {
             "Streets of Rage 4",
             "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
             "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
-            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: Отключено (пропуск проблемных видеопотоков)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
-            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: Disabled (bypass problematic video streams)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
+            "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: ЦП (стабильное воспроизведение вступительных и сюжетных видеороликов)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
+            "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: CPU (stable intro and cutscene video playback)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\nvdec_emulation" to "0",
+                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -4894,6 +4894,1051 @@ object GameFixDatabase {
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1",
                 "System\\airplane_mode" to "true",
+            )
+        ),
+        GameFixProfile(
+            0x0100646009FBE000L,
+            "Dead Cells",
+            "• Задержка ввода в динамичных боевых секциях\n• Статтеры процедурной генерации",
+            "• Combat frame latency\n• Procedural level generation stutters",
+            "✓ Быстрая память (Fastmem): Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено",
+            "✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed",
+            mapOf(
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x010040F01EC60000L,
+            "Aggelos 2",
+            "• Черный экран при старте из-за рассинхронизации 2D-движка Clickteam Fusion при асинхронном выводе\n• Зависание опроса сетевых сокетов\n• Сбои барьеров памяти при загрузке динамических спрайтовых буферов",
+            "• Black screen on boot caused by Clickteam Fusion 2D presentation queue desync with async presentation\n• Network socket polling hang\n• Memory barrier faults during dynamic sprite buffer streaming",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x010004D00A9C0000L,
+            "Aggelos",
+            "• Черный экран при старте из-за рассинхронизации 2D-движка Clickteam Fusion при асинхронном выводе\n• Зависание опроса сетевых сокетов\n• Сбои барьеров памяти при загрузке спрайтовых буферов",
+            "• Black screen on boot caused by Clickteam Fusion 2D presentation queue desync with async presentation\n• Network socket polling hang\n• Memory barrier faults during sprite buffer streaming",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100F3E024DFC000L,
+            "Another Eden Begins",
+            "• Задержки компиляции шейдеров Unity при анимациях навыков\n• Зависание при опросе сетевых служб эмулятором",
+            "• Unity shader compilation stutter during skill animations\n• Network socket timeout hangs during boot sequence",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\nvdec_emulation" to "1",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100FC001ACE0000L,
+            "Anvil Saga",
+            "• Артефакты пиксельного текста интерфейса кузницы при пересжатии ASTC\n• Утечки памяти при длительных игровых сессиях",
+            "• Smithy UI text pixelation and font artifacts with ASTC recompression\n• Memory fragmentation during long sessions",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01006DD02868A000L,
+            "Artis Impact",
+            "• Микростаттеры кадрового пейсинга 2D-сцен\n• Зависание при фоновом сетевом обращении",
+            "• 2D scene frame pacing jitter\n• Background network socket hangs",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100EAE010560000L,
+            "Captain Tsubasa - Rise of New Champions",
+            "• Зависание вступительных и сюжетных видеороликов при аппаратном NVDEC\n• Статтеры при анимации супер-ударов на стадионе\n• Нехватка памяти при 27 DLC",
+            "• Cutscene and opening video freezes on GPU NVDEC\n• Super shot cinematic animation stutters\n• Out of memory with 27 DLCs",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x01009720213B0000L,
+            "Captain Tsubasa 2 - World Fighters",
+            "• Задержки компиляции шейдеров спецэффектов футбольных ударов\n• Нагрузка на память при наличии дополнений",
+            "• Shader compilation drops during special soccer shot effects\n• Memory pressure with DLCs installed",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100FA501AF90000L,
+            "Castlevania - Dominus Collection",
+            "• Рассинхронизация двухэкранного вывода NDS при асинхронном выводе кадров\n• Ошибки позиционирования сенсорного экрана\n• Размытие шрифтов при сжатии ASTC",
+            "• Dual-screen NDS presentation desync with async presentation\n• Touchscreen coordinate precision errors\n• Font blurring under ASTC recompression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100622020F5A000L,
+            "Clockwork Rabbit",
+            "• Дрожание 2D-пикселей при скроллинге уровня\n• Рассинхронизация звуковых дорожек",
+            "• 2D pixel jitter during horizontal scrolling\n• Audio track synchronization issues",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x0100A4601ECA8000L,
+            "Crypt Custodian",
+            "• Зависание отрисовки поверхностей GameMaker при асинхронном выводе\n• Артефакты полупрозрачных частиц при пересжатии ASTC",
+            "• GameMaker 2D surface rendering freeze with async presentation\n• Transparent particle artifacts with ASTC recompression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100F8F00C4F2000L,
+            "DC Super Hero Girls - Teen Power",
+            "• Просадки FPS в открытом городе Метрополис\n• Дроп динамического разрешения при быстром перемещении",
+            "• Framerate drops in Metropolis open city area\n• Dynamic resolution scaling drops during fast traversal",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100C6A0235D4000L,
+            "Devil Jam",
+            "• Задержка ввода и рассинхронизация ритмических таймингов с музыкой\n• Микрофризы рендеринга",
+            "• Input latency and rhythm timing desync with soundtrack\n• Rendering microstutters",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x010058C017024000L,
+            "Dungeons 3 [Nintendo Switch Edition]",
+            "• Тяжелый расчет физики и ИИ существ подземелья\n• Утечки памяти и вылеты OOM при долгих игровых сессиях",
+            "• Heavy dungeon creature simulation and lighting calculations\n• Memory fragmentation and out of memory crashes on long sessions",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100F7901971C000L,
+            "Dungeons 4 [Nintendo Switch Edition]",
+            "• Интенсивный расчет физики многотысячных армий подземелья\n• Переполнение видеобуферов и памяти 4 ГБ",
+            "• Intensive multi-unit physics and underworld simulation\n• 4GB DRAM memory buffer exhaustion",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01001BB01E8E2000L,
+            "Fantasian Neo Dimension",
+            "• Искажение фотореалистичных диорамных фонов при сжатии ASTC\n• Статтеры при переходах боевой камеры\n• Зависание видеовставок",
+            "• Photographic diorama background compression artifacts under ASTC recompression\n• Battle camera transition stutters\n• Video cutscene hangs",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100FF100FB68000L,
+            "Finding Teddy II [Definitive Edition]",
+            "• Рассинхронизация 2D-презентации кадров\n• Артефакты пиксель-арта при масштабировании",
+            "• 2D presentation desync with async presentation\n• Pixel art scaling artifacts",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x01000EB0276F2000L,
+            "Garfield - Escape from Monday",
+            "• Шейдерные задержки при смене комнат\n• Зависание вступительных роликов",
+            "• Room transition shader stutters\n• Intro video playback freezes",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x01007DE013A48000L,
+            "Golden Force",
+            "• Задержка ввода в динамичных платформенных секциях\n• Нестабильность кадровой частоты 60 FPS",
+            "• Input latency during precision platforming sections\n• 60 FPS frame pacing instability",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x010027901C89C000L,
+            "Hello Kitty - Island Adventure [Deluxe Edition]",
+            "• Просадки FPS при исследовании открытого 3D-острова\n• Зависания при фоновом сетевом поиске игроков",
+            "• Framerate drops during open 3D island traversal\n• Freezes caused by background matchmaking socket polling",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100B36008F90000L,
+            "Inazuma Eleven - Victory Road",
+            "• Зависание аниме-роликов при аппаратном декодировании NVDEC\n• Статтеры при командных спецприемах на стадионе\n• Нехватка памяти 4 ГБ",
+            "• Anime cutscene freezing on GPU NVDEC\n• Stadium special move shader stutters\n• 4GB DRAM memory exhaustion",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x010092A0172E4000L,
+            "It Takes Two",
+            "• Двойная нагрузка рендеринга разделенного экрана (Split-Screen)\n• Вылеты по нехватке памяти при использовании русской озвучки (MOD - RUS VOICE)",
+            "• Heavy double-viewport split-screen rendering draw calls\n• Out-of-memory crashes when using LayeredFS Russian voice mod",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100EB60202C8000L,
+            "Kalanoro",
+            "• Рассинхронизация 2D-кадров\n• Размытие текстовых диалогов при сжатии текстур",
+            "• 2D frame presentation pacing jitter\n• Dialogue font blurring under texture recompression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\async_presentation" to "false"
+            )
+        ),
+        GameFixProfile(
+            0x0100BB901FA12000L,
+            "Little Big Adventure - Twinsen's Quest",
+            "• Задержки компиляции шейдеров Unreal Engine 4 при переходе между островами\n• Высокое потребление VRAM",
+            "• Unreal Engine 4 shader compilation stutters across islands\n• Elevated VRAM memory footprint",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100E1C0252F8000L,
+            "Maestro",
+            "• Критическая задержка аудио и видео при дирижировании оркестром\n• Зависание вступительных видеороликов",
+            "• Audio-visual latency critical for orchestra conducting score\n• Intro video playback freezes",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100317013770000L,
+            "Mario + Rabbids - Sparks of Hope",
+            "• Нагрузка движка Snowdrop на видеобуфер и память 4 ГБ\n• Зависания при сетевом опросе серверов Ubisoft Connect\n• Статтеры тактических спецэффектов",
+            "• Snowdrop engine memory pressure exceeding 4GB DRAM\n• Hangs caused by Ubisoft Connect server network polling\n• Tactical effect shader stutters",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100C9C00E25C000L,
+            "Mario Golf - Super Rush",
+            "• Просадки FPS в режиме Speed Golf при одновременном беге игроков\n• Шейдерные задержки геометрии травы",
+            "• Speed Golf simultaneous runner physics framerate dips\n• Grass terrain shader compilation lag",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100B99019412000L,
+            "Mario vs. Donkey Kong",
+            "• Зависание видеороликов сюжета при аппаратном NVDEC\n• Статтеры анимаций головоломок",
+            "• Story FMV video playback hangs on hardware NVDEC\n• Puzzle stage animation stutters",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x0100EA80032EA000L,
+            "New Super Mario Bros. U Deluxe",
+            "• Микростаттеры синхронизации 60 FPS платформера\n• Замыливание текстур задников при сжатии ASTC",
+            "• 60 FPS platforming synchronization jitter\n• Background texture blurring under ASTC recompression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100ECD018EBE000L,
+            "Paper Mario - The Thousand-Year Door",
+            "• Сбои буферов отражения пола театральной сцены\n• Искажение геометрии бумажного складывания при обычной точности ГПУ",
+            "• Stage floor reflection buffer rendering issues\n• Paper folding geometry inaccuracies on Normal GPU accuracy",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "1",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100C3801C786000L,
+            "Poppy Playtime - Chapter 1",
+            "• Шейдерные статтеры освещения фабрики игрушек Unreal Engine 4\n• Зависание вступительных видеокассет VHS при аппаратном NVDEC\n• Нехватка памяти",
+            "• Unreal Engine 4 toy factory lighting shader stutters\n• VHS tape video playback freezes on GPU NVDEC\n• 4GB DRAM memory exhaustion",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100D3801E6CE000L,
+            "Poppy Playtime - Chapter 2",
+            "• Просадки FPS при погоне Mommy Long Legs\n• Зависания видеокассет VHS\n• Вылеты по нехватке памяти",
+            "• Framerate drops during Mommy Long Legs chase sequence\n• VHS cutscene playback freezes\n• Out-of-memory crashes",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100BD601EC3E000L,
+            "Poppy Playtime - Chapter 3",
+            "• Высокая нагрузка на VRAM в открытой локации Playcare\n• Зависания видеороликов\n• Переполнение памяти",
+            "• Playcare hub volumetric smoke and lighting VRAM load\n• Cutscene video freezes\n• Memory exhaustion",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100A2902051A000L,
+            "Poppy Playtime - Chapter 4",
+            "• Шейдерные задержки глубоких подземных комплексов\n• Зависания сюжетных видеороликов\n• Утечки памяти",
+            "• Deep underground complex shader stutters\n• Narrative video playback freezes\n• Memory allocation pressure",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x010075D026910000L,
+            "Poppy Playtime - Chapter 5",
+            "• Пиковые нагрузки геометрии финального акта\n• Зависания видеороликов\n• Риск крашей на 4 ГБ DRAM",
+            "• Peak geometry streaming load in final chapter\n• Video playback freezes\n• Crash risk on 4GB DRAM",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x01008E20257E0000L,
+            "Qliphah in Providence's Shadow",
+            "• Артефакты темных полутонов и освещения\n• Замыливание спрайтов при сжатии ASTC",
+            "• Dark lighting gradient banding artifacts\n• Sprite blurring under ASTC recompression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x01008970149B0000L,
+            "Rabbids - Party of Legends",
+            "• Микрофризы мини-игр для 4 игроков\n• Зависания при сетевом поиске серверов\n• Статтеры видеороликов",
+            "• 4-player party minigame physics microstutters\n• Network socket hangs during matchmaking\n• Video playback stutters",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\nvdec_emulation" to "1",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01009D6022DC2000L,
+            "Reus 2",
+            "• Нагрузка симуляции планетарных биомов на оперативную память\n• Искажение текстур гигантов при сжатии ASTC",
+            "• Planetary biome simulation memory consumption\n• Giant creature texture distortion under ASTC compression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x01009A5009A9E000L,
+            "Shining Resonance Refrain",
+            "• Зависание аниме-роликов при аппаратном NVDEC\n• Сбои синхронизации музыкальной боевой системы B.A.N.D.",
+            "• Anime cutscene freezing on GPU NVDEC\n• B.A.N.D. musical combat system synchronization issues",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100FD8022DAA000L,
+            "Super Mario Galaxy 2",
+            "• Просадки FPS при расчете гравитации сферических планет\n• Ошибки буферов размытия и свечения",
+            "• Framerate drops during spherical planet gravity calculations\n• Bloom lighting and blur buffer errors",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x010099C022B96000L,
+            "Super Mario Galaxy",
+            "• Зависание вступительного ролика при аппаратном декодировании\n• Ошибки позиционирования указателя Star Pointer",
+            "• Opening cinematic freeze with hardware NVDEC\n• Star Pointer render coordinate precision issues",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\nvdec_emulation" to "1",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01009B90006DC000L,
+            "Super Mario Maker 2",
+            "• Зависание на вечной загрузке при сетевом поиске уровней онлайн\n• Размытие иконок элементов редактора при сжатии ASTC",
+            "• Infinite loading hang on online level search socket polling\n• Level editor palette icon blurring with ASTC compression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100965017338000L,
+            "Super Mario Party Jamboree",
+            "• Вылеты по нехватке памяти из-за разнообразия 110+ мини-игр и больших досок\n• Зависания при сетевом поиске игроков",
+            "• Out of memory crashes across 110+ minigames and expansive game boards\n• Network socket hangs during matchmaking",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "System\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x010022201229A000L,
+            "Super Robot Wars 30",
+            "• Размытие высокодетализированных спрайтов роботов при сжатии ASTC\n• Зависание видеовставок атак при аппаратном NVDEC\n• Вылеты по памяти при 16 DLC",
+            "• High-resolution mecha sprite blurring under ASTC recompression\n• Attack animation video hangs on hardware NVDEC\n• Memory pressure with 16 DLCs",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01006C900CC60000L,
+            "Super Robot Wars T",
+            "• Потеря четкости контуров боевой анимации мехов\n• Зависание сюжетных роликов\n• Переполнение памяти при 25 DLC",
+            "• Mecha attack animation line art degradation\n• Story cutscene freezes\n• Memory overhead with 25 DLCs",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100CA400E300000L,
+            "Super Robot Wars V",
+            "• Рассинхронизация звука во время масштабных атак линкора Ямато\n• Зависания видеороликов\n• Нагрузка памяти с DLC",
+            "• Audio desync during massive Yamato battleship attacks\n• Video cutscene freezes\n• Memory pressure with DLCs",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x010026800E304000L,
+            "Super Robot Wars X",
+            "• Искажение магических спецэффектов и спрайтов мехов при пересжатии ASTC\n• Зависания вступительных роликов",
+            "• Magic effect and mecha sprite distortion under ASTC compression\n• Opening video playback freezes",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x010063301BD50000L,
+            "Super Robot Wars Y",
+            "• Размытие спрайтов боевых сцен\n• Зависания видеовставок при аппаратном декодировании\n• Нехватка памяти при 10 DLC",
+            "• Combat scene sprite blurring\n• Video playback hangs on hardware decoding\n• Memory pressure with 10 DLCs",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100C2801F22C000L,
+            "Tales of Berseria - Remastered",
+            "• Зависание аниме-роликов при аппаратном декодировании NVDEC\n• Статтеры при динамичных комбо-атаках 60 FPS\n• Утечки памяти при русификаторе (MOD - RUS)",
+            "• Anime cutscene freezing on GPU NVDEC\n• 60 FPS combo attack shader stutters\n• Memory leaks when using LayeredFS Russian mod",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01005E701D168000L,
+            "Tales of Graces f - Remastered",
+            "• Зависание опенинга при аппаратном NVDEC\n• Микрофризы скоростной боевой системы Style Shift\n• Стабильность модов",
+            "• Anime opening video freeze on GPU NVDEC\n• Style Shift battle system shader microstutters\n• Mod memory stability",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100A410169A4000L,
+            "Tales of Symphonia - Remastered",
+            "• Зависание вступительного видеоролика\n• Статтеры при входе в бой\n• Стабильность выделения памяти для русификатора",
+            "• Opening cinematic video playback freezes\n• Battle encounter transition stutters\n• Memory stability for Russian translation mod",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01002C0008E52000L,
+            "Tales of Vesperia [Definitive Edition]",
+            "• Зависание сюжетных аниме-роликов при аппаратном NVDEC\n• Задержки компиляции шейдеров сел-шейдинга\n• Нехватка памяти при русификаторе",
+            "• Story anime cutscene freezes on GPU NVDEC\n• Cel-shading shader compilation stutters\n• Memory pressure with Russian localization mod",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100F1101BB9E000L,
+            "Tales of Xillia - Remastered",
+            "• Зависание аниме-опенингов Джуда и Миллы при аппаратном NVDEC\n• Просадки FPS при двойных атаках\n• Вылеты памяти при двух модах (RUS + MODS)",
+            "• Jude and Milla anime opening video hangs on GPU NVDEC\n• Dual artes combo framerate drops\n• Memory crash risk with dual mods",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01001AA022B66000L,
+            "Tentacle Tango",
+            "• Рассинхронизация ритмических нажатий с музыкальным битом\n• Дрожание кадров при асинхронном выводе",
+            "• Rhythm timing desync with musical beat\n• Frame presentation jitter under async presentation",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x0100B51020B68000L,
+            "Terminator 2D - No Fate",
+            "• Рассинхронизация 2D-презентации кадров\n• Артефакты пиксельных спрайтов терминатора при сжатии текстур",
+            "• 2D frame presentation desync\n• Terminator pixel sprite degradation under texture compression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x01005EC01E6A4000L,
+            "The Art of Dave the Diver - Digital Artbook",
+            "• Цветовые полосы и замыливание детальных страниц артбука при сжатии ASTC\n• Статтеры при пролистывании изображений высокого разрешения",
+            "• Color banding and pixelation of high-res art pages with ASTC recompression\n• Stutter during high-resolution page navigation",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x010033100691A000L,
+            "The Coma - Recut",
+            "• Рассинхронизация 2D-презентации кадров в коридорах школы\n• Зависание вступительных видеороликов при аппаратном NVDEC",
+            "• 2D presentation desync in school corridors\n• Intro video playback freezes on GPU NVDEC",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100B7C01169C000L,
+            "The Coma 2 - Vicious Sisters",
+            "• Сбои динамических теней фонаря и атмосферного освещения\n• Зависание видеороликов\n• Переполнение памяти при 8 DLC",
+            "• Flashlight dynamic shadow and 2D horror atmospheric lighting desync\n• Video cutscene freezes\n• Memory overhead with 8 DLCs",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100A31020078000L,
+            "The Coma 2B - Catacomb",
+            "• Зависания катсцен при преследовании монстрами\n• Задержки воспроизведения видеороликов NVDEC\n• Размытие иллюстраций",
+            "• Cutscene stalls during monster chase sequences\n• NVDEC video playback freezes\n• Illustration blurring under compression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100919027DBE000L,
+            "The Coma 3 - Bloodlines",
+            "• Рассинхронизация кадров рисованного хоррора\n• Зависания видеосюжетов при аппаратном декодировании NVDEC",
+            "• 2D illustrated horror frame pacing desync\n• Video sequence hangs on GPU NVDEC decoding",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100C69018E4A000L,
+            "The Last Faith",
+            "• Утечки памяти при исследовании готического города и переходе между локациями\n• Задержки компиляции шейдеров магии и добиваний\n• Вылеты на 4 ГБ DRAM",
+            "• Memory fragmentation during Gothic interconnected map traversal\n• Weapon execution and magic particle shader stutters\n• Crash risk on 4GB DRAM",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x01007A2027548000L,
+            "The Legend of Heroes - Trails in the Sky 2nd Chapter - Remake",
+            "• Нагрузка 30 DLC на память и систему\n• Шейдерные задержки в пошаговых S-Craft боях\n• Зависание аниме-роликов при аппаратном NVDEC",
+            "• Heavy system and memory footprint with 30 DLCs\n• S-Craft turn-based combat shader stutters\n• Anime cutscene freezes on GPU NVDEC",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100FBE015910000L,
+            "The Legend of Heroes - Trails to Azure",
+            "• Размытие текстур высокого разрешения при пересжатии ASTC\n• Зависание вступительного аниме-ролика\n• Микрофризы в режиме ускорения (Turbo Mode)",
+            "• High-resolution texture degradation under ASTC compression\n• Anime opening video freeze on GPU NVDEC\n• Turbo Mode frame pacing stutter",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100852026502000L,
+            "Tyrant's Realm",
+            "• Статтеры компиляции ретро-шейдеров PS1-стилистики\n• Искажение аффинных текстур при сжатии",
+            "• PS1-style retro dark fantasy shader compilation stutters\n• Affine texture mapping distortion under compression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x0100304027592000L,
+            "Urban Jungle",
+            "• Просадки кадровой частоты из-за прозрачности множества растений\n• Шейдерные задержки комнатного освещения",
+            "• Framerate drops from heavy foliage transparency overdraw\n• Room lighting shader compilation stutters",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x010040502453E000L,
+            "Vampire Crawlers",
+            "• Критическое падение FPS при одновременной отрисовке десятков тысяч пуль и врагов\n• Прерывания доступа к памяти гостевого процесса",
+            "• Severe framerate drops with tens of thousands of projectiles and enemy sprites\n• Guest memory abort risks under swarm loads",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x0100217023F6C000L,
+            "Well Dweller",
+            "• Рассинхронизация 2D-кадров\n• Потеря резкости пиксель-арта колодца",
+            "• 2D frame presentation pacing jitter\n• Well pixel art sharpness degradation",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x01001B90277BE000L,
+            "Woodo",
+            "• Потеря детализации фактуры дерева и резьбы при сжатии ASTC\n• Шейдерные задержки глубины резкости и объемного света\n• Нехватка памяти",
+            "• Wood grain texture and carving degradation under ASTC compression\n• Depth of field and ambient lighting shader stutters\n• Memory pressure",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x010013F009B88000L,
+            "Xeno Crisis",
+            "• Разрыв кадров (Tearing) и микрофризы аркадного шутера 60 FPS при асинхронном выводе\n• Сбои передачи буферов Genesis/Mega Drive",
+            "• Screen tearing and frame pacing stutters in 60 FPS arcade shooter with async presentation\n• Mega Drive sprite buffer sync errors",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
+        GameFixProfile(
+            0x0100BAC01E57E000L,
+            "Ys X - Nordics",
+            "• Зависание вступительных аниме-роликов при аппаратном NVDEC\n• Просадки FPS при морских боях на корабле и спецэффектах воды\n• Вылеты по нехватке памяти при 13 DLC",
+            "• Anime cutscene freezes on GPU NVDEC\n• Framerate drops during naval ship battles and water particle effects\n• Memory exhaustion with 13 DLCs",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
             )
         )
     )
