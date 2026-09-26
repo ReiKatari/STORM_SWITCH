@@ -2846,6 +2846,20 @@ void MainWindow::SetupMenuIcons() {
     }
     apply_action(log_viewer_action, QStringLiteral("book"), col_blue);
 
+    if (!reset_gamefix_action) {
+        reset_gamefix_action = new QAction(StormLang(
+            QStringLiteral("Сбросить скрытые диалоги авто-исправлений..."),
+            QStringLiteral("Reset Hidden Auto-Fix Dialogs..."),
+            QStringLiteral("Ausgeblendete Auto-Fix-Dialoge zurücksetzen..."),
+            QStringLiteral("Réinitialiser les dialogues d'auto-correction masqués..."),
+            QStringLiteral("重置隐藏的自动修复对话框..."),
+            QStringLiteral("非表示の自動修正ダイアログをリセット...")
+        ), this);
+        ui->menu_Tools->addAction(reset_gamefix_action);
+        connect(reset_gamefix_action, &QAction::triggered, this, &MainWindow::OnResetGameFixSuppression);
+    }
+    apply_action(reset_gamefix_action, QStringLiteral("shield"), col_cyan);
+
     // Multiplayer Menu
     apply_action(ui->action_View_Lobby, QStringLiteral("globe"), col_cyan);
     apply_action(ui->action_Start_Room, QStringLiteral("plus"), col_green);
@@ -3093,6 +3107,10 @@ void MainWindow::ConnectWidgetEvents() {
     connect(game_list, &GameList::OpenFolderRequested, this, &MainWindow::OnGameListOpenFolder);
     connect(game_list, &GameList::OpenSaveSyncRequested, this,
             [this](u64 program_id) { OnOpenStormSaveSync(program_id); });
+    connect(game_list, &GameList::OpenGameFixRequested, this,
+            [this](u64 program_id, const QString& game_path) {
+                ShowGameFixDialog(program_id, game_path, true /* force_show */);
+            });
     connect(game_list, &GameList::OpenModManagerRequested, this,
             [this](u64 program_id, const QString& game_path) {
                 const QString game_name = QFileInfo(game_path).completeBaseName();
@@ -3702,6 +3720,385 @@ void MainWindow::OnOpenLogViewer() {
     dialog.exec();
 }
 
+MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show) {
+    if (title_id == 0) {
+        static const QRegularExpression tid_regex(QStringLiteral(R"(([0-9a-fA-F]{16}))"));
+        const auto match = tid_regex.match(game_path);
+        if (match.hasMatch()) {
+            bool ok = false;
+            const u64 parsed = match.captured(1).toULongLong(&ok, 16);
+            if (ok && parsed != 0) {
+                title_id = parsed;
+            }
+        }
+    }
+
+    const auto* profile = Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, game_path.toStdString());
+    if (profile != nullptr && title_id == 0) {
+        title_id = profile->title_id;
+    }
+    if (profile == nullptr && title_id != 0) {
+        profile = Core::GameFixDatabase::GetProfile(title_id);
+    }
+
+    if (profile == nullptr) {
+        return GameFixDialogResult::LaunchWithoutChanges;
+    }
+
+    QByteArray utf8_str = game_path.toUtf8();
+    const auto file_path_hash = Common::CityHash64(utf8_str.constData(), static_cast<std::size_t>(utf8_str.size()));
+    const auto specific_config = fmt::format("{:016X}_{:016X}", title_id, file_path_hash);
+    const auto legacy_config = fmt::format("{:016X}", title_id);
+
+    std::filesystem::path custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
+    std::string target_ini = (custom_path / (specific_config + ".ini")).string();
+    std::string check_ini = target_ini;
+    if (!std::filesystem::exists(check_ini) && std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
+        check_ini = (custom_path / (legacy_config + ".ini")).string();
+    }
+
+    bool dont_ask = false;
+    if (std::filesystem::exists(check_ini)) {
+        std::ifstream f(check_ini);
+        std::string l;
+        while (std::getline(f, l)) {
+            if (l.find("storm_fix_dont_ask=true") != std::string::npos || l.find("storm_fix_dont_ask = true") != std::string::npos) {
+                dont_ask = true;
+                break;
+            }
+        }
+    }
+
+    if ((dont_ask || m_is_cmd_line_launch) && !force_show) {
+        Core::GameFixDatabase::SetFixesEnabled(true);
+        Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+        return GameFixDialogResult::ApplyAndLaunch;
+    }
+
+    QString clean_game_name = QString::fromStdString(profile->game_name);
+    clean_game_name.remove(QRegularExpression(QStringLiteral(R"(\s*\((?:Alt|Rev|v|Build)[^)]*\))"), QRegularExpression::CaseInsensitiveOption));
+    clean_game_name.remove(QRegularExpression(QStringLiteral(R"(\s*\[[^\]]*\])")));
+    clean_game_name = clean_game_name.trimmed();
+    if (clean_game_name.isEmpty()) {
+        clean_game_name = tr("Игра");
+    }
+
+    QDialog fixDialog(this);
+    fixDialog.setWindowTitle(tr("🛡️ Авто-исправление: %1").arg(clean_game_name));
+    fixDialog.setWindowFlags(fixDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    fixDialog.setMinimumWidth(600);
+    fixDialog.setMaximumWidth(660);
+    fixDialog.resize(620, 440);
+
+    fixDialog.setStyleSheet(QStringLiteral(
+        "QDialog {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #151923, stop:1 #0B0E14);"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    border-radius: 12px;"
+        "}"
+        "QLabel { color: #E2E8F0; font-family: 'Segoe UI', sans-serif; }"
+    ));
+
+    auto* dlg_layout = new QVBoxLayout(&fixDialog);
+    dlg_layout->setContentsMargins(14, 12, 14, 12);
+    dlg_layout->setSpacing(8);
+
+    // 1. Header Card with Game Title
+    auto* headerCard = new QFrame(&fixDialog);
+    headerCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 210, 255, 0.12), stop:1 rgba(2, 132, 199, 0.04));"
+        "    border: 1px solid rgba(0, 210, 255, 0.28);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* headerLayout = new QHBoxLayout(headerCard);
+    headerLayout->setContentsMargins(12, 8, 12, 8);
+    headerLayout->setSpacing(10);
+
+    auto* gameIconLabel = new QLabel(headerCard);
+    gameIconLabel->setText(QStringLiteral("🛡️"));
+    gameIconLabel->setStyleSheet(QStringLiteral("font-size: 20px; background: transparent; border: none;"));
+    headerLayout->addWidget(gameIconLabel);
+
+    auto* titleContainer = new QVBoxLayout();
+    titleContainer->setContentsMargins(0, 0, 0, 0);
+    titleContainer->setSpacing(2);
+
+    auto* gameTitleLabel = new QLabel(clean_game_name, headerCard);
+    gameTitleLabel->setStyleSheet(QStringLiteral("font-size: 14px; font-weight: bold; color: #FFFFFF; background: transparent; border: none;"));
+    titleContainer->addWidget(gameTitleLabel);
+
+    if (title_id != 0) {
+        auto* tidLabel = new QLabel(QStringLiteral("Title ID: %1").arg(QString::asprintf("%016llX", static_cast<unsigned long long>(title_id))), headerCard);
+        tidLabel->setStyleSheet(QStringLiteral("font-size: 11px; color: #94A3B8; background: transparent; border: none; font-family: monospace;"));
+        titleContainer->addWidget(tidLabel);
+    }
+    headerLayout->addLayout(titleContainer, 1);
+    dlg_layout->addWidget(headerCard);
+
+    // Scroll Area for Issue Card and Fix Card
+    auto* scrollArea = new QScrollArea(&fixDialog);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setStyleSheet(QStringLiteral(
+        "QScrollArea { background: transparent; border: none; }"
+        "QScrollBar:vertical {"
+        "    background: rgba(15, 23, 42, 0.6);"
+        "    width: 8px;"
+        "    margin: 0px;"
+        "    border-radius: 4px;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "    background: rgba(0, 210, 255, 0.4);"
+        "    min-height: 24px;"
+        "    border-radius: 4px;"
+        "}"
+        "QScrollBar::handle:vertical:hover {"
+        "    background: #00D2FF;"
+        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+        "    height: 0px;"
+        "}"
+    ));
+
+    auto* scrollWidget = new QWidget();
+    scrollWidget->setStyleSheet(QStringLiteral("background: transparent;"));
+    auto* scrollLayout = new QVBoxLayout(scrollWidget);
+    scrollLayout->setContentsMargins(0, 0, 6, 0);
+    scrollLayout->setSpacing(8);
+
+    // 2. Issues Card
+    QString issues_formatted = QString::fromStdString(profile->issues_ru);
+    issues_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
+
+    auto* issueCard = new QFrame(scrollWidget);
+    issueCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(239, 68, 68, 0.08);"
+        "    border: 1px solid rgba(239, 68, 68, 0.35);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* issueLayout = new QVBoxLayout(issueCard);
+    issueLayout->setContentsMargins(12, 8, 12, 8);
+    issueLayout->setSpacing(4);
+
+    auto* issueHeader = new QLabel(QStringLiteral("⚠️ <b>Обнаружены известные проблемы в игре:</b>"), issueCard);
+    issueHeader->setStyleSheet(QStringLiteral("color: #F87171; font-size: 12.5px; background: transparent; border: none;"));
+    issueLayout->addWidget(issueHeader);
+
+    auto* issueText = new QLabel(issues_formatted, issueCard);
+    issueText->setTextFormat(Qt::RichText);
+    issueText->setWordWrap(true);
+    issueText->setStyleSheet(QStringLiteral("color: #FCA5A5; font-size: 11.5px; line-height: 1.35; background: transparent; border: none;"));
+    issueLayout->addWidget(issueText);
+    scrollLayout->addWidget(issueCard);
+
+    // 3. Recommended Fixes Card
+    QString fixes_formatted = QString::fromStdString(profile->fixes_ru);
+    fixes_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
+
+    auto* fixCard = new QFrame(scrollWidget);
+    fixCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(0, 210, 255, 0.06);"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* fixLayout = new QVBoxLayout(fixCard);
+    fixLayout->setContentsMargins(12, 8, 12, 8);
+    fixLayout->setSpacing(4);
+
+    auto* fixHeader = new QLabel(QStringLiteral("🛡️ <b>Параметры авто-исправления (совместимость и стабильность):</b>"), fixCard);
+    fixHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 12.5px; background: transparent; border: none;"));
+    fixLayout->addWidget(fixHeader);
+
+    auto* fixText = new QLabel(fixes_formatted, fixCard);
+    fixText->setTextFormat(Qt::RichText);
+    fixText->setWordWrap(true);
+    fixText->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.4; background: transparent; border: none;"));
+    fixLayout->addWidget(fixText);
+    scrollLayout->addWidget(fixCard);
+
+    scrollLayout->addStretch(1);
+
+    scrollArea->setWidget(scrollWidget);
+    dlg_layout->addWidget(scrollArea, 1);
+
+    // 4. Prompt text
+    auto* promptLabel = new QLabel(force_show ?
+        tr("Применить параметры авто-исправления к профилю игры?") :
+        tr("Применить параметры авто-исправления для этой игры перед запуском?"), &fixDialog);
+    promptLabel->setAlignment(Qt::AlignCenter);
+    promptLabel->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 12px; color: #F8FAFC; margin-top: 2px; background: transparent; border: none;"));
+    dlg_layout->addWidget(promptLabel);
+
+    // 5. Stylized Checkbox (Rule 4: solid square with neon fill, no old checkmark)
+    auto* cb_layout = new QHBoxLayout();
+    cb_layout->setAlignment(Qt::AlignCenter);
+    auto* dont_ask_cb = new QCheckBox(tr("Больше не показывать для этой игры"), &fixDialog);
+    dont_ask_cb->setChecked(false);
+    dont_ask_cb->setStyleSheet(QStringLiteral(
+        "QCheckBox {"
+        "    color: #94A3B8;"
+        "    font-size: 11.5px;"
+        "    spacing: 8px;"
+        "    background: transparent;"
+        "    border: none;"
+        "}"
+        "QCheckBox::indicator {"
+        "    width: 15px;"
+        "    height: 15px;"
+        "    border-radius: 4px;"
+        "    border: 1px solid rgba(0, 210, 255, 0.45);"
+        "    background: rgba(15, 23, 42, 0.7);"
+        "}"
+        "QCheckBox::indicator:hover {"
+        "    border: 1px solid #00D2FF;"
+        "    background: rgba(0, 210, 255, 0.15);"
+        "}"
+        "QCheckBox::indicator:checked {"
+        "    background: #00D2FF;"
+        "    border: 1px solid #00F0FF;"
+        "}"
+    ));
+    cb_layout->addWidget(dont_ask_cb);
+    dlg_layout->addLayout(cb_layout);
+
+    // 6. Action buttons (Elevated 3D buttons)
+    auto* btn_layout = new QHBoxLayout();
+    btn_layout->setContentsMargins(0, 2, 0, 0);
+    btn_layout->setSpacing(10);
+    btn_layout->setAlignment(Qt::AlignCenter);
+
+    auto* applyBtn = new QPushButton(force_show ? tr("🛡️ Применить для этой игры") : tr("🛡️ Применить и запустить"), &fixDialog);
+    applyBtn->setObjectName(QStringLiteral("PrimaryDialogButton"));
+    applyBtn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
+        "    color: #050B14;"
+        "    font-weight: bold;"
+        "    font-size: 12.5px;"
+        "    padding: 7px 16px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid #00F0FF;"
+        "}"
+        "QPushButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #00D2FF);"
+        "}"
+        "QPushButton:pressed {"
+        "    background: #0284C7;"
+        "}"
+    ));
+
+    auto* skipBtn = new QPushButton(force_show ? tr("Закрыть") : tr("Запустить без изменений"), &fixDialog);
+    skipBtn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: rgba(30, 41, 59, 0.75);"
+        "    color: #CBD5E1;"
+        "    font-size: 12.5px;"
+        "    padding: 7px 14px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid rgba(148, 163, 184, 0.25);"
+        "}"
+        "QPushButton:hover {"
+        "    background: rgba(51, 65, 85, 0.9);"
+        "    border: 1px solid rgba(148, 163, 184, 0.45);"
+        "    color: #FFFFFF;"
+        "}"
+        "QPushButton:pressed {"
+        "    background: rgba(15, 23, 42, 0.9);"
+        "}"
+    ));
+
+    QPushButton* cancelBtn = nullptr;
+    if (!force_show) {
+        cancelBtn = new QPushButton(tr("Отменить"), &fixDialog);
+        cancelBtn->setStyleSheet(QStringLiteral(
+            "QPushButton {"
+            "    background: rgba(46, 16, 20, 0.75);"
+            "    color: #FCA5A5;"
+            "    font-size: 12.5px;"
+            "    padding: 7px 14px;"
+            "    border-radius: 6px;"
+            "    border: 1px solid rgba(239, 68, 68, 0.35);"
+            "}"
+            "QPushButton:hover {"
+            "    background: rgba(239, 68, 68, 0.85);"
+            "    border: 1px solid #FF5252;"
+            "    color: #FFFFFF;"
+            "}"
+            "QPushButton:pressed {"
+            "    background: #991B1B;"
+            "}"
+        ));
+    }
+
+    btn_layout->addWidget(applyBtn);
+    btn_layout->addWidget(skipBtn);
+    if (cancelBtn) {
+        btn_layout->addWidget(cancelBtn);
+    }
+    dlg_layout->addLayout(btn_layout);
+
+    GameFixDialogResult action = GameFixDialogResult::Cancel;
+
+    connect(applyBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
+        action = GameFixDialogResult::ApplyAndLaunch;
+        fixDialog.accept();
+    });
+    connect(skipBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
+        action = GameFixDialogResult::LaunchWithoutChanges;
+        fixDialog.accept();
+    });
+    if (cancelBtn) {
+        connect(cancelBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
+            action = GameFixDialogResult::Cancel;
+            fixDialog.reject();
+        });
+    }
+
+    fixDialog.adjustSize();
+    if (fixDialog.height() > 560) {
+        fixDialog.resize(fixDialog.width(), 560);
+    }
+
+    fixDialog.exec();
+
+    if (action == GameFixDialogResult::Cancel) {
+        return GameFixDialogResult::Cancel;
+    }
+
+    const bool new_dont_ask = dont_ask_cb->isChecked();
+    Core::GameFixDatabase::SetDontAskAgain(title_id, target_ini, new_dont_ask);
+    Core::GameFixDatabase::SetDontAskAgain(title_id, (custom_path / (legacy_config + ".ini")).string(), new_dont_ask);
+
+    if (action == GameFixDialogResult::ApplyAndLaunch) {
+        Core::GameFixDatabase::SetFixesEnabled(true);
+        Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+        if (force_show) {
+            QMessageBox::information(this, tr("🛡️ Авто-исправление"),
+                tr("Параметры авто-исправления успешно применены для текущей сессии игры: %1").arg(clean_game_name));
+        }
+        return GameFixDialogResult::ApplyAndLaunch;
+    }
+    Core::GameFixDatabase::SetFixesEnabled(false);
+    return GameFixDialogResult::LaunchWithoutChanges;
+}
+
+void MainWindow::OnResetGameFixSuppression() {
+    int count = Core::GameFixDatabase::ResetAllDontAskAgain();
+    if (count > 0) {
+        QMessageBox::information(this, tr("Авто-исправления STORM SWITCH"),
+            tr("Сброшено скрытых диалогов авто-исправлений: %1.\nПри следующем запуске оптимизированных игр диалог будет предложен снова.").arg(count));
+    } else {
+        QMessageBox::information(this, tr("Авто-исправления STORM SWITCH"),
+            tr("Нет скрытых диалогов авто-исправлений. Все диалоги уже активны."));
+    }
+}
+
 void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletParameters params,
                           StartGameType type) {
     if (emulation_running || (QtCommon::emu_thread && QtCommon::emu_thread->isRunning()) || QtCommon::system->IsPoweredOn()) {
@@ -3765,6 +4162,20 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         params.program_id = title_id;
     }
 
+    if (type == StartGameType::Normal) {
+        if (params.launch_type == Service::AM::LaunchType::ApplicationInitiated) {
+            Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+        } else {
+            const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
+            if (fix_result == GameFixDialogResult::Cancel) {
+                LOG_INFO(Frontend, "Запуск игры отменен пользователем в диалоге авто-исправлений");
+                m_session_backup.is_active = false;
+                game_list->setEnabled(true);
+                return;
+            }
+        }
+    }
+
     if (title_id != 0 && type == StartGameType::Normal) {
         const auto file_path_hash = Common::CityHash64(utf8_str.constData(), static_cast<std::size_t>(utf8_str.size()));
         const auto specific_config = fmt::format("{:016X}_{:016X}", title_id, file_path_hash);
@@ -3804,6 +4215,8 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
             Core::GameFixDatabase::ApplyProfileDirectly(title_id);
             QtCommon::system->ApplySettings();
             statusBar()->showMessage(tr("🛡️ Авто-исправление: Применено"), 8000);
+        } else if (Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString()) != nullptr) {
+            statusBar()->showMessage(tr("⚠️ Авто-исправление: Не применено"), 8000);
         }
         UpdateStatusButtons();
     }
@@ -4095,13 +4508,24 @@ void MainWindow::OnEmulationStopped() {
         QtCommon::emu_thread->disconnect();
         if (QtCommon::emu_thread->isRunning()) {
             QtCommon::emu_thread->ForceStop();
-            if (!QtCommon::emu_thread->wait(3000)) {
-                LOG_ERROR(Frontend, "EmuThread did not terminate in 3 seconds, terminating...");
-                QtCommon::emu_thread->terminate();
-                QtCommon::emu_thread->wait(1000);
+            // Allow thread to gracefully unwind its loops and shut down cleanly with GUI responsiveness
+            for (int i = 0; i < 50 && QtCommon::emu_thread->isRunning(); ++i) {
+                if (QtCommon::emu_thread->wait(100)) {
+                    break;
+                }
+                QCoreApplication::processEvents();
+            }
+            if (QtCommon::emu_thread->isRunning()) {
+                LOG_WARNING(Frontend, "EmuThread is still executing after timeout; waiting synchronously...");
+                QtCommon::emu_thread->wait(5000);
             }
         }
-        QtCommon::emu_thread.reset();
+        if (!QtCommon::emu_thread->isRunning()) {
+            QtCommon::emu_thread.reset();
+        } else {
+            LOG_ERROR(Frontend, "EmuThread did not exit within limit; detaching handle to prevent MSVCP140 crash");
+            QtCommon::emu_thread.release();
+        }
     }
 
     if (shutdown_dialog) {
@@ -10434,6 +10858,16 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
             QStringLiteral("Journal des opérations (Logs)..."),
             QStringLiteral("运行日志 (Logs)..."),
             QStringLiteral("動作ログ (Logs)...")
+        ));
+    }
+    if (reset_gamefix_action) {
+        reset_gamefix_action->setText(StormLang(
+            QStringLiteral("Сбросить скрытые диалоги авто-исправлений..."),
+            QStringLiteral("Reset Hidden Auto-Fix Dialogs..."),
+            QStringLiteral("Ausgeblendete Auto-Fix-Dialoge zurücksetzen..."),
+            QStringLiteral("Réinitialiser les dialogues d'auto-correction masqués..."),
+            QStringLiteral("重置隐藏的自动修复对话框..."),
+            QStringLiteral("非表示の自動修正ダイアログをリセット...")
         ));
     }
 

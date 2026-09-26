@@ -285,6 +285,13 @@ private:
     void BootGame(const QString& filename, Service::AM::FrontendAppletParameters params,
                   StartGameType with_config = StartGameType::Normal);
     void BootGameFromList(const QString& filename, StartGameType with_config);
+    enum class GameFixDialogResult {
+        ApplyAndLaunch,
+        LaunchWithoutChanges,
+        Cancel,
+    };
+    GameFixDialogResult ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show = false);
+    void OnResetGameFixSuppression();
     void OnOpenStormGamesWorld();
     void OnOpenStormSaveSync(u64 target_program_id = 0);
     void OnOpenLogViewer();
@@ -729,6 +736,7 @@ private:
     QAction* storm_games_world_action{nullptr};
     QAction* storm_save_sync_action{nullptr};
     QAction* log_viewer_action{nullptr};
+    QAction* reset_gamefix_action{nullptr};
 
 protected:
     void dropEvent(QDropEvent* event) override;

@@ -943,10 +943,24 @@ void IGeneralService::GetInternetConnectionStatus(HLERequestContext& ctx) {
     };
     Output out{};
 
-    if (!st.connected) {
+    const bool is_airplane = Settings::values.airplane_mode.GetValue();
+    const u64 current_title = system.GetApplicationProcessProgramID();
+    const bool is_tokyo_2020 = (current_title == 0x0100C60010228000ULL ||
+                                current_title == 0x01008F400E75A000ULL ||
+                                current_title == 0x0100BA700E340000ULL);
+
+    if (is_airplane) {
+        out.type = 1;
+        out.bars = 0;
+        out.state = InternetConnectionStatus::ConnectingUnknown1;
+    } else if (is_tokyo_2020) {
         out.type = 1;
         out.bars = 3;
         out.state = InternetConnectionStatus::Connected;
+    } else if (!st.connected) {
+        out.type = 1;
+        out.bars = 0;
+        out.state = InternetConnectionStatus::ConnectingUnknown1;
     } else {
         out.type = st.via_wifi ? 1 : 2;
         out.bars = st.bars;

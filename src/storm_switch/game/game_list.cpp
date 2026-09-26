@@ -30,6 +30,7 @@
 #include "core/core.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
+#include "core/hle/service/game_fix_database.h"
 #include "qt_common/config/uisettings.h"
 #include "qt_common/game_list/game_list_p.h"
 #include "qt_common/game_list/model.h"
@@ -558,6 +559,10 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     context_menu.addSeparator();
     QAction* mod_manager_action = context_menu.addAction(tr("🧩 Менеджер модов..."));
     QAction* cheats_action = context_menu.addAction(tr("✨ Чит-коды..."));
+    QAction* game_fix_action = nullptr;
+    if (Core::GameFixDatabase::GetProfileByTitleOrPath(program_id, path) != nullptr) {
+        game_fix_action = context_menu.addAction(tr("🛡️ Авто-исправление игры..."));
+    }
     QAction* properties = context_menu.addAction(tr("⚙️ Свойства / Настройки игры..."));
     QAction* reset_game_settings = context_menu.addAction(tr("🔄 Сбросить настройки игры на стандартные"));
 
@@ -584,6 +589,11 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     connect(cheats_action, &QAction::triggered, this, [this, program_id, path]() {
         emit OpenCheatsRequested(program_id, QString::fromStdString(path));
     });
+    if (game_fix_action) {
+        connect(game_fix_action, &QAction::triggered, this, [this, program_id, path]() {
+            emit OpenGameFixRequested(program_id, QString::fromStdString(path));
+        });
+    }
     connect(reset_game_settings, &QAction::triggered, this, [this, program_id, path]() {
         const auto file_path_hash = Common::CityHash64(path.data(), path.size());
         const auto specific_config = fmt::format("{:016X}_{:016X}", program_id, file_path_hash);
