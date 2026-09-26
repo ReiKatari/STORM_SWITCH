@@ -3692,6 +3692,8 @@ void MainWindow::StormSessionBackup::Capture() {
     skip_cpu_inner_invalidation = capture_switchable(Settings::values.skip_cpu_inner_invalidation);
     cpu_clock = capture_switchable(Settings::values.cpu_clock);
     use_custom_cpu_ticks = capture_switchable(Settings::values.use_custom_cpu_ticks);
+    cpu_ticks = capture_switchable(Settings::values.cpu_ticks);
+    cpu_backend = capture_switchable(Settings::values.cpu_backend);
     frame_pacing_mode = capture_switchable(Settings::values.frame_pacing_mode);
     dynamic_performance_scaler = capture_switchable(Settings::values.dynamic_performance_scaler);
     is_active = true;
@@ -3745,6 +3747,8 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.skip_cpu_inner_invalidation, skip_cpu_inner_invalidation);
     restore_switchable(Settings::values.cpu_clock, cpu_clock);
     restore_switchable(Settings::values.use_custom_cpu_ticks, use_custom_cpu_ticks);
+    restore_switchable(Settings::values.cpu_ticks, cpu_ticks);
+    restore_switchable(Settings::values.cpu_backend, cpu_backend);
     restore_switchable(Settings::values.frame_pacing_mode, frame_pacing_mode);
     restore_switchable(Settings::values.dynamic_performance_scaler, dynamic_performance_scaler);
 
@@ -5949,6 +5953,9 @@ void MainWindow::OnConfigure() {
     connect(&configure_dialog, &ConfigureDialog::ConfigurationApplied, this,
             [this]() {
                 UpdateStatusButtons();
+                if (m_session_backup.is_active) {
+                    m_session_backup.Capture();
+                }
                 if (config) {
                     config->SaveAllValues();
                 }

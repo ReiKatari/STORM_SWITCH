@@ -1125,10 +1125,8 @@ Widget::Widget(Settings::BasicSetting* setting_, const TranslationMap& translati
         return;
     }
 
-    apply_funcs.push_back([load_func, setting_](bool powered_on) {
-        if (setting_->RuntimeModifiable() || !powered_on) {
-            load_func();
-        }
+    apply_funcs.push_back([load_func](bool /*powered_on*/) {
+        load_func();
     });
 
     bool enable = runtime_lock || setting.RuntimeModifiable();
