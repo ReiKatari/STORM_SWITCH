@@ -39,6 +39,11 @@ struct ChannelState {
 
     void BindRasterizer(VideoCore::RasterizerInterface* rasterizer);
 
+    MemoryManager* memory_manager = nullptr;
+    s32 bind_id = -1;
+    u64 program_id = 0;
+    bool initialized = false;
+
     struct Payload {
         explicit Payload(Core::System& system, MemoryManager& memory_manager, ChannelState& channel_state);
 
@@ -56,12 +61,8 @@ struct ChannelState {
         Engines::Nv01Timer nv01_timer;
         DmaPusher dma_pusher;
     };
-    std::optional<Payload> payload;
-    MemoryManager* memory_manager = nullptr;
 
-    s32 bind_id = -1;
-    u64 program_id = 0;
-    bool initialized = false;
+    std::optional<Payload> payload;
 };
 
 } // namespace Control
