@@ -24,6 +24,9 @@ void Scheduler::Push(GPU& gpu, s32 channel, CommandList&& entries) {
     }
     // Process commands outside the lock to reduce contention.
     // Multiple channels can prepare their commands in parallel.
+    if (!channel_state->payload) {
+        return;
+    }
     channel_state->payload->dma_pusher.Push(std::move(entries));
     channel_state->payload->dma_pusher.DispatchCalls();
 }
