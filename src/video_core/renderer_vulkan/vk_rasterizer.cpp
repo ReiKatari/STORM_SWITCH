@@ -428,15 +428,17 @@ void RasterizerVulkan::DrawTexture() {
     float dst_y0 = draw_texture_state.dst_y0;
     float dst_x1 = draw_texture_state.dst_x1;
     float dst_y1 = draw_texture_state.dst_y1;
+    const u32 clip_w = maxwell3d->regs.surface_clip.width != 0
+                           ? u32(maxwell3d->regs.surface_clip.width)
+                           : 1280U;
+    const u32 clip_h = maxwell3d->regs.surface_clip.height != 0
+                           ? u32(maxwell3d->regs.surface_clip.height)
+                           : 720U;
     if (dst_x1 <= dst_x0) {
-        dst_x1 = dst_x0 + static_cast<float>(maxwell3d->regs.surface_clip.width != 0
-                                                 ? maxwell3d->regs.surface_clip.width
-                                                 : 1280);
+        dst_x1 = dst_x0 + static_cast<float>(clip_w);
     }
     if (dst_y1 <= dst_y0) {
-        dst_y1 = dst_y0 + static_cast<float>(maxwell3d->regs.surface_clip.height != 0
-                                                 ? maxwell3d->regs.surface_clip.height
-                                                 : 720);
+        dst_y1 = dst_y0 + static_cast<float>(clip_h);
     }
 
     Region2D dst_region = {Offset2D{.x = ScaleDst(dst_x0),
