@@ -5423,9 +5423,8 @@ static const std::vector<GameFixProfile> s_profiles = {
 
 static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     // 1-15: Графика и видео
-    {"Renderer\\backend", "0"},
     {"Renderer\\gpu_accuracy", "1"},
-    {"Renderer\\nvdec_emulation", "1"},
+    {"Renderer\\nvdec_emulation", "2"},
     {"Renderer\\accelerate_astc", "1"},
     {"Renderer\\astc_recompression", "0"},
     {"Renderer\\use_asynchronous_shaders", "true"},
@@ -5485,15 +5484,15 @@ static std::string BuildFixesRu(const std::unordered_map<std::string, std::strin
     }
 
     // 3. Декодирование видео NVDEC
-    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "1");
+    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "2");
     if (nvdec == "0") {
         out += "• <b>Декодирование видео NVDEC:</b> Отключено (пропуск проблемных видеопотоков)\n";
-    } else if (nvdec == "2") {
-        out += "• <b>Декодирование видео NVDEC:</b> ГПУ (аппаратное декодирование видеокадров)\n";
+    } else if (nvdec == "1") {
+        out += "• <b>Декодирование видео NVDEC:</b> ЦП (программный декодер FFmpeg устраняет зависания)\n";
     } else if (nvdec == "3") {
         out += "• <b>Декодирование видео NVDEC:</b> Гибридное (аппаратное с ЦП-подстраховкой)\n";
     } else {
-        out += "• <b>Декодирование видео NVDEC:</b> ЦП (программный декодер FFmpeg устраняет зависания)\n";
+        out += "• <b>Декодирование видео NVDEC:</b> ГПУ (аппаратное декодирование видеокадров)\n";
     }
 
     // 4. Декодирование текстур ASTC
@@ -5679,15 +5678,15 @@ static std::string BuildFixesEn(const std::unordered_map<std::string, std::strin
     }
 
     // 3. NVDEC Video Emulation
-    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "1");
+    const auto nvdec = GetSetting(settings, "Renderer\\nvdec_emulation", "2");
     if (nvdec == "0") {
         out += "• <b>NVDEC Video Emulation:</b> Disabled (bypass problematic video streams)\n";
-    } else if (nvdec == "2") {
-        out += "• <b>NVDEC Video Emulation:</b> GPU (hardware video decoding)\n";
+    } else if (nvdec == "1") {
+        out += "• <b>NVDEC Video Emulation:</b> CPU (software FFmpeg decoder prevents cutscene freezes)\n";
     } else if (nvdec == "3") {
         out += "• <b>NVDEC Video Emulation:</b> Hybrid (hardware decoding with CPU fallback)\n";
     } else {
-        out += "• <b>NVDEC Video Emulation:</b> CPU (software FFmpeg decoder prevents cutscene freezes)\n";
+        out += "• <b>NVDEC Video Emulation:</b> GPU (hardware video decoding)\n";
     }
 
     // 4. ASTC Texture Decoding
@@ -5919,7 +5918,8 @@ const GameFixProfile* GameFixDatabase::GetProfile(u64 title_id) {
         return it_base->second.get();
     }
 
-    // Check s_profiles
+    // Check s_profiles - gather all matching profiles (to merge duplicates/incremental fixes)
+    std::vector<const GameFixProfile*> matching_profiles;
     for (const auto& profile : s_profiles) {
         bool matches = (profile.title_id == title_id || (profile.title_id & ~0x1FFFULL) == base_title_id);
         if (!matches) {
@@ -5931,11 +5931,32 @@ const GameFixProfile* GameFixDatabase::GetProfile(u64 title_id) {
             }
         }
         if (matches) {
-            auto enriched = std::make_unique<GameFixProfile>(CreateEnrichedProfile(profile, title_id));
-            auto* ptr = enriched.get();
-            s_enriched_cache[title_id] = std::move(enriched);
-            return ptr;
+            matching_profiles.push_back(&profile);
         }
+    }
+
+    if (!matching_profiles.empty()) {
+        // Merge matching profiles in sequence (earlier base + later enhancements)
+        GameFixProfile merged = *matching_profiles.front();
+        merged.title_id = title_id;
+        for (size_t i = 1; i < matching_profiles.size(); ++i) {
+            const auto* next_p = matching_profiles[i];
+            if (!next_p->issues_ru.empty()) merged.issues_ru = next_p->issues_ru;
+            if (!next_p->issues_en.empty()) merged.issues_en = next_p->issues_en;
+            if (!next_p->game_name.empty()) merged.game_name = next_p->game_name;
+            for (const auto& [k, v] : next_p->ini_settings) {
+                merged.ini_settings[k] = v;
+            }
+            for (u64 alt : next_p->alt_title_ids) {
+                if (std::find(merged.alt_title_ids.begin(), merged.alt_title_ids.end(), alt) == merged.alt_title_ids.end()) {
+                    merged.alt_title_ids.push_back(alt);
+                }
+            }
+        }
+        auto enriched = std::make_unique<GameFixProfile>(CreateEnrichedProfile(merged, title_id));
+        auto* ptr = enriched.get();
+        s_enriched_cache[title_id] = std::move(enriched);
+        return ptr;
     }
 
     // Unprofiled game: synthesize universal profile dynamically!
@@ -6478,7 +6499,8 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
         if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" ||
             full_key == "System\\use_docked_mode" || full_key == "Renderer\\anti_aliasing" ||
             full_key == "Renderer\\scaling_filter" || full_key == "Renderer\\fsr_sharpening_slider" ||
-            full_key == "Renderer\\max_anisotropy") {
+            full_key == "Renderer\\max_anisotropy" || full_key == "Renderer\\frame_pacing_mode" ||
+            full_key == "Renderer\\backend") {
             continue;
         }
         auto slash = full_key.find('\\');
@@ -6487,7 +6509,7 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
             auto key = full_key.substr(slash + 1);
             if (key == "aspect_ratio" || key == "resolution_setup" || key == "use_docked_mode" ||
                 key == "anti_aliasing" || key == "scaling_filter" || key == "fsr_sharpening_slider" ||
-                key == "max_anisotropy") {
+                key == "max_anisotropy" || key == "frame_pacing_mode" || key == "backend") {
                 continue;
             }
             std::string sanitized_val = val;
@@ -6652,25 +6674,25 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
         };
 
         auto apply_setting = [](auto& setting, auto val) {
-            setting.SetGlobal(false);
+            if constexpr (requires { setting.SetGlobal(false); }) {
+                setting.SetGlobal(false);
+            }
             setting.SetValue(val);
         };
 
         for (const auto& [full_key, val] : profile->ini_settings) {
-            // STRICT PRESERVATION: Never override aspect ratio or user scaling filters
+            // STRICT PRESERVATION: Never override aspect ratio, user scaling filters or graphics API backend
             if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" ||
                 full_key == "System\\use_docked_mode" || full_key == "Renderer\\anti_aliasing" ||
                 full_key == "Renderer\\scaling_filter" || full_key == "Renderer\\fsr_sharpening_slider" ||
-                full_key == "Renderer\\max_anisotropy" || full_key == "Renderer\\frame_pacing_mode") {
+                full_key == "Renderer\\max_anisotropy" || full_key == "Renderer\\frame_pacing_mode" ||
+                full_key == "Renderer\\backend") {
                 continue;
             }
             if (full_key == "Renderer\\dma_accuracy" && val == "0") {
                 continue;
             }
             if (full_key == "Renderer\\gpu_fence_behavior" && val == "0") {
-                continue;
-            }
-            if (full_key == "Renderer\\nvdec_emulation" && val == "1") {
                 continue;
             }
             if (full_key == "Renderer\\gpu_accuracy") {
@@ -6703,22 +6725,20 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.accelerate_astc, static_cast<Settings::AstcDecodeMode>(safe_stoi(val, 1)));
             } else if (full_key == "Renderer\\gpu_fence_behavior") {
                 apply_setting(Settings::values.gpu_fence_behavior, static_cast<Settings::GpuFenceBehavior>(safe_stoi(val, 0)));
-            } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {
-                apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
-            } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
-                int mode = safe_stoi(val, 0);
-#ifdef __ANDROID__
-                if (mode >= 2) {
-                    mode = 1;
-                }
-#endif
-                apply_setting(Settings::values.memory_layout_mode, static_cast<Settings::MemoryLayout>(mode));
-            } else if (full_key == "Cpu\\cpu_accuracy") {
-                apply_setting(Settings::values.cpu_accuracy, static_cast<Settings::CpuAccuracy>(safe_stoi(val, 0)));
-            } else if (full_key == "Cpu\\cpuopt_fastmem") {
-                apply_setting(Settings::values.cpuopt_fastmem, val == "true" || val == "1");
-            } else if (full_key == "Cpu\\cpuopt_ignore_memory_aborts") {
-                apply_setting(Settings::values.cpuopt_ignore_memory_aborts, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\dyna_state") {
+                apply_setting(Settings::values.dyna_state, static_cast<Settings::ExtendedDynamicState>(safe_stoi(val, 0)));
+            } else if (full_key == "Renderer\\vram_usage_mode") {
+                apply_setting(Settings::values.vram_usage_mode, static_cast<Settings::VramUsageMode>(safe_stoi(val, 1)));
+            } else if (full_key == "Renderer\\backend") {
+                apply_setting(Settings::values.renderer_backend, static_cast<Settings::RendererBackend>(safe_stoi(val, 1)));
+            } else if (full_key == "Renderer\\fix_bloom_effects") {
+                apply_setting(Settings::values.fix_bloom_effects, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\eco_frame_pacing") {
+                apply_setting(Settings::values.eco_frame_pacing, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\emulate_bgr565") {
+                apply_setting(Settings::values.emulate_bgr565, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\use_video_framerate") {
+                apply_setting(Settings::values.use_video_framerate, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_vulkan_driver_pipeline_cache") {
                 apply_setting(Settings::values.use_vulkan_driver_pipeline_cache, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_disk_shader_cache") {
@@ -6729,6 +6749,40 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.dma_accuracy, static_cast<Settings::DmaAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\vram_garbage_collection") {
                 apply_setting(Settings::values.vram_garbage_collection, val == "true" || val == "1");
+            } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {
+                apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
+            } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
+                int mode = safe_stoi(val, 0);
+#ifdef __ANDROID__
+                if (mode >= 2) {
+                    mode = 1;
+                }
+#endif
+                apply_setting(Settings::values.memory_layout_mode, static_cast<Settings::MemoryLayout>(mode));
+            } else if (full_key == "System\\language_index") {
+                apply_setting(Settings::values.language_index, static_cast<Settings::Language>(safe_stoi(val, 1)));
+            } else if (full_key == "System\\region_index") {
+                apply_setting(Settings::values.region_index, static_cast<Settings::Region>(safe_stoi(val, 1)));
+            } else if (full_key == "Cpu\\cpu_accuracy") {
+                apply_setting(Settings::values.cpu_accuracy, static_cast<Settings::CpuAccuracy>(safe_stoi(val, 0)));
+            } else if (full_key == "Cpu\\cpuopt_fastmem") {
+                apply_setting(Settings::values.cpuopt_fastmem, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_ignore_memory_aborts") {
+                apply_setting(Settings::values.cpuopt_ignore_memory_aborts, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_fastmem_exclusives") {
+                apply_setting(Settings::values.cpuopt_fastmem_exclusives, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_recompile_exclusives") {
+                apply_setting(Settings::values.cpuopt_recompile_exclusives, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_unsafe_unfuse_fma") {
+                apply_setting(Settings::values.cpuopt_unsafe_unfuse_fma, val == "true" || val == "1");
+            } else if (full_key == "Debugging\\disable_macro_hle") {
+                apply_setting(Settings::values.disable_macro_hle, val == "true" || val == "1");
+            } else if (full_key == "Debugging\\disable_macro_jit") {
+                apply_setting(Settings::values.disable_macro_jit, val == "true" || val == "1");
+            } else if (full_key == "Debugging\\disable_web_applet") {
+                apply_setting(Settings::values.disable_web_applet, val == "true" || val == "1");
+            } else if (full_key == "Debugging\\use_auto_stub") {
+                apply_setting(Settings::values.use_auto_stub, val == "true" || val == "1");
             }
         }
         Settings::UpdateGPUAccuracy();
