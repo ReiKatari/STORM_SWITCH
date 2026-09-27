@@ -603,7 +603,8 @@ bool GraphicsPipeline::ConfigureDraw(const RescalingPushConstant& rescaling,
             build_condvar.wait(lock, [this] { return is_built.load(std::memory_order::relaxed); });
         });
     }
-    const bool is_rescaling{texture_cache.IsRescaling()};
+    const auto* current_fb = texture_cache.GetFramebuffer();
+    const bool is_rescaling{current_fb != nullptr ? current_fb->IsRescaled() : texture_cache.IsRescaling()};
     const bool update_rescaling{scheduler.UpdateRescaling(is_rescaling)};
     const bool bind_pipeline{scheduler.UpdateGraphicsPipeline(this)};
     const bool bind_descriptor_buffer{

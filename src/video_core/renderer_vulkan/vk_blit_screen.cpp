@@ -8,6 +8,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <vulkan/vulkan_core.h>
+#include "common/settings.h"
 #include "video_core/framebuffer_config.h"
 #include "video_core/present.h"
 #include "video_core/renderer_vulkan/present/filters.h"
@@ -101,10 +102,18 @@ void BlitScreen::DrawToFrame(const Device& device, RasterizerVulkan& rasterizer,
                              const Layout::FramebufferLayout& layout,
                              size_t current_swapchain_image_count,
                              VkFormat current_swapchain_view_format) {
+    const VkExtent2D window_size{
+        .width = layout.screen.GetWidth(),
+        .height = layout.screen.GetHeight(),
+    };
+    const float up_factor = Settings::values.resolution_info.up_factor;
+    const auto active_aa = filters.get_anti_aliasing();
+    const auto active_scaling = filters.get_scaling_filter();
+
     bool resource_update_required = false;
     bool presentation_recreate_required = false;
 
-    if (!window_adapt || scaling_filter != filters.get_scaling_filter()) {
+    if (!window_adapt || scaling_filter != active_scaling) {
         resource_update_required = true;
     }
 
@@ -120,6 +129,16 @@ void BlitScreen::DrawToFrame(const Device& device, RasterizerVulkan& rasterizer,
         swapchain_view_format = current_swapchain_view_format;
     }
 
+    if (current_window_size.width != window_size.width ||
+        current_window_size.height != window_size.height ||
+        current_up_factor != up_factor ||
+        current_anti_aliasing != active_aa) {
+        layers.clear();
+        current_window_size = window_size;
+        current_up_factor = up_factor;
+        current_anti_aliasing = active_aa;
+    }
+
     if (resource_update_required) {
         WaitIdle(device);
         SetWindowAdaptPass(device);
@@ -131,11 +150,6 @@ void BlitScreen::DrawToFrame(const Device& device, RasterizerVulkan& rasterizer,
 
         image_index = 0;
     }
-
-    const VkExtent2D window_size{
-        .width = layout.screen.GetWidth(),
-        .height = layout.screen.GetHeight(),
-    };
 
     if (layers.size() != framebuffers.size()) {
         layers.clear();

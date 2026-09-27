@@ -100,12 +100,12 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
         if (raw_fb_w >= 1200.0f && raw_fb_h >= 680.0f) {
             const float min_width = 1280.0f * scale;
             const float min_height = 720.0f * scale;
-            if (width > 0 && width < min_width) {
+            if (width >= 640.0f * scale && width < min_width) {
                 const float center_x = x + width * 0.5f;
                 width = min_width;
                 x = center_x - width * 0.5f;
             }
-            if (height > 0 && std::abs(height) < min_height) {
+            if (std::abs(height) >= 360.0f * scale && std::abs(height) < min_height) {
                 const float sign = height < 0 ? -1.0f : 1.0f;
                 const float center_y = y + height * 0.5f;
                 height = sign * min_height;
@@ -396,8 +396,8 @@ void RasterizerVulkan::DrawTexture() {
         return;
     }
 
-    const bool src_rescaling = texture_cache.IsRescaling() && texture.IsRescaled();
-    const bool dst_rescaling = texture_cache.IsRescaling() && framebuffer->IsRescaled();
+    const bool src_rescaling = texture.IsRescaled();
+    const bool dst_rescaling = framebuffer->IsRescaled();
 
     const auto ScaleSrc = [&](auto dim_f) -> s32 {
         auto dim = static_cast<s32>(dim_f);
@@ -462,7 +462,7 @@ void RasterizerVulkan::Clear(u32 layer_count) {
     query_cache.CounterEnable(VideoCommon::QueryType::ZPassPixelCount64, maxwell3d->regs.zpass_pixel_count_enable);
     u32 up_scale = 1;
     u32 down_shift = 0;
-    if (texture_cache.IsRescaling()) {
+    if (framebuffer->IsRescaled()) {
         up_scale = Settings::values.resolution_info.up_scale;
         down_shift = Settings::values.resolution_info.down_shift;
     }
@@ -1201,9 +1201,11 @@ void RasterizerVulkan::UpdateViewportsState(Tegra::Engines::Maxwell3D::Regs& reg
 
     maxwell3d->dirty.flags[Dirty::Scissors] = true;
 
+    const auto* current_fb = texture_cache.GetFramebuffer();
+    const bool is_rescaling = (current_fb != nullptr) ? current_fb->IsRescaled() : texture_cache.IsRescaling();
+    const float scale = is_rescaling ? Settings::values.resolution_info.up_factor : 1.0f;
+
     if (!regs.viewport_scale_offset_enabled) {
-        const bool is_rescaling{texture_cache.IsRescaling()};
-        const float scale = is_rescaling ? Settings::values.resolution_info.up_factor : 1.0f;
         float x = static_cast<float>(regs.surface_clip.x) * scale;
         float y = static_cast<float>(regs.surface_clip.y) * scale;
         float width = (std::max)(1.0f, static_cast<float>(regs.surface_clip.width) * scale);
@@ -1229,8 +1231,6 @@ void RasterizerVulkan::UpdateViewportsState(Tegra::Engines::Maxwell3D::Regs& reg
         });
         return;
     }
-    const bool is_rescaling{texture_cache.IsRescaling()};
-    const float scale = is_rescaling ? Settings::values.resolution_info.up_factor : 1.0f;
     const std::array viewport_list{
         GetViewportState(device, regs, 0, scale),  GetViewportState(device, regs, 1, scale),
         GetViewportState(device, regs, 2, scale),  GetViewportState(device, regs, 3, scale),
@@ -1252,8 +1252,10 @@ void RasterizerVulkan::UpdateScissorsState(Tegra::Engines::Maxwell3D::Regs& regs
     if (!state_tracker.TouchScissors()) {
         return;
     }
+    const auto* current_fb = texture_cache.GetFramebuffer();
+    const bool is_rescaling = (current_fb != nullptr) ? current_fb->IsRescaled() : texture_cache.IsRescaling();
+
     if (!regs.viewport_scale_offset_enabled) {
-        const bool is_rescaling{texture_cache.IsRescaling()};
         const auto& resolution = Settings::values.resolution_info;
         const u32 up_scale = is_rescaling ? resolution.up_scale : 1U;
         const u32 down_shift = is_rescaling ? resolution.down_shift : 0U;
@@ -1292,7 +1294,7 @@ void RasterizerVulkan::UpdateScissorsState(Tegra::Engines::Maxwell3D::Regs& regs
     }
     u32 up_scale = 1;
     u32 down_shift = 0;
-    if (texture_cache.IsRescaling()) {
+    if (is_rescaling) {
         up_scale = Settings::values.resolution_info.up_scale;
         down_shift = Settings::values.resolution_info.down_shift;
     }

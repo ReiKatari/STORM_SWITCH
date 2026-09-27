@@ -62,15 +62,17 @@ Layer::Layer(const Device& device, MemoryAllocator& memory_allocator_, Scheduler
     , device_memory(device_memory_)
     , filters(filters_)
     , image_count(image_count_)
+    , current_output_size(output_size)
+    , scaling_filter_setting(filters.get_scaling_filter())
 {
     CreateDescriptorPool(device);
     CreateDescriptorSets(device, layout);
-    if (filters.get_scaling_filter() == Settings::ScalingFilter::Fsr) {
-        sr_filter.emplace<FSR>(device, memory_allocator, image_count, output_size);
-    } else if (filters.get_scaling_filter() == Settings::ScalingFilter::Sgsr) {
-        sr_filter.emplace<SGSR>(device, memory_allocator, image_count, output_size, false);
-    } else if (filters.get_scaling_filter() == Settings::ScalingFilter::SgsrEdge) {
-        sr_filter.emplace<SGSR>(device, memory_allocator, image_count, output_size, true);
+    if (scaling_filter_setting == Settings::ScalingFilter::Fsr) {
+        sr_filter.emplace<FSR>(device, memory_allocator, image_count, current_output_size);
+    } else if (scaling_filter_setting == Settings::ScalingFilter::Sgsr) {
+        sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, false);
+    } else if (scaling_filter_setting == Settings::ScalingFilter::SgsrEdge) {
+        sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, true);
     }
 }
 
@@ -92,7 +94,19 @@ void Layer::ConfigureDraw(const Device& device, PresentPushConstants* out_push_c
     const bool use_accelerated = texture_info.has_value();
 
     RefreshResources(device, framebuffer);
-    SetAntiAliasPass(device);
+
+    const VkExtent2D current_render_extent{
+        .width = scaled_width,
+        .height = scaled_height,
+    };
+
+    SetAntiAliasPass(device, current_render_extent);
+
+    const VkExtent2D window_size{
+        .width = layout.screen.GetWidth(),
+        .height = layout.screen.GetHeight(),
+    };
+    UpdateScalingFilter(device, window_size);
 
     // Finish any pending renderpass
     scheduler.RequestOutsideRenderPassOperationContext();
@@ -109,23 +123,10 @@ void Layer::ConfigureDraw(const Device& device, PresentPushConstants* out_push_c
     VkImageView source_image_view =
         texture_info ? texture_info->image_view : *raw_image_views[image_index];
 
-    VkExtent2D current_render_extent{
-        .width = scaled_width,
-        .height = scaled_height,
-    };
-
     if (auto* fxaa = std::get_if<FXAA>(&anti_alias)) {
         fxaa->Draw(device, scheduler, image_index, &source_image, &source_image_view);
-        current_render_extent = {
-            .width = Settings::values.resolution_info.ScaleUp(raw_width),
-            .height = Settings::values.resolution_info.ScaleUp(raw_height),
-        };
     } else if (auto* smaa = std::get_if<SMAA>(&anti_alias)) {
         smaa->Draw(device, scheduler, image_index, &source_image, &source_image_view);
-        current_render_extent = {
-            .width = Settings::values.resolution_info.ScaleUp(raw_width),
-            .height = Settings::values.resolution_info.ScaleUp(raw_height),
-        };
     }
 
     auto crop_rect = Tegra::NormalizeCrop(framebuffer, texture_width, texture_height);
@@ -199,16 +200,17 @@ void Layer::RefreshResources(const Device& device, const Tegra::FramebufferConfi
     CreateRawImages(device, framebuffer);
 }
 
-void Layer::SetAntiAliasPass(const Device& device) {
-    if (!std::holds_alternative<std::monostate>(anti_alias) && anti_alias_setting == filters.get_anti_aliasing())
+void Layer::SetAntiAliasPass(const Device& device, VkExtent2D render_area) {
+    const auto active_aa = filters.get_anti_aliasing();
+    if (!std::holds_alternative<std::monostate>(anti_alias) &&
+        anti_alias_setting == active_aa &&
+        current_aa_extent.width == render_area.width &&
+        current_aa_extent.height == render_area.height) {
         return;
+    }
 
-    anti_alias_setting = filters.get_anti_aliasing();
-
-    const VkExtent2D render_area{
-        .width = Settings::values.resolution_info.ScaleUp(raw_width),
-        .height = Settings::values.resolution_info.ScaleUp(raw_height),
-    };
+    anti_alias_setting = active_aa;
+    current_aa_extent = render_area;
 
     switch (anti_alias_setting) {
     case Settings::AntiAliasing::Fxaa:
@@ -220,6 +222,29 @@ void Layer::SetAntiAliasPass(const Device& device) {
     default:
         anti_alias.emplace<std::monostate>();
         break;
+    }
+}
+
+void Layer::UpdateScalingFilter(const Device& device, VkExtent2D output_size) {
+    const auto active_filter = filters.get_scaling_filter();
+    if (!std::holds_alternative<std::monostate>(sr_filter) &&
+        scaling_filter_setting == active_filter &&
+        current_output_size.width == output_size.width &&
+        current_output_size.height == output_size.height) {
+        return;
+    }
+
+    scaling_filter_setting = active_filter;
+    current_output_size = output_size;
+
+    if (scaling_filter_setting == Settings::ScalingFilter::Fsr) {
+        sr_filter.emplace<FSR>(device, memory_allocator, image_count, current_output_size);
+    } else if (scaling_filter_setting == Settings::ScalingFilter::Sgsr) {
+        sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, false);
+    } else if (scaling_filter_setting == Settings::ScalingFilter::SgsrEdge) {
+        sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, true);
+    } else {
+        sr_filter.emplace<std::monostate>();
     }
 }
 

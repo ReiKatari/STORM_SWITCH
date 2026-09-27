@@ -26,6 +26,7 @@ struct FramebufferConfig;
 }
 
 namespace Settings {
+enum class AntiAliasing : u32;
 enum class ScalingFilter : u32;
 } // namespace Settings
 
@@ -84,6 +85,10 @@ private:
     Settings::ScalingFilter scaling_filter{};
     std::unique_ptr<WindowAdaptPass> window_adapt{};
     std::list<Layer> layers{};
+
+    VkExtent2D current_window_size{};
+    float current_up_factor{1.0f};
+    Settings::AntiAliasing current_anti_aliasing{};
 };
 
 } // namespace Vulkan

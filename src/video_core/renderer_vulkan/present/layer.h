@@ -65,7 +65,8 @@ private:
     void CreateRawImages(const Device& device, const Tegra::FramebufferConfig& framebuffer);
 
     void RefreshResources(const Device& device, const Tegra::FramebufferConfig& framebuffer);
-    void SetAntiAliasPass(const Device& device);
+    void SetAntiAliasPass(const Device& device, VkExtent2D render_area);
+    void UpdateScalingFilter(const Device& device, VkExtent2D output_size);
     void ReleaseRawImages();
 
     u64 CalculateBufferSize(const Tegra::FramebufferConfig& framebuffer) const;
@@ -93,7 +94,11 @@ private:
     Service::android::PixelFormat pixel_format{};
 
     Settings::AntiAliasing anti_alias_setting{};
+    VkExtent2D current_aa_extent{};
     std::variant<std::monostate, FXAA, SMAA> anti_alias{};
+
+    VkExtent2D current_output_size{};
+    Settings::ScalingFilter scaling_filter_setting{};
     std::variant<std::monostate, SGSR, FSR> sr_filter{};
     std::vector<u64> resource_ticks{};
 };
