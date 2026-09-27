@@ -1,4 +1,4 @@
-﻿/*
+/*
  * STORM DAY Stylesheet - Clean High-End White & Electric Cobalt Theme
  * Exclusively for STORM SWITCH
  */
@@ -532,7 +532,7 @@ QGroupBox::title {
     padding: 0 6px;
     color: #2563eb;
     font-weight: bold;
-    background-color: #ffffff;
+    background-color: transparent;
 }
 
 /* ToolTip */

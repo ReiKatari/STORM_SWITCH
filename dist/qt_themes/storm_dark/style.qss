@@ -1,4 +1,4 @@
-﻿/*
+/*
  * STORM DARK Stylesheet - Cyber Slate & Electric Cyan Theme
  * Standardized for STORM SWITCH ecosystem
  */
@@ -465,7 +465,7 @@ QGroupBox::title {
     padding: 0 6px;
     color: #00D2FF;
     font-weight: 700;
-    background-color: #0F172A;
+    background-color: transparent;
 }
 
 /* ToolTip */

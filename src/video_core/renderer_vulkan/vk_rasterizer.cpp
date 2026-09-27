@@ -392,7 +392,11 @@ void RasterizerVulkan::DrawTexture() {
     const auto& texture = texture_cache.GetImageView(draw_texture_state.src_texture);
     const auto* framebuffer = texture_cache.GetFramebuffer();
 
-    if (!framebuffer || !sampler || !texture.ImageHandle() || !texture.RenderTarget()) {
+    VkImageView src_view = texture.Handle(Shader::TextureType::Color2D);
+    if (!src_view) {
+        src_view = texture.RenderTarget();
+    }
+    if (!framebuffer || !sampler || !texture.ImageHandle() || !src_view) {
         return;
     }
 
@@ -419,7 +423,7 @@ void RasterizerVulkan::DrawTexture() {
                                     .y = ScaleSrc(draw_texture_state.src_y1)}};
     Extent3D src_size = {static_cast<u32>(ScaleSrc(texture.size.width)),
                          static_cast<u32>(ScaleSrc(texture.size.height)), texture.size.depth};
-    blit_image.BlitColor(framebuffer, texture.RenderTarget(), texture.ImageHandle(),
+    blit_image.BlitColor(framebuffer, src_view, texture.ImageHandle(),
                          sampler->Handle(), dst_region, src_region, src_size);
 }
 

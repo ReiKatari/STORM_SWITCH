@@ -1,4 +1,4 @@
-﻿/*
+/*
  * STORM MATRIX Stylesheet - Premium OLED Black & Electric Cyan Theme
  * Exclusively for STORM SWITCH 3
  */
@@ -483,7 +483,7 @@ QGroupBox::title {
     padding: 0 6px;
     color: #00ff66;
     font-weight: bold;
-    background-color: #0b1410;
+    background-color: transparent;
 }
 
 /* ToolTip */
