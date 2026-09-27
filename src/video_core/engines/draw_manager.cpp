@@ -234,17 +234,11 @@ void Maxwell3D::DrawManager::DrawTexture(Maxwell3D& maxwell3d) {
     const auto dst_width = f32(maxwell3d.regs.draw_texture.dst_width) / 4096.f;
     const auto dst_height = f32(maxwell3d.regs.draw_texture.dst_height) / 4096.f;
     const bool lower_left{maxwell3d.regs.window_origin.mode != Maxwell3D::Regs::WindowOrigin::Mode::UpperLeft};
-    const float clip_height = maxwell3d.regs.surface_clip.height != 0
-                                  ? f32(maxwell3d.regs.surface_clip.height)
-                                  : dst_height;
     if (lower_left) {
-        const float flipped_y = clip_height - (draw_texture_state.dst_y0 + dst_height);
-        draw_texture_state.dst_y0 = flipped_y;
-        draw_texture_state.dst_y1 = flipped_y + dst_height;
-    } else {
-        draw_texture_state.dst_y1 = draw_texture_state.dst_y0 + dst_height;
+        draw_texture_state.dst_y0 -= dst_height;
     }
     draw_texture_state.dst_x1 = draw_texture_state.dst_x0 + dst_width;
+    draw_texture_state.dst_y1 = draw_texture_state.dst_y0 + dst_height;
     draw_texture_state.src_x0 = f32(maxwell3d.regs.draw_texture.src_x0) / 4096.f;
     draw_texture_state.src_y0 = f32(maxwell3d.regs.draw_texture.src_y0) / 4096.f;
     draw_texture_state.src_x1 = (f32(maxwell3d.regs.draw_texture.dx_du) / 4294967296.f) * dst_width + draw_texture_state.src_x0;

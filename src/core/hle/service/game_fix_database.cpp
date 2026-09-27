@@ -307,8 +307,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\backend", "0"},
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\astc_recompression", "0"},
@@ -321,7 +320,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\early_release_fences", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
-            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\dma_accuracy", "1"},
             {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
@@ -4475,17 +4474,24 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100EAE010560000ULL,
         "Captain Tsubasa - Rise of New Champions",
-        "• Зависание вступительных и сюжетных видеороликов при аппаратном NVDEC\n• Статтеры при анимации супер-ударов на стадионе\n• Нехватка памяти при 27 DLC",
-        "• Cutscene and opening video freezes on GPU NVDEC\n• Super shot cinematic animation stutters\n• Out of memory with 27 DLCs",
+        "• Зависание вступительных и сюжетных видеороликов при аппаратном NVDEC\n• Дублирование и наложение полупрозрачных текстур лица/глаз при масштабировании разрешения 2X+\n• Статтеры при анимации супер-ударов на стадионе\n• Нехватка памяти при 27 DLC",
+        "• Cutscene and opening video freezes on GPU NVDEC\n• Ghosting and duplicate face/eye decal overlay at 2X+ resolution scaling\n• Super shot cinematic animation stutters\n• Out of memory with 27 DLCs",
         "",
         "",
         {
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\drs_resolution_lock", "true"},
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
+        },
+        {
+            0x0100EA6010560000ULL,
+            0x0100EA6010560800ULL,
+            0x0100EAE010560800ULL
         }
     },
     {
