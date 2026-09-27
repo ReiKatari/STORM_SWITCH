@@ -34,6 +34,9 @@ void Decoder::Decode() {
     }
 
     const auto packet_data = ComposeFrame();
+    if (packet_data.empty()) {
+        return;
+    }
     FFmpeg::FrameOffsets offsets{};
     offsets.hidden = vp9_hidden_frame;
     offsets.interlaced = IsInterlaced();

@@ -63,8 +63,8 @@ using VideoCommon::GenericEnvironment;
 using VideoCommon::GraphicsEnvironment;
 
 constexpr u32 CACHE_VERSION = 19;
-constexpr size_t VULKAN_CACHE_FLUSH_PIPELINES = 128;
-constexpr size_t VULKAN_CACHE_FLUSH_MIN_SECONDS = 30;
+constexpr size_t VULKAN_CACHE_FLUSH_PIPELINES = 24;
+constexpr size_t VULKAN_CACHE_FLUSH_MIN_SECONDS = 15;
 constexpr std::array<char, 8> VULKAN_CACHE_MAGIC_NUMBER{'y', 'u', 'z', 'u', 'v', 'k', 'c', 'h'};
 
 #pragma pack(push, 1)
@@ -775,14 +775,16 @@ void PipelineCache::QueueVulkanPipelineCacheFlush() {
     if (!use_vulkan_pipeline_cache || vulkan_pipeline_cache_filename.empty()) {
         return;
     }
-    if (++pipelines_since_flush < VULKAN_CACHE_FLUSH_PIPELINES) {
-        return;
-    }
     const auto now = std::chrono::steady_clock::now();
     const auto megabytes = last_cache_size.load(std::memory_order_relaxed) / (1024 * 1024);
     const std::chrono::seconds interval{
         std::max<size_t>(VULKAN_CACHE_FLUSH_MIN_SECONDS, megabytes)};
-    if (last_flush.time_since_epoch().count() != 0 && now - last_flush < interval) {
+    const bool count_threshold = (++pipelines_since_flush >= VULKAN_CACHE_FLUSH_PIPELINES);
+    const bool time_threshold = (pipelines_since_flush >= 8 && last_flush.time_since_epoch().count() != 0 && now - last_flush >= std::chrono::seconds(60));
+    if (!count_threshold && !time_threshold) {
+        return;
+    }
+    if (last_flush.time_since_epoch().count() != 0 && now - last_flush < interval && !time_threshold) {
         return;
     }
     if (flush_in_flight.exchange(true, std::memory_order_acq_rel)) {

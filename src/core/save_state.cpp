@@ -33,9 +33,42 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     const u8* dram_ptr = device_memory.buffer.BackingBasePointer();
     const u64 dram_size = Kernel::Board::Nintendo::Nx::KSystemControl::Init::GetIntendedMemorySize();
 
-    // Compress DRAM with Zstd (level 1 for speed)
-    LOG_INFO(Core, "Compressing {} MB of DRAM...", dram_size / (1024 * 1024));
-    auto compressed = Common::Compression::CompressDataZSTD(dram_ptr, dram_size, 1);
+    // Compress DRAM with Sparse Page Encoding (64KB chunks) + Zstd level 1
+    constexpr u32 SPARSE_PAGE_SIZE = 64 * 1024;
+    const u32 total_pages = static_cast<u32>(dram_size / SPARSE_PAGE_SIZE);
+    const u32 bitmask_bytes = (total_pages + 7) / 8;
+    std::vector<u8> bitmask(bitmask_bytes, 0);
+
+    std::vector<u8> packed_dram;
+    packed_dram.reserve(dram_size / 2);
+    packed_dram.resize(bitmask_bytes); // Reserve space at front for bitmask
+
+    u32 stored_pages = 0;
+    for (u32 p = 0; p < total_pages; ++p) {
+        const u8* page_src = dram_ptr + (static_cast<u64>(p) * SPARSE_PAGE_SIZE);
+        const u64* word_ptr = reinterpret_cast<const u64*>(page_src);
+        constexpr std::size_t num_words = SPARSE_PAGE_SIZE / sizeof(u64);
+        bool is_zero = true;
+        for (std::size_t w = 0; w < num_words; ++w) {
+            if (word_ptr[w] != 0) {
+                is_zero = false;
+                break;
+            }
+        }
+        if (!is_zero) {
+            bitmask[p / 8] |= static_cast<u8>(1u << (p % 8));
+            packed_dram.insert(packed_dram.end(), page_src, page_src + SPARSE_PAGE_SIZE);
+            stored_pages++;
+        }
+    }
+    std::memcpy(packed_dram.data(), bitmask.data(), bitmask_bytes);
+
+    LOG_INFO(Core, "Sparse Page Encoding: {} / {} non-zero pages ({:.1f} MB sparse vs {:.1f} MB full DRAM)...",
+             stored_pages, total_pages,
+             (double)packed_dram.size() / (1024 * 1024),
+             (double)dram_size / (1024 * 1024));
+
+    auto compressed = Common::Compression::CompressDataZSTD(packed_dram.data(), packed_dram.size(), 1);
     if (compressed.empty()) {
         system.UnstallApplication();
         return SaveStateResult::ErrorCompress;
@@ -78,6 +111,10 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     header.dram_compressed_size = compressed.size();
     header.num_threads = static_cast<u32>(thread_snapshots.size());
     header.compression_level = 1;
+    header.flags = 1; // Bit 0: Sparse Page Encoding enabled
+    header.sparse_page_size = SPARSE_PAGE_SIZE;
+    header.num_sparse_pages = total_pages;
+    header.num_stored_pages = stored_pages;
     header.timestamp = std::chrono::duration_cast<std::chrono::seconds>(
                            std::chrono::system_clock::now().time_since_epoch())
                            .count();
@@ -155,7 +192,7 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
     // Decompress
     LOG_INFO(Core, "Decompressing {} MB...", compressed.size() / (1024 * 1024));
     auto decompressed = Common::Compression::DecompressDataZSTD(compressed);
-    if (decompressed.empty() || decompressed.size() != header.dram_size) {
+    if (decompressed.empty()) {
         system.UnstallApplication();
         return SaveStateResult::ErrorDecompress;
     }
@@ -163,7 +200,38 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
     // Restore DRAM
     auto& device_memory = system.DeviceMemory();
     u8* dram_ptr = device_memory.buffer.BackingBasePointer();
-    std::memcpy(dram_ptr, decompressed.data(), header.dram_size);
+
+    if (header.flags & 1) { // Sparse Page Encoded
+        const u32 page_size = header.sparse_page_size ? header.sparse_page_size : (64 * 1024);
+        const u32 total_pages = header.num_sparse_pages ? header.num_sparse_pages : static_cast<u32>(header.dram_size / page_size);
+        const u32 bitmask_bytes = (total_pages + 7) / 8;
+        if (decompressed.size() < bitmask_bytes) {
+            system.UnstallApplication();
+            return SaveStateResult::ErrorCorruptedFile;
+        }
+
+        std::memset(dram_ptr, 0, header.dram_size);
+        const u8* bitmask = decompressed.data();
+        const u8* page_data = decompressed.data() + bitmask_bytes;
+        const u8* data_end = decompressed.data() + decompressed.size();
+
+        for (u32 p = 0; p < total_pages; ++p) {
+            if ((bitmask[p / 8] & (1u << (p % 8))) != 0) {
+                if (page_data + page_size > data_end) {
+                    LOG_ERROR(Core, "Save state stream truncated while restoring page {}", p);
+                    break;
+                }
+                std::memcpy(dram_ptr + (static_cast<u64>(p) * page_size), page_data, page_size);
+                page_data += page_size;
+            }
+        }
+    } else {
+        if (decompressed.size() != header.dram_size) {
+            system.UnstallApplication();
+            return SaveStateResult::ErrorDecompress;
+        }
+        std::memcpy(dram_ptr, decompressed.data(), header.dram_size);
+    }
 
     // Invalidate GPU Cache and rasterizer buffers
     system.GPU().FlushAndInvalidateRegion(0, header.dram_size);
@@ -187,10 +255,19 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                             arm->SetContext(ctx);
                         }
                     }
+                    // Reset stale wait status to wake up sleeping threads safely
+                    if (thread.GetState() == Kernel::ThreadState::Waiting) {
+                        thread.WaitCancel(kernel);
+                    }
                     break;
                 }
             }
         }
+    }
+
+    // Reschedule cores to process woken threads immediately
+    for (std::size_t c = 0; c < Core::Hardware::NUM_CPU_CORES; ++c) {
+        kernel.Scheduler(c).RequestScheduleOnInterrupt(kernel);
     }
 
     system.UnstallApplication();

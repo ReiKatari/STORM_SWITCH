@@ -83,20 +83,14 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
 
         if (consecutive_overbudget >= kOverbudgetThreshold &&
             current_level_index > min_level_index) {
-            // Scale DOWN one step
+            // Under load: record level drop without mutating resolution_setup mid-game
+            // Mutating resolution_setup dynamically breaks compiled Maxwell shaders and allocated VkImage dimensions
             current_level_index--;
             consecutive_overbudget = 0;
 
-            // Apply to settings
-            const auto new_level = kLevelOrder[current_level_index];
-            Settings::values.resolution_setup.SetValue(new_level);
-            Settings::UpdateRescalingInfo();
-            changed = true;
-
-            LOG_INFO(Core,
-                     "DynamicPerformanceScaler: Scale DOWN to level {} "
-                     "(avg {:.2f} ms > budget {:.2f} ms)",
-                     current_level_index, new_avg, target_frame_time_ms);
+            LOG_DEBUG(Core,
+                     "DynamicPerformanceScaler: Under load (avg {:.2f} ms > budget {:.2f} ms)",
+                     new_avg, target_frame_time_ms);
         }
     } else if (new_avg < target_frame_time_ms * kUnderbudgetMargin) {
         // Frame is fast — room to increase quality
@@ -105,21 +99,12 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
 
         if (consecutive_underbudget >= kUnderbudgetThreshold &&
             current_level_index < max_level_index) {
-            // Scale UP one step
             current_level_index++;
             consecutive_underbudget = 0;
 
-            // Apply to settings
-            const auto new_level = kLevelOrder[current_level_index];
-            Settings::values.resolution_setup.SetValue(new_level);
-            Settings::UpdateRescalingInfo();
-            changed = true;
-
-            LOG_INFO(Core,
-                     "DynamicPerformanceScaler: Scale UP to level {} "
-                     "(avg {:.2f} ms < {:.2f} ms)",
-                     current_level_index, new_avg,
-                     target_frame_time_ms * kUnderbudgetMargin);
+            LOG_DEBUG(Core,
+                     "DynamicPerformanceScaler: Frame stable (avg {:.2f} ms < {:.2f} ms)",
+                     new_avg, target_frame_time_ms * kUnderbudgetMargin);
         }
     } else {
         // Within budget — reset both counters

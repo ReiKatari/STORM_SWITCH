@@ -56,6 +56,10 @@ std::span<const u8> H264::ComposeFrame() {
     SetFrameDimensions(static_cast<s32>(params.pic_width_in_mbs) * 16,
                        static_cast<s32>(params.frame_height_in_mbs) * 16);
 
+    if (current_context.stream_len == 0) {
+        return {};
+    }
+
     const s64 frame_number = current_context.h264_parameter_set.frame_number.Value();
     if (!is_first_frame && frame_number != 0) {
         frame_scratch.resize_destructive(current_context.stream_len);

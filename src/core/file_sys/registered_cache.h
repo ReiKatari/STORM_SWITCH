@@ -9,6 +9,7 @@
 #include <array>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
@@ -292,6 +293,7 @@ public:
     VirtualFile GetEntryForVersion(u64 title_id, ContentRecordType type, u32 version) const;
 
 private:
+    mutable std::mutex entries_mutex;
     std::map<std::tuple<TitleType, ContentRecordType, u64>, VirtualFile> entries;
     std::vector<ExternalUpdateEntry> multi_version_entries;
 };

@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QAbstractTextDocumentLayout>
@@ -22,17 +22,17 @@ DepsDialog::DepsDialog(QWidget* parent) : QDialog(parent), ui{std::make_unique<U
     };
 
     const std::vector<ProjectEntry> acknowledgements = {
-        {QStringLiteral("Eden Emulator Project & Camille LaVey"), QStringLiteral("https://git.eden-emu.dev/eden-emu/eden"), QStringLiteral("Базовый форк эмулятора Switch")},
+        {QStringLiteral("Eden Emulator Project и Camille LaVey"), QStringLiteral("https://git.eden-emu.dev/eden-emu/eden"), QStringLiteral("Базовый форк эмулятора Switch")},
         {QStringLiteral("Yuzu Emulator Team"), QStringLiteral("https://yuzu-emu.org"), QStringLiteral("Архитектура ядра эмуляции Switch")},
         {QStringLiteral("Ryujinx Team"), QStringLiteral("https://ryujinx.org"), QStringLiteral("Исследования FS и Horizon OS")},
-        {QStringLiteral("Sudachi & Citron Projects"), QStringLiteral("https://github.com/sudachi-emu"), QStringLiteral("Оптимизации производительности")},
-        {QStringLiteral("Tinfoil & Blawar"), QStringLiteral("https://tinfoil.io"), QStringLiteral("Формат NSZ/NCZ и база TitleDB")},
+        {QStringLiteral("Sudachi и Citron Projects"), QStringLiteral("https://github.com/sudachi-emu"), QStringLiteral("Оптимизации производительности")},
+        {QStringLiteral("Tinfoil и Blawar"), QStringLiteral("https://tinfoil.io"), QStringLiteral("Формат NSZ/NCZ и база TitleDB")},
         {QStringLiteral("Zstandard (zstd) / Yann Collet"), QStringLiteral("https://github.com/facebook/zstd"), QStringLiteral("Библиотека сжатия ZSTD (Meta)")},
-        {QStringLiteral("FFmpeg Project"), QStringLiteral("https://ffmpeg.org"), QStringLiteral("Декодер NVDEC видео/аудио")},
+        {QStringLiteral("FFmpeg Project"), QStringLiteral("https://ffmpeg.org"), QStringLiteral("Декодер NVDEC видео и аудио")},
         {QStringLiteral("Dynarmic (MerryMage)"), QStringLiteral("https://github.com/merryhime/dynarmic"), QStringLiteral("JIT-рекомпилятор ARMv8")},
         {QStringLiteral("Mozilla Cubeb"), QStringLiteral("https://github.com/mozilla/cubeb"), QStringLiteral("Кросс-платформенный звук")},
-        {QStringLiteral("Qt Project & The Qt Company"), QStringLiteral("https://www.qt.io"), QStringLiteral("Графический интерфейс Qt6")},
-        {QStringLiteral("Vulkan SDK & LunarG"), QStringLiteral("https://vulkan.lunarg.com"), QStringLiteral("Графический API Vulkan")},
+        {QStringLiteral("Qt Project и The Qt Company"), QStringLiteral("https://www.qt.io"), QStringLiteral("Графический интерфейс Qt6")},
+        {QStringLiteral("Vulkan SDK и LunarG"), QStringLiteral("https://vulkan.lunarg.com"), QStringLiteral("Графический API Vulkan")},
     };
 
     const int total_rows = static_cast<int>(acknowledgements.size() + Common::dep_hashes.size());

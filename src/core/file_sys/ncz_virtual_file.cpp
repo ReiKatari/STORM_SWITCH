@@ -535,6 +535,47 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                                    std::filesystem::exists(completed_path, ec);
                 
                 if (!cache_valid && !disk_cache_checked) {
+                    // Enforce 24GB ring LRU cache budget before decompressing
+                    {
+                        constexpr u64 MAX_CACHE_BUDGET = 24ULL * 1024 * 1024 * 1024; // 24 GB
+                        struct CacheEntry {
+                            std::filesystem::path path;
+                            std::filesystem::path marker;
+                            u64 size = 0;
+                            std::filesystem::file_time_type mtime;
+                        };
+                        std::vector<CacheEntry> entries;
+                        u64 total_cache_size = 0;
+                        for (const auto& dir_entry : std::filesystem::directory_iterator(temp_dir, ec)) {
+                            if (ec) break;
+                            if (!dir_entry.is_regular_file()) continue;
+                            const auto p = dir_entry.path();
+                            if (p.extension() == ".completed") continue;
+                            if (p.string().find(".decompressed_cache") != std::string::npos) {
+                                u64 sz = dir_entry.file_size(ec);
+                                if (ec) sz = 0;
+                                auto mt = dir_entry.last_write_time(ec);
+                                entries.push_back({p, p.string() + ".completed", sz, mt});
+                                total_cache_size += sz;
+                            }
+                        }
+                        if (total_cache_size + decompressed_size > MAX_CACHE_BUDGET) {
+                            std::sort(entries.begin(), entries.end(), [](const CacheEntry& a, const CacheEntry& b) {
+                                return a.mtime < b.mtime;
+                            });
+                            for (const auto& entry : entries) {
+                                if (total_cache_size + decompressed_size <= MAX_CACHE_BUDGET) {
+                                    break;
+                                }
+                                LOG_INFO(Service_FS, "NCZ LRU Cache: Evicting {} ({:.2f} GB) to maintain 24 GB cache budget",
+                                         entry.path.filename().string(), (double)entry.size / (1024.0 * 1024.0 * 1024.0));
+                                std::filesystem::remove(entry.path, ec);
+                                std::filesystem::remove(entry.marker, ec);
+                                total_cache_size = (total_cache_size > entry.size) ? (total_cache_size - entry.size) : 0;
+                            }
+                        }
+                    }
+
                     LOG_INFO(Service_FS, "NCZ: Decompressing solid stream to disk cache ({} bytes)...", decompressed_size);
                     if (DecompressSolidTo(cache_path)) {
                         if (std::FILE* marker = std::fopen(completed_path.string().c_str(), "w")) {
@@ -548,6 +589,7 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                 }
                 
                 if (cache_valid) {
+                    std::filesystem::last_write_time(cache_path, std::filesystem::file_time_type::clock::now(), ec);
                     disk_cache_file = std::make_shared<DiskVfsFile>(cache_path, GetName());
                     solid_decompressed = true;
                 }

@@ -380,6 +380,7 @@ object GameFixDatabase {
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
+                "Renderer\\rescale_hack" to "true",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -414,6 +415,7 @@ object GameFixDatabase {
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
+                "Renderer\\rescale_hack" to "true",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -5002,6 +5004,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
+                "Renderer\\rescale_hack" to "true",
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6597,6 +6600,10 @@ object GameFixDatabase {
         if (isRu) {
             lines.add("🎮 <b>Графика и видео:</b>")
             lines.add(if (gpuAcc == "1") "  • <b>Точность ГПУ:</b> Высокая (стабильная геометрия и текстуры)" else "  • <b>Точность ГПУ:</b> Обычная (плавные 60 FPS, устранение задержек 200 ms)")
+            val rescaleHack = map["Renderer\\rescale_hack"] ?: "false"
+            if (rescaleHack == "true" || rescaleHack == "1") {
+                lines.add("  • <b>Масштабирование спрайтов:</b> Включено (целочисленная выборка без артефактов и двоения)")
+            }
             lines.add("  • <b>Фиксация разрешения DRS:</b> Отключено (устранение смещения и обрезки экрана 320x180)")
             lines.add("  • <b>Реактивная очистка:</b> Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)")
             lines.add("  • <b>Асинхронный вывод:</b> Включено (плавные 60 FPS)")
@@ -6636,6 +6643,10 @@ object GameFixDatabase {
         } else {
             lines.add("🎮 <b>Graphics and video:</b>")
             lines.add(if (gpuAcc == "1") "  • <b>GPU accuracy:</b> High (stable geometry and textures)" else "  • <b>GPU accuracy:</b> Normal (smooth 60 FPS, eliminates 200 ms latency)")
+            val rescaleHackEn = map["Renderer\\rescale_hack"] ?: "false"
+            if (rescaleHackEn == "true" || rescaleHackEn == "1") {
+                lines.add("  • <b>Sprite scaling fix:</b> Enabled (integer sampling without jitter or ghosting)")
+            }
             lines.add("  • <b>DRS resolution lock:</b> Disabled (fixes 320x180 viewport offset and clipping)")
             lines.add("  • <b>Reactive flushing:</b> Disabled (eliminates 4 FPS and 200 ms latency stalls)")
             lines.add("  • <b>Async presentation:</b> Enabled (smooth 60 FPS)")

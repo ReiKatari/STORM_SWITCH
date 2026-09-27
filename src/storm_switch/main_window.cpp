@@ -1694,6 +1694,16 @@ void MainWindow::InitializeWidgets() {
                 }
                 UpdateVramText();
                 ApplyDynamicSettingChange();
+                if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+                    statusBar()->showMessage(StormLang(
+                        QStringLiteral("Режим использования VRAM изменен. Полный бюджет видеопамяти применится при следующем запуске игры."),
+                        QStringLiteral("VRAM usage mode changed. Full GPU memory budget will apply upon next game launch."),
+                        QStringLiteral("VRAM-Nutzungsmodus geändert. Das vollständige GPU-Speicherbudget gilt beim nächsten Spielstart."),
+                        QStringLiteral("Mode d'utilisation de la VRAM modifié. Le budget mémoire s'appliquera au prochain lancement."),
+                        QStringLiteral("显存使用模式已更改。完整的显存预算将在下次启动游戏时生效。"),
+                        QStringLiteral("VRAM使用モードを変更しました。完全なGPUメモリ割り当ては次回のゲーム起動時に適用されます。")
+                    ), 6000);
+                }
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_vram);
@@ -2002,6 +2012,16 @@ void MainWindow::InitializeWidgets() {
                 }
                 UpdateResScaleText();
                 ApplyDynamicSettingChange();
+                if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+                    statusBar()->showMessage(StormLang(
+                        QStringLiteral("Масштаб разрешения изменен. Для предотвращения графических артефактов рекомендуется перезапуск игры."),
+                        QStringLiteral("Resolution scale changed. Restarting the game is recommended to avoid visual artifacts."),
+                        QStringLiteral("Auflösungsskalierung geändert. Ein Neustart des Spiels wird empfohlen."),
+                        QStringLiteral("Échelle de résolution modifiée. Redémarrer le jeu est recommandé."),
+                        QStringLiteral("分辨率缩放已更改。建议重新启动游戏以避免视觉伪影。"),
+                        QStringLiteral("解像度スケールを変更しました。視覚的なアーティファクトを避けるためゲームの再起動をお勧めします。")
+                    ), 6000);
+                }
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_res);
@@ -2864,11 +2884,11 @@ void MainWindow::SetupMenuIcons() {
     if (!storm_games_world_action) {
         storm_games_world_action = new QAction(StormLang(
             QStringLiteral("Каталог и менеджер игр STORM GAMES WORLD..."),
-            QStringLiteral("STORM GAMES WORLD Game Catalog & Manager..."),
+            QStringLiteral("STORM GAMES WORLD Game Catalog and Manager..."),
             QStringLiteral("STORM GAMES WORLD Spielekatalog und Manager..."),
             QStringLiteral("Catalogue et gestionnaire de jeux STORM GAMES WORLD..."),
             QStringLiteral("STORM GAMES WORLD 游戏目录与管理器..."),
-            QStringLiteral("STORM GAMES WORLD ゲームカタログ＆マネージャー...")
+            QStringLiteral("STORM GAMES WORLD ゲームカタログとマネージャー...")
         ), this);
         storm_games_world_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+G")));
         ui->menu_Tools->addAction(storm_games_world_action);
@@ -3681,6 +3701,7 @@ void MainWindow::StormSessionBackup::Capture() {
     smart_shader_throttle = capture_switchable(Settings::values.smart_shader_throttle);
     vram_garbage_collection = capture_switchable(Settings::values.vram_garbage_collection);
     drs_resolution_lock = capture_switchable(Settings::values.drs_resolution_lock);
+    rescale_hack = capture_switchable(Settings::values.rescale_hack);
     aspect_ratio = capture_switchable(Settings::values.aspect_ratio);
     vram_usage_mode = capture_switchable(Settings::values.vram_usage_mode);
     enable_frame_skipping = capture_switchable(Settings::values.enable_frame_skipping);
@@ -3736,6 +3757,7 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.smart_shader_throttle, smart_shader_throttle);
     restore_switchable(Settings::values.vram_garbage_collection, vram_garbage_collection);
     restore_switchable(Settings::values.drs_resolution_lock, drs_resolution_lock);
+    restore_switchable(Settings::values.rescale_hack, rescale_hack);
     restore_switchable(Settings::values.aspect_ratio, aspect_ratio);
     restore_switchable(Settings::values.vram_usage_mode, vram_usage_mode);
     restore_switchable(Settings::values.enable_frame_skipping, enable_frame_skipping);
@@ -8728,6 +8750,16 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
                 }
                 UpdateResScaleText();
                 ApplyDynamicSettingChange();
+                if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+                    statusBar()->showMessage(StormLang(
+                        QStringLiteral("Масштаб разрешения изменен. Для предотвращения графических артефактов рекомендуется перезапуск игры."),
+                        QStringLiteral("Resolution scale changed. Restarting the game is recommended to avoid visual artifacts."),
+                        QStringLiteral("Auflösungsskalierung geändert. Ein Neustart des Spiels wird empfohlen."),
+                        QStringLiteral("Échelle de résolution modifiée. Redémarrer le jeu est recommandé."),
+                        QStringLiteral("分辨率缩放已更改。建议重新启动游戏以避免视觉伪影。"),
+                        QStringLiteral("解像度スケールを変更しました。視覚的なアーティファクトを避けるためゲームの再起動をお勧めします。")
+                    ), 6000);
+                }
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_res);
@@ -8786,6 +8818,16 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
                 }
                 UpdateVramText();
                 ApplyDynamicSettingChange();
+                if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+                    statusBar()->showMessage(StormLang(
+                        QStringLiteral("Режим использования VRAM изменен. Полный бюджет видеопамяти применится при следующем запуске игры."),
+                        QStringLiteral("VRAM usage mode changed. Full GPU memory budget will apply upon next game launch."),
+                        QStringLiteral("VRAM-Nutzungsmodus geändert. Das vollständige GPU-Speicherbudget gilt beim nächsten Spielstart."),
+                        QStringLiteral("Mode d'utilisation de la VRAM modifié. Le budget mémoire s'appliquera au prochain lancement."),
+                        QStringLiteral("显存使用模式已更改。完整的显存预算将在下次启动游戏时生效。"),
+                        QStringLiteral("VRAM使用モードを変更しました。完全なGPUメモリ割り当ては次回のゲーム起動時に適用されます。")
+                    ), 6000);
+                }
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_vram);

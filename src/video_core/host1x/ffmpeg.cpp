@@ -327,8 +327,15 @@ bool DecoderContext::OpenContext(const Decoder& decoder, std::span<const u8> ext
 }
 
 bool DecoderContext::SendPacket(const Packet& packet) {
+    if (!packet.GetPacket() || packet.GetPacket()->size <= 0) {
+        return false;
+    }
     if (const int ret = avcodec_send_packet(m_codec_context, packet.GetPacket()); ret < 0 && ret != AVERROR_EOF && ret != AVERROR(EAGAIN)) {
-        LOG_ERROR(HW_GPU, "avcodec_send_packet error: {}", AVError(ret));
+        if (ret == AVERROR_INVALIDDATA) {
+            LOG_DEBUG(HW_GPU, "avcodec_send_packet: Invalid bitstream data in packet (dropped)");
+        } else {
+            LOG_ERROR(HW_GPU, "avcodec_send_packet error: {}", AVError(ret));
+        }
         return false;
     }
 
@@ -458,14 +465,22 @@ bool DecodeApi::SendPacket(std::span<const u8> packet_data, const FrameOffsets& 
         }
         m_opened = true;
     }
-    if (!offsets.hidden) {
-        m_pending_offsets.push(offsets);
+    if (packet_data.empty()) {
+        return false;
     }
     FFmpeg::Packet packet(packet_data);
     packet.GetPacket()->pts = m_next_pts;
     packet.GetPacket()->dts = m_next_pts;
     ++m_next_pts;
-    return m_decoder_context->SendPacket(packet);
+    const bool success = m_decoder_context->SendPacket(packet);
+    if (success) {
+        if (!offsets.hidden) {
+            m_pending_offsets.push(offsets);
+        }
+    } else {
+        --m_next_pts;
+    }
+    return success;
 }
 
 std::optional<DecodeApi::DecodedFrame> DecodeApi::ReceiveFrame() {

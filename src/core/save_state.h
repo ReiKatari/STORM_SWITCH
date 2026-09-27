@@ -28,7 +28,11 @@ struct SaveStateHeader {
     u32 num_threads{};
     u32 compression_level{};
     u64 timestamp{};
-    u8 reserved[32]{};
+    u32 flags{};             // Bit 0: Sparse Page Encoding
+    u32 sparse_page_size{};  // Chunk size (65536 = 64KB)
+    u32 num_sparse_pages{};  // Total page count
+    u32 num_stored_pages{};  // Number of non-zero pages stored
+    u8 reserved[16]{};
 };
 
 static_assert(sizeof(SaveStateHeader) == 80, "SaveStateHeader must be 80 bytes");

@@ -4,20 +4,21 @@
 STORM SWITCH — форк эмулятора гибридной игровой консоли Nintendo Switch для платформ Android и Windows PC. Проект ориентирован на максимальную производительность, оптимизацию JIT/NCE компилятора, стабильность видеодрайверов Vulkan, поддержку сжатых форматов (NSZ/NCZ/XCZ на лету), расширенную базу авто-исправлений GameFix Database и готический пользовательский интерфейс с глубокой кастомизацией оверлеев и телеметрии.
 
 ## **Происхождение и форки**
-STORM SWITCH является высокопроизводительным форком эмулятора Nintendo Switch **Eden**, на базе **Citron** и **Yuzu** с кастомными Vulkan-пайплайнами, исправлениями глубины и освещения (BotW/TotK), потоковой декомпрессией NSZ/XCZ через Zstandard, расширенной базой авто-профилей GameFix Database и оверлеями нагрузки в реальном времени.
+STORM SWITCH является высокопроизводительным форком эмулятора Nintendo Switch **Eden**, на базе **Citron**, **Yuzu** и наработок **Lemon-Project** с кастомными Vulkan-пайплайнами, барьерами синхронизации для исправления растительности и теней (BotW/TotK), потоковой декомпрессией NSZ/XCZ через Zstandard с 24 ГБ кольцевым LRU-кэшем, расширенной базой авто-профилей GameFix Database и оверлеями нагрузки в реальном времени.
 
 ## **Технологический стек**
 - **Языки программирования**: C++20, C, Kotlin, Java, CMake
 - **Графический стек**: Vulkan 1.3, Turnip/Adreno Custom Extensions, Spirv-Cross, Shader Recompiler
 - **Компиляция кода**: Dynarmic (ARM64 JIT Recompiler), Native Code Execution (NCE) для Android ARM64
 - **Аудио**: Cubeb, SDL3 Audio, OpenSL ES
-- **Декомпрессия и форматы**: Zstandard (NSZ/NCZ/XCZ streaming decompressor), hactool, liblz4
+- **Декомпрессия и форматы**: Zstandard (блочное и solid потоковое декодирование NSZ/NCZ/XCZ с LRU-кэшем), hactool, liblz4
 - **Пользовательский интерфейс**: Qt6 (Windows), Jetpack Compose / Android Native UI (Android)
 
 ## **Ключевые возможности**
-- **Прямая поддержка сжатых форматов (NSZ/NCZ/XCZ)**: Потоковая распаковка Zstandard на лету без необходимости предварительной распаковки гигабайтных архивов на накопитель.
+- **Прямая поддержка сжатых форматов (NSZ/NCZ/XCZ)**: Потоковая распаковка Zstandard блочных дампов на лету без распаковки на диск и 24 ГБ кольцевой LRU-кэш для сплошных архивов.
 - **Глубокая база авто-профилей (GameFix Database)**: Автоматическая настройка параметров памяти (8GB DRAM Layout), точности CPU (Unsafe JIT/Fastmem), ASTC-текстур и графических твиков для сотен коммерческих игр и homebrew-портов (Streets of Rage 4 на ПК и Android, Assassin's Creed: The Rebel Collection, GTA V, Half-Life, Doom 3, S.T.A.L.K.E.R. и др.).
-- **Vulkan Stability and Dynamic State**: Устранение сбоев `VK_ERROR_DEVICE_LOST`, поддержка расширений `VK_EXT_extended_dynamic_state3` и аппаратного декомпрессора ASTC.
+- **Vulkan Stability and Compute Barriers**: Устранение сбоев `VK_ERROR_DEVICE_LOST`, барьеры конвейера памяти для compute dispatch (исправление теней и травы в Zelda TotK), поддержка расширений `VK_EXT_extended_dynamic_state3` и аппаратного декомпрессора ASTC.
+- **Оптимизированные быстрые сохранения (Savestates)**: Разреженное сжатие страниц памяти (Sparse Page Encoding), уменьшающее вес файла сохранения в ~3 раза и ускоряющее запись и чтение, с корректным пробуждением спящих потоков гостевого ядра.
 - **Встроенный менеджер дополнений и модов**: Управление DLC, обновлениями, интеграция с GameBanana Mods и встроенный браузер Amiibo со случайной генерацией UID.
 - **Кроссплатформенная синхронизация сохранений (STORM SAVE SYNC)**: Прямая передача и синхронизация сохранений Switch между ПК и смартфонами Android по защищённому коду подключения с трёхсторонним разрешением конфликтов версий.
 - **Готический интерфейс и неоновая телеметрия**: Оверлей нагрузки с отображением реального разрешения рендера, FPS, frametime и температуры GPU/CPU.
@@ -26,17 +27,18 @@ STORM SWITCH является высокопроизводительным фо�
 - **Операционные системы**: Android 10+ (ARM64-v8a, Snapdragon / Dimensity / Exynos), Windows 10, Windows 11 (x64, DirectX 12 / Vulkan)
 - **Поддерживаемая консоль**: Nintendo Switch (Horizon OS)
 - **Форматы файлов**: NSP, NSZ, XCI, XCZ, NRO, NSO
-- **Поддерживаемые эмуляторы и форки**: STORM SWITCH, Eden, Citron, Yuzu, Suyu, Sudachi, Torzu, Ryujinx
+- **Поддерживаемые эмуляторы и форки**: STORM SWITCH, Eden, Lemon-Project, Citron, Yuzu, Suyu, Sudachi, Torzu, Ryujinx
 
 ## **Установка и запуск**
 1. Перейдите в раздел **Releases** репозитория на GitHub.
-2. Для Android: скачайте и установите APK-файл `STORM_SWITCH_9.1.0.apk`, `STORM_SWITCH_9.1.0_LEGACY.apk` или `STORM_SWITCH_9.1.0_SDK27.apk`.
-3. Для Windows: скачайте архив `STORM_SWITCH_9.1.0_Windows11.zip` (для Windows 11) или `STORM_SWITCH_9.1.0_Windows10.zip` (универсальный, с библиотеками среды выполнения MSVC CRT).
+2. Для Android: скачайте и установите APK-файл `STORM_SWITCH_10.0.0.apk`, `STORM_SWITCH_10.0.0_LEGACY.apk` или `STORM_SWITCH_10.0.0_SDK27.apk`.
+3. Для Windows: скачайте инсталлятор `STORM_SWITCH_10.0.0_Setup.exe` или архив `STORM_SWITCH_10.0.0_Windows.zip`.
 4. Установите системные ключи (`prod.keys`) и актуальную прошивку Nintendo Switch (Firmware) через меню настроек эмулятора.
 
 ## **Благодарности**
 - **Команда Yuzu (Bunnei, Lioncache, Subv, BreadFish64, Blinkhawk, Morph, byte[])** — за фундаментальный проект и создание архитектуры эмуляции Nintendo Switch.
 - **Команда Eden Emulator** — за развитие открытой кодовой базы и продвинутые оптимизации компилятора.
+- **Ghael-V и команда Lemon-Project** — за исследования потоковой декомпрессии форматов NSZ и XCZ, алгоритмы барьеров синхронизации Vulkan и наработки по оптимизации быстрых сохранений.
 - **Команда Citron Emulator (BignBooty, EmuGamer)** — за инновации в Android-версии и управление шейдерами.
 - **Команда Ryujinx (gdkchan, Ac_K, Mary, riperiperi)** — за фундаментальные исследования операционной системы Horizon OS и сервисов Switch.
 - **merryhime и команда Dynarmic** — за непревзойденный ARM64 JIT-компилятор.

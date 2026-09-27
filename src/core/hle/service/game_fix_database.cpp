@@ -304,11 +304,13 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Streets of Rage 4",
         "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Зависание вступительных видеороликов при аппаратном декодировании NVDEC\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
         "• 0 FPS boot hang caused by DotEmu server network polling\n• Intro video freeze on hardware GPU NVDEC decoding\n• 2D presentation desync with asynchronous presentation",
-        "",
-        "",
+        "✓ Точность ГПУ: Высокая\n✓ NVDEC: Программный (устранение зависаний видеороликов)\n✓ Совместимое масштабирование (Legacy Rescale): Включено (устранение нарезки 2D-спрайтов при 2X+)\n✓ Асинхронная презентация: Отключено\n✓ Режим полета: Включено (пропуск сетевого опроса серверов DotEmu)",
+        "✓ GPU Accuracy: High\n✓ NVDEC: CPU (Fixes video freezes)\n✓ Rescale Compatibility Mode: Enabled (Fixes 2D sprite slicing at 2X+)\n✓ Async Presentation: Disabled\n✓ Airplane Mode: Enabled (Bypasses DotEmu server polling)",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\rescale_hack", "true"},
+            {"Renderer\\drs_resolution_lock", "false"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -4476,15 +4478,16 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Captain Tsubasa - Rise of New Champions",
         "• Зависание вступительных и сюжетных видеороликов при аппаратном NVDEC\n• Дублирование и наложение полупрозрачных текстур лица/глаз при масштабировании разрешения 2X+\n• Статтеры при анимации супер-ударов на стадионе\n• Нехватка памяти при 27 DLC",
         "• Cutscene and opening video freezes on GPU NVDEC\n• Ghosting and duplicate face/eye decal overlay at 2X+ resolution scaling\n• Super shot cinematic animation stutters\n• Out of memory with 27 DLCs",
-        "",
-        "",
+        "✓ Точность ГПУ: Высокая (устранение графических багов)\n✓ NVDEC: Программный (устранение зависаний видеороликов)\n✓ Совместимое масштабирование (Legacy Rescale): Включено (устранение наложения текстур лица и глаз при 2X+)\n✓ Память: 6GB DRAM (стабильность со всеми DLC)",
+        "✓ GPU Accuracy: High (Fixes graphical glitches)\n✓ NVDEC: CPU (Fixes cutscene freezes)\n✓ Rescale Compatibility Mode: Enabled (Fixes face and eye decal ghosting at 2X+)\n✓ Memory Layout: 6GB DRAM (Stability with all DLCs)",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\drs_resolution_lock", "true"},
+            {"Renderer\\drs_resolution_lock", "false"},
+            {"Renderer\\rescale_hack", "true"},
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
         },
@@ -6705,6 +6708,8 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.gpu_accuracy, static_cast<Settings::GpuAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\drs_resolution_lock") {
                 apply_setting(Settings::values.drs_resolution_lock, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\rescale_hack") {
+                apply_setting(Settings::values.rescale_hack, val == "true" || val == "1");
             } else if (full_key == "Renderer\\dynamic_performance_scaler") {
                 apply_setting(Settings::values.dynamic_performance_scaler, val == "true" || val == "1");
             } else if (full_key == "Renderer\\barrier_feedback_loops") {

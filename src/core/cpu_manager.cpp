@@ -11,6 +11,8 @@
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/cpu_manager.h"
+#include "core/arm/arm_interface.h"
+#include "core/hle/kernel/k_process.h"
 #include "core/hle/kernel/k_interrupt_manager.h"
 #include "core/hle/kernel/k_scheduler.h"
 #include "core/hle/kernel/k_thread.h"
@@ -36,6 +38,14 @@ void CpuManager::Shutdown() {
     for (std::size_t core = 0; core < num_cores; core++) {
         if (core_data[core].host_thread.joinable()) {
             core_data[core].host_thread.request_stop();
+        }
+    }
+    // Interrupt all physical CPU cores so guest threads immediately halt execution loops and join
+    for (std::size_t core = 0; core < num_cores && core < Core::Hardware::NUM_CPU_CORES; core++) {
+        system.Kernel().PhysicalCore(core).Interrupt();
+    }
+    for (std::size_t core = 0; core < num_cores; core++) {
+        if (core_data[core].host_thread.joinable()) {
             core_data[core].host_thread.join();
         }
     }

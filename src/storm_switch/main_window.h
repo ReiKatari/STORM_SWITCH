@@ -595,6 +595,7 @@ private:
         std::pair<bool, bool> smart_shader_throttle;
         std::pair<bool, bool> vram_garbage_collection;
         std::pair<bool, bool> drs_resolution_lock;
+        std::pair<bool, bool> rescale_hack;
         std::pair<Settings::AspectRatio, bool> aspect_ratio;
         std::pair<Settings::VramUsageMode, bool> vram_usage_mode;
         std::pair<bool, bool> enable_frame_skipping;

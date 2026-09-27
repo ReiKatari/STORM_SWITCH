@@ -92,27 +92,6 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
         height = -height;
     }
 
-    if (Settings::values.drs_resolution_lock) {
-        // Only apply DRS resolution lock if the target framebuffer is actually at least 720p natively in guest coordinates.
-        // Never distort games or passes with small native framebuffers (e.g. 320x180 in Animal Well, shadow maps, LUTs).
-        const float raw_fb_w = static_cast<f32>(regs.surface_clip.width);
-        const float raw_fb_h = static_cast<f32>(regs.surface_clip.height);
-        if (raw_fb_w >= 1200.0f && raw_fb_h >= 680.0f) {
-            const float min_width = 1280.0f * scale;
-            const float min_height = 720.0f * scale;
-            if (width >= 640.0f * scale && width < min_width) {
-                const float center_x = x + width * 0.5f;
-                width = min_width;
-                x = center_x - width * 0.5f;
-            }
-            if (std::abs(height) >= 360.0f * scale && std::abs(height) < min_height) {
-                const float sign = height < 0 ? -1.0f : 1.0f;
-                const float center_y = y + height * 0.5f;
-                height = sign * min_height;
-                y = center_y - height * 0.5f;
-            }
-        }
-    }
 
     const float reduce_z = regs.depth_mode == Maxwell::DepthMode::MinusOneToOne ? 1.0f : 0.0f;
     VkViewport viewport{
@@ -630,18 +609,41 @@ void RasterizerVulkan::DispatchCompute() {
     const auto& qmd{kepler_compute->launch_description};
     auto indirect_address = kepler_compute->GetIndirectComputeAddress();
     if (indirect_address) {
-        // DispatchIndirect
+        // DispatchIndirect with memory synchronization for Zelda TotK grass and shadows
         static constexpr auto sync_info = VideoCommon::ObtainBufferSynchronize::FullSynchronize;
         const auto post_op = VideoCommon::ObtainBufferOperation::DiscardWrite;
         const auto [buffer, offset] =
             buffer_cache.ObtainBuffer(*indirect_address, 12, sync_info, post_op);
         scheduler.RequestOutsideRenderPassOperationContext();
+        static constexpr VkMemoryBarrier INDIRECT_READ_BARRIER{
+            .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT,
+            .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT,
+        };
+        scheduler.Record([](vk::CommandBuffer cmdbuf) {
+            cmdbuf.PipelineBarrier(vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER,
+                                   VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+                                   0, INDIRECT_READ_BARRIER);
+        });
         scheduler.Record([pipeline, indirect_buffer = buffer->Handle(),
                           indirect_offset = offset](vk::CommandBuffer cmdbuf) {
             if (!pipeline->IsBound()) {
                 return;
             }
             cmdbuf.DispatchIndirect(indirect_buffer, indirect_offset);
+        });
+        static constexpr VkMemoryBarrier POST_COMPUTE_BARRIER{
+            .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+            .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INDEX_READ_BIT |
+                             VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT,
+        };
+        scheduler.Record([](vk::CommandBuffer cmdbuf) {
+            cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                   VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                   0, POST_COMPUTE_BARRIER);
         });
         return;
     }

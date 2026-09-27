@@ -328,14 +328,14 @@ void Visit(const IR::Program& program, IR::Block& block, IR::Inst& inst) {
         PatchImageQueryDimensions(block, inst);
         break;
     case IR::Opcode::ImageFetch:
-        if (is_fragment_shader) {
+        if (is_fragment_shader && !Settings::values.rescale_hack.GetValue()) {
             SubScaleImageFetch(block, inst);
         } else {
             PatchImageFetch(block, inst);
         }
         break;
     case IR::Opcode::ImageRead:
-        if (is_fragment_shader) {
+        if (is_fragment_shader && !Settings::values.rescale_hack.GetValue()) {
             SubScaleImageRead(block, inst);
         } else {
             PatchImageRead(block, inst);
