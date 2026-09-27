@@ -588,12 +588,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         {0x0100916014D8C000ULL, 0x0100726014352000ULL}
     },
     {
-        0x01002D001AD24000ULL,
+        0x010020D01AD24000ULL,
         "Animal Well",
         "• Просадки кадровой частоты (4 FPS / 200 ms) из-за высокой точности ГПУ, блокировок фенсов и реактивной очистки\n• Смещение и обрезка экрана из-за фиксации разрешения DRS Lock\n• Графические полосы и черные тайлы из-за барьеров обратной связи",
         "• Frame drops (4 FPS / 200 ms) caused by high GPU accuracy, fence stalls and reactive flushing\n• Viewport offset and clipping caused by DRS Resolution Lock\n• Graphics strips and black tiles caused by feedback loop barriers",
-        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Разрешение: Родное 1X (720p/1080p, чистый пиксель-арт)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без искажений)\n✓ Режим консоли: Док-станция\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
-        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Resolution: Native 1X (720p/1080p, pristine pixel art)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Console Mode: Docked\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Динамический оптимизатор: Отключено (стабильный буфер 320x180)\n✓ Разрешение: Родное 1X (720p/1080p, чистый пиксель-арт)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Соотношение сторон: 16:9 (без искажений)\n✓ Режим консоли: Док-станция\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
+        "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Dynamic Performance Scaler: Disabled (Stable 320x180 buffer)\n✓ Resolution: Native 1X (720p/1080p, pristine pixel art)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Aspect Ratio: 16:9\n✓ Console Mode: Docked\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
@@ -601,6 +601,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\drs_resolution_lock", "false"},
+            {"Renderer\\dynamic_performance_scaler", "false"},
             {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -623,7 +624,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
         },
-        {0x010020D01AD24000ULL, 0x0100650017170000ULL, 0x0100C9E01B854000ULL, 0x0100E5E01C098000ULL}
+        {0x01002D001AD24000ULL, 0x0100650017170000ULL, 0x0100C9E01B854000ULL, 0x0100E5E01C098000ULL}
     },
     {
         0x0100C6000EEA8000ULL,
@@ -6660,8 +6661,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" ||
                 full_key == "System\\use_docked_mode" || full_key == "Renderer\\anti_aliasing" ||
                 full_key == "Renderer\\scaling_filter" || full_key == "Renderer\\fsr_sharpening_slider" ||
-                full_key == "Renderer\\max_anisotropy" || full_key == "Renderer\\frame_pacing_mode" ||
-                full_key == "Renderer\\dynamic_performance_scaler") {
+                full_key == "Renderer\\max_anisotropy" || full_key == "Renderer\\frame_pacing_mode") {
                 continue;
             }
             if (full_key == "Renderer\\dma_accuracy" && val == "0") {
@@ -6675,6 +6675,10 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             }
             if (full_key == "Renderer\\gpu_accuracy") {
                 apply_setting(Settings::values.gpu_accuracy, static_cast<Settings::GpuAccuracy>(safe_stoi(val, 0)));
+            } else if (full_key == "Renderer\\drs_resolution_lock") {
+                apply_setting(Settings::values.drs_resolution_lock, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\dynamic_performance_scaler") {
+                apply_setting(Settings::values.dynamic_performance_scaler, val == "true" || val == "1");
             } else if (full_key == "Renderer\\barrier_feedback_loops") {
                 apply_setting(Settings::values.barrier_feedback_loops, val == "true" || val == "1");
             } else if (full_key == "Renderer\\use_reactive_flushing") {

@@ -413,14 +413,40 @@ void RasterizerVulkan::DrawTexture() {
         return dst_rescaling ? Settings::values.resolution_info.ScaleUp(dim) : dim;
     };
 
-    Region2D dst_region = {Offset2D{.x = ScaleDst(draw_texture_state.dst_x0),
-                                    .y = ScaleDst(draw_texture_state.dst_y0)},
-                           Offset2D{.x = ScaleDst(draw_texture_state.dst_x1),
-                                    .y = ScaleDst(draw_texture_state.dst_y1)}};
-    Region2D src_region = {Offset2D{.x = ScaleSrc(draw_texture_state.src_x0),
-                                    .y = ScaleSrc(draw_texture_state.src_y0)},
-                           Offset2D{.x = ScaleSrc(draw_texture_state.src_x1),
-                                    .y = ScaleSrc(draw_texture_state.src_y1)}};
+    float src_x0 = draw_texture_state.src_x0;
+    float src_y0 = draw_texture_state.src_y0;
+    float src_x1 = draw_texture_state.src_x1;
+    float src_y1 = draw_texture_state.src_y1;
+    if (src_x1 <= src_x0) {
+        src_x1 = src_x0 + static_cast<float>(texture.size.width);
+    }
+    if (src_y1 <= src_y0) {
+        src_y1 = src_y0 + static_cast<float>(texture.size.height);
+    }
+
+    float dst_x0 = draw_texture_state.dst_x0;
+    float dst_y0 = draw_texture_state.dst_y0;
+    float dst_x1 = draw_texture_state.dst_x1;
+    float dst_y1 = draw_texture_state.dst_y1;
+    if (dst_x1 <= dst_x0) {
+        dst_x1 = dst_x0 + static_cast<float>(maxwell3d->regs.surface_clip.width != 0
+                                                 ? maxwell3d->regs.surface_clip.width
+                                                 : 1280);
+    }
+    if (dst_y1 <= dst_y0) {
+        dst_y1 = dst_y0 + static_cast<float>(maxwell3d->regs.surface_clip.height != 0
+                                                 ? maxwell3d->regs.surface_clip.height
+                                                 : 720);
+    }
+
+    Region2D dst_region = {Offset2D{.x = ScaleDst(dst_x0),
+                                    .y = ScaleDst(dst_y0)},
+                           Offset2D{.x = ScaleDst(dst_x1),
+                                    .y = ScaleDst(dst_y1)}};
+    Region2D src_region = {Offset2D{.x = ScaleSrc(src_x0),
+                                    .y = ScaleSrc(src_y0)},
+                           Offset2D{.x = ScaleSrc(src_x1),
+                                    .y = ScaleSrc(src_y1)}};
     Extent3D src_size = {static_cast<u32>(ScaleSrc(texture.size.width)),
                          static_cast<u32>(ScaleSrc(texture.size.height)), texture.size.depth};
     blit_image.BlitColor(framebuffer, src_view, texture.ImageHandle(),

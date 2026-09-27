@@ -98,11 +98,13 @@ private:
 
     u32 consecutive_overbudget{0};
     u32 consecutive_underbudget{0};
+    u32 startup_frames{0};
 
     // Thresholds (tunable)
-    static constexpr u32 kOverbudgetThreshold = 5;   // frames before scale-down
-    static constexpr u32 kUnderbudgetThreshold = 30;  // frames before scale-up
-    static constexpr double kOverbudgetMargin = 1.10; // 10% over target = overbudget
+    static constexpr u32 kStartupGraceFrames = 600;  // 10 seconds of 60 FPS gameplay warmup
+    static constexpr u32 kOverbudgetThreshold = 10;  // frames before scale-down (increased for stability)
+    static constexpr u32 kUnderbudgetThreshold = 60; // frames before scale-up
+    static constexpr double kOverbudgetMargin = 1.15; // 15% over target = overbudget
     static constexpr double kUnderbudgetMargin = 0.85; // 15% under target = underbudget
 
     mutable std::mutex mutex_;

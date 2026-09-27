@@ -44,6 +44,7 @@ void DynamicPerformanceScaler::Initialize(Settings::ResolutionSetup user_resolut
     smoothed_frametime.store(target_frame_time_ms);
     consecutive_overbudget = 0;
     consecutive_underbudget = 0;
+    startup_frames = 0;
 
     LOG_INFO(Core, "DynamicPerformanceScaler: Initialized — target {:.1f} FPS ({:.2f} ms), "
                    "max level index {} ({}x), min level index {}",
@@ -55,6 +56,18 @@ void DynamicPerformanceScaler::Initialize(Settings::ResolutionSetup user_resolut
 
 bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
     std::lock_guard lock(mutex_);
+
+    // Startup grace period: ignore warmup frames to allow disk loading / pipeline creation
+    if (startup_frames < kStartupGraceFrames) {
+        startup_frames++;
+        smoothed_frametime.store(target_frame_time_ms, std::memory_order_relaxed);
+        return false;
+    }
+
+    // Ignore single extreme hitches (> 100 ms) such as pipeline compiling or asset disk load
+    if (frame_time_ms > 100.0) {
+        return false;
+    }
 
     // EMA smoothing (alpha = 0.1)
     const double prev_avg = smoothed_frametime.load(std::memory_order_relaxed);
@@ -146,6 +159,7 @@ void DynamicPerformanceScaler::Reset() {
     current_level_index = max_level_index;
     consecutive_overbudget = 0;
     consecutive_underbudget = 0;
+    startup_frames = 0;
     smoothed_frametime.store(target_frame_time_ms, std::memory_order_relaxed);
 
     // Restore user's resolution
