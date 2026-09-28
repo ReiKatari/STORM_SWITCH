@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
@@ -1207,19 +1207,20 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         };
     };
 
+    auto GetCamZ = [&](float x, float y, float z) -> float {
+        const float x1 = x * cos_y + z * sin_y;
+        const float y1 = y;
+        const float z1 = -x * sin_y + z * cos_y;
+        return y1 * sin_x + z1 * cos_x;
+    };
+
     auto LightColor = [&](const QColor& base, float nx, float ny, float nz) -> QColor {
         const float len = std::max(0.0001f, std::sqrt(nx * nx + ny * ny + nz * nz));
-        const float nnx = nx / len;
-        const float nny = ny / len;
-        const float nnz = nz / len;
-
         constexpr float lx = 0.35f;
         constexpr float ly = -0.65f;
         constexpr float lz = 0.67f;
-
-        const float dot = nnx * lx + nny * ly + nnz * lz;
+        const float dot = (nx * lx + ny * ly + nz * lz) / len;
         const float factor = std::clamp(0.60f + 0.40f * dot, 0.35f, 1.45f);
-
         if (factor > 1.0f) {
             return base.lighter(static_cast<int>(factor * 100.0f));
         } else {
@@ -1227,10 +1228,10 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         }
     };
 
-    // 1. Photorealistic Ambient Drop Shadow on ground plane
+    // 1. Ambient drop shadow beneath controller on ground plane
     {
-        const auto shadow_proj = Project(0.0f, 115.0f, -15.0f);
-        const float shadow_rx = 245.0f * shadow_proj.scale;
+        const auto shadow_proj = Project(0.0f, 120.0f, -15.0f);
+        const float shadow_rx = 250.0f * shadow_proj.scale;
         const float shadow_ry = 110.0f * shadow_proj.scale * std::max(0.35f, std::cos(rad_x));
 
         QRadialGradient shadow_grad(shadow_proj.pt, shadow_rx);
@@ -1241,44 +1242,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setPen(Qt::NoPen);
         p.setBrush(shadow_grad);
         p.drawEllipse(shadow_proj.pt, shadow_rx, shadow_ry);
-    }
-
-    // 2. 3D Rear Shell and Grip Backs (Z = -28.0f .. -24.0f)
-    {
-        QPolygonF rear_left_handle;
-        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
-            const float lx = pro_left_handle[i * 2 + 0] * 0.94f;
-            const float ly = pro_left_handle[i * 2 + 1] * 0.95f;
-            rear_left_handle << Project(lx, ly, -28.0f).pt;
-        }
-
-        QPolygonF rear_right_handle;
-        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
-            const float rx = -pro_left_handle[i * 2 + 0] * 0.94f;
-            const float ry = pro_left_handle[i * 2 + 1] * 0.95f;
-            rear_right_handle << Project(rx, ry, -28.0f).pt;
-        }
-
-        QPolygonF rear_body;
-        for (std::size_t i = 0; i < pro_body.size() / 2; ++i) {
-            const float bx = pro_body[i * 2 + 0] * 0.94f;
-            const float by = pro_body[i * 2 + 1] * 0.95f;
-            rear_body << Project(bx, by, -24.0f).pt;
-        }
-        for (int i = static_cast<int>(pro_body.size() / 2) - 1; i >= 0; --i) {
-            const float bx = -pro_body[i * 2 + 0] * 0.94f;
-            const float by = pro_body[i * 2 + 1] * 0.95f;
-            rear_body << Project(bx, by, -24.0f).pt;
-        }
-
-        p.setPen(QPen(colors.outline.darker(140), 1.0f));
-        p.setBrush(colors.left.darker(150));
-        p.drawPolygon(rear_left_handle);
-        p.setBrush(colors.right.darker(150));
-        p.drawPolygon(rear_right_handle);
-
-        p.setBrush(colors.primary.darker(160));
-        p.drawPolygon(rear_body);
     }
 
     using namespace Settings::NativeButton;
@@ -1293,59 +1256,271 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                  button_values[ZR].value ? 1.0f : 0.0f),
         0.0f, 1.0f);
 
-    // 3. 3D Analog Triggers (ZL and ZR) on rear/top shoulder
+    struct RenderElement {
+        float depth;
+        std::function<void()> draw;
+    };
+    std::vector<RenderElement> elements;
+    elements.reserve(64);
+
+    // 2. Rear Body Shell (Z = -25.0f)
+    elements.push_back({GetCamZ(0.0f, -10.0f, -25.0f), [&]() {
+        QPolygonF rear_body;
+        for (std::size_t i = 0; i < pro_body.size() / 2; ++i) {
+            const float bx = pro_body[i * 2 + 0] * 0.94f;
+            const float by = pro_body[i * 2 + 1] * 0.95f;
+            rear_body << Project(bx, by, -25.0f).pt;
+        }
+        for (int i = static_cast<int>(pro_body.size() / 2) - 1; i >= 0; --i) {
+            const float bx = -pro_body[i * 2 + 0] * 0.94f;
+            const float by = pro_body[i * 2 + 1] * 0.95f;
+            rear_body << Project(bx, by, -25.0f).pt;
+        }
+
+        p.setPen(QPen(colors.outline.darker(140), 1.2f));
+        p.setBrush(colors.primary.darker(150));
+        p.drawPolygon(rear_body);
+
+        const float back_dot = -cos_y * cos_x;
+        if (back_dot > -0.2f) {
+            // Central battery hatch door
+            QPolygonF batt_hatch;
+            batt_hatch << Project(-46.0f, -40.0f, -25.2f).pt
+                       << Project( 46.0f, -40.0f, -25.2f).pt
+                       << Project( 44.0f,  30.0f, -25.2f).pt
+                       << Project(-44.0f,  30.0f, -25.2f).pt;
+            p.setPen(QPen(QColor(45, 48, 55), 1.0f));
+            p.setBrush(colors.primary.darker(170));
+            p.drawPolygon(batt_hatch);
+
+            // Official Nintendo Switch logo engraving
+            const auto logo_pos = Project(0.0f, -15.0f, -25.4f);
+            p.setPen(QPen(QColor(160, 165, 175, 160), 1.0f));
+            p.setBrush(Qt::NoBrush);
+            const float lw = 14.0f * logo_pos.scale;
+            const float lh = 18.0f * logo_pos.scale;
+            p.drawRoundedRect(QRectF(logo_pos.pt.x() - lw, logo_pos.pt.y() - lh * 0.5f, lw * 2.0f, lh), 3.0f, 3.0f);
+            p.drawLine(QPointF(logo_pos.pt.x(), logo_pos.pt.y() - lh * 0.5f),
+                       QPointF(logo_pos.pt.x(), logo_pos.pt.y() + lh * 0.5f));
+            p.setBrush(QColor(160, 165, 175, 160));
+            p.drawEllipse(QPointF(logo_pos.pt.x() - lw * 0.5f, logo_pos.pt.y() - lh * 0.2f), 1.5f * logo_pos.scale, 1.5f * logo_pos.scale);
+            p.drawEllipse(QPointF(logo_pos.pt.x() + lw * 0.5f, logo_pos.pt.y() + lh * 0.2f), 1.5f * logo_pos.scale, 1.5f * logo_pos.scale);
+
+            // Regulatory text engraving
+            p.setPen(QColor(120, 125, 135, 140));
+            SetTextFont(p, 0.65f * logo_pos.scale);
+            DrawText(p, Project(0.0f, 10.0f, -25.4f).pt, 0.65f * logo_pos.scale, QStringLiteral("MOD. HAC-013  5V=500mA"));
+
+            // 4 Screws on back housing
+            auto DrawScrew = [&](float sx, float sy) {
+                const auto sp = Project(sx, sy, -25.4f);
+                p.setPen(QPen(QColor(25, 27, 32), 0.8f));
+                p.setBrush(QColor(70, 75, 85));
+                p.drawEllipse(sp.pt, 2.4f * sp.scale, 2.4f * sp.scale);
+                p.setPen(QPen(QColor(140, 145, 155), 0.6f));
+                p.drawLine(QPointF(sp.pt.x() - 1.2f * sp.scale, sp.pt.y()), QPointF(sp.pt.x() + 1.2f * sp.scale, sp.pt.y()));
+                p.drawLine(QPointF(sp.pt.x(), sp.pt.y() - 1.2f * sp.scale), QPointF(sp.pt.x(), sp.pt.y() + 1.2f * sp.scale));
+            };
+            DrawScrew(-50.0f, -25.0f);
+            DrawScrew( 50.0f, -25.0f);
+            DrawScrew(-48.0f,  35.0f);
+            DrawScrew( 48.0f,  35.0f);
+        }
+    }});
+
+    // 3. Rear Left Handle (Z = -28.0f)
+    elements.push_back({GetCamZ(-145.0f, 45.0f, -28.0f), [&]() {
+        QPolygonF rear_left_handle;
+        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
+            const float lx = pro_left_handle[i * 2 + 0] * 0.94f;
+            const float ly = pro_left_handle[i * 2 + 1] * 0.95f;
+            rear_left_handle << Project(lx, ly, -28.0f).pt;
+        }
+        p.setPen(QPen(colors.outline.darker(140), 1.0f));
+        p.setBrush(colors.left.darker(160));
+        p.drawPolygon(rear_left_handle);
+
+        const float back_dot = -cos_y * cos_x;
+        if (back_dot > -0.2f) {
+            p.setPen(Qt::NoPen);
+            p.setBrush(QColor(255, 255, 255, 15));
+            for (int dy = -10; dy <= 90; dy += 18) {
+                for (int dx = -180; dx <= -125; dx += 18) {
+                    const auto dot = Project(static_cast<float>(dx + ((dy % 36 == 0) ? 9 : 0)),
+                                             static_cast<float>(dy), -28.2f);
+                    p.drawEllipse(dot.pt, 1.2f * dot.scale, 1.2f * dot.scale);
+                }
+            }
+            const auto sp = Project(-138.0f, 115.0f, -28.3f);
+            p.setPen(QPen(QColor(25, 27, 32), 0.8f));
+            p.setBrush(QColor(70, 75, 85));
+            p.drawEllipse(sp.pt, 2.2f * sp.scale, 2.2f * sp.scale);
+        }
+    }});
+
+    // 4. Rear Right Handle (Z = -28.0f)
+    elements.push_back({GetCamZ(145.0f, 45.0f, -28.0f), [&]() {
+        QPolygonF rear_right_handle;
+        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
+            const float rx = -pro_left_handle[i * 2 + 0] * 0.94f;
+            const float ry = pro_left_handle[i * 2 + 1] * 0.95f;
+            rear_right_handle << Project(rx, ry, -28.0f).pt;
+        }
+        p.setPen(QPen(colors.outline.darker(140), 1.0f));
+        p.setBrush(colors.right.darker(160));
+        p.drawPolygon(rear_right_handle);
+
+        const float back_dot = -cos_y * cos_x;
+        if (back_dot > -0.2f) {
+            p.setPen(Qt::NoPen);
+            p.setBrush(QColor(255, 255, 255, 15));
+            for (int dy = -10; dy <= 90; dy += 18) {
+                for (int dx = 125; dx <= 180; dx += 18) {
+                    const auto dot = Project(static_cast<float>(dx + ((dy % 36 == 0) ? 9 : 0)),
+                                             static_cast<float>(dy), -28.2f);
+                    p.drawEllipse(dot.pt, 1.2f * dot.scale, 1.2f * dot.scale);
+                }
+            }
+            const auto sp = Project(138.0f, 115.0f, -28.3f);
+            p.setPen(QPen(QColor(25, 27, 32), 0.8f));
+            p.setBrush(QColor(70, 75, 85));
+            p.drawEllipse(sp.pt, 2.2f * sp.scale, 2.2f * sp.scale);
+        }
+    }});
+
+    // 5. Extruded Handle Side Walls (Thickness Z = +4.0f to Z = -28.0f)
+    elements.push_back({GetCamZ(-160.0f, 40.0f, -12.0f), [&]() {
+        for (std::size_t i = 0; i + 3 < pro_left_handle.size() / 2; i += 3) {
+            const std::size_t i_next = std::min<std::size_t>(i + 3, pro_left_handle.size() / 2 - 1);
+            const float x1 = pro_left_handle[i * 2 + 0];
+            const float y1 = pro_left_handle[i * 2 + 1];
+            const float x2 = pro_left_handle[i_next * 2 + 0];
+            const float y2 = pro_left_handle[i_next * 2 + 1];
+
+            const auto pf1 = Project(x1, y1, +4.0f);
+            const auto pf2 = Project(x2, y2, +4.0f);
+            const auto pb2 = Project(x2 * 0.94f, y2 * 0.95f, -28.0f);
+            const auto pb1 = Project(x1 * 0.94f, y1 * 0.95f, -28.0f);
+
+            const float cp = (pf2.pt.x() - pf1.pt.x()) * (pb1.pt.y() - pf1.pt.y()) -
+                             (pf2.pt.y() - pf1.pt.y()) * (pb1.pt.x() - pf1.pt.x());
+            if (cp > 0.0f) {
+                QPolygonF quad;
+                quad << pf1.pt << pf2.pt << pb2.pt << pb1.pt;
+                const float nx = y2 - y1;
+                const float ny = -(x2 - x1);
+                p.setPen(Qt::NoPen);
+                p.setBrush(LightColor(colors.left, nx, ny, 0.2f));
+                p.drawPolygon(quad);
+            }
+        }
+    }});
+
+    elements.push_back({GetCamZ(160.0f, 40.0f, -12.0f), [&]() {
+        for (std::size_t i = 0; i + 3 < pro_left_handle.size() / 2; i += 3) {
+            const std::size_t i_next = std::min<std::size_t>(i + 3, pro_left_handle.size() / 2 - 1);
+            const float x1 = -pro_left_handle[i * 2 + 0];
+            const float y1 = pro_left_handle[i * 2 + 1];
+            const float x2 = -pro_left_handle[i_next * 2 + 0];
+            const float y2 = pro_left_handle[i_next * 2 + 1];
+
+            const auto pf1 = Project(x1, y1, +4.0f);
+            const auto pf2 = Project(x2, y2, +4.0f);
+            const auto pb2 = Project(x2 * 0.94f, y2 * 0.95f, -28.0f);
+            const auto pb1 = Project(x1 * 0.94f, y1 * 0.95f, -28.0f);
+
+            const float cp = (pf2.pt.x() - pf1.pt.x()) * (pb1.pt.y() - pf1.pt.y()) -
+                             (pf2.pt.y() - pf1.pt.y()) * (pb1.pt.x() - pf1.pt.x());
+            if (cp > 0.0f) {
+                QPolygonF quad;
+                quad << pf1.pt << pf2.pt << pb2.pt << pb1.pt;
+                const float nx = -(y2 - y1);
+                const float ny = -(x2 - x1);
+                p.setPen(Qt::NoPen);
+                p.setBrush(LightColor(colors.right, nx, ny, 0.2f));
+                p.drawPolygon(quad);
+            }
+        }
+    }});
+
+    // 6. Top Shoulder Assembly: USB-C port, Sync button and LED
+    elements.push_back({GetCamZ(0.0f, -88.0f, -6.0f), [&]() {
+        const auto usbc_pos = Project(0.0f, -88.0f, -6.0f);
+        p.setPen(QPen(QColor(60, 65, 75), 1.0f));
+        p.setBrush(QColor(15, 17, 20));
+        p.drawRoundedRect(QRectF(usbc_pos.pt.x() - 8.0f * usbc_pos.scale,
+                                 usbc_pos.pt.y() - 3.0f * usbc_pos.scale,
+                                 16.0f * usbc_pos.scale, 6.0f * usbc_pos.scale), 2.5f, 2.5f);
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(140, 145, 155));
+        p.drawRoundedRect(QRectF(usbc_pos.pt.x() - 5.0f * usbc_pos.scale,
+                                 usbc_pos.pt.y() - 1.0f * usbc_pos.scale,
+                                 10.0f * usbc_pos.scale, 2.0f * usbc_pos.scale), 1.0f, 1.0f);
+
+        const auto sync_pos = Project(-22.0f, -88.0f, -6.0f);
+        p.setPen(QPen(QColor(40, 44, 52), 0.8f));
+        p.setBrush(QColor(30, 32, 38));
+        p.drawEllipse(sync_pos.pt, 2.5f * sync_pos.scale, 2.5f * sync_pos.scale);
+
+        const auto sync_led = Project(22.0f, -88.0f, -6.0f);
+        p.setPen(Qt::NoPen);
+        p.setBrush(is_connected ? QColor(0, 245, 140) : QColor(40, 45, 52));
+        p.drawEllipse(sync_led.pt, 1.8f * sync_led.scale, 1.8f * sync_led.scale);
+    }});
+
+    // 7. 3D Triggers (ZL and ZR) on shoulder slope
     auto Draw3DTrigger = [&](bool is_left, float analog, bool pressed, Symbol sym) {
         const float sgn = is_left ? -1.0f : 1.0f;
-        const float x_in = sgn * 76.0f;
-        const float x_out = sgn * 132.0f;
+        const float x_in = sgn * 52.0f;
+        const float x_out = sgn * 115.0f;
 
         const float dy = analog * 7.5f;
         const float dz = -analog * 12.0f;
 
         const auto p_tf_in  = Project(x_in,  -86.0f + dy, -8.0f + dz);
         const auto p_tf_out = Project(x_out, -89.0f + dy, -8.0f + dz);
-        const auto p_tc_out = Project(x_out, -96.0f + dy, -18.0f + dz);
-        const auto p_tc_in  = Project(x_in,  -93.0f + dy, -18.0f + dz);
-        const auto p_bb_in  = Project(x_in,  -83.0f + dy, -24.0f + dz);
-        const auto p_bb_out = Project(x_out, -86.0f + dy, -24.0f + dz);
-        const auto p_bf_out = Project(x_out, -77.0f + dy, -13.0f + dz);
+        const auto p_tc_out = Project(x_out, -98.0f + dy, -18.0f + dz);
+        const auto p_tc_in  = Project(x_in,  -95.0f + dy, -18.0f + dz);
+        const auto p_bb_in  = Project(x_in,  -84.0f + dy, -25.0f + dz);
+        const auto p_bb_out = Project(x_out, -87.0f + dy, -25.0f + dz);
+        const auto p_bf_out = Project(x_out, -78.0f + dy, -13.0f + dz);
 
         const QColor trig_col = (analog > 0.05f || pressed) ? colors.indicator : colors.button;
 
-        // Top curved face
         QPolygonF top_face;
         top_face << p_tf_in.pt << p_tf_out.pt << p_tc_out.pt << p_tc_in.pt;
         p.setPen(QPen(colors.outline, 1.0f));
         p.setBrush(LightColor(trig_col, 0.0f, -0.6f, 0.8f));
         p.drawPolygon(top_face);
 
-        // Rear face
         QPolygonF rear_face;
         rear_face << p_tc_in.pt << p_tc_out.pt << p_bb_out.pt << p_bb_in.pt;
         p.setBrush(LightColor(trig_col, 0.0f, 0.2f, -0.9f));
         p.drawPolygon(rear_face);
 
-        // Outer side wall
         QPolygonF side_face;
         side_face << p_tf_out.pt << p_tc_out.pt << p_bb_out.pt << p_bf_out.pt;
         p.setBrush(LightColor(trig_col, sgn * 0.9f, 0.0f, 0.2f));
         p.drawPolygon(side_face);
 
-        // Trigger Symbol inscription
-        const auto label_pos = Project(sgn * 104.0f, -87.0f + dy, -12.0f + dz);
+        const auto label_pos = Project(sgn * 84.0f, -88.0f + dy, -13.0f + dz);
         p.setPen(colors.transparent);
         p.setBrush((analog > 0.05f || pressed) ? colors.font : colors.font2);
-        DrawSymbol(p, label_pos.pt, sym, 1.35f * label_pos.scale);
+        DrawSymbol(p, label_pos.pt, sym, 1.30f * label_pos.scale);
     };
 
-    Draw3DTrigger(true, zl_analog, button_values[ZL].value, Symbol::ZL);
-    Draw3DTrigger(false, zr_analog, button_values[ZR].value, Symbol::ZR);
+    elements.push_back({GetCamZ(-78.0f, -88.0f, -14.0f), [&, zl_analog]() {
+        Draw3DTrigger(true, zl_analog, button_values[ZL].value, Symbol::ZL);
+    }});
+    elements.push_back({GetCamZ(78.0f, -88.0f, -14.0f), [&, zr_analog]() {
+        Draw3DTrigger(false, zr_analog, button_values[ZR].value, Symbol::ZR);
+    }});
 
-    // 4. 3D Bumpers (L and R) in front of triggers
+    // 8. 3D Bumpers (L and R) in front of triggers
     auto Draw3DBumper = [&](bool is_left, bool pressed, Symbol sym) {
         const float sgn = is_left ? -1.0f : 1.0f;
-        const float x_in = sgn * 66.0f;
-        const float x_out = sgn * 126.0f;
+        const float x_in = sgn * 48.0f;
+        const float x_out = sgn * 110.0f;
         const float dy = pressed ? 5.0f : 0.0f;
 
         const auto p_front_in  = Project(x_in,  -76.0f + dy, 9.0f);
@@ -1357,108 +1532,37 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
         const QColor bump_col = pressed ? colors.highlight : colors.button;
 
-        // Front face
         QPolygonF front_poly;
         front_poly << p_front_in.pt << p_front_out.pt << p_top_out.pt << p_top_in.pt;
         p.setPen(QPen(colors.outline, 1.0f));
         p.setBrush(LightColor(bump_col, 0.0f, 0.0f, 1.0f));
         p.drawPolygon(front_poly);
 
-        // Top slope
         QPolygonF top_poly;
         top_poly << p_top_in.pt << p_top_out.pt << p_back_out.pt << p_back_in.pt;
         p.setBrush(LightColor(bump_col, 0.0f, -0.8f, 0.4f));
         p.drawPolygon(top_poly);
 
-        // Bumper Symbol
-        const auto label_pos = Project(sgn * 96.0f, -80.0f + dy, 9.0f);
+        const auto label_pos = Project(sgn * 78.0f, -80.0f + dy, 9.0f);
         p.setPen(colors.transparent);
         p.setBrush(pressed ? colors.font : colors.font2);
-        DrawSymbol(p, label_pos.pt, sym, 1.30f * label_pos.scale);
+        DrawSymbol(p, label_pos.pt, sym, 1.25f * label_pos.scale);
     };
 
-    Draw3DBumper(true, button_values[L].value, Symbol::L);
-    Draw3DBumper(false, button_values[R].value, Symbol::R);
+    elements.push_back({GetCamZ(-78.0f, -78.0f, 6.0f), [&]() {
+        Draw3DBumper(true, button_values[L].value, Symbol::L);
+    }});
+    elements.push_back({GetCamZ(78.0f, -78.0f, 6.0f), [&]() {
+        Draw3DBumper(false, button_values[R].value, Symbol::R);
+    }});
 
-    // USB-C socket & Sync button on top shoulder
-    {
-        const auto usbc_pos = Project(0.0f, -86.0f, -6.0f);
-        p.setPen(QPen(QColor(60, 65, 75), 1.0f));
-        p.setBrush(QColor(15, 17, 20));
-        p.drawRoundedRect(QRectF(usbc_pos.pt.x() - 7.0f * usbc_pos.scale,
-                                 usbc_pos.pt.y() - 2.5f * usbc_pos.scale,
-                                 14.0f * usbc_pos.scale, 5.0f * usbc_pos.scale), 2.0f, 2.0f);
-
-        const auto sync_pos = Project(-18.0f, -86.0f, -6.0f);
-        p.setPen(QPen(QColor(40, 44, 52), 0.8f));
-        p.setBrush(QColor(30, 32, 38));
-        p.drawEllipse(sync_pos.pt, 2.2f * sync_pos.scale, 2.2f * sync_pos.scale);
-    }
-
-    // 5. Extruded 3D Side Walls for Handles (Thickness from Z = +4.0f to Z = -28.0f)
-    for (std::size_t i = 0; i + 3 < pro_left_handle.size() / 2; i += 3) {
-        const std::size_t i_next = std::min<std::size_t>(i + 3, pro_left_handle.size() / 2 - 1);
-        const float x1 = pro_left_handle[i * 2 + 0];
-        const float y1 = pro_left_handle[i * 2 + 1];
-        const float x2 = pro_left_handle[i_next * 2 + 0];
-        const float y2 = pro_left_handle[i_next * 2 + 1];
-
-        const auto pf1 = Project(x1, y1, +4.0f);
-        const auto pf2 = Project(x2, y2, +4.0f);
-        const auto pb2 = Project(x2 * 0.94f, y2 * 0.95f, -28.0f);
-        const auto pb1 = Project(x1 * 0.94f, y1 * 0.95f, -28.0f);
-
-        const float cp = (pf2.pt.x() - pf1.pt.x()) * (pb1.pt.y() - pf1.pt.y()) -
-                         (pf2.pt.y() - pf1.pt.y()) * (pb1.pt.x() - pf1.pt.x());
-        if (cp > 0.0f) {
-            QPolygonF quad;
-            quad << pf1.pt << pf2.pt << pb2.pt << pb1.pt;
-            const float nx = y2 - y1;
-            const float ny = -(x2 - x1);
-            p.setPen(Qt::NoPen);
-            p.setBrush(LightColor(colors.left, nx, ny, 0.2f));
-            p.drawPolygon(quad);
+    // 9. Front Handles (Z = +4.0f)
+    elements.push_back({GetCamZ(-145.0f, 45.0f, 4.0f), [&]() {
+        QPolygonF front_left_handle;
+        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
+            front_left_handle << Project(pro_left_handle[i * 2 + 0], pro_left_handle[i * 2 + 1], +4.0f).pt;
         }
-    }
 
-    for (std::size_t i = 0; i + 3 < pro_left_handle.size() / 2; i += 3) {
-        const std::size_t i_next = std::min<std::size_t>(i + 3, pro_left_handle.size() / 2 - 1);
-        const float x1 = -pro_left_handle[i * 2 + 0];
-        const float y1 = pro_left_handle[i * 2 + 1];
-        const float x2 = -pro_left_handle[i_next * 2 + 0];
-        const float y2 = pro_left_handle[i_next * 2 + 1];
-
-        const auto pf1 = Project(x1, y1, +4.0f);
-        const auto pf2 = Project(x2, y2, +4.0f);
-        const auto pb2 = Project(x2 * 0.94f, y2 * 0.95f, -28.0f);
-        const auto pb1 = Project(x1 * 0.94f, y1 * 0.95f, -28.0f);
-
-        const float cp = (pf2.pt.x() - pf1.pt.x()) * (pb1.pt.y() - pf1.pt.y()) -
-                         (pf2.pt.y() - pf1.pt.y()) * (pb1.pt.x() - pf1.pt.x());
-        if (cp > 0.0f) {
-            QPolygonF quad;
-            quad << pf1.pt << pf2.pt << pb2.pt << pb1.pt;
-            const float nx = -(y2 - y1);
-            const float ny = -(x2 - x1);
-            p.setPen(Qt::NoPen);
-            p.setBrush(LightColor(colors.right, nx, ny, 0.2f));
-            p.drawPolygon(quad);
-        }
-    }
-
-    // 6. Front Handles ($Z = +4.0f$)
-    QPolygonF front_left_handle;
-    for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
-        front_left_handle << Project(pro_left_handle[i * 2 + 0], pro_left_handle[i * 2 + 1], +4.0f).pt;
-    }
-
-    QPolygonF front_right_handle;
-    for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
-        front_right_handle << Project(-pro_left_handle[i * 2 + 0], pro_left_handle[i * 2 + 1], +4.0f).pt;
-    }
-
-    p.setPen(QPen(colors.outline, 1.2f));
-    {
         const auto p_hl = Project(-190.0f, 0.0f, +4.0f);
         const auto p_sh = Project(-100.0f, 0.0f, +4.0f);
         QLinearGradient left_grad(p_hl.pt, p_sh.pt);
@@ -1466,11 +1570,12 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         left_grad.setColorAt(0.35, colors.left);
         left_grad.setColorAt(0.85, colors.left.darker(115));
         left_grad.setColorAt(1.0, colors.grip_left_shadow);
+        p.setPen(QPen(colors.outline, 1.2f));
         p.setBrush(left_grad);
         p.drawPolygon(front_left_handle);
 
         p.setPen(Qt::NoPen);
-        p.setBrush(QColor(255, 255, 255, 20));
+        p.setBrush(QColor(255, 255, 255, 22));
         for (int dy = -20; dy <= 95; dy += 16) {
             for (int dx = -180; dx <= -130; dx += 16) {
                 const auto dot = Project(static_cast<float>(dx + ((dy % 32 == 0) ? 8 : 0)),
@@ -1478,9 +1583,14 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 p.drawEllipse(dot.pt, 1.2f * dot.scale, 1.2f * dot.scale);
             }
         }
-    }
+    }});
 
-    {
+    elements.push_back({GetCamZ(145.0f, 45.0f, 4.0f), [&]() {
+        QPolygonF front_right_handle;
+        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
+            front_right_handle << Project(-pro_left_handle[i * 2 + 0], pro_left_handle[i * 2 + 1], +4.0f).pt;
+        }
+
         const auto p_hl = Project(190.0f, 0.0f, +4.0f);
         const auto p_sh = Project(100.0f, 0.0f, +4.0f);
         QLinearGradient right_grad(p_hl.pt, p_sh.pt);
@@ -1493,7 +1603,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.drawPolygon(front_right_handle);
 
         p.setPen(Qt::NoPen);
-        p.setBrush(QColor(255, 255, 255, 20));
+        p.setBrush(QColor(255, 255, 255, 22));
         for (int dy = -20; dy <= 95; dy += 16) {
             for (int dx = 130; dx <= 180; dx += 16) {
                 const auto dot = Project(static_cast<float>(dx + ((dy % 32 == 0) ? 8 : 0)),
@@ -1501,18 +1611,33 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 p.drawEllipse(dot.pt, 1.2f * dot.scale, 1.2f * dot.scale);
             }
         }
-    }
 
-    // 7. Front Chassis ($Z = +2.0f$)
-    QPolygonF front_body;
-    for (std::size_t i = 0; i < pro_body.size() / 2; ++i) {
-        front_body << Project(pro_body[i * 2 + 0], pro_body[i * 2 + 1], +2.0f).pt;
-    }
-    for (int i = static_cast<int>(pro_body.size() / 2) - 1; i >= 0; --i) {
-        front_body << Project(-pro_body[i * 2 + 0], pro_body[i * 2 + 1], +2.0f).pt;
-    }
+        if (current_skin == ControllerSkin::ZeldaTotk) {
+            QPolygonF gold_tip;
+            gold_tip << Project(135.0f, 85.0f, 4.2f).pt
+                     << Project(180.0f, 80.0f, 4.2f).pt
+                     << Project(160.0f, 138.0f, 4.2f).pt
+                     << Project(135.0f, 120.0f, 4.2f).pt;
+            QLinearGradient gold_grad(Project(135.0f, 85.0f, 4.2f).pt, Project(160.0f, 138.0f, 4.2f).pt);
+            gold_grad.setColorAt(0.0, QColor(255, 230, 110));
+            gold_grad.setColorAt(0.5, QColor(218, 168, 38));
+            gold_grad.setColorAt(1.0, QColor(165, 115, 20));
+            p.setPen(QPen(QColor(180, 130, 25), 1.0f));
+            p.setBrush(gold_grad);
+            p.drawPolygon(gold_tip);
+        }
+    }});
 
-    {
+    // 10. Front Chassis (Z = +2.0f) with internal PCB & HD Rumble
+    elements.push_back({GetCamZ(0.0f, -10.0f, 2.0f), [&]() {
+        QPolygonF front_body;
+        for (std::size_t i = 0; i < pro_body.size() / 2; ++i) {
+            front_body << Project(pro_body[i * 2 + 0], pro_body[i * 2 + 1], +2.0f).pt;
+        }
+        for (int i = static_cast<int>(pro_body.size() / 2) - 1; i >= 0; --i) {
+            front_body << Project(-pro_body[i * 2 + 0], pro_body[i * 2 + 1], +2.0f).pt;
+        }
+
         const auto p_top = Project(0.0f, -90.0f, +2.0f);
         const auto p_bot = Project(0.0f, 100.0f, +2.0f);
         QLinearGradient body_grad(p_top.pt, p_bot.pt);
@@ -1525,159 +1650,268 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(body_grad);
         p.drawPolygon(front_body);
 
-        // Internal translucent chassis ribbing
+        if (current_skin == ControllerSkin::ClassicBlack) {
+            QPolygonF pcb;
+            pcb << Project(-62.0f, -60.0f, 1.8f).pt
+                << Project( 62.0f, -60.0f, 1.8f).pt
+                << Project( 62.0f,  45.0f, 1.8f).pt
+                << Project(-62.0f,  45.0f, 1.8f).pt;
+            p.setPen(QPen(QColor(18, 48, 38, 180), 1.2f));
+            p.setBrush(QColor(12, 34, 26, 175));
+            p.drawPolygon(pcb);
+
+            p.setPen(QPen(QColor(195, 160, 75, 140), 1.0f));
+            p.drawLine(Project(-55.0f, -40.0f, 1.85f).pt, Project(-25.0f, -40.0f, 1.85f).pt);
+            p.drawLine(Project(-25.0f, -40.0f, 1.85f).pt, Project(-15.0f, -20.0f, 1.85f).pt);
+            p.drawLine(Project(-15.0f, -20.0f, 1.85f).pt, Project( 15.0f, -20.0f, 1.85f).pt);
+            p.drawLine(Project( 15.0f, -20.0f, 1.85f).pt, Project( 25.0f, -40.0f, 1.85f).pt);
+            p.drawLine(Project( 25.0f, -40.0f, 1.85f).pt, Project( 55.0f, -40.0f, 1.85f).pt);
+            p.drawLine(Project(-40.0f,  10.0f, 1.85f).pt, Project( 40.0f,  10.0f, 1.85f).pt);
+            p.drawLine(Project(-35.0f,  25.0f, 1.85f).pt, Project( 35.0f,  25.0f, 1.85f).pt);
+
+            auto DrawIC = [&](float cx, float cy, float w, float h) {
+                const auto cp = Project(cx, cy, 1.86f);
+                p.setPen(QPen(QColor(160, 165, 175, 180), 0.7f));
+                p.setBrush(QColor(15, 17, 22, 230));
+                p.drawRect(QRectF(cp.pt.x() - w * 0.5f * cp.scale, cp.pt.y() - h * 0.5f * cp.scale,
+                                  w * cp.scale, h * cp.scale));
+            };
+            DrawIC(0.0f, -5.0f, 18.0f, 14.0f);
+            DrawIC(-35.0f, -12.0f, 10.0f, 10.0f);
+            DrawIC( 35.0f, -12.0f, 10.0f, 10.0f);
+
+            QPolygonF batt;
+            batt << Project(-28.0f,  5.0f, 1.84f).pt
+                 << Project( 28.0f,  5.0f, 1.84f).pt
+                 << Project( 28.0f, 40.0f, 1.84f).pt
+                 << Project(-28.0f, 40.0f, 1.84f).pt;
+            p.setPen(QPen(QColor(35, 40, 48, 160), 1.0f));
+            p.setBrush(QColor(18, 22, 28, 190));
+            p.drawPolygon(batt);
+
+            auto DrawHDRumble = [&](bool is_left) {
+                const float sgn = is_left ? -1.0f : 1.0f;
+                const auto m_center = Project(sgn * 135.0f, 35.0f, 1.85f);
+                p.setPen(QPen(QColor(130, 135, 145, 160), 1.0f));
+                p.setBrush(QColor(170, 175, 185, 180));
+                p.drawRoundedRect(QRectF(m_center.pt.x() - 9.0f * m_center.scale,
+                                         m_center.pt.y() - 16.0f * m_center.scale,
+                                         18.0f * m_center.scale, 32.0f * m_center.scale), 4.0f, 4.0f);
+                p.setPen(Qt::NoPen);
+                p.setBrush(QColor(190, 115, 45, 180));
+                p.drawRect(QRectF(m_center.pt.x() - 8.5f * m_center.scale,
+                                  m_center.pt.y() - 6.0f * m_center.scale,
+                                  17.0f * m_center.scale, 12.0f * m_center.scale));
+                p.setPen(QPen(QColor(215, 45, 45, 160), 1.0f));
+                p.drawLine(m_center.pt, Project(sgn * 60.0f, 25.0f, 1.85f).pt);
+            };
+            DrawHDRumble(true);
+            DrawHDRumble(false);
+
+            const auto ee_pos = Project(42.0f, 40.0f, 1.88f);
+            p.setPen(QColor(195, 160, 75, 160));
+            SetTextFont(p, 0.55f * ee_pos.scale);
+            DrawText(p, ee_pos.pt, 0.55f * ee_pos.scale, QStringLiteral("thnx2 allgamefans!"));
+        }
+
         p.setPen(QPen(colors.body_inner, 1.4f));
         p.setBrush(Qt::NoBrush);
-        const auto rib_tl = Project(-50.0f, -30.0f, +1.9f);
-        const auto rib_tr = Project(50.0f, -30.0f, +1.9f);
-        const auto rib_br = Project(50.0f, 30.0f, +1.9f);
-        const auto rib_bl = Project(-50.0f, 30.0f, +1.9f);
+        const auto rib_tl = Project(-45.0f, -30.0f, +1.9f);
+        const auto rib_tr = Project( 45.0f, -30.0f, +1.9f);
+        const auto rib_br = Project( 45.0f,  30.0f, +1.9f);
+        const auto rib_bl = Project(-45.0f,  30.0f, +1.9f);
         QPolygonF rib_poly;
         rib_poly << rib_tl.pt << rib_tr.pt << rib_br.pt << rib_bl.pt;
         p.drawPolygon(rib_poly);
         p.drawLine(Project(-40.0f, 0.0f, +1.9f).pt, Project(40.0f, 0.0f, +1.9f).pt);
-        p.drawLine(Project(0.0f, -30.0f, +1.9f).pt, Project(0.0f, 30.0f, +1.9f).pt);
-    }
+    }});
 
-    // 8. 3D Projected Skin Graphics & Emblems
-    switch (current_skin) {
-    case ControllerSkin::Xenoblade2: {
-        p.save();
-        p.setPen(QPen(colors.emblem_secondary, 2.0f));
-        p.setBrush(QColor(colors.emblem_secondary.red(), colors.emblem_secondary.green(), colors.emblem_secondary.blue(), 60));
-        QPolygonF wing_l;
-        wing_l << Project(-24.0f, -18.0f, 2.2f).pt << Project(-48.0f, -32.0f, 2.2f).pt
-               << Project(-40.0f, -14.0f, 2.2f).pt << Project(-24.0f, -8.0f, 2.2f).pt;
-        QPolygonF wing_r;
-        wing_r << Project(24.0f, -18.0f, 2.2f).pt << Project(48.0f, -32.0f, 2.2f).pt
-               << Project(40.0f, -14.0f, 2.2f).pt << Project(24.0f, -8.0f, 2.2f).pt;
-        p.drawPolygon(wing_l);
-        p.drawPolygon(wing_r);
+    // 11. Skin Artwork / Decals (Z = +2.2f)
+    elements.push_back({GetCamZ(0.0f, -10.0f, 2.2f), [&]() {
+        switch (current_skin) {
+        case ControllerSkin::ZeldaTotk: {
+            p.save();
+            const auto c_proj = Project(0.0f, -5.0f, 2.2f);
+            p.setPen(QPen(QColor(230, 185, 45, 230), 2.8f * zoom, Qt::SolidLine, Qt::RoundCap));
+            p.setBrush(Qt::NoBrush);
+            p.drawEllipse(c_proj.pt, 28.0f * c_proj.scale, 28.0f * c_proj.scale);
 
-        QPolygonF crystal;
-        crystal << Project(0.0f, -34.0f, 2.2f).pt << Project(16.0f, -16.0f, 2.2f).pt
-                << Project(0.0f, 2.0f, 2.2f).pt << Project(-16.0f, -16.0f, 2.2f).pt;
-        p.setPen(QPen(QColor(255, 255, 255, 220), 1.5f));
-        p.setBrush(colors.emblem);
-        p.drawPolygon(crystal);
-        p.drawLine(Project(0.0f, -34.0f, 2.2f).pt, Project(0.0f, 2.0f, 2.2f).pt);
-        p.drawLine(Project(-16.0f, -16.0f, 2.2f).pt, Project(16.0f, -16.0f, 2.2f).pt);
-        p.restore();
-        break;
-    }
-    case ControllerSkin::SmashBrosUltimate: {
-        p.save();
-        p.setPen(QPen(colors.emblem_secondary, 1.5f));
-        p.setBrush(colors.emblem);
-        QPolygonF bar1;
-        bar1 << Project(-20.0f, -65.0f, 2.2f).pt << Project(-7.0f, -65.0f, 2.2f).pt
-             << Project(-7.0f, 50.0f, 2.2f).pt << Project(-20.0f, 50.0f, 2.2f).pt;
-        QPolygonF bar2;
-        bar2 << Project(-105.0f, -32.0f, 2.2f).pt << Project(105.0f, -32.0f, 2.2f).pt
-             << Project(105.0f, -19.0f, 2.2f).pt << Project(-105.0f, -19.0f, 2.2f).pt;
-        p.drawPolygon(bar1);
-        p.drawPolygon(bar2);
-        p.restore();
-        break;
-    }
-    case ControllerSkin::ZeldaTotk: {
-        p.save();
-        p.setPen(QPen(colors.emblem, 2.2f * zoom, Qt::SolidLine, Qt::RoundCap));
-        p.setBrush(Qt::NoBrush);
-        const auto c1 = Project(0.0f, -5.0f, 2.2f);
-        p.drawEllipse(c1.pt, 30.0f * c1.scale, 30.0f * c1.scale);
-        const auto c2 = Project(0.0f, -5.0f, 2.2f);
-        p.drawEllipse(c2.pt, 18.0f * c2.scale, 18.0f * c2.scale);
-        p.setPen(QPen(colors.emblem_secondary, 1.8f));
-        p.drawLine(Project(40.0f, -45.0f, 2.2f).pt, Project(65.0f, -30.0f, 2.2f).pt);
-        p.drawLine(Project(65.0f, -30.0f, 2.2f).pt, Project(55.0f, -15.0f, 2.2f).pt);
-        p.drawLine(Project(55.0f, -15.0f, 2.2f).pt, Project(75.0f, 5.0f, 2.2f).pt);
-        p.restore();
-        break;
-    }
-    case ControllerSkin::Splatoon3: {
-        p.save();
-        p.setPen(Qt::NoPen);
-        p.setBrush(colors.emblem);
-        const auto sp1 = Project(-25.0f, -28.0f, 2.2f);
-        p.drawEllipse(sp1.pt, 16.0f * sp1.scale, 13.0f * sp1.scale);
-        const auto sp2 = Project(-38.0f, -20.0f, 2.2f);
-        p.drawEllipse(sp2.pt, 9.0f * sp2.scale, 8.0f * sp2.scale);
-        p.setBrush(colors.emblem_secondary);
-        const auto sp3 = Project(22.0f, 10.0f, 2.2f);
-        p.drawEllipse(sp3.pt, 14.0f * sp3.scale, 12.0f * sp3.scale);
-        const auto sp4 = Project(35.0f, 18.0f, 2.2f);
-        p.drawEllipse(sp4.pt, 8.0f * sp4.scale, 7.5f * sp4.scale);
-        p.restore();
-        break;
-    }
-    case ControllerSkin::MonsterHunterRise: {
-        p.save();
-        p.setPen(QPen(colors.emblem, 2.0f));
-        p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 50));
-        QPolygonF blade1;
-        blade1 << Project(0.0f, -45.0f, 2.2f).pt << Project(14.0f, -25.0f, 2.2f).pt << Project(0.0f, -10.0f, 2.2f).pt;
-        QPolygonF blade2;
-        blade2 << Project(0.0f, -45.0f, 2.2f).pt << Project(-14.0f, -25.0f, 2.2f).pt << Project(0.0f, -10.0f, 2.2f).pt;
-        p.drawPolygon(blade1);
-        p.drawPolygon(blade2);
-        p.restore();
-        break;
-    }
-    case ControllerSkin::PokemonScarletViolet: {
-        p.save();
-        p.setPen(QPen(colors.emblem, 1.8f));
-        p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 40));
-        QPolygonF shield;
-        shield << Project(0.0f, -38.0f, 2.2f).pt << Project(20.0f, -32.0f, 2.2f).pt
-               << Project(20.0f, -10.0f, 2.2f).pt << Project(0.0f, 10.0f, 2.2f).pt
-               << Project(-20.0f, -10.0f, 2.2f).pt << Project(-20.0f, -32.0f, 2.2f).pt;
-        p.drawPolygon(shield);
-        p.drawLine(Project(0.0f, -38.0f, 2.2f).pt, Project(0.0f, 10.0f, 2.2f).pt);
-        p.drawLine(Project(-20.0f, -20.0f, 2.2f).pt, Project(20.0f, -20.0f, 2.2f).pt);
-        p.restore();
-        break;
-    }
-    case ControllerSkin::CyberStorm: {
-        p.save();
-        p.setPen(QPen(colors.emblem, 1.6f));
-        p.drawLine(Project(-70.0f, -25.0f, 2.2f).pt, Project(-35.0f, -25.0f, 2.2f).pt);
-        p.drawLine(Project(-35.0f, -25.0f, 2.2f).pt, Project(-15.0f, -45.0f, 2.2f).pt);
-        p.drawLine(Project(-15.0f, -45.0f, 2.2f).pt, Project(20.0f, -45.0f, 2.2f).pt);
-        p.drawLine(Project(20.0f, -45.0f, 2.2f).pt, Project(40.0f, -25.0f, 2.2f).pt);
-        p.drawLine(Project(40.0f, -25.0f, 2.2f).pt, Project(75.0f, -25.0f, 2.2f).pt);
-        p.setPen(QPen(colors.emblem_secondary, 2.0f));
-        p.drawLine(Project(4.0f, -30.0f, 2.2f).pt, Project(-4.0f, -16.0f, 2.2f).pt);
-        p.drawLine(Project(-4.0f, -16.0f, 2.2f).pt, Project(2.0f, -16.0f, 2.2f).pt);
-        p.drawLine(Project(2.0f, -16.0f, 2.2f).pt, Project(-2.0f, -4.0f, 2.2f).pt);
-        p.restore();
-        break;
-    }
-    default:
-        break;
-    }
+            p.setPen(QPen(QColor(56, 225, 176, 210), 1.8f * zoom));
+            p.drawEllipse(c_proj.pt, 18.0f * c_proj.scale, 18.0f * c_proj.scale);
 
-    // 9. 3D Joysticks (Left & Right) with Steel Stem & Rubber Cap
+            p.setPen(QPen(QColor(230, 185, 45, 200), 1.6f * zoom));
+            p.drawLine(Project(28.0f, -30.0f, 2.2f).pt, Project(50.0f, -20.0f, 2.2f).pt);
+            p.drawLine(Project(50.0f, -20.0f, 2.2f).pt, Project(45.0f, -8.0f, 2.2f).pt);
+            p.drawLine(Project(45.0f, -8.0f, 2.2f).pt, Project(62.0f, 5.0f, 2.2f).pt);
+
+            p.setPen(QPen(QColor(218, 168, 38, 220), 2.0f * zoom));
+            p.drawLine(Project(115.0f, -15.0f, 4.2f).pt, Project(135.0f, 15.0f, 4.2f).pt);
+            p.drawLine(Project(135.0f, 15.0f, 4.2f).pt, Project(125.0f, 40.0f, 4.2f).pt);
+            p.drawLine(Project(125.0f, 40.0f, 4.2f).pt, Project(145.0f, 70.0f, 4.2f).pt);
+            p.restore();
+            break;
+        }
+
+        case ControllerSkin::SmashBrosUltimate: {
+            p.save();
+            const auto p1 = Project(-16.0f, -80.0f, 2.2f);
+            const auto p2 = Project(-5.0f, 55.0f, 2.2f);
+            QLinearGradient cross_v_grad(p1.pt, p2.pt);
+            cross_v_grad.setColorAt(0.0, QColor(255, 255, 255, 240));
+            cross_v_grad.setColorAt(0.3, QColor(195, 202, 214, 230));
+            cross_v_grad.setColorAt(0.65, QColor(120, 126, 138, 220));
+            cross_v_grad.setColorAt(1.0, QColor(230, 235, 245, 240));
+
+            QPolygonF bar_v;
+            bar_v << Project(-18.0f, -75.0f, 2.2f).pt
+                  << Project( -6.0f, -75.0f, 2.2f).pt
+                  << Project( -6.0f,  55.0f, 2.2f).pt
+                  << Project(-18.0f,  55.0f, 2.2f).pt;
+            p.setPen(QPen(QColor(50, 52, 60, 200), 1.2f));
+            p.setBrush(cross_v_grad);
+            p.drawPolygon(bar_v);
+
+            const auto p3 = Project(-110.0f, -28.0f, 2.2f);
+            const auto p4 = Project( 110.0f, -16.0f, 2.2f);
+            QLinearGradient cross_h_grad(p3.pt, p4.pt);
+            cross_h_grad.setColorAt(0.0, QColor(255, 255, 255, 240));
+            cross_h_grad.setColorAt(0.4, QColor(195, 202, 214, 230));
+            cross_h_grad.setColorAt(0.7, QColor(120, 126, 138, 220));
+            cross_h_grad.setColorAt(1.0, QColor(230, 235, 245, 240));
+
+            QPolygonF bar_h;
+            bar_h << Project(-110.0f, -28.0f, 2.2f).pt
+                  << Project( 110.0f, -28.0f, 2.2f).pt
+                  << Project( 110.0f, -16.0f, 2.2f).pt
+                  << Project(-110.0f, -16.0f, 2.2f).pt;
+            p.setBrush(cross_h_grad);
+            p.drawPolygon(bar_h);
+            p.restore();
+            break;
+        }
+
+        case ControllerSkin::CyberStorm: {
+            p.save();
+            p.setPen(QPen(QColor(0, 240, 255, 230), 1.8f * zoom));
+            p.drawLine(Project(-60.0f, -25.0f, 2.2f).pt, Project(-30.0f, -25.0f, 2.2f).pt);
+            p.drawLine(Project(-30.0f, -25.0f, 2.2f).pt, Project(-12.0f, -45.0f, 2.2f).pt);
+            p.drawLine(Project(-12.0f, -45.0f, 2.2f).pt, Project( 12.0f, -45.0f, 2.2f).pt);
+            p.drawLine(Project( 12.0f, -45.0f, 2.2f).pt, Project( 30.0f, -25.0f, 2.2f).pt);
+            p.drawLine(Project( 30.0f, -25.0f, 2.2f).pt, Project( 60.0f, -25.0f, 2.2f).pt);
+
+            p.setPen(Qt::NoPen);
+            p.setBrush(QColor(0, 240, 255));
+            for (float dx : {-60.0f, -30.0f, 30.0f, 60.0f}) {
+                const auto np = Project(dx, -25.0f, 2.22f);
+                p.drawEllipse(np.pt, 2.5f * np.scale, 2.5f * np.scale);
+            }
+
+            p.setPen(QPen(QColor(255, 0, 128, 240), 2.2f * zoom));
+            p.drawLine(Project( 4.0f, -26.0f, 2.22f).pt, Project(-4.0f, -14.0f, 2.22f).pt);
+            p.drawLine(Project(-4.0f, -14.0f, 2.22f).pt, Project( 2.0f, -14.0f, 2.22f).pt);
+            p.drawLine(Project( 2.0f, -14.0f, 2.22f).pt, Project(-2.0f,  -2.0f, 2.22f).pt);
+            p.restore();
+            break;
+        }
+
+        case ControllerSkin::Xenoblade2: {
+            p.save();
+            QPolygonF crystal;
+            crystal << Project(  0.0f, -32.0f, 2.2f).pt
+                    << Project( 14.0f, -16.0f, 2.2f).pt
+                    << Project(  0.0f,   0.0f, 2.2f).pt
+                    << Project(-14.0f, -16.0f, 2.2f).pt;
+            p.setPen(QPen(QColor(255, 255, 255, 220), 1.5f));
+            p.setBrush(colors.emblem);
+            p.drawPolygon(crystal);
+            p.setPen(QPen(QColor(255, 255, 255, 180), 1.0f));
+            p.drawLine(Project(0.0f, -32.0f, 2.2f).pt, Project(0.0f, 0.0f, 2.2f).pt);
+            p.drawLine(Project(-14.0f, -16.0f, 2.2f).pt, Project(14.0f, -16.0f, 2.2f).pt);
+
+            p.setPen(QPen(colors.emblem_secondary, 2.0f * zoom));
+            p.setBrush(QColor(colors.emblem_secondary.red(), colors.emblem_secondary.green(), colors.emblem_secondary.blue(), 70));
+            QPolygonF wing_l;
+            wing_l << Project(-20.0f, -16.0f, 2.2f).pt << Project(-45.0f, -28.0f, 2.2f).pt
+                   << Project(-38.0f, -12.0f, 2.2f).pt << Project(-20.0f,  -6.0f, 2.2f).pt;
+            QPolygonF wing_r;
+            wing_r << Project( 20.0f, -16.0f, 2.2f).pt << Project( 45.0f, -28.0f, 2.2f).pt
+                   << Project( 38.0f, -12.0f, 2.2f).pt << Project( 20.0f,  -6.0f, 2.2f).pt;
+            p.drawPolygon(wing_l);
+            p.drawPolygon(wing_r);
+            p.restore();
+            break;
+        }
+
+        case ControllerSkin::Splatoon3: {
+            p.save();
+            p.setPen(Qt::NoPen);
+            p.setBrush(colors.emblem);
+            const auto sp1 = Project(-25.0f, -28.0f, 2.2f);
+            p.drawEllipse(sp1.pt, 16.0f * sp1.scale, 13.0f * sp1.scale);
+            const auto sp2 = Project(-38.0f, -20.0f, 2.2f);
+            p.drawEllipse(sp2.pt, 9.0f * sp2.scale, 8.0f * sp2.scale);
+            p.setBrush(colors.emblem_secondary);
+            const auto sp3 = Project(22.0f, 10.0f, 2.2f);
+            p.drawEllipse(sp3.pt, 14.0f * sp3.scale, 12.0f * sp3.scale);
+            const auto sp4 = Project(35.0f, 18.0f, 2.2f);
+            p.drawEllipse(sp4.pt, 8.0f * sp4.scale, 7.5f * sp4.scale);
+            p.restore();
+            break;
+        }
+
+        case ControllerSkin::MonsterHunterRise: {
+            p.save();
+            p.setPen(QPen(colors.emblem, 2.0f * zoom));
+            p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 60));
+            QPolygonF blade1;
+            blade1 << Project(0.0f, -42.0f, 2.2f).pt << Project(14.0f, -22.0f, 2.2f).pt << Project(0.0f, -8.0f, 2.2f).pt;
+            QPolygonF blade2;
+            blade2 << Project(0.0f, -42.0f, 2.2f).pt << Project(-14.0f, -22.0f, 2.2f).pt << Project(0.0f, -8.0f, 2.2f).pt;
+            p.drawPolygon(blade1);
+            p.drawPolygon(blade2);
+            p.restore();
+            break;
+        }
+
+        case ControllerSkin::PokemonScarletViolet: {
+            p.save();
+            p.setPen(QPen(colors.emblem, 1.8f * zoom));
+            p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 50));
+            QPolygonF shield;
+            shield << Project(  0.0f, -36.0f, 2.2f).pt << Project( 18.0f, -30.0f, 2.2f).pt
+                   << Project( 18.0f,  -8.0f, 2.2f).pt << Project(  0.0f,  12.0f, 2.2f).pt
+                   << Project(-18.0f,  -8.0f, 2.2f).pt << Project(-18.0f, -30.0f, 2.2f).pt;
+            p.drawPolygon(shield);
+            p.drawLine(Project(0.0f, -36.0f, 2.2f).pt, Project(0.0f, 12.0f, 2.2f).pt);
+            p.restore();
+            break;
+        }
+        default:
+            break;
+        }
+    }});
+
+    // 12. 3D Joysticks (Left & Right) with Anatomical Coordinates
     auto Draw3DStick = [&](bool is_left) {
         const auto stick_id = is_left ? Settings::NativeAnalog::LStick : Settings::NativeAnalog::RStick;
         const auto button_id = is_left ? Settings::NativeButton::LStick : Settings::NativeButton::RStick;
 
         const float sx = std::clamp(stick_values[stick_id].x.value, -1.0f, 1.0f);
         const float sy = std::clamp(stick_values[stick_id].y.value, -1.0f, 1.0f);
-        const bool is_l3_pressed = button_values[button_id].value;
+        const bool is_click_pressed = button_values[button_id].value;
 
-        const float well_x = is_left ? -111.0f : 51.0f;
-        const float well_y = is_left ? -55.0f : 0.0f;
+        const float well_x = is_left ? -64.0f : 42.0f;
+        const float well_y = is_left ? -42.0f : 18.0f;
 
-        const float pad_x = well_x + sx * 15.0f;
-        const float pad_y = well_y + sy * 15.0f;
+        const float pad_x = well_x + sx * 13.0f;
+        const float pad_y = well_y + sy * 13.0f;
 
-        float pad_z = 28.0f - (sx * sx + sy * sy) * 3.0f;
-        if (is_l3_pressed) {
-            pad_z -= 6.0f;
+        float pad_z = 24.0f - (sx * sx + sy * sy) * 2.5f;
+        if (is_click_pressed) {
+            pad_z -= 5.0f;
         }
 
-        // Stick well socket
+        // Stick socket well
         {
             constexpr int well_pts = 24;
             QPolygonF well_outer_poly;
@@ -1686,16 +1920,16 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 const float ang = 2.0f * PI_CONST * k / well_pts;
                 const float cos_a = std::cos(ang);
                 const float sin_a = std::sin(ang);
-                well_outer_poly << Project(well_x + 32.0f * cos_a, well_y + 32.0f * sin_a, +2.0f).pt;
-                well_inner_poly << Project(well_x + 25.0f * cos_a, well_y + 25.0f * sin_a, -6.0f).pt;
+                well_outer_poly << Project(well_x + 30.0f * cos_a, well_y + 30.0f * sin_a, +2.0f).pt;
+                well_inner_poly << Project(well_x + 24.0f * cos_a, well_y + 24.0f * sin_a, -5.0f).pt;
             }
 
             p.setPen(QPen(colors.outline.darker(120), 1.0f));
             p.setBrush(QColor(22, 24, 28));
             p.drawPolygon(well_outer_poly);
 
-            const auto sock_proj = Project(well_x, well_y, -6.0f);
-            QRadialGradient socket_grad(sock_proj.pt, 30.0f * sock_proj.scale);
+            const auto sock_proj = Project(well_x, well_y, -5.0f);
+            QRadialGradient socket_grad(sock_proj.pt, 28.0f * sock_proj.scale);
             socket_grad.setColorAt(0.0, QColor(10, 11, 14));
             socket_grad.setColorAt(0.7, QColor(18, 20, 24));
             socket_grad.setColorAt(1.0, QColor(36, 40, 48));
@@ -1705,14 +1939,14 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
         // 3D Metallic Steel Stem / Shaft
         {
-            const auto p_base = Project(well_x, well_y, -4.0f);
-            const auto p_top = Project(pad_x, pad_y, pad_z - 3.5f);
+            const auto p_base = Project(well_x, well_y, -3.0f);
+            const auto p_top = Project(pad_x, pad_y, pad_z - 3.0f);
 
             const QPointF dir = p_top.pt - p_base.pt;
             const float len = std::max(0.001f, std::sqrt(float(dir.x() * dir.x() + dir.y() * dir.y())));
             const QPointF norm(-dir.y() / len, dir.x() / len);
 
-            const float shaft_r = 5.2f * p_base.scale;
+            const float shaft_r = 4.8f * p_base.scale;
             const QPointF w = norm * shaft_r;
 
             QPolygonF shaft_poly;
@@ -1723,7 +1957,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
             QLinearGradient shaft_grad(p_base.pt - w, p_base.pt + w);
             shaft_grad.setColorAt(0.0, QColor(60, 64, 72));
-            shaft_grad.setColorAt(0.35, QColor(185, 190, 205));
+            shaft_grad.setColorAt(0.35, QColor(190, 195, 210));
             shaft_grad.setColorAt(0.7, QColor(120, 125, 135));
             shaft_grad.setColorAt(1.0, QColor(45, 48, 55));
 
@@ -1735,9 +1969,9 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         // 3D Rubber Thumb-Pad (Cap)
         {
             constexpr int cap_pts = 20;
-            constexpr float r_skirt = 25.0f;
-            constexpr float r_rim = 24.0f;
-            constexpr float r_bowl = 17.0f;
+            constexpr float r_skirt = 23.0f;
+            constexpr float r_rim = 22.0f;
+            constexpr float r_bowl = 15.5f;
 
             std::array<QPointF, cap_pts> skirt_pts;
             std::array<QPointF, cap_pts> rim_pts;
@@ -1748,9 +1982,9 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 const float cos_a = std::cos(ang);
                 const float sin_a = std::sin(ang);
 
-                skirt_pts[k] = Project(pad_x + r_skirt * cos_a, pad_y + r_skirt * sin_a, pad_z - 3.5f).pt;
+                skirt_pts[k] = Project(pad_x + r_skirt * cos_a, pad_y + r_skirt * sin_a, pad_z - 3.0f).pt;
                 rim_pts[k] = Project(pad_x + r_rim * cos_a, pad_y + r_rim * sin_a, pad_z).pt;
-                bowl_pts[k] = Project(pad_x + r_bowl * cos_a, pad_y + r_bowl * sin_a, pad_z - 2.0f).pt;
+                bowl_pts[k] = Project(pad_x + r_bowl * cos_a, pad_y + r_bowl * sin_a, pad_z - 1.8f).pt;
             }
 
             for (int k = 0; k < cap_pts; ++k) {
@@ -1776,8 +2010,8 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 rim_poly << rim_pts[k];
             }
 
-            p.setPen(QPen(is_l3_pressed ? colors.indicator : colors.outline, 1.2f));
-            if (is_l3_pressed) {
+            p.setPen(QPen(is_click_pressed ? colors.indicator : colors.outline, 1.2f));
+            if (is_click_pressed) {
                 p.setBrush(colors.highlight);
             } else {
                 const auto cap_center = Project(pad_x, pad_y, pad_z);
@@ -1792,13 +2026,13 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
             // 4 Tactile Cardinal Notches on outer rim
             p.setPen(Qt::NoPen);
-            p.setBrush(is_l3_pressed ? colors.font : QColor(16, 18, 22, 190));
+            p.setBrush(is_click_pressed ? colors.font : QColor(16, 18, 22, 190));
             constexpr std::array<float, 4> notch_rads = {0.0f, float(PI_CONST * 0.5f), float(PI_CONST), float(PI_CONST * 1.5f)};
             for (float n_ang : notch_rads) {
                 const auto notch_proj = Project(pad_x + std::cos(n_ang) * (r_rim - 2.5f),
                                                 pad_y + std::sin(n_ang) * (r_rim - 2.5f),
                                                 pad_z + 0.2f);
-                p.drawEllipse(notch_proj.pt, 2.0f * notch_proj.scale, 2.0f * notch_proj.scale);
+                p.drawEllipse(notch_proj.pt, 1.8f * notch_proj.scale, 1.8f * notch_proj.scale);
             }
 
             // Inner concave thumb bowl
@@ -1807,9 +2041,9 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 bowl_poly << bowl_pts[k];
             }
 
-            const auto bowl_center = Project(pad_x, pad_y, pad_z - 2.0f);
+            const auto bowl_center = Project(pad_x, pad_y, pad_z - 1.8f);
             p.setPen(QPen(QColor(15, 17, 20), 0.8f));
-            if (is_l3_pressed) {
+            if (is_click_pressed) {
                 p.setBrush(colors.highlight2);
             } else {
                 QRadialGradient bowl_grad(bowl_center.pt, r_bowl * bowl_center.scale);
@@ -1822,95 +2056,17 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         }
     };
 
-    Draw3DStick(true);
-    Draw3DStick(false);
+    elements.push_back({GetCamZ(-64.0f, -42.0f, 20.0f), [&]() {
+        Draw3DStick(true);
+    }});
+    elements.push_back({GetCamZ(42.0f, 18.0f, 20.0f), [&]() {
+        Draw3DStick(false);
+    }});
 
-    // 10. 3D Cylindrical ABXY Face Buttons
-    auto Draw3DFaceButton = [&](int btn_id, float bx, float by, Symbol sym) {
-        const bool pressed = button_values[btn_id].value;
-        const float base_z = 3.0f;
-        const float top_z = pressed ? 5.0f : 13.0f;
-        constexpr float r = 14.5f;
-        constexpr int pts_count = 16;
-
-        std::array<QPointF, pts_count> base_pts;
-        std::array<QPointF, pts_count> top_pts;
-
-        for (int k = 0; k < pts_count; ++k) {
-            const float ang = 2.0f * PI_CONST * k / pts_count;
-            const float cos_a = std::cos(ang);
-            const float sin_a = std::sin(ang);
-
-            base_pts[k] = Project(bx + r * cos_a, by + r * sin_a, base_z).pt;
-            top_pts[k] = Project(bx + r * cos_a, by + r * sin_a, top_z).pt;
-        }
-
-        // Cylindrical side wall quads
-        for (int k = 0; k < pts_count; ++k) {
-            const int next_k = (k + 1) % pts_count;
-            QPolygonF wall_quad;
-            wall_quad << base_pts[k] << base_pts[next_k] << top_pts[next_k] << top_pts[k];
-
-            const float ang = 2.0f * PI_CONST * (k + 0.5f) / pts_count;
-            const float nx = std::cos(ang);
-            const float ny = std::sin(ang);
-
-            const float cp = (base_pts[next_k].x() - base_pts[k].x()) * (top_pts[k].y() - base_pts[k].y()) -
-                             (base_pts[next_k].y() - base_pts[k].y()) * (top_pts[k].x() - base_pts[k].x());
-            if (cp > 0.0f) {
-                p.setPen(Qt::NoPen);
-                p.setBrush(LightColor(pressed ? colors.indicator.darker(110) : colors.button.darker(125), nx, ny, 0.2f));
-                p.drawPolygon(wall_quad);
-            }
-        }
-
-        // Top face polygon
-        QPolygonF top_poly;
-        for (int k = 0; k < pts_count; ++k) {
-            top_poly << top_pts[k];
-        }
-
-        const auto top_center = Project(bx, by, top_z);
-        p.setPen(QPen(pressed ? colors.font : colors.outline, 1.2f));
-        if (pressed) {
-            QRadialGradient glow_grad(top_center.pt, r * top_center.scale);
-            glow_grad.setColorAt(0.0, colors.indicator.lighter(130));
-            glow_grad.setColorAt(0.7, colors.indicator);
-            glow_grad.setColorAt(1.0, colors.indicator.darker(120));
-            p.setBrush(glow_grad);
-        } else {
-            QRadialGradient btn_grad(top_center.pt - QPointF(r * 0.35f * top_center.scale, r * 0.35f * top_center.scale),
-                                     r * 1.3f * top_center.scale);
-            btn_grad.setColorAt(0.0, QColor(70, 75, 85));
-            btn_grad.setColorAt(0.5, colors.button);
-            btn_grad.setColorAt(1.0, colors.button.darker(130));
-            p.setBrush(btn_grad);
-        }
-        p.drawPolygon(top_poly);
-
-        // Domed gloss specular reflection highlight arc
-        if (!pressed) {
-            p.setPen(Qt::NoPen);
-            p.setBrush(QColor(255, 255, 255, 55));
-            const auto spec_proj = Project(bx - 3.0f, by - 4.5f, top_z + 0.1f);
-            p.drawEllipse(spec_proj.pt, 6.0f * spec_proj.scale, 3.0f * spec_proj.scale);
-        }
-
-        // Letter Symbol on top face
-        p.setPen(colors.transparent);
-        p.setBrush(pressed ? colors.font : colors.font2);
-        DrawSymbol(p, top_center.pt, sym, 1.45f * top_center.scale);
-    };
-
-    Draw3DFaceButton(A, 105.0f + 31.0f, -56.0f, Symbol::A);
-    Draw3DFaceButton(B, 105.0f, -56.0f + 31.0f, Symbol::B);
-    Draw3DFaceButton(X, 105.0f, -56.0f - 31.0f, Symbol::X);
-    Draw3DFaceButton(Y, 105.0f - 31.0f, -56.0f, Symbol::Y);
-
-    // 11. 3D D-Pad (Directional Rocker Cross)
-    {
-        const float cx = -61.0f;
-        const float cy = 0.0f;
+    // 13. 3D D-Pad (Directional Pad) at (-42.0f, 18.0f)
+    elements.push_back({GetCamZ(-42.0f, 18.0f, 10.0f), [&]() {
+        const float cx = -42.0f;
+        const float cy = 18.0f;
         const float base_z = 2.0f;
 
         const bool up = button_values[DUp].value;
@@ -1918,8 +2074,8 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         const bool left = button_values[DLeft].value;
         const bool right = button_values[DRight].value;
 
-        constexpr float arm_len = 28.0f;
-        constexpr float arm_w = 9.0f;
+        constexpr float arm_len = 24.0f;
+        constexpr float arm_w = 8.0f;
 
         const struct { float x; float y; } cross_pts[12] = {
             {-arm_w, -arm_len},
@@ -1937,11 +2093,11 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         };
 
         auto GetTopZ = [&](float x, float y) -> float {
-            float z = 9.5f;
-            if (up)    z += (y < -arm_w ? -5.5f : (y > arm_w ? +2.0f : -2.5f));
-            if (down)  z += (y > arm_w ? -5.5f : (y < -arm_w ? +2.0f : -2.5f));
-            if (left)  z += (x < -arm_w ? -5.5f : (x > arm_w ? +2.0f : -2.5f));
-            if (right) z += (x > arm_w ? -5.5f : (x < -arm_w ? +2.0f : -2.5f));
+            float z = 8.5f;
+            if (up)    z += (y < -arm_w ? -4.5f : (y > arm_w ? +1.8f : -2.0f));
+            if (down)  z += (y > arm_w ? -4.5f : (y < -arm_w ? +1.8f : -2.0f));
+            if (left)  z += (x < -arm_w ? -4.5f : (x > arm_w ? +1.8f : -2.0f));
+            if (right) z += (x > arm_w ? -4.5f : (x < -arm_w ? +1.8f : -2.0f));
             return z;
         };
 
@@ -1957,7 +2113,10 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             top_proj[i] = Project(px, py, top_z).pt;
         }
 
-        // 3D side bevel walls
+        const QColor dpad_base_col = (current_skin == ControllerSkin::ZeldaTotk)
+                                         ? QColor(218, 168, 38)
+                                         : colors.button;
+
         for (int i = 0; i < 12; ++i) {
             const int next_i = (i + 1) % 12;
             QPolygonF wall_quad;
@@ -1969,7 +2128,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 const float nx = -(cross_pts[next_i].y - cross_pts[i].y);
                 const float ny = cross_pts[next_i].x - cross_pts[i].x;
                 p.setPen(Qt::NoPen);
-                p.setBrush(LightColor(colors.button.darker(120), nx, ny, 0.2f));
+                p.setBrush(LightColor(dpad_base_col.darker(120), nx, ny, 0.2f));
                 p.drawPolygon(wall_quad);
             }
         }
@@ -1980,145 +2139,306 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         }
 
         p.setPen(QPen(colors.outline, 1.2f));
-        p.setBrush(colors.button);
+        p.setBrush(dpad_base_col);
         p.drawPolygon(top_poly);
 
-        // Center pivot dish
-        const auto center_proj = Project(cx, cy, GetTopZ(0.0f, 0.0f) - 1.5f);
+        const auto center_proj = Project(cx, cy, GetTopZ(0.0f, 0.0f) - 1.2f);
         p.setPen(QPen(QColor(18, 20, 24), 0.8f));
-        p.setBrush(colors.button2);
-        p.drawEllipse(center_proj.pt, 6.0f * center_proj.scale, 6.0f * center_proj.scale);
+        p.setBrush(dpad_base_col.darker(125));
+        p.drawEllipse(center_proj.pt, 5.5f * center_proj.scale, 5.5f * center_proj.scale);
 
-        // Directional arrows
         auto DrawDpadArm = [&](Direction dir, bool is_pressed, float ax, float ay) {
             const float top_z = GetTopZ(ax, ay);
             const auto arm_proj = Project(cx + ax, cy + ay, top_z + 0.1f);
-            p.setPen(is_pressed ? colors.font : colors.font2);
-            p.setBrush(is_pressed ? colors.indicator : colors.font2);
-            DrawArrow(p, arm_proj.pt, dir, 0.95f * arm_proj.scale);
+            const QColor arr_col = is_pressed ? colors.indicator
+                                 : ((current_skin == ControllerSkin::ZeldaTotk) ? QColor(56, 225, 176) : colors.font2);
+            p.setPen(arr_col);
+            p.setBrush(arr_col);
+            DrawArrow(p, arm_proj.pt, dir, 0.88f * arm_proj.scale);
         };
 
-        DrawDpadArm(Direction::Up, up, 0.0f, -19.0f);
-        DrawDpadArm(Direction::Down, down, 0.0f, 19.0f);
-        DrawDpadArm(Direction::Left, left, -19.0f, 0.0f);
-        DrawDpadArm(Direction::Right, right, 19.0f, 0.0f);
-    }
+        DrawDpadArm(Direction::Up, up, 0.0f, -16.0f);
+        DrawDpadArm(Direction::Down, down, 0.0f, 16.0f);
+        DrawDpadArm(Direction::Left, left, -16.0f, 0.0f);
+        DrawDpadArm(Direction::Right, right, 16.0f, 0.0f);
+    }});
 
-    // 12. 3D Auxiliary Buttons (+, -, Screenshot, Home)
-    {
-        // Minus button at (-50, -86)
-        {
-            const bool pressed = button_values[Minus].value;
-            const float z = pressed ? 4.0f : 8.0f;
-            const auto proj = Project(-50.0f, -86.0f, z);
-            p.setPen(QPen(pressed ? colors.font : colors.outline, 1.0f));
-            p.setBrush(pressed ? colors.indicator : colors.button);
-            p.drawEllipse(proj.pt, 8.5f * proj.scale, 8.5f * proj.scale);
+    // 14. 3D Face Buttons (ABXY) at Cluster (+64.0f, -42.0f)
+    auto PushFaceButton = [&](int btn_id, float bx, float by, Symbol sym) {
+        elements.push_back({GetCamZ(bx, by, 12.0f), [&, btn_id, bx, by, sym]() {
+            const bool pressed = button_values[btn_id].value;
+            const float base_z = 3.0f;
+            const float top_z = pressed ? 5.0f : 12.0f;
+            constexpr float r = 11.5f;
+            constexpr int pts_count = 16;
 
-            p.setPen(colors.font2);
-            p.setBrush(colors.font2);
-            const auto sym_proj = Project(-50.0f, -86.0f, z + 0.1f);
-            p.drawRect(QRectF(sym_proj.pt.x() - 4.5f * sym_proj.scale, sym_proj.pt.y() - 0.8f * sym_proj.scale,
-                              9.0f * sym_proj.scale, 1.6f * sym_proj.scale));
-        }
+            std::array<QPointF, pts_count> base_pts;
+            std::array<QPointF, pts_count> top_pts;
 
-        // Plus button at (+50, -86)
-        {
-            const bool pressed = button_values[Plus].value;
-            const float z = pressed ? 4.0f : 8.0f;
-            const auto proj = Project(50.0f, -86.0f, z);
-            p.setPen(QPen(pressed ? colors.font : colors.outline, 1.0f));
-            p.setBrush(pressed ? colors.indicator : colors.button);
-            p.drawEllipse(proj.pt, 8.5f * proj.scale, 8.5f * proj.scale);
+            for (int k = 0; k < pts_count; ++k) {
+                const float ang = 2.0f * PI_CONST * k / pts_count;
+                const float cos_a = std::cos(ang);
+                const float sin_a = std::sin(ang);
 
-            p.setPen(colors.font2);
-            p.setBrush(colors.font2);
-            const auto sym_proj = Project(50.0f, -86.0f, z + 0.1f);
-            p.drawRect(QRectF(sym_proj.pt.x() - 4.5f * sym_proj.scale, sym_proj.pt.y() - 0.8f * sym_proj.scale,
-                              9.0f * sym_proj.scale, 1.6f * sym_proj.scale));
-            p.drawRect(QRectF(sym_proj.pt.x() - 0.8f * sym_proj.scale, sym_proj.pt.y() - 4.5f * sym_proj.scale,
-                              1.6f * sym_proj.scale, 9.0f * sym_proj.scale));
-        }
+                base_pts[k] = Project(bx + r * cos_a, by + r * sin_a, base_z).pt;
+                top_pts[k] = Project(bx + r * cos_a, by + r * sin_a, top_z).pt;
+            }
 
-        // Screenshot/Capture button at (-29, -56)
-        {
-            const bool pressed = button_values[Screenshot].value;
-            const float z = pressed ? 3.0f : 7.0f;
-            const auto proj = Project(-29.0f, -56.0f, z);
-            p.setPen(QPen(pressed ? colors.font : colors.outline, 1.0f));
-            p.setBrush(pressed ? colors.indicator : colors.button);
-            const float sz = 7.0f * proj.scale;
-            p.drawRoundedRect(QRectF(proj.pt.x() - sz, proj.pt.y() - sz, sz * 2.0f, sz * 2.0f), 2.0f, 2.0f);
+            for (int k = 0; k < pts_count; ++k) {
+                const int next_k = (k + 1) % pts_count;
+                QPolygonF wall_quad;
+                wall_quad << base_pts[k] << base_pts[next_k] << top_pts[next_k] << top_pts[k];
 
-            p.setPen(colors.font2);
-            p.setBrush(colors.font2);
-            p.drawEllipse(proj.pt, 3.8f * proj.scale, 3.8f * proj.scale);
-        }
+                const float ang = 2.0f * PI_CONST * (k + 0.5f) / pts_count;
+                const float nx = std::cos(ang);
+                const float ny = std::sin(ang);
 
-        // Home button at (+29, -56)
-        {
-            const bool pressed = button_values[Home].value;
-            const float z = pressed ? 3.0f : 7.0f;
+                const float cp = (base_pts[next_k].x() - base_pts[k].x()) * (top_pts[k].y() - base_pts[k].y()) -
+                                 (base_pts[next_k].y() - base_pts[k].y()) * (top_pts[k].x() - base_pts[k].x());
+                if (cp > 0.0f) {
+                    p.setPen(Qt::NoPen);
+                    p.setBrush(LightColor(pressed ? colors.indicator.darker(110) : colors.button.darker(125), nx, ny, 0.2f));
+                    p.drawPolygon(wall_quad);
+                }
+            }
 
-            // Radiant Notification LED Halo Ring around base
-            const auto halo_proj = Project(29.0f, -56.0f, 2.5f);
-            QRadialGradient led_grad(halo_proj.pt, 16.0f * halo_proj.scale);
-            led_grad.setColorAt(0.0, colors.home_led);
-            QColor led_fade = colors.home_led;
-            led_fade.setAlpha(0);
-            led_grad.setColorAt(1.0, led_fade);
-            p.setPen(Qt::NoPen);
-            p.setBrush(led_grad);
-            p.drawEllipse(halo_proj.pt, 16.0f * halo_proj.scale, 16.0f * halo_proj.scale);
+            QPolygonF top_poly;
+            for (int k = 0; k < pts_count; ++k) {
+                top_poly << top_pts[k];
+            }
 
-            // Home button body
-            const auto proj = Project(29.0f, -56.0f, z);
-            p.setPen(QPen(colors.home_led, 1.6f));
-            p.setBrush(pressed ? colors.indicator : colors.button);
-            p.drawEllipse(proj.pt, 8.5f * proj.scale, 8.5f * proj.scale);
+            const auto top_center = Project(bx, by, top_z);
+            p.setPen(QPen(pressed ? colors.font : colors.outline, 1.2f));
+            if (pressed) {
+                QRadialGradient glow_grad(top_center.pt, r * top_center.scale);
+                glow_grad.setColorAt(0.0, colors.indicator.lighter(130));
+                glow_grad.setColorAt(0.7, colors.indicator);
+                glow_grad.setColorAt(1.0, colors.indicator.darker(120));
+                p.setBrush(glow_grad);
+            } else {
+                QRadialGradient btn_grad(top_center.pt - QPointF(r * 0.35f * top_center.scale, r * 0.35f * top_center.scale),
+                                         r * 1.3f * top_center.scale);
+                btn_grad.setColorAt(0.0, QColor(70, 75, 85));
+                btn_grad.setColorAt(0.5, colors.button);
+                btn_grad.setColorAt(1.0, colors.button.darker(130));
+                p.setBrush(btn_grad);
+            }
+            p.drawPolygon(top_poly);
+
+            if (!pressed) {
+                p.setPen(Qt::NoPen);
+                p.setBrush(QColor(255, 255, 255, 55));
+                const auto spec_proj = Project(bx - 2.5f, by - 3.5f, top_z + 0.1f);
+                p.drawEllipse(spec_proj.pt, 4.5f * spec_proj.scale, 2.5f * spec_proj.scale);
+            }
 
             p.setPen(colors.transparent);
-            p.setBrush(colors.font2);
-            DrawSymbol(p, proj.pt, Symbol::House, 4.0f * proj.scale);
-        }
-    }
+            p.setBrush(pressed ? colors.font : colors.font2);
+            DrawSymbol(p, top_center.pt, sym, 1.30f * top_center.scale);
+        }});
+    };
 
-    // 13. 3D Player Slot Indicator LEDs
-    {
-        constexpr std::array<float, 4> led_x = {-18.0f, -6.0f, 6.0f, 18.0f};
+    PushFaceButton(A, 82.0f, -42.0f, Symbol::A);
+    PushFaceButton(B, 64.0f, -24.0f, Symbol::B);
+    PushFaceButton(X, 64.0f, -60.0f, Symbol::X);
+    PushFaceButton(Y, 46.0f, -42.0f, Symbol::Y);
+
+    // 15. Auxiliary Buttons (-, +, Screenshot, Home)
+    elements.push_back({GetCamZ(-24.0f, -58.0f, 6.0f), [&]() {
+        const bool pressed = button_values[Minus].value;
+        const float z = pressed ? 3.5f : 7.0f;
+        const auto proj = Project(-24.0f, -58.0f, z);
+        p.setPen(QPen(pressed ? colors.font : colors.outline, 1.0f));
+        p.setBrush(pressed ? colors.indicator : colors.button);
+        p.drawEllipse(proj.pt, 7.0f * proj.scale, 7.0f * proj.scale);
+
+        p.setPen(colors.font2);
+        p.setBrush(colors.font2);
+        const auto sym_proj = Project(-24.0f, -58.0f, z + 0.1f);
+        p.drawRect(QRectF(sym_proj.pt.x() - 3.5f * sym_proj.scale, sym_proj.pt.y() - 0.7f * sym_proj.scale,
+                          7.0f * sym_proj.scale, 1.4f * sym_proj.scale));
+    }});
+
+    elements.push_back({GetCamZ(24.0f, -58.0f, 6.0f), [&]() {
+        const bool pressed = button_values[Plus].value;
+        const float z = pressed ? 3.5f : 7.0f;
+        const auto proj = Project(24.0f, -58.0f, z);
+        p.setPen(QPen(pressed ? colors.font : colors.outline, 1.0f));
+        p.setBrush(pressed ? colors.indicator : colors.button);
+        p.drawEllipse(proj.pt, 7.0f * proj.scale, 7.0f * proj.scale);
+
+        p.setPen(colors.font2);
+        p.setBrush(colors.font2);
+        const auto sym_proj = Project(24.0f, -58.0f, z + 0.1f);
+        p.drawRect(QRectF(sym_proj.pt.x() - 3.5f * sym_proj.scale, sym_proj.pt.y() - 0.7f * sym_proj.scale,
+                          7.0f * sym_proj.scale, 1.4f * sym_proj.scale));
+        p.drawRect(QRectF(sym_proj.pt.x() - 0.7f * sym_proj.scale, sym_proj.pt.y() - 3.5f * sym_proj.scale,
+                          1.4f * sym_proj.scale, 7.0f * sym_proj.scale));
+    }});
+
+    elements.push_back({GetCamZ(-16.0f, -28.0f, 5.0f), [&]() {
+        const bool pressed = button_values[Screenshot].value;
+        const float z = pressed ? 3.0f : 6.0f;
+        const auto proj = Project(-16.0f, -28.0f, z);
+        p.setPen(QPen(pressed ? colors.font : colors.outline, 1.0f));
+        p.setBrush(pressed ? colors.indicator : colors.button);
+        const float sz = 5.5f * proj.scale;
+        p.drawRoundedRect(QRectF(proj.pt.x() - sz, proj.pt.y() - sz, sz * 2.0f, sz * 2.0f), 2.0f, 2.0f);
+
+        p.setPen(colors.font2);
+        p.setBrush(colors.font2);
+        p.drawEllipse(proj.pt, 3.0f * proj.scale, 3.0f * proj.scale);
+    }});
+
+    elements.push_back({GetCamZ(16.0f, -28.0f, 5.0f), [&]() {
+        const bool pressed = button_values[Home].value;
+        const float z = pressed ? 3.0f : 6.0f;
+
+        const auto halo_proj = Project(16.0f, -28.0f, 2.5f);
+        QRadialGradient led_grad(halo_proj.pt, 14.0f * halo_proj.scale);
+        led_grad.setColorAt(0.0, colors.home_led);
+        QColor led_fade = colors.home_led;
+        led_fade.setAlpha(0);
+        led_grad.setColorAt(1.0, led_fade);
+        p.setPen(Qt::NoPen);
+        p.setBrush(led_grad);
+        p.drawEllipse(halo_proj.pt, 14.0f * halo_proj.scale, 14.0f * halo_proj.scale);
+
+        const auto proj = Project(16.0f, -28.0f, z);
+        p.setPen(QPen(colors.home_led, 1.4f));
+        p.setBrush(pressed ? colors.indicator : colors.button);
+        p.drawEllipse(proj.pt, 7.0f * proj.scale, 7.0f * proj.scale);
+
+        p.setPen(colors.transparent);
+        p.setBrush(colors.font2);
+        DrawSymbol(p, proj.pt, Symbol::House, 3.2f * proj.scale);
+    }});
+
+    // 16. Player Indicator LEDs (Z = +3.0f)
+    elements.push_back({GetCamZ(0.0f, 52.0f, 3.0f), [&]() {
+        constexpr std::array<float, 4> led_x = {-15.0f, -5.0f, 5.0f, 15.0f};
         const bool on[4] = {bool(led_pattern.position1), bool(led_pattern.position2),
                             bool(led_pattern.position3), bool(led_pattern.position4)};
 
         for (int i = 0; i < 4; ++i) {
-            const auto proj = Project(led_x[i], 66.0f, 2.5f);
+            const auto proj = Project(led_x[i], 52.0f, 2.5f);
             p.setPen(Qt::NoPen);
             p.setBrush(on[i] ? colors.indicator : QColor(30, 35, 42));
-            p.drawRoundedRect(QRectF(proj.pt.x() - 2.5f * proj.scale, proj.pt.y() - 1.5f * proj.scale,
-                                     5.0f * proj.scale, 3.0f * proj.scale), 1.0f, 1.0f);
+            p.drawRoundedRect(QRectF(proj.pt.x() - 2.2f * proj.scale, proj.pt.y() - 1.2f * proj.scale,
+                                     4.4f * proj.scale, 2.4f * proj.scale), 0.8f, 0.8f);
             if (on[i]) {
-                QRadialGradient glow(proj.pt, 5.0f * proj.scale);
+                QRadialGradient glow(proj.pt, 4.5f * proj.scale);
                 glow.setColorAt(0.0, colors.indicator);
                 QColor fade = colors.indicator;
                 fade.setAlpha(0);
                 glow.setColorAt(1.0, fade);
                 p.setBrush(glow);
-                p.drawEllipse(proj.pt, 5.0f * proj.scale, 5.0f * proj.scale);
+                p.drawEllipse(proj.pt, 4.5f * proj.scale, 4.5f * proj.scale);
+            }
+        }
+    }});
+
+    // Execute painter's algorithm: sort elements from farthest to nearest
+    std::sort(elements.begin(), elements.end(), [](const RenderElement& a, const RenderElement& b) {
+        return a.depth < b.depth;
+    });
+
+    for (const auto& el : elements) {
+        el.draw();
+    }
+
+    // 17. 2D HUD Overlays: Analog Stick Coordinates, Properties, and Live Status
+    const QPointF hud_left = center + QPointF(-185.0f, 95.0f);
+    const QPointF hud_right = center + QPointF(185.0f, 95.0f);
+    DrawRawJoystick(p, hud_left, hud_right);
+
+    // Live Numeric Axis Text Badges below HUD radars
+    {
+        SetTextFont(p, 0.70f);
+        p.setPen(colors.font);
+
+        const float lx = stick_values[Settings::NativeAnalog::LStick].x.value;
+        const float ly = stick_values[Settings::NativeAnalog::LStick].y.value;
+        const QString l_str = QStringLiteral("L: X[%1] Y[%2]")
+                                  .arg(lx, 5, 'f', 2, QLatin1Char(' '))
+                                  .arg(ly, 5, 'f', 2, QLatin1Char(' '));
+        DrawText(p, hud_left + QPointF(0.0f, 52.0f), 0.70f, l_str);
+
+        const float rx = stick_values[Settings::NativeAnalog::RStick].x.value;
+        const float ry = stick_values[Settings::NativeAnalog::RStick].y.value;
+        const QString r_str = QStringLiteral("R: X[%1] Y[%2]")
+                                  .arg(rx, 5, 'f', 2, QLatin1Char(' '))
+                                  .arg(ry, 5, 'f', 2, QLatin1Char(' '));
+        DrawText(p, hud_right + QPointF(0.0f, 52.0f), 0.70f, r_str);
+    }
+
+    // Active pressed buttons monitor ribbon under controller
+    {
+        struct ActiveBadge {
+            QString name{};
+            bool active{false};
+        };
+        const std::array<ActiveBadge, 14> active_badges = {
+            ActiveBadge{QStringLiteral("A"), button_values[A].value},
+            ActiveBadge{QStringLiteral("B"), button_values[B].value},
+            ActiveBadge{QStringLiteral("X"), button_values[X].value},
+            ActiveBadge{QStringLiteral("Y"), button_values[Y].value},
+            ActiveBadge{QStringLiteral("L"), button_values[L].value},
+            ActiveBadge{QStringLiteral("R"), button_values[R].value},
+            ActiveBadge{QStringLiteral("ZL"), zl_analog > 0.15f || button_values[ZL].value},
+            ActiveBadge{QStringLiteral("ZR"), zr_analog > 0.15f || button_values[ZR].value},
+            ActiveBadge{QStringLiteral("L3"), button_values[Settings::NativeButton::LStick].value},
+            ActiveBadge{QStringLiteral("R3"), button_values[Settings::NativeButton::RStick].value},
+            ActiveBadge{QStringLiteral("▲"), button_values[DUp].value},
+            ActiveBadge{QStringLiteral("▼"), button_values[DDown].value},
+            ActiveBadge{QStringLiteral("◀"), button_values[DLeft].value},
+            ActiveBadge{QStringLiteral("▶"), button_values[DRight].value},
+        };
+
+        std::vector<QString> pressed_names;
+        for (const auto& b : active_badges) {
+            if (b.active) {
+                pressed_names.push_back(b.name);
+            }
+        }
+
+        if (!pressed_names.empty()) {
+            const float badge_w = 26.0f;
+            const float badge_h = 18.0f;
+            const float spacing = 6.0f;
+            const float total_w = pressed_names.size() * badge_w + (pressed_names.size() - 1) * spacing;
+            float start_x = center.x() - total_w * 0.5f;
+            const float badge_y = center.y() + 125.0f;
+
+            for (const auto& name : pressed_names) {
+                QRectF b_rect(start_x, badge_y - badge_h * 0.5f, badge_w, badge_h);
+                p.setPen(QPen(colors.indicator.lighter(130), 1.2f));
+                QLinearGradient b_grad(b_rect.topLeft(), b_rect.bottomLeft());
+                b_grad.setColorAt(0.0, colors.indicator.darker(110));
+                b_grad.setColorAt(1.0, colors.indicator.darker(160));
+                p.setBrush(b_grad);
+                p.drawRoundedRect(b_rect, 4.0f, 4.0f);
+
+                p.setPen(colors.font);
+                SetTextFont(p, 0.75f);
+                DrawText(p, QPointF(start_x + badge_w * 0.5f, badge_y), 0.75f, name);
+                start_x += badge_w + spacing;
             }
         }
     }
 
-    // 14. Motion Orientation Cube in top-right corner
+    // 18. Motion Orientation Cube in top-right corner
     {
         using namespace Settings::NativeMotion;
-        const QPointF motion_pos = center + QPointF(175.0f * zoom, -115.0f * zoom);
+        const QPointF motion_pos = center + QPointF(185.0f, -115.0f);
         p.setPen(colors.button);
         p.setBrush(colors.transparent);
-        Draw3dCube(p, motion_pos, motion_values[Settings::NativeMotion::MotionLeft].euler, 15.0f * zoom);
+        Draw3dCube(p, motion_pos, motion_values[Settings::NativeMotion::MotionLeft].euler, 15.0f);
     }
 
-    // 15. Battery in top-left corner
+    // 19. Battery in top-left corner
     {
-        const QPointF bat_pos = center + QPointF(-185.0f * zoom, -125.0f * zoom);
+        const QPointF bat_pos = center + QPointF(-185.0f, -125.0f);
         DrawBattery(p, bat_pos, battery_values[Core::HID::EmulatedDeviceIndex::LeftIndex]);
     }
 }

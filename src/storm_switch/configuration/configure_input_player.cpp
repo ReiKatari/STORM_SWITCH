@@ -348,6 +348,20 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         ui->buttonSLRight,  ui->buttonSRRight,
     };
 
+    const QString dpad_btn_style = QStringLiteral("QPushButton { text-align: left; padding-left: 8px; min-width: 78px; }");
+    ui->buttonDpadLeft->setStyleSheet(dpad_btn_style);
+    ui->buttonDpadRight->setStyleSheet(dpad_btn_style);
+    ui->buttonDpadUp->setStyleSheet(dpad_btn_style);
+    ui->buttonDpadDown->setStyleSheet(dpad_btn_style);
+    ui->buttonDpadLeft->setMinimumWidth(78);
+    ui->buttonDpadRight->setMinimumWidth(78);
+    ui->buttonDpadUp->setMinimumWidth(78);
+    ui->buttonDpadDown->setMinimumWidth(78);
+    ui->buttonDpadLeftGroup->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    ui->buttonDpadRightGroup->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    ui->buttonDpadUpGroup->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    ui->buttonDpadDownGroup->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
     analog_map_buttons = {{
         {
             ui->buttonLStickUp,
