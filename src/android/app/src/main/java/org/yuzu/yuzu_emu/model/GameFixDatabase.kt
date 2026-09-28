@@ -5004,11 +5004,13 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\rescale_hack" to "true",
-                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\rescale_hack" to "true",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -5016,14 +5018,18 @@ object GameFixDatabase {
         GameFixProfile(
             0x01009720213B0000L,
             "Captain Tsubasa 2 - World Fighters",
-            "• Задержки компиляции шейдеров спецэффектов футбольных ударов\n• Нагрузка на память при наличии дополнений",
-            "• Shader compilation drops during special soccer shot effects\n• Memory pressure with DLCs installed",
+            "• Сбои после создания персонажа при неточной синхронизации ГПУ\n• Задержки компиляции шейдеров спецэффектов футбольных ударов\n• Нагрузка на память при наличии дополнений",
+            "• Crashes after character creation on inaccurate GPU sync\n• Shader compilation drops during special soccer shot effects\n• Memory pressure with DLCs installed",
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\rescale_hack" to "true",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )

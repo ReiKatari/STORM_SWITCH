@@ -1259,6 +1259,9 @@ public:
 
     void BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
                          VkIndexType index_type) const noexcept {
+        if (buffer == VK_NULL_HANDLE) {
+            return;
+        }
         dld->vkCmdBindIndexBuffer(handle, buffer, offset, index_type);
     }
 
@@ -1326,12 +1329,18 @@ public:
     void BlitImage(VkImage src_image, VkImageLayout src_layout, VkImage dst_image,
                    VkImageLayout dst_layout, Span<VkImageBlit> regions,
                    VkFilter filter) const noexcept {
+        if (src_image == VK_NULL_HANDLE || dst_image == VK_NULL_HANDLE || regions.empty()) {
+            return;
+        }
         dld->vkCmdBlitImage(handle, src_image, src_layout, dst_image, dst_layout, regions.size(),
                             regions.data(), filter);
     }
 
     void ResolveImage(VkImage src_image, VkImageLayout src_layout, VkImage dst_image,
                       VkImageLayout dst_layout, Span<VkImageResolve> regions) {
+        if (src_image == VK_NULL_HANDLE || dst_image == VK_NULL_HANDLE || regions.empty()) {
+            return;
+        }
         dld->vkCmdResolveImage(handle, src_image, src_layout, dst_image, dst_layout, regions.size(),
                                regions.data());
     }
@@ -1457,23 +1466,35 @@ public:
 
     void CopyBufferToImage(VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout,
                            Span<VkBufferImageCopy> regions) const noexcept {
+        if (src_buffer == VK_NULL_HANDLE || dst_image == VK_NULL_HANDLE || regions.empty()) {
+            return;
+        }
         dld->vkCmdCopyBufferToImage(handle, src_buffer, dst_image, dst_image_layout, regions.size(),
                                     regions.data());
     }
 
     void CopyBuffer(VkBuffer src_buffer, VkBuffer dst_buffer,
                     Span<VkBufferCopy> regions) const noexcept {
+        if (src_buffer == VK_NULL_HANDLE || dst_buffer == VK_NULL_HANDLE || regions.empty()) {
+            return;
+        }
         dld->vkCmdCopyBuffer(handle, src_buffer, dst_buffer, regions.size(), regions.data());
     }
 
     void CopyImage(VkImage src_image, VkImageLayout src_layout, VkImage dst_image,
                    VkImageLayout dst_layout, Span<VkImageCopy> regions) const noexcept {
+        if (src_image == VK_NULL_HANDLE || dst_image == VK_NULL_HANDLE || regions.empty()) {
+            return;
+        }
         dld->vkCmdCopyImage(handle, src_image, src_layout, dst_image, dst_layout, regions.size(),
                             regions.data());
     }
 
     void CopyImageToBuffer(VkImage src_image, VkImageLayout src_layout, VkBuffer dst_buffer,
                            Span<VkBufferImageCopy> regions) const noexcept {
+        if (src_image == VK_NULL_HANDLE || dst_buffer == VK_NULL_HANDLE || regions.empty()) {
+            return;
+        }
         dld->vkCmdCopyImageToBuffer(handle, src_image, src_layout, dst_buffer, regions.size(),
                                     regions.data());
     }
@@ -1481,12 +1502,18 @@ public:
     void CopyQueryPoolResults(VkQueryPool query_pool, u32 first_query, u32 query_count,
                               VkBuffer dst_buffer, VkDeviceSize dst_offset, VkDeviceSize stride,
                               VkQueryResultFlags flags) const noexcept {
+        if (dst_buffer == VK_NULL_HANDLE || query_pool == VK_NULL_HANDLE || query_count == 0) {
+            return;
+        }
         dld->vkCmdCopyQueryPoolResults(handle, query_pool, first_query, query_count, dst_buffer,
                                        dst_offset, stride, flags);
     }
 
     void FillBuffer(VkBuffer dst_buffer, VkDeviceSize dst_offset, VkDeviceSize size,
                     u32 data) const noexcept {
+        if (dst_buffer == VK_NULL_HANDLE) {
+            return;
+        }
         dld->vkCmdFillBuffer(handle, dst_buffer, dst_offset, size, data);
     }
 
@@ -1708,6 +1735,9 @@ public:
 
     void BeginConditionalRenderingEXT(
         const VkConditionalRenderingBeginInfoEXT& info) const noexcept {
+        if (info.buffer == VK_NULL_HANDLE) {
+            return;
+        }
         dld->vkCmdBeginConditionalRenderingEXT(handle, &info);
     }
 

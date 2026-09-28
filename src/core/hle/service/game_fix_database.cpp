@@ -4489,7 +4489,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\drs_resolution_lock", "false"},
             {"Renderer\\rescale_hack", "true"},
             {"Core\\memory_layout_mode", "1"},
@@ -4504,14 +4504,18 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01009720213B0000ULL,
         "Captain Tsubasa 2 - World Fighters",
-        "• Задержки компиляции шейдеров спецэффектов футбольных ударов\n• Нагрузка на память при наличии дополнений",
-        "• Shader compilation drops during special soccer shot effects\n• Memory pressure with DLCs installed",
-        "",
-        "",
+        "• Сбои после создания персонажа при неточной синхронизации ГПУ\n• Задержки компиляции шейдеров спецэффектов футбольных ударов\n• Нагрузка на память при наличии дополнений",
+        "• Crashes after character creation on inaccurate GPU sync\n• Shader compilation drops during special soccer shot effects\n• Memory pressure with DLCs installed",
+        "✓ Точность ГПУ: Высокая (устранение сбоев после создания персонажа)\n✓ NVDEC: Программный (стабильность видеороликов)\n✓ Совместимое масштабирование: Включено\n✓ Память: 6GB DRAM (стабильность с дополнениями)",
+        "✓ GPU Accuracy: High (Fixes character creation crash)\n✓ NVDEC: CPU (Video stability)\n✓ Rescale Compatibility Mode: Enabled\n✓ Memory Layout: 6GB DRAM (DLC stability)",
         {
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\drs_resolution_lock", "false"},
+            {"Renderer\\rescale_hack", "true"},
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
         }

@@ -648,12 +648,19 @@ void BlitImageHelper::BlitColor(const Framebuffer* dst_framebuffer, VkImageView 
                                 VkImage src_image, VkSampler src_sampler,
                                 const Region2D& dst_region, const Region2D& src_region,
                                 const Extent3D& src_size) {
+    if (!dst_framebuffer || src_image_view == VK_NULL_HANDLE || src_image == VK_NULL_HANDLE ||
+        src_sampler == VK_NULL_HANDLE) {
+        return;
+    }
     const BlitImagePipelineKey key{
         .renderpass = dst_framebuffer->RenderPass(),
         .operation = Tegra::Engines::Fermi2D::Operation::SrcCopy,
     };
     const VkPipelineLayout layout = *one_texture_pipeline_layout;
     const VkPipeline pipeline = FindOrEmplaceColorPipeline(key);
+    if (!pipeline) {
+        return;
+    }
     scheduler.RequestOutsideRenderPassOperationContext();
     scheduler.Record([this, dst_framebuffer, src_image_view, src_image, src_sampler, dst_region,
                       src_region, src_size, pipeline, layout](vk::CommandBuffer cmdbuf) {

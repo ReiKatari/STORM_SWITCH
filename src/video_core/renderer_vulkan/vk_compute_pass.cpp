@@ -286,6 +286,9 @@ Uint8Pass::~Uint8Pass() = default;
 
 std::pair<VkBuffer, VkDeviceSize> Uint8Pass::Assemble(u32 num_vertices, VkBuffer src_buffer,
                                                       u32 src_offset) {
+    if (src_buffer == VK_NULL_HANDLE || num_vertices == 0) {
+        return {};
+    }
     const u32 staging_size = static_cast<u32>(num_vertices * sizeof(u16));
     const auto staging = staging_buffer_pool.Request(staging_size, MemoryUsage::DeviceLocal);
 
@@ -329,6 +332,9 @@ QuadIndexedPass::~QuadIndexedPass() = default;
 std::pair<VkBuffer, VkDeviceSize> QuadIndexedPass::Assemble(
     Tegra::Engines::Maxwell3D::Regs::IndexFormat index_format, u32 num_vertices, u32 base_vertex,
     VkBuffer src_buffer, u32 src_offset, bool is_strip) {
+    if (src_buffer == VK_NULL_HANDLE || num_vertices == 0) {
+        return {};
+    }
     const u32 index_shift = [index_format] {
         switch (index_format) {
         case Tegra::Engines::Maxwell3D::Regs::IndexFormat::UnsignedByte:
@@ -388,6 +394,9 @@ ConditionalRenderingResolvePass::ConditionalRenderingResolvePass(
 void ConditionalRenderingResolvePass::Resolve(VkBuffer dst_buffer, VkBuffer src_buffer,
                                               u32 src_offset, bool compare_to_zero) {
     if (!device.IsExtConditionalRendering()) {
+        return;
+    }
+    if (dst_buffer == VK_NULL_HANDLE || src_buffer == VK_NULL_HANDLE) {
         return;
     }
     const size_t compare_size = compare_to_zero ? 8 : 24;

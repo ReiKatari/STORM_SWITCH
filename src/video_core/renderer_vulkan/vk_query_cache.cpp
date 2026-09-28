@@ -649,9 +649,15 @@ public:
     }
 
     void Sync(StagingBufferRef& stagging_buffer, size_t extra_offset, size_t start, size_t size) {
+        if (!buffer || *buffer == VK_NULL_HANDLE || stagging_buffer.buffer == VK_NULL_HANDLE) {
+            return;
+        }
         scheduler.RequestOutsideRenderPassOperationContext();
         scheduler.Record([this, dst_buffer = stagging_buffer.buffer, extra_offset, start,
                           size](vk::CommandBuffer cmdbuf) {
+            if (!buffer || *buffer == VK_NULL_HANDLE || dst_buffer == VK_NULL_HANDLE) {
+                return;
+            }
             std::array<VkBufferCopy, 1> copy{VkBufferCopy{
                 .srcOffset = start * QUERY_SIZE,
                 .dstOffset = extra_offset,
@@ -1036,11 +1042,18 @@ private:
             .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
             .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
         };
+        if (!current_bank || current_bank->GetBuffer() == VK_NULL_HANDLE ||
+            counter_buffers[slot_index] == VK_NULL_HANDLE) {
+            return {current_bank_id, slot};
+        }
         scheduler.RequestOutsideRenderPassOperationContext();
         scheduler.Record([dst_buffer = current_bank->GetBuffer(),
                           src_buffer = counter_buffers[slot_index],
                           src_offset = offsets[slot_index],
                           slot](vk::CommandBuffer cmdbuf) {
+            if (src_buffer == VK_NULL_HANDLE || dst_buffer == VK_NULL_HANDLE) {
+                return;
+            }
             cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT,
                                    VK_PIPELINE_STAGE_TRANSFER_BIT, 0, READ_BARRIER);
             std::array<VkBufferCopy, 1> copy{VkBufferCopy{
@@ -1414,8 +1427,12 @@ void QueryCacheRuntime::HostConditionalRenderingCompareValueImpl(VideoCommon::Lo
         const auto post_op = VideoCommon::ObtainBufferOperation::DoNothing;
         const auto [buffer, offset] =
             impl->buffer_cache.ObtainCPUBuffer(object.address, 8, sync_info, post_op);
-        impl->hcr_buffer = buffer->Handle();
+        impl->hcr_buffer = buffer ? buffer->Handle() : VkBuffer{};
         impl->hcr_offset = offset;
+    }
+    if (impl->hcr_buffer == VK_NULL_HANDLE) {
+        EndHostConditionalRendering();
+        return;
     }
     if (impl->hcr_is_set) {
         if (impl->hcr_setup.buffer == impl->hcr_buffer &&
@@ -1439,8 +1456,8 @@ void QueryCacheRuntime::HostConditionalRenderingCompareValueImpl(VideoCommon::Lo
 
 void QueryCacheRuntime::HostConditionalRenderingCompareBCImpl(DAddr address, bool is_equal,
                                                               bool compare_to_zero) {
-    VkBuffer to_resolve;
-    u32 to_resolve_offset;
+    VkBuffer to_resolve = VK_NULL_HANDLE;
+    u32 to_resolve_offset = 0;
     const u32 resolve_size = compare_to_zero ? 8 : 24;
     {
         std::scoped_lock lk(impl->buffer_cache.mutex);
@@ -1448,8 +1465,14 @@ void QueryCacheRuntime::HostConditionalRenderingCompareBCImpl(DAddr address, boo
         const auto post_op = VideoCommon::ObtainBufferOperation::DoNothing;
         const auto [buffer, offset] =
             impl->buffer_cache.ObtainCPUBuffer(address, resolve_size, sync_info, post_op);
-        to_resolve = buffer->Handle();
-        to_resolve_offset = static_cast<u32>(offset);
+        if (buffer) {
+            to_resolve = buffer->Handle();
+            to_resolve_offset = static_cast<u32>(offset);
+        }
+    }
+    if (to_resolve == VK_NULL_HANDLE) {
+        EndHostConditionalRendering();
+        return;
     }
     bool was_running = impl->is_hcr_running;
     if (was_running) {
@@ -1648,7 +1671,8 @@ void QueryCacheRuntime::SyncValues(std::span<SyncValuesType> values, VkBuffer ba
             const auto post_op = VideoCommon::ObtainBufferOperation::DoNothing;
             const auto [buffer, offset] = impl->buffer_cache.ObtainCPUBuffer(
                 pair.first, static_cast<u32>(pair.second - pair.first), sync_info, post_op);
-            impl->buffers_to_upload_to.emplace_back(buffer->Handle(), offset);
+            VkBuffer handle = (buffer != nullptr) ? buffer->Handle() : VkBuffer{};
+            impl->buffers_to_upload_to.emplace_back(handle, offset);
         }
     });
 
@@ -1688,8 +1712,14 @@ void QueryCacheRuntime::SyncValues(std::span<SyncValuesType> values, VkBuffer ba
 
     impl->scheduler.RequestOutsideRenderPassOperationContext();
     impl->scheduler.Record([src_buffer, dst_buffers = std::move(impl->buffers_to_upload_to), vk_copies = std::move(impl->copies_setup)](vk::CommandBuffer cmdbuf) {
+        if (src_buffer == VK_NULL_HANDLE) {
+            return;
+        }
         size_t size = dst_buffers.size();
         for (size_t i = 0; i < size; i++) {
+            if (dst_buffers[i].first == VK_NULL_HANDLE || vk_copies[i].empty()) {
+                continue;
+            }
             cmdbuf.CopyBuffer(src_buffer, dst_buffers[i].first, vk_copies[i]);
         }
     });

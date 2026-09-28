@@ -88,9 +88,6 @@ vk::Buffer CreateBuffer(const Device& device, const MemoryAllocator& memory_allo
 
 Buffer::Buffer(BufferCacheRuntime& runtime, VideoCommon::NullBufferParams null_params)
     : VideoCommon::BufferBase(null_params), scheduler{&runtime.scheduler}, tracker{4096} {
-    if (runtime.device.HasNullDescriptor()) {
-        return;
-    }
     device = &runtime.device;
     buffer = runtime.CreateNullBuffer();
     is_null = true;
@@ -693,9 +690,11 @@ vk::Buffer BufferCacheRuntime::CreateNullBuffer() {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .size = 4,
+        .size = 256,
         .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
-                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                 VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         .queueFamilyIndexCount = 0,
         .pQueueFamilyIndices = nullptr,

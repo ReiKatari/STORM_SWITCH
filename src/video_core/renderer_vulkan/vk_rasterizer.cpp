@@ -375,7 +375,8 @@ void RasterizerVulkan::DrawTexture() {
     if (!src_view) {
         src_view = texture.RenderTarget();
     }
-    if (!framebuffer || !sampler || !texture.ImageHandle() || !src_view) {
+    if (!framebuffer || !sampler || sampler->Handle() == VK_NULL_HANDLE ||
+        !texture.ImageHandle() || !src_view) {
         return;
     }
 
@@ -393,7 +394,9 @@ void RasterizerVulkan::DrawTexture() {
     };
 
     if (draw_texture_state.dst_x0 == draw_texture_state.dst_x1 ||
-        draw_texture_state.dst_y0 == draw_texture_state.dst_y1) {
+        draw_texture_state.dst_y0 == draw_texture_state.dst_y1 ||
+        draw_texture_state.src_x0 == draw_texture_state.src_x1 ||
+        draw_texture_state.src_y0 == draw_texture_state.src_y1) {
         return;
     }
 
