@@ -83,7 +83,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Username</string>
+             <string notr="true"/>
             </property>
            </widget>
           </item>

@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2016 Citra Emulator Project
@@ -137,6 +137,7 @@ void ConfigureProfileManager::changeEvent(QEvent* event) {
 void ConfigureProfileManager::RetranslateUI() {
     ui->retranslateUi(this);
     item_model->setHeaderData(0, Qt::Horizontal, tr("Users"));
+    UpdateCurrentUser();
 }
 
 void ConfigureProfileManager::SetConfiguration() {
@@ -171,14 +172,28 @@ void ConfigureProfileManager::PopulateUserList() {
 void ConfigureProfileManager::UpdateCurrentUser() {
     ui->pm_add->setEnabled(profile_manager.GetUserCount() < Service::Account::MAX_USERS);
 
-    const auto& current_user = profile_manager.GetUser(Settings::values.current_user.GetValue());
-    ASSERT(current_user);
-    const auto username = GetAccountUsername(profile_manager, *current_user);
+    const auto current_idx = Settings::values.current_user.GetValue();
+    auto current_user = profile_manager.GetUser(current_idx);
+    if (!current_user.has_value() || current_user->IsInvalid()) {
+        const auto& all_users = profile_manager.GetAllUsers();
+        if (!all_users.empty()) {
+            current_user = all_users.front();
+        }
+    }
 
-    scene->clear();
-    scene->addPixmap(
-        GetIcon(*current_user).scaled(64, 64, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    ui->current_user_username->setText(username);
+    if (current_user.has_value() && !current_user->IsInvalid()) {
+        auto username = GetAccountUsername(profile_manager, *current_user);
+        if (username.isEmpty()) {
+            username = QString::fromStdString(current_user->FormattedString());
+        }
+        scene->clear();
+        scene->addPixmap(
+            GetIcon(*current_user).scaled(64, 64, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+        ui->current_user_username->setText(username);
+    } else {
+        scene->clear();
+        ui->current_user_username->setText(tr("No user selected"));
+    }
 }
 
 void ConfigureProfileManager::ApplyConfiguration() {
