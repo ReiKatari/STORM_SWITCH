@@ -1206,6 +1206,10 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     const float cos_x = std::cos(rad_x);
     const float sin_x = std::sin(rad_x);
 
+    // Scaling: 36% larger, shifted slightly up to give space below for modern stick monitors
+    constexpr float base_scale = 1.36f;
+    const QPointF controller_center = center + QPointF(0.0f, -32.0f);
+
     auto Project = [&](float x, float y, float z = 0.0f) -> ProjectedPt {
         const float x1 = x * cos_y + z * sin_y;
         const float y1 = y;
@@ -1216,10 +1220,10 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         const float z2 = y1 * sin_x + z1 * cos_x;
 
         constexpr float camera_dist = 900.0f;
-        const float persp = (camera_dist / std::max(100.0f, camera_dist - z2)) * zoom;
+        const float persp = (camera_dist / std::max(100.0f, camera_dist - z2)) * zoom * base_scale;
 
         return {
-            center + QPointF(x2 * persp, y2 * persp),
+            controller_center + QPointF(x2 * persp, y2 * persp),
             persp
         };
     };
@@ -1237,14 +1241,310 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         0.0f, 1.0f);
 
     // =========================================================================
+    // HUD COMPONENT 1: High-Tech Battery Card (Top-Left, Clear of Controller)
+    // =========================================================================
+    auto DrawPhotorealisticBattery = [&](const QPointF bat_pos) {
+        const auto bat_status = battery_values[Core::HID::EmulatedDeviceIndex::LeftIndex];
+        int pct = 100;
+        bool is_charging = false;
+        QColor bar_color = QColor(0, 230, 118); // Neon Green
+
+        switch (bat_status) {
+        case Common::Input::BatteryLevel::Charging:
+            pct = 100;
+            is_charging = true;
+            bar_color = QColor(0, 229, 255); // Cyan charging
+            break;
+        case Common::Input::BatteryLevel::Full:
+            pct = 100;
+            bar_color = QColor(0, 230, 118); // Bright green
+            break;
+        case Common::Input::BatteryLevel::Medium:
+            pct = 75;
+            bar_color = QColor(174, 234, 0); // Lime/Amber
+            break;
+        case Common::Input::BatteryLevel::Low:
+            pct = 40;
+            bar_color = QColor(255, 171, 0); // Amber/Orange
+            break;
+        case Common::Input::BatteryLevel::Critical:
+            pct = 15;
+            bar_color = QColor(255, 23, 68); // Red
+            break;
+        case Common::Input::BatteryLevel::Empty:
+            pct = 5;
+            bar_color = QColor(213, 0, 0); // Deep red
+            break;
+        default:
+            pct = 100;
+            break;
+        }
+
+        // Outer Card Container
+        const float card_w = 124.0f;
+        const float card_h = 44.0f;
+        QRectF card_rect(bat_pos.x(), bat_pos.y(), card_w, card_h);
+        p.setPen(QPen(QColor(45, 52, 66), 1.2f));
+        p.setBrush(QColor(12, 15, 22, 220));
+        p.drawRoundedRect(card_rect, 8.0f, 8.0f);
+
+        // Battery Shell
+        const QRectF b_shell(bat_pos.x() + 10.0f, bat_pos.y() + 13.0f, 38.0f, 18.0f);
+        p.setPen(QPen(QColor(70, 75, 88), 1.5f));
+        p.setBrush(QColor(8, 10, 14));
+        p.drawRoundedRect(b_shell, 3.5f, 3.5f);
+
+        // Positive Terminal Pip
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(90, 96, 110));
+        p.drawRoundedRect(QRectF(b_shell.right() + 1.0f, b_shell.top() + 4.5f, 3.5f, 9.0f), 1.5f, 1.5f);
+
+        // Inner Charge Level Fill
+        const float max_fill_w = b_shell.width() - 4.0f;
+        const float fill_w = std::max(2.0f, max_fill_w * (pct / 100.0f));
+        const QRectF fill_rect(b_shell.left() + 2.0f, b_shell.top() + 2.0f, fill_w, b_shell.height() - 4.0f);
+
+        QLinearGradient fill_grad(fill_rect.topLeft(), fill_rect.bottomLeft());
+        fill_grad.setColorAt(0.0, bar_color.lighter(135));
+        fill_grad.setColorAt(0.5, bar_color);
+        fill_grad.setColorAt(1.0, bar_color.darker(120));
+        p.setBrush(fill_grad);
+        p.drawRoundedRect(fill_rect, 2.0f, 2.0f);
+
+        // If charging, draw a bright charging bolt icon
+        if (is_charging) {
+            p.setPen(QColor(255, 235, 59));
+            p.setBrush(QColor(255, 235, 59));
+            QPolygonF bolt;
+            const float bx = b_shell.left() + b_shell.width() * 0.5f;
+            const float by = b_shell.top() + b_shell.height() * 0.5f;
+            bolt << QPointF(bx + 1.5f, by - 6.0f)
+                 << QPointF(bx - 3.5f, by)
+                 << QPointF(bx - 0.5f, by)
+                 << QPointF(bx - 2.5f, by + 6.0f)
+                 << QPointF(bx + 3.5f, by - 1.0f)
+                 << QPointF(bx + 0.5f, by - 1.0f);
+            p.drawPolygon(bolt);
+        }
+
+        // Percentage Text
+        p.setPen(colors.font);
+        SetTextFont(p, 0.85f);
+        const QString pct_str = is_charging ? QStringLiteral("вљЎ %1%").arg(pct) : QStringLiteral("%1%").arg(pct);
+        DrawText(p, QPointF(bat_pos.x() + 86.0f, bat_pos.y() + 20.0f), 0.85f, pct_str);
+
+        // Subtext "Р—Р°СЂСЏРґ" / "Р—Р°СЂСЏРґРєР°"
+        p.setPen(QColor(140, 145, 160));
+        SetTextFont(p, 0.58f);
+        DrawText(p, QPointF(bat_pos.x() + 86.0f, bat_pos.y() + 32.0f), 0.58f,
+                 is_charging ? QStringLiteral("Р—Р°СЂСЏРґРєР°") : QStringLiteral("Р‘Р°С‚Р°СЂРµСЏ"));
+    };
+
+    // =========================================================================
+    // HUD COMPONENT 2: Colorful 3D Gyroscope (Top-Right, Clear of Controller)
+    // =========================================================================
+    auto DrawColorfulGyroscope = [&](const QPointF gyro_c, const Common::Vec3f& euler, float size) {
+        // Instrument Backdrop Dial
+        p.setPen(QPen(QColor(0, 229, 255, 90), 1.2f));
+        p.setBrush(QColor(12, 15, 22, 220));
+        p.drawEllipse(gyro_c, 36.0f, 36.0f);
+
+        // Compass / Attitude Ring Ticks
+        p.setPen(QPen(QColor(255, 255, 255, 40), 1.0f));
+        for (int k = 0; k < 8; ++k) {
+            const float ang = k * PI_CONST / 4.0f;
+            const QPointF p1 = gyro_c + QPointF(std::cos(ang) * 31.0f, std::sin(ang) * 31.0f);
+            const QPointF p2 = gyro_c + QPointF(std::cos(ang) * 35.0f, std::sin(ang) * 35.0f);
+            p.drawLine(p1, p2);
+        }
+
+        // 8 Cube Vertices in local 3D space
+        std::array<Common::Vec3f, 8> v = {
+            Common::Vec3f{-0.85f, -0.85f, -0.85f}, // 0
+            Common::Vec3f{ 0.85f, -0.85f, -0.85f}, // 1
+            Common::Vec3f{ 0.85f,  0.85f, -0.85f}, // 2
+            Common::Vec3f{-0.85f,  0.85f, -0.85f}, // 3
+            Common::Vec3f{-0.85f, -0.85f,  0.85f}, // 4
+            Common::Vec3f{ 0.85f, -0.85f,  0.85f}, // 5
+            Common::Vec3f{ 0.85f,  0.85f,  0.85f}, // 6
+            Common::Vec3f{-0.85f,  0.85f,  0.85f}, // 7
+        };
+
+        for (auto& pt : v) {
+            pt.RotateFromOrigin(euler.x, euler.y, euler.z);
+            pt *= size;
+        }
+
+        // 6 Colored Faces with distinct cyber/flight colors
+        struct GyroFace {
+            std::array<int, 4> idx;
+            QColor color;
+            float depth;
+        };
+
+        std::array<GyroFace, 6> faces = {
+            GyroFace{{4, 5, 6, 7}, QColor(0, 229, 255, 205), (v[4].z + v[5].z + v[6].z + v[7].z) * 0.25f}, // Top (+Z, Cyan)
+            GyroFace{{0, 3, 2, 1}, QColor(26, 35, 126, 185), (v[0].z + v[3].z + v[2].z + v[1].z) * 0.25f}, // Bottom (-Z, Blue)
+            GyroFace{{3, 2, 6, 7}, QColor(0, 230, 118, 205), (v[3].z + v[2].z + v[6].z + v[7].z) * 0.25f}, // Front (+Y, Green)
+            GyroFace{{0, 1, 5, 4}, QColor(0, 105, 92,  185), (v[0].z + v[1].z + v[5].z + v[4].z) * 0.25f}, // Back (-Y, Teal)
+            GyroFace{{1, 2, 6, 5}, QColor(255, 23, 68, 205), (v[1].z + v[2].z + v[6].z + v[5].z) * 0.25f}, // Right (+X, Red/Magenta)
+            GyroFace{{0, 4, 7, 3}, QColor(255, 145, 0, 205), (v[0].z + v[4].z + v[7].z + v[3].z) * 0.25f}, // Left (-X, Gold/Amber)
+        };
+
+        // Sort faces back to front (Painter's algorithm on the 3D gyro)
+        std::sort(faces.begin(), faces.end(), [](const GyroFace& a, const GyroFace& b) {
+            return a.depth < b.depth;
+        });
+
+        for (const auto& f : faces) {
+            const QPointF p0 = gyro_c + QPointF(v[f.idx[0]].x, v[f.idx[0]].y);
+            const QPointF p1 = gyro_c + QPointF(v[f.idx[1]].x, v[f.idx[1]].y);
+            const QPointF p2 = gyro_c + QPointF(v[f.idx[2]].x, v[f.idx[2]].y);
+            const float cross = (p1.x() - p0.x()) * (p2.y() - p0.y()) - (p1.y() - p0.y()) * (p2.x() - p0.x());
+            if (cross > 0.0f) {
+                QPolygonF poly;
+                poly << p0 << p1 << p2 << (gyro_c + QPointF(v[f.idx[3]].x, v[f.idx[3]].y));
+                p.setPen(QPen(f.color.lighter(130), 1.2f));
+                p.setBrush(f.color);
+                p.drawPolygon(poly);
+            }
+        }
+
+        // Projecting 3D Coordinate Arrows
+        auto DrawAxis = [&](Common::Vec3f dir, const QColor& col) {
+            dir.RotateFromOrigin(euler.x, euler.y, euler.z);
+            const QPointF end_pt = gyro_c + QPointF(dir.x * size * 1.55f, dir.y * size * 1.55f);
+            p.setPen(QPen(col, 1.8f));
+            p.drawLine(gyro_c, end_pt);
+            p.setPen(Qt::NoPen);
+            p.setBrush(col);
+            p.drawEllipse(end_pt, 2.5f, 2.5f);
+        };
+        DrawAxis(Common::Vec3f{1, 0, 0}, QColor(255, 23, 68));  // X = Red
+        DrawAxis(Common::Vec3f{0, 1, 0}, QColor(0, 230, 118));  // Y = Green
+        DrawAxis(Common::Vec3f{0, 0, 1}, QColor(0, 229, 255));  // Z = Cyan
+
+        // Header label
+        p.setPen(colors.indicator);
+        SetTextFont(p, 0.65f);
+        DrawText(p, QPointF(gyro_c.x(), gyro_c.y() - 44.0f), 0.65f, QStringLiteral("Р“РР РћРЎРљРћРџ"));
+
+        // Angles text badge
+        const float pitch_deg = euler.x * 180.0f / PI_CONST;
+        const float roll_deg  = euler.z * 180.0f / PI_CONST;
+        const QString angles_str = QStringLiteral("P:%1В° R:%2В°")
+                                      .arg(int(std::round(pitch_deg)), 3, 10, QLatin1Char(' '))
+                                      .arg(int(std::round(roll_deg)),  3, 10, QLatin1Char(' '));
+        const QRectF badge_r(gyro_c.x() - 46.0f, gyro_c.y() + 42.0f, 92.0f, 18.0f);
+        p.setPen(QPen(QColor(40, 45, 56), 1.0f));
+        p.setBrush(QColor(12, 15, 22, 210));
+        p.drawRoundedRect(badge_r, 4.0f, 4.0f);
+
+        p.setPen(colors.font);
+        SetTextFont(p, 0.62f);
+        DrawText(p, QPointF(gyro_c.x(), gyro_c.y() + 51.0f), 0.62f, angles_str);
+    };
+
+    // =========================================================================
+    // HUD COMPONENT 3: Precision Stick Radars (Under Controller, Centered L/R)
+    // =========================================================================
+    auto DrawModernStickRadar = [&](bool is_left, const QPointF radar_c) {
+        const auto stick_id = is_left ? Settings::NativeAnalog::LStick : Settings::NativeAnalog::RStick;
+        const auto button_id = is_left ? Settings::NativeButton::LStick : Settings::NativeButton::RStick;
+        const auto& stick = stick_values[stick_id];
+        const bool is_clicked = button_values[button_id].value;
+
+        const float sx = std::clamp(stick.x.value, -1.0f, 1.0f);
+        const float sy = std::clamp(stick.y.value, -1.0f, 1.0f);
+
+        constexpr float radar_r = 38.0f;
+
+        // Dark Radar Glass Plate with subtle radial gradient
+        QRadialGradient plate_grad(radar_c, radar_r * 1.2f);
+        plate_grad.setColorAt(0.0, QColor(16, 20, 28, 220));
+        plate_grad.setColorAt(0.7, QColor(10, 12, 18, 235));
+        plate_grad.setColorAt(1.0, QColor(6, 8, 12, 245));
+        p.setPen(QPen(is_clicked ? colors.indicator : QColor(40, 46, 58), 1.4f));
+        p.setBrush(plate_grad);
+        p.drawEllipse(radar_c, radar_r, radar_r);
+
+        // Outer 100% Boundary Ring (dashed)
+        p.setPen(QPen(QColor(0, 240, 255, 90), 1.0f, Qt::DashLine));
+        p.setBrush(Qt::NoBrush);
+        p.drawEllipse(radar_c, radar_r * 0.90f, radar_r * 0.90f);
+
+        // 50% Mid-Range Guide Ring
+        p.setPen(QPen(QColor(255, 255, 255, 25), 0.8f));
+        p.drawEllipse(radar_c, radar_r * 0.45f, radar_r * 0.45f);
+
+        // Crosshair Lines
+        p.setPen(QPen(QColor(255, 255, 255, 30), 0.8f));
+        p.drawLine(QPointF(radar_c.x() - radar_r * 0.85f, radar_c.y()), QPointF(radar_c.x() + radar_r * 0.85f, radar_c.y()));
+        p.drawLine(QPointF(radar_c.x(), radar_c.y() - radar_r * 0.85f), QPointF(radar_c.x(), radar_c.y() + radar_r * 0.85f));
+
+        // Deadzone Circle (Amber/Red glow)
+        const float deadzone_r = radar_r * 0.90f * std::clamp(stick.x.properties.deadzone, 0.05f, 0.45f);
+        p.setPen(QPen(colors.deadzone, 0.9f, Qt::DotLine));
+        p.setBrush(QColor(colors.deadzone.red(), colors.deadzone.green(), colors.deadzone.blue(), 25));
+        p.drawEllipse(radar_c, deadzone_r, deadzone_r);
+
+        // Deflection Vector Line from center to target
+        const QPointF target_pt = radar_c + QPointF(sx * radar_r * 0.90f, sy * radar_r * 0.90f);
+        p.setPen(QPen(colors.indicator, 1.8f));
+        p.drawLine(radar_c, target_pt);
+
+        // Stick Target Dot with Multi-Layer Glow
+        QRadialGradient dot_glow(target_pt, 9.0f);
+        dot_glow.setColorAt(0.0, colors.indicator);
+        dot_glow.setColorAt(0.4, QColor(colors.indicator.red(), colors.indicator.green(), colors.indicator.blue(), 120));
+        dot_glow.setColorAt(1.0, QColor(colors.indicator.red(), colors.indicator.green(), colors.indicator.blue(), 0));
+        p.setPen(Qt::NoPen);
+        p.setBrush(dot_glow);
+        p.drawEllipse(target_pt, 9.0f, 9.0f);
+
+        p.setBrush(QColor(255, 255, 255));
+        p.drawEllipse(target_pt, 3.5f, 3.5f);
+
+        // Stick Click Badge (L3 / R3)
+        if (is_clicked) {
+            p.setPen(QPen(colors.indicator, 1.2f));
+            p.setBrush(colors.highlight);
+            p.drawRoundedRect(QRectF(radar_c.x() - 18.0f, radar_c.y() - 10.0f, 36.0f, 20.0f), 4.0f, 4.0f);
+            p.setPen(colors.font);
+            SetTextFont(p, 0.65f);
+            DrawText(p, radar_c, 0.65f, is_left ? QStringLiteral("L3") : QStringLiteral("R3"));
+        }
+
+        // Coordinate text badge below radar
+        const QString coord_str = QStringLiteral("%1: X[%2] Y[%3]")
+                                      .arg(is_left ? QStringLiteral("L") : QStringLiteral("R"))
+                                      .arg(sx, 5, 'f', 2, QLatin1Char(' '))
+                                      .arg(sy, 5, 'f', 2, QLatin1Char(' '));
+        const QRectF badge_rect(radar_c.x() - 52.0f, radar_c.y() + radar_r + 6.0f, 104.0f, 18.0f);
+        p.setPen(QPen(QColor(40, 45, 56), 1.0f));
+        p.setBrush(QColor(12, 15, 22, 210));
+        p.drawRoundedRect(badge_rect, 4.0f, 4.0f);
+
+        p.setPen(colors.font);
+        SetTextFont(p, 0.68f);
+        DrawText(p, QPointF(radar_c.x(), radar_c.y() + radar_r + 15.0f), 0.68f, coord_str);
+    };
+
+    // Calculate non-overlapping HUD positions
+    const QPointF bat_pos = center + QPointF(-320.0f, -170.0f);
+    const QPointF gyro_pos = center + QPointF(320.0f, -170.0f);
+    const QPointF left_radar = center + QPointF(-115.0f, 182.0f);
+    const QPointF right_radar = center + QPointF( 115.0f, 182.0f);
+
+    // =========================================================================
     // MODE A: REAR VIEW (Р’РР” РЎР—РђР”Р) вЂ” PHOTOREALISTIC
     // =========================================================================
     if (is_rear_view) {
         // 1. Studio Drop Shadow beneath rear chassis
         {
             const auto sp = Project(0.0f, 115.0f, -10.0f);
-            const float s_rx = 240.0f * sp.scale;
-            const float s_ry = 85.0f * sp.scale;
+            const float s_rx = 250.0f * sp.scale;
+            const float s_ry = 90.0f * sp.scale;
             QRadialGradient floor_shadow(sp.pt, s_rx);
             floor_shadow.setColorAt(0.0, QColor(0, 0, 0, 160));
             floor_shadow.setColorAt(0.35, QColor(0, 0, 0, 95));
@@ -1260,7 +1560,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             const auto usbc_pos = Project(0.0f, -88.0f, 2.0f);
             const float port_w = 8.5f * usbc_pos.scale;
             const float port_h = 4.0f * usbc_pos.scale;
-            // USB-C Recessed housing
             p.setPen(QPen(QColor(52, 58, 68), 1.2f));
             QRadialGradient port_g(usbc_pos.pt, port_w * 1.5f);
             port_g.setColorAt(0.0, QColor(6, 8, 12));
@@ -1270,7 +1569,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawRoundedRect(QRectF(usbc_pos.pt.x() - port_w, usbc_pos.pt.y() - port_h,
                                      port_w * 2.0f, port_h * 2.0f), 3.0f, 2.0f);
 
-            // Metal tongue inside port
             p.setPen(Qt::NoPen);
             QLinearGradient tongue_g(usbc_pos.pt - QPointF(0, port_h * 0.3f),
                                      usbc_pos.pt + QPointF(0, port_h * 0.3f));
@@ -1281,7 +1579,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawRoundedRect(QRectF(usbc_pos.pt.x() - port_w * 0.6f, usbc_pos.pt.y() - port_h * 0.3f,
                                      port_w * 1.2f, port_h * 0.6f), 1.0f, 1.0f);
 
-            // Sync button (on right from behind)
             const auto sync_pos = Project(22.0f, -88.0f, 2.0f);
             QRadialGradient sync_g(sync_pos.pt, 3.2f * sync_pos.scale);
             sync_g.setColorAt(0.0, QColor(48, 52, 60));
@@ -1291,7 +1588,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setBrush(sync_g);
             p.drawEllipse(sync_pos.pt, 3.0f * sync_pos.scale, 3.0f * sync_pos.scale);
 
-            // Status LED (on left from behind)
             const auto sync_led = Project(-22.0f, -88.0f, 2.0f);
             if (is_connected) {
                 QRadialGradient led_glow(sync_led.pt, 6.0f * sync_led.scale);
@@ -1364,9 +1660,9 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawPolygon(rear_body);
         }
 
-        // 5. Rear Handles (Left & Right) with diamond anti-slip grip texture
+        // 5. Rear Handles with diamond anti-slip grip texture
         auto DrawRearHandle = [&](bool is_left) {
-            const float sgn = is_left ? 1.0f : -1.0f; // Note: mirrored from behind
+            const float sgn = is_left ? 1.0f : -1.0f;
             const QColor grip_col = is_left ? colors.right : colors.left;
 
             QPolygonF rear_handle;
@@ -1430,7 +1726,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setBrush(bh_grad);
             p.drawPolygon(batt_hatch);
 
-            // Hatch bevel line
             p.setPen(QPen(QColor(85, 90, 102, 90), 0.8f));
             p.drawLine(Project(-45.5f, -39.5f, 0.0f).pt, Project(45.5f, -39.5f, 0.0f).pt);
 
@@ -1447,7 +1742,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawEllipse(QPointF(logo_pos.pt.x() - lw * 0.5f, logo_pos.pt.y() - lh * 0.2f), 1.5f * logo_pos.scale, 1.5f * logo_pos.scale);
             p.drawEllipse(QPointF(logo_pos.pt.x() + lw * 0.5f, logo_pos.pt.y() + lh * 0.2f), 1.5f * logo_pos.scale, 1.5f * logo_pos.scale);
 
-            // Regulatory text
             p.setPen(QColor(110, 115, 125, 120));
             SetTextFont(p, 0.60f * logo_pos.scale);
             DrawText(p, Project(0.0f, 10.0f, 0.1f).pt, 0.60f * logo_pos.scale, QStringLiteral("MOD. HAC-013  5V=500mA"));
@@ -1476,7 +1770,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
         // 7. Orientation Badge "Р’РР” РЎР—РђР”Р"
         {
-            const auto badge_pos = center + QPointF(0.0f, -125.0f);
+            const auto badge_pos = center + QPointF(0.0f, -145.0f);
             p.setPen(QPen(colors.indicator, 1.0f));
             p.setBrush(QColor(15, 20, 28, 200));
             p.drawRoundedRect(QRectF(badge_pos.x() - 48.0f, badge_pos.y() - 11.0f, 96.0f, 22.0f), 5.0f, 5.0f);
@@ -1485,16 +1779,11 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             DrawText(p, badge_pos, 0.70f, QStringLiteral("Р’РР” РЎР—РђР”Р"));
         }
 
-        // 8. Battery and Motion HUD
-        {
-            const QPointF bat_pos = center + QPointF(-185.0f, -125.0f);
-            DrawBattery(p, bat_pos, battery_values[Core::HID::EmulatedDeviceIndex::LeftIndex]);
-            using namespace Settings::NativeMotion;
-            const QPointF motion_pos = center + QPointF(185.0f, -115.0f);
-            p.setPen(colors.button);
-            p.setBrush(colors.transparent);
-            Draw3dCube(p, motion_pos, motion_values[Settings::NativeMotion::MotionLeft].euler, 15.0f);
-        }
+        // 8. Draw HUD elements in Rear View
+        DrawPhotorealisticBattery(bat_pos);
+        DrawColorfulGyroscope(gyro_pos, motion_values[Settings::NativeMotion::MotionLeft].euler, 16.0f);
+        DrawModernStickRadar(true, left_radar);
+        DrawModernStickRadar(false, right_radar);
         return;
     }
 
@@ -1507,7 +1796,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     // LAYER 1: Ambient Studio Drop Shadow with Contact Shadows
     // -------------------------------------------------------------------------
     {
-        // Wide ambient floor shadow
         const auto sp = Project(0.0f, 115.0f, -10.0f);
         const float s_rx = 250.0f * sp.scale;
         const float s_ry = 90.0f * sp.scale;
@@ -1520,7 +1808,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(floor_shadow);
         p.drawEllipse(sp.pt, s_rx, s_ry);
 
-        // Dark contact shadows under left grip, right grip, and lower chin
         auto DrawContactShadow = [&](float cx, float cy, float rx, float ry, int alpha) {
             const auto cp = Project(cx, cy, -8.0f);
             QRadialGradient cs(cp.pt, rx * cp.scale);
@@ -1563,7 +1850,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(top_grad);
         p.drawPolygon(top_face);
 
-        // Specular highlight on trigger crown
         {
             const auto spec = Project(sgn * 80.0f, -91.0f + dy, -12.0f);
             p.setPen(Qt::NoPen);
@@ -1605,7 +1891,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(front_grad);
         p.drawPolygon(front_poly);
 
-        // Specular gleam on bumper edge
         {
             const auto spec = Project(sgn * 78.0f, -81.0f + dy, 6.0f);
             p.setPen(Qt::NoPen);
@@ -1638,7 +1923,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             handle_poly << Project(hx, ly, 4.0f).pt;
         }
 
-        // 6-stop volumetric cylindrical gradient across handle width
         const auto p_outer = Project(sgn * 192.0f, 10.0f, 4.0f);
         const auto p_inner = Project(sgn * 100.0f, 10.0f, 4.0f);
         QLinearGradient h_grad(p_outer.pt, p_inner.pt);
@@ -1649,12 +1933,11 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         h_grad.setColorAt(0.80, main_col.darker(114));
         h_grad.setColorAt(1.0,  sh_col);
 
-        // Smooth subtle edge pen instead of harsh comic outline
         p.setPen(QPen(QColor(18, 20, 24, 180), 1.2f));
         p.setBrush(h_grad);
         p.drawPolygon(handle_poly);
 
-        // Specular highlight streak along outer ergonomic crest
+        // Specular highlight streak
         {
             const auto sp = Project(sgn * 175.0f, -10.0f, 4.3f);
             QRadialGradient sg(sp.pt, 50.0f * sp.scale);
@@ -1666,7 +1949,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawEllipse(sp.pt, 9.0f * sp.scale, 52.0f * sp.scale);
         }
 
-        // Tactile diamond anti-slip grip texture
+        // Diamond Anti-Slip Grip Texture
         p.setPen(Qt::NoPen);
         const int start_x = is_left ? -182 : 130;
         const int end_x   = is_left ? -130 : 182;
@@ -1702,7 +1985,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setBrush(gold_grad);
             p.drawPolygon(gold_tip);
 
-            // Zonai swirl band on right grip
             p.setPen(QPen(QColor(218, 168, 38, 220), 2.2f * zoom, Qt::SolidLine, Qt::RoundCap));
             p.setBrush(Qt::NoBrush);
             p.drawLine(Project(125.0f, -10.0f, 4.25f).pt, Project(148.0f, 18.0f, 4.25f).pt);
@@ -1719,10 +2001,8 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     // -------------------------------------------------------------------------
     auto DrawHandleSeam = [&](bool is_left) {
         const float sgn = is_left ? -1.0f : 1.0f;
-        // Inner shadow seam line
         p.setPen(QPen(QColor(10, 12, 16, 200), 1.5f));
         p.drawLine(Project(sgn * 98.0f, -35.0f, 3.5f).pt, Project(sgn * 98.0f, 55.0f, 3.5f).pt);
-        // Subtle outer highlight edge
         p.setPen(QPen(QColor(255, 255, 255, 30), 0.8f));
         p.drawLine(Project(sgn * 99.5f, -34.0f, 3.5f).pt, Project(sgn * 99.5f, 54.0f, 3.5f).pt);
     };
@@ -1741,7 +2021,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             front_body << Project(-pro_body[i * 2 + 0], pro_body[i * 2 + 1], 2.0f).pt;
         }
 
-        // 7-stop vertical studio softbox gradient
         const auto p_top = Project(0.0f, -95.0f, 2.0f);
         const auto p_bot = Project(0.0f,  60.0f, 2.0f);
         QLinearGradient body_grad(p_top.pt, p_bot.pt);
@@ -1803,7 +2082,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setBrush(QColor(12, 34, 26, 175));
             p.drawPolygon(pcb);
 
-            // Golden copper traces
             p.setPen(QPen(QColor(195, 160, 75, 140), 1.0f));
             p.drawLine(Project(-55.0f, -40.0f, 1.85f).pt, Project(-25.0f, -40.0f, 1.85f).pt);
             p.drawLine(Project(-25.0f, -40.0f, 1.85f).pt, Project(-15.0f, -20.0f, 1.85f).pt);
@@ -1811,7 +2089,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawLine(Project( 15.0f, -20.0f, 1.85f).pt, Project( 25.0f, -40.0f, 1.85f).pt);
             p.drawLine(Project( 25.0f, -40.0f, 1.85f).pt, Project( 55.0f, -40.0f, 1.85f).pt);
 
-            // Secret Easter Egg Message
             const auto ee_pos = Project(42.0f, 40.0f, 1.88f);
             p.setPen(QColor(195, 160, 75, 160));
             SetTextFont(p, 0.55f * ee_pos.scale);
@@ -1827,7 +2104,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
         const auto c_proj = Project(0.0f, -8.0f, 2.2f);
-        // Golden radial glow around Zonai emblem
         {
             QRadialGradient eye_glow(c_proj.pt, 36.0f * c_proj.scale);
             eye_glow.setColorAt(0.0, QColor(230, 185, 45, 0));
@@ -1838,18 +2114,14 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setBrush(eye_glow);
             p.drawEllipse(c_proj.pt, 36.0f * c_proj.scale, 36.0f * c_proj.scale);
         }
-        // Outer golden Zonai ring
         p.setPen(QPen(QColor(230, 185, 45, 245), 3.2f * zoom, Qt::SolidLine, Qt::RoundCap));
         p.setBrush(Qt::NoBrush);
         p.drawEllipse(c_proj.pt, 29.0f * c_proj.scale, 29.0f * c_proj.scale);
-        // Inner glowing teal ring
         p.setPen(QPen(QColor(56, 225, 176, 230), 2.2f * zoom));
         p.drawEllipse(c_proj.pt, 18.5f * c_proj.scale, 18.5f * c_proj.scale);
-        // Central teal power rune
         p.setPen(Qt::NoPen);
         p.setBrush(QColor(56, 225, 176, 220));
         p.drawEllipse(c_proj.pt, 4.5f * c_proj.scale, 4.5f * c_proj.scale);
-        // Teardrop / Sheikah pupil
         {
             const auto tear_bot = Project(0.0f, 6.0f, 2.22f);
             QPainterPath tear_path;
@@ -1864,7 +2136,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setBrush(QColor(230, 185, 45, 55));
             p.drawPath(tear_path);
         }
-        // Radiating golden circuit lines
         p.setPen(QPen(QColor(230, 185, 45, 190), 1.5f * zoom));
         p.setBrush(Qt::NoBrush);
         p.drawLine(Project(28.0f, -30.0f, 2.2f).pt, Project(50.0f, -20.0f, 2.2f).pt);
@@ -1872,7 +2143,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.drawLine(Project(45.0f, -8.0f, 2.2f).pt, Project(62.0f, 5.0f, 2.2f).pt);
         p.drawLine(Project(-28.0f, -30.0f, 2.2f).pt, Project(-50.0f, -20.0f, 2.2f).pt);
         p.drawLine(Project(-50.0f, -20.0f, 2.2f).pt, Project(-45.0f, -8.0f, 2.2f).pt);
-        // Teal glowing glyph nodes
         p.setPen(Qt::NoPen);
         p.setBrush(QColor(56, 225, 176, 200));
         for (auto& ep : {std::pair{50.0f, -20.0f}, std::pair{45.0f, -8.0f},
@@ -1896,7 +2166,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawLine(pa.pt, pb.pt);
         };
 
-        // Neon cyan circuit bus
         DrawNeonLine(-60.0f, -25.0f, -30.0f, -25.0f, QColor(0, 240, 255, 245));
         DrawNeonLine(-30.0f, -25.0f, -12.0f, -45.0f, QColor(0, 240, 255, 245));
         DrawNeonLine(-12.0f, -45.0f,  12.0f, -45.0f, QColor(0, 240, 255, 245));
@@ -1905,7 +2174,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         DrawNeonLine(-50.0f, -10.0f, -20.0f, -10.0f, QColor(0, 240, 255, 170), 1.2f);
         DrawNeonLine( 20.0f, -10.0f,  50.0f, -10.0f, QColor(0, 240, 255, 170), 1.2f);
 
-        // Glowing junction nodes
         p.setPen(Qt::NoPen);
         for (auto& np_pos : {std::pair{-60.0f, -25.0f}, std::pair{-30.0f, -25.0f},
                              std::pair{30.0f, -25.0f}, std::pair{60.0f, -25.0f},
@@ -1921,7 +2189,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawEllipse(np.pt, 2.5f * np.scale, 2.5f * np.scale);
         }
 
-        // Hot pink STORM lightning crest
         DrawNeonLine( 4.0f, -26.0f, -4.0f, -14.0f, QColor(255, 20, 120, 255), 2.5f);
         DrawNeonLine(-4.0f, -14.0f,  2.0f, -14.0f, QColor(255, 20, 120, 255), 2.5f);
         DrawNeonLine( 2.0f, -14.0f, -2.0f,  -2.0f, QColor(255, 20, 120, 255), 2.5f);
@@ -1942,7 +2209,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     case ControllerSkin::SmashBrosUltimate: {
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
-        // Vertical metallic bar
         const auto p1 = Project(-16.0f, -80.0f, 2.2f);
         const auto p2 = Project(-5.0f,   55.0f, 2.2f);
         QLinearGradient cross_v_grad(p1.pt, p2.pt);
@@ -1962,11 +2228,9 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(cross_v_grad);
         p.drawPolygon(bar_v);
 
-        // Chrome bevel highlight on vertical bar
         p.setPen(QPen(QColor(255, 255, 255, 110), 0.8f));
         p.drawLine(Project(-18.0f, -75.0f, 2.21f).pt, Project(-18.0f, 55.0f, 2.21f).pt);
 
-        // Horizontal metallic bar
         const auto p3 = Project(-110.0f, -28.0f, 2.2f);
         const auto p4 = Project( 110.0f, -16.0f, 2.2f);
         QLinearGradient cross_h_grad(p3.pt, p4.pt);
@@ -1985,7 +2249,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(cross_h_grad);
         p.drawPolygon(bar_h);
 
-        // Intersection metallic flare
         {
             const auto cross_c = Project(-12.0f, -22.0f, 2.25f);
             QRadialGradient flare(cross_c.pt, 14.0f * cross_c.scale);
@@ -2004,7 +2267,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
         const auto crystal_center = Project(0.0f, -16.0f, 2.2f);
-        // Emerald crystal radial glow
         {
             QRadialGradient crystal_glow(crystal_center.pt, 28.0f * crystal_center.scale);
             crystal_glow.setColorAt(0.0, QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 75));
@@ -2014,7 +2276,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setBrush(crystal_glow);
             p.drawEllipse(crystal_center.pt, 28.0f * crystal_center.scale, 28.0f * crystal_center.scale);
         }
-        // Diamond crystal shape with facet gradient
         QPolygonF crystal;
         crystal << Project(  0.0f, -32.0f, 2.2f).pt
                 << Project( 14.0f, -16.0f, 2.2f).pt
@@ -2029,12 +2290,10 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(crystal_grad);
         p.drawPolygon(crystal);
 
-        // Internal facets
         p.setPen(QPen(QColor(255, 255, 255, 160), 1.0f));
         p.drawLine(Project(0.0f, -32.0f, 2.2f).pt, Project(0.0f, 0.0f, 2.2f).pt);
         p.drawLine(Project(-14.0f, -16.0f, 2.2f).pt, Project(14.0f, -16.0f, 2.2f).pt);
 
-        // Golden Aegis Wings
         p.setPen(QPen(colors.emblem_secondary, 2.2f * zoom));
         p.setBrush(QColor(colors.emblem_secondary.red(), colors.emblem_secondary.green(), colors.emblem_secondary.blue(), 85));
         QPolygonF wing_l;
@@ -2053,7 +2312,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
         p.setPen(Qt::NoPen);
-        // Vibrant neon yellow-green ink splatter
         {
             const auto sp1 = Project(-25.0f, -28.0f, 2.2f);
             QRadialGradient splat1(sp1.pt, 18.0f * sp1.scale);
@@ -2067,11 +2325,9 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             const auto sp1b = Project(-18.0f, -38.0f, 2.2f);
             p.drawEllipse(sp1b.pt, 7.0f * sp1b.scale, 6.0f * sp1b.scale);
 
-            // Specular drop highlight (wet ink)
             p.setBrush(QColor(255, 255, 255, 120));
             p.drawEllipse(Project(-27.0f, -30.0f, 2.22f).pt, 3.5f * sp1.scale, 2.5f * sp1.scale);
         }
-        // Vibrant deep purple ink splatter
         {
             const auto sp2 = Project(22.0f, 10.0f, 2.2f);
             QRadialGradient splat2(sp2.pt, 16.0f * sp2.scale);
@@ -2085,7 +2341,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             const auto sp2b = Project(30.0f, 0.0f, 2.2f);
             p.drawEllipse(sp2b.pt, 6.0f * sp2b.scale, 5.5f * sp2b.scale);
 
-            // Wet ink specular
             p.setBrush(QColor(255, 255, 255, 110));
             p.drawEllipse(Project(20.0f, 8.0f, 2.22f).pt, 3.0f * sp2.scale, 2.0f * sp2.scale);
         }
@@ -2106,7 +2361,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setBrush(mh_glow);
             p.drawEllipse(mc.pt, 28.0f * mc.scale, 28.0f * mc.scale);
         }
-        // Double gilded blade crest
         p.setPen(QPen(colors.emblem, 2.2f * zoom));
         p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 95));
         QPolygonF blade1;
@@ -2165,12 +2419,10 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             well_inner_poly << Project(well_x + 24.0f * cos_a, well_y + 24.0f * sin_a, -4.0f).pt;
         }
 
-        // Beveled outer ring
         p.setPen(QPen(QColor(15, 17, 22), 1.2f));
         p.setBrush(QColor(18, 20, 24));
         p.drawPolygon(well_outer_poly);
 
-        // Deep recessed socket with 5-stop radial gradient
         const auto sock_proj = Project(well_x, well_y, -4.0f);
         QRadialGradient socket_grad(sock_proj.pt, 28.0f * sock_proj.scale);
         socket_grad.setColorAt(0.0, QColor(6, 7, 10));
@@ -2241,7 +2493,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(dpad_grad);
         p.drawPolygon(top_poly);
 
-        // Central concave thumb dish
         const auto center_proj = Project(cx, cy, GetTopZ(0.0f, 0.0f) - 1.2f);
         QRadialGradient hub_grad(center_proj.pt, 6.0f * center_proj.scale);
         hub_grad.setColorAt(0.0, dpad_col.darker(115));
@@ -2251,7 +2502,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(hub_grad);
         p.drawEllipse(center_proj.pt, 5.5f * center_proj.scale, 5.5f * center_proj.scale);
 
-        // Direction arrows
         auto DrawDpadArm = [&](Direction dir, bool is_pressed, float ax, float ay) {
             const float top_z = GetTopZ(ax, ay);
             const auto arm_proj = Project(cx + ax, cy + ay, top_z + 0.1f);
@@ -2277,7 +2527,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
         const auto b_center = Project(bx, by, top_z);
 
-        // Outer socket shadow
         {
             const auto sock = Project(bx, by, 2.5f);
             p.setPen(QPen(QColor(10, 12, 16), 1.0f));
@@ -2285,7 +2534,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawEllipse(sock.pt, (r + 1.8f) * sock.scale, (r + 1.8f) * sock.scale);
         }
 
-        // Dome surface
         p.setPen(QPen(pressed ? colors.font : QColor(22, 24, 30), 1.2f));
         if (pressed) {
             QRadialGradient glow_grad(b_center.pt, r * b_center.scale);
@@ -2306,7 +2554,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         }
         p.drawEllipse(b_center.pt, r * b_center.scale, r * b_center.scale);
 
-        // Acrylic curved specular reflection arc
         if (!pressed) {
             p.setPen(Qt::NoPen);
             p.setBrush(QColor(255, 255, 255, 55));
@@ -2314,7 +2561,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawEllipse(spec.pt, 5.0f * spec.scale, 3.0f * spec.scale);
         }
 
-        // Button letter
         p.setPen(colors.transparent);
         p.setBrush(pressed ? colors.font : colors.font2);
         DrawSymbol(p, b_center.pt, sym, 1.30f * b_center.scale);
@@ -2347,7 +2593,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             pad_z -= 5.0f;
         }
 
-        // Metallic Steel Stem with realistic 7-stop chrome gradient
+        // Metallic Steel Stem
         {
             const auto p_base = Project(well_x, well_y, -3.0f);
             const auto p_top = Project(pad_x, pad_y, pad_z - 3.0f);
@@ -2379,14 +2625,13 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawPolygon(shaft_poly);
         }
 
-        // Rubber Thumb-Pad (Cap)
+        // Rubber Thumb-Pad
         {
             constexpr float r_rim = 22.0f;
             constexpr float r_bowl = 15.5f;
 
             const auto cap_center = Project(pad_x, pad_y, pad_z);
 
-            // Outer Rim
             p.setPen(QPen(is_click_pressed ? colors.indicator : QColor(20, 22, 28), 1.2f));
             if (is_click_pressed) {
                 p.setBrush(colors.highlight);
@@ -2402,7 +2647,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             }
             p.drawEllipse(cap_center.pt, r_rim * cap_center.scale, r_rim * cap_center.scale);
 
-            // 4 Tactile Cardinal Notches
+            // Cardinal Notches
             p.setPen(Qt::NoPen);
             p.setBrush(is_click_pressed ? colors.font : QColor(16, 18, 22, 210));
             constexpr std::array<float, 4> notch_rads = {0.0f, float(PI_CONST * 0.5f), float(PI_CONST), float(PI_CONST * 1.5f)};
@@ -2413,7 +2658,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 p.drawEllipse(notch_proj.pt, 2.0f * notch_proj.scale, 2.0f * notch_proj.scale);
             }
 
-            // Inner concave thumb bowl
+            // Concave Dish
             const auto bowl_center = Project(pad_x, pad_y, pad_z - 1.8f);
             p.setPen(QPen(QColor(12, 14, 18), 0.8f));
             if (is_click_pressed) {
@@ -2429,7 +2674,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             }
             p.drawEllipse(bowl_center.pt, r_bowl * bowl_center.scale, r_bowl * bowl_center.scale);
 
-            // Rim specular crescent
             if (!is_click_pressed) {
                 const auto spec = Project(pad_x - 4.0f, pad_y - 6.0f, pad_z + 0.3f);
                 p.setPen(Qt::NoPen);
@@ -2511,7 +2755,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         const bool pressed = button_values[Home].value;
         const float z = pressed ? 3.0f : 6.0f;
 
-        // Glowing Home Halo
         const auto halo_proj = Project(16.0f, -28.0f, 2.5f);
         QRadialGradient led_grad(halo_proj.pt, 14.0f * halo_proj.scale);
         led_grad.setColorAt(0.0, colors.home_led);
@@ -2523,7 +2766,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setBrush(led_grad);
         p.drawEllipse(halo_proj.pt, 14.0f * halo_proj.scale, 14.0f * halo_proj.scale);
 
-        // Home button
         const auto proj = Project(16.0f, -28.0f, z);
         QRadialGradient home_grad(proj.pt - QPointF(2.0f * proj.scale, 2.0f * proj.scale), 8.0f * proj.scale);
         home_grad.setColorAt(0.0, QColor(72, 78, 92));
@@ -2565,33 +2807,19 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     }
 
     // -------------------------------------------------------------------------
-    // LAYER 13: 2D HUD Overlays: Analog Stick Coordinates, Ribbon & Motion
+    // LAYER 13: HUD Overlays (Non-Overlapping, Beautifully Positioned)
     // -------------------------------------------------------------------------
-    const QPointF hud_left = center + QPointF(-185.0f, 95.0f);
-    const QPointF hud_right = center + QPointF(185.0f, 95.0f);
-    DrawRawJoystick(p, hud_left, hud_right);
+    // Battery Card (Upper-Left)
+    DrawPhotorealisticBattery(bat_pos);
 
-    // Live Numeric Axis Text Badges
-    {
-        SetTextFont(p, 0.70f);
-        p.setPen(colors.font);
+    // Colorful 3D Gyroscope (Upper-Right)
+    DrawColorfulGyroscope(gyro_pos, motion_values[Settings::NativeMotion::MotionLeft].euler, 16.0f);
 
-        const float lx = stick_values[Settings::NativeAnalog::LStick].x.value;
-        const float ly = stick_values[Settings::NativeAnalog::LStick].y.value;
-        const QString l_str = QStringLiteral("L: X[%1] Y[%2]")
-                                  .arg(lx, 5, 'f', 2, QLatin1Char(' '))
-                                  .arg(ly, 5, 'f', 2, QLatin1Char(' '));
-        DrawText(p, hud_left + QPointF(0.0f, 52.0f), 0.70f, l_str);
+    // Precision Analog Stick Radars (Under Controller, Centered L/R)
+    DrawModernStickRadar(true, left_radar);
+    DrawModernStickRadar(false, right_radar);
 
-        const float rx = stick_values[Settings::NativeAnalog::RStick].x.value;
-        const float ry = stick_values[Settings::NativeAnalog::RStick].y.value;
-        const QString r_str = QStringLiteral("R: X[%1] Y[%2]")
-                                  .arg(rx, 5, 'f', 2, QLatin1Char(' '))
-                                  .arg(ry, 5, 'f', 2, QLatin1Char(' '));
-        DrawText(p, hud_right + QPointF(0.0f, 52.0f), 0.70f, r_str);
-    }
-
-    // Active Pressed Buttons Ribbon
+    // Active Pressed Buttons Ribbon (Centered below stick radars, only when active)
     {
         struct ActiveBadge {
             QString name{};
@@ -2627,7 +2855,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             const float spacing = 6.0f;
             const float total_w = pressed_names.size() * badge_w + (pressed_names.size() - 1) * spacing;
             float start_x = center.x() - total_w * 0.5f;
-            const float badge_y = center.y() + 125.0f;
+            const float badge_y = center.y() + 252.0f;
 
             for (const auto& name : pressed_names) {
                 QRectF b_rect(start_x, badge_y - badge_h * 0.5f, badge_w, badge_h);
@@ -2644,21 +2872,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 start_x += badge_w + spacing;
             }
         }
-    }
-
-    // 14. Motion Orientation Cube
-    {
-        using namespace Settings::NativeMotion;
-        const QPointF motion_pos = center + QPointF(185.0f, -115.0f);
-        p.setPen(colors.button);
-        p.setBrush(colors.transparent);
-        Draw3dCube(p, motion_pos, motion_values[Settings::NativeMotion::MotionLeft].euler, 15.0f);
-    }
-
-    // 15. Battery Status Indicator
-    {
-        const QPointF bat_pos = center + QPointF(-185.0f, -125.0f);
-        DrawBattery(p, bat_pos, battery_values[Core::HID::EmulatedDeviceIndex::LeftIndex]);
     }
 }
 
