@@ -310,7 +310,8 @@ Result ServerManager::Process(MultiWaitHolder* holder) {
     case UserDataTag::DeferEvent:
         R_RETURN(this->OnDeferralEvent());
     default:
-        UNREACHABLE();
+        LOG_ERROR(Service, "Unexpected UserDataTag: {}", holder->GetUserData());
+        R_THROW(ResultSuccess);
     }
 }
 

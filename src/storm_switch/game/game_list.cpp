@@ -261,7 +261,9 @@ void GameList::ResetViewMode() {
 
         break;
     default:
-        UNREACHABLE();
+        m_currentView = tree_view;
+        newTreeMode = true;
+        break;
     }
 
     tree_view->setVisible(false);

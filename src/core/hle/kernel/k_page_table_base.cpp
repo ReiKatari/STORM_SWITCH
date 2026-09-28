@@ -536,7 +536,7 @@ KProcessAddress KPageTableBase::GetRegionAddress(Svc::MemoryState state) const {
     case Svc::MemoryState::CodeData:
         return m_code_region_start;
     default:
-        UNREACHABLE();
+        return 0;
     }
 }
 
@@ -572,7 +572,7 @@ size_t KPageTableBase::GetRegionSize(Svc::MemoryState state) const {
     case Svc::MemoryState::CodeData:
         return m_code_region_end - m_code_region_start;
     default:
-        UNREACHABLE();
+        return 0;
     }
 }
 
@@ -2012,7 +2012,7 @@ Result KPageTableBase::SetProcessMemoryPermission(KProcessAddress addr, size_t s
             new_state = KMemoryState::AliasCodeData;
             break;
         default:
-            UNREACHABLE();
+            R_THROW(Kernel::ResultInvalidState);
         }
     }
 
@@ -5742,7 +5742,7 @@ Result KPageTableBase::Operate(PageLinkedList* page_list, KProcessAddress virt_a
         R_SUCCEED();
     }
     default:
-        UNREACHABLE();
+        R_THROW(ResultInvalidEnumValue);
     }
 }
 
@@ -5783,7 +5783,7 @@ Result KPageTableBase::Operate(PageLinkedList* page_list, KProcessAddress virt_a
         R_SUCCEED();
     }
     default:
-        UNREACHABLE();
+        R_THROW(ResultInvalidEnumValue);
     }
 }
 

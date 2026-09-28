@@ -250,7 +250,10 @@ void WebBrowser::Initialize() {
     web_applet_version = WebAppletVersion{common_args.library_version};
 
     const auto web_arg_storage = PopInData();
-    ASSERT(web_arg_storage != nullptr);
+    if (!web_arg_storage) {
+        LOG_WARNING(Service_AM, "Web Browser storage is null");
+        return;
+    }
 
     const auto& web_arg = web_arg_storage->GetData();
     ASSERT_OR_EXECUTE(web_arg.size() >= sizeof(WebArgHeader), { return; });

@@ -210,10 +210,15 @@ Result VfsDirectoryServiceWrapper::RenameFile(const std::string& src_path_,
         return c_res;
 
     auto dest = backing->GetFileRelative(dest_path);
-    ASSERT_MSG(dest != nullptr, "Newly created file with success cannot be found.");
+    if (!dest) {
+        LOG_ERROR(Service_FS, "Newly created file at {} cannot be opened", dest_path);
+        return FileSys::ResultPathNotFound;
+    }
 
-    ASSERT_MSG(dest->WriteBytes(src->ReadAllBytes()) == src->GetSize(),
-               "Could not write all of the bytes but everything else has succeeded.");
+    if (dest->WriteBytes(src->ReadAllBytes()) != src->GetSize()) {
+        LOG_ERROR(Service_FS, "Failed to write all bytes to {}", dest_path);
+        return ResultUnknown;
+    }
 
     if (!src->GetContainingDirectory()->DeleteFile(Common::FS::GetFilename(src_path))) {
         // TODO(DarkLordZach): Find a better error code for this

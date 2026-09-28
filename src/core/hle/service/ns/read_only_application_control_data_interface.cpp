@@ -179,7 +179,8 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData(
 
     if (control.first != nullptr) {
         const auto bytes = control.first->GetRawBytes();
-        std::memcpy(out_buffer.data(), bytes.data(), bytes.size());
+        const auto copy_len = (std::min)(out_buffer.size(), bytes.size());
+        std::memcpy(out_buffer.data(), bytes.data(), copy_len);
     } else {
         LOG_WARNING(Service_NS, "missing NACP data for application_id={:016X}, defaulting to zero",
                     application_id);
@@ -349,8 +350,14 @@ void IReadOnlyApplicationControlDataInterface::ListApplicationTitle(HLERequestCo
     if (t_mem != nullptr && app_count > 0) {
         auto& memory = system.ApplicationMemory();
         const auto t_mem_address = t_mem->GetSourceAddress();
+        const auto t_mem_size = t_mem->GetSize();
 
         for (size_t i = 0; i < app_count; ++i) {
+            const size_t offset = i * title_entry_size;
+            if (offset + title_entry_size > t_mem_size) {
+                break;
+            }
+
             const u64 app_id = application_ids[i];
             const FileSys::PatchManager pm{app_id, system.GetFileSystemController(),
                                            system.GetContentProvider()};
@@ -361,7 +368,6 @@ void IReadOnlyApplicationControlDataInterface::ListApplicationTitle(HLERequestCo
                 entry = control.first->GetLanguageEntry();
             }
 
-            const size_t offset = i * title_entry_size;
             memory.WriteBlock(t_mem_address + offset, &entry, title_entry_size);
         }
     }

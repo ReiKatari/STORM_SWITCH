@@ -109,6 +109,7 @@ DisconnectReason LANDiscovery::GetDisconnectReason() const {
 
 Result LANDiscovery::Scan(std::span<NetworkInfo> out_networks, s16& out_count,
                           const ScanFilter& filter) {
+    out_count = 0;
     {
         std::scoped_lock lock{packet_mutex};
         scan_results.clear();

@@ -35,7 +35,7 @@ IR::U32 scaleIndex(IR::IREmitter& ir, IR::U32 index, Shift shift) {
         case Shift::Default: return index;
         case Shift::U16: return ir.ShiftLeftLogical(index, ir.Imm32(1));
         case Shift::B32: return ir.ShiftLeftLogical(index, ir.Imm32(2));
-        default: UNREACHABLE();
+        default: return index;
     }
 }
 
@@ -46,7 +46,7 @@ IR::U32 skewBytes(IR::IREmitter& ir, SZ sizeRead) {
         case SZ::U16: return ir.ShiftLeftLogical(lane, ir.Imm32(1));
         case SZ::U32:
         case SZ::F32: return ir.ShiftLeftLogical(lane, ir.Imm32(2));
-        default: UNREACHABLE();
+        default: return lane;
     }
 }
 
@@ -88,7 +88,7 @@ void TranslatorVisitor::ISBERD(u64 insn) {
         case SZ::U16: globalLoaded = ir.LoadGlobalU16(index64); break;
         case SZ::U32:
         case SZ::F32: globalLoaded = ir.LoadGlobal32(index64);  break;
-        default: UNREACHABLE();
+        default: globalLoaded = ir.Imm32(0); break;
         }
         X(isberd.dest_reg.Value(), globalLoaded);
 
@@ -108,7 +108,7 @@ void TranslatorVisitor::ISBERD(u64 insn) {
             break;
         case Mode::Attr:  float_index = ir.GetAttributeIndexed(index);
             break;
-        default: UNREACHABLE();
+        default: float_index = ir.Imm32(0.0f); break;
         }
         X(isberd.dest_reg.Value(), ir.BitCast<IR::U32>(float_index));
 

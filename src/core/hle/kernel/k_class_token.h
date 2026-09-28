@@ -39,7 +39,7 @@ private:
     static constexpr inline TokenBaseType BaseClassToken = 1U << Index;
 
     template <TokenBaseType Index>
-    static constexpr inline TokenBaseType FinalClassToken = [] {
+    static constexpr inline TokenBaseType FinalClassToken = []() -> TokenBaseType {
         TokenBaseType index = 0;
         for (size_t i = 0; i < FinalClassBits; i++) {
             for (size_t j = i + 1; j < FinalClassBits; j++) {
@@ -51,7 +51,7 @@ private:
                 }
             }
         }
-        UNREACHABLE();
+        return static_cast<TokenBaseType>(0);
     }();
 
     template <typename T>

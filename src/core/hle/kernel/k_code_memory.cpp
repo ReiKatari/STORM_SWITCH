@@ -123,8 +123,7 @@ Result KCodeMemory::MapToOwner(KernelCore& kernel, KProcessAddress address, size
         k_perm = KMemoryPermission::UserReadExecute;
         break;
     default:
-        // Already validated by ControlCodeMemory svc
-        UNREACHABLE();
+        R_THROW(Kernel::ResultInvalidNewMemoryPermission);
     }
 
     // Map the memory.

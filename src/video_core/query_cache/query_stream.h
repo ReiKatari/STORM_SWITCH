@@ -141,7 +141,7 @@ protected:
             old_queries.push_back(query_id);
             return;
         }
-        UNREACHABLE();
+        LOG_WARNING(HW_GPU, "ReleaseQuery: query_id {} out of bounds ({})", query_id, slot_queries.size());
     }
 
     std::mutex guard;

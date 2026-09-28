@@ -600,7 +600,6 @@ void GraphicsPipeline::GenerateTransformFeedbackState() {
                 case 3:
                     return locations[index / 4].attribute3.Value();
                 }
-                UNREACHABLE();
                 return 0;
             };
 

@@ -270,7 +270,8 @@ struct Memory::Impl {
                 break;
             }
             default:
-                UNREACHABLE();
+                user_accessible = false;
+                break;
             }
             page_index++;
             page_offset = 0;
@@ -421,13 +422,12 @@ struct Memory::Impl {
                     current_page_table->entries[vaddr >> YUZU_PAGEBITS].ptr.Store(0, Common::PageType::DebugMemory);
                     break;
                 default:
-                    UNREACHABLE();
+                    break;
                 }
             } else {
                 // Switch page type to non-debug if now non-debug
                 switch (page_type) {
                 case Common::PageType::Unmapped:
-                    ASSERT(false && "Attempted to mark unmapped pages as non-debug");
                     break;
                 case Common::PageType::RasterizerCachedMemory:
                 case Common::PageType::Memory:
@@ -439,7 +439,7 @@ struct Memory::Impl {
                     break;
                 }
                 default:
-                    UNREACHABLE();
+                    break;
                 }
             }
         }
@@ -485,7 +485,7 @@ struct Memory::Impl {
                     // that this area is already marked as cached.
                     break;
                 default:
-                    UNREACHABLE();
+                    break;
                 }
             } else {
                 // Switch page type to uncached if now uncached
@@ -511,7 +511,7 @@ struct Memory::Impl {
                     break;
                 }
                 default:
-                    UNREACHABLE();
+                    break;
                 }
             }
         }
@@ -590,7 +590,8 @@ struct Memory::Impl {
                     return nullptr;
                 }
                 default:
-                    UNREACHABLE();
+                    on_unmapped();
+                    return nullptr;
                 }
                 return nullptr;
             }

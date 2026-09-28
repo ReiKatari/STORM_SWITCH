@@ -30,22 +30,27 @@ void ProfileSelect::Initialize() {
     profile_select_version = ProfileSelectAppletVersion{common_args.library_version};
 
     const std::shared_ptr<IStorage> user_config_storage = PopInData();
-    ASSERT(user_config_storage != nullptr);
+    if (!user_config_storage) {
+        LOG_WARNING(Service_AM, "Profile Select applet storage is null");
+        return;
+    }
     const auto& user_config = user_config_storage->GetData();
 
     LOG_INFO(Service_AM, "Initializing Profile Select Applet with version={}",
              profile_select_version);
 
     switch (profile_select_version) {
-    case ProfileSelectAppletVersion::Version1:
-        ASSERT(user_config.size() == sizeof(UiSettingsV1));
-        std::memcpy(&config_old, user_config.data(), sizeof(UiSettingsV1));
+    case ProfileSelectAppletVersion::Version1: {
+        const std::size_t copy_size = (std::min)(user_config.size(), sizeof(UiSettingsV1));
+        std::memcpy(&config_old, user_config.data(), copy_size);
         break;
+    }
     case ProfileSelectAppletVersion::Version2:
-    case ProfileSelectAppletVersion::Version3:
-        ASSERT(user_config.size() == sizeof(UiSettings));
-        std::memcpy(&config, user_config.data(), sizeof(UiSettings));
+    case ProfileSelectAppletVersion::Version3: {
+        const std::size_t copy_size = (std::min)(user_config.size(), sizeof(UiSettings));
+        std::memcpy(&config, user_config.data(), copy_size);
         break;
+    }
     default:
         LOG_WARNING(Service_AM, "Unknown profile_select_version = {}", profile_select_version);
         break;

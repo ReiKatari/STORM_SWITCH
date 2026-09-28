@@ -58,6 +58,11 @@ static void SanitizeJPEGImageSize(std::vector<u8>& image) {
         stbi_load_from_memory(image.data(), static_cast<int>(image.size()), &original_width,
                               &original_height, &color_channels, STBI_rgb);
 
+    if (plain_image == nullptr) {
+        LOG_ERROR(Service_ACC, "Failed to load JPEG for sanitization.");
+        return;
+    }
+
     // Resize image to match 256*256
     if (original_width != profile_dimensions || original_height != profile_dimensions) {
         // Use vector instead of array to avoid overflowing the stack
@@ -71,6 +76,8 @@ static void SanitizeJPEGImageSize(std::vector<u8>& image) {
             LOG_ERROR(Service_ACC, "Failed to resize the user provided image.");
         }
     }
+
+    stbi_image_free(plain_image);
 
     image.resize((std::min)(image.size(), max_jpeg_image_size));
 }

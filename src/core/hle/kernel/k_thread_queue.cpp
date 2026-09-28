@@ -11,7 +11,6 @@
 namespace Kernel {
 
 void KThreadQueue::NotifyAvailable(KernelCore& kernel, KThread* waiting_thread, KSynchronizationObject* signaled_object, Result wait_result) {
-    UNREACHABLE();
 }
 
 void KThreadQueue::EndWait(KernelCore& kernel, KThread* waiting_thread, Result wait_result) {
@@ -47,7 +46,6 @@ void KThreadQueue::CancelWait(KernelCore& kernel, KThread* waiting_thread, Resul
 }
 
 void KThreadQueueWithoutEndWait::EndWait(KernelCore& kernel, KThread* waiting_thread, Result wait_result) {
-    UNREACHABLE();
 }
 
 } // namespace Kernel

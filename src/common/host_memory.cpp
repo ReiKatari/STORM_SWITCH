@@ -225,8 +225,7 @@ public:
     }
 
     void EnableDirectMappedAddress() {
-        // TODO
-        UNREACHABLE();
+        LOG_WARNING(HW_Memory, "EnableDirectMappedAddress: not supported on this platform");
     }
 
     const size_t backing_size; ///< Size of the backing memory in bytes

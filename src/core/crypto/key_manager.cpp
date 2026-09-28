@@ -116,7 +116,7 @@ u64 GetSignatureTypeDataSize(SignatureType type) {
     case SignatureType::ECDSA_SHA256:
         return 0x3C;
     }
-    UNREACHABLE();
+    return 0;
 }
 
 u64 GetSignatureTypePaddingSize(SignatureType type) {
@@ -130,7 +130,7 @@ u64 GetSignatureTypePaddingSize(SignatureType type) {
     case SignatureType::ECDSA_SHA256:
         return 0x40;
     }
-    UNREACHABLE();
+    return 0;
 }
 
 bool Ticket::IsValid() const {
@@ -144,7 +144,7 @@ SignatureType Ticket::GetSignatureType() const {
         return ticket->sig_type;
     if (const auto* ticket = std::get_if<ECDSATicket>(&data))
         return ticket->sig_type;
-    UNREACHABLE();
+    return SignatureType::RSA_2048_SHA256;
 }
 
 TicketData& Ticket::GetData() {
@@ -154,7 +154,8 @@ TicketData& Ticket::GetData() {
         return ticket->data;
     if (auto* ticket = std::get_if<ECDSATicket>(&data))
         return ticket->data;
-    UNREACHABLE();
+    static TicketData dummy_data{};
+    return dummy_data;
 }
 
 const TicketData& Ticket::GetData() const {
@@ -164,7 +165,8 @@ const TicketData& Ticket::GetData() const {
         return ticket->data;
     if (const auto* ticket = std::get_if<ECDSATicket>(&data))
         return ticket->data;
-    UNREACHABLE();
+    static TicketData dummy_data{};
+    return dummy_data;
 }
 
 u64 Ticket::GetSize() const {

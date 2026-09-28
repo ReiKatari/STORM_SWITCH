@@ -927,7 +927,7 @@ void RasterizerOpenGL::SyncClipEnabled(u32 clip_mask) {
 }
 
 void RasterizerOpenGL::SyncClipCoef() {
-    UNIMPLEMENTED();
+    LOG_WARNING(Render_OpenGL, "SyncClipCoef: unimplemented");
 }
 
 void RasterizerOpenGL::SyncCullMode() {

@@ -159,7 +159,7 @@ Result IAudioDevice::ListAudioOutputDeviceName(
     for (s32 i = 0; i < *out_count; i++) {
         std::string a{};
         u32 j = 0;
-        while (out_names[i].name[j] != '\0') {
+        while (j < sizeof(out_names[i].name) && out_names[i].name[j] != '\0') {
             a += out_names[i].name[j];
             j++;
         }

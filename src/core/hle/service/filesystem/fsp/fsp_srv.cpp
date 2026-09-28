@@ -202,15 +202,23 @@ Result FSP_SRV::OpenFileSystemWithPatch(OutInterface<IFileSystem> out_interface,
     LOG_ERROR(Service_FS, "(STUBBED) called with type={}, program_id={:016X}", type,
               open_program_id);
 
-    // FIXME: many issues with this
-    ASSERT(type == FileSystemProxyType::Manual);
+    if (type != FileSystemProxyType::Manual) {
+        LOG_WARNING(Service_FS, "Unsupported FileSystemProxyType={}", type);
+        R_THROW(FileSys::ResultInvalidArgument);
+    }
     const auto manual_romfs = romfs_controller->OpenPatchedRomFS(
         open_program_id, FileSys::ContentRecordType::HtmlDocument);
 
-    ASSERT(manual_romfs != nullptr);
+    if (!manual_romfs) {
+        LOG_WARNING(Service_FS, "Patched RomFS not found for program_id={:016X}", open_program_id);
+        R_THROW(FileSys::ResultTargetNotFound);
+    }
 
     const auto extracted_romfs = FileSys::ExtractRomFS(manual_romfs);
-    ASSERT(extracted_romfs != nullptr);
+    if (!extracted_romfs) {
+        LOG_WARNING(Service_FS, "Failed to extract RomFS for program_id={:016X}", open_program_id);
+        R_THROW(FileSys::ResultTargetNotFound);
+    }
 
     *out_interface = std::make_shared<IFileSystem>(
         system, extracted_romfs, SizeGetter::FromStorageId(fsc, FileSys::StorageId::NandUser));

@@ -97,8 +97,9 @@ union Error::ErrorArguments {
 namespace {
 template <typename T>
 void CopyArgumentData(std::span<const u8> data, T& variable) {
-    ASSERT(data.size() >= sizeof(T));
-    std::memcpy(&variable, data.data(), sizeof(T));
+    variable = {};
+    const std::size_t copy_size = (std::min)(data.size(), sizeof(T));
+    std::memcpy(&variable, data.data(), copy_size);
 }
 
 Result Decode64BitError(u64 error) {
@@ -119,10 +120,15 @@ void Error::Initialize() {
     complete = false;
 
     const std::shared_ptr<IStorage> storage = PopInData();
-    ASSERT(storage != nullptr);
+    if (!storage) {
+        LOG_WARNING(Service_AM, "Error applet storage is null");
+        return;
+    }
     const auto data = storage->GetData();
-
-    ASSERT(!data.empty());
+    if (data.size() < sizeof(ErrorAppletMode)) {
+        LOG_WARNING(Service_AM, "Error applet data is empty or too small: size={}", data.size());
+        return;
+    }
     std::memcpy(&mode, data.data(), sizeof(ErrorAppletMode));
 
     switch (mode) {

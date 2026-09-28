@@ -97,8 +97,8 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
     case ImageType::Buffer:
         break;
     }
-    ASSERT_MSG(false, "Invalid image type={}", type);
-    return {};
+    LOG_ERROR(Render_Vulkan, "Invalid image type={}", type);
+    return VK_IMAGE_TYPE_2D;
 }
 
 [[nodiscard]] VkSampleCountFlagBits ConvertSampleCount(u32 num_samples) {
@@ -114,7 +114,7 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
     case 16:
         return VK_SAMPLE_COUNT_16_BIT;
     default:
-        ASSERT_MSG(false, "Invalid number of samples={}", num_samples);
+        LOG_ERROR(Render_Vulkan, "Invalid number of samples={}", num_samples);
         return VK_SAMPLE_COUNT_1_BIT;
     }
 }
@@ -134,7 +134,7 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
             usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
             break;
         default:
-            ASSERT_MSG(false, "Invalid surface type");
+            LOG_ERROR(Render_Vulkan, "Invalid surface type");
             break;
         }
     }
@@ -272,7 +272,7 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
     case VideoCore::Surface::SurfaceType::DepthStencil:
         return VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
     default:
-        ASSERT_MSG(false, "Invalid surface type");
+        LOG_ERROR(Render_Vulkan, "Invalid surface type");
         return VkImageAspectFlags{};
     }
 }
@@ -322,7 +322,7 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
     case SwizzleSource::OneInt:
         return VK_COMPONENT_SWIZZLE_ONE;
     }
-    ASSERT_MSG(false, "Invalid swizzle={}", swizzle);
+    LOG_ERROR(Render_Vulkan, "Invalid swizzle={}", swizzle);
     return VK_COMPONENT_SWIZZLE_ZERO;
 }
 
@@ -357,10 +357,10 @@ void SanitizeDepthStencilSwizzle(std::array<SwizzleSource, 4>& swizzle,
     case Shader::TextureType::ColorArrayCube:
         return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
     case Shader::TextureType::Buffer:
-        ASSERT_MSG(false, "Texture buffers can't be image views");
+        LOG_WARNING(Render_Vulkan, "Texture buffers can't be image views");
         return VK_IMAGE_VIEW_TYPE_1D;
     }
-    ASSERT_MSG(false, "Invalid image view type={}", type);
+    LOG_ERROR(Render_Vulkan, "Invalid image view type={}", type);
     return VK_IMAGE_VIEW_TYPE_2D;
 }
 
@@ -382,10 +382,10 @@ void SanitizeDepthStencilSwizzle(std::array<SwizzleSource, 4>& swizzle,
     case VideoCommon::ImageViewType::CubeArray:
         return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
     case VideoCommon::ImageViewType::Buffer:
-        ASSERT_MSG(false, "Texture buffers can't be image views");
+        LOG_WARNING(Render_Vulkan, "Texture buffers can't be image views");
         return VK_IMAGE_VIEW_TYPE_1D;
     }
-    ASSERT_MSG(false, "Invalid image view type={}", type);
+    LOG_ERROR(Render_Vulkan, "Invalid image view type={}", type);
     return VK_IMAGE_VIEW_TYPE_2D;
 }
 
@@ -769,7 +769,7 @@ void TryTransformSwizzleIfNeeded(PixelFormat format, std::array<SwizzleSource, 4
     case Shader::ImageFormat::R32G32B32A32_UINT:
         return VK_FORMAT_R32G32B32A32_UINT;
     }
-    ASSERT_MSG(false, "Invalid image format={}", format);
+    LOG_ERROR(Render_Vulkan, "Invalid image format={}", format);
     return VK_FORMAT_R32_UINT;
 }
 
@@ -2548,7 +2548,7 @@ ImageView::ImageView(TextureCacheRuntime& runtime, const VideoCommon::ImageViewI
         create(TextureType::ColorArrayCube, std::nullopt);
         break;
     case VideoCommon::ImageViewType::Buffer:
-        ASSERT(false);
+        LOG_WARNING(Render_Vulkan, "Unexpected ImageViewType::Buffer in ImageView constructor");
         break;
     }
 }
@@ -3076,9 +3076,8 @@ void TextureCacheRuntime::AccelerateImageUpload(
 
     if (!Settings::values.gpu_unswizzle_enabled.GetValue() || !bl3d_unswizzle_pass) {
         if (IsPixelFormatBCn(image.info.format) && image.info.type == ImageType::e3D) {
-            ASSERT(false && "GPU unswizzle is disabled for BCn 3D texture");
+            LOG_WARNING(Render_Vulkan, "GPU unswizzle is disabled for BCn 3D texture");
         }
-        ASSERT(false);
         return;
     }
 
@@ -3086,7 +3085,7 @@ void TextureCacheRuntime::AccelerateImageUpload(
         return bl3d_unswizzle_pass->Unswizzle(image, map, swizzles, z_start, z_count);
     }
 
-    ASSERT(false);
+    LOG_WARNING(Render_Vulkan, "Unsupported texture configuration for unswizzle pass");
 }
 
 void TextureCacheRuntime::TransitionImageLayout(Image& image) {

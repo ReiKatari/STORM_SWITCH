@@ -44,7 +44,9 @@ const KAddressSpaceInfo& GetAddressSpaceInfo(size_t width, KAddressSpaceInfo::Ty
             return info;
         }
     }
-    UNREACHABLE_MSG("Could not find AddressSpaceInfo");
+    static constexpr KAddressSpaceInfo dummy{ .bit_width = 39, .address = 0, .size = 0, .type = KAddressSpaceInfo::Type::MapSmall };
+    LOG_ERROR(Kernel, "Could not find AddressSpaceInfo for width={} type={}", width, static_cast<int>(type));
+    return dummy;
 }
 
 } // namespace

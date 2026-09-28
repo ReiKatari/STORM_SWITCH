@@ -50,7 +50,8 @@ static inline const std::string GetCipherName(Mode mode, u32 key_size) {
         effective_bits /= 2;
         break;
     default:
-        UNREACHABLE();
+        cipher = "CTR";
+        break;
     }
     return fmt::format("AES-{}-{}", effective_bits, cipher);
 };

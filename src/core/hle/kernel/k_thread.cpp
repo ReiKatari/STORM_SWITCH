@@ -1212,7 +1212,7 @@ namespace Kernel {
             KWorkerTaskManager::AddTask(kernel, KWorkerTaskManager::WorkerType::Exit, this);
         }
 
-        UNREACHABLE_MSG("KThread::Exit() would return");
+        LOG_WARNING(Kernel, "KThread::Exit() returned unexpectedly");
     }
 
     Result KThread::Terminate(KernelCore& kernel) {

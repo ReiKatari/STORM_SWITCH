@@ -134,15 +134,15 @@ constexpr FormatTuple GetFormatTuple(VideoCore::Surface::PixelFormat pixel_forma
     SURFACE_FORMAT_LIST
 #undef SURFACE_FORMAT_ELEM
 #undef SURFACE_FORMAT_LIST
-    default: UNREACHABLE();
+    default: return {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
     }
 }
 
 inline GLenum VertexFormat(Maxwell::VertexAttribute attrib) {
     switch (attrib.type) {
     case Maxwell::VertexAttribute::Type::UnusedEnumDoNotUseBecauseItWillGoAway:
-        ASSERT_MSG(false, "Invalid vertex attribute type!");
-        break;
+        LOG_WARNING(Render_OpenGL, "Invalid vertex attribute type!");
+        return GL_NONE;
     case Maxwell::VertexAttribute::Type::UNorm:
     case Maxwell::VertexAttribute::Type::UScaled:
     case Maxwell::VertexAttribute::Type::UInt:

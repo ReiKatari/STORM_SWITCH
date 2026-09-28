@@ -330,8 +330,9 @@ void ConfigurePerGameAddons::AddonDeleteRequested(QList<QModelIndex> selected) {
     if (choice == QtCommon::Frontend::StandardButton::No)
         return;
 
+    std::error_code ec;
     for (const QModelIndex& index : filtered) {
-        std::filesystem::remove_all(index.data(PATCH_LOCATION).toString().toStdString());
+        std::filesystem::remove_all(index.data(PATCH_LOCATION).toString().toStdString(), ec);
     }
 
     QtCommon::Frontend::Information(tr("Successfully deleted"),

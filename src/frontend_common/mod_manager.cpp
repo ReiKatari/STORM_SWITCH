@@ -46,13 +46,15 @@ ModInstallResult InstallMod(const std::filesystem::path& path, const u64 program
         DataManager::GetDataDir(DataManager::DataDir::Mods) / program_id_string / mod_name;
 
     // pre-emptively remove any existing mod here
-    std::filesystem::remove_all(mod_dir);
+    std::error_code remove_ec;
+    std::filesystem::remove_all(mod_dir, remove_ec);
 
     // now copy
     try {
         std::filesystem::copy(path, mod_dir, std::filesystem::copy_options::recursive);
-        if (!copy)
-            std::filesystem::remove_all(path);
+        if (!copy) {
+            std::filesystem::remove_all(path, remove_ec);
+        }
     } catch (std::exception& e) {
         LOG_ERROR(Frontend, "Mod install failed with message {}", e.what());
         return Failed;

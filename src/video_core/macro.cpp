@@ -647,10 +647,9 @@ bool MacroInterpreterImpl::EvaluateBranchCondition(Macro::BranchCondition cond, 
     switch (cond) {
     case Macro::BranchCondition::Zero:
         return value == 0;
-    case Macro::BranchCondition::NotZero:
-        return value != 0;
+    default:
+        return false;
     }
-    UNREACHABLE();
 }
 
 /// Reads an opcode at the current program counter location.
@@ -1397,7 +1396,8 @@ void MacroEngine::Execute(Core::System& system, Engines::Maxwell3D& maxwell3d, u
         if (auto program = std::get_if<std::unique_ptr<DynamicCachedMacro>>(&cached))
             return program->get()->Execute(system, maxwell3d, parameters, method);
 
-        UNREACHABLE();
+        LOG_ERROR(HW_GPU, "Failed to execute cached macro variant: unknown program type");
+        return;
     };
     if (auto const it = macro_cache.find(method); it != macro_cache.end()) {
         execute_variant(it->second.program);

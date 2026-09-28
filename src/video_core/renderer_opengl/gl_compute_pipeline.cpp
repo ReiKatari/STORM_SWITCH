@@ -48,7 +48,8 @@ ComputePipeline::ComputePipeline(const Device& device, TextureCache& texture_cac
         source_program = CreateProgram(code_v, GL_COMPUTE_SHADER);
         break;
     default:
-        UNREACHABLE();
+        LOG_ERROR(Render_OpenGL, "Unknown compute program backend");
+        break;
     }
     std::copy_n(info.constant_buffer_used_sizes.begin(), uniform_buffer_sizes.size(), uniform_buffer_sizes.begin());
 

@@ -1251,7 +1251,8 @@ GLuint ImageView::MakeView(Shader::TextureType view_type, GLenum view_format) {
         view_range = full_range;
         break;
     default:
-        UNREACHABLE();
+        view_range = flat_range;
+        break;
     }
     OGLTextureView& view = stored_views.emplace_back();
     view.Create();

@@ -786,8 +786,9 @@ void IGeneralService::GetScanDataV2(HLERequestContext& ctx) {
         const Network::ScanData& s = scans[i];
         auto& ap = rows[i];
 
-        ap.ssid_len = s.ssid_len;
-        std::memcpy(ap.ssid, s.ssid, s.ssid_len);
+        const auto copy_len = (std::min)(static_cast<size_t>(s.ssid_len), sizeof(ap.ssid));
+        ap.ssid_len = static_cast<u8>(copy_len);
+        std::memcpy(ap.ssid, s.ssid, copy_len);
         ap.strength = to_bars(s.quality);
 
         bool is_connected = std::strncmp(net_state.ssid, ap.ssid, ap.ssid_len) == 0 &&
@@ -827,8 +828,9 @@ void IGeneralService::GetScanDataV3(HLERequestContext& ctx) {
         const Network::ScanData& s = scans[i];
         auto& ap = rows[i];
 
-        ap.ssid_len = s.ssid_len;
-        std::memcpy(ap.ssid, s.ssid, s.ssid_len);
+        const auto copy_len = (std::min)(static_cast<size_t>(s.ssid_len), sizeof(ap.ssid));
+        ap.ssid_len = static_cast<u8>(copy_len);
+        std::memcpy(ap.ssid, s.ssid, copy_len);
         ap.strength = to_bars(s.quality);
         ap.visible = 1;
         ap.has_password = (s.flags & 2) ? 2 : 1;
@@ -1054,11 +1056,12 @@ void IGeneralService::GetCurrentAccessPoint(HLERequestContext& ctx) {
     AccessPointDataV3 access_point_info{};
 
     if (st.connected && st.via_wifi) {
-        access_point_info.ssid_len = static_cast<u8>(std::strlen(st.ssid));
+        const auto copy_len = (std::min)(std::strlen(st.ssid), sizeof(access_point_info.ssid));
+        access_point_info.ssid_len = static_cast<u8>(copy_len);
         access_point_info.strength = st.bars;
         access_point_info.visible = 1;
         access_point_info.is_available = 1;
-        std::memcpy(access_point_info.ssid, st.ssid, access_point_info.ssid_len);
+        std::memcpy(access_point_info.ssid, st.ssid, copy_len);
     }
 
     ctx.WriteBuffer(access_point_info);

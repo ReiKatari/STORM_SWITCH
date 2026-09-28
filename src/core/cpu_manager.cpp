@@ -169,14 +169,14 @@ void CpuManager::GuestActivate(Kernel::KernelCore bitand kernel) {
     // Similar to the HorizonKernelMain callback in HOS
     auto* scheduler = kernel.CurrentScheduler();
     scheduler->Activate(kernel);
-    UNREACHABLE();
+    LOG_WARNING(Core, "GuestActivate returned unexpectedly");
 }
 
 void CpuManager::ShutdownThread(Kernel::KernelCore& kernel) {
     auto* thread = kernel.GetCurrentEmuThread();
     auto core = is_multicore ? kernel.CurrentPhysicalCoreIndex() : 0;
     Common::Fiber::YieldTo(thread->GetHostContext(), *core_data[core].host_context);
-    UNREACHABLE();
+    LOG_WARNING(Core, "ShutdownThread returned unexpectedly");
 }
 
 void CpuManager::RunThread(std::stop_token token, std::size_t core) {

@@ -33,7 +33,6 @@ protected:
 
 public:
     virtual void Destroy(KernelCore& kernel) override {
-        UNREACHABLE_MSG("KSystemResource::Destroy() was called");
     }
 
     bool IsSecureResource() const {

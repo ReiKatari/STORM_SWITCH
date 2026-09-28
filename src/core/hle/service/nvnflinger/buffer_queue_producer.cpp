@@ -932,7 +932,8 @@ void BufferQueueProducer::Transact(u32 code, std::span<const u8> parcel_data,
         break;
     }
     default:
-        ASSERT_MSG(false, "Unimplemented TransactionId {}", code);
+        LOG_ERROR(Service_VI, "Unimplemented TransactionId {}", code);
+        status = Status::BadValue;
         break;
     }
 

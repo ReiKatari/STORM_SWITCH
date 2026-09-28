@@ -72,12 +72,14 @@ void Controller::Initialize() {
     controller_applet_version = ControllerAppletVersion{common_args.library_version};
 
     const std::shared_ptr<IStorage> private_arg_storage = PopInData();
-    ASSERT(private_arg_storage != nullptr);
+    if (!private_arg_storage) {
+        LOG_WARNING(Service_AM, "Controller applet private arg storage is null");
+        return;
+    }
 
     const auto& private_arg = private_arg_storage->GetData();
-    ASSERT(private_arg.size() == sizeof(ControllerSupportArgPrivate));
-
-    std::memcpy(&controller_private_arg, private_arg.data(), private_arg.size());
+    const std::size_t priv_copy_size = (std::min)(private_arg.size(), sizeof(ControllerSupportArgPrivate));
+    std::memcpy(&controller_private_arg, private_arg.data(), priv_copy_size);
     ASSERT_MSG(controller_private_arg.arg_private_size == sizeof(ControllerSupportArgPrivate),
                "Unknown ControllerSupportArgPrivate revision={} with size={}",
                controller_applet_version, controller_private_arg.arg_private_size);

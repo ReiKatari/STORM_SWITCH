@@ -555,7 +555,8 @@ std::unique_ptr<GraphicsPipeline> ShaderCache::CreateGraphicsPipeline(
             sources_spirv[stage_index] = EmitSPIRV(profile, runtime_info, program, binding);
             break;
         default:
-            UNREACHABLE();
+            LOG_ERROR(Render_OpenGL, "Unknown shader backend");
+            return nullptr;
         }
         previous_program = &program;
     }
@@ -616,7 +617,8 @@ std::unique_ptr<ComputePipeline> ShaderCache::CreateComputePipeline(
         code_spirv = EmitSPIRV(profile, program);
         break;
     default:
-        UNREACHABLE();
+        LOG_ERROR(Render_OpenGL, "Unknown compute shader backend");
+        return nullptr;
     }
     return std::make_unique<ComputePipeline>(device, texture_cache, buffer_cache, program_manager, program.info, code, code_spirv, force_context_flush);
 } catch (Shader::Exception& exception) {

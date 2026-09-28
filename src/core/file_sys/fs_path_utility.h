@@ -397,8 +397,7 @@ public:
                 state = Normal;
                 break;
             default:
-                UNREACHABLE();
-                break;
+                R_THROW(ResultInvalidPathFormat);
             }
         }
 
@@ -418,8 +417,7 @@ public:
             *out = false;
             break;
         default:
-            UNREACHABLE();
-            break;
+            R_THROW(ResultInvalidPathFormat);
         }
 
         // Set the output length

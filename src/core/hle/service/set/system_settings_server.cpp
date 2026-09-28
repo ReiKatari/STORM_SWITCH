@@ -438,7 +438,8 @@ bool ISystemSettingsServer::LoadSettingsFile(std::filesystem::path& path, auto&&
     } else if constexpr (std::is_same_v<settings_type, SystemSettings>) {
         file.read(reinterpret_cast<char*>(&m_system_settings), sizeof(settings_type));
     } else {
-        UNREACHABLE();
+        file.close();
+        return false;
     }
     file.close();
 
@@ -476,11 +477,19 @@ bool ISystemSettingsServer::StoreSettingsFile(std::filesystem::path& path, auto&
     } else if constexpr (std::is_same_v<settings_type, SystemSettings>) {
         file.write(reinterpret_cast<const char*>(&m_system_settings), sizeof(settings_type));
     } else {
-        UNREACHABLE();
+        file.close();
+        return false;
     }
     file.close();
 
-    std::filesystem::rename(settings_tmp_file, settings_base.replace_extension("dat"));
+    std::error_code ec;
+    const auto target_file = settings_base.replace_extension("dat");
+    std::filesystem::remove(target_file, ec);
+    std::filesystem::rename(settings_tmp_file, target_file, ec);
+    if (ec) {
+        LOG_ERROR(Service_SET, "Failed to rename settings file: {}", ec.message());
+        return false;
+    }
 
     return true;
 }
@@ -1184,9 +1193,9 @@ Result ISystemSettingsServer::GetDeviceNickName(
     LOG_DEBUG(Service_SET, "called");
 
     *out_device_name = {};
-    const auto device_name_buffer = ::Settings::values.device_name.GetValue().c_str();
-    memcpy(out_device_name->data(), device_name_buffer,
-           ::Settings::values.device_name.GetValue().size());
+    const auto& dev_name = ::Settings::values.device_name.GetValue();
+    const std::size_t string_size = (std::min)(dev_name.size(), out_device_name->size());
+    memcpy(out_device_name->data(), dev_name.data(), string_size);
 
     R_SUCCEED();
 }
@@ -1545,8 +1554,9 @@ Result ISystemSettingsServer::GetSettingsItemValueImpl(std::span<u8> out_value, 
     auto settings{GetSettings()};
     R_UNLESS(settings.contains(category) && settings[category].contains(name), ResultUnknown);
 
-    ASSERT_MSG(out_value.size() >= settings[category][name].size(),
-               "Stored type is bigger than requested type");
+    if (out_value.size() < settings[category][name].size()) {
+        LOG_WARNING(Service_SET, "Stored type is bigger than requested type: {}/{}", category, name);
+    }
     out_size = std::min<u64>(settings[category][name].size(), out_value.size());
     std::memcpy(out_value.data(), settings[category][name].data(), out_size);
     R_SUCCEED();

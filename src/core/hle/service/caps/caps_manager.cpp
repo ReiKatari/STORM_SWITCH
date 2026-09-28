@@ -63,6 +63,8 @@ Result AlbumManager::IsAlbumMounted(AlbumStorage storage) {
 
 Result AlbumManager::GetAlbumFileList(std::span<AlbumEntry> out_entries, u64& out_entries_count,
                                       AlbumStorage storage, u8 flags) const {
+    out_entries_count = 0;
+
     if (storage > AlbumStorage::Sd) {
         return ResultInvalidStorage;
     }
@@ -124,6 +126,8 @@ Result AlbumManager::GetAlbumFileList(std::span<ApplicationAlbumEntry> out_entri
                                       u64& out_entries_count, ContentType content_type,
                                       AlbumFileDateTime start_date, AlbumFileDateTime end_date,
                                       u64 aruid) const {
+    out_entries_count = 0;
+
     if (!is_mounted) {
         return ResultIsNotMounted;
     }
@@ -424,6 +428,8 @@ Result AlbumManager::LoadImage(std::span<u8> out_image, const std::filesystem::p
 
     stbir_resize_uint8_srgb(dbi_image, original_width, original_height, 0, out_image.data(), width,
                             height, 0, STBI_rgb_alpha, 3, filter_flag);
+
+    stbi_image_free(dbi_image);
 
     return ResultSuccess;
 }

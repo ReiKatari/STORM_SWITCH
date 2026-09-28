@@ -309,6 +309,9 @@ void Scheduler::WorkerThread(std::stop_token stop_token) {
                 if (ex.GetResult() == VK_ERROR_DEVICE_LOST) {
                     return;
                 }
+            } catch (const std::exception& ex) {
+                LOG_CRITICAL(Render_Vulkan, "Vulkan worker thread caught std::exception: {}",
+                             ex.what());
             }
 
             // If the chunk was a submission, reallocate the command buffer.

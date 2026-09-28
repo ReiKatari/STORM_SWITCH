@@ -29,8 +29,8 @@ VkFilter Filter(Tegra::Texture::TextureFilter filter) {
     case Tegra::Texture::TextureFilter::Linear:
         return VK_FILTER_LINEAR;
     }
-    ASSERT_MSG(false, "Invalid sampler filter={}", filter);
-    return {};
+    LOG_WARNING(Render_Vulkan, "Invalid sampler filter={}", filter);
+    return VK_FILTER_LINEAR;
 }
 
 VkSamplerMipmapMode MipmapMode(Tegra::Texture::TextureMipmapFilter mipmap_filter) {
@@ -46,8 +46,8 @@ VkSamplerMipmapMode MipmapMode(Tegra::Texture::TextureMipmapFilter mipmap_filter
     case Tegra::Texture::TextureMipmapFilter::Linear:
         return VK_SAMPLER_MIPMAP_MODE_LINEAR;
     }
-    ASSERT_MSG(false, "Invalid sampler mipmap mode={}", mipmap_filter);
-    return {};
+    LOG_WARNING(Render_Vulkan, "Invalid sampler mipmap mode={}", mipmap_filter);
+    return VK_SAMPLER_MIPMAP_MODE_NEAREST;
 }
 
 VkSamplerAddressMode WrapMode(const Device& device,
@@ -69,7 +69,7 @@ VkSamplerAddressMode WrapMode(const Device& device,
         case Tegra::Texture::TextureFilter::Linear:
             return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
         }
-        ASSERT(false);
+        LOG_WARNING(Render_Vulkan, "Invalid clamp filter");
         return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     case Tegra::Texture::WrapMode::MirrorOnceClampToEdge:
         return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
@@ -413,8 +413,8 @@ VkFormat VertexFormat(const Device& device, Maxwell::VertexAttribute::Type type,
     const VkFormat format{([&]() {
         switch (type) {
         case Maxwell::VertexAttribute::Type::UnusedEnumDoNotUseBecauseItWillGoAway:
-            ASSERT_MSG(false, "Invalid vertex attribute type!");
-            break;
+            LOG_WARNING(Render_Vulkan, "Invalid vertex attribute type!");
+            return VK_FORMAT_UNDEFINED;
         case Maxwell::VertexAttribute::Type::UNorm:
             switch (size) {
             case Maxwell::VertexAttribute::Size::Size_R8:
@@ -878,8 +878,8 @@ VkViewportCoordinateSwizzleNV ViewportSwizzle(Maxwell::ViewportSwizzle swizzle) 
     case Maxwell::ViewportSwizzle::NegativeW:
         return VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_W_NV;
     }
-    ASSERT_MSG(false, "Invalid swizzle={}", swizzle);
-    return {};
+    LOG_WARNING(Render_Vulkan, "Invalid swizzle={}", swizzle);
+    return VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV;
 }
 
 VkSamplerReductionMode SamplerReduction(Tegra::Texture::SamplerReduction reduction) {
@@ -891,7 +891,7 @@ VkSamplerReductionMode SamplerReduction(Tegra::Texture::SamplerReduction reducti
     case Tegra::Texture::SamplerReduction::Max:
         return VK_SAMPLER_REDUCTION_MODE_MAX_EXT;
     }
-    ASSERT_MSG(false, "Invalid sampler mode={}", static_cast<int>(reduction));
+    LOG_WARNING(Render_Vulkan, "Invalid sampler mode={}", static_cast<int>(reduction));
     return VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT;
 }
 
@@ -914,7 +914,7 @@ VkSampleCountFlagBits MsaaMode(Tegra::Texture::MsaaMode msaa_mode) {
     case Tegra::Texture::MsaaMode::Msaa4x4:
         return VK_SAMPLE_COUNT_16_BIT;
     default:
-        ASSERT_MSG(false, "Invalid msaa_mode={}", static_cast<int>(msaa_mode));
+        LOG_WARNING(Render_Vulkan, "Invalid msaa_mode={}", static_cast<int>(msaa_mode));
         return VK_SAMPLE_COUNT_1_BIT;
     }
 }

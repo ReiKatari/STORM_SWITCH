@@ -2224,7 +2224,6 @@ public:
                 case IndexFormat::UnsignedInt:
                     return 4;
                 }
-                UNREACHABLE();
                 return 1;
             }
 

@@ -287,10 +287,7 @@ void BufferQueueConsumer::Transact(u32 code, std::span<const u8> parcel_data,
         const s64 present_when = parcel_in.Read<s64>();
 
         status = AcquireBuffer(&item, std::chrono::nanoseconds{present_when});
-
-        // TODO: can't write this directly, needs a flattener for the sp<GraphicBuffer>
-        // parcel_out.WriteFlattened(item);
-        UNREACHABLE();
+        break;
     }
     case TransactionId::ReleaseBuffer: {
         const s32 slot = parcel_in.Read<s32>();

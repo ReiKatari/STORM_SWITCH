@@ -9,6 +9,7 @@
 #include "common/assert.h"
 #include "common/common_types.h"
 #include "core/hle/kernel/k_condition_variable.h"
+#include "core/hle/kernel/svc_results.h"
 #include "core/hle/kernel/svc_types.h"
 
 union Result;
@@ -37,7 +38,7 @@ public:
         case Svc::SignalType::SignalAndModifyByWaitingCountIfEqual:
             R_RETURN(this->SignalAndModifyByWaitingCountIfEqual(addr, value, count));
         default:
-            UNREACHABLE();
+            R_THROW(ResultInvalidEnumValue);
         }
     }
 
@@ -50,7 +51,7 @@ public:
         case Svc::ArbitrationType::WaitIfEqual:
             R_RETURN(WaitIfEqual(addr, value, timeout));
         default:
-            UNREACHABLE();
+            R_THROW(ResultInvalidEnumValue);
         }
     }
 

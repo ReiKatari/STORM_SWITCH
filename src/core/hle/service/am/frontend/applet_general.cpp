@@ -48,9 +48,15 @@ void Auth::Initialize() {
     complete = false;
 
     const std::shared_ptr<IStorage> storage = PopInData();
-    ASSERT(storage != nullptr);
+    if (!storage) {
+        LOG_WARNING(Service_AM, "Auth applet storage is null");
+        return;
+    }
     const auto data = storage->GetData();
-    ASSERT(data.size() >= 0xC);
+    if (data.size() < 0xC) {
+        LOG_WARNING(Service_AM, "Auth applet data too small: size={}", data.size());
+        return;
+    }
 
     struct Arg {
         INSERT_PADDING_BYTES(4);
@@ -168,9 +174,17 @@ void PhotoViewer::Initialize() {
     complete = false;
 
     const std::shared_ptr<IStorage> storage = PopInData();
-    ASSERT(storage != nullptr);
+    if (!storage) {
+        LOG_WARNING(Service_AM, "PhotoViewer storage is null");
+        mode = PhotoViewerAppletMode::CurrentApp;
+        return;
+    }
     const auto data = storage->GetData();
-    ASSERT(!data.empty());
+    if (data.empty()) {
+        LOG_WARNING(Service_AM, "PhotoViewer data is empty");
+        mode = PhotoViewerAppletMode::CurrentApp;
+        return;
+    }
     mode = static_cast<PhotoViewerAppletMode>(data[0]);
 }
 

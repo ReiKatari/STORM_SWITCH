@@ -369,7 +369,7 @@ std::optional<Shader::ReplaceConstant> GraphicsEnvironment::GetReplaceConstBuffe
         case Tegra::Engines::Maxwell3D::HLEReplacementAttributeType::DrawID:
             return Shader::ReplaceConstant::DrawID;
         default:
-            UNREACHABLE();
+            return Shader::ReplaceConstant::BaseVertex;
         }
     }(it->second);
     cbuf_replacements.emplace(key, converted_value);

@@ -46,10 +46,16 @@ void Cabinet::Initialize() {
               common_args.theme_color);
 
     std::shared_ptr<IStorage> storage = PopInData();
-    ASSERT(storage != nullptr);
+    if (!storage) {
+        LOG_WARNING(Service_AM, "Cabinet applet storage is null");
+        return;
+    }
 
     const auto applet_input_data = storage->GetData();
-    ASSERT(applet_input_data.size() >= sizeof(StartParamForAmiiboSettings));
+    if (applet_input_data.size() < sizeof(StartParamForAmiiboSettings)) {
+        LOG_WARNING(Service_AM, "Cabinet applet data too small: size={}", applet_input_data.size());
+        return;
+    }
 
     std::memcpy(&applet_input_common, applet_input_data.data(),
                 sizeof(StartParamForAmiiboSettings));
