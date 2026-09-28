@@ -150,6 +150,8 @@ QPushButton* Widget::CreateRestoreGlobalButton(bool using_global, QWidget* paren
 QLabel* Widget::CreateLabel(const QString& text) {
     QLabel* qt_label = new QLabel(text, this->parent);
     qt_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    qt_label->setAttribute(Qt::WA_TranslucentBackground, true);
+    qt_label->setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
     return qt_label;
 }
 
@@ -158,6 +160,8 @@ QWidget* Widget::CreateCheckBox(Settings::BasicSetting* bool_setting, const QStr
                                 std::function<void()>& restore_func,
                                 const std::function<void()>& touch) {
     checkbox = new QCheckBox(label, this);
+    checkbox->setAttribute(Qt::WA_TranslucentBackground, true);
+    checkbox->setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
     checkbox->setCheckState(bool_setting->ToString() == "true" ? Qt::CheckState::Checked
                                                                : Qt::CheckState::Unchecked);
     checkbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -1117,6 +1121,8 @@ Widget::Widget(Settings::BasicSetting* setting_, const TranslationMap& translati
     : QWidget(parent_), parent{parent_}, translations{translations_},
       combobox_enumerations{combobox_translations_}, setting{*setting_}, apply_funcs{apply_funcs_},
       runtime_lock{runtime_lock_} {
+    setAttribute(Qt::WA_TranslucentBackground, true);
+    setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
     if (!Settings::IsConfiguringGlobal() && !setting.Switchable()) {
         LOG_DEBUG(Frontend, "\"{}\" is not switchable, skipping...", setting.GetLabel());
         return;

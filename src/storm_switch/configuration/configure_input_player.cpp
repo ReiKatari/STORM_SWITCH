@@ -400,7 +400,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         top_toolbar->setSpacing(8);
 
         auto* const skin_label = new QLabel(tr("Оформление:"), this);
-        skin_label->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 11px;"));
+        skin_label->setStyleSheet(QStringLiteral("background: transparent; font-weight: bold; font-size: 11px;"));
 
         auto* const combo_skin = new QComboBox(this);
         combo_skin->setMinimumWidth(230);
@@ -433,7 +433,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         });
 
         auto* const hint_3d = new QLabel(tr("ЛКМ — наклон | Двойной клик — перевернуть | Колесико — зум"), this);
-        hint_3d->setStyleSheet(QStringLiteral("color: #888888; font-size: 11px;"));
+        hint_3d->setStyleSheet(QStringLiteral("background: transparent; color: #888888; font-size: 11px;"));
 
         auto* const btn_flip_view = new QPushButton(tr("🔄 Повернуть геймпад"), this);
         btn_flip_view->setToolTip(tr("Перевернуть геймпад: вид спереди или сзади"));

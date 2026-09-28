@@ -2211,8 +2211,8 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setPen(QPen(QColor(10, 12, 16, 60), 1.0f * ring_p.scale));
             p.drawEllipse(ring_p.pt, 32.0f * ring_p.scale, 32.0f * ring_p.scale);
         };
-        DrawAntiFrictionRing(-64.0f, -42.0f);
-        DrawAntiFrictionRing( 42.0f,  18.0f);
+        DrawAntiFrictionRing(-78.0f, -38.0f);
+        DrawAntiFrictionRing( 48.0f,  24.0f);
 
         // ClassicBlack: Translucent PCB & Easter Egg
         if (current_skin == ControllerSkin::ClassicBlack) {
@@ -2232,7 +2232,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawLine(Project( 15.0f, -20.0f, 1.85f).pt, Project( 25.0f, -40.0f, 1.85f).pt);
             p.drawLine(Project( 25.0f, -40.0f, 1.85f).pt, Project( 55.0f, -40.0f, 1.85f).pt);
 
-            const auto ee_pos = Project(42.0f, 40.0f, 1.88f);
+            const auto ee_pos = Project(48.0f, 44.0f, 1.88f);
             p.setPen(QColor(195, 160, 75, 160));
             SetTextFont(p, 0.55f * ee_pos.scale);
             DrawText(p, ee_pos.pt, 0.55f * ee_pos.scale, QStringLiteral("thnx2 allgamefans!"));
@@ -2440,11 +2440,11 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setPen(QPen(colors.emblem_secondary, 2.2f * zoom));
         p.setBrush(QColor(colors.emblem_secondary.red(), colors.emblem_secondary.green(), colors.emblem_secondary.blue(), 85));
         QPolygonF wing_l;
-        wing_l << Project(-20.0f, -16.0f, 2.2f).pt << Project(-45.0f, -28.0f, 2.2f).pt
-               << Project(-38.0f, -12.0f, 2.2f).pt << Project(-20.0f,  -6.0f, 2.2f).pt;
+        wing_l << Project(-18.0f, -14.0f, 2.2f).pt << Project(-38.0f, -24.0f, 2.2f).pt
+               << Project(-32.0f, -10.0f, 2.2f).pt << Project(-18.0f,  -5.0f, 2.2f).pt;
         QPolygonF wing_r;
-        wing_r << Project( 20.0f, -16.0f, 2.2f).pt << Project( 45.0f, -28.0f, 2.2f).pt
-               << Project( 38.0f, -12.0f, 2.2f).pt << Project( 20.0f,  -6.0f, 2.2f).pt;
+        wing_r << Project( 18.0f, -14.0f, 2.2f).pt << Project( 38.0f, -24.0f, 2.2f).pt
+               << Project( 32.0f, -10.0f, 2.2f).pt << Project( 18.0f,  -5.0f, 2.2f).pt;
         p.drawPolygon(wing_l);
         p.drawPolygon(wing_r);
         p.restore();
@@ -2578,22 +2578,22 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.drawPolygon(well_inner_poly);
     };
 
-    DrawStickSocket(-64.0f, -42.0f);
-    DrawStickSocket( 42.0f,  18.0f);
+    DrawStickSocket(-78.0f, -38.0f);
+    DrawStickSocket( 48.0f,  24.0f);
 
     // -------------------------------------------------------------------------
-    // LAYER 8: 3D D-Pad (Directional Pad) at (-42.0f, 18.0f)
+    // LAYER 8: 3D D-Pad (Directional Pad) at (-48.0f, 24.0f)
     // -------------------------------------------------------------------------
     {
-        const float cx = -42.0f;
-        const float cy = 18.0f;
+        const float cx = -48.0f;
+        const float cy = 24.0f;
         const bool up    = button_values[DUp].value;
         const bool down  = button_values[DDown].value;
         const bool left  = button_values[DLeft].value;
         const bool right = button_values[DRight].value;
 
-        constexpr float arm_len = 24.0f;
-        constexpr float arm_w = 8.0f;
+        constexpr float arm_len = 22.0f;
+        constexpr float arm_w = 7.5f;
 
         const struct { float x; float y; } cross_pts[12] = {
             {-arm_w, -arm_len}, { arm_w, -arm_len}, { arm_w, -arm_w},
@@ -2654,10 +2654,10 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.setBrush(arr_col);
             DrawArrow(p, arm_proj.pt, dir, 0.88f * arm_proj.scale);
         };
-        DrawDpadArm(Direction::Up, up, 0.0f, -16.0f);
-        DrawDpadArm(Direction::Down, down, 0.0f, 16.0f);
-        DrawDpadArm(Direction::Left, left, -16.0f, 0.0f);
-        DrawDpadArm(Direction::Right, right, 16.0f, 0.0f);
+        DrawDpadArm(Direction::Up, up, 0.0f, -15.0f);
+        DrawDpadArm(Direction::Down, down, 0.0f, 15.0f);
+        DrawDpadArm(Direction::Left, left, -15.0f, 0.0f);
+        DrawDpadArm(Direction::Right, right, 15.0f, 0.0f);
     }
 
     // -------------------------------------------------------------------------
@@ -2666,7 +2666,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     auto DrawPhotorealisticButton = [&](int btn_id, float bx, float by, Symbol sym) {
         const bool pressed = button_values[btn_id].value;
         const float top_z = pressed ? 5.0f : 12.0f;
-        constexpr float r = 11.5f;
+        constexpr float r = 10.0f;
 
         const auto b_center = Project(bx, by, top_z);
 
@@ -2706,13 +2706,13 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
         p.setPen(colors.transparent);
         p.setBrush(pressed ? colors.font : colors.font2);
-        DrawSymbol(p, b_center.pt, sym, 1.30f * b_center.scale);
+        DrawSymbol(p, b_center.pt, sym, 1.18f * b_center.scale);
     };
 
-    DrawPhotorealisticButton(A, 82.0f, -42.0f, Symbol::A);
-    DrawPhotorealisticButton(B, 64.0f, -24.0f, Symbol::B);
-    DrawPhotorealisticButton(X, 64.0f, -60.0f, Symbol::X);
-    DrawPhotorealisticButton(Y, 46.0f, -42.0f, Symbol::Y);
+    DrawPhotorealisticButton(A, 98.0f, -38.0f, Symbol::A);
+    DrawPhotorealisticButton(B, 78.0f, -18.0f, Symbol::B);
+    DrawPhotorealisticButton(X, 78.0f, -58.0f, Symbol::X);
+    DrawPhotorealisticButton(Y, 58.0f, -38.0f, Symbol::Y);
 
     // -------------------------------------------------------------------------
     // LAYER 10: 3D Analog Joysticks with Live 2D Tilt & Steel Shaft
@@ -2725,8 +2725,8 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         const float sy = std::clamp(stick_values[stick_id].y.value, -1.0f, 1.0f);
         const bool is_click_pressed = button_values[button_id].value;
 
-        const float well_x = is_left ? -64.0f : 42.0f;
-        const float well_y = is_left ? -42.0f : 18.0f;
+        const float well_x = is_left ? -78.0f : 48.0f;
+        const float well_y = is_left ? -38.0f : 24.0f;
 
         const float pad_x = well_x + sx * 13.0f;
         const float pad_y = well_y + sy * 13.0f;

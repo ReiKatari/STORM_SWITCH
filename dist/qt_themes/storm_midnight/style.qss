@@ -486,6 +486,19 @@ QGroupBox::title {
     background-color: transparent;
 }
 
+QGroupBox QWidget,
+QGroupBox QLabel,
+QGroupBox QCheckBox,
+QGroupBox QRadioButton {
+    background: transparent;
+    background-color: transparent;
+}
+
+QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget {
+    background: transparent;
+    background-color: transparent;
+}
+
 /* ToolTip */
 QToolTip {
     background-color: #110d20;
