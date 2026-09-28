@@ -432,11 +432,17 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             UISettings::values.controller_skin = static_cast<u32>(skin);
         });
 
-        auto* const hint_3d = new QLabel(tr("3D обзор: ЛКМ — вращение | Колесико — зум"), this);
+        auto* const hint_3d = new QLabel(tr("ЛКМ — наклон | Двойной клик — перевернуть | Колесико — зум"), this);
         hint_3d->setStyleSheet(QStringLiteral("color: #888888; font-size: 11px;"));
 
-        auto* const btn_reset_view = new QPushButton(tr("↺ 3D вид"), this);
-        btn_reset_view->setToolTip(tr("Сбросить 3D вращение и масштаб к исходному виду"));
+        auto* const btn_flip_view = new QPushButton(tr("🔄 Повернуть геймпад"), this);
+        btn_flip_view->setToolTip(tr("Перевернуть геймпад: вид спереди или сзади"));
+        connect(btn_flip_view, &QPushButton::clicked, [this] {
+            ui->controllerFrame->ToggleRearView();
+        });
+
+        auto* const btn_reset_view = new QPushButton(tr("↺ Сброс"), this);
+        btn_reset_view->setToolTip(tr("Сбросить наклон и зум к исходному виду"));
         connect(btn_reset_view, &QPushButton::clicked, [this] {
             ui->controllerFrame->ResetView();
         });
@@ -445,6 +451,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         top_toolbar->addWidget(combo_skin);
         top_toolbar->addStretch(1);
         top_toolbar->addWidget(hint_3d);
+        top_toolbar->addWidget(btn_flip_view);
         top_toolbar->addWidget(btn_reset_view);
 
         ui->verticalLayout_4->addLayout(top_toolbar);

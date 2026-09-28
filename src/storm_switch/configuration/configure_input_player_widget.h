@@ -73,6 +73,10 @@ public:
     float GetZoom() const { return zoom; }
     void SetRotation(float rx, float ry, float z = 1.0f);
 
+    void ToggleRearView();
+    bool IsRearView() const { return is_rear_view; }
+    void SetRearView(bool rear);
+
 protected:
     void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
@@ -273,5 +277,6 @@ private:
     float rot_y{0.0f};
     float zoom{1.0f};
     bool is_mouse_dragging{false};
+    bool is_rear_view{false};
     QPoint last_mouse_pos{};
 };
