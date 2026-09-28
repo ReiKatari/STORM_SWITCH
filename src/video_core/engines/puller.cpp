@@ -58,7 +58,7 @@ void Puller::ProcessBindMethod(DmaPusher& dma_pusher, const MethodCall& method_c
         dma_pusher.BindSubchannel(&dma_pusher.channel_state.payload->nv01_timer, method_call.subchannel, EngineTypes::Nv01Timer);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented engine {:04X}", engine_id);
+        LOG_ERROR(HW_GPU, "Unimplemented engine {:04X}", engine_id);
         break;
     }
 }

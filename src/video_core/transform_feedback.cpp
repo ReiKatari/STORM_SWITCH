@@ -10,6 +10,7 @@
 
 #include "common/alignment.h"
 #include "common/assert.h"
+#include "common/logging.h"
 #include <ranges>
 #include "shader_recompiler/shader_info.h"
 #include "video_core/transform_feedback.h"
@@ -98,7 +99,9 @@ std::pair<std::array<Shader::TransformFeedbackVarying, 256>, u32> MakeTransformF
             const u32 base_offset = offset;
             const auto attribute{get_attribute(offset)};
             if (std::ranges::find(VECTORS, Common::AlignDown(attribute, 4)) != VECTORS.end()) {
-                UNIMPLEMENTED_IF_MSG(attribute % 4 != 0, "Unaligned TFB {}", attribute);
+                if (attribute % 4 != 0) {
+                    LOG_WARNING(HW_GPU, "Unaligned TFB {}", attribute);
+                }
 
                 const auto base_index = attribute / 4;
                 while (offset + 1 < varying_count && base_index == get_attribute(offset + 1) / 4) {
@@ -110,7 +113,9 @@ std::pair<std::array<Shader::TransformFeedbackVarying, 256>, u32> MakeTransformF
             count = (std::max)(count, attribute);
             highest = (std::max)(highest, (base_offset + varying.components) * 4);
         }
-        UNIMPLEMENTED_IF(highest != layout.stride);
+        if (highest != layout.stride) {
+            LOG_WARNING(HW_GPU, "TFB highest {} != stride {}", highest, layout.stride);
+        }
     }
     return {xfb, count + 1};
 }

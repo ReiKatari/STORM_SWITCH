@@ -122,7 +122,7 @@ Result ServiceFrameworkBase::HandleSyncRequest(Kernel::KServerSession& session,
             break;
         }
 
-        UNIMPLEMENTED_MSG("command_type={}", ctx.GetCommandType());
+        LOG_ERROR(Service, "Unimplemented command_type={}", ctx.GetCommandType());
         break;
     }
 

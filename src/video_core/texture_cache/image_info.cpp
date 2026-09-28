@@ -7,6 +7,7 @@
 #include <fmt/ranges.h>
 
 #include "common/assert.h"
+#include "common/logging.h"
 #include "common/settings.h"
 #include "video_core/surface.h"
 #include "video_core/texture_cache/format_lookup_table.h"
@@ -103,7 +104,9 @@ ImageInfo::ImageInfo(const TICEntry& config) noexcept {
         resources.layers = config.BaseLayer() + 6;
         break;
     case TextureType::TextureCubeArray:
-        UNIMPLEMENTED_IF(config.load_store_hint != 0);
+        if (config.load_store_hint != 0) {
+            LOG_WARNING(HW_GPU, "Unhandled load_store_hint={}", config.load_store_hint);
+        }
         type = ImageType::e2D;
         size.width = config.Width();
         size.height = config.Height();
@@ -232,7 +235,9 @@ ImageInfo::ImageInfo(const Maxwell3D::Regs::Zeta& zt, const Maxwell3D::Regs::Zet
 }
 
 ImageInfo::ImageInfo(const Fermi2D::Surface& config) noexcept {
-    UNIMPLEMENTED_IF_MSG(config.layer != 0, "Surface layer is not zero");
+    if (config.layer != 0) {
+        LOG_WARNING(HW_GPU, "Surface layer is not zero: {}", config.layer);
+    }
     forced_flushed = config.linear == Fermi2D::MemoryLayout::Pitch &&
                      !Settings::values.use_reactive_flushing.GetValue();
     dma_downloaded = forced_flushed;
@@ -282,7 +287,7 @@ static PixelFormat ByteSizeToFormat(u32 bytes_per_pixel) {
     case 16:
         return PixelFormat::R32G32B32A32_UINT;
     default:
-        UNIMPLEMENTED();
+        LOG_WARNING(HW_GPU, "Unhandled bytes_per_pixel={}", bytes_per_pixel);
         return PixelFormat::Invalid;
     }
 }

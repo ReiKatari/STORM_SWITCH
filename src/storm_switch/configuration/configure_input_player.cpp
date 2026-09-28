@@ -159,7 +159,7 @@ QString GetDirectionName(const std::string& direction) {
     if (direction == "down") {
         return QObject::tr("Down");
     }
-    UNIMPLEMENTED_MSG("Unimplemented direction name={}", direction);
+    LOG_WARNING(Frontend, "Unimplemented direction name={}", direction);
     return QString::fromStdString(direction);
 }
 

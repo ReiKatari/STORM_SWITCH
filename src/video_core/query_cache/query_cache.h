@@ -219,7 +219,6 @@ void QueryCacheBase<Traits>::CounterReset(QueryType counter_type) {
     size_t index = static_cast<size_t>(counter_type);
     StreamerInterface* streamer = impl->streamers[index];
     if (!streamer) [[unlikely]] {
-        UNIMPLEMENTED();
         return;
     }
     streamer->ResetCounter();

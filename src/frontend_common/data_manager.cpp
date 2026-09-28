@@ -4,6 +4,7 @@
 #include <filesystem>
 #include "data_manager.h"
 #include "common/assert.h"
+#include "common/logging.h"
 #include "common/fs/path_util.h"
 #include <fmt/format.h>
 
@@ -30,7 +31,8 @@ const fs::path GetDataDir(DataDir dir, const std::string &user_id)
     case DataDir::Shaders:
         return Common::FS::GetEdenPathString(Common::FS::EdenPath::ShaderDir);
     default:
-        UNIMPLEMENTED();
+        LOG_WARNING(Frontend, "Unimplemented DataDir={}", static_cast<int>(dir));
+        break;
     }
 
     return "";

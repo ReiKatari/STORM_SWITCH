@@ -21,6 +21,7 @@
 #include "common/bit_util.h"
 #include "common/common_types.h"
 #include "common/div_ceil.h"
+#include "common/logging.h"
 #include "common/scratch_buffer.h"
 #include "common/settings.h"
 #include "video_core/compatible_formats.h"
@@ -539,10 +540,14 @@ void SwizzleBlockLinearImage(Tegra::MemoryManager& gpu_memory, GPUVAddr gpu_addr
     const u32 num_blocks_per_layer = NumBlocks(level_size, tile_size);
     const u32 host_bytes_per_layer = num_blocks_per_layer * bytes_per_block;
 
-    UNIMPLEMENTED_IF(copy.image_offset.x != 0);
-    UNIMPLEMENTED_IF(copy.image_offset.y != 0);
-    UNIMPLEMENTED_IF(copy.image_offset.z != 0);
-    UNIMPLEMENTED_IF(copy.image_extent != level_size);
+    if (copy.image_offset.x != 0 || copy.image_offset.y != 0 || copy.image_offset.z != 0) {
+        LOG_WARNING(HW_GPU, "Non-zero copy offset: ({}, {}, {})", copy.image_offset.x, copy.image_offset.y, copy.image_offset.z);
+    }
+    if (copy.image_extent != level_size) {
+        LOG_WARNING(HW_GPU, "Mismatching image extent: ({}, {}, {}) vs ({}, {}, {})",
+                    copy.image_extent.width, copy.image_extent.height, copy.image_extent.depth,
+                    level_size.width, level_size.height, level_size.depth);
+    }
 
     const Extent3D num_tiles = AdjustTileSize(level_size, tile_size);
     const Extent3D block =
@@ -734,7 +739,7 @@ ImageViewType RenderTargetImageViewType(const ImageInfo& info) noexcept {
     case ImageType::Linear:
         return ImageViewType::e2D;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented image type={}", static_cast<int>(info.type));
+        LOG_WARNING(HW_GPU, "Unimplemented image type={}", static_cast<int>(info.type));
         return ImageViewType{};
     }
 }
@@ -1017,7 +1022,9 @@ boost::container::small_vector<BufferImageCopy, 16> FullDownloadCopies(const Ima
             .image_extent = size,
         }};
     }
-    UNIMPLEMENTED_IF(info.tile_width_spacing > 0);
+    if (info.tile_width_spacing > 0) {
+        LOG_WARNING(HW_GPU, "Unhandled tile_width_spacing={}", info.tile_width_spacing);
+    }
 
     const s32 num_layers = info.resources.layers;
     const s32 num_levels = info.resources.levels;

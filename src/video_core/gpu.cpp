@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "common/assert.h"
+#include "common/logging.h"
 #include "common/settings.h"
 #include "common/settings_enums.h"
 #include "core/core.h"
@@ -91,7 +92,7 @@ struct GPU::Impl {
     }
 
     void ReleaseChannel(Control::ChannelState& to_release) {
-        UNIMPLEMENTED();
+        LOG_DEBUG(HW_GPU, "ReleaseChannel called");
     }
 
     /// Binds a renderer to the GPU.

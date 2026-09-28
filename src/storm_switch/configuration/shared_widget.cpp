@@ -905,7 +905,8 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
             data_component = CreateCombobox(serializer, restore_func, touch);
             break;
         default:
-            UNIMPLEMENTED();
+            data_component = nullptr;
+            break;
         }
     } else if (setting.IsEnum()) {
         if (request == RequestType::RadioGroup) {
@@ -938,7 +939,8 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
             data_component = CreateCombobox(serializer, restore_func, touch);
             break;
         default:
-            UNIMPLEMENTED();
+            data_component = nullptr;
+            break;
         }
     } else if (setting.IsFloatingPoint()) {
         switch (request) {
@@ -952,7 +954,8 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
                                           serializer, restore_func, touch);
             break;
         default:
-            UNIMPLEMENTED();
+            data_component = nullptr;
+            break;
         }
     }
 

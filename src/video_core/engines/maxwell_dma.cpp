@@ -197,9 +197,15 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
         return;
     }
 
-    UNIMPLEMENTED_IF(regs.src_params.block_size.width != 0);
-    UNIMPLEMENTED_IF(regs.src_params.block_size.depth != 0);
-    UNIMPLEMENTED_IF(regs.src_params.block_size.depth == 0 && regs.src_params.depth != 1);
+    if (regs.src_params.block_size.width != 0) {
+        LOG_WARNING(HW_GPU, "Unhandled block_size.width={}", regs.src_params.block_size.width);
+    }
+    if (regs.src_params.block_size.depth != 0) {
+        LOG_WARNING(HW_GPU, "Unhandled block_size.depth={}", regs.src_params.block_size.depth);
+    }
+    if (regs.src_params.block_size.depth == 0 && regs.src_params.depth != 1) {
+        LOG_WARNING(HW_GPU, "Unhandled depth={}", regs.src_params.depth);
+    }
 
     // Deswizzle the input and copy it over.
     const DMA::Parameters& src_params = regs.src_params;
@@ -263,7 +269,9 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
         return;
     }
 
-    UNIMPLEMENTED_IF_MSG(regs.dst_params.block_size.width != 0, "Block width is not one");
+    if (regs.dst_params.block_size.width != 0) {
+        LOG_WARNING(HW_GPU, "Block width is not one: {}", regs.dst_params.block_size.width);
+    }
 
     const bool is_remapping = regs.launch_dma.remap_enable != 0;
     const u32 num_remap_components = regs.remap_const.num_dst_components_minus_one + 1;
@@ -309,7 +317,9 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
 }
 
 void MaxwellDMA::CopyBlockLinearToBlockLinear() {
-    UNIMPLEMENTED_IF(regs.src_params.block_size.width != 0);
+    if (regs.src_params.block_size.width != 0) {
+        LOG_WARNING(HW_GPU, "Block width is not one: {}", regs.src_params.block_size.width);
+    }
 
     const bool is_remapping = regs.launch_dma.remap_enable != 0;
 

@@ -1362,7 +1362,9 @@ u64 TextureCache<P>::GetScaledImageSizeBytes(const ImageBase& image) {
 
 template <class P>
 void TextureCache<P>::QueueAsyncDecode(Image& image, ImageId image_id) {
-    UNIMPLEMENTED_IF(False(image.flags & ImageFlagBits::Converted));
+    if (False(image.flags & ImageFlagBits::Converted)) {
+        LOG_WARNING(HW_GPU, "Async decode called on unconverted image");
+    }
     LOG_INFO(HW_GPU, "Queuing async texture decode");
 
     image.flags |= ImageFlagBits::IsDecoding;
@@ -2579,16 +2581,19 @@ void TextureCache<P>::CopyImage(ImageId dst_id, ImageId src_id, std::vector<Imag
         }
         return runtime.CopyImage(dst, src, copies);
     }
-    UNIMPLEMENTED_IF(dst.info.type != ImageType::e2D);
-    UNIMPLEMENTED_IF(src.info.type != ImageType::e2D);
+    if (dst.info.type != ImageType::e2D || src.info.type != ImageType::e2D) {
+        LOG_WARNING(HW_GPU, "Unimplemented image types for conversion: dst={} src={}",
+                    static_cast<int>(dst.info.type), static_cast<int>(src.info.type));
+        return;
+    }
     if (runtime.ShouldReinterpret(dst, src)) {
         return runtime.ReinterpretImage(dst, src, copies);
     }
     for (const ImageCopy& copy : copies) {
-        UNIMPLEMENTED_IF(copy.dst_subresource.num_layers != 1);
-        UNIMPLEMENTED_IF(copy.src_subresource.num_layers != 1);
-        UNIMPLEMENTED_IF(copy.src_offset != Offset3D{});
-        UNIMPLEMENTED_IF(copy.dst_offset != Offset3D{});
+        if (copy.dst_subresource.num_layers != 1 || copy.src_subresource.num_layers != 1 ||
+            copy.src_offset != Offset3D{} || copy.dst_offset != Offset3D{}) {
+            LOG_WARNING(HW_GPU, "Unsupported copy subresource or offset in conversion");
+        }
 
         const SubresourceBase dst_base{
             .level = copy.dst_subresource.base_level,
@@ -2631,7 +2636,9 @@ void TextureCache<P>::CopyImage(ImageId dst_id, ImageId src_id, std::vector<Imag
                 .depth = expected_size.depth,
             };
         }();
-        UNIMPLEMENTED_IF(copy.extent != scaled_extent);
+        if (copy.extent != scaled_extent) {
+            LOG_WARNING(HW_GPU, "Mismatch copy extent vs scaled extent in conversion");
+        }
 
         runtime.ConvertImage(dst_framebuffer, dst_view, src_view);
     }

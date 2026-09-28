@@ -200,7 +200,9 @@ Result SetThreadPriority(Core::System& system, Handle thread_handle, s32 priorit
 Result GetThreadList(Core::System& system, s32* out_num_threads, u64 out_thread_ids,
                      s32 out_thread_ids_size, Handle debug_handle) {
     // TODO: Handle this case when debug events are supported.
-    UNIMPLEMENTED_IF(debug_handle != InvalidHandle);
+    if (debug_handle != InvalidHandle) {
+        LOG_WARNING(Kernel_SVC, "Unimplemented debug_handle={}", debug_handle);
+    }
 
     LOG_DEBUG(Kernel_SVC, "called. out_thread_ids={:#016x}, out_thread_ids_size={}",
               out_thread_ids, out_thread_ids_size);

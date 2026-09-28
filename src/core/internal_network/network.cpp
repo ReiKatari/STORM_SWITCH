@@ -86,7 +86,7 @@ sockaddr TranslateFromSockAddrIn(SockAddrIn input) {
         result.sin_family = AF_INET;
         break;
     default:
-        UNIMPLEMENTED_MSG("Unhandled sockaddr family={}", input.family);
+        LOG_WARNING(Network, "Unhandled sockaddr family={}", input.family);
         result.sin_family = AF_INET;
         break;
     }
@@ -159,7 +159,7 @@ Errno TranslateNativeError(int e, CallType call_type = CallType::Other) {
     case WSAEISCONN:
         return Errno::ISCONN;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented errno={}", e);
+        LOG_WARNING(Network, "Unimplemented errno={}", e);
         return Errno::OTHER;
     }
 }
@@ -221,7 +221,7 @@ sockaddr TranslateFromSockAddrIn(SockAddrIn input) {
         result.sin_family = AF_INET;
         break;
     default:
-        UNIMPLEMENTED_MSG("Unhandled sockaddr family={}", input.family);
+        LOG_WARNING(Network, "Unhandled sockaddr family={}", input.family);
         result.sin_family = AF_INET;
         break;
     }
@@ -372,7 +372,7 @@ Domain TranslateDomainFromNative(int domain) {
     case AF_INET:
         return Domain::INET;
     default:
-        UNIMPLEMENTED_MSG("Unhandled domain={}", domain);
+        LOG_WARNING(Network, "Unhandled domain={}", domain);
         return Domain::INET;
     }
 }
@@ -384,7 +384,7 @@ int TranslateDomainToNative(Domain domain) {
     case Domain::INET:
         return AF_INET;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented domain={}", domain);
+        LOG_WARNING(Network, "Unimplemented domain={}", static_cast<int>(domain));
         return 0;
     }
 }
@@ -398,7 +398,7 @@ Type TranslateTypeFromNative(int type) {
     case SOCK_RAW: return Type::RAW;
     case SOCK_SEQPACKET: return Type::SEQPACKET;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented type={}", type);
+        LOG_WARNING(Network, "Unimplemented type={}", type);
         return Type::STREAM;
     }
 }
@@ -412,7 +412,7 @@ int TranslateTypeToNative(Type type) {
     case Type::RAW: return SOCK_RAW;
     case Type::SEQPACKET: return SOCK_SEQPACKET;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented type={}", type);
+        LOG_WARNING(Network, "Unimplemented type={}", static_cast<int>(type));
         return 0;
     }
 }
@@ -668,7 +668,9 @@ short TranslatePollEvents(PollEvents events) {
     result &= allowed_events;
 #endif
 
-    UNIMPLEMENTED_IF_MSG((u16)events != 0, "Unhandled guest events={:#x}", (u16)events);
+    if ((u16)events != 0) {
+        LOG_WARNING(Network, "Unhandled guest events={:#x}", (u16)events);
+    }
 
     return result;
 }
@@ -692,7 +694,9 @@ PollEvents TranslatePollRevents(short revents) {
     translate(POLLRDBAND, PollEvents::RdBand);
     translate(POLLWRBAND, PollEvents::WrBand);
 
-    UNIMPLEMENTED_IF_MSG(revents != 0, "Unhandled host revents={:#x}", revents);
+    if (revents != 0) {
+        LOG_WARNING(Network, "Unhandled host revents={:#x}", revents);
+    }
 
     return result;
 }
@@ -951,7 +955,7 @@ Errno Socket::Shutdown(ShutdownHow how) {
         host_how = SD_BOTH;
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented flag how={}", how);
+        LOG_WARNING(Network, "Unimplemented flag how={}", static_cast<int>(how));
         return Errno::SUCCESS;
     }
     if (shutdown(fd, host_how) != SOCKET_ERROR) {
@@ -962,7 +966,9 @@ Errno Socket::Shutdown(ShutdownHow how) {
 }
 
 std::pair<s32, Errno> Socket::Recv(int flags, std::span<u8> message) {
-    ASSERT(flags == 0);
+    if (flags != 0) {
+        LOG_WARNING(Network, "Unexpected flags={}", flags);
+    }
     ASSERT(message.size() < static_cast<size_t>((std::numeric_limits<int>::max)()));
 
     const auto result =
@@ -975,7 +981,9 @@ std::pair<s32, Errno> Socket::Recv(int flags, std::span<u8> message) {
 }
 
 std::pair<s32, Errno> Socket::RecvFrom(int flags, std::span<u8> message, SockAddrIn* addr) {
-    ASSERT(flags == 0);
+    if (flags != 0) {
+        LOG_WARNING(Network, "Unexpected flags={}", flags);
+    }
     ASSERT(message.size() < static_cast<size_t>((std::numeric_limits<int>::max)()));
 
     sockaddr_in addr_in{};
@@ -997,7 +1005,9 @@ std::pair<s32, Errno> Socket::RecvFrom(int flags, std::span<u8> message, SockAdd
 
 std::pair<s32, Errno> Socket::Send(std::span<const u8> message, int flags) {
     ASSERT(message.size() < static_cast<size_t>((std::numeric_limits<int>::max)()));
-    ASSERT(flags == 0);
+    if (flags != 0) {
+        LOG_WARNING(Network, "Unexpected flags={}", flags);
+    }
 
     int native_flags = 0;
 #ifdef __unix__
@@ -1014,7 +1024,9 @@ std::pair<s32, Errno> Socket::Send(std::span<const u8> message, int flags) {
 
 std::pair<s32, Errno> Socket::SendTo(u32 flags, std::span<const u8> message,
                                      const SockAddrIn* addr) {
-    ASSERT(flags == 0);
+    if (flags != 0) {
+        LOG_WARNING(Network, "Unexpected flags={}", flags);
+    }
 
     const sockaddr* to = nullptr;
     const int to_len = addr ? sizeof(sockaddr) : 0;

@@ -4849,8 +4849,8 @@ void MainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target,
         break;
     }
     default:
-        UNIMPLEMENTED();
-        break;
+        LOG_WARNING(Frontend, "Unimplemented GameListOpenTarget");
+        return;
     }
 
     const QString qpath = QString::fromStdString(Common::FS::PathToUTF8String(path));
