@@ -20,6 +20,107 @@
 
 namespace {
 constexpr float PI_CONST = 3.14159265358979323846f;
+
+constexpr std::array<float, 36 * 2> pro_left_trigger = {
+    -65.2f,  -132.6f, -68.2f,  -134.1f, -71.3f,  -135.5f, -74.4f,  -136.7f, -77.6f,
+    -137.6f, -80.9f,  -138.1f, -84.3f,  -138.3f, -87.6f,  -138.3f, -91.0f,  -138.1f,
+    -94.3f,  -137.8f, -97.6f,  -137.3f, -100.9f, -136.7f, -107.5f, -135.3f, -110.7f,
+    -134.5f, -120.4f, -131.8f, -123.6f, -130.8f, -126.8f, -129.7f, -129.9f, -128.5f,
+    -132.9f, -127.1f, -135.9f, -125.6f, -138.8f, -123.9f, -141.6f, -122.0f, -144.1f,
+    -119.8f, -146.3f, -117.3f, -148.4f, -114.7f, -150.4f, -112.0f, -152.3f, -109.2f,
+    -155.3f, -104.0f, -152.0f, -104.3f, -148.7f, -104.5f, -145.3f, -104.8f, -35.5f,
+    -117.2f, -38.5f,  -118.7f, -41.4f,  -120.3f, -44.4f,  -121.8f, -50.4f,  -124.9f,
+};
+
+constexpr std::array<float, 14 * 2> pro_body_top = {
+    0.0f,   -115.4f, -4.4f,  -116.1f, -69.7f, -131.3f, -66.4f, -131.9f, -63.1f, -132.3f,
+    -56.4f, -133.0f, -53.1f, -133.3f, -49.8f, -133.5f, -43.1f, -133.8f, -39.8f, -134.0f,
+    -36.5f, -134.1f, -16.4f, -134.4f, -13.1f, -134.4f, 0.0f,   -134.1f,
+};
+
+constexpr std::array<float, 145 * 2> pro_left_handle = {
+    -178.7f, -47.5f, -179.0f, -46.1f, -179.3f, -44.6f, -182.0f, -29.8f, -182.3f, -28.4f,
+    -182.6f, -26.9f, -182.8f, -25.4f, -183.1f, -23.9f, -183.3f, -22.4f, -183.6f, -21.0f,
+    -183.8f, -19.5f, -184.1f, -18.0f, -184.3f, -16.5f, -184.6f, -15.1f, -184.8f, -13.6f,
+    -185.1f, -12.1f, -185.3f, -10.6f, -185.6f, -9.1f,  -185.8f, -7.7f,  -186.1f, -6.2f,
+    -186.3f, -4.7f,  -186.6f, -3.2f,  -186.8f, -1.7f,  -187.1f, -0.3f,  -187.3f, 1.2f,
+    -187.6f, 2.7f,   -187.8f, 4.2f,   -188.3f, 7.1f,   -188.5f, 8.6f,   -188.8f, 10.1f,
+    -189.0f, 11.6f,  -189.3f, 13.1f,  -189.5f, 14.5f,  -190.0f, 17.5f,  -190.2f, 19.0f,
+    -190.5f, 20.5f,  -190.7f, 21.9f,  -191.2f, 24.9f,  -191.4f, 26.4f,  -191.7f, 27.9f,
+    -191.9f, 29.3f,  -192.4f, 32.3f,  -192.6f, 33.8f,  -193.1f, 36.8f,  -193.3f, 38.2f,
+    -193.8f, 41.2f,  -194.0f, 42.7f,  -194.7f, 47.1f,  -194.9f, 48.6f,  -199.0f, 82.9f,
+    -199.1f, 84.4f,  -199.1f, 85.9f,  -199.2f, 87.4f,  -199.2f, 88.9f,  -199.1f, 94.9f,
+    -198.9f, 96.4f,  -198.8f, 97.8f,  -198.5f, 99.3f,  -198.3f, 100.8f, -198.0f, 102.3f,
+    -197.7f, 103.7f, -197.4f, 105.2f, -197.0f, 106.7f, -196.6f, 108.1f, -195.7f, 111.0f,
+    -195.2f, 112.4f, -194.1f, 115.2f, -193.5f, 116.5f, -192.8f, 117.9f, -192.1f, 119.2f,
+    -190.6f, 121.8f, -189.8f, 123.1f, -188.9f, 124.3f, -187.0f, 126.6f, -186.0f, 127.7f,
+    -183.9f, 129.8f, -182.7f, 130.8f, -180.3f, 132.6f, -179.1f, 133.4f, -177.8f, 134.1f,
+    -176.4f, 134.8f, -175.1f, 135.5f, -173.7f, 136.0f, -169.4f, 137.3f, -167.9f, 137.7f,
+    -166.5f, 138.0f, -165.0f, 138.3f, -163.5f, 138.4f, -162.0f, 138.4f, -160.5f, 138.3f,
+    -159.0f, 138.0f, -157.6f, 137.7f, -156.1f, 137.3f, -154.7f, 136.9f, -153.2f, 136.5f,
+    -151.8f, 136.0f, -150.4f, 135.4f, -149.1f, 134.8f, -147.7f, 134.1f, -146.5f, 133.3f,
+    -145.2f, 132.5f, -144.0f, 131.6f, -142.8f, 130.6f, -141.7f, 129.6f, -139.6f, 127.5f,
+    -138.6f, 126.4f, -137.7f, 125.2f, -135.1f, 121.5f, -134.3f, 120.3f, -133.5f, 119.0f,
+    -131.9f, 116.5f, -131.1f, 115.2f, -128.8f, 111.3f, -128.0f, 110.1f, -127.2f, 108.8f,
+    -126.5f, 107.5f, -125.7f, 106.2f, -125.0f, 104.9f, -124.2f, 103.6f, -123.5f, 102.3f,
+    -122.0f, 99.6f,  -121.3f, 98.3f,  -115.8f, 87.7f,  -115.1f, 86.4f,  -114.4f, 85.0f,
+    -113.7f, 83.7f,  -112.3f, 81.0f,  -111.6f, 79.7f,  -110.1f, 77.1f,  -109.4f, 75.8f,
+    -108.0f, 73.1f,  -107.2f, 71.8f,  -106.4f, 70.6f,  -105.7f, 69.3f,  -104.8f, 68.0f,
+    -104.0f, 66.8f,  -103.1f, 65.6f,  -101.1f, 63.3f,  -100.0f, 62.3f,  -98.8f,  61.4f,
+    -97.6f,  60.6f,  -97.9f,  59.5f,  -98.8f,  58.3f,  -101.5f, 54.6f,  -102.4f, 53.4f,
+};
+
+constexpr std::array<float, 245 * 2> pro_body = {
+    -0.7f,   -129.1f, -54.3f,  -129.1f, -55.0f,  -129.1f, -57.8f,  -129.0f, -58.5f,  -129.0f,
+    -60.7f,  -128.9f, -61.4f,  -128.9f, -62.8f,  -128.8f, -63.5f,  -128.8f, -65.7f,  -128.7f,
+    -66.4f,  -128.7f, -67.8f,  -128.6f, -68.5f,  -128.6f, -69.2f,  -128.5f, -70.0f,  -128.5f,
+    -70.7f,  -128.4f, -71.4f,  -128.4f, -72.1f,  -128.3f, -72.8f,  -128.3f, -73.5f,  -128.2f,
+    -74.2f,  -128.2f, -74.9f,  -128.1f, -75.7f,  -128.1f, -76.4f,  -128.0f, -77.1f,  -128.0f,
+    -77.8f,  -127.9f, -78.5f,  -127.9f, -79.2f,  -127.8f, -80.6f,  -127.7f, -81.4f,  -127.6f,
+    -82.1f,  -127.5f, -82.8f,  -127.5f, -83.5f,  -127.4f, -84.9f,  -127.3f, -85.6f,  -127.2f,
+    -87.0f,  -127.1f, -87.7f,  -127.0f, -88.5f,  -126.9f, -89.2f,  -126.8f, -89.9f,  -126.8f,
+    -90.6f,  -126.7f, -94.1f,  -126.3f, -94.8f,  -126.2f, -113.2f, -123.3f, -113.9f, -123.2f,
+    -114.6f, -123.0f, -115.3f, -122.9f, -116.7f, -122.6f, -117.4f, -122.5f, -118.1f, -122.3f,
+    -118.8f, -122.2f, -119.5f, -122.0f, -120.9f, -121.7f, -121.6f, -121.5f, -122.3f, -121.4f,
+    -122.9f, -121.2f, -123.6f, -121.0f, -126.4f, -120.3f, -127.1f, -120.1f, -127.8f, -119.8f,
+    -128.4f, -119.6f, -129.1f, -119.4f, -131.2f, -118.7f, -132.5f, -118.3f, -133.2f, -118.0f,
+    -133.8f, -117.7f, -134.5f, -117.4f, -135.1f, -117.2f, -135.8f, -116.9f, -136.4f, -116.5f,
+    -137.0f, -116.2f, -137.7f, -115.8f, -138.3f, -115.4f, -138.9f, -115.1f, -139.5f, -114.7f,
+    -160.0f, -100.5f, -160.5f, -100.0f, -162.5f, -97.9f,  -162.9f, -97.4f,  -163.4f, -96.8f,
+    -163.8f, -96.2f,  -165.3f, -93.8f,  -165.7f, -93.2f,  -166.0f, -92.6f,  -166.4f, -91.9f,
+    -166.7f, -91.3f,  -167.3f, -90.0f,  -167.6f, -89.4f,  -167.8f, -88.7f,  -168.1f, -88.0f,
+    -168.4f, -87.4f,  -168.6f, -86.7f,  -168.9f, -86.0f,  -169.1f, -85.4f,  -169.3f, -84.7f,
+    -169.6f, -84.0f,  -169.8f, -83.3f,  -170.2f, -82.0f,  -170.4f, -81.3f,  -172.8f, -72.3f,
+    -173.0f, -71.6f,  -173.5f, -69.5f,  -173.7f, -68.8f,  -173.9f, -68.2f,  -174.0f, -67.5f,
+    -174.2f, -66.8f,  -174.5f, -65.4f,  -174.7f, -64.7f,  -174.8f, -64.0f,  -175.0f, -63.3f,
+    -175.3f, -61.9f,  -175.5f, -61.2f,  -175.8f, -59.8f,  -176.0f, -59.1f,  -176.1f, -58.4f,
+    -176.3f, -57.7f,  -176.6f, -56.3f,  -176.8f, -55.6f,  -176.9f, -54.9f,  -177.1f, -54.2f,
+    -177.3f, -53.6f,  -177.4f, -52.9f,  -177.6f, -52.2f,  -177.9f, -50.8f,  -178.1f, -50.1f,
+    -178.2f, -49.4f,  -178.2f, -48.7f,  -177.8f, -48.1f,  -177.1f, -46.9f,  -177.7f, -46.3f,
+    -176.4f, -45.6f,  -176.0f, -45.0f,  -175.3f, -43.8f,  -174.9f, -43.2f,  -174.2f, -42.0f,
+    -173.4f, -40.7f,  -173.1f, -40.1f,  -172.7f, -39.5f,  -172.0f, -38.3f,  -171.6f, -37.7f,
+    -170.5f, -35.9f,  -170.1f, -35.3f,  -169.7f, -34.6f,  -169.3f, -34.0f,  -168.6f, -32.8f,
+    -168.2f, -32.2f,  -166.3f, -29.2f,  -165.9f, -28.6f,  -163.2f, -24.4f,  -162.8f, -23.8f,
+    -141.8f, 6.8f,    -141.4f, 7.4f,    -139.4f, 10.3f,   -139.0f, 10.9f,   -138.5f, 11.5f,
+    -138.1f, 12.1f,   -137.3f, 13.2f,   -136.9f, 13.8f,   -136.0f, 15.0f,   -135.6f, 15.6f,
+    -135.2f, 16.1f,   -134.8f, 16.7f,   -133.9f, 17.9f,   -133.5f, 18.4f,   -133.1f, 19.0f,
+    -131.8f, 20.7f,   -131.4f, 21.3f,   -130.1f, 23.0f,   -129.7f, 23.6f,   -128.4f, 25.3f,
+    -128.0f, 25.9f,   -126.7f, 27.6f,   -126.3f, 28.2f,   -125.4f, 29.3f,   -125.0f, 29.9f,
+    -124.1f, 31.0f,   -123.7f, 31.6f,   -122.8f, 32.7f,   -122.4f, 33.3f,   -121.5f, 34.4f,
+    -121.1f, 35.0f,   -120.6f, 35.6f,   -120.2f, 36.1f,   -119.7f, 36.7f,   -119.3f, 37.2f,
+    -118.9f, 37.8f,   -118.4f, 38.4f,   -118.0f, 38.9f,   -117.5f, 39.5f,   -117.1f, 40.0f,
+    -116.6f, 40.6f,   -116.2f, 41.1f,   -115.7f, 41.7f,   -115.2f, 42.2f,   -114.8f, 42.8f,
+    -114.3f, 43.3f,   -113.9f, 43.9f,   -113.4f, 44.4f,   -112.4f, 45.5f,   -112.0f, 46.0f,
+    -111.5f, 46.5f,   -110.5f, 47.6f,   -110.0f, 48.1f,   -109.6f, 48.6f,   -109.1f, 49.2f,
+    -108.6f, 49.7f,   -107.7f, 50.8f,   -107.2f, 51.3f,   -105.7f, 52.9f,   -105.3f, 53.4f,
+    -104.8f, 53.9f,   -104.3f, 54.5f,   -103.8f, 55.0f,   -100.7f, 58.0f,   -100.2f, 58.4f,
+    -99.7f,  58.9f,   -99.1f,  59.3f,   -97.2f,  60.3f,   -96.5f,  60.1f,   -95.9f,  59.7f,
+    -95.3f,  59.4f,   -94.6f,  59.1f,   -93.9f,  58.9f,   -92.6f,  58.5f,   -91.9f,  58.4f,
+    -91.2f,  58.2f,   -90.5f,  58.1f,   -89.7f,  58.0f,   -89.0f,  57.9f,   -86.2f,  57.6f,
+    -85.5f,  57.5f,   -84.1f,  57.4f,   -83.4f,  57.3f,   -82.6f,  57.3f,   -81.9f,  57.2f,
+    -81.2f,  57.2f,   -80.5f,  57.1f,   -79.8f,  57.1f,   -78.4f,  57.0f,   -77.7f,  57.0f,
+    -75.5f,  56.9f,   -74.8f,  56.9f,   -71.9f,  56.8f,   -71.2f,  56.8f,   0.0f,    56.8f,
+};
 } // namespace
 
 PlayerControlPreview::PlayerControlPreview(QWidget* parent) : QFrame(parent) {
@@ -339,7 +440,6 @@ void PlayerControlPreview::ControllerUpdate(Core::HID::ControllerTriggerType typ
 
 void PlayerControlPreview::UpdateInput() {
     if (mapping_active) {
-
         for (std::size_t index = 0; index < button_values.size(); ++index) {
             bool blink = index == button_mapping_index;
             if (analog_mapping_index == Settings::NativeAnalog::NumAnalogs) {
@@ -360,8 +460,42 @@ void PlayerControlPreview::UpdateInput() {
                     blink_counter > 25 ? -(blink_counter - 25) / 25.0f : 0;
             }
         }
+    } else if (is_controller_set && controller != nullptr) {
+        // Continuous direct hardware polling from physical gamepad
+        const auto new_buttons = controller->GetButtonsValues();
+        for (std::size_t i = 0; i < new_buttons.size() && i < button_values.size(); ++i) {
+            if (new_buttons[i].value != button_values[i].value) {
+                button_values[i] = new_buttons[i];
+                needs_redraw = true;
+            }
+        }
+
+        using namespace Settings::NativeAnalog;
+        auto new_sticks = controller->GetSticksValues();
+        new_sticks[LStick].y.value = -new_sticks[LStick].y.value;
+        new_sticks[LStick].y.raw_value = -new_sticks[LStick].y.raw_value;
+        new_sticks[RStick].y.value = -new_sticks[RStick].y.value;
+        new_sticks[RStick].y.raw_value = -new_sticks[RStick].y.raw_value;
+        for (std::size_t s = 0; s < new_sticks.size() && s < stick_values.size(); ++s) {
+            if (std::abs(new_sticks[s].x.value - stick_values[s].x.value) > 0.005f ||
+                std::abs(new_sticks[s].y.value - stick_values[s].y.value) > 0.005f) {
+                stick_values[s] = new_sticks[s];
+                needs_redraw = true;
+            }
+        }
+
+        const auto new_triggers = controller->GetTriggersValues();
+        for (std::size_t t = 0; t < new_triggers.size() && t < trigger_values.size(); ++t) {
+            if (new_triggers[t].pressed.value != trigger_values[t].pressed.value ||
+                std::abs(new_triggers[t].analog.value - trigger_values[t].analog.value) > 0.005f) {
+                trigger_values[t] = new_triggers[t];
+                needs_redraw = true;
+            }
+        }
     }
+
     if (needs_redraw) {
+        needs_redraw = false;
         update();
     }
 
@@ -448,6 +582,11 @@ void PlayerControlPreview::paintEvent(QPaintEvent* event) {
     p.setRenderHint(QPainter::SmoothPixmapTransform);
     const QPointF center = rect().center();
 
+    if (controller_type == Core::HID::NpadStyleIndex::Fullkey) {
+        DrawProController(p, center);
+        return;
+    }
+
     p.save();
     if (rot_x != 0.0f || rot_y != 0.0f || zoom != 1.0f) {
         const float rad_y = rot_y * PI_CONST / 180.0f;
@@ -481,7 +620,6 @@ void PlayerControlPreview::paintEvent(QPaintEvent* event) {
     case Core::HID::NpadStyleIndex::GameCube:
         DrawGCController(p, center);
         break;
-    case Core::HID::NpadStyleIndex::Fullkey:
     default:
         DrawProController(p, center);
         break;
@@ -1035,122 +1173,954 @@ void PlayerControlPreview::DrawHandheldController(QPainter& p, const QPointF cen
 }
 
 void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) {
-    DrawProTriggers(p, center, button_values[Settings::NativeButton::L],
-                    button_values[Settings::NativeButton::R]);
-    DrawProBody(p, center);
+    struct ProjectedPt {
+        QPointF pt;
+        float z_depth{0.0f};
+        float scale{1.0f};
+    };
+
+    const float rad_y = rot_y * PI_CONST / 180.0f;
+    const float rad_x = rot_x * PI_CONST / 180.0f;
+    const float cos_y = std::cos(rad_y);
+    const float sin_y = std::sin(rad_y);
+    const float cos_x = std::cos(rad_x);
+    const float sin_x = std::sin(rad_x);
+
+    auto Project = [&](float x, float y, float z) -> ProjectedPt {
+        // 1. Yaw around Y axis
+        const float x1 = x * cos_y + z * sin_y;
+        const float y1 = y;
+        const float z1 = -x * sin_y + z * cos_y;
+
+        // 2. Pitch around X axis
+        const float x2 = x1;
+        const float y2 = y1 * cos_x - z1 * sin_x;
+        const float z2 = y1 * sin_x + z1 * cos_x;
+
+        constexpr float camera_dist = 850.0f;
+        const float persp = (camera_dist / std::max(60.0f, camera_dist - z2)) * zoom;
+
+        return {
+            center + QPointF(x2 * persp, y2 * persp),
+            z2,
+            persp
+        };
+    };
+
+    auto LightColor = [&](const QColor& base, float nx, float ny, float nz) -> QColor {
+        const float len = std::max(0.0001f, std::sqrt(nx * nx + ny * ny + nz * nz));
+        const float nnx = nx / len;
+        const float nny = ny / len;
+        const float nnz = nz / len;
+
+        constexpr float lx = 0.35f;
+        constexpr float ly = -0.65f;
+        constexpr float lz = 0.67f;
+
+        const float dot = nnx * lx + nny * ly + nnz * lz;
+        const float factor = std::clamp(0.60f + 0.40f * dot, 0.35f, 1.45f);
+
+        if (factor > 1.0f) {
+            return base.lighter(static_cast<int>(factor * 100.0f));
+        } else {
+            return base.darker(static_cast<int>(100.0f / factor));
+        }
+    };
+
+    // 1. Photorealistic Ambient Drop Shadow on ground plane
     {
-        // Draw joysticks
-        using namespace Settings::NativeAnalog;
-        const auto l_stick = QPointF(stick_values[LStick].x.value, stick_values[LStick].y.value);
-        const auto r_stick = QPointF(stick_values[RStick].x.value, stick_values[RStick].y.value);
-        DrawProJoystick(p, center + QPointF(-111, -55), l_stick, 11,
-                        button_values[Settings::NativeButton::LStick]);
-        DrawProJoystick(p, center + QPointF(51, 0), r_stick, 11,
-                        button_values[Settings::NativeButton::RStick]);
-        DrawRawJoystick(p, center + QPointF(-50, 105), center + QPointF(50, 105));
+        const auto shadow_proj = Project(0.0f, 115.0f, -15.0f);
+        const float shadow_rx = 245.0f * shadow_proj.scale;
+        const float shadow_ry = 110.0f * shadow_proj.scale * std::max(0.35f, std::cos(rad_x));
+
+        QRadialGradient shadow_grad(shadow_proj.pt, shadow_rx);
+        shadow_grad.setColorAt(0.0, QColor(0, 0, 0, 150));
+        shadow_grad.setColorAt(0.55, QColor(0, 0, 0, 50));
+        shadow_grad.setColorAt(0.95, QColor(0, 0, 0, 0));
+
+        p.setPen(Qt::NoPen);
+        p.setBrush(shadow_grad);
+        p.drawEllipse(shadow_proj.pt, shadow_rx, shadow_ry);
     }
 
+    // 2. 3D Rear Shell and Grip Backs (Z = -28.0f .. -24.0f)
     {
-        // Draw motion cubes
-        using namespace Settings::NativeMotion;
-        p.setPen(colors.button);
-        p.setBrush(colors.transparent);
-        Draw3dCube(p, center + QPointF(0, -100),
-                   motion_values[Settings::NativeMotion::MotionLeft].euler, 15.0f);
+        QPolygonF rear_left_handle;
+        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
+            const float lx = pro_left_handle[i * 2 + 0] * 0.94f;
+            const float ly = pro_left_handle[i * 2 + 1] * 0.95f;
+            rear_left_handle << Project(lx, ly, -28.0f).pt;
+        }
+
+        QPolygonF rear_right_handle;
+        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
+            const float rx = -pro_left_handle[i * 2 + 0] * 0.94f;
+            const float ry = pro_left_handle[i * 2 + 1] * 0.95f;
+            rear_right_handle << Project(rx, ry, -28.0f).pt;
+        }
+
+        QPolygonF rear_body;
+        for (std::size_t i = 0; i < pro_body.size() / 2; ++i) {
+            const float bx = pro_body[i * 2 + 0] * 0.94f;
+            const float by = pro_body[i * 2 + 1] * 0.95f;
+            rear_body << Project(bx, by, -24.0f).pt;
+        }
+        for (int i = static_cast<int>(pro_body.size() / 2) - 1; i >= 0; --i) {
+            const float bx = -pro_body[i * 2 + 0] * 0.94f;
+            const float by = pro_body[i * 2 + 1] * 0.95f;
+            rear_body << Project(bx, by, -24.0f).pt;
+        }
+
+        p.setPen(QPen(colors.outline.darker(140), 1.0f));
+        p.setBrush(colors.left.darker(150));
+        p.drawPolygon(rear_left_handle);
+        p.setBrush(colors.right.darker(150));
+        p.drawPolygon(rear_right_handle);
+
+        p.setBrush(colors.primary.darker(160));
+        p.drawPolygon(rear_body);
     }
 
     using namespace Settings::NativeButton;
+    using namespace Settings::NativeAnalog;
 
-    // Face buttons constants
-    const QPointF face_center = center + QPoint(105, -56);
-    constexpr int face_distance = 31;
-    constexpr int face_radius = 15;
-    constexpr float text_size = 1.5f;
+    const float zl_analog = std::clamp(
+        std::max(trigger_values[Settings::NativeTrigger::LTrigger].analog.value,
+                 button_values[ZL].value ? 1.0f : 0.0f),
+        0.0f, 1.0f);
+    const float zr_analog = std::clamp(
+        std::max(trigger_values[Settings::NativeTrigger::RTrigger].analog.value,
+                 button_values[ZR].value ? 1.0f : 0.0f),
+        0.0f, 1.0f);
 
-    // Face buttons
-    p.setPen(colors.outline);
-    button_color = colors.button;
-    DrawCircleButton(p, face_center + QPoint(face_distance, 0), button_values[A], face_radius);
-    DrawCircleButton(p, face_center + QPoint(0, face_distance), button_values[B], face_radius);
-    DrawCircleButton(p, face_center + QPoint(0, -face_distance), button_values[X], face_radius);
-    DrawCircleButton(p, face_center + QPoint(-face_distance, 0), button_values[Y], face_radius);
+    // 3. 3D Analog Triggers (ZL and ZR) on rear/top shoulder
+    auto Draw3DTrigger = [&](bool is_left, float analog, bool pressed, Symbol sym) {
+        const float sgn = is_left ? -1.0f : 1.0f;
+        const float x_in = sgn * 76.0f;
+        const float x_out = sgn * 132.0f;
 
-    // Domed gloss specular highlights on ABXY face buttons
-    p.setPen(Qt::NoPen);
-    p.setBrush(QColor(255, 255, 255, 45));
-    p.drawEllipse(face_center + QPointF(face_distance - 2, -4), 6.5f, 3.2f);
-    p.drawEllipse(face_center + QPointF(-2, face_distance - 4), 6.5f, 3.2f);
-    p.drawEllipse(face_center + QPointF(-2, -face_distance - 4), 6.5f, 3.2f);
-    p.drawEllipse(face_center + QPointF(-face_distance - 2, -4), 6.5f, 3.2f);
+        const float dy = analog * 7.5f;
+        const float dz = -analog * 12.0f;
 
-    // Face buttons text
-    p.setPen(colors.transparent);
-    p.setBrush(colors.font);
-    DrawSymbol(p, face_center + QPoint(face_distance, 0), Symbol::A, text_size);
-    DrawSymbol(p, face_center + QPoint(0, face_distance), Symbol::B, text_size);
-    DrawSymbol(p, face_center + QPoint(0, -face_distance), Symbol::X, text_size);
-    DrawSymbol(p, face_center + QPoint(-face_distance, 1), Symbol::Y, text_size);
+        const auto p_tf_in  = Project(x_in,  -86.0f + dy, -8.0f + dz);
+        const auto p_tf_out = Project(x_out, -89.0f + dy, -8.0f + dz);
+        const auto p_tc_out = Project(x_out, -96.0f + dy, -18.0f + dz);
+        const auto p_tc_in  = Project(x_in,  -93.0f + dy, -18.0f + dz);
+        const auto p_bb_in  = Project(x_in,  -83.0f + dy, -24.0f + dz);
+        const auto p_bb_out = Project(x_out, -86.0f + dy, -24.0f + dz);
+        const auto p_bf_out = Project(x_out, -77.0f + dy, -13.0f + dz);
 
-    // D-pad buttons
-    const QPointF dpad_position = center + QPoint(-61, 0);
-    DrawArrowButton(p, dpad_position, Direction::Up, button_values[DUp]);
-    DrawArrowButton(p, dpad_position, Direction::Left, button_values[DLeft]);
-    DrawArrowButton(p, dpad_position, Direction::Right, button_values[DRight]);
-    DrawArrowButton(p, dpad_position, Direction::Down, button_values[DDown]);
-    DrawArrowButtonOutline(p, dpad_position);
+        const QColor trig_col = (analog > 0.05f || pressed) ? colors.indicator : colors.button;
 
-    // ZL and ZR buttons
-    p.setPen(colors.outline);
-    DrawTriggerButton(p, center + QPoint(-210, -120), Direction::Left, button_values[ZL]);
-    DrawTriggerButton(p, center + QPoint(210, -120), Direction::Right, button_values[ZR]);
-    p.setPen(colors.transparent);
-    p.setBrush(colors.font);
-    DrawSymbol(p, center + QPoint(-210, -120), Symbol::ZL, 1.5f);
-    DrawSymbol(p, center + QPoint(210, -120), Symbol::ZR, 1.5f);
+        // Top curved face
+        QPolygonF top_face;
+        top_face << p_tf_in.pt << p_tf_out.pt << p_tc_out.pt << p_tc_in.pt;
+        p.setPen(QPen(colors.outline, 1.0f));
+        p.setBrush(LightColor(trig_col, 0.0f, -0.6f, 0.8f));
+        p.drawPolygon(top_face);
 
-    // Minus and Plus buttons
-    p.setPen(colors.outline);
-    DrawCircleButton(p, center + QPoint(-50, -86), button_values[Minus], 9);
-    DrawCircleButton(p, center + QPoint(50, -86), button_values[Plus], 9);
+        // Rear face
+        QPolygonF rear_face;
+        rear_face << p_tc_in.pt << p_tc_out.pt << p_bb_out.pt << p_bb_in.pt;
+        p.setBrush(LightColor(trig_col, 0.0f, 0.2f, -0.9f));
+        p.drawPolygon(rear_face);
 
-    // Minus and Plus symbols
-    p.setPen(colors.font2);
-    p.setBrush(colors.font2);
-    DrawRectangle(p, center + QPoint(-50, -86), 9, 1.5f);
-    DrawRectangle(p, center + QPoint(50, -86), 9, 1.5f);
-    DrawRectangle(p, center + QPoint(50, -86), 1.5f, 9);
+        // Outer side wall
+        QPolygonF side_face;
+        side_face << p_tf_out.pt << p_tc_out.pt << p_bb_out.pt << p_bf_out.pt;
+        p.setBrush(LightColor(trig_col, sgn * 0.9f, 0.0f, 0.2f));
+        p.drawPolygon(side_face);
 
-    // Screenshot button
-    p.setPen(colors.outline);
-    DrawRoundButton(p, center + QPoint(-29, -56), button_values[Screenshot], 7, 7);
-    p.setPen(colors.font2);
-    p.setBrush(colors.font2);
-    DrawCircle(p, center + QPoint(-29, -56), 4.5f);
+        // Trigger Symbol inscription
+        const auto label_pos = Project(sgn * 104.0f, -87.0f + dy, -12.0f + dz);
+        p.setPen(colors.transparent);
+        p.setBrush((analog > 0.05f || pressed) ? colors.font : colors.font2);
+        DrawSymbol(p, label_pos.pt, sym, 1.35f * label_pos.scale);
+    };
 
-    // Home Button glowing notification LED ring
-    const QPointF home_pos = center + QPoint(29, -56);
-    p.setPen(Qt::NoPen);
-    QRadialGradient led_grad(home_pos, 16.0);
-    led_grad.setColorAt(0.0, colors.home_led);
-    QColor led_fade = colors.home_led;
-    led_fade.setAlpha(0);
-    led_grad.setColorAt(1.0, led_fade);
-    p.setBrush(led_grad);
-    p.drawEllipse(home_pos, 16.0, 16.0);
+    Draw3DTrigger(true, zl_analog, button_values[ZL].value, Symbol::ZL);
+    Draw3DTrigger(false, zr_analog, button_values[ZR].value, Symbol::ZR);
 
-    // Home Button outer halo ring
-    p.setPen(QPen(colors.home_led, 1.8));
-    button_color = colors.slider_button;
-    DrawCircleButton(p, home_pos, button_values[Home], 10.0f);
-    button_color = colors.button;
-    DrawCircleButton(p, home_pos, button_values[Home], 7.1f);
-    p.setPen(colors.transparent);
-    p.setBrush(colors.font2);
-    DrawSymbol(p, home_pos, Symbol::House, 3.9f);
+    // 4. 3D Bumpers (L and R) in front of triggers
+    auto Draw3DBumper = [&](bool is_left, bool pressed, Symbol sym) {
+        const float sgn = is_left ? -1.0f : 1.0f;
+        const float x_in = sgn * 66.0f;
+        const float x_out = sgn * 126.0f;
+        const float dy = pressed ? 5.0f : 0.0f;
 
-    // Draw battery
-    DrawBattery(p, center + QPoint(-20, -160),
-                battery_values[Core::HID::EmulatedDeviceIndex::LeftIndex]);
+        const auto p_front_in  = Project(x_in,  -76.0f + dy, 9.0f);
+        const auto p_front_out = Project(x_out, -76.0f + dy, 9.0f);
+        const auto p_top_out   = Project(x_out, -86.0f + dy, 9.0f);
+        const auto p_top_in    = Project(x_in,  -85.0f + dy, 9.0f);
+        const auto p_back_in   = Project(x_in,  -87.0f + dy, 1.5f);
+        const auto p_back_out  = Project(x_out, -88.0f + dy, 1.5f);
+
+        const QColor bump_col = pressed ? colors.highlight : colors.button;
+
+        // Front face
+        QPolygonF front_poly;
+        front_poly << p_front_in.pt << p_front_out.pt << p_top_out.pt << p_top_in.pt;
+        p.setPen(QPen(colors.outline, 1.0f));
+        p.setBrush(LightColor(bump_col, 0.0f, 0.0f, 1.0f));
+        p.drawPolygon(front_poly);
+
+        // Top slope
+        QPolygonF top_poly;
+        top_poly << p_top_in.pt << p_top_out.pt << p_back_out.pt << p_back_in.pt;
+        p.setBrush(LightColor(bump_col, 0.0f, -0.8f, 0.4f));
+        p.drawPolygon(top_poly);
+
+        // Bumper Symbol
+        const auto label_pos = Project(sgn * 96.0f, -80.0f + dy, 9.0f);
+        p.setPen(colors.transparent);
+        p.setBrush(pressed ? colors.font : colors.font2);
+        DrawSymbol(p, label_pos.pt, sym, 1.30f * label_pos.scale);
+    };
+
+    Draw3DBumper(true, button_values[L].value, Symbol::L);
+    Draw3DBumper(false, button_values[R].value, Symbol::R);
+
+    // USB-C socket & Sync button on top shoulder
+    {
+        const auto usbc_pos = Project(0.0f, -86.0f, -6.0f);
+        p.setPen(QPen(QColor(60, 65, 75), 1.0f));
+        p.setBrush(QColor(15, 17, 20));
+        p.drawRoundedRect(QRectF(usbc_pos.pt.x() - 7.0f * usbc_pos.scale,
+                                 usbc_pos.pt.y() - 2.5f * usbc_pos.scale,
+                                 14.0f * usbc_pos.scale, 5.0f * usbc_pos.scale), 2.0f, 2.0f);
+
+        const auto sync_pos = Project(-18.0f, -86.0f, -6.0f);
+        p.setPen(QPen(QColor(40, 44, 52), 0.8f));
+        p.setBrush(QColor(30, 32, 38));
+        p.drawEllipse(sync_pos.pt, 2.2f * sync_pos.scale, 2.2f * sync_pos.scale);
+    }
+
+    // 5. Extruded 3D Side Walls for Handles (Thickness from Z = +4.0f to Z = -28.0f)
+    for (std::size_t i = 0; i + 3 < pro_left_handle.size() / 2; i += 3) {
+        const std::size_t i_next = std::min<std::size_t>(i + 3, pro_left_handle.size() / 2 - 1);
+        const float x1 = pro_left_handle[i * 2 + 0];
+        const float y1 = pro_left_handle[i * 2 + 1];
+        const float x2 = pro_left_handle[i_next * 2 + 0];
+        const float y2 = pro_left_handle[i_next * 2 + 1];
+
+        const auto pf1 = Project(x1, y1, +4.0f);
+        const auto pf2 = Project(x2, y2, +4.0f);
+        const auto pb2 = Project(x2 * 0.94f, y2 * 0.95f, -28.0f);
+        const auto pb1 = Project(x1 * 0.94f, y1 * 0.95f, -28.0f);
+
+        const float cp = (pf2.pt.x() - pf1.pt.x()) * (pb1.pt.y() - pf1.pt.y()) -
+                         (pf2.pt.y() - pf1.pt.y()) * (pb1.pt.x() - pf1.pt.x());
+        if (cp > 0.0f) {
+            QPolygonF quad;
+            quad << pf1.pt << pf2.pt << pb2.pt << pb1.pt;
+            const float nx = y2 - y1;
+            const float ny = -(x2 - x1);
+            p.setPen(Qt::NoPen);
+            p.setBrush(LightColor(colors.left, nx, ny, 0.2f));
+            p.drawPolygon(quad);
+        }
+    }
+
+    for (std::size_t i = 0; i + 3 < pro_left_handle.size() / 2; i += 3) {
+        const std::size_t i_next = std::min<std::size_t>(i + 3, pro_left_handle.size() / 2 - 1);
+        const float x1 = -pro_left_handle[i * 2 + 0];
+        const float y1 = pro_left_handle[i * 2 + 1];
+        const float x2 = -pro_left_handle[i_next * 2 + 0];
+        const float y2 = pro_left_handle[i_next * 2 + 1];
+
+        const auto pf1 = Project(x1, y1, +4.0f);
+        const auto pf2 = Project(x2, y2, +4.0f);
+        const auto pb2 = Project(x2 * 0.94f, y2 * 0.95f, -28.0f);
+        const auto pb1 = Project(x1 * 0.94f, y1 * 0.95f, -28.0f);
+
+        const float cp = (pf2.pt.x() - pf1.pt.x()) * (pb1.pt.y() - pf1.pt.y()) -
+                         (pf2.pt.y() - pf1.pt.y()) * (pb1.pt.x() - pf1.pt.x());
+        if (cp > 0.0f) {
+            QPolygonF quad;
+            quad << pf1.pt << pf2.pt << pb2.pt << pb1.pt;
+            const float nx = -(y2 - y1);
+            const float ny = -(x2 - x1);
+            p.setPen(Qt::NoPen);
+            p.setBrush(LightColor(colors.right, nx, ny, 0.2f));
+            p.drawPolygon(quad);
+        }
+    }
+
+    // 6. Front Handles ($Z = +4.0f$)
+    QPolygonF front_left_handle;
+    for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
+        front_left_handle << Project(pro_left_handle[i * 2 + 0], pro_left_handle[i * 2 + 1], +4.0f).pt;
+    }
+
+    QPolygonF front_right_handle;
+    for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
+        front_right_handle << Project(-pro_left_handle[i * 2 + 0], pro_left_handle[i * 2 + 1], +4.0f).pt;
+    }
+
+    p.setPen(QPen(colors.outline, 1.2f));
+    {
+        const auto p_hl = Project(-190.0f, 0.0f, +4.0f);
+        const auto p_sh = Project(-100.0f, 0.0f, +4.0f);
+        QLinearGradient left_grad(p_hl.pt, p_sh.pt);
+        left_grad.setColorAt(0.0, colors.grip_left_highlight);
+        left_grad.setColorAt(0.35, colors.left);
+        left_grad.setColorAt(0.85, colors.left.darker(115));
+        left_grad.setColorAt(1.0, colors.grip_left_shadow);
+        p.setBrush(left_grad);
+        p.drawPolygon(front_left_handle);
+
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(255, 255, 255, 20));
+        for (int dy = -20; dy <= 95; dy += 16) {
+            for (int dx = -180; dx <= -130; dx += 16) {
+                const auto dot = Project(static_cast<float>(dx + ((dy % 32 == 0) ? 8 : 0)),
+                                         static_cast<float>(dy), +4.1f);
+                p.drawEllipse(dot.pt, 1.2f * dot.scale, 1.2f * dot.scale);
+            }
+        }
+    }
+
+    {
+        const auto p_hl = Project(190.0f, 0.0f, +4.0f);
+        const auto p_sh = Project(100.0f, 0.0f, +4.0f);
+        QLinearGradient right_grad(p_hl.pt, p_sh.pt);
+        right_grad.setColorAt(0.0, colors.grip_right_highlight);
+        right_grad.setColorAt(0.35, colors.right);
+        right_grad.setColorAt(0.85, colors.right.darker(115));
+        right_grad.setColorAt(1.0, colors.grip_right_shadow);
+        p.setPen(QPen(colors.outline, 1.2f));
+        p.setBrush(right_grad);
+        p.drawPolygon(front_right_handle);
+
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(255, 255, 255, 20));
+        for (int dy = -20; dy <= 95; dy += 16) {
+            for (int dx = 130; dx <= 180; dx += 16) {
+                const auto dot = Project(static_cast<float>(dx + ((dy % 32 == 0) ? 8 : 0)),
+                                         static_cast<float>(dy), +4.1f);
+                p.drawEllipse(dot.pt, 1.2f * dot.scale, 1.2f * dot.scale);
+            }
+        }
+    }
+
+    // 7. Front Chassis ($Z = +2.0f$)
+    QPolygonF front_body;
+    for (std::size_t i = 0; i < pro_body.size() / 2; ++i) {
+        front_body << Project(pro_body[i * 2 + 0], pro_body[i * 2 + 1], +2.0f).pt;
+    }
+    for (int i = static_cast<int>(pro_body.size() / 2) - 1; i >= 0; --i) {
+        front_body << Project(-pro_body[i * 2 + 0], pro_body[i * 2 + 1], +2.0f).pt;
+    }
+
+    {
+        const auto p_top = Project(0.0f, -90.0f, +2.0f);
+        const auto p_bot = Project(0.0f, 100.0f, +2.0f);
+        QLinearGradient body_grad(p_top.pt, p_bot.pt);
+        body_grad.setColorAt(0.0, colors.primary.lighter(125));
+        body_grad.setColorAt(0.2, colors.primary);
+        body_grad.setColorAt(0.8, colors.primary.darker(110));
+        body_grad.setColorAt(1.0, colors.primary.darker(125));
+
+        p.setPen(QPen(colors.outline, 1.2f));
+        p.setBrush(body_grad);
+        p.drawPolygon(front_body);
+
+        // Internal translucent chassis ribbing
+        p.setPen(QPen(colors.body_inner, 1.4f));
+        p.setBrush(Qt::NoBrush);
+        const auto rib_tl = Project(-50.0f, -30.0f, +1.9f);
+        const auto rib_tr = Project(50.0f, -30.0f, +1.9f);
+        const auto rib_br = Project(50.0f, 30.0f, +1.9f);
+        const auto rib_bl = Project(-50.0f, 30.0f, +1.9f);
+        QPolygonF rib_poly;
+        rib_poly << rib_tl.pt << rib_tr.pt << rib_br.pt << rib_bl.pt;
+        p.drawPolygon(rib_poly);
+        p.drawLine(Project(-40.0f, 0.0f, +1.9f).pt, Project(40.0f, 0.0f, +1.9f).pt);
+        p.drawLine(Project(0.0f, -30.0f, +1.9f).pt, Project(0.0f, 30.0f, +1.9f).pt);
+    }
+
+    // 8. 3D Projected Skin Graphics & Emblems
+    switch (current_skin) {
+    case ControllerSkin::Xenoblade2: {
+        p.save();
+        p.setPen(QPen(colors.emblem_secondary, 2.0f));
+        p.setBrush(QColor(colors.emblem_secondary.red(), colors.emblem_secondary.green(), colors.emblem_secondary.blue(), 60));
+        QPolygonF wing_l;
+        wing_l << Project(-24.0f, -18.0f, 2.2f).pt << Project(-48.0f, -32.0f, 2.2f).pt
+               << Project(-40.0f, -14.0f, 2.2f).pt << Project(-24.0f, -8.0f, 2.2f).pt;
+        QPolygonF wing_r;
+        wing_r << Project(24.0f, -18.0f, 2.2f).pt << Project(48.0f, -32.0f, 2.2f).pt
+               << Project(40.0f, -14.0f, 2.2f).pt << Project(24.0f, -8.0f, 2.2f).pt;
+        p.drawPolygon(wing_l);
+        p.drawPolygon(wing_r);
+
+        QPolygonF crystal;
+        crystal << Project(0.0f, -34.0f, 2.2f).pt << Project(16.0f, -16.0f, 2.2f).pt
+                << Project(0.0f, 2.0f, 2.2f).pt << Project(-16.0f, -16.0f, 2.2f).pt;
+        p.setPen(QPen(QColor(255, 255, 255, 220), 1.5f));
+        p.setBrush(colors.emblem);
+        p.drawPolygon(crystal);
+        p.drawLine(Project(0.0f, -34.0f, 2.2f).pt, Project(0.0f, 2.0f, 2.2f).pt);
+        p.drawLine(Project(-16.0f, -16.0f, 2.2f).pt, Project(16.0f, -16.0f, 2.2f).pt);
+        p.restore();
+        break;
+    }
+    case ControllerSkin::SmashBrosUltimate: {
+        p.save();
+        p.setPen(QPen(colors.emblem_secondary, 1.5f));
+        p.setBrush(colors.emblem);
+        QPolygonF bar1;
+        bar1 << Project(-20.0f, -65.0f, 2.2f).pt << Project(-7.0f, -65.0f, 2.2f).pt
+             << Project(-7.0f, 50.0f, 2.2f).pt << Project(-20.0f, 50.0f, 2.2f).pt;
+        QPolygonF bar2;
+        bar2 << Project(-105.0f, -32.0f, 2.2f).pt << Project(105.0f, -32.0f, 2.2f).pt
+             << Project(105.0f, -19.0f, 2.2f).pt << Project(-105.0f, -19.0f, 2.2f).pt;
+        p.drawPolygon(bar1);
+        p.drawPolygon(bar2);
+        p.restore();
+        break;
+    }
+    case ControllerSkin::ZeldaTotk: {
+        p.save();
+        p.setPen(QPen(colors.emblem, 2.2f * zoom, Qt::SolidLine, Qt::RoundCap));
+        p.setBrush(Qt::NoBrush);
+        const auto c1 = Project(0.0f, -5.0f, 2.2f);
+        p.drawEllipse(c1.pt, 30.0f * c1.scale, 30.0f * c1.scale);
+        const auto c2 = Project(0.0f, -5.0f, 2.2f);
+        p.drawEllipse(c2.pt, 18.0f * c2.scale, 18.0f * c2.scale);
+        p.setPen(QPen(colors.emblem_secondary, 1.8f));
+        p.drawLine(Project(40.0f, -45.0f, 2.2f).pt, Project(65.0f, -30.0f, 2.2f).pt);
+        p.drawLine(Project(65.0f, -30.0f, 2.2f).pt, Project(55.0f, -15.0f, 2.2f).pt);
+        p.drawLine(Project(55.0f, -15.0f, 2.2f).pt, Project(75.0f, 5.0f, 2.2f).pt);
+        p.restore();
+        break;
+    }
+    case ControllerSkin::Splatoon3: {
+        p.save();
+        p.setPen(Qt::NoPen);
+        p.setBrush(colors.emblem);
+        const auto sp1 = Project(-25.0f, -28.0f, 2.2f);
+        p.drawEllipse(sp1.pt, 16.0f * sp1.scale, 13.0f * sp1.scale);
+        const auto sp2 = Project(-38.0f, -20.0f, 2.2f);
+        p.drawEllipse(sp2.pt, 9.0f * sp2.scale, 8.0f * sp2.scale);
+        p.setBrush(colors.emblem_secondary);
+        const auto sp3 = Project(22.0f, 10.0f, 2.2f);
+        p.drawEllipse(sp3.pt, 14.0f * sp3.scale, 12.0f * sp3.scale);
+        const auto sp4 = Project(35.0f, 18.0f, 2.2f);
+        p.drawEllipse(sp4.pt, 8.0f * sp4.scale, 7.5f * sp4.scale);
+        p.restore();
+        break;
+    }
+    case ControllerSkin::MonsterHunterRise: {
+        p.save();
+        p.setPen(QPen(colors.emblem, 2.0f));
+        p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 50));
+        QPolygonF blade1;
+        blade1 << Project(0.0f, -45.0f, 2.2f).pt << Project(14.0f, -25.0f, 2.2f).pt << Project(0.0f, -10.0f, 2.2f).pt;
+        QPolygonF blade2;
+        blade2 << Project(0.0f, -45.0f, 2.2f).pt << Project(-14.0f, -25.0f, 2.2f).pt << Project(0.0f, -10.0f, 2.2f).pt;
+        p.drawPolygon(blade1);
+        p.drawPolygon(blade2);
+        p.restore();
+        break;
+    }
+    case ControllerSkin::PokemonScarletViolet: {
+        p.save();
+        p.setPen(QPen(colors.emblem, 1.8f));
+        p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 40));
+        QPolygonF shield;
+        shield << Project(0.0f, -38.0f, 2.2f).pt << Project(20.0f, -32.0f, 2.2f).pt
+               << Project(20.0f, -10.0f, 2.2f).pt << Project(0.0f, 10.0f, 2.2f).pt
+               << Project(-20.0f, -10.0f, 2.2f).pt << Project(-20.0f, -32.0f, 2.2f).pt;
+        p.drawPolygon(shield);
+        p.drawLine(Project(0.0f, -38.0f, 2.2f).pt, Project(0.0f, 10.0f, 2.2f).pt);
+        p.drawLine(Project(-20.0f, -20.0f, 2.2f).pt, Project(20.0f, -20.0f, 2.2f).pt);
+        p.restore();
+        break;
+    }
+    case ControllerSkin::CyberStorm: {
+        p.save();
+        p.setPen(QPen(colors.emblem, 1.6f));
+        p.drawLine(Project(-70.0f, -25.0f, 2.2f).pt, Project(-35.0f, -25.0f, 2.2f).pt);
+        p.drawLine(Project(-35.0f, -25.0f, 2.2f).pt, Project(-15.0f, -45.0f, 2.2f).pt);
+        p.drawLine(Project(-15.0f, -45.0f, 2.2f).pt, Project(20.0f, -45.0f, 2.2f).pt);
+        p.drawLine(Project(20.0f, -45.0f, 2.2f).pt, Project(40.0f, -25.0f, 2.2f).pt);
+        p.drawLine(Project(40.0f, -25.0f, 2.2f).pt, Project(75.0f, -25.0f, 2.2f).pt);
+        p.setPen(QPen(colors.emblem_secondary, 2.0f));
+        p.drawLine(Project(4.0f, -30.0f, 2.2f).pt, Project(-4.0f, -16.0f, 2.2f).pt);
+        p.drawLine(Project(-4.0f, -16.0f, 2.2f).pt, Project(2.0f, -16.0f, 2.2f).pt);
+        p.drawLine(Project(2.0f, -16.0f, 2.2f).pt, Project(-2.0f, -4.0f, 2.2f).pt);
+        p.restore();
+        break;
+    }
+    default:
+        break;
+    }
+
+    // 9. 3D Joysticks (Left & Right) with Steel Stem & Rubber Cap
+    auto Draw3DStick = [&](bool is_left) {
+        const auto stick_id = is_left ? Settings::NativeAnalog::LStick : Settings::NativeAnalog::RStick;
+        const auto button_id = is_left ? Settings::NativeButton::LStick : Settings::NativeButton::RStick;
+
+        const float sx = std::clamp(stick_values[stick_id].x.value, -1.0f, 1.0f);
+        const float sy = std::clamp(stick_values[stick_id].y.value, -1.0f, 1.0f);
+        const bool is_l3_pressed = button_values[button_id].value;
+
+        const float well_x = is_left ? -111.0f : 51.0f;
+        const float well_y = is_left ? -55.0f : 0.0f;
+
+        const float pad_x = well_x + sx * 15.0f;
+        const float pad_y = well_y + sy * 15.0f;
+
+        float pad_z = 28.0f - (sx * sx + sy * sy) * 3.0f;
+        if (is_l3_pressed) {
+            pad_z -= 6.0f;
+        }
+
+        // Stick well socket
+        {
+            constexpr int well_pts = 24;
+            QPolygonF well_outer_poly;
+            QPolygonF well_inner_poly;
+            for (int k = 0; k < well_pts; ++k) {
+                const float ang = 2.0f * PI_CONST * k / well_pts;
+                const float cos_a = std::cos(ang);
+                const float sin_a = std::sin(ang);
+                well_outer_poly << Project(well_x + 32.0f * cos_a, well_y + 32.0f * sin_a, +2.0f).pt;
+                well_inner_poly << Project(well_x + 25.0f * cos_a, well_y + 25.0f * sin_a, -6.0f).pt;
+            }
+
+            p.setPen(QPen(colors.outline.darker(120), 1.0f));
+            p.setBrush(QColor(22, 24, 28));
+            p.drawPolygon(well_outer_poly);
+
+            const auto sock_proj = Project(well_x, well_y, -6.0f);
+            QRadialGradient socket_grad(sock_proj.pt, 30.0f * sock_proj.scale);
+            socket_grad.setColorAt(0.0, QColor(10, 11, 14));
+            socket_grad.setColorAt(0.7, QColor(18, 20, 24));
+            socket_grad.setColorAt(1.0, QColor(36, 40, 48));
+            p.setBrush(socket_grad);
+            p.drawPolygon(well_inner_poly);
+        }
+
+        // 3D Metallic Steel Stem / Shaft
+        {
+            const auto p_base = Project(well_x, well_y, -4.0f);
+            const auto p_top = Project(pad_x, pad_y, pad_z - 3.5f);
+
+            const QPointF dir = p_top.pt - p_base.pt;
+            const float len = std::max(0.001f, std::sqrt(float(dir.x() * dir.x() + dir.y() * dir.y())));
+            const QPointF norm(-dir.y() / len, dir.x() / len);
+
+            const float shaft_r = 5.2f * p_base.scale;
+            const QPointF w = norm * shaft_r;
+
+            QPolygonF shaft_poly;
+            shaft_poly << (p_base.pt - w)
+                       << (p_base.pt + w)
+                       << (p_top.pt + w * 0.90f)
+                       << (p_top.pt - w * 0.90f);
+
+            QLinearGradient shaft_grad(p_base.pt - w, p_base.pt + w);
+            shaft_grad.setColorAt(0.0, QColor(60, 64, 72));
+            shaft_grad.setColorAt(0.35, QColor(185, 190, 205));
+            shaft_grad.setColorAt(0.7, QColor(120, 125, 135));
+            shaft_grad.setColorAt(1.0, QColor(45, 48, 55));
+
+            p.setPen(QPen(QColor(30, 32, 36), 1.0f));
+            p.setBrush(shaft_grad);
+            p.drawPolygon(shaft_poly);
+        }
+
+        // 3D Rubber Thumb-Pad (Cap)
+        {
+            constexpr int cap_pts = 20;
+            constexpr float r_skirt = 25.0f;
+            constexpr float r_rim = 24.0f;
+            constexpr float r_bowl = 17.0f;
+
+            std::array<QPointF, cap_pts> skirt_pts;
+            std::array<QPointF, cap_pts> rim_pts;
+            std::array<QPointF, cap_pts> bowl_pts;
+
+            for (int k = 0; k < cap_pts; ++k) {
+                const float ang = 2.0f * PI_CONST * k / cap_pts;
+                const float cos_a = std::cos(ang);
+                const float sin_a = std::sin(ang);
+
+                skirt_pts[k] = Project(pad_x + r_skirt * cos_a, pad_y + r_skirt * sin_a, pad_z - 3.5f).pt;
+                rim_pts[k] = Project(pad_x + r_rim * cos_a, pad_y + r_rim * sin_a, pad_z).pt;
+                bowl_pts[k] = Project(pad_x + r_bowl * cos_a, pad_y + r_bowl * sin_a, pad_z - 2.0f).pt;
+            }
+
+            for (int k = 0; k < cap_pts; ++k) {
+                const int next_k = (k + 1) % cap_pts;
+                QPolygonF skirt_quad;
+                skirt_quad << skirt_pts[k] << skirt_pts[next_k] << rim_pts[next_k] << rim_pts[k];
+
+                const float ang = 2.0f * PI_CONST * (k + 0.5f) / cap_pts;
+                const float nx = std::cos(ang);
+                const float ny = std::sin(ang);
+
+                const float cp = (skirt_pts[next_k].x() - skirt_pts[k].x()) * (rim_pts[k].y() - skirt_pts[k].y()) -
+                                 (skirt_pts[next_k].y() - skirt_pts[k].y()) * (rim_pts[k].x() - skirt_pts[k].x());
+                if (cp > 0.0f) {
+                    p.setPen(Qt::NoPen);
+                    p.setBrush(LightColor(colors.button.darker(120), nx, ny, 0.2f));
+                    p.drawPolygon(skirt_quad);
+                }
+            }
+
+            QPolygonF rim_poly;
+            for (int k = 0; k < cap_pts; ++k) {
+                rim_poly << rim_pts[k];
+            }
+
+            p.setPen(QPen(is_l3_pressed ? colors.indicator : colors.outline, 1.2f));
+            if (is_l3_pressed) {
+                p.setBrush(colors.highlight);
+            } else {
+                const auto cap_center = Project(pad_x, pad_y, pad_z);
+                QRadialGradient pad_grad(cap_center.pt - QPointF(r_rim * 0.3f * cap_center.scale, r_rim * 0.3f * cap_center.scale),
+                                         r_rim * 1.3f * cap_center.scale);
+                pad_grad.setColorAt(0.0, QColor(75, 80, 92));
+                pad_grad.setColorAt(0.55, colors.button);
+                pad_grad.setColorAt(1.0, colors.button.darker(135));
+                p.setBrush(pad_grad);
+            }
+            p.drawPolygon(rim_poly);
+
+            // 4 Tactile Cardinal Notches on outer rim
+            p.setPen(Qt::NoPen);
+            p.setBrush(is_l3_pressed ? colors.font : QColor(16, 18, 22, 190));
+            constexpr std::array<float, 4> notch_rads = {0.0f, float(PI_CONST * 0.5f), float(PI_CONST), float(PI_CONST * 1.5f)};
+            for (float n_ang : notch_rads) {
+                const auto notch_proj = Project(pad_x + std::cos(n_ang) * (r_rim - 2.5f),
+                                                pad_y + std::sin(n_ang) * (r_rim - 2.5f),
+                                                pad_z + 0.2f);
+                p.drawEllipse(notch_proj.pt, 2.0f * notch_proj.scale, 2.0f * notch_proj.scale);
+            }
+
+            // Inner concave thumb bowl
+            QPolygonF bowl_poly;
+            for (int k = 0; k < cap_pts; ++k) {
+                bowl_poly << bowl_pts[k];
+            }
+
+            const auto bowl_center = Project(pad_x, pad_y, pad_z - 2.0f);
+            p.setPen(QPen(QColor(15, 17, 20), 0.8f));
+            if (is_l3_pressed) {
+                p.setBrush(colors.highlight2);
+            } else {
+                QRadialGradient bowl_grad(bowl_center.pt, r_bowl * bowl_center.scale);
+                bowl_grad.setColorAt(0.0, colors.button2.darker(125));
+                bowl_grad.setColorAt(0.7, colors.button2);
+                bowl_grad.setColorAt(1.0, QColor(62, 66, 76));
+                p.setBrush(bowl_grad);
+            }
+            p.drawPolygon(bowl_poly);
+        }
+    };
+
+    Draw3DStick(true);
+    Draw3DStick(false);
+
+    // 10. 3D Cylindrical ABXY Face Buttons
+    auto Draw3DFaceButton = [&](int btn_id, float bx, float by, Symbol sym) {
+        const bool pressed = button_values[btn_id].value;
+        const float base_z = 3.0f;
+        const float top_z = pressed ? 5.0f : 13.0f;
+        constexpr float r = 14.5f;
+        constexpr int pts_count = 16;
+
+        std::array<QPointF, pts_count> base_pts;
+        std::array<QPointF, pts_count> top_pts;
+
+        for (int k = 0; k < pts_count; ++k) {
+            const float ang = 2.0f * PI_CONST * k / pts_count;
+            const float cos_a = std::cos(ang);
+            const float sin_a = std::sin(ang);
+
+            base_pts[k] = Project(bx + r * cos_a, by + r * sin_a, base_z).pt;
+            top_pts[k] = Project(bx + r * cos_a, by + r * sin_a, top_z).pt;
+        }
+
+        // Cylindrical side wall quads
+        for (int k = 0; k < pts_count; ++k) {
+            const int next_k = (k + 1) % pts_count;
+            QPolygonF wall_quad;
+            wall_quad << base_pts[k] << base_pts[next_k] << top_pts[next_k] << top_pts[k];
+
+            const float ang = 2.0f * PI_CONST * (k + 0.5f) / pts_count;
+            const float nx = std::cos(ang);
+            const float ny = std::sin(ang);
+
+            const float cp = (base_pts[next_k].x() - base_pts[k].x()) * (top_pts[k].y() - base_pts[k].y()) -
+                             (base_pts[next_k].y() - base_pts[k].y()) * (top_pts[k].x() - base_pts[k].x());
+            if (cp > 0.0f) {
+                p.setPen(Qt::NoPen);
+                p.setBrush(LightColor(pressed ? colors.indicator.darker(110) : colors.button.darker(125), nx, ny, 0.2f));
+                p.drawPolygon(wall_quad);
+            }
+        }
+
+        // Top face polygon
+        QPolygonF top_poly;
+        for (int k = 0; k < pts_count; ++k) {
+            top_poly << top_pts[k];
+        }
+
+        const auto top_center = Project(bx, by, top_z);
+        p.setPen(QPen(pressed ? colors.font : colors.outline, 1.2f));
+        if (pressed) {
+            QRadialGradient glow_grad(top_center.pt, r * top_center.scale);
+            glow_grad.setColorAt(0.0, colors.indicator.lighter(130));
+            glow_grad.setColorAt(0.7, colors.indicator);
+            glow_grad.setColorAt(1.0, colors.indicator.darker(120));
+            p.setBrush(glow_grad);
+        } else {
+            QRadialGradient btn_grad(top_center.pt - QPointF(r * 0.35f * top_center.scale, r * 0.35f * top_center.scale),
+                                     r * 1.3f * top_center.scale);
+            btn_grad.setColorAt(0.0, QColor(70, 75, 85));
+            btn_grad.setColorAt(0.5, colors.button);
+            btn_grad.setColorAt(1.0, colors.button.darker(130));
+            p.setBrush(btn_grad);
+        }
+        p.drawPolygon(top_poly);
+
+        // Domed gloss specular reflection highlight arc
+        if (!pressed) {
+            p.setPen(Qt::NoPen);
+            p.setBrush(QColor(255, 255, 255, 55));
+            const auto spec_proj = Project(bx - 3.0f, by - 4.5f, top_z + 0.1f);
+            p.drawEllipse(spec_proj.pt, 6.0f * spec_proj.scale, 3.0f * spec_proj.scale);
+        }
+
+        // Letter Symbol on top face
+        p.setPen(colors.transparent);
+        p.setBrush(pressed ? colors.font : colors.font2);
+        DrawSymbol(p, top_center.pt, sym, 1.45f * top_center.scale);
+    };
+
+    Draw3DFaceButton(A, 105.0f + 31.0f, -56.0f, Symbol::A);
+    Draw3DFaceButton(B, 105.0f, -56.0f + 31.0f, Symbol::B);
+    Draw3DFaceButton(X, 105.0f, -56.0f - 31.0f, Symbol::X);
+    Draw3DFaceButton(Y, 105.0f - 31.0f, -56.0f, Symbol::Y);
+
+    // 11. 3D D-Pad (Directional Rocker Cross)
+    {
+        const float cx = -61.0f;
+        const float cy = 0.0f;
+        const float base_z = 2.0f;
+
+        const bool up = button_values[DUp].value;
+        const bool down = button_values[DDown].value;
+        const bool left = button_values[DLeft].value;
+        const bool right = button_values[DRight].value;
+
+        constexpr float arm_len = 28.0f;
+        constexpr float arm_w = 9.0f;
+
+        const struct { float x; float y; } cross_pts[12] = {
+            {-arm_w, -arm_len},
+            { arm_w, -arm_len},
+            { arm_w, -arm_w},
+            { arm_len, -arm_w},
+            { arm_len,  arm_w},
+            { arm_w,  arm_w},
+            { arm_w,  arm_len},
+            {-arm_w,  arm_len},
+            {-arm_w,  arm_w},
+            {-arm_len, arm_w},
+            {-arm_len, -arm_w},
+            {-arm_w, -arm_w}
+        };
+
+        auto GetTopZ = [&](float x, float y) -> float {
+            float z = 9.5f;
+            if (up)    z += (y < -arm_w ? -5.5f : (y > arm_w ? +2.0f : -2.5f));
+            if (down)  z += (y > arm_w ? -5.5f : (y < -arm_w ? +2.0f : -2.5f));
+            if (left)  z += (x < -arm_w ? -5.5f : (x > arm_w ? +2.0f : -2.5f));
+            if (right) z += (x > arm_w ? -5.5f : (x < -arm_w ? +2.0f : -2.5f));
+            return z;
+        };
+
+        std::array<QPointF, 12> base_proj;
+        std::array<QPointF, 12> top_proj;
+
+        for (int i = 0; i < 12; ++i) {
+            const float px = cx + cross_pts[i].x;
+            const float py = cy + cross_pts[i].y;
+            const float top_z = GetTopZ(cross_pts[i].x, cross_pts[i].y);
+
+            base_proj[i] = Project(px, py, base_z).pt;
+            top_proj[i] = Project(px, py, top_z).pt;
+        }
+
+        // 3D side bevel walls
+        for (int i = 0; i < 12; ++i) {
+            const int next_i = (i + 1) % 12;
+            QPolygonF wall_quad;
+            wall_quad << base_proj[i] << base_proj[next_i] << top_proj[next_i] << top_proj[i];
+
+            const float cp = (base_proj[next_i].x() - base_proj[i].x()) * (top_proj[i].y() - base_proj[i].y()) -
+                             (base_proj[next_i].y() - base_proj[i].y()) * (top_proj[i].x() - base_proj[i].x());
+            if (cp > 0.0f) {
+                const float nx = -(cross_pts[next_i].y - cross_pts[i].y);
+                const float ny = cross_pts[next_i].x - cross_pts[i].x;
+                p.setPen(Qt::NoPen);
+                p.setBrush(LightColor(colors.button.darker(120), nx, ny, 0.2f));
+                p.drawPolygon(wall_quad);
+            }
+        }
+
+        QPolygonF top_poly;
+        for (int i = 0; i < 12; ++i) {
+            top_poly << top_proj[i];
+        }
+
+        p.setPen(QPen(colors.outline, 1.2f));
+        p.setBrush(colors.button);
+        p.drawPolygon(top_poly);
+
+        // Center pivot dish
+        const auto center_proj = Project(cx, cy, GetTopZ(0.0f, 0.0f) - 1.5f);
+        p.setPen(QPen(QColor(18, 20, 24), 0.8f));
+        p.setBrush(colors.button2);
+        p.drawEllipse(center_proj.pt, 6.0f * center_proj.scale, 6.0f * center_proj.scale);
+
+        // Directional arrows
+        auto DrawDpadArm = [&](Direction dir, bool is_pressed, float ax, float ay) {
+            const float top_z = GetTopZ(ax, ay);
+            const auto arm_proj = Project(cx + ax, cy + ay, top_z + 0.1f);
+            p.setPen(is_pressed ? colors.font : colors.font2);
+            p.setBrush(is_pressed ? colors.indicator : colors.font2);
+            DrawArrow(p, arm_proj.pt, dir, 0.95f * arm_proj.scale);
+        };
+
+        DrawDpadArm(Direction::Up, up, 0.0f, -19.0f);
+        DrawDpadArm(Direction::Down, down, 0.0f, 19.0f);
+        DrawDpadArm(Direction::Left, left, -19.0f, 0.0f);
+        DrawDpadArm(Direction::Right, right, 19.0f, 0.0f);
+    }
+
+    // 12. 3D Auxiliary Buttons (+, -, Screenshot, Home)
+    {
+        // Minus button at (-50, -86)
+        {
+            const bool pressed = button_values[Minus].value;
+            const float z = pressed ? 4.0f : 8.0f;
+            const auto proj = Project(-50.0f, -86.0f, z);
+            p.setPen(QPen(pressed ? colors.font : colors.outline, 1.0f));
+            p.setBrush(pressed ? colors.indicator : colors.button);
+            p.drawEllipse(proj.pt, 8.5f * proj.scale, 8.5f * proj.scale);
+
+            p.setPen(colors.font2);
+            p.setBrush(colors.font2);
+            const auto sym_proj = Project(-50.0f, -86.0f, z + 0.1f);
+            p.drawRect(QRectF(sym_proj.pt.x() - 4.5f * sym_proj.scale, sym_proj.pt.y() - 0.8f * sym_proj.scale,
+                              9.0f * sym_proj.scale, 1.6f * sym_proj.scale));
+        }
+
+        // Plus button at (+50, -86)
+        {
+            const bool pressed = button_values[Plus].value;
+            const float z = pressed ? 4.0f : 8.0f;
+            const auto proj = Project(50.0f, -86.0f, z);
+            p.setPen(QPen(pressed ? colors.font : colors.outline, 1.0f));
+            p.setBrush(pressed ? colors.indicator : colors.button);
+            p.drawEllipse(proj.pt, 8.5f * proj.scale, 8.5f * proj.scale);
+
+            p.setPen(colors.font2);
+            p.setBrush(colors.font2);
+            const auto sym_proj = Project(50.0f, -86.0f, z + 0.1f);
+            p.drawRect(QRectF(sym_proj.pt.x() - 4.5f * sym_proj.scale, sym_proj.pt.y() - 0.8f * sym_proj.scale,
+                              9.0f * sym_proj.scale, 1.6f * sym_proj.scale));
+            p.drawRect(QRectF(sym_proj.pt.x() - 0.8f * sym_proj.scale, sym_proj.pt.y() - 4.5f * sym_proj.scale,
+                              1.6f * sym_proj.scale, 9.0f * sym_proj.scale));
+        }
+
+        // Screenshot/Capture button at (-29, -56)
+        {
+            const bool pressed = button_values[Screenshot].value;
+            const float z = pressed ? 3.0f : 7.0f;
+            const auto proj = Project(-29.0f, -56.0f, z);
+            p.setPen(QPen(pressed ? colors.font : colors.outline, 1.0f));
+            p.setBrush(pressed ? colors.indicator : colors.button);
+            const float sz = 7.0f * proj.scale;
+            p.drawRoundedRect(QRectF(proj.pt.x() - sz, proj.pt.y() - sz, sz * 2.0f, sz * 2.0f), 2.0f, 2.0f);
+
+            p.setPen(colors.font2);
+            p.setBrush(colors.font2);
+            p.drawEllipse(proj.pt, 3.8f * proj.scale, 3.8f * proj.scale);
+        }
+
+        // Home button at (+29, -56)
+        {
+            const bool pressed = button_values[Home].value;
+            const float z = pressed ? 3.0f : 7.0f;
+
+            // Radiant Notification LED Halo Ring around base
+            const auto halo_proj = Project(29.0f, -56.0f, 2.5f);
+            QRadialGradient led_grad(halo_proj.pt, 16.0f * halo_proj.scale);
+            led_grad.setColorAt(0.0, colors.home_led);
+            QColor led_fade = colors.home_led;
+            led_fade.setAlpha(0);
+            led_grad.setColorAt(1.0, led_fade);
+            p.setPen(Qt::NoPen);
+            p.setBrush(led_grad);
+            p.drawEllipse(halo_proj.pt, 16.0f * halo_proj.scale, 16.0f * halo_proj.scale);
+
+            // Home button body
+            const auto proj = Project(29.0f, -56.0f, z);
+            p.setPen(QPen(colors.home_led, 1.6f));
+            p.setBrush(pressed ? colors.indicator : colors.button);
+            p.drawEllipse(proj.pt, 8.5f * proj.scale, 8.5f * proj.scale);
+
+            p.setPen(colors.transparent);
+            p.setBrush(colors.font2);
+            DrawSymbol(p, proj.pt, Symbol::House, 4.0f * proj.scale);
+        }
+    }
+
+    // 13. 3D Player Slot Indicator LEDs
+    {
+        constexpr std::array<float, 4> led_x = {-18.0f, -6.0f, 6.0f, 18.0f};
+        const bool on[4] = {bool(led_pattern.position1), bool(led_pattern.position2),
+                            bool(led_pattern.position3), bool(led_pattern.position4)};
+
+        for (int i = 0; i < 4; ++i) {
+            const auto proj = Project(led_x[i], 66.0f, 2.5f);
+            p.setPen(Qt::NoPen);
+            p.setBrush(on[i] ? colors.indicator : QColor(30, 35, 42));
+            p.drawRoundedRect(QRectF(proj.pt.x() - 2.5f * proj.scale, proj.pt.y() - 1.5f * proj.scale,
+                                     5.0f * proj.scale, 3.0f * proj.scale), 1.0f, 1.0f);
+            if (on[i]) {
+                QRadialGradient glow(proj.pt, 5.0f * proj.scale);
+                glow.setColorAt(0.0, colors.indicator);
+                QColor fade = colors.indicator;
+                fade.setAlpha(0);
+                glow.setColorAt(1.0, fade);
+                p.setBrush(glow);
+                p.drawEllipse(proj.pt, 5.0f * proj.scale, 5.0f * proj.scale);
+            }
+        }
+    }
+
+    // 14. Motion Orientation Cube in top-right corner
+    {
+        using namespace Settings::NativeMotion;
+        const QPointF motion_pos = center + QPointF(175.0f * zoom, -115.0f * zoom);
+        p.setPen(colors.button);
+        p.setBrush(colors.transparent);
+        Draw3dCube(p, motion_pos, motion_values[Settings::NativeMotion::MotionLeft].euler, 15.0f * zoom);
+    }
+
+    // 15. Battery in top-left corner
+    {
+        const QPointF bat_pos = center + QPointF(-185.0f * zoom, -125.0f * zoom);
+        DrawBattery(p, bat_pos, battery_values[Core::HID::EmulatedDeviceIndex::LeftIndex]);
+    }
 }
 
 void PlayerControlPreview::DrawGCController(QPainter& p, const QPointF center) {
@@ -1391,107 +2361,6 @@ constexpr std::array<float, 64 * 2> trigger_button = {
     18.3f,  -1.9f,  18.4f,  -1.4f,  18.5f,  -1.2f,  18.6f,  -0.3f,  18.6f,  0.0f,   18.3f,  13.9f,
     -17.0f, 13.8f,  -17.0f, 13.6f,  -16.4f, -11.4f, -16.3f, -11.6f, -16.1f, -11.8f, -15.7f, -12.0f,
     -15.5f, -12.1f, -15.1f, -12.3f, -14.6f, -12.4f, -13.4f, -12.5f,
-};
-
-constexpr std::array<float, 36 * 2> pro_left_trigger = {
-    -65.2f,  -132.6f, -68.2f,  -134.1f, -71.3f,  -135.5f, -74.4f,  -136.7f, -77.6f,
-    -137.6f, -80.9f,  -138.1f, -84.3f,  -138.3f, -87.6f,  -138.3f, -91.0f,  -138.1f,
-    -94.3f,  -137.8f, -97.6f,  -137.3f, -100.9f, -136.7f, -107.5f, -135.3f, -110.7f,
-    -134.5f, -120.4f, -131.8f, -123.6f, -130.8f, -126.8f, -129.7f, -129.9f, -128.5f,
-    -132.9f, -127.1f, -135.9f, -125.6f, -138.8f, -123.9f, -141.6f, -122.0f, -144.1f,
-    -119.8f, -146.3f, -117.3f, -148.4f, -114.7f, -150.4f, -112.0f, -152.3f, -109.2f,
-    -155.3f, -104.0f, -152.0f, -104.3f, -148.7f, -104.5f, -145.3f, -104.8f, -35.5f,
-    -117.2f, -38.5f,  -118.7f, -41.4f,  -120.3f, -44.4f,  -121.8f, -50.4f,  -124.9f,
-};
-
-constexpr std::array<float, 14 * 2> pro_body_top = {
-    0.0f,   -115.4f, -4.4f,  -116.1f, -69.7f, -131.3f, -66.4f, -131.9f, -63.1f, -132.3f,
-    -56.4f, -133.0f, -53.1f, -133.3f, -49.8f, -133.5f, -43.1f, -133.8f, -39.8f, -134.0f,
-    -36.5f, -134.1f, -16.4f, -134.4f, -13.1f, -134.4f, 0.0f,   -134.1f,
-};
-
-constexpr std::array<float, 145 * 2> pro_left_handle = {
-    -178.7f, -47.5f, -179.0f, -46.1f, -179.3f, -44.6f, -182.0f, -29.8f, -182.3f, -28.4f,
-    -182.6f, -26.9f, -182.8f, -25.4f, -183.1f, -23.9f, -183.3f, -22.4f, -183.6f, -21.0f,
-    -183.8f, -19.5f, -184.1f, -18.0f, -184.3f, -16.5f, -184.6f, -15.1f, -184.8f, -13.6f,
-    -185.1f, -12.1f, -185.3f, -10.6f, -185.6f, -9.1f,  -185.8f, -7.7f,  -186.1f, -6.2f,
-    -186.3f, -4.7f,  -186.6f, -3.2f,  -186.8f, -1.7f,  -187.1f, -0.3f,  -187.3f, 1.2f,
-    -187.6f, 2.7f,   -187.8f, 4.2f,   -188.3f, 7.1f,   -188.5f, 8.6f,   -188.8f, 10.1f,
-    -189.0f, 11.6f,  -189.3f, 13.1f,  -189.5f, 14.5f,  -190.0f, 17.5f,  -190.2f, 19.0f,
-    -190.5f, 20.5f,  -190.7f, 21.9f,  -191.2f, 24.9f,  -191.4f, 26.4f,  -191.7f, 27.9f,
-    -191.9f, 29.3f,  -192.4f, 32.3f,  -192.6f, 33.8f,  -193.1f, 36.8f,  -193.3f, 38.2f,
-    -193.8f, 41.2f,  -194.0f, 42.7f,  -194.7f, 47.1f,  -194.9f, 48.6f,  -199.0f, 82.9f,
-    -199.1f, 84.4f,  -199.1f, 85.9f,  -199.2f, 87.4f,  -199.2f, 88.9f,  -199.1f, 94.9f,
-    -198.9f, 96.4f,  -198.8f, 97.8f,  -198.5f, 99.3f,  -198.3f, 100.8f, -198.0f, 102.3f,
-    -197.7f, 103.7f, -197.4f, 105.2f, -197.0f, 106.7f, -196.6f, 108.1f, -195.7f, 111.0f,
-    -195.2f, 112.4f, -194.1f, 115.2f, -193.5f, 116.5f, -192.8f, 117.9f, -192.1f, 119.2f,
-    -190.6f, 121.8f, -189.8f, 123.1f, -188.9f, 124.3f, -187.0f, 126.6f, -186.0f, 127.7f,
-    -183.9f, 129.8f, -182.7f, 130.8f, -180.3f, 132.6f, -179.1f, 133.4f, -177.8f, 134.1f,
-    -176.4f, 134.8f, -175.1f, 135.5f, -173.7f, 136.0f, -169.4f, 137.3f, -167.9f, 137.7f,
-    -166.5f, 138.0f, -165.0f, 138.3f, -163.5f, 138.4f, -162.0f, 138.4f, -160.5f, 138.3f,
-    -159.0f, 138.0f, -157.6f, 137.7f, -156.1f, 137.3f, -154.7f, 136.9f, -153.2f, 136.5f,
-    -151.8f, 136.0f, -150.4f, 135.4f, -149.1f, 134.8f, -147.7f, 134.1f, -146.5f, 133.3f,
-    -145.2f, 132.5f, -144.0f, 131.6f, -142.8f, 130.6f, -141.7f, 129.6f, -139.6f, 127.5f,
-    -138.6f, 126.4f, -137.7f, 125.2f, -135.1f, 121.5f, -134.3f, 120.3f, -133.5f, 119.0f,
-    -131.9f, 116.5f, -131.1f, 115.2f, -128.8f, 111.3f, -128.0f, 110.1f, -127.2f, 108.8f,
-    -126.5f, 107.5f, -125.7f, 106.2f, -125.0f, 104.9f, -124.2f, 103.6f, -123.5f, 102.3f,
-    -122.0f, 99.6f,  -121.3f, 98.3f,  -115.8f, 87.7f,  -115.1f, 86.4f,  -114.4f, 85.0f,
-    -113.7f, 83.7f,  -112.3f, 81.0f,  -111.6f, 79.7f,  -110.1f, 77.1f,  -109.4f, 75.8f,
-    -108.0f, 73.1f,  -107.2f, 71.8f,  -106.4f, 70.6f,  -105.7f, 69.3f,  -104.8f, 68.0f,
-    -104.0f, 66.8f,  -103.1f, 65.6f,  -101.1f, 63.3f,  -100.0f, 62.3f,  -98.8f,  61.4f,
-    -97.6f,  60.6f,  -97.9f,  59.5f,  -98.8f,  58.3f,  -101.5f, 54.6f,  -102.4f, 53.4f,
-};
-
-constexpr std::array<float, 245 * 2> pro_body = {
-    -0.7f,   -129.1f, -54.3f,  -129.1f, -55.0f,  -129.1f, -57.8f,  -129.0f, -58.5f,  -129.0f,
-    -60.7f,  -128.9f, -61.4f,  -128.9f, -62.8f,  -128.8f, -63.5f,  -128.8f, -65.7f,  -128.7f,
-    -66.4f,  -128.7f, -67.8f,  -128.6f, -68.5f,  -128.6f, -69.2f,  -128.5f, -70.0f,  -128.5f,
-    -70.7f,  -128.4f, -71.4f,  -128.4f, -72.1f,  -128.3f, -72.8f,  -128.3f, -73.5f,  -128.2f,
-    -74.2f,  -128.2f, -74.9f,  -128.1f, -75.7f,  -128.1f, -76.4f,  -128.0f, -77.1f,  -128.0f,
-    -77.8f,  -127.9f, -78.5f,  -127.9f, -79.2f,  -127.8f, -80.6f,  -127.7f, -81.4f,  -127.6f,
-    -82.1f,  -127.5f, -82.8f,  -127.5f, -83.5f,  -127.4f, -84.9f,  -127.3f, -85.6f,  -127.2f,
-    -87.0f,  -127.1f, -87.7f,  -127.0f, -88.5f,  -126.9f, -89.2f,  -126.8f, -89.9f,  -126.8f,
-    -90.6f,  -126.7f, -94.1f,  -126.3f, -94.8f,  -126.2f, -113.2f, -123.3f, -113.9f, -123.2f,
-    -114.6f, -123.0f, -115.3f, -122.9f, -116.7f, -122.6f, -117.4f, -122.5f, -118.1f, -122.3f,
-    -118.8f, -122.2f, -119.5f, -122.0f, -120.9f, -121.7f, -121.6f, -121.5f, -122.3f, -121.4f,
-    -122.9f, -121.2f, -123.6f, -121.0f, -126.4f, -120.3f, -127.1f, -120.1f, -127.8f, -119.8f,
-    -128.4f, -119.6f, -129.1f, -119.4f, -131.2f, -118.7f, -132.5f, -118.3f, -133.2f, -118.0f,
-    -133.8f, -117.7f, -134.5f, -117.4f, -135.1f, -117.2f, -135.8f, -116.9f, -136.4f, -116.5f,
-    -137.0f, -116.2f, -137.7f, -115.8f, -138.3f, -115.4f, -138.9f, -115.1f, -139.5f, -114.7f,
-    -160.0f, -100.5f, -160.5f, -100.0f, -162.5f, -97.9f,  -162.9f, -97.4f,  -163.4f, -96.8f,
-    -163.8f, -96.2f,  -165.3f, -93.8f,  -165.7f, -93.2f,  -166.0f, -92.6f,  -166.4f, -91.9f,
-    -166.7f, -91.3f,  -167.3f, -90.0f,  -167.6f, -89.4f,  -167.8f, -88.7f,  -168.1f, -88.0f,
-    -168.4f, -87.4f,  -168.6f, -86.7f,  -168.9f, -86.0f,  -169.1f, -85.4f,  -169.3f, -84.7f,
-    -169.6f, -84.0f,  -169.8f, -83.3f,  -170.2f, -82.0f,  -170.4f, -81.3f,  -172.8f, -72.3f,
-    -173.0f, -71.6f,  -173.5f, -69.5f,  -173.7f, -68.8f,  -173.9f, -68.2f,  -174.0f, -67.5f,
-    -174.2f, -66.8f,  -174.5f, -65.4f,  -174.7f, -64.7f,  -174.8f, -64.0f,  -175.0f, -63.3f,
-    -175.3f, -61.9f,  -175.5f, -61.2f,  -175.8f, -59.8f,  -176.0f, -59.1f,  -176.1f, -58.4f,
-    -176.3f, -57.7f,  -176.6f, -56.3f,  -176.8f, -55.6f,  -176.9f, -54.9f,  -177.1f, -54.2f,
-    -177.3f, -53.6f,  -177.4f, -52.9f,  -177.6f, -52.2f,  -177.9f, -50.8f,  -178.1f, -50.1f,
-    -178.2f, -49.4f,  -178.2f, -48.7f,  -177.8f, -48.1f,  -177.1f, -46.9f,  -176.7f, -46.3f,
-    -176.4f, -45.6f,  -176.0f, -45.0f,  -175.3f, -43.8f,  -174.9f, -43.2f,  -174.2f, -42.0f,
-    -173.4f, -40.7f,  -173.1f, -40.1f,  -172.7f, -39.5f,  -172.0f, -38.3f,  -171.6f, -37.7f,
-    -170.5f, -35.9f,  -170.1f, -35.3f,  -169.7f, -34.6f,  -169.3f, -34.0f,  -168.6f, -32.8f,
-    -168.2f, -32.2f,  -166.3f, -29.2f,  -165.9f, -28.6f,  -163.2f, -24.4f,  -162.8f, -23.8f,
-    -141.8f, 6.8f,    -141.4f, 7.4f,    -139.4f, 10.3f,   -139.0f, 10.9f,   -138.5f, 11.5f,
-    -138.1f, 12.1f,   -137.3f, 13.2f,   -136.9f, 13.8f,   -136.0f, 15.0f,   -135.6f, 15.6f,
-    -135.2f, 16.1f,   -134.8f, 16.7f,   -133.9f, 17.9f,   -133.5f, 18.4f,   -133.1f, 19.0f,
-    -131.8f, 20.7f,   -131.4f, 21.3f,   -130.1f, 23.0f,   -129.7f, 23.6f,   -128.4f, 25.3f,
-    -128.0f, 25.9f,   -126.7f, 27.6f,   -126.3f, 28.2f,   -125.4f, 29.3f,   -125.0f, 29.9f,
-    -124.1f, 31.0f,   -123.7f, 31.6f,   -122.8f, 32.7f,   -122.4f, 33.3f,   -121.5f, 34.4f,
-    -121.1f, 35.0f,   -120.6f, 35.6f,   -120.2f, 36.1f,   -119.7f, 36.7f,   -119.3f, 37.2f,
-    -118.9f, 37.8f,   -118.4f, 38.4f,   -118.0f, 38.9f,   -117.5f, 39.5f,   -117.1f, 40.0f,
-    -116.6f, 40.6f,   -116.2f, 41.1f,   -115.7f, 41.7f,   -115.2f, 42.2f,   -114.8f, 42.8f,
-    -114.3f, 43.3f,   -113.9f, 43.9f,   -113.4f, 44.4f,   -112.4f, 45.5f,   -112.0f, 46.0f,
-    -111.5f, 46.5f,   -110.5f, 47.6f,   -110.0f, 48.1f,   -109.6f, 48.6f,   -109.1f, 49.2f,
-    -108.6f, 49.7f,   -107.7f, 50.8f,   -107.2f, 51.3f,   -105.7f, 52.9f,   -105.3f, 53.4f,
-    -104.8f, 53.9f,   -104.3f, 54.5f,   -103.8f, 55.0f,   -100.7f, 58.0f,   -100.2f, 58.4f,
-    -99.7f,  58.9f,   -99.1f,  59.3f,   -97.2f,  60.3f,   -96.5f,  60.1f,   -95.9f,  59.7f,
-    -95.3f,  59.4f,   -94.6f,  59.1f,   -93.9f,  58.9f,   -92.6f,  58.5f,   -91.9f,  58.4f,
-    -91.2f,  58.2f,   -90.5f,  58.1f,   -89.7f,  58.0f,   -89.0f,  57.9f,   -86.2f,  57.6f,
-    -85.5f,  57.5f,   -84.1f,  57.4f,   -83.4f,  57.3f,   -82.6f,  57.3f,   -81.9f,  57.2f,
-    -81.2f,  57.2f,   -80.5f,  57.1f,   -79.8f,  57.1f,   -78.4f,  57.0f,   -77.7f,  57.0f,
-    -75.5f,  56.9f,   -74.8f,  56.9f,   -71.9f,  56.8f,   -71.2f,  56.8f,   0.0f,    56.8f,
 };
 
 constexpr std::array<float, 199 * 2> gc_body = {
