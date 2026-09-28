@@ -185,7 +185,8 @@ private:
         if (handle == VK_NULL_HANDLE) {
             guest_descriptor_queue.AddBuffer(handle, 0, 0, VK_WHOLE_SIZE);
         } else {
-            guest_descriptor_queue.AddBuffer(handle, buffer.DeviceAddress(), offset, size);
+            guest_descriptor_queue.AddBuffer(handle, buffer.DeviceAddress(), offset,
+                                             size == 0 ? VK_WHOLE_SIZE : size);
         }
     }
 

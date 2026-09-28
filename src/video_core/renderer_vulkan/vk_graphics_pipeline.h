@@ -98,6 +98,10 @@ public:
     bool UsesExtendedDynamicState() const noexcept {
         return key.state.extended_dynamic_state != 0;
     }
+
+    bool IsBound() const noexcept {
+        return static_cast<bool>(pipeline);
+    }
     GraphicsPipeline& operator=(GraphicsPipeline&&) noexcept = delete;
     GraphicsPipeline(GraphicsPipeline&&) noexcept = delete;
 

@@ -601,6 +601,9 @@ struct RangedBarrierRange {
 void CopyBufferToImage(vk::CommandBuffer cmdbuf, VkBuffer src_buffer, VkImage image,
                        VkImageAspectFlags aspect_mask, bool is_initialized,
                        std::span<const VkBufferImageCopy> copies) {
+    if (copies.empty() || src_buffer == VK_NULL_HANDLE || image == VK_NULL_HANDLE) {
+        return;
+    }
     static constexpr VkAccessFlags WRITE_ACCESS_FLAGS =
                                            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
                                            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
@@ -1537,6 +1540,9 @@ bool TextureCacheRuntime::IsFormatScalable(PixelFormat format) {
 
 void TextureCacheRuntime::CopyImage(Image& dst, Image& src,
                                     std::span<const VideoCommon::ImageCopy> copies) {
+    if (copies.empty() || dst.Handle() == VK_NULL_HANDLE || src.Handle() == VK_NULL_HANDLE) {
+        return;
+    }
     if (ENABLE_MSAA_RESOLVE_CONSUME) {
         InvalidateResolveShadow(dst.Handle());
     }
@@ -2130,6 +2136,9 @@ void Image::DownloadMemory(std::span<VkBuffer> buffers_span, std::span<size_t> o
                                        0, read_barrier);
 
                 for (size_t index = 0; index < buffers.size(); index++) {
+                    if (buffers[index] == VK_NULL_HANDLE || vk_copies[index].empty()) {
+                        continue;
+                    }
                     cmdbuf.CopyImageToBuffer(image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffers[index],
                                              vk_copies[index]);
                 }
@@ -2199,6 +2208,9 @@ void Image::DownloadMemory(std::span<VkBuffer> buffers_span, std::span<size_t> o
                                    0, read_barrier);
 
             for (size_t index = 0; index < buffers.size(); index++) {
+                if (buffers[index] == VK_NULL_HANDLE || vk_copies[index].empty()) {
+                    continue;
+                }
                 cmdbuf.CopyImageToBuffer(image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffers[index],
                                          vk_copies[index]);
             }

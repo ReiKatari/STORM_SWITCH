@@ -670,9 +670,10 @@ public:
             return;
         }
         scheduler.RequestOutsideRenderPassOperationContext();
-        scheduler.Record([this, dst_buffer = stagging_buffer.buffer, extra_offset, start,
+        const VkBuffer src_buffer = *buffer;
+        scheduler.Record([src_buffer, dst_buffer = stagging_buffer.buffer, extra_offset, start,
                           size](vk::CommandBuffer cmdbuf) {
-            if (!buffer || *buffer == VK_NULL_HANDLE || dst_buffer == VK_NULL_HANDLE) {
+            if (src_buffer == VK_NULL_HANDLE || dst_buffer == VK_NULL_HANDLE) {
                 return;
             }
             std::array<VkBufferCopy, 1> copy{VkBufferCopy{
@@ -680,7 +681,7 @@ public:
                 .dstOffset = extra_offset,
                 .size = size * QUERY_SIZE,
             }};
-            cmdbuf.CopyBuffer(*buffer, dst_buffer, copy);
+            cmdbuf.CopyBuffer(src_buffer, dst_buffer, copy);
         });
     }
 
@@ -947,6 +948,7 @@ private:
             return;
         }
         has_flushed_end_pending = true;
+        scheduler.NotifyTransformFeedbackUsage();
         // Refresh buffers state before beginning transform feedback so counters are up-to-date
         UpdateBuffers();
         if (!has_started || buffers_count == 0) {

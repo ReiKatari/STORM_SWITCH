@@ -595,6 +595,10 @@ bool GraphicsPipeline::ConfigureDraw(const RescalingPushConstant& rescaling,
         }
     }
 
+    if (is_built.load(std::memory_order::relaxed) && !pipeline) {
+        return false;
+    }
+
     scheduler.RequestRenderpass(texture_cache.GetFramebuffer());
     if (!is_built.load(std::memory_order::relaxed)) {
         // Wait for the pipeline to be built

@@ -266,7 +266,11 @@ void RasterizerVulkan::Draw(bool is_indexed, u32 instance_count) {
         const u32 num_instances{instance_count};
         const DrawParams draw_params{MakeDrawParams(draw_state, num_instances, is_indexed)};
 
-        scheduler.Record([draw_params](vk::CommandBuffer cmdbuf) {
+        GraphicsPipeline* const current_pipeline{pipeline_cache.CurrentGraphicsPipeline()};
+        scheduler.Record([current_pipeline, draw_params](vk::CommandBuffer cmdbuf) {
+            if (!current_pipeline || !current_pipeline->IsBound()) {
+                return;
+            }
             if (draw_params.is_indexed) {
                 cmdbuf.DrawIndexed(draw_params.num_vertices, draw_params.num_instances,
                                    draw_params.first_index, draw_params.base_vertex,
@@ -1206,8 +1210,10 @@ void RasterizerVulkan::HandleTransformFeedback() {
             GPU::Logging::GPULogger::GetInstance().LogExtensionUsage(
                 "VK_EXT_transform_feedback", "HandleTransformFeedback");
         }
-        UNIMPLEMENTED_IF(regs.IsShaderConfigEnabled(Maxwell::ShaderType::TessellationInit) ||
-                         regs.IsShaderConfigEnabled(Maxwell::ShaderType::Tessellation));
+        if (regs.IsShaderConfigEnabled(Maxwell::ShaderType::TessellationInit) ||
+            regs.IsShaderConfigEnabled(Maxwell::ShaderType::Tessellation)) {
+            LOG_WARNING(Render_Vulkan, "Transform feedback with tessellation is not fully supported");
+        }
     }
 }
 

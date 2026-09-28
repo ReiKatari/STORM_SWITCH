@@ -79,7 +79,7 @@ public:
         *(payload_cursor++) = VkDescriptorBufferInfo{
             .buffer = buffer,
             .offset = offset,
-            .range = size,
+            .range = (size == 0) ? VK_WHOLE_SIZE : size,
         };
     }
 
@@ -91,7 +91,7 @@ public:
         }
         *(payload_cursor++) = DescriptorAddress{
             .address = base_address == 0 ? 0 : base_address + offset,
-            .range = base_address == 0 ? VK_WHOLE_SIZE : size,
+            .range = (base_address == 0 || size == 0) ? VK_WHOLE_SIZE : size,
             .format = VK_FORMAT_UNDEFINED,
         };
     }

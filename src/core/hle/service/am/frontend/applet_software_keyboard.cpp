@@ -232,11 +232,21 @@ void SoftwareKeyboard::InitializeForeground() {
 
     const auto& work_buffer = work_buffer_storage->GetData();
 
-    std::vector<char16_t> initial_string(swkbd_config_common.initial_string_length);
+    const size_t offset = swkbd_config_common.initial_string_offset;
+    const size_t length_bytes = swkbd_config_common.initial_string_length * sizeof(char16_t);
 
-    std::memcpy(initial_string.data(),
-                work_buffer.data() + swkbd_config_common.initial_string_offset,
-                swkbd_config_common.initial_string_length * sizeof(char16_t));
+    if (offset >= work_buffer.size() || length_bytes == 0) {
+        LOG_WARNING(Service_AM, "Invalid initial string offset={} with buffer size={}", offset, work_buffer.size());
+        InitializeFrontendNormalKeyboard();
+        return;
+    }
+
+    const size_t available_bytes = work_buffer.size() - offset;
+    const size_t copy_bytes = (std::min)(length_bytes, available_bytes);
+    const size_t copy_elements = copy_bytes / sizeof(char16_t);
+
+    std::vector<char16_t> initial_string(copy_elements);
+    std::memcpy(initial_string.data(), work_buffer.data() + offset, copy_elements * sizeof(char16_t));
 
     initial_text = Common::UTF16StringFromFixedZeroTerminatedBuffer(initial_string.data(),
                                                                     initial_string.size());

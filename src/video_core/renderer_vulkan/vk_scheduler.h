@@ -90,6 +90,11 @@ public:
     /// Invalidates current command buffer state except for render passes
     void InvalidateState();
 
+    /// Notifies that transform feedback was used in the current render pass.
+    void NotifyTransformFeedbackUsage() noexcept {
+        state.has_xfb = true;
+    }
+
     /// Assigns the query cache.
     void SetQueryCache(VideoCommon::QueryCacheBase<QueryCacheParams>& query_cache_) {
         query_cache = &query_cache_;
@@ -248,6 +253,7 @@ private:
         bool needs_state_enable_refresh = false;
         u32 descriptor_buffer_chunk = 0;
         bool descriptor_buffer_bound = false;
+        bool has_xfb = false;
     };
 
     struct DeferredClear {

@@ -124,9 +124,14 @@ void MiiEdit::Execute() {
         break;
     }
     case MiiEditAppletMode::EditMii: {
-        const MiiEditCharInfo edit_char_info{
-            .mii_info{applet_input_v4.char_info.mii_info},
-        };
+        MiiEditCharInfo edit_char_info{};
+        if (applet_input_common.version == MiiEditAppletVersion::Version3) {
+            Mii::CharInfo char_info{};
+            manager->BuildRandom(char_info, Mii::Age::All, Mii::Gender::All, Mii::Race::All);
+            edit_char_info.mii_info = char_info;
+        } else {
+            edit_char_info.mii_info = applet_input_v4.char_info.mii_info;
+        }
 
         MiiEditOutputForCharInfoEditing(MiiEditResult::Success, edit_char_info);
         break;

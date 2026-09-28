@@ -401,6 +401,7 @@ void Scheduler::InvalidateState() {
     state.graphics_pipeline = nullptr;
     state.rescaling_defined = false;
     state.descriptor_buffer_bound = false;
+    state.has_xfb = false;
     state_tracker.InvalidateCommandBufferState();
 }
 
@@ -428,10 +429,13 @@ void Scheduler::EndRenderPass()
         query_cache->CounterEnable(VideoCommon::QueryType::ZPassPixelCount64, false);
         query_cache->NotifySegment(false);
 
+        const bool emit_xfb_barrier = device.IsExtTransformFeedbackSupported() && state.has_xfb;
+        state.has_xfb = false;
+
         Record([num_images = num_renderpass_images,
                        images = renderpass_images,
                        ranges = renderpass_image_ranges,
-                       has_transform_feedback = device.IsExtTransformFeedbackSupported()](
+                       emit_xfb_barrier](
                           vk::CommandBuffer cmdbuf) {
             std::array<VkImageMemoryBarrier, 9> barriers;
             size_t valid_barriers = 0;
@@ -478,7 +482,7 @@ void Scheduler::EndRenderPass()
                                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, vk::PIPELINE_STAGE_GRAPHICS_COMPUTE,
                                        0, nullptr, nullptr, vk::Span(barriers.data(), valid_barriers));
             }
-            if (has_transform_feedback) {
+            if (emit_xfb_barrier) {
                 static constexpr VkMemoryBarrier XFB_OUTPUT_BARRIER{
                     .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
                     .pNext = nullptr,
