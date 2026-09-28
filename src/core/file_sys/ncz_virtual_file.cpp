@@ -647,7 +647,7 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                     std::memset(data + bytes_read + read, 0, copy_size - read);
                 }
             } else {
-                constexpr std::size_t CACHE_SLOTS = 32;
+                constexpr std::size_t CACHE_SLOTS = 64;
                 std::size_t slot = block_index % CACHE_SLOTS;
                 bool hit = false;
                 {
@@ -664,8 +664,9 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                 }
 
                 if (!hit) {
-                    std::vector<u8> compressed_data(block.compressed_size);
-                    if (SafeRead(file, compressed_data.data(), block.compressed_size, block.offset) != block.compressed_size) {
+                    thread_local std::vector<u8> tls_compressed;
+                    tls_compressed.resize(block.compressed_size);
+                    if (SafeRead(file, tls_compressed.data(), block.compressed_size, block.offset) != block.compressed_size) {
                         LOG_ERROR(Service_FS, "Failed to read compressed block {} at offset 0x{:X}", block_index, block.offset);
                         std::memset(data + bytes_read, 0, copy_size);
                         bytes_read += copy_size;
@@ -675,7 +676,7 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                     }
 
                     std::vector<u8> decomp(expected_decompressed_size);
-                    if (!DecompressZstdBlock(compressed_data.data(), block.compressed_size, decomp.data(), expected_decompressed_size)) {
+                    if (!DecompressZstdBlock(tls_compressed.data(), block.compressed_size, decomp.data(), expected_decompressed_size)) {
                         LOG_ERROR(Service_FS, "ZSTD decompression failed at block {} (size: {}, expected: {})", block_index, block.compressed_size, expected_decompressed_size);
                         std::memset(data + bytes_read, 0, copy_size);
                         bytes_read += copy_size;

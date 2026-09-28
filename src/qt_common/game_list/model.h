@@ -51,6 +51,7 @@ public:
     void DonePopulating(const QStringList& watch_list);
 
     void PopulateAsync(QVector<UISettings::GameDir>& game_dirs);
+    void CancelPopulate();
     void WorkerEvent();
 
     bool IsEmpty() const;

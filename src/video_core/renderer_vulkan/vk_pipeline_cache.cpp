@@ -333,7 +333,10 @@ size_t GetTotalPipelineWorkers() {
         // Reserve at least 2 cores for guest CPU and GPU threads to prevent thermal spikes and micro-stutter
         return std::clamp<size_t>(max_core_threads > 2 ? max_core_threads - 2 : 1, 1ULL, 8ULL);
     }
-    return std::max<size_t>(hardware_threads, 1ULL);
+    // Balanced high-performance mode: reserve cores for host OS and main guest threads
+    // to prevent 100% all-core thermal saturation, micro-stutters and overheating.
+    const size_t balanced_workers = hardware_threads > 4 ? (hardware_threads - 2) : max_core_threads;
+    return std::clamp<size_t>(balanced_workers, 1ULL, 16ULL);
 #endif
 }
 

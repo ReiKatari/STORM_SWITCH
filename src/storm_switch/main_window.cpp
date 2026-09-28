@@ -791,6 +791,9 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 }
 
 MainWindow::~MainWindow() {
+    if (game_list) {
+        game_list->CancelPopulate();
+    }
     ConfigurationShared::SetGlobalSettingChangeCallback(nullptr);
     if (s_main_window_instance == this) {
         s_main_window_instance = nullptr;
@@ -4212,7 +4215,10 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
     LOG_INFO(Frontend, "STORM SWITCH starting...");
 
-    game_list->setDisabled(true);
+    if (game_list) {
+        game_list->CancelPopulate();
+        game_list->setDisabled(true);
+    }
 
     if (params.program_id == 0 ||
         params.program_id > static_cast<u64>(Service::AM::AppletProgramId::MaxProgramId)) {

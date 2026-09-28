@@ -697,32 +697,9 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                     icon_bytes.assign(qdata.begin(), qdata.end());
                 }
                 if (icon_bytes.empty()) {
-                    try {
-                        const auto fallback_file = vfs->OpenFile(file_info.physical_name, FileSys::OpenMode::Read);
-                        if (fallback_file) {
-                            auto fallback_loader = Loader::GetLoader(system, fallback_file, cached.program_id);
-                            if (!fallback_loader) {
-                                fallback_loader = Loader::GetLoader(system, fallback_file);
-                            }
-                            if (fallback_loader) {
-                                fallback_loader->ReadIcon(icon_bytes);
-                                if (icon_bytes.empty()) {
-                                    const FileSys::PatchManager p{cached.program_id, system.GetFileSystemController(), system.GetContentProvider()};
-                                    const auto ctrl = p.GetControlMetadata();
-                                    if (ctrl.second != nullptr) {
-                                        icon_bytes = ctrl.second->ReadAllBytes();
-                                    }
-                                }
-                                if (!icon_bytes.empty()) {
-                                    void(Common::FS::CreateParentDirs(icon_file_path));
-                                    QFile out_icon(QString::fromStdString(icon_file_path));
-                                    if (out_icon.open(QFile::WriteOnly)) {
-                                        out_icon.write(reinterpret_cast<const char*>(icon_bytes.data()), icon_bytes.size());
-                                    }
-                                }
-                            }
-                        }
-                    } catch (...) {}
+                    // Do not block initial game list population with heavy multi-gigabyte disk seeks over network/slow storage.
+                    // Instead, schedule this file for background icon extraction in Step 2 so the game list populates instantly.
+                    uncached_files.push_back(file_info);
                 }
 
                 auto entry = MakeCachedGameListEntry(
@@ -905,17 +882,19 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 meta.addons_text = addons_str.toStdString();
                 meta.is_bootable = true;
                 metadata_cache[file_info.physical_name] = std::move(meta);
-                metadata_cache_dirty = true;
+                const bool already_emitted = emitted_entries.contains(file_info.physical_name);
                 emitted_entries.insert(file_info.physical_name);
 
-                RecordEvent([=](GameListModel* model) { model->AddEntry(entry, parent_dir); });
+                if (!already_emitted) {
+                    RecordEvent([=](GameListModel* model) { model->AddEntry(entry, parent_dir); });
+                }
             };
 
             if (program_ids.size() > 1 &&
                 (file_type == Loader::FileType::XCI || file_type == Loader::FileType::XCZ ||
                  file_type == Loader::FileType::NSP || file_type == Loader::FileType::NSZ)) {
                 for (const auto id : program_ids) {
-                    if ((id & 0xFFF) != 0) {
+                    if (stop_requested || (id & 0xFFF) != 0) {
                         continue;
                     }
                     auto sub_loader = Loader::GetLoader(system, file, id);
@@ -925,7 +904,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                     addEntry(sub_loader, id);
                 }
             } else {
-                if (program_id != 0 && (program_id & 0xFFF) == 0) {
+                if (!stop_requested && program_id != 0 && (program_id & 0xFFF) == 0) {
                     addEntry(loader, program_id);
                 }
             }
@@ -934,6 +913,8 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
             if (uncached_count % 5 == 0) {
                 SaveMetadataCache();
             }
+            // Yield CPU and I/O bus to keep GUI and concurrent game launches completely smooth
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
         } catch (const std::exception& e) {
             LOG_WARNING(Frontend, "Exception while scanning file {}: {}", file_info.physical_name,
                         e.what());

@@ -68,6 +68,15 @@ void GameListModel::PopulateAsync(QVector<UISettings::GameDir>& game_dirs) {
     QThreadPool::globalInstance()->start(current_worker.get());
 }
 
+void GameListModel::CancelPopulate() {
+    if (refresh_timer) {
+        refresh_timer->stop();
+    }
+    if (current_worker) {
+        current_worker->Cancel();
+    }
+}
+
 void GameListModel::WorkerEvent() {
     current_worker->ProcessEvents(this);
 }

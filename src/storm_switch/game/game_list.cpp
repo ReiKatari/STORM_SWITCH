@@ -219,6 +219,12 @@ void GameList::PopulateAsync(QVector<UISettings::GameDir>& game_dirs) {
     item_model->PopulateAsync(game_dirs);
 }
 
+void GameList::CancelPopulate() {
+    if (item_model) {
+        item_model->CancelPopulate();
+    }
+}
+
 void GameList::SaveInterfaceLayout() {
     tree_view->SaveInterfaceLayout();
 }

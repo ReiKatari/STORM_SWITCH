@@ -54,6 +54,11 @@ public:
     /// Starts the processing of directory tree information.
     void run() override;
 
+    /// Requests immediate cancellation of the background scanning process.
+    void Cancel() {
+        stop_requested.store(true);
+    }
+
 public:
     /**
      * Synchronously processes any events queued by the worker.

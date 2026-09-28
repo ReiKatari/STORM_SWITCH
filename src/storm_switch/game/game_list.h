@@ -76,6 +76,7 @@ public:
     bool IsEmpty() const;
 
     void PopulateAsync(QVector<UISettings::GameDir>& game_dirs);
+    void CancelPopulate();
 
     void SaveInterfaceLayout();
     void LoadInterfaceLayout();
