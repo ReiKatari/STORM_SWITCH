@@ -94,10 +94,8 @@ Services::Services(std::shared_ptr<SM::ServiceManager>& sm, Core::System& system
         {"bsdsocket",  &Sockets::LoopProcess},
         {"nvnflinger", &Nvnflinger::LoopProcess},
     })
-        m_service_threads.push_back(
-            kernel.RunOnHostCoreProcess(std::string(e.first), [&system, f = e.second] { f(system); }));
-    m_service_threads.push_back(
-        kernel.RunOnHostCoreProcess("vi", [&, token] { VI::LoopProcess(system, token); }));
+        kernel.RunOnHostCoreProcess(std::string(e.first), [&system, f = e.second] { f(system); }).detach();
+    kernel.RunOnHostCoreProcess("vi", [&, token] { VI::LoopProcess(system, token); }).detach();
 
     // Avoid cold clones of lambdas -- succintly
     for (auto const& e : std::vector<std::pair<std::string_view, void (*)(Core::System&)>>{
@@ -151,10 +149,9 @@ Services::Services(std::shared_ptr<SM::ServiceManager>& sm, Core::System& system
         {"ssl",        &SSL::LoopProcess},
         {"usb",        &USB::LoopProcess},
         {"i2c",        &I2C::LoopProcess},
-        {"gpio",       &GPIO::LoopProcess},
+        {"gpio",        &GPIO::LoopProcess},
     })
-        m_service_threads.push_back(
-            kernel.RunOnHostCoreProcess(std::string(e.first), [&system, f = e.second] { f(system); }));
+        kernel.RunOnGuestCoreProcess(std::string(e.first), [&system, f = e.second] { f(system); });
 }
 
 } // namespace Service

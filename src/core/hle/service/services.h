@@ -6,9 +6,6 @@
 
 #pragma once
 
-#include <thread>
-#include <vector>
-
 #include "common/polyfill_thread.h"
 #include "core/hle/service/sm/sm.h"
 
@@ -21,9 +18,6 @@ public:
     explicit Services(std::shared_ptr<SM::ServiceManager>& sm, Core::System& system,
                       std::stop_token token);
     ~Services() = default;
-
-private:
-    std::vector<std::jthread> m_service_threads;
 };
 
 } // namespace Service
