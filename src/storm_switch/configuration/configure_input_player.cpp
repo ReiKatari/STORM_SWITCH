@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2016 Citra Emulator Project
@@ -7,7 +7,9 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <QComboBox>
 #include <QInputDialog>
+#include <QLabel>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -21,6 +23,7 @@
 #include "input_common/drivers/mouse.h"
 #include "input_common/main.h"
 #include "qt_common/config/qt_config.h"
+#include "qt_common/config/uisettings.h"
 #include "ui_configure_input_player.h"
 #include "storm_switch/bootmanager.h"
 #include "storm_switch/configuration/configure_input_player.h"
@@ -375,6 +378,64 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
     analog_map_range_spinbox = {ui->spinboxLStickRange, ui->spinboxRStickRange};
 
     ui->controllerFrame->SetController(emulated_controller);
+
+    // Setup 3D Pro Controller skin selector and interactive controls toolbar
+    {
+        auto* const top_toolbar = new QHBoxLayout();
+        top_toolbar->setContentsMargins(10, 6, 10, 4);
+        top_toolbar->setSpacing(8);
+
+        auto* const skin_label = new QLabel(tr("Оформление:"), this);
+        skin_label->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 11px;"));
+
+        auto* const combo_skin = new QComboBox(this);
+        combo_skin->setMinimumWidth(230);
+        combo_skin->addItem(tr("Классический полупрозрачный"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::ClassicBlack));
+        combo_skin->addItem(tr("Xenoblade Chronicles 2 (Pyra/Aegis)"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::Xenoblade2));
+        combo_skin->addItem(tr("Super Smash Bros. Ultimate"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::SmashBrosUltimate));
+        combo_skin->addItem(tr("The Legend of Zelda: Tears of the Kingdom"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::ZeldaTotk));
+        combo_skin->addItem(tr("Splatoon 3 Neon"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::Splatoon3));
+        combo_skin->addItem(tr("Monster Hunter Rise"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::MonsterHunterRise));
+        combo_skin->addItem(tr("Pokémon Scarlet and Violet"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::PokemonScarletViolet));
+        combo_skin->addItem(tr("STORM Cyberpunk OLED"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::CyberStorm));
+
+        const u32 cur_skin_idx = std::min(UISettings::values.controller_skin.GetValue(),
+                                          static_cast<u32>(PlayerControlPreview::ControllerSkin::Count) - 1);
+        combo_skin->setCurrentIndex(static_cast<int>(cur_skin_idx));
+        ui->controllerFrame->SetSkin(static_cast<PlayerControlPreview::ControllerSkin>(cur_skin_idx));
+
+        connect(combo_skin, QOverload<int>::of(&QComboBox::currentIndexChanged), [this, combo_skin](int idx) {
+            const auto skin = static_cast<PlayerControlPreview::ControllerSkin>(combo_skin->itemData(idx).toInt());
+            ui->controllerFrame->SetSkin(skin);
+            UISettings::values.controller_skin = static_cast<u32>(skin);
+        });
+
+        auto* const hint_3d = new QLabel(tr("3D обзор: ЛКМ — вращение | Колесико — зум"), this);
+        hint_3d->setStyleSheet(QStringLiteral("color: #888888; font-size: 11px;"));
+
+        auto* const btn_reset_view = new QPushButton(tr("↺ 3D вид"), this);
+        btn_reset_view->setToolTip(tr("Сбросить 3D вращение и масштаб к исходному виду"));
+        connect(btn_reset_view, &QPushButton::clicked, [this] {
+            ui->controllerFrame->ResetView();
+        });
+
+        top_toolbar->addWidget(skin_label);
+        top_toolbar->addWidget(combo_skin);
+        top_toolbar->addStretch(1);
+        top_toolbar->addWidget(hint_3d);
+        top_toolbar->addWidget(btn_reset_view);
+
+        ui->verticalLayout_4->addLayout(top_toolbar);
+        ui->verticalLayout_4->addStretch(1);
+    }
 
     for (int button_id = 0; button_id < Settings::NativeButton::NumButtons; ++button_id) {
         auto* const button = button_map[button_id];

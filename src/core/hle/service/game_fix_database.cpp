@@ -74,7 +74,14 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "0"},
             {"System\\memory_layout_mode", "0"}
         },
-        {0x010034B00E14C800ULL}
+        {
+            0x010034B00E14C800ULL,
+            0x0100C60010228000ULL,
+            0x0100C60010228800ULL,
+            0x01008F400E75A000ULL,
+            0x01008F400E75A800ULL,
+            0x0100BA700E340000ULL
+        }
     },
     {
         0x010003000E146000ULL,
@@ -337,10 +344,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             0x010085800E33E000ULL,
             0x01000BD011936000ULL,
             0x0100F7A011938000ULL,
-            0x0100BA700E340000ULL,
-            0x0100C60010228000ULL,
             0x0100AC300919A000ULL,
-            0x01008F400E75A000ULL,
             0x01004C900C1F8000ULL,
             0x010077800F838000ULL
         }

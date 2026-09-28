@@ -945,18 +945,21 @@ void IGeneralService::GetInternetConnectionStatus(HLERequestContext& ctx) {
 
     const bool is_airplane = Settings::values.airplane_mode.GetValue();
     const u64 current_title = system.GetApplicationProcessProgramID();
-    const bool is_tokyo_2020 = (current_title == 0x0100C60010228000ULL ||
-                                current_title == 0x01008F400E75A000ULL ||
-                                current_title == 0x0100BA700E340000ULL);
+    const u64 base_title = current_title & ~0x800ULL;
+    const bool is_tokyo_2020 = (base_title == 0x010034B00E14C000ULL ||
+                                base_title == 0x0100C60010228000ULL ||
+                                base_title == 0x01008F400E75A000ULL ||
+                                base_title == 0x0100BA700E340000ULL ||
+                                base_title == 0x010003000E146000ULL);
 
-    if (is_airplane) {
-        out.type = 1;
-        out.bars = 0;
-        out.state = InternetConnectionStatus::ConnectingUnknown1;
-    } else if (is_tokyo_2020) {
+    if (is_tokyo_2020) {
         out.type = 1;
         out.bars = 3;
         out.state = InternetConnectionStatus::Connected;
+    } else if (is_airplane) {
+        out.type = 1;
+        out.bars = 0;
+        out.state = InternetConnectionStatus::ConnectingUnknown1;
     } else if (!st.connected) {
         out.type = 1;
         out.bars = 0;

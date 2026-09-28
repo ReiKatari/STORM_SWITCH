@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>650</width>
+    <width>720</width>
     <height>700</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>0</width>
+    <width>720</width>
     <height>675</height>
    </size>
   </property>
@@ -26,13 +26,13 @@
       <widget class="QListWidget" name="selectorList">
        <property name="minimumSize">
         <size>
-         <width>120</width>
+         <width>170</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>120</width>
+         <width>170</width>
          <height>16777215</height>
         </size>
        </property>

@@ -50,8 +50,36 @@ public:
     // Updates input on scheduled interval
     void UpdateInput();
 
+    enum class ControllerSkin : u32 {
+        ClassicBlack = 0,
+        Xenoblade2,
+        SmashBrosUltimate,
+        ZeldaTotk,
+        Splatoon3,
+        MonsterHunterRise,
+        PokemonScarletViolet,
+        CyberStorm,
+        Count
+    };
+
+    // Sets controller appearance skin edition
+    void SetSkin(ControllerSkin skin);
+    ControllerSkin GetSkin() const { return current_skin; }
+
+    // Resets 3D perspective orientation and zoom
+    void ResetView();
+    float GetRotationX() const { return rot_x; }
+    float GetRotationY() const { return rot_y; }
+    float GetZoom() const { return zoom; }
+    void SetRotation(float rx, float ry, float z = 1.0f);
+
 protected:
     void paintEvent(QPaintEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
 
 private:
     enum class Direction : std::size_t {
@@ -100,6 +128,15 @@ private:
         QColor slider_arrow{};
         QColor deadzone{};
         QColor charging{};
+        QColor grip_left_highlight{};
+        QColor grip_right_highlight{};
+        QColor grip_left_shadow{};
+        QColor grip_right_shadow{};
+        QColor body_inner{};
+        QColor body_rim{};
+        QColor emblem{};
+        QColor emblem_secondary{};
+        QColor home_led{};
     };
 
     void UpdateColors();
@@ -230,4 +267,11 @@ private:
     Core::HID::TriggerValues trigger_values{};
     Core::HID::BatteryValues battery_values{};
     Core::HID::MotionState motion_values{};
+
+    ControllerSkin current_skin{ControllerSkin::ClassicBlack};
+    float rot_x{0.0f};
+    float rot_y{0.0f};
+    float zoom{1.0f};
+    bool is_mouse_dragging{false};
+    QPoint last_mouse_pos{};
 };

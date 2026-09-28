@@ -1804,9 +1804,6 @@
                <bold>true</bold>
               </font>
              </property>
-             <property name="styleSheet">
-              <string notr="true">image: url(:/controller/pro);</string>
-             </property>
              <layout class="QVBoxLayout" name="verticalLayout_4">
               <property name="leftMargin">
                <number>0</number>

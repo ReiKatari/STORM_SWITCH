@@ -475,20 +475,20 @@ object GameFixDatabase {
         ),
         GameFixProfile(
             0x0100C60010228000L,
-            "Streets of Rage 4",
+            "Tokyo 2020 Olympics - The Official Video Game",
             "• Зависание на 0 FPS при старте из-за сетевого опроса серверов DotEmu\n• Дедлок и черный экран при декодировании вступительных видеороликов NVDEC на ГПУ\n• Рассинхронизация 2D-презентации кадров при асинхронном выводе",
             "• 0 FPS boot hang caused by DotEmu server network polling\n• Deadlock and black screen during GPU NVDEC intro video playback\n• 2D presentation desync with asynchronous presentation",
             "🎮 Графика и видео:\n• Графический API: Vulkan (наивысшая производительность и стабильность)\n• Точность ГПУ: Обычная (максимальная кадровая частота)\n• Декодирование видео NVDEC: ЦП (стабильное воспроизведение вступительных и сюжетных видеороликов)\n• Декодирование текстур ASTC: ГПУ (вычислительные шейдеры)\n• Пересжатие текстур ASTC: Без сжатия (оригинальное качество текстур)\n• Асинхронная компиляция шейдеров: Включено (устранение микрофризов)\n• Дисковый кэш шейдеров: Включено (быстрая повторная загрузка сцен)\n• Быстрое время ГПУ: Включено (предотвращает дроп динамического разрешения)\n• Асинхронный вывод кадров: Отключено (синхронный кадровый пейсинг)\n• Синхронизация операций памяти: Отключено (высокая пропускная способность)\n• Реактивный сброс памяти: Отключено (устранение задержек рендеринга)\n• Сборщик мусора VRAM: Отключено (устраняет просадки и задержки 200 мс)\n• Досрочное освобождение фенсов: Отключено (стабильная синхронизация очереди)\n• Поведение барьеров ГПУ: По умолчанию (Default)\n• Точность DMA: Быстрая (Fast, максимальная скорость передачи)\n\n⚙️ Процессор и память:\n• Точность ЦП: Авто (Auto, автоматическая адаптация Dynarmic)\n• Быстрая память (Fastmem): Включено (прямой доступ Host MMU)\n• Игнорировать прерывания памяти: Включено (защита от крашей за границами буфера)\n• Конфигурация памяти DRAM: Стандартная 4 ГБ (оригинальный объем памяти Switch)\n\n🌐 Система и сеть:\n• Режим «В самолете»: Включено (предотвращает дедлоки сетевых сокетов)",
             "🎮 Graphics and Video:\n• Graphics API: Vulkan (highest performance and stability)\n• GPU Accuracy: Normal (maximum framerate)\n• NVDEC Video Emulation: CPU (stable intro and cutscene video playback)\n• ASTC Texture Decoding: GPU (compute shaders)\n• ASTC Texture Recompression: Uncompressed (original texture fidelity)\n• Asynchronous Shaders: Enabled (eliminates ingame stuttering)\n• Disk Shader Cache: Enabled (fast subsequent scene loading)\n• Fast GPU Time: Enabled (prevents dynamic resolution drops)\n• Async Presentation: Disabled (synchronous frame presentation)\n• Sync Memory Operations: Disabled (high bandwidth throughput)\n• Reactive Flushing: Disabled (prevents rendering pipeline stalls)\n• VRAM Garbage Collection: Disabled (eliminates FPS drops and 200ms queue stalls)\n• Early Release Fences: Disabled (stable queue synchronization)\n• GPU Fence Behavior: Default (driver recommended)\n• DMA Accuracy: Fast (maximum transfer speed)\n\n⚙️ CPU and Memory:\n• CPU Accuracy: Auto (dynamic JIT adaptation)\n• Fastmem (Host MMU): Enabled (direct hardware page mapping)\n• Ignore Memory Aborts: Enabled (prevents crashes on out-of-bounds guest memory accesses)\n• DRAM Memory Layout: 4GB Standard (original Switch console memory layout)\n\n🌐 System and Network:\n• Airplane Mode: Enabled (prevents network socket hangs and server matchmaking delays)",
             mapOf(
-                "System\\airplane_mode" to "true",
-                "Network\\airplane_mode" to "true",
-                "Services\\airplane_mode" to "true",
+                "System\\airplane_mode" to "false",
+                "Network\\airplane_mode" to "false",
+                "Services\\airplane_mode" to "false",
                 "Renderer\\nvdec_emulation" to "1",
-                "Renderer\\async_presentation" to "false",
+                "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
@@ -499,7 +499,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\gpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -6088,6 +6088,7 @@ object GameFixDatabase {
                 nameLower.contains("arceus") -> listOf("legends: arceus", "arceus", "01001f5010dfa000")
                 nameLower.contains("sword") || nameLower.contains("shield") -> listOf("sword", "shield", "0100abf008968000", "01008db008c2c000")
                 nameLower.contains("kirby") -> listOf("kirby", "forgotten land", "01004d300c5ae000")
+                nameLower.contains("tokyo 2020") || nameLower.contains("olympic") -> listOf("tokyo 2020", "olympic", "010034b00e14c000", "0100c60010228000", "01008f400e75a000", "0100ba700e340000")
                 nameLower.contains("three houses") -> listOf("three houses", "010055d009f78000")
                 nameLower.contains("engage") -> listOf("engage", "0100a6301214e000")
                 nameLower.contains("astral chain") -> listOf("astral chain", "01007300020fa000")

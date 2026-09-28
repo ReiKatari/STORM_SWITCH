@@ -231,6 +231,9 @@ struct Values {
     // Play time
     Setting<bool> show_play_time{linkage, true, "show_play_time", Category::UiGameList};
 
+    // Controller skin edition
+    Setting<u32> controller_skin{linkage, 0, "controller_skin", Category::Ui};
+
     // misc
     Setting<bool> show_fw_warning{linkage, true, "show_fw_warning", Category::Miscellaneous};
 

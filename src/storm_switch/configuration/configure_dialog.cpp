@@ -170,6 +170,7 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
 
     SetConfiguration();
     PopulateSelectionList();
+    ui->selectorList->setFixedWidth(175);
 
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
         if (index != -1) {

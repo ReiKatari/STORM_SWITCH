@@ -1,16 +1,27 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <cmath>
+#include <QLinearGradient>
+#include <QMatrix4x4>
 #include <QMenu>
+#include <QMouseEvent>
 #include <QPainter>
+#include <QPainterPath>
+#include <QRadialGradient>
 #include <QTimer>
+#include <QWheelEvent>
 
 #include "hid_core/frontend/emulated_controller.h"
 #include "storm_switch/configuration/configure_input_player_widget.h"
+
+namespace {
+constexpr float PI_CONST = 3.14159265358979323846f;
+} // namespace
 
 PlayerControlPreview::PlayerControlPreview(QWidget* parent) : QFrame(parent) {
     is_controller_set = false;
@@ -115,11 +126,137 @@ void PlayerControlPreview::UpdateColors() {
     colors.left = colors.primary;
     colors.right = colors.primary;
 
-    const auto color_left = controller->GetColorsValues()[0].body;
-    const auto color_right = controller->GetColorsValues()[1].body;
-    if (color_left != 0 && color_right != 0) {
-        colors.left = QColor(color_left);
-        colors.right = QColor(color_right);
+    switch (current_skin) {
+    case ControllerSkin::ClassicBlack:
+    default:
+        colors.primary = QColor(42, 45, 52, 235);
+        colors.left = QColor(36, 38, 44);
+        colors.right = QColor(36, 38, 44);
+        colors.grip_left_highlight = QColor(62, 66, 74);
+        colors.grip_right_highlight = QColor(62, 66, 74);
+        colors.grip_left_shadow = QColor(20, 22, 26);
+        colors.grip_right_shadow = QColor(20, 22, 26);
+        colors.body_inner = QColor(28, 30, 36, 180);
+        colors.body_rim = QColor(75, 82, 92);
+        colors.emblem = QColor(0, 0, 0, 0);
+        colors.emblem_secondary = QColor(0, 0, 0, 0);
+        colors.home_led = QColor(0, 210, 255);
+        break;
+
+    case ControllerSkin::Xenoblade2:
+        colors.primary = QColor(38, 41, 46, 235);
+        colors.left = QColor(215, 38, 75);
+        colors.right = QColor(215, 38, 75);
+        colors.grip_left_highlight = QColor(245, 85, 120);
+        colors.grip_right_highlight = QColor(245, 85, 120);
+        colors.grip_left_shadow = QColor(140, 18, 45);
+        colors.grip_right_shadow = QColor(140, 18, 45);
+        colors.body_inner = QColor(30, 25, 32, 190);
+        colors.body_rim = QColor(230, 60, 95);
+        colors.emblem = QColor(0, 245, 185);
+        colors.emblem_secondary = QColor(255, 215, 60);
+        colors.home_led = QColor(0, 245, 185);
+        break;
+
+    case ControllerSkin::SmashBrosUltimate:
+        colors.primary = QColor(36, 38, 42, 235);
+        colors.left = QColor(238, 240, 244);
+        colors.right = QColor(238, 240, 244);
+        colors.grip_left_highlight = QColor(255, 255, 255);
+        colors.grip_right_highlight = QColor(255, 255, 255);
+        colors.grip_left_shadow = QColor(170, 175, 182);
+        colors.grip_right_shadow = QColor(170, 175, 182);
+        colors.body_inner = QColor(25, 26, 30, 190);
+        colors.body_rim = QColor(200, 205, 215);
+        colors.emblem = QColor(245, 248, 252, 220);
+        colors.emblem_secondary = QColor(30, 32, 38, 200);
+        colors.home_led = QColor(255, 225, 100);
+        break;
+
+    case ControllerSkin::ZeldaTotk:
+        colors.primary = QColor(35, 39, 44, 235);
+        colors.left = QColor(30, 34, 40);
+        colors.right = QColor(218, 168, 38);
+        colors.grip_left_highlight = QColor(55, 62, 72);
+        colors.grip_right_highlight = QColor(255, 220, 85);
+        colors.grip_left_shadow = QColor(18, 20, 25);
+        colors.grip_right_shadow = QColor(145, 105, 18);
+        colors.body_inner = QColor(25, 32, 35, 190);
+        colors.body_rim = QColor(220, 175, 50);
+        colors.emblem = QColor(64, 224, 185);
+        colors.emblem_secondary = QColor(230, 185, 45);
+        colors.home_led = QColor(64, 224, 185);
+        break;
+
+    case ControllerSkin::Splatoon3:
+        colors.primary = QColor(38, 40, 46, 230);
+        colors.left = QColor(218, 253, 33);
+        colors.right = QColor(122, 38, 235);
+        colors.grip_left_highlight = QColor(238, 255, 105);
+        colors.grip_right_highlight = QColor(175, 95, 255);
+        colors.grip_left_shadow = QColor(155, 185, 15);
+        colors.grip_right_shadow = QColor(72, 18, 155);
+        colors.body_inner = QColor(32, 28, 40, 190);
+        colors.body_rim = QColor(218, 253, 33);
+        colors.emblem = QColor(218, 253, 33, 215);
+        colors.emblem_secondary = QColor(140, 50, 245, 215);
+        colors.home_led = QColor(218, 253, 33);
+        break;
+
+    case ControllerSkin::MonsterHunterRise:
+        colors.primary = QColor(40, 44, 48, 240);
+        colors.left = QColor(48, 52, 58);
+        colors.right = QColor(48, 52, 58);
+        colors.grip_left_highlight = QColor(75, 80, 90);
+        colors.grip_right_highlight = QColor(75, 80, 90);
+        colors.grip_left_shadow = QColor(26, 28, 32);
+        colors.grip_right_shadow = QColor(26, 28, 32);
+        colors.body_inner = QColor(28, 30, 34, 200);
+        colors.body_rim = QColor(220, 175, 65);
+        colors.emblem = QColor(225, 180, 65);
+        colors.emblem_secondary = QColor(175, 90, 250);
+        colors.home_led = QColor(185, 125, 255);
+        break;
+
+    case ControllerSkin::PokemonScarletViolet:
+        colors.primary = QColor(36, 38, 44, 235);
+        colors.left = QColor(228, 45, 60);
+        colors.right = QColor(75, 65, 215);
+        colors.grip_left_highlight = QColor(255, 95, 110);
+        colors.grip_right_highlight = QColor(125, 115, 255);
+        colors.grip_left_shadow = QColor(150, 22, 35);
+        colors.grip_right_shadow = QColor(42, 35, 145);
+        colors.body_inner = QColor(30, 30, 38, 190);
+        colors.body_rim = QColor(255, 180, 60);
+        colors.emblem = QColor(255, 180, 50);
+        colors.emblem_secondary = QColor(225, 230, 240);
+        colors.home_led = QColor(255, 90, 90);
+        break;
+
+    case ControllerSkin::CyberStorm:
+        colors.primary = QColor(14, 16, 22, 245);
+        colors.left = QColor(0, 225, 250);
+        colors.right = QColor(255, 30, 95);
+        colors.grip_left_highlight = QColor(120, 245, 255);
+        colors.grip_right_highlight = QColor(255, 110, 160);
+        colors.grip_left_shadow = QColor(0, 120, 145);
+        colors.grip_right_shadow = QColor(150, 15, 55);
+        colors.body_inner = QColor(8, 10, 15, 230);
+        colors.body_rim = QColor(0, 240, 255, 180);
+        colors.emblem = QColor(0, 245, 255);
+        colors.emblem_secondary = QColor(255, 35, 115);
+        colors.home_led = QColor(0, 255, 240);
+        break;
+    }
+
+    if (controller != nullptr) {
+        const auto color_left = controller->GetColorsValues()[0].body;
+        const auto color_right = controller->GetColorsValues()[1].body;
+        if (color_left != 0 && color_right != 0 &&
+            controller_type != Core::HID::NpadStyleIndex::Fullkey) {
+            colors.left = QColor(color_left);
+            colors.right = QColor(color_right);
+        }
     }
 }
 
@@ -233,11 +370,98 @@ void PlayerControlPreview::UpdateInput() {
     }
 }
 
+void PlayerControlPreview::SetSkin(ControllerSkin skin) {
+    current_skin = skin;
+    UpdateColors();
+    update();
+}
+
+void PlayerControlPreview::ResetView() {
+    rot_x = 0.0f;
+    rot_y = 0.0f;
+    zoom = 1.0f;
+    update();
+}
+
+void PlayerControlPreview::SetRotation(float rx, float ry, float z) {
+    rot_x = rx;
+    rot_y = ry;
+    zoom = std::clamp(z, 0.65f, 2.0f);
+    update();
+}
+
+void PlayerControlPreview::mousePressEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        is_mouse_dragging = true;
+        last_mouse_pos = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+        event->accept();
+        return;
+    }
+    QFrame::mousePressEvent(event);
+}
+
+void PlayerControlPreview::mouseMoveEvent(QMouseEvent* event) {
+    if (is_mouse_dragging) {
+        const QPoint delta = event->pos() - last_mouse_pos;
+        last_mouse_pos = event->pos();
+        rot_y = std::clamp(rot_y + static_cast<float>(delta.x()) * 0.45f, -65.0f, 65.0f);
+        rot_x = std::clamp(rot_x - static_cast<float>(delta.y()) * 0.45f, -50.0f, 50.0f);
+        update();
+        event->accept();
+        return;
+    }
+    QFrame::mouseMoveEvent(event);
+}
+
+void PlayerControlPreview::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        is_mouse_dragging = false;
+        unsetCursor();
+        event->accept();
+        return;
+    }
+    QFrame::mouseReleaseEvent(event);
+}
+
+void PlayerControlPreview::mouseDoubleClickEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        ResetView();
+        event->accept();
+        return;
+    }
+    QFrame::mouseDoubleClickEvent(event);
+}
+
+void PlayerControlPreview::wheelEvent(QWheelEvent* event) {
+    const float numDegrees = static_cast<float>(event->angleDelta().y()) / 8.0f;
+    const float numSteps = numDegrees / 15.0f;
+    zoom = std::clamp(zoom + numSteps * 0.08f, 0.65f, 1.85f);
+    update();
+    event->accept();
+}
+
 void PlayerControlPreview::paintEvent(QPaintEvent* event) {
     QFrame::paintEvent(event);
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
     const QPointF center = rect().center();
+
+    p.save();
+    if (rot_x != 0.0f || rot_y != 0.0f || zoom != 1.0f) {
+        QMatrix4x4 m4;
+        m4.translate(static_cast<float>(center.x()), static_cast<float>(center.y()), 0.0f);
+        const float aspect = static_cast<float>(width()) / static_cast<float>(std::max(1, height()));
+        m4.perspective(38.0f, aspect, 10.0f, 3000.0f);
+        const float fov_rad = static_cast<float>(38.0 * PI_CONST / 180.0);
+        const float dist = (static_cast<float>(height()) * 0.5f) / std::tan(fov_rad * 0.5f);
+        m4.translate(0.0f, 0.0f, -dist / std::max(0.1f, zoom));
+        m4.rotate(rot_x, 1.0f, 0.0f, 0.0f);
+        m4.rotate(rot_y, 0.0f, 1.0f, 0.0f);
+        m4.translate(-static_cast<float>(center.x()), -static_cast<float>(center.y()), 0.0f);
+        p.setTransform(m4.toTransform());
+    }
 
     switch (controller_type) {
     case Core::HID::NpadStyleIndex::Handheld:
@@ -260,6 +484,8 @@ void PlayerControlPreview::paintEvent(QPaintEvent* event) {
         DrawProController(p, center);
         break;
     }
+
+    p.restore();
 }
 
 void PlayerControlPreview::DrawLeftController(QPainter& p, const QPointF center) {
@@ -847,6 +1073,14 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     DrawCircleButton(p, face_center + QPoint(0, -face_distance), button_values[X], face_radius);
     DrawCircleButton(p, face_center + QPoint(-face_distance, 0), button_values[Y], face_radius);
 
+    // Domed gloss specular highlights on ABXY face buttons
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor(255, 255, 255, 45));
+    p.drawEllipse(face_center + QPointF(face_distance - 2, -4), 6.5f, 3.2f);
+    p.drawEllipse(face_center + QPointF(-2, face_distance - 4), 6.5f, 3.2f);
+    p.drawEllipse(face_center + QPointF(-2, -face_distance - 4), 6.5f, 3.2f);
+    p.drawEllipse(face_center + QPointF(-face_distance - 2, -4), 6.5f, 3.2f);
+
     // Face buttons text
     p.setPen(colors.transparent);
     p.setBrush(colors.font);
@@ -891,15 +1125,26 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     p.setBrush(colors.font2);
     DrawCircle(p, center + QPoint(-29, -56), 4.5f);
 
-    // Home Button
-    p.setPen(colors.outline);
+    // Home Button glowing notification LED ring
+    const QPointF home_pos = center + QPoint(29, -56);
+    p.setPen(Qt::NoPen);
+    QRadialGradient led_grad(home_pos, 16.0);
+    led_grad.setColorAt(0.0, colors.home_led);
+    QColor led_fade = colors.home_led;
+    led_fade.setAlpha(0);
+    led_grad.setColorAt(1.0, led_fade);
+    p.setBrush(led_grad);
+    p.drawEllipse(home_pos, 16.0, 16.0);
+
+    // Home Button outer halo ring
+    p.setPen(QPen(colors.home_led, 1.8));
     button_color = colors.slider_button;
-    DrawCircleButton(p, center + QPoint(29, -56), button_values[Home], 10.0f);
+    DrawCircleButton(p, home_pos, button_values[Home], 10.0f);
     button_color = colors.button;
-    DrawCircleButton(p, center + QPoint(29, -56), button_values[Home], 7.1f);
+    DrawCircleButton(p, home_pos, button_values[Home], 7.1f);
     p.setPen(colors.transparent);
     p.setBrush(colors.font2);
-    DrawSymbol(p, center + QPoint(29, -56), Symbol::House, 3.9f);
+    DrawSymbol(p, home_pos, Symbol::House, 3.9f);
 
     // Draw battery
     DrawBattery(p, center + QPoint(-20, -160),
@@ -1595,23 +1840,222 @@ void PlayerControlPreview::DrawProBody(QPainter& p, const QPointF center) {
         qbody[pro_body.size() - 1 - point] = center + QPointF(-body_x, body_y);
     }
 
-    // Draw left handle body
-    p.setPen(colors.outline);
-    p.setBrush(colors.left);
-    DrawPolygon(p, qleft_handle);
+    // 1. Photorealistic Volumetric Drop Shadow beneath controller
+    {
+        QRadialGradient shadow_grad(center.x(), center.y() + 50.0, 250.0);
+        shadow_grad.setColorAt(0.0, QColor(0, 0, 0, 130));
+        shadow_grad.setColorAt(0.55, QColor(0, 0, 0, 50));
+        shadow_grad.setColorAt(0.95, QColor(0, 0, 0, 0));
+        p.setPen(Qt::NoPen);
+        p.setBrush(shadow_grad);
+        p.drawEllipse(center + QPointF(0, 50), 245.0, 115.0);
+    }
 
-    // Draw right handle body
-    p.setBrush(colors.right);
-    DrawPolygon(p, qright_handle);
+    // 2. Volumetric 3D Left Handle with ergonomic curvature shading
+    {
+        QLinearGradient left_grad(center.x() - 190.0, center.y(), center.x() - 100.0, center.y());
+        left_grad.setColorAt(0.0, colors.grip_left_highlight);
+        left_grad.setColorAt(0.35, colors.left);
+        left_grad.setColorAt(0.85, colors.left.darker(115));
+        left_grad.setColorAt(1.0, colors.grip_left_shadow);
 
-    // Draw body
-    p.setBrush(colors.primary);
-    DrawPolygon(p, qbody);
+        p.setPen(QPen(colors.outline, 1.2));
+        p.setBrush(left_grad);
+        DrawPolygon(p, qleft_handle);
 
-    // Draw joycon circles
-    p.setBrush(colors.transparent);
-    p.drawEllipse(center + QPoint(-111, -55), radius1, radius1);
-    p.drawEllipse(center + QPoint(51, 0), radius1, radius1);
+        // Tactile micro-dot grip texture on left handle
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(255, 255, 255, 22));
+        for (int dy = -25; dy <= 95; dy += 12) {
+            for (int dx = -180; dx <= -130; dx += 12) {
+                const QPointF dot_pos = center + QPointF(dx + ((dy % 24 == 0) ? 6 : 0), dy);
+                p.drawEllipse(dot_pos, 1.2, 1.2);
+            }
+        }
+    }
+
+    // 3. Volumetric 3D Right Handle with ergonomic curvature shading
+    {
+        QLinearGradient right_grad(center.x() + 190.0, center.y(), center.x() + 100.0, center.y());
+        right_grad.setColorAt(0.0, colors.grip_right_highlight);
+        right_grad.setColorAt(0.35, colors.right);
+        right_grad.setColorAt(0.85, colors.right.darker(115));
+        right_grad.setColorAt(1.0, colors.grip_right_shadow);
+
+        p.setPen(QPen(colors.outline, 1.2));
+        p.setBrush(right_grad);
+        DrawPolygon(p, qright_handle);
+
+        // Tactile micro-dot grip texture on right handle
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(255, 255, 255, 22));
+        for (int dy = -25; dy <= 95; dy += 12) {
+            for (int dx = 130; dx <= 180; dx += 12) {
+                const QPointF dot_pos = center + QPointF(dx + ((dy % 24 == 0) ? 6 : 0), dy);
+                p.drawEllipse(dot_pos, 1.2, 1.2);
+            }
+        }
+    }
+
+    // 4. Main Body: Smoky Polycarbonate Chassis with Depth Shading
+    {
+        QLinearGradient body_grad(center.x(), center.y() - 90.0, center.x(), center.y() + 100.0);
+        body_grad.setColorAt(0.0, colors.primary.lighter(125));
+        body_grad.setColorAt(0.2, colors.primary);
+        body_grad.setColorAt(0.8, colors.primary.darker(110));
+        body_grad.setColorAt(1.0, colors.primary.darker(125));
+
+        p.setPen(QPen(colors.outline, 1.2));
+        p.setBrush(body_grad);
+        DrawPolygon(p, qbody);
+
+        // Subtle internal structural ribbing (visible through smoky translucent plastic)
+        p.setPen(QPen(colors.body_inner, 1.5));
+        p.setBrush(Qt::NoBrush);
+        p.drawRoundedRect(QRectF(center.x() - 52, center.y() - 32, 104, 64), 10.0, 10.0);
+        p.drawLine(center + QPointF(-40, 0), center + QPointF(40, 0));
+        p.drawLine(center + QPointF(0, -32), center + QPointF(0, 32));
+
+        // Polished top rim bevel highlight
+        if (colors.body_rim.alpha() > 0) {
+            p.setPen(QPen(colors.body_rim, 1.5));
+            p.drawArc(QRectF(center.x() - 145, center.y() - 88, 290, 80), 30 * 16, 120 * 16);
+        }
+    }
+
+    // 5. Authentic Edition Emblems & Signature Graphics
+    switch (current_skin) {
+    case ControllerSkin::Xenoblade2: {
+        // Pyra / Aegis Emerald Core Crystal (Rhombus) + Golden Wings
+        p.save();
+        p.setPen(QPen(colors.emblem_secondary, 2.0));
+        p.setBrush(QColor(colors.emblem_secondary.red(), colors.emblem_secondary.green(), colors.emblem_secondary.blue(), 60));
+        const QPointF wing_left[] = {center + QPointF(-24, -18), center + QPointF(-48, -32), center + QPointF(-40, -14), center + QPointF(-24, -8)};
+        const QPointF wing_right[] = {center + QPointF(24, -18), center + QPointF(48, -32), center + QPointF(40, -14), center + QPointF(24, -8)};
+        p.drawPolygon(wing_left, 4);
+        p.drawPolygon(wing_right, 4);
+
+        const QPointF crystal[] = {center + QPointF(0, -34), center + QPointF(16, -16), center + QPointF(0, 2), center + QPointF(-16, -16)};
+        p.setPen(QPen(QColor(255, 255, 255, 220), 1.5));
+        p.setBrush(colors.emblem);
+        p.drawPolygon(crystal, 4);
+        p.setPen(QPen(QColor(255, 255, 255, 180), 1.0));
+        p.drawLine(center + QPointF(0, -34), center + QPointF(0, 2));
+        p.drawLine(center + QPointF(-16, -16), center + QPointF(16, -16));
+        p.restore();
+        break;
+    }
+    case ControllerSkin::SmashBrosUltimate: {
+        // Super Smash Bros. Signature Off-Center Cross
+        p.save();
+        p.setPen(QPen(colors.emblem_secondary, 1.5));
+        p.setBrush(colors.emblem);
+        p.drawRect(QRectF(center.x() - 20, center.y() - 65, 13, 115));
+        p.drawRect(QRectF(center.x() - 110, center.y() - 32, 215, 13));
+        p.restore();
+        break;
+    }
+    case ControllerSkin::ZeldaTotk: {
+        // Zonai Sacred Swirl & Ancient Dragon Runes
+        p.save();
+        p.setPen(QPen(colors.emblem, 2.2, Qt::SolidLine, Qt::RoundCap));
+        p.setBrush(Qt::NoBrush);
+        p.drawArc(QRectF(center.x() - 35, center.y() - 40, 70, 70), 45 * 16, 270 * 16);
+        p.drawArc(QRectF(center.x() - 25, center.y() - 30, 50, 50), 180 * 16, 220 * 16);
+        p.setPen(QPen(colors.emblem_secondary, 1.8));
+        p.drawLine(center + QPointF(40, -45), center + QPointF(65, -30));
+        p.drawLine(center + QPointF(65, -30), center + QPointF(55, -15));
+        p.drawLine(center + QPointF(55, -15), center + QPointF(75, 5));
+        p.restore();
+        break;
+    }
+    case ControllerSkin::Splatoon3: {
+        // Splatoon 3 Ink Splatters (Neon Yellow & Violet)
+        p.save();
+        p.setPen(Qt::NoPen);
+        p.setBrush(colors.emblem);
+        p.drawEllipse(center + QPointF(-25, -28), 16.0, 13.0);
+        p.drawEllipse(center + QPointF(-38, -20), 9.0, 8.0);
+        p.drawEllipse(center + QPointF(-16, -42), 6.5, 6.0);
+        p.drawEllipse(center + QPointF(-44, -36), 4.5, 4.5);
+        p.setBrush(colors.emblem_secondary);
+        p.drawEllipse(center + QPointF(22, 10), 14.0, 12.0);
+        p.drawEllipse(center + QPointF(35, 18), 8.0, 7.5);
+        p.drawEllipse(center + QPointF(12, 24), 6.0, 5.5);
+        p.restore();
+        break;
+    }
+    case ControllerSkin::MonsterHunterRise: {
+        // Magnamalo Golden Dragon Armor & Flame Crest
+        p.save();
+        p.setPen(QPen(colors.emblem, 2.0));
+        p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 50));
+        const QPointF blade1[] = {center + QPointF(0, -45), center + QPointF(14, -25), center + QPointF(0, -10)};
+        const QPointF blade2[] = {center + QPointF(0, -45), center + QPointF(-14, -25), center + QPointF(0, -10)};
+        p.drawPolyline(blade1, 3);
+        p.drawPolyline(blade2, 3);
+        p.setPen(QPen(colors.emblem_secondary, 1.8));
+        p.drawArc(QRectF(center.x() - 40, center.y() - 35, 80, 55), 20 * 16, 140 * 16);
+        p.restore();
+        break;
+    }
+    case ControllerSkin::PokemonScarletViolet: {
+        // Naranja / Uva Academy Shield Crest
+        p.save();
+        p.setPen(QPen(colors.emblem, 1.8));
+        p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 40));
+        const QPointF shield[] = {
+            center + QPointF(0, -38), center + QPointF(20, -32), center + QPointF(20, -10),
+            center + QPointF(0, 10), center + QPointF(-20, -10), center + QPointF(-20, -32)
+        };
+        p.drawPolygon(shield, 6);
+        p.setPen(QPen(colors.emblem_secondary, 1.5));
+        p.drawLine(center + QPointF(0, -38), center + QPointF(0, 10));
+        p.drawLine(center + QPointF(-20, -20), center + QPointF(20, -20));
+        p.restore();
+        break;
+    }
+    case ControllerSkin::CyberStorm: {
+        // STORM Soft Cyberpunk Vector Grid & Lightning Trace
+        p.save();
+        p.setPen(QPen(colors.emblem, 1.6));
+        p.drawLine(center + QPointF(-70, -25), center + QPointF(-35, -25));
+        p.drawLine(center + QPointF(-35, -25), center + QPointF(-15, -45));
+        p.drawLine(center + QPointF(-15, -45), center + QPointF(20, -45));
+        p.drawLine(center + QPointF(20, -45), center + QPointF(40, -25));
+        p.drawLine(center + QPointF(40, -25), center + QPointF(75, -25));
+        p.setPen(Qt::NoPen);
+        p.setBrush(colors.emblem);
+        p.drawEllipse(center + QPointF(-35, -25), 3.0, 3.0);
+        p.drawEllipse(center + QPointF(40, -25), 3.0, 3.0);
+        p.setPen(QPen(colors.emblem_secondary, 2.0));
+        const QPointF bolt[] = {center + QPointF(4, -30), center + QPointF(-4, -16), center + QPointF(2, -16), center + QPointF(-2, -4)};
+        p.drawPolyline(bolt, 4);
+        p.restore();
+        break;
+    }
+    default:
+        break;
+    }
+
+    // 6. Joy-Con Stick Wells with Chamfered Friction Ring and Inner Occlusion
+    const QPointF left_well = center + QPoint(-111, -55);
+    const QPointF right_well = center + QPoint(51, 0);
+
+    for (const QPointF& well_center : {left_well, right_well}) {
+        p.setPen(QPen(colors.outline, 1.4));
+        QRadialGradient well_grad(well_center, radius1);
+        well_grad.setColorAt(0.0, QColor(16, 18, 22));
+        well_grad.setColorAt(0.7, QColor(28, 32, 38));
+        well_grad.setColorAt(0.95, QColor(48, 52, 60));
+        well_grad.setColorAt(1.0, colors.outline);
+        p.setBrush(well_grad);
+        p.drawEllipse(well_center, radius1, radius1);
+
+        p.setPen(QPen(QColor(70, 75, 85, 120), 1.0));
+        p.setBrush(Qt::NoBrush);
+        p.drawEllipse(well_center, radius1 - 3.0f, radius1 - 3.0f);
+    }
 }
 
 void PlayerControlPreview::DrawGCBody(QPainter& p, const QPointF center) {
@@ -2443,24 +2887,72 @@ void PlayerControlPreview::DrawProJoystick(QPainter& p, const QPointF center, co
         ((offset.x() == 0.f) ? std::atan(1.f) * 2.f : std::atan(offset.y() / offset.x())) *
         (180.f / (std::atan(1.f) * 4.f));
 
+    // 1. Draw metallic stick neck/shaft when tilted
+    if (offset.x() != 0.0f || offset.y() != 0.0f) {
+        p.save();
+        p.setPen(QPen(QColor(30, 32, 36), 1.0));
+        QLinearGradient shaft_grad(center, offset_center);
+        shaft_grad.setColorAt(0.0, QColor(70, 75, 85));
+        shaft_grad.setColorAt(0.5, QColor(145, 150, 165));
+        shaft_grad.setColorAt(1.0, QColor(60, 64, 72));
+        p.setBrush(shaft_grad);
+        const QPointF normal(-offset.y(), offset.x());
+        const float len = std::max(0.001f, std::sqrt(float(normal.x() * normal.x() + normal.y() * normal.y())));
+        const QPointF unit_norm = normal / len * 6.0f;
+        const QPointF shaft_poly[] = {
+            center - unit_norm,
+            center + unit_norm,
+            offset_center + unit_norm * 0.8f,
+            offset_center - unit_norm * 0.8f
+        };
+        p.drawPolygon(shaft_poly, 4);
+        p.restore();
+    }
+
     p.save();
     p.translate(offset_center);
     p.rotate(rotation);
 
-    // Outer circle
-    p.setPen(colors.outline);
-    p.setBrush(pressed.value ? colors.highlight : colors.button);
+    // 2. Outer rubber thumb-pad with spherical lighting
+    p.setPen(QPen(colors.outline, 1.2));
+    if (pressed.value) {
+        p.setBrush(colors.highlight);
+    } else {
+        QRadialGradient pad_grad(QPointF(-radius1 * 0.3f, -radius1 * 0.3f), radius1 * 1.3f);
+        pad_grad.setColorAt(0.0, QColor(75, 80, 90));
+        pad_grad.setColorAt(0.5, colors.button);
+        pad_grad.setColorAt(1.0, colors.button.darker(130));
+        p.setBrush(pad_grad);
+    }
     p.drawEllipse(QPointF(0, 0), radius1 * amplitude, radius1);
 
-    // Inner circle
-    p.setBrush(pressed.value ? colors.highlight2 : colors.button2);
+    // 3. 4 Authentic Tactile Cardinal Notches on the outer rim of thumb-pad
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor(18, 20, 24, 180));
+    constexpr std::array<float, 4> notch_angles = {0.0f, float(PI_CONST * 0.5f), float(PI_CONST), float(PI_CONST * 1.5f)};
+    for (float notch_rad : notch_angles) {
+        const QPointF notch_pos(std::cos(notch_rad) * (radius1 - 2.0f) * amplitude,
+                                std::sin(notch_rad) * (radius1 - 2.0f));
+        p.drawEllipse(notch_pos, 1.6f * amplitude, 1.6f);
+    }
 
+    // 4. Inner concave thumb bowl
     const float inner_offset =
         (radius1 - radius2) * 0.4f * ((offset.x() == 0 && offset.y() < 0) ? -1.0f : 1.0f);
     const float offset_factor = (1.0f - amplitude) / 0.1f;
+    const QPointF bowl_pos = QPointF((offset.x() < 0) ? -inner_offset : inner_offset, 0) * offset_factor;
 
-    p.drawEllipse(QPointF((offset.x() < 0) ? -inner_offset : inner_offset, 0) * offset_factor,
-                  radius2 * amplitude, radius2);
+    if (pressed.value) {
+        p.setBrush(colors.highlight2);
+    } else {
+        QRadialGradient bowl_grad(bowl_pos, radius2);
+        bowl_grad.setColorAt(0.0, colors.button2.darker(120));
+        bowl_grad.setColorAt(0.7, colors.button2);
+        bowl_grad.setColorAt(1.0, QColor(60, 65, 75));
+        p.setBrush(bowl_grad);
+    }
+    p.setPen(QPen(QColor(15, 17, 20), 0.8));
+    p.drawEllipse(bowl_pos, radius2 * amplitude, radius2);
 
     p.restore();
 }
