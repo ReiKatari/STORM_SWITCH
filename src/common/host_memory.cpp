@@ -206,7 +206,8 @@ public:
         } else if (!read && !write) {
             new_flags = PAGE_NOACCESS;
         } else {
-            UNIMPLEMENTED_MSG("Protection flag combination read={} write={}", read, write);
+            LOG_WARNING(HW_Memory, "Protection flag combination read={} write={}, falling back to PAGE_READWRITE", read, write);
+            new_flags = PAGE_READWRITE;
         }
         const size_t virtual_end = virtual_offset + length;
 

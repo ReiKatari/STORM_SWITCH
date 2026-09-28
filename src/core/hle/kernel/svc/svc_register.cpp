@@ -10,7 +10,6 @@ Result ReadWriteRegister(Core::System& system, uint32_t* out, uint64_t address, 
                          uint32_t value) {
     *out = 0;
 
-    UNIMPLEMENTED();
     R_THROW(ResultNotImplemented);
 }
 

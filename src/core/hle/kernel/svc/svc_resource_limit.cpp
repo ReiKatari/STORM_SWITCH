@@ -95,7 +95,6 @@ Result SetResourceLimitLimitValue(Core::System& system, Handle resource_limit_ha
 
 Result GetResourceLimitPeakValue(Core::System& system, int64_t* out_peak_value,
                                  Handle resource_limit_handle, LimitableResource which) {
-    UNIMPLEMENTED();
     R_THROW(ResultNotImplemented);
 }
 

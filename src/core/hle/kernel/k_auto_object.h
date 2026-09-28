@@ -96,9 +96,7 @@ public:
     static KAutoObject* Create(KAutoObject* ptr);
 
     // Destroy is responsible for destroying the auto object's resources when ref_count hits zero.
-    virtual void Destroy(KernelCore& kernel) {
-        UNIMPLEMENTED();
-    }
+    virtual void Destroy(KernelCore& kernel) {}
 
     // Finalize is responsible for cleaning up resource, but does not destroy the object.
     virtual void Finalize(KernelCore& kernel) {}

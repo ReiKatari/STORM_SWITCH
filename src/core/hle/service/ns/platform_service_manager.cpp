@@ -41,8 +41,18 @@ constexpr u64 SHARED_FONT_MEM_SIZE{0x1100000};
 constexpr FontRegion EMPTY_REGION{0, 0};
 
 static void DecryptSharedFont(const std::span<u32 const> input, std::span<u8> output, std::size_t& offset) {
-    ASSERT(offset + (input.size() * sizeof(u32)) < SHARED_FONT_MEM_SIZE && "Shared fonts exceeds 17mb!");
-    ASSERT(input[0] == EXPECTED_MAGIC && "Failed to derive key, unexpected magic number");
+    if (input.size() < 2) {
+        LOG_ERROR(Service_NS, "Input font too small");
+        return;
+    }
+    if (offset + (input.size() * sizeof(u32)) > SHARED_FONT_MEM_SIZE) {
+        LOG_ERROR(Service_NS, "Shared fonts exceeds 17mb!");
+        return;
+    }
+    if (input[0] != EXPECTED_MAGIC) {
+        LOG_ERROR(Service_NS, "Failed to derive key, unexpected magic number: {:#x}", input[0]);
+        return;
+    }
     const u32 KEY = input[0] ^ EXPECTED_RESULT; // Derive key using an inverse xor
     std::vector<u32> transformed_font(input.size());
     // TODO(ogniK): Figure out a better way to do this
@@ -53,9 +63,12 @@ static void DecryptSharedFont(const std::span<u32 const> input, std::span<u8> ou
 }
 
 void DecryptSharedFontToTTF(const std::vector<u32>& input, std::vector<u8>& output) {
-    ASSERT_MSG(input[0] == EXPECTED_MAGIC, "Failed to derive key, unexpected magic number");
     if (input.size() < 2) {
         LOG_ERROR(Service_NS, "Input font is empty");
+        return;
+    }
+    if (input[0] != EXPECTED_MAGIC) {
+        LOG_ERROR(Service_NS, "Failed to derive key, unexpected magic number: {:#x}", input[0]);
         return;
     }
     const u32 KEY = input[0] ^ EXPECTED_RESULT; // Derive key using an inverse xor
@@ -66,7 +79,10 @@ void DecryptSharedFontToTTF(const std::vector<u32>& input, std::vector<u8>& outp
 }
 
 void EncryptSharedFont(const std::vector<u32>& input, std::vector<u8>& output, std::size_t& offset) {
-    ASSERT(offset + (input.size() * sizeof(u32)) < SHARED_FONT_MEM_SIZE && "Shared fonts exceeds 17mb!");
+    if (offset + ((input.size() + 2) * sizeof(u32)) > SHARED_FONT_MEM_SIZE) {
+        LOG_ERROR(Service_NS, "Shared fonts exceeds 17mb!");
+        return;
+    }
     const auto key = Common::swap32(EXPECTED_RESULT ^ EXPECTED_MAGIC);
     std::vector<u32> transformed_font(input.size() + 2);
     transformed_font[0] = Common::swap32(EXPECTED_MAGIC);

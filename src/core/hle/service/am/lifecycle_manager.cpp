@@ -330,7 +330,7 @@ FocusState LifecycleManager::GetFocusStateWhileForegroundObscured() const {
         return FocusState::NotInFocus;
 
     default:
-        UNREACHABLE();
+        return FocusState::NotInFocus;
     }
 }
 
@@ -349,7 +349,7 @@ FocusState LifecycleManager::GetFocusStateWhileBackground(bool is_obscured) cons
         return m_is_application ? FocusState::Background : FocusState::NotInFocus;
 
     default:
-        UNREACHABLE();
+        return FocusState::NotInFocus;
     }
 }
 
@@ -377,7 +377,8 @@ bool LifecycleManager::UpdateRequestedFocusState() {
             break;
 
         default:
-            UNREACHABLE();
+            new_state = FocusState::NotInFocus;
+            break;
         }
     } else {
         // With forced suspend or resume, the applet is guaranteed to be background.

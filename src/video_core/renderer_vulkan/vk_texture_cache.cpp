@@ -1257,7 +1257,7 @@ void TextureCacheRuntime::BlitImage(Framebuffer* dst_framebuffer, ImageView& dst
             case VideoCore::Surface::PixelFormat::D32_FLOAT_S8_UINT:
                 return device.IsBlitDepth32Stencil8Supported();
             default:
-                UNREACHABLE();
+                return false;
             }
         }();
         // Use shader-based depth/stencil blits if hardware doesn't support the format

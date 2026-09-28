@@ -8,7 +8,7 @@
 namespace Kernel::Svc {
 
 void CallSecureMonitor(Core::System& system, lp64::SecureMonitorArguments* args) {
-    UNIMPLEMENTED();
+    LOG_WARNING(Kernel_SVC, "CallSecureMonitor called (unimplemented)");
 }
 
 void CallSecureMonitor64(Core::System& system, lp64::SecureMonitorArguments* args) {
@@ -17,7 +17,7 @@ void CallSecureMonitor64(Core::System& system, lp64::SecureMonitorArguments* arg
 
 void CallSecureMonitor64From32(Core::System& system, ilp32::SecureMonitorArguments* args) {
     // CallSecureMonitor64From32 is not supported.
-    UNIMPLEMENTED_MSG("CallSecureMonitor64From32");
+    LOG_WARNING(Kernel_SVC, "CallSecureMonitor64From32 not supported");
 }
 
 // Custom ABI for CallSecureMonitor.

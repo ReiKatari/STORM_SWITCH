@@ -96,7 +96,6 @@ Result UnmapSharedMemory(Core::System& system, Handle shmem_handle, u64 address,
 
 Result CreateSharedMemory(Core::System& system, Handle* out_handle, uint64_t size,
                           MemoryPermission owner_perm, MemoryPermission remote_perm) {
-    UNIMPLEMENTED();
     R_THROW(ResultNotImplemented);
 }
 

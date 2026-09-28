@@ -23,8 +23,8 @@ Alarm::Alarm(Core::System& system, KernelHelpers::ServiceContext& ctx, AlarmType
         m_priority = 0;
         break;
     default:
-        UNREACHABLE();
-        return;
+        m_priority = 0;
+        break;
     }
 }
 

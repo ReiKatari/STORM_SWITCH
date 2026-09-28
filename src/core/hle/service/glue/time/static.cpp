@@ -74,11 +74,16 @@ StaticService::StaticService(Core::System& system_,
                m_setup_info.can_write_steady_clock && !m_setup_info.can_write_uninitialized_clock) {
         m_time_m->GetStaticServiceAsRepair(&m_wrapped_service);
     } else {
-        UNREACHABLE();
+        LOG_WARNING(Service_Time, "Unexpected setup info permissions, defaulting to User service");
+        m_time_m->GetStaticServiceAsUser(&m_wrapped_service);
     }
 
-    auto res = m_wrapped_service->GetTimeZoneService(&m_time_zone);
-    ASSERT(res == ResultSuccess);
+    if (m_wrapped_service) {
+        auto res = m_wrapped_service->GetTimeZoneService(&m_time_zone);
+        if (res != ResultSuccess) {
+            LOG_ERROR(Service_Time, "Failed to get time zone service: {:#x}", res.raw);
+        }
+    }
 }
 
 Result StaticService::GetStandardUserSystemClock(

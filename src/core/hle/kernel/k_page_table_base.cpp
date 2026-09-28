@@ -484,7 +484,7 @@ void KPageTableBase::Finalize() {
 
     // Free any unsafe mapped memory.
     if (m_mapped_unsafe_physical_memory) {
-        UNIMPLEMENTED();
+        LOG_WARNING(Kernel, "Finalizing page table with unsafe mapped physical memory");
     }
 
     // Release any insecure mapped memory.
@@ -5554,12 +5554,10 @@ Result KPageTableBase::UnmapPhysicalMemory(KProcessAddress address, size_t size)
 }
 
 Result KPageTableBase::MapPhysicalMemoryUnsafe(KProcessAddress address, size_t size) {
-    UNIMPLEMENTED();
     R_THROW(ResultNotImplemented);
 }
 
 Result KPageTableBase::UnmapPhysicalMemoryUnsafe(KProcessAddress address, size_t size) {
-    UNIMPLEMENTED();
     R_THROW(ResultNotImplemented);
 }
 

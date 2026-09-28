@@ -132,7 +132,9 @@ Result OpusDecoder::DecodeInterleaved(u32* out_data_size, u64* out_time_taken,
                                           channel_count, in_data.data(), header.size,
                                           shared_buffer.data(), time_taken, reset));
 
-    std::memcpy(output_data.data(), out_data.data(), out_samples * channel_count * sizeof(s16));
+    const size_t out_bytes = static_cast<size_t>(out_samples) * channel_count * sizeof(s16);
+    R_UNLESS(output_data.size_bytes() >= out_bytes, ResultBufferTooSmall);
+    std::memcpy(output_data.data(), out_data.data(), out_bytes);
 
     *out_data_size = header.size + sizeof(OpusPacketHeader);
     *out_sample_count = out_samples;
@@ -178,7 +180,9 @@ Result OpusDecoder::DecodeInterleavedForMultiStream(u32* out_data_size, u64* out
         out_samples, out_data.data(), out_data.size_bytes(), channel_count, in_data.data(),
         header.size, shared_buffer.data(), time_taken, reset));
 
-    std::memcpy(output_data.data(), out_data.data(), out_samples * channel_count * sizeof(s16));
+    const size_t out_bytes = static_cast<size_t>(out_samples) * channel_count * sizeof(s16);
+    R_UNLESS(output_data.size_bytes() >= out_bytes, ResultBufferTooSmall);
+    std::memcpy(output_data.data(), out_data.data(), out_bytes);
 
     *out_data_size = header.size + sizeof(OpusPacketHeader);
     *out_sample_count = out_samples;

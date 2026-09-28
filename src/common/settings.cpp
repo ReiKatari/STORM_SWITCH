@@ -471,7 +471,9 @@ void TranslateResolutionInfo(ResolutionSetup setup, ResolutionScalingInfo& info)
         info.down_shift = 0;
         break;
     default:
-        UNREACHABLE();
+        info.up_scale = 1;
+        info.down_shift = 0;
+        break;
     }
     info.up_factor = static_cast<f32>(info.up_scale) / (1U << info.down_shift);
     info.down_factor = static_cast<f32>(1U << info.down_shift) / info.up_scale;
@@ -539,7 +541,7 @@ u16 SpeedLimit() {
     case SpeedMode::Slow:
         return values.slow_speed_limit.GetValue();
     default:
-        UNIMPLEMENTED();
+        return 100;
     }
 
     return 100;

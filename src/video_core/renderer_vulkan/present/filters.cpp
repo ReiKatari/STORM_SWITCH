@@ -63,7 +63,7 @@ std::unique_ptr<WindowAdaptPass> MakeBicubic(const Device& device, VkFormat fram
             case VK_CUBIC_FILTER_WEIGHTS_MITCHELL_NETRAVALI_QCOM:
                 return BuildShader(device, PRESENT_MITCHELL_FRAG_SPV);
             default:
-                UNREACHABLE();
+                return BuildShader(device, PRESENT_BICUBIC_FRAG_SPV);
             }
         }());
     }

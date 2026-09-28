@@ -134,11 +134,14 @@ NvResult nvmap::IocAlloc(IocAllocParams& params, DeviceFD fd) {
     }
     bool is_out_io{};
     auto process = container.GetSession(sessions[fd])->process;
-    ASSERT(process->GetPageTable()
-               .LockForMapDeviceAddressSpace(&is_out_io, handle_description->address,
-                                             handle_description->size,
-                                             Kernel::KMemoryPermission::None, true, false)
-               .IsSuccess());
+    auto map_res = process->GetPageTable()
+                       .LockForMapDeviceAddressSpace(&is_out_io, handle_description->address,
+                                                     handle_description->size,
+                                                     Kernel::KMemoryPermission::None, true, false);
+    if (!map_res.IsSuccess()) {
+        LOG_ERROR(Service_NVDRV, "LockForMapDeviceAddressSpace failed: {:#x}", map_res.raw);
+        return NvResult::BadValue;
+    }
     return result;
 }
 
@@ -245,9 +248,11 @@ NvResult nvmap::IocFree(IocFreeParams& params, DeviceFD fd) {
     if (auto freeInfo{file.FreeHandle(params.handle, false)}) {
         auto process = container.GetSession(sessions[fd])->process;
         if (freeInfo->can_unlock) {
-            ASSERT(process->GetPageTable()
-                       .UnlockForDeviceAddressSpace(freeInfo->address, freeInfo->size)
-                       .IsSuccess());
+            auto unlock_res = process->GetPageTable()
+                                  .UnlockForDeviceAddressSpace(freeInfo->address, freeInfo->size);
+            if (!unlock_res.IsSuccess()) {
+                LOG_ERROR(Service_NVDRV, "UnlockForDeviceAddressSpace failed: {:#x}", unlock_res.raw);
+            }
         }
         params.address = freeInfo->address;
         params.size = static_cast<u32>(freeInfo->size);

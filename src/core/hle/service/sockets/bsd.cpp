@@ -812,7 +812,6 @@ std::pair<s32, Errno> BSD::FcntlImpl(s32 fd, FcntlCmd cmd, s32 arg) {
 
     switch (cmd) {
     case FcntlCmd::GETFL:
-        ASSERT(arg == 0);
         return {descriptor.flags, Errno::SUCCESS};
     case FcntlCmd::SETFL: {
         const bool enable = (arg & Network::FLAG_O_NONBLOCK) != 0;

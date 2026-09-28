@@ -8,7 +8,6 @@ namespace Kernel::Svc {
 
 Result CreateInterruptEvent(Core::System& system, Handle* out, int32_t interrupt_id,
                             InterruptType type) {
-    UNIMPLEMENTED();
     R_THROW(ResultNotImplemented);
 }
 

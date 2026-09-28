@@ -218,7 +218,10 @@ size_t KSystemControl::CalculateRequiredSecureMemorySize(size_t size, u32 pool) 
 Result KSystemControl::AllocateSecureMemory(KernelCore& kernel, KVirtualAddress* out, size_t size,
                                             u32 pool) {
     // Applet secure memory is handled separately.
-    UNIMPLEMENTED_IF(pool == static_cast<u32>(KMemoryManager::Pool::Applet));
+    if (pool == static_cast<u32>(KMemoryManager::Pool::Applet)) {
+        LOG_WARNING(Kernel, "AllocateSecureMemory: Applet pool requested");
+        R_THROW(ResultNotImplemented);
+    }
 
     // Ensure the size is aligned.
     const size_t alignment =
@@ -246,7 +249,10 @@ Result KSystemControl::AllocateSecureMemory(KernelCore& kernel, KVirtualAddress*
 void KSystemControl::FreeSecureMemory(KernelCore& kernel, KVirtualAddress address, size_t size,
                                       u32 pool) {
     // Applet secure memory is handled separately.
-    UNIMPLEMENTED_IF(pool == static_cast<u32>(KMemoryManager::Pool::Applet));
+    if (pool == static_cast<u32>(KMemoryManager::Pool::Applet)) {
+        LOG_WARNING(Kernel, "FreeSecureMemory: Applet pool requested");
+        return;
+    }
 
     // Ensure the size is aligned.
     const size_t alignment =

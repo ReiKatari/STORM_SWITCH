@@ -493,7 +493,8 @@ private:
         }
 
         // Failure to find a free context is actually an abort condition.
-        UNREACHABLE();
+        LOG_ERROR(Service, "No free process contexts available!");
+        return InvalidContextId;
     }
 
     void FreeContext(Kernel::KernelCore& kernel, size_t context_id) {

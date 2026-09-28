@@ -143,7 +143,7 @@ namespace Kernel {
         case ThreadType::Dummy:
             break;
         case ThreadType::Kernel:
-            UNIMPLEMENTED();
+            LOG_WARNING(Kernel, "KThread::Initialize: Kernel thread type initialized");
             break;
         default:
             ASSERT_MSG(false, "KThread::Initialize: Unknown ThreadType {}", static_cast<u32>(type));

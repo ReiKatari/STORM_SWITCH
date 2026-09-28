@@ -75,7 +75,8 @@ static EVP_CIPHER *GetCipher(Mode mode, u32 key_size) {
     case Mode::XTS:
         return key_size == 16 ? ciphers.xts_16 : ciphers.xts_32;
     default:
-        UNIMPLEMENTED();
+        LOG_ERROR(Crypto, "Unsupported AES mode: {}", static_cast<u32>(mode));
+        return nullptr;
     }
     return nullptr;
 }
@@ -89,7 +90,7 @@ Crypto::AESCipher<Key>::AESCipher(Key key, Mode mode) : ctx(std::make_unique<Cip
     if (ctx->cipher) {
         EVP_CIPHER_up_ref(ctx->cipher);
     } else {
-        UNIMPLEMENTED();
+        LOG_ERROR(Crypto, "Failed to get AES cipher for mode: {}", static_cast<u32>(mode));
     }
 
     ASSERT(ctx->encryption_context && ctx->decryption_context && ctx->cipher && "OpenSSL cipher context failed init!");

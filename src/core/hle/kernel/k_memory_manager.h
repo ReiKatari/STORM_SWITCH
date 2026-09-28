@@ -242,9 +242,7 @@ private:
             return m_heap.GetFreeSize();
         }
 
-        void DumpFreeList() const {
-            UNIMPLEMENTED();
-        }
+        void DumpFreeList() const {}
 
         constexpr size_t GetPageOffset(KPhysicalAddress address) const {
             return m_heap.GetPageOffset(address);

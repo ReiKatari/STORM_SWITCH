@@ -7,7 +7,7 @@
 namespace Kernel::Svc {
 
 void SleepSystem(Core::System& system) {
-    UNIMPLEMENTED();
+    LOG_WARNING(Kernel_SVC, "SleepSystem called");
 }
 
 void SleepSystem64(Core::System& system) {

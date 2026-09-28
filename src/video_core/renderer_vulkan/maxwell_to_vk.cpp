@@ -239,7 +239,10 @@ FormatInfo SurfaceFormat(const Device& device, FormatType format_type, bool with
     SURFACE_FORMAT_ELEM(VK_FORMAT_D32_SFLOAT_S8_UINT, usage_attachable, D32_FLOAT_S8_UINT)
 #define SURFACE_FORMAT_ELEM(res, usage, pixel) case PixelFormat::pixel: tuple = {res, usage}; break;
     SURFACE_FORMAT_LIST
-    default: UNREACHABLE_MSG("unknown format {}", pixel_format);
+    default:
+        LOG_ERROR(Render_Vulkan, "Unknown format {}", pixel_format);
+        tuple = {VK_FORMAT_UNDEFINED, 0};
+        break;
 #undef SURFACE_FORMAT_ELEM
 #undef SURFACE_FORMAT_LIST
     }

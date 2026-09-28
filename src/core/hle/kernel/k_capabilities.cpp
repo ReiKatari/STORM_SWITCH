@@ -230,7 +230,7 @@ Result KCapabilities::SetInterruptPairCapability(const u32 cap) {
 
     for (size_t i = 0; i < ids.size(); i++) {
         if (ids[i] != PaddingInterruptId) {
-            UNIMPLEMENTED();
+            LOG_WARNING(Kernel, "Interrupt capability not implemented: {}", ids[i]);
             // R_UNLESS(Kernel::GetInterruptManager().IsInterruptDefined(ids[i]), ResultOutOfRange);
             // R_UNLESS(this->SetInterruptPermitted(ids[i]), ResultOutOfRange);
         }

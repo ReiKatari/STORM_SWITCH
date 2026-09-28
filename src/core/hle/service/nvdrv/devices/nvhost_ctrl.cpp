@@ -319,7 +319,7 @@ Kernel::KEvent* nvhost_ctrl::QueryEvent(u32 event_id) {
         return event.kevent;
     }
     // Is this possible in hardware?
-    ASSERT_MSG(false, "Slot:{}, SyncpointID:{}, requested", slot, syncpoint_id);
+    LOG_ERROR(Service_NVDRV, "Slot:{}, SyncpointID:{}, requested (not found)", slot, syncpoint_id);
     return nullptr;
 }
 
@@ -328,10 +328,15 @@ std::unique_lock<std::mutex> nvhost_ctrl::NvEventsLock() {
 }
 
 void nvhost_ctrl::CreateNvEvent(u32 event_id) {
+    if (event_id >= events.size()) {
+        LOG_ERROR(Service_NVDRV, "CreateNvEvent: invalid event_id {}", event_id);
+        return;
+    }
     auto& event = events[event_id];
-    ASSERT(!event.kevent);
-    ASSERT(!event.registered);
-    ASSERT(!event.IsBeingUsed());
+    if (event.kevent || event.registered || event.IsBeingUsed()) {
+        LOG_WARNING(Service_NVDRV, "CreateNvEvent: event {} already active or in use", event_id);
+        return;
+    }
     event.kevent = events_interface.CreateEvent(fmt::format("NVCTRL::NvEvent_{}", event_id));
     event.status = EventState::Available;
     event.registered = true;
@@ -342,10 +347,15 @@ void nvhost_ctrl::CreateNvEvent(u32 event_id) {
 }
 
 void nvhost_ctrl::FreeNvEvent(u32 event_id) {
+    if (event_id >= events.size()) {
+        LOG_ERROR(Service_NVDRV, "FreeNvEvent: invalid event_id {}", event_id);
+        return;
+    }
     auto& event = events[event_id];
-    ASSERT(event.kevent);
-    ASSERT(event.registered);
-    ASSERT(!event.IsBeingUsed());
+    if (!event.kevent || !event.registered) {
+        LOG_WARNING(Service_NVDRV, "FreeNvEvent: event {} not registered", event_id);
+        return;
+    }
     events_interface.FreeEvent(event.kevent);
     event.kevent = nullptr;
     event.status = EventState::Available;

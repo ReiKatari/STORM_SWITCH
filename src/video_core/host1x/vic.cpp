@@ -893,7 +893,7 @@ void Vic::WriteY8__V8U8_N420(const OutputSurfaceConfig& output_surface_config) n
         host1x.gmmu_manager.WriteBlock(regs.output_surface.chroma_u.Address(), chroma_scratch.data(), out_chroma_size);
     } break;
     default:
-        UNREACHABLE();
+        LOG_ERROR(HW_GPU, "Unhandled VIC block kind in WriteYUV: {}", static_cast<u32>(output_surface_config.out_block_kind.Value()));
         break;
     }
 }
@@ -1040,7 +1040,7 @@ void Vic::WriteABGR(const OutputSurfaceConfig& output_surface_config, VideoPixel
         Decode(out_luma.data(), output_surface.data());
     } break;
     default:
-        UNREACHABLE();
+        LOG_ERROR(HW_GPU, "Unhandled VIC block kind in WriteABGR: {}", static_cast<u32>(output_surface_config.out_block_kind.Value()));
         break;
     }
 }

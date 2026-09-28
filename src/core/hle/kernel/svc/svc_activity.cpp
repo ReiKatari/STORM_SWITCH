@@ -40,7 +40,6 @@ Result SetThreadActivity(Core::System& system, Handle thread_handle,
 
 Result SetProcessActivity(Core::System& system, Handle process_handle,
                           ProcessActivity process_activity) {
-    UNIMPLEMENTED();
     R_THROW(ResultNotImplemented);
 }
 

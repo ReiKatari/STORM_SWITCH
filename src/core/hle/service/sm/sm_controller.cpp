@@ -12,6 +12,7 @@
 #include "core/hle/kernel/k_scoped_resource_reservation.h"
 #include "core/hle/kernel/k_server_session.h"
 #include "core/hle/kernel/k_session.h"
+#include "core/hle/kernel/svc_results.h"
 #include "core/hle/service/ipc_helpers.h"
 #include "core/hle/service/server_manager.h"
 #include "core/hle/service/sm/sm_controller.h"
@@ -38,11 +39,21 @@ void Controller::CloneCurrentObject(HLERequestContext& ctx) {
 
     // Reserve a new session from the process resource limit.
     Kernel::KScopedResourceReservation session_reservation(system.Kernel(), Kernel::GetCurrentProcessPointer(kernel), Kernel::LimitableResource::SessionCountMax);
-    ASSERT(session_reservation.Succeeded());
+    if (!session_reservation.Succeeded()) {
+        LOG_ERROR(Service_SM, "Failed to reserve session");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(Kernel::ResultOutOfResource);
+        return;
+    }
 
     // Create the session.
     Kernel::KSession* session = Kernel::KSession::Create(kernel);
-    ASSERT(session != nullptr);
+    if (session == nullptr) {
+        LOG_ERROR(Service_SM, "Failed to allocate session");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(Kernel::ResultOutOfResource);
+        return;
+    }
 
     // Initialize the session.
     session->Initialize(kernel, nullptr, 0);

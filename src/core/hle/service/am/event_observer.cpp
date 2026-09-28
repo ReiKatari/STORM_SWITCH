@@ -119,7 +119,7 @@ void EventObserver::Process(MultiWaitHolder* holder) {
         this->OnProcessEvent(static_cast<ProcessHolder*>(holder));
         break;
     default:
-        UNREACHABLE();
+        break;
     }
 }
 

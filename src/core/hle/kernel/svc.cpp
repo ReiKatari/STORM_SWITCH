@@ -2364,7 +2364,9 @@ static void Call32(Core::System& system, u32 imm, std::span<uint64_t, 8> args) {
     case SvcId::CallSecureMonitor: return SvcWrap_CallSecureMonitor64From32(system, args);
     case SvcId::MapInsecureMemory: return SvcWrap_MapInsecureMemory64From32(system, args);
     case SvcId::UnmapInsecureMemory: return SvcWrap_UnmapInsecureMemory64From32(system, args);
-    default: UNREACHABLE_MSG("Unhandled SVC {:#x}!", imm);
+    default:
+        LOG_ERROR(Kernel_SVC, "Unhandled SVC {:#x}!", imm);
+        break;
     }
 }
 
@@ -2493,7 +2495,9 @@ static void Call64(Core::System& system, u32 imm, std::span<uint64_t, 8> args) {
     case SvcId::CallSecureMonitor: return SvcWrap_CallSecureMonitor64(system, args);
     case SvcId::MapInsecureMemory: return SvcWrap_MapInsecureMemory64(system, args);
     case SvcId::UnmapInsecureMemory: return SvcWrap_UnmapInsecureMemory64(system, args);
-    default: UNREACHABLE_MSG("Unhandled SVC {:#x}!", imm);
+    default:
+        LOG_ERROR(Kernel_SVC, "Unhandled SVC {:#x}!", imm);
+        break;
     }
 }
 void Call(Core::System& system, u32 imm) {

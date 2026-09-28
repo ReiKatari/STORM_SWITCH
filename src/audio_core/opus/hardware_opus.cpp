@@ -126,8 +126,10 @@ Result HardwareOpus::InitializeMultiStreamDecodeObject(u32 sample_rate, u32 chan
     shared_memory.host_send_data[4] = total_stream_count;
     shared_memory.host_send_data[5] = stereo_stream_count;
 
-    ASSERT(channel_count <= MaxChannels);
-    std::memcpy(shared_memory.channel_mapping.data(), mappings, channel_count * sizeof(u8));
+    R_UNLESS(channel_count <= MaxChannels, ResultInvalidChannelCount);
+    if (mappings != nullptr) {
+        std::memcpy(shared_memory.channel_mapping.data(), mappings, channel_count * sizeof(u8));
+    }
 
     opus_decoder.Send(ADSP::Direction::DSP,
                       ADSP::OpusDecoder::Message::InitializeMultiStreamDecodeObject);

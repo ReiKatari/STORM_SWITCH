@@ -8,13 +8,11 @@ namespace Kernel::Svc {
 
 Result QueryPhysicalAddress(Core::System& system, lp64::PhysicalMemoryInfo* out_info,
                             uint64_t address) {
-    UNIMPLEMENTED();
     R_THROW(ResultNotImplemented);
 }
 
 Result QueryIoMapping(Core::System& system, uint64_t* out_address, uint64_t* out_size,
                       uint64_t physical_address, uint64_t size) {
-    UNIMPLEMENTED();
     R_THROW(ResultNotImplemented);
 }
 

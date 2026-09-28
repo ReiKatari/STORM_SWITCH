@@ -588,11 +588,10 @@ Result ISystemSettingsServer::SetEulaVersions(
     InArray<EulaVersion, BufferAttr_HipcMapAlias> eula_versions) {
     LOG_INFO(Service_SET, "called, elements={}", eula_versions.size());
 
-    ASSERT(eula_versions.size() <= m_system_settings.eula_versions.size());
-
-    m_system_settings.eula_version_count = static_cast<s32>(eula_versions.size());
+    const auto copy_count = (std::min)(eula_versions.size(), m_system_settings.eula_versions.size());
+    m_system_settings.eula_version_count = static_cast<s32>(copy_count);
     std::memcpy(m_system_settings.eula_versions.data(), eula_versions.data(),
-                eula_versions.size() * sizeof(EulaVersion));
+                copy_count * sizeof(EulaVersion));
     SetSaveNeeded();
     R_SUCCEED();
 }
@@ -657,14 +656,12 @@ Result ISystemSettingsServer::SetAccountNotificationSettings(
     InArray<AccountNotificationSettings, BufferAttr_HipcMapAlias> account_notification_settings) {
     LOG_INFO(Service_SET, "called, elements={}", account_notification_settings.size());
 
-    ASSERT(account_notification_settings.size() <=
-           m_system_settings.account_notification_settings.size());
-
-    m_system_settings.account_notification_settings_count =
-        static_cast<s32>(account_notification_settings.size());
+    const auto copy_count = (std::min)(account_notification_settings.size(),
+                                       m_system_settings.account_notification_settings.size());
+    m_system_settings.account_notification_settings_count = static_cast<s32>(copy_count);
     std::memcpy(m_system_settings.account_notification_settings.data(),
                 account_notification_settings.data(),
-                account_notification_settings.size() * sizeof(AccountNotificationSettings));
+                copy_count * sizeof(AccountNotificationSettings));
     SetSaveNeeded();
     R_SUCCEED();
 }
