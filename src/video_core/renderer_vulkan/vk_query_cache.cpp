@@ -295,6 +295,9 @@ public:
         bool has_multi_queries = false;
         for (auto q : pending_sync) {
             auto* query = GetQuery(q);
+            if (!query) {
+                continue;
+            }
             size_t sync_value_slot = 0;
             if (True(query->flags & VideoCommon::QueryFlagBits::IsRewritten)) {
                 continue;
@@ -401,6 +404,9 @@ public:
             [](SamplesQueryBank* bank, size_t start, size_t amount) { bank->Sync(start, amount); });
         for (auto q : current_flush_queries) {
             auto* query = GetQuery(q);
+            if (!query) {
+                continue;
+            }
             u64 total = 0;
             ApplyBankOp(query, [&total](SamplesQueryBank* bank, size_t start, size_t amount) {
                 const auto& results = bank->GetResults();
@@ -416,6 +422,9 @@ public:
 private:
     template <typename Func>
     void ApplyBankOp(VideoCommon::HostQueryBase* query, Func&& func) {
+        if (!query) {
+            return;
+        }
         size_t size_slots = query->size_slots;
         if (size_slots == 0) {
             return;
@@ -911,6 +920,10 @@ public:
         size_t offset_base = staging_ref.offset;
         for (auto q : flushed_queries) {
             auto* query = GetQuery(q);
+            if (!query) {
+                offset_base += TFBQueryBank::QUERY_SIZE;
+                continue;
+            }
             u32 result = 0;
             std::memcpy(&result, staging_ref.mapped_span.data() + offset_base, sizeof(u32));
             query->value = static_cast<u64>(result);
@@ -1179,15 +1192,17 @@ public:
             new_query->dependant_index =
                 tfb_streamer.WriteCounter(address, has_timestamp, value, subreport_);
             auto* dependant_query = tfb_streamer.GetQuery(new_query->dependant_index);
-            dependant_query->flags |= VideoCommon::QueryFlagBits::IsInvalidated;
-            must_manage_dependance = true;
-            if (True(dependant_query->flags & VideoCommon::QueryFlagBits::IsFinalValueSynced)) {
-                new_query->value = 0;
-                new_query->flags |= VideoCommon::QueryFlagBits::IsFinalValueSynced;
-                if (must_manage_dependance) {
-                    tfb_streamer.Free(new_query->dependant_index);
+            if (dependant_query) {
+                dependant_query->flags |= VideoCommon::QueryFlagBits::IsInvalidated;
+                must_manage_dependance = true;
+                if (True(dependant_query->flags & VideoCommon::QueryFlagBits::IsFinalValueSynced)) {
+                    new_query->value = 0;
+                    new_query->flags |= VideoCommon::QueryFlagBits::IsFinalValueSynced;
+                    if (must_manage_dependance) {
+                        tfb_streamer.Free(new_query->dependant_index);
+                    }
+                    return index;
                 }
-                return index;
             }
             new_query->stride = 1;
             runtime.View3DRegs([new_query, subreport](Maxwell3D& maxwell3d) {
@@ -1231,6 +1246,9 @@ public:
 
         for (auto q : flushed_queries) {
             auto* query = GetQuery(q);
+            if (!query) {
+                continue;
+            }
             if (True(query->flags & VideoCommon::QueryFlagBits::IsFinalValueSynced)) {
                 continue;
             }
@@ -1244,7 +1262,9 @@ public:
             }
             if (query->dependant_manage) {
                 auto* dependant_query = tfb_streamer.GetQuery(query->dependant_index);
-                num_vertices = dependant_query->value / safe_stride;
+                if (dependant_query) {
+                    num_vertices = dependant_query->value / safe_stride;
+                }
                 tfb_streamer.Free(query->dependant_index);
             } else {
                 u8* pointer = device_memory.GetPointer<u8>(query->dependant_address);

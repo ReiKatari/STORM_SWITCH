@@ -153,6 +153,9 @@ struct QueryCacheBase<Traits>::QueryCacheBaseImpl {
 
     QueryBase* ObtainQuery(QueryCacheBase<Traits>::QueryLocation location) {
         size_t which_stream = location.stream_id.Value();
+        if (which_stream >= streamers.size()) [[unlikely]] {
+            return nullptr;
+        }
         auto* streamer = streamers[which_stream];
         if (!streamer) {
             return nullptr;
@@ -248,6 +251,9 @@ void QueryCacheBase<Traits>::CounterReport(GPUVAddr addr, QueryType counter_type
     DAddr cpu_addr = *cpu_addr_opt;
     const size_t new_query_id = streamer->WriteCounter(cpu_addr, has_timestamp, payload, subreport);
     auto* query = streamer->GetQuery(new_query_id);
+    if (!query) [[unlikely]] {
+        return;
+    }
     if (is_fence) {
         query->flags |= QueryFlagBits::IsFence;
     }
@@ -296,6 +302,7 @@ void QueryCacheBase<Traits>::CounterReport(GPUVAddr addr, QueryType counter_type
                 std::memcpy(pointer, &value, sizeof(value));
             }
         }
+        query_base->flags |= QueryFlagBits::IsGuestSynced;
         if (!is_synced) [[likely]] {
             impl->pending_unregister.push_back(query_location);
         }
@@ -338,7 +345,9 @@ void QueryCacheBase<Traits>::CounterReport(GPUVAddr addr, QueryType counter_type
             return;
         }
         auto* old_query = impl->ObtainQuery(it_current->second);
-        old_query->flags |= QueryFlagBits::IsRewritten;
+        if (old_query) {
+            old_query->flags |= QueryFlagBits::IsRewritten;
+        }
         sub_container.insert_or_assign(base, query_location);
     }
 }
@@ -352,11 +361,17 @@ void QueryCacheBase<Traits>::UnregisterPending() {
     std::scoped_lock lock(cache_mutex);
     for (QueryLocation loc : impl->pending_unregister) {
         const auto [streamer_id, query_id] = loc.unpack();
+        if (streamer_id >= impl->streamers.size()) [[unlikely]] {
+            continue;
+        }
         auto* streamer = impl->streamers[streamer_id];
         if (!streamer) [[unlikely]] {
             continue;
         }
         auto* query = streamer->GetQuery(query_id);
+        if (!query) [[unlikely]] {
+            continue;
+        }
         auto [cont_addr, base] = gen_caching_indexing(query->guest_address);
         auto it1 = cached_queries.find(cont_addr);
         if (it1 != cached_queries.end()) {
@@ -430,8 +445,10 @@ bool QueryCacheBase<Traits>::AccelerateHostConditionalRendering() {
             it_current = it_current_2;
         }
         auto* query = impl->ObtainQuery(it_current->second);
-        qc_dirty |= True(query->flags & QueryFlagBits::IsHostManaged) &&
-                    False(query->flags & QueryFlagBits::IsGuestSynced);
+        if (query) {
+            qc_dirty |= True(query->flags & QueryFlagBits::IsHostManaged) &&
+                        False(query->flags & QueryFlagBits::IsGuestSynced);
+        }
         return VideoCommon::LookupData{
             .address = cpu_addr,
             .found_query = query,
@@ -583,11 +600,23 @@ bool QueryCacheBase<Traits>::SemiFlushQueryDirty(QueryCacheBase<Traits>::QueryLo
         False(query_base->flags & QueryFlagBits::IsGuestSynced)) {
         auto* ptr = impl->device_memory.template GetPointer<u8>(query_base->guest_address);
         if (True(query_base->flags & QueryFlagBits::HasTimestamp)) {
-            std::memcpy(ptr, &query_base->value, sizeof(query_base->value));
+            auto* ptr_timestamp =
+                impl->device_memory.template GetPointer<u8>(query_base->guest_address + 8);
+            if (ptr_timestamp) {
+                u64 timestamp = impl->gpu.GetTicks();
+                std::memcpy(ptr_timestamp, &timestamp, sizeof(timestamp));
+            }
+            if (ptr) {
+                std::memcpy(ptr, &query_base->value, sizeof(query_base->value));
+            }
+            query_base->flags |= QueryFlagBits::IsGuestSynced;
             return false;
         }
-        u32 value_l = static_cast<u32>(query_base->value);
-        std::memcpy(ptr, &value_l, sizeof(value_l));
+        if (ptr) {
+            u32 value_l = static_cast<u32>(query_base->value);
+            std::memcpy(ptr, &value_l, sizeof(value_l));
+        }
+        query_base->flags |= QueryFlagBits::IsGuestSynced;
         return false;
     }
     return True(query_base->flags & QueryFlagBits::IsHostManaged) &&
