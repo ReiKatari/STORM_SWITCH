@@ -63,8 +63,8 @@ using VideoCommon::GenericEnvironment;
 using VideoCommon::GraphicsEnvironment;
 
 constexpr u32 CACHE_VERSION = 19;
-constexpr size_t VULKAN_CACHE_FLUSH_PIPELINES = 24;
-constexpr size_t VULKAN_CACHE_FLUSH_MIN_SECONDS = 15;
+constexpr size_t VULKAN_CACHE_FLUSH_PIPELINES = 128;
+constexpr size_t VULKAN_CACHE_FLUSH_MIN_SECONDS = 45;
 constexpr std::array<char, 8> VULKAN_CACHE_MAGIC_NUMBER{'y', 'u', 'z', 'u', 'v', 'k', 'c', 'h'};
 
 #pragma pack(push, 1)
@@ -759,9 +759,6 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
         serialization_thread.QueueWork([this]() {
             SerializeVulkanPipelineCache(vulkan_pipeline_cache_filename, vulkan_pipeline_cache,
                                          CACHE_VERSION);
-            size_t size = 0;
-            vulkan_pipeline_cache.Read(&size, nullptr);
-            last_cache_size.store(size, std::memory_order_relaxed);
             last_flush = std::chrono::steady_clock::now();
         });
     }
@@ -780,7 +777,7 @@ void PipelineCache::QueueVulkanPipelineCacheFlush() {
     const std::chrono::seconds interval{
         std::max<size_t>(VULKAN_CACHE_FLUSH_MIN_SECONDS, megabytes)};
     const bool count_threshold = (++pipelines_since_flush >= VULKAN_CACHE_FLUSH_PIPELINES);
-    const bool time_threshold = (pipelines_since_flush >= 8 && last_flush.time_since_epoch().count() != 0 && now - last_flush >= std::chrono::seconds(60));
+    const bool time_threshold = (pipelines_since_flush >= 32 && last_flush.time_since_epoch().count() != 0 && now - last_flush >= std::chrono::seconds(120));
     if (!count_threshold && !time_threshold) {
         return;
     }
@@ -795,9 +792,6 @@ void PipelineCache::QueueVulkanPipelineCacheFlush() {
     serialization_thread.QueueWork([this] {
         SerializeVulkanPipelineCache(vulkan_pipeline_cache_filename, vulkan_pipeline_cache,
                                      CACHE_VERSION);
-        size_t size = 0;
-        vulkan_pipeline_cache.Read(&size, nullptr);
-        last_cache_size.store(size, std::memory_order_relaxed);
         flush_in_flight.store(false, std::memory_order_release);
     });
 }
@@ -1111,9 +1105,13 @@ void PipelineCache::SerializeVulkanPipelineCache(const std::filesystem::path& fi
     size_t cache_size = 0;
     std::vector<char> cache_data;
     if (pipeline_cache) {
+        std::scoped_lock lock{vulkan_pipeline_cache_mutex};
         pipeline_cache.Read(&cache_size, nullptr);
-        cache_data.resize(cache_size);
-        pipeline_cache.Read(&cache_size, cache_data.data());
+        if (cache_size > 0) {
+            cache_data.resize(cache_size);
+            pipeline_cache.Read(&cache_size, cache_data.data());
+        }
+        last_cache_size.store(cache_size, std::memory_order_relaxed);
     }
     file.write(cache_data.data(), cache_size);
 

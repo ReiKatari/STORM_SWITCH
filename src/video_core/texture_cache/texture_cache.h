@@ -200,9 +200,9 @@ void TextureCache<P>::TickFrame() {
     const bool budget_gov = Settings::values.vram_budget_governor.GetValue();
     u64 gc_threshold = critical_memory;
     if (budget_gov) {
-        gc_threshold = static_cast<u64>(critical_memory * 90 / 100);
+        gc_threshold = static_cast<u64>(expected_memory * 85 / 100);
     } else if (vram_gc) {
-        gc_threshold = static_cast<u64>(critical_memory * 95 / 100);
+        gc_threshold = static_cast<u64>(expected_memory);
     }
     if (total_used_memory > gc_threshold) {
         RunGarbageCollector();

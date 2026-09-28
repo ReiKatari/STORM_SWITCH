@@ -614,6 +614,9 @@ void RasterizerVulkan::DispatchCompute() {
         const auto post_op = VideoCommon::ObtainBufferOperation::DiscardWrite;
         const auto [buffer, offset] =
             buffer_cache.ObtainBuffer(*indirect_address, 12, sync_info, post_op);
+        if (!buffer) {
+            return;
+        }
         scheduler.RequestOutsideRenderPassOperationContext();
         static constexpr VkMemoryBarrier INDIRECT_READ_BARRIER{
             .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,

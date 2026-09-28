@@ -133,6 +133,7 @@ void BlitScreen::DrawToFrame(const Device& device, RasterizerVulkan& rasterizer,
         current_window_size.height != window_size.height ||
         current_up_factor != up_factor ||
         current_anti_aliasing != active_aa) {
+        WaitIdle(device);
         layers.clear();
         current_window_size = window_size;
         current_up_factor = up_factor;

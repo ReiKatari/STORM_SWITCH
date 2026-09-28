@@ -383,7 +383,7 @@ bool NCZVirtualFile::IsReadable() const {
 }
 
 std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offset) const {
-    if (!is_valid || length == 0 || offset >= decompressed_size) {
+    if (!is_valid || !data || length == 0 || offset >= decompressed_size) {
         if (!is_valid) LOG_ERROR(Service_FS, "Read called on invalid NCZVirtualFile!");
         return 0;
     }
@@ -647,7 +647,7 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                     std::memset(data + bytes_read + read, 0, copy_size - read);
                 }
             } else {
-                constexpr std::size_t CACHE_SLOTS = 512;
+                constexpr std::size_t CACHE_SLOTS = 32;
                 std::size_t slot = block_index % CACHE_SLOTS;
                 bool hit = false;
                 {

@@ -19,7 +19,9 @@ Host1x::Host1x(Core::System& system_)
     , allocator{1 << 12}
 {}
 
-Host1x::~Host1x() = default;
+Host1x::~Host1x() {
+    frame_queue.Clear();
+}
 
 void Host1x::StartDevice(s32 fd, ChannelType type, u32 syncpt) {
     switch (type) {
@@ -43,6 +45,7 @@ void Host1x::StartDevice(s32 fd, ChannelType type, u32 syncpt) {
 
 void Host1x::StopDevice(s32 fd, ChannelType type) {
     devices[fd].emplace<std::monostate>();
+    frame_queue.Close(fd);
 }
 
 } // namespace Tegra::Host1x

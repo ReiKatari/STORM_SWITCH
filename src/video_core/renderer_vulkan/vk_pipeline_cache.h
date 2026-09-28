@@ -175,6 +175,7 @@ private:
     std::filesystem::path pipeline_cache_filename;
 
     std::filesystem::path vulkan_pipeline_cache_filename;
+    mutable std::mutex vulkan_pipeline_cache_mutex;
     vk::PipelineCache vulkan_pipeline_cache;
     size_t pipelines_since_flush{};
     std::chrono::steady_clock::time_point last_flush{};

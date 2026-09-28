@@ -103,6 +103,11 @@ public:
         return {};
     }
 
+    void Clear() {
+        std::scoped_lock l{m_mutex};
+        m_frame_devices.clear();
+    }
+
 private:
     std::shared_ptr<FFmpeg::Frame> GetPresentOrderLocked(s32 fd) {
         if (auto const it = m_frame_devices.find(fd); it != m_frame_devices.end()) {
@@ -126,8 +131,8 @@ private:
     std::mutex m_mutex{};
     ankerl::unordered_dense::map<s32, FrameDevice> m_frame_devices;
 
-    static constexpr size_t MAX_PRESENT_QUEUE = 100;
-    static constexpr size_t MAX_DECODE_MAP = 200;
+    static constexpr size_t MAX_PRESENT_QUEUE = 16;
+    static constexpr size_t MAX_DECODE_MAP = 32;
 };
 
 enum class ChannelType : u32 {
