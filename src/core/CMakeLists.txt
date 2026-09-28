@@ -1165,11 +1165,15 @@ add_library(core STATIC
     loader/xci.h
     memory.cpp
     memory.h
+    memory_region_scan.cpp
+    memory_region_scan.h
     memory/cheat_engine.cpp
     memory/cheat_engine.h
     memory/dmnt_cheat_types.h
     memory/dmnt_cheat_vm.cpp
     memory/dmnt_cheat_vm.h
+    savestate.cpp
+    savestate.h
     dynamic_performance_scaler.cpp
     dynamic_performance_scaler.h
     perf_stats.cpp

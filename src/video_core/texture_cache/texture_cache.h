@@ -259,6 +259,9 @@ void TextureCache<P>::FillImageViews(std::span<ImageViewInOut> views, bool compu
             if (blacklist) {
                 if (view.blacklist && view.id != NULL_IMAGE_VIEW_ID) {
                     const ImageViewBase& image_view = slot_image_views[view.id];
+                    if (image_view.image_id == NULL_IMAGE_ID) {
+                        continue;
+                    }
                     auto& image = slot_images[image_view.image_id];
                     has_blacklisted |= ScaleDown(image);
                     image.scale_rating = 0;

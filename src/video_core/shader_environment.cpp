@@ -8,7 +8,9 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <new>
 #include <optional>
+#include <stdexcept>
 #include <utility>
 
 #include "common/assert.h"
@@ -664,6 +666,16 @@ void LoadPipelines(
         }
         u32 num_envs{};
         file.read(reinterpret_cast<char*>(&num_envs), sizeof(num_envs));
+        if (num_envs == 0 || num_envs > Maxwell::MaxShaderProgram) {
+            file.close();
+            LOG_ERROR(Common_Filesystem, "Corrupt pipeline cache entry ({} shaders)", num_envs);
+            if (!Common::FS::RemoveFile(filename)) {
+                LOG_ERROR(Common_Filesystem,
+                          "Corrupt pipeline cache file and failed to delete it in \"{}\"",
+                          Common::FS::PathToUTF8String(filename));
+            }
+            return;
+        }
         std::vector<FileEnvironment> envs(num_envs);
         for (FileEnvironment& env : envs) {
             env.Deserialize(file);
@@ -677,6 +689,18 @@ void LoadPipelines(
 
 } catch (const std::ios_base::failure& e) {
     LOG_ERROR(Common_Filesystem, "{}", e.what());
+    if (!Common::FS::RemoveFile(filename)) {
+        LOG_ERROR(Common_Filesystem, "Failed to delete pipeline cache file {}",
+                  Common::FS::PathToUTF8String(filename));
+    }
+} catch (const std::length_error& e) {
+    LOG_ERROR(Common_Filesystem, "Corrupt pipeline cache entry: {}", e.what());
+    if (!Common::FS::RemoveFile(filename)) {
+        LOG_ERROR(Common_Filesystem, "Failed to delete pipeline cache file {}",
+                  Common::FS::PathToUTF8String(filename));
+    }
+} catch (const std::bad_alloc& e) {
+    LOG_ERROR(Common_Filesystem, "Corrupt pipeline cache entry: {}", e.what());
     if (!Common::FS::RemoveFile(filename)) {
         LOG_ERROR(Common_Filesystem, "Failed to delete pipeline cache file {}",
                   Common::FS::PathToUTF8String(filename));

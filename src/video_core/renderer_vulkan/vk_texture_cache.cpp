@@ -2284,6 +2284,9 @@ bool Image::IsRescaled() const noexcept {
 }
 
 bool Image::ScaleUp(bool ignore) {
+    if (!runtime) {
+        return false;
+    }
     const auto& resolution = runtime->resolution;
     if (!resolution.active) {
         return false;
@@ -2330,6 +2333,9 @@ bool Image::ScaleUp(bool ignore) {
 }
 
 bool Image::ScaleDown(bool ignore) {
+    if (!runtime) {
+        return false;
+    }
     const auto& resolution = runtime->resolution;
     if (!resolution.active) {
         return false;

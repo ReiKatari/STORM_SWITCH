@@ -371,6 +371,9 @@ StagingBufferRef BufferCacheRuntime::DownloadStagingBuffer(size_t size, bool def
 }
 
 VkFormat BufferCacheRuntime::TexelBufferFormat(VideoCore::Surface::PixelFormat format) const {
+    if (format == VideoCore::Surface::PixelFormat::Invalid) {
+        return VK_FORMAT_R8_UINT;
+    }
     return MaxwellToVK::SurfaceFormat(device, FormatType::Buffer, false, format).format;
 }
 
