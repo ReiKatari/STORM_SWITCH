@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 #include <QLinearGradient>
-#include <QMatrix4x4>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
@@ -25,6 +24,7 @@ constexpr float PI_CONST = 3.14159265358979323846f;
 
 PlayerControlPreview::PlayerControlPreview(QWidget* parent) : QFrame(parent) {
     is_controller_set = false;
+    setCursor(Qt::OpenHandCursor);
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, QOverload<>::of(&PlayerControlPreview::UpdateInput));
 
@@ -405,8 +405,8 @@ void PlayerControlPreview::mouseMoveEvent(QMouseEvent* event) {
     if (is_mouse_dragging) {
         const QPoint delta = event->pos() - last_mouse_pos;
         last_mouse_pos = event->pos();
-        rot_y = std::clamp(rot_y + static_cast<float>(delta.x()) * 0.45f, -65.0f, 65.0f);
-        rot_x = std::clamp(rot_x - static_cast<float>(delta.y()) * 0.45f, -50.0f, 50.0f);
+        rot_y = std::clamp(rot_y + static_cast<float>(delta.x()) * 0.40f, -55.0f, 55.0f);
+        rot_x = std::clamp(rot_x - static_cast<float>(delta.y()) * 0.40f, -40.0f, 40.0f);
         update();
         event->accept();
         return;
@@ -417,7 +417,7 @@ void PlayerControlPreview::mouseMoveEvent(QMouseEvent* event) {
 void PlayerControlPreview::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         is_mouse_dragging = false;
-        unsetCursor();
+        setCursor(Qt::OpenHandCursor);
         event->accept();
         return;
     }
@@ -436,7 +436,7 @@ void PlayerControlPreview::mouseDoubleClickEvent(QMouseEvent* event) {
 void PlayerControlPreview::wheelEvent(QWheelEvent* event) {
     const float numDegrees = static_cast<float>(event->angleDelta().y()) / 8.0f;
     const float numSteps = numDegrees / 15.0f;
-    zoom = std::clamp(zoom + numSteps * 0.08f, 0.65f, 1.85f);
+    zoom = std::clamp(zoom + numSteps * 0.06f, 0.70f, 1.60f);
     update();
     event->accept();
 }
@@ -450,17 +450,19 @@ void PlayerControlPreview::paintEvent(QPaintEvent* event) {
 
     p.save();
     if (rot_x != 0.0f || rot_y != 0.0f || zoom != 1.0f) {
-        QMatrix4x4 m4;
-        m4.translate(static_cast<float>(center.x()), static_cast<float>(center.y()), 0.0f);
-        const float aspect = static_cast<float>(width()) / static_cast<float>(std::max(1, height()));
-        m4.perspective(38.0f, aspect, 10.0f, 3000.0f);
-        const float fov_rad = static_cast<float>(38.0 * PI_CONST / 180.0);
-        const float dist = (static_cast<float>(height()) * 0.5f) / std::tan(fov_rad * 0.5f);
-        m4.translate(0.0f, 0.0f, -dist / std::max(0.1f, zoom));
-        m4.rotate(rot_x, 1.0f, 0.0f, 0.0f);
-        m4.rotate(rot_y, 0.0f, 1.0f, 0.0f);
-        m4.translate(-static_cast<float>(center.x()), -static_cast<float>(center.y()), 0.0f);
-        p.setTransform(m4.toTransform());
+        const float rad_y = rot_y * PI_CONST / 180.0f;
+        const float rad_x = rot_x * PI_CONST / 180.0f;
+        const float cos_y = std::cos(rad_y);
+        const float sin_y = std::sin(rad_y);
+        const float cos_x = std::cos(rad_x);
+        const float sin_x = std::sin(rad_x);
+
+        QTransform t;
+        t.translate(center.x(), center.y());
+        t.scale(zoom * cos_y, zoom * cos_x);
+        t.shear(-sin_y * sin_x * 0.30f, sin_y * 0.12f);
+        t.translate(-center.x(), -center.y());
+        p.setTransform(t, true);
     }
 
     switch (controller_type) {
