@@ -301,7 +301,15 @@ void Scheduler::WorkerThread(std::stop_token stop_token) {
             // Perform the work, tracking whether the chunk was a submission
             // before executing.
             const bool has_submit = work->HasSubmit();
-            work->ExecuteAll(current_cmdbuf, current_upload_cmdbuf);
+            try {
+                work->ExecuteAll(current_cmdbuf, current_upload_cmdbuf);
+            } catch (const vk::Exception& ex) {
+                LOG_CRITICAL(Render_Vulkan, "Vulkan worker thread caught exception: {} ({})",
+                             ex.what(), static_cast<int>(ex.GetResult()));
+                if (ex.GetResult() == VK_ERROR_DEVICE_LOST) {
+                    return;
+                }
+            }
 
             // If the chunk was a submission, reallocate the command buffer.
             if (has_submit) {
@@ -368,7 +376,7 @@ u64 Scheduler::SubmitExecution(VkSemaphore signal_semaphore, VkSemaphore wait_se
             }
             break;
         case VK_ERROR_DEVICE_LOST:
-            device.ReportLoss();
+            device.ReportLoss("Scheduler::SubmitExecution");
             [[fallthrough]];
         default:
             vk::Check(result);
@@ -425,7 +433,11 @@ void Scheduler::EndRenderPass()
                        has_transform_feedback = device.IsExtTransformFeedbackSupported()](
                           vk::CommandBuffer cmdbuf) {
             std::array<VkImageMemoryBarrier, 9> barriers;
+            size_t valid_barriers = 0;
             for (size_t i = 0; i < num_images; ++i) {
+                if (images[i] == VK_NULL_HANDLE) {
+                    continue;
+                }
                 const VkImageSubresourceRange& range = ranges[i];
                 const bool is_color = (range.aspectMask & VK_IMAGE_ASPECT_COLOR_BIT) != 0;
                 const bool is_depth_stencil = (range.aspectMask
@@ -442,7 +454,7 @@ void Scheduler::EndRenderPass()
                     src_access |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
                                   | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-                barriers[i] = VkImageMemoryBarrier{
+                barriers[valid_barriers++] = VkImageMemoryBarrier{
                         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                         .pNext = nullptr,
                         .srcAccessMask = src_access,
@@ -460,9 +472,11 @@ void Scheduler::EndRenderPass()
                 };
             }
             cmdbuf.EndRenderPass();
-            cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT |
-                                   VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, vk::PIPELINE_STAGE_GRAPHICS_COMPUTE,
-                                   0, nullptr, nullptr, vk::Span(barriers.data(), num_images));
+            if (valid_barriers > 0) {
+                cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT |
+                                       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, vk::PIPELINE_STAGE_GRAPHICS_COMPUTE,
+                                       0, nullptr, nullptr, vk::Span(barriers.data(), valid_barriers));
+            }
             if (has_transform_feedback) {
                 static constexpr VkMemoryBarrier XFB_OUTPUT_BARRIER{
                     .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,

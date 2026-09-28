@@ -1375,9 +1375,13 @@ public:
                 };
             }
             std::array<VkBufferMemoryBarrier2, MaxBarriers> buffer_barriers2;
+            u32 valid_buffer_count = 0;
             for (u32 i = 0; i < buffer_barriers.size(); ++i) {
                 const auto& barrier = buffer_barriers[i];
-                buffer_barriers2[i] = VkBufferMemoryBarrier2{
+                if (barrier.buffer == VK_NULL_HANDLE) {
+                    continue;
+                }
+                buffer_barriers2[valid_buffer_count++] = VkBufferMemoryBarrier2{
                     .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
                     .pNext = nullptr,
                     .srcStageMask = src_stage_mask2,
@@ -1392,9 +1396,13 @@ public:
                 };
             }
             std::array<VkImageMemoryBarrier2, MaxBarriers> image_barriers2;
+            u32 valid_image_count = 0;
             for (size_t i = 0; i < image_barriers.size(); ++i) {
                 const auto& barrier = image_barriers[i];
-                image_barriers2[i] = VkImageMemoryBarrier2{
+                if (barrier.image == VK_NULL_HANDLE) {
+                    continue;
+                }
+                image_barriers2[valid_image_count++] = VkImageMemoryBarrier2{
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
                     .pNext = nullptr,
                     .srcStageMask = src_stage_mask2,
@@ -1415,18 +1423,56 @@ public:
                 .dependencyFlags = dependency_flags,
                 .memoryBarrierCount = static_cast<u32>(memory_barriers.size()),
                 .pMemoryBarriers = memory_barriers2.data(),
-                .bufferMemoryBarrierCount = static_cast<u32>(buffer_barriers.size()),
+                .bufferMemoryBarrierCount = valid_buffer_count,
                 .pBufferMemoryBarriers = buffer_barriers2.data(),
-                .imageMemoryBarrierCount = static_cast<u32>(image_barriers.size()),
+                .imageMemoryBarrierCount = valid_image_count,
                 .pImageMemoryBarriers = image_barriers2.data(),
             };
             dld->vkCmdPipelineBarrier2(handle, &dependency_info);
             return;
         }
+        std::vector<VkBufferMemoryBarrier> clean_buf;
+        Span<VkBufferMemoryBarrier> out_buf = buffer_barriers;
+        bool has_null_buf = false;
+        for (const auto& b : buffer_barriers) {
+            if (b.buffer == VK_NULL_HANDLE) {
+                has_null_buf = true;
+                break;
+            }
+        }
+        if (has_null_buf) {
+            clean_buf.reserve(buffer_barriers.size());
+            for (const auto& b : buffer_barriers) {
+                if (b.buffer != VK_NULL_HANDLE) {
+                    clean_buf.push_back(b);
+                }
+            }
+            out_buf = clean_buf;
+        }
+
+        std::vector<VkImageMemoryBarrier> clean_img;
+        Span<VkImageMemoryBarrier> out_img = image_barriers;
+        bool has_null_img = false;
+        for (const auto& b : image_barriers) {
+            if (b.image == VK_NULL_HANDLE) {
+                has_null_img = true;
+                break;
+            }
+        }
+        if (has_null_img) {
+            clean_img.reserve(image_barriers.size());
+            for (const auto& b : image_barriers) {
+                if (b.image != VK_NULL_HANDLE) {
+                    clean_img.push_back(b);
+                }
+            }
+            out_img = clean_img;
+        }
+
         dld->vkCmdPipelineBarrier(handle, src_stage_mask, dst_stage_mask, dependency_flags,
                                   memory_barriers.size(), memory_barriers.data(),
-                                  buffer_barriers.size(), buffer_barriers.data(),
-                                  image_barriers.size(), image_barriers.data());
+                                  out_buf.size(), out_buf.data(),
+                                  out_img.size(), out_img.data());
     }
 
     void PipelineBarrier(VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask,

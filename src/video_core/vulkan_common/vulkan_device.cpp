@@ -983,11 +983,19 @@ VkFormat Device::GetSupportedFormat(VkFormat wanted_format, VkFormatFeatureFlags
     return wanted_format;
 }
 
-void Device::ReportLoss() const {
-    LOG_CRITICAL(Render_Vulkan, "Device loss occurred!");
+void Device::ReportLoss(std::string_view source) const {
+    if (source.empty()) {
+        LOG_CRITICAL(Render_Vulkan, "Device loss occurred!");
+    } else {
+        LOG_CRITICAL(Render_Vulkan, "Device loss occurred! Source: {}", source);
+    }
 
-    // Wait for the log to flush and for Nsight Aftermath to dump the results
-    std::this_thread::sleep_for(std::chrono::seconds{15});
+    if (nsight_aftermath_tracker) {
+        // Wait for the log to flush and for Nsight Aftermath to dump the results
+        std::this_thread::sleep_for(std::chrono::seconds{15});
+    } else {
+        std::this_thread::sleep_for(std::chrono::milliseconds{200});
+    }
 }
 
 void Device::SaveShader(std::span<const u32> spirv) const {
@@ -1500,6 +1508,52 @@ void Device::RemoveUnsuitableExtensions() {
     RemoveExtensionFeatureIfUnsuitable(extensions.extended_dynamic_state3,
                                        features.extended_dynamic_state3,
                                        VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+
+    // Enforce user and per-game dyna_state level limits
+    const auto dyna_setting = Settings::values.dyna_state.GetValue();
+    if (dyna_setting == Settings::ExtendedDynamicState::Disabled) {
+        RemoveExtensionFeature(extensions.extended_dynamic_state, features.extended_dynamic_state,
+                               VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+        RemoveExtensionFeature(extensions.extended_dynamic_state2, features.extended_dynamic_state2,
+                               VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+        RemoveExtensionFeature(extensions.extended_dynamic_state3, features.extended_dynamic_state3,
+                               VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+        dynamic_state3_blending = false;
+        dynamic_state3_enables = false;
+        dynamic_state3_depth_clamp_enable = false;
+        dynamic_state3_logic_op_enable = false;
+        dynamic_state3_line_raster_mode = false;
+        dynamic_state3_conservative_raster_mode = false;
+        dynamic_state3_line_stipple_enable = false;
+        dynamic_state3_alpha_to_coverage = false;
+        dynamic_state3_alpha_to_one = false;
+    } else if (dyna_setting == Settings::ExtendedDynamicState::EDS1) {
+        RemoveExtensionFeature(extensions.extended_dynamic_state2, features.extended_dynamic_state2,
+                               VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+        RemoveExtensionFeature(extensions.extended_dynamic_state3, features.extended_dynamic_state3,
+                               VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+        dynamic_state3_blending = false;
+        dynamic_state3_enables = false;
+        dynamic_state3_depth_clamp_enable = false;
+        dynamic_state3_logic_op_enable = false;
+        dynamic_state3_line_raster_mode = false;
+        dynamic_state3_conservative_raster_mode = false;
+        dynamic_state3_line_stipple_enable = false;
+        dynamic_state3_alpha_to_coverage = false;
+        dynamic_state3_alpha_to_one = false;
+    } else if (dyna_setting == Settings::ExtendedDynamicState::EDS2) {
+        RemoveExtensionFeature(extensions.extended_dynamic_state3, features.extended_dynamic_state3,
+                               VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+        dynamic_state3_blending = false;
+        dynamic_state3_enables = false;
+        dynamic_state3_depth_clamp_enable = false;
+        dynamic_state3_logic_op_enable = false;
+        dynamic_state3_line_raster_mode = false;
+        dynamic_state3_conservative_raster_mode = false;
+        dynamic_state3_line_stipple_enable = false;
+        dynamic_state3_alpha_to_coverage = false;
+        dynamic_state3_alpha_to_one = false;
+    }
 
     // VK_EXT_robustness2
     features.robustness2.robustBufferAccess2 = VK_FALSE;

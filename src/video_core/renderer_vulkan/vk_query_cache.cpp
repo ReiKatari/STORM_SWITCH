@@ -83,6 +83,9 @@ public:
     }
 
     void Sync(size_t start, size_t size) {
+        if (last_used_tick > 0 && !scheduler.IsFree(last_used_tick)) {
+            scheduler.Wait(last_used_tick);
+        }
         const auto& dev = device.GetLogical();
         const VkResult query_result = dev.GetQueryResults(
             *query_pool, static_cast<u32>(start), static_cast<u32>(size), sizeof(u64) * size,
@@ -91,10 +94,15 @@ public:
         case VK_SUCCESS:
             return;
         case VK_ERROR_DEVICE_LOST:
-            device.ReportLoss();
+            device.ReportLoss("QueryCache::Sync");
             [[fallthrough]];
         default:
-            throw vk::Exception(query_result);
+            LOG_WARNING(Render_Vulkan, "QueryCache::Sync GetQueryResults failed with result={}, start={}, size={}",
+                        static_cast<int>(query_result), start, size);
+            for (size_t i = 0; i < size; ++i) {
+                host_results[start + i] = 0;
+            }
+            return;
         }
     }
 
