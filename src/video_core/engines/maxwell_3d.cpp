@@ -239,14 +239,23 @@ void Maxwell3D::RefreshParametersImpl() {
     if (!Settings::IsGPULevelHigh()) {
         return;
     }
+    size_t total_params = 0;
+    for (const auto& segment : macro_segments) {
+        total_params += segment.second;
+    }
+    if (macro_params.size() < total_params) {
+        macro_params.resize(total_params);
+    }
     size_t current_index = 0;
     for (auto& segment : macro_segments) {
         if (segment.first == 0) {
             current_index += segment.second;
             continue;
         }
-        memory_manager.ReadBlock(segment.first, &macro_params[current_index],
-                                 sizeof(u32) * segment.second);
+        if (current_index + segment.second <= macro_params.size()) {
+            memory_manager.ReadBlock(segment.first, &macro_params[current_index],
+                                     sizeof(u32) * segment.second);
+        }
         current_index += segment.second;
     }
 }
@@ -291,6 +300,9 @@ size_t Maxwell3D::EstimateIndexBufferSize() {
 }
 
 u32 Maxwell3D::ProcessShadowRam(u32 method, u32 argument) {
+    if (method >= Regs::NUM_REGS) {
+        return argument;
+    }
     // Keep track of the register value in shadow_state when requested.
     auto const c = shadow_state.shadow_ram_control;
     if (c == Regs::ShadowRamControl::Track || c == Regs::ShadowRamControl::TrackWithFilter)
@@ -304,20 +316,31 @@ void Maxwell3D::ConsumeSinkImpl(Core::System& system) {
     const auto control = shadow_state.shadow_ram_control;
     if (control == Regs::ShadowRamControl::Track || control == Regs::ShadowRamControl::TrackWithFilter) {
         for (auto [method, value] : method_sink) {
-            shadow_state.reg_array[method] = value;
-            ProcessDirtyRegisters(method, value);
+            if (method < Regs::NUM_REGS) {
+                shadow_state.reg_array[method] = value;
+                ProcessDirtyRegisters(method, value);
+            }
         }
     } else if (control == Regs::ShadowRamControl::Replay) {
-        for (auto [method, value] : method_sink)
-            ProcessDirtyRegisters(method, shadow_state.reg_array[method]);
+        for (auto [method, value] : method_sink) {
+            if (method < Regs::NUM_REGS) {
+                ProcessDirtyRegisters(method, shadow_state.reg_array[method]);
+            }
+        }
     } else {
-        for (auto [method, value] : method_sink)
-            ProcessDirtyRegisters(method, value);
+        for (auto [method, value] : method_sink) {
+            if (method < Regs::NUM_REGS) {
+                ProcessDirtyRegisters(method, value);
+            }
+        }
     }
     method_sink.clear();
 }
 
 void Maxwell3D::ProcessDirtyRegisters(u32 method, u32 argument) {
+    if (method >= Regs::NUM_REGS) {
+        return;
+    }
     regs.reg_array[method] = argument;
     for (auto const& table : dirty.tables)
         dirty.flags[table[method]] = true;
@@ -424,7 +447,9 @@ void Maxwell3D::CallMethod(Core::System& system, u32 method, u32 method_argument
         return;
     }
 
-    ASSERT(method < Regs::NUM_REGS && "Invalid Maxwell3D register, increase the size of the Regs structure");
+    if (method >= Regs::NUM_REGS) {
+        return;
+    }
     const u32 argument = ProcessShadowRam(method, method_argument);
     ProcessDirtyRegisters(method, argument);
     ProcessMethodCall(method, argument, method_argument, is_last_call);
@@ -523,16 +548,16 @@ void Maxwell3D::ProcessQueryGet() {
     case Regs::ReportSemaphore::Operation::Acquire:
         // TODO(Blinkhawk): Under this operation, the GPU waits for the CPU to write a value that
         // matches the current payload.
-        UNIMPLEMENTED_MSG("Unimplemented query operation ACQUIRE");
+        LOG_WARNING(HW_GPU, "Unimplemented query operation ACQUIRE");
         break;
     case Regs::ReportSemaphore::Operation::ReportOnly:
         rasterizer->Query(sequence_address, query_type, flags, payload, subreport);
         break;
     case Regs::ReportSemaphore::Operation::Trap:
-        UNIMPLEMENTED_MSG("Unimplemented query operation TRAP");
+        LOG_WARNING(HW_GPU, "Unimplemented query operation TRAP");
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown query operation");
+        LOG_ERROR(HW_GPU, "Unknown query operation: {}", static_cast<u32>(regs.report_semaphore.query.operation.Value()));
         break;
     }
 }
@@ -581,7 +606,7 @@ void Maxwell3D::ProcessQueryCondition() {
             break;
         }
         default: {
-            UNIMPLEMENTED_MSG("Uninplemented Condition Mode!");
+            LOG_ERROR(HW_GPU, "Unimplemented Condition Mode!");
             execute_on = true;
             break;
         }

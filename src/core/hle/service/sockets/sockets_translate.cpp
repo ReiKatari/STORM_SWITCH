@@ -347,7 +347,9 @@ Network::PollEvents Translate(PollEvents flags) {
     translate(PollEvents::RdBand, Network::PollEvents::RdBand);
     translate(PollEvents::WrBand, Network::PollEvents::WrBand);
 
-    UNIMPLEMENTED_IF_MSG((u16)flags != 0, "Unimplemented flags={}", (u16)flags);
+    if ((u16)flags != 0) {
+        LOG_WARNING(Service, "Unimplemented flags={}", (u16)flags);
+    }
     return result;
 }
 
@@ -370,7 +372,9 @@ PollEvents Translate(Network::PollEvents flags) {
     translate(Network::PollEvents::RdBand, PollEvents::RdBand);
     translate(Network::PollEvents::WrBand, PollEvents::WrBand);
 
-    UNIMPLEMENTED_IF_MSG((u16)flags != 0, "Unimplemented flags={}", (u16)flags);
+    if ((u16)flags != 0) {
+        LOG_WARNING(Service, "Unimplemented flags={}", (u16)flags);
+    }
     return result;
 }
 

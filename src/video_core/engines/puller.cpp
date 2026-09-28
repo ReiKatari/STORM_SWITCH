@@ -74,7 +74,7 @@ void Puller::ProcessFenceActionMethod(DmaPusher& dma_pusher) {
         dma_pusher.rasterizer->SignalSyncPoint(regs.fence_action.syncpoint_id);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented operation {}", regs.fence_action.op.Value());
+        LOG_ERROR(HW_GPU, "Unimplemented operation {}", regs.fence_action.op.Value());
         break;
     }
 }
@@ -227,13 +227,16 @@ void Puller::CallEngineMethod(DmaPusher& dma_pusher, const MethodCall& method_ca
         dma_pusher.channel_state.payload->nv01_timer.CallMethod(dma_pusher.system, method_call.method, method_call.argument, method_call.IsLastCall());
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented engine");
+        LOG_ERROR(HW_GPU, "Unimplemented engine");
         break;
     }
 }
 
 /// Calls a GPU engine multivalue method.
 void Puller::CallEngineMultiMethod(DmaPusher& dma_pusher, u32 method, u32 subchannel, const u32* base_start, u32 amount, u32 methods_pending) {
+    if (subchannel >= bound_engines.size()) {
+        return;
+    }
     const EngineID engine = bound_engines[subchannel];
     switch (engine) {
     case EngineID::FERMI_TWOD_A:
@@ -255,7 +258,7 @@ void Puller::CallEngineMultiMethod(DmaPusher& dma_pusher, u32 method, u32 subcha
         dma_pusher.channel_state.payload->nv01_timer.CallMultiMethod(dma_pusher.system, method, base_start, amount, methods_pending);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented engine");
+        LOG_ERROR(HW_GPU, "Unimplemented engine");
         break;
     }
 }
@@ -263,7 +266,9 @@ void Puller::CallEngineMultiMethod(DmaPusher& dma_pusher, u32 method, u32 subcha
 /// Calls a GPU method.
 void Puller::CallMethod(DmaPusher& dma_pusher, const MethodCall& method_call) {
     LOG_TRACE(HW_GPU, "Processing method {:08X} on subchannel {}", method_call.method, method_call.subchannel);
-    ASSERT(method_call.subchannel < bound_engines.size());
+    if (method_call.subchannel >= bound_engines.size()) {
+        return;
+    }
 
     if (ExecuteMethodOnEngine(dma_pusher, method_call.method)) {
         CallEngineMethod(dma_pusher, method_call);
@@ -275,7 +280,9 @@ void Puller::CallMethod(DmaPusher& dma_pusher, const MethodCall& method_call) {
 /// Calls a GPU multivalue method.
 void Puller::CallMultiMethod(DmaPusher& dma_pusher, u32 method, u32 subchannel, const u32* base_start, u32 amount, u32 methods_pending) {
     LOG_TRACE(HW_GPU, "Processing method {:08X} on subchannel {}", method, subchannel);
-    ASSERT(subchannel < bound_engines.size());
+    if (subchannel >= bound_engines.size()) {
+        return;
+    }
     if (ExecuteMethodOnEngine(dma_pusher, method)) {
         CallEngineMultiMethod(dma_pusher, method, subchannel, base_start, amount, methods_pending);
     } else {

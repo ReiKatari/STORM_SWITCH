@@ -31,8 +31,8 @@ STORM SWITCH является высокопроизводительным фо�
 
 ## **Установка и запуск**
 1. Перейдите в раздел **Releases** репозитория на GitHub.
-2. Для Android: скачайте и установите APK-файл `STORM_SWITCH_10.0.2.apk`, `STORM_SWITCH_10.0.2_LEGACY.apk` или `STORM_SWITCH_10.0.2_SDK27.apk`.
-3. Для Windows: скачайте инсталлятор `STORM_SWITCH_10.0.2_Setup.exe` или архив `STORM_SWITCH_10.0.2_Windows.zip`.
+2. Для Android: скачайте и установите APK-файл `STORM_SWITCH_10.0.3.apk`, `STORM_SWITCH_10.0.3_LEGACY.apk` или `STORM_SWITCH_10.0.3_SDK27.apk`.
+3. Для Windows: скачайте инсталлятор `STORM_SWITCH_10.0.3_Setup.exe` или архив `STORM_SWITCH_10.0.3_Windows.zip`.
 4. Установите системные ключи (`prod.keys`) и актуальную прошивку Nintendo Switch (Firmware) через меню настроек эмулятора.
 
 ## **Благодарности**

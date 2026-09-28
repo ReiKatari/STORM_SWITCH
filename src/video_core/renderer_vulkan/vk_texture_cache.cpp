@@ -1226,7 +1226,7 @@ void TextureCacheRuntime::BlitImage(Framebuffer* dst_framebuffer, ImageView& dst
     const bool is_dst_msaa = dst.Samples() != VK_SAMPLE_COUNT_1_BIT;
     const bool is_src_msaa = src.Samples() != VK_SAMPLE_COUNT_1_BIT;
     if (aspect_mask != ImageAspectMask(dst.format)) {
-        UNIMPLEMENTED_MSG("Incompatible blit from format {} to {}", src.format, dst.format);
+        LOG_WARNING(Render_Vulkan, "Incompatible blit from format {} to {}", src.format, dst.format);
         return;
     }
     if (aspect_mask == VK_IMAGE_ASPECT_COLOR_BIT && !is_src_msaa && !is_dst_msaa) {
@@ -1234,11 +1234,14 @@ void TextureCacheRuntime::BlitImage(Framebuffer* dst_framebuffer, ImageView& dst
                                     operation);
         return;
     }
-    ASSERT(src.format == dst.format);
+    if (src.format != dst.format) {
+        LOG_WARNING(Render_Vulkan, "Blit with mismatched formats {} vs {}", src.format, dst.format);
+        return;
+    }
     if (is_src_msaa && !is_dst_msaa &&
         (aspect_mask & (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)) != 0) {
         if ((aspect_mask & VK_IMAGE_ASPECT_DEPTH_BIT) == 0) {
-            UNIMPLEMENTED_MSG("Stencil-only MSAA resolve is not supported");
+            LOG_WARNING(Render_Vulkan, "Stencil-only MSAA resolve is not supported");
             return;
         }
         blit_image_helper.ResolveDepthStencil(dst_framebuffer, src, dst_region, src_region);
@@ -1260,7 +1263,10 @@ void TextureCacheRuntime::BlitImage(Framebuffer* dst_framebuffer, ImageView& dst
         // Use shader-based depth/stencil blits if hardware doesn't support the format
         // Note: MSAA resolves (MSAA->single) use vkCmdResolveImage which works fine
         if (!can_blit_depth_stencil) {
-            UNIMPLEMENTED_IF(is_src_msaa || is_dst_msaa);
+            if (is_src_msaa || is_dst_msaa) {
+                LOG_WARNING(Render_Vulkan, "MSAA depth/stencil blit unsupported on this driver");
+                return;
+            }
             blit_image_helper.BlitDepthStencil(dst_framebuffer, src, dst_region, src_region,
                                                filter, operation);
             return;
@@ -1275,7 +1281,7 @@ void TextureCacheRuntime::BlitImage(Framebuffer* dst_framebuffer, ImageView& dst
         return;
     }
     if (is_msaa_to_msaa && device.CantBlitMSAA()) {
-        UNIMPLEMENTED_MSG("MSAA to MSAA depth-stencil blit is not supported on this driver");
+        LOG_WARNING(Render_Vulkan, "MSAA to MSAA depth-stencil blit is not supported on this driver");
         return;
     }
 
@@ -1662,7 +1668,7 @@ void TextureCacheRuntime::CopyImageMSAA(Image& dst, Image& src,
     const u32 num_samples = msaa_to_non_msaa ? src.info.num_samples : dst.info.num_samples;
     if (dst.AspectMask() != VK_IMAGE_ASPECT_COLOR_BIT ||
         VideoCore::Surface::IsPixelFormatInteger(dst.info.format)) {
-        UNIMPLEMENTED_MSG("Copying images with different samples is not supported.");
+        LOG_WARNING(Render_Vulkan, "Copying images with different samples is not supported.");
         return;
     }
     if (ENABLE_MSAA_RESOLVE_CONSUME && msaa_to_non_msaa && copies.size() == 1 &&

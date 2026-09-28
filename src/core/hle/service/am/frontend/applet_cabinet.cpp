@@ -94,7 +94,7 @@ void Cabinet::Execute() {
         frontend.ShowCabinetApplet(callback, parameters, nfp_device);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown CabinetMode={}", applet_input_common.applet_mode);
+        LOG_ERROR(Service_AM, "Unknown CabinetMode={}", applet_input_common.applet_mode);
         DisplayCompleted(false, {});
         break;
     }
@@ -137,7 +137,7 @@ void Cabinet::DisplayCompleted(bool apply_changes, std::string_view amiibo_name)
         nfp_device->Format();
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown CabinetMode={}", applet_input_common.applet_mode);
+        LOG_ERROR(Service_AM, "Unknown CabinetMode={}", applet_input_common.applet_mode);
         break;
     }
 

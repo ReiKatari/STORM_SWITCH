@@ -112,7 +112,7 @@ void Vic::Execute() noexcept {
                         ReadY8__V8U8_N420(slot_config, regs.surfaces[i], std::move(frame), false);
                         break;
                     default:
-                        UNIMPLEMENTED_MSG("Unimplemented slot pixel format {}", u32(slot_config.surface_config.slot_pixel_format.Value()));
+                        LOG_ERROR(HW_GPU, "Unimplemented slot pixel format {}", u32(slot_config.surface_config.slot_pixel_format.Value()));
                         break;
                     }
                     Blend(config, slot_config, config.output_surface_config.out_pixel_format);
@@ -143,7 +143,7 @@ void Vic::Execute() noexcept {
         WriteY8__V8U8_N420(config.output_surface_config);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown video pixel format {}", format.Value());
+        LOG_ERROR(HW_GPU, "Unknown video pixel format {}", format.Value());
         break;
     }
 }

@@ -13,6 +13,7 @@
 #include "common/assert.h"
 #include "common/bit_util.h"
 #include "common/div_ceil.h"
+#include "common/logging.h"
 #include "video_core/gpu.h"
 #include "video_core/textures/decoders.h"
 
@@ -95,6 +96,13 @@ template <bool TO_LINEAR, u32 BYTES_PER_PIXEL>
 void SwizzleSubrectImpl(std::span<u8> output, std::span<const u8> input, u32 width, u32 height,
                         u32 depth, u32 origin_x, u32 origin_y, u32 extent_x, u32 num_lines,
                         u32 block_height, u32 block_depth, u32 pitch_linear) {
+    if (width == 0 || height == 0 || depth == 0 || extent_x == 0 || num_lines == 0) {
+        return;
+    }
+    if (origin_x >= width || origin_y >= height) {
+        return;
+    }
+
     // The origin of the transformation can be configured here, leave it as zero as the current API
     // doesn't expose it.
     static constexpr u32 origin_z = 0;
@@ -113,8 +121,9 @@ void SwizzleSubrectImpl(std::span<u8> output, std::span<const u8> input, u32 wid
     const u32 block_depth_mask = (1U << block_depth) - 1;
     const u32 x_shift = GOB_SIZE_SHIFT + block_height + block_depth;
 
+    const u32 valid_extent_x = (std::min)(extent_x, width - origin_x);
     u32 unprocessed_lines = num_lines;
-    u32 extent_y = (std::min)(num_lines, height - origin_y);
+    const u32 extent_y = (std::min)(num_lines, height - origin_y);
 
     for (u32 slice = 0; slice < depth; ++slice) {
         const u32 z = slice + origin_z;
@@ -130,7 +139,7 @@ void SwizzleSubrectImpl(std::span<u8> output, std::span<const u8> input, u32 wid
                                  ((block_y & block_height_mask) << GOB_SIZE_SHIFT);
 
             u32 swizzled_x = pdep<SWIZZLE_X_BITS>(origin_x * BYTES_PER_PIXEL);
-            for (u32 column = 0; column < extent_x;
+            for (u32 column = 0; column < valid_extent_x;
                  ++column, incrpdep<SWIZZLE_X_BITS, BYTES_PER_PIXEL>(swizzled_x)) {
                 const u32 x = (column + origin_x) * BYTES_PER_PIXEL;
                 const u32 offset_x = (x >> GOB_SIZE_X_SHIFT) << x_shift;
@@ -141,10 +150,12 @@ void SwizzleSubrectImpl(std::span<u8> output, std::span<const u8> input, u32 wid
                 const u32 unswizzled_offset =
                     slice * pitch * height + line * pitch + column * BYTES_PER_PIXEL;
 
-                u8* const dst = &output[TO_LINEAR ? swizzled_offset : unswizzled_offset];
-                const u8* const src = &input[TO_LINEAR ? unswizzled_offset : swizzled_offset];
+                const size_t out_offset = TO_LINEAR ? swizzled_offset : unswizzled_offset;
+                const size_t in_offset = TO_LINEAR ? unswizzled_offset : swizzled_offset;
 
-                std::memcpy(dst, src, BYTES_PER_PIXEL);
+                if (out_offset + BYTES_PER_PIXEL <= output.size() && in_offset + BYTES_PER_PIXEL <= input.size()) {
+                    std::memcpy(&output[out_offset], &input[in_offset], BYTES_PER_PIXEL);
+                }
             }
         }
         unprocessed_lines -= lines_in_y;
@@ -220,7 +231,7 @@ void SwizzleSubrect(std::span<u8> output, std::span<const u8> input, u32 bytes_p
         BPP_CASE(16)
 #undef BPP_CASE
     default:
-        ASSERT_MSG(false, "Invalid bytes_per_pixel={}", bytes_per_pixel);
+        LOG_ERROR(HW_GPU, "Invalid bytes_per_pixel={}", bytes_per_pixel);
         break;
     }
 }
@@ -244,7 +255,7 @@ void UnswizzleSubrect(std::span<u8> output, std::span<const u8> input, u32 bytes
         BPP_CASE(16)
 #undef BPP_CASE
     default:
-        ASSERT_MSG(false, "Invalid bytes_per_pixel={}", bytes_per_pixel);
+        LOG_ERROR(HW_GPU, "Invalid bytes_per_pixel={}", bytes_per_pixel);
         break;
     }
 }

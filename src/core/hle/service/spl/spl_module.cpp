@@ -53,7 +53,7 @@ void Module::Interface::GetConfig(HLERequestContext& ctx) {
 }
 
 void Module::Interface::ModularExponentiate(HLERequestContext& ctx) {
-    UNIMPLEMENTED_MSG("ModularExponentiate is not implemented!");
+    LOG_WARNING(Service_SPL, "ModularExponentiate is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);
@@ -90,7 +90,7 @@ void Module::Interface::GenerateAesKey(HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetConfig(HLERequestContext& ctx) {
-    UNIMPLEMENTED_MSG("SetConfig is not implemented!");
+    LOG_WARNING(Service_SPL, "SetConfig is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);
@@ -112,21 +112,21 @@ void Module::Interface::GenerateRandomBytes(HLERequestContext& ctx) {
 }
 
 void Module::Interface::IsDevelopment(HLERequestContext& ctx) {
-    UNIMPLEMENTED_MSG("IsDevelopment is not implemented!");
+    LOG_WARNING(Service_SPL, "IsDevelopment is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);
 }
 
 void Module::Interface::SetBootReason(HLERequestContext& ctx) {
-    UNIMPLEMENTED_MSG("SetBootReason is not implemented!");
+    LOG_WARNING(Service_SPL, "SetBootReason is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);
 }
 
 void Module::Interface::GetBootReason(HLERequestContext& ctx) {
-    UNIMPLEMENTED_MSG("GetBootReason is not implemented!");
+    LOG_WARNING(Service_SPL, "GetBootReason is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);

@@ -2,12 +2,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "common/assert.h"
+#include "common/logging.h"
 #include "video_core/framebuffer_config.h"
 
 namespace Tegra {
 
 Common::Rectangle<f32> NormalizeCrop(const FramebufferConfig& framebuffer, u32 texture_width,
                                      u32 texture_height) {
+    if (texture_width == 0 || texture_height == 0) {
+        return Common::Rectangle<f32>(0.f, 0.f, 1.f, 1.f);
+    }
+
     f32 left, top, right, bottom;
 
     if (!framebuffer.crop_rect.IsEmpty()) {
@@ -39,8 +44,8 @@ Common::Rectangle<f32> NormalizeCrop(const FramebufferConfig& framebuffer, u32 t
     framebuffer_transform_flags &= ~Service::android::BufferTransformFlags::FlipH;
     framebuffer_transform_flags &= ~Service::android::BufferTransformFlags::FlipV;
     if (True(framebuffer_transform_flags)) {
-        UNIMPLEMENTED_MSG("Unsupported framebuffer_transform_flags={}",
-                          static_cast<u32>(framebuffer_transform_flags));
+        LOG_WARNING(HW_GPU, "Unsupported framebuffer_transform_flags={}",
+                    static_cast<u32>(framebuffer_transform_flags));
     }
 
     // Normalize coordinate space.

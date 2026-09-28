@@ -34,7 +34,7 @@ Status BufferItemConsumer::AcquireBuffer(BufferItem* item, std::chrono::nanoseco
     }
 
     if (wait_for_fence) {
-        UNIMPLEMENTED();
+        LOG_DEBUG(Service_Nvnflinger, "wait_for_fence requested");
     }
 
     item->graphic_buffer = slots[item->slot].graphic_buffer;

@@ -804,7 +804,9 @@ void BufferQueueProducer::Transact(u32 code, std::span<const u8> parcel_data,
         const auto api = parcel_in.Read<NativeWindowApi>();
         const auto producer_controlled_by_app = parcel_in.Read<bool>();
 
-        UNIMPLEMENTED_IF_MSG(enable_listener, "Listener is unimplemented!");
+        if (enable_listener) {
+            LOG_WARNING(Service_Nvnflinger, "Listener is unimplemented!");
+        }
 
         std::shared_ptr<IProducerListener> listener;
         QueueBufferOutput output{};

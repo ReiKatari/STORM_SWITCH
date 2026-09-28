@@ -1043,15 +1043,19 @@ bool Device::TestDepthStencilBlits(VkFormat format) const {
     const auto test_features = [](VkFormatProperties props) {
         return (props.optimalTilingFeatures & required_features) == required_features;
     };
-    return test_features(format_properties.at(format));
+    const auto it = format_properties.find(format);
+    if (it == format_properties.end()) {
+        return false;
+    }
+    return test_features(it->second);
 }
 
 bool Device::IsFormatSupported(VkFormat wanted_format, VkFormatFeatureFlags wanted_usage,
                                FormatType format_type) const {
     const auto it = format_properties.find(wanted_format);
     if (it == format_properties.end()) {
-        UNIMPLEMENTED_MSG("Unimplemented format query={}", wanted_format);
-        return true;
+        LOG_DEBUG(Render_Vulkan, "Unimplemented format query={}", wanted_format);
+        return false;
     }
     const auto supported_usage = GetFormatFeatures(it->second, format_type);
     return (supported_usage & wanted_usage) == wanted_usage;

@@ -48,8 +48,8 @@ VkFormat GetFormat(const Tegra::FramebufferConfig& framebuffer) {
     case Service::android::PixelFormat::Bgra8888:
         return VK_FORMAT_B8G8R8A8_UNORM;
     default:
-        UNIMPLEMENTED_MSG("Unknown framebuffer pixel format: {}",
-                          static_cast<u32>(framebuffer.pixel_format));
+        LOG_ERROR(Render_Vulkan, "Unknown framebuffer pixel format: {}",
+                  static_cast<u32>(framebuffer.pixel_format));
         return VK_FORMAT_A8B8G8R8_UNORM_PACK32;
     }
 }

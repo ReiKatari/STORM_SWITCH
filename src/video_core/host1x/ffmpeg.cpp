@@ -166,7 +166,7 @@ Decoder::Decoder(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
         case Tegra::Host1x::NvdecCommon::VideoCodec::VP9:
             return AV_CODEC_ID_VP9;
         default:
-            UNIMPLEMENTED_MSG("Unknown codec {}", codec);
+            LOG_ERROR(Service_NVDRV, "Unknown codec {}", codec);
             return AV_CODEC_ID_NONE;
         }
     }();

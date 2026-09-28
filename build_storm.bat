@@ -28,8 +28,8 @@ cd /d "%BUILD_DIR%"
 echo [1/3] Running CMake configuration...
 "%CMAKE%" -G "Ninja" -DCMAKE_MAKE_PROGRAM="%NINJA%" ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DGIT_TAG="9.9.0" ^
-    -DGIT_RELEASE="9.9.0" ^
+    -DGIT_TAG="10.0.3" ^
+    -DGIT_RELEASE="10.0.3" ^
     -DENABLE_QT=ON ^
     -DENABLE_QT_TRANSLATION=ON ^
     -DYUZU_USE_BUNDLED_QT=ON ^

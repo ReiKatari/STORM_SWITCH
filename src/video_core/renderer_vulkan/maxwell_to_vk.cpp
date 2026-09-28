@@ -74,13 +74,13 @@ VkSamplerAddressMode WrapMode(const Device& device,
     case Tegra::Texture::WrapMode::MirrorOnceClampToEdge:
         return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
     case Tegra::Texture::WrapMode::MirrorOnceBorder:
-        UNIMPLEMENTED();
+        LOG_WARNING(Render_Vulkan, "Unimplemented wrap mode MirrorOnceBorder, using MirrorClampToEdge");
         return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
     case Tegra::Texture::WrapMode::MirrorOnceClampOGL:
         return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented wrap mode={}", wrap_mode);
-        return {};
+        LOG_ERROR(Render_Vulkan, "Unimplemented wrap mode={}", wrap_mode);
+        return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     }
 }
 
@@ -103,8 +103,8 @@ VkCompareOp DepthCompareFunction(Tegra::Texture::DepthCompareFunc depth_compare_
     case Tegra::Texture::DepthCompareFunc::Always:
         return VK_COMPARE_OP_ALWAYS;
     }
-    UNIMPLEMENTED_MSG("Unimplemented sampler depth compare function={}", depth_compare_func);
-    return {};
+    LOG_ERROR(Render_Vulkan, "Unimplemented sampler depth compare function={}", depth_compare_func);
+    return VK_COMPARE_OP_ALWAYS;
 }
 
 } // namespace Sampler
@@ -352,8 +352,8 @@ VkShaderStageFlagBits ShaderStage(Shader::Stage stage) {
     case Shader::Stage::Compute:
         return VK_SHADER_STAGE_COMPUTE_BIT;
     }
-    UNIMPLEMENTED_MSG("Unimplemented shader stage={}", stage);
-    return {};
+    LOG_ERROR(Render_Vulkan, "Unimplemented shader stage={}", stage);
+    return VK_SHADER_STAGE_ALL;
 }
 
 VkPrimitiveTopology PrimitiveTopology([[maybe_unused]] const Device& device,
@@ -393,8 +393,8 @@ VkPrimitiveTopology PrimitiveTopology([[maybe_unused]] const Device& device,
                                    "single body and not a bunch of triangles.");
         return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
     }
-    UNIMPLEMENTED_MSG("Unimplemented topology={}", topology);
-    return {};
+    LOG_ERROR(Render_Vulkan, "Unimplemented topology={}", topology);
+    return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 }
 
 VkFormat VertexFormat(const Device& device, Maxwell::VertexAttribute::Type type,
@@ -619,7 +619,7 @@ VkFormat VertexFormat(const Device& device, Maxwell::VertexAttribute::Type type,
     })()};
 
     if (format == VK_FORMAT_UNDEFINED) {
-        UNIMPLEMENTED_MSG("Unimplemented vertex format of type={} and size={}", type, size);
+        LOG_ERROR(Render_Vulkan, "Unimplemented vertex format of type={} and size={}", type, size);
     }
 
     return device.GetSupportedFormat(format, VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT,

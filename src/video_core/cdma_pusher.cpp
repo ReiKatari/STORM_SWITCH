@@ -83,8 +83,7 @@ CDmaPusher::CDmaPusher(Host1x::Host1x& host1x_, s32 id)
                     break;
                 }
                 default:
-                    LOG_ERROR(HW_GPU, "Bad command at index {} (bytes {:#x}), buffer size {}", i - 1, (i - 1) * sizeof(u32), command_list.size());
-                    UNIMPLEMENTED_MSG("ChSubmission mode {} is not implemented!", u32(mode));
+                    LOG_ERROR(HW_GPU, "Bad command at index {} (bytes {:#x}), buffer size {}, mode {}", i - 1, (i - 1) * sizeof(u32), command_list.size(), u32(mode));
                     break;
                 }
             }

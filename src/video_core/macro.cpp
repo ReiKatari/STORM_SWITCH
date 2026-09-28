@@ -539,7 +539,7 @@ bool MacroInterpreterImpl::Step(Core::System& system, Engines::Maxwell3D& maxwel
         break;
     }
     default:
-        UNIMPLEMENTED_MSG("Unimplemented macro operation {}", opcode.operation.Value());
+        LOG_ERROR(HW_GPU, "Unimplemented macro operation {}", opcode.operation.Value());
         break;
     }
 
@@ -588,7 +588,7 @@ u32 MacroInterpreterImpl::GetALUResult(Macro::ALUOperation operation, u32 src_a,
         return ~(src_a & src_b);
 
     default:
-        UNIMPLEMENTED_MSG("Unimplemented ALU operation {}", operation);
+        LOG_ERROR(HW_GPU, "Unimplemented ALU operation {}", operation);
         return 0;
     }
 }
@@ -637,7 +637,7 @@ void MacroInterpreterImpl::ProcessResult(Core::System& system, Engines::Maxwell3
         Send(system, maxwell3d, (result >> 12) & 0b111111);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented result operation {}", operation);
+        LOG_ERROR(HW_GPU, "Unimplemented result operation {}", operation);
         break;
     }
 }
@@ -907,7 +907,7 @@ void MacroJITx64Impl::Compile_ALU(Core::System& system, Macro::Opcode opcode) {
         }
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented ALU operation {}", opcode.alu_operation.Value());
+        LOG_ERROR(HW_GPU, "Unimplemented ALU operation {}", opcode.alu_operation.Value());
         break;
     }
     Compile_ProcessResult(system, opcode.result_operation, opcode.dst);
@@ -1206,7 +1206,7 @@ bool MacroJITx64Impl::Compile_NextInstruction(Core::System& system) {
         Compile_Branch(opcode);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented opcode {}", opcode.operation.Value());
+        LOG_ERROR(HW_GPU, "Unimplemented opcode {}", opcode.operation.Value());
         break;
     }
 
@@ -1328,7 +1328,7 @@ void MacroJITx64Impl::Compile_ProcessResult(Core::System& system, Macro::ResultO
         Compile_Send(system, RESULT);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented macro operation {}", operation);
+        LOG_ERROR(HW_GPU, "Unimplemented macro operation {}", operation);
         break;
     }
 }

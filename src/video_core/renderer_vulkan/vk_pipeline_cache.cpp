@@ -121,8 +121,8 @@ Shader::CompareFunction MaxwellToCompareFunction(Maxwell::ComparisonOp compariso
     case Maxwell::ComparisonOp::Always_GL:
         return Shader::CompareFunction::Always;
     }
-    UNIMPLEMENTED_MSG("Unimplemented comparison op={}", comparison);
-    return {};
+    LOG_ERROR(Render_Vulkan, "Unimplemented comparison op={}", comparison);
+    return Shader::CompareFunction::Always;
 }
 
 Shader::AttributeType CastAttributeType(const FixedPipelineState::VertexAttribute& attr) {
@@ -906,7 +906,10 @@ std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(
         if (key.unique_hashes[index] == 0 && !is_emulated_stage) {
             continue;
         }
-        UNIMPLEMENTED_IF(index == 0);
+        if (index == 0) {
+            LOG_ERROR(Render_Vulkan, "Unexpected standalone shader stage at index 0");
+            continue;
+        }
 
         Shader::IR::Program& program{programs[index]};
         const size_t stage_index{index - 1};

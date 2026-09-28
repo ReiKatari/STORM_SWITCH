@@ -304,7 +304,8 @@ Result WebBrowser::GetStatus() const {
 }
 
 void WebBrowser::ExecuteInteractive() {
-    UNIMPLEMENTED_MSG("WebSession is not implemented");
+    LOG_WARNING(Service_AM, "WebSession is not implemented");
+    WebBrowserExit(WebExitReason::EndButtonPressed);
 }
 
 void WebBrowser::Execute() {

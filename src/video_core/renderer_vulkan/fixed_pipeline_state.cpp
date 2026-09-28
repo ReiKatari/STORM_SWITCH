@@ -11,6 +11,7 @@
 #include <ranges>
 #include "common/cityhash.h"
 #include "common/common_types.h"
+#include "common/logging.h"
 #include "common/settings.h"
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/renderer_vulkan/fixed_pipeline_state.h"
@@ -564,7 +565,7 @@ u32 FixedPipelineState::PackBlendFactor(Maxwell::Blend::Factor factor) noexcept 
     case Maxwell::Blend::Factor::OneMinusConstantAlpha_GL:
         return 18;
     }
-    UNIMPLEMENTED_MSG("Unknown blend factor {}", static_cast<u32>(factor));
+    LOG_WARNING(Render_Vulkan, "Unknown blend factor {}", static_cast<u32>(factor));
     return 0;
 }
 

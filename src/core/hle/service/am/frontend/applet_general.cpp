@@ -85,9 +85,10 @@ void Auth::Execute() {
     }
 
     const auto unimplemented_log = [this] {
-        UNIMPLEMENTED_MSG("Unimplemented Auth applet type for type={:08X}, arg0={:02X}, "
-                          "arg1={:02X}, arg2={:02X}",
-                          type, arg0, arg1, arg2);
+        LOG_ERROR(Service_AM, "Unimplemented Auth applet type for type={:08X}, arg0={:02X}, "
+                  "arg1={:02X}, arg2={:02X}",
+                  type, arg0, arg1, arg2);
+        AuthFinished(true);
     };
 
     switch (type) {
@@ -194,7 +195,8 @@ void PhotoViewer::Execute() {
         frontend.ShowAllPhotos(callback);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented PhotoViewer applet mode={:02X}!", mode);
+        LOG_ERROR(Service_AM, "Unimplemented PhotoViewer applet mode={:02X}!", mode);
+        ViewFinished();
         break;
     }
 }

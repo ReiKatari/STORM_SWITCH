@@ -33,7 +33,7 @@ constexpr const char* GetTextCheckResultName(SwkbdTextCheckResult text_check_res
     case SwkbdTextCheckResult::Silent:
         return "Silent";
     default:
-        UNIMPLEMENTED_MSG("Unknown TextCheckResult={}", text_check_result);
+        LOG_ERROR(Service_AM, "Unknown TextCheckResult={}", text_check_result);
         return "Unknown";
     }
 }
@@ -214,11 +214,12 @@ void SoftwareKeyboard::InitializeForeground() {
                     sizeof(SwkbdConfigNew));
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown SwkbdConfig revision={} with size={}", swkbd_applet_version,
-                          swkbd_config_data.size());
-        ASSERT(swkbd_config_data.size() >= sizeof(SwkbdConfigCommon) + sizeof(SwkbdConfigNew));
-        std::memcpy(&swkbd_config_new, swkbd_config_data.data() + sizeof(SwkbdConfigCommon),
-                    sizeof(SwkbdConfigNew));
+        LOG_WARNING(Service_AM, "Unknown SwkbdConfig revision={} with size={}", swkbd_applet_version,
+                    swkbd_config_data.size());
+        if (swkbd_config_data.size() >= sizeof(SwkbdConfigCommon) + sizeof(SwkbdConfigNew)) {
+            std::memcpy(&swkbd_config_new, swkbd_config_data.data() + sizeof(SwkbdConfigCommon),
+                        sizeof(SwkbdConfigNew));
+        }
         break;
     }
 
@@ -361,7 +362,7 @@ void SoftwareKeyboard::ProcessInlineKeyboardRequest() {
         RequestSetMovedCursorV2Flag(request_data);
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown SwkbdRequestCommand={}", request_command);
+        LOG_WARNING(Service_AM, "Unknown SwkbdRequestCommand={}", request_command);
         break;
     }
 }
@@ -478,7 +479,7 @@ void SoftwareKeyboard::SendReply(SwkbdReplyType reply_type) {
         ReplyMovedCursorUtf8V2();
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown SwkbdReplyType={}", reply_type);
+        LOG_WARNING(Service_AM, "Unknown SwkbdReplyType={}", reply_type);
         ReplyDefault();
         break;
     }
@@ -832,13 +833,14 @@ void SoftwareKeyboard::RequestCalc(std::span<const u8> request_data) {
         RequestCalcNew();
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown SwkbdCalcArg size={}", swkbd_calc_arg_common.calc_arg_size);
-        ASSERT(request_data.size() >=
-               sizeof(SwkbdRequestCommand) + sizeof(SwkbdCalcArgCommon) + sizeof(SwkbdCalcArgNew));
-        std::memcpy(&swkbd_calc_arg_new,
-                    request_data.data() + sizeof(SwkbdRequestCommand) + sizeof(SwkbdCalcArgCommon),
-                    sizeof(SwkbdCalcArgNew));
-        RequestCalcNew();
+        LOG_WARNING(Service_AM, "Unknown SwkbdCalcArg size={}", swkbd_calc_arg_common.calc_arg_size);
+        if (request_data.size() >=
+            sizeof(SwkbdRequestCommand) + sizeof(SwkbdCalcArgCommon) + sizeof(SwkbdCalcArgNew)) {
+            std::memcpy(&swkbd_calc_arg_new,
+                        request_data.data() + sizeof(SwkbdRequestCommand) + sizeof(SwkbdCalcArgCommon),
+                        sizeof(SwkbdCalcArgNew));
+            RequestCalcNew();
+        }
         break;
     }
 }

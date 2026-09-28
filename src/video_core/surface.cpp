@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "common/common_types.h"
+#include "common/logging.h"
 #include "common/math_util.h"
 #include "common/settings.h"
 #include "video_core/surface.h"
@@ -92,7 +93,7 @@ PixelFormat PixelFormatFromDepthFormat(Tegra::DepthFormat format) {
     case Tegra::DepthFormat::X8Z24_UNORM:
         return PixelFormat::X8_D24_UNORM;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented format={}", format);
+        LOG_ERROR(HW_GPU, "Unimplemented format={}", static_cast<u32>(format));
         return PixelFormat::S8_UINT_D24_UNORM;
     }
 }
@@ -200,7 +201,7 @@ PixelFormat PixelFormatFromRenderTargetFormat(Tegra::RenderTargetFormat format) 
     case Tegra::RenderTargetFormat::R8_UINT:
         return PixelFormat::R8_UINT;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented format={}", format);
+        LOG_ERROR(HW_GPU, "Unimplemented format={}", static_cast<u32>(format));
         return PixelFormat::A8B8G8R8_UNORM;
     }
 }
@@ -215,7 +216,7 @@ PixelFormat PixelFormatFromGPUPixelFormat(Service::android::PixelFormat format) 
     case Service::android::PixelFormat::Bgra8888:
         return PixelFormat::B8G8R8A8_UNORM;
     default:
-        UNIMPLEMENTED_MSG("Unimplemented format={}", format);
+        LOG_ERROR(HW_GPU, "Unimplemented format={}", static_cast<u32>(format));
         return PixelFormat::A8B8G8R8_UNORM;
     }
 }

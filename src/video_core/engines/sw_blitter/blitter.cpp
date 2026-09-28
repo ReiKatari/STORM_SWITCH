@@ -30,16 +30,23 @@ constexpr size_t ir_components = 4;
 
 void NearestNeighbor(std::span<const u8> input, std::span<u8> output, u32 src_width, u32 src_height,
                      u32 dst_width, u32 dst_height, size_t bpp) {
+    if (dst_width == 0 || dst_height == 0 || src_width == 0 || src_height == 0 || bpp == 0) {
+        return;
+    }
     const size_t dx_du = std::llround((static_cast<f64>(src_width) / dst_width) * (1ULL << 32));
     const size_t dy_dv = std::llround((static_cast<f64>(src_height) / dst_height) * (1ULL << 32));
     size_t src_y = 0;
     for (u32 y = 0; y < dst_height; y++) {
         size_t src_x = 0;
+        const size_t y_coord = (std::min)(static_cast<size_t>(src_y >> 32), static_cast<size_t>(src_height - 1));
         for (u32 x = 0; x < dst_width; x++) {
-            const size_t read_from = ((src_y * src_width + src_x) >> 32) * bpp;
+            const size_t x_coord = (std::min)(static_cast<size_t>(src_x >> 32), static_cast<size_t>(src_width - 1));
+            const size_t read_from = (y_coord * src_width + x_coord) * bpp;
             const size_t write_to = (y * dst_width + x) * bpp;
 
-            std::memcpy(&output[write_to], &input[read_from], bpp);
+            if (read_from + bpp <= input.size() && write_to + bpp <= output.size()) {
+                std::memcpy(&output[write_to], &input[read_from], bpp);
+            }
             src_x += dx_du;
         }
         src_y += dy_dv;
@@ -48,16 +55,23 @@ void NearestNeighbor(std::span<const u8> input, std::span<u8> output, u32 src_wi
 
 void NearestNeighborFast(std::span<const f32> input, std::span<f32> output, u32 src_width,
                          u32 src_height, u32 dst_width, u32 dst_height) {
+    if (dst_width == 0 || dst_height == 0 || src_width == 0 || src_height == 0) {
+        return;
+    }
     const size_t dx_du = std::llround((static_cast<f64>(src_width) / dst_width) * (1ULL << 32));
     const size_t dy_dv = std::llround((static_cast<f64>(src_height) / dst_height) * (1ULL << 32));
     size_t src_y = 0;
     for (u32 y = 0; y < dst_height; y++) {
         size_t src_x = 0;
+        const size_t y_coord = (std::min)(static_cast<size_t>(src_y >> 32), static_cast<size_t>(src_height - 1));
         for (u32 x = 0; x < dst_width; x++) {
-            const size_t read_from = ((src_y * src_width + src_x) >> 32) * ir_components;
+            const size_t x_coord = (std::min)(static_cast<size_t>(src_x >> 32), static_cast<size_t>(src_width - 1));
+            const size_t read_from = (y_coord * src_width + x_coord) * ir_components;
             const size_t write_to = (y * dst_width + x) * ir_components;
 
-            std::memcpy(&output[write_to], &input[read_from], sizeof(f32) * ir_components);
+            if (read_from + ir_components <= input.size() && write_to + ir_components <= output.size()) {
+                std::memcpy(&output[write_to], &input[read_from], sizeof(f32) * ir_components);
+            }
             src_x += dx_du;
         }
         src_y += dy_dv;
@@ -66,6 +80,9 @@ void NearestNeighborFast(std::span<const f32> input, std::span<f32> output, u32 
 
 void Bilinear(std::span<const f32> input, std::span<f32> output, size_t src_width,
               size_t src_height, size_t dst_width, size_t dst_height) {
+    if (dst_width == 0 || dst_height == 0 || src_width == 0 || src_height == 0) {
+        return;
+    }
     const auto bilinear_sample = [](std::span<const f32> x0_y0, std::span<const f32> x1_y0,
                                     std::span<const f32> x0_y1, std::span<const f32> x1_y1,
                                     f32 weight_x, f32 weight_y) {
@@ -83,18 +100,23 @@ void Bilinear(std::span<const f32> input, std::span<f32> output, size_t src_widt
         dst_height > 1 ? static_cast<f32>(src_height - 1) / static_cast<f32>(dst_height - 1) : 0.f;
     for (u32 y = 0; y < dst_height; y++) {
         for (u32 x = 0; x < dst_width; x++) {
-            const f32 x_low = std::floor(static_cast<f32>(x) * dx_du);
-            const f32 y_low = std::floor(static_cast<f32>(y) * dy_dv);
-            const f32 x_high = std::ceil(static_cast<f32>(x) * dx_du);
-            const f32 y_high = std::ceil(static_cast<f32>(y) * dy_dv);
-            const f32 weight_x = (static_cast<f32>(x) * dx_du) - x_low;
-            const f32 weight_y = (static_cast<f32>(y) * dy_dv) - y_low;
+            const f32 x_pos = static_cast<f32>(x) * dx_du;
+            const f32 y_pos = static_cast<f32>(y) * dy_dv;
+            const f32 x_low = std::floor(x_pos);
+            const f32 y_low = std::floor(y_pos);
+            const f32 x_high = (std::min)(std::ceil(x_pos), static_cast<f32>(src_width - 1));
+            const f32 y_high = (std::min)(std::ceil(y_pos), static_cast<f32>(src_height - 1));
+            const f32 weight_x = x_pos - x_low;
+            const f32 weight_y = y_pos - y_low;
 
             const auto read_src = [&](f32 in_x, f32 in_y) {
-                const size_t read_from =
-                    ((static_cast<size_t>(in_x) * src_width + static_cast<size_t>(in_y)) >> 32) *
-                    ir_components;
-                return std::span<const f32>(&input[read_from], ir_components);
+                const size_t clamp_x = (std::min)(static_cast<size_t>((std::max)(0.f, in_x)), src_width - 1);
+                const size_t clamp_y = (std::min)(static_cast<size_t>((std::max)(0.f, in_y)), src_height - 1);
+                const size_t read_from = (clamp_y * src_width + clamp_x) * ir_components;
+                if (read_from + ir_components <= input.size()) {
+                    return std::span<const f32>(&input[read_from], ir_components);
+                }
+                return std::span<const f32>(&input[0], ir_components);
             };
 
             auto x0_y0 = read_src(x_low, y_low);
@@ -105,8 +127,9 @@ void Bilinear(std::span<const f32> input, std::span<f32> output, size_t src_widt
             const auto result = bilinear_sample(x0_y0, x1_y0, x0_y1, x1_y1, weight_x, weight_y);
 
             const size_t write_to = (y * dst_width + x) * ir_components;
-
-            std::memcpy(&output[write_to], &result, sizeof(f32) * ir_components);
+            if (write_to + ir_components <= output.size()) {
+                std::memcpy(&output[write_to], &result, sizeof(f32) * ir_components);
+            }
         }
     }
 }
@@ -119,9 +142,15 @@ void ProcessPitchLinear(std::span<const u8> input, std::span<u8> output, size_t 
     for (size_t y = 0; y < extent_y; y++) {
         const size_t first_offset = (y + y0) * pitch + base_offset;
         const size_t second_offset = y * extent_x * bpp;
-        u8* write_to = unpack ? &output[first_offset] : &output[second_offset];
-        const u8* read_from = unpack ? &input[second_offset] : &input[first_offset];
-        std::memcpy(write_to, read_from, copy_size);
+        if (unpack) {
+            if (first_offset + copy_size <= output.size() && second_offset + copy_size <= input.size()) {
+                std::memcpy(&output[first_offset], &input[second_offset], copy_size);
+            }
+        } else {
+            if (first_offset + copy_size <= input.size() && second_offset + copy_size <= output.size()) {
+                std::memcpy(&output[second_offset], &input[first_offset], copy_size);
+            }
+        }
     }
 }
 
@@ -153,6 +182,11 @@ bool SoftwareBlitEngine::Blit(Fermi2D::Surface& src, Fermi2D::Surface& dst,
         return static_cast<size_t>(surface.pitch * surface.height);
     };
 
+    if (config.src_x1 <= config.src_x0 || config.src_y1 <= config.src_y0 ||
+        config.dst_x1 <= config.dst_x0 || config.dst_y1 <= config.dst_y0) {
+        return false;
+    }
+
     const u32 src_extent_x = config.src_x1 - config.src_x0;
     const u32 src_extent_y = config.src_y1 - config.src_y0;
 
@@ -160,6 +194,9 @@ bool SoftwareBlitEngine::Blit(Fermi2D::Surface& src, Fermi2D::Surface& dst,
     const u32 dst_extent_y = config.dst_y1 - config.dst_y0;
     const auto src_bytes_per_pixel = BytesPerBlock(PixelFormatFromRenderTargetFormat(src.format));
     const auto dst_bytes_per_pixel = BytesPerBlock(PixelFormatFromRenderTargetFormat(dst.format));
+    if (src_bytes_per_pixel == 0 || dst_bytes_per_pixel == 0) {
+        return false;
+    }
     const size_t src_size = get_surface_size(src, src_bytes_per_pixel);
 
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_buffer(

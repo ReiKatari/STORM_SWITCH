@@ -32,7 +32,7 @@ Result IApplicationProxyService::OpenApplicationProxy(
             system, applet, process_handle.Get(), m_window_system);
         R_SUCCEED();
     } else {
-        UNIMPLEMENTED();
+        LOG_ERROR(Service_AM, "Applet not found for PID {:016X}", pid.pid);
         R_THROW(ResultUnknown);
     }
 }

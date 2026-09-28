@@ -98,8 +98,8 @@ void Controller::Initialize() {
                 ControllerSupportMode::ShowControllerKeyRemappingForSystem;
             break;
         default:
-            UNIMPLEMENTED_MSG("Unknown ControllerPrivateArg mode={} with arg_size={}",
-                              controller_private_arg.mode, controller_private_arg.arg_size);
+            LOG_WARNING(Service_HID, "Unknown ControllerPrivateArg mode={} with arg_size={}",
+                        controller_private_arg.mode, controller_private_arg.arg_size);
             controller_private_arg.mode = ControllerSupportMode::ShowControllerSupport;
             break;
         }
@@ -178,7 +178,7 @@ void Controller::Initialize() {
         break;
     }
     default: {
-        UNIMPLEMENTED_MSG("Unimplemented ControllerSupportMode={}", controller_private_arg.mode);
+        LOG_WARNING(Service_HID, "Unimplemented ControllerSupportMode={}", controller_private_arg.mode);
         break;
     }
     }
@@ -243,8 +243,8 @@ void Controller::Execute() {
     case ControllerSupportMode::ShowControllerStrapGuide:
     case ControllerSupportMode::ShowControllerFirmwareUpdate:
     case ControllerSupportMode::ShowControllerKeyRemappingForSystem:
-        UNIMPLEMENTED_MSG("ControllerSupportMode={} is not implemented",
-                          controller_private_arg.mode);
+        LOG_WARNING(Service_HID, "ControllerSupportMode={} is not implemented",
+                    controller_private_arg.mode);
         ConfigurationComplete(true);
         break;
     default: {

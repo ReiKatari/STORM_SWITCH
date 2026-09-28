@@ -54,12 +54,13 @@ void MiiEdit::Initialize() {
                     sizeof(MiiEditAppletInputV4));
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown MiiEditAppletVersion={} with size={}",
-                          applet_input_common.version, applet_input_data.size());
-        ASSERT(applet_input_data.size() >=
-               sizeof(MiiEditAppletInputCommon) + sizeof(MiiEditAppletInputV4));
-        std::memcpy(&applet_input_v4, applet_input_data.data() + sizeof(MiiEditAppletInputCommon),
-                    sizeof(MiiEditAppletInputV4));
+        LOG_WARNING(Service_AM, "Unknown MiiEditAppletVersion={} with size={}",
+                    applet_input_common.version, applet_input_data.size());
+        if (applet_input_data.size() >=
+            sizeof(MiiEditAppletInputCommon) + sizeof(MiiEditAppletInputV4)) {
+            std::memcpy(&applet_input_v4, applet_input_data.data() + sizeof(MiiEditAppletInputCommon),
+                        sizeof(MiiEditAppletInputV4));
+        }
         break;
     }
 
@@ -137,7 +138,7 @@ void MiiEdit::Execute() {
         break;
     }
     default:
-        UNIMPLEMENTED_MSG("Unknown MiiEditAppletMode={}", applet_input_common.applet_mode);
+        LOG_ERROR(Service_AM, "Unknown MiiEditAppletMode={}", applet_input_common.applet_mode);
 
         MiiEditOutput(MiiEditResult::Success, 0);
         break;
