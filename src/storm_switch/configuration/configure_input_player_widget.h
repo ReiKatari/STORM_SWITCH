@@ -277,6 +277,8 @@ private:
     float rot_y{0.0f};
     float zoom{1.0f};
     bool is_mouse_dragging{false};
+    bool is_gyro_dragging{false};
     bool is_rear_view{false};
     QPoint last_mouse_pos{};
+    Common::Vec3f smooth_euler{};
 };

@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
@@ -385,8 +385,10 @@ void PlayerControlPreview::ControllerUpdate(Core::HID::ControllerTriggerType typ
         ControllerUpdate(Core::HID::ControllerTriggerType::Stick);
         ControllerUpdate(Core::HID::ControllerTriggerType::Trigger);
         ControllerUpdate(Core::HID::ControllerTriggerType::Battery);
+        ControllerUpdate(Core::HID::ControllerTriggerType::Motion);
         return;
     }
+
 
     switch (type) {
     case Core::HID::ControllerTriggerType::Connected:
@@ -492,6 +494,42 @@ void PlayerControlPreview::UpdateInput() {
                 needs_redraw = true;
             }
         }
+
+        // Direct hardware polling of Motion / Gyroscope
+        if (!is_gyro_dragging) {
+            const auto new_motions = controller->GetMotions();
+            for (std::size_t m = 0; m < new_motions.size() && m < motion_values.size(); ++m) {
+                if (std::abs(new_motions[m].euler.x - motion_values[m].euler.x) > 0.001f ||
+                    std::abs(new_motions[m].euler.y - motion_values[m].euler.y) > 0.001f ||
+                    std::abs(new_motions[m].euler.z - motion_values[m].euler.z) > 0.001f) {
+                    motion_values[m] = new_motions[m];
+                    needs_redraw = true;
+                }
+            }
+        }
+
+        // Direct hardware polling of Battery
+        const auto new_batteries = controller->GetBatteryValues();
+        for (std::size_t b = 0; b < new_batteries.size() && b < battery_values.size(); ++b) {
+            if (new_batteries[b] != battery_values[b]) {
+                battery_values[b] = new_batteries[b];
+                needs_redraw = true;
+            }
+        }
+    }
+
+    // Smooth gyro animation interpolation towards target euler angles
+    {
+        const auto& target_euler = motion_values[Settings::NativeMotion::MotionLeft].euler;
+        const float dx = target_euler.x - smooth_euler.x;
+        const float dy = target_euler.y - smooth_euler.y;
+        const float dz = target_euler.z - smooth_euler.z;
+        if (std::abs(dx) > 0.0005f || std::abs(dy) > 0.0005f || std::abs(dz) > 0.0005f) {
+            smooth_euler.x += dx * 0.35f;
+            smooth_euler.y += dy * 0.35f;
+            smooth_euler.z += dz * 0.35f;
+            needs_redraw = true;
+        }
     }
 
     if (needs_redraw) {
@@ -515,8 +553,11 @@ void PlayerControlPreview::ResetView() {
     rot_y = 0.0f;
     zoom = 1.0f;
     is_rear_view = false;
+    smooth_euler = {};
+    motion_values[Settings::NativeMotion::MotionLeft].euler = {};
     update();
 }
+
 
 void PlayerControlPreview::SetRotation(float rx, float ry, float z) {
     rot_x = rx;
@@ -549,6 +590,12 @@ void PlayerControlPreview::mousePressEvent(QMouseEvent* event) {
         event->accept();
         return;
     }
+    if (event->button() == Qt::RightButton) {
+        is_gyro_dragging = true;
+        last_mouse_pos = event->pos();
+        event->accept();
+        return;
+    }
     QFrame::mousePressEvent(event);
 }
 
@@ -558,6 +605,16 @@ void PlayerControlPreview::mouseMoveEvent(QMouseEvent* event) {
         last_mouse_pos = event->pos();
         rot_y = std::clamp(rot_y + static_cast<float>(delta.x()) * 0.25f, -20.0f, 20.0f);
         rot_x = std::clamp(rot_x - static_cast<float>(delta.y()) * 0.25f, -15.0f, 15.0f);
+        update();
+        event->accept();
+        return;
+    }
+    if (is_gyro_dragging) {
+        const QPoint delta = event->pos() - last_mouse_pos;
+        last_mouse_pos = event->pos();
+        motion_values[Settings::NativeMotion::MotionLeft].euler.x += static_cast<float>(delta.y()) * 0.02f;
+        motion_values[Settings::NativeMotion::MotionLeft].euler.z += static_cast<float>(delta.x()) * 0.02f;
+        needs_redraw = true;
         update();
         event->accept();
         return;
@@ -572,6 +629,11 @@ void PlayerControlPreview::mouseReleaseEvent(QMouseEvent* event) {
         event->accept();
         return;
     }
+    if (event->button() == Qt::RightButton) {
+        is_gyro_dragging = false;
+        event->accept();
+        return;
+    }
     QFrame::mouseReleaseEvent(event);
 }
 
@@ -581,8 +643,16 @@ void PlayerControlPreview::mouseDoubleClickEvent(QMouseEvent* event) {
         event->accept();
         return;
     }
+    if (event->button() == Qt::RightButton) {
+        motion_values[Settings::NativeMotion::MotionLeft].euler = {};
+        smooth_euler = {};
+        update();
+        event->accept();
+        return;
+    }
     QFrame::mouseDoubleClickEvent(event);
 }
+
 
 void PlayerControlPreview::wheelEvent(QWheelEvent* event) {
     const float numDegrees = static_cast<float>(event->angleDelta().y()) / 8.0f;
@@ -1280,16 +1350,16 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             break;
         }
 
-        // Outer Card Container
-        const float card_w = 124.0f;
+        // Outer Card Container (Anchored away from controller)
+        const float card_w = 126.0f;
         const float card_h = 44.0f;
-        QRectF card_rect(bat_pos.x(), bat_pos.y(), card_w, card_h);
+        const QRectF card_rect(bat_pos.x(), bat_pos.y(), card_w, card_h);
         p.setPen(QPen(QColor(45, 52, 66), 1.2f));
-        p.setBrush(QColor(12, 15, 22, 220));
+        p.setBrush(QColor(12, 15, 22, 230));
         p.drawRoundedRect(card_rect, 8.0f, 8.0f);
 
         // Battery Shell
-        const QRectF b_shell(bat_pos.x() + 10.0f, bat_pos.y() + 13.0f, 38.0f, 18.0f);
+        const QRectF b_shell(bat_pos.x() + 8.0f, bat_pos.y() + 13.0f, 38.0f, 18.0f);
         p.setPen(QPen(QColor(70, 75, 88), 1.5f));
         p.setBrush(QColor(8, 10, 14));
         p.drawRoundedRect(b_shell, 3.5f, 3.5f);
@@ -1327,17 +1397,21 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawPolygon(bolt);
         }
 
-        // Percentage Text
-        p.setPen(colors.font);
-        SetTextFont(p, 0.85f);
-        const QString pct_str = is_charging ? QStringLiteral("вљЎ %1%").arg(pct) : QStringLiteral("%1%").arg(pct);
-        DrawText(p, QPointF(bat_pos.x() + 86.0f, bat_pos.y() + 20.0f), 0.85f, pct_str);
+        // Percentage Text (Clean, crisp, bold 10pt)
+        QFont font_pct(QStringLiteral("Segoe UI"), 10, QFont::Bold);
+        p.setFont(font_pct);
+        p.setPen(is_charging ? QColor(0, 240, 255) : QColor(245, 248, 255));
+        const QString pct_str = is_charging ? QStringLiteral("⚡ %1%").arg(pct) : QStringLiteral("%1%").arg(pct);
+        const QRectF pct_rect(bat_pos.x() + 52.0f, bat_pos.y() + 6.0f, 68.0f, 18.0f);
+        p.drawText(pct_rect, Qt::AlignVCenter | Qt::AlignLeft, pct_str);
 
-        // Subtext "Р—Р°СЂСЏРґ" / "Р—Р°СЂСЏРґРєР°"
-        p.setPen(QColor(140, 145, 160));
-        SetTextFont(p, 0.58f);
-        DrawText(p, QPointF(bat_pos.x() + 86.0f, bat_pos.y() + 32.0f), 0.58f,
-                 is_charging ? QStringLiteral("Р—Р°СЂСЏРґРєР°") : QStringLiteral("Р‘Р°С‚Р°СЂРµСЏ"));
+        // Subtext "Батарея" / "Зарядка" (Clean 8pt)
+        QFont font_sub(QStringLiteral("Segoe UI"), 8, QFont::Normal);
+        p.setFont(font_sub);
+        p.setPen(QColor(150, 160, 175));
+        const QRectF sub_rect(bat_pos.x() + 52.0f, bat_pos.y() + 24.0f, 68.0f, 15.0f);
+        p.drawText(sub_rect, Qt::AlignVCenter | Qt::AlignLeft,
+                   is_charging ? QStringLiteral("Зарядка") : QStringLiteral("Батарея"));
     };
 
     // =========================================================================
@@ -1425,24 +1499,27 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         DrawAxis(Common::Vec3f{0, 0, 1}, QColor(0, 229, 255));  // Z = Cyan
 
         // Header label
+        QFont font_hdr(QStringLiteral("Segoe UI"), 8, QFont::Bold);
+        p.setFont(font_hdr);
         p.setPen(colors.indicator);
-        SetTextFont(p, 0.65f);
-        DrawText(p, QPointF(gyro_c.x(), gyro_c.y() - 44.0f), 0.65f, QStringLiteral("Р“РР РћРЎРљРћРџ"));
+        const QRectF hdr_rect(gyro_c.x() - 50.0f, gyro_c.y() - 54.0f, 100.0f, 16.0f);
+        p.drawText(hdr_rect, Qt::AlignCenter, QStringLiteral("ГИРОСКОП"));
 
-        // Angles text badge
+        // Angles text badge with clear, visible degree values
         const float pitch_deg = euler.x * 180.0f / PI_CONST;
         const float roll_deg  = euler.z * 180.0f / PI_CONST;
-        const QString angles_str = QStringLiteral("P:%1В° R:%2В°")
-                                      .arg(int(std::round(pitch_deg)), 3, 10, QLatin1Char(' '))
-                                      .arg(int(std::round(roll_deg)),  3, 10, QLatin1Char(' '));
-        const QRectF badge_r(gyro_c.x() - 46.0f, gyro_c.y() + 42.0f, 92.0f, 18.0f);
-        p.setPen(QPen(QColor(40, 45, 56), 1.0f));
-        p.setBrush(QColor(12, 15, 22, 210));
-        p.drawRoundedRect(badge_r, 4.0f, 4.0f);
+        const QString angles_str = QStringLiteral("P: %1°  R: %2°")
+                                      .arg(int(std::round(pitch_deg)))
+                                      .arg(int(std::round(roll_deg)));
+        const QRectF badge_r(gyro_c.x() - 54.0f, gyro_c.y() + 42.0f, 108.0f, 20.0f);
+        p.setPen(QPen(QColor(40, 48, 64), 1.2f));
+        p.setBrush(QColor(12, 16, 24, 230));
+        p.drawRoundedRect(badge_r, 5.0f, 5.0f);
 
-        p.setPen(colors.font);
-        SetTextFont(p, 0.62f);
-        DrawText(p, QPointF(gyro_c.x(), gyro_c.y() + 51.0f), 0.62f, angles_str);
+        QFont font_angles(QStringLiteral("Segoe UI"), 8, QFont::Bold);
+        p.setFont(font_angles);
+        p.setPen(QColor(230, 240, 255));
+        p.drawText(badge_r, Qt::AlignCenter, angles_str);
     };
 
     // =========================================================================
@@ -1507,34 +1584,48 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
         // Stick Click Badge (L3 / R3)
         if (is_clicked) {
+            const QRectF click_rect(radar_c.x() - 18.0f, radar_c.y() - 10.0f, 36.0f, 20.0f);
             p.setPen(QPen(colors.indicator, 1.2f));
             p.setBrush(colors.highlight);
-            p.drawRoundedRect(QRectF(radar_c.x() - 18.0f, radar_c.y() - 10.0f, 36.0f, 20.0f), 4.0f, 4.0f);
-            p.setPen(colors.font);
-            SetTextFont(p, 0.65f);
-            DrawText(p, radar_c, 0.65f, is_left ? QStringLiteral("L3") : QStringLiteral("R3"));
+            p.drawRoundedRect(click_rect, 4.0f, 4.0f);
+            QFont font_click(QStringLiteral("Segoe UI"), 8, QFont::Bold);
+            p.setFont(font_click);
+            p.setPen(QColor(255, 255, 255));
+            p.drawText(click_rect, Qt::AlignCenter, is_left ? QStringLiteral("L3") : QStringLiteral("R3"));
         }
 
-        // Coordinate text badge below radar
+        // Coordinate text badge below radar with clear visible numbers
         const QString coord_str = QStringLiteral("%1: X[%2] Y[%3]")
                                       .arg(is_left ? QStringLiteral("L") : QStringLiteral("R"))
                                       .arg(sx, 5, 'f', 2, QLatin1Char(' '))
                                       .arg(sy, 5, 'f', 2, QLatin1Char(' '));
-        const QRectF badge_rect(radar_c.x() - 52.0f, radar_c.y() + radar_r + 6.0f, 104.0f, 18.0f);
-        p.setPen(QPen(QColor(40, 45, 56), 1.0f));
-        p.setBrush(QColor(12, 15, 22, 210));
-        p.drawRoundedRect(badge_rect, 4.0f, 4.0f);
+        const QRectF badge_rect(radar_c.x() - 62.0f, radar_c.y() + radar_r + 6.0f, 124.0f, 20.0f);
+        p.setPen(QPen(QColor(40, 48, 64), 1.2f));
+        p.setBrush(QColor(12, 16, 24, 230));
+        p.drawRoundedRect(badge_rect, 5.0f, 5.0f);
 
-        p.setPen(colors.font);
-        SetTextFont(p, 0.68f);
-        DrawText(p, QPointF(radar_c.x(), radar_c.y() + radar_r + 15.0f), 0.68f, coord_str);
+        QFont font_coord(QStringLiteral("Segoe UI"), 8, QFont::Bold);
+        p.setFont(font_coord);
+        p.setPen(QColor(0, 240, 255));
+        p.drawText(badge_rect, Qt::AlignCenter, coord_str);
     };
 
-    // Calculate non-overlapping HUD positions
-    const QPointF bat_pos = center + QPointF(-320.0f, -170.0f);
-    const QPointF gyro_pos = center + QPointF(320.0f, -170.0f);
-    const QPointF left_radar = center + QPointF(-115.0f, 182.0f);
+    // Calculate non-overlapping HUD positions (Battery shifted safely to top-left)
+    const float hud_cx = static_cast<float>(center.x());
+    const float hud_cy = static_cast<float>(center.y());
+    const float hud_w  = static_cast<float>(rect().width());
+
+    const float bat_x = std::max(16.0f, hud_cx - 410.0f);
+    const float bat_y = std::max(16.0f, hud_cy - 210.0f);
+    const QPointF bat_pos(bat_x, bat_y);
+
+    const float gyro_x = std::min(hud_w - 68.0f, hud_cx + 330.0f);
+    const float gyro_y = std::max(60.0f, hud_cy - 170.0f);
+    const QPointF gyro_pos(gyro_x, gyro_y);
+
+    const QPointF left_radar  = center + QPointF(-115.0f, 182.0f);
     const QPointF right_radar = center + QPointF( 115.0f, 182.0f);
+
 
     // =========================================================================
     // MODE A: REAR VIEW (Р’РР” РЎР—РђР”Р) вЂ” PHOTOREALISTIC
@@ -1603,38 +1694,77 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             p.drawEllipse(sync_led.pt, 2.0f * sync_led.scale, 2.0f * sync_led.scale);
         }
 
-        // 3. Triggers ZL & ZR from behind
-        auto DrawRearTrigger = [&](bool is_left, float analog, bool pressed, Symbol sym) {
+        // 3. Triggers ZL & ZR and Bumpers L & R from behind with clear gap
+        auto DrawRearBumper = [&](bool is_left, bool pressed, const QString& label) {
             const float sgn = is_left ? -1.0f : 1.0f;
-            const float x_in = sgn * 52.0f;
-            const float x_out = sgn * 115.0f;
-            const float dy = analog * 6.0f;
+            const float dy = pressed ? 3.5f : 0.0f;
+            const auto p_t_in  = Project(sgn * 56.0f,  -174.0f + dy, 6.0f);
+            const auto p_t_out = Project(sgn * 122.0f, -166.0f + dy, 6.0f);
+            const auto p_b_out = Project(sgn * 124.0f, -153.0f + dy, 6.0f);
+            const auto p_b_in  = Project(sgn * 54.0f,  -158.0f + dy, 6.0f);
 
-            const auto p_top_in = Project(x_in, -84.0f + dy, 0.0f);
-            const auto p_top_out = Project(x_out, -87.0f + dy, 0.0f);
-            const auto p_bot_out = Project(x_out, -98.0f + dy, 0.0f);
-            const auto p_bot_in = Project(x_in, -95.0f + dy, 0.0f);
+            QPolygonF poly;
+            poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
+
+            const QColor b_col = pressed ? colors.highlight : colors.button;
+            QLinearGradient bg(p_t_in.pt, p_b_in.pt);
+            bg.setColorAt(0.0, b_col.lighter(120));
+            bg.setColorAt(0.5, b_col);
+            bg.setColorAt(1.0, b_col.darker(125));
+
+            p.setPen(QPen(pressed ? colors.indicator : QColor(55, 62, 75), 1.5f));
+            p.setBrush(bg);
+            p.drawPolygon(poly);
+
+            const auto lbl_pos = Project(sgn * 88.0f, -163.0f + dy, 6.5f);
+            const float lbl_w = 36.0f * lbl_pos.scale;
+            const float lbl_h = 18.0f * lbl_pos.scale;
+            const QRectF lbl_rect(lbl_pos.pt.x() - lbl_w * 0.5f, lbl_pos.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h);
+
+            QFont font_lbl(QStringLiteral("Segoe UI"), 9, QFont::Bold);
+            p.setFont(font_lbl);
+            p.setPen(pressed ? QColor(255, 255, 255) : QColor(220, 230, 245));
+            p.drawText(lbl_rect, Qt::AlignCenter, label);
+        };
+        DrawRearBumper(true, button_values[L].value, QStringLiteral("L"));
+        DrawRearBumper(false, button_values[R].value, QStringLiteral("R"));
+
+        auto DrawRearTrigger = [&](bool is_left, float analog, bool pressed, const QString& label) {
+            const float sgn = is_left ? -1.0f : 1.0f;
+            const float dy = analog * 6.5f;
+            const bool is_active = (analog > 0.05f || pressed);
+
+            // Elevated trigger in rear view with gap from bumper
+            const auto p_t_in  = Project(sgn * 58.0f,  -145.0f + dy, -6.0f);
+            const auto p_t_out = Project(sgn * 126.0f, -138.0f + dy, -6.0f);
+            const auto p_b_out = Project(sgn * 128.0f, -120.0f + dy, -6.0f);
+            const auto p_b_in  = Project(sgn * 56.0f,  -125.0f + dy, -6.0f);
 
             QPolygonF trig_poly;
-            trig_poly << p_top_in.pt << p_top_out.pt << p_bot_out.pt << p_bot_in.pt;
+            trig_poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
 
-            const QColor t_col = (analog > 0.05f || pressed) ? colors.indicator : colors.button;
-            QLinearGradient tg(p_top_in.pt, p_bot_in.pt);
-            tg.setColorAt(0.0, t_col.lighter(115));
+            const QColor t_col = is_active ? colors.indicator : colors.button;
+            QLinearGradient tg(p_t_in.pt, p_b_in.pt);
+            tg.setColorAt(0.0, t_col.lighter(125));
             tg.setColorAt(0.5, t_col);
             tg.setColorAt(1.0, t_col.darker(125));
 
-            p.setPen(QPen(QColor(22, 24, 30), 1.0f));
+            p.setPen(QPen(is_active ? colors.indicator.lighter(130) : QColor(50, 58, 72), 1.6f));
             p.setBrush(tg);
             p.drawPolygon(trig_poly);
 
-            const auto lbl = Project(sgn * 84.0f, -91.0f + dy, 0.1f);
-            p.setPen(colors.transparent);
-            p.setBrush((analog > 0.05f || pressed) ? colors.font : colors.font2);
-            DrawSymbol(p, lbl.pt, sym, 1.25f * lbl.scale);
+            const auto lbl = Project(sgn * 92.0f, -132.0f + dy, -5.5f);
+            const float lbl_w = 40.0f * lbl.scale;
+            const float lbl_h = 20.0f * lbl.scale;
+            const QRectF lbl_rect(lbl.pt.x() - lbl_w * 0.5f, lbl.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h);
+
+            QFont font_lbl(QStringLiteral("Segoe UI"), 10, QFont::Bold);
+            p.setFont(font_lbl);
+            p.setPen(is_active ? QColor(255, 255, 255) : QColor(220, 230, 245));
+            p.drawText(lbl_rect, Qt::AlignCenter, label);
         };
-        DrawRearTrigger(true, zl_analog, button_values[ZL].value, Symbol::ZL);
-        DrawRearTrigger(false, zr_analog, button_values[ZR].value, Symbol::ZR);
+        DrawRearTrigger(true, zl_analog, button_values[ZL].value, QStringLiteral("ZL"));
+        DrawRearTrigger(false, zr_analog, button_values[ZR].value, QStringLiteral("ZR"));
 
         // 4. Rear Shell Body
         {
@@ -1781,7 +1911,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
         // 8. Draw HUD elements in Rear View
         DrawPhotorealisticBattery(bat_pos);
-        DrawColorfulGyroscope(gyro_pos, motion_values[Settings::NativeMotion::MotionLeft].euler, 16.0f);
+        DrawColorfulGyroscope(gyro_pos, smooth_euler, 16.0f);
         DrawModernStickRadar(true, left_radar);
         DrawModernStickRadar(false, right_radar);
         return;
@@ -1823,89 +1953,102 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     }
 
     // -------------------------------------------------------------------------
-    // LAYER 2: Triggers (ZL / ZR) & Bumpers (L / R) on Shoulders
+    // LAYER 2: Triggers (ZL / ZR) & Bumpers (L / R) with Clear Offset & High Visibility
     // -------------------------------------------------------------------------
-    auto DrawShoulderTrigger = [&](bool is_left, float analog, bool pressed, Symbol sym) {
+    auto DrawShoulderTrigger = [&](bool is_left, float analog, bool pressed, const QString& label) {
         const float sgn = is_left ? -1.0f : 1.0f;
-        const float x_in = sgn * 52.0f;
-        const float x_out = sgn * 115.0f;
-        const float dy = analog * 6.5f;
+        const bool is_active = (analog > 0.05f || pressed);
+        const float dy = analog * 7.0f;
 
-        const auto p_tf_in  = Project(x_in,  -86.0f + dy, -8.0f);
-        const auto p_tf_out = Project(x_out, -89.0f + dy, -8.0f);
-        const auto p_tc_out = Project(x_out, -98.0f + dy, -18.0f);
-        const auto p_tc_in  = Project(x_in,  -95.0f + dy, -18.0f);
+        const auto p_t_in  = Project(sgn * 60.0f,  -175.0f + dy, -16.0f);
+        const auto p_t_out = Project(sgn * 126.0f, -166.0f + dy, -16.0f);
+        const auto p_b_out = Project(sgn * 128.0f, -149.0f + dy, -16.0f);
+        const auto p_b_in  = Project(sgn * 58.0f,  -154.0f + dy, -16.0f);
 
-        const QColor trig_col = (analog > 0.05f || pressed) ? colors.indicator : colors.button;
+        QPolygonF trig_poly;
+        trig_poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
 
-        QPolygonF top_face;
-        top_face << p_tf_in.pt << p_tf_out.pt << p_tc_out.pt << p_tc_in.pt;
-        QLinearGradient top_grad(p_tf_in.pt, p_tc_in.pt);
-        top_grad.setColorAt(0.0, trig_col.lighter(120));
-        top_grad.setColorAt(0.3, trig_col);
-        top_grad.setColorAt(0.7, trig_col.darker(110));
-        top_grad.setColorAt(1.0, trig_col.darker(122));
-
-        p.setPen(QPen(QColor(18, 20, 24), 1.0f));
-        p.setBrush(top_grad);
-        p.drawPolygon(top_face);
-
-        {
-            const auto spec = Project(sgn * 80.0f, -91.0f + dy, -12.0f);
-            p.setPen(Qt::NoPen);
-            p.setBrush(QColor(255, 255, 255, 35));
-            p.drawEllipse(spec.pt, 18.0f * spec.scale, 4.0f * spec.scale);
+        QLinearGradient tg(p_t_in.pt, p_b_in.pt);
+        if (is_active) {
+            tg.setColorAt(0.0, colors.indicator.lighter(135));
+            tg.setColorAt(0.4, colors.indicator);
+            tg.setColorAt(1.0, colors.indicator.darker(120));
+        } else {
+            tg.setColorAt(0.0, QColor(64, 70, 84));
+            tg.setColorAt(0.3, QColor(46, 52, 62));
+            tg.setColorAt(0.8, QColor(30, 34, 42));
+            tg.setColorAt(1.0, QColor(22, 25, 30));
         }
 
-        const auto label_pos = Project(sgn * 84.0f, -90.0f + dy, -13.0f);
-        p.setPen(colors.transparent);
-        p.setBrush((analog > 0.05f || pressed) ? colors.font : colors.font2);
-        DrawSymbol(p, label_pos.pt, sym, 1.28f * label_pos.scale);
+        p.setPen(QPen(is_active ? colors.indicator.lighter(130) : QColor(56, 64, 78), 1.8f));
+        p.setBrush(tg);
+        p.drawPolygon(trig_poly);
+
+        // Top specular metallic rim
+        p.setPen(QPen(is_active ? QColor(255, 255, 255, 190) : QColor(255, 255, 255, 50), 1.2f));
+        p.drawLine(p_t_in.pt, p_t_out.pt);
+
+        // Prominent bold label "ZL" / "ZR"
+        const auto lbl_pos = Project(sgn * 92.0f, -161.0f + dy, -15.0f);
+        const float lbl_w = 42.0f * lbl_pos.scale;
+        const float lbl_h = 22.0f * lbl_pos.scale;
+        const QRectF lbl_rect(lbl_pos.pt.x() - lbl_w * 0.5f, lbl_pos.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h);
+
+        QFont font_lbl(QStringLiteral("Segoe UI"), 10, QFont::Bold);
+        p.setFont(font_lbl);
+        p.setPen(is_active ? QColor(255, 255, 255) : QColor(215, 225, 240));
+        p.drawText(lbl_rect, Qt::AlignCenter, label);
     };
 
-    DrawShoulderTrigger(true, zl_analog, button_values[ZL].value, Symbol::ZL);
-    DrawShoulderTrigger(false, zr_analog, button_values[ZR].value, Symbol::ZR);
+    DrawShoulderTrigger(true, zl_analog, button_values[ZL].value, QStringLiteral("ZL"));
+    DrawShoulderTrigger(false, zr_analog, button_values[ZR].value, QStringLiteral("ZR"));
 
-    auto DrawShoulderBumper = [&](bool is_left, bool pressed, Symbol sym) {
+    auto DrawShoulderBumper = [&](bool is_left, bool pressed, const QString& label) {
         const float sgn = is_left ? -1.0f : 1.0f;
-        const float x_in = sgn * 48.0f;
-        const float x_out = sgn * 110.0f;
-        const float dy = pressed ? 4.0f : 0.0f;
+        const float dy = pressed ? 3.5f : 0.0f;
 
-        const auto p_front_in  = Project(x_in,  -76.0f + dy, 6.0f);
-        const auto p_front_out = Project(x_out, -76.0f + dy, 6.0f);
-        const auto p_top_out   = Project(x_out, -86.0f + dy, 6.0f);
-        const auto p_top_in    = Project(x_in,  -85.0f + dy, 6.0f);
+        const auto p_t_in  = Project(sgn * 56.0f,  -144.0f + dy, 6.0f);
+        const auto p_t_out = Project(sgn * 122.0f, -137.0f + dy, 6.0f);
+        const auto p_b_out = Project(sgn * 124.0f, -123.0f + dy, 6.0f);
+        const auto p_b_in  = Project(sgn * 54.0f,  -127.0f + dy, 6.0f);
 
-        const QColor bump_col = pressed ? colors.highlight : colors.button;
+        QPolygonF bump_poly;
+        bump_poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
 
-        QPolygonF front_poly;
-        front_poly << p_front_in.pt << p_front_out.pt << p_top_out.pt << p_top_in.pt;
-        QLinearGradient front_grad(p_front_in.pt, p_top_in.pt);
-        front_grad.setColorAt(0.0, bump_col.lighter(116));
-        front_grad.setColorAt(0.4, bump_col);
-        front_grad.setColorAt(0.8, bump_col.darker(112));
-        front_grad.setColorAt(1.0, bump_col.darker(124));
-
-        p.setPen(QPen(QColor(20, 22, 26), 1.0f));
-        p.setBrush(front_grad);
-        p.drawPolygon(front_poly);
-
-        {
-            const auto spec = Project(sgn * 78.0f, -81.0f + dy, 6.0f);
-            p.setPen(Qt::NoPen);
-            p.setBrush(QColor(255, 255, 255, 32));
-            p.drawEllipse(spec.pt, 22.0f * spec.scale, 3.5f * spec.scale);
+        QLinearGradient bg(p_t_in.pt, p_b_in.pt);
+        if (pressed) {
+            bg.setColorAt(0.0, colors.highlight.lighter(135));
+            bg.setColorAt(0.4, colors.highlight);
+            bg.setColorAt(1.0, colors.highlight.darker(120));
+        } else {
+            bg.setColorAt(0.0, QColor(78, 85, 100));
+            bg.setColorAt(0.3, colors.button);
+            bg.setColorAt(0.8, colors.button.darker(110));
+            bg.setColorAt(1.0, colors.button.darker(125));
         }
 
-        const auto label_pos = Project(sgn * 78.0f, -80.5f + dy, 6.0f);
-        p.setPen(colors.transparent);
-        p.setBrush(pressed ? colors.font : colors.font2);
-        DrawSymbol(p, label_pos.pt, sym, 1.25f * label_pos.scale);
+        p.setPen(QPen(pressed ? colors.indicator : QColor(64, 72, 88), 1.6f));
+        p.setBrush(bg);
+        p.drawPolygon(bump_poly);
+
+        // Specular highlight line along top edge
+        p.setPen(QPen(QColor(255, 255, 255, pressed ? 170 : 55), 1.2f));
+        p.drawLine(p_t_in.pt, p_t_out.pt);
+
+        // Prominent bold label "L" / "R"
+        const auto lbl_pos = Project(sgn * 88.0f, -134.0f + dy, 7.0f);
+        const float lbl_w = 36.0f * lbl_pos.scale;
+        const float lbl_h = 18.0f * lbl_pos.scale;
+        const QRectF lbl_rect(lbl_pos.pt.x() - lbl_w * 0.5f, lbl_pos.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h);
+
+        QFont font_lbl(QStringLiteral("Segoe UI"), 10, QFont::Bold);
+        p.setFont(font_lbl);
+        p.setPen(pressed ? QColor(255, 255, 255) : QColor(230, 240, 255));
+        p.drawText(lbl_rect, Qt::AlignCenter, label);
     };
 
-    DrawShoulderBumper(true, button_values[L].value, Symbol::L);
-    DrawShoulderBumper(false, button_values[R].value, Symbol::R);
+    DrawShoulderBumper(true, button_values[L].value, QStringLiteral("L"));
+    DrawShoulderBumper(false, button_values[R].value, QStringLiteral("R"));
 
     // -------------------------------------------------------------------------
     // LAYER 3: Ergonomic Palm Handles (Left and Right)
@@ -2813,7 +2956,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     DrawPhotorealisticBattery(bat_pos);
 
     // Colorful 3D Gyroscope (Upper-Right)
-    DrawColorfulGyroscope(gyro_pos, motion_values[Settings::NativeMotion::MotionLeft].euler, 16.0f);
+    DrawColorfulGyroscope(gyro_pos, smooth_euler, 16.0f);
 
     // Precision Analog Stick Radars (Under Controller, Centered L/R)
     DrawModernStickRadar(true, left_radar);
@@ -2866,9 +3009,10 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                 p.setBrush(b_grad);
                 p.drawRoundedRect(b_rect, 4.0f, 4.0f);
 
-                p.setPen(colors.font);
-                SetTextFont(p, 0.75f);
-                DrawText(p, QPointF(start_x + badge_w * 0.5f, badge_y), 0.75f, name);
+                QFont font_badge(QStringLiteral("Segoe UI"), 8, QFont::Bold);
+                p.setFont(font_badge);
+                p.setPen(QColor(255, 255, 255));
+                p.drawText(b_rect, Qt::AlignCenter, name);
                 start_x += badge_w + spacing;
             }
         }
