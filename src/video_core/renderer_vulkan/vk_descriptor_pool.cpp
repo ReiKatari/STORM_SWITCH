@@ -153,6 +153,13 @@ DescriptorBank& DescriptorPool::Bank(const Device& device, const DescriptorBankI
     read_lock.unlock();
 
     std::unique_lock write_lock{banks_mutex};
+    const auto it_write = std::ranges::find_if(bank_infos, [&reqs](const DescriptorBankInfo& bank) {
+        return std::abs(bank.score - reqs.score) < SCORE_THRESHOLD && bank.IsSuperset(reqs);
+    });
+    if (it_write != bank_infos.end()) {
+        return *banks[std::distance(bank_infos.begin(), it_write)].get();
+    }
+
     bank_infos.push_back(reqs);
 
     auto& bank = *banks.emplace_back(std::make_unique<DescriptorBank>());

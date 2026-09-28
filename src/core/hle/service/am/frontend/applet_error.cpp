@@ -161,7 +161,7 @@ Result Error::GetStatus() const {
 }
 
 void Error::ExecuteInteractive() {
-    ASSERT_MSG(false, "Unexpected interactive applet data!");
+    LOG_WARNING(Service_AM, "Unexpected interactive error applet data received, ignoring");
 }
 
 void Error::Execute() {

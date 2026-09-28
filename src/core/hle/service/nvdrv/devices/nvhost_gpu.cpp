@@ -394,7 +394,8 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
 NvResult nvhost_gpu::SubmitGPFIFOBase1(IoctlSubmitGpfifo& params,
                                        std::span<Tegra::CommandListHeader> commands, bool kickoff) {
     if (params.num_entries > commands.size()) {
-        UNIMPLEMENTED();
+        LOG_ERROR(Service_NVDRV, "num_entries ({}) exceeds commands size ({})",
+                  params.num_entries, commands.size());
         return NvResult::InvalidSize;
     }
 
@@ -413,7 +414,8 @@ NvResult nvhost_gpu::SubmitGPFIFOBase1(IoctlSubmitGpfifo& params,
 NvResult nvhost_gpu::SubmitGPFIFOBase2(IoctlSubmitGpfifo& params,
                                        std::span<const Tegra::CommandListHeader> commands) {
     if (params.num_entries > commands.size()) {
-        UNIMPLEMENTED();
+        LOG_ERROR(Service_NVDRV, "num_entries ({}) exceeds commands size ({})",
+                  params.num_entries, commands.size());
         return NvResult::InvalidSize;
     }
 

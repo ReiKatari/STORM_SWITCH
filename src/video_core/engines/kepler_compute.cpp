@@ -66,11 +66,13 @@ void KeplerCompute::CallMethod(Core::System& system, u32 method, u32 method_argu
         const GPUVAddr launch_desc_loc = regs.launch_desc_loc.Address();
 
         for (auto& data : uploads) {
-            const GPUVAddr offset = data.exec_address - launch_desc_loc;
-            if (offset / sizeof(u32) == LAUNCH_REG_INDEX(grid_dim_x)) {
-                const bool source_dirty = memory_manager.IsMemoryDirty(data.upload_address, data.copy_size);
-                if (data.was_dirty || source_dirty) {
-                    indirect_compute = {data.upload_address};
+            if (data.exec_address >= launch_desc_loc) {
+                const GPUVAddr offset = data.exec_address - launch_desc_loc;
+                if (offset / sizeof(u32) == LAUNCH_REG_INDEX(grid_dim_x)) {
+                    const bool source_dirty = memory_manager.IsMemoryDirty(data.upload_address, data.copy_size);
+                    if (data.was_dirty || source_dirty) {
+                        indirect_compute = {data.upload_address};
+                    }
                 }
             }
         }

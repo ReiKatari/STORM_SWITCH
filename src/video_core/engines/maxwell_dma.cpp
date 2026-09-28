@@ -71,11 +71,7 @@ void MaxwellDMA::Launch() {
         if (!is_src_pitch && !is_dst_pitch) {
             // If both the source and the destination are in block layout, assert.
             CopyBlockLinearToBlockLinear();
-            ReleaseSemaphore();
-            return;
-        }
-
-        if (is_src_pitch && is_dst_pitch) {
+        } else if (is_src_pitch && is_dst_pitch) {
             for (u32 line = 0; line < regs.line_count; ++line) {
                 const GPUVAddr source_line =
                     regs.offset_in + static_cast<size_t>(line) * regs.pitch_in;
@@ -95,14 +91,23 @@ void MaxwellDMA::Launch() {
         auto& accelerate = rasterizer->AccessAccelerateDMA();
         const bool is_const_a_dst = regs.remap_const.dst_x == RemapConst::Swizzle::CONST_A;
         if (regs.launch_dma.remap_enable != 0 && is_const_a_dst) {
+            if (regs.line_length_in == 0) {
+                ReleaseSemaphore();
+                return;
+            }
             const u32 component_size = regs.remap_const.component_size_minus_one + 1;
             ASSERT(component_size == 1 || component_size == 2 || component_size == 4);
+            const size_t total_bytes = static_cast<size_t>(regs.line_length_in) * component_size;
+            read_buffer.resize_destructive(total_bytes);
             if (component_size == 4) {
                 accelerate.BufferClear(regs.offset_out, regs.line_length_in, regs.remap_const.remap_consta_value);
+                std::ranges::fill(std::span<u32>(reinterpret_cast<u32*>(read_buffer.data()), regs.line_length_in), regs.remap_const.remap_consta_value);
+            } else if (component_size == 2) {
+                std::ranges::fill(std::span<u16>(reinterpret_cast<u16*>(read_buffer.data()), regs.line_length_in), static_cast<u16>(regs.remap_const.remap_consta_value));
+            } else {
+                std::ranges::fill(std::span<u8>(read_buffer.data(), regs.line_length_in), static_cast<u8>(regs.remap_const.remap_consta_value));
             }
-            read_buffer.resize_destructive(regs.line_length_in * sizeof(u32));
-            std::ranges::fill(std::span<u32>(reinterpret_cast<u32*>(read_buffer.data()), regs.line_length_in), regs.remap_const.remap_consta_value);
-            memory_manager.WriteBlockUnsafe(regs.offset_out, reinterpret_cast<u8*>(read_buffer.data()), static_cast<size_t>(regs.line_length_in) * component_size);
+            memory_manager.WriteBlockUnsafe(regs.offset_out, reinterpret_cast<u8*>(read_buffer.data()), total_bytes);
         } else {
             memory_manager.FlushCaching();
             const auto convert_linear_2_blocklinear_addr = [](u64 address) {

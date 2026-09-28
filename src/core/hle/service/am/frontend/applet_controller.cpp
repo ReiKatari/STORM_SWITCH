@@ -122,49 +122,59 @@ void Controller::Initialize() {
     case ControllerSupportMode::ShowControllerSupport:
     case ControllerSupportMode::ShowControllerStrapGuide: {
         const std::shared_ptr<IStorage> user_arg_storage = PopInData();
-        ASSERT(user_arg_storage != nullptr);
+        if (!user_arg_storage) {
+            LOG_ERROR(Service_AM, "User arg storage is null!");
+            break;
+        }
 
         const auto& user_arg = user_arg_storage->GetData();
         switch (controller_applet_version) {
         case ControllerAppletVersion::Version3:
         case ControllerAppletVersion::Version4:
-        case ControllerAppletVersion::Version5:
-            ASSERT(user_arg.size() == sizeof(ControllerSupportArgOld));
-            std::memcpy(&controller_user_arg_old, user_arg.data(), user_arg.size());
+        case ControllerAppletVersion::Version5: {
+            const size_t copy_size = (std::min)(user_arg.size(), sizeof(ControllerSupportArgOld));
+            std::memcpy(&controller_user_arg_old, user_arg.data(), copy_size);
             break;
+        }
         case ControllerAppletVersion::Version7:
         case ControllerAppletVersion::Version8:
-        case ControllerAppletVersion::Version9:
-            ASSERT(user_arg.size() == sizeof(ControllerSupportArgNew));
-            std::memcpy(&controller_user_arg_new, user_arg.data(), user_arg.size());
+        case ControllerAppletVersion::Version9: {
+            const size_t copy_size = (std::min)(user_arg.size(), sizeof(ControllerSupportArgNew));
+            std::memcpy(&controller_user_arg_new, user_arg.data(), copy_size);
             break;
-        default:
-            UNIMPLEMENTED_MSG("Unknown ControllerSupportArg revision={} with size={}",
-                              controller_applet_version, controller_private_arg.arg_size);
-            ASSERT(user_arg.size() >= sizeof(ControllerSupportArgNew));
-            std::memcpy(&controller_user_arg_new, user_arg.data(), sizeof(ControllerSupportArgNew));
+        }
+        default: {
+            LOG_WARNING(Service_AM, "Unknown ControllerSupportArg revision={} with size={}",
+                        controller_applet_version, controller_private_arg.arg_size);
+            const size_t copy_size = (std::min)(user_arg.size(), sizeof(ControllerSupportArgNew));
+            std::memcpy(&controller_user_arg_new, user_arg.data(), copy_size);
             break;
+        }
         }
         break;
     }
     case ControllerSupportMode::ShowControllerFirmwareUpdate: {
         const std::shared_ptr<IStorage> update_arg_storage = PopInData();
-        ASSERT(update_arg_storage != nullptr);
+        if (!update_arg_storage) {
+            LOG_ERROR(Service_AM, "Update arg storage is null!");
+            break;
+        }
 
         const auto& update_arg = update_arg_storage->GetData();
-        ASSERT(update_arg.size() == sizeof(ControllerUpdateFirmwareArg));
-
-        std::memcpy(&controller_update_arg, update_arg.data(), update_arg.size());
+        const size_t copy_size = (std::min)(update_arg.size(), sizeof(ControllerUpdateFirmwareArg));
+        std::memcpy(&controller_update_arg, update_arg.data(), copy_size);
         break;
     }
     case ControllerSupportMode::ShowControllerKeyRemappingForSystem: {
         const std::shared_ptr<IStorage> remapping_arg_storage = PopInData();
-        ASSERT(remapping_arg_storage != nullptr);
+        if (!remapping_arg_storage) {
+            LOG_ERROR(Service_AM, "Remapping arg storage is null!");
+            break;
+        }
 
         const auto& remapping_arg = remapping_arg_storage->GetData();
-        ASSERT(remapping_arg.size() == sizeof(ControllerKeyRemappingArg));
-
-        std::memcpy(&controller_key_remapping_arg, remapping_arg.data(), remapping_arg.size());
+        const size_t copy_size = (std::min)(remapping_arg.size(), sizeof(ControllerKeyRemappingArg));
+        std::memcpy(&controller_key_remapping_arg, remapping_arg.data(), copy_size);
         break;
     }
     default: {

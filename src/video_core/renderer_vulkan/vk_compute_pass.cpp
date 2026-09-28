@@ -332,7 +332,7 @@ QuadIndexedPass::~QuadIndexedPass() = default;
 std::pair<VkBuffer, VkDeviceSize> QuadIndexedPass::Assemble(
     Tegra::Engines::Maxwell3D::Regs::IndexFormat index_format, u32 num_vertices, u32 base_vertex,
     VkBuffer src_buffer, u32 src_offset, bool is_strip) {
-    if (src_buffer == VK_NULL_HANDLE || num_vertices == 0) {
+    if (src_buffer == VK_NULL_HANDLE || num_vertices < 4) {
         return {};
     }
     const u32 index_shift = [index_format] {
@@ -720,7 +720,9 @@ void BlockLinearUnswizzle3DPass::Unswizzle(
     // Allocate or grow to cover this batch's slice count
     image.AllocateComputeUnswizzleBuffer(MAX_BATCH_SLICES);
 
-    ASSERT(swizzles.size() == 1);
+    if (swizzles.empty()) {
+        return;
+    }
     const auto& sw = swizzles[0];
     const auto params = MakeBlockLinearSwizzle3DParams(sw, image.info);
 

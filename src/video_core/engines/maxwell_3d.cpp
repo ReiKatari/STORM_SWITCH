@@ -266,21 +266,27 @@ u32 Maxwell3D::GetMaxCurrentVertices() {
         const auto& limit = regs.vertex_stream_limits[index];
         const GPUVAddr gpu_addr_begin = array.Address();
         const GPUVAddr gpu_addr_end = limit.Address() + 1;
-        const u32 address_size = static_cast<u32>(gpu_addr_end - gpu_addr_begin);
-        num_vertices = (std::max)(
-            num_vertices, address_size / (std::max)(attribute.SizeInBytes(), array.stride.Value()));
+        const u32 address_size = gpu_addr_end > gpu_addr_begin
+                                     ? static_cast<u32>(gpu_addr_end - gpu_addr_begin)
+                                     : 0U;
+        const u32 divisor = (std::max)(1U, (std::max)(attribute.SizeInBytes(), array.stride.Value()));
+        num_vertices = (std::max)(num_vertices, address_size / divisor);
         break;
     }
     return num_vertices;
 }
 
 size_t Maxwell3D::EstimateIndexBufferSize() {
+    auto const byte_size = regs.index_buffer.FormatSizeInBytes();
+    if (byte_size == 0) {
+        return 0;
+    }
     GPUVAddr start_address = regs.index_buffer.StartAddress();
     GPUVAddr end_address = regs.index_buffer.EndAddress();
-    auto const byte_size = regs.index_buffer.FormatSizeInBytes();
     auto const max_size = 1ull << (byte_size * CHAR_BIT);
     auto const upper_cap = GetMaxCurrentVertices() * 4 * byte_size;
-    auto const lower_cap = std::min<size_t>(size_t(end_address - start_address), upper_cap);
+    const size_t diff = end_address > start_address ? static_cast<size_t>(end_address - start_address) : 0;
+    auto const lower_cap = std::min<size_t>(diff, upper_cap);
     return std::min<size_t>(memory_manager.GetMemoryLayoutSize(start_address, byte_size * max_size) / byte_size, lower_cap);
 }
 

@@ -717,6 +717,9 @@ void BlitImageHelper::ResolveDepthStencil(const Framebuffer* dst_framebuffer,
     const VkImageView src_depth_view = src_image_view.DepthView();
     const VkImageView src_stencil_view =
         resolve_stencil ? src_image_view.StencilView() : VK_NULL_HANDLE;
+    if (!pipeline || !src_depth_view || (resolve_stencil && !src_stencil_view)) {
+        return;
+    }
 
     RecordShaderReadBarrier(scheduler, src_image_view);
     scheduler.RequestRenderpass(dst_framebuffer);
@@ -760,6 +763,9 @@ void BlitImageHelper::BlitDepthStencil(const Framebuffer* dst_framebuffer,
     const VkPipeline pipeline = FindOrEmplaceDepthStencilPipeline(key);
     const VkImageView src_depth_view = src_image_view.DepthView();
     const VkImageView src_stencil_view = src_image_view.StencilView();
+    if (!pipeline || !src_depth_view || !src_stencil_view) {
+        return;
+    }
 
     RecordShaderReadBarrier(scheduler, src_image_view);
     scheduler.RequestRenderpass(dst_framebuffer);

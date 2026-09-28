@@ -33,9 +33,11 @@ void State::ProcessExec(const bool is_linear_) {
 }
 
 void State::ProcessData(const u32 data, const bool is_last_call) {
-    const u32 sub_copy_size = (std::min)(4U, copy_size - write_offset);
-    std::memcpy(&inner_buffer[write_offset], &data, sub_copy_size);
-    write_offset += sub_copy_size;
+    if (write_offset < copy_size) {
+        const u32 sub_copy_size = (std::min)(4U, copy_size - write_offset);
+        std::memcpy(&inner_buffer[write_offset], &data, sub_copy_size);
+        write_offset += sub_copy_size;
+    }
     if (!is_last_call) {
         return;
     }
@@ -48,11 +50,18 @@ void State::ProcessData(const u32* data, size_t num_data) {
 }
 
 void State::ProcessData(std::span<const u8> read_buffer) {
+    if (read_buffer.empty()) {
+        return;
+    }
     const GPUVAddr address{regs.dest.Address()};
     if (is_linear) {
         for (size_t line = 0; line < regs.line_count; ++line) {
+            const size_t line_offset = line * regs.line_length_in;
+            if (line_offset + regs.line_length_in > read_buffer.size()) {
+                break;
+            }
             const GPUVAddr dest_line = address + line * regs.dest.pitch;
-            std::span<const u8> buffer(read_buffer.data() + line * regs.line_length_in,
+            std::span<const u8> buffer(read_buffer.data() + line_offset,
                                        regs.line_length_in);
             rasterizer->AccelerateInlineToMemory(dest_line, regs.line_length_in, buffer);
         }

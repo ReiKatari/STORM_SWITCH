@@ -187,8 +187,11 @@ Frame* PresentManager::GetRenderFrame() {
     free_queue.pop_front();
 
     // Wait for the presentation to be finished so all frame resources are free
-    frame->present_done.Wait();
-    frame->present_done.Reset();
+    if (frame->is_submitted) {
+        frame->present_done.Wait();
+        frame->present_done.Reset();
+        frame->is_submitted = false;
+    }
 
     return frame;
 }
@@ -576,6 +579,7 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
         switch (const VkResult result =
                     device.GetGraphicsQueue().Submit(submit_info, *frame->present_done)) {
         case VK_SUCCESS:
+            frame->is_submitted = true;
             break;
         case VK_ERROR_DEVICE_LOST:
             device.ReportLoss("PresentManager::Submit");

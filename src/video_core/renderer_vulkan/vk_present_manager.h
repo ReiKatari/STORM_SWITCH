@@ -37,6 +37,7 @@ struct Frame {
     vk::CommandBuffer cmdbuf;
     vk::Semaphore render_ready;
     vk::Fence present_done;
+    bool is_submitted = false;
 };
 
 class PresentManager {
