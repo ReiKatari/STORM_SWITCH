@@ -651,9 +651,9 @@ void BufferCacheRuntime::BindTransformFeedbackBuffer(u32 index, VkBuffer buffer,
         offset = 0;
         size = 0;
     }
-    scheduler.Record([index, buffer, offset, size](vk::CommandBuffer cmdbuf) {
+    const VkDeviceSize vk_size = (size == 0) ? VK_WHOLE_SIZE : static_cast<VkDeviceSize>(size);
+    scheduler.Record([index, buffer, offset, vk_size](vk::CommandBuffer cmdbuf) {
         const VkDeviceSize vk_offset = offset;
-        const VkDeviceSize vk_size = size;
         cmdbuf.BindTransformFeedbackBuffersEXT(index, 1, &buffer, &vk_offset, &vk_size);
     });
 }
@@ -670,7 +670,9 @@ void BufferCacheRuntime::BindTransformFeedbackBuffers(VideoCommon::HostBindings<
             ReserveNullBuffer();
             handle = *null_buffer;
             bindings.offsets[i] = 0;
-            bindings.sizes[i] = 0;
+            bindings.sizes[i] = VK_WHOLE_SIZE;
+        } else if (bindings.sizes[i] == 0) {
+            bindings.sizes[i] = VK_WHOLE_SIZE;
         }
         buffer_handles[i] = handle;
     }
@@ -690,7 +692,7 @@ vk::Buffer BufferCacheRuntime::CreateNullBuffer() {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .size = 256,
+        .size = 65536,
         .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                  VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |

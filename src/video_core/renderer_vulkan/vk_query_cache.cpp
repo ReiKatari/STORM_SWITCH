@@ -720,11 +720,12 @@ public:
         if (device.IsExtTransformFeedbackSupported()) {
             counter_buffer_usage |= VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT;
         }
+        static constexpr size_t COUNTER_STRIDE = 256;
         const VkBufferCreateInfo buffer_ci = {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
-            .size = TFBQueryBank::QUERY_SIZE * NUM_STREAMS,
+            .size = COUNTER_STRIDE * NUM_STREAMS,
             .usage = counter_buffer_usage,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = 0,
@@ -738,7 +739,7 @@ public:
         size_t base_offset = 0;
         for (auto& o : offsets) {
             o = base_offset;
-            base_offset += TFBQueryBank::QUERY_SIZE;
+            base_offset += COUNTER_STRIDE;
         }
     }
 
@@ -758,13 +759,13 @@ public:
 
     void ResetCounter() override {
         CloseCounter();
+        has_started = false;
+        has_flushed_end_pending = false;
     }
 
     void CloseCounter() override {
         if (has_flushed_end_pending) {
-            if (scheduler.IsRenderPassActive()) {
-                FlushEndTFB();
-            }
+            FlushEndTFB();
         }
         runtime.View3DRegs([this](Maxwell3D& maxwell3d) {
             if (maxwell3d.regs.transform_feedback_enabled == 0) {
@@ -961,11 +962,12 @@ private:
             .srcAccessMask = VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT,
             .dstAccessMask = VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_READ_BIT_EXT,
         };
-        scheduler.Record([this, total = static_cast<u32>(buffers_count)](vk::CommandBuffer cmdbuf) {
+        const u32 total = static_cast<u32>(buffers_count);
+        scheduler.Record([counter_buffers_ = counter_buffers, offsets_ = offsets, total](vk::CommandBuffer cmdbuf) {
             cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT,
                                    VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT, 0,
                                    COUNTER_RESUME_BARRIER);
-            cmdbuf.BeginTransformFeedbackEXT(0, total, counter_buffers.data(), offsets.data());
+            cmdbuf.BeginTransformFeedbackEXT(0, total, counter_buffers_.data(), offsets_.data());
         });
     }
 
@@ -974,10 +976,14 @@ private:
             return;
         }
         if (!has_flushed_end_pending) [[unlikely]] {
-            UNREACHABLE();
             return;
         }
         has_flushed_end_pending = false;
+
+        // Vulkan specification: vkCmdEndTransformFeedbackEXT must be executed inside a render pass
+        if (!scheduler.IsRenderPassActive()) {
+            return;
+        }
 
         // Refresh buffer state before ending transform feedback to ensure counters_count is up-to-date.
         UpdateBuffers();
@@ -988,9 +994,9 @@ private:
             });
         } else {
             LOG_DEBUG(Render_Vulkan, "EndTransformFeedbackEXT called with counters (buffers_count={})", buffers_count);
-            scheduler.Record([this,
-                              total = static_cast<u32>(buffers_count)](vk::CommandBuffer cmdbuf) {
-                cmdbuf.EndTransformFeedbackEXT(0, total, counter_buffers.data(), offsets.data());
+            const u32 total = static_cast<u32>(buffers_count);
+            scheduler.Record([counter_buffers_ = counter_buffers, offsets_ = offsets, total](vk::CommandBuffer cmdbuf) {
+                cmdbuf.EndTransformFeedbackEXT(0, total, counter_buffers_.data(), offsets_.data());
             });
         }
     }
@@ -1040,6 +1046,9 @@ private:
     }
 
     std::pair<size_t, size_t> ProduceCounterBuffer(size_t slot_index) {
+        if (slot_index >= NUM_STREAMS) {
+            return {current_bank_id, 0};
+        }
         if (current_bank == nullptr || current_bank->IsClosed()) {
             current_bank_id =
                 bank_pool.ReserveBank([this](std::deque<TFBQueryBank>& queue, size_t index) {

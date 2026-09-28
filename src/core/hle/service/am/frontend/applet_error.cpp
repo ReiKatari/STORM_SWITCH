@@ -171,6 +171,14 @@ void Error::Execute() {
 
     const auto callback = [this] { DisplayCompleted(); };
     const auto title_id = system.GetApplicationProcessProgramID();
+    const u32 category = static_cast<u32>(error_code.GetModule()) + 2000;
+    if (category == 2155 || category == 2124 || category == 2137 ||
+        error_code.raw == 0x00123A18 || error_code.raw == 0x0010749B) {
+        LOG_INFO(Service_AM, "Silently suppressing network error {:04}-{:04} (0x{:08X}) for Title 0x{:016X}",
+                 category, error_code.GetDescription(), error_code.raw, title_id);
+        DisplayCompleted();
+        return;
+    }
     const auto& reporter{system.GetReporter()};
 
     switch (mode) {
