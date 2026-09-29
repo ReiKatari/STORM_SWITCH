@@ -26,6 +26,11 @@ Status BufferQueueConsumer::AcquireBuffer(BufferItem* out_buffer,
                                           std::chrono::nanoseconds expected_present) {
     std::scoped_lock lock{core->mutex};
 
+    // Check if the queue is empty.
+    if (core->queue.empty()) {
+        return Status::NoBufferAvailable;
+    }
+
     // Check that the consumer doesn't currently have the maximum number of buffers acquired.
     const s32 num_acquired_buffers{
         static_cast<s32>(std::count_if(slots.begin(), slots.end(), [](const auto& slot) {
@@ -33,14 +38,14 @@ Status BufferQueueConsumer::AcquireBuffer(BufferItem* out_buffer,
         }))};
 
     if (num_acquired_buffers >= core->max_acquired_buffer_count + 1) {
-        LOG_ERROR(Service_Nvnflinger, "max acquired buffer count reached: {} (max {})",
-                  num_acquired_buffers, core->max_acquired_buffer_count);
-        return Status::InvalidOperation;
-    }
-
-    // Check if the queue is empty.
-    if (core->queue.empty()) {
-        return Status::NoBufferAvailable;
+        // Auto-release oldest acquired buffer so newly queued frame can be acquired
+        for (s32 s{}; s < BufferQueueDefs::NUM_BUFFER_SLOTS; ++s) {
+            if (slots[s].buffer_state == BufferState::Acquired) {
+                slots[s].buffer_state = BufferState::Free;
+                LOG_DEBUG(Service_Nvnflinger, "auto-released acquired slot {}", s);
+                break;
+            }
+        }
     }
 
     auto front(core->queue.begin());

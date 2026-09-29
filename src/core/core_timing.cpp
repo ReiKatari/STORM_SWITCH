@@ -16,6 +16,10 @@
 #include "common/windows/timer_resolution.h"
 #endif
 
+#if defined(_M_X64) || defined(__x86_64__)
+#include <immintrin.h>
+#endif
+
 #include "common/settings.h"
 #include "core/core_timing.h"
 #include "core/hardware_properties.h"
@@ -227,7 +231,11 @@ void CoreTiming::Idle() {
     __yield();
 #endif
 #else
+#if defined(_M_X64) || defined(__x86_64__)
+    _mm_pause();
+#else
     std::this_thread::yield();
+#endif
 #endif
 }
 

@@ -140,9 +140,11 @@ Result StaticService::SetStandardSteadyClockInternalOffset(s64 offset_ns) {
 }
 
 Result StaticService::GetStandardSteadyClockRtcValue(Out<s64> out_rtc_value) {
-    LOG_DEBUG(Service_Time, "called. This function is not implemented!");
+    LOG_DEBUG(Service_Time, "called");
 
-    R_RETURN(ResultNotImplemented);
+    *out_rtc_value = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    R_SUCCEED();
 }
 
 Result StaticService::IsStandardUserSystemClockAutomaticCorrectionEnabled(
@@ -179,9 +181,10 @@ Result StaticService::SetStandardUserSystemClockAutomaticCorrectionEnabled(
 }
 
 Result StaticService::GetStandardUserSystemClockInitialYear(Out<s32> out_year) {
-    LOG_DEBUG(Service_Time, "called. This function is not implemented!");
+    LOG_DEBUG(Service_Time, "called");
 
-    R_RETURN(ResultNotImplemented);
+    *out_year = 2017;
+    R_SUCCEED();
 }
 
 Result StaticService::IsStandardNetworkSystemClockAccuracySufficient(Out<bool> out_is_sufficient) {

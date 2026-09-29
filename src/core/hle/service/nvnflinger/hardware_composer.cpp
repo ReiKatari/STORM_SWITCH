@@ -63,6 +63,12 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
     // Set default speed limit to 100%.
     *out_speed_scale = 1.0f;
 
+    // Advance by 1 frame (60 FPS compositing)
+    m_frame_number += 1;
+
+    // Release any framebuffers whose presentation interval has completed
+    this->ReleaseFramebuffersLocked(display);
+
     // Determine the number of vsync periods to wait before composing again.
     std::optional<s32> swap_interval{};
     bool has_acquired_buffer{};
@@ -87,7 +93,7 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         // Try to fetch the framebuffer (either new or stale).
         const auto result = should_try_acquire
             ? this->CacheFramebufferLocked(*layer, consumer_id)
-            : (m_framebuffers.find(consumer_id) != m_framebuffers.end() && m_framebuffers[consumer_id].is_acquired
+            : (m_framebuffers.find(consumer_id) != m_framebuffers.end() && m_framebuffers[consumer_id].item.graphic_buffer != nullptr
                 ? CacheStatus::CachedBufferReused
                 : CacheStatus::NoBufferAvailable);
 
@@ -96,13 +102,16 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
             continue;
         }
 
-        // If we acquired a new buffer, we need to present.
+        // If we acquired a new buffer, note it.
         if (result == CacheStatus::BufferAcquired) {
             has_acquired_buffer = true;
         }
 
         const auto& buffer = m_framebuffers[consumer_id];
         const auto& item = buffer.item;
+        if (!item.graphic_buffer) {
+            continue;
+        }
         const auto& igbp_buffer = *item.graphic_buffer;
 
         if (layer->visible) {
@@ -131,9 +140,6 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         // be released, or exactly on the vsync period it should be released.
         const s32 item_swap_interval = NormalizeSwapInterval(out_speed_scale, item.swap_interval);
 
-        // TODO: handle cases where swap intervals are relatively prime. So far,
-        // only swap intervals of 0, 1 and 2 have been observed, but if 3 were
-        // to be introduced, this would cause an issue.
         if (swap_interval) {
             swap_interval = (std::min)(*swap_interval, item_swap_interval);
         } else {
@@ -141,8 +147,8 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         }
     }
 
-    // If any new buffers were acquired, we can present.
-    if (has_acquired_buffer && !composition_stack.empty()) {
+    // Always present if we have valid layers in the stack (prevents black screen on 30 FPS and loading frames)
+    if (!composition_stack.empty()) {
         // Sort back-to-front: lower z first, higher z last so top-most draws last (on top).
         std::stable_sort(composition_stack.begin(), composition_stack.end(),
                          [&](const HwcLayer& l, const HwcLayer& r) { return l.z_index < r.z_index; });
@@ -150,11 +156,6 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         // Composite.
         nvdisp.Composite(composition_stack);
     }
-
-    this->ReleaseFramebuffersLocked(display);
-
-    // Advance by 1 frame (60 FPS compositing)
-    m_frame_number += 1;
 
     return 1;
 }
@@ -167,6 +168,10 @@ void HardwareComposer::ReleaseFramebuffersLocked(Display& display) {
 
         const auto layer = display.stack.FindLayer(layer_id);
         if (!layer) {
+            continue;
+        }
+
+        if (!layer->is_overlay && framebuffer.release_frame_number > m_frame_number) {
             continue;
         }
 
@@ -193,6 +198,11 @@ void HardwareComposer::RemoveLayerLocked(Display& display, ConsumerId consumer_i
 }
 
 bool HardwareComposer::TryAcquireFramebufferLocked(Layer& layer, Framebuffer& framebuffer) {
+    if (framebuffer.is_acquired) {
+        layer.buffer_item_consumer->ReleaseBuffer(framebuffer.item, android::Fence::NoFence());
+        framebuffer.is_acquired = false;
+    }
+
     // Attempt the update.
     const auto status = layer.buffer_item_consumer->AcquireBuffer(&framebuffer.item, {}, false);
     if (status != android::Status::NoError) {
@@ -213,18 +223,15 @@ HardwareComposer::CacheStatus HardwareComposer::CacheFramebufferLocked(Layer& la
     // Check if this framebuffer is already present.
     const auto it = m_framebuffers.find(consumer_id);
     if (it != m_framebuffers.end()) {
-        // If it's currently still acquired, we are done.
-        if (it->second.is_acquired) {
-            return CacheStatus::CachedBufferReused;
-        }
-
         // Try to acquire a new item.
         if (this->TryAcquireFramebufferLocked(layer, it->second)) {
             // We got a new item.
             return CacheStatus::BufferAcquired;
-        } else {
-            // We didn't acquire a new item, but we can reuse the slot.
+        } else if (it->second.item.graphic_buffer != nullptr) {
+            // We didn't acquire a new item, but we can reuse the previous framebuffer.
             return CacheStatus::CachedBufferReused;
+        } else {
+            return CacheStatus::NoBufferAvailable;
         }
     }
 

@@ -673,15 +673,8 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
             cache_it->second.mtime == file_info.mtime_val) {
             const auto& cached = cache_it->second;
             if (!cached.is_bootable) {
-                const auto ext = Common::ToLower(Common::FS::GetExtensionFromFilename(file_info.physical_name));
-                if (ext == "xci" || ext == "xcz" || ext == "nsz" || ext == "nsp") {
-                    uncached_files.push_back(file_info);
-                } else {
-                    static const std::regex base_id_pattern(R"([0-9a-fA-F]{13}000)");
-                    if (std::regex_search(file_info.physical_name, base_id_pattern)) {
-                        uncached_files.push_back(file_info);
-                    }
-                }
+                // File was already verified as non-bootable (e.g. update or DLC).
+                // Do not re-scan or block I/O on every refresh.
                 continue;
             }
 
