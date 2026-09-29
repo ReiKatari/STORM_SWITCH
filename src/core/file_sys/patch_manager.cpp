@@ -43,7 +43,16 @@
 namespace FileSys {
 namespace {
 
+struct CachedParsedControl {
+    std::vector<u8> nacp_bytes;
+    std::string nacp_name;
+    VirtualFile icon_file;
+};
+std::mutex s_parsed_control_mutex;
+std::unordered_map<u64, CachedParsedControl> s_parsed_control_cache;
+
 constexpr u32 SINGLE_BYTE_MODULUS = 0x100;
+
 
 constexpr std::array<const char*, 14> EXEFS_FILE_NAMES{
     "main",    "main.npdm", "rtld",    "sdk",     "subsdk0", "subsdk1", "subsdk2",
@@ -972,7 +981,7 @@ VirtualFile PatchManager::PatchRomFS(const NCA* base_nca, VirtualFile base_romfs
         ApplyLayeredFS(romfs, title_id, type, fs_controller);
     }
 
-    LOG_INFO(Loader, "PatchRomFS: Finished RomFS for title_id={:016X}, type={:02X}, size={}",
+    LOG_DEBUG(Loader, "PatchRomFS: Finished RomFS for title_id={:016X}, type={:02X}, size={}",
              title_id, static_cast<u8>(type), romfs ? romfs->GetSize() : 0);
     return romfs;
 }
@@ -1419,7 +1428,22 @@ PatchManager::Metadata PatchManager::GetControlMetadata() const {
 }
 
 PatchManager::Metadata PatchManager::ParseControlNCA(const NCA& nca) const {
+    const u64 nca_title_id = nca.GetTitleId();
+    {
+        std::scoped_lock lock{s_parsed_control_mutex};
+        const auto it = s_parsed_control_cache.find(nca_title_id);
+        if (it != s_parsed_control_cache.end()) {
+            std::unique_ptr<NACP> cached_nacp;
+            if (!it->second.nacp_bytes.empty()) {
+                auto nacp_vfs = std::make_shared<VectorVfsFile>(it->second.nacp_bytes, it->second.nacp_name);
+                cached_nacp = std::make_unique<NACP>(std::move(nacp_vfs));
+            }
+            return {std::move(cached_nacp), it->second.icon_file};
+        }
+    }
+
     const auto base_romfs = nca.GetRomFS();
+
     if (base_romfs == nullptr) {
         return {};
     }
@@ -1492,7 +1516,22 @@ PatchManager::Metadata PatchManager::ParseControlNCA(const NCA& nca) const {
         }
     }
 
+
+    CachedParsedControl cached_entry;
+
+    if (nacp_file != nullptr) {
+        cached_entry.nacp_bytes = nacp_file->ReadAllBytes();
+        cached_entry.nacp_name = nacp_file->GetName();
+    }
+    cached_entry.icon_file = icon_file;
+
+    {
+        std::scoped_lock lock{s_parsed_control_mutex};
+        s_parsed_control_cache[nca_title_id] = std::move(cached_entry);
+    }
+
     return {std::move(nacp), icon_file};
+
 }
 
 [[nodiscard]] PatchManager::Metadata PatchManager::GetMetadataFromBaseOrUpdate(Core::System& system, u64 application_id) noexcept {

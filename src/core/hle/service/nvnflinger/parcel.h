@@ -56,12 +56,27 @@ public:
 
     template <typename T>
     void ReadFlattened(T& val) {
+        static_assert(std::is_trivially_copyable_v<T>, "T must be trivially copyable.");
         const auto flattened_size = Read<s64>();
-        if (static_cast<s64>(sizeof(T)) != flattened_size) {
+        if (flattened_size <= 0) {
             std::memset(&val, 0, sizeof(T));
             return;
         }
-        Read(val);
+
+        const size_t sz = static_cast<size_t>(flattened_size);
+        const size_t copy_bytes = (std::min)(sizeof(T), sz);
+
+        if (read_index + copy_bytes <= read_buffer.size()) {
+            std::memcpy(&val, read_buffer.data() + read_index, copy_bytes);
+            if (copy_bytes < sizeof(T)) {
+                std::memset(reinterpret_cast<u8*>(&val) + copy_bytes, 0, sizeof(T) - copy_bytes);
+            }
+        } else {
+            std::memset(&val, 0, sizeof(T));
+        }
+
+        const size_t aligned_advance = Common::AlignUp(sz, 4);
+        read_index = (std::min)(read_buffer.size(), read_index + aligned_advance);
     }
 
     template <typename T>

@@ -157,18 +157,52 @@ IReadOnlyApplicationControlDataInterface::IReadOnlyApplicationControlDataInterfa
 
 IReadOnlyApplicationControlDataInterface::~IReadOnlyApplicationControlDataInterface() = default;
 
-Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData(
-    OutBuffer<BufferAttr_HipcMapAlias> out_buffer, Out<u32> out_actual_size,
-    ApplicationControlSource application_control_source, u64 application_id) {
-    LOG_INFO(Service_NS, "called with control_source={}, application_id={:016X}",
-             application_control_source, application_id);
+std::mutex IReadOnlyApplicationControlDataInterface::s_cache_mutex;
+std::unordered_map<u64, IReadOnlyApplicationControlDataInterface::CachedControlData>
+    IReadOnlyApplicationControlDataInterface::s_control_cache;
 
+const IReadOnlyApplicationControlDataInterface::CachedControlData&
+IReadOnlyApplicationControlDataInterface::GetOrCreateCachedControl(u64 application_id) {
+    std::scoped_lock lock{s_cache_mutex};
+    const auto it = s_control_cache.find(application_id);
+    if (it != s_control_cache.end()) {
+        return it->second;
+    }
+
+    CachedControlData data;
     const FileSys::PatchManager pm{application_id, system.GetFileSystemController(),
                                    system.GetContentProvider()};
     const auto control = pm.GetControlMetadata();
+
+    if (control.first != nullptr) {
+        data.nacp_bytes = control.first->GetRawBytes();
+        data.language_entry = control.first->GetLanguageEntry();
+        data.has_nacp = true;
+    }
+
+    if (control.second != nullptr) {
+        const size_t icon_size = control.second->GetSize();
+        if (icon_size > 0) {
+            data.icon_bytes.resize(icon_size);
+            control.second->Read(data.icon_bytes.data(), icon_size);
+            data.has_icon = true;
+        }
+    }
+
+    auto [emplaced_it, _] = s_control_cache.emplace(application_id, std::move(data));
+    return emplaced_it->second;
+}
+
+Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData(
+    OutBuffer<BufferAttr_HipcMapAlias> out_buffer, Out<u32> out_actual_size,
+    ApplicationControlSource application_control_source, u64 application_id) {
+    LOG_DEBUG(Service_NS, "called with control_source={}, application_id={:016X}",
+              application_control_source, application_id);
+
+    const auto& control = GetOrCreateCachedControl(application_id);
     const auto size = out_buffer.size();
 
-    const auto icon_size = control.second ? control.second->GetSize() : 0;
+    const auto icon_size = control.icon_bytes.size();
     const auto total_size = sizeof(FileSys::RawNACP) + icon_size;
 
     if (size < total_size) {
@@ -177,18 +211,17 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData(
         R_THROW(ResultUnknown);
     }
 
-    if (control.first != nullptr) {
-        const auto bytes = control.first->GetRawBytes();
-        const auto copy_len = (std::min)(out_buffer.size(), bytes.size());
-        std::memcpy(out_buffer.data(), bytes.data(), copy_len);
+    if (control.has_nacp) {
+        const auto copy_len = (std::min)(out_buffer.size(), control.nacp_bytes.size());
+        std::memcpy(out_buffer.data(), control.nacp_bytes.data(), copy_len);
     } else {
         LOG_WARNING(Service_NS, "missing NACP data for application_id={:016X}, defaulting to zero",
                     application_id);
         std::memset(out_buffer.data(), 0, sizeof(FileSys::RawNACP));
     }
 
-    if (control.second != nullptr) {
-        control.second->Read(out_buffer.data() + sizeof(FileSys::RawNACP), icon_size);
+    if (control.has_icon) {
+        control.icon_bytes.empty() ? void() : static_cast<void>(std::memcpy(out_buffer.data() + sizeof(FileSys::RawNACP), control.icon_bytes.data(), icon_size));
     } else {
         LOG_WARNING(Service_NS, "missing icon data for application_id={:016X}", application_id);
     }
@@ -199,7 +232,7 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData(
 
 Result IReadOnlyApplicationControlDataInterface::GetApplicationDesiredLanguage(
     Out<ApplicationLanguage> out_desired_language, u32 supported_languages) {
-    LOG_INFO(Service_NS, "called with supported_languages={:08X}", supported_languages);
+    LOG_DEBUG(Service_NS, "called with supported_languages={:08X}", supported_languages);
 
     // Get language code from settings
     const auto language_code =
@@ -224,7 +257,7 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationDesiredLanguage(
     const auto desired_flag = GetSupportedLanguageFlag(*application_language);
     if (supported_languages == 0 || (supported_languages & desired_flag) == desired_flag) {
         *out_desired_language = *application_language;
-        LOG_INFO(Service_NS, "Using user configured application language: {}", *application_language);
+        LOG_DEBUG(Service_NS, "Using user configured application language: {}", *application_language);
         R_SUCCEED();
     }
 
@@ -233,14 +266,14 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationDesiredLanguage(
         const auto supported_flag = GetSupportedLanguageFlag(lang);
         if ((supported_languages & supported_flag) == supported_flag) {
             *out_desired_language = lang;
-            LOG_INFO(Service_NS, "Fallback application language: {}", lang);
+            LOG_DEBUG(Service_NS, "Fallback application language: {}", lang);
             R_SUCCEED();
         }
     }
 
     // If game NACP doesn't list it (e.g. fan translations, LayeredFS mods), still provide the user's requested language
     *out_desired_language = *application_language;
-    LOG_INFO(Service_NS, "Defaulting to user configured application language: {}", *application_language);
+    LOG_DEBUG(Service_NS, "Defaulting to user configured application language: {}", *application_language);
     R_SUCCEED();
 }
 
@@ -259,14 +292,11 @@ Result IReadOnlyApplicationControlDataInterface::ConvertApplicationLanguageToLan
 Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData2(
     OutBuffer<BufferAttr_HipcMapAlias> out_buffer, Out<u64> out_total_size,
     ApplicationControlSource application_control_source, u8 flag1, u8 flag2, u64 application_id) {
-    LOG_INFO(Service_NS, "called with control_source={}, flags=({:02X},{:02X}), application_id={:016X}",
-             application_control_source, flag1, flag2, application_id);
+    LOG_DEBUG(Service_NS, "called with control_source={}, flags=({:02X},{:02X}), application_id={:016X}",
+              application_control_source, flag1, flag2, application_id);
 
-    const FileSys::PatchManager pm{application_id, system.GetFileSystemController(),
-                                   system.GetContentProvider()};
-    const auto control = pm.GetControlMetadata();
+    const auto& control = GetOrCreateCachedControl(application_id);
     const auto size = out_buffer.size();
-
     const auto nacp_size = sizeof(FileSys::RawNACP);
 
     if (size < nacp_size) {
@@ -275,10 +305,9 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData2(
         R_THROW(ResultUnknown);
     }
 
-    if (control.first != nullptr) {
-        const auto bytes = control.first->GetRawBytes();
-        const auto copy_len = (std::min)(static_cast<size_t>(bytes.size()), static_cast<size_t>(nacp_size));
-        std::memcpy(out_buffer.data(), bytes.data(), copy_len);
+    if (control.has_nacp) {
+        const auto copy_len = (std::min)(static_cast<size_t>(control.nacp_bytes.size()), static_cast<size_t>(nacp_size));
+        std::memcpy(out_buffer.data(), control.nacp_bytes.data(), copy_len);
         if (copy_len < nacp_size) {
             std::memset(out_buffer.data() + copy_len, 0, nacp_size - copy_len);
         }
@@ -288,21 +317,12 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData2(
     }
 
     const auto icon_area_size = size - nacp_size;
-    std::vector<u8> final_icon_data;
-
-    if (control.second != nullptr) {
-        size_t full_size = control.second->GetSize();
-        if (full_size > 0) {
-            final_icon_data.resize(full_size);
-            control.second->Read(final_icon_data.data(), full_size);
-
-            if (flag1 == 1) {
-                SanitizeJPEGImageSize(final_icon_data);
-            }
-        }
+    std::vector<u8> final_icon_data = control.icon_bytes;
+    if (!final_icon_data.empty() && flag1 == 1) {
+        SanitizeJPEGImageSize(final_icon_data);
     }
 
-    size_t available_icon_bytes = final_icon_data.size();
+    const size_t available_icon_bytes = final_icon_data.size();
 
     if (icon_area_size > 0) {
         const size_t to_copy = (std::min)(available_icon_bytes, icon_area_size);
@@ -322,15 +342,7 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData2(
     R_SUCCEED();
 }
 
-
 void IReadOnlyApplicationControlDataInterface::ListApplicationTitle(HLERequestContext& ctx) {
-    /*
-    IPC::RequestParser rp{ctx};
-    auto control_source = rp.PopRaw<u8>();
-    rp.Skip(7, false);
-    auto transfer_memory_size = rp.Pop<u64>();
-    */
-
     const auto app_ids_buffer = ctx.ReadBuffer();
     const size_t app_count = app_ids_buffer.size() / sizeof(u64);
 
@@ -359,15 +371,8 @@ void IReadOnlyApplicationControlDataInterface::ListApplicationTitle(HLERequestCo
             }
 
             const u64 app_id = application_ids[i];
-            const FileSys::PatchManager pm{app_id, system.GetFileSystemController(),
-                                           system.GetContentProvider()};
-            const auto control = pm.GetControlMetadata();
-
-            FileSys::LanguageEntry entry{};
-            if (control.first != nullptr) {
-                entry = control.first->GetLanguageEntry();
-            }
-
+            const auto& control = GetOrCreateCachedControl(app_id);
+            FileSys::LanguageEntry entry = control.language_entry;
             memory.WriteBlock(t_mem_address + offset, &entry, title_entry_size);
         }
     }
@@ -384,14 +389,11 @@ void IReadOnlyApplicationControlDataInterface::ListApplicationTitle(HLERequestCo
 Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData3(
    OutBuffer<BufferAttr_HipcMapAlias> out_buffer, Out<u32> out_flags_a, Out<u32> out_flags_b,
    Out<u32> out_actual_size, ApplicationControlSource application_control_source, u8 flag1, u8 flag2, u64 application_id) {
-    LOG_INFO(Service_NS, "called with control_source={}, flags=({:02X},{:02X}), application_id={:016X}",
-             application_control_source, flag1, flag2, application_id);
+    LOG_DEBUG(Service_NS, "called with control_source={}, flags=({:02X},{:02X}), application_id={:016X}",
+              application_control_source, flag1, flag2, application_id);
 
-    const FileSys::PatchManager pm{application_id, system.GetFileSystemController(),
-                                   system.GetContentProvider()};
-    const auto control = pm.GetControlMetadata();
+    const auto& control = GetOrCreateCachedControl(application_id);
     const auto size = out_buffer.size();
-
     const auto nacp_size = sizeof(FileSys::RawNACP);
 
     if (size < nacp_size) {
@@ -400,10 +402,9 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData3(
         R_THROW(ResultUnknown);
     }
 
-    if (control.first != nullptr) {
-        const auto bytes = control.first->GetRawBytes();
-        const auto copy_len = (std::min)(static_cast<size_t>(bytes.size()), static_cast<size_t>(nacp_size));
-        std::memcpy(out_buffer.data(), bytes.data(), copy_len);
+    if (control.has_nacp) {
+        const auto copy_len = (std::min)(static_cast<size_t>(control.nacp_bytes.size()), static_cast<size_t>(nacp_size));
+        std::memcpy(out_buffer.data(), control.nacp_bytes.data(), copy_len);
         if (copy_len < nacp_size) {
             std::memset(out_buffer.data() + copy_len, 0, nacp_size - copy_len);
         }
@@ -414,21 +415,12 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData3(
     }
 
     const auto icon_area_size = size - nacp_size;
-    std::vector<u8> final_icon_data;
-
-    if (control.second != nullptr) {
-        size_t full_size = control.second->GetSize();
-        if (full_size > 0) {
-            final_icon_data.resize(full_size);
-            control.second->Read(final_icon_data.data(), full_size);
-
-            if (flag1 == 1) {
-                SanitizeJPEGImageSize(final_icon_data);
-            }
-        }
+    std::vector<u8> final_icon_data = control.icon_bytes;
+    if (!final_icon_data.empty() && flag1 == 1) {
+        SanitizeJPEGImageSize(final_icon_data);
     }
 
-    size_t available_icon_bytes = final_icon_data.size();
+    const size_t available_icon_bytes = final_icon_data.size();
 
     if (icon_area_size > 0) {
         const size_t to_copy = (std::min)(available_icon_bytes, icon_area_size);

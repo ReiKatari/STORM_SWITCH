@@ -218,6 +218,25 @@ Status BufferQueueProducer::WaitForFreeSlotThenRelock(bool async, s32* found, St
                 return Status::WouldBlock;
             }
 
+            // If no buffer is found, and consumer holds no buffers and queue is empty,
+            // the consumer cannot release any buffer. Search for an available slot
+            // beyond max_buffer_count up to NUM_BUFFER_SLOTS to prevent circular deadlock.
+            if (*found == BufferQueueCore::INVALID_BUFFER_SLOT && acquired_count == 0 && core->queue.empty()) {
+                for (s32 s = max_buffer_count; s < BufferQueueDefs::NUM_BUFFER_SLOTS; ++s) {
+                    if (slots[s].buffer_state == BufferState::Free) {
+                        *found = s;
+                        if (core->override_max_buffer_count != 0) {
+                            core->override_max_buffer_count = std::max(core->override_max_buffer_count, s + 1);
+                        }
+                        try_again = false;
+                        break;
+                    }
+                }
+                if (!try_again) {
+                    break;
+                }
+            }
+
             if (!core->WaitForDequeueCondition(lk)) {
                 // We are no longer running
                 return Status::NoError;

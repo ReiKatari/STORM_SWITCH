@@ -10,6 +10,7 @@
 #include "common/assert.h"
 
 #include "core/hle/service/nvnflinger/buffer_queue_core.h"
+#include <chrono>
 
 namespace Service::android {
 
@@ -56,10 +57,16 @@ void BufferQueueCore::SignalDequeueCondition() {
 }
 
 bool BufferQueueCore::WaitForDequeueCondition(std::unique_lock<std::mutex>& lk) {
-    dequeue_condition.wait(lk, [&] { return dequeue_possible.load(); });
+    if (is_abandoned) {
+        return false;
+    }
+
+    dequeue_condition.wait_for(lk, std::chrono::milliseconds(16), [&] {
+        return dequeue_possible.load() || is_abandoned;
+    });
     dequeue_possible.store(false);
 
-    return true;
+    return !is_abandoned;
 }
 
 s32 BufferQueueCore::GetMinUndequeuedBufferCountLocked(bool async) const {

@@ -6,6 +6,11 @@
 
 #pragma once
 
+#include <mutex>
+#include <unordered_map>
+#include <vector>
+
+#include "core/file_sys/control_metadata.h"
 #include "core/hle/service/cmif_types.h"
 #include "core/hle/service/service.h"
 #include "core/hle/service/ns/language.h"
@@ -44,6 +49,20 @@ public:
         u8 flag1,
         u8 flag2,
         u64 application_id);
+
+private:
+    struct CachedControlData {
+        std::vector<u8> nacp_bytes;
+        std::vector<u8> icon_bytes;
+        FileSys::LanguageEntry language_entry{};
+        bool has_nacp{false};
+        bool has_icon{false};
+    };
+
+    const CachedControlData& GetOrCreateCachedControl(u64 application_id);
+
+    static std::mutex s_cache_mutex;
+    static std::unordered_map<u64, CachedControlData> s_control_cache;
 };
 
 } // namespace Service::NS
