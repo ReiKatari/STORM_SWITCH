@@ -147,8 +147,8 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         }
     }
 
-    // Always present if we have valid layers in the stack (prevents black screen on 30 FPS and loading frames)
-    if (!composition_stack.empty()) {
+    // Present if newly acquired buffers exist or during initial startup
+    if (has_acquired_buffer && !composition_stack.empty()) {
         // Sort back-to-front: lower z first, higher z last so top-most draws last (on top).
         std::stable_sort(composition_stack.begin(), composition_stack.end(),
                          [&](const HwcLayer& l, const HwcLayer& r) { return l.z_index < r.z_index; });
@@ -157,7 +157,7 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         nvdisp.Composite(composition_stack);
     }
 
-    return 1;
+    return swap_interval.value_or(1);
 }
 
 void HardwareComposer::ReleaseFramebuffersLocked(Display& display) {
@@ -198,18 +198,20 @@ void HardwareComposer::RemoveLayerLocked(Display& display, ConsumerId consumer_i
 }
 
 bool HardwareComposer::TryAcquireFramebufferLocked(Layer& layer, Framebuffer& framebuffer) {
+    // Attempt the update into a temporary buffer item first to protect existing acquired buffer
+    android::BufferItem new_item{};
+    const auto status = layer.buffer_item_consumer->AcquireBuffer(&new_item, {}, false);
+    if (status != android::Status::NoError) {
+        return false;
+    }
+
+    // Safely release previous buffer only after successfully acquiring the new one
     if (framebuffer.is_acquired) {
         layer.buffer_item_consumer->ReleaseBuffer(framebuffer.item, android::Fence::NoFence());
         framebuffer.is_acquired = false;
     }
 
-    // Attempt the update.
-    const auto status = layer.buffer_item_consumer->AcquireBuffer(&framebuffer.item, {}, false);
-    if (status != android::Status::NoError) {
-        return false;
-    }
-
-    // We succeeded, so set the new release frame info.
+    framebuffer.item = new_item;
     const s32 swap_interval = layer.is_overlay ? 1 : NormalizeSwapInterval(nullptr, framebuffer.item.swap_interval);
     framebuffer.release_frame_number = m_frame_number + swap_interval;
     framebuffer.last_acquire_frame = m_frame_number;
@@ -227,8 +229,8 @@ HardwareComposer::CacheStatus HardwareComposer::CacheFramebufferLocked(Layer& la
         if (this->TryAcquireFramebufferLocked(layer, it->second)) {
             // We got a new item.
             return CacheStatus::BufferAcquired;
-        } else if (it->second.item.graphic_buffer != nullptr) {
-            // We didn't acquire a new item, but we can reuse the previous framebuffer.
+        } else if (it->second.is_acquired && it->second.item.graphic_buffer != nullptr) {
+            // We didn't acquire a new item, but the existing buffer is still validly acquired.
             return CacheStatus::CachedBufferReused;
         } else {
             return CacheStatus::NoBufferAvailable;

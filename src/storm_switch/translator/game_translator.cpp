@@ -53,7 +53,16 @@
 #include <sphelper.h>
 #include <windows.h>
 #pragma comment(lib, "sapi.lib")
+
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Globalization.h>
+#include <winrt/Windows.Graphics.Imaging.h>
+#include <winrt/Windows.Media.Ocr.h>
+#include <winrt/Windows.Storage.Streams.h>
+#pragma comment(lib, "windowsapp.lib")
 #endif
+#include <bit>
 
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
@@ -857,44 +866,205 @@ void GameTranslator::TranslateFrame(const QImage& frame) {
     ExtractTextFromImageAndTranslate(frame);
 }
 
-void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
-    m_status_label->setText(tr("🔍 Распознавание текста на экране..."));
-
-    auto zones = m_roi_preview->GetZones();
-    QString src_lang = m_src_lang_combo->currentData().toString();
-    QString tgt_lang = m_tgt_lang_combo->currentData().toString();
-    QString current_text = m_original_edit->toPlainText();
-
-    auto* watcher = new QFutureWatcher<void>(this);
-    connect(watcher, &QFutureWatcher<void>::finished, this, [this, watcher, current_text, src_lang, tgt_lang]() {
-        watcher->deleteLater();
-        PerformOnlineTranslation(current_text, src_lang, tgt_lang);
-    });
-
-    QFuture<void> future = QtConcurrent::run([frame, zones]() {
-        QImage process_image = frame;
-        if (!zones.empty()) {
-            QRect merged = zones[0];
-            for (size_t i = 1; i < zones.size(); ++i) {
-                merged = merged.united(zones[i]);
-            }
-            merged = merged.intersected(QRect(0, 0, frame.width(), frame.height()));
-            if (!merged.isEmpty()) {
-                process_image = frame.copy(merged);
+uint64_t GameTranslator::ComputeDHash(const QImage& image) const {
+    if (image.isNull()) return 0;
+    QImage tiny = image.scaled(9, 8, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)
+                       .convertToFormat(QImage::Format_Grayscale8);
+    uint64_t hash = 0;
+    for (int y = 0; y < 8; ++y) {
+        const uchar* line = tiny.scanLine(y);
+        for (int x = 0; x < 8; ++x) {
+            if (line[x + 1] > line[x]) {
+                hash |= (1ULL << (y * 8 + x));
             }
         }
-        QByteArray image_bytes;
-        QBuffer buffer(&image_bytes);
-        buffer.open(QIODevice::WriteOnly);
-        process_image.scaled(1280, 720, Qt::KeepAspectRatio, Qt::SmoothTransformation).save(&buffer, "JPG", 85);
+    }
+    return hash;
+}
+
+int GameTranslator::ComputeHammingDistance(uint64_t h1, uint64_t h2) const {
+#if defined(__cpp_lib_bitops)
+    return std::popcount(h1 ^ h2);
+#else
+    uint64_t x = h1 ^ h2;
+    int count = 0;
+    while (x) {
+        count += (x & 1);
+        x >>= 1;
+    }
+    return count;
+#endif
+}
+
+QString GameTranslator::PerformWindowsOCR(const QImage& image, const QString& lang_code) {
+#ifdef _WIN32
+    if (image.isNull()) return QString();
+    try {
+        winrt::init_apartment(winrt::apartment_type::single_threaded);
+
+        QByteArray bytes;
+        QBuffer qbuffer(&bytes);
+        qbuffer.open(QIODevice::WriteOnly);
+        image.save(&qbuffer, "BMP");
+
+        auto stream = winrt::Windows::Storage::Streams::InMemoryRandomAccessStream();
+        auto writer = winrt::Windows::Storage::Streams::DataWriter(stream);
+        writer.WriteBytes(winrt::array_view<const uint8_t>(
+            reinterpret_cast<const uint8_t*>(bytes.constData()),
+            reinterpret_cast<const uint8_t*>(bytes.constData()) + bytes.size()));
+        writer.StoreAsync().get();
+        writer.DetachStream();
+        stream.Seek(0);
+
+        auto decoder = winrt::Windows::Graphics::Imaging::BitmapDecoder::CreateAsync(stream).get();
+        auto software_bitmap = decoder.GetSoftwareBitmapAsync().get();
+
+        std::wstring lang_tag = L"en-US";
+        if (lang_code == QStringLiteral("ja")) {
+            lang_tag = L"ja";
+        } else if (lang_code == QStringLiteral("zh-CN") || lang_code == QStringLiteral("zh")) {
+            lang_tag = L"zh-Hans-CN";
+        } else if (lang_code == QStringLiteral("zh-TW")) {
+            lang_tag = L"zh-Hant-TW";
+        } else if (lang_code == QStringLiteral("ko")) {
+            lang_tag = L"ko";
+        } else if (lang_code == QStringLiteral("ru")) {
+            lang_tag = L"ru-RU";
+        } else if (lang_code == QStringLiteral("de")) {
+            lang_tag = L"de-DE";
+        } else if (lang_code == QStringLiteral("fr")) {
+            lang_tag = L"fr-FR";
+        } else if (lang_code == QStringLiteral("es")) {
+            lang_tag = L"es-ES";
+        }
+
+        winrt::Windows::Globalization::Language lang(lang_tag);
+        winrt::Windows::Media::Ocr::OcrEngine engine = nullptr;
+
+        if (winrt::Windows::Media::Ocr::OcrEngine::IsLanguageSupported(lang)) {
+            engine = winrt::Windows::Media::Ocr::OcrEngine::TryCreateFromLanguage(lang);
+        }
+        if (!engine) {
+            auto avail = winrt::Windows::Media::Ocr::OcrEngine::AvailableRecognizerLanguages();
+            if (avail.Size() > 0) {
+                engine = winrt::Windows::Media::Ocr::OcrEngine::TryCreateFromLanguage(avail.GetAt(0));
+            } else {
+                engine = winrt::Windows::Media::Ocr::OcrEngine::TryCreateFromUserProfileLanguages();
+            }
+        }
+
+        if (engine) {
+            auto ocr_result = engine.RecognizeAsync(software_bitmap).get();
+            std::wstring recognized_text(ocr_result.Text());
+            return QString::fromStdWString(recognized_text);
+        }
+    } catch (const winrt::hresult_error& ex) {
+        qWarning("Windows OCR exception: %ls", ex.message().c_str());
+    } catch (const std::exception& e) {
+        qWarning("Windows OCR error: %s", e.what());
+    }
+#endif
+    return QString();
+}
+
+void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
+    if (frame.isNull()) return;
+
+    auto zones = m_roi_preview->GetZones();
+    QImage process_image = frame;
+    if (!zones.empty()) {
+        QRect merged = zones[0];
+        for (size_t i = 1; i < zones.size(); ++i) {
+            merged = merged.united(zones[i]);
+        }
+        merged = merged.intersected(QRect(0, 0, frame.width(), frame.height()));
+        if (!merged.isEmpty()) {
+            process_image = frame.copy(merged);
+        }
+    } else {
+        // Default to lower 33% of the viewport (standard dialogue/subtitles zone)
+        int sub_h = frame.height() / 3;
+        process_image = frame.copy(0, frame.height() - sub_h, frame.width(), sub_h);
+    }
+
+    // Step 1: Compute 64-bit dHash for perceptual motion diffing (0 ms instant cache hit)
+    const uint64_t current_dhash = ComputeDHash(process_image);
+    if (m_has_last_dhash) {
+        const int diff = ComputeHammingDistance(current_dhash, m_last_frame_dhash);
+        if (diff <= 2) {
+            // Frame is identical or static dialogue — 0 ms instant cache hit!
+            m_status_label->setText(tr("⚡ 0 мс (Кадр статичен / кэш)"));
+            if (!m_last_translated_output.isEmpty() && m_hud_overlay && m_show_hud_check->isChecked()) {
+                m_hud_overlay->SetSubtitleText(m_last_translated_output);
+                m_hud_overlay->show();
+            }
+            return;
+        }
+    }
+    m_last_frame_dhash = current_dhash;
+    m_has_last_dhash = true;
+
+    // Step 2: Prevent overlapping background OCR tasks
+    bool expected_busy = false;
+    if (!m_is_ocr_busy.compare_exchange_strong(expected_busy, true)) {
+        return;
+    }
+
+    const QString src_lang = m_src_lang_combo->currentData().toString();
+    const QString tgt_lang = m_tgt_lang_combo->currentData().toString();
+    m_status_label->setText(tr("🔍 Распознавание текста (Windows GPU OCR)..."));
+
+    auto* watcher = new QFutureWatcher<QString>(this);
+    connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher, src_lang, tgt_lang]() {
+        m_is_ocr_busy = false;
+        const QString ocr_text = watcher->result();
+        watcher->deleteLater();
+
+        const QString cleaned_text = SanitizeOcrText(ocr_text);
+        if (cleaned_text.isEmpty()) {
+            m_status_label->setText(tr("Текст на экране не обнаружен"));
+            return;
+        }
+
+        m_original_edit->setPlainText(cleaned_text);
+
+        // Step 3: Check Title ID translation cache
+        const QString cache_key = QStringLiteral("%1:%2:%3").arg(src_lang, tgt_lang, cleaned_text);
+        if (m_translation_cache.contains(cache_key)) {
+            const QString cached_trans = m_translation_cache.value(cache_key);
+            m_translated_edit->setPlainText(cached_trans);
+            m_last_translated_input = cleaned_text;
+            m_last_translated_output = cached_trans;
+            m_status_label->setText(tr("⚡ 0 мс (Мгновенный перевод из кэша)"));
+
+            if (m_hud_overlay && m_show_hud_check->isChecked()) {
+                m_hud_overlay->SetSubtitleText(cached_trans);
+                m_hud_overlay->show();
+            }
+            if (m_auto_speak_check->isChecked()) {
+                SpeakText(cached_trans);
+            }
+            return;
+        }
+
+        // Cache miss -> perform tiered translation
+        PerformOnlineTranslation(cleaned_text, src_lang, tgt_lang);
+    });
+
+    QFuture<QString> future = QtConcurrent::run([this, process_image, src_lang]() {
+        return PerformWindowsOCR(process_image, src_lang);
     });
     watcher->setFuture(future);
 }
 
 void GameTranslator::LoadCache() {
+    const auto tid = GetCurrentTitleIdString().toStdString();
     std::filesystem::path config_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir);
-    std::filesystem::path cache_path = config_dir / "translator_cache.json";
+    std::filesystem::path cache_path = config_dir / fmt::format("translator_cache_{}.json", tid);
     std::error_code ec;
+    if (!std::filesystem::exists(cache_path, ec)) {
+        cache_path = config_dir / "translator_cache.json";
+    }
     if (std::filesystem::exists(cache_path, ec)) {
         QFile f(QString::fromStdString(cache_path.string()));
         if (f.open(QIODevice::ReadOnly)) {
@@ -908,15 +1078,16 @@ void GameTranslator::LoadCache() {
 }
 
 void GameTranslator::SaveCache() {
+    const auto tid = GetCurrentTitleIdString().toStdString();
     std::filesystem::path config_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir);
-    std::filesystem::path cache_path = config_dir / "translator_cache.json";
+    std::filesystem::path cache_path = config_dir / fmt::format("translator_cache_{}.json", tid);
     std::error_code ec;
     static_cast<void>(Common::FS::CreateParentDir(cache_path));
 
     QJsonObject root;
-    // Limit cache size to 2000 entries (LRU/cap)
+    // Limit cache size to 5000 entries (LRU/cap)
     int count = 0;
-    for (auto it = m_translation_cache.begin(); it != m_translation_cache.end() && count < 2000; ++it, ++count) {
+    for (auto it = m_translation_cache.begin(); it != m_translation_cache.end() && count < 5000; ++it, ++count) {
         root.insert(it.key(), it.value());
     }
 
@@ -1032,6 +1203,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
             m_translated_edit->setText(translated_result);
             m_hud_overlay->SetSubtitleText(translated_result);
             m_status_label->setText(tr("✅ Перевод завершён"));
+            SaveCache();
 
             if (m_auto_speak_check->isChecked()) {
                 SpeakText(translated_result);

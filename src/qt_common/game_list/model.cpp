@@ -174,6 +174,10 @@ void GameListModel::RemoveFavorite(u64 program_id) {
 }
 
 void GameListModel::Repopulate() {
+    if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+        LOG_INFO(Frontend, "Game emulation is active. Postponing game list reload to prevent I/O and VFS conflicts.");
+        return;
+    }
     LOG_INFO(Frontend, "Executing debounced game list reload.");
     current_worker.reset();
     QtCommon::system->GetFileSystemController().CreateFactories(*QtCommon::vfs);
@@ -181,6 +185,9 @@ void GameListModel::Repopulate() {
 }
 
 void GameListModel::RefreshGameDirectory() {
+    if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+        return;
+    }
     ResetExternalWatcher();
     if (!UISettings::values.game_dirs.empty()) {
         if (!refresh_timer->isActive()) {
@@ -191,6 +198,9 @@ void GameListModel::RefreshGameDirectory() {
 }
 
 void GameListModel::RefreshExternalContent() {
+    if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+        return;
+    }
     if (!UISettings::values.game_dirs.empty()) {
         QtCommon::Game::ResetMetadata(false);
         if (!refresh_timer->isActive()) {

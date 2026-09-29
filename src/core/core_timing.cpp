@@ -231,11 +231,7 @@ void CoreTiming::Idle() {
     __yield();
 #endif
 #else
-#if defined(_M_X64) || defined(__x86_64__)
-    _mm_pause();
-#else
     std::this_thread::yield();
-#endif
 #endif
 }
 

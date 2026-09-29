@@ -13,6 +13,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QTimer>
+#include <atomic>
+#include <cstdint>
 
 class QLabel;
 class QTextEdit;
@@ -146,12 +148,19 @@ private:
     QString SanitizeOcrText(const QString& text) const;
     void ExecuteTranslationRequest(int endpoint_index, const QString& text, const QString& src_lang, const QString& tgt_lang, const QString& cache_key);
 
+    uint64_t ComputeDHash(const QImage& image) const;
+    int ComputeHammingDistance(uint64_t h1, uint64_t h2) const;
+    QString PerformWindowsOCR(const QImage& image, const QString& lang_code);
+
     Core::System& m_system;
     QNetworkAccessManager* m_network_mgr{nullptr};
     QImage m_captured_frame;
     QHash<QString, QString> m_translation_cache;
     QString m_last_translated_input;
     QString m_last_translated_output;
+    uint64_t m_last_frame_dhash{0};
+    bool m_has_last_dhash{false};
+    std::atomic<bool> m_is_ocr_busy{false};
 
     // Tabs
     QTabWidget* m_tab_widget{nullptr};

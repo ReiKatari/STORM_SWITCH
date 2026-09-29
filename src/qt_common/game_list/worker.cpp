@@ -689,12 +689,6 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                     const auto qdata = ifile.readAll();
                     icon_bytes.assign(qdata.begin(), qdata.end());
                 }
-                if (icon_bytes.empty()) {
-                    // Do not block initial game list population with heavy multi-gigabyte disk seeks over network/slow storage.
-                    // Instead, schedule this file for background icon extraction in Step 2 so the game list populates instantly.
-                    uncached_files.push_back(file_info);
-                }
-
                 auto entry = MakeCachedGameListEntry(
                     file_info.physical_name, cached.name, cached.file_size, icon_bytes,
                     QString::fromStdString(cached.file_type_string), cached.program_id,
@@ -906,8 +900,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
             if (uncached_count % 5 == 0) {
                 SaveMetadataCache();
             }
-            // Yield CPU and I/O bus to keep GUI and concurrent game launches completely smooth
-            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+
         } catch (const std::exception& e) {
             LOG_WARNING(Frontend, "Exception while scanning file {}: {}", file_info.physical_name,
                         e.what());
