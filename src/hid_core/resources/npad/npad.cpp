@@ -49,13 +49,15 @@ NPad::NPad(Core::HID::HIDCore& hid_core_, KernelHelpers::ServiceContext& service
         for (std::size_t i = 0; i < controller_data[aruid_index].size(); ++i) {
             auto& controller = controller_data[aruid_index][i];
             controller.device = hid_core.GetEmulatedControllerByIndex(i);
-            Core::HID::ControllerUpdateCallback engine_callback{
-                .on_change = [this, i, kernel = &hid_core.kernel](Core::HID::ControllerTriggerType type) {
-                    ControllerUpdate(*kernel, type, i);
-                },
-                .is_npad_service = true,
-            };
-            controller.callback_key = controller.device->SetCallback(engine_callback);
+            if (controller.device) {
+                Core::HID::ControllerUpdateCallback engine_callback{
+                    .on_change = [this, i, kernel = &hid_core.kernel](Core::HID::ControllerTriggerType type) {
+                        ControllerUpdate(*kernel, type, i);
+                    },
+                    .is_npad_service = true,
+                };
+                controller.callback_key = controller.device->SetCallback(engine_callback);
+            }
         }
     }
     for (std::size_t i = 0; i < abstracted_pads.size(); ++i) {
@@ -146,6 +148,12 @@ void NPad::ControllerUpdate(Kernel::KernelCore& kernel, Core::HID::ControllerTri
         return;
     }
 
+    if (!applet_resource_holder.applet_resource || !applet_resource_holder.shared_mutex) {
+        return;
+    }
+
+    std::scoped_lock lock{*applet_resource_holder.shared_mutex};
+
     for (std::size_t aruid_index = 0; aruid_index < AruidIndexMax; aruid_index++) {
         if (controller_idx >= controller_data[aruid_index].size()) {
             return;
@@ -158,6 +166,10 @@ void NPad::ControllerUpdate(Kernel::KernelCore& kernel, Core::HID::ControllerTri
         }
 
         auto& controller = controller_data[aruid_index][controller_idx];
+        if (!controller.device) {
+            continue;
+        }
+
         const auto is_connected = controller.device->IsConnected();
         const auto npad_type = controller.device->GetNpadStyleIndex();
         const auto npad_id = controller.device->GetNpadIdType();
@@ -165,13 +177,13 @@ void NPad::ControllerUpdate(Kernel::KernelCore& kernel, Core::HID::ControllerTri
         case Core::HID::ControllerTriggerType::Connected:
         case Core::HID::ControllerTriggerType::Disconnected:
             if (is_connected == controller.is_connected) {
-                return;
+                continue;
             }
             UpdateControllerAt(kernel, data->aruid, npad_type, npad_id, is_connected);
             break;
         case Core::HID::ControllerTriggerType::Battery: {
             if (!controller.device->IsConnected()) {
-                return;
+                continue;
             }
             if (auto* shared_memory = controller.shared_memory; shared_memory) {
                 const auto& battery_level = controller.device->GetBattery();

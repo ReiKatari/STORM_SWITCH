@@ -7290,6 +7290,12 @@ void MainWindow::UpdateStatusBar() {
     emu_speed_label->setVisible(!Settings::values.use_multi_core.GetValue());
     game_fps_label->setVisible(true);
     emu_frametime_label->setVisible(true);
+
+    static u32 s_fps_log_counter = 0;
+    if (++s_fps_log_counter >= 5) {
+        s_fps_log_counter = 0;
+        LOG_INFO(Frontend, "Performance: FPS: {:.1f} | Frametime: {:.2f} ms | Speed: {:.0f}%", display_fps, results.frametime * 1000.0, results.emulation_speed * 100.0);
+    }
 }
 
 void MainWindow::ApplyDynamicSettingChange() {
