@@ -177,19 +177,6 @@ Status BufferQueueProducer::WaitForFreeSlotThenRelock(bool async, s32* found, St
             }
         }
 
-        // If no slot is free within max_buffer_count, check available free slots in pool
-        if (*found == BufferQueueCore::INVALID_BUFFER_SLOT) {
-            for (s32 s = max_buffer_count; s < BufferQueueDefs::NUM_BUFFER_SLOTS; ++s) {
-                if (slots[s].buffer_state == BufferState::Free) {
-                    *found = s;
-                    if (core->override_max_buffer_count != 0) {
-                        core->override_max_buffer_count = std::max(core->override_max_buffer_count, s + 1);
-                    }
-                    break;
-                }
-            }
-        }
-
         // Producers are not allowed to dequeue more than one buffer if they did not set a buffer
         // count
         if (!core->override_max_buffer_count && dequeued_count) {
