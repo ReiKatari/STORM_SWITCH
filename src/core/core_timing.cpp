@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <mutex>
+#include <stop_token>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -83,6 +84,11 @@ void CoreTiming::Initialize(std::function<void()>&& on_thread_init_) {
             on_thread_init();
             has_started = true;
 
+            std::stop_callback stop_cb(stop_token, [this] {
+                pause_event.Set();
+                event.Set();
+            });
+
             // base frequency in MHz: 1ns (10^-9) = 1GHz (10^9)
             while (!stop_token.stop_requested()) {
                 while (!paused && !stop_token.stop_requested()) {
@@ -97,12 +103,17 @@ void CoreTiming::Initialize(std::function<void()>&& on_thread_init_) {
                         // Queue is empty, wait until another event is scheduled and signals us to
                         // continue.
                         wait_set = true;
-                        event.Wait();
+                        event.WaitFor(std::chrono::milliseconds(50));
                     }
                     wait_set = false;
                 }
+
+                if (stop_token.stop_requested()) {
+                    break;
+                }
+
                 paused_set = true;
-                pause_event.Wait();
+                pause_event.WaitFor(std::chrono::milliseconds(50));
             }
         });
     }
@@ -224,7 +235,9 @@ void CoreTiming::AddTicks(u64 ticks_to_add) {
 
 void CoreTiming::Idle() {
     AddTicks(1000U);
-#if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(_M_X64) || defined(__x86_64__)
+    _mm_pause();
+#elif defined(__aarch64__) || defined(_M_ARM64)
 #if defined(__GNUC__) || defined(__clang__)
     asm volatile("yield" ::: "memory");
 #else
@@ -320,13 +333,15 @@ std::optional<s64> CoreTiming::Advance() {
 
 void CoreTiming::Reset() {
     paused = true;
-    pause_event.Set();
-    event.Set();
     if (timer_thread.joinable()) {
         timer_thread.request_stop();
+        pause_event.Set();
+        event.Set();
         timer_thread.join();
     }
     has_started = false;
+    std::scoped_lock lock{advance_lock, basic_lock};
+    event_queue.clear();
 }
 
 /// @brief Returns current time in nanoseconds.
