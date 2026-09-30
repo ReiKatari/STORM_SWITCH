@@ -67,6 +67,8 @@ public:
     // In order to use a custom widget with a stylesheet, you need to override the paintEvent
     // See https://wiki.qt.io/How_to_Change_the_Background_Color_of_QWidget
     void paintEvent(QPaintEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
 signals:
     void LoadProgress(VideoCore::LoadCallbackStage stage, std::size_t value, std::size_t total);

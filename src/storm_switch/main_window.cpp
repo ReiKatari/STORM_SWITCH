@@ -5645,11 +5645,13 @@ bool MainWindow::ConfirmShutdownGame() {
 void MainWindow::OnLoadComplete() {
     loading_screen->OnLoadComplete();
 
-    perf_overlay = new PerformanceOverlay(this);
-    perf_overlay->setVisible(ui->action_Show_Performance_Overlay->isChecked());
+    if (!perf_overlay) {
+        perf_overlay = new PerformanceOverlay(this);
+        perf_overlay->setVisible(ui->action_Show_Performance_Overlay->isChecked());
 
-    connect(perf_overlay, &PerformanceOverlay::closed, perf_overlay,
-            [this]() { ui->action_Show_Performance_Overlay->setChecked(false); });
+        connect(perf_overlay, &PerformanceOverlay::closed, perf_overlay,
+                [this]() { ui->action_Show_Performance_Overlay->setChecked(false); });
+    }
 }
 
 void MainWindow::OnExecuteProgram(std::size_t program_index) {

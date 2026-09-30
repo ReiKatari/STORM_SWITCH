@@ -181,8 +181,22 @@ void LoadingScreen::OnLoadComplete() {
     if (watchdog_timer) {
         watchdog_timer->stop();
     }
-    if (fadeout_animation->state() != QAbstractAnimation::Running && isVisible()) {
+    if (!isVisible()) {
+        return;
+    }
+    if (fadeout_animation && fadeout_animation->state() != QAbstractAnimation::Running) {
         fadeout_animation->start(QPropertyAnimation::KeepWhenStopped);
+        // Robust fallback: guarantee screen is hidden even if animation finishes off-screen or fails
+        QTimer::singleShot(fadeout_animation->duration() + 50, this, [this] {
+            if (isVisible()) {
+                hide();
+                opacity_effect->setOpacity(1);
+                emit Hidden();
+            }
+        });
+    } else if (!fadeout_animation) {
+        hide();
+        emit Hidden();
     }
 }
 
@@ -293,9 +307,9 @@ void LoadingScreen::OnLoadProgress(VideoCore::LoadCallbackStage stage, std::size
 
         // Launch data card remains displayed until the game actually starts rendering frames
         // (MainWindow::OnLoadComplete connected to GRenderWindow::FirstFrameDisplayed).
-        // Watchdog (30s) ensures the screen doesn't stay indefinitely if video output hangs.
+        // Safety watchdog (3.5s) ensures the screen doesn't stay indefinitely if video output delays.
         if (watchdog_timer) {
-            watchdog_timer->start(30000);
+            watchdog_timer->start(3500);
         }
     }
 
@@ -308,6 +322,20 @@ void LoadingScreen::paintEvent(QPaintEvent* event) {
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
     QWidget::paintEvent(event);
+}
+
+void LoadingScreen::mousePressEvent(QMouseEvent* event) {
+    if (load_completed) {
+        OnLoadComplete();
+    }
+    QWidget::mousePressEvent(event);
+}
+
+void LoadingScreen::keyPressEvent(QKeyEvent* event) {
+    if (load_completed) {
+        OnLoadComplete();
+    }
+    QWidget::keyPressEvent(event);
 }
 
 void LoadingScreen::Clear() {

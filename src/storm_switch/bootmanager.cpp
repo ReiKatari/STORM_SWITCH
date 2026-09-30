@@ -129,7 +129,8 @@ GRenderWindow::GRenderWindow(MainWindow* parent,
     strict_context_required = QGuiApplication::platformName() == QStringLiteral("wayland") ||
                               QGuiApplication::platformName() == QStringLiteral("wayland-egl");
 
-    connect(this, &GRenderWindow::FirstFrameDisplayed, parent, &MainWindow::OnLoadComplete);
+    connect(this, &GRenderWindow::FirstFrameDisplayed, parent, &MainWindow::OnLoadComplete,
+            Qt::QueuedConnection);
     connect(this, &GRenderWindow::ExecuteProgramSignal, parent, &MainWindow::OnExecuteProgram,
             Qt::QueuedConnection);
     connect(this, &GRenderWindow::ExitSignal, parent, &MainWindow::OnExit, Qt::QueuedConnection);
@@ -157,22 +158,9 @@ void GRenderWindow::OnFrameDisplayed() {
         std::get<0>(input_subsystem->GetTas()->GetStatus());
 
     if (!first_frame) {
-        m_frame_display_count++;
-        const auto now = std::chrono::steady_clock::now();
-        if (m_first_frame_time.time_since_epoch().count() == 0) {
-            m_first_frame_time = now;
-        }
-        const auto elapsed_ms =
-            std::chrono::duration_cast<std::chrono::milliseconds>(now - m_first_frame_time).count();
-
-        // Hold the loading screen until the game establishes an active render cadence
-        // (15 continuous frames or 1200ms elapsed). This avoids the black screen void
-        // where the game emits 1-2 blank frames during internal engine setup.
-        if (m_frame_display_count >= 15 || elapsed_ms >= 1200) {
-            last_tas_state = new_tas_state;
-            first_frame = true;
-            emit FirstFrameDisplayed();
-        }
+        last_tas_state = new_tas_state;
+        first_frame = true;
+        emit FirstFrameDisplayed();
     }
 
     if (new_tas_state != last_tas_state) {
@@ -772,8 +760,6 @@ bool GRenderWindow::InitRenderTarget() {
     }
 
     first_frame = false;
-    m_frame_display_count = 0;
-    m_first_frame_time = {};
 
     switch (Settings::values.renderer_backend.GetValue()) {
     case Settings::RendererBackend::OpenGL_GLSL:
@@ -820,8 +806,6 @@ void GRenderWindow::ReleaseRenderTarget() {
     }
     main_context.reset();
     first_frame = false;
-    m_frame_display_count = 0;
-    m_first_frame_time = {};
 }
 
 void GRenderWindow::CaptureScreenshot(const QString& screenshot_path) {
