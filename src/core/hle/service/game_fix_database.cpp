@@ -4683,8 +4683,10 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\early_release_fences", "true"},
             {"Renderer\\astc_recompression", "0"}
         }
     },

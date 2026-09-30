@@ -42,6 +42,10 @@ Status BufferQueueConsumer::AcquireBuffer(BufferItem* out_buffer,
         for (s32 s{}; s < BufferQueueDefs::NUM_BUFFER_SLOTS; ++s) {
             if (slots[s].buffer_state == BufferState::Acquired) {
                 slots[s].buffer_state = BufferState::Free;
+                core->SignalDequeueCondition();
+                if (core->connected_producer_listener) {
+                    core->connected_producer_listener->OnBufferReleased();
+                }
                 LOG_DEBUG(Service_Nvnflinger, "auto-released acquired slot {}", s);
                 break;
             }
