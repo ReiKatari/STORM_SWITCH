@@ -4225,10 +4225,9 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         StoreRecentFile(filename); // Put the filename on top of the list
     }
 
-    // Save configurations
+    // Save UI settings without blocking boot with heavy synchronous file writing
     UpdateUISettings();
     game_list->SaveInterfaceLayout();
-    config->SaveAllValues();
 
     m_session_backup.Capture();
 

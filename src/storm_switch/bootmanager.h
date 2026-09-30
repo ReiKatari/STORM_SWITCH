@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <chrono>
 #include <cstddef>
 #include <memory>
 #include <utility>
@@ -173,6 +174,8 @@ private:
     QWidget* child_widget = nullptr;
 
     bool first_frame = false;
+    u32 m_frame_display_count = 0;
+    std::chrono::steady_clock::time_point m_first_frame_time{};
     InputCommon::TasInput::TasState last_tas_state;
 
 #if YUZU_USE_QT_MULTIMEDIA

@@ -34,7 +34,7 @@ LoadingScreen::LoadingScreen(QWidget* parent)
     opacity_effect->setOpacity(1);
     ui->fade_parent->setGraphicsEffect(opacity_effect);
     fadeout_animation = std::make_unique<QPropertyAnimation>(opacity_effect, "opacity");
-    fadeout_animation->setDuration(450);
+    fadeout_animation->setDuration(260);
     fadeout_animation->setStartValue(1);
     fadeout_animation->setEndValue(0);
     fadeout_animation->setEasingCurve(QEasingCurve::OutCubic);
