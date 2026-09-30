@@ -38,14 +38,9 @@ Status BufferQueueConsumer::AcquireBuffer(BufferItem* out_buffer,
         }))};
 
     if (num_acquired_buffers >= core->max_acquired_buffer_count + 1) {
-        // Auto-release oldest acquired buffer so newly queued frame can be acquired
-        for (s32 s{}; s < BufferQueueDefs::NUM_BUFFER_SLOTS; ++s) {
-            if (slots[s].buffer_state == BufferState::Acquired) {
-                slots[s].buffer_state = BufferState::Free;
-                LOG_DEBUG(Service_Nvnflinger, "auto-released acquired slot {}", s);
-                break;
-            }
-        }
+        LOG_ERROR(Service_Nvnflinger, "max acquired buffer count reached: {} (max {})",
+                  num_acquired_buffers, core->max_acquired_buffer_count);
+        return Status::InvalidOperation;
     }
 
     auto front(core->queue.begin());

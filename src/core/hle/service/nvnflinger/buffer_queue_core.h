@@ -83,7 +83,7 @@ private:
     PixelFormat default_buffer_format{PixelFormat::Rgba8888};
     u32 default_width{1};
     u32 default_height{1};
-    s32 default_max_buffer_count{4};
+    s32 default_max_buffer_count{2};
     const s32 max_acquired_buffer_count{}; // This is always zero on HOS
     bool buffer_has_been_queued{};
     u64 frame_counter{};

@@ -63,8 +63,7 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
     // Set default speed limit to 100%.
     *out_speed_scale = 1.0f;
 
-    // Release all acquired framebuffers unconditionally every vsync so the guest
-    // producer queue never starves waiting for free buffer slots (prevents deadlocks).
+    nvdisp.WaitForComposite();
     this->ReleaseFramebuffersLocked(display);
 
     // Determine the number of vsync periods to wait before composing again.
@@ -75,8 +74,25 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
     for (auto& layer : display.stack.layers) {
         auto consumer_id = layer->consumer_id;
 
+        bool should_try_acquire = true;
+        if (!layer->is_overlay) {
+            auto fb_it = m_framebuffers.find(consumer_id);
+            if (fb_it != m_framebuffers.end() && fb_it->second.is_acquired) {
+                const u64 frames_since_last_acquire = m_frame_number - fb_it->second.last_acquire_frame;
+                const s32 expected_interval = NormalizeSwapInterval(nullptr, fb_it->second.item.swap_interval);
+
+                if (frames_since_last_acquire < static_cast<u64>(expected_interval)) {
+                    should_try_acquire = false;
+                }
+            }
+        }
+
         // Try to fetch the framebuffer (either new or stale).
-        const auto result = this->CacheFramebufferLocked(*layer, consumer_id);
+        const auto result = should_try_acquire
+            ? this->CacheFramebufferLocked(*layer, consumer_id)
+            : (m_framebuffers.find(consumer_id) != m_framebuffers.end() && m_framebuffers[consumer_id].is_acquired
+                ? CacheStatus::CachedBufferReused
+                : CacheStatus::NoBufferAvailable);
 
         // If we failed, skip this layer.
         if (result == CacheStatus::NoBufferAvailable) {
@@ -155,6 +171,10 @@ void HardwareComposer::ReleaseFramebuffersLocked(Display& display) {
             continue;
         }
 
+        if (!layer->is_overlay && framebuffer.release_frame_number > m_frame_number) {
+            continue;
+        }
+
         layer->buffer_item_consumer->ReleaseBuffer(framebuffer.item, android::Fence::NoFence());
         framebuffer.is_acquired = false;
     }
@@ -207,9 +227,6 @@ HardwareComposer::CacheStatus HardwareComposer::CacheFramebufferLocked(Layer& la
         if (this->TryAcquireFramebufferLocked(layer, it->second)) {
             // We got a new item.
             return CacheStatus::BufferAcquired;
-        } else if (it->second.item.graphic_buffer != nullptr) {
-            // We didn't acquire a new item, but we can reuse the previous framebuffer.
-            return CacheStatus::CachedBufferReused;
         } else {
             return CacheStatus::NoBufferAvailable;
         }

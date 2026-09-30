@@ -378,13 +378,15 @@ struct Impl {
 void Filter::ParseFilterString(std::string_view filter_view) {
     auto clause_begin = filter_view.cbegin();
     while (clause_begin < filter_view.cend()) {
-        auto clause_end = std::find(clause_begin, filter_view.cend(), ' ');
+        auto clause_end = std::find_if(clause_begin, filter_view.cend(), [](char c) {
+            return c == ' ' || c == ',';
+        });
         // If clause isn't empty
         if (clause_end != clause_begin) {
             ParseFilterRule(*this, clause_begin, clause_end);
         }
         if (clause_end != filter_view.cend()) {
-            // Skip over the whitespace
+            // Skip over the separator
             ++clause_end;
         }
         clause_begin = clause_end;
