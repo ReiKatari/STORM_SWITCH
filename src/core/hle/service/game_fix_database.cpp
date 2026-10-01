@@ -118,13 +118,13 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
         "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
         {
-            {"Renderer\\nvdec_emulation", "2"},
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\async_presentation", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
@@ -132,9 +132,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
-            {"System\\airplane_mode", "false"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"System\\airplane_mode", "false"}
         },
         {0x01008F1008DA6800ULL, 0x01008F1008C06000ULL}
     },
@@ -697,14 +695,16 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\async_presentation", "true"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\early_release_fences", "false"},
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"}
         },
-        {0x01004A4010F22800ULL}
+        {0x01004A4010F22800ULL, 0x01004A4010FEA000ULL, 0x01004A4010FE8000ULL, 0x01004A4010FEB800ULL}
     },
     {
         0x01007300020FA000ULL,
@@ -4408,12 +4408,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\async_presentation", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\nvdec_emulation", "2"},
+            {"Renderer\\nvdec_emulation", "3"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
@@ -4428,12 +4428,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\async_presentation", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\nvdec_emulation", "2"},
+            {"Renderer\\nvdec_emulation", "3"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
@@ -4574,11 +4574,13 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\async_presentation", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\nvdec_emulation", "2"}
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"}
         },
         {0x0100A4601ECA8800ULL}
     },
@@ -6714,6 +6716,11 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
         };
 
         auto apply_setting = [](auto& setting, auto val) {
+            if constexpr (requires { setting.UsingGlobal(); }) {
+                if (!setting.UsingGlobal()) {
+                    return;
+                }
+            }
             if constexpr (requires { setting.SetGlobal(false); }) {
                 setting.SetGlobal(false);
             }
@@ -6756,13 +6763,27 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\early_release_fences") {
                 apply_setting(Settings::values.early_release_fences, val == "true" || val == "1");
             } else if (full_key == "Renderer\\sync_memory_operations") {
+#ifdef __ANDROID__
+                apply_setting(Settings::values.sync_memory_operations, false);
+#else
                 apply_setting(Settings::values.sync_memory_operations, val == "true" || val == "1");
+#endif
             } else if (full_key == "Renderer\\use_fast_gpu_time") {
                 apply_setting(Settings::values.use_fast_gpu_time, val == "true" || val == "1");
             } else if (full_key == "Renderer\\nvdec_emulation") {
-                apply_setting(Settings::values.nvdec_emulation, static_cast<Settings::NvdecEmulation>(safe_stoi(val, 1)));
+                auto nvdec_val = static_cast<Settings::NvdecEmulation>(safe_stoi(val, 1));
+#ifdef __ANDROID__
+                if (nvdec_val == Settings::NvdecEmulation::Gpu) {
+                    nvdec_val = Settings::NvdecEmulation::Hybrid;
+                }
+#endif
+                apply_setting(Settings::values.nvdec_emulation, nvdec_val);
             } else if (full_key == "Renderer\\async_presentation") {
+#ifdef __ANDROID__
+                apply_setting(Settings::values.async_presentation, true);
+#else
                 apply_setting(Settings::values.async_presentation, val == "true" || val == "1");
+#endif
             } else if (full_key == "Renderer\\accelerate_astc") {
                 apply_setting(Settings::values.accelerate_astc, static_cast<Settings::AstcDecodeMode>(safe_stoi(val, 1)));
             } else if (full_key == "Renderer\\gpu_fence_behavior") {
@@ -6827,6 +6848,10 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.use_auto_stub, val == "true" || val == "1");
             }
         }
+#ifdef __ANDROID__
+        Settings::values.async_presentation.SetGlobal(false);
+        Settings::values.async_presentation.SetValue(true);
+#endif
         Settings::UpdateGPUAccuracy();
         Settings::UpdateRescalingInfo();
         LOG_INFO(Frontend, "Directly applied GameFix profile in-memory for {:#016x}", title_id);

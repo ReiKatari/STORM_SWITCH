@@ -362,15 +362,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 null -> {
                     val hasBuiltInFix = GameFixDatabase.hasFix(gameToUse)
                     val isUserCustom = GameFixDatabase.isUserCustomConfig(gameToUse)
-                    val isFixRequested = hasBuiltInFix || (gameToUse == args.game && args.custom) || GameFixDatabase.isSessionFixActive(gameToUse)
-
-                    NativeLibrary.setGameFixesEnabled(isFixRequested)
 
                     if (isUserCustom) {
+                        NativeLibrary.setGameFixesEnabled(false)
                         shouldUseCustom = true
+                        GameFixDatabase.prepareCustomLaunch(gameToUse)
                         SettingsFile.loadCustomConfig(gameToUse)
                         Log.info("[EmulationFragment] Loaded user manual per-game config for ${gameToUse.title} (user custom takes priority)")
-                    } else if (isFixRequested && hasBuiltInFix) {
+                    } else if (hasBuiltInFix || (gameToUse == args.game && args.custom) || GameFixDatabase.isSessionFixActive(gameToUse)) {
+                        NativeLibrary.setGameFixesEnabled(true)
                         shouldUseCustom = true
                         val overrides = GameFixDatabase.getManualOverrides(gameToUse)
                         GameFixDatabase.applyFix(gameToUse)
@@ -381,6 +381,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                             Log.info("[EmulationFragment] Loaded GameFix profile for ${gameToUse.title}")
                         }
                     } else {
+                        NativeLibrary.setGameFixesEnabled(false)
                         shouldUseCustom = false
                         GameFixDatabase.cleanupSession(gameToUse)
                         NativeConfig.unloadPerGameConfig()

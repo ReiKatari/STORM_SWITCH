@@ -33,13 +33,13 @@ object GameFixDatabase {
             "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
             "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
-                "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
@@ -47,9 +47,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "false",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\airplane_mode" to "false"
             )
         ),
         GameFixProfile(
@@ -60,13 +58,13 @@ object GameFixDatabase {
             "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
             "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
-                "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
@@ -74,9 +72,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "false",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\airplane_mode" to "false"
             )
         ),
         GameFixProfile(
@@ -87,13 +83,13 @@ object GameFixDatabase {
             "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
             "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
-                "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
@@ -101,9 +97,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "false",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\airplane_mode" to "false"
             )
         ),
         GameFixProfile(
@@ -887,7 +881,9 @@ object GameFixDatabase {
             "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\async_presentation" to "true",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\early_release_fences" to "false",
@@ -904,7 +900,66 @@ object GameFixDatabase {
             "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\early_release_fences" to "false",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2"
+            )
+        ),
+        GameFixProfile(
+            0x01004A4010FEA000L,
+            "Bayonetta 3 (Alt)",
+            "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний\n• Зависание на карте пролога без отображения интерфейса",
+            "• Invisible character/enemy models on Snapdragon SoCs\n• Black screen after QTE sequences\n• Softlock on prologue chapter map without UI",
+            "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено (отрисовка интерфейса)\n✓ Сжатие ASTC: Отключено\n✓ Синхронизация операций памяти: Включено\n✓ Конфигурация памяти: 8 ГБ DRAM",
+            "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\early_release_fences" to "false",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2"
+            )
+        ),
+        GameFixProfile(
+            0x01004A4010FE8000L,
+            "Bayonetta 3 (Alt 2)",
+            "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний\n• Зависание на карте пролога без отображения интерфейса",
+            "• Invisible character/enemy models on Snapdragon SoCs\n• Black screen after QTE sequences\n• Softlock on prologue chapter map without UI",
+            "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено (отрисовка интерфейса)\n✓ Сжатие ASTC: Отключено\n✓ Синхронизация операций памяти: Включено\n✓ Конфигурация памяти: 8 ГБ DRAM",
+            "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\early_release_fences" to "false",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2"
+            )
+        ),
+        GameFixProfile(
+            0x01004A4010FEB800L,
+            "Bayonetta 3 (Alt Update)",
+            "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний\n• Зависание на карте пролога без отображения интерфейса",
+            "• Invisible character/enemy models on Snapdragon SoCs\n• Black screen after QTE sequences\n• Softlock on prologue chapter map without UI",
+            "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено (отрисовка интерфейса)\n✓ Сжатие ASTC: Отключено\n✓ Синхронизация операций памяти: Включено\n✓ Конфигурация памяти: 8 ГБ DRAM",
+            "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\async_presentation" to "true",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\early_release_fences" to "false",
@@ -4959,12 +5014,12 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\nvdec_emulation" to "2",
+                "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -4979,12 +5034,12 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\nvdec_emulation" to "2",
+                "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -5120,11 +5175,13 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "2"
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -5135,11 +5192,13 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "2"
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -6393,9 +6452,6 @@ object GameFixDatabase {
             if (!file.exists() || file.length() == 0L) {
                 return false
             }
-            if (isTemporaryFixFile(file)) {
-                return false
-            }
             // A genuine user manual per-game config must contain at least one overridden setting.
             // Auto-generated boilerplate INI files created by yuzu contain only 'use_global=true' for all keys.
             var hasUserOverrides = false
@@ -6443,15 +6499,7 @@ object GameFixDatabase {
 
     fun cleanupSession(game: Game? = null) {
         clearActiveSessionFix(game)
-        if (game != null) {
-            try {
-                val file = SettingsFile.getCustomSettingsFile(game)
-                if (file.exists() && isTemporaryFixFile(file)) {
-                    file.delete()
-                    Log.info("[GameFixDatabase] Cleaned up temporary fix file for ${game.title}")
-                }
-            } catch (_: Exception) {}
-        }
+        // Per-game configs on disk must NEVER be deleted during session cleanup!
     }
 
     fun isSessionFixActive(game: Game): Boolean {
@@ -6523,57 +6571,10 @@ object GameFixDatabase {
             // Keys that must NEVER overwrite user manual settings
             val protectedUserKeys = setOf(
                 "resolution_setup", "custom_driver_name", "driver_path", "aspect_ratio",
-                "audio_sink_id", "vsync_mode", "use_docked_mode"
+                "audio_sink_id", "vsync_mode", "use_docked_mode", "cpu_backend",
+                "cpu_accuracy", "renderer_backend", "anti_aliasing", "scaling_filter",
+                "fsr_sharpening_slider", "max_anisotropy", "audio_volume"
             )
-
-            // Clean up dangerous/invalid settings from previous auto-fixes or corrupted configs
-            sections["Renderer"]?.let { r ->
-                if (r["resolution_setup"] == "0") {
-                    r.remove("resolution_setup")
-                    r.remove("resolution_setup\\use_global")
-                    r.remove("resolution_setup\\default")
-                }
-                listOf("early_release_fences", "dyna_state", "use_fast_gpu_time",
-                       "barrier_feedback_loops", "enable_compute_pipelines").forEach { bad ->
-                    r.remove(bad)
-                    r.remove("$bad\\use_global")
-                    r.remove("$bad\\default")
-                }
-            }
-            sections["System"]?.let { s ->
-                if (s["memory_layout_mode"] == "2") {
-                    s.remove("memory_layout_mode")
-                    s.remove("memory_layout_mode\\use_global")
-                    s.remove("memory_layout_mode\\default")
-                }
-                s.remove("airplane_mode")
-                s.remove("airplane_mode\\use_global")
-                s.remove("airplane_mode\\default")
-            }
-            sections["Services"]?.let { sv ->
-                sv.remove("airplane_mode")
-                sv.remove("airplane_mode\\use_global")
-                sv.remove("airplane_mode\\default")
-            }
-            sections["Network"]?.let { net ->
-                net.remove("airplane_mode")
-                net.remove("airplane_mode\\use_global")
-                net.remove("airplane_mode\\default")
-            }
-            sections["Core"]?.let { c ->
-                if (c["memory_layout_mode"] == "2") {
-                    c.remove("memory_layout_mode")
-                    c.remove("memory_layout_mode\\use_global")
-                    c.remove("memory_layout_mode\\default")
-                }
-            }
-            sections["Cpu"]?.let { cpu ->
-                if (cpu["cpu_backend"] == "0") {
-                    cpu.remove("cpu_backend")
-                    cpu.remove("cpu_backend\\use_global")
-                    cpu.remove("cpu_backend\\default")
-                }
-            }
 
             val settings = getFullSettingsMap(fix)
             for ((fullKey, value) in settings) {
@@ -6591,8 +6592,9 @@ object GameFixDatabase {
                 val section = sections.getOrPut(sectionName) { mutableMapOf() }
 
                 // USER PRIORITY RULE:
-                // Only treat as user override if explicitly set with use_global=false
-                val isExplicitUserOverride = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true
+                // Only treat as user override if explicitly set with use_global=false or in protected keys
+                val isExplicitUserOverride = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true ||
+                        (section.containsKey(keyName) && keyName in protectedUserKeys)
                 if (isExplicitUserOverride && section.containsKey(keyName)) {
                     val existingVal = section[keyName]?.trim()
                     if (existingVal != null && !existingVal.equals(value.trim(), ignoreCase = true)) {
@@ -6688,6 +6690,9 @@ object GameFixDatabase {
             "System\\memory_layout_mode" to "0"
         )
         fullMap.putAll(profile.settingsMap)
+        if (fullMap["Renderer\\nvdec_emulation"] == "2") {
+            fullMap["Renderer\\nvdec_emulation"] = "3"
+        }
         return fullMap
     }
 
@@ -6811,6 +6816,18 @@ object GameFixDatabase {
             if (!file.parentFile.exists()) {
                 file.parentFile.mkdirs()
             }
+            if (file.exists() && isUserCustomConfig(game)) {
+                // Safeguard: User has personal custom settings configured!
+                // Create backup and merge fix into existing config so custom parameters are NEVER wiped!
+                try {
+                    val bak = java.io.File(file.parentFile, "${file.name}.bak")
+                    file.copyTo(bak, overwrite = true)
+                    Log.info("[GameFixDatabase] Backed up user custom settings to ${bak.absolutePath}")
+                } catch (_: Exception) {}
+                mergeFixIntoExistingConfig(file, fix)
+                Log.info("[GameFixDatabase] Merged GameFix into existing user custom config for ${game.title} -> ${file.absolutePath}")
+                return true
+            }
             val sb = StringBuilder()
             sb.append(TEMPORARY_FIX_HEADER).append(" - Auto-generated by STORM SWITCH GameFix\n\n")
 
@@ -6874,19 +6891,13 @@ object GameFixDatabase {
     }
 
     fun prepareCustomLaunch(game: Game) {
-        cleanupSession(game)
+        clearActiveSessionFix(game)
         markConfigAsUserCustom(game)
         Log.info("[GameFixDatabase] Custom launch prepared for ${game.title}")
     }
 
     fun prepareGlobalLaunch(game: Game) {
-        cleanupSession(game)
-        try {
-            val file = SettingsFile.getCustomSettingsFile(game)
-            if (file.exists() && isTemporaryFixFile(file)) {
-                file.delete()
-            }
-        } catch (_: Exception) {}
+        clearActiveSessionFix(game)
         Log.info("[GameFixDatabase] Global launch prepared for ${game.title}")
     }
 

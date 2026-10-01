@@ -354,29 +354,6 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
         LOG_INFO(Frontend, "Clamped memory_layout_mode 8GB to 6GB for Android stability");
     }
-#ifdef HAS_NCE
-    // On Android ARM64, force NCE (CpuBackend::Nce) for rock-solid stability and native execution.
-    // Dynarmic on Android ARM64 causes immediate crashes/memory aborts.
-    if (Settings::values.cpu_backend.GetValue() != Settings::CpuBackend::Nce) {
-        Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
-        LOG_INFO(Frontend, "Enforced NCE CPU backend for Android stability");
-    }
-#endif
-    // Force barrier_feedback_loops to false on Android (prevents Mali and mobile Vulkan driver crashes)
-    if (Settings::values.barrier_feedback_loops.GetValue()) {
-        Settings::values.barrier_feedback_loops.SetValue(false);
-        LOG_INFO(Frontend, "Disabled barrier_feedback_loops for mobile Vulkan stability");
-    }
-    // Force enable_compute_pipelines to false on Android (prevents mobile driver crashes)
-    if (Settings::values.enable_compute_pipelines.GetValue()) {
-        Settings::values.enable_compute_pipelines.SetValue(false);
-        LOG_INFO(Frontend, "Disabled enable_compute_pipelines for mobile Vulkan stability");
-    }
-    // Force early_release_fences to false on Android (prevents host/guest GPU desync, fence race conditions and loading hangs)
-    if (Settings::values.early_release_fences.GetValue()) {
-        Settings::values.early_release_fences.SetValue(false);
-        LOG_INFO(Frontend, "Disabled early_release_fences for mobile Vulkan stability");
-    }
 #endif
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();
@@ -411,6 +388,10 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         return m_load_result;
     }
 
+    // Complete initialization.
+    m_system.GPU().Start();
+    m_system.GetCpuManager().OnGpuReady();
+
     if (Core::GameFixDatabase::AreFixesEnabled()) {
         const u64 title_id = m_system.GetApplicationProcessProgramID();
         if (Core::GameFixDatabase::ApplyProfileDirectly(title_id)) {
@@ -418,9 +399,6 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         }
     }
 
-    // Complete initialization.
-    m_system.GPU().Start();
-    m_system.GetCpuManager().OnGpuReady();
     m_system.RegisterExitCallback([&] { HaltEmulation(); });
 
     // Register an ExecuteProgram callback such that Core can execute a sub-program
@@ -452,11 +430,11 @@ void EmulationSession::ShutdownEmulation() {
     // Shutdown the main emulated process
     m_system.DetachDebugger();
     m_system.ShutdownMainProcess();
+    if (per_game_config != nullptr) {
+        per_game_config.reset();
+    }
     Settings::RestoreGlobalState(false);
     Core::GameFixDatabase::SetFixesEnabled(false);
-    if (per_game_config != nullptr) {
-        per_game_config->ReloadAllValues();
-    }
     m_system.ApplySettings();
     const auto result = (m_load_result == Core::SystemResultStatus::Success)
                             ? Core::SystemResultStatus::Success

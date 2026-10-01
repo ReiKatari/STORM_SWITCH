@@ -75,17 +75,24 @@ class GameFixDialogFragment : DialogFragment() {
         }
 
         val isRu = Locale.getDefault().language == "ru"
+        val hasUserCustom = GameFixDatabase.isUserCustomConfig(currentGame)
+
+        if (hasUserCustom) {
+            binding.cardLaunchCustom.strokeWidth = (2.2f * resources.displayMetrics.density).toInt()
+            binding.cardLaunchCustom.strokeColor = android.graphics.Color.parseColor("#00E5FF")
+        }
 
         binding.cardLaunchAutoFix.setOnClickListener {
             val ctx = context
             try {
+                val hadCustom = GameFixDatabase.isUserCustomConfig(currentGame)
                 GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.AUTO_FIX
                 GameFixDatabase.applyCleanFix(currentGame)
                 if (ctx != null) {
-                    val msg = if (isRu) {
-                        "⚡ Авто-исправление: Применен чистый эталонный профиль"
+                    val msg = if (hadCustom) {
+                        if (isRu) "⚡ Авто-исправление: Рекомендуемые параметры применены с сохранением ваших настроек" else "⚡ Auto-Fix: Applied with your custom settings preserved"
                     } else {
-                        "⚡ Auto-Fix: Clean profile applied"
+                        if (isRu) "⚡ Авто-исправление: Применен чистый эталонный профиль" else "⚡ Auto-Fix: Clean profile applied"
                     }
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
