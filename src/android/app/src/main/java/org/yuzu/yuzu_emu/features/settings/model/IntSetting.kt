@@ -91,6 +91,8 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     override fun setInt(value: Int) {
         if (NativeConfig.isPerGameConfigLoaded()) {
             global = false
+        } else {
+            global = true
         }
         NativeConfig.setInt(key, value)
     }

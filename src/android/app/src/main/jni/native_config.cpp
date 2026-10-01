@@ -80,9 +80,6 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_initializePerGameConfig(JNIEnv* 
     const auto config_file_name = program_id == 0 ? file_name : fmt::format("{:016X}", program_id);
     per_game_config =
         std::make_unique<AndroidConfig>(config_file_name, Config::ConfigType::PerGameConfig);
-    if (Core::GameFixDatabase::AreFixesEnabled() && program_id != 0) {
-        Core::GameFixDatabase::ApplyProfileDirectly(program_id);
-    }
 }
 
 jboolean Java_org_yuzu_yuzu_1emu_utils_NativeConfig_isPerGameConfigLoaded(JNIEnv* env,
@@ -121,6 +118,11 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setBoolean(JNIEnv* env, jobject 
     if (setting == nullptr) {
         return;
     }
+    if (per_game_config == nullptr) {
+        setting->SetGlobal(true);
+    } else {
+        setting->SetGlobal(false);
+    }
     setting->SetValue(static_cast<bool>(value));
 }
 
@@ -138,6 +140,11 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setByte(JNIEnv* env, jobject obj
     auto setting = getSetting<u8>(env, jkey);
     if (setting == nullptr) {
         return;
+    }
+    if (per_game_config == nullptr) {
+        setting->SetGlobal(true);
+    } else {
+        setting->SetGlobal(false);
     }
     setting->SetValue(value);
 }
@@ -157,6 +164,11 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setShort(JNIEnv* env, jobject ob
     if (setting == nullptr) {
         return;
     }
+    if (per_game_config == nullptr) {
+        setting->SetGlobal(true);
+    } else {
+        setting->SetGlobal(false);
+    }
     setting->SetValue(value);
 }
 
@@ -174,6 +186,11 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setInt(JNIEnv* env, jobject obj,
     auto setting = getSetting<int>(env, jkey);
     if (setting == nullptr) {
         return;
+    }
+    if (per_game_config == nullptr) {
+        setting->SetGlobal(true);
+    } else {
+        setting->SetGlobal(false);
     }
     setting->SetValue(value);
 }
@@ -193,6 +210,11 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setFloat(JNIEnv* env, jobject ob
     if (setting == nullptr) {
         return;
     }
+    if (per_game_config == nullptr) {
+        setting->SetGlobal(true);
+    } else {
+        setting->SetGlobal(false);
+    }
     setting->SetValue(value);
 }
 
@@ -210,6 +232,11 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setLong(JNIEnv* env, jobject obj
     auto setting = getSetting<long>(env, jkey);
     if (setting == nullptr) {
         return;
+    }
+    if (per_game_config == nullptr) {
+        setting->SetGlobal(true);
+    } else {
+        setting->SetGlobal(false);
     }
     setting->SetValue(value);
 }
@@ -230,6 +257,11 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setString(JNIEnv* env, jobject o
         return;
     }
 
+    if (per_game_config == nullptr) {
+        setting->SetGlobal(true);
+    } else {
+        setting->SetGlobal(false);
+    }
     setting->SetValue(Common::Android::GetJString(env, value));
 }
 

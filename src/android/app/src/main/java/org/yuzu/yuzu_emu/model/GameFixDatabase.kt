@@ -4919,12 +4919,12 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -4939,12 +4939,12 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -5004,15 +5004,16 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\drs_resolution_lock" to "false",
                 "Renderer\\rescale_hack" to "true",
                 "Core\\memory_layout_mode" to "1",
@@ -5027,15 +5028,16 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\drs_resolution_lock" to "false",
                 "Renderer\\rescale_hack" to "true",
                 "Core\\memory_layout_mode" to "1",
@@ -5224,8 +5226,10 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Core\\memory_layout_mode" to "1",
@@ -6516,7 +6520,8 @@ object GameFixDatabase {
                 }
             }
 
-            for ((fullKey, value) in fix.settingsMap) {
+            val settings = getFullSettingsMap(fix)
+            for ((fullKey, value) in settings) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                     fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
                     fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode") ||
@@ -6635,6 +6640,10 @@ object GameFixDatabase {
             "System\\memory_layout_mode" to "0"
         )
         fullMap.putAll(profile.settingsMap)
+        fullMap["Renderer\\gpu_accuracy"] = "0"
+        fullMap["Renderer\\nvdec_emulation"] = "3"
+        fullMap["Renderer\\async_presentation"] = "true"
+        fullMap["Renderer\\sync_memory_operations"] = "false"
         fullMap["Renderer\\early_release_fences"] = "false"
         fullMap["Renderer\\dyna_state"] = "0"
         fullMap["Renderer\\use_fast_gpu_time"] = "false"
@@ -6758,8 +6767,9 @@ object GameFixDatabase {
             sb.append("[StormEden]\n")
             sb.append("storm_fix_applied = true\n\n")
 
+            val settings = getFullSettingsMap(fix)
             val sections = mutableMapOf<String, MutableMap<String, String>>()
-            for ((fullKey, value) in fix.settingsMap) {
+            for ((fullKey, value) in settings) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                     fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
                     fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode") ||

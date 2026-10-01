@@ -22,6 +22,8 @@ enum class StringSetting(override val key: String) : AbstractStringSetting {
     override fun setString(value: String) {
         if (NativeConfig.isPerGameConfigLoaded()) {
             global = false
+        } else {
+            global = true
         }
         NativeConfig.setString(key, value)
     }

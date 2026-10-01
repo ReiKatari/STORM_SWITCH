@@ -42,6 +42,8 @@ import org.yuzu.yuzu_emu.features.settings.model.view.SpinBoxSetting
 import org.yuzu.yuzu_emu.features.settings.model.view.StringInputSetting
 import org.yuzu.yuzu_emu.features.settings.model.view.StringSingleChoiceSetting
 import org.yuzu.yuzu_emu.utils.ParamPackage
+import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.utils.collect
 
 class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener {
@@ -130,6 +132,13 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
 
                             else -> {
                                 item.setting.reset()
+                                if (NativeConfig.isPerGameConfigLoaded()) {
+                                    NativeConfig.savePerGameConfig()
+                                    NativeLibrary.applySettings()
+                                } else {
+                                    NativeConfig.saveGlobalConfig()
+                                    NativeLibrary.applySettings()
+                                }
                                 settingsViewModel.setAdapterItemChanged(position)
                             }
                         }
@@ -465,6 +474,13 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
     }
 
     private fun closeDialog() {
+        if (NativeConfig.isPerGameConfigLoaded()) {
+            NativeConfig.savePerGameConfig()
+            NativeLibrary.applySettings()
+        } else {
+            NativeConfig.saveGlobalConfig()
+            NativeLibrary.applySettings()
+        }
         settingsViewModel.setAdapterItemChanged(position)
         clearDialogState()
         dismiss()

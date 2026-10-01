@@ -17,6 +17,8 @@ enum class ByteSetting(override val key: String) : AbstractByteSetting {
     override fun setByte(value: Byte) {
         if (NativeConfig.isPerGameConfigLoaded()) {
             global = false
+        } else {
+            global = true
         }
         NativeConfig.setByte(key, value)
     }

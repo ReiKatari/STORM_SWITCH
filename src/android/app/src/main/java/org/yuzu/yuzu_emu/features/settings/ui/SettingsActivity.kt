@@ -54,7 +54,11 @@ class SettingsActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (!NativeConfig.isPerGameConfigLoaded() && args.game != null) {
+        if (args.game == null) {
+            NativeConfig.unloadPerGameConfig()
+            NativeConfig.reloadGlobalConfig()
+        } else {
+            NativeConfig.unloadPerGameConfig()
             SettingsFile.loadCustomConfig(args.game!!)
         }
         settingsViewModel.game = args.game
@@ -134,7 +138,26 @@ class SettingsActivity : AppCompatActivity() {
         applyFullscreenPreference()
     }
 
+    private fun saveSettings() {
+        try {
+            if (args.game == null) {
+                NativeConfig.saveGlobalConfig()
+                NativeLibrary.applySettings()
+                Log.info("[SettingsActivity] Saved global settings to INI")
+            } else if (NativeConfig.isPerGameConfigLoaded()) {
+                NativeConfig.savePerGameConfig()
+                args.game?.let { GameFixDatabase.markConfigAsUserCustom(it) }
+                NativeLibrary.logSettings()
+                NativeLibrary.applySettings()
+                Log.info("[SettingsActivity] Saved per-game settings to INI for ${args.game?.title}")
+            }
+        } catch (e: Exception) {
+            Log.error("[SettingsActivity] Failed to save settings: ${e.message}")
+        }
+    }
+
     fun navigateBack() {
+        saveSettings()
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
         if (navHostFragment.childFragmentManager.backStackEntryCount > 0) {
@@ -157,6 +180,11 @@ class SettingsActivity : AppCompatActivity() {
         applyFullscreenPreference()
     }
 
+    override fun onPause() {
+        saveSettings()
+        super.onPause()
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
@@ -165,6 +193,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
+        saveSettings()
         super.onStop()
         Log.info("[SettingsActivity] Settings activity stopping. Saving settings to INI...")
         if (isFinishing) {
@@ -195,6 +224,15 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        saveSettings()
+        if (args.game != null && !EmulationActivity.isEmulationRunning) {
+            NativeConfig.unloadPerGameConfig()
+            NativeConfig.reloadGlobalConfig()
+        }
+        super.onDestroy()
     }
 
     fun onSettingsReset() {

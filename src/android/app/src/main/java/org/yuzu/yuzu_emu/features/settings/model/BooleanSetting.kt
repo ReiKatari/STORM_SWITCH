@@ -118,6 +118,8 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     override fun setBoolean(value: Boolean) {
         if (NativeConfig.isPerGameConfigLoaded()) {
             global = false
+        } else {
+            global = true
         }
         NativeConfig.setBoolean(key, value)
     }

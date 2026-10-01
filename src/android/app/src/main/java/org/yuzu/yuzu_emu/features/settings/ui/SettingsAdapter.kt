@@ -33,6 +33,8 @@ import org.yuzu.yuzu_emu.features.settings.model.AbstractIntSetting
 import org.yuzu.yuzu_emu.features.settings.model.Settings
 import org.yuzu.yuzu_emu.features.settings.model.view.*
 import org.yuzu.yuzu_emu.features.settings.ui.viewholder.*
+import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.utils.ParamPackage
 
 class SettingsAdapter(
@@ -125,6 +127,13 @@ class SettingsAdapter(
 
     fun onBooleanClick(item: SwitchSetting, checked: Boolean, position: Int) {
         item.setChecked(checked)
+        if (NativeConfig.isPerGameConfigLoaded()) {
+            NativeConfig.savePerGameConfig()
+            NativeLibrary.applySettings()
+        } else {
+            NativeConfig.saveGlobalConfig()
+            NativeLibrary.applySettings()
+        }
         notifyItemChanged(position)
         settingsViewModel.setShouldReloadSettingsList(true)
     }
@@ -199,6 +208,13 @@ class SettingsAdapter(
             if (item.getValue() != epochTime) {
                 notifyItemChanged(position)
                 item.setValue(epochTime)
+                if (NativeConfig.isPerGameConfigLoaded()) {
+                    NativeConfig.savePerGameConfig()
+                    NativeLibrary.applySettings()
+                } else {
+                    NativeConfig.saveGlobalConfig()
+                    NativeLibrary.applySettings()
+                }
             }
         }
         datePicker.show(
@@ -465,6 +481,13 @@ class SettingsAdapter(
 
     fun onClearClick(item: SettingsItem, position: Int) {
         item.setting.global = true
+        if (NativeConfig.isPerGameConfigLoaded()) {
+            NativeConfig.savePerGameConfig()
+            NativeLibrary.applySettings()
+        } else {
+            NativeConfig.saveGlobalConfig()
+            NativeLibrary.applySettings()
+        }
         notifyItemChanged(position)
         settingsViewModel.setShouldReloadSettingsList(true)
     }

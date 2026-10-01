@@ -13,6 +13,8 @@ enum class LongSetting(override val key: String) : AbstractLongSetting {
     override fun setLong(value: Long) {
         if (NativeConfig.isPerGameConfigLoaded()) {
             global = false
+        } else {
+            global = true
         }
         NativeConfig.setLong(key, value)
     }

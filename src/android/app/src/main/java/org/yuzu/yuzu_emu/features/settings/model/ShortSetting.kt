@@ -20,6 +20,8 @@ enum class ShortSetting(override val key: String) : AbstractShortSetting {
     override fun setShort(value: Short) {
         if (NativeConfig.isPerGameConfigLoaded()) {
             global = false
+        } else {
+            global = true
         }
         NativeConfig.setShort(key, value)
     }

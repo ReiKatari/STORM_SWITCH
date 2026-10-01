@@ -4400,12 +4400,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\async_presentation", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "3"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
@@ -4420,12 +4420,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\async_presentation", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "3"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
@@ -4485,15 +4485,16 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Точность ГПУ: Высокая (устранение графических багов)\n✓ Быстрое время ГПУ: Отключено (исправление вылета Device Loss после заставки)\n✓ Динамическое состояние: Базовое (EDS1, стабильность конвейеров)\n✓ Синхронизация памяти: Включено (стабильность Unreal Engine 4 и устранение Device Loss)\n✓ Barrier Feedback Loops: Отключено (стабильность конвейеров)\n✓ Декодирование ASTC: ГПУ\n✓ NVDEC: Программный (устранение зависаний видеороликов)\n✓ Совместимое масштабирование (Legacy Rescale): Включено (устранение наложения текстур лица и глаз при 2X+)\n✓ Память: 6GB DRAM (стабильность со всеми DLC)",
         "✓ GPU Accuracy: High (Fixes graphical glitches)\n✓ Fast GPU Time: Disabled (Fixes Device Loss crash after cutscenes)\n✓ Dynamic State: Basic (EDS1, pipeline stability)\n✓ Sync Memory Operations: Enabled (Unreal Engine 4 stability and Device Loss fix)\n✓ Barrier Feedback Loops: Disabled (Pipeline stability)\n✓ ASTC Decoding: GPU\n✓ NVDEC: CPU (Fixes cutscene freezes)\n✓ Rescale Compatibility Mode: Enabled (Fixes face and eye decal ghosting at 2X+)\n✓ Memory Layout: 6GB DRAM (Stability with all DLCs)",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\drs_resolution_lock", "false"},
             {"Renderer\\rescale_hack", "true"},
             {"Core\\memory_layout_mode", "1"},
@@ -4513,15 +4514,16 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Точность ГПУ: Высокая (устранение сбоев после создания персонажа)\n✓ Быстрое время ГПУ: Отключено (исправление вылета Device Loss после заставки)\n✓ Динамическое состояние: Базовое (EDS1, стабильность конвейеров)\n✓ Синхронизация памяти: Включено (стабильность Unreal Engine 4 и устранение Device Loss)\n✓ Barrier Feedback Loops: Отключено (стабильность конвейеров)\n✓ Декодирование ASTC: ГПУ\n✓ NVDEC: Программный (стабильность видеороликов)\n✓ Совместимое масштабирование: Включено\n✓ Память: 6GB DRAM (стабильность с дополнениями)",
         "✓ GPU Accuracy: High (Fixes character creation crash)\n✓ Fast GPU Time: Disabled (Fixes Device Loss crash after cutscenes)\n✓ Dynamic State: Basic (EDS1, pipeline stability)\n✓ Sync Memory Operations: Enabled (Unreal Engine 4 stability and Device Loss fix)\n✓ Barrier Feedback Loops: Disabled (Pipeline stability)\n✓ ASTC Decoding: GPU\n✓ NVDEC: CPU (Video stability)\n✓ Rescale Compatibility Mode: Enabled\n✓ Memory Layout: 6GB DRAM (DLC stability)",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\drs_resolution_lock", "false"},
             {"Renderer\\rescale_hack", "true"},
             {"Core\\memory_layout_mode", "1"},
@@ -4712,8 +4714,10 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "3"},
             {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Core\\memory_layout_mode", "1"},
@@ -5450,8 +5454,8 @@ static const std::vector<GameFixProfile> s_profiles = {
 
 static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     // 1-15: Графика и видео
-    {"Renderer\\gpu_accuracy", "1"},
-    {"Renderer\\nvdec_emulation", "2"},
+    {"Renderer\\gpu_accuracy", "0"},
+    {"Renderer\\nvdec_emulation", "3"},
     {"Renderer\\accelerate_astc", "1"},
     {"Renderer\\astc_recompression", "0"},
     {"Renderer\\use_asynchronous_shaders", "true"},
@@ -5478,7 +5482,7 @@ static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     {"Network\\airplane_mode", "false"},
 
     // Дополнительные флаги стабильности Vulkan
-    {"Renderer\\enable_compute_pipelines", "true"},
+    {"Renderer\\enable_compute_pipelines", "false"},
     {"Renderer\\use_vulkan_driver_pipeline_cache", "true"},
     {"Renderer\\enable_gpu_buffer_readback", "false"}
 };
@@ -6731,9 +6735,16 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 full_key == "Renderer\\use_fast_gpu_time" ||
                 full_key == "Renderer\\enable_compute_pipelines" ||
                 full_key == "Renderer\\barrier_feedback_loops" ||
+                full_key == "Renderer\\sync_memory_operations" ||
                 full_key == "System\\airplane_mode" ||
                 full_key == "Services\\airplane_mode" ||
                 full_key == "Network\\airplane_mode") {
+                continue;
+            }
+            if (full_key == "Renderer\\gpu_accuracy" && (val == "1" || val == "2")) {
+                continue;
+            }
+            if (full_key == "Renderer\\async_presentation" && (val == "false" || val == "0")) {
                 continue;
             }
 #endif

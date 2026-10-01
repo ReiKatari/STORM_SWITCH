@@ -392,6 +392,26 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         Settings::values.airplane_mode.SetValue(false);
         LOG_INFO(Frontend, "Disabled airplane_mode for network service compatibility");
     }
+    // Force async_presentation to true on Android (prevents SurfaceView / Choreographer deadlocks)
+    if (!Settings::values.async_presentation.GetValue()) {
+        Settings::values.async_presentation.SetValue(true);
+        LOG_INFO(Frontend, "Forced async_presentation to true for Android surface synchronization");
+    }
+    // Force sync_memory_operations to false on Android (prevents mobile Vulkan driver stalls and freezes)
+    if (Settings::values.sync_memory_operations.GetValue()) {
+        Settings::values.sync_memory_operations.SetValue(false);
+        LOG_INFO(Frontend, "Disabled sync_memory_operations for mobile Vulkan memory stability");
+    }
+    // Clamp High GPU accuracy to Low (Normal) on Android (High causes queue desync, massive frame drops and device loss)
+    if (Settings::values.gpu_accuracy.GetValue() == Settings::GpuAccuracy::High) {
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
+        LOG_INFO(Frontend, "Normalized gpu_accuracy to Normal/Low for mobile stability");
+    }
+    // Enforce Hybrid NVDEC emulation on Android
+    if (Settings::values.nvdec_emulation.GetValue() != Settings::NvdecEmulation::Hybrid) {
+        Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Hybrid);
+        LOG_INFO(Frontend, "Enforced Hybrid NVDEC for Android video stability");
+    }
 #endif
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();
@@ -424,19 +444,6 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     m_load_result = m_system.Load(EmulationSession::GetInstance().Window(), filepath, params);
     if (m_load_result != Core::SystemResultStatus::Success) {
         return m_load_result;
-    }
-
-    if (Core::GameFixDatabase::AreFixesEnabled()) {
-        Core::GameFixDatabase::ApplyProfileDirectly(params.program_id);
-#ifdef __ANDROID__
-        Settings::values.early_release_fences.SetValue(false);
-        Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
-        Settings::values.use_fast_gpu_time.SetValue(false);
-        Settings::values.airplane_mode.SetValue(false);
-        Settings::values.barrier_feedback_loops.SetValue(false);
-        Settings::values.enable_compute_pipelines.SetValue(false);
-#endif
-        m_system.ApplySettings();
     }
 
     // Complete initialization.

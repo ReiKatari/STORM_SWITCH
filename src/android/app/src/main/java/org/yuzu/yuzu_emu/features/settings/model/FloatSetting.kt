@@ -14,6 +14,8 @@ enum class FloatSetting(override val key: String) : AbstractFloatSetting {
     override fun setFloat(value: Float) {
         if (NativeConfig.isPerGameConfigLoaded()) {
             global = false
+        } else {
+            global = true
         }
         NativeConfig.setFloat(key, value)
     }
