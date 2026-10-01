@@ -38,9 +38,18 @@ Status BufferQueueConsumer::AcquireBuffer(BufferItem* out_buffer,
         }))};
 
     if (num_acquired_buffers >= core->max_acquired_buffer_count + 1) {
-        LOG_ERROR(Service_Nvnflinger, "max acquired buffer count reached: {} (max {})",
-                  num_acquired_buffers, core->max_acquired_buffer_count);
-        return Status::InvalidOperation;
+        // Auto-release oldest acquired buffer so newly queued frame can be acquired
+        for (s32 s{}; s < BufferQueueDefs::NUM_BUFFER_SLOTS; ++s) {
+            if (slots[s].buffer_state == BufferState::Acquired) {
+                slots[s].buffer_state = BufferState::Free;
+                core->SignalDequeueCondition();
+                if (core->connected_producer_listener) {
+                    core->connected_producer_listener->OnBufferReleased();
+                }
+                LOG_DEBUG(Service_Nvnflinger, "auto-released acquired slot {}", s);
+                break;
+            }
+        }
     }
 
     auto front(core->queue.begin());
@@ -153,6 +162,9 @@ Status BufferQueueConsumer::ReleaseBuffer(s32 slot, u64 frame_number, const Fenc
             listener = core->connected_producer_listener;
 
             LOG_DEBUG(Service_Nvnflinger, "releasing slot {}", slot);
+        } else if (slots[slot].buffer_state == BufferState::Free) {
+            // Already released and free, safe no-op
+            return Status::NoError;
         } else if (slots[slot].needs_cleanup_on_release) {
             LOG_DEBUG(Service_Nvnflinger, "releasing a stale buffer slot {} (state = {})", slot,
                       slots[slot].buffer_state);

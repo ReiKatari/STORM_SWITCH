@@ -46,6 +46,7 @@ void EmuWindow_Android::OnSurfaceChanged(ANativeWindow* surface) {
     UpdateCurrentFramebufferLayout(m_window_width, m_window_height);
 
     window_info.render_surface = reinterpret_cast<void*>(surface);
+    m_first_frame = false;
     UpdateFrameRateHint();
 }
 

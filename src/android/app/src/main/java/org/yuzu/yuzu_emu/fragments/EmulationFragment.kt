@@ -1179,7 +1179,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             }
         }
         emulationViewModel.programChanged.collect(viewLifecycleOwner) {
-            if (it != 0) {
+            if (it != -1) {
                 emulationViewModel.setEmulationStarted(false)
                 binding.drawerLayout.close()
                 binding.drawerLayout

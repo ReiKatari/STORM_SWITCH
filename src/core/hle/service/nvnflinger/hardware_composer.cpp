@@ -63,9 +63,11 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
     // Set default speed limit to 100%.
     *out_speed_scale = 1.0f;
 
+    nvdisp.WaitForComposite();
+    this->ReleaseFramebuffersLocked(display);
+
     // Determine the number of vsync periods to wait before composing again.
     std::optional<s32> swap_interval{};
-    bool has_acquired_buffer{};
 
     // Acquire all necessary framebuffers.
     for (auto& layer : display.stack.layers) {
@@ -77,11 +79,6 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         // If we failed, skip this layer.
         if (result == CacheStatus::NoBufferAvailable) {
             continue;
-        }
-
-        // If we acquired a new buffer, note it.
-        if (result == CacheStatus::BufferAcquired) {
-            has_acquired_buffer = true;
         }
 
         const auto& buffer = m_framebuffers[consumer_id];
@@ -122,8 +119,7 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         }
     }
 
-    // Present ONLY if newly acquired buffers were retrieved from guest, eliminating judder, duplicate frames and speed limiter stalls
-    if (has_acquired_buffer && !composition_stack.empty()) {
+    if (!composition_stack.empty()) {
         // Sort back-to-front: lower z first, higher z last so top-most draws last (on top).
         std::stable_sort(composition_stack.begin(), composition_stack.end(),
                          [&](const HwcLayer& l, const HwcLayer& r) { return l.z_index < r.z_index; });
@@ -131,9 +127,6 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         // Composite.
         nvdisp.Composite(composition_stack);
     }
-
-    // Release any acquired framebuffers at the end of composition
-    this->ReleaseFramebuffersLocked(display);
 
     // Advance by 1 frame (60 FPS compositing)
     m_frame_number += 1;
@@ -149,6 +142,10 @@ void HardwareComposer::ReleaseFramebuffersLocked(Display& display) {
 
         const auto layer = display.stack.FindLayer(layer_id);
         if (!layer) {
+            continue;
+        }
+
+        if (!layer->is_overlay && framebuffer.release_frame_number > m_frame_number) {
             continue;
         }
 
@@ -176,11 +173,18 @@ void HardwareComposer::RemoveLayerLocked(Display& display, ConsumerId consumer_i
 }
 
 bool HardwareComposer::TryAcquireFramebufferLocked(Layer& layer, Framebuffer& framebuffer) {
-    const auto status = layer.buffer_item_consumer->AcquireBuffer(&framebuffer.item, {}, false);
+    android::BufferItem new_item{};
+    const auto status = layer.buffer_item_consumer->AcquireBuffer(&new_item, {}, false);
     if (status != android::Status::NoError) {
         return false;
     }
 
+    if (framebuffer.is_acquired) {
+        layer.buffer_item_consumer->ReleaseBuffer(framebuffer.item, android::Fence::NoFence());
+        framebuffer.is_acquired = false;
+    }
+
+    framebuffer.item = std::move(new_item);
     const s32 swap_interval = layer.is_overlay ? 1 : NormalizeSwapInterval(nullptr, framebuffer.item.swap_interval);
     framebuffer.release_frame_number = m_frame_number + swap_interval;
     framebuffer.last_acquire_frame = m_frame_number;
