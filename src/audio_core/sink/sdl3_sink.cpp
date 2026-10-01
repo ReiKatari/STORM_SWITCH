@@ -27,9 +27,9 @@ namespace {
         // caused them be identified as different applications by the OS."
         //
         // Keep in sync with cubeb_sink.cpp name.
-        SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", "yuzu Latency Getter");
+        SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", "STORM SWITCH");
 #if defined(__ANDROID__)
-        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "aaudio,opensles");
+        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "opensles,aaudio");
 #endif
         if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
             LOG_CRITICAL(Audio_Sink, "SDL_InitSubSystem audio failed: {}", SDL_GetError());

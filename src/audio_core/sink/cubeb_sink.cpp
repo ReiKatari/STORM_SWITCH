@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
@@ -211,10 +211,21 @@ CubebSink::CubebSink(std::string_view target_device_name) {
     com_init_result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 #endif
 
+#if defined(__ANDROID__)
+    if (cubeb_init(&ctx, "STORM SWITCH", "opensles") != CUBEB_OK) {
+        if (cubeb_init(&ctx, "STORM SWITCH", "aaudio") != CUBEB_OK) {
+            if (cubeb_init(&ctx, "STORM SWITCH", nullptr) != CUBEB_OK) {
+                LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
+                return;
+            }
+        }
+    }
+#else
     if (cubeb_init(&ctx, "STORM SWITCH", nullptr) != CUBEB_OK) {
         LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
         return;
     }
+#endif
 
     if (target_device_name != auto_device_name && !target_device_name.empty()) {
         cubeb_device_collection collection;
@@ -306,11 +317,21 @@ std::vector<std::string> ListCubebSinkDevices(bool capture) {
 #ifdef _WIN32
     auto com_init_result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 #endif
-
+#if defined(__ANDROID__)
+    if (cubeb_init(&ctx, "Eden Device Enumerator", "opensles") != CUBEB_OK) {
+        if (cubeb_init(&ctx, "Eden Device Enumerator", "aaudio") != CUBEB_OK) {
+            if (cubeb_init(&ctx, "Eden Device Enumerator", nullptr) != CUBEB_OK) {
+                LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
+                return {};
+            }
+        }
+    }
+#else
     if (cubeb_init(&ctx, "Eden Device Enumerator", nullptr) != CUBEB_OK) {
         LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
         return {};
     }
+#endif
 
 #ifdef _WIN32
     if (SUCCEEDED(com_init_result)) {
@@ -346,11 +367,22 @@ u32 GetCubebLatency() {
 #endif
 
     // Init cubeb
+#if defined(__ANDROID__)
+    if (cubeb_init(&ctx, "yuzu Latency Getter", "opensles") != CUBEB_OK) {
+        if (cubeb_init(&ctx, "yuzu Latency Getter", "aaudio") != CUBEB_OK) {
+            if (cubeb_init(&ctx, "yuzu Latency Getter", nullptr) != CUBEB_OK) {
+                LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
+                return 10000u;
+            }
+        }
+    }
+#else
     if (cubeb_init(&ctx, "yuzu Latency Getter", nullptr) != CUBEB_OK) {
         LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
         // Return a large latency so we choose SDL instead.
         return 10000u;
     }
+#endif
 
 #ifdef _WIN32
     if (SUCCEEDED(com_init_result)) {
