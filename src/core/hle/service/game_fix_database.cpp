@@ -124,6 +124,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\async_presentation", "false"},
+            {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
@@ -690,13 +691,20 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01004A4010F22000ULL,
         "Bayonetta 3",
-        "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний",
-        "• Invisible character/enemy models on Snapdragon SoCs\n• Black screen after QTE sequences",
-        "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая",
-        "✓ Depth Clip Control: Enabled (STORM DRIVER)\n✓ GPU Accuracy: High",
+        "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний\n• Зависание на карте пролога без отображения интерфейса",
+        "• Invisible character/enemy models on Snapdragon SoCs\n• Black screen after QTE sequences\n• Softlock on prologue chapter map without UI",
+        "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено (отрисовка интерфейса)\n✓ Сжатие ASTC: Отключено\n✓ Синхронизация операций памяти: Включено\n✓ Конфигурация памяти: 8 ГБ DRAM",
+        "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
-            {"Renderer\\gpu_accuracy", "1"}
-        }
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"}
+        },
+        {0x01004A4010F22800ULL}
     },
     {
         0x01007300020FA000ULL,

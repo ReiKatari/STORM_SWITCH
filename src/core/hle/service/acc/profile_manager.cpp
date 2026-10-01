@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
@@ -73,6 +73,7 @@ ProfileManager::ProfileManager() {
     } else if (user_count > 0 && profiles[0].user_uuid.IsValid()) {
         OpenUser(profiles[0].user_uuid);
     }
+    StoreOpenedUsers();
 }
 
 ProfileManager::~ProfileManager() = default;

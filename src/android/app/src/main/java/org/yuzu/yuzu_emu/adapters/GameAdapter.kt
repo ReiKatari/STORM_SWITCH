@@ -378,7 +378,15 @@ class GameAdapter(private val activity: AppCompatActivity) :
                 }
 
                 val action = HomeNavigationDirections.actionGlobalEmulationActivity(game, useCustom)
-                binding.root.findNavController().navigate(action)
+                try {
+                    binding.root.findNavController().navigate(action)
+                } catch (e: Exception) {
+                    try {
+                        androidx.navigation.Navigation.findNavController(activity, R.id.fragment_container).navigate(action)
+                    } catch (e2: Exception) {
+                        org.yuzu.yuzu_emu.utils.Log.error("[GameAdapter] Failed to navigate to emulation: ${e2.message}")
+                    }
+                }
             }
 
             val checkGameFixAndLaunch: () -> Unit = {

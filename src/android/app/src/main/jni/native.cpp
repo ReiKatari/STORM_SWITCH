@@ -411,6 +411,13 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         return m_load_result;
     }
 
+    if (Core::GameFixDatabase::AreFixesEnabled()) {
+        const u64 title_id = m_system.GetApplicationProcessProgramID();
+        if (Core::GameFixDatabase::ApplyProfileDirectly(title_id)) {
+            m_system.ApplySettings();
+        }
+    }
+
     // Complete initialization.
     m_system.GPU().Start();
     m_system.GetCpuManager().OnGpuReady();

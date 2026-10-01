@@ -39,6 +39,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
@@ -65,6 +66,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
@@ -91,6 +93,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
@@ -878,12 +881,35 @@ object GameFixDatabase {
         GameFixProfile(
             0x01004A4010F22000L,
             "Bayonetta 3",
-            "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний",
-            "• Invisible character/enemy models on Snapdragon SoCs\n• Black screen after QTE sequences",
-            "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая",
-            "✓ Depth Clip Control: Enabled (STORM DRIVER)\n✓ GPU Accuracy: High",
+            "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний\n• Зависание на карте пролога без отображения интерфейса",
+            "• Invisible character/enemy models on Snapdragon SoCs\n• Black screen after QTE sequences\n• Softlock on prologue chapter map without UI",
+            "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено (отрисовка интерфейса)\n✓ Сжатие ASTC: Отключено\n✓ Синхронизация операций памяти: Включено\n✓ Конфигурация памяти: 8 ГБ DRAM",
+            "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\early_release_fences" to "false",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2"
+            )
+        ),
+        GameFixProfile(
+            0x01004A4010F22800L,
+            "Bayonetta 3 (Update)",
+            "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний\n• Зависание на карте пролога без отображения интерфейса",
+            "• Invisible character/enemy models on Snapdragon SoCs\n• Black screen after QTE sequences\n• Softlock on prologue chapter map without UI",
+            "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено (отрисовка интерфейса)\n✓ Сжатие ASTC: Отключено\n✓ Синхронизация операций памяти: Включено\n✓ Конфигурация памяти: 8 ГБ DRAM",
+            "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\early_release_fences" to "false",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2"
             )
         ),
         GameFixProfile(
@@ -1538,20 +1564,6 @@ object GameFixDatabase {
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "2"
-            )
-        ),
-        GameFixProfile(
-            0x01004A4010F22000L,
-            "Bayonetta 3",
-            "• Падение FPS при призыве демонов\n• Искажение прозрачных частиц взрывов",
-            "• FPS drops during demon slave summoning\n• Explosion transparency distortion",
-            "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Сжатие текстур ASTC: Отключено\n✓ Память: 8GB DRAM",
-            "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 8GB DRAM",
-            mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\astc_recompression" to "0",
                 "System\\memory_layout_mode" to "2"
             )
         ),
@@ -6567,17 +6579,10 @@ object GameFixDatabase {
             for ((fullKey, value) in settings) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                     fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
-                    fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode") ||
-                    fullKey.endsWith("barrier_feedback_loops") ||
-                    fullKey.endsWith("enable_compute_pipelines") ||
-                    fullKey.endsWith("early_release_fences") ||
-                    fullKey.endsWith("dyna_state") ||
-                    fullKey.endsWith("use_fast_gpu_time") ||
-                    fullKey.endsWith("airplane_mode") ||
-                    fullKey.endsWith("cpu_backend")) {
+                    fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) {
                     continue
                 }
-                if (fullKey.endsWith("memory_layout_mode") && value != "1") {
+                if (fullKey.endsWith("memory_layout_mode") && value == "0") {
                     continue
                 }
                 val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
@@ -6660,7 +6665,7 @@ object GameFixDatabase {
             "Renderer\\vram_garbage_collection" to "false",
             "Renderer\\gpu_fence_behavior" to "0",
             "Renderer\\dma_accuracy" to "0",
-            "Renderer\\async_presentation" to "true",
+            "Renderer\\async_presentation" to "false",
             "Renderer\\drs_resolution_lock" to "false",
             "Renderer\\barrier_feedback_loops" to "false",
             "Renderer\\use_reactive_flushing" to "false",
@@ -6670,7 +6675,7 @@ object GameFixDatabase {
             "Renderer\\dyna_state" to "0",
             "Renderer\\enable_gpu_buffer_readback" to "false",
             "Renderer\\enable_compute_pipelines" to "false",
-            "Renderer\\sync_memory_operations" to "false",
+            "Renderer\\sync_memory_operations" to "true",
             "Renderer\\use_fast_gpu_time" to "false",
             "Renderer\\early_release_fences" to "false",
             "Renderer\\astc_recompression" to "0",
@@ -6683,16 +6688,6 @@ object GameFixDatabase {
             "System\\memory_layout_mode" to "0"
         )
         fullMap.putAll(profile.settingsMap)
-        fullMap["Renderer\\gpu_accuracy"] = "0"
-        fullMap["Renderer\\nvdec_emulation"] = "3"
-        fullMap["Renderer\\async_presentation"] = "true"
-        fullMap["Renderer\\sync_memory_operations"] = "false"
-        fullMap["Renderer\\early_release_fences"] = "false"
-        fullMap["Renderer\\dyna_state"] = "0"
-        fullMap["Renderer\\use_fast_gpu_time"] = "false"
-        fullMap["Renderer\\enable_compute_pipelines"] = "false"
-        fullMap["Renderer\\barrier_feedback_loops"] = "false"
-        fullMap["System\\airplane_mode"] = "false"
         return fullMap
     }
 
@@ -6720,7 +6715,8 @@ object GameFixDatabase {
             }
             lines.add("  • <b>Фиксация разрешения DRS:</b> Отключено (устранение смещения и обрезки экрана 320x180)")
             lines.add("  • <b>Реактивная очистка:</b> Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)")
-            lines.add("  • <b>Асинхронный вывод:</b> Включено (плавные 60 FPS)")
+            val asyncPres = map["Renderer\\async_presentation"] ?: "false"
+            lines.add(if (asyncPres == "true" || asyncPres == "1") "  • <b>Асинхронный вывод:</b> Включено (плавные 60 FPS)" else "  • <b>Асинхронный вывод:</b> Отключено (стабильная передача кадров)")
             lines.add("  • <b>Барьеры ГПУ:</b> По умолчанию")
             val dma = map["Renderer\\dma_accuracy"] ?: "0"
             lines.add("  • <b>Точность DMA:</b> " + (if (dma == "1") "Нормальная" else "По умолчанию (Безопасно)"))
@@ -6732,7 +6728,8 @@ object GameFixDatabase {
             lines.add("  • <b>Асинхронные шейдеры:</b> Включено (плавный геймплей)")
             lines.add("  • <b>Обратное чтение буферов ГПУ:</b> Отключено")
             lines.add("  • <b>Вычислительные конвейеры:</b> Отключено (стабильность драйвера)")
-            lines.add("  • <b>Синхронизация памяти ГПУ:</b> Отключено")
+            val syncMem = map["Renderer\\sync_memory_operations"] ?: "true"
+            lines.add(if (syncMem == "true" || syncMem == "1") "  • <b>Синхронизация памяти ГПУ:</b> Включено (стабильные 2D/3D буферы)" else "  • <b>Синхронизация памяти ГПУ:</b> Отключено")
             lines.add("  • <b>Быстрое время ГПУ:</b> Отключено (стабильная синхронизация кадров)")
             lines.add("  • <b>Раннее освобождение барьеров:</b> Отключено (устранение зависаний загрузки)")
             lines.add("  • <b>Сжатие ASTC:</b> Без сжатия")
@@ -6748,7 +6745,11 @@ object GameFixDatabase {
             lines.add("  • <b>Игнорирование сбоев памяти:</b> Включено")
             lines.add("  • <b>Точность ЦП:</b> Авто")
             val mem = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
-            lines.add("  • <b>Конфигурация памяти:</b> " + (if (mem == "1") "6 ГБ DRAM" else "4 ГБ DRAM"))
+            lines.add("  • <b>Конфигурация памяти:</b> " + when (mem) {
+                "1" -> "6 ГБ DRAM"
+                "2" -> "8 ГБ DRAM"
+                else -> "4 ГБ DRAM"
+            })
             lines.add("\n🛠️ <b>Система и сеть:</b>")
             lines.add("  • <b>Режим «В самолете»:</b> Отключено (сеть активна)")
         } else {
@@ -6760,7 +6761,8 @@ object GameFixDatabase {
             }
             lines.add("  • <b>DRS resolution lock:</b> Disabled (fixes 320x180 viewport offset and clipping)")
             lines.add("  • <b>Reactive flushing:</b> Disabled (eliminates 4 FPS and 200 ms latency stalls)")
-            lines.add("  • <b>Async presentation:</b> Enabled (smooth 60 FPS)")
+            val asyncPresEn = map["Renderer\\async_presentation"] ?: "false"
+            lines.add(if (asyncPresEn == "true" || asyncPresEn == "1") "  • <b>Async presentation:</b> Enabled (smooth 60 FPS)" else "  • <b>Async presentation:</b> Disabled (stable frame presentation)")
             lines.add("  • <b>GPU fence behavior:</b> Default")
             val dma = map["Renderer\\dma_accuracy"] ?: "0"
             lines.add("  • <b>DMA accuracy:</b> " + (if (dma == "1") "Normal" else "Default (safe)"))
@@ -6772,7 +6774,8 @@ object GameFixDatabase {
             lines.add("  • <b>Async shaders:</b> Enabled (smooth gameplay)")
             lines.add("  • <b>GPU buffer readback:</b> Disabled")
             lines.add("  • <b>Compute pipelines:</b> Disabled (driver stability)")
-            lines.add("  • <b>Sync GPU memory operations:</b> Disabled")
+            val syncMemEn = map["Renderer\\sync_memory_operations"] ?: "true"
+            lines.add(if (syncMemEn == "true" || syncMemEn == "1") "  • <b>Sync GPU memory operations:</b> Enabled (stable 2D/3D buffers)" else "  • <b>Sync GPU memory operations:</b> Disabled")
             lines.add("  • <b>Fast GPU time:</b> Disabled (stable frame pacing)")
             lines.add("  • <b>Early release fences:</b> Disabled (eliminates boot hangs)")
             lines.add("  • <b>ASTC recompression:</b> Uncompressed")
@@ -6787,8 +6790,12 @@ object GameFixDatabase {
             lines.add("  • <b>Fastmem memory:</b> Enabled")
             lines.add("  • <b>Ignore memory aborts:</b> Enabled")
             lines.add("  • <b>CPU accuracy:</b> Auto")
-            val mem = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
-            lines.add("  • <b>Memory layout:</b> " + (if (mem == "1") "6GB DRAM" else "4GB DRAM"))
+            val memEn = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
+            lines.add("  • <b>Memory layout:</b> " + when (memEn) {
+                "1" -> "6GB DRAM"
+                "2" -> "8GB DRAM"
+                else -> "4GB DRAM"
+            })
             lines.add("\n🛠️ <b>System and network:</b>")
             lines.add("  • <b>Airplane mode:</b> Disabled (network active)")
         }
@@ -6815,17 +6822,10 @@ object GameFixDatabase {
             for ((fullKey, value) in settings) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                     fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
-                    fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode") ||
-                    fullKey.endsWith("barrier_feedback_loops") ||
-                    fullKey.endsWith("enable_compute_pipelines") ||
-                    fullKey.endsWith("early_release_fences") ||
-                    fullKey.endsWith("dyna_state") ||
-                    fullKey.endsWith("use_fast_gpu_time") ||
-                    fullKey.endsWith("airplane_mode") ||
-                    fullKey.endsWith("cpu_backend")) {
+                    fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) {
                     continue
                 }
-                if (fullKey.endsWith("memory_layout_mode") && value != "1") {
+                if (fullKey.endsWith("memory_layout_mode") && value == "0") {
                     continue
                 }
                 val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
