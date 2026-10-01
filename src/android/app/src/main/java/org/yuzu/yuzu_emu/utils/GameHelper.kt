@@ -650,7 +650,7 @@ object GameHelper {
 
                 // 3. Fallback standalone version pattern in filename
                 if (isBaseVersion(cleanVersion)) {
-                    val standaloneMatches = Regex("""(?:^|[\s_-\[\(])(?:v|ver|upd|update)?([0-9]+(?:\.[0-9]+)+(?:[-_][a-zA-Z0-9_\.]+)*)(?:[\s_-\]\)]|$)""", RegexOption.IGNORE_CASE).findAll(name)
+                    val standaloneMatches = Regex("""(?:^|[-\s_\[\(])(?:v|ver|upd|update)?([0-9]+(?:\.[0-9]+)+(?:[-_][a-zA-Z0-9_\.]+)*)(?:[-\s_\]\)]|$)""", RegexOption.IGNORE_CASE).findAll(name)
                     for (sm in standaloneMatches) {
                         val parsedVer = sm.groupValues[1].trim()
                         if (!isBaseVersion(parsedVer)) {

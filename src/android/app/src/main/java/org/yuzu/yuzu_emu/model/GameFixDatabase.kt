@@ -4922,6 +4922,8 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -4942,6 +4944,8 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6336,12 +6340,24 @@ object GameFixDatabase {
             if (!file.exists() || file.length() == 0L) {
                 return false
             }
-            val isTemp = isTemporaryFixFile(file)
-            if (!isTemp) {
-                // Any non-temporary, non-empty custom config file in config/custom/ is a user manual configuration
-                return true
+            if (isTemporaryFixFile(file)) {
+                return false
             }
-            return false
+            // A genuine user manual per-game config must contain at least one overridden setting.
+            // Auto-generated boilerplate INI files created by yuzu contain only 'use_global=true' for all keys.
+            var hasUserOverrides = false
+            file.bufferedReader().useLines { lines ->
+                for (line in lines) {
+                    val trimmed = line.trim()
+                    if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith(";")) continue
+                    if (trimmed.contains("use_global", ignoreCase = true) &&
+                        (trimmed.endsWith("=false", ignoreCase = true) || trimmed.endsWith("= false", ignoreCase = true))) {
+                        hasUserOverrides = true
+                        break
+                    }
+                }
+            }
+            hasUserOverrides
         } catch (_: Exception) {
             false
         }
@@ -6465,13 +6481,13 @@ object GameFixDatabase {
                 if (sections["Renderer"]?.get("resolution_setup") == "0") {
                     sections["Renderer"]?.remove("resolution_setup")
                 }
-                // Clean up unsafe memory_layout_mode (6GB/8GB) from previous auto-fixes to prevent lmkd SIGKILL
-                if (sections["Core"]?.get("memory_layout_mode") == "1" || sections["Core"]?.get("memory_layout_mode") == "2") {
+                // Clean up 8GB DRAM (mode 2) which is unsafe on Android; 6GB DRAM (mode 1) is allowed when requested by profile
+                if (sections["Core"]?.get("memory_layout_mode") == "2") {
                     sections["Core"]?.remove("memory_layout_mode")
                     sections["Core"]?.remove("memory_layout_mode\\use_global")
                     sections["Core"]?.remove("memory_layout_mode\\default")
                 }
-                if (sections["System"]?.get("memory_layout_mode") == "1" || sections["System"]?.get("memory_layout_mode") == "2") {
+                if (sections["System"]?.get("memory_layout_mode") == "2") {
                     sections["System"]?.remove("memory_layout_mode")
                     sections["System"]?.remove("memory_layout_mode\\use_global")
                     sections["System"]?.remove("memory_layout_mode\\default")
@@ -6492,9 +6508,9 @@ object GameFixDatabase {
                     sections["Cpu"]?.remove("cpu_backend\\default")
                 }
 
-                if (keyName == "memory_layout_mode" || keyName == "barrier_feedback_loops" ||
+                if ((keyName == "memory_layout_mode" && value != "1") || keyName == "barrier_feedback_loops" ||
                     keyName == "enable_compute_pipelines" || keyName == "cpu_backend") {
-                    // Never force 6GB/8GB DRAM, feedback loops, compute pipelines or Dynarmic on Android
+                    // Never force 8GB DRAM, feedback loops, compute pipelines or Dynarmic on Android
                     continue
                 }
 
@@ -6720,10 +6736,12 @@ object GameFixDatabase {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                     fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
                     fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode") ||
-                    fullKey.endsWith("memory_layout_mode") ||
                     fullKey.endsWith("barrier_feedback_loops") ||
                     fullKey.endsWith("enable_compute_pipelines") ||
                     fullKey.endsWith("cpu_backend")) {
+                    continue
+                }
+                if (fullKey.endsWith("memory_layout_mode") && value != "1") {
                     continue
                 }
                 val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"

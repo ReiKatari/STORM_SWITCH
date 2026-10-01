@@ -12,6 +12,7 @@
 #include "common/fs/path_util.h"
 #include "common/logging.h"
 #include "common/settings.h"
+#include "core/hle/service/game_fix_database.h"
 #include "frontend_common/config.h"
 #include "frontend_common/settings_generator.h"
 #include "native.h"
@@ -79,6 +80,9 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_initializePerGameConfig(JNIEnv* 
     const auto config_file_name = program_id == 0 ? file_name : fmt::format("{:016X}", program_id);
     per_game_config =
         std::make_unique<AndroidConfig>(config_file_name, Config::ConfigType::PerGameConfig);
+    if (Core::GameFixDatabase::AreFixesEnabled() && program_id != 0) {
+        Core::GameFixDatabase::ApplyProfileDirectly(program_id);
+    }
 }
 
 jboolean Java_org_yuzu_yuzu_1emu_utils_NativeConfig_isPerGameConfigLoaded(JNIEnv* env,
