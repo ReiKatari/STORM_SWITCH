@@ -182,17 +182,17 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 NativeConfig.addGameDir(GameDir(uriStr, true))
             }
 
-            val friendlyName = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: "Каталог"
-            binding.detailSaveFolder.text = "📁 Каталог: $friendlyName ✏️"
-            Toast.makeText(ctx, "Каталог загрузки: $friendlyName", Toast.LENGTH_SHORT).show()
+            val friendlyName = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: "РљР°С‚Р°Р»РѕРі"
+            binding.detailSaveFolder.text = "рџ“Ѓ РљР°С‚Р°Р»РѕРі: $friendlyName вњЏпёЏ"
+            Toast.makeText(ctx, "РљР°С‚Р°Р»РѕРі Р·Р°РіСЂСѓР·РєРё: $friendlyName", Toast.LENGTH_SHORT).show()
         }
 
     enum class SortMode(val titleRes: Int, val labelRu: String, val labelEn: String) {
-        TITLE_ASC(R.string.sort_by_title_asc, "А-Я", "A-Z"),
-        TITLE_DESC(R.string.sort_by_title_desc, "Я-А", "Z-A"),
-        SIZE_DESC(R.string.sort_by_size_desc, "Размер ↓", "Size ↓"),
-        SIZE_ASC(R.string.sort_by_size_asc, "Размер ↑", "Size ↑"),
-        RECOMMENDED(R.string.sort_by_addons_mods, "DLC и моды", "DLC and mods");
+        TITLE_ASC(R.string.sort_by_title_asc, "Рђ-РЇ", "A-Z"),
+        TITLE_DESC(R.string.sort_by_title_desc, "РЇ-Рђ", "Z-A"),
+        SIZE_DESC(R.string.sort_by_size_desc, "Р Р°Р·РјРµСЂ в†“", "Size в†“"),
+        SIZE_ASC(R.string.sort_by_size_asc, "Р Р°Р·РјРµСЂ в†‘", "Size в†‘"),
+        RECOMMENDED(R.string.sort_by_addons_mods, "DLC Рё РјРѕРґС‹", "DLC and mods");
 
         val label: String
             get() = labelRu
@@ -236,15 +236,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             "058E630A38C70000" -> R.drawable.cover_diablo_hellfire
             "9B485EB8" -> R.drawable.cover_gta_v
             "010034B00E14C000" -> R.drawable.cover_tokyo_2020
-            else -> {
-                val lt = (item.title.ifEmpty { item.finalTitle }).lowercase(Locale.ROOT)
-                when {
-                    lt.contains("hellfire") || (lt.contains("diablo") && lt.contains("hell")) -> R.drawable.cover_diablo_hellfire
-                    lt.contains("grand theft auto v") || lt.contains("gta v") || lt.contains("gta 5") -> R.drawable.cover_gta_v
-                    lt.contains("tokyo 2020 olympics") || lt.contains("olympic games tokyo 2020") -> R.drawable.cover_tokyo_2020
-                    else -> null
-                }
-            }
+            else -> null
         }
         if (localCoverRes != null) {
             imageView.setImageResource(localCoverRes)
@@ -267,52 +259,82 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val isHomebrew = item.finalTitle.contains("Homebrew", ignoreCase = true) ||
                              item.title.contains("Homebrew", ignoreCase = true)
             if (isHomebrew) {
-                // Never query Nintendo Europe for homebrew ports
                 return
             }
-            val cleanTitle = (item.title.ifEmpty { item.finalTitle })
-                .replace(Regex("""\([^\)]*\)"""), "")
-                .replace(Regex("""\[[^\]]*\]"""), "")
-                .replace(Regex("""\{[^\}]*\}"""), "")
-                .replace("MOD", "", ignoreCase = true)
-                .trim()
-            if (cleanTitle.length >= 3) {
-                val gameId = item.id
-                imageView.tag = gameId
-                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                    try {
-                        val searchUrl = "https://search.nintendo-europe.com/en/select?q=${Uri.encode(cleanTitle)}&fq=type:GAME&rows=1&wt=json"
-                        val req = Request.Builder().url(searchUrl).header("User-Agent", "STORM_SWITCH/9.9.0").build()
+            val gameId = item.id
+            imageView.tag = gameId
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    var foundImgUrl: String? = null
+                    // 1. Strict priority: search by exact Title ID on Nintendo eShop
+                    if (tid.length == 16) {
+                        val searchByTidUrl = "https://search.nintendo-europe.com/en/select?q=*&fq=application_id_s:${tid.lowercase(Locale.ROOT)}&wt=json"
+                        val req = Request.Builder().url(searchByTidUrl).header("User-Agent", "Mozilla/5.0").build()
                         val resp = sharedHttpClient.newCall(req).execute()
                         val body = resp.body?.string().orEmpty()
                         resp.close()
                         if (body.isNotEmpty()) {
-                            val tokener = org.json.JSONTokener(body)
-                            val json = JSONObject(tokener)
+                            val json = JSONObject(org.json.JSONTokener(body))
                             val docs = json.optJSONObject("response")?.optJSONArray("docs")
                             if (docs != null && docs.length() > 0) {
                                 val doc = docs.getJSONObject(0)
-                                val imgUrl = doc.optString("image_url").ifEmpty {
-                                    doc.optString("image_url_sq_s").ifEmpty { doc.optString("image_url_h2x_s") }
+                                foundImgUrl = doc.optString("image_url_sq_s").ifEmpty {
+                                    doc.optString("image_url").ifEmpty { doc.optString("image_url_h2x1_s") }
                                 }
-                                if (imgUrl.isNotEmpty() && imgUrl.startsWith("http")) {
-                                    if (tid.isNotEmpty()) {
-                                        dynamicCoverCache[tid] = imgUrl
-                                    }
-                                    withContext(Dispatchers.Main) {
-                                        if (imageView.tag == gameId) {
-                                            imageView.load(imgUrl) {
-                                                crossfade(true)
-                                                placeholder(R.drawable.default_icon)
-                                                error(R.drawable.default_icon)
+                            }
+                        }
+                    }
+
+                    // 2. Fallback: search by clean title with strict title verification
+                    if (foundImgUrl.isNullOrEmpty()) {
+                        val cleanTitle = (item.title.ifEmpty { item.finalTitle })
+                            .replace(Regex("""\([^\)]*\)"""), "")
+                            .replace(Regex("""\[[^\]]*\]"""), "")
+                            .replace(Regex("""\{[^\}]*\}"""), "")
+                            .replace("MOD", "", ignoreCase = true)
+                            .trim()
+                        if (cleanTitle.length >= 3) {
+                            val searchByTitleUrl = "https://search.nintendo-europe.com/en/select?q=${Uri.encode(cleanTitle)}&fq=type:GAME&rows=3&wt=json"
+                            val req = Request.Builder().url(searchByTitleUrl).header("User-Agent", "Mozilla/5.0").build()
+                            val resp = sharedHttpClient.newCall(req).execute()
+                            val body = resp.body?.string().orEmpty()
+                            resp.close()
+                            if (body.isNotEmpty()) {
+                                val json = JSONObject(org.json.JSONTokener(body))
+                                val docs = json.optJSONObject("response")?.optJSONArray("docs")
+                                if (docs != null) {
+                                    for (dIdx in 0 until docs.length()) {
+                                        val doc = docs.getJSONObject(dIdx)
+                                        val docTitle = doc.optString("title", "")
+                                        val match = docTitle.contains(cleanTitle, ignoreCase = true) ||
+                                                    cleanTitle.contains(docTitle, ignoreCase = true)
+                                        if (match) {
+                                            foundImgUrl = doc.optString("image_url_sq_s").ifEmpty {
+                                                doc.optString("image_url").ifEmpty { doc.optString("image_url_h2x1_s") }
                                             }
+                                            if (!foundImgUrl.isNullOrEmpty()) break
                                         }
                                     }
                                 }
                             }
                         }
-                    } catch (_: Exception) {}
-                }
+                    }
+
+                    if (!foundImgUrl.isNullOrEmpty() && foundImgUrl.startsWith("http")) {
+                        if (tid.isNotEmpty()) {
+                            dynamicCoverCache[tid] = foundImgUrl
+                        }
+                        withContext(Dispatchers.Main) {
+                            if (imageView.tag == gameId) {
+                                imageView.load(foundImgUrl) {
+                                    crossfade(true)
+                                    placeholder(R.drawable.default_icon)
+                                    error(R.drawable.default_icon)
+                                }
+                            }
+                        }
+                    }
+                } catch (_: Exception) {}
             }
         }
     }
@@ -377,7 +399,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         binding.btnClose.setOnClickListener {
             if (StormDownloadManager.isDownloading()) {
-                Toast.makeText(requireContext(), "Загрузка игры продолжается в фоновом режиме", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Р—Р°РіСЂСѓР·РєР° РёРіСЂС‹ РїСЂРѕРґРѕР»Р¶Р°РµС‚СЃСЏ РІ С„РѕРЅРѕРІРѕРј СЂРµР¶РёРјРµ", Toast.LENGTH_SHORT).show()
             }
             dismiss()
         }
@@ -495,7 +517,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             allGames.clear()
             allGames.addAll(cached)
             filterGames(binding.editSearch.text?.toString().orEmpty())
-            binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
+            binding.textCatalogStatus.text = "Р”РѕСЃС‚СѓРїРЅРѕ РёРіСЂ Nintendo Switch: ${allGames.size}"
             binding.progressLoading.isVisible = false
 
             if (appCtx != null) {
@@ -524,7 +546,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val appCtx = context?.applicationContext ?: return
         if (allGames.isEmpty()) {
             binding.progressLoading.isVisible = true
-            binding.textCatalogStatus.text = "Синхронизация каталога облака..."
+            binding.textCatalogStatus.text = "РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ РєР°С‚Р°Р»РѕРіР° РѕР±Р»Р°РєР°..."
         }
         binding.textEmpty.isVisible = false
         binding.btnRefresh.isEnabled = false
@@ -540,10 +562,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     filterGames(binding.editSearch.text?.toString().orEmpty())
                     binding.progressLoading.isVisible = false
                     binding.btnRefresh.isEnabled = true
-                    binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
+                    binding.textCatalogStatus.text = "Р”РѕСЃС‚СѓРїРЅРѕ РёРіСЂ Nintendo Switch: ${allGames.size}"
                     if (allGames.isEmpty()) {
                         binding.textEmpty.isVisible = true
-                        binding.textEmpty.text = "Нет доступных игр в облаке"
+                        binding.textEmpty.text = "РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… РёРіСЂ РІ РѕР±Р»Р°РєРµ"
                     }
                 }
 
@@ -556,9 +578,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.btnRefresh.isEnabled = true
                     if (allGames.isEmpty()) {
                         binding.textEmpty.isVisible = true
-                        binding.textEmpty.text = "Ошибка подключения: ${e.localizedMessage ?: "Сбой сети"}"
+                        binding.textEmpty.text = "РћС€РёР±РєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ: ${e.localizedMessage ?: "РЎР±РѕР№ СЃРµС‚Рё"}"
                         context?.let { c ->
-                            Toast.makeText(c, "Не удалось загрузить каталог", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(c, "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РєР°С‚Р°Р»РѕРі", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -579,7 +601,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val allFiles = mutableListOf<LocalFile>()
 
         val modCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)m(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
-        val rusModRegex = Regex("""(?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка""", RegexOption.IGNORE_CASE)
+        val rusModRegex = Regex("""(?:\bmod\b)|(?:\bРјРѕРґ\b)|СЂСѓСЃРёС„РёРєР°С‚РѕСЂ|РѕР·РІСѓС‡РєР°""", RegexOption.IGNORE_CASE)
         val dlcCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)d(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
 
         fun extractModCount(str: String): Int {
@@ -617,7 +639,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                         f.length(),
                                         extractModCount(lower),
                                         extractDlcCount(lower),
-                                        lower.contains("rus") || lower.contains("рус")
+                                        lower.contains("rus") || lower.contains("СЂСѓСЃ")
                                     )
                                 )
                             }
@@ -637,7 +659,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                         f.length(),
                                         extractModCount(lower),
                                         extractDlcCount(lower),
-                                        lower.contains("rus") || lower.contains("рус")
+                                        lower.contains("rus") || lower.contains("СЂСѓСЃ")
                                     )
                                 )
                             }
@@ -653,7 +675,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         games.forEach { g ->
             val tid = g.serialId.trim().uppercase(Locale.ROOT)
             val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
-            val key = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid else cleanBaseTitle
+            val key = if (tid.isNotEmpty() && tid != "вЂ”" && tid != "-") tid else cleanBaseTitle
             groupCounts[key] = (groupCounts[key] ?: 0) + 1
         }
 
@@ -662,14 +684,14 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         games.forEach { g ->
             val tid = g.serialId.trim().lowercase(Locale.ROOT)
             val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
-            val groupKey = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid.uppercase(Locale.ROOT) else cleanBaseTitle
+            val groupKey = if (tid.isNotEmpty() && tid != "вЂ”" && tid != "-") tid.uppercase(Locale.ROOT) else cleanBaseTitle
             val isSingle = (groupCounts[groupKey] ?: 0) <= 1
             val cleanTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
             val cleanFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
             val ver = g.version.trim().lowercase(Locale.ROOT)
             val intVer = g.internalVersion.trim()
             val fullTitle = "${g.finalTitle} ${g.title}".lowercase(Locale.ROOT)
-            val gameIsRus = fullTitle.contains("rus") || fullTitle.contains("рус")
+            val gameIsRus = fullTitle.contains("rus") || fullTitle.contains("СЂСѓСЃ")
             val gameModCount = maxOf(g.modCount, extractModCount(fullTitle))
             val gameDlcCount = maxOf(g.dlcCount, extractDlcCount(fullTitle))
             val gameIsMod = gameModCount > 0
@@ -701,7 +723,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         return@any true
                     }
 
-                    if (tid.isNotEmpty() && tid != "—" && lowerName.contains(tid)) {
+                    if (tid.isNotEmpty() && tid != "вЂ”" && lowerName.contains(tid)) {
                         if (intVer.isNotEmpty() && intVer != "0") {
                             if (lowerName.contains(intVer) || lowerName.contains("v$intVer") || lowerName.contains("-$intVer-")) {
                                 return@any true
@@ -724,7 +746,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 } else {
                     // Single version in catalog
                     if (cleanFinal.isNotEmpty() && lowerName.contains(cleanFinal)) return@any true
-                    if (tid.isNotEmpty() && tid != "—" && lowerName.contains(tid)) return@any true
+                    if (tid.isNotEmpty() && tid != "вЂ”" && lowerName.contains(tid)) return@any true
                     if (cleanTitle.isNotEmpty() && cleanTitle.length >= 4 && lowerName.contains(cleanTitle)) return@any true
                     false
                 }
@@ -741,7 +763,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val l = it.lowercase(Locale.ROOT).trim()
                     l == "ru" || l == "rus" || l == "russian" || l.startsWith("ru-")
                 }
-                hasTextLang || full.contains("rus") || full.contains("рус") || full.contains("русификатор") || full.contains("озвучка")
+                hasTextLang || full.contains("rus") || full.contains("СЂСѓСЃ") || full.contains("СЂСѓСЃРёС„РёРєР°С‚РѕСЂ") || full.contains("РѕР·РІСѓС‡РєР°")
             }
             LanguageFilter.ENG -> {
                 val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
@@ -760,8 +782,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             LanguageFilter.DLC_OR_MODS -> {
                 val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
                 g.dlcCount > 0 || g.modCount > 0 || g.dlcs.isNotEmpty() ||
-                    full.contains("dlc") || full.contains("mod") || full.contains("мод") ||
-                    full.contains("дополнение") || full.contains("update") || full.contains("обновление")
+                    full.contains("dlc") || full.contains("mod") || full.contains("РјРѕРґ") ||
+                    full.contains("РґРѕРїРѕР»РЅРµРЅРёРµ") || full.contains("update") || full.contains("РѕР±РЅРѕРІР»РµРЅРёРµ")
             }
         }
     }
@@ -821,9 +843,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val trimmed = sizeStr.trim().uppercase(Locale.ROOT)
         val num = trimmed.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
         return when {
-            trimmed.endsWith("ГБ") || trimmed.endsWith("GB") -> (num * 1024.0 * 1024.0 * 1024.0).toLong()
-            trimmed.endsWith("МБ") || trimmed.endsWith("MB") -> (num * 1024.0 * 1024.0).toLong()
-            trimmed.endsWith("КБ") || trimmed.endsWith("KB") -> (num * 1024.0).toLong()
+            trimmed.endsWith("Р“Р‘") || trimmed.endsWith("GB") -> (num * 1024.0 * 1024.0 * 1024.0).toLong()
+            trimmed.endsWith("РњР‘") || trimmed.endsWith("MB") -> (num * 1024.0 * 1024.0).toLong()
+            trimmed.endsWith("РљР‘") || trimmed.endsWith("KB") -> (num * 1024.0).toLong()
             else -> num.toLong()
         }
     }
@@ -862,7 +884,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     private fun updatePaginationUI(totalPages: Int, totalItems: Int) {
         val binding = _binding ?: return
         binding.btnSortCatalog.text = currentSortMode.getLabel(binding.root.context)
-        binding.textPaginationInfo.text = "Страница $currentPage из $totalPages ($totalItems)"
+        binding.textPaginationInfo.text = "РЎС‚СЂР°РЅРёС†Р° $currentPage РёР· $totalPages ($totalItems)"
 
         binding.btnPagePrev.isEnabled = currentPage > 1
         binding.btnPagePrev.alpha = if (currentPage > 1) 1.0f else 0.4f
@@ -903,7 +925,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         for (p in sortedPages) {
             if (prev != 0 && p > prev + 1) {
                 val ellipsis = android.widget.TextView(ctx).apply {
-                    text = "…"
+                    text = "вЂ¦"
                     setTextColor(onSurfaceVariantColor)
                     textSize = 12f
                     setPadding(margin * 2, 0, margin * 2, 0)
@@ -988,13 +1010,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         binding.detailGameDescription.text = if (game.description.isNotBlank() && game.description != "null") {
             game.description
         } else {
-            "Загрузка информации..."
+            "Р—Р°РіСЂСѓР·РєР° РёРЅС„РѕСЂРјР°С†РёРё..."
         }
 
         loadCoverForGame(game, binding.detailGameCover)
 
         val targetDir = getTargetDownloadDirectoryDescription()
-        binding.detailSaveFolder.text = "📁 Каталог: $targetDir ✏️"
+        binding.detailSaveFolder.text = "рџ“Ѓ РљР°С‚Р°Р»РѕРі: $targetDir вњЏпёЏ"
         binding.detailSaveFolder.setOnClickListener {
             showDownloadDirectoryPicker()
         }
@@ -1036,7 +1058,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             val dObj = dlcsArr.optJSONObject(d) ?: continue
                             val dlcId = dObj.optString("id", "")
                             val rawName = dObj.optString("name", "").trim()
-                            val dlcName = if (rawName.isNotEmpty()) rawName else "Дополнение ${d + 1}"
+                            val dlcName = if (rawName.isNotEmpty()) rawName else "Р”РѕРїРѕР»РЅРµРЅРёРµ ${d + 1}"
                             val dlcDesc = dObj.optString("description", "")
                             game.dlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
                         }
@@ -1070,7 +1092,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.detailGameDescription.text = if (game.description.isNotBlank() && game.description != "null") {
                         game.description
                     } else {
-                        "Описание отсутствует"
+                        "РћРїРёСЃР°РЅРёРµ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚"
                     }
                     if (game.dlcCount > 0) {
                         binding.detailGameDlc.isVisible = true
@@ -1087,7 +1109,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             } catch (_: Exception) {
                 withContext(Dispatchers.Main) {
                     if (_binding == null || selectedGame?.id != game.id) return@withContext
-                    binding.detailGameDescription.text = "Описание отсутствует"
+                    binding.detailGameDescription.text = "РћРїРёСЃР°РЅРёРµ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚"
                 }
             }
         }
@@ -1099,38 +1121,38 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val options = mutableListOf<String>()
         val actions = mutableListOf<() -> Unit>()
 
-        options.add("📂 Выбрать новую папку на устройстве...")
+        options.add("рџ“‚ Р’С‹Р±СЂР°С‚СЊ РЅРѕРІСѓСЋ РїР°РїРєСѓ РЅР° СѓСЃС‚СЂРѕР№СЃС‚РІРµ...")
         actions.add { selectDownloadDirLauncher.launch(null) }
 
         for (dir in gameDirs) {
             val uri = Uri.parse(dir.uriString)
             val name = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: dir.uriString
-            options.add("📁 Папка игр: $name")
+            options.add("рџ“Ѓ РџР°РїРєР° РёРіСЂ: $name")
             actions.add {
                 val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
                 prefs.edit().putString(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR, dir.uriString).apply()
-                binding.detailSaveFolder.text = "📁 Каталог: $name ✏️"
-                Toast.makeText(ctx, "Каталог загрузки: $name", Toast.LENGTH_SHORT).show()
+                binding.detailSaveFolder.text = "рџ“Ѓ РљР°С‚Р°Р»РѕРі: $name вњЏпёЏ"
+                Toast.makeText(ctx, "РљР°С‚Р°Р»РѕРі Р·Р°РіСЂСѓР·РєРё: $name", Toast.LENGTH_SHORT).show()
             }
         }
 
-        options.add("🔄 По умолчанию (Download/STORM_SWITCH_GAMES)")
+        options.add("рџ”„ РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (Download/STORM_SWITCH_GAMES)")
         actions.add {
             val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
             prefs.edit().remove(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR).apply()
             val defName = getTargetDownloadDirectoryDescription()
-            binding.detailSaveFolder.text = "📁 Каталог: $defName ✏️"
-            Toast.makeText(ctx, "Каталог сброшен по умолчанию", Toast.LENGTH_SHORT).show()
+            binding.detailSaveFolder.text = "рџ“Ѓ РљР°С‚Р°Р»РѕРі: $defName вњЏпёЏ"
+            Toast.makeText(ctx, "РљР°С‚Р°Р»РѕРі СЃР±СЂРѕС€РµРЅ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ", Toast.LENGTH_SHORT).show()
         }
 
         com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
-            .setTitle("Каталог для загрузки игр")
+            .setTitle("РљР°С‚Р°Р»РѕРі РґР»СЏ Р·Р°РіСЂСѓР·РєРё РёРіСЂ")
             .setItems(options.toTypedArray()) { _, which ->
                 if (which in actions.indices) {
                     actions[which].invoke()
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton("РћС‚РјРµРЅР°", null)
             .show()
     }
 
@@ -1169,7 +1191,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val ctx = requireContext()
                 val primaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorPrimary)
                 if (game.isDownloaded) {
-                    binding.btnStartDownload.text = "Скачано"
+                    binding.btnStartDownload.text = "РЎРєР°С‡Р°РЅРѕ"
                     binding.btnStartDownload.setIconResource(R.drawable.ic_check)
                     binding.btnStartDownload.isEnabled = false
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
@@ -1177,7 +1199,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
                     binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
                 } else {
-                    binding.btnStartDownload.text = "Скачать игру"
+                    binding.btnStartDownload.text = "РЎРєР°С‡Р°С‚СЊ РёРіСЂСѓ"
                     binding.btnStartDownload.setIconResource(R.drawable.ic_install)
                     binding.btnStartDownload.isEnabled = true
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
@@ -1196,8 +1218,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.progressDownload.isIndeterminate = true
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = false
-                    binding.btnStartDownload.text = "Подключение..."
-                    binding.btnPauseDownload.text = "Пауза"
+                    binding.btnStartDownload.text = "РџРѕРґРєР»СЋС‡РµРЅРёРµ..."
+                    binding.btnPauseDownload.text = "РџР°СѓР·Р°"
                 }
 
                 StormDownloadStatus.DOWNLOADING -> {
@@ -1206,8 +1228,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.progressDownload.progress = progress.progressPercent
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = false
-                    binding.btnStartDownload.text = "Идет загрузка..."
-                    binding.btnPauseDownload.text = "Пауза"
+                    binding.btnStartDownload.text = "РРґРµС‚ Р·Р°РіСЂСѓР·РєР°..."
+                    binding.btnPauseDownload.text = "РџР°СѓР·Р°"
                 }
 
                 StormDownloadStatus.PAUSED -> {
@@ -1216,13 +1238,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.progressDownload.progress = progress.progressPercent
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = true
-                    binding.btnStartDownload.text = "Возобновить"
-                    binding.btnPauseDownload.text = "Продолжить"
+                    binding.btnStartDownload.text = "Р’РѕР·РѕР±РЅРѕРІРёС‚СЊ"
+                    binding.btnPauseDownload.text = "РџСЂРѕРґРѕР»Р¶РёС‚СЊ"
                 }
 
                 StormDownloadStatus.COMPLETED -> {
                     binding.layoutDownloadProgress.isVisible = false
-                    binding.btnStartDownload.text = "Скачано"
+                    binding.btnStartDownload.text = "РЎРєР°С‡Р°РЅРѕ"
                     binding.btnStartDownload.setIconResource(R.drawable.ic_check)
                     binding.btnStartDownload.isEnabled = false
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
@@ -1238,15 +1260,15 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.layoutDownloadProgress.isVisible = true
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = true
-                    binding.btnStartDownload.text = "Повторить"
-                    binding.btnPauseDownload.text = "Повторить"
+                    binding.btnStartDownload.text = "РџРѕРІС‚РѕСЂРёС‚СЊ"
+                    binding.btnPauseDownload.text = "РџРѕРІС‚РѕСЂРёС‚СЊ"
                 }
 
                 else -> {}
             }
         } else {
             if (progress.status == StormDownloadStatus.DOWNLOADING || progress.status == StormDownloadStatus.CONNECTING) {
-                binding.textCatalogStatus.text = "Фоновая загрузка: ${progress.game.finalTitle.ifEmpty { progress.game.title }} (${progress.progressPercent}%)"
+                binding.textCatalogStatus.text = "Р¤РѕРЅРѕРІР°СЏ Р·Р°РіСЂСѓР·РєР°: ${progress.game.finalTitle.ifEmpty { progress.game.title }} (${progress.progressPercent}%)"
             }
         }
     }
@@ -1308,7 +1330,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             loadCoverForGame(item, holder.b.imageGameCover)
 
             if (item.isDownloaded) {
-                holder.b.btnGameAction.text = "Скачано"
+                holder.b.btnGameAction.text = "РЎРєР°С‡Р°РЅРѕ"
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_check)
                 holder.b.btnGameAction.isEnabled = false
                 holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
@@ -1316,7 +1338,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 holder.b.btnGameAction.setTextColor(0xFFFFFFFF.toInt())
                 holder.b.btnGameAction.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
             } else {
-                holder.b.btnGameAction.text = "Скачать"
+                holder.b.btnGameAction.text = "РЎРєР°С‡Р°С‚СЊ"
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_install)
                 holder.b.btnGameAction.isEnabled = !StormDownloadManager.isDownloading()
                 holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
@@ -1393,7 +1415,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             val dObj = dlcsArr.optJSONObject(d) ?: continue
                             val dlcId = dObj.optString("id", "")
                             val rawName = dObj.optString("name", "").trim()
-                            val dlcName = if (rawName.isNotEmpty()) rawName else "Официальное дополнение (DLC #${d + 1})"
+                            val dlcName = if (rawName.isNotEmpty()) rawName else "РћС„РёС†РёР°Р»СЊРЅРѕРµ РґРѕРїРѕР»РЅРµРЅРёРµ (DLC #${d + 1})"
                             val dlcDesc = dObj.optString("description", "")
                             fetchedDlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
                         }
@@ -1474,86 +1496,136 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val dynamicCoverCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
         val SWITCH_CDN_ICONS = mapOf(
-            "058E630A38C70000" to "https://upload.wikimedia.org/wikipedia/en/d/d9/HellfireCoverSmall.jpg",
-            "9B485EB8" to "https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_V.png",
-            "010034B00E14C000" to "https://upload.wikimedia.org/wikipedia/en/8/80/Tokyo_2020_game_cover.png",
-            "01000B900D8B0000" to "https://img-eshop.cdn.nintendo.net/i/1972ebb4a507e7d83c7d4592ae4702ebdc5bf3738659644bc29c243b144782ee.jpg",
-            "010013F009B88000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_XenoCrisis_image500w.jpg",
-            "010015100B514000" to "https://img-eshop.cdn.nintendo.net/i/bf2fca7eed5ad7ec96d03025907ea52c3efe168e02c8be96e868d8430a247a57.jpg",
-            "01001B300B9BE000" to "https://img-eshop.cdn.nintendo.net/i/bf924a38ce1da69413bdba496afad2ef562f73ea5273621c09cac878ab7ad0b5.jpg",
-            "01001BB01E8E2000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/fantasianneodimension/1x1_FantasianNeoDimension_image500w.jpg",
-            "01002D001AD24000" to "https://img-eshop.cdn.nintendo.net/i/4519ab30d1b40a67a3ea3caa03cf792575954a15ecb1639f0e6b9eb9df169f37.jpg",
-            "010020D01AD24000" to "https://img-eshop.cdn.nintendo.net/i/4519ab30d1b40a67a3ea3caa03cf792575954a15ecb1639f0e6b9eb9df169f37.jpg",
-            "010022201229A000" to "https://img-eshop.cdn.nintendo.net/i/2035f3f0fc956dc61d691a2d3234974d6416f8175a9fc0989bfb8e6cf9477c92.jpg",
-            "010026800E304000" to "https://img-eshop.cdn.nintendo.net/i/7a48b73ce4dbcacbf25a4103ffad0f4414bcefc0a39d94ebcdc28f66e2e09f7d.jpg",
-            "01002C0008E52000" to "https://www.nintendo.com/eu/media/images/05_packshots/games_13/nintendo_switch_8/PS_NSwitch_TalesOfVesperiaDefinitiveEdition_PEGI_image500w.jpg",
-            "01002DA013484000" to "https://img-eshop.cdn.nintendo.net/i/7e575dbcd62ff138066bd6276afda8770f8c91c80ea99d13ab7480aed91b1ae1.jpg",
-            "01002EF01A316000" to "https://img-eshop.cdn.nintendo.net/i/a00f56c54d8caf6c59f544d699b4ef42ae59e8960da3d1c2df49e3286a68e71c.jpg",
-            "01002FC00412C000" to "https://img-eshop.cdn.nintendo.net/i/765c5c93eaa0adc70d13b5ff3af3ed3a940cbf537a8de576e67d2c8622b19040.jpg",
-            "0100307018934000" to "https://img-eshop.cdn.nintendo.net/i/e030ea7fe3a0ffa10b8fa371feba97ab92f94b2457c5baaf3e5e5ec77b4c3821.jpg",
-            "010033001F050000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/ysvstrailsintheskyalternativesaga/1x1_YsVsTrailsInTheSkyAlternativeSaga_image500w.jpg",
-            "010033100691A000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_TheComaRecut_image500w.jpg",
-            "010040502453E000" to "https://img-eshop.cdn.nintendo.net/i/352a5f0b19d037318d3c3add59f8e22ad19dd15715d425e59f47ce7223c0de62.jpg",
-            "010042D00D900000" to "https://img-eshop.cdn.nintendo.net/i/6849b7cca03fea9c8363524f31faaae42a196ddc8fe011a480e001858b36f53a.jpg",
-            "010044700DEB0000" to "https://img-eshop.cdn.nintendo.net/i/66b639f88213ebf50af4a9eaca2da8c64a24a7314a0c80d587fec466df74d8b9.jpg",
-            "010057901E9E6000" to "https://img-eshop.cdn.nintendo.net/i/2e0cb59b4cd9d4443ae36bf1a94490d0ce08c38058c6e7a0d48befc1fecfeaaf.jpg",
-            "010058C017024000" to "https://www.nintendo.com/eu/media/images/05_packshots/games_13/nintendo_switch_8/PS_NSwitch_Dungeon3NintendoSwitchEdition_PEGI_image500w.jpg",
-            "010059D020C26000" to "https://img-eshop.cdn.nintendo.net/i/2d8f509b557453409619dbde88b0346d6a6f2a1bb6a3cb62fd9cea8c8925ba1f.jpg",
-            "01005CF01E784000" to "https://img-eshop.cdn.nintendo.net/i/50d96f21074d590ba0572b7e8d10947cec190f600aa898ab3af540039f36fe6f.jpg",
-            "01005E701D168000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofgracesfremastered/1x1_TalesOfGracesFRemastered_image500w.jpg",
-            "01005EC01E6A4000" to "https://img-eshop.cdn.nintendo.net/i/c94866c17a79c2c8ec8816df7db3433d88f19b880969af491ebe51dc14d4a590.jpg",
-            "010063301BD50000" to "https://img-eshop.cdn.nintendo.net/i/d3fe8a7a991e1408e635b8f7c356c0e49213f8818cf456faf6a7d5256e9001e8.jpg",
-            "0100646009FBE000" to "https://www.nintendo.com/eu/media/images/05_packshots/games_13/nintendo_switch_8/PS_NSwitch_DeadCells_PEGI_image500w.jpg",
-            "01006560184E6000" to "https://img-eshop.cdn.nintendo.net/i/f73a31a4c276dce115550ed9eda3ea813606b5e4ac53fae9f39d48f8f45099e1.jpg",
-            "010066101A55A000" to "https://img-eshop.cdn.nintendo.net/i/f8e6ecd237605ae5a839257a87190858bfebfa8f3b735eb73692a1e665699c80.jpg",
-            "0100670014482000" to "https://img-eshop.cdn.nintendo.net/i/aeab72bcb6fb6c79c32bddec987764f6e47c3e90cd32642a84de75f631b4eed0.jpg",
-            "01006BB00C6F0000" to "https://img-eshop.cdn.nintendo.net/i/b0b0b2d150830b70b5bb259cdabefe21d2009b55cbd58854cf6a897587249054.jpg",
-            "01006C900CC60000" to "https://img-eshop.cdn.nintendo.net/i/fc9a60cfb3a86cc0fbb45cc5377cd3d4ae1fa5dd05ebd8be991480992c809d46.jpg",
-            "0100726014352000" to "https://img-eshop.cdn.nintendo.net/i/3555961fefd935624036664963fdcc3b4409d223802a52eb30040b3a84d256bc.jpg",
-            "010075D026910000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter5/1x1_PoppyPlaytimeChapter5_image500w.jpg",
-            "01007EF00011E000" to "https://img-eshop.cdn.nintendo.net/i/d3c210e61e8487200fc4c344987243a60257838187a69a6a81c42d7447d5d192.jpg",
-            "01007F600B134000" to "https://img-eshop.cdn.nintendo.net/i/b7c8b605f109a0f090fd4231a33c87eaf91ff1bb3a1b6fe94b9057a822162a6d.jpg",
-            "010089A0197E4000" to "https://img-eshop.cdn.nintendo.net/i/98bd188f34a48db53c83b6789993d167924a21f47d83fe3801e75d33a30b3d1c.jpg",
-            "01008BA02525A000" to "https://img-eshop.cdn.nintendo.net/i/6f498743317e0689bd8812450e41c80551f7eee1a68ef56aed4f6e93ac1aa56e.jpg",
-            "01008CF01BAAC000" to "https://img-eshop.cdn.nintendo.net/i/2dc088f59a77a690046661216ae33948dc72dfe91675cf19d7d7ac757856bfc1.jpg",
-            "01008F1008DA6000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_DarkestDungeon_image500w.jpg",
-            "0100919027DBE000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/thecoma3bloodlines/1x1_TheComa3Bloodlines_image500w.jpg",
-            "010093801237C000" to "https://img-eshop.cdn.nintendo.net/i/924b1b82bc75719dba325773795096359df9e6b4be0de77efa90b0e3039c6fff.jpg",
-            "010094D023A28000" to "https://img-eshop.cdn.nintendo.net/i/e8fd1fe443c9e3b6a0768377247b978402ee04eb226d57d5ac8819d11a5bdcc5.jpg",
-            "010097100EDD6000" to "https://img-eshop.cdn.nintendo.net/i/4dfb37171bdd954247af39a826e7bb700a52ae7c14b9fd5baa17c9a5be6aa965.jpg",
-            "010097F018538000" to "https://img-eshop.cdn.nintendo.net/i/c94866c17a79c2c8ec8816df7db3433d88f19b880969af491ebe51dc14d4a590.jpg",
-            "01009A5009A9E000" to "https://www.nintendo.com/eu/media/images/05_packshots/games_13/nintendo_switch_8/PS_NSwitch_ShiningResonanceRefrain_PEGI_image500w.jpg",
-            "0100A2902051A000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter4/1x1_PoppyPlaytimeChapter4_image500w.jpg",
-            "0100A31020078000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/thecoma2bcatacomb/1x1_TheComa2BCatacomb_image500w.jpg",
-            "0100A410169A4000" to "https://www.nintendo.com/eu/media/images/05_packshots/games_13/nintendo_switch_8/PS_NSwitch_TalesOfSymphoniaRemastered_PEGI_image500w.jpg",
-            "0100AC300919A000" to "https://img-eshop.cdn.nintendo.net/i/05233ea213c6659cdadf4fcb592704c1c8f5ca76160b4d6673e67e5a67c0d11b.jpg",
-            "0100B11027658000" to "https://img-eshop.cdn.nintendo.net/i/416666806a9808eb88e926d83098b30ccd956326b766f171f0b9cb99b58d0147.jpg",
-            "0100B36008F90000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/inazumaelevenvictoryroad/1x1_InazumaElevenVictoryRoad_EN_image500w.jpg",
-            "0100B51020B68000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/terminator2dnofate/1x1_Terminator2DNoFate_image500w.jpg",
-            "0100B7C01169C000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_TheComa2ViciousSisters_image500w.jpg",
-            "0100BAC01E57E000" to "https://img-eshop.cdn.nintendo.net/i/da8bf3f6e66a4914ceefa21f84462e4a1c0678e6a6f6a32831be0ad059a4b84d.jpg",
-            "0100BB901FA12000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/littlebigadventuretwinsensquest/1x1_LittleBigAdventureTwinsensQuest_image500w.jpg",
-            "0100BD601EC3E000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter3/1x1_PoppyPlaytimeChapter3_image500w.jpg",
-            "0100BDA01AABC000" to "https://img-eshop.cdn.nintendo.net/i/20b1474cd664e5e945f4e94bc7d36f9a7dee3e51929613f9d7875365a3a99bb0.jpg",
-            "0100C2801F22C000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofberseriaremastered/1x1_TalesOfBerseriaRemastered_image500w.jpg",
-            "0100C3801C786000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_PoppyPlaytimeChapter1_image500w.jpg",
-            "0100C6A0235D4000" to "https://img-eshop.cdn.nintendo.net/i/f4b0e53362b1df1880b54010fb4427780b5756f696164c38bab1d0f857ed8be0.jpg",
-            "0100CA400E300000" to "https://img-eshop.cdn.nintendo.net/i/77cf808ec79894dca98a64d9c0b281f3b513992f84897967f8e115891d4cd91f.jpg",
-            "0100CEA007D08000" to "https://img-eshop.cdn.nintendo.net/i/eae2eb74652a1f82b3c8a0fd9dee68260ab4274509076df52330d784e80e8ac9.jpg",
-            "0100D3801E6CE000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter2/1x1_PoppyPlaytimeChapter2_image500w.jpg",
-            "0100D59022590000" to "https://img-eshop.cdn.nintendo.net/i/4f61d9a29f29a2be5e070f8ff69c801224a7c5bd1656b6a4c17bc98c93f861bb.jpg",
-            "0100E5E01C098000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_DarkestDungeonII_image500w.jpg",
-            "0100E65002BB8000" to "https://img-eshop.cdn.nintendo.net/i/2c2d14a11ac7ee9439cfc88449360d238db52cedd921ac31309eea04053c08e7.jpg",
-            "0100EC9010258000" to "https://img-eshop.cdn.nintendo.net/i/79be0825e04a14281c9b4ea2360ec609d63197d329bd19370f4ba0c7476659ad.jpg",
-            "0100F1101BB9E000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofxilliaremastered/1x1_TalesOfXilliaRemastered_image500w.jpg",
-            "0100F2200C984000" to "https://img-eshop.cdn.nintendo.net/i/a24c3bf5c318afdf67b92dd4de87e2202738262ff4db62d3f2d10c4126a48f67.jpg",
-            "0100F2C0115B6000" to "https://img-eshop.cdn.nintendo.net/i/4b53da7ca4b118fe37c8b8040609b84dc63214d6131c51592486de9bf29ef29c.jpg",
+            "01007F600B134000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_AssassinsCreedIIIDefinitiveEdition_image500w.jpg",
+            "01009B90006DC000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMarioMaker2_image500w.jpg",
             "0100F3E024DFC000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/pnikpcs0uhydw9lw8672",
-            "0100F43008C44000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/pokemonlegendsza/1x1_NSwitch2_PokemonLegendsZA_KV_GB_en_image500w.jpg",
+            "0100FD8022DAA000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/supermariogalaxy2/1x1_NSwitch_SuperMarioGalaxy2_image500w.jpg",
+            "058E630A38C70000" to "https://upload.wikimedia.org/wikipedia/en/d/d9/HellfireCoverSmall.jpg",
+            "0100C69018E4A000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_TheLastFaith_image500w.jpg",
+            "0100CEA007D08000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_CryptOfTheNecroDancerNintendoSwitchEdition_image500w.jpg",
+            "0100B36008F90000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/inazumaelevenvictoryroad/1x1_InazumaElevenVictoryRoad_EN_image500w.jpg",
+            "0100CA400E300000" to "https://img-eshop.cdn.nintendo.net/i/77cf808ec79894dca98a64d9c0b281f3b513992f84897967f8e115891d4cd91f.jpg",
+            "0100000000010000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMarioOdyssey_Alt01_image500w.jpg",
+            "01008CF01BAAC000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TheLegendofZeldaEchoesOfWisdom_image500w.jpg",
+            "01005EC01E6A4000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_DaveTheDiver_image500w.jpg",
+            "01001BB01E8E2000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/fantasianneodimension/1x1_FantasianNeoDimension_image500w.jpg",
+            "010042D00D900000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_LegoStarWarsTheSkywalkerSaga_image500w.jpg",
+            "01007EF00011E000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/wii_u_20/SQ_WiiU_TheLegendOfZeldaBreathOfTheWild_image500w.jpg",
+            "0100E65002BB8000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_StardewValley_image500w.jpg",
+            "0100EAE010560000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_CaptainTsubasaRiseOfNewChampions_image500w.jpg",
+            "0100152000022000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioKart8Deluxe_image500w.jpg",
+            "010013F009B88000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_XenoCrisis_image500w.jpg",
+            "010075D026910000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter5/1x1_PoppyPlaytimeChapter5_image500w.jpg",
+            "0100BC0018138000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioRPG_image500w.jpg",
             "0100F7901971C000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/dungeons4nintendoswitchedition/1x1_Dungeons4NintendoSwitchEdition_image500w.jpg",
+            "01009D6022DC2000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/reus2/1x1_Reus2_image500w.jpg",
+            "019232F2781D0000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/virtual_console_nintendo_3ds_8/SQ_3DSVC_DrMario_image500w.jpg",
+            "01008E20257E0000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/zcxmw0qbm6ytnvgf69ey",
+            "010015100B514000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioBrosWonder_image500w.jpg",
             "0100F8F00C4F2000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DCSuperHeroGirlsTeenPower_image500w.jpg",
+            "010093801237C000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MetroidDread_image500w.jpg",
+            "0100F2200C984000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MortalKombat11_image500w.jpg",
+            "0100C2801F22C000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofberseriaremastered/1x1_TalesOfBerseriaRemastered_image500w.jpg",
+            "01006560184E6000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MortalKombat1_image500w.jpg",
+            "010034B00E14C000" to "https://upload.wikimedia.org/wikipedia/en/8/80/Tokyo_2020_game_cover.png",
+            "010092A0172E4000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_ItTakesTwo_image500w.jpg",
+            "010022201229A000" to "https://img-eshop.cdn.nintendo.net/i/2035f3f0fc956dc61d691a2d3234974d6416f8175a9fc0989bfb8e6cf9477c92.jpg",
+            "01002FC00412C000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_LittleNightmaresCompleteEdition_image500w.jpg",
+            "0100BDA01AABC000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/riftofthenecrodancer/1x1_RiftOfTheNecroDancer_image500w.jpg",
+            "0100ECD018EBE000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_PaperMarioTheThousandYearDoor_GB_en_image500w.jpg",
             "0100FA501AF90000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_CastlevaniaDominusCollection_image500w.jpg",
-            "0100FC001ACE0000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/anvilsaga/1x1_AnvilSaga_image500w.jpg"
+            "010033100691A000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_TheComaRecut_image500w.jpg",
+            "01849C8CA8080000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_9/SQ_N64_MarioKart64_image500w.jpg",
+            "0100FF100FB68000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_FindingTeddyTwoDefinitiveEdition_image500w.jpg",
+            "01001AA022B66000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/tentacletango/1x1_TentacleTango_image500w.jpg",
+            "0100A31020078000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/thecoma2bcatacomb/1x1_TheComa2BCatacomb_image500w.jpg",
+            "0100F43008C44000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/pokemonlegendsza/1x1_NSwitch2_PokemonLegendsZA_KV_GB_en_image500w.jpg",
+            "010003000E146000" to "https://upload.wikimedia.org/wikipedia/en/1/1a/Mario_%26_Sonic_at_the_Olympic_Games_Tokyo_2020_box_art.jpg",
+            "0100C3801C786000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_PoppyPlaytimeChapter1_image500w.jpg",
+            "010019401051C000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioStrikersBattleLeagueFootball_image500w.jpg",
+            "010033001F050000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/ysvstrailsintheskyalternativesaga/1x1_YsVsTrailsInTheSkyAlternativeSaga_image500w.jpg",
+            "0100BDE00862A000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioTennisAces_image500w.jpg",
+            "01006C900CC60000" to "https://img-eshop.cdn.nintendo.net/i/fc9a60cfb3a86cc0fbb45cc5377cd3d4ae1fa5dd05ebd8be991480992c809d46.jpg",
+            "010028600EBDA000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMario3DWorldAndBowsersFury_image500w.jpg",
+            "01000B900D8B0000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_CadenceOfHyruleCryptOfTheNecroDancerFeaturingTheLegendOfZelda_v2_image500w.jpg",
+            "01006DD02868A000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/mv8kxcjjajbjx536qx0q",
+            "0100FC001ACE0000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/anvilsaga/1x1_AnvilSaga_image500w.jpg",
+            "01008F1008DA6000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_DarkestDungeon_image500w.jpg",
+            "010020D01AD24000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_AnimalWell_V3_image500w.jpg",
+            "010059D020C26000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/marvelcosmicinvasion_1/1x1_MarvelCosmicInvasion_image500w.jpg",
+            "01007A2027548000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/fg0htmfgjrnu87m4m9oo",
+            "0100E1C0252F8000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/fj3inknfvf8hvgfjerci",
+            "0100EC9010258000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_StreetsOfRage4_image500w.jpg",
+            "010040502453E000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/vampirecrawlerstheturbowildcardfromvampiresurvivors/1x1_VampireCrawlersTheTurboWildcardFromVampireSurvivors_image500w.jpg",
+            "0100BB901FA12000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/littlebigadventuretwinsensquest/1x1_LittleBigAdventureTwinsensQuest_image500w.jpg",
+            "01007DE013A48000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_GoldenForce_image500w.jpg",
+            "01052BA7AC450000" to "https://www.nintendo.com/eu/media/images/03_teaser_module_1_square/games_3/wiiu_download_software_1/TM_WiiUDS_DuckTalesRemastered_image500w.png",
+            "01542031DCEC0000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/virtual_console_nintendo_3ds_8/SQ_3DSVC_SuperMarioBros_image500w.jpg",
+            "01006BB00C6F0000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_TheLegendOfZeldaLinksAwakening_image500w.jpg",
+            "0100217023F6C000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/wk30tmoq2t6mvfhlo4ee",
+            "0100317013770000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioAndRabbidsSparksOfHope_enGB_image500w.jpg",
+            "010036B0034E4000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMarioParty_image500w.jpg",
+            "0100D3801E6CE000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter2/1x1_PoppyPlaytimeChapter2_image500w.jpg",
+            "01001B300B9BE000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DiabloIIIEternalCollection_image500w.jpg",
+            "010026800E304000" to "https://img-eshop.cdn.nintendo.net/i/7a48b73ce4dbcacbf25a4103ffad0f4414bcefc0a39d94ebcdc28f66e2e09f7d.jpg",
+            "010099C022B96000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/supermariogalaxy/1x1_NSwitch_SuperMarioGalaxy_image500w.jpg",
+            "0100BAC01E57E000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_YsXNordics_image500w.jpg",
+            "010094D023A28000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/drillcore/1x1_DrillCore_image500w.jpg",
+            "0100B7C01169C000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_TheComa2ViciousSisters_image500w.jpg",
+            "0100307018934000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_Signalis_image500w.jpg",
+            "01009720213B0000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/captaintsubasa2worldfighters/1x1_CaptainTsubasa2WorldFighters_image500w.jpg",
+            "01005CF01E784000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_TeenageMutantNinjaTurtlesSplinteredFate_new_image500w.jpg",
+            "01006D0017F7A000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioLuigiBrothership_Base_GB_en_image500w.jpg",
+            "010063301BD50000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/superrobotwarsy/1x1_SuperRobotWarsY_image500w.jpg",
+            "0132B3143DF50000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/virtual_console_nintendo_3ds_8/SQ_3DSVC_SuperMarioBros_image500w.jpg",
+            "01002C0008E52000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_TalesOfVesperiaDefinitiveEdition_image500w.jpg",
+            "0100A3900C3E2000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_PaperMarioTheOrigamiKing_image500w.jpg",
+            "0100FBE015910000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TheLegendOfHeroesTrailsToAzure_image500w.jpg",
+            "0100C6A0235D4000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/deviljam/1x1_DevilJam_image500w.jpg",
+            "0100EA80032EA000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_NewSuperMarioBrosUDeluxe_image500w.jpg",
+            "0100A4601ECA8000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_CryptCustodian_image500w.jpg",
+            "01005E701D168000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofgracesfremastered/1x1_TalesOfGracesFRemastered_image500w.jpg",
+            "010044700DEB0000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_AssassinsCreedTheRebelCollection_image500w.jpg",
+            "010066101A55A000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/littlenightmaresiii_1/1x1_LittleNightmaresIII_image500w.jpg",
+            "01008BA02525A000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_2_games/dispatchns2e/1x1_DispatchNS2E_image500w.jpg",
+            "9B485EB8" to "https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_V.png",
+            "0100852026502000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/pgsmphppjax0yb5aydgk",
+            "010097100EDD6000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_LittleNightmaresII_image500w.jpg",
+            "0100622020F5A000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/ufxlo3aficvsyiamjzg7",
+            "0100E5E01C098000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_DarkestDungeonII_image500w.jpg",
+            "01006FE013472000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioPartySuperStars_image500w.jpg",
+            "010057901E9E6000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/underlinguprising/1x1_UnderlingUprising_image500w.jpg",
+            "0100304027592000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/urbanjungle/1x1_UrbanJungle_image500w.jpg",
+            "0100B11027658000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/xnznx3wpdmxfyrjxwfq6",
+            "0100965017338000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioPartyJamboree_BASE_image500w.jpg",
+            "0100646009FBE000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DeadCells_image500w.jpg",
+            "01009A5009A9E000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_ShiningResonanceRefrain_image500w.jpg",
+            "010040F01EC60000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/uuov0vj1qffnjd27os5d",
+            "0100726014352000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_DiabloIIResurrected_image500w.jpg",
+            "010067300059A000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioAndRabbidsKingdomBattle_EU_image500w.jpg",
+            "0100D59022590000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/scottpilgrimex/1x1_ScottPilgrimEx_image500w.jpg",
+            "010004D00A9C0000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_Aggelos_image500w.jpg",
+            "01002DA013484000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_TheLegendOfZeldaSkywardSwordHD_image500w.jpg",
+            "0100BD601EC3E000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter3/1x1_PoppyPlaytimeChapter3_image500w.jpg",
+            "010089A0197E4000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_VampireSurvivors_image500w.jpg",
+            "01002EF01A316000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_Brotato_image500w.jpg",
+            "010058C017024000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_Dungeon3NintendoSwitchEdition_image500w.jpg",
+            "0100A2902051A000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter4/1x1_PoppyPlaytimeChapter4_image500w.jpg",
+            "0100670014482000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_AssassinsCreedTheEzioCollection_image500w.jpg",
+            "0100AC300919A000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_Firewatch_image500w.jpg",
+            "0100F1101BB9E000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofxilliaremastered/1x1_TalesOfXilliaRemastered_image500w.jpg",
+            "0100919027DBE000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/thecoma3bloodlines/1x1_TheComa3Bloodlines_image500w.jpg",
+            "0100B51020B68000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/terminator2dnofate/1x1_Terminator2DNoFate_image500w.jpg",
+            "010097F018538000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_DaveTheDiver_image500w.jpg",
+            "01001B90277BE000" to "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/sm89rnvoxaacheso2a9b",
+            "0100EB60202C8000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/kalanoro/1x1_Kalanoro_image500w.jpg",
+            "01008970149B0000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_RabbidsPartyOfLegends_EN_image500w.jpg",
+            "0100A410169A4000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TalesOfSymphoniaRemastered_image500w.jpg",
+            "0100F2C0115B6000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TloZTearsOfTheKingdom_BASE_image500w.jpg",
+            "010027901C89C000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/hellokittyislandadventure/1x1_HelloKittyIslandAdventure_image500w.jpg",
+            "01000EB0276F2000" to "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/garfieldescapefrommonday/1x1_GarfieldEscapeFromMonday_image500w.jpg",
+            "0100B99019412000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioVsDonkeyKong_image500w.jpg",
+            "0100C9C00E25C000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioGolfSuperRush_image500w.jpg",
         )
 
         val sharedHttpClient: OkHttpClient by lazy {
@@ -1591,11 +1663,22 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val list = mutableListOf<StormWorldGameItem>()
                 for (i in 0 until jsonArr.length()) {
                     val obj = jsonArr.optJSONObject(i) ?: continue
-                    list.add(StormWorldGameItem.fromJson(obj))
+                    val item = StormWorldGameItem.fromJson(obj)
+                    val resolvedCover = if (item.cover.isNotBlank() && item.cover.startsWith("http")) {
+                        item.cover
+                    } else {
+                        SWITCH_CDN_ICONS[item.serialId.uppercase(Locale.ROOT)] ?: item.cover
+                    }
+                    val finalItem = if (resolvedCover != item.cover) {
+                        item.copy(cover = resolvedCover)
+                    } else {
+                        item
+                    }
+                    list.add(finalItem)
                 }
                 list.filterNot { item ->
                     val t = "${item.finalTitle} ${item.title} ${item.version}".lowercase(Locale.ROOT)
-                    t.contains("копия") || t.contains("рљропрёсџ") || t.contains("(copy)")
+                    t.contains("РєРѕРїРёСЏ") || t.contains("СЂС™СЂРѕРїСЂС‘СЃСџ") || t.contains("(copy)")
                 }.distinctBy { item ->
                     val k = (item.serialId.ifEmpty { item.title }).uppercase(Locale.ROOT)
                     val cleanVer = item.version.split(" ").firstOrNull().orEmpty()
@@ -1644,7 +1727,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val sizeStr = obj.optString("size", "").trim()
 
                     // Exclude any game with missing flags or placeholder size
-                    if (platform == "Nintendo Switch" && platformType == "CONSOLES" && fileExists && hasFile && sizeStr.isNotEmpty() && sizeStr != "—") {
+                    if (platform == "Nintendo Switch" && platformType == "CONSOLES" && fileExists && hasFile && sizeStr.isNotEmpty() && sizeStr != "вЂ”") {
                         val regList = mutableListOf<String>()
                         val regArr = obj.optJSONArray("regions")
                         if (regArr != null) {
@@ -1679,9 +1762,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         var modNum = modMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
                         if (modNum == 0) {
                             if (rawFinalTitle.contains("MOD", ignoreCase = true) || rawTitle.contains("MOD", ignoreCase = true) ||
-                                langList.any { it.contains("MOD", ignoreCase = true) || it.contains("русификатор", ignoreCase = true) || it.contains("озвучка", ignoreCase = true) } ||
-                                rawFinalTitle.contains("русификатор", ignoreCase = true) || rawTitle.contains("русификатор", ignoreCase = true) ||
-                                rawFinalTitle.contains("озвучка", ignoreCase = true) || rawTitle.contains("озвучка", ignoreCase = true)) {
+                                langList.any { it.contains("MOD", ignoreCase = true) || it.contains("СЂСѓСЃРёС„РёРєР°С‚РѕСЂ", ignoreCase = true) || it.contains("РѕР·РІСѓС‡РєР°", ignoreCase = true) } ||
+                                rawFinalTitle.contains("СЂСѓСЃРёС„РёРєР°С‚РѕСЂ", ignoreCase = true) || rawTitle.contains("СЂСѓСЃРёС„РёРєР°С‚РѕСЂ", ignoreCase = true) ||
+                                rawFinalTitle.contains("РѕР·РІСѓС‡РєР°", ignoreCase = true) || rawTitle.contains("РѕР·РІСѓС‡РєР°", ignoreCase = true)) {
                                 modNum = 1
                             }
                         }
@@ -1695,7 +1778,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 internalVersion = internalVer,
                                 serialId = serialId,
                                 size = sizeStr,
-                                cover = obj.optString("cover"),
+                                cover = obj.optString("cover").ifEmpty {
+                                    SWITCH_CDN_ICONS[serialId.uppercase(Locale.ROOT)] ?: ""
+                                },
                                 fileExists = fileExists,
                                 hasFile = hasFile,
                                 regions = regList,
@@ -1710,7 +1795,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val verifiedGames = candidateList
                     .filterNot { item ->
                         val t = "${item.finalTitle} ${item.title} ${item.version}".lowercase(Locale.ROOT)
-                        t.contains("копия") || t.contains("рљропрёсџ") || t.contains("(copy)")
+                        t.contains("РєРѕРїРёСЏ") || t.contains("СЂС™СЂРѕРїСЂС‘СЃСџ") || t.contains("(copy)")
                     }
                     .distinctBy { item ->
                         val k = (item.serialId.ifEmpty { item.title }).uppercase(Locale.ROOT)
@@ -1743,7 +1828,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     }
                     for (l in g.textLangs) {
                         val lu = l.uppercase(Locale.ROOT)
-                        if (lu == "RUS" || lu.contains("RUSSIAN") || lu.contains("РУССКИЙ")) {
+                        if (lu == "RUS" || lu.contains("RUSSIAN") || lu.contains("Р РЈРЎРЎРљРР™")) {
                             return 200
                         }
                     }

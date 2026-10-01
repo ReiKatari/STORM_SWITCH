@@ -1,1466 +1,3890 @@
-[
-  {
-    "id": 1087,
-    "title": "Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda",
-    "finalTitle": "Cadence of Hyrule - Crypt of the NecroDancer featuring The Legend of Zelda [WW] [MOD - RUS] (1.5.0 - 458752 - 01000B900D8B0000) (1G+1U+4D+1M)",
-    "version": "1.5.0",
-    "internalVersion": "458752",
-    "serialId": "01000B900D8B0000",
-    "size": "1,73 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/1972ebb4a507e7d83c7d4592ae4702ebdc5bf3738659644bc29c243b144782ee.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "MOD - RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 4,
-    "modCount": 1,
-    "isRecommended": true
-  },
-  {
-    "id": 1088,
-    "title": "Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda",
-    "finalTitle": "Cadence of Hyrule - Crypt of the NecroDancer featuring The Legend of Zelda [WW] [MOD - RUS] (1.4.0 - 393216 - 01000B900D8B0000) (1G+1U+4D+1M)",
-    "version": "1.4.0",
-    "internalVersion": "393216",
-    "serialId": "01000B900D8B0000",
-    "size": "1,76 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/1972ebb4a507e7d83c7d4592ae4702ebdc5bf3738659644bc29c243b144782ee.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "MOD - RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 4,
-    "modCount": 1,
-    "isRecommended": false
-  },
-  {
-    "id": 1086,
-    "title": "Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda",
-    "finalTitle": "Cadence of Hyrule - Crypt of the NecroDancer featuring The Legend of Zelda [WW] [ENG] (1.5.0 - 458752 - 01000B900D8B0000) (1G+1U+4D)",
-    "version": "1.5.0",
-    "internalVersion": "458752",
-    "serialId": "01000B900D8B0000",
-    "size": "1,74 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/1972ebb4a507e7d83c7d4592ae4702ebdc5bf3738659644bc29c243b144782ee.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "ENG"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 4,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1150,
-    "title": "Super Mario Bros. Wonder",
-    "finalTitle": "Super Mario Bros. Wonder [WW] [RUS] (1.2.1 - 327680 - 010015100B514000) (1G+1U)",
-    "version": "1.2.1",
-    "internalVersion": "327680",
-    "serialId": "010015100B514000",
-    "size": "3,52 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/bf2fca7eed5ad7ec96d03025907ea52c3efe168e02c8be96e868d8430a247a57.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1149,
-    "title": "Diablo III: Eternal Collection",
-    "finalTitle": "Diablo III - Eternal Collection [WW] [RUS] (2.7.7.92380 - 1441792 - 01001B300B9BE000) (1G+1U+4D)",
-    "version": "2.7.7.92380",
-    "internalVersion": "1441792",
-    "serialId": "01001B300B9BE000",
-    "size": "21,62 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/bf924a38ce1da69413bdba496afad2ef562f73ea5273621c09cac878ab7ad0b5.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 4,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1217,
-    "title": "Animal Well",
-    "finalTitle": "Animal Well [WW] [RUS] (1.0.10 - 655360 - 01002D001AD24000) (1G+1U)",
-    "version": "1.0.10",
-    "internalVersion": "655360",
-    "serialId": "01002D001AD24000",
-    "size": "37,63 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/4519ab30d1b40a67a3ea3caa03cf792575954a15ecb1639f0e6b9eb9df169f37.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1201,
-    "title": "Super Robot Wars 30",
-    "finalTitle": "Super Robot Wars 30 [WW] [ENG] (1.3.4 - 1048576 - 010022201229A000) (1G+1U+16D)",
-    "version": "1.3.4",
-    "internalVersion": "1048576",
-    "serialId": "010022201229A000",
-    "size": "15,46 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/2035f3f0fc956dc61d691a2d3234974d6416f8175a9fc0989bfb8e6cf9477c92.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "ENG"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 16,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1199,
-    "title": "Super Robot Wars X",
-    "finalTitle": "Super Robot Wars X [WW] [ENG] (1.0.1 - 65536 - 010026800E304000) (1G+1U+6D+1M)",
-    "version": "1.0.1",
-    "internalVersion": "65536",
-    "serialId": "010026800E304000",
-    "size": "5,52 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/7a48b73ce4dbcacbf25a4103ffad0f4414bcefc0a39d94ebcdc28f66e2e09f7d.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "ENG"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 6,
-    "modCount": 1,
-    "isRecommended": false
-  },
-  {
-    "id": 1081,
-    "title": "The Legend of Zelda: Skyward Sword HD",
-    "finalTitle": "The Legend of Zelda - Skyward Sword HD [WW] [RUS] (1.0.1 - 65536 - 01002DA013484000) (1G+1U)",
-    "version": "1.0.1",
-    "internalVersion": "65536",
-    "serialId": "01002DA013484000",
-    "size": "7,07 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/7e575dbcd62ff138066bd6276afda8770f8c91c80ea99d13ab7480aed91b1ae1.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1151,
-    "title": "Brotato",
-    "finalTitle": "Brotato [WW] [RUS] (1.1.15.4 - 851968 - 01002EF01A316000) (1G+1U+1D)",
-    "version": "1.1.15.4",
-    "internalVersion": "851968",
-    "serialId": "01002EF01A316000",
-    "size": "388,19 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/a00f56c54d8caf6c59f544d699b4ef42ae59e8960da3d1c2df49e3286a68e71c.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1091,
-    "title": "Little Nightmares",
-    "finalTitle": "Little Nightmares [Complete Edition] [WW] [RUS] (1.0.4 - 262144 - 01002FC00412C000) (1G+1U+2D)",
-    "version": "1.0.4",
-    "internalVersion": "262144",
-    "serialId": "01002FC00412C000",
-    "size": "2,82 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/765c5c93eaa0adc70d13b5ff3af3ed3a940cbf537a8de576e67d2c8622b19040.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 2,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1076,
-    "title": "Signalis",
-    "finalTitle": "Signalis [WW] [RUS] (1.4 - 0100307018934000) (1G+1U)",
-    "version": "1.4",
-    "internalVersion": "",
-    "serialId": "0100307018934000",
-    "size": "2,17 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/e030ea7fe3a0ffa10b8fa371feba97ab92f94b2457c5baaf3e5e5ec77b4c3821.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1109,
-    "title": "Vampire Crawlers",
-    "finalTitle": "Vampire Crawlers [WW] [RUS] (1.5.1 - 262144 - 010040502453E000) (1G+1U)",
-    "version": "1.5.1",
-    "internalVersion": "262144",
-    "serialId": "010040502453E000",
-    "size": "938,30 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/352a5f0b19d037318d3c3add59f8e22ad19dd15715d425e59f47ce7223c0de62.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1153,
-    "title": "LEGO Star Wars: The Skywalker Saga",
-    "finalTitle": "LEGO Star Wars - The Skywalker Saga [WW] [RUS] (1.10.0 - 589824 - 010042D00D900000) (1G+1U+17D)",
-    "version": "1.10.0",
-    "internalVersion": "589824",
-    "serialId": "010042D00D900000",
-    "size": "15,91 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/6849b7cca03fea9c8363524f31faaae42a196ddc8fe011a480e001858b36f53a.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 17,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1104,
-    "title": "Assassin’s Creed: The Rebel Collection",
-    "finalTitle": "Assassin’s Creed - The Rebel Collection [WW] [RUS] (1.0.0 - 0 - 010044700DEB0000) (1G+3D)",
-    "version": "1.0.0",
-    "internalVersion": "0",
-    "serialId": "010044700DEB0000",
-    "size": "20,63 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/66b639f88213ebf50af4a9eaca2da8c64a24a7314a0c80d587fec466df74d8b9.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 3,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1099,
-    "title": "Underling Uprising",
-    "finalTitle": "Underling Uprising [WW] [RUS] (1.0.0.409 - 65536 - 010057901E9E6000) (1G+1U)",
-    "version": "1.0.0.409",
-    "internalVersion": "65536",
-    "serialId": "010057901E9E6000",
-    "size": "1,13 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/2e0cb59b4cd9d4443ae36bf1a94490d0ce08c38058c6e7a0d48befc1fecfeaaf.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1107,
-    "title": "Marvel Cosmic Invasion",
-    "finalTitle": "Marvel Cosmic Invasion [WW] [RUS] (1.0.7 - 393216 - 010059D020C26000) (1G+1U+1D)",
-    "version": "1.0.7",
-    "internalVersion": "393216",
-    "serialId": "010059D020C26000",
-    "size": "626,82 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/2d8f509b557453409619dbde88b0346d6a6f2a1bb6a3cb62fd9cea8c8925ba1f.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 0,
-    "isRecommended": true
-  },
-  {
-    "id": 1102,
-    "title": "Marvel Cosmic Invasion",
-    "finalTitle": "Marvel Cosmic Invasion [WW] [RUS] (1.0.6 - 327680 - 010059D020C26000) (1G+1U+1D)",
-    "version": "1.0.6",
-    "internalVersion": "327680",
-    "serialId": "010059D020C26000",
-    "size": "626,82 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/2d8f509b557453409619dbde88b0346d6a6f2a1bb6a3cb62fd9cea8c8925ba1f.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1264,
-    "title": "Teenage Mutant Ninja Turtles: Splintered Fate",
-    "finalTitle": "Teenage Mutant Ninja Turtles - Splintered Fate [WW] [RUS] (2.0.3 - 2031616 - 01005CF01E784000) (1G+1U+4D)",
-    "version": "2.0.3",
-    "internalVersion": "2031616",
-    "serialId": "01005CF01E784000",
-    "size": "1,16 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/50d96f21074d590ba0572b7e8d10947cec190f600aa898ab3af540039f36fe6f.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 4,
-    "modCount": 0,
-    "isRecommended": true
-  },
-  {
-    "id": 1205,
-    "title": "Teenage Mutant Ninja Turtles: Splintered Fate",
-    "finalTitle": "Teenage Mutant Ninja Turtles - Splintered Fate [WW] [RUS] (2.0.1 - 1966080 - 01005CF01E784000) (1G+1U+4D)",
-    "version": "2.0.1",
-    "internalVersion": "1966080",
-    "serialId": "01005CF01E784000",
-    "size": "1,16 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/50d96f21074d590ba0572b7e8d10947cec190f600aa898ab3af540039f36fe6f.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 4,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1078,
-    "title": "The Art of Dave the Diver: Digital Artbook",
-    "finalTitle": "The Art of Dave the Diver - Digital Artbook [WW] [RUS] (1.1 - 131072 - 01005EC01E6A4000) (1G+1U)",
-    "version": "1.1",
-    "internalVersion": "131072",
-    "serialId": "01005EC01E6A4000",
-    "size": "302,74 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/c94866c17a79c2c8ec8816df7db3433d88f19b880969af491ebe51dc14d4a590.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1197,
-    "title": "Super Robot Wars Y",
-    "finalTitle": "Super Robot Wars Y [WW] [ENG] (1.4.0 - 655360 - 010063301BD50000) (1G+1U+10D)",
-    "version": "1.4.0",
-    "internalVersion": "655360",
-    "serialId": "010063301BD50000",
-    "size": "16,83 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/d3fe8a7a991e1408e635b8f7c356c0e49213f8818cf456faf6a7d5256e9001e8.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "ENG"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 10,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1106,
-    "title": "Mortal Kombat 1",
-    "finalTitle": "Mortal Kombat 1 [WW] [RUS] (1.29.0 - 1900544 - 01006560184E6000) (1G+1U+1D)",
-    "version": "1.29.0",
-    "internalVersion": "1900544",
-    "serialId": "01006560184E6000",
-    "size": "42,54 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/f73a31a4c276dce115550ed9eda3ea813606b5e4ac53fae9f39d48f8f45099e1.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1261,
-    "title": "Little Nightmares III",
-    "finalTitle": "Little Nightmares III [WW] [RUS] (1.1.1 - 393216 - 010066101A55A000) (1G+1U+6D)",
-    "version": "1.1.1",
-    "internalVersion": "393216",
-    "serialId": "010066101A55A000",
-    "size": "8,27 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/f8e6ecd237605ae5a839257a87190858bfebfa8f3b735eb73692a1e665699c80.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 6,
-    "modCount": 0,
-    "isRecommended": true
-  },
-  {
-    "id": 1093,
-    "title": "Little Nightmares III",
-    "finalTitle": "Little Nightmares III [WW] [RUS] (1.1.0 - 327680 - 010066101A55A000) (1G+1U+6D)",
-    "version": "1.1.0",
-    "internalVersion": "327680",
-    "serialId": "010066101A55A000",
-    "size": "8,27 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/f8e6ecd237605ae5a839257a87190858bfebfa8f3b735eb73692a1e665699c80.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 6,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1105,
-    "title": "Assassin's Creed: The Ezio Collection",
-    "finalTitle": "Assassin's Creed - The Ezio Collection [WW] [RUS] (1.3 - 196608 - 0100670014482000) (1G+1U+5D)",
-    "version": "1.3",
-    "internalVersion": "196608",
-    "serialId": "0100670014482000",
-    "size": "27,97 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/aeab72bcb6fb6c79c32bddec987764f6e47c3e90cd32642a84de75f631b4eed0.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 5,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1083,
-    "title": "The Legend of Zelda: Link's Awakening",
-    "finalTitle": "The Legend of Zelda - Link's Awakening [WW] [RUS] (1.1.0 - 131072 - 01006BB00C6F0000) (1G+1U)",
-    "version": "1.1.0",
-    "internalVersion": "131072",
-    "serialId": "01006BB00C6F0000",
-    "size": "5,84 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/b0b0b2d150830b70b5bb259cdabefe21d2009b55cbd58854cf6a897587249054.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1200,
-    "title": "Super Robot Wars T",
-    "finalTitle": "Super Robot Wars T [WW] [ENG] (1.0.5 - 327680 - 01006C900CC60000) (1G+1U+25D+1M)",
-    "version": "1.0.5",
-    "internalVersion": "327680",
-    "serialId": "01006C900CC60000",
-    "size": "6,04 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/fc9a60cfb3a86cc0fbb45cc5377cd3d4ae1fa5dd05ebd8be991480992c809d46.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "ENG"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 25,
-    "modCount": 1,
-    "isRecommended": false
-  },
-  {
-    "id": 1258,
-    "title": "Diablo II: Resurrected",
-    "finalTitle": "Diablo II - Resurrected [Infernal Edition] [WW] [RUS] (1.0.34.0 - 2228224 - 0100726014352000) (1G+1U+1D+1M)",
-    "version": "1.0.34.0",
-    "internalVersion": "2228224",
-    "serialId": "0100726014352000",
-    "size": "8,40 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/3555961fefd935624036664963fdcc3b4409d223802a52eb30040b3a84d256bc.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 1,
-    "isRecommended": true
-  },
-  {
-    "id": 1148,
-    "title": "Diablo II: Resurrected",
-    "finalTitle": "Diablo II - Resurrected [Infernal Edition] [WW] [RUS] (1.0.33.0 - 2162688 - 0100726014352000) (1G+1U+1D+1M)",
-    "version": "1.0.33.0",
-    "internalVersion": "2162688",
-    "serialId": "0100726014352000",
-    "size": "8,40 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/3555961fefd935624036664963fdcc3b4409d223802a52eb30040b3a84d256bc.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 1,
-    "isRecommended": false
-  },
-  {
-    "id": 1080,
-    "title": "The Legend of Zelda: Breath of the Wild",
-    "finalTitle": "The Legend of Zelda - Breath of the Wild [WW] [RUS] (1.9.0 - 1114112 - 01007EF00011E000) (1G+1U+2D)",
-    "version": "1.9.0",
-    "internalVersion": "1114112",
-    "serialId": "01007EF00011E000",
-    "size": "15,45 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/d3c210e61e8487200fc4c344987243a60257838187a69a6a81c42d7447d5d192.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 2,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1252,
-    "title": "Assassin's Creed III: Remastered",
-    "finalTitle": "Assassin's Creed III - Remastered [WW] [RUS] (1.0.3 - 196608 - 01007F600B134000) (1G+1U+2D)",
-    "version": "1.0.3",
-    "internalVersion": "196608",
-    "serialId": "01007F600B134000",
-    "size": "15,94 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/b7c8b605f109a0f090fd4231a33c87eaf91ff1bb3a1b6fe94b9057a822162a6d.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 2,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1265,
-    "title": "Vampire Survivors",
-    "finalTitle": "Vampire Survivors [WW] [RUS] (1.16.105 - 1900544 - 010089A0197E4000) (1G+1U+8D)",
-    "version": "1.16.105",
-    "internalVersion": "1900544",
-    "serialId": "010089A0197E4000",
-    "size": "1,24 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/98bd188f34a48db53c83b6789993d167924a21f47d83fe3801e75d33a30b3d1c.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 8,
-    "modCount": 0,
-    "isRecommended": true
-  },
-  {
-    "id": 1108,
-    "title": "Vampire Survivors",
-    "finalTitle": "Vampire Survivors [WW] [RUS] (1.15.113 - 1769472 - 010089A0197E4000) (1G+1U+7D)",
-    "version": "1.15.113",
-    "internalVersion": "1769472",
-    "serialId": "010089A0197E4000",
-    "size": "1,24 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/98bd188f34a48db53c83b6789993d167924a21f47d83fe3801e75d33a30b3d1c.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 7,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1098,
-    "title": "Vampire Survivors",
-    "finalTitle": "Vampire Survivors [WW] [RUS] (1.14.111 - 1572864 - 010089A0197E4000) (1G+1U+7D)",
-    "version": "1.14.111",
-    "internalVersion": "1572864",
-    "serialId": "010089A0197E4000",
-    "size": "826,64 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/98bd188f34a48db53c83b6789993d167924a21f47d83fe3801e75d33a30b3d1c.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 7,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1260,
-    "title": "Dispatch",
-    "finalTitle": "Dispatch [WW] [RUS] (1.0.17878 - 589824 - 01008BA02525A000) (1G+1U+1D+1M)",
-    "version": "1.0.17878",
-    "internalVersion": "589824",
-    "serialId": "01008BA02525A000",
-    "size": "7,03 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/6f498743317e0689bd8812450e41c80551f7eee1a68ef56aed4f6e93ac1aa56e.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 1,
-    "isRecommended": true
-  },
-  {
-    "id": 1259,
-    "title": "Dispatch",
-    "finalTitle": "Dispatch [WW] [RUS] (1.0.17878 - 589824 - 01008BA02525A000) (1G+1U+1D)",
-    "version": "1.0.17878",
-    "internalVersion": "589824",
-    "serialId": "01008BA02525A000",
-    "size": "7,03 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/6f498743317e0689bd8812450e41c80551f7eee1a68ef56aed4f6e93ac1aa56e.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1095,
-    "title": "Dispatch",
-    "finalTitle": "Dispatch [WW] [RUS] (1.0.17397 - 524288 - 01008BA02525A000) (1G+1U+1M)",
-    "version": "1.0.17397",
-    "internalVersion": "524288",
-    "serialId": "01008BA02525A000",
-    "size": "7,31 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/6f498743317e0689bd8812450e41c80551f7eee1a68ef56aed4f6e93ac1aa56e.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 1,
-    "isRecommended": false
-  },
-  {
-    "id": 1094,
-    "title": "Dispatch",
-    "finalTitle": "Dispatch [WW] [RUS] (1.0.17397 - 524288 - 01008BA02525A000) (1G+1U)",
-    "version": "1.0.17397",
-    "internalVersion": "524288",
-    "serialId": "01008BA02525A000",
-    "size": "7,03 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/6f498743317e0689bd8812450e41c80551f7eee1a68ef56aed4f6e93ac1aa56e.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1082,
-    "title": "The Legend of Zelda: Echoes of Wisdom",
-    "finalTitle": "The Legend of Zelda - Echoes of Wisdom [WW] [RUS] (1.1.0 - 196608 - 01008CF01BAAC000) (1G+1U)",
-    "version": "1.1.0",
-    "internalVersion": "196608",
-    "serialId": "01008CF01BAAC000",
-    "size": "7,54 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/2dc088f59a77a690046661216ae33948dc72dfe91675cf19d7d7ac757856bfc1.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1152,
-    "title": "Metroid Dread",
-    "finalTitle": "Metroid Dread [WW] [RUS] (2.1.0 - 327680 - 010093801237C000) (1G+1U)",
-    "version": "2.1.0",
-    "internalVersion": "327680",
-    "serialId": "010093801237C000",
-    "size": "4,97 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/924b1b82bc75719dba325773795096359df9e6b4be0de77efa90b0e3039c6fff.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1096,
-    "title": "Drill Core",
-    "finalTitle": "Drill Core [WW] [RUS] (1.0.1 - 65536 - 010094D023A28000) (1G+1U)",
-    "version": "1.0.1",
-    "internalVersion": "65536",
-    "serialId": "010094D023A28000",
-    "size": "2,71 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/e8fd1fe443c9e3b6a0768377247b978402ee04eb226d57d5ac8819d11a5bdcc5.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1092,
-    "title": "Little Nightmares II",
-    "finalTitle": "Little Nightmares II [WW] [RUS] (1.4 - 262144 - 010097100EDD6000) (1G+1U+2D)",
-    "version": "1.4",
-    "internalVersion": "262144",
-    "serialId": "010097100EDD6000",
-    "size": "4,96 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/4dfb37171bdd954247af39a826e7bb700a52ae7c14b9fd5baa17c9a5be6aa965.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 2,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1256,
-    "title": "Dave the Diver",
-    "finalTitle": "Dave the Diver [Anniversary Edition] [WW] [RUS] (1.0.6.1259 - 3014656 - 010097F018538000) (1G+1U+6D)",
-    "version": "1.0.6.1259",
-    "internalVersion": "3014656",
-    "serialId": "010097F018538000",
-    "size": "4,55 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/c94866c17a79c2c8ec8816df7db3433d88f19b880969af491ebe51dc14d4a590.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 6,
-    "modCount": 0,
-    "isRecommended": true
-  },
-  {
-    "id": 1077,
-    "title": "Dave the Diver",
-    "finalTitle": "Dave the Diver [Anniversary Edition] [WW] [RUS] (1.0.6.1161 - 2555904 - 010097F018538000) (1G+1U+6D)",
-    "version": "1.0.6.1161",
-    "internalVersion": "2555904",
-    "serialId": "010097F018538000",
-    "size": "4,60 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/c94866c17a79c2c8ec8816df7db3433d88f19b880969af491ebe51dc14d4a590.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 6,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1203,
-    "title": "Firewatch",
-    "finalTitle": "Firewatch [WW] [RUS] (1.0.0 - 0 - 0100AC300919A000) (1G)",
-    "version": "1.0.0",
-    "internalVersion": "0",
-    "serialId": "0100AC300919A000",
-    "size": "2,14 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/05233ea213c6659cdadf4fcb592704c1c8f5ca76160b4d6673e67e5a67c0d11b.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1257,
-    "title": "Defender of the Crown: The Legend Returns",
-    "finalTitle": "Defender of the Crown - The Legend Returns [WW] [RUS] (1.0.6 - 65536 - 0100B11027658000) (1G+1U)",
-    "version": "1.0.6",
-    "internalVersion": "65536",
-    "serialId": "0100B11027658000",
-    "size": "917,12 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/416666806a9808eb88e926d83098b30ccd956326b766f171f0b9cb99b58d0147.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": true
-  },
-  {
-    "id": 1206,
-    "title": "Defender of the Crown: The Legend Returns",
-    "finalTitle": "Defender of the Crown - The Legend Returns [WW] [RUS] (1.0.1 - 0 - 0100B11027658000) (1G+1U)",
-    "version": "1.0.1",
-    "internalVersion": "0",
-    "serialId": "0100B11027658000",
-    "size": "843,11 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/416666806a9808eb88e926d83098b30ccd956326b766f171f0b9cb99b58d0147.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1215,
-    "title": "Ys X: Nordics",
-    "finalTitle": "Ys X - Nordics [WW] [MOD - M. RUS] (1.0.3 - 196608 - 0100BAC01E57E000) (1G+1U+13D+1M)",
-    "version": "1.0.3",
-    "internalVersion": "196608",
-    "serialId": "0100BAC01E57E000",
-    "size": "10,48 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/da8bf3f6e66a4914ceefa21f84462e4a1c0678e6a6f6a32831be0ad059a4b84d.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "MOD - M. RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 13,
-    "modCount": 1,
-    "isRecommended": true
-  },
-  {
-    "id": 1214,
-    "title": "Ys X: Nordics",
-    "finalTitle": "Ys X - Nordics [WW] [ENG] (1.0.3 - 196608 - 0100BAC01E57E000) (1G+1U+13D)",
-    "version": "1.0.3",
-    "internalVersion": "196608",
-    "serialId": "0100BAC01E57E000",
-    "size": "10,44 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/da8bf3f6e66a4914ceefa21f84462e4a1c0678e6a6f6a32831be0ad059a4b84d.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "ENG"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 13,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1262,
-    "title": "Rift of the NecroDancer",
-    "finalTitle": "Rift of the NecroDancer [WW] [RUS] (1.14.0 - 524288 - 0100BDA01AABC000) (1G+1U+23D)",
-    "version": "1.14.0",
-    "internalVersion": "524288",
-    "serialId": "0100BDA01AABC000",
-    "size": "9,07 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/20b1474cd664e5e945f4e94bc7d36f9a7dee3e51929613f9d7875365a3a99bb0.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 23,
-    "modCount": 0,
-    "isRecommended": true
-  },
-  {
-    "id": 1090,
-    "title": "Rift of the NecroDancer",
-    "finalTitle": "Rift of the NecroDancer [WW] [RUS] (1.11.0 - 458752 - 0100BDA01AABC000) (1G+1U+23D)",
-    "version": "1.11.0",
-    "internalVersion": "458752",
-    "serialId": "0100BDA01AABC000",
-    "size": "9,07 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/20b1474cd664e5e945f4e94bc7d36f9a7dee3e51929613f9d7875365a3a99bb0.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 23,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1097,
-    "title": "Devil Jam",
-    "finalTitle": "Devil Jam [WW] [RUS] (1.0.1 - 65536 - 0100C6A0235D4000) (1G+1U)",
-    "version": "1.0.1",
-    "internalVersion": "65536",
-    "serialId": "0100C6A0235D4000",
-    "size": "452,07 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/f4b0e53362b1df1880b54010fb4427780b5756f696164c38bab1d0f857ed8be0.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1198,
-    "title": "Super Robot Wars V",
-    "finalTitle": "Super Robot Wars V [WW] [ENG] (1.0.2 - 131072 - 0100CA400E300000) (1G+1U+7D+1M)",
-    "version": "1.0.2",
-    "internalVersion": "131072",
-    "serialId": "0100CA400E300000",
-    "size": "6,09 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/77cf808ec79894dca98a64d9c0b281f3b513992f84897967f8e115891d4cd91f.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "ENG"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 7,
-    "modCount": 1,
-    "isRecommended": false
-  },
-  {
-    "id": 1089,
-    "title": "Crypt of the NecroDancer",
-    "finalTitle": "Crypt of the NecroDancer [Nintendo Switch Edition] [WW] [RUS] (4.2.1-b5628 - 655360 - 0100CEA007D08000) (1G+1U+2D)",
-    "version": "4.2.1-b5628",
-    "internalVersion": "",
-    "serialId": "0100CEA007D08000",
-    "size": "1,79 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/eae2eb74652a1f82b3c8a0fd9dee68260ab4274509076df52330d784e80e8ac9.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 2,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1263,
-    "title": "Scott Pilgrim EX",
-    "finalTitle": "Scott Pilgrim EX [WW] [RUS] (1.0.0.15225 - 393216 - 0100D59022590000) (1G+1U+1D)",
-    "version": "1.0.0.15225",
-    "internalVersion": "393216",
-    "serialId": "0100D59022590000",
-    "size": "1,03 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/4f61d9a29f29a2be5e070f8ff69c801224a7c5bd1656b6a4c17bc98c93f861bb.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 0,
-    "isRecommended": true
-  },
-  {
-    "id": 1100,
-    "title": "Scott Pilgrim EX",
-    "finalTitle": "Scott Pilgrim EX [WW] [RUS] (1.0.0.14564 - 327680 - 0100D59022590000) (1G+1U)",
-    "version": "1.0.0.14564",
-    "internalVersion": "327680",
-    "serialId": "0100D59022590000",
-    "size": "847,36 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/4f61d9a29f29a2be5e070f8ff69c801224a7c5bd1656b6a4c17bc98c93f861bb.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1103,
-    "title": "Stardew Valley",
-    "finalTitle": "Stardew Valley [WW] [RUS] (1.6.15.13 - 1310720 - 0100E65002BB8000) (1G+1U)",
-    "version": "1.6.15.13",
-    "internalVersion": "1310720",
-    "serialId": "0100E65002BB8000",
-    "size": "667,72 MB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/2c2d14a11ac7ee9439cfc88449360d238db52cedd921ac31309eea04053c08e7.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1101,
-    "title": "Streets of Rage 4",
-    "finalTitle": "Streets of Rage 4 [WW] [RUS] (1.0.9 - 458752 - 0100EC9010258000) (1G+1U+1D)",
-    "version": "1.0.9",
-    "internalVersion": "458752",
-    "serialId": "0100EC9010258000",
-    "size": "3,73 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/79be0825e04a14281c9b4ea2360ec609d63197d329bd19370f4ba0c7476659ad.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 1,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1196,
-    "title": "Mortal Kombat 11",
-    "finalTitle": "Mortal Kombat 11 [WW] [RUS] (1.0.26 - 1703936 - 0100F2200C984000) (1G+1U+31D)",
-    "version": "1.0.26",
-    "internalVersion": "1703936",
-    "serialId": "0100F2200C984000",
-    "size": "26,06 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/a24c3bf5c318afdf67b92dd4de87e2202738262ff4db62d3f2d10c4126a48f67.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 31,
-    "modCount": 0,
-    "isRecommended": false
-  },
-  {
-    "id": 1079,
-    "title": "The Legend of Zelda: Tears of the Kingdom",
-    "finalTitle": "The Legend of Zelda - Tears of the Kingdom [WW] [RUS] (1.4.3 - 720896 - 0100F2C0115B6000) (1G+1U)",
-    "version": "1.4.3",
-    "internalVersion": "720896",
-    "serialId": "0100F2C0115B6000",
-    "size": "15,96 GB",
-    "cover": "https://img-eshop.cdn.nintendo.net/i/4b53da7ca4b118fe37c8b8040609b84dc63214d6131c51592486de9bf29ef29c.jpg",
-    "fileExists": true,
-    "hasFile": true,
-    "regions": [
-      "WW"
-    ],
-    "textLangs": [
-      "RUS"
-    ],
-    "description": "",
-    "fileSizeBytes": 0,
-    "realExtension": ".nsp",
-    "dlcCount": 0,
-    "modCount": 0,
-    "isRecommended": false
-  }
+﻿[
+    {
+        "id":  1355,
+        "title":  "Aggelos",
+        "finalTitle":  "Aggelos [WW] [RUS] (1.0.2 - 131072 - 010004D00A9C0000) (1G+1U)",
+        "version":  "1.0.2",
+        "internalVersion":  "",
+        "serialId":  "010004D00A9C0000",
+        "size":  "109,22 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_Aggelos_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1356,
+        "title":  "Aggelos 2",
+        "finalTitle":  "Aggelos 2 [WW] [RUS] (1.0.5 - 327680 - 010040F01EC60000) (1G+1U)",
+        "version":  "1.0.5",
+        "internalVersion":  "",
+        "serialId":  "010040F01EC60000",
+        "size":  "107,12 MB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/uuov0vj1qffnjd27os5d",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1217,
+        "title":  "Animal Well",
+        "finalTitle":  "Animal Well [WW] [RUS] (1.0.10 - 655360 - 010020D01AD24000) (1G+1U)",
+        "version":  "1.0.10",
+        "internalVersion":  "",
+        "serialId":  "010020D01AD24000",
+        "size":  "37,63 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_AnimalWell_V3_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1303,
+        "title":  "Another Eden Begins",
+        "finalTitle":  "Another Eden Begins [WW] [ENG] (1.1.0 - 131072 - 0100F3E024DFC000) (1G+1U)",
+        "version":  "1.1.0",
+        "internalVersion":  "",
+        "serialId":  "0100F3E024DFC000",
+        "size":  "3,61 GB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/pnikpcs0uhydw9lw8672",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1283,
+        "title":  "Anvil Saga",
+        "finalTitle":  "Anvil Saga [WW] [RUS] (1.1.1 - 0 - 0100FC001ACE0000) (1G+1U)",
+        "version":  "1.1.1",
+        "internalVersion":  "",
+        "serialId":  "0100FC001ACE0000",
+        "size":  "694,29 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/anvilsaga/1x1_AnvilSaga_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1360,
+        "title":  "Artis Impact",
+        "finalTitle":  "Artis Impact [WW] [RUS] (1.0.1 - 65536 - 01006DD02868A000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "01006DD02868A000",
+        "size":  "1,39 GB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/mv8kxcjjajbjx536qx0q",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1252,
+        "title":  "Assassin\u0027s Creed III: Remastered",
+        "finalTitle":  "Assassin\u0027s Creed III - Remastered [WW] [RUS] (1.0.3 - 196608 - 01007F600B134000) (1G+1U+2D)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "01007F600B134000",
+        "size":  "15,94 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_AssassinsCreedIIIDefinitiveEdition_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1105,
+        "title":  "Assassin\u0027s Creed: The Ezio Collection",
+        "finalTitle":  "Assassin\u0027s Creed - The Ezio Collection [WW] [RUS] (1.3 - 196608 - 0100670014482000) (1G+1U+5D)",
+        "version":  "1.3",
+        "internalVersion":  "",
+        "serialId":  "0100670014482000",
+        "size":  "27,97 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_AssassinsCreedTheEzioCollection_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1104,
+        "title":  "Assassinâs Creed: The Rebel Collection",
+        "finalTitle":  "Assassinâs Creed - The Rebel Collection [WW] [RUS] (1.0.0 - 0 - 010044700DEB0000) (1G+3D)",
+        "version":  "1.0.0",
+        "internalVersion":  "",
+        "serialId":  "010044700DEB0000",
+        "size":  "20,63 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_AssassinsCreedTheRebelCollection_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1151,
+        "title":  "Brotato",
+        "finalTitle":  "Brotato [WW] [RUS] (1.1.15.4 - 851968 - 01002EF01A316000) (1G+1U+1D)",
+        "version":  "1.1.15.4",
+        "internalVersion":  "",
+        "serialId":  "01002EF01A316000",
+        "size":  "388,19 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_Brotato_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1086,
+        "title":  "Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda",
+        "finalTitle":  "Cadence of Hyrule - Crypt of the NecroDancer featuring The Legend of Zelda [WW] [ENG] (1.5.0 - 458752 - 01000B900D8B0000) (1G+1U+4D)",
+        "version":  "1.5.0",
+        "internalVersion":  "",
+        "serialId":  "01000B900D8B0000",
+        "size":  "1,74 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_CadenceOfHyruleCryptOfTheNecroDancerFeaturingTheLegendOfZelda_v2_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1087,
+        "title":  "Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda",
+        "finalTitle":  "Cadence of Hyrule - Crypt of the NecroDancer featuring The Legend of Zelda [WW] [MOD - RUS] (1.5.0 - 458752 - 01000B900D8B0000) (1G+1U+4D+1M)",
+        "version":  "1.5.0",
+        "internalVersion":  "",
+        "serialId":  "01000B900D8B0000",
+        "size":  "1,73 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_CadenceOfHyruleCryptOfTheNecroDancerFeaturingTheLegendOfZelda_v2_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1088,
+        "title":  "Cadence of Hyrule: Crypt of the NecroDancer featuring The Legend of Zelda",
+        "finalTitle":  "Cadence of Hyrule - Crypt of the NecroDancer featuring The Legend of Zelda [WW] [MOD - RUS] (1.4.0 - 393216 - 01000B900D8B0000) (1G+1U+4D+1M)",
+        "version":  "1.4.0",
+        "internalVersion":  "",
+        "serialId":  "01000B900D8B0000",
+        "size":  "1,76 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_CadenceOfHyruleCryptOfTheNecroDancerFeaturingTheLegendOfZelda_v2_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1312,
+        "title":  "Captain Tsubasa 2: World Fighters",
+        "finalTitle":  "Captain Tsubasa 2 - World Fighters [WW] [ENG] (1.0.2 - 131072 - 01009720213B0000) (1G+1U+4D)",
+        "version":  "1.0.2",
+        "internalVersion":  "",
+        "serialId":  "01009720213B0000",
+        "size":  "9,71 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/captaintsubasa2worldfighters/1x1_CaptainTsubasa2WorldFighters_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1361,
+        "title":  "Captain Tsubasa 2: World Fighters",
+        "finalTitle":  "Captain Tsubasa 2 - World Fighters [WW] [ENG] (1.0.3 - 131072 - 01009720213B0000) (1G+1U+5D)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "01009720213B0000",
+        "size":  "9,69 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/captaintsubasa2worldfighters/1x1_CaptainTsubasa2WorldFighters_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1362,
+        "title":  "Captain Tsubasa 2: World Fighters",
+        "finalTitle":  "Captain Tsubasa 2 - World Fighters [WW] [MOD - M. RUS] (1.0.3 - 131072 - 01009720213B0000) (1G+1U+5D+1M)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "01009720213B0000",
+        "size":  "9,71 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/captaintsubasa2worldfighters/1x1_CaptainTsubasa2WorldFighters_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - M. RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1313,
+        "title":  "Captain Tsubasa: Rise of New Champions",
+        "finalTitle":  "Captain Tsubasa - Rise of New Champions [Month 1 Edition] [WW] [ENG] (1.46 - 1048576 - 0100EAE010560000) (1G+1U+27D)",
+        "version":  "1.46",
+        "internalVersion":  "",
+        "serialId":  "0100EAE010560000",
+        "size":  "13,98 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_CaptainTsubasaRiseOfNewChampions_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1281,
+        "title":  "Castlevania: Dominus Collection",
+        "finalTitle":  "Castlevania - Dominus Collection [WW] [MOD - RUS] (1.3.1 - 196608 - 0100FA501AF90000) (1G+1U+1M)",
+        "version":  "1.3.1",
+        "internalVersion":  "",
+        "serialId":  "0100FA501AF90000",
+        "size":  "1,18 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_CastlevaniaDominusCollection_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1279,
+        "title":  "Castlevania: Dominus Collection",
+        "finalTitle":  "Castlevania - Dominus Collection [WW] [ENG] (1.3.1 - 196608 - 0100FA501AF90000) (1G+1U)",
+        "version":  "1.3.1",
+        "internalVersion":  "",
+        "serialId":  "0100FA501AF90000",
+        "size":  "1,13 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_CastlevaniaDominusCollection_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1354,
+        "title":  "Clockwork Rabbit",
+        "finalTitle":  "Clockwork Rabbit [WW] [RUS] (1.0.0 - 0 - 0100622020F5A000) (1G)",
+        "version":  "1.0.0",
+        "internalVersion":  "",
+        "serialId":  "0100622020F5A000",
+        "size":  "407,44 MB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/ufxlo3aficvsyiamjzg7",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1364,
+        "title":  "Crypt Custodian",
+        "finalTitle":  "Crypt Custodian [WW] [RUS] (1.0.3 - 196608 - 0100A4601ECA8000) (1G+1U)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "0100A4601ECA8000",
+        "size":  "547,01 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_CryptCustodian_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1089,
+        "title":  "Crypt of the NecroDancer",
+        "finalTitle":  "Crypt of the NecroDancer [Nintendo Switch Edition] [WW] [RUS] (4.2.1-b5628 - 655360 - 0100CEA007D08000) (1G+1U+2D)",
+        "version":  "4.2.1-b5628",
+        "internalVersion":  "",
+        "serialId":  "0100CEA007D08000",
+        "size":  "1,79 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_CryptOfTheNecroDancerNintendoSwitchEdition_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1277,
+        "title":  "Darkest Dungeon",
+        "finalTitle":  "Darkest Dungeon [Ancestral Edition] [WW] [RUS] (1.3.1 - 458752 - 01008F1008DA6000) (1G+1U+5D)",
+        "version":  "1.3.1",
+        "internalVersion":  "",
+        "serialId":  "01008F1008DA6000",
+        "size":  "3,26 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_DarkestDungeon_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1278,
+        "title":  "Darkest Dungeon II",
+        "finalTitle":  "Darkest Dungeon II [WW] [RUS] (1.1.0 - 655360 - 0100E5E01C098000) (1G+1U+4D)",
+        "version":  "1.1.0",
+        "internalVersion":  "",
+        "serialId":  "0100E5E01C098000",
+        "size":  "4,00 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_DarkestDungeonII_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1077,
+        "title":  "Dave the Diver",
+        "finalTitle":  "Dave the Diver [Anniversary Edition] [WW] [RUS] (1.0.6.1161 - 2555904 - 010097F018538000) (1G+1U+6D)",
+        "version":  "1.0.6.1161",
+        "internalVersion":  "",
+        "serialId":  "010097F018538000",
+        "size":  "4,60 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_DaveTheDiver_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1256,
+        "title":  "Dave the Diver",
+        "finalTitle":  "Dave the Diver [Anniversary Edition] [WW] [RUS] (1.0.6.1259 - 3014656 - 010097F018538000) (1G+1U+6D)",
+        "version":  "1.0.6.1259",
+        "internalVersion":  "",
+        "serialId":  "010097F018538000",
+        "size":  "4,55 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_DaveTheDiver_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1266,
+        "title":  "DC Super Hero Girls: Teen Power",
+        "finalTitle":  "DC Super Hero Girls - Teen Power [WW] [ENG] (1.0.1 - 65536 - 0100F8F00C4F2000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100F8F00C4F2000",
+        "size":  "1,86 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DCSuperHeroGirlsTeenPower_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1267,
+        "title":  "DC Super Hero Girls: Teen Power",
+        "finalTitle":  "DC Super Hero Girls - Teen Power [WW] [MOD - M. RUS] (1.0.1 - 65536 - 0100F8F00C4F2000) (1G+1U+1M)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100F8F00C4F2000",
+        "size":  "1,85 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DCSuperHeroGirlsTeenPower_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - M. RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1282,
+        "title":  "Dead Cells",
+        "finalTitle":  "Dead Cells [WW] [RUS] (1.25.0 - 3014656 - 0100646009FBE000) (1G+1U+5D)",
+        "version":  "1.25.0",
+        "internalVersion":  "",
+        "serialId":  "0100646009FBE000",
+        "size":  "2,38 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DeadCells_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1206,
+        "title":  "Defender of the Crown: The Legend Returns",
+        "finalTitle":  "Defender of the Crown - The Legend Returns [WW] [RUS] (1.0.1 - 0 - 0100B11027658000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100B11027658000",
+        "size":  "843,11 MB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/xnznx3wpdmxfyrjxwfq6",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1257,
+        "title":  "Defender of the Crown: The Legend Returns",
+        "finalTitle":  "Defender of the Crown - The Legend Returns [WW] [RUS] (1.0.6 - 65536 - 0100B11027658000) (1G+1U)",
+        "version":  "1.0.6",
+        "internalVersion":  "",
+        "serialId":  "0100B11027658000",
+        "size":  "917,12 MB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/xnznx3wpdmxfyrjxwfq6",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1097,
+        "title":  "Devil Jam",
+        "finalTitle":  "Devil Jam [WW] [RUS] (1.0.1 - 65536 - 0100C6A0235D4000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100C6A0235D4000",
+        "size":  "452,07 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/deviljam/1x1_DevilJam_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1148,
+        "title":  "Diablo II: Resurrected",
+        "finalTitle":  "Diablo II - Resurrected [Infernal Edition] [WW] [RUS] (1.0.33.0 - 2162688 - 0100726014352000) (1G+1U+1D+1M)",
+        "version":  "1.0.33.0",
+        "internalVersion":  "",
+        "serialId":  "0100726014352000",
+        "size":  "8,40 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_DiabloIIResurrected_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1258,
+        "title":  "Diablo II: Resurrected",
+        "finalTitle":  "Diablo II - Resurrected [Infernal Edition] [WW] [RUS] (1.0.34.0 - 2228224 - 0100726014352000) (1G+1U+1D+1M)",
+        "version":  "1.0.34.0",
+        "internalVersion":  "",
+        "serialId":  "0100726014352000",
+        "size":  "8,40 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_DiabloIIResurrected_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1149,
+        "title":  "Diablo III: Eternal Collection",
+        "finalTitle":  "Diablo III - Eternal Collection [WW] [RUS] (2.7.7.92380 - 1441792 - 01001B300B9BE000) (1G+1U+4D)",
+        "version":  "2.7.7.92380",
+        "internalVersion":  "",
+        "serialId":  "01001B300B9BE000",
+        "size":  "21,62 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DiabloIIIEternalCollection_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1306,
+        "title":  "Diablo: Hellfire",
+        "finalTitle":  "Diablo - Hellfire [Homebrew] [WW] [RUS + MOD - RUS VOICE] (1.5.5 - 1.09 - 058E630A38C70000) (1G+1U+1M)",
+        "version":  "1.5.5",
+        "internalVersion":  "",
+        "serialId":  "058E630A38C70000",
+        "size":  "1,40 GB",
+        "cover":  "https://upload.wikimedia.org/wikipedia/en/d/d9/HellfireCoverSmall.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1094,
+        "title":  "Dispatch",
+        "finalTitle":  "Dispatch [WW] [RUS] (1.0.17397 - 524288 - 01008BA02525A000) (1G+1U)",
+        "version":  "1.0.17397",
+        "internalVersion":  "",
+        "serialId":  "01008BA02525A000",
+        "size":  "7,03 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_2_games/dispatchns2e/1x1_DispatchNS2E_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1095,
+        "title":  "Dispatch",
+        "finalTitle":  "Dispatch [WW] [RUS] (1.0.17397 - 524288 - 01008BA02525A000) (1G+1U+1M)",
+        "version":  "1.0.17397",
+        "internalVersion":  "",
+        "serialId":  "01008BA02525A000",
+        "size":  "7,31 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_2_games/dispatchns2e/1x1_DispatchNS2E_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1259,
+        "title":  "Dispatch",
+        "finalTitle":  "Dispatch [WW] [RUS] (1.0.17878 - 589824 - 01008BA02525A000) (1G+1U+1D)",
+        "version":  "1.0.17878",
+        "internalVersion":  "",
+        "serialId":  "01008BA02525A000",
+        "size":  "7,03 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_2_games/dispatchns2e/1x1_DispatchNS2E_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1260,
+        "title":  "Dispatch",
+        "finalTitle":  "Dispatch [WW] [RUS] (1.0.17878 - 589824 - 01008BA02525A000) (1G+1U+1D+1M)",
+        "version":  "1.0.17878",
+        "internalVersion":  "",
+        "serialId":  "01008BA02525A000",
+        "size":  "7,03 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_2_games/dispatchns2e/1x1_DispatchNS2E_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1342,
+        "title":  "Dr. Mario Mania",
+        "finalTitle":  "Dr. Mario Mania [Homebrew] [WW] [ENG] (1.0.0 d9f99ee - 1.4.1 - 019232F2781D0000) (1G+1U)",
+        "version":  "1.0.0 d9f99ee",
+        "internalVersion":  "",
+        "serialId":  "019232F2781D0000",
+        "size":  "354,71 KB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/virtual_console_nintendo_3ds_8/SQ_3DSVC_DrMario_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1096,
+        "title":  "Drill Core",
+        "finalTitle":  "Drill Core [WW] [RUS] (1.0.1 - 65536 - 010094D023A28000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "010094D023A28000",
+        "size":  "2,71 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/drillcore/1x1_DrillCore_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1293,
+        "title":  "Dungeons 3",
+        "finalTitle":  "Dungeons 3 [Nintendo Switch Edition] [WW] [RUS] (1.7 - 65536 - 010058C017024000) (1G+1U+4D)",
+        "version":  "1.7",
+        "internalVersion":  "",
+        "serialId":  "010058C017024000",
+        "size":  "5,91 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_Dungeon3NintendoSwitchEdition_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1292,
+        "title":  "Dungeons 4",
+        "finalTitle":  "Dungeons 4 [Nintendo Switch Edition] [WW] [RUS] (1.11 - 589824 - 0100F7901971C000) (1G+1U)",
+        "version":  "1.11",
+        "internalVersion":  "",
+        "serialId":  "0100F7901971C000",
+        "size":  "6,58 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/dungeons4nintendoswitchedition/1x1_Dungeons4NintendoSwitchEdition_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1299,
+        "title":  "Fantasian Neo Dimension",
+        "finalTitle":  "Fantasian Neo Dimension [WW] [ENG] (1.0.2 - 131072 - 01001BB01E8E2000) (1G+1U+1D)",
+        "version":  "1.0.2",
+        "internalVersion":  "",
+        "serialId":  "01001BB01E8E2000",
+        "size":  "6,17 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/fantasianneodimension/1x1_FantasianNeoDimension_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1300,
+        "title":  "Fantasian Neo Dimension",
+        "finalTitle":  "Fantasian Neo Dimension [WW] [MOD - M. RUS] (1.0.2 - 131072 - 01001BB01E8E2000) (1G+1U+1D+1M)",
+        "version":  "1.0.2",
+        "internalVersion":  "",
+        "serialId":  "01001BB01E8E2000",
+        "size":  "6,17 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/fantasianneodimension/1x1_FantasianNeoDimension_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - M. RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1359,
+        "title":  "Finding Teddy II",
+        "finalTitle":  "Finding Teddy II [Definitive Edition] [WW] [RUS] (3.0.5b - 393216 - 0100FF100FB68000) (1G+1U)",
+        "version":  "3.0.5b",
+        "internalVersion":  "",
+        "serialId":  "0100FF100FB68000",
+        "size":  "422,10 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_FindingTeddyTwoDefinitiveEdition_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1203,
+        "title":  "Firewatch",
+        "finalTitle":  "Firewatch [WW] [RUS] (1.0.0 - 0 - 0100AC300919A000) (1G)",
+        "version":  "1.0.0",
+        "internalVersion":  "",
+        "serialId":  "0100AC300919A000",
+        "size":  "2,14 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_Firewatch_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1368,
+        "title":  "Garfield: Escape from Monday",
+        "finalTitle":  "Garfield - Escape from Monday [WW] [ENG] (1.03.02 - 65536 - 01000EB0276F2000) (1G+1U)",
+        "version":  "1.03.02",
+        "internalVersion":  "",
+        "serialId":  "01000EB0276F2000",
+        "size":  "2,85 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/garfieldescapefrommonday/1x1_GarfieldEscapeFromMonday_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1369,
+        "title":  "Garfield: Escape from Monday",
+        "finalTitle":  "Garfield - Escape from Monday [WW] [ENG] (1.03.02 - 65536 - 01000EB0276F2000) (1G+1U) (ÐÐ¾Ð¿Ð¸Ñ)",
+        "version":  "1.03.02 (ÐÐ¾Ð¿Ð¸Ñ)",
+        "internalVersion":  "",
+        "serialId":  "01000EB0276F2000",
+        "size":  "2,85 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/garfieldescapefrommonday/1x1_GarfieldEscapeFromMonday_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1349,
+        "title":  "Gizmoduck",
+        "finalTitle":  "Gizmoduck [Homebrew] [WW] [RUS] (1.1.9 - 14.09.2026 - 01052BA7AC450000) (1G+1U)",
+        "version":  "1.1.9",
+        "internalVersion":  "",
+        "serialId":  "01052BA7AC450000",
+        "size":  "338,71 KB",
+        "cover":  "https://www.nintendo.com/eu/media/images/03_teaser_module_1_square/games_3/wiiu_download_software_1/TM_WiiUDS_DuckTalesRemastered_image500w.png",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1358,
+        "title":  "Golden Force",
+        "finalTitle":  "Golden Force [WW] [ENG] (1.1.6 - 196608 - 01007DE013A48000) (1G+1U)",
+        "version":  "1.1.6",
+        "internalVersion":  "",
+        "serialId":  "01007DE013A48000",
+        "size":  "613,37 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_GoldenForce_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1305,
+        "title":  "Grand Theft Auto V",
+        "finalTitle":  "Grand Theft Auto V [Homebrew] [WW] [RUS] (09.09.2026 - 1.0.2699 - 9b485eb8) (1G+1U)",
+        "version":  "09.09.2026",
+        "internalVersion":  "",
+        "serialId":  "9b485eb8",
+        "size":  "55,51 GB",
+        "cover":  "https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_V.png",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1357,
+        "title":  "Hello Kitty: Island Adventure",
+        "finalTitle":  "Hello Kitty - Island Adventure [Deluxe Edition] [WW] [RUS] (2.18.1 - 1376256 - 010027901C89C000) (1G+1U+4D)",
+        "version":  "2.18.1",
+        "internalVersion":  "",
+        "serialId":  "010027901C89C000",
+        "size":  "2,96 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/hellokittyislandadventure/1x1_HelloKittyIslandAdventure_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1290,
+        "title":  "Inazuma Eleven: Victory Road",
+        "finalTitle":  "Inazuma Eleven - Victory Road [WW] [ENG] (7.0.0 - 1048576 - 0100B36008F90000) (1G+1U+2D)",
+        "version":  "7.0.0",
+        "internalVersion":  "",
+        "serialId":  "0100B36008F90000",
+        "size":  "28,91 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/inazumaelevenvictoryroad/1x1_InazumaElevenVictoryRoad_EN_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1307,
+        "title":  "It Takes Two",
+        "finalTitle":  "It Takes Two [WW] [RUS] (1.0.3 - 196608 - 010092A0172E4000) (1G+1U+2D)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "010092A0172E4000",
+        "size":  "10,08 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_ItTakesTwo_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1308,
+        "title":  "It Takes Two",
+        "finalTitle":  "It Takes Two [WW] [RUS + MOD - RUS VOICE] (1.0.3 - 196608 - 010092A0172E4000) (1G+1U+2D+1M)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "010092A0172E4000",
+        "size":  "10,39 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_ItTakesTwo_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1366,
+        "title":  "Kalanoro",
+        "finalTitle":  "Kalanoro [WW] [RUS] (1.02.2021 - 262144 - 0100EB60202C8000) (1G+1U)",
+        "version":  "1.02.2021",
+        "internalVersion":  "",
+        "serialId":  "0100EB60202C8000",
+        "size":  "3,19 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/kalanoro/1x1_Kalanoro_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1153,
+        "title":  "LEGO Star Wars: The Skywalker Saga",
+        "finalTitle":  "LEGO Star Wars - The Skywalker Saga [WW] [RUS] (1.10.0 - 589824 - 010042D00D900000) (1G+1U+17D)",
+        "version":  "1.10.0",
+        "internalVersion":  "",
+        "serialId":  "010042D00D900000",
+        "size":  "15,91 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_LegoStarWarsTheSkywalkerSaga_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1291,
+        "title":  "Little Big Adventure: Twinsen\u0027s Quest",
+        "finalTitle":  "Little Big Adventure - Twinsen\u0027s Quest [WW] [RUS] (1.1.3.4 - 327680 - 0100BB901FA12000) (1G+1U)",
+        "version":  "1.1.3.4",
+        "internalVersion":  "",
+        "serialId":  "0100BB901FA12000",
+        "size":  "2,17 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/littlebigadventuretwinsensquest/1x1_LittleBigAdventureTwinsensQuest_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1091,
+        "title":  "Little Nightmares",
+        "finalTitle":  "Little Nightmares [Complete Edition] [WW] [RUS] (1.0.4 - 262144 - 01002FC00412C000) (1G+1U+2D)",
+        "version":  "1.0.4",
+        "internalVersion":  "",
+        "serialId":  "01002FC00412C000",
+        "size":  "2,82 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_LittleNightmaresCompleteEdition_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1092,
+        "title":  "Little Nightmares II",
+        "finalTitle":  "Little Nightmares II [WW] [RUS] (1.4 - 262144 - 010097100EDD6000) (1G+1U+2D)",
+        "version":  "1.4",
+        "internalVersion":  "",
+        "serialId":  "010097100EDD6000",
+        "size":  "4,96 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_LittleNightmaresII_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1093,
+        "title":  "Little Nightmares III",
+        "finalTitle":  "Little Nightmares III [WW] [RUS] (1.1.0 - 327680 - 010066101A55A000) (1G+1U+6D)",
+        "version":  "1.1.0",
+        "internalVersion":  "",
+        "serialId":  "010066101A55A000",
+        "size":  "8,27 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/littlenightmaresiii_1/1x1_LittleNightmaresIII_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1261,
+        "title":  "Little Nightmares III",
+        "finalTitle":  "Little Nightmares III [WW] [RUS] (1.1.1 - 393216 - 010066101A55A000) (1G+1U+6D)",
+        "version":  "1.1.1",
+        "internalVersion":  "",
+        "serialId":  "010066101A55A000",
+        "size":  "8,27 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/littlenightmaresiii_1/1x1_LittleNightmaresIII_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1346,
+        "title":  "Maestro",
+        "finalTitle":  "Maestro [WW] [RUS] (1.0.4 - 262144 - 0100E1C0252F8000) (1G+1U+1D)",
+        "version":  "1.0.4",
+        "internalVersion":  "",
+        "serialId":  "0100E1C0252F8000",
+        "size":  "2,96 GB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/fj3inknfvf8hvgfjerci",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1334,
+        "title":  "Mario \u0026 Luigi: Brothership",
+        "finalTitle":  "Mario \u0026 Luigi - Brothership [WW] [ENG] (1.0.1 - 65536 - 01006D0017F7A000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "01006D0017F7A000",
+        "size":  "9,85 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioLuigiBrothership_Base_GB_en_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1336,
+        "title":  "Mario \u0026 Luigi: Brothership",
+        "finalTitle":  "Mario \u0026 Luigi - Brothership [WW] [MOD - RUS] (1.0.1 - 65536 - 01006D0017F7A000) (1G+1U+1M)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "01006D0017F7A000",
+        "size":  "9,85 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioLuigiBrothership_Base_GB_en_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1316,
+        "title":  "Mario \u0026 Sonic at the Olympic Games Tokyo 2020",
+        "finalTitle":  "Mario \u0026 Sonic at the Olympic Games Tokyo 2020 [WW] [RUS] (1.0.1 - 65536 - 010003000E146000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "010003000E146000",
+        "size":  "6,38 GB",
+        "cover":  "https://upload.wikimedia.org/wikipedia/en/1/1a/Mario_%26_Sonic_at_the_Olympic_Games_Tokyo_2020_box_art.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1314,
+        "title":  "Mario + Rabbids: Kingdom Battle",
+        "finalTitle":  "Mario + Rabbids - Kingdom Battle [Gold Edition] [WW] [RUS] (1.9.589692 - 589824 - 010067300059A000) (1G+1U+4D)",
+        "version":  "1.9.589692",
+        "internalVersion":  "",
+        "serialId":  "010067300059A000",
+        "size":  "4,39 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioAndRabbidsKingdomBattle_EU_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1318,
+        "title":  "Mario + Rabbids: Sparks of Hope",
+        "finalTitle":  "Mario + Rabbids - Sparks of Hope [WW] [RUS] (1.6.2225577 - 393216 - 0100317013770000) (1G+1U+7D)",
+        "version":  "1.6.2225577",
+        "internalVersion":  "",
+        "serialId":  "0100317013770000",
+        "size":  "8,83 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioAndRabbidsSparksOfHope_enGB_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1322,
+        "title":  "Mario Golf: Super Rush",
+        "finalTitle":  "Mario Golf - Super Rush [WW] [RUS] (4.0.0 - 262144 - 0100C9C00E25C000) (1G+1U)",
+        "version":  "4.0.0",
+        "internalVersion":  "",
+        "serialId":  "0100C9C00E25C000",
+        "size":  "3,84 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioGolfSuperRush_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1344,
+        "title":  "Mario Kart 64",
+        "finalTitle":  "Mario Kart 64 [Homebrew] [WW] [ENG] (1.0.0 - Bolognese Alfa 1732542 - 01849C8CA8080000) (1G)",
+        "version":  "1.0.0",
+        "internalVersion":  "",
+        "serialId":  "01849C8CA8080000",
+        "size":  "90,59 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_9/SQ_N64_MarioKart64_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1309,
+        "title":  "Mario Kart 8 Deluxe",
+        "finalTitle":  "Mario Kart 8 Deluxe [WW] [RUS] (4.0.0 - 1441792 - 0100152000022000) (1G+1U+1D)",
+        "version":  "4.0.0",
+        "internalVersion":  "",
+        "serialId":  "0100152000022000",
+        "size":  "11,36 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioKart8Deluxe_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1323,
+        "title":  "Mario Party Superstars",
+        "finalTitle":  "Mario Party Superstars [WW] [RUS] (1.1.1 - 131072 - 01006FE013472000) (1G+1U)",
+        "version":  "1.1.1",
+        "internalVersion":  "",
+        "serialId":  "01006FE013472000",
+        "size":  "2,72 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioPartySuperStars_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1324,
+        "title":  "Mario Strikers: Battle League Football",
+        "finalTitle":  "Mario Strikers - Battle League Football [WW] [RUS] (1.3.2 - 393216 - 010019401051C000) (1G+1U+1M)",
+        "version":  "1.3.2",
+        "internalVersion":  "",
+        "serialId":  "010019401051C000",
+        "size":  "2,71 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioStrikersBattleLeagueFootball_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1330,
+        "title":  "Mario Tennis Aces",
+        "finalTitle":  "Mario Tennis Aces [WW] [RUS] (3.1.1 - 851968 - 0100BDE00862A000) (1G+1U)",
+        "version":  "3.1.1",
+        "internalVersion":  "",
+        "serialId":  "0100BDE00862A000",
+        "size":  "2,28 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioTennisAces_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1325,
+        "title":  "Mario vs. Donkey Kong",
+        "finalTitle":  "Mario vs. Donkey Kong [WW] [ENG] (1.0.1 - 65536 - 0100B99019412000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100B99019412000",
+        "size":  "1,28 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioVsDonkeyKong_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1326,
+        "title":  "Mario vs. Donkey Kong",
+        "finalTitle":  "Mario vs. Donkey Kong [WW] [MOD - RUS] (1.0.1 - 65536 - 0100B99019412000) (1G+1U+1M)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100B99019412000",
+        "size":  "1,28 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioVsDonkeyKong_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1102,
+        "title":  "Marvel Cosmic Invasion",
+        "finalTitle":  "Marvel Cosmic Invasion [WW] [RUS] (1.0.6 - 327680 - 010059D020C26000) (1G+1U+1D)",
+        "version":  "1.0.6",
+        "internalVersion":  "",
+        "serialId":  "010059D020C26000",
+        "size":  "626,82 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/marvelcosmicinvasion_1/1x1_MarvelCosmicInvasion_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1107,
+        "title":  "Marvel Cosmic Invasion",
+        "finalTitle":  "Marvel Cosmic Invasion [WW] [RUS] (1.0.7 - 393216 - 010059D020C26000) (1G+1U+1D)",
+        "version":  "1.0.7",
+        "internalVersion":  "",
+        "serialId":  "010059D020C26000",
+        "size":  "626,82 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/marvelcosmicinvasion_1/1x1_MarvelCosmicInvasion_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1152,
+        "title":  "Metroid Dread",
+        "finalTitle":  "Metroid Dread [WW] [RUS] (2.1.0 - 327680 - 010093801237C000) (1G+1U)",
+        "version":  "2.1.0",
+        "internalVersion":  "",
+        "serialId":  "010093801237C000",
+        "size":  "4,97 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MetroidDread_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1106,
+        "title":  "Mortal Kombat 1",
+        "finalTitle":  "Mortal Kombat 1 [WW] [RUS] (1.29.0 - 1900544 - 01006560184E6000) (1G+1U+1D)",
+        "version":  "1.29.0",
+        "internalVersion":  "",
+        "serialId":  "01006560184E6000",
+        "size":  "42,54 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MortalKombat1_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1196,
+        "title":  "Mortal Kombat 11",
+        "finalTitle":  "Mortal Kombat 11 [WW] [RUS] (1.0.26 - 1703936 - 0100F2200C984000) (1G+1U+31D)",
+        "version":  "1.0.26",
+        "internalVersion":  "",
+        "serialId":  "0100F2200C984000",
+        "size":  "26,06 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MortalKombat11_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1332,
+        "title":  "New Super Mario Bros. U Deluxe",
+        "finalTitle":  "New Super Mario Bros. U Deluxe [WW] [RUS] (1.0.2 - 131072 - 0100EA80032EA000) (1G+1U)",
+        "version":  "1.0.2",
+        "internalVersion":  "",
+        "serialId":  "0100EA80032EA000",
+        "size":  "2,52 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_NewSuperMarioBrosUDeluxe_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1320,
+        "title":  "Paper Mario: The Origami King",
+        "finalTitle":  "Paper Mario - The Origami King [WW] [ENG] (1.0.1 - 65536 - 0100A3900C3E2000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100A3900C3E2000",
+        "size":  "6,46 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_PaperMarioTheOrigamiKing_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1321,
+        "title":  "Paper Mario: The Origami King",
+        "finalTitle":  "Paper Mario - The Origami King [WW] [MOD - RUS] (1.0.1 - 65536 - 0100A3900C3E2000) (1G+1U+1M)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100A3900C3E2000",
+        "size":  "6,52 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_PaperMarioTheOrigamiKing_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1341,
+        "title":  "Paper Mario: The Thousand-Year Door",
+        "finalTitle":  "Paper Mario - The Thousand-Year Door [WW] [ENG] (1.0.1 - 65536 - 0100ECD018EBE000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100ECD018EBE000",
+        "size":  "5,08 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_PaperMarioTheThousandYearDoor_GB_en_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1301,
+        "title":  "PokÐµmon Legends: Z-A",
+        "finalTitle":  "PokÐµmon Legends - Z-A [WW] [ENG] (2.0.2 - 393216 - 0100F43008C44000) (1G+1U+1D)",
+        "version":  "2.0.2",
+        "internalVersion":  "",
+        "serialId":  "0100F43008C44000",
+        "size":  "5,63 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/pokemonlegendsza/1x1_NSwitch2_PokemonLegendsZA_KV_GB_en_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1302,
+        "title":  "PokÐµmon Legends: Z-A",
+        "finalTitle":  "PokÐµmon Legends - Z-A [WW] [MOD - M. RUS] (2.0.2 - 393216 - 0100F43008C44000) (1G+1U+1D+1M)",
+        "version":  "2.0.2",
+        "internalVersion":  "",
+        "serialId":  "0100F43008C44000",
+        "size":  "5,63 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/pokemonlegendsza/1x1_NSwitch2_PokemonLegendsZA_KV_GB_en_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - M. RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1294,
+        "title":  "Poppy Playtime: Chapter 1",
+        "finalTitle":  "Poppy Playtime - Chapter 1 [WW] [RUS] (2.4 - 327680 - 0100C3801C786000) (1G+1U)",
+        "version":  "2.4",
+        "internalVersion":  "",
+        "serialId":  "0100C3801C786000",
+        "size":  "2,55 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_PoppyPlaytimeChapter1_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1295,
+        "title":  "Poppy Playtime: Chapter 2",
+        "finalTitle":  "Poppy Playtime - Chapter 2 [WW] [RUS] (1.4 - 262144 - 0100D3801E6CE000) (1G+1U)",
+        "version":  "1.4",
+        "internalVersion":  "",
+        "serialId":  "0100D3801E6CE000",
+        "size":  "6,25 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter2/1x1_PoppyPlaytimeChapter2_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1296,
+        "title":  "Poppy Playtime: Chapter 3",
+        "finalTitle":  "Poppy Playtime - Chapter 3 [WW] [RUS] (1.2 - 196608 - 0100BD601EC3E000) (1G+1U)",
+        "version":  "1.2",
+        "internalVersion":  "",
+        "serialId":  "0100BD601EC3E000",
+        "size":  "2,44 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter3/1x1_PoppyPlaytimeChapter3_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1297,
+        "title":  "Poppy Playtime: Chapter 4",
+        "finalTitle":  "Poppy Playtime - Chapter 4 [WW] [RUS] (1.3 - 196608 - 0100A2902051A000) (1G+1U)",
+        "version":  "1.3",
+        "internalVersion":  "",
+        "serialId":  "0100A2902051A000",
+        "size":  "2,61 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter4/1x1_PoppyPlaytimeChapter4_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1298,
+        "title":  "Poppy Playtime: Chapter 5",
+        "finalTitle":  "Poppy Playtime - Chapter 5 [WW] [RUS] (2.0 - 131072 - 010075D026910000) (1G+1U)",
+        "version":  "2.0",
+        "internalVersion":  "",
+        "serialId":  "010075D026910000",
+        "size":  "6,83 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter5/1x1_PoppyPlaytimeChapter5_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1365,
+        "title":  "Qliphah in Providence\u0027s Shadow",
+        "finalTitle":  "Qliphah in Providence\u0027s Shadow [WW] [ENG] (1.0.3 - 131072 - 01008E20257E0000) (1G+1U)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "01008E20257E0000",
+        "size":  "1,21 GB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/zcxmw0qbm6ytnvgf69ey",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1315,
+        "title":  "Rabbids: Party of Legends",
+        "finalTitle":  "Rabbids - Party of Legends [WW] [RUS] (1.0.1 - 65536 - 01008970149B0000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "01008970149B0000",
+        "size":  "2,96 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_RabbidsPartyOfLegends_EN_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1348,
+        "title":  "Reus 2",
+        "finalTitle":  "Reus 2 [WW] [RUS] (1.5.6 - 65536 - 01009D6022DC2000) (1G+1U+1D)",
+        "version":  "1.5.6",
+        "internalVersion":  "",
+        "serialId":  "01009D6022DC2000",
+        "size":  "1,47 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/reus2/1x1_Reus2_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1090,
+        "title":  "Rift of the NecroDancer",
+        "finalTitle":  "Rift of the NecroDancer [WW] [RUS] (1.11.0 - 458752 - 0100BDA01AABC000) (1G+1U+23D)",
+        "version":  "1.11.0",
+        "internalVersion":  "",
+        "serialId":  "0100BDA01AABC000",
+        "size":  "9,07 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/riftofthenecrodancer/1x1_RiftOfTheNecroDancer_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1262,
+        "title":  "Rift of the NecroDancer",
+        "finalTitle":  "Rift of the NecroDancer [WW] [RUS] (1.14.0 - 524288 - 0100BDA01AABC000) (1G+1U+23D)",
+        "version":  "1.14.0",
+        "internalVersion":  "",
+        "serialId":  "0100BDA01AABC000",
+        "size":  "9,07 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/riftofthenecrodancer/1x1_RiftOfTheNecroDancer_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1100,
+        "title":  "Scott Pilgrim EX",
+        "finalTitle":  "Scott Pilgrim EX [WW] [RUS] (1.0.0.14564 - 327680 - 0100D59022590000) (1G+1U)",
+        "version":  "1.0.0.14564",
+        "internalVersion":  "",
+        "serialId":  "0100D59022590000",
+        "size":  "847,36 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/scottpilgrimex/1x1_ScottPilgrimEx_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1263,
+        "title":  "Scott Pilgrim EX",
+        "finalTitle":  "Scott Pilgrim EX [WW] [RUS] (1.0.0.15225 - 393216 - 0100D59022590000) (1G+1U+1D)",
+        "version":  "1.0.0.15225",
+        "internalVersion":  "",
+        "serialId":  "0100D59022590000",
+        "size":  "1,03 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/scottpilgrimex/1x1_ScottPilgrimEx_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1274,
+        "title":  "Shining Resonance Refrain",
+        "finalTitle":  "Shining Resonance Refrain [WW] [ENG] (1.0.1 - 65536 - 01009A5009A9E000) (1G+1U+1D)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "01009A5009A9E000",
+        "size":  "7,88 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_ShiningResonanceRefrain_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1275,
+        "title":  "Shining Resonance Refrain",
+        "finalTitle":  "Shining Resonance Refrain [WW] [MOD - RUS] (1.0.1 - 65536 - 01009A5009A9E000) (1G+1U+1D+1M)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "01009A5009A9E000",
+        "size":  "7,94 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_ShiningResonanceRefrain_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1076,
+        "title":  "Signalis",
+        "finalTitle":  "Signalis [WW] [RUS] (1.4 - 0100307018934000) (1G+1U)",
+        "version":  "1.4",
+        "internalVersion":  "",
+        "serialId":  "0100307018934000",
+        "size":  "2,17 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_Signalis_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1103,
+        "title":  "Stardew Valley",
+        "finalTitle":  "Stardew Valley [WW] [RUS] (1.6.15.13 - 1310720 - 0100E65002BB8000) (1G+1U)",
+        "version":  "1.6.15.13",
+        "internalVersion":  "",
+        "serialId":  "0100E65002BB8000",
+        "size":  "667,72 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_StardewValley_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1101,
+        "title":  "Streets of Rage 4",
+        "finalTitle":  "Streets of Rage 4 [WW] [RUS] (1.0.9 - 458752 - 0100EC9010258000) (1G+1U+1D)",
+        "version":  "1.0.9",
+        "internalVersion":  "",
+        "serialId":  "0100EC9010258000",
+        "size":  "3,73 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_StreetsOfRage4_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1331,
+        "title":  "Super Mario 3D World + Bowser\u0027s Fury",
+        "finalTitle":  "Super Mario 3D World + Bowser\u0027s Fury [WW] [RUS] (1.2.2 - 262144 - 010028600EBDA000) (1G+1U)",
+        "version":  "1.2.2",
+        "internalVersion":  "",
+        "serialId":  "010028600EBDA000",
+        "size":  "2,87 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMario3DWorldAndBowsersFury_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1343,
+        "title":  "Super Mario Bros. Remastered",
+        "finalTitle":  "Super Mario Bros. Remastered [Homebrew] [WW] [RUS] (1.0.0 d569266 - 1.0.2-e23cbba - 01542031DCEC0000) (1G+1U)",
+        "version":  "1.0.0 d569266",
+        "internalVersion":  "",
+        "serialId":  "01542031DCEC0000",
+        "size":  "402,71 KB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/virtual_console_nintendo_3ds_8/SQ_3DSVC_SuperMarioBros_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1150,
+        "title":  "Super Mario Bros. Wonder",
+        "finalTitle":  "Super Mario Bros. Wonder [WW] [RUS] (1.2.1 - 327680 - 010015100B514000) (1G+1U)",
+        "version":  "1.2.1",
+        "internalVersion":  "",
+        "serialId":  "010015100B514000",
+        "size":  "3,52 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioBrosWonder_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1345,
+        "title":  "Super Mario Bros. X",
+        "finalTitle":  "Super Mario Bros. X [Homebrew] [WW] [RUS] (1.3.7.3 - 0 - 0132B3143DF50000) (1G+1U)",
+        "version":  "1.3.7.3",
+        "internalVersion":  "",
+        "serialId":  "0132B3143DF50000",
+        "size":  "386,71 KB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/virtual_console_nintendo_3ds_8/SQ_3DSVC_SuperMarioBros_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1337,
+        "title":  "Super Mario Galaxy",
+        "finalTitle":  "Super Mario Galaxy [WW] [ENG] (1.3.1 - 327680 - 010099C022B96000) (1G+1U)",
+        "version":  "1.3.1",
+        "internalVersion":  "",
+        "serialId":  "010099C022B96000",
+        "size":  "3,32 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/supermariogalaxy/1x1_NSwitch_SuperMarioGalaxy_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1338,
+        "title":  "Super Mario Galaxy",
+        "finalTitle":  "Super Mario Galaxy [WW] [MOD - RUS] (1.3.1 - 327680 - 010099C022B96000) (1G+1U+1M)",
+        "version":  "1.3.1",
+        "internalVersion":  "",
+        "serialId":  "010099C022B96000",
+        "size":  "3,32 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/supermariogalaxy/1x1_NSwitch_SuperMarioGalaxy_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1339,
+        "title":  "Super Mario Galaxy 2",
+        "finalTitle":  "Super Mario Galaxy 2 [WW] [ENG] (1.4.0 - 393216 - 0100FD8022DAA000) (1G+1U)",
+        "version":  "1.4.0",
+        "internalVersion":  "",
+        "serialId":  "0100FD8022DAA000",
+        "size":  "2,64 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/supermariogalaxy2/1x1_NSwitch_SuperMarioGalaxy2_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1340,
+        "title":  "Super Mario Galaxy 2",
+        "finalTitle":  "Super Mario Galaxy 2 [WW] [MOD - RUS] (1.4.0 - 393216 - 0100FD8022DAA000) (1G+1U+1M)",
+        "version":  "1.4.0",
+        "internalVersion":  "",
+        "serialId":  "0100FD8022DAA000",
+        "size":  "2,64 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/supermariogalaxy2/1x1_NSwitch_SuperMarioGalaxy2_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1333,
+        "title":  "Super Mario Maker 2",
+        "finalTitle":  "Super Mario Maker 2 [WW] [RUS] (3.0.3 - 458752 - 01009B90006DC000) (1G+1U)",
+        "version":  "3.0.3",
+        "internalVersion":  "",
+        "serialId":  "01009B90006DC000",
+        "size":  "2,92 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMarioMaker2_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1310,
+        "title":  "Super Mario Odyssey",
+        "finalTitle":  "Super Mario Odyssey [WW] [RUS] (1.4.1 - 393216 - 0100000000010000) (1G+1U)",
+        "version":  "1.4.1",
+        "internalVersion":  "",
+        "serialId":  "0100000000010000",
+        "size":  "5,38 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMarioOdyssey_Alt01_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1319,
+        "title":  "Super Mario Party",
+        "finalTitle":  "Super Mario Party [WW] [RUS] (1.1.0 - 131072 - 010036B0034E4000) (1G+1U)",
+        "version":  "1.1.0",
+        "internalVersion":  "",
+        "serialId":  "010036B0034E4000",
+        "size":  "2,77 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMarioParty_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1329,
+        "title":  "Super Mario Party Jamboree",
+        "finalTitle":  "Super Mario Party Jamboree [WW] [RUS] (2.3.0 - 458752 - 0100965017338000) (1G+1U)",
+        "version":  "2.3.0",
+        "internalVersion":  "",
+        "serialId":  "0100965017338000",
+        "size":  "5,34 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioPartyJamboree_BASE_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1327,
+        "title":  "Super Mario RPG",
+        "finalTitle":  "Super Mario RPG [WW] [ENG] (1.0.1 - 65536 - 0100BC0018138000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100BC0018138000",
+        "size":  "6,40 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioRPG_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1328,
+        "title":  "Super Mario RPG",
+        "finalTitle":  "Super Mario RPG [WW] [MOD - RUS] (1.0.1 - 65536 - 0100BC0018138000) (1G+1U+1M)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100BC0018138000",
+        "size":  "6,40 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioRPG_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1201,
+        "title":  "Super Robot Wars 30",
+        "finalTitle":  "Super Robot Wars 30 [WW] [ENG] (1.3.4 - 1048576 - 010022201229A000) (1G+1U+16D)",
+        "version":  "1.3.4",
+        "internalVersion":  "",
+        "serialId":  "010022201229A000",
+        "size":  "15,46 GB",
+        "cover":  "https://img-eshop.cdn.nintendo.net/i/2035f3f0fc956dc61d691a2d3234974d6416f8175a9fc0989bfb8e6cf9477c92.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1200,
+        "title":  "Super Robot Wars T",
+        "finalTitle":  "Super Robot Wars T [WW] [ENG] (1.0.5 - 327680 - 01006C900CC60000) (1G+1U+25D+1M)",
+        "version":  "1.0.5",
+        "internalVersion":  "",
+        "serialId":  "01006C900CC60000",
+        "size":  "6,04 GB",
+        "cover":  "https://img-eshop.cdn.nintendo.net/i/fc9a60cfb3a86cc0fbb45cc5377cd3d4ae1fa5dd05ebd8be991480992c809d46.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1198,
+        "title":  "Super Robot Wars V",
+        "finalTitle":  "Super Robot Wars V [WW] [ENG] (1.0.2 - 131072 - 0100CA400E300000) (1G+1U+7D+1M)",
+        "version":  "1.0.2",
+        "internalVersion":  "",
+        "serialId":  "0100CA400E300000",
+        "size":  "6,09 GB",
+        "cover":  "https://img-eshop.cdn.nintendo.net/i/77cf808ec79894dca98a64d9c0b281f3b513992f84897967f8e115891d4cd91f.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1199,
+        "title":  "Super Robot Wars X",
+        "finalTitle":  "Super Robot Wars X [WW] [ENG] (1.0.1 - 65536 - 010026800E304000) (1G+1U+6D+1M)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "010026800E304000",
+        "size":  "5,52 GB",
+        "cover":  "https://img-eshop.cdn.nintendo.net/i/7a48b73ce4dbcacbf25a4103ffad0f4414bcefc0a39d94ebcdc28f66e2e09f7d.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1197,
+        "title":  "Super Robot Wars Y",
+        "finalTitle":  "Super Robot Wars Y [WW] [ENG] (1.4.0 - 655360 - 010063301BD50000) (1G+1U+10D)",
+        "version":  "1.4.0",
+        "internalVersion":  "",
+        "serialId":  "010063301BD50000",
+        "size":  "16,83 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/superrobotwarsy/1x1_SuperRobotWarsY_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1268,
+        "title":  "Tales of Berseria: Remastered",
+        "finalTitle":  "Tales of Berseria - Remastered [WW] [RUS] (1.0.5 - 262144 - 0100C2801F22C000) (1G+1U+9D)",
+        "version":  "1.0.5",
+        "internalVersion":  "",
+        "serialId":  "0100C2801F22C000",
+        "size":  "9,07 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofberseriaremastered/1x1_TalesOfBerseriaRemastered_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1273,
+        "title":  "Tales of Graces f: Remastered",
+        "finalTitle":  "Tales of Graces f - Remastered [WW] [RUS] (1.0.3 - 196608 - 01005E701D168000) (1G+1U+2D)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "01005E701D168000",
+        "size":  "10,78 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofgracesfremastered/1x1_TalesOfGracesFRemastered_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1272,
+        "title":  "Tales of Symphonia: Remastered",
+        "finalTitle":  "Tales of Symphonia - Remastered [WW] [RUS] (1.3.1 - 262144 - 0100A410169A4000) (1G+1U)",
+        "version":  "1.3.1",
+        "internalVersion":  "",
+        "serialId":  "0100A410169A4000",
+        "size":  "19,47 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TalesOfSymphoniaRemastered_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1271,
+        "title":  "Tales of Vesperia",
+        "finalTitle":  "Tales of Vesperia [Definitive Edition] [WW] [RUS] (1.0.2 - 131072 - 01002C0008E52000) (1G+1U+2D)",
+        "version":  "1.0.2",
+        "internalVersion":  "",
+        "serialId":  "01002C0008E52000",
+        "size":  "12,93 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_TalesOfVesperiaDefinitiveEdition_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1270,
+        "title":  "Tales of Xillia: Remastered",
+        "finalTitle":  "Tales of Xillia - Remastered [WW] [RUS] (1.0.3 - 196608 - 0100F1101BB9E000) (1G+1U+2M)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "0100F1101BB9E000",
+        "size":  "10,15 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofxilliaremastered/1x1_TalesOfXilliaRemastered_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1205,
+        "title":  "Teenage Mutant Ninja Turtles: Splintered Fate",
+        "finalTitle":  "Teenage Mutant Ninja Turtles - Splintered Fate [WW] [RUS] (2.0.1 - 1966080 - 01005CF01E784000) (1G+1U+4D)",
+        "version":  "2.0.1",
+        "internalVersion":  "",
+        "serialId":  "01005CF01E784000",
+        "size":  "1,16 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_TeenageMutantNinjaTurtlesSplinteredFate_new_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1264,
+        "title":  "Teenage Mutant Ninja Turtles: Splintered Fate",
+        "finalTitle":  "Teenage Mutant Ninja Turtles - Splintered Fate [WW] [RUS] (2.0.3 - 2031616 - 01005CF01E784000) (1G+1U+4D)",
+        "version":  "2.0.3",
+        "internalVersion":  "",
+        "serialId":  "01005CF01E784000",
+        "size":  "1,16 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_TeenageMutantNinjaTurtlesSplinteredFate_new_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1367,
+        "title":  "Tentacle Tango",
+        "finalTitle":  "Tentacle Tango [WW] [ENG] (1.0.1 - 65536 - 01001AA022B66000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "01001AA022B66000",
+        "size":  "638,34 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/tentacletango/1x1_TentacleTango_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1289,
+        "title":  "Terminator 2D: No Fate",
+        "finalTitle":  "Terminator 2D - No Fate [WW] [RUS] (1.0.4 - 262144 - 0100B51020B68000) (1G+1U)",
+        "version":  "1.0.4",
+        "internalVersion":  "",
+        "serialId":  "0100B51020B68000",
+        "size":  "590,58 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/terminator2dnofate/1x1_Terminator2DNoFate_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1078,
+        "title":  "The Art of Dave the Diver: Digital Artbook",
+        "finalTitle":  "The Art of Dave the Diver - Digital Artbook [WW] [RUS] (1.1 - 131072 - 01005EC01E6A4000) (1G+1U)",
+        "version":  "1.1",
+        "internalVersion":  "",
+        "serialId":  "01005EC01E6A4000",
+        "size":  "302,74 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_DaveTheDiver_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1285,
+        "title":  "The Coma 2: Vicious Sisters",
+        "finalTitle":  "The Coma 2 - Vicious Sisters [WW] [RUS] (1.3.0 - 65536 - 0100B7C01169C000) (1G+1U+8D)",
+        "version":  "1.3.0",
+        "internalVersion":  "",
+        "serialId":  "0100B7C01169C000",
+        "size":  "806,75 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_TheComa2ViciousSisters_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1286,
+        "title":  "The Coma 2B: Catacomb",
+        "finalTitle":  "The Coma 2B - Catacomb [WW] [RUS] (1.5.0 - 327680 - 0100A31020078000) (1G+1U+3D)",
+        "version":  "1.5.0",
+        "internalVersion":  "",
+        "serialId":  "0100A31020078000",
+        "size":  "1,49 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/thecoma2bcatacomb/1x1_TheComa2BCatacomb_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1287,
+        "title":  "The Coma 3: Bloodlines",
+        "finalTitle":  "The Coma 3 - Bloodlines [WW] [RUS] (1.0.0 - 0 - 0100919027DBE000) (1G+8D)",
+        "version":  "1.0.0",
+        "internalVersion":  "",
+        "serialId":  "0100919027DBE000",
+        "size":  "798,28 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/thecoma3bloodlines/1x1_TheComa3Bloodlines_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1284,
+        "title":  "The Coma: Recut",
+        "finalTitle":  "The Coma - Recut [WW] [RUS] (1.0.1 - 65536 - 010033100691A000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "010033100691A000",
+        "size":  "1,11 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_TheComaRecut_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1311,
+        "title":  "The Last Faith",
+        "finalTitle":  "The Last Faith [WW] [RUS] (1.9.13858.20.9 - 655360 - 0100C69018E4A000) (1G+1U+1D)",
+        "version":  "1.9.13858.20.9",
+        "internalVersion":  "",
+        "serialId":  "0100C69018E4A000",
+        "size":  "2,54 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_TheLastFaith_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1353,
+        "title":  "The Legend of Heroes: Trails in the Sky 2nd Chapter: Remake",
+        "finalTitle":  "The Legend of Heroes - Trails in the Sky 2nd Chapter - Remake [WW] [ENG] (1.0.0 - 0 - 01007A2027548000) (1G+30D)",
+        "version":  "1.0.0",
+        "internalVersion":  "",
+        "serialId":  "01007A2027548000",
+        "size":  "18,46 GB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/fg0htmfgjrnu87m4m9oo",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1351,
+        "title":  "The Legend of Heroes: Trails to Azure",
+        "finalTitle":  "The Legend of Heroes - Trails to Azure [WW] [ENG] (1.2.5 - 262144 - 0100FBE015910000) (1G+1U)",
+        "version":  "1.2.5",
+        "internalVersion":  "",
+        "serialId":  "0100FBE015910000",
+        "size":  "6,00 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TheLegendOfHeroesTrailsToAzure_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1352,
+        "title":  "The Legend of Heroes: Trails to Azure",
+        "finalTitle":  "The Legend of Heroes - Trails to Azure [WW] [MOD - RUS] (1.2.5 - 262144 - 0100FBE015910000) (1G+1U+1M)",
+        "version":  "1.2.5",
+        "internalVersion":  "",
+        "serialId":  "0100FBE015910000",
+        "size":  "6,00 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TheLegendOfHeroesTrailsToAzure_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1080,
+        "title":  "The Legend of Zelda: Breath of the Wild",
+        "finalTitle":  "The Legend of Zelda - Breath of the Wild [WW] [RUS] (1.9.0 - 1114112 - 01007EF00011E000) (1G+1U+2D)",
+        "version":  "1.9.0",
+        "internalVersion":  "",
+        "serialId":  "01007EF00011E000",
+        "size":  "15,45 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/wii_u_20/SQ_WiiU_TheLegendOfZeldaBreathOfTheWild_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1082,
+        "title":  "The Legend of Zelda: Echoes of Wisdom",
+        "finalTitle":  "The Legend of Zelda - Echoes of Wisdom [WW] [RUS] (1.1.0 - 196608 - 01008CF01BAAC000) (1G+1U)",
+        "version":  "1.1.0",
+        "internalVersion":  "",
+        "serialId":  "01008CF01BAAC000",
+        "size":  "7,54 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TheLegendofZeldaEchoesOfWisdom_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1083,
+        "title":  "The Legend of Zelda: Link\u0027s Awakening",
+        "finalTitle":  "The Legend of Zelda - Link\u0027s Awakening [WW] [RUS] (1.1.0 - 131072 - 01006BB00C6F0000) (1G+1U)",
+        "version":  "1.1.0",
+        "internalVersion":  "",
+        "serialId":  "01006BB00C6F0000",
+        "size":  "5,84 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_TheLegendOfZeldaLinksAwakening_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1081,
+        "title":  "The Legend of Zelda: Skyward Sword HD",
+        "finalTitle":  "The Legend of Zelda - Skyward Sword HD [WW] [RUS] (1.0.1 - 65536 - 01002DA013484000) (1G+1U)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "01002DA013484000",
+        "size":  "7,07 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_TheLegendOfZeldaSkywardSwordHD_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1079,
+        "title":  "The Legend of Zelda: Tears of the Kingdom",
+        "finalTitle":  "The Legend of Zelda - Tears of the Kingdom [WW] [RUS] (1.4.3 - 720896 - 0100F2C0115B6000) (1G+1U)",
+        "version":  "1.4.3",
+        "internalVersion":  "",
+        "serialId":  "0100F2C0115B6000",
+        "size":  "15,45 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TloZTearsOfTheKingdom_BASE_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1317,
+        "title":  "Tokyo 2020 Olympics: The Official Video Game",
+        "finalTitle":  "Tokyo 2020 Olympics - The Official Video Game [EU] [RUS] (1.0.2 - 131072 - 010034B00E14C000) (1G+1U)",
+        "version":  "1.0.2",
+        "internalVersion":  "",
+        "serialId":  "010034B00E14C000",
+        "size":  "7,51 GB",
+        "cover":  "https://upload.wikimedia.org/wikipedia/en/8/80/Tokyo_2020_game_cover.png",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "EU"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1304,
+        "title":  "Tyrant\u0027s Realm",
+        "finalTitle":  "Tyrant\u0027s Realm [WW] [RUS] (1.1.3 - 65536 - 0100852026502000) (1G+1U)",
+        "version":  "1.1.3",
+        "internalVersion":  "",
+        "serialId":  "0100852026502000",
+        "size":  "890,30 MB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/pgsmphppjax0yb5aydgk",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1099,
+        "title":  "Underling Uprising",
+        "finalTitle":  "Underling Uprising [WW] [RUS] (1.0.0.409 - 65536 - 010057901E9E6000) (1G+1U)",
+        "version":  "1.0.0.409",
+        "internalVersion":  "",
+        "serialId":  "010057901E9E6000",
+        "size":  "1,13 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/underlinguprising/1x1_UnderlingUprising_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1347,
+        "title":  "Urban Jungle",
+        "finalTitle":  "Urban Jungle [WW] [RUS] (1.0.1 - 65536 - 0100304027592000) (1G+1U+1D)",
+        "version":  "1.0.1",
+        "internalVersion":  "",
+        "serialId":  "0100304027592000",
+        "size":  "3,40 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/urbanjungle/1x1_UrbanJungle_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1109,
+        "title":  "Vampire Crawlers",
+        "finalTitle":  "Vampire Crawlers [WW] [RUS] (1.5.1 - 262144 - 010040502453E000) (1G+1U)",
+        "version":  "1.5.1",
+        "internalVersion":  "",
+        "serialId":  "010040502453E000",
+        "size":  "938,30 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/vampirecrawlerstheturbowildcardfromvampiresurvivors/1x1_VampireCrawlersTheTurboWildcardFromVampireSurvivors_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1098,
+        "title":  "Vampire Survivors",
+        "finalTitle":  "Vampire Survivors [WW] [RUS] (1.14.111 - 1572864 - 010089A0197E4000) (1G+1U+7D)",
+        "version":  "1.14.111",
+        "internalVersion":  "",
+        "serialId":  "010089A0197E4000",
+        "size":  "826,64 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_VampireSurvivors_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1108,
+        "title":  "Vampire Survivors",
+        "finalTitle":  "Vampire Survivors [WW] [RUS] (1.15.113 - 1769472 - 010089A0197E4000) (1G+1U+7D)",
+        "version":  "1.15.113",
+        "internalVersion":  "",
+        "serialId":  "010089A0197E4000",
+        "size":  "1,24 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_VampireSurvivors_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1265,
+        "title":  "Vampire Survivors",
+        "finalTitle":  "Vampire Survivors [WW] [RUS] (1.16.105 - 1900544 - 010089A0197E4000) (1G+1U+8D)",
+        "version":  "1.16.105",
+        "internalVersion":  "",
+        "serialId":  "010089A0197E4000",
+        "size":  "1,24 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_VampireSurvivors_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1363,
+        "title":  "Well Dweller",
+        "finalTitle":  "Well Dweller [WW] [RUS] (1.0.2 - 131072 - 0100217023F6C000) (1G+1U)",
+        "version":  "1.0.2",
+        "internalVersion":  "",
+        "serialId":  "0100217023F6C000",
+        "size":  "652,82 MB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/wk30tmoq2t6mvfhlo4ee",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1350,
+        "title":  "Woodo",
+        "finalTitle":  "Woodo [WW] [RUS] (1.1 - 131072 - 01001B90277BE000) (1G+1U)",
+        "version":  "1.1",
+        "internalVersion":  "",
+        "serialId":  "01001B90277BE000",
+        "size":  "2,39 GB",
+        "cover":  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/sm89rnvoxaacheso2a9b",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1288,
+        "title":  "Xeno Crisis",
+        "finalTitle":  "Xeno Crisis [WW] [ENG] (1.0.3 - 196608 - 010013F009B88000) (1G+1U)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "010013F009B88000",
+        "size":  "138,13 MB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_XenoCrisis_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1276,
+        "title":  "Ys vs. Trails in the Sky: Alternative Saga",
+        "finalTitle":  "Ys vs. Trails in the Sky - Alternative Saga [WW] [ENG] (1.0.9 - 327680 - 010033001F050000) (1G+1U)",
+        "version":  "1.0.9",
+        "internalVersion":  "",
+        "serialId":  "010033001F050000",
+        "size":  "9,04 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/ysvstrailsintheskyalternativesaga/1x1_YsVsTrailsInTheSkyAlternativeSaga_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1214,
+        "title":  "Ys X: Nordics",
+        "finalTitle":  "Ys X - Nordics [WW] [ENG] (1.0.3 - 196608 - 0100BAC01E57E000) (1G+1U+13D)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "0100BAC01E57E000",
+        "size":  "10,44 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_YsXNordics_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "ENG"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    },
+    {
+        "id":  1215,
+        "title":  "Ys X: Nordics",
+        "finalTitle":  "Ys X - Nordics [WW] [MOD - M. RUS] (1.0.3 - 196608 - 0100BAC01E57E000) (1G+1U+13D+1M)",
+        "version":  "1.0.3",
+        "internalVersion":  "",
+        "serialId":  "0100BAC01E57E000",
+        "size":  "10,48 GB",
+        "cover":  "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_YsXNordics_image500w.jpg",
+        "fileExists":  true,
+        "hasFile":  true,
+        "regions":  [
+                        "WW"
+                    ],
+        "textLangs":  [
+                          "MOD - M. RUS"
+                      ],
+        "description":  "",
+        "fileSizeBytes":  0,
+        "realExtension":  ".nsp",
+        "dlcCount":  0,
+        "modCount":  0,
+        "isRecommended":  false
+    }
 ]

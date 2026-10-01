@@ -58,6 +58,142 @@ static QString SanitizeLibretroName(QString name) {
     return name.trimmed();
 }
 
+static QString GetVerifiedCoverUrlForTid(const QString& tid) {
+    static const QHash<QString, QString> s_verified_covers = {
+        {QStringLiteral("01007F600B134000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_AssassinsCreedIIIDefinitiveEdition_image500w.jpg")},
+        {QStringLiteral("01009B90006DC000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMarioMaker2_image500w.jpg")},
+        {QStringLiteral("0100F3E024DFC000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/pnikpcs0uhydw9lw8672")},
+        {QStringLiteral("0100FD8022DAA000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/supermariogalaxy2/1x1_NSwitch_SuperMarioGalaxy2_image500w.jpg")},
+        {QStringLiteral("058E630A38C70000"), QStringLiteral("https://upload.wikimedia.org/wikipedia/en/d/d9/HellfireCoverSmall.jpg")},
+        {QStringLiteral("0100C69018E4A000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_TheLastFaith_image500w.jpg")},
+        {QStringLiteral("0100CEA007D08000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_CryptOfTheNecroDancerNintendoSwitchEdition_image500w.jpg")},
+        {QStringLiteral("0100B36008F90000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/inazumaelevenvictoryroad/1x1_InazumaElevenVictoryRoad_EN_image500w.jpg")},
+        {QStringLiteral("0100CA400E300000"), QStringLiteral("https://img-eshop.cdn.nintendo.net/i/77cf808ec79894dca98a64d9c0b281f3b513992f84897967f8e115891d4cd91f.jpg")},
+        {QStringLiteral("0100000000010000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMarioOdyssey_Alt01_image500w.jpg")},
+        {QStringLiteral("01008CF01BAAC000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TheLegendofZeldaEchoesOfWisdom_image500w.jpg")},
+        {QStringLiteral("01005EC01E6A4000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_DaveTheDiver_image500w.jpg")},
+        {QStringLiteral("01001BB01E8E2000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/fantasianneodimension/1x1_FantasianNeoDimension_image500w.jpg")},
+        {QStringLiteral("010042D00D900000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_LegoStarWarsTheSkywalkerSaga_image500w.jpg")},
+        {QStringLiteral("01007EF00011E000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/wii_u_20/SQ_WiiU_TheLegendOfZeldaBreathOfTheWild_image500w.jpg")},
+        {QStringLiteral("0100E65002BB8000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_StardewValley_image500w.jpg")},
+        {QStringLiteral("0100EAE010560000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_CaptainTsubasaRiseOfNewChampions_image500w.jpg")},
+        {QStringLiteral("0100152000022000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioKart8Deluxe_image500w.jpg")},
+        {QStringLiteral("010013F009B88000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_XenoCrisis_image500w.jpg")},
+        {QStringLiteral("010075D026910000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter5/1x1_PoppyPlaytimeChapter5_image500w.jpg")},
+        {QStringLiteral("0100BC0018138000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioRPG_image500w.jpg")},
+        {QStringLiteral("0100F7901971C000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/dungeons4nintendoswitchedition/1x1_Dungeons4NintendoSwitchEdition_image500w.jpg")},
+        {QStringLiteral("01009D6022DC2000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/reus2/1x1_Reus2_image500w.jpg")},
+        {QStringLiteral("019232F2781D0000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/virtual_console_nintendo_3ds_8/SQ_3DSVC_DrMario_image500w.jpg")},
+        {QStringLiteral("01008E20257E0000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/zcxmw0qbm6ytnvgf69ey")},
+        {QStringLiteral("010015100B514000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioBrosWonder_image500w.jpg")},
+        {QStringLiteral("0100F8F00C4F2000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DCSuperHeroGirlsTeenPower_image500w.jpg")},
+        {QStringLiteral("010093801237C000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MetroidDread_image500w.jpg")},
+        {QStringLiteral("0100F2200C984000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MortalKombat11_image500w.jpg")},
+        {QStringLiteral("0100C2801F22C000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofberseriaremastered/1x1_TalesOfBerseriaRemastered_image500w.jpg")},
+        {QStringLiteral("01006560184E6000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MortalKombat1_image500w.jpg")},
+        {QStringLiteral("010034B00E14C000"), QStringLiteral("https://upload.wikimedia.org/wikipedia/en/8/80/Tokyo_2020_game_cover.png")},
+        {QStringLiteral("010092A0172E4000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_ItTakesTwo_image500w.jpg")},
+        {QStringLiteral("010022201229A000"), QStringLiteral("https://img-eshop.cdn.nintendo.net/i/2035f3f0fc956dc61d691a2d3234974d6416f8175a9fc0989bfb8e6cf9477c92.jpg")},
+        {QStringLiteral("01002FC00412C000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_LittleNightmaresCompleteEdition_image500w.jpg")},
+        {QStringLiteral("0100BDA01AABC000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/riftofthenecrodancer/1x1_RiftOfTheNecroDancer_image500w.jpg")},
+        {QStringLiteral("0100ECD018EBE000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_PaperMarioTheThousandYearDoor_GB_en_image500w.jpg")},
+        {QStringLiteral("0100FA501AF90000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_CastlevaniaDominusCollection_image500w.jpg")},
+        {QStringLiteral("010033100691A000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_TheComaRecut_image500w.jpg")},
+        {QStringLiteral("01849C8CA8080000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_9/SQ_N64_MarioKart64_image500w.jpg")},
+        {QStringLiteral("0100FF100FB68000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_FindingTeddyTwoDefinitiveEdition_image500w.jpg")},
+        {QStringLiteral("01001AA022B66000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/tentacletango/1x1_TentacleTango_image500w.jpg")},
+        {QStringLiteral("0100A31020078000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/thecoma2bcatacomb/1x1_TheComa2BCatacomb_image500w.jpg")},
+        {QStringLiteral("0100F43008C44000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/pokemonlegendsza/1x1_NSwitch2_PokemonLegendsZA_KV_GB_en_image500w.jpg")},
+        {QStringLiteral("010003000E146000"), QStringLiteral("https://upload.wikimedia.org/wikipedia/en/1/1a/Mario_%26_Sonic_at_the_Olympic_Games_Tokyo_2020_box_art.jpg")},
+        {QStringLiteral("0100C3801C786000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_PoppyPlaytimeChapter1_image500w.jpg")},
+        {QStringLiteral("010019401051C000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioStrikersBattleLeagueFootball_image500w.jpg")},
+        {QStringLiteral("010033001F050000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/ysvstrailsintheskyalternativesaga/1x1_YsVsTrailsInTheSkyAlternativeSaga_image500w.jpg")},
+        {QStringLiteral("0100BDE00862A000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioTennisAces_image500w.jpg")},
+        {QStringLiteral("01006C900CC60000"), QStringLiteral("https://img-eshop.cdn.nintendo.net/i/fc9a60cfb3a86cc0fbb45cc5377cd3d4ae1fa5dd05ebd8be991480992c809d46.jpg")},
+        {QStringLiteral("010028600EBDA000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMario3DWorldAndBowsersFury_image500w.jpg")},
+        {QStringLiteral("01000B900D8B0000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_CadenceOfHyruleCryptOfTheNecroDancerFeaturingTheLegendOfZelda_v2_image500w.jpg")},
+        {QStringLiteral("01006DD02868A000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/mv8kxcjjajbjx536qx0q")},
+        {QStringLiteral("0100FC001ACE0000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/anvilsaga/1x1_AnvilSaga_image500w.jpg")},
+        {QStringLiteral("01008F1008DA6000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_DarkestDungeon_image500w.jpg")},
+        {QStringLiteral("010020D01AD24000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_AnimalWell_V3_image500w.jpg")},
+        {QStringLiteral("010059D020C26000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/marvelcosmicinvasion_1/1x1_MarvelCosmicInvasion_image500w.jpg")},
+        {QStringLiteral("01007A2027548000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/fg0htmfgjrnu87m4m9oo")},
+        {QStringLiteral("0100E1C0252F8000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/fj3inknfvf8hvgfjerci")},
+        {QStringLiteral("0100EC9010258000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_StreetsOfRage4_image500w.jpg")},
+        {QStringLiteral("010040502453E000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/vampirecrawlerstheturbowildcardfromvampiresurvivors/1x1_VampireCrawlersTheTurboWildcardFromVampireSurvivors_image500w.jpg")},
+        {QStringLiteral("0100BB901FA12000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/littlebigadventuretwinsensquest/1x1_LittleBigAdventureTwinsensQuest_image500w.jpg")},
+        {QStringLiteral("01007DE013A48000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_GoldenForce_image500w.jpg")},
+        {QStringLiteral("01052BA7AC450000"), QStringLiteral("https://www.nintendo.com/eu/media/images/03_teaser_module_1_square/games_3/wiiu_download_software_1/TM_WiiUDS_DuckTalesRemastered_image500w.png")},
+        {QStringLiteral("01542031DCEC0000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/virtual_console_nintendo_3ds_8/SQ_3DSVC_SuperMarioBros_image500w.jpg")},
+        {QStringLiteral("01006BB00C6F0000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_TheLegendOfZeldaLinksAwakening_image500w.jpg")},
+        {QStringLiteral("0100217023F6C000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/wk30tmoq2t6mvfhlo4ee")},
+        {QStringLiteral("0100317013770000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioAndRabbidsSparksOfHope_enGB_image500w.jpg")},
+        {QStringLiteral("010036B0034E4000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_SuperMarioParty_image500w.jpg")},
+        {QStringLiteral("0100D3801E6CE000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter2/1x1_PoppyPlaytimeChapter2_image500w.jpg")},
+        {QStringLiteral("01001B300B9BE000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DiabloIIIEternalCollection_image500w.jpg")},
+        {QStringLiteral("010026800E304000"), QStringLiteral("https://img-eshop.cdn.nintendo.net/i/7a48b73ce4dbcacbf25a4103ffad0f4414bcefc0a39d94ebcdc28f66e2e09f7d.jpg")},
+        {QStringLiteral("010099C022B96000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/supermariogalaxy/1x1_NSwitch_SuperMarioGalaxy_image500w.jpg")},
+        {QStringLiteral("0100BAC01E57E000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_YsXNordics_image500w.jpg")},
+        {QStringLiteral("010094D023A28000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/drillcore/1x1_DrillCore_image500w.jpg")},
+        {QStringLiteral("0100B7C01169C000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_TheComa2ViciousSisters_image500w.jpg")},
+        {QStringLiteral("0100307018934000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_Signalis_image500w.jpg")},
+        {QStringLiteral("01009720213B0000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/captaintsubasa2worldfighters/1x1_CaptainTsubasa2WorldFighters_image500w.jpg")},
+        {QStringLiteral("01005CF01E784000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_TeenageMutantNinjaTurtlesSplinteredFate_new_image500w.jpg")},
+        {QStringLiteral("01006D0017F7A000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioLuigiBrothership_Base_GB_en_image500w.jpg")},
+        {QStringLiteral("010063301BD50000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/superrobotwarsy/1x1_SuperRobotWarsY_image500w.jpg")},
+        {QStringLiteral("0132B3143DF50000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/virtual_console_nintendo_3ds_8/SQ_3DSVC_SuperMarioBros_image500w.jpg")},
+        {QStringLiteral("01002C0008E52000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_TalesOfVesperiaDefinitiveEdition_image500w.jpg")},
+        {QStringLiteral("0100A3900C3E2000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_PaperMarioTheOrigamiKing_image500w.jpg")},
+        {QStringLiteral("0100FBE015910000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TheLegendOfHeroesTrailsToAzure_image500w.jpg")},
+        {QStringLiteral("0100C6A0235D4000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/deviljam/1x1_DevilJam_image500w.jpg")},
+        {QStringLiteral("0100EA80032EA000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_NewSuperMarioBrosUDeluxe_image500w.jpg")},
+        {QStringLiteral("0100A4601ECA8000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_CryptCustodian_image500w.jpg")},
+        {QStringLiteral("01005E701D168000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofgracesfremastered/1x1_TalesOfGracesFRemastered_image500w.jpg")},
+        {QStringLiteral("010044700DEB0000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_AssassinsCreedTheRebelCollection_image500w.jpg")},
+        {QStringLiteral("010066101A55A000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/littlenightmaresiii_1/1x1_LittleNightmaresIII_image500w.jpg")},
+        {QStringLiteral("01008BA02525A000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_2_games/dispatchns2e/1x1_DispatchNS2E_image500w.jpg")},
+        {QStringLiteral("9B485EB8"), QStringLiteral("https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_V.png")},
+        {QStringLiteral("0100852026502000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/pgsmphppjax0yb5aydgk")},
+        {QStringLiteral("010097100EDD6000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_LittleNightmaresII_image500w.jpg")},
+        {QStringLiteral("0100622020F5A000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/ufxlo3aficvsyiamjzg7")},
+        {QStringLiteral("0100E5E01C098000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_DarkestDungeonII_image500w.jpg")},
+        {QStringLiteral("01006FE013472000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioPartySuperStars_image500w.jpg")},
+        {QStringLiteral("010057901E9E6000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/underlinguprising/1x1_UnderlingUprising_image500w.jpg")},
+        {QStringLiteral("0100304027592000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/urbanjungle/1x1_UrbanJungle_image500w.jpg")},
+        {QStringLiteral("0100B11027658000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/xnznx3wpdmxfyrjxwfq6")},
+        {QStringLiteral("0100965017338000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_SuperMarioPartyJamboree_BASE_image500w.jpg")},
+        {QStringLiteral("0100646009FBE000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_DeadCells_image500w.jpg")},
+        {QStringLiteral("01009A5009A9E000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_ShiningResonanceRefrain_image500w.jpg")},
+        {QStringLiteral("010040F01EC60000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/uuov0vj1qffnjd27os5d")},
+        {QStringLiteral("0100726014352000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_DiabloIIResurrected_image500w.jpg")},
+        {QStringLiteral("010067300059A000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioAndRabbidsKingdomBattle_EU_image500w.jpg")},
+        {QStringLiteral("0100D59022590000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/scottpilgrimex/1x1_ScottPilgrimEx_image500w.jpg")},
+        {QStringLiteral("010004D00A9C0000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_Aggelos_image500w.jpg")},
+        {QStringLiteral("01002DA013484000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_TheLegendOfZeldaSkywardSwordHD_image500w.jpg")},
+        {QStringLiteral("0100BD601EC3E000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter3/1x1_PoppyPlaytimeChapter3_image500w.jpg")},
+        {QStringLiteral("010089A0197E4000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_VampireSurvivors_image500w.jpg")},
+        {QStringLiteral("01002EF01A316000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_Brotato_image500w.jpg")},
+        {QStringLiteral("010058C017024000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_Dungeon3NintendoSwitchEdition_image500w.jpg")},
+        {QStringLiteral("0100A2902051A000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/poppyplaytimechapter4/1x1_PoppyPlaytimeChapter4_image500w.jpg")},
+        {QStringLiteral("0100670014482000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_AssassinsCreedTheEzioCollection_image500w.jpg")},
+        {QStringLiteral("0100AC300919A000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_Firewatch_image500w.jpg")},
+        {QStringLiteral("0100F1101BB9E000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/talesofxilliaremastered/1x1_TalesOfXilliaRemastered_image500w.jpg")},
+        {QStringLiteral("0100919027DBE000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/thecoma3bloodlines/1x1_TheComa3Bloodlines_image500w.jpg")},
+        {QStringLiteral("0100B51020B68000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/terminator2dnofate/1x1_Terminator2DNoFate_image500w.jpg")},
+        {QStringLiteral("010097F018538000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/1x1_NSwitchDS_DaveTheDiver_image500w.jpg")},
+        {QStringLiteral("01001B90277BE000"), QStringLiteral("https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/sm89rnvoxaacheso2a9b")},
+        {QStringLiteral("0100EB60202C8000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/kalanoro/1x1_Kalanoro_image500w.jpg")},
+        {QStringLiteral("01008970149B0000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_RabbidsPartyOfLegends_EN_image500w.jpg")},
+        {QStringLiteral("0100A410169A4000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TalesOfSymphoniaRemastered_image500w.jpg")},
+        {QStringLiteral("0100F2C0115B6000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_TloZTearsOfTheKingdom_BASE_image500w.jpg")},
+        {QStringLiteral("010027901C89C000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/hellokittyislandadventure/1x1_HelloKittyIslandAdventure_image500w.jpg")},
+        {QStringLiteral("01000EB0276F2000"), QStringLiteral("https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/garfieldescapefrommonday/1x1_GarfieldEscapeFromMonday_image500w.jpg")},
+        {QStringLiteral("0100B99019412000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/1x1_NSwitch_MarioVsDonkeyKong_image500w.jpg")},
+        {QStringLiteral("0100C9C00E25C000"), QStringLiteral("https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_MarioGolfSuperRush_image500w.jpg")}
+    };
+    return s_verified_covers.value(tid.toUpper());
+}
+
 static int ExtractModCount(const QString& title, const QString& final_title, const QStringList& text_langs) {
     static const QRegularExpression mod_regex(
         QStringLiteral(R"((?:\+|[\(\[])(\d+)\s*(?:M\b|MOD\b))"),
@@ -1175,6 +1311,13 @@ void StormGamesWorldDialog::ParseCatalogData(const QByteArray bitand raw_data) {
                 }
             }
 
+            if (g.cover_url.isEmpty() && !g.serial_id.isEmpty()) {
+                const QString verified_cover = GetVerifiedCoverUrlForTid(g.serial_id.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper());
+                if (!verified_cover.isEmpty()) {
+                    g.cover_url = verified_cover;
+                }
+            }
+
             bool ok_tid = false;
             const u64 num_tid = g.serial_id.toULongLong(&ok_tid, 16);
             g.dlc_count = ExtractDlcCountFast(g.title);
@@ -1796,6 +1939,14 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame bitand game) {
     // 3. Build multi-source candidate URLs matching STORM SWITCH BOX CoverCacheService
     current_cover_candidates.clear();
     current_cover_candidate_index = 0;
+
+    // S. Storm Switch Verified High-Res CDN Icon (Exact 1:1 match for all known games)
+    if (!tid.isEmpty() and tid != QStringLiteral("—")) {
+        const QString verified_url = GetVerifiedCoverUrlForTid(tid);
+        if (!verified_url.isEmpty()) {
+            current_cover_candidates.append(verified_url);
+        }
+    }
 
     // A. TitleDB Official Nintendo eShop Icon
     if (!tid.isEmpty() and tid != QStringLiteral("—")) {

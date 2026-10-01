@@ -45,7 +45,7 @@ AmiiboBrowserDialog::~AmiiboBrowserDialog() = default;
 
 void AmiiboBrowserDialog::SetupUi() {
     setWindowTitle(tr("Онлайн-база и менеджер Amiibo — STORM SWITCH"));
-    resize(980, 680);
+    setWindowState(Qt::WindowMaximized);
     setMinimumSize(850, 560);
 
     // Apply dark cyber styling

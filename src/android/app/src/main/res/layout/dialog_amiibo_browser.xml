@@ -5,10 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="16dp"
+    app:cardCornerRadius="0dp"
     app:cardElevation="0dp"
-    app:strokeColor="?attr/colorOutline"
-    app:strokeWidth="1.5dp">
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"

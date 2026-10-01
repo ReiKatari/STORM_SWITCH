@@ -110,12 +110,9 @@ class AmiiboDialogFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog?.window?.let { window ->
-            val dm = resources.displayMetrics
-            val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else (dm.widthPixels * 0.95).toInt()
-            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.88).toInt()
-            window.setLayout(width, height)
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             window.setBackgroundDrawableResource(android.R.color.transparent)
+            window.setGravity(android.view.Gravity.CENTER)
             ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
     }
