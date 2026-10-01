@@ -4928,9 +4928,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "System\\airplane_mode" to "true",
-                "Services\\airplane_mode" to "true"
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -4950,9 +4948,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "System\\airplane_mode" to "true",
-                "Services\\airplane_mode" to "true"
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -5013,7 +5009,6 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\dyna_state" to "1",
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\early_release_fences" to "false",
@@ -5037,7 +5032,6 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\dyna_state" to "1",
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\early_release_fences" to "false",
@@ -5233,7 +5227,7 @@ object GameFixDatabase {
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -6473,46 +6467,73 @@ object GameFixDatabase {
                 "audio_sink_id", "vsync_mode", "use_docked_mode"
             )
 
-            for ((fullKey, value) in getFullSettingsMap(fix)) {
-                if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") || fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") || fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) { continue }
-                val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
-                val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
-                                // Clean up legacy 0.25X downscaling from previous auto-fixes
-                if (sections["Renderer"]?.get("resolution_setup") == "0") {
-                    sections["Renderer"]?.remove("resolution_setup")
+            // Clean up dangerous/invalid settings from previous auto-fixes or corrupted configs
+            sections["Renderer"]?.let { r ->
+                if (r["resolution_setup"] == "0") {
+                    r.remove("resolution_setup")
+                    r.remove("resolution_setup\\use_global")
+                    r.remove("resolution_setup\\default")
                 }
-                // Clean up 8GB DRAM (mode 2) which is unsafe on Android; 6GB DRAM (mode 1) is allowed when requested by profile
-                if (sections["Core"]?.get("memory_layout_mode") == "2") {
-                    sections["Core"]?.remove("memory_layout_mode")
-                    sections["Core"]?.remove("memory_layout_mode\\use_global")
-                    sections["Core"]?.remove("memory_layout_mode\\default")
+                listOf("early_release_fences", "dyna_state", "use_fast_gpu_time",
+                       "barrier_feedback_loops", "enable_compute_pipelines").forEach { bad ->
+                    r.remove(bad)
+                    r.remove("$bad\\use_global")
+                    r.remove("$bad\\default")
                 }
-                if (sections["System"]?.get("memory_layout_mode") == "2") {
-                    sections["System"]?.remove("memory_layout_mode")
-                    sections["System"]?.remove("memory_layout_mode\\use_global")
-                    sections["System"]?.remove("memory_layout_mode\\default")
+            }
+            sections["System"]?.let { s ->
+                if (s["memory_layout_mode"] == "2") {
+                    s.remove("memory_layout_mode")
+                    s.remove("memory_layout_mode\\use_global")
+                    s.remove("memory_layout_mode\\default")
                 }
-                if (sections["Renderer"]?.containsKey("barrier_feedback_loops") == true) {
-                    sections["Renderer"]?.remove("barrier_feedback_loops")
-                    sections["Renderer"]?.remove("barrier_feedback_loops\\use_global")
-                    sections["Renderer"]?.remove("barrier_feedback_loops\\default")
+                s.remove("airplane_mode")
+                s.remove("airplane_mode\\use_global")
+                s.remove("airplane_mode\\default")
+            }
+            sections["Services"]?.let { sv ->
+                sv.remove("airplane_mode")
+                sv.remove("airplane_mode\\use_global")
+                sv.remove("airplane_mode\\default")
+            }
+            sections["Network"]?.let { net ->
+                net.remove("airplane_mode")
+                net.remove("airplane_mode\\use_global")
+                net.remove("airplane_mode\\default")
+            }
+            sections["Core"]?.let { c ->
+                if (c["memory_layout_mode"] == "2") {
+                    c.remove("memory_layout_mode")
+                    c.remove("memory_layout_mode\\use_global")
+                    c.remove("memory_layout_mode\\default")
                 }
-                if (sections["Renderer"]?.containsKey("enable_compute_pipelines") == true) {
-                    sections["Renderer"]?.remove("enable_compute_pipelines")
-                    sections["Renderer"]?.remove("enable_compute_pipelines\\use_global")
-                    sections["Renderer"]?.remove("enable_compute_pipelines\\default")
+            }
+            sections["Cpu"]?.let { cpu ->
+                if (cpu["cpu_backend"] == "0") {
+                    cpu.remove("cpu_backend")
+                    cpu.remove("cpu_backend\\use_global")
+                    cpu.remove("cpu_backend\\default")
                 }
-                if (sections["Cpu"]?.get("cpu_backend") == "0") {
-                    sections["Cpu"]?.remove("cpu_backend")
-                    sections["Cpu"]?.remove("cpu_backend\\use_global")
-                    sections["Cpu"]?.remove("cpu_backend\\default")
-                }
+            }
 
-                if ((keyName == "memory_layout_mode" && value != "1") || keyName == "barrier_feedback_loops" ||
-                    keyName == "enable_compute_pipelines" || keyName == "cpu_backend") {
-                    // Never force 8GB DRAM, feedback loops, compute pipelines or Dynarmic on Android
+            for ((fullKey, value) in fix.settingsMap) {
+                if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
+                    fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
+                    fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode") ||
+                    fullKey.endsWith("barrier_feedback_loops") ||
+                    fullKey.endsWith("enable_compute_pipelines") ||
+                    fullKey.endsWith("early_release_fences") ||
+                    fullKey.endsWith("dyna_state") ||
+                    fullKey.endsWith("use_fast_gpu_time") ||
+                    fullKey.endsWith("airplane_mode") ||
+                    fullKey.endsWith("cpu_backend")) {
                     continue
                 }
+                if (fullKey.endsWith("memory_layout_mode") && value != "1") {
+                    continue
+                }
+                val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
+                val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
 
                 val section = sections.getOrPut(sectionName) { mutableMapOf() }
 
@@ -6531,6 +6552,8 @@ object GameFixDatabase {
                 section["$keyName\\use_global"] = "false"
                 section["$keyName\\default"] = "false"
             }
+
+            sections.getOrPut("StormEden") { mutableMapOf() }["storm_fix_applied"] = "true"
 
             val sb = StringBuilder()
             for ((sectionName, map) in sections) {
@@ -6570,7 +6593,7 @@ object GameFixDatabase {
                     sections.getOrPut(currentSection) { mutableMapOf() }[k] = v
                 }
             }
-            for ((fullKey, fixValue) in getFullSettingsMap(fix)) {
+            for ((fullKey, fixValue) in fix.settingsMap) {
                 val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
                 val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
                 val section = sections[sectionName] ?: continue
@@ -6596,22 +6619,28 @@ object GameFixDatabase {
             "Renderer\\use_asynchronous_shaders" to "true",
             "Renderer\\scaling_filter" to "1",
             "Renderer\\anti_aliasing" to "0",
-            "Renderer\\dyna_state" to "1",
+            "Renderer\\dyna_state" to "0",
             "Renderer\\enable_gpu_buffer_readback" to "false",
-            "Renderer\\enable_compute_pipelines" to "true",
+            "Renderer\\enable_compute_pipelines" to "false",
             "Renderer\\sync_memory_operations" to "false",
-            "Renderer\\use_fast_gpu_time" to "true",
-            "Renderer\\early_release_fences" to "true",
+            "Renderer\\use_fast_gpu_time" to "false",
+            "Renderer\\early_release_fences" to "false",
             "Renderer\\astc_recompression" to "0",
             "Renderer\\nvdec_emulation" to "3",
             "Cpu\\cpuopt_fastmem" to "true",
             "Cpu\\cpuopt_ignore_memory_aborts" to "true",
             "Cpu\\cpu_accuracy" to "0",
-            "System\\airplane_mode" to "true",
+            "System\\airplane_mode" to "false",
             "Core\\memory_layout_mode" to "0",
             "System\\memory_layout_mode" to "0"
         )
         fullMap.putAll(profile.settingsMap)
+        fullMap["Renderer\\early_release_fences"] = "false"
+        fullMap["Renderer\\dyna_state"] = "0"
+        fullMap["Renderer\\use_fast_gpu_time"] = "false"
+        fullMap["Renderer\\enable_compute_pipelines"] = "false"
+        fullMap["Renderer\\barrier_feedback_loops"] = "false"
+        fullMap["System\\airplane_mode"] = "false"
         return fullMap
     }
 
@@ -6645,17 +6674,15 @@ object GameFixDatabase {
             lines.add("  • <b>Точность DMA:</b> " + (if (dma == "1") "Нормальная" else "По умолчанию (Безопасно)"))
             val bfl = map["Renderer\\barrier_feedback_loops"] ?: "false"
             lines.add(if (bfl == "true" || bfl == "1") "  • <b>Барьеры обратной связи:</b> Включено (корректные тени и эффекты)" else "  • <b>Барьеры обратной связи:</b> Отключено (устранение черных тайлов)")
-            lines.add("  • <b>Динамическое состояние:</b> Базовое (EDS 1)")
-            lines.add("  • <b>Сглаживание:</b> Отключено (сохранение пиксель-арта и четкости)")
-            lines.add("  • <b>Фильтр масштабирования:</b> Билинейный")
+            lines.add("  • <b>Динамическое состояние:</b> Отключено (стабильные конвейеры Vulkan)")
+            lines.add("  • <b>Сглаживание:</b> По умолчанию")
+            lines.add("  • <b>Фильтр масштабирования:</b> По умолчанию")
             lines.add("  • <b>Асинхронные шейдеры:</b> Включено (плавный геймплей)")
             lines.add("  • <b>Обратное чтение буферов ГПУ:</b> Отключено")
-            lines.add("  • <b>Вычислительные конвейеры:</b> Включено")
+            lines.add("  • <b>Вычислительные конвейеры:</b> Отключено (стабильность драйвера)")
             lines.add("  • <b>Синхронизация памяти ГПУ:</b> Отключено")
-            val fastGpu = map["Renderer\\use_fast_gpu_time"] ?: "true"
-            lines.add(if (fastGpu == "false" || fastGpu == "0") "  • <b>Быстрое время ГПУ:</b> Отключено (синхронизация кадров)" else "  • <b>Быстрое время ГПУ:</b> Включено")
-            val earlyFences = map["Renderer\\early_release_fences"] ?: "true"
-            lines.add(if (earlyFences == "false" || earlyFences == "0") "  • <b>Раннее освобождение барьеров:</b> Отключено" else "  • <b>Раннее освобождение барьеров:</b> Включено")
+            lines.add("  • <b>Быстрое время ГПУ:</b> Отключено (стабильная синхронизация кадров)")
+            lines.add("  • <b>Раннее освобождение барьеров:</b> Отключено (устранение зависаний загрузки)")
             lines.add("  • <b>Сжатие ASTC:</b> Без сжатия")
             lines.add("  • <b>Очистка VRAM:</b> Отключено (устраняет микрофризы)")
             val nvdec = map["Renderer\\nvdec_emulation"] ?: "3"
@@ -6671,8 +6698,7 @@ object GameFixDatabase {
             val mem = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
             lines.add("  • <b>Конфигурация памяти:</b> " + (if (mem == "1") "6 ГБ DRAM" else "4 ГБ DRAM"))
             lines.add("\n🛠️ <b>Система и сеть:</b>")
-            val airplane = map["System\\airplane_mode"] ?: "true"
-            lines.add(if (airplane == "false" || airplane == "0") "  • <b>Режим «В самолете»:</b> Отключено (сеть активна)" else "  • <b>Режим «В самолете»:</b> Включено")
+            lines.add("  • <b>Режим «В самолете»:</b> Отключено (сеть активна)")
         } else {
             lines.add("🎮 <b>Graphics and video:</b>")
             lines.add(if (gpuAcc == "1") "  • <b>GPU accuracy:</b> High (stable geometry and textures)" else "  • <b>GPU accuracy:</b> Normal (smooth 60 FPS, eliminates 200 ms latency)")
@@ -6688,17 +6714,15 @@ object GameFixDatabase {
             lines.add("  • <b>DMA accuracy:</b> " + (if (dma == "1") "Normal" else "Default (safe)"))
             val bfl = map["Renderer\\barrier_feedback_loops"] ?: "false"
             lines.add(if (bfl == "true" || bfl == "1") "  • <b>Barrier feedback loops:</b> Enabled (correct shadows and effects)" else "  • <b>Barrier feedback loops:</b> Disabled (eliminates black tiles)")
-            lines.add("  • <b>Dynamic state:</b> Basic (EDS 1)")
-            lines.add("  • <b>Anti-aliasing:</b> None (preserves pixel-art and clarity)")
-            lines.add("  • <b>Scaling filter:</b> Bilinear")
+            lines.add("  • <b>Dynamic state:</b> Disabled (stable Vulkan pipelines)")
+            lines.add("  • <b>Anti-aliasing:</b> Default")
+            lines.add("  • <b>Scaling filter:</b> Default")
             lines.add("  • <b>Async shaders:</b> Enabled (smooth gameplay)")
             lines.add("  • <b>GPU buffer readback:</b> Disabled")
-            lines.add("  • <b>Compute pipelines:</b> Enabled")
+            lines.add("  • <b>Compute pipelines:</b> Disabled (driver stability)")
             lines.add("  • <b>Sync GPU memory operations:</b> Disabled")
-            val fastGpu = map["Renderer\\use_fast_gpu_time"] ?: "true"
-            lines.add(if (fastGpu == "false" || fastGpu == "0") "  • <b>Fast GPU time:</b> Disabled (frame pacing)" else "  • <b>Fast GPU time:</b> Enabled")
-            val earlyFences = map["Renderer\\early_release_fences"] ?: "true"
-            lines.add(if (earlyFences == "false" || earlyFences == "0") "  • <b>Early release fences:</b> Disabled" else "  • <b>Early release fences:</b> Enabled")
+            lines.add("  • <b>Fast GPU time:</b> Disabled (stable frame pacing)")
+            lines.add("  • <b>Early release fences:</b> Disabled (eliminates boot hangs)")
             lines.add("  • <b>ASTC recompression:</b> Uncompressed")
             lines.add("  • <b>VRAM garbage collection:</b> Disabled (prevents micro-stutters)")
             val nvdec = map["Renderer\\nvdec_emulation"] ?: "3"
@@ -6714,8 +6738,7 @@ object GameFixDatabase {
             val mem = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
             lines.add("  • <b>Memory layout:</b> " + (if (mem == "1") "6GB DRAM" else "4GB DRAM"))
             lines.add("\n🛠️ <b>System and network:</b>")
-            val airplane = map["System\\airplane_mode"] ?: "true"
-            lines.add(if (airplane == "false" || airplane == "0") "  • <b>Airplane mode:</b> Disabled (network active)" else "  • <b>Airplane mode:</b> Enabled")
+            lines.add("  • <b>Airplane mode:</b> Disabled (network active)")
         }
         return lines.joinToString("\n")
     }
@@ -6731,13 +6754,21 @@ object GameFixDatabase {
             }
             val sb = StringBuilder()
             sb.append(TEMPORARY_FIX_HEADER).append(" - Auto-generated by STORM SWITCH GameFix\n\n")
+
+            sb.append("[StormEden]\n")
+            sb.append("storm_fix_applied = true\n\n")
+
             val sections = mutableMapOf<String, MutableMap<String, String>>()
-            for ((fullKey, value) in getFullSettingsMap(fix)) {
+            for ((fullKey, value) in fix.settingsMap) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                     fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
                     fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode") ||
                     fullKey.endsWith("barrier_feedback_loops") ||
                     fullKey.endsWith("enable_compute_pipelines") ||
+                    fullKey.endsWith("early_release_fences") ||
+                    fullKey.endsWith("dyna_state") ||
+                    fullKey.endsWith("use_fast_gpu_time") ||
+                    fullKey.endsWith("airplane_mode") ||
                     fullKey.endsWith("cpu_backend")) {
                     continue
                 }
@@ -6765,6 +6796,7 @@ object GameFixDatabase {
             return false
         }
     }
+
 
     fun applyFixWithCustomOverrides(game: Game): Boolean {
         val fix = getFix(game)

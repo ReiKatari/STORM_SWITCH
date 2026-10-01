@@ -349,11 +349,10 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         per_game_config->ReloadAllValues();
     }
 #ifdef __ANDROID__
-    // On Android devices, always clamp memory_layout_mode to standard 4GB DRAM (mode 0)
-    // to protect against Low Memory Killer Daemon (lmkd) SIGKILL on devices with <= 8GB RAM.
-    if (Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb) {
-        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
-        LOG_INFO(Frontend, "Clamped memory_layout_mode to 4GB for Android stability");
+    // On Android devices, clamp 8GB DRAM (mode 2) to 6GB (mode 1)
+    if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_8Gb) {
+        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
+        LOG_INFO(Frontend, "Clamped memory_layout_mode 8GB to 6GB for Android stability");
     }
 #ifdef HAS_NCE
     // On Android ARM64, force NCE (CpuBackend::Nce) for rock-solid stability and native execution.
@@ -372,6 +371,26 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     if (Settings::values.enable_compute_pipelines.GetValue()) {
         Settings::values.enable_compute_pipelines.SetValue(false);
         LOG_INFO(Frontend, "Disabled enable_compute_pipelines for mobile Vulkan stability");
+    }
+    // Force early_release_fences to false on Android (prevents host/guest GPU desync, fence race conditions and loading hangs)
+    if (Settings::values.early_release_fences.GetValue()) {
+        Settings::values.early_release_fences.SetValue(false);
+        LOG_INFO(Frontend, "Disabled early_release_fences for mobile Vulkan stability");
+    }
+    // Force dyna_state to Disabled on Android (EDS on mobile Vulkan causes pipeline compilation hangs and crashes)
+    if (Settings::values.dyna_state.GetValue() != Settings::ExtendedDynamicState::Disabled) {
+        Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
+        LOG_INFO(Frontend, "Disabled dyna_state for mobile Vulkan stability");
+    }
+    // Force use_fast_gpu_time to false on Android (prevents timer query mismatch and frame pacing stalls)
+    if (Settings::values.use_fast_gpu_time.GetValue()) {
+        Settings::values.use_fast_gpu_time.SetValue(false);
+        LOG_INFO(Frontend, "Disabled use_fast_gpu_time for mobile Vulkan stability");
+    }
+    // Force airplane_mode to false on Android by default (ensures network service compatibility)
+    if (Settings::values.airplane_mode.GetValue()) {
+        Settings::values.airplane_mode.SetValue(false);
+        LOG_INFO(Frontend, "Disabled airplane_mode for network service compatibility");
     }
 #endif
     m_system.SetShuttingDown(false);
@@ -409,6 +428,14 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
 
     if (Core::GameFixDatabase::AreFixesEnabled()) {
         Core::GameFixDatabase::ApplyProfileDirectly(params.program_id);
+#ifdef __ANDROID__
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
+        Settings::values.use_fast_gpu_time.SetValue(false);
+        Settings::values.airplane_mode.SetValue(false);
+        Settings::values.barrier_feedback_loops.SetValue(false);
+        Settings::values.enable_compute_pipelines.SetValue(false);
+#endif
         m_system.ApplySettings();
     }
 

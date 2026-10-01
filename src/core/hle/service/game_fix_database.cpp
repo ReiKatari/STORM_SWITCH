@@ -4409,9 +4409,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"}
+            {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
     {
@@ -4431,9 +4429,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"System\\airplane_mode", "true"},
-            {"Services\\airplane_mode", "true"}
+            {"Cpu\\cpuopt_fastmem", "true"}
         }
     },
     {
@@ -4494,7 +4490,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\dyna_state", "1"},
             {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\early_release_fences", "false"},
@@ -4523,7 +4518,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\dyna_state", "1"},
             {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\early_release_fences", "false"},
@@ -4721,7 +4715,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
         }
@@ -6728,6 +6722,21 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             if (full_key == "Renderer\\gpu_fence_behavior" && val == "0") {
                 continue;
             }
+#ifdef __ANDROID__
+            // Strict mobile platform stability: NEVER allow early release fences,
+            // extended dynamic state (EDS), fast GPU time, compute pipelines,
+            // feedback loops, or airplane mode to be forced on Android!
+            if (full_key == "Renderer\\early_release_fences" ||
+                full_key == "Renderer\\dyna_state" ||
+                full_key == "Renderer\\use_fast_gpu_time" ||
+                full_key == "Renderer\\enable_compute_pipelines" ||
+                full_key == "Renderer\\barrier_feedback_loops" ||
+                full_key == "System\\airplane_mode" ||
+                full_key == "Services\\airplane_mode" ||
+                full_key == "Network\\airplane_mode") {
+                continue;
+            }
+#endif
             if (full_key == "Renderer\\gpu_accuracy") {
                 apply_setting(Settings::values.gpu_accuracy, static_cast<Settings::GpuAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\drs_resolution_lock") {
