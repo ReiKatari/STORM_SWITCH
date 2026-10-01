@@ -173,7 +173,7 @@ Decoder::Decoder(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
 
 #if defined(__ANDROID__)
     const auto nvdec_mode = Settings::values.nvdec_emulation.GetValue();
-    if (nvdec_mode == Settings::NvdecEmulation::Gpu) {
+    if (nvdec_mode == Settings::NvdecEmulation::Gpu || nvdec_mode == Settings::NvdecEmulation::Hybrid) {
         const char* mc_name = nullptr;
         switch (av_codec) {
         case AV_CODEC_ID_H264: mc_name = "h264_mediacodec"; break;

@@ -377,41 +377,6 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         Settings::values.early_release_fences.SetValue(false);
         LOG_INFO(Frontend, "Disabled early_release_fences for mobile Vulkan stability");
     }
-    // Force dyna_state to Disabled on Android (EDS on mobile Vulkan causes pipeline compilation hangs and crashes)
-    if (Settings::values.dyna_state.GetValue() != Settings::ExtendedDynamicState::Disabled) {
-        Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
-        LOG_INFO(Frontend, "Disabled dyna_state for mobile Vulkan stability");
-    }
-    // Force use_fast_gpu_time to false on Android (prevents timer query mismatch and frame pacing stalls)
-    if (Settings::values.use_fast_gpu_time.GetValue()) {
-        Settings::values.use_fast_gpu_time.SetValue(false);
-        LOG_INFO(Frontend, "Disabled use_fast_gpu_time for mobile Vulkan stability");
-    }
-    // Force airplane_mode to false on Android by default (ensures network service compatibility)
-    if (Settings::values.airplane_mode.GetValue()) {
-        Settings::values.airplane_mode.SetValue(false);
-        LOG_INFO(Frontend, "Disabled airplane_mode for network service compatibility");
-    }
-    // Force async_presentation to true on Android (prevents SurfaceView / Choreographer deadlocks)
-    if (!Settings::values.async_presentation.GetValue()) {
-        Settings::values.async_presentation.SetValue(true);
-        LOG_INFO(Frontend, "Forced async_presentation to true for Android surface synchronization");
-    }
-    // Force sync_memory_operations to false on Android (prevents mobile Vulkan driver stalls and freezes)
-    if (Settings::values.sync_memory_operations.GetValue()) {
-        Settings::values.sync_memory_operations.SetValue(false);
-        LOG_INFO(Frontend, "Disabled sync_memory_operations for mobile Vulkan memory stability");
-    }
-    // Clamp High GPU accuracy to Low (Normal) on Android (High causes queue desync, massive frame drops and device loss)
-    if (Settings::values.gpu_accuracy.GetValue() == Settings::GpuAccuracy::High) {
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
-        LOG_INFO(Frontend, "Normalized gpu_accuracy to Normal/Low for mobile stability");
-    }
-    // Enforce Hybrid NVDEC emulation on Android
-    if (Settings::values.nvdec_emulation.GetValue() != Settings::NvdecEmulation::Hybrid) {
-        Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Hybrid);
-        LOG_INFO(Frontend, "Enforced Hybrid NVDEC for Android video stability");
-    }
 #endif
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();

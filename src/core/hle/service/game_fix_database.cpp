@@ -118,12 +118,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
         "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
         {
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\vram_garbage_collection", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
@@ -135,7 +135,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
         },
-        {0x01008F1008DA6800ULL}
+        {0x01008F1008DA6800ULL, 0x01008F1008C06000ULL}
     },
     {
         0x0100DDF01A03A000ULL,
@@ -4400,12 +4400,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\async_presentation", "false"},
+            {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
@@ -4420,12 +4420,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\async_presentation", "false"},
+            {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
@@ -4570,8 +4570,9 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\nvdec_emulation", "1"}
-        }
+            {"Renderer\\nvdec_emulation", "2"}
+        },
+        {0x0100A4601ECA8800ULL}
     },
     {
         0x0100F8F00C4F2000ULL,
@@ -6726,28 +6727,6 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             if (full_key == "Renderer\\gpu_fence_behavior" && val == "0") {
                 continue;
             }
-#ifdef __ANDROID__
-            // Strict mobile platform stability: NEVER allow early release fences,
-            // extended dynamic state (EDS), fast GPU time, compute pipelines,
-            // feedback loops, or airplane mode to be forced on Android!
-            if (full_key == "Renderer\\early_release_fences" ||
-                full_key == "Renderer\\dyna_state" ||
-                full_key == "Renderer\\use_fast_gpu_time" ||
-                full_key == "Renderer\\enable_compute_pipelines" ||
-                full_key == "Renderer\\barrier_feedback_loops" ||
-                full_key == "Renderer\\sync_memory_operations" ||
-                full_key == "System\\airplane_mode" ||
-                full_key == "Services\\airplane_mode" ||
-                full_key == "Network\\airplane_mode") {
-                continue;
-            }
-            if (full_key == "Renderer\\gpu_accuracy" && (val == "1" || val == "2")) {
-                continue;
-            }
-            if (full_key == "Renderer\\async_presentation" && (val == "false" || val == "0")) {
-                continue;
-            }
-#endif
             if (full_key == "Renderer\\gpu_accuracy") {
                 apply_setting(Settings::values.gpu_accuracy, static_cast<Settings::GpuAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\drs_resolution_lock") {

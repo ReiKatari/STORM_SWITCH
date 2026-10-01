@@ -117,6 +117,19 @@ data class StormWorldGameItem(
     }
 
     companion object {
+        fun sanitizeEncoding(str: String): String {
+            if (str.isEmpty()) return str
+            if (!str.contains('Р') && !str.contains('С') && !str.contains('р') && !str.contains("вЂ")) return str
+            return try {
+                val cp1251 = java.nio.charset.Charset.forName("windows-1251")
+                val bytes = str.toByteArray(cp1251)
+                val decoded = String(bytes, java.nio.charset.StandardCharsets.UTF_8)
+                if (decoded.contains('\uFFFD')) str else decoded
+            } catch (_: Exception) {
+                str
+            }
+        }
+
         fun fromJson(obj: JSONObject): StormWorldGameItem {
             val regList = mutableListOf<String>()
             val regArr = obj.optJSONArray("regions")
@@ -126,12 +139,12 @@ data class StormWorldGameItem(
             val langList = mutableListOf<String>()
             val langArr = obj.optJSONArray("textLangs")
             if (langArr != null) {
-                for (l in 0 until langArr.length()) langList.add(langArr.optString(l))
+                for (l in 0 until langArr.length()) langList.add(sanitizeEncoding(langArr.optString(l)))
             }
             return StormWorldGameItem(
                 id = obj.optInt("id"),
-                title = obj.optString("title"),
-                finalTitle = obj.optString("finalTitle"),
+                title = sanitizeEncoding(obj.optString("title")),
+                finalTitle = sanitizeEncoding(obj.optString("finalTitle")),
                 version = obj.optString("version"),
                 internalVersion = obj.optString("internalVersion"),
                 serialId = obj.optString("serialId"),
@@ -142,7 +155,7 @@ data class StormWorldGameItem(
                 regions = regList,
                 textLangs = langList,
                 description = let {
-                    val d = obj.optString("description")
+                    val d = sanitizeEncoding(obj.optString("description"))
                     if (d == "null" || d.isBlank()) "" else d
                 },
                 fileSizeBytes = obj.optLong("fileSizeBytes"),
@@ -182,17 +195,17 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 NativeConfig.addGameDir(GameDir(uriStr, true))
             }
 
-            val friendlyName = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: "РљР°С‚Р°Р»РѕРі"
-            binding.detailSaveFolder.text = "рџ“Ѓ РљР°С‚Р°Р»РѕРі: $friendlyName вњЏпёЏ"
-            Toast.makeText(ctx, "РљР°С‚Р°Р»РѕРі Р·Р°РіСЂСѓР·РєРё: $friendlyName", Toast.LENGTH_SHORT).show()
+            val friendlyName = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: "Каталог"
+            binding.detailSaveFolder.text = "📁 Каталог: $friendlyName ✏️"
+            Toast.makeText(ctx, "Каталог загрузки: $friendlyName", Toast.LENGTH_SHORT).show()
         }
 
     enum class SortMode(val titleRes: Int, val labelRu: String, val labelEn: String) {
-        TITLE_ASC(R.string.sort_by_title_asc, "Рђ-РЇ", "A-Z"),
-        TITLE_DESC(R.string.sort_by_title_desc, "РЇ-Рђ", "Z-A"),
-        SIZE_DESC(R.string.sort_by_size_desc, "Р Р°Р·РјРµСЂ в†“", "Size в†“"),
-        SIZE_ASC(R.string.sort_by_size_asc, "Р Р°Р·РјРµСЂ в†‘", "Size в†‘"),
-        RECOMMENDED(R.string.sort_by_addons_mods, "DLC Рё РјРѕРґС‹", "DLC and mods");
+        TITLE_ASC(R.string.sort_by_title_asc, "А-Я", "A-Z"),
+        TITLE_DESC(R.string.sort_by_title_desc, "Я-А", "Z-A"),
+        SIZE_DESC(R.string.sort_by_size_desc, "Размер ↓", "Size ↓"),
+        SIZE_ASC(R.string.sort_by_size_asc, "Размер ↑", "Size ↑"),
+        RECOMMENDED(R.string.sort_by_addons_mods, "DLC и моды", "DLC and mods");
 
         val label: String
             get() = labelRu
@@ -399,7 +412,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         binding.btnClose.setOnClickListener {
             if (StormDownloadManager.isDownloading()) {
-                Toast.makeText(requireContext(), "Р—Р°РіСЂСѓР·РєР° РёРіСЂС‹ РїСЂРѕРґРѕР»Р¶Р°РµС‚СЃСЏ РІ С„РѕРЅРѕРІРѕРј СЂРµР¶РёРјРµ", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Загрузка игры продолжается в фоновом режиме", Toast.LENGTH_SHORT).show()
             }
             dismiss()
         }
@@ -517,7 +530,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             allGames.clear()
             allGames.addAll(cached)
             filterGames(binding.editSearch.text?.toString().orEmpty())
-            binding.textCatalogStatus.text = "Р”РѕСЃС‚СѓРїРЅРѕ РёРіСЂ Nintendo Switch: ${allGames.size}"
+            binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
             binding.progressLoading.isVisible = false
 
             if (appCtx != null) {
@@ -546,7 +559,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val appCtx = context?.applicationContext ?: return
         if (allGames.isEmpty()) {
             binding.progressLoading.isVisible = true
-            binding.textCatalogStatus.text = "РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ РєР°С‚Р°Р»РѕРіР° РѕР±Р»Р°РєР°..."
+            binding.textCatalogStatus.text = "Синхронизация каталога облака..."
         }
         binding.textEmpty.isVisible = false
         binding.btnRefresh.isEnabled = false
@@ -562,10 +575,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     filterGames(binding.editSearch.text?.toString().orEmpty())
                     binding.progressLoading.isVisible = false
                     binding.btnRefresh.isEnabled = true
-                    binding.textCatalogStatus.text = "Р”РѕСЃС‚СѓРїРЅРѕ РёРіСЂ Nintendo Switch: ${allGames.size}"
+                    binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
                     if (allGames.isEmpty()) {
                         binding.textEmpty.isVisible = true
-                        binding.textEmpty.text = "РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… РёРіСЂ РІ РѕР±Р»Р°РєРµ"
+                        binding.textEmpty.text = "Нет доступных игр в облаке"
                     }
                 }
 
@@ -578,9 +591,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.btnRefresh.isEnabled = true
                     if (allGames.isEmpty()) {
                         binding.textEmpty.isVisible = true
-                        binding.textEmpty.text = "РћС€РёР±РєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ: ${e.localizedMessage ?: "РЎР±РѕР№ СЃРµС‚Рё"}"
+                        binding.textEmpty.text = "Ошибка подключения: ${e.localizedMessage ?: "Сбой сети"}"
                         context?.let { c ->
-                            Toast.makeText(c, "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РєР°С‚Р°Р»РѕРі", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(c, "Не удалось загрузить каталог", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -601,7 +614,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val allFiles = mutableListOf<LocalFile>()
 
         val modCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)m(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
-        val rusModRegex = Regex("""(?:\bmod\b)|(?:\bРјРѕРґ\b)|СЂСѓСЃРёС„РёРєР°С‚РѕСЂ|РѕР·РІСѓС‡РєР°""", RegexOption.IGNORE_CASE)
+        val rusModRegex = Regex("""(?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка""", RegexOption.IGNORE_CASE)
         val dlcCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)d(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
 
         fun extractModCount(str: String): Int {
@@ -639,7 +652,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                         f.length(),
                                         extractModCount(lower),
                                         extractDlcCount(lower),
-                                        lower.contains("rus") || lower.contains("СЂСѓСЃ")
+                                        lower.contains("rus") || lower.contains("рус")
                                     )
                                 )
                             }
@@ -659,7 +672,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                         f.length(),
                                         extractModCount(lower),
                                         extractDlcCount(lower),
-                                        lower.contains("rus") || lower.contains("СЂСѓСЃ")
+                                        lower.contains("rus") || lower.contains("рус")
                                     )
                                 )
                             }
@@ -675,7 +688,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         games.forEach { g ->
             val tid = g.serialId.trim().uppercase(Locale.ROOT)
             val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
-            val key = if (tid.isNotEmpty() && tid != "вЂ”" && tid != "-") tid else cleanBaseTitle
+            val key = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid else cleanBaseTitle
             groupCounts[key] = (groupCounts[key] ?: 0) + 1
         }
 
@@ -684,14 +697,14 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         games.forEach { g ->
             val tid = g.serialId.trim().lowercase(Locale.ROOT)
             val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
-            val groupKey = if (tid.isNotEmpty() && tid != "вЂ”" && tid != "-") tid.uppercase(Locale.ROOT) else cleanBaseTitle
+            val groupKey = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid.uppercase(Locale.ROOT) else cleanBaseTitle
             val isSingle = (groupCounts[groupKey] ?: 0) <= 1
             val cleanTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
             val cleanFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
             val ver = g.version.trim().lowercase(Locale.ROOT)
             val intVer = g.internalVersion.trim()
             val fullTitle = "${g.finalTitle} ${g.title}".lowercase(Locale.ROOT)
-            val gameIsRus = fullTitle.contains("rus") || fullTitle.contains("СЂСѓСЃ")
+            val gameIsRus = fullTitle.contains("rus") || fullTitle.contains("рус")
             val gameModCount = maxOf(g.modCount, extractModCount(fullTitle))
             val gameDlcCount = maxOf(g.dlcCount, extractDlcCount(fullTitle))
             val gameIsMod = gameModCount > 0
@@ -723,7 +736,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         return@any true
                     }
 
-                    if (tid.isNotEmpty() && tid != "вЂ”" && lowerName.contains(tid)) {
+                    if (tid.isNotEmpty() && tid != "—" && lowerName.contains(tid)) {
                         if (intVer.isNotEmpty() && intVer != "0") {
                             if (lowerName.contains(intVer) || lowerName.contains("v$intVer") || lowerName.contains("-$intVer-")) {
                                 return@any true
@@ -746,7 +759,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 } else {
                     // Single version in catalog
                     if (cleanFinal.isNotEmpty() && lowerName.contains(cleanFinal)) return@any true
-                    if (tid.isNotEmpty() && tid != "вЂ”" && lowerName.contains(tid)) return@any true
+                    if (tid.isNotEmpty() && tid != "—" && lowerName.contains(tid)) return@any true
                     if (cleanTitle.isNotEmpty() && cleanTitle.length >= 4 && lowerName.contains(cleanTitle)) return@any true
                     false
                 }
@@ -763,7 +776,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val l = it.lowercase(Locale.ROOT).trim()
                     l == "ru" || l == "rus" || l == "russian" || l.startsWith("ru-")
                 }
-                hasTextLang || full.contains("rus") || full.contains("СЂСѓСЃ") || full.contains("СЂСѓСЃРёС„РёРєР°С‚РѕСЂ") || full.contains("РѕР·РІСѓС‡РєР°")
+                hasTextLang || full.contains("rus") || full.contains("рус") || full.contains("русификатор") || full.contains("озвучка")
             }
             LanguageFilter.ENG -> {
                 val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
@@ -782,8 +795,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             LanguageFilter.DLC_OR_MODS -> {
                 val full = "${g.title} ${g.finalTitle}".lowercase(Locale.ROOT)
                 g.dlcCount > 0 || g.modCount > 0 || g.dlcs.isNotEmpty() ||
-                    full.contains("dlc") || full.contains("mod") || full.contains("РјРѕРґ") ||
-                    full.contains("РґРѕРїРѕР»РЅРµРЅРёРµ") || full.contains("update") || full.contains("РѕР±РЅРѕРІР»РµРЅРёРµ")
+                    full.contains("dlc") || full.contains("mod") || full.contains("мод") ||
+                    full.contains("дополнение") || full.contains("update") || full.contains("обновление")
             }
         }
     }
@@ -843,9 +856,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val trimmed = sizeStr.trim().uppercase(Locale.ROOT)
         val num = trimmed.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
         return when {
-            trimmed.endsWith("Р“Р‘") || trimmed.endsWith("GB") -> (num * 1024.0 * 1024.0 * 1024.0).toLong()
-            trimmed.endsWith("РњР‘") || trimmed.endsWith("MB") -> (num * 1024.0 * 1024.0).toLong()
-            trimmed.endsWith("РљР‘") || trimmed.endsWith("KB") -> (num * 1024.0).toLong()
+            trimmed.endsWith("ГБ") || trimmed.endsWith("GB") -> (num * 1024.0 * 1024.0 * 1024.0).toLong()
+            trimmed.endsWith("МБ") || trimmed.endsWith("MB") -> (num * 1024.0 * 1024.0).toLong()
+            trimmed.endsWith("КБ") || trimmed.endsWith("KB") -> (num * 1024.0).toLong()
             else -> num.toLong()
         }
     }
@@ -884,7 +897,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     private fun updatePaginationUI(totalPages: Int, totalItems: Int) {
         val binding = _binding ?: return
         binding.btnSortCatalog.text = currentSortMode.getLabel(binding.root.context)
-        binding.textPaginationInfo.text = "РЎС‚СЂР°РЅРёС†Р° $currentPage РёР· $totalPages ($totalItems)"
+        binding.textPaginationInfo.text = "Страница $currentPage из $totalPages ($totalItems)"
 
         binding.btnPagePrev.isEnabled = currentPage > 1
         binding.btnPagePrev.alpha = if (currentPage > 1) 1.0f else 0.4f
@@ -900,7 +913,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         binding.scrollPageNumbers.isVisible = true
 
         val density = resources.displayMetrics.density
-        val btnSize = (36 * density).toInt()
+        val btnSize = (30 * density).toInt()
         val margin = (2 * density).toInt()
 
         val pagesToShow = linkedSetOf<Int>()
@@ -925,9 +938,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         for (p in sortedPages) {
             if (prev != 0 && p > prev + 1) {
                 val ellipsis = android.widget.TextView(ctx).apply {
-                    text = "вЂ¦"
+                    text = "…"
                     setTextColor(onSurfaceVariantColor)
-                    textSize = 12f
+                    textSize = 11f
                     setPadding(margin * 2, 0, margin * 2, 0)
                 }
                 binding.layoutPageButtons.addView(ellipsis)
@@ -946,7 +959,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 insetBottom = 0
                 setPadding(0, 0, 0, 0)
                 text = p.toString()
-                textSize = 12f
+                textSize = 11f
                 cornerRadius = (6 * density).toInt()
 
                 if (p == currentPage) {
@@ -1010,13 +1023,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         binding.detailGameDescription.text = if (game.description.isNotBlank() && game.description != "null") {
             game.description
         } else {
-            "Р—Р°РіСЂСѓР·РєР° РёРЅС„РѕСЂРјР°С†РёРё..."
+            "Загрузка информации..."
         }
 
         loadCoverForGame(game, binding.detailGameCover)
 
         val targetDir = getTargetDownloadDirectoryDescription()
-        binding.detailSaveFolder.text = "рџ“Ѓ РљР°С‚Р°Р»РѕРі: $targetDir вњЏпёЏ"
+        binding.detailSaveFolder.text = "📁 Каталог: $targetDir ✏️"
         binding.detailSaveFolder.setOnClickListener {
             showDownloadDirectoryPicker()
         }
@@ -1048,7 +1061,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val safeDesc = if (rawDesc == "null" || rawDesc.isBlank()) "" else rawDesc
                     val bytes = obj.optLong("fileSizeBytes", 0L)
 
-                    game.description = safeDesc
+                    game.description = StormWorldGameItem.sanitizeEncoding(safeDesc)
                     game.fileSizeBytes = bytes
 
                     val dlcsArr = obj.optJSONArray("dlcs")
@@ -1058,8 +1071,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             val dObj = dlcsArr.optJSONObject(d) ?: continue
                             val dlcId = dObj.optString("id", "")
                             val rawName = dObj.optString("name", "").trim()
-                            val dlcName = if (rawName.isNotEmpty()) rawName else "Р”РѕРїРѕР»РЅРµРЅРёРµ ${d + 1}"
-                            val dlcDesc = dObj.optString("description", "")
+                            val dlcName = StormWorldGameItem.sanitizeEncoding(if (rawName.isNotEmpty()) rawName else "Дополнение ${d + 1}")
+                            val dlcDesc = StormWorldGameItem.sanitizeEncoding(dObj.optString("description", ""))
                             game.dlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
                         }
                         if (game.dlcs.isNotEmpty()) {
@@ -1092,7 +1105,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.detailGameDescription.text = if (game.description.isNotBlank() && game.description != "null") {
                         game.description
                     } else {
-                        "РћРїРёСЃР°РЅРёРµ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚"
+                        "Описание отсутствует"
                     }
                     if (game.dlcCount > 0) {
                         binding.detailGameDlc.isVisible = true
@@ -1109,7 +1122,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             } catch (_: Exception) {
                 withContext(Dispatchers.Main) {
                     if (_binding == null || selectedGame?.id != game.id) return@withContext
-                    binding.detailGameDescription.text = "РћРїРёСЃР°РЅРёРµ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚"
+                    binding.detailGameDescription.text = "Описание отсутствует"
                 }
             }
         }
@@ -1121,38 +1134,38 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val options = mutableListOf<String>()
         val actions = mutableListOf<() -> Unit>()
 
-        options.add("рџ“‚ Р’С‹Р±СЂР°С‚СЊ РЅРѕРІСѓСЋ РїР°РїРєСѓ РЅР° СѓСЃС‚СЂРѕР№СЃС‚РІРµ...")
+        options.add("📂 Выбрать новую папку на устройстве...")
         actions.add { selectDownloadDirLauncher.launch(null) }
 
         for (dir in gameDirs) {
             val uri = Uri.parse(dir.uriString)
             val name = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: dir.uriString
-            options.add("рџ“Ѓ РџР°РїРєР° РёРіСЂ: $name")
+            options.add("📁 Папка игр: $name")
             actions.add {
                 val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
                 prefs.edit().putString(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR, dir.uriString).apply()
-                binding.detailSaveFolder.text = "рџ“Ѓ РљР°С‚Р°Р»РѕРі: $name вњЏпёЏ"
-                Toast.makeText(ctx, "РљР°С‚Р°Р»РѕРі Р·Р°РіСЂСѓР·РєРё: $name", Toast.LENGTH_SHORT).show()
+                binding.detailSaveFolder.text = "📁 Каталог: $name ✏️"
+                Toast.makeText(ctx, "Каталог загрузки: $name", Toast.LENGTH_SHORT).show()
             }
         }
 
-        options.add("рџ”„ РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (Download/STORM_SWITCH_GAMES)")
+        options.add("🔄 По умолчанию (Download/STORM_SWITCH_GAMES)")
         actions.add {
             val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
             prefs.edit().remove(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR).apply()
             val defName = getTargetDownloadDirectoryDescription()
-            binding.detailSaveFolder.text = "рџ“Ѓ РљР°С‚Р°Р»РѕРі: $defName вњЏпёЏ"
-            Toast.makeText(ctx, "РљР°С‚Р°Р»РѕРі СЃР±СЂРѕС€РµРЅ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ", Toast.LENGTH_SHORT).show()
+            binding.detailSaveFolder.text = "📁 Каталог: $defName ✏️"
+            Toast.makeText(ctx, "Каталог сброшен по умолчанию", Toast.LENGTH_SHORT).show()
         }
 
         com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
-            .setTitle("РљР°С‚Р°Р»РѕРі РґР»СЏ Р·Р°РіСЂСѓР·РєРё РёРіСЂ")
+            .setTitle("Каталог для загрузки игр")
             .setItems(options.toTypedArray()) { _, which ->
                 if (which in actions.indices) {
                     actions[which].invoke()
                 }
             }
-            .setNegativeButton("РћС‚РјРµРЅР°", null)
+            .setNegativeButton("Отмена", null)
             .show()
     }
 
@@ -1191,7 +1204,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val ctx = requireContext()
                 val primaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorPrimary)
                 if (game.isDownloaded) {
-                    binding.btnStartDownload.text = "РЎРєР°С‡Р°РЅРѕ"
+                    binding.btnStartDownload.text = "Скачано"
                     binding.btnStartDownload.setIconResource(R.drawable.ic_check)
                     binding.btnStartDownload.isEnabled = false
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
@@ -1199,7 +1212,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
                     binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
                 } else {
-                    binding.btnStartDownload.text = "РЎРєР°С‡Р°С‚СЊ РёРіСЂСѓ"
+                    binding.btnStartDownload.text = "Скачать игру"
                     binding.btnStartDownload.setIconResource(R.drawable.ic_install)
                     binding.btnStartDownload.isEnabled = true
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
@@ -1218,8 +1231,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.progressDownload.isIndeterminate = true
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = false
-                    binding.btnStartDownload.text = "РџРѕРґРєР»СЋС‡РµРЅРёРµ..."
-                    binding.btnPauseDownload.text = "РџР°СѓР·Р°"
+                    binding.btnStartDownload.text = "Подключение..."
+                    binding.btnPauseDownload.text = "Пауза"
                 }
 
                 StormDownloadStatus.DOWNLOADING -> {
@@ -1228,8 +1241,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.progressDownload.progress = progress.progressPercent
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = false
-                    binding.btnStartDownload.text = "РРґРµС‚ Р·Р°РіСЂСѓР·РєР°..."
-                    binding.btnPauseDownload.text = "РџР°СѓР·Р°"
+                    binding.btnStartDownload.text = "Идет загрузка..."
+                    binding.btnPauseDownload.text = "Пауза"
                 }
 
                 StormDownloadStatus.PAUSED -> {
@@ -1238,13 +1251,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.progressDownload.progress = progress.progressPercent
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = true
-                    binding.btnStartDownload.text = "Р’РѕР·РѕР±РЅРѕРІРёС‚СЊ"
-                    binding.btnPauseDownload.text = "РџСЂРѕРґРѕР»Р¶РёС‚СЊ"
+                    binding.btnStartDownload.text = "Возобновить"
+                    binding.btnPauseDownload.text = "Продолжить"
                 }
 
                 StormDownloadStatus.COMPLETED -> {
                     binding.layoutDownloadProgress.isVisible = false
-                    binding.btnStartDownload.text = "РЎРєР°С‡Р°РЅРѕ"
+                    binding.btnStartDownload.text = "Скачано"
                     binding.btnStartDownload.setIconResource(R.drawable.ic_check)
                     binding.btnStartDownload.isEnabled = false
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
@@ -1260,15 +1273,15 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.layoutDownloadProgress.isVisible = true
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = true
-                    binding.btnStartDownload.text = "РџРѕРІС‚РѕСЂРёС‚СЊ"
-                    binding.btnPauseDownload.text = "РџРѕРІС‚РѕСЂРёС‚СЊ"
+                    binding.btnStartDownload.text = "Повторить"
+                    binding.btnPauseDownload.text = "Повторить"
                 }
 
                 else -> {}
             }
         } else {
             if (progress.status == StormDownloadStatus.DOWNLOADING || progress.status == StormDownloadStatus.CONNECTING) {
-                binding.textCatalogStatus.text = "Р¤РѕРЅРѕРІР°СЏ Р·Р°РіСЂСѓР·РєР°: ${progress.game.finalTitle.ifEmpty { progress.game.title }} (${progress.progressPercent}%)"
+                binding.textCatalogStatus.text = "Фоновая загрузка: ${progress.game.finalTitle.ifEmpty { progress.game.title }} (${progress.progressPercent}%)"
             }
         }
     }
@@ -1330,7 +1343,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             loadCoverForGame(item, holder.b.imageGameCover)
 
             if (item.isDownloaded) {
-                holder.b.btnGameAction.text = "РЎРєР°С‡Р°РЅРѕ"
+                holder.b.btnGameAction.text = "Скачано"
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_check)
                 holder.b.btnGameAction.isEnabled = false
                 holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
@@ -1338,7 +1351,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 holder.b.btnGameAction.setTextColor(0xFFFFFFFF.toInt())
                 holder.b.btnGameAction.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
             } else {
-                holder.b.btnGameAction.text = "РЎРєР°С‡Р°С‚СЊ"
+                holder.b.btnGameAction.text = "Скачать"
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_install)
                 holder.b.btnGameAction.isEnabled = !StormDownloadManager.isDownloading()
                 holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
@@ -1415,8 +1428,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             val dObj = dlcsArr.optJSONObject(d) ?: continue
                             val dlcId = dObj.optString("id", "")
                             val rawName = dObj.optString("name", "").trim()
-                            val dlcName = if (rawName.isNotEmpty()) rawName else "РћС„РёС†РёР°Р»СЊРЅРѕРµ РґРѕРїРѕР»РЅРµРЅРёРµ (DLC #${d + 1})"
-                            val dlcDesc = dObj.optString("description", "")
+                            val dlcName = StormWorldGameItem.sanitizeEncoding(if (rawName.isNotEmpty()) rawName else "Официальное дополнение (DLC #${d + 1})")
+                            val dlcDesc = StormWorldGameItem.sanitizeEncoding(dObj.optString("description", ""))
                             fetchedDlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
                         }
                     }
@@ -1678,7 +1691,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 }
                 list.filterNot { item ->
                     val t = "${item.finalTitle} ${item.title} ${item.version}".lowercase(Locale.ROOT)
-                    t.contains("РєРѕРїРёСЏ") || t.contains("СЂС™СЂРѕРїСЂС‘СЃСџ") || t.contains("(copy)")
+                    t.contains("копия") || t.contains("рљропрёсџ") || t.contains("(copy)")
                 }.distinctBy { item ->
                     val k = (item.serialId.ifEmpty { item.title }).uppercase(Locale.ROOT)
                     val cleanVer = item.version.split(" ").firstOrNull().orEmpty()
@@ -1727,7 +1740,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val sizeStr = obj.optString("size", "").trim()
 
                     // Exclude any game with missing flags or placeholder size
-                    if (platform == "Nintendo Switch" && platformType == "CONSOLES" && fileExists && hasFile && sizeStr.isNotEmpty() && sizeStr != "вЂ”") {
+                    if (platform == "Nintendo Switch" && platformType == "CONSOLES" && fileExists && hasFile && sizeStr.isNotEmpty() && sizeStr != "—") {
                         val regList = mutableListOf<String>()
                         val regArr = obj.optJSONArray("regions")
                         if (regArr != null) {
@@ -1762,9 +1775,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         var modNum = modMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
                         if (modNum == 0) {
                             if (rawFinalTitle.contains("MOD", ignoreCase = true) || rawTitle.contains("MOD", ignoreCase = true) ||
-                                langList.any { it.contains("MOD", ignoreCase = true) || it.contains("СЂСѓСЃРёС„РёРєР°С‚РѕСЂ", ignoreCase = true) || it.contains("РѕР·РІСѓС‡РєР°", ignoreCase = true) } ||
-                                rawFinalTitle.contains("СЂСѓСЃРёС„РёРєР°С‚РѕСЂ", ignoreCase = true) || rawTitle.contains("СЂСѓСЃРёС„РёРєР°С‚РѕСЂ", ignoreCase = true) ||
-                                rawFinalTitle.contains("РѕР·РІСѓС‡РєР°", ignoreCase = true) || rawTitle.contains("РѕР·РІСѓС‡РєР°", ignoreCase = true)) {
+                                langList.any { it.contains("MOD", ignoreCase = true) || it.contains("русификатор", ignoreCase = true) || it.contains("озвучка", ignoreCase = true) } ||
+                                rawFinalTitle.contains("русификатор", ignoreCase = true) || rawTitle.contains("русификатор", ignoreCase = true) ||
+                                rawFinalTitle.contains("озвучка", ignoreCase = true) || rawTitle.contains("озвучка", ignoreCase = true)) {
                                 modNum = 1
                             }
                         }
@@ -1795,7 +1808,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val verifiedGames = candidateList
                     .filterNot { item ->
                         val t = "${item.finalTitle} ${item.title} ${item.version}".lowercase(Locale.ROOT)
-                        t.contains("РєРѕРїРёСЏ") || t.contains("СЂС™СЂРѕРїСЂС‘СЃСџ") || t.contains("(copy)")
+                        t.contains("копия") || t.contains("рљропрёсџ") || t.contains("(copy)")
                     }
                     .distinctBy { item ->
                         val k = (item.serialId.ifEmpty { item.title }).uppercase(Locale.ROOT)
@@ -1828,7 +1841,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     }
                     for (l in g.textLangs) {
                         val lu = l.uppercase(Locale.ROOT)
-                        if (lu == "RUS" || lu.contains("RUSSIAN") || lu.contains("Р РЈРЎРЎРљРР™")) {
+                        if (lu == "RUS" || lu.contains("RUSSIAN") || lu.contains("РУССКИЙ")) {
                             return 200
                         }
                     }

@@ -264,17 +264,17 @@
                 android:background="#101623"
                 android:gravity="center_vertical"
                 android:orientation="vertical"
-                android:paddingHorizontal="8dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="8dp">
+                android:paddingHorizontal="6dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="4dp">
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginBottom="6dp"
+                    android:layout_marginBottom="3dp"
                     android:background="#20354E" />
 
-                <!-- Row 1: Sort Button (Left) and Pagination Info (Right) -->
+                <!-- Single Compact Row: Sort (Left), Page Navigation (Center), Page Info (Right) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -285,93 +285,93 @@
                         android:id="@+id/btn_sort_catalog"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:paddingHorizontal="8dp"
+                        android:layout_height="30dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:paddingHorizontal="6dp"
                         android:paddingVertical="0dp"
                         android:text="А-Я"
                         android:textColor="#38BDF8"
-                        android:textSize="11sp"
+                        android:textSize="10sp"
                         app:backgroundTint="#16263D"
                         app:strokeColor="#20354E"
                         app:strokeWidth="1dp"
                         app:icon="@drawable/ic_filter"
-                        app:iconSize="14dp"
+                        app:iconSize="12dp"
                         app:iconTint="#38BDF8" />
 
-                    <TextView
-                        android:id="@+id/text_pagination_info"
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="8dp"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_page_prev"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:insetLeft="0dp"
+                            android:insetTop="0dp"
+                            android:insetRight="0dp"
+                            android:insetBottom="0dp"
+                            android:padding="0dp"
+                            android:text="‹"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#00F0FF"
+                            app:backgroundTint="#16263D"
+                            app:strokeColor="#00D2FF"
+                            app:strokeWidth="1dp" />
+
+                        <HorizontalScrollView
+                            android:id="@+id/scroll_page_numbers"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="3dp"
+                            android:scrollbars="none">
+
+                            <LinearLayout
+                                android:id="@+id/layout_page_buttons"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal" />
+                        </HorizontalScrollView>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_page_next"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:insetLeft="0dp"
+                            android:insetTop="0dp"
+                            android:insetRight="0dp"
+                            android:insetBottom="0dp"
+                            android:padding="0dp"
+                            android:text="›"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#00F0FF"
+                            app:backgroundTint="#16263D"
+                            app:strokeColor="#00D2FF"
+                            app:strokeWidth="1dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/text_pagination_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
                         android:gravity="end|center_vertical"
                         android:textAlignment="viewEnd"
                         android:textColor="#FFFFFF"
-                        android:textSize="11sp"
+                        android:textSize="10sp"
                         android:textStyle="bold"
                         android:maxLines="1"
                         android:ellipsize="end"
-                        tools:text="Страница 1 из 45 (1120 игр)" />
-                </LinearLayout>
-
-                <!-- Row 2: Page Navigation (Centered Prev, Page Numbers, Next) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_page_prev"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:insetLeft="0dp"
-                        android:insetTop="0dp"
-                        android:insetRight="0dp"
-                        android:insetBottom="0dp"
-                        android:padding="0dp"
-                        android:text="‹"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#00F0FF"
-                        app:backgroundTint="#16263D"
-                        app:strokeColor="#00D2FF"
-                        app:strokeWidth="1dp" />
-
-                    <HorizontalScrollView
-                        android:id="@+id/scroll_page_numbers"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="4dp"
-                        android:scrollbars="none">
-
-                        <LinearLayout
-                            android:id="@+id/layout_page_buttons"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal" />
-                    </HorizontalScrollView>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_page_next"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:insetLeft="0dp"
-                        android:insetTop="0dp"
-                        android:insetRight="0dp"
-                        android:insetBottom="0dp"
-                        android:padding="0dp"
-                        android:text="›"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#00F0FF"
-                        app:backgroundTint="#16263D"
-                        app:strokeColor="#00D2FF"
-                        app:strokeWidth="1dp" />
+                        tools:text="Страница 1 из 7 (161)" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

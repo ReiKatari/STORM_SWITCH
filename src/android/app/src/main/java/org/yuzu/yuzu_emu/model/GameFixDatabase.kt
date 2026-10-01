@@ -33,21 +33,22 @@ object GameFixDatabase {
             "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
             "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
-                "Renderer\\nvdec_emulation" to "3",
-                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\nvdec_emulation" to "2",
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "true",
+                "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
-                "System\\memory_layout_mode" to "0"
+                "System\\airplane_mode" to "false",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
             )
         ),
         GameFixProfile(
@@ -58,21 +59,48 @@ object GameFixDatabase {
             "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
             "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
-                "Renderer\\nvdec_emulation" to "3",
-                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\nvdec_emulation" to "2",
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "true",
+                "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
-                "System\\memory_layout_mode" to "0"
+                "System\\airplane_mode" to "false",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x01008F1008C06000L,
+            "Darkest Dungeon (Base)",
+            "• Зависание и вылет вступительного видеоролика при программном декодировании NVDEC ЦП\n• Просадки кадровой частоты в подземельях\n• Сбои распределения памяти",
+            "• Freezing and crash in opening cinematic with CPU NVDEC video decoding\n• Framerate drops in dungeons\n• Memory allocation faults",
+            "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
+            "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
+            mapOf(
+                "Renderer\\nvdec_emulation" to "2",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "false",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
             )
         ),
         GameFixProfile(
@@ -4919,12 +4947,12 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -4939,12 +4967,12 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -5084,7 +5112,22 @@ object GameFixDatabase {
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "Renderer\\nvdec_emulation" to "2"
+            )
+        ),
+        GameFixProfile(
+            0x0100A4601ECA8800L,
+            "Crypt Custodian (Update)",
+            "• Зависание отрисовки поверхностей GameMaker при асинхронном выводе\n• Артефакты полупрозрачных частиц при пересжатии ASTC",
+            "• GameMaker 2D surface rendering freeze with async presentation\n• Transparent particle artifacts with ASTC recompression",
+            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            mapOf(
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\nvdec_emulation" to "2"
             )
         ),
         GameFixProfile(
