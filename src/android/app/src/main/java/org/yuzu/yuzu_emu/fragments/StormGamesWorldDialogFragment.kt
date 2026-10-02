@@ -360,12 +360,17 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog?.window?.let { window ->
-            val dm = resources.displayMetrics
-            val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else ViewGroup.LayoutParams.MATCH_PARENT
-            val height = ViewGroup.LayoutParams.MATCH_PARENT
-            window.setLayout(width, height)
-            window.setGravity(android.view.Gravity.CENTER)
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            window.setBackgroundDrawableResource(android.R.color.transparent)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        dialog?.window?.let { window ->
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            window.setBackgroundDrawableResource(android.R.color.transparent)
             ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
     }
@@ -406,6 +411,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
             insets
         }
+        binding.root.requestApplyInsets()
 
         binding.recyclerGames.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerGames.adapter = GamesAdapter()

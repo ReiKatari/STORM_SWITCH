@@ -559,17 +559,17 @@
         android:background="?attr/colorSurfaceVariant"
         android:gravity="center_vertical"
         android:orientation="vertical"
-        android:paddingHorizontal="10dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="5dp">
+        android:paddingHorizontal="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="10dp">
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="8dp"
             android:background="?attr/colorOutline" />
 
-        <!-- Single Compact Row: Sort (Left), Page Navigation (Center), Page Info (Right) -->
+        <!-- Row 1: Sort Button (Left) and Pagination Info (Right) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -580,93 +580,93 @@
                 android:id="@+id/btn_sort_catalog"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:paddingHorizontal="8dp"
+                android:layout_height="36dp"
+                android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
                 android:text="А-Я"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="11sp"
+                android:textSize="12sp"
                 app:backgroundTint="?attr/colorSurface"
                 app:strokeColor="?attr/colorOutline"
                 app:strokeWidth="1dp"
                 app:icon="@drawable/ic_filter"
-                app:iconSize="14dp"
+                app:iconSize="16dp"
                 app:iconTint="?attr/colorPrimary" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_page_prev"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:insetLeft="0dp"
-                    android:insetTop="0dp"
-                    android:insetRight="0dp"
-                    android:insetBottom="0dp"
-                    android:padding="0dp"
-                    android:text="‹"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorPrimary"
-                    app:backgroundTint="?attr/colorSurface"
-                    app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp" />
-
-                <HorizontalScrollView
-                    android:id="@+id/scroll_page_numbers"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="4dp"
-                    android:scrollbars="none">
-
-                    <LinearLayout
-                        android:id="@+id/layout_page_buttons"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal" />
-                </HorizontalScrollView>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_page_next"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:insetLeft="0dp"
-                    android:insetTop="0dp"
-                    android:insetRight="0dp"
-                    android:insetBottom="0dp"
-                    android:padding="0dp"
-                    android:text="›"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorPrimary"
-                    app:backgroundTint="?attr/colorSurface"
-                    app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp" />
-            </LinearLayout>
 
             <TextView
                 android:id="@+id/text_pagination_info"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
                 android:gravity="end|center_vertical"
                 android:textAlignment="viewEnd"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="11sp"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
-                tools:text="Страница 1 из 7 (161)" />
+                tools:text="Страница 1 из 45 (1120 игр)" />
+        </LinearLayout>
+
+        <!-- Row 2: Page Navigation (Centered Prev, Page Numbers, Next) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_page_prev"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                android:text="‹"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                app:backgroundTint="?attr/colorSurface"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <HorizontalScrollView
+                android:id="@+id/scroll_page_numbers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="6dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/layout_page_buttons"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_page_next"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                android:text="›"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                app:backgroundTint="?attr/colorSurface"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
         </LinearLayout>
     </LinearLayout>
 
