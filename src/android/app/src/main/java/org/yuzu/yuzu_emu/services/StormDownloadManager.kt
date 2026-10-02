@@ -358,17 +358,16 @@ object StormDownloadManager {
     }
 
     private suspend fun runDownloadLoop(appContext: Context, game: StormWorldGameItem) {
-        val cleanTitle = (if (game.finalTitle.isNotEmpty()) game.finalTitle else game.title)
+        val rawBase = (if (game.finalTitle.isNotEmpty()) game.finalTitle else game.title)
             .replace(Regex("[\\\\/:*?\"<>|]"), "_")
             .trim()
-        val baseFilename = if (cleanTitle.endsWith(".nsp", ignoreCase = true) ||
-            cleanTitle.endsWith(".xci", ignoreCase = true) ||
-            cleanTitle.endsWith(".nsz", ignoreCase = true) ||
-            cleanTitle.endsWith(".xcz", ignoreCase = true)) {
-            cleanTitle
-        } else {
-            "$cleanTitle${game.realExtension}"
-        }
+        val cleanTitle = rawBase
+            .removeSuffix(".nsp").removeSuffix(".NSP")
+            .removeSuffix(".nsz").removeSuffix(".NSZ")
+            .removeSuffix(".xci").removeSuffix(".XCI")
+            .removeSuffix(".xcz").removeSuffix(".XCZ")
+            .trim()
+        val baseFilename = "$cleanTitle${game.realExtension}"
         val partFilename = "$baseFilename.part"
 
         var activeTarget: StreamTarget? = null
@@ -406,7 +405,7 @@ object StormDownloadManager {
 
                 var existingBytes = currentTarget.existingBytes
 
-                val downloadUrl = "https://stormgamesworld.ru/api/games/${game.id}/download"
+                val downloadUrl = "https://stormgamesworld.ru/api/games/${game.rawGameId}/download?format=${game.extensionClean.lowercase(Locale.ROOT)}"
                 val reqBuilder = Request.Builder()
                     .url(downloadUrl)
                     .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")

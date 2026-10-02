@@ -96,6 +96,12 @@ data class StormWorldGameItem(
     val extensionClean: String
         get() = realExtension.removePrefix(".").trim().uppercase(Locale.ROOT).ifEmpty { "NSP" }
 
+    val rawGameId: Int
+        get() = if (id >= 10000000) id % 10000000 else if (id < 0) -id else id
+
+    val catalogKey: String
+        get() = "${rawGameId}_$extensionClean"
+
     fun toJson(): JSONObject {
         val obj = JSONObject()
         obj.put("id", id)
@@ -1066,7 +1072,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val req = Request.Builder()
-                    .url("https://stormgamesworld.ru/api/games?id=${game.id}")
+                    .url("https://stormgamesworld.ru/api/games?id=${game.rawGameId}")
                     .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")
                     .build()
                 val resp = httpClient.newCall(req).execute()
@@ -1085,7 +1091,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val bytes = obj.optLong("fileSizeBytes", 0L)
 
                     game.description = StormWorldGameItem.sanitizeEncoding(safeDesc)
-                    game.fileSizeBytes = bytes
+                    if (game.fileSizeBytes == 0L) {
+                        game.fileSizeBytes = bytes
+                    }
 
                     val dlcsArr = obj.optJSONArray("dlcs")
                     if (dlcsArr != null) {
@@ -1109,25 +1117,26 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     }
                 }
 
-                // Also check HEAD Content-Disposition to detect real extension (.nsz / .xci / .nsp)
+                // Check HEAD Content-Disposition only if current extension is default .nsp, to detect .nsz / .xci / .xcz
                 var extChanged = false
-                try {
-                    val headReq = Request.Builder()
-                        .url("https://stormgamesworld.ru/api/games/${game.id}/download")
-                        .head()
-                        .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")
-                        .build()
-                    val headResp = httpClient.newCall(headReq).execute()
-                    val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
-                    val oldExt = game.realExtension
-                    if (disp.contains(".nsz")) game.realExtension = ".nsz"
-                    else if (disp.contains(".xcz")) game.realExtension = ".xcz"
-                    else if (disp.contains(".xci")) game.realExtension = ".xci"
-                    else if (disp.contains(".nsp")) game.realExtension = ".nsp"
-                    if (oldExt != game.realExtension) {
-                        extChanged = true
-                    }
-                } catch (_: Exception) {}
+                if (game.realExtension.isEmpty() || game.realExtension == ".nsp") {
+                    try {
+                        val headReq = Request.Builder()
+                            .url("https://stormgamesworld.ru/api/games/${game.rawGameId}/download")
+                            .head()
+                            .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")
+                            .build()
+                        val headResp = httpClient.newCall(headReq).execute()
+                        val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
+                        val oldExt = game.realExtension
+                        if (disp.contains(".nsz")) game.realExtension = ".nsz"
+                        else if (disp.contains(".xcz")) game.realExtension = ".xcz"
+                        else if (disp.contains(".xci")) game.realExtension = ".xci"
+                        if (oldExt != game.realExtension) {
+                            extChanged = true
+                        }
+                    } catch (_: Exception) {}
+                }
 
                 withContext(Dispatchers.Main) {
                     if (_binding == null || selectedGame?.id != game.id) return@withContext
@@ -1404,7 +1413,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 }
             }
 
-            val isSelected = selectedGame?.id == item.id
+            val isSelected = selectedGame?.id == item.id && selectedGame?.realExtension == item.realExtension
             holder.b.root.strokeColor = if (isSelected) primaryColor else outlineColor
             holder.b.root.strokeWidth = if (isSelected) 2 else 1
 
@@ -1445,8 +1454,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     val req = Request.Builder()
-                        .url("https://stormgamesworld.ru/api/games?id=${game.id}")
-                        .header("User-Agent", "STORM_SWITCH/9.0.0 (Android)")
+                        .url("https://stormgamesworld.ru/api/games?id=${game.rawGameId}")
+                        .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")
                         .build()
                     val resp = httpClient.newCall(req).execute()
                     val body = resp.body?.string().orEmpty()
@@ -1543,7 +1552,51 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         const val TAG = "StormGamesWorldDialogFragment"
         private const val CATALOG_CACHE_FILE = "storm_world_catalog_cache.json"
 
-                val dynamicCoverCache = java.util.concurrent.ConcurrentHashMap<String, String>()
+        val dynamicCoverCache = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+        data class CloudFormatVariant(
+            val extension: String,
+            val size: String,
+            val fileSizeBytes: Long
+        )
+
+        val KNOWN_CLOUD_FORMAT_VARIANTS = mapOf(
+            "0100FC001ACE0000" to listOf( // Anvil Saga
+                CloudFormatVariant(".nsp", "694,29 MB", 728016736L),
+                CloudFormatVariant(".nsz", "308,51 MB", 323499452L)
+            ),
+            "010004D00A9C0000" to listOf( // Aggelos
+                CloudFormatVariant(".nsp", "112,93 MB", 118411040L),
+                CloudFormatVariant(".nsz", "105,46 MB", 110581026L)
+            ),
+            "010040F01EC60000" to listOf( // Aggelos 2
+                CloudFormatVariant(".nsp", "107,12 MB", 112319264L),
+                CloudFormatVariant(".nsz", "89,56 MB", 93908837L)
+            ),
+            "010020D01AD24000" to listOf( // Animal Well
+                CloudFormatVariant(".nsp", "37,63 MB", 39457568L),
+                CloudFormatVariant(".nsz", "34,83 MB", 36522797L)
+            ),
+            "0100F3E024DFC000" to listOf( // Another Eden Begins
+                CloudFormatVariant(".nsp", "3,61 GB", 3876480288L),
+                CloudFormatVariant(".nsz", "3,29 GB", 3535621250L)
+            ),
+            "01006DD02868A000" to listOf( // Artis Impact
+                CloudFormatVariant(".nsp", "1,39 GB", 1496537888L),
+                CloudFormatVariant(".nsz", "970,82 MB", 1017977718L)
+            ),
+            "01008F1008DA6000" to listOf( // Darkest Dungeon [Ancestral Edition]
+                CloudFormatVariant(".nsp", "3,26 GB", 3497294656L),
+                CloudFormatVariant(".nsz", "658 KB", 673780L)
+            ),
+            "0100E5E01C098000" to listOf( // Darkest Dungeon II
+                CloudFormatVariant(".nsp", "4,00 GB", 4298739840L),
+                CloudFormatVariant(".nsz", "917 KB", 939088L)
+            ),
+            "0100F2C0115B6000" to listOf( // The Legend of Zelda: Tears of the Kingdom (ONLY NSZ in cloud)
+                CloudFormatVariant(".nsz", "15,45 GB", 16591941089L)
+            )
+        )
 
         val SWITCH_CDN_ICONS = mapOf(
             "01007F600B134000" to "https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_AssassinsCreedIIIDefinitiveEdition_image500w.jpg",
@@ -1699,15 +1752,14 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         fun getCachedCatalog(context: Context): List<StormWorldGameItem> {
             return try {
                 // Baseline bundled assets catalog
-                val assetMap = mutableMapOf<Int, StormWorldGameItem>()
+                val assetList = mutableListOf<StormWorldGameItem>()
                 try {
                     val assetJson = context.assets.open(CATALOG_CACHE_FILE).bufferedReader().use { it.readText() }
                     if (assetJson.isNotBlank()) {
                         val arr = JSONArray(assetJson)
                         for (i in 0 until arr.length()) {
                             val obj = arr.optJSONObject(i) ?: continue
-                            val it = StormWorldGameItem.fromJson(obj)
-                            assetMap[it.id] = it
+                            assetList.add(StormWorldGameItem.fromJson(obj))
                         }
                     }
                 } catch (_: Exception) {}
@@ -1732,39 +1784,64 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     for (i in 0 until jsonArr.length()) {
                         val obj = jsonArr.optJSONObject(i) ?: continue
                         val item = StormWorldGameItem.fromJson(obj)
-                        val assetItem = assetMap[item.id]
-                        val effectiveExt = if ((item.realExtension.isEmpty() || item.realExtension == ".nsp") &&
-                            assetItem != null && assetItem.realExtension.isNotEmpty() && assetItem.realExtension != ".nsp") {
-                            assetItem.realExtension
-                        } else {
-                            item.realExtension
-                        }
-                        val resolvedCover = if (item.cover.isNotBlank() && item.cover.startsWith("http")) {
-                            item.cover
-                        } else {
-                            SWITCH_CDN_ICONS[item.serialId.uppercase(Locale.ROOT)] ?: item.cover
-                        }
-                        list.add(item.copy(realExtension = effectiveExt, cover = resolvedCover))
-                    }
-                    val presentIds = list.map { it.id }.toSet()
-                    for (ai in assetMap.values) {
-                        if (ai.id !in presentIds) {
-                            val resolvedCover = if (ai.cover.isNotBlank() && ai.cover.startsWith("http")) {
-                                ai.cover
-                            } else {
-                                SWITCH_CDN_ICONS[ai.serialId.uppercase(Locale.ROOT)] ?: ai.cover
-                            }
-                            list.add(ai.copy(cover = resolvedCover))
-                        }
-                    }
-                } else {
-                    for (item in assetMap.values) {
                         val resolvedCover = if (item.cover.isNotBlank() && item.cover.startsWith("http")) {
                             item.cover
                         } else {
                             SWITCH_CDN_ICONS[item.serialId.uppercase(Locale.ROOT)] ?: item.cover
                         }
                         list.add(item.copy(cover = resolvedCover))
+                    }
+                }
+
+                // Merge items from bundled assets that may be missing in filesDir cache
+                val presentKeys = list.map { "${it.id}|${it.realExtension.lowercase(Locale.ROOT)}" }.toSet()
+                for (ai in assetList) {
+                    val key = "${ai.id}|${ai.realExtension.lowercase(Locale.ROOT)}"
+                    if (key !in presentKeys) {
+                        val resolvedCover = if (ai.cover.isNotBlank() && ai.cover.startsWith("http")) {
+                            ai.cover
+                        } else {
+                            SWITCH_CDN_ICONS[ai.serialId.uppercase(Locale.ROOT)] ?: ai.cover
+                        }
+                        list.add(ai.copy(cover = resolvedCover))
+                    }
+                }
+
+                if (list.isEmpty()) {
+                    for (ai in assetList) {
+                        val resolvedCover = if (ai.cover.isNotBlank() && ai.cover.startsWith("http")) {
+                            ai.cover
+                        } else {
+                            SWITCH_CDN_ICONS[ai.serialId.uppercase(Locale.ROOT)] ?: ai.cover
+                        }
+                        list.add(ai.copy(cover = resolvedCover))
+                    }
+                }
+
+                // Ensure all KNOWN_CLOUD_FORMAT_VARIANTS are injected if missing
+                for ((tid, variants) in KNOWN_CLOUD_FORMAT_VARIANTS) {
+                    val baseItem = list.firstOrNull { it.serialId.equals(tid, ignoreCase = true) } ?: continue
+                    for (v in variants) {
+                        val isNsz = v.extension.equals(".nsz", ignoreCase = true)
+                        val targetId = if (isNsz && variants.size > 1) 10000000 + baseItem.rawGameId else baseItem.rawGameId
+                        val targetKey = "${targetId}|${v.extension.lowercase(Locale.ROOT)}"
+                        val alreadyExists = list.any { "${it.id}|${it.realExtension.lowercase(Locale.ROOT)}" == targetKey }
+                        if (!alreadyExists) {
+                            val resolvedCover = if (baseItem.cover.isNotBlank() && baseItem.cover.startsWith("http")) {
+                                baseItem.cover
+                            } else {
+                                SWITCH_CDN_ICONS[tid] ?: baseItem.cover
+                            }
+                            list.add(
+                                baseItem.copy(
+                                    id = targetId,
+                                    realExtension = v.extension,
+                                    size = v.size,
+                                    fileSizeBytes = v.fileSizeBytes,
+                                    cover = resolvedCover
+                                )
+                            )
+                        }
                     }
                 }
 
@@ -1776,7 +1853,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val cleanVer = item.version.split(" ").firstOrNull().orEmpty()
                     val langs = item.textLangs.sorted().joinToString(",")
                     val ext = item.extensionClean
-                    "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}|$ext"
+                    val rawId = item.rawGameId
+                    "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}|$ext|$rawId"
                 }
             } catch (e: Exception) {
                 Log.error("[StormGamesWorld] Failed to read cached catalog: ${e.message}")
@@ -1801,7 +1879,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")
-                    .header("User-Agent", "STORM_SWITCH/9.0.0 (Android)")
+                    .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")
                     .build()
 
                 val resp = sharedHttpClient.newCall(req).execute()
@@ -1810,11 +1888,12 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
                 val jsonArray = JSONArray(body)
                 val candidateList = mutableListOf<StormWorldGameItem>()
-                val cachedMap = try {
-                    getCachedCatalog(context).associateBy { it.id }
+                val cachedGames = try {
+                    getCachedCatalog(context)
                 } catch (_: Exception) {
-                    emptyMap()
+                    emptyList()
                 }
+                val cachedBySerial = cachedGames.groupBy { it.serialId.uppercase(Locale.ROOT) }
 
                 for (i in 0 until jsonArray.length()) {
                     val obj = jsonArray.optJSONObject(i) ?: continue
@@ -1868,38 +1947,100 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         }
 
                         val gameId = obj.optInt("id")
-                        val fullTitleLower = "$rawFinalTitle $rawTitle".lowercase(Locale.ROOT)
-                        val detectedExt = when {
-                            cachedMap[gameId]?.realExtension?.isNotEmpty() == true && cachedMap[gameId]!!.realExtension != ".nsp" -> cachedMap[gameId]!!.realExtension
-                            fullTitleLower.contains(".nsz") || fullTitleLower.contains("[nsz]") || fullTitleLower.contains("(nsz)") -> ".nsz"
-                            fullTitleLower.contains(".xcz") || fullTitleLower.contains("[xcz]") || fullTitleLower.contains("(xcz)") -> ".xcz"
-                            fullTitleLower.contains(".xci") || fullTitleLower.contains("[xci]") || fullTitleLower.contains("(xci)") -> ".xci"
-                            fullTitleLower.contains(".nsp") || fullTitleLower.contains("[nsp]") || fullTitleLower.contains("(nsp)") -> ".nsp"
-                            cachedMap[gameId]?.realExtension?.isNotEmpty() == true -> cachedMap[gameId]!!.realExtension
-                            else -> ".nsp"
-                        }
+                        val cleanSerial = serialId.uppercase(Locale.ROOT)
+                        val knownVariants = KNOWN_CLOUD_FORMAT_VARIANTS[cleanSerial]
 
-                        candidateList.add(
-                            StormWorldGameItem(
-                                id = gameId,
-                                title = rawTitle,
-                                finalTitle = rawFinalTitle,
-                                version = if (rawVersion.isNotEmpty()) rawVersion else "1.0.0",
-                                internalVersion = internalVer,
-                                serialId = serialId,
-                                size = sizeStr,
-                                cover = obj.optString("cover").ifEmpty {
-                                    SWITCH_CDN_ICONS[serialId.uppercase(Locale.ROOT)] ?: ""
-                                },
-                                fileExists = fileExists,
-                                hasFile = hasFile,
-                                regions = regList,
-                                textLangs = langList,
-                                realExtension = detectedExt,
-                                dlcCount = dlcNum,
-                                modCount = modNum
-                            )
-                        )
+                        if (knownVariants != null && knownVariants.isNotEmpty()) {
+                            // Known multiple formats or format override
+                            for (v in knownVariants) {
+                                val isNsz = v.extension.equals(".nsz", ignoreCase = true)
+                                val effectiveId = if (isNsz && knownVariants.size > 1) 10000000 + gameId else gameId
+                                candidateList.add(
+                                    StormWorldGameItem(
+                                        id = effectiveId,
+                                        title = rawTitle,
+                                        finalTitle = rawFinalTitle,
+                                        version = if (rawVersion.isNotEmpty()) rawVersion else "1.0.0",
+                                        internalVersion = internalVer,
+                                        serialId = serialId,
+                                        size = v.size,
+                                        fileSizeBytes = v.fileSizeBytes,
+                                        cover = obj.optString("cover").ifEmpty {
+                                            SWITCH_CDN_ICONS[cleanSerial] ?: ""
+                                        },
+                                        fileExists = fileExists,
+                                        hasFile = hasFile,
+                                        regions = regList,
+                                        textLangs = langList,
+                                        realExtension = v.extension,
+                                        dlcCount = dlcNum,
+                                        modCount = modNum
+                                    )
+                                )
+                            }
+                        } else {
+                            val cachedVariants = cachedBySerial[cleanSerial].orEmpty()
+                            if (cachedVariants.size > 1) {
+                                for (cv in cachedVariants) {
+                                    val isNsz = cv.realExtension.equals(".nsz", ignoreCase = true)
+                                    val effectiveId = if (isNsz && cv.id >= 10000000) cv.id else if (isNsz) 10000000 + gameId else gameId
+                                    candidateList.add(
+                                        StormWorldGameItem(
+                                            id = effectiveId,
+                                            title = rawTitle,
+                                            finalTitle = rawFinalTitle,
+                                            version = if (rawVersion.isNotEmpty()) rawVersion else "1.0.0",
+                                            internalVersion = internalVer,
+                                            serialId = serialId,
+                                            size = cv.size.ifEmpty { sizeStr },
+                                            fileSizeBytes = cv.fileSizeBytes,
+                                            cover = obj.optString("cover").ifEmpty {
+                                                SWITCH_CDN_ICONS[cleanSerial] ?: ""
+                                            },
+                                            fileExists = fileExists,
+                                            hasFile = hasFile,
+                                            regions = regList,
+                                            textLangs = langList,
+                                            realExtension = cv.realExtension,
+                                            dlcCount = dlcNum,
+                                            modCount = modNum
+                                        )
+                                    )
+                                }
+                            } else {
+                                val fullTitleLower = "$rawFinalTitle $rawTitle".lowercase(Locale.ROOT)
+                                val detectedExt = when {
+                                    fullTitleLower.contains(".nsz") || fullTitleLower.contains("[nsz]") || fullTitleLower.contains("(nsz)") -> ".nsz"
+                                    fullTitleLower.contains(".xcz") || fullTitleLower.contains("[xcz]") || fullTitleLower.contains("(xcz)") -> ".xcz"
+                                    fullTitleLower.contains(".xci") || fullTitleLower.contains("[xci]") || fullTitleLower.contains("(xci)") -> ".xci"
+                                    fullTitleLower.contains(".nsp") || fullTitleLower.contains("[nsp]") || fullTitleLower.contains("(nsp)") -> ".nsp"
+                                    cachedVariants.isNotEmpty() && cachedVariants[0].realExtension.isNotEmpty() -> cachedVariants[0].realExtension
+                                    else -> ".nsp"
+                                }
+
+                                candidateList.add(
+                                    StormWorldGameItem(
+                                        id = gameId,
+                                        title = rawTitle,
+                                        finalTitle = rawFinalTitle,
+                                        version = if (rawVersion.isNotEmpty()) rawVersion else "1.0.0",
+                                        internalVersion = internalVer,
+                                        serialId = serialId,
+                                        size = sizeStr,
+                                        cover = obj.optString("cover").ifEmpty {
+                                            SWITCH_CDN_ICONS[cleanSerial] ?: ""
+                                        },
+                                        fileExists = fileExists,
+                                        hasFile = hasFile,
+                                        regions = regList,
+                                        textLangs = langList,
+                                        realExtension = detectedExt,
+                                        dlcCount = dlcNum,
+                                        modCount = modNum
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -1913,7 +2054,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         val cleanVer = item.version.split(" ").firstOrNull().orEmpty()
                         val langs = item.textLangs.sorted().joinToString(",")
                         val ext = item.extensionClean
-                        "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}|$ext"
+                        val rawId = item.rawGameId
+                        "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}|$ext|$rawId"
                     }
 
                 fun compareVers(v1: String, v2: String): Int {
@@ -1959,6 +2101,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         continue
                     }
 
+                    // If all items only differ by extension/format (same version, dlc, mod), don't show recommended star
+                    val distinctVersions = list.map { "${it.version}|${it.dlcCount}|${it.modCount}" }.distinct()
+                    if (distinctVersions.size <= 1) {
+                        for (g in list) g.isRecommended = false
+                        continue
+                    }
+
                     var best: StormWorldGameItem? = null
                     for (g in list) {
                         g.isRecommended = false
@@ -1998,7 +2147,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 val verCmp = compareVers(b.version, a.version)
                                 if (verCmp != 0) verCmp else {
                                     val extCmp = a.extensionClean.compareTo(b.extensionClean)
-                                    if (extCmp != 0) extCmp else b.id.compareTo(a.id)
+                                    if (extCmp != 0) extCmp else a.id.compareTo(b.id)
                                 }
                             }
                         }

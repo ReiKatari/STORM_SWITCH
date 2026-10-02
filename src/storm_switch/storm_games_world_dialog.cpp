@@ -194,6 +194,53 @@ static QString GetVerifiedCoverUrlForTid(const QString& tid) {
     return s_verified_covers.value(tid.toUpper());
 }
 
+struct KnownCloudVariant {
+    QString ext;
+    QString size;
+    qint64 file_size_bytes{0};
+};
+
+static const QMap<QString, QVector<KnownCloudVariant>>& GetKnownCloudVariants() {
+    static const QMap<QString, QVector<KnownCloudVariant>> s_map = {
+        {QStringLiteral("0100FC001ACE0000"), { // Anvil Saga
+            {QStringLiteral(".nsp"), QStringLiteral("694,29 MB"), 728016736LL},
+            {QStringLiteral(".nsz"), QStringLiteral("308,51 MB"), 323499452LL}
+        }},
+        {QStringLiteral("010004D00A9C0000"), { // Aggelos
+            {QStringLiteral(".nsp"), QStringLiteral("112,93 MB"), 118411040LL},
+            {QStringLiteral(".nsz"), QStringLiteral("105,46 MB"), 110581026LL}
+        }},
+        {QStringLiteral("010040F01EC60000"), { // Aggelos 2
+            {QStringLiteral(".nsp"), QStringLiteral("107,12 MB"), 112319264LL},
+            {QStringLiteral(".nsz"), QStringLiteral("89,56 MB"), 93908837LL}
+        }},
+        {QStringLiteral("010020D01AD24000"), { // Animal Well
+            {QStringLiteral(".nsp"), QStringLiteral("37,63 MB"), 39457568LL},
+            {QStringLiteral(".nsz"), QStringLiteral("34,83 MB"), 36522797LL}
+        }},
+        {QStringLiteral("0100F3E024DFC000"), { // Another Eden Begins
+            {QStringLiteral(".nsp"), QStringLiteral("3,61 GB"), 3876480288LL},
+            {QStringLiteral(".nsz"), QStringLiteral("3,29 GB"), 3535621250LL}
+        }},
+        {QStringLiteral("01006DD02868A000"), { // Artis Impact
+            {QStringLiteral(".nsp"), QStringLiteral("1,39 GB"), 1496537888LL},
+            {QStringLiteral(".nsz"), QStringLiteral("970,82 MB"), 1017977718LL}
+        }},
+        {QStringLiteral("01008F1008DA6000"), { // Darkest Dungeon [Ancestral Edition]
+            {QStringLiteral(".nsp"), QStringLiteral("3,26 GB"), 3497294656LL},
+            {QStringLiteral(".nsz"), QStringLiteral("658 KB"), 673780LL}
+        }},
+        {QStringLiteral("0100E5E01C098000"), { // Darkest Dungeon II
+            {QStringLiteral(".nsp"), QStringLiteral("4,00 GB"), 4298739840LL},
+            {QStringLiteral(".nsz"), QStringLiteral("917 KB"), 939088LL}
+        }},
+        {QStringLiteral("0100F2C0115B6000"), { // The Legend of Zelda: Tears of the Kingdom (ONLY NSZ)
+            {QStringLiteral(".nsz"), QStringLiteral("15,45 GB"), 16591941089LL}
+        }}
+    };
+    return s_map;
+}
+
 static int ExtractModCount(const QString& title, const QString& final_title, const QStringList& text_langs) {
     static const QRegularExpression mod_regex(
         QStringLiteral(R"((?:\+|[\(\[])(\d+)\s*(?:M\b|MOD\b))"),
@@ -794,7 +841,9 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
         }
 
         if (!is_single) {
-            // Multiple versions in catalog: must verify exact version/mod/dlc/rus
+            // Multiple versions/formats in catalog: must verify exact version/mod/dlc/rus and format
+            const QString target_ext = (game.real_extension.isEmpty() ? QStringLiteral("nsp") : game.real_extension).remove(QLatin1Char('.')).toLower();
+            if (!file.extension.isEmpty() and file.extension.toLower() != target_ext) continue;
             if (game_is_mod != file.has_mod) continue;
             if (game_is_mod and game_mod_count != file.mod_count) continue;
             if (game_has_dlc != file.has_dlc) continue;
@@ -1336,7 +1385,23 @@ void StormGamesWorldDialog::ParseCatalogData(const QByteArray bitand raw_data) {
 
             g.mod_count = ExtractModCount(g.title, g.final_title, g.text_langs);
 
-            all_games.push_back(g);
+            const QString clean_tid = g.serial_id.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
+            const auto& known_variants = GetKnownCloudVariants();
+            if (known_variants.contains(clean_tid)) {
+                const auto& variants = known_variants.value(clean_tid);
+                for (const auto& v : variants) {
+                    StormWorldGame vg = g;
+                    vg.real_extension = v.ext;
+                    vg.size = v.size;
+                    vg.file_size_bytes = v.file_size_bytes;
+                    if (v.ext.compare(QStringLiteral(".nsz"), Qt::CaseInsensitive) == 0 && variants.size() > 1) {
+                        vg.id = 10000000 + g.id;
+                    }
+                    all_games.push_back(std::move(vg));
+                }
+            } else {
+                all_games.push_back(g);
+            }
         }
     }
 
@@ -1470,7 +1535,9 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
             const bool match_title = g.title.toLower().contains(lower_filter);
             const bool match_final = g.final_title.toLower().contains(lower_filter);
             const bool match_tid = g.serial_id.toLower().contains(lower_filter);
-            if (!match_title and !match_final and !match_tid) {
+            const QString ext_clean = g.real_extension.remove(QLatin1Char('.')).toLower();
+            const bool match_ext = ext_clean.contains(lower_filter) || g.real_extension.toLower().contains(lower_filter);
+            if (!match_title and !match_final and !match_tid and !match_ext) {
                 continue;
             }
         }
@@ -1492,12 +1559,15 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
             }
         }
 
+        const QString ext_tag = (g.real_extension.isEmpty() ? QStringLiteral("NSP") : g.real_extension).remove(QLatin1Char('.')).toUpper();
+        const QString clean_ver = g.version.isEmpty() ? QStringLiteral("1.0.0") : g.version;
+
         if (g.is_recommended) {
-            item->setText(1, QStringLiteral("⭐ %1 [Рекомендуемая]").arg(g.version.isEmpty() ? QStringLiteral("1.0.0") : g.version));
+            item->setText(1, QStringLiteral("⭐ %1 [%2]").arg(clean_ver).arg(ext_tag));
             item->setForeground(1, QBrush(QColor(QStringLiteral("#00FF66"))));
-            item->setToolTip(1, tr("Рекомендуемая новейшая версия игры"));
+            item->setToolTip(1, tr("Рекомендуемая новейшая версия игры (%1)").arg(ext_tag));
         } else {
-            item->setText(1, g.version.isEmpty() ? tr("1.0.0") : g.version);
+            item->setText(1, QStringLiteral("%1 [%2]").arg(clean_ver).arg(ext_tag));
             item->setForeground(1, QBrush(QColor(QStringLiteral("#FFFFFF"))));
         }
 
@@ -1734,7 +1804,8 @@ void StormGamesWorldDialog::FetchGameDetails(int game_id) {
         details_reply = nullptr;
     }
 
-    QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games?id=%1").arg(game_id)));
+    const int raw_id = (game_id >= 10000000) ? (game_id - 10000000) : game_id;
+    QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games?id=%1").arg(raw_id)));
     req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/9.5.0 (Windows x64)"));
     details_reply = network_mgr.get(req);
     connect(details_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnGameDetailsReplyFinished);
@@ -1805,7 +1876,8 @@ void StormGamesWorldDialog::FetchRealExtension(int game_id) {
         head_reply = nullptr;
     }
 
-    QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game_id)));
+    const int raw_id = (game_id >= 10000000) ? (game_id - 10000000) : game_id;
+    QNetworkRequest req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(raw_id)));
     req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/9.5.0 (Windows x64)"));
     head_reply = network_mgr.head(req);
     connect(head_reply, &QNetworkReply::finished, this, &StormGamesWorldDialog::OnHeadReplyFinished);
@@ -1831,10 +1903,17 @@ void StormGamesWorldDialog::OnHeadReplyFinished() {
         }
 
         if (selected_game_index >= 0 && selected_game_index < static_cast<int>(filtered_games.size())) {
-            filtered_games[selected_game_index].real_extension = real_ext;
+            const QString current_ext = filtered_games[selected_game_index].real_extension;
+            if (current_ext.compare(QStringLiteral(".nsz"), Qt::CaseInsensitive) == 0 &&
+                real_ext.compare(QStringLiteral(".nsp"), Qt::CaseInsensitive) == 0) {
+                // Preserve verified NSZ variant
+            } else {
+                filtered_games[selected_game_index].real_extension = real_ext;
+            }
             const auto& game = filtered_games[selected_game_index];
+            const QString actual_tag = (game.real_extension.isEmpty() ? QStringLiteral("NSP") : game.real_extension).remove(QLatin1Char('.')).toUpper();
             version_combo->clear();
-            version_combo->addItem(tr("Основная версия (%1) [%2]").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(real_tag));
+            version_combo->addItem(tr("Основная версия (%1) [%2]").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(actual_tag));
         }
     }
 
@@ -2081,11 +2160,16 @@ void StormGamesWorldDialog::OnStartDownload() {
     }
 
     QString base_filename = SanitizeFileName(game.final_title.isEmpty() ? game.title : game.final_title);
-    if (!base_filename.endsWith(QStringLiteral(".nsp"), Qt::CaseInsensitive) and
-        !base_filename.endsWith(QStringLiteral(".xci"), Qt::CaseInsensitive) and
-        !base_filename.endsWith(QStringLiteral(".nsz"), Qt::CaseInsensitive)) {
-        base_filename += (game.real_extension.isEmpty() ? QStringLiteral(".nsp") : game.real_extension);
+    if (base_filename.endsWith(QStringLiteral(".nsp"), Qt::CaseInsensitive)) {
+        base_filename.chop(4);
+    } else if (base_filename.endsWith(QStringLiteral(".nsz"), Qt::CaseInsensitive)) {
+        base_filename.chop(4);
+    } else if (base_filename.endsWith(QStringLiteral(".xci"), Qt::CaseInsensitive)) {
+        base_filename.chop(4);
+    } else if (base_filename.endsWith(QStringLiteral(".xcz"), Qt::CaseInsensitive)) {
+        base_filename.chop(4);
     }
+    base_filename += (game.real_extension.isEmpty() ? QStringLiteral(".nsp") : game.real_extension);
 
     current_download_path = dir.filePath(base_filename);
 
@@ -2096,7 +2180,9 @@ void StormGamesWorldDialog::OnStartDownload() {
         return;
     }
 
-    const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download").arg(game.id));
+    const int raw_id = (game.id >= 10000000) ? (game.id - 10000000) : game.id;
+    const QString ext_param = (game.real_extension.isEmpty() ? QStringLiteral("nsp") : game.real_extension).remove(QLatin1Char('.')).toLower();
+    const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download?format=%2").arg(raw_id).arg(ext_param));
     QNetworkRequest req(download_url);
     req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/9.5.0 (Windows x64)"));
     req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
