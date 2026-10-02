@@ -407,13 +407,35 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:id="@+id/detail_game_cover"
+                        <FrameLayout
                             android:layout_width="64dp"
-                            android:layout_height="64dp"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/default_icon"
-                            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
+                            android:layout_height="64dp">
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/detail_game_cover"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/default_icon"
+                                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/detail_badge_extension"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="top|start"
+                                android:layout_margin="3dp"
+                                android:background="@drawable/badge_extension_background"
+                                android:paddingLeft="5dp"
+                                android:paddingRight="5dp"
+                                android:paddingTop="1dp"
+                                android:paddingBottom="1dp"
+                                android:textColor="?attr/colorOnPrimary"
+                                android:textSize="9sp"
+                                android:textStyle="bold"
+                                tools:text="NSP" />
+
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"

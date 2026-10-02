@@ -363,7 +363,8 @@ object StormDownloadManager {
             .trim()
         val baseFilename = if (cleanTitle.endsWith(".nsp", ignoreCase = true) ||
             cleanTitle.endsWith(".xci", ignoreCase = true) ||
-            cleanTitle.endsWith(".nsz", ignoreCase = true)) {
+            cleanTitle.endsWith(".nsz", ignoreCase = true) ||
+            cleanTitle.endsWith(".xcz", ignoreCase = true)) {
             cleanTitle
         } else {
             "$cleanTitle${game.realExtension}"

@@ -93,6 +93,9 @@ data class StormWorldGameItem(
     var isRecommended: Boolean = false,
     val dlcs: MutableList<StormWorldDlcItem> = mutableListOf()
 ) {
+    val extensionClean: String
+        get() = realExtension.removePrefix(".").trim().uppercase(Locale.ROOT).ifEmpty { "NSP" }
+
     fun toJson(): JSONObject {
         val obj = JSONObject()
         obj.put("id", id)
@@ -615,7 +618,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val size: Long,
             val modCount: Int,
             val dlcCount: Int,
-            val hasRus: Boolean
+            val hasRus: Boolean,
+            val extension: String = ""
         )
         val allFiles = mutableListOf<LocalFile>()
 
@@ -649,8 +653,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     rootDoc?.listFiles()?.forEach { f ->
                         if (f.isFile) {
                             val lower = f.name.orEmpty().lowercase(Locale.ROOT)
-                            if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz")) {
+                            if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
                                 val stem = lower.substringBeforeLast('.')
+                                val ext = lower.substringAfterLast('.', "")
                                 allFiles.add(
                                     LocalFile(
                                         lower,
@@ -658,7 +663,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                         f.length(),
                                         extractModCount(lower),
                                         extractDlcCount(lower),
-                                        lower.contains("rus") || lower.contains("рус")
+                                        lower.contains("rus") || lower.contains("рус"),
+                                        ext
                                     )
                                 )
                             }
@@ -669,8 +675,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     File(path).listFiles()?.forEach { f ->
                         if (f.isFile) {
                             val lower = f.name.lowercase(Locale.ROOT)
-                            if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz")) {
+                            if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
                                 val stem = lower.substringBeforeLast('.')
+                                val ext = lower.substringAfterLast('.', "")
                                 allFiles.add(
                                     LocalFile(
                                         lower,
@@ -678,7 +685,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                         f.length(),
                                         extractModCount(lower),
                                         extractDlcCount(lower),
-                                        lower.contains("rus") || lower.contains("рус")
+                                        lower.contains("rus") || lower.contains("рус"),
+                                        ext
                                     )
                                 )
                             }
@@ -689,6 +697,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
 
         val exactStems = allFiles.map { it.stem }.toHashSet()
+        val exactFileNames = allFiles.map { it.name }.toHashSet()
 
         val groupCounts = mutableMapOf<String, Int>()
         games.forEach { g ->
@@ -716,8 +725,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val gameIsMod = gameModCount > 0
             val gameHasDlc = gameDlcCount > 0
 
-            // Fast path: exact stem match
-            if (cleanFinal.isNotEmpty() && exactStems.contains(cleanFinal)) {
+            // Fast path: exact filename with extension match
+            val expectedFullName = "$cleanFinal.${g.extensionClean.lowercase(Locale.ROOT)}"
+            if (cleanFinal.isNotEmpty() && exactFileNames.contains(expectedFullName)) {
+                g.isDownloaded = true
+                return@forEach
+            }
+            if (isSingle && cleanFinal.isNotEmpty() && exactStems.contains(cleanFinal)) {
                 g.isDownloaded = true
                 return@forEach
             }
@@ -726,12 +740,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val lowerName = fileItem.name
                 val fileStem = fileItem.stem
 
-                if (cleanFinal.isNotEmpty() && fileStem == cleanFinal) {
+                if (isSingle && cleanFinal.isNotEmpty() && fileStem == cleanFinal) {
                     return@any true
                 }
 
                 if (!isSingle) {
-                    // Multiple versions in catalog: must verify exact version/mod/dlc/rus
+                    // Multiple versions/formats in catalog: must verify exact format/version/mod/dlc/rus
+                    if (fileItem.extension.isNotEmpty() && !fileItem.extension.equals(g.extensionClean, ignoreCase = true)) return@any false
                     if (gameIsMod != (fileItem.modCount > 0)) return@any false
                     if (gameIsMod && gameModCount != fileItem.modCount) return@any false
                     if (gameHasDlc != (fileItem.dlcCount > 0)) return@any false
@@ -851,7 +866,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val matchTitle = g.title.lowercase(Locale.ROOT).contains(q)
                 val matchFinal = g.finalTitle.lowercase(Locale.ROOT).contains(q)
                 val matchTid = g.serialId.lowercase(Locale.ROOT).contains(q)
-                if (!matchTitle && !matchFinal && !matchTid) continue
+                val matchExt = g.extensionClean.lowercase(Locale.ROOT) == q || g.realExtension.lowercase(Locale.ROOT) == q
+                if (!matchTitle && !matchFinal && !matchTid && !matchExt) continue
             }
             filteredAndSortedGames.add(g)
         }
@@ -996,6 +1012,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         val dispTitle = if (game.title.isNotBlank()) game.title else game.finalTitle
         binding.detailGameTitle.text = dispTitle
+        binding.detailBadgeExtension.text = game.extensionClean
         binding.detailGameVersion.text = game.version
         if (game.internalVersion.isNotEmpty()) {
             binding.detailInternalVersion.isVisible = true
@@ -1093,6 +1110,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 }
 
                 // Also check HEAD Content-Disposition to detect real extension (.nsz / .xci / .nsp)
+                var extChanged = false
                 try {
                     val headReq = Request.Builder()
                         .url("https://stormgamesworld.ru/api/games/${game.id}/download")
@@ -1101,13 +1119,25 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         .build()
                     val headResp = httpClient.newCall(headReq).execute()
                     val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
+                    val oldExt = game.realExtension
                     if (disp.contains(".nsz")) game.realExtension = ".nsz"
+                    else if (disp.contains(".xcz")) game.realExtension = ".xcz"
                     else if (disp.contains(".xci")) game.realExtension = ".xci"
                     else if (disp.contains(".nsp")) game.realExtension = ".nsp"
+                    if (oldExt != game.realExtension) {
+                        extChanged = true
+                    }
                 } catch (_: Exception) {}
 
                 withContext(Dispatchers.Main) {
                     if (_binding == null || selectedGame?.id != game.id) return@withContext
+                    binding.detailBadgeExtension.text = game.extensionClean
+                    if (extChanged) {
+                        binding.recyclerGames.adapter?.notifyDataSetChanged()
+                        context?.applicationContext?.let { appCtx ->
+                            saveCatalogCache(appCtx, allGames)
+                        }
+                    }
                     binding.detailGameDescription.text = if (game.description.isNotBlank() && game.description != "null") {
                         game.description
                     } else {
@@ -1314,6 +1344,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val outlineColor = ThemeHelper.getColor(context, com.google.android.material.R.attr.colorOutline)
 
             holder.b.textGameTitle.text = dispTitle
+            holder.b.badgeGameExtension.text = item.extensionClean
             holder.b.textGameVersion.text = item.version
             holder.b.textGameVersion.setTextColor(primaryColor)
             if (item.internalVersion.isNotEmpty()) {
@@ -1667,34 +1698,76 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         fun getCachedCatalog(context: Context): List<StormWorldGameItem> {
             return try {
+                // Baseline bundled assets catalog
+                val assetMap = mutableMapOf<Int, StormWorldGameItem>()
+                try {
+                    val assetJson = context.assets.open(CATALOG_CACHE_FILE).bufferedReader().use { it.readText() }
+                    if (assetJson.isNotBlank()) {
+                        val arr = JSONArray(assetJson)
+                        for (i in 0 until arr.length()) {
+                            val obj = arr.optJSONObject(i) ?: continue
+                            val it = StormWorldGameItem.fromJson(obj)
+                            assetMap[it.id] = it
+                        }
+                    }
+                } catch (_: Exception) {}
+
                 val file = File(context.filesDir, CATALOG_CACHE_FILE)
+                val pkgInfo = try {
+                    context.packageManager.getPackageInfo(context.packageName, 0)
+                } catch (_: Exception) { null }
+                if (file.exists() && pkgInfo != null && file.lastModified() < pkgInfo.lastUpdateTime) {
+                    file.delete()
+                }
+
                 val jsonStr = if (file.exists() && file.length() > 0) {
                     file.readText()
                 } else {
-                    try {
-                        context.assets.open(CATALOG_CACHE_FILE).bufferedReader().use { it.readText() }
-                    } catch (_: Exception) {
-                        ""
-                    }
+                    ""
                 }
-                if (jsonStr.isBlank()) return emptyList()
-                val jsonArr = JSONArray(jsonStr)
+
                 val list = mutableListOf<StormWorldGameItem>()
-                for (i in 0 until jsonArr.length()) {
-                    val obj = jsonArr.optJSONObject(i) ?: continue
-                    val item = StormWorldGameItem.fromJson(obj)
-                    val resolvedCover = if (item.cover.isNotBlank() && item.cover.startsWith("http")) {
-                        item.cover
-                    } else {
-                        SWITCH_CDN_ICONS[item.serialId.uppercase(Locale.ROOT)] ?: item.cover
+                if (jsonStr.isNotBlank()) {
+                    val jsonArr = JSONArray(jsonStr)
+                    for (i in 0 until jsonArr.length()) {
+                        val obj = jsonArr.optJSONObject(i) ?: continue
+                        val item = StormWorldGameItem.fromJson(obj)
+                        val assetItem = assetMap[item.id]
+                        val effectiveExt = if ((item.realExtension.isEmpty() || item.realExtension == ".nsp") &&
+                            assetItem != null && assetItem.realExtension.isNotEmpty() && assetItem.realExtension != ".nsp") {
+                            assetItem.realExtension
+                        } else {
+                            item.realExtension
+                        }
+                        val resolvedCover = if (item.cover.isNotBlank() && item.cover.startsWith("http")) {
+                            item.cover
+                        } else {
+                            SWITCH_CDN_ICONS[item.serialId.uppercase(Locale.ROOT)] ?: item.cover
+                        }
+                        list.add(item.copy(realExtension = effectiveExt, cover = resolvedCover))
                     }
-                    val finalItem = if (resolvedCover != item.cover) {
-                        item.copy(cover = resolvedCover)
-                    } else {
-                        item
+                    val presentIds = list.map { it.id }.toSet()
+                    for (ai in assetMap.values) {
+                        if (ai.id !in presentIds) {
+                            val resolvedCover = if (ai.cover.isNotBlank() && ai.cover.startsWith("http")) {
+                                ai.cover
+                            } else {
+                                SWITCH_CDN_ICONS[ai.serialId.uppercase(Locale.ROOT)] ?: ai.cover
+                            }
+                            list.add(ai.copy(cover = resolvedCover))
+                        }
                     }
-                    list.add(finalItem)
+                } else {
+                    for (item in assetMap.values) {
+                        val resolvedCover = if (item.cover.isNotBlank() && item.cover.startsWith("http")) {
+                            item.cover
+                        } else {
+                            SWITCH_CDN_ICONS[item.serialId.uppercase(Locale.ROOT)] ?: item.cover
+                        }
+                        list.add(item.copy(cover = resolvedCover))
+                    }
                 }
+
                 list.filterNot { item ->
                     val t = "${item.finalTitle} ${item.title} ${item.version}".lowercase(Locale.ROOT)
                     t.contains("копия") || t.contains("рљропрёсџ") || t.contains("(copy)")
@@ -1702,7 +1775,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val k = (item.serialId.ifEmpty { item.title }).uppercase(Locale.ROOT)
                     val cleanVer = item.version.split(" ").firstOrNull().orEmpty()
                     val langs = item.textLangs.sorted().joinToString(",")
-                    "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}"
+                    val ext = item.extensionClean
+                    "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}|$ext"
                 }
             } catch (e: Exception) {
                 Log.error("[StormGamesWorld] Failed to read cached catalog: ${e.message}")
@@ -1736,6 +1810,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
                 val jsonArray = JSONArray(body)
                 val candidateList = mutableListOf<StormWorldGameItem>()
+                val cachedMap = try {
+                    getCachedCatalog(context).associateBy { it.id }
+                } catch (_: Exception) {
+                    emptyMap()
+                }
 
                 for (i in 0 until jsonArray.length()) {
                     val obj = jsonArray.optJSONObject(i) ?: continue
@@ -1788,9 +1867,21 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             }
                         }
 
+                        val gameId = obj.optInt("id")
+                        val fullTitleLower = "$rawFinalTitle $rawTitle".lowercase(Locale.ROOT)
+                        val detectedExt = when {
+                            cachedMap[gameId]?.realExtension?.isNotEmpty() == true && cachedMap[gameId]!!.realExtension != ".nsp" -> cachedMap[gameId]!!.realExtension
+                            fullTitleLower.contains(".nsz") || fullTitleLower.contains("[nsz]") || fullTitleLower.contains("(nsz)") -> ".nsz"
+                            fullTitleLower.contains(".xcz") || fullTitleLower.contains("[xcz]") || fullTitleLower.contains("(xcz)") -> ".xcz"
+                            fullTitleLower.contains(".xci") || fullTitleLower.contains("[xci]") || fullTitleLower.contains("(xci)") -> ".xci"
+                            fullTitleLower.contains(".nsp") || fullTitleLower.contains("[nsp]") || fullTitleLower.contains("(nsp)") -> ".nsp"
+                            cachedMap[gameId]?.realExtension?.isNotEmpty() == true -> cachedMap[gameId]!!.realExtension
+                            else -> ".nsp"
+                        }
+
                         candidateList.add(
                             StormWorldGameItem(
-                                id = obj.optInt("id"),
+                                id = gameId,
                                 title = rawTitle,
                                 finalTitle = rawFinalTitle,
                                 version = if (rawVersion.isNotEmpty()) rawVersion else "1.0.0",
@@ -1804,6 +1895,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 hasFile = hasFile,
                                 regions = regList,
                                 textLangs = langList,
+                                realExtension = detectedExt,
                                 dlcCount = dlcNum,
                                 modCount = modNum
                             )
@@ -1820,7 +1912,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         val k = (item.serialId.ifEmpty { item.title }).uppercase(Locale.ROOT)
                         val cleanVer = item.version.split(" ").firstOrNull().orEmpty()
                         val langs = item.textLangs.sorted().joinToString(",")
-                        "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}"
+                        val ext = item.extensionClean
+                        "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}|$ext"
                     }
 
                 fun compareVers(v1: String, v2: String): Int {
@@ -1903,7 +1996,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 prioB.compareTo(prioA)
                             } else {
                                 val verCmp = compareVers(b.version, a.version)
-                                if (verCmp != 0) verCmp else b.id.compareTo(a.id)
+                                if (verCmp != 0) verCmp else {
+                                    val extCmp = a.extensionClean.compareTo(b.extensionClean)
+                                    if (extCmp != 0) extCmp else b.id.compareTo(a.id)
+                                }
                             }
                         }
                     }
