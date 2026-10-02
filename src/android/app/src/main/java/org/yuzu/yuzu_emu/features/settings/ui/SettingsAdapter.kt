@@ -129,6 +129,7 @@ class SettingsAdapter(
         item.setChecked(checked)
         if (NativeConfig.isPerGameConfigLoaded()) {
             NativeConfig.savePerGameConfig()
+            settingsViewModel.game?.let { org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(it) }
             NativeLibrary.applySettings()
         } else {
             NativeConfig.saveGlobalConfig()
@@ -210,6 +211,7 @@ class SettingsAdapter(
                 item.setValue(epochTime)
                 if (NativeConfig.isPerGameConfigLoaded()) {
                     NativeConfig.savePerGameConfig()
+                    settingsViewModel.game?.let { org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(it) }
                     NativeLibrary.applySettings()
                 } else {
                     NativeConfig.saveGlobalConfig()
@@ -483,6 +485,7 @@ class SettingsAdapter(
         item.setting.global = true
         if (NativeConfig.isPerGameConfigLoaded()) {
             NativeConfig.savePerGameConfig()
+            settingsViewModel.game?.let { org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(it) }
             NativeLibrary.applySettings()
         } else {
             NativeConfig.saveGlobalConfig()

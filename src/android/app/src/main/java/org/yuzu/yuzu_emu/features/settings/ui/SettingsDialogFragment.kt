@@ -476,6 +476,7 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
     private fun closeDialog() {
         if (NativeConfig.isPerGameConfigLoaded()) {
             NativeConfig.savePerGameConfig()
+            settingsViewModel.game?.let { org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(it) }
             NativeLibrary.applySettings()
         } else {
             NativeConfig.saveGlobalConfig()

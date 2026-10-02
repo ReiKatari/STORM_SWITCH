@@ -132,7 +132,9 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"},
-            {"System\\airplane_mode", "false"}
+            {"System\\airplane_mode", "false"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         },
         {0x01008F1008DA6800ULL, 0x01008F1008C06000ULL}
     },
@@ -4417,7 +4419,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"}
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpu_backend", "0"}
         }
     },
     {
@@ -4437,7 +4440,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_disk_shader_cache", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"}
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpu_backend", "0"}
         }
     },
     {

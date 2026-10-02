@@ -348,13 +348,37 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     if (per_game_config != nullptr) {
         per_game_config->ReloadAllValues();
     }
+    u64 early_title_id = 0;
+    try {
+        const auto early_file = m_system.GetFilesystem()->OpenFile(filepath, FileSys::OpenMode::Read);
+        if (early_file) {
+            auto early_loader = Loader::GetLoader(m_system, early_file);
+            if (early_loader) {
+                early_loader->ReadProgramId(early_title_id);
+            }
+        }
+    } catch (...) {}
+
 #ifdef __ANDROID__
+    // Darkest Dungeon title IDs: 0x01008F1008DA6000ULL and 0x01008F1008DA6800ULL
+    // Darkest Dungeon fails with out-of-bounds guest memory space on 6GB/8GB DRAM on Snapdragon 8 Elite.
+    if (early_title_id == 0x01008F1008DA6000ULL || early_title_id == 0x01008F1008DA6800ULL) {
+        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+        LOG_INFO(Frontend, "Enforced 4GB DRAM for Darkest Dungeon on Android to prevent out-of-bounds crash");
+    }
+
     // On Android devices, clamp 8GB DRAM (mode 2) to 6GB (mode 1)
     if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_8Gb) {
         Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
         LOG_INFO(Frontend, "Clamped memory_layout_mode 8GB to 6GB for Android stability");
     }
 #endif
+
+    if (early_title_id != 0 && Core::GameFixDatabase::AreFixesEnabled()) {
+        if (Core::GameFixDatabase::ApplyProfileDirectly(early_title_id)) {
+            LOG_INFO(Frontend, "Applied early GameFix profile for title_id={:016X}", early_title_id);
+        }
+    }
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();
     Settings::LogSettings();
