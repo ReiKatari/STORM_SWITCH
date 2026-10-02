@@ -106,31 +106,23 @@ object GameHelper {
         val mountedContainerUris = mutableSetOf<String>()
         mountExternalContentDirectories(mountedContainerUris)
 
-        // Stage 1: Pre-mount ALL containers across ALL game directories and subdirectories
+        val cachedMapByPath = cachedGameList.associateBy { it.path }
+        val cachedMapByName = cachedGameList.associateBy {
+            try { FileUtil.getFilename(it.path.toUri()) } catch (_: Exception) { "" }
+        }.filterKeys { it.isNotEmpty() }
+
+        // Fast unified single-pass: Mount containers and discover games simultaneously
         gameDirs.forEach { gameDir ->
             val gameDirUri = gameDir.uriString.toUri()
             if (FileUtil.isTreeUriValid(gameDirUri)) {
-                val scanDepth = if (gameDir.deepScan) 5 else 3
-                scanContentContainersRecursive(FileUtil.listFiles(gameDirUri), scanDepth) {
-                    val filePath = it.uri.toString()
-                    if (mountedContainerUris.add(filePath)) {
-                        NativeLibrary.addGameFolderFileToFilesystemProvider(filePath)
-                    }
-                }
-            }
-        }
-
-        // Stage 2: Load games with all content/updates/DLCs already registered in ContentProvider
-        gameDirs.forEach { gameDir ->
-            val gameDirUri = gameDir.uriString.toUri()
-            val isValid = FileUtil.isTreeUriValid(gameDirUri)
-            if (isValid) {
                 val scanDepth = if (gameDir.deepScan) 7 else 5
-
-                addGamesRecursive(
+                scanAndAddGamesRecursive(
                     games,
                     FileUtil.listFiles(gameDirUri),
-                    scanDepth
+                    scanDepth,
+                    mountedContainerUris,
+                    cachedMapByPath,
+                    cachedMapByName
                 )
             }
         }
@@ -332,6 +324,65 @@ object GameHelper {
                         onContainerFound(it)
                     } catch (e: Throwable) {
                         Log.error("[GameHelper] Failed to mount container ${it.filename}: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun scanAndAddGamesRecursive(
+        games: MutableList<Game>,
+        files: Array<MinimalDocumentFile>,
+        depth: Int,
+        mountedContainerUris: MutableSet<String>,
+        cachedMapByPath: Map<String, Game>,
+        cachedMapByName: Map<String, Game>
+    ) {
+        if (depth <= 0) {
+            return
+        }
+
+        for (it in files) {
+            if (it.isDirectory) {
+                scanAndAddGamesRecursive(
+                    games,
+                    FileUtil.listFiles(it.uri),
+                    depth - 1,
+                    mountedContainerUris,
+                    cachedMapByPath,
+                    cachedMapByName
+                )
+            } else {
+                val extension = if (it.filename.isNotEmpty() && it.filename.contains('.')) {
+                    it.filename.substringAfterLast('.').lowercase()
+                } else {
+                    FileUtil.getExtension(it.uri).lowercase()
+                }
+                val filePath = it.uri.toString()
+
+                if (externalContentExtensions.contains(extension)) {
+                    if (mountedContainerUris.add(filePath)) {
+                        try {
+                            NativeLibrary.addGameFolderFileToFilesystemProvider(filePath)
+                        } catch (e: Throwable) {
+                            Log.error("[GameHelper] Failed to mount container ${it.filename}: ${e.message}")
+                        }
+                    }
+                }
+
+                if (Game.extensions.contains(extension)) {
+                    try {
+                        val cached = cachedMapByPath[filePath] ?: cachedMapByName[it.filename]
+                        if (cached != null) {
+                            games.add(cached)
+                        } else {
+                            val game = getGame(it.uri, true, false)
+                            if (game != null) {
+                                games.add(game)
+                            }
+                        }
+                    } catch (e: Throwable) {
+                        Log.error("[GameHelper] Failed to parse game ${it.filename}: ${e.message}")
                     }
                 }
             }

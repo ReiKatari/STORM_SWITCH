@@ -379,17 +379,6 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
             LOG_INFO(Frontend, "Applied early GameFix profile for title_id={:016X}", early_title_id);
         }
     }
-#ifdef __ANDROID__
-    Settings::values.early_release_fences.SetValue(false);
-    Settings::values.barrier_feedback_loops.SetValue(false);
-    Settings::values.enable_compute_pipelines.SetValue(false);
-    Settings::values.use_fast_gpu_time.SetValue(false);
-    Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
-    Settings::values.airplane_mode.SetValue(false);
-#if defined(HAS_NCE)
-    Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
-#endif
-#endif
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();
     Settings::LogSettings();
@@ -433,19 +422,6 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
             m_system.ApplySettings();
         }
     }
-#ifdef __ANDROID__
-    Settings::values.early_release_fences.SetValue(false);
-    Settings::values.barrier_feedback_loops.SetValue(false);
-    Settings::values.enable_compute_pipelines.SetValue(false);
-    Settings::values.use_fast_gpu_time.SetValue(false);
-    Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
-    Settings::values.airplane_mode.SetValue(false);
-#if defined(HAS_NCE)
-    Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
-#endif
-    m_system.ApplySettings();
-#endif
-
     m_system.RegisterExitCallback([&] { HaltEmulation(); });
 
     // Register an ExecuteProgram callback such that Core can execute a sub-program

@@ -697,7 +697,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\astc_recompression", "0"},
@@ -6764,11 +6764,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\dynamic_performance_scaler") {
                 apply_setting(Settings::values.dynamic_performance_scaler, val == "true" || val == "1");
             } else if (full_key == "Renderer\\barrier_feedback_loops") {
-#ifdef __ANDROID__
-                apply_setting(Settings::values.barrier_feedback_loops, false);
-#else
                 apply_setting(Settings::values.barrier_feedback_loops, val == "true" || val == "1");
-#endif
             } else if (full_key == "Renderer\\use_reactive_flushing") {
                 apply_setting(Settings::values.use_reactive_flushing, val == "true" || val == "1");
             } else if (full_key == "Renderer\\astc_recompression") {
@@ -6778,23 +6774,11 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\enable_gpu_buffer_readback") {
                 apply_setting(Settings::values.enable_gpu_buffer_readback, val == "true" || val == "1");
             } else if (full_key == "Renderer\\early_release_fences") {
-#ifdef __ANDROID__
-                apply_setting(Settings::values.early_release_fences, false);
-#else
                 apply_setting(Settings::values.early_release_fences, val == "true" || val == "1");
-#endif
             } else if (full_key == "Renderer\\sync_memory_operations") {
-#ifdef __ANDROID__
-                apply_setting(Settings::values.sync_memory_operations, false);
-#else
                 apply_setting(Settings::values.sync_memory_operations, val == "true" || val == "1");
-#endif
             } else if (full_key == "Renderer\\use_fast_gpu_time") {
-#ifdef __ANDROID__
-                apply_setting(Settings::values.use_fast_gpu_time, false);
-#else
                 apply_setting(Settings::values.use_fast_gpu_time, val == "true" || val == "1");
-#endif
             } else if (full_key == "Renderer\\nvdec_emulation") {
                 auto nvdec_val = static_cast<Settings::NvdecEmulation>(safe_stoi(val, 1));
 #ifdef __ANDROID__
@@ -6814,11 +6798,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\gpu_fence_behavior") {
                 apply_setting(Settings::values.gpu_fence_behavior, static_cast<Settings::GpuFenceBehavior>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\dyna_state") {
-#ifdef __ANDROID__
-                apply_setting(Settings::values.dyna_state, Settings::ExtendedDynamicState::Disabled);
-#else
                 apply_setting(Settings::values.dyna_state, static_cast<Settings::ExtendedDynamicState>(safe_stoi(val, 0)));
-#endif
             } else if (full_key == "Renderer\\vram_usage_mode") {
                 apply_setting(Settings::values.vram_usage_mode, static_cast<Settings::VramUsageMode>(safe_stoi(val, 1)));
             } else if (full_key == "Renderer\\backend") {
@@ -6836,21 +6816,13 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Renderer\\use_disk_shader_cache") {
                 apply_setting(Settings::values.use_disk_shader_cache, val == "true" || val == "1");
             } else if (full_key == "Renderer\\enable_compute_pipelines") {
-#ifdef __ANDROID__
-                apply_setting(Settings::values.enable_compute_pipelines, false);
-#else
                 apply_setting(Settings::values.enable_compute_pipelines, val == "true" || val == "1");
-#endif
             } else if (full_key == "Renderer\\dma_accuracy") {
                 apply_setting(Settings::values.dma_accuracy, static_cast<Settings::DmaAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\vram_garbage_collection") {
                 apply_setting(Settings::values.vram_garbage_collection, val == "true" || val == "1");
             } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {
-#ifdef __ANDROID__
-                apply_setting(Settings::values.airplane_mode, false);
-#else
                 apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
-#endif
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
                 int mode = safe_stoi(val, 0);
 #ifdef __ANDROID__
@@ -6866,11 +6838,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "Cpu\\cpu_accuracy") {
                 apply_setting(Settings::values.cpu_accuracy, static_cast<Settings::CpuAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Cpu\\cpu_backend") {
-#if defined(__ANDROID__) && defined(HAS_NCE)
-                apply_setting(Settings::values.cpu_backend, Settings::CpuBackend::Nce);
-#else
                 apply_setting(Settings::values.cpu_backend, static_cast<Settings::CpuBackend>(safe_stoi(val, 1)));
-#endif
             } else if (full_key == "Cpu\\cpuopt_fastmem") {
                 apply_setting(Settings::values.cpuopt_fastmem, val == "true" || val == "1");
             } else if (full_key == "Cpu\\cpuopt_ignore_memory_aborts") {
@@ -6892,24 +6860,6 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             }
         }
 #ifdef __ANDROID__
-        Settings::values.async_presentation.SetGlobal(false);
-        Settings::values.async_presentation.SetValue(true);
-        Settings::values.early_release_fences.SetGlobal(false);
-        Settings::values.early_release_fences.SetValue(false);
-        Settings::values.barrier_feedback_loops.SetGlobal(false);
-        Settings::values.barrier_feedback_loops.SetValue(false);
-        Settings::values.enable_compute_pipelines.SetGlobal(false);
-        Settings::values.enable_compute_pipelines.SetValue(false);
-        Settings::values.use_fast_gpu_time.SetGlobal(false);
-        Settings::values.use_fast_gpu_time.SetValue(false);
-        Settings::values.dyna_state.SetGlobal(false);
-        Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
-        Settings::values.airplane_mode.SetGlobal(false);
-        Settings::values.airplane_mode.SetValue(false);
-#if defined(HAS_NCE)
-        Settings::values.cpu_backend.SetGlobal(false);
-        Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
-#endif
         if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_8Gb) {
             Settings::values.memory_layout_mode.SetGlobal(false);
             Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);

@@ -233,11 +233,20 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         DLC_OR_MODS
     }
 
+    enum class FormatFilter {
+        ALL,
+        NSP,
+        NSZ,
+        XCI,
+        XCZ
+    }
+
     private val allGames = mutableListOf<StormWorldGameItem>()
     private val filteredAndSortedGames = mutableListOf<StormWorldGameItem>()
     private val pagedGames = mutableListOf<StormWorldGameItem>()
     private var currentSortMode = SortMode.TITLE_ASC
     private var selectedLanguageFilter = LanguageFilter.ALL
+    private var selectedFormatFilter = FormatFilter.ALL
     private var currentPage = 1
     private val pageSize = 25
     private var selectedGame: StormWorldGameItem? = null
@@ -462,6 +471,27 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
         }
         updateLanguageChipsUi()
+
+        val formatChipMappings = listOfNotNull(
+            binding.chipExtAll?.let { it to FormatFilter.ALL },
+            binding.chipExtNsp?.let { it to FormatFilter.NSP },
+            binding.chipExtNsz?.let { it to FormatFilter.NSZ },
+            binding.chipExtXci?.let { it to FormatFilter.XCI },
+            binding.chipExtXcz?.let { it to FormatFilter.XCZ }
+        )
+        for ((chip, filter) in formatChipMappings) {
+            chip.setOnClickListener {
+                if (selectedFormatFilter != filter) {
+                    selectedFormatFilter = filter
+                } else if (filter != FormatFilter.ALL) {
+                    selectedFormatFilter = FormatFilter.ALL
+                }
+                updateFormatChipsUi()
+                filterGames(binding.editSearch.text?.toString().orEmpty())
+                binding.recyclerGames.scrollToPosition(0)
+            }
+        }
+        updateFormatChipsUi()
 
         binding.btnStartDownload.setOnClickListener {
             val game = selectedGame ?: return@setOnClickListener
@@ -863,11 +893,57 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
     }
 
+    private fun updateFormatChipsUi() {
+        val binding = _binding ?: return
+        val ctx = context ?: return
+
+        val primaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorPrimary)
+        val onPrimaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOnPrimary)
+        val surfaceVariantColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorSurfaceVariant)
+        val onSurfaceColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOnSurface)
+        val outlineColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorOutline)
+
+        val chips = listOfNotNull(
+            binding.chipExtAll?.let { it to FormatFilter.ALL },
+            binding.chipExtNsp?.let { it to FormatFilter.NSP },
+            binding.chipExtNsz?.let { it to FormatFilter.NSZ },
+            binding.chipExtXci?.let { it to FormatFilter.XCI },
+            binding.chipExtXcz?.let { it to FormatFilter.XCZ }
+        )
+
+        val density = resources.displayMetrics.density
+        for ((chip, filter) in chips) {
+            val isSelected = (filter == selectedFormatFilter)
+            if (isSelected) {
+                chip.backgroundTintList = android.content.res.ColorStateList.valueOf(primaryColor)
+                chip.setTextColor(onPrimaryColor)
+                chip.strokeColor = android.content.res.ColorStateList.valueOf(primaryColor)
+                chip.strokeWidth = (1.5f * density).toInt()
+            } else {
+                chip.backgroundTintList = android.content.res.ColorStateList.valueOf(surfaceVariantColor)
+                chip.setTextColor(onSurfaceColor)
+                chip.strokeColor = android.content.res.ColorStateList.valueOf(outlineColor)
+                chip.strokeWidth = (1f * density).toInt()
+            }
+        }
+    }
+
+    private fun matchesFormat(game: StormWorldGameItem, filter: FormatFilter): Boolean {
+        return when (filter) {
+            FormatFilter.ALL -> true
+            FormatFilter.NSP -> game.extensionClean.equals("NSP", ignoreCase = true)
+            FormatFilter.NSZ -> game.extensionClean.equals("NSZ", ignoreCase = true)
+            FormatFilter.XCI -> game.extensionClean.equals("XCI", ignoreCase = true)
+            FormatFilter.XCZ -> game.extensionClean.equals("XCZ", ignoreCase = true)
+        }
+    }
+
     private fun filterGames(query: String) {
         val q = query.trim().lowercase(Locale.ROOT)
         filteredAndSortedGames.clear()
         for (g in allGames) {
             if (!matchesLanguage(g, selectedLanguageFilter)) continue
+            if (!matchesFormat(g, selectedFormatFilter)) continue
             if (q.isNotEmpty()) {
                 val matchTitle = g.title.lowercase(Locale.ROOT).contains(q)
                 val matchFinal = g.finalTitle.lowercase(Locale.ROOT).contains(q)
@@ -1749,7 +1825,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             return StormGamesWorldDialogFragment()
         }
 
+        @Volatile
+        private var memoryCachedCatalog: List<StormWorldGameItem>? = null
+
         fun getCachedCatalog(context: Context): List<StormWorldGameItem> {
+            memoryCachedCatalog?.let { return it }
             return try {
                 // Baseline bundled assets catalog
                 val assetList = mutableListOf<StormWorldGameItem>()
@@ -1845,7 +1925,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     }
                 }
 
-                list.filterNot { item ->
+                val result = list.filterNot { item ->
                     val t = "${item.finalTitle} ${item.title} ${item.version}".lowercase(Locale.ROOT)
                     t.contains("копия") || t.contains("рљропрёсџ") || t.contains("(copy)")
                 }.distinctBy { item ->
@@ -1856,6 +1936,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val rawId = item.rawGameId
                     "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}|$ext|$rawId"
                 }
+                memoryCachedCatalog = result
+                result
             } catch (e: Exception) {
                 Log.error("[StormGamesWorld] Failed to read cached catalog: ${e.message}")
                 emptyList()
@@ -1863,6 +1945,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
 
         fun saveCatalogCache(context: Context, games: List<StormWorldGameItem>) {
+            memoryCachedCatalog = games
             try {
                 val jsonArr = JSONArray()
                 for (g in games) {

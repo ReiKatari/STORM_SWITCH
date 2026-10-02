@@ -885,7 +885,7 @@ object GameFixDatabase {
             "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\astc_recompression" to "0",
@@ -904,7 +904,7 @@ object GameFixDatabase {
             "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\astc_recompression" to "0",
@@ -923,7 +923,7 @@ object GameFixDatabase {
             "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\astc_recompression" to "0",
@@ -942,7 +942,7 @@ object GameFixDatabase {
             "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\astc_recompression" to "0",
@@ -961,7 +961,7 @@ object GameFixDatabase {
             "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\astc_recompression" to "0",
@@ -6637,18 +6637,7 @@ object GameFixDatabase {
 
             val isFileCustom = isUserCustomConfig(file)
 
-            // Lethal settings on Android must NEVER be preserved as user overrides!
-            val lethalSettings = setOf(
-                "early_release_fences",
-                "barrier_feedback_loops",
-                "enable_compute_pipelines",
-                "dyna_state",
-                "use_fast_gpu_time",
-                "airplane_mode",
-                "cpu_backend"
-            )
-
-            // Keys that must NEVER overwrite user manual settings (excluding lethalSettings)
+            // Keys that must NEVER overwrite user manual settings unless explicitly specified in the profile
             val protectedUserKeys = setOf(
                 "resolution_setup", "custom_driver_name", "driver_path", "aspect_ratio",
                 "audio_sink_id", "vsync_mode", "use_docked_mode",
@@ -6671,23 +6660,17 @@ object GameFixDatabase {
 
                 val section = sections.getOrPut(sectionName) { mutableMapOf() }
 
-                // FATAL SETTING SANITIZATION:
-                if (keyName in lethalSettings) {
-                    section[keyName] = value
-                    section["$keyName\\use_global"] = "false"
-                    section["$keyName\\default"] = "false"
-                    continue
-                }
-
-                // USER PRIORITY RULE:
-                // Only treat as user override if explicitly set with use_global=false or in protected keys
-                val isExplicitUserOverride = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true ||
-                        (isFileCustom && section.containsKey(keyName) && keyName in protectedUserKeys)
-                if (isExplicitUserOverride && section.containsKey(keyName)) {
-                    val existingVal = section[keyName]?.trim()
-                    if (existingVal != null && (!existingVal.equals(value.trim(), ignoreCase = true) || isFileCustom)) {
-                        Log.info("[GameFixDatabase] Preserving user manual override for $fullKey = $existingVal (auto-fix $value skipped)")
-                        continue
+                // If this setting is explicitly specified by the GameFix profile, the profile MUST take precedence!
+                val isExplicitFixSetting = fix.settingsMap.containsKey(fullKey)
+                if (!isExplicitFixSetting) {
+                    val isExplicitUserOverride = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true ||
+                            (isFileCustom && section.containsKey(keyName) && keyName in protectedUserKeys)
+                    if (isExplicitUserOverride && section.containsKey(keyName)) {
+                        val existingVal = section[keyName]?.trim()
+                        if (existingVal != null && (!existingVal.equals(value.trim(), ignoreCase = true) || isFileCustom)) {
+                            Log.info("[GameFixDatabase] Preserving user manual override for $fullKey = $existingVal (auto-fix $value skipped)")
+                            continue
+                        }
                     }
                 }
 
@@ -6782,7 +6765,7 @@ object GameFixDatabase {
             "Cpu\\cpuopt_ignore_memory_aborts" to "true",
             "Cpu\\cpu_accuracy" to "0",
             "Cpu\\cpu_backend" to "1",
-            "System\\airplane_mode" to "false",
+            "System\\airplane_mode" to "true",
             "Core\\memory_layout_mode" to "0",
             "System\\memory_layout_mode" to "0"
         )
@@ -6790,15 +6773,6 @@ object GameFixDatabase {
         if (fullMap["Renderer\\nvdec_emulation"] == "2") {
             fullMap["Renderer\\nvdec_emulation"] = "3"
         }
-        // CRITICAL ANDROID SANITIZATION:
-        // Enforce safe mobile parameters regardless of profile
-        fullMap["Cpu\\cpu_backend"] = "1"
-        fullMap["Renderer\\early_release_fences"] = "false"
-        fullMap["Renderer\\barrier_feedback_loops"] = "false"
-        fullMap["Renderer\\enable_compute_pipelines"] = "false"
-        fullMap["Renderer\\dyna_state"] = "0"
-        fullMap["Renderer\\use_fast_gpu_time"] = "false"
-        fullMap["System\\airplane_mode"] = "false"
         val memMode = fullMap["Core\\memory_layout_mode"]?.toIntOrNull() ?: 0
         if (memMode > 1) {
             fullMap["Core\\memory_layout_mode"] = "1"

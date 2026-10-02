@@ -208,6 +208,96 @@
                 app:cornerRadius="17dp"
                 app:strokeColor="?attr/colorOutline"
                 app:strokeWidth="1dp" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="22dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="?attr/colorOutline" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_ext_all"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="📦 Все форматы"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_ext_nsp"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="NSP"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_ext_nsz"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="NSZ"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_ext_xci"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="XCI"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_ext_xcz"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
+                android:text="XCZ"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="17dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp" />
         </LinearLayout>
     </HorizontalScrollView>
 
