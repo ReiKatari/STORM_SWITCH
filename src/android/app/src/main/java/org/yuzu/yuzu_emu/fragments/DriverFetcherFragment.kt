@@ -225,7 +225,7 @@ class DriverFetcherFragment : Fragment() {
                         try {
                             val request = Request.Builder()
                                 .url(url)
-                                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 StormEden/4.4.3")
+                                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 StormSwitch/4.8.8")
                                 .header("Accept", "application/vnd.github.v3+json, application/json, text/plain, */*")
                                 .build()
 

@@ -29,6 +29,9 @@ class AddonAdapter(val addonViewModel: AddonViewModel) :
             }
             binding.title.text = model.name
             binding.version.text = model.version
+            // A recycled row still carries the listener of the add-on it showed before; setting
+            // isChecked with it attached would toggle that other add-on.
+            binding.addonSwitch.setOnCheckedChangeListener(null)
             binding.addonSwitch.isChecked = model.enabled
 
             binding.addonSwitch.setOnCheckedChangeListener { _, checked ->

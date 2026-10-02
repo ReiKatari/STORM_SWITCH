@@ -6593,7 +6593,8 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
             }
         }
     }
-    sections["StormEden"]["storm_fix_applied"] = "true";
+    sections["StormSwitch"]["storm_fix_applied"] = "true";
+    sections.erase("StormEden");
 
     // Write back INI
     std::ofstream out(path, std::ios::trunc);
@@ -6642,7 +6643,8 @@ void GameFixDatabase::SetDontAskAgain(u64 title_id, const std::string& config_fi
         }
     }
 
-    sections["StormEden"]["storm_fix_dont_ask"] = dont_ask ? "true" : "false";
+    sections["StormSwitch"]["storm_fix_dont_ask"] = dont_ask ? "true" : "false";
+    sections.erase("StormEden");
 
     std::ofstream out(path, std::ios::trunc);
     if (!out.is_open()) return;
@@ -6680,7 +6682,14 @@ int GameFixDatabase::ResetAllDontAskAgain() {
                     if (eq != std::string::npos && !cur_sec.empty()) sections[cur_sec][line.substr(0, eq)] = line.substr(eq + 1);
                 }
             }
-            if (sections["StormEden"].erase("storm_fix_dont_ask") > 0) {
+            bool erased = false;
+            if (sections.count("StormSwitch") && sections["StormSwitch"].erase("storm_fix_dont_ask") > 0) {
+                erased = true;
+            }
+            if (sections.count("StormEden") && sections["StormEden"].erase("storm_fix_dont_ask") > 0) {
+                erased = true;
+            }
+            if (erased) {
                 std::ofstream out(entry.path(), std::ios::trunc);
                 for (const auto& [sec, kvs] : sections) {
                     out << "[" << sec << "]\n";
@@ -6898,7 +6907,8 @@ bool GameFixDatabase::IsFixApplied(u64 title_id, const std::string& config_file_
         }
     }
 
-    if (sections["StormEden"]["storm_fix_applied"] == "true") {
+    if ((sections.count("StormSwitch") && sections["StormSwitch"]["storm_fix_applied"] == "true") ||
+        (sections.count("StormEden") && sections["StormEden"]["storm_fix_applied"] == "true")) {
         return true;
     }
     return false;

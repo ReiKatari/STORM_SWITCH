@@ -286,7 +286,7 @@ class ReleaseAdapter(
 
                                             val req = Request.Builder()
                                                 .url(dlUrl)
-                                                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 StormEden/4.4.3")
+                                                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 StormSwitch/4.8.8")
                                                 .header("Accept", "application/octet-stream, */*")
                                                 .build()
 

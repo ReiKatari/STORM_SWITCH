@@ -283,7 +283,7 @@ void ConfigurePerGameAmiibo::OnRefreshClicked() {
 
         QUrl url(urls[index]);
         QNetworkRequest req(url);
-        req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 STORM-EDEN/4.0.1"));
+        req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 STORM-SWITCH/4.8.8"));
         req.setRawHeader("Accept", "application/json, text/plain, */*");
 
         auto* reply = m_network_mgr->get(req);
@@ -721,7 +721,7 @@ void ConfigurePerGameAmiibo::FetchImage(const QString& image_url, QLabel* target
         QUrl url(mirror_urls[mirror_index]);
         QNetworkRequest req(url);
         req.setTransferTimeout(2500);
-        req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 STORM-EDEN/4.0.2"));
+        req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 STORM-SWITCH/4.8.8"));
         req.setRawHeader("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
 
         auto* reply = m_network_mgr->get(req);

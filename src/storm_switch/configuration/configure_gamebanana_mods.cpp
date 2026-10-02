@@ -574,7 +574,7 @@ void ConfigureGameBananaMods::SearchMods(const QString& query, int page) {
     search_url.setQuery(q);
 
     QNetworkRequest request(search_url);
-    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-EDEN-Client/3.3.4"));
+    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-Client/4.8.8"));
 
     current_reply = network_manager->get(request);
     connect(current_reply, &QNetworkReply::finished, this, [this]() {
@@ -765,7 +765,7 @@ void ConfigureGameBananaMods::DownloadAndInstallMod(const GameBananaFile& file_i
 
     QNetworkRequest request(QUrl(file_info.url));
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-EDEN-Client/3.2.4"));
+    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM-SWITCH-Client/4.8.8"));
 
     download_reply = network_manager->get(request);
     connect(download_reply, &QNetworkReply::downloadProgress, this, &ConfigureGameBananaMods::OnDownloadProgress);

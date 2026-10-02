@@ -203,7 +203,7 @@ std::optional<std::string> MakeRequest(const std::string& url, const std::string
         }
 
         httplib::Headers headers = {
-            {"User-Agent", fmt::format("STORM-EDEN/{}", Common::g_build_version)},
+            {"User-Agent", fmt::format("STORM-SWITCH/{}", Common::g_build_version)},
             {"Accept", "application/vnd.github.v3+json, application/json, */*"},
         };
 

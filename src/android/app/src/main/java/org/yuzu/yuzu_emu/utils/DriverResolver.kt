@@ -243,7 +243,7 @@ object DriverResolver {
             try {
                 val request = Request.Builder()
                     .url("https://api.github.com/repos/$repoPath/releases")
-                    .header("User-Agent", "Mozilla/5.0 (Linux; Android) StormEden/4.4.0")
+                    .header("User-Agent", "Mozilla/5.0 (Linux; Android) StormSwitch/4.8.8")
                     .header("Accept", "application/vnd.github.v3+json")
                     .build()
 

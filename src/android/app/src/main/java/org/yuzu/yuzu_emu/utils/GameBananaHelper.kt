@@ -47,7 +47,7 @@ data class GameBananaFile(
 
 object GameBananaHelper {
     private const val USER_AGENT =
-        "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36 STORM-EDEN/4.0.0"
+        "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36 StormSwitch/4.8.8"
 
     private val httpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()

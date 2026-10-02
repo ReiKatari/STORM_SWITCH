@@ -490,14 +490,22 @@ struct Values {
                                          linkage, 0, "bg_blue", Category::Renderer, Specialization::Default, true, true};
 
     SwitchableSetting<GpuAccuracy, true> gpu_accuracy{linkage,
+#ifdef __ANDROID__
+                                                      GpuAccuracy::Low,
+#else
                                                       GpuAccuracy::High,
+#endif
                                                       "gpu_accuracy",
                                                       Category::RendererAdvanced,
                                                       Specialization::Default,
                                                       true,
                                                       true};
 
+#ifdef __ANDROID__
+    GpuAccuracy current_gpu_accuracy{GpuAccuracy::Low};
+#else
     GpuAccuracy current_gpu_accuracy{GpuAccuracy::High};
+#endif
 
     SwitchableSetting<DmaAccuracy, true> dma_accuracy{linkage,
                                                       DmaAccuracy::Default,
@@ -525,7 +533,12 @@ struct Values {
                                                            true,
                                                            true};
 
-    SwitchableSetting<NvdecEmulation> nvdec_emulation{linkage, NvdecEmulation::Gpu,
+    SwitchableSetting<NvdecEmulation> nvdec_emulation{linkage,
+#ifdef __ANDROID__
+                                                      NvdecEmulation::Hybrid,
+#else
+                                                      NvdecEmulation::Gpu,
+#endif
                                                       "nvdec_emulation", Category::RendererAdvanced,
                                                       Specialization::Default, true, true};
 
@@ -657,7 +670,11 @@ struct Values {
                                                  true,
                                                  true};
     SwitchableSetting<bool> vram_garbage_collection{linkage,
+#ifdef __ANDROID__
+                                                    false,
+#else
                                                     true,
+#endif
                                                     "vram_garbage_collection",
                                                     Category::RendererAdvanced,
                                                     Specialization::Default,
