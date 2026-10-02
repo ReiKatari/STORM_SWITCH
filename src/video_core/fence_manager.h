@@ -73,7 +73,11 @@ public:
 
     void SignalFence(std::function<void()>&& func) {
         const bool delay_fence = Settings::IsGPUFenceBehaviorStrict();
+#ifdef __ANDROID__
+        const bool early_release = false;
+#else
         const bool early_release = Settings::values.early_release_fences.GetValue();
+#endif
         const bool should_flush = ShouldFlush();
         if constexpr (!can_async_check) {
             TryReleasePendingFences<false>();

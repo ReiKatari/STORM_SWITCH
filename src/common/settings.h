@@ -605,7 +605,7 @@ struct Values {
         linkage, true, "use_vulkan_driver_pipeline_cache", Category::RendererAdvanced,
         Specialization::Default, true, true};
 
-    SwitchableSetting<bool> enable_compute_pipelines{linkage, true, "enable_compute_pipelines",
+    SwitchableSetting<bool> enable_compute_pipelines{linkage, false, "enable_compute_pipelines",
                                                      Category::RendererAdvanced, Specialization::Default, true, true};
 
     SwitchableSetting<bool> use_video_framerate{linkage, false, "use_video_framerate",
@@ -619,7 +619,7 @@ struct Values {
                                                   true,
                                                   true};
 
-    SwitchableSetting<bool> barrier_feedback_loops{linkage, true, "barrier_feedback_loops",
+    SwitchableSetting<bool> barrier_feedback_loops{linkage, false, "barrier_feedback_loops",
                                                    Category::RendererAdvanced, Specialization::Default, true, true};
 
     SwitchableSetting<bool> enable_buffer_history{linkage,

@@ -128,7 +128,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\nvdec_emulation" to "3",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -163,7 +163,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -197,7 +197,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -231,7 +231,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -650,7 +650,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -1191,7 +1191,7 @@ object GameFixDatabase {
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -1225,7 +1225,7 @@ object GameFixDatabase {
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -1259,7 +1259,7 @@ object GameFixDatabase {
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -3948,7 +3948,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\nvdec_emulation" to "3",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -3983,7 +3983,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\nvdec_emulation" to "3",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -4018,7 +4018,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\nvdec_emulation" to "3",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -4159,7 +4159,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -4193,7 +4193,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -4227,7 +4227,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -4261,7 +4261,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -4295,7 +4295,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -4329,7 +4329,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -4363,7 +4363,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -4397,7 +4397,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -4431,7 +4431,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -4465,7 +4465,7 @@ object GameFixDatabase {
                 "Renderer\\enable_compute_pipelines" to "true",
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "true",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -5028,7 +5028,7 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpu_backend" to "0"
+                "Cpu\\cpu_backend" to "1"
             )
         ),
         GameFixProfile(
@@ -5049,7 +5049,7 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpu_backend" to "0"
+                "Cpu\\cpu_backend" to "1"
             )
         ),
         GameFixProfile(
@@ -6445,8 +6445,12 @@ object GameFixDatabase {
         return try {
             file.bufferedReader().use { reader ->
                 val firstLine = reader.readLine()
-                firstLine != null && firstLine.startsWith(TEMPORARY_FIX_HEADER)
+                if (firstLine != null && firstLine.startsWith(TEMPORARY_FIX_HEADER)) {
+                    return true
+                }
             }
+            val text = file.readText()
+            text.contains("storm_fix_applied = true", ignoreCase = true) || text.contains("storm_fix_applied=true", ignoreCase = true)
         } catch (_: Exception) {
             false
         }
@@ -6462,17 +6466,14 @@ object GameFixDatabase {
             if (text.contains("user_custom = true", ignoreCase = true) || text.contains("user_custom=true", ignoreCase = true)) {
                 return true
             }
-            // 2. Pure auto-fix files
-            if (text.startsWith(TEMPORARY_FIX_HEADER) && !text.contains("user_custom = true", ignoreCase = true)) {
+            if (text.contains("user_custom = false", ignoreCase = true) || text.contains("user_custom=false", ignoreCase = true)) {
                 return false
             }
-            if (text.contains("storm_fix_applied = true", ignoreCase = true) && !text.contains("user_custom = true", ignoreCase = true)) {
-                val userKeys = setOf("cpu_backend", "resolution_setup", "custom_driver_name", "driver_path", "audio_volume", "vsync_mode")
-                for (key in userKeys) {
-                    if (text.contains("$key\\use_global = false", ignoreCase = true) || text.contains("$key\\use_global=false", ignoreCase = true)) {
-                        return true
-                    }
-                }
+            // 2. Pure auto-fix files
+            if (text.startsWith(TEMPORARY_FIX_HEADER)) {
+                return false
+            }
+            if (text.contains("storm_fix_applied = true", ignoreCase = true) || text.contains("storm_fix_applied=true", ignoreCase = true)) {
                 return false
             }
             // 3. Any manual file with use_global = false is custom
@@ -6636,15 +6637,26 @@ object GameFixDatabase {
 
             val isFileCustom = isUserCustomConfig(file)
 
-            // Keys that must NEVER overwrite user manual settings
+            // Lethal settings on Android must NEVER be preserved as user overrides!
+            val lethalSettings = setOf(
+                "early_release_fences",
+                "barrier_feedback_loops",
+                "enable_compute_pipelines",
+                "dyna_state",
+                "use_fast_gpu_time",
+                "airplane_mode",
+                "cpu_backend"
+            )
+
+            // Keys that must NEVER overwrite user manual settings (excluding lethalSettings)
             val protectedUserKeys = setOf(
                 "resolution_setup", "custom_driver_name", "driver_path", "aspect_ratio",
-                "audio_sink_id", "vsync_mode", "use_docked_mode", "cpu_backend",
+                "audio_sink_id", "vsync_mode", "use_docked_mode",
                 "cpu_accuracy", "renderer_backend", "anti_aliasing", "scaling_filter",
                 "fsr_sharpening_slider", "max_anisotropy", "audio_volume",
                 "gpu_accuracy", "async_presentation", "sync_memory_operations",
                 "astc_recompression", "nvdec_emulation", "vram_garbage_collection",
-                "gpu_fence_behavior", "dma_accuracy", "barrier_feedback_loops"
+                "gpu_fence_behavior", "dma_accuracy"
             )
 
             val settings = getFullSettingsMap(fix)
@@ -6658,6 +6670,14 @@ object GameFixDatabase {
                 val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
 
                 val section = sections.getOrPut(sectionName) { mutableMapOf() }
+
+                // FATAL SETTING SANITIZATION:
+                if (keyName in lethalSettings) {
+                    section[keyName] = value
+                    section["$keyName\\use_global"] = "false"
+                    section["$keyName\\default"] = "false"
+                    continue
+                }
 
                 // USER PRIORITY RULE:
                 // Only treat as user override if explicitly set with use_global=false or in protected keys
@@ -6683,12 +6703,8 @@ object GameFixDatabase {
                     stormSwitchSec.putIfAbsent(k, v)
                 }
             }
-            if (isFileCustom) {
-                stormSwitchSec["user_custom"] = "true"
-                stormSwitchSec["storm_fix_applied"] = "false"
-            } else {
-                stormSwitchSec["storm_fix_applied"] = "true"
-            }
+            stormSwitchSec["storm_fix_applied"] = "true"
+            stormSwitchSec["user_custom"] = if (isFileCustom) "true" else "false"
 
             val sb = StringBuilder()
             for ((sectionName, map) in sections) {
@@ -6765,6 +6781,7 @@ object GameFixDatabase {
             "Cpu\\cpuopt_fastmem" to "true",
             "Cpu\\cpuopt_ignore_memory_aborts" to "true",
             "Cpu\\cpu_accuracy" to "0",
+            "Cpu\\cpu_backend" to "1",
             "System\\airplane_mode" to "false",
             "Core\\memory_layout_mode" to "0",
             "System\\memory_layout_mode" to "0"
@@ -6772,6 +6789,24 @@ object GameFixDatabase {
         fullMap.putAll(profile.settingsMap)
         if (fullMap["Renderer\\nvdec_emulation"] == "2") {
             fullMap["Renderer\\nvdec_emulation"] = "3"
+        }
+        // CRITICAL ANDROID SANITIZATION:
+        // Enforce safe mobile parameters regardless of profile
+        fullMap["Cpu\\cpu_backend"] = "1"
+        fullMap["Renderer\\early_release_fences"] = "false"
+        fullMap["Renderer\\barrier_feedback_loops"] = "false"
+        fullMap["Renderer\\enable_compute_pipelines"] = "false"
+        fullMap["Renderer\\dyna_state"] = "0"
+        fullMap["Renderer\\use_fast_gpu_time"] = "false"
+        fullMap["System\\airplane_mode"] = "false"
+        val memMode = fullMap["Core\\memory_layout_mode"]?.toIntOrNull() ?: 0
+        if (memMode > 1) {
+            fullMap["Core\\memory_layout_mode"] = "1"
+            fullMap["System\\memory_layout_mode"] = "1"
+        }
+        val sysMemMode = fullMap["System\\memory_layout_mode"]?.toIntOrNull() ?: 0
+        if (sysMemMode > 1) {
+            fullMap["System\\memory_layout_mode"] = "1"
         }
         return fullMap
     }
@@ -6896,17 +6931,12 @@ object GameFixDatabase {
             if (!file.parentFile.exists()) {
                 file.parentFile.mkdirs()
             }
-            if (file.exists() && isUserCustomConfig(game)) {
-                // Safeguard: User has personal custom settings configured!
-                // Create backup and merge fix into existing config so custom parameters are NEVER wiped!
+            if (file.exists() && file.length() > 0) {
                 try {
                     val bak = java.io.File(file.parentFile, "${file.name}.bak")
                     file.copyTo(bak, overwrite = true)
-                    Log.info("[GameFixDatabase] Backed up user custom settings to ${bak.absolutePath}")
+                    Log.info("[GameFixDatabase] Backed up previous custom settings to ${bak.absolutePath}")
                 } catch (_: Exception) {}
-                mergeFixIntoExistingConfig(file, fix)
-                Log.info("[GameFixDatabase] Merged GameFix into existing user custom config for ${game.title} -> ${file.absolutePath}")
-                return true
             }
             val sb = StringBuilder()
             sb.append(TEMPORARY_FIX_HEADER).append(" - Auto-generated by STORM SWITCH GameFix\n\n")
