@@ -232,7 +232,7 @@ static const QMap<QString, QVector<KnownCloudVariant>>& GetKnownCloudVariants() 
         }},
         {QStringLiteral("0100E5E01C098000"), { // Darkest Dungeon II
             {QStringLiteral(".nsp"), QStringLiteral("4,00 GB"), 4298739840LL},
-            {QStringLiteral(".nsz"), QStringLiteral("917 KB"), 939088LL}
+            {QStringLiteral(".nsz"), QStringLiteral("1,72 GB"), 1844242747LL}
         }},
         {QStringLiteral("0100F2C0115B6000"), { // The Legend of Zelda: Tears of the Kingdom (ONLY NSZ)
             {QStringLiteral(".nsz"), QStringLiteral("15,45 GB"), 16591941089LL}

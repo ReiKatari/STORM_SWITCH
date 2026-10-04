@@ -1678,7 +1678,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             ),
             "0100E5E01C098000" to listOf( // Darkest Dungeon II
                 CloudFormatVariant(".nsp", "4,00 GB", 4298739840L),
-                CloudFormatVariant(".nsz", "2,45 GB", 2630667468L)
+                CloudFormatVariant(".nsz", "1,72 GB", 1844242747L)
             ),
             "0100F2C0115B6000" to listOf( // The Legend of Zelda: Tears of the Kingdom (ONLY NSZ in cloud)
                 CloudFormatVariant(".nsz", "15,45 GB", 16591941089L)
