@@ -6778,6 +6778,8 @@ object GameFixDatabase {
             false
         }
         val targetCpuBackend = if (isDynarmic) "0" else "1"
+        val isAdreno = org.yuzu.yuzu_emu.utils.GpuDriverHelper.isAdrenoGpu()
+        val defaultDynaState = if (isAdreno) "1" else "0"
 
         val fullMap = mutableMapOf(
             "Renderer\\gpu_accuracy" to "0",
@@ -6791,7 +6793,7 @@ object GameFixDatabase {
             "Renderer\\use_asynchronous_shaders" to "true",
             "Renderer\\scaling_filter" to "1",
             "Renderer\\anti_aliasing" to "0",
-            "Renderer\\dyna_state" to "0",
+            "Renderer\\dyna_state" to defaultDynaState,
             "Renderer\\enable_gpu_buffer_readback" to "false",
             "Renderer\\enable_compute_pipelines" to "false",
             "Renderer\\sync_memory_operations" to "false",
@@ -6811,13 +6813,19 @@ object GameFixDatabase {
         if (fullMap["Renderer\\nvdec_emulation"] == "2") {
             fullMap["Renderer\\nvdec_emulation"] = "3"
         }
+        if (!profile.settingsMap.containsKey("Renderer\\dyna_state")) {
+            fullMap["Renderer\\dyna_state"] = defaultDynaState
+        }
         // CRITICAL ANDROID HARDWARE SAFETY OVERRIDES:
-        // Qualcomm and Turnip drivers on Adreno GPUs (Snapdragon 8 Elite / Adreno 830) deadlock
-        // when compute pipelines, fast GPU time, barrier feedback loops, early release fences or >4GB DRAM are enabled with NCE.
+        // Qualcomm and Turnip drivers on Adreno GPUs (Snapdragon 8 Elite / Adreno 830) and Mali GPUs
+        // deadlock when compute pipelines, fast GPU time, barrier feedback loops, early release fences,
+        // sync memory operations or >4GB DRAM are enabled with NCE.
         fullMap["Renderer\\enable_compute_pipelines"] = "false"
         fullMap["Renderer\\use_fast_gpu_time"] = "false"
         fullMap["Renderer\\barrier_feedback_loops"] = "false"
         fullMap["Renderer\\early_release_fences"] = "false"
+        fullMap["Renderer\\sync_memory_operations"] = "false"
+        fullMap["Renderer\\async_presentation"] = "true"
         fullMap["Core\\memory_layout_mode"] = "0"
         fullMap["System\\memory_layout_mode"] = "0"
         fullMap["System\\airplane_mode"] = "false"
@@ -6945,13 +6953,29 @@ object GameFixDatabase {
             if (!file.parentFile.exists()) {
                 file.parentFile.mkdirs()
             }
+            val gpuDriverLines = mutableListOf<String>()
             if (file.exists() && file.length() > 0) {
                 try {
                     val bak = java.io.File(file.parentFile, "${file.name}.bak")
                     file.copyTo(bak, overwrite = true)
                     Log.info("[GameFixDatabase] Backed up previous custom settings to ${bak.absolutePath}")
+
+                    var inGpuDriver = false
+                    for (line in file.readLines()) {
+                        val trimmed = line.trim()
+                        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                            inGpuDriver = trimmed.equals("[GpuDriver]", ignoreCase = true)
+                            if (inGpuDriver) {
+                                gpuDriverLines.add(line)
+                            }
+                            continue
+                        }
+                        if (inGpuDriver) {
+                            gpuDriverLines.add(line)
+                        }
+                    }
                 } catch (e: Exception) {
-                    Log.error("[GameFixDatabase] Failed to backup custom settings: ${e.message}")
+                    Log.error("[GameFixDatabase] Failed to backup custom settings or read GpuDriver: ${e.message}")
                 }
             }
             val sb = StringBuilder()
@@ -6979,6 +7003,12 @@ object GameFixDatabase {
                     sb.append("$k = $v\n")
                     sb.append("$k\\use_global = false\n")
                     sb.append("$k\\default = false\n")
+                }
+                sb.append("\n")
+            }
+            if (gpuDriverLines.isNotEmpty()) {
+                for (dLine in gpuDriverLines) {
+                    sb.append(dLine).append("\n")
                 }
                 sb.append("\n")
             }

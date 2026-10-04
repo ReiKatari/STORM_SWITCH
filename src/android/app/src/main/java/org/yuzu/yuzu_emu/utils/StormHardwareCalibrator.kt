@@ -403,7 +403,7 @@ object StormHardwareCalibrator {
         // 1.5X for Flagship Adreno 7xx+, 0.75X for Adreno 6xx, 1X for others
         val res = if (profile.isAdreno6xx) 2 else if (profile.tier >= HardwareTier.FLAGSHIP && profile.isAdreno) 5 else 3
         IntSetting.RENDERER_RESOLUTION.setInt(res)
-        IntSetting.RENDERER_ACCURACY.setInt(if (profile.isAdreno830) 2 else if (profile.isDimensity9400) 0 else 1)
+        IntSetting.RENDERER_ACCURACY.setInt(if (profile.isDimensity9400) 0 else 1)
         IntSetting.DMA_ACCURACY.setInt(3) // Safe
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP && !profile.isDimensity9400) 2 else 1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(0) // Strict

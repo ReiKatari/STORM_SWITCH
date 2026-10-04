@@ -6733,6 +6733,21 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 full_key == "Renderer\\backend") {
                 continue;
             }
+#ifdef __ANDROID__
+            if (full_key == "Renderer\\early_release_fences" ||
+                full_key == "Renderer\\use_fast_gpu_time" ||
+                full_key == "Renderer\\enable_compute_pipelines" ||
+                full_key == "Renderer\\barrier_feedback_loops" ||
+                full_key == "Renderer\\sync_memory_operations" ||
+                full_key == "System\\airplane_mode" ||
+                full_key == "Services\\airplane_mode" ||
+                full_key == "Network\\airplane_mode") {
+                continue;
+            }
+            if (full_key == "Renderer\\async_presentation" && (val == "false" || val == "0")) {
+                continue;
+            }
+#endif
             if (full_key == "Renderer\\dma_accuracy" && val == "0") {
                 continue;
             }
@@ -6855,6 +6870,12 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
 
         Settings::values.use_fast_gpu_time.SetGlobal(false);
         Settings::values.use_fast_gpu_time.SetValue(false);
+
+        Settings::values.sync_memory_operations.SetGlobal(false);
+        Settings::values.sync_memory_operations.SetValue(false);
+
+        Settings::values.async_presentation.SetGlobal(false);
+        Settings::values.async_presentation.SetValue(true);
 
         Settings::values.airplane_mode.SetGlobal(false);
         Settings::values.airplane_mode.SetValue(false);

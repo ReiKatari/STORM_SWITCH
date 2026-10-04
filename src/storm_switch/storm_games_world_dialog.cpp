@@ -2207,7 +2207,7 @@ void StormGamesWorldDialog::OnStartDownload() {
     ext_param = ext_param.toLower();
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download?format=%2").arg(raw_id).arg(ext_param));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/10.3.0 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/10.4.0 (Windows x64)"));
     req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     req.setRawHeader("Connection", "keep-alive");

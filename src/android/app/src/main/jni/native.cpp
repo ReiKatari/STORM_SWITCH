@@ -380,12 +380,14 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         }
     }
 #ifdef __ANDROID__
-    // Hardware safety overrides for Android Adreno GPUs and NCE CPU backend:
-    // Prevents driver deadlock on compute pipelines, timestamp desync, tile lockup, and DRAM virtual address faults.
+    // Hardware safety overrides for Android Adreno/Mali GPUs and NCE CPU backend:
+    // Prevents driver deadlock on compute pipelines, timestamp desync, tile lockup, memory stalls, and DRAM virtual address faults.
     Settings::values.early_release_fences.SetValue(false);
     Settings::values.barrier_feedback_loops.SetValue(false);
     Settings::values.enable_compute_pipelines.SetValue(false);
     Settings::values.use_fast_gpu_time.SetValue(false);
+    Settings::values.sync_memory_operations.SetValue(false);
+    Settings::values.async_presentation.SetValue(true);
     Settings::values.airplane_mode.SetValue(false);
     Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
 #if defined(HAS_NCE)
@@ -428,18 +430,18 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         return m_load_result;
     }
 
-    // Complete initialization.
-    m_system.GPU().Start();
-    m_system.GetCpuManager().OnGpuReady();
-
-    if (Core::GameFixDatabase::AreFixesEnabled()) {
+    // If early title ID was 0, apply profile now strictly BEFORE GPU().Start() and OnGpuReady()
+    if (early_title_id == 0 && Core::GameFixDatabase::AreFixesEnabled()) {
         const u64 title_id = m_system.GetApplicationProcessProgramID();
-        if (Core::GameFixDatabase::ApplyProfileDirectly(title_id)) {
+        if (title_id != 0 && Core::GameFixDatabase::ApplyProfileDirectly(title_id)) {
+            LOG_INFO(Frontend, "Applied deferred GameFix profile for title_id={:016X}", title_id);
 #ifdef __ANDROID__
             Settings::values.early_release_fences.SetValue(false);
             Settings::values.barrier_feedback_loops.SetValue(false);
             Settings::values.enable_compute_pipelines.SetValue(false);
             Settings::values.use_fast_gpu_time.SetValue(false);
+            Settings::values.sync_memory_operations.SetValue(false);
+            Settings::values.async_presentation.SetValue(true);
             Settings::values.airplane_mode.SetValue(false);
             Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
 #if defined(HAS_NCE)
@@ -451,6 +453,11 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
             m_system.ApplySettings();
         }
     }
+
+    // Complete initialization.
+    m_system.GPU().Start();
+    m_system.GetCpuManager().OnGpuReady();
+
     m_system.RegisterExitCallback([&] { HaltEmulation(); });
 
     // Register an ExecuteProgram callback such that Core can execute a sub-program

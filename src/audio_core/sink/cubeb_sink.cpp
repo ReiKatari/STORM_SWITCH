@@ -93,6 +93,20 @@ public:
                                            &CubebSinkStream::StateCallback, this);
         }
 
+        if (init_error != CUBEB_OK && output_device != nullptr) {
+            LOG_WARNING(Audio_Sink, "Retrying cubeb stream init with default output device");
+            init_error = cubeb_stream_init(ctx, &stream_backend, name.c_str(), input_device,
+                                           nullptr, nullptr, &params, minimum_latency,
+                                           &CubebSinkStream::DataCallback,
+                                           &CubebSinkStream::StateCallback, this);
+        }
+        if (init_error != CUBEB_OK) {
+            LOG_WARNING(Audio_Sink, "Retrying cubeb stream init with relaxed latency (1024 samples)");
+            init_error = cubeb_stream_init(ctx, &stream_backend, name.c_str(), input_device,
+                                           nullptr, nullptr, &params, TargetSampleCount * 4,
+                                           &CubebSinkStream::DataCallback,
+                                           &CubebSinkStream::StateCallback, this);
+        }
         if (init_error != CUBEB_OK) {
             LOG_CRITICAL(Audio_Sink, "Error initializing cubeb stream, error: {}", init_error);
             return;
