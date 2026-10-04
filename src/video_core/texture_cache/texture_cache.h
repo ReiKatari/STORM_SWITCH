@@ -824,16 +824,25 @@ bool TextureCache<P>::BlitImage(const Tegra::Engines::Fermi2D::Surface& dst,
 template <class P>
 std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImageView(
     const Tegra::FramebufferConfig& config, DAddr cpu_addr) {
-    // TODO: Properly implement this
+    if (!Settings::values.accelerate_display.GetValue()) {
+        return {};
+    }
     const auto it = page_table.find(cpu_addr >> YUZU_PAGEBITS);
     if (it == page_table.end()) {
         return {};
     }
     const auto& image_map_ids = it->second;
     boost::container::small_vector<ImageId, 4> valid_image_ids;
+    bool any_overlap_gpu_modified = false;
+
     for (const ImageMapId map_id : image_map_ids) {
         const ImageMapView& map = slot_map_views[map_id];
         const ImageBase& image = slot_images[map.image_id];
+        
+        if (True(image.flags & ImageFlagBits::GpuModified)) {
+            any_overlap_gpu_modified = true;
+        }
+
         if (image.cpu_addr != cpu_addr) {
             continue;
         }
@@ -854,7 +863,19 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
         }
     }();
 
-    const auto GetImageViewForFramebuffer = [&](ImageId image_id) {
+    const auto GetImageViewForFramebuffer = [&](ImageId image_id) -> std::pair<typename P::ImageView*, bool> {
+        bool has_gpu = True(slot_images[image_id].flags & ImageFlagBits::GpuModified);
+        bool alias_gpu = false;
+        for (const auto& aliased : slot_images[image_id].aliased_images) {
+            if (True(slot_images[aliased.id].flags & ImageFlagBits::GpuModified)) {
+                alias_gpu = true;
+                break;
+            }
+        }
+        if (!has_gpu && !alias_gpu) {
+            return {};
+        }
+
         ImageViewInfo info{ImageViewType::e2D, view_format};
         if (config.blending == Tegra::BlendMode::Opaque) {
             info.x_source = static_cast<u8>(SwizzleSource::R);
@@ -862,19 +883,31 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
             info.z_source = static_cast<u8>(SwizzleSource::B);
             info.w_source = static_cast<u8>(SwizzleSource::OneFloat);
         }
+        // STORM FIX: Force alpha to OneFloat to fix black screens in 2D engines
+        info.w_source = static_cast<u8>(SwizzleSource::OneFloat);
+
         return std::make_pair(&slot_image_views[FindOrEmplaceImageView(image_id, info)],
                               slot_images[image_id].IsRescaled());
     };
 
     if (valid_image_ids.size() == 1) [[likely]] {
-        return GetImageViewForFramebuffer(valid_image_ids.front());
+        auto result = GetImageViewForFramebuffer(valid_image_ids.front());
+        if (result.first) return result;
     }
 
     if (valid_image_ids.size() > 0) [[unlikely]] {
         auto most_recent = std::ranges::max_element(valid_image_ids, [&](auto a, auto b) {
             return slot_images[a].modification_tick < slot_images[b].modification_tick;
         });
-        return GetImageViewForFramebuffer(*most_recent);
+        auto result = GetImageViewForFramebuffer(*most_recent);
+        if (result.first) return result;
+    }
+
+    // STORM FIX: Flush overlapping GPU modifications to Guest RAM before falling back to UpdateRawImage
+    if (any_overlap_gpu_modified) {
+        size_t bytes_per_pixel = (config.pixel_format == Service::android::PixelFormat::Rgb565) ? 2 : 4;
+        size_t fb_size = config.stride * config.height * bytes_per_pixel;
+        DownloadMemory(cpu_addr, fb_size);
     }
 
     return {};

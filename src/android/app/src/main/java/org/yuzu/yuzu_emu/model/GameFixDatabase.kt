@@ -1502,6 +1502,7 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\astc_recompression" to "0",
+                "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
