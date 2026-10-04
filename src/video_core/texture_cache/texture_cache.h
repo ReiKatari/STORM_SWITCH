@@ -824,9 +824,6 @@ bool TextureCache<P>::BlitImage(const Tegra::Engines::Fermi2D::Surface& dst,
 template <class P>
 std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImageView(
     const Tegra::FramebufferConfig& config, DAddr cpu_addr) {
-    if (!Settings::values.accelerate_display.GetValue()) {
-        return {};
-    }
     const auto it = page_table.find(cpu_addr >> YUZU_PAGEBITS);
     if (it == page_table.end()) {
         return {};
