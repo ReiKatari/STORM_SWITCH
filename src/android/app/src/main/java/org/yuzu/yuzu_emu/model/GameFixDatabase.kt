@@ -6666,6 +6666,29 @@ object GameFixDatabase {
 
                 val section = sections.getOrPut(sectionName) { mutableMapOf() }
 
+                // Critical Android safety: never preserve settings that cause driver deadlocks or NCE memory faults
+                val dangerousAndroidKeys = setOf(
+                    "enable_compute_pipelines", "use_fast_gpu_time", "barrier_feedback_loops", "early_release_fences"
+                )
+                if (keyName in dangerousAndroidKeys) {
+                    section[keyName] = "false"
+                    section["$keyName\\use_global"] = "false"
+                    section["$keyName\\default"] = "false"
+                    continue
+                }
+                if (keyName == "memory_layout_mode") {
+                    section[keyName] = "0"
+                    section["$keyName\\use_global"] = "false"
+                    section["$keyName\\default"] = "false"
+                    continue
+                }
+                if (keyName == "airplane_mode") {
+                    section[keyName] = "false"
+                    section["$keyName\\use_global"] = "false"
+                    section["$keyName\\default"] = "false"
+                    continue
+                }
+
                 // If this setting is explicitly specified by the GameFix profile, the profile MUST take precedence!
                 val isExplicitFixSetting = fix.settingsMap.containsKey(fullKey)
                 if (!isExplicitFixSetting) {
@@ -6773,7 +6796,7 @@ object GameFixDatabase {
             "Cpu\\cpuopt_ignore_memory_aborts" to "true",
             "Cpu\\cpu_accuracy" to "0",
             "Cpu\\cpu_backend" to "1",
-            "System\\airplane_mode" to "true",
+            "System\\airplane_mode" to "false",
             "Core\\memory_layout_mode" to "0",
             "System\\memory_layout_mode" to "0"
         )
@@ -6781,15 +6804,17 @@ object GameFixDatabase {
         if (fullMap["Renderer\\nvdec_emulation"] == "2") {
             fullMap["Renderer\\nvdec_emulation"] = "3"
         }
-        val memMode = fullMap["Core\\memory_layout_mode"]?.toIntOrNull() ?: 0
-        if (memMode > 1) {
-            fullMap["Core\\memory_layout_mode"] = "1"
-            fullMap["System\\memory_layout_mode"] = "1"
-        }
-        val sysMemMode = fullMap["System\\memory_layout_mode"]?.toIntOrNull() ?: 0
-        if (sysMemMode > 1) {
-            fullMap["System\\memory_layout_mode"] = "1"
-        }
+        // CRITICAL ANDROID HARDWARE SAFETY OVERRIDES:
+        // Qualcomm and Turnip drivers on Adreno GPUs (Snapdragon 8 Elite / Adreno 830) deadlock
+        // when compute pipelines, fast GPU time, barrier feedback loops, early release fences or >4GB DRAM are enabled with NCE.
+        fullMap["Renderer\\enable_compute_pipelines"] = "false"
+        fullMap["Renderer\\use_fast_gpu_time"] = "false"
+        fullMap["Renderer\\barrier_feedback_loops"] = "false"
+        fullMap["Renderer\\early_release_fences"] = "false"
+        fullMap["Core\\memory_layout_mode"] = "0"
+        fullMap["System\\memory_layout_mode"] = "0"
+        fullMap["System\\airplane_mode"] = "false"
+        fullMap["Cpu\\cpu_backend"] = "1"
         return fullMap
     }
 

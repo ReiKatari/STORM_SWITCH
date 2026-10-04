@@ -967,7 +967,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     private fun parseSizeToBytes(sizeStr: String): Long {
         val trimmed = sizeStr.trim().uppercase(Locale.ROOT)
-        val num = trimmed.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
+        val num = trimmed.replace(",", ".").replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
         return when {
             trimmed.endsWith("ГБ") || trimmed.endsWith("GB") -> (num * 1024.0 * 1024.0 * 1024.0).toLong()
             trimmed.endsWith("МБ") || trimmed.endsWith("MB") -> (num * 1024.0 * 1024.0).toLong()
@@ -1111,7 +1111,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         } else {
             binding.detailInternalVersion.isVisible = false
         }
-        binding.detailGameSize.text = game.size
+        binding.detailGameSize.text = localizeSizeString(game.size)
         val langsStr = if (game.textLangs.isNotEmpty()) game.textLangs.joinToString(", ") else "Multi"
         binding.detailGameLangs.text = langsStr
         binding.detailGameId.text = if (game.serialId.isNotEmpty()) "ID: ${game.serialId}" else ""
@@ -1206,8 +1206,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 var extChanged = false
                 if (game.realExtension.isEmpty()) {
                     try {
+                        val fmtParam = if (game.extensionClean.isNotEmpty()) "?format=${game.extensionClean.lowercase(Locale.ROOT)}" else ""
                         val headReq = Request.Builder()
-                            .url("https://stormgamesworld.ru/api/games/${game.rawGameId}/download")
+                            .url("https://stormgamesworld.ru/api/games/${game.rawGameId}/download$fmtParam")
                             .head()
                             .header("User-Agent", "STORM_SWITCH/9.1.0 (Android)")
                             .build()
@@ -1449,7 +1450,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             } else {
                 holder.b.textInternalVersion.isVisible = false
             }
-            holder.b.textGameSize.text = item.size
+            holder.b.textGameSize.text = localizeSizeString(item.size)
             holder.b.textGameLangs.text = if (item.textLangs.isNotEmpty()) item.textLangs.joinToString(", ") else "Multi"
             holder.b.textGameSerial.text = item.serialId
 
@@ -1641,6 +1642,16 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         val dynamicCoverCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
+        @JvmStatic
+        fun localizeSizeString(sizeStr: String): String {
+            if (sizeStr.isEmpty()) return sizeStr
+            return sizeStr
+                .replace(Regex("(?i)\\bGB\\b"), "ГБ")
+                .replace(Regex("(?i)\\bMB\\b"), "МБ")
+                .replace(Regex("(?i)\\bKB\\b"), "КБ")
+                .replace(Regex("(?i)\\bB\\b"), "Б")
+        }
+
         data class CloudFormatVariant(
             val extension: String,
             val size: String,
@@ -1649,39 +1660,39 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         val KNOWN_CLOUD_FORMAT_VARIANTS = mapOf(
             "0100FC001ACE0000" to listOf( // Anvil Saga
-                CloudFormatVariant(".nsp", "694,29 MB", 728016736L),
-                CloudFormatVariant(".nsz", "308,51 MB", 323499452L)
+                CloudFormatVariant(".nsp", "694,29 МБ", 728016736L),
+                CloudFormatVariant(".nsz", "308,51 МБ", 323499452L)
             ),
             "010004D00A9C0000" to listOf( // Aggelos
-                CloudFormatVariant(".nsp", "112,93 MB", 118411040L),
-                CloudFormatVariant(".nsz", "105,46 MB", 110581026L)
+                CloudFormatVariant(".nsp", "112,93 МБ", 118411040L),
+                CloudFormatVariant(".nsz", "105,46 МБ", 110581026L)
             ),
             "010040F01EC60000" to listOf( // Aggelos 2
-                CloudFormatVariant(".nsp", "107,12 MB", 112319264L),
-                CloudFormatVariant(".nsz", "89,56 MB", 93908837L)
+                CloudFormatVariant(".nsp", "107,12 МБ", 112319264L),
+                CloudFormatVariant(".nsz", "89,56 МБ", 93908837L)
             ),
             "010020D01AD24000" to listOf( // Animal Well
-                CloudFormatVariant(".nsp", "37,63 MB", 39457568L),
-                CloudFormatVariant(".nsz", "34,83 MB", 36522797L)
+                CloudFormatVariant(".nsp", "37,63 МБ", 39457568L),
+                CloudFormatVariant(".nsz", "34,83 МБ", 36522797L)
             ),
             "0100F3E024DFC000" to listOf( // Another Eden Begins
-                CloudFormatVariant(".nsp", "3,61 GB", 3876480288L),
-                CloudFormatVariant(".nsz", "3,29 GB", 3535621250L)
+                CloudFormatVariant(".nsp", "3,61 ГБ", 3876480288L),
+                CloudFormatVariant(".nsz", "3,29 ГБ", 3535621250L)
             ),
             "01006DD02868A000" to listOf( // Artis Impact
-                CloudFormatVariant(".nsp", "1,39 GB", 1496537888L),
-                CloudFormatVariant(".nsz", "970,82 MB", 1017977718L)
+                CloudFormatVariant(".nsp", "1,39 ГБ", 1496537888L),
+                CloudFormatVariant(".nsz", "970,82 МБ", 1017977718L)
             ),
             "01008F1008DA6000" to listOf( // Darkest Dungeon [Ancestral Edition]
-                CloudFormatVariant(".nsp", "3,26 GB", 3497294656L),
-                CloudFormatVariant(".nsz", "1,16 GB", 1243524535L)
+                CloudFormatVariant(".nsp", "3,26 ГБ", 3497294656L),
+                CloudFormatVariant(".nsz", "1,16 ГБ", 1243524535L)
             ),
             "0100E5E01C098000" to listOf( // Darkest Dungeon II
-                CloudFormatVariant(".nsp", "4,00 GB", 4298739840L),
-                CloudFormatVariant(".nsz", "1,72 GB", 1844242747L)
+                CloudFormatVariant(".nsp", "4,00 ГБ", 4298739840L),
+                CloudFormatVariant(".nsz", "1,72 ГБ", 1844242747L)
             ),
             "0100F2C0115B6000" to listOf( // The Legend of Zelda: Tears of the Kingdom (ONLY NSZ in cloud)
-                CloudFormatVariant(".nsz", "15,45 GB", 16591941089L)
+                CloudFormatVariant(".nsz", "15,45 ГБ", 16591941089L)
             )
         )
 
@@ -1995,7 +2006,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val platformType = obj.optString("platformTypeName")
                     val fileExists = obj.optBoolean("fileExists", false)
                     val hasFile = obj.optBoolean("hasFile", false)
-                    val sizeStr = obj.optString("size", "").trim()
+                    val sizeStr = localizeSizeString(obj.optString("size", "").trim())
 
                     // Exclude any game with missing flags or placeholder size
                     if (platform == "Nintendo Switch" && platformType == "CONSOLES" && fileExists && hasFile && sizeStr.isNotEmpty() && sizeStr != "—") {

@@ -379,6 +379,19 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
             LOG_INFO(Frontend, "Applied early GameFix profile for title_id={:016X}", early_title_id);
         }
     }
+#ifdef __ANDROID__
+    // Hardware safety overrides for Android Adreno GPUs and NCE CPU backend:
+    // Prevents driver deadlock on compute pipelines, timestamp desync, tile lockup, and DRAM virtual address faults.
+    Settings::values.early_release_fences.SetValue(false);
+    Settings::values.barrier_feedback_loops.SetValue(false);
+    Settings::values.enable_compute_pipelines.SetValue(false);
+    Settings::values.use_fast_gpu_time.SetValue(false);
+    Settings::values.airplane_mode.SetValue(false);
+    Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+#if defined(HAS_NCE)
+    Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
+#endif
+#endif
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();
     Settings::LogSettings();
@@ -420,6 +433,17 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     if (Core::GameFixDatabase::AreFixesEnabled()) {
         const u64 title_id = m_system.GetApplicationProcessProgramID();
         if (Core::GameFixDatabase::ApplyProfileDirectly(title_id)) {
+#ifdef __ANDROID__
+            Settings::values.early_release_fences.SetValue(false);
+            Settings::values.barrier_feedback_loops.SetValue(false);
+            Settings::values.enable_compute_pipelines.SetValue(false);
+            Settings::values.use_fast_gpu_time.SetValue(false);
+            Settings::values.airplane_mode.SetValue(false);
+            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+#if defined(HAS_NCE)
+            Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
+#endif
+#endif
             m_system.ApplySettings();
         }
     }

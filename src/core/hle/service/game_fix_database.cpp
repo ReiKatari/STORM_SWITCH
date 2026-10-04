@@ -6844,10 +6844,28 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             }
         }
 #ifdef __ANDROID__
-        if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_8Gb) {
-            Settings::values.memory_layout_mode.SetGlobal(false);
-            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
-        }
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+
+        Settings::values.barrier_feedback_loops.SetGlobal(false);
+        Settings::values.barrier_feedback_loops.SetValue(false);
+
+        Settings::values.enable_compute_pipelines.SetGlobal(false);
+        Settings::values.enable_compute_pipelines.SetValue(false);
+
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(false);
+
+        Settings::values.airplane_mode.SetGlobal(false);
+        Settings::values.airplane_mode.SetValue(false);
+
+        Settings::values.memory_layout_mode.SetGlobal(false);
+        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+
+#if defined(HAS_NCE)
+        Settings::values.cpu_backend.SetGlobal(false);
+        Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
+#endif
 #endif
         Settings::UpdateGPUAccuracy();
         Settings::UpdateRescalingInfo();

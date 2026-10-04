@@ -200,42 +200,55 @@ struct KnownCloudVariant {
     qint64 file_size_bytes{0};
 };
 
+static QString LocalizeSizeString(QString size_str) {
+    if (size_str.isEmpty()) return size_str;
+    static const QRegularExpression gb_rx(QStringLiteral(R"(\bGB\b)"), QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression mb_rx(QStringLiteral(R"(\bMB\b)"), QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression kb_rx(QStringLiteral(R"(\bKB\b)"), QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression b_rx(QStringLiteral(R"(\bB\b)"), QRegularExpression::CaseInsensitiveOption);
+    size_str.replace(gb_rx, QStringLiteral("ГБ"));
+    size_str.replace(mb_rx, QStringLiteral("МБ"));
+    size_str.replace(kb_rx, QStringLiteral("КБ"));
+    size_str.replace(b_rx, QStringLiteral("Б"));
+    return size_str;
+}
+
 static const QMap<QString, QVector<KnownCloudVariant>>& GetKnownCloudVariants() {
     static const QMap<QString, QVector<KnownCloudVariant>> s_map = {
         {QStringLiteral("0100FC001ACE0000"), { // Anvil Saga
-            {QStringLiteral(".nsp"), QStringLiteral("694,29 MB"), 728016736LL},
-            {QStringLiteral(".nsz"), QStringLiteral("308,51 MB"), 323499452LL}
+            {QStringLiteral(".nsp"), QStringLiteral("694,29 МБ"), 728016736LL},
+            {QStringLiteral(".nsz"), QStringLiteral("308,51 МБ"), 323499452LL}
         }},
         {QStringLiteral("010004D00A9C0000"), { // Aggelos
-            {QStringLiteral(".nsp"), QStringLiteral("112,93 MB"), 118411040LL},
-            {QStringLiteral(".nsz"), QStringLiteral("105,46 MB"), 110581026LL}
+            {QStringLiteral(".nsp"), QStringLiteral("112,93 МБ"), 118411040LL},
+            {QStringLiteral(".nsz"), QStringLiteral("105,46 МБ"), 110581026LL}
         }},
         {QStringLiteral("010040F01EC60000"), { // Aggelos 2
-            {QStringLiteral(".nsp"), QStringLiteral("107,12 MB"), 112319264LL},
-            {QStringLiteral(".nsz"), QStringLiteral("89,56 MB"), 93908837LL}
+            {QStringLiteral(".nsp"), QStringLiteral("107,12 МБ"), 112319264LL},
+            {QStringLiteral(".nsz"), QStringLiteral("89,56 МБ"), 93908837LL}
         }},
         {QStringLiteral("010020D01AD24000"), { // Animal Well
-            {QStringLiteral(".nsp"), QStringLiteral("37,63 MB"), 39457568LL},
-            {QStringLiteral(".nsz"), QStringLiteral("34,83 MB"), 36522797LL}
+            {QStringLiteral(".nsp"), QStringLiteral("37,63 МБ"), 39457568LL},
+            {QStringLiteral(".nsz"), QStringLiteral("34,83 МБ"), 36522797LL}
         }},
         {QStringLiteral("0100F3E024DFC000"), { // Another Eden Begins
-            {QStringLiteral(".nsp"), QStringLiteral("3,61 GB"), 3876480288LL},
-            {QStringLiteral(".nsz"), QStringLiteral("3,29 GB"), 3535621250LL}
+            {QStringLiteral(".nsp"), QStringLiteral("3,61 ГБ"), 3876480288LL},
+            {QStringLiteral(".nsz"), QStringLiteral("3,29 ГБ"), 3535621250LL}
         }},
         {QStringLiteral("01006DD02868A000"), { // Artis Impact
-            {QStringLiteral(".nsp"), QStringLiteral("1,39 GB"), 1496537888LL},
-            {QStringLiteral(".nsz"), QStringLiteral("970,82 MB"), 1017977718LL}
+            {QStringLiteral(".nsp"), QStringLiteral("1,39 ГБ"), 1496537888LL},
+            {QStringLiteral(".nsz"), QStringLiteral("970,82 МБ"), 1017977718LL}
         }},
         {QStringLiteral("01008F1008DA6000"), { // Darkest Dungeon [Ancestral Edition]
-            {QStringLiteral(".nsp"), QStringLiteral("3,26 GB"), 3497294656LL},
-            {QStringLiteral(".nsz"), QStringLiteral("1,16 GB"), 1243524535LL}
+            {QStringLiteral(".nsp"), QStringLiteral("3,26 ГБ"), 3497294656LL},
+            {QStringLiteral(".nsz"), QStringLiteral("1,16 ГБ"), 1243524535LL}
         }},
         {QStringLiteral("0100E5E01C098000"), { // Darkest Dungeon II
-            {QStringLiteral(".nsp"), QStringLiteral("4,00 GB"), 4298739840LL},
-            {QStringLiteral(".nsz"), QStringLiteral("1,72 GB"), 1844242747LL}
+            {QStringLiteral(".nsp"), QStringLiteral("4,00 ГБ"), 4298739840LL},
+            {QStringLiteral(".nsz"), QStringLiteral("1,72 ГБ"), 1844242747LL}
         }},
         {QStringLiteral("0100F2C0115B6000"), { // The Legend of Zelda: Tears of the Kingdom (ONLY NSZ)
-            {QStringLiteral(".nsz"), QStringLiteral("15,45 GB"), 16591941089LL}
+            {QStringLiteral(".nsz"), QStringLiteral("15,45 ГБ"), 16591941089LL}
         }}
     };
     return s_map;
@@ -1336,7 +1349,7 @@ void StormGamesWorldDialog::ParseCatalogData(const QByteArray bitand raw_data) {
             g.final_title = obj[QStringLiteral("finalTitle")].toString();
             g.version = obj[QStringLiteral("version")].toString();
             g.serial_id = obj[QStringLiteral("serialId")].toString();
-            g.size = obj[QStringLiteral("size")].toString();
+            g.size = LocalizeSizeString(obj[QStringLiteral("size")].toString());
             g.cover_url = obj[QStringLiteral("cover")].toString();
             g.file_exists = file_exists;
             g.has_file = has_file;
@@ -1571,7 +1584,7 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
             item->setForeground(1, QBrush(QColor(QStringLiteral("#FFFFFF"))));
         }
 
-        item->setText(2, g.size.isEmpty() ? tr("—") : g.size);
+        item->setText(2, g.size.isEmpty() ? tr("—") : LocalizeSizeString(g.size));
         item->setForeground(2, QBrush(QColor(QStringLiteral("#FFFFFF"))));
 
         if (g.dlc_count > 0 and g.mod_count > 0) {
@@ -1725,7 +1738,7 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
     }
     const QString int_ver = ExtractInternalVersion(game.title, game.version);
     internal_version_badge->setText(tr("Сборка: %1").arg(int_ver));
-    size_badge->setText(tr("Размер: %1").arg(game.size.isEmpty() ? tr("Неизвестно") : game.size));
+    size_badge->setText(tr("Размер: %1").arg(game.size.isEmpty() ? tr("Неизвестно") : LocalizeSizeString(game.size)));
 
     if (game.dlc_count > 0) {
         dlc_badge->setText(tr("📦 Дополнений: %1").arg(game.dlc_count));
