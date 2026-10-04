@@ -22,6 +22,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <poll.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #endif
@@ -1099,6 +1100,21 @@ Errno Socket::SetNonBlock(bool enable) {
         return Errno::SUCCESS;
     }
     return GetAndLogLastError();
+}
+
+std::pair<s32, Errno> Socket::GetBytesAvailable() {
+#ifdef _WIN32
+    u_long available = 0;
+    if (ioctlsocket(fd, FIONREAD, &available) == SOCKET_ERROR) {
+        return {-1, GetAndLogLastError()};
+    }
+#else
+    int available = 0;
+    if (ioctl(fd, FIONREAD, &available) < 0) {
+        return {-1, GetAndLogLastError()};
+    }
+#endif
+    return {static_cast<s32>(available), Errno::SUCCESS};
 }
 
 bool Socket::IsOpened() const {

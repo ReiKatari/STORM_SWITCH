@@ -12,6 +12,7 @@
 #include <optional>
 #include <thread>
 #include <ankerl/unordered_dense.h>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -525,6 +526,9 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     const bool is_mvk = driver_id == VK_DRIVER_ID_MOLTENVK;
     const bool is_qualcomm = driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY;
     const bool is_turnip = driver_id == VK_DRIVER_ID_MESA_TURNIP;
+    const bool is_mali = driver_id == VK_DRIVER_ID_ARM_PROPRIETARY ||
+                         properties.properties.vendorID == 0x13B5 ||
+                         std::string_view(properties.properties.deviceName).find("Mali") != std::string_view::npos;
 
     if (!is_suitable)
         LOG_WARNING(Render_Vulkan, "Unsuitable driver - continuing anyways");
@@ -669,7 +673,10 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     }
 
     sets_per_pool = 256;
-    if (is_amd_driver || is_nvidia) {
+    if (is_mali) {
+        // Mali drivers have strict descriptor pool memory constraints; lower to 64 sets per pool
+        sets_per_pool = 64;
+    } else if (is_amd_driver || is_nvidia) {
         // AMD/NVIDIA drivers benefit from a higher amount of Sets per Pool in heavy titles.
         sets_per_pool = 512;
 
@@ -746,8 +753,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         // Force EDS completely disabled for stability on Snapdragon 700 series.
         LOG_INFO(Render_Vulkan, "Adreno 6xx auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
-    } else if ((is_turnip || is_qualcomm) && effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
-        LOG_INFO(Render_Vulkan, "Adreno/Turnip auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability and prevent pipeline cache invalidation");
+    } else if ((is_turnip || is_qualcomm || is_mali) && effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
+        LOG_INFO(Render_Vulkan, "Adreno/Turnip/Mali auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability and prevent pipeline cache invalidation");
         effective_dyna_state = Settings::ExtendedDynamicState::EDS1;
     }
 
@@ -1353,28 +1360,31 @@ bool Device::GetSuitability(bool requires_swapchain) {
 
     // Driver detection variables for workarounds in GetSuitability
     const VkDriverId driver_id = properties.driver.driverID;
+    const bool is_mali_suitability = driver_id == VK_DRIVER_ID_ARM_PROPRIETARY ||
+                                    properties.properties.vendorID == 0x13B5 ||
+                                    std::string_view(properties.properties.deviceName).find("Mali") != std::string_view::npos;
 
     // VK_EXT_extended_dynamic_state2 below this will appear drivers that need workarounds.
 
     // VK_EXT_extended_dynamic_state3 below this will appear drivers that need workarounds.
 
-    // Samsung: Broken extendedDynamicState3ColorBlendEquation
+    // Samsung & Mali: Broken extendedDynamicState3ColorBlendEquation / ColorBlendEnable
     // Disable blend equation dynamic state, force static pipeline state
     if (extensions.extended_dynamic_state3 &&
-        (driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY)) {
+        (driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY || is_mali_suitability)) {
         LOG_WARNING(Render_Vulkan,
-                    "Samsung: Disabling broken extendedDynamicState3ColorBlendEquation");
+                    "Samsung/Mali: Disabling broken extendedDynamicState3ColorBlendEquation and ColorBlendEnable");
         features.extended_dynamic_state3.extendedDynamicState3ColorBlendEnable = false;
         features.extended_dynamic_state3.extendedDynamicState3ColorBlendEquation = false;
     }
 
-    // Disable VertexInputDynamicState on Intel (< 27.20.100.0) and all NVIDIA Windows drivers (causes nvgpucomp64 crash)
+    // Disable VertexInputDynamicState on Intel (< 27.20.100.0), all NVIDIA Windows drivers, and Mali
     if (extensions.vertex_input_dynamic_state) {
         bool is_broken = false;
         if (driver_id == VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS) {
             const u32 version = (properties.properties.driverVersion << 3) >> 3;
             is_broken = version < VK_MAKE_API_VERSION(0, 27, 20, 100);
-        } else if (driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY) {
+        } else if (driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY || is_mali_suitability) {
             is_broken = true;
         }
         if (is_broken) {

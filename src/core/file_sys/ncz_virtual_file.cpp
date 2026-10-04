@@ -201,12 +201,17 @@ NCZVirtualFile::NCZVirtualFile(VirtualFile file_)
         file->ReadObject(&section_count, offset + 8);
         u64 sections_start = offset + 16;
 
-        if (section_count > 64) {
+        constexpr u64 MaxSectionCount = 0x10000;
+        if (section_count > MaxSectionCount) {
             u32 count_32 = static_cast<u32>(section_count & 0xFFFFFFFF);
-            if (count_32 > 0 && count_32 <= 64) {
+            if (count_32 > 0 && count_32 <= MaxSectionCount) {
                 section_count = count_32;
                 sections_start = offset + 12;
             }
+        }
+        if (section_count == 0 || section_count > MaxSectionCount) {
+            LOG_ERROR(Service_FS, "NCZ file reports an implausible section count ({})", section_count);
+            return;
         }
 
         sections.resize(section_count);

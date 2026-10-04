@@ -855,7 +855,9 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
 
         if (!is_single) {
             // Multiple versions/formats in catalog: must verify exact version/mod/dlc/rus and format
-            const QString target_ext = (game.real_extension.isEmpty() ? QStringLiteral("nsp") : game.real_extension).remove(QLatin1Char('.')).toLower();
+            QString target_ext = game.real_extension.isEmpty() ? QStringLiteral("nsp") : game.real_extension;
+            target_ext.remove(QLatin1Char('.'));
+            target_ext = target_ext.toLower();
             if (!file.extension.isEmpty() and file.extension.toLower() != target_ext) continue;
             if (game_is_mod != file.has_mod) continue;
             if (game_is_mod and game_mod_count != file.mod_count) continue;
@@ -1548,7 +1550,9 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
             const bool match_title = g.title.toLower().contains(lower_filter);
             const bool match_final = g.final_title.toLower().contains(lower_filter);
             const bool match_tid = g.serial_id.toLower().contains(lower_filter);
-            const QString ext_clean = g.real_extension.remove(QLatin1Char('.')).toLower();
+            QString ext_clean = g.real_extension;
+            ext_clean.remove(QLatin1Char('.'));
+            ext_clean = ext_clean.toLower();
             const bool match_ext = ext_clean.contains(lower_filter) || g.real_extension.toLower().contains(lower_filter);
             if (!match_title and !match_final and !match_tid and !match_ext) {
                 continue;
@@ -1572,7 +1576,9 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
             }
         }
 
-        const QString ext_tag = (g.real_extension.isEmpty() ? QStringLiteral("NSP") : g.real_extension).remove(QLatin1Char('.')).toUpper();
+        QString ext_tag = g.real_extension.isEmpty() ? QStringLiteral("NSP") : g.real_extension;
+        ext_tag.remove(QLatin1Char('.'));
+        ext_tag = ext_tag.toUpper();
         const QString clean_ver = g.version.isEmpty() ? QStringLiteral("1.0.0") : g.version;
 
         if (g.is_recommended) {
@@ -1924,7 +1930,9 @@ void StormGamesWorldDialog::OnHeadReplyFinished() {
                 filtered_games[selected_game_index].real_extension = real_ext;
             }
             const auto& game = filtered_games[selected_game_index];
-            const QString actual_tag = (game.real_extension.isEmpty() ? QStringLiteral("NSP") : game.real_extension).remove(QLatin1Char('.')).toUpper();
+            QString actual_tag = game.real_extension.isEmpty() ? QStringLiteral("NSP") : game.real_extension;
+            actual_tag.remove(QLatin1Char('.'));
+            actual_tag = actual_tag.toUpper();
             version_combo->clear();
             version_combo->addItem(tr("Основная версия (%1) [%2]").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(actual_tag));
         }
@@ -2194,10 +2202,12 @@ void StormGamesWorldDialog::OnStartDownload() {
     }
 
     const int raw_id = (game.id >= 10000000) ? (game.id - 10000000) : game.id;
-    const QString ext_param = (game.real_extension.isEmpty() ? QStringLiteral("nsp") : game.real_extension).remove(QLatin1Char('.')).toLower();
+    QString ext_param = game.real_extension.isEmpty() ? QStringLiteral("nsp") : game.real_extension;
+    ext_param.remove(QLatin1Char('.'));
+    ext_param = ext_param.toLower();
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download?format=%2").arg(raw_id).arg(ext_param));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/9.5.0 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/10.3.0 (Windows x64)"));
     req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     req.setRawHeader("Connection", "keep-alive");

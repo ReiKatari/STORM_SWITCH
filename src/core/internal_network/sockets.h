@@ -85,6 +85,9 @@ public:
 
     virtual Errno SetNonBlock(bool enable) = 0;
 
+    /// Bytes that can be read without blocking (FIONREAD).
+    virtual std::pair<s32, Errno> GetBytesAvailable() = 0;
+
     virtual std::pair<Errno, Errno> GetPendingError() = 0;
 
     virtual bool IsOpened() const = 0;
@@ -152,6 +155,8 @@ public:
     Errno SetRcvTimeo(u32 value) override;
 
     Errno SetNonBlock(bool enable) override;
+
+    std::pair<s32, Errno> GetBytesAvailable() override;
 
     template <typename T>
     Errno SetSockOpt(SOCKET fd, int option, T value);

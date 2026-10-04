@@ -6772,6 +6772,13 @@ object GameFixDatabase {
     }
 
     fun getFullSettingsMap(profile: GameFixProfile): Map<String, String> {
+        val isDynarmic = try {
+            org.yuzu.yuzu_emu.features.settings.model.IntSetting.CPU_BACKEND.getInt() == 0
+        } catch (_: Exception) {
+            false
+        }
+        val targetCpuBackend = if (isDynarmic) "0" else "1"
+
         val fullMap = mutableMapOf(
             "Renderer\\gpu_accuracy" to "0",
             "Renderer\\vram_garbage_collection" to "false",
@@ -6795,7 +6802,7 @@ object GameFixDatabase {
             "Cpu\\cpuopt_fastmem" to "true",
             "Cpu\\cpuopt_ignore_memory_aborts" to "true",
             "Cpu\\cpu_accuracy" to "0",
-            "Cpu\\cpu_backend" to "1",
+            "Cpu\\cpu_backend" to targetCpuBackend,
             "System\\airplane_mode" to "false",
             "Core\\memory_layout_mode" to "0",
             "System\\memory_layout_mode" to "0"
@@ -6814,7 +6821,7 @@ object GameFixDatabase {
         fullMap["Core\\memory_layout_mode"] = "0"
         fullMap["System\\memory_layout_mode"] = "0"
         fullMap["System\\airplane_mode"] = "false"
-        fullMap["Cpu\\cpu_backend"] = "1"
+        fullMap["Cpu\\cpu_backend"] = targetCpuBackend
         return fullMap
     }
 

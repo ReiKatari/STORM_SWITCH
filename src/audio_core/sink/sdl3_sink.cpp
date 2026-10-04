@@ -29,7 +29,7 @@ namespace {
         // Keep in sync with cubeb_sink.cpp name.
         SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", "STORM SWITCH");
 #if defined(__ANDROID__)
-        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "opensles,aaudio");
+        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "aaudio,opensles");
 #endif
         if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
             LOG_CRITICAL(Audio_Sink, "SDL_InitSubSystem audio failed: {}", SDL_GetError());
@@ -108,6 +108,13 @@ public:
 
         stream = SDL_OpenAudioDeviceStream(audio_device, &spec, &SDLSinkStream::DataCallback,
                                            this);
+
+        if (stream == nullptr && audio_device != SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK && !capture) {
+            LOG_WARNING(Audio_Sink, "Failed to open audio device {}, falling back to default playback: {}",
+                        audio_device, SDL_GetError());
+            stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec,
+                                               &SDLSinkStream::DataCallback, this);
+        }
 
         if (stream == nullptr) {
             LOG_CRITICAL(Audio_Sink, "Error opening SDL audio device: {}", SDL_GetError());

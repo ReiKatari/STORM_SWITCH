@@ -150,6 +150,7 @@ private:
     void GetSockOpt(HLERequestContext& ctx);
     void Listen(HLERequestContext& ctx);
     void Fcntl(HLERequestContext& ctx);
+    void Ioctl(HLERequestContext& ctx);
     void SetSockOpt(HLERequestContext& ctx);
     void Shutdown(HLERequestContext& ctx);
     void Recv(HLERequestContext& ctx);
@@ -175,6 +176,8 @@ private:
     Errno GetSockNameImpl(s32 fd, std::vector<u8>& write_buffer);
     Errno ListenImpl(s32 fd, s32 backlog);
     std::pair<s32, Errno> FcntlImpl(s32 fd, FcntlCmd cmd, s32 arg);
+    std::pair<s32, Errno> IoctlImpl(s32 fd, u32 request, std::span<const u8> in,
+                                    std::vector<u8>& out);
     Errno GetSockOptImpl(s32 fd, u32 level, OptName optname, std::vector<u8>& optval);
     Errno SetSockOptImpl(s32 fd, u32 level, OptName optname, std::span<const u8> optval);
     Errno ShutdownImpl(s32 fd, s32 how);

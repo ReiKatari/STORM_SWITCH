@@ -4,7 +4,7 @@ Start-Sleep -Milliseconds 500
 $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe'
 $sha1 = '10C44A100C93E316872A1BEF4D46269EA9C52269'
 
-$version = '10.2.0'
+$version = '10.3.0'
 if (Test-Path 'E:\STORM SWITCH 4\Build\GIT-RELEASE') {
     $v = (Get-Content 'E:\STORM SWITCH 4\Build\GIT-RELEASE' -Raw).Trim()
     if ($v) { $version = $v }

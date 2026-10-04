@@ -722,7 +722,6 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
     }
 
     // Step 2: Process uncached games (single container open, single loader, progressive streaming)
-    int uncached_count = 0;
     for (const auto& file_info : uncached_files) {
         if (stop_requested) {
             break;

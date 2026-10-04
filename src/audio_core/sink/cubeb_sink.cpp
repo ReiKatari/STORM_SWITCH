@@ -212,8 +212,8 @@ CubebSink::CubebSink(std::string_view target_device_name) {
 #endif
 
 #if defined(__ANDROID__)
-    if (cubeb_init(&ctx, "STORM SWITCH", "opensles") != CUBEB_OK) {
-        if (cubeb_init(&ctx, "STORM SWITCH", "aaudio") != CUBEB_OK) {
+    if (cubeb_init(&ctx, "STORM SWITCH", "aaudio") != CUBEB_OK) {
+        if (cubeb_init(&ctx, "STORM SWITCH", "opensles") != CUBEB_OK) {
             if (cubeb_init(&ctx, "STORM SWITCH", nullptr) != CUBEB_OK) {
                 LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
                 return;
@@ -368,9 +368,9 @@ u32 GetCubebLatency() {
 
     // Init cubeb
 #if defined(__ANDROID__)
-    if (cubeb_init(&ctx, "yuzu Latency Getter", "opensles") != CUBEB_OK) {
-        if (cubeb_init(&ctx, "yuzu Latency Getter", "aaudio") != CUBEB_OK) {
-            if (cubeb_init(&ctx, "yuzu Latency Getter", nullptr) != CUBEB_OK) {
+    if (cubeb_init(&ctx, "STORM SWITCH Latency Getter", "aaudio") != CUBEB_OK) {
+        if (cubeb_init(&ctx, "STORM SWITCH Latency Getter", "opensles") != CUBEB_OK) {
+            if (cubeb_init(&ctx, "STORM SWITCH Latency Getter", nullptr) != CUBEB_OK) {
                 LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
                 return 10000u;
             }

@@ -21,7 +21,7 @@ if (Test-Path $sdk27) {
     Copy-Item $sdk27 "E:\STORM SWITCH 4\Files\STORM_SWITCH_${version}_SDK27.apk" -Force
 }
 
-Get-ChildItem -Path 'E:\STORM SWITCH 4\Files' -Recurse | Unblock-File -ErrorAction SilentlyContinue
-Get-ChildItem -Path 'E:\STORM SWITCH 4\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
+Get-ChildItem -Path 'E:\STORM SWITCH 4\Files' | Unblock-File -ErrorAction SilentlyContinue
+Get-ChildItem -Path 'E:\STORM SWITCH 4\Assembling' | Unblock-File -ErrorAction SilentlyContinue
 
 Write-Host "All $version APKs copied to E:\STORM SWITCH 4\Files and unblocked successfully!"

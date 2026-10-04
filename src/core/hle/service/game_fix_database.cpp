@@ -6863,8 +6863,10 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
         Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
 
 #if defined(HAS_NCE)
-        Settings::values.cpu_backend.SetGlobal(false);
-        Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
+        if (Settings::values.cpu_backend.GetValue() != Settings::CpuBackend::Dynarmic) {
+            Settings::values.cpu_backend.SetGlobal(false);
+            Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
+        }
 #endif
 #endif
         Settings::UpdateGPUAccuracy();

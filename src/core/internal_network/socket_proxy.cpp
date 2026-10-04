@@ -291,6 +291,11 @@ Errno ProxySocket::SetNonBlock(bool enable) {
     return Errno::SUCCESS;
 }
 
+std::pair<s32, Errno> ProxySocket::GetBytesAvailable() {
+    // Proxied packets are queued by the proxy; report them as arriving through Recv.
+    return {0, Errno::SUCCESS};
+}
+
 std::pair<Errno, Errno> ProxySocket::GetPendingError() {
     LOG_DEBUG(Network, "(STUBBED) called");
     return {Errno::SUCCESS, Errno::SUCCESS};

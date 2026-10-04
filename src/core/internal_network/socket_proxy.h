@@ -73,6 +73,8 @@ public:
 
     Errno SetNonBlock(bool enable) override;
 
+    std::pair<s32, Errno> GetBytesAvailable() override;
+
     template <typename T>
     Errno SetSockOpt(SOCKET fd, int option, T value);
 
