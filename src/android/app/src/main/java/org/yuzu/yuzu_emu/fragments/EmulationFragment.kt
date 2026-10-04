@@ -2099,6 +2099,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         }
 
     override fun onPause() {
+        gameTranslatorManager?.pauseTranslation()
         if (this::emulationState.isInitialized) {
             if (emulationState.isRunning && emulationActivity?.isInPictureInPictureMode != true) {
                 pauseEmulationAndCaptureFrame()
@@ -2155,6 +2156,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     override fun onResume() {
         super.onResume()
+        gameTranslatorManager?.resumeTranslation()
         NativeLibrary.refreshThreadPolicies()
         val currentGame = game ?: args.game
         if (currentGame != null) {
@@ -2863,14 +2865,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         binding.inGameMenu.requestLayout()
     }
 
-    private val ltpoFrameCallback = object : Choreographer.FrameCallback {
-        override fun doFrame(frameTimeNanos: Long) {
-            if (isResumed && this@EmulationFragment::emulationState.isInitialized && emulationState.isRunning) {
-                Choreographer.getInstance().postFrameCallback(this)
-            }
-        }
-    }
-
     override fun surfaceCreated(holder: SurfaceHolder) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
             try {
@@ -2884,9 +2878,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 Log.warning("[EmulationFragment] Failed to lock surface frame rate: ${e.message}")
             }
         }
-        try {
-            Choreographer.getInstance().postFrameCallback(ltpoFrameCallback)
-        } catch (_: Exception) {}
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -2917,9 +2908,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        try {
-            Choreographer.getInstance().removeFrameCallback(ltpoFrameCallback)
-        } catch (_: Exception) {}
         if (this::emulationState.isInitialized && !hasNewerEmulationFragment()) {
             emulationState.clearSurface()
         }

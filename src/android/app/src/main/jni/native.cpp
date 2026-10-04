@@ -401,6 +401,7 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
 
     // Load the ROM.
     Service::AM::FrontendAppletParameters params{
+        .program_id = early_title_id,
         .applet_id = static_cast<Service::AM::AppletId>(m_applet_id),
         .launch_type = frontend_initiated ? Service::AM::LaunchType::FrontendInitiated
                                           : Service::AM::LaunchType::ApplicationInitiated,
@@ -827,8 +828,31 @@ void Java_org_yuzu_yuzu_1emu_NativeLibrary_setAppDirectory(JNIEnv* env, jobject 
     Common::FS::SetAppDirectory(Common::Android::GetJString(env, j_directory));
 }
 
+static Settings::ResolutionSetup s_pre_thermal_res = Settings::ResolutionSetup::Res1X;
+static u16 s_pre_thermal_speed = 100;
+static bool s_has_saved_thermal_state = false;
+
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_setThermalThrottle(JNIEnv* env, jclass clazz, jboolean throttle) {
-    Settings::values.eco_thermal_mode = static_cast<bool>(throttle);
+    const bool should_throttle = static_cast<bool>(throttle);
+    Settings::values.eco_thermal_mode = should_throttle;
+    if (should_throttle) {
+        if (!s_has_saved_thermal_state) {
+            s_pre_thermal_res = Settings::values.resolution_setup.GetValue();
+            s_pre_thermal_speed = Settings::values.speed_limit.GetValue();
+            s_has_saved_thermal_state = true;
+        }
+        if (Settings::values.resolution_setup.GetValue() > Settings::ResolutionSetup::Res3_4X) {
+            Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res3_4X);
+        }
+        LOG_INFO(Frontend, "Thermal Governor: Throttling ACTIVATED (eco mode ON, scaling 0.75x)");
+    } else {
+        if (s_has_saved_thermal_state) {
+            Settings::values.resolution_setup.SetValue(s_pre_thermal_res);
+            Settings::values.speed_limit.SetValue(s_pre_thermal_speed);
+            s_has_saved_thermal_state = false;
+        }
+        LOG_INFO(Frontend, "Thermal Governor: Throttling DEACTIVATED (normal scaling restored)");
+    }
 }
 
 int Java_org_yuzu_yuzu_1emu_NativeLibrary_installFileToNand(JNIEnv* env, jobject instance,

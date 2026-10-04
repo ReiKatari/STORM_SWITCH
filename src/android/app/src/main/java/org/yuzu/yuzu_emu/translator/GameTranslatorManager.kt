@@ -78,11 +78,24 @@ class GameTranslatorManager(
     private var lastRecognizedTextHash: Int = 0
     var overlayView: GameTranslationOverlayView? = null
 
+    @Volatile
+    var isPaused: Boolean = false
+
+    fun pauseTranslation() {
+        isPaused = true
+    }
+
+    fun resumeTranslation() {
+        isPaused = false
+    }
+
     fun startAutoTranslateLoop(surfaceView: SurfaceView?) {
         stopAutoTranslateLoop()
         autoTranslateJob = coroutineScope.launch {
             while (true) {
                 kotlinx.coroutines.delay(1800)
+                if (isPaused) continue
+                if (surfaceView == null || !surfaceView.holder.surface.isValid) continue
                 val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                 val mode = TranslatorTriggerMode.fromPreference(prefs.getString("translator_trigger_mode", "on_demand"))
                 if (mode == TranslatorTriggerMode.AUTO_SCREEN_CHANGE) {

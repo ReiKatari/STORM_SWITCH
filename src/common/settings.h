@@ -362,7 +362,7 @@ struct Values {
                                                         Specialization::Default, true, true};
 
     SwitchableSetting<VSyncMode, true> vsync_mode{linkage,
-                                                  VSyncMode::Mailbox,
+                                                  VSyncMode::Fifo,
                                                   "use_vsync",
                                                   Category::Renderer,
                                                   Specialization::RuntimeList,

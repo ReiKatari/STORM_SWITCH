@@ -673,9 +673,22 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
             cache_it->second.mtime == file_info.mtime_val) {
             const auto& cached = cache_it->second;
             if (!cached.is_bootable) {
-                // File was already verified as non-bootable (e.g. update or DLC).
-                // Do not re-scan or block I/O on every refresh.
+                // File was verified as non-bootable (e.g. update or DLC).
+                // Register in provider so DLCs and updates are not lost after ClearAllEntries!
+                if (Settings::values.ext_content_from_game_dirs.GetValue()) {
+                    const auto file = vfs->OpenFile(file_info.physical_name, FileSys::OpenMode::Read);
+                    if (file && file->GetSize() > 0) {
+                        provider->AddEntriesFromContainer(file);
+                    }
+                }
                 continue;
+            }
+
+            if (Settings::values.ext_content_from_game_dirs.GetValue()) {
+                const auto file = vfs->OpenFile(file_info.physical_name, FileSys::OpenMode::Read);
+                if (file && file->GetSize() > 0) {
+                    provider->AddEntriesFromContainer(file);
+                }
             }
 
             if (!emitted_entries.contains(file_info.physical_name) && cached.program_id != 0 &&
@@ -894,11 +907,6 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 if (!stop_requested && program_id != 0 && (program_id & 0xFFF) == 0) {
                     addEntry(loader, program_id);
                 }
-            }
-
-            uncached_count++;
-            if (uncached_count % 5 == 0) {
-                SaveMetadataCache();
             }
 
         } catch (const std::exception& e) {

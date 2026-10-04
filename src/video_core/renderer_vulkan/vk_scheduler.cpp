@@ -70,12 +70,19 @@ void Scheduler::Finish(VkSemaphore signal_semaphore, VkSemaphore wait_semaphore)
 }
 
 void Scheduler::WaitWorker() {
+    if (is_lost.load(std::memory_order_relaxed)) {
+        return;
+    }
     DispatchWork();
 
     // Ensure the queue is drained.
     {
         std::unique_lock ql{queue_mutex};
-        event_cv.wait(ql, [this] { return work_queue.empty(); });
+        event_cv.wait(ql, [this] { return work_queue.empty() || is_lost.load(std::memory_order_relaxed); });
+    }
+
+    if (is_lost.load(std::memory_order_relaxed)) {
+        return;
     }
 
     // Now wait for execution to finish.
@@ -83,6 +90,9 @@ void Scheduler::WaitWorker() {
 }
 
 void Scheduler::DispatchWork() {
+    if (is_lost.load(std::memory_order_relaxed)) {
+        return;
+    }
     if (chunk && !chunk->Empty()) {
         {
             std::scoped_lock ql{queue_mutex};
@@ -307,6 +317,15 @@ void Scheduler::WorkerThread(std::stop_token stop_token) {
                 LOG_CRITICAL(Render_Vulkan, "Vulkan worker thread caught exception: {} ({})",
                              ex.what(), static_cast<int>(ex.GetResult()));
                 if (ex.GetResult() == VK_ERROR_DEVICE_LOST) {
+                    is_lost.store(true, std::memory_order_relaxed);
+                    device.ReportLoss("Scheduler::WorkerThread");
+                    {
+                        std::scoped_lock ql{queue_mutex};
+                        while (!work_queue.empty()) {
+                            work_queue.pop();
+                        }
+                    }
+                    event_cv.notify_all();
                     return;
                 }
             } catch (const std::exception& ex) {

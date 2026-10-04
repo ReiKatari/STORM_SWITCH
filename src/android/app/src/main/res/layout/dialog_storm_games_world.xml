@@ -209,11 +209,25 @@
                 app:strokeColor="?attr/colorOutline"
                 app:strokeWidth="1dp" />
 
-            <View
-                android:layout_width="1dp"
-                android:layout_height="22dp"
-                android:layout_marginHorizontal="8dp"
-                android:background="?attr/colorOutline" />
+                    </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Format Filter Chips Bar -->
+    <HorizontalScrollView
+        android:id="@+id/scroll_format_filters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingHorizontal="12dp"
+        android:paddingBottom="6dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/layout_format_chips"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/chip_ext_all"

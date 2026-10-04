@@ -10,6 +10,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import kotlinx.coroutines.launch
 import org.yuzu.yuzu_emu.features.input.NativeInput
 import java.io.File
 import java.io.FileOutputStream
@@ -130,7 +131,13 @@ class YuzuApplication : Application() {
 
         try {
             DirectoryInitialization.start()
-            org.yuzu.yuzu_emu.model.GameFixDatabase.cleanupAllTemporaryFixes()
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                try {
+                    org.yuzu.yuzu_emu.model.GameFixDatabase.cleanupAllTemporaryFixes()
+                } catch (t: Throwable) {
+                    Log.error("[YuzuApplication] cleanupAllTemporaryFixes error: ${t.message}")
+                }
+            }
         } catch (t: Throwable) {
             org.yuzu.yuzu_emu.utils.CrashHandler.logError(this, "DirectoryInitialization", t)
         }

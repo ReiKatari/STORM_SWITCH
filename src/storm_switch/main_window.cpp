@@ -3720,6 +3720,9 @@ void MainWindow::StormSessionBackup::Capture() {
     cpu_backend = capture_switchable(Settings::values.cpu_backend);
     frame_pacing_mode = capture_switchable(Settings::values.frame_pacing_mode);
     dynamic_performance_scaler = capture_switchable(Settings::values.dynamic_performance_scaler);
+    disable_macro_jit = Settings::values.disable_macro_jit.GetValue();
+    use_auto_stub = Settings::values.use_auto_stub.GetValue();
+    disable_web_applet = Settings::values.disable_web_applet.GetValue();
     is_active = true;
 }
 
@@ -3776,6 +3779,9 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.cpu_backend, cpu_backend);
     restore_switchable(Settings::values.frame_pacing_mode, frame_pacing_mode);
     restore_switchable(Settings::values.dynamic_performance_scaler, dynamic_performance_scaler);
+    Settings::values.disable_macro_jit.SetValue(disable_macro_jit);
+    Settings::values.use_auto_stub.SetValue(use_auto_stub);
+    Settings::values.disable_web_applet.SetValue(disable_web_applet);
 
     Settings::UpdateGPUAccuracy();
     Settings::UpdateRescalingInfo();
@@ -4637,14 +4643,15 @@ void MainWindow::OnEmulationStopped() {
             QtCommon::emu_thread->ForceStop();
             // Wait synchronously for EmuThread to exit cleanly without re-entrant event pumping
             if (!QtCommon::emu_thread->wait(5000)) {
-                LOG_ERROR(Frontend, "EmuThread did not exit within limit; detaching handle to prevent MSVCP140 crash");
-                QtCommon::emu_thread.release();
-            } else {
-                QtCommon::emu_thread.reset();
+                LOG_WARNING(Frontend, "EmuThread did not exit within 5s; waiting an additional 5s");
+                if (!QtCommon::emu_thread->wait(5000)) {
+                    LOG_CRITICAL(Frontend, "EmuThread hung during shutdown, forcefully terminating before context cleanup");
+                    QtCommon::emu_thread->terminate();
+                    QtCommon::emu_thread->wait(2000);
+                }
             }
-        } else {
-            QtCommon::emu_thread.reset();
         }
+        QtCommon::emu_thread.reset();
     }
 
     if (shutdown_dialog) {

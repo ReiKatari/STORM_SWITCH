@@ -8,11 +8,11 @@
 
 #include <atomic>
 
+#include <mutex>
 #include "common/assert.h"
 #include "common/atomic_ops.h"
 #include "common/common_funcs.h"
 #include "common/common_types.h"
-#include "common/spin_lock.h"
 
 namespace Kernel {
 
@@ -30,7 +30,7 @@ public:
     };
 
 public:
-    constexpr KSlabHeapImpl() = default;
+    KSlabHeapImpl() = default;
 
     void Initialize() {
         ASSERT(m_head == nullptr);
@@ -68,7 +68,7 @@ public:
 
 private:
     std::atomic<Node*> m_head{};
-    Common::SpinLock m_lock;
+    std::mutex m_lock;
 };
 
 } // namespace impl

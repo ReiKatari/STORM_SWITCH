@@ -396,12 +396,30 @@ void PresentManager::CopyToSwapchain(Frame* frame) {
     bool requires_recreation = false;
 
     while (true) {
+        if (scheduler.IsLost()) {
+            return;
+        }
+        if (use_present_thread && present_thread.get_stop_token().stop_requested()) {
+            return;
+        }
 #ifdef __ANDROID__
         while (render_window.GetWindowInfo().render_surface == nullptr) {
+            if (scheduler.IsLost()) {
+                return;
+            }
+            if (use_present_thread && present_thread.get_stop_token().stop_requested()) {
+                return;
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
             requires_recreation = true;
         }
 #endif
+        if (scheduler.IsLost()) {
+            return;
+        }
+        if (use_present_thread && present_thread.get_stop_token().stop_requested()) {
+            return;
+        }
         try {
             // Recreate surface and swapchain if needed.
             if (requires_recreation) {
@@ -417,9 +435,7 @@ void PresentManager::CopyToSwapchain(Frame* frame) {
         } catch (const vk::Exception& except) {
             const auto res = except.GetResult();
             if (res == VK_ERROR_DEVICE_LOST) {
-                LOG_CRITICAL(Render_Vulkan, "STORM Vulkan Device Recovery: Device lost detected, performing safe recovery without crashing...");
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                requires_recreation = true;
+                LOG_CRITICAL(Render_Vulkan, "STORM Vulkan Device Recovery: Device lost detected, stopping present thread safely...");
                 return;
             }
             if (res != VK_ERROR_SURFACE_LOST_KHR &&

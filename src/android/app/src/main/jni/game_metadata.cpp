@@ -4,6 +4,7 @@
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <mutex>
 #include <regex>
 #include "common/android/android_common.h"
 #include "common/string_util.h"
@@ -27,6 +28,7 @@ struct RomMetadata {
     bool isHomebrew{false};
     bool is_base_game{false};
 };
+static std::recursive_mutex s_metadata_mutex;
 static ankerl::unordered_dense::map<std::string, RomMetadata> m_rom_metadata_cache;
 static ankerl::unordered_dense::map<u64, int> m_aoc_count_cache;
 static bool m_aoc_cache_valid = false;
@@ -329,6 +331,7 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
 }
 
 static RomMetadata GetRomMetadata(const std::string& path, bool reload = false) {
+    std::scoped_lock lock{s_metadata_mutex};
     if (reload)
         return CacheRomMetadata(path);
     if (auto it = m_rom_metadata_cache.find(path); it != m_rom_metadata_cache.end())
@@ -459,6 +462,7 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsHomebrew(JNIEnv* env, j
 }
 
 void Java_org_yuzu_yuzu_1emu_utils_GameMetadata_resetMetadata(JNIEnv* env, jobject obj) {
+    std::scoped_lock lock{s_metadata_mutex};
     m_rom_metadata_cache.clear();
     m_aoc_count_cache.clear();
     m_aoc_cache_valid = false;

@@ -68,6 +68,7 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
 
     // Determine the number of vsync periods to wait before composing again.
     std::optional<s32> swap_interval{};
+    bool has_acquired_buffer{};
 
     // Acquire all necessary framebuffers.
     for (auto& layer : display.stack.layers) {
@@ -79,6 +80,10 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         // If we failed, skip this layer.
         if (result == CacheStatus::NoBufferAvailable) {
             continue;
+        }
+
+        if (result == CacheStatus::BufferAcquired) {
+            has_acquired_buffer = true;
         }
 
         const auto& buffer = m_framebuffers[consumer_id];
@@ -119,7 +124,7 @@ u32 HardwareComposer::ComposeLocked(f32* out_speed_scale, Display& display,
         }
     }
 
-    if (!composition_stack.empty()) {
+    if (has_acquired_buffer && !composition_stack.empty()) {
         // Sort back-to-front: lower z first, higher z last so top-most draws last (on top).
         std::stable_sort(composition_stack.begin(), composition_stack.end(),
                          [&](const HwcLayer& l, const HwcLayer& r) { return l.z_index < r.z_index; });

@@ -103,7 +103,7 @@ namespace AndroidSettings {
         Settings::Setting<bool> haptic_feedback{linkage, true, "haptic_feedback",
                                                 Settings::Category::Overlay,
                                                 Settings::Specialization::Default, true, true};
-        Settings::Setting<bool> show_performance_overlay{linkage, true, "show_performance_overlay",
+        Settings::Setting<bool> show_performance_overlay{linkage, false, "show_performance_overlay",
                                                          Settings::Category::Overlay,
                                                          Settings::Specialization::Paired, true,
                                                          true};
@@ -188,7 +188,7 @@ namespace AndroidSettings {
 
         /// DEVICE/SOC OVERLAY
 
-        Settings::Setting<bool> show_soc_overlay{linkage, true, "show_soc_overlay",
+        Settings::Setting<bool> show_soc_overlay{linkage, false, "show_soc_overlay",
                                                  Settings::Category::Overlay,
                                                  Settings::Specialization::Paired, true, true};
         Settings::Setting<bool> show_build_id{linkage, true, "show_build_id",
@@ -230,7 +230,7 @@ namespace AndroidSettings {
                                                     &show_soc_overlay};
 
         // MISC
-        Settings::Setting<bool> show_device_load_overlay{linkage, true,
+        Settings::Setting<bool> show_device_load_overlay{linkage, false,
                                                         "show_device_load_overlay",
                                                         Settings::Category::Overlay, Settings::Specialization::Default, true, true};
         Settings::Setting<bool> dont_show_driver_shader_warning{linkage, false,

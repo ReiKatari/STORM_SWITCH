@@ -238,6 +238,12 @@ int main(int argc, char* argv[]) {
     if (hSingleInstanceMutex && GetLastError() == ERROR_ALREADY_EXISTS) {
         HWND existingWnd = nullptr;
         EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
+            wchar_t className[256];
+            if (GetClassNameW(hwnd, className, 256) > 0) {
+                if (wcsstr(className, L"Qt") == nullptr && wcsstr(className, L"QWindow") == nullptr) {
+                    return TRUE;
+                }
+            }
             wchar_t title[256];
             if (GetWindowTextW(hwnd, title, 256) > 0) {
                 if (wcsstr(title, L"STORM SWITCH") != nullptr) {

@@ -11,6 +11,8 @@ import android.os.Environment
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -65,7 +67,18 @@ data class StormDownloadProgress(
 
 object StormDownloadManager {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.error("[StormDownloadManager] Uncaught download error: ${throwable.message}")
+        val curr = _state.value
+        if (curr != null) {
+            _state.value = curr.copy(
+                status = StormDownloadStatus.ERROR,
+                errorMessage = throwable.message ?: "Ошибка загрузки",
+                statsText = "❌ Ошибка: ${throwable.message ?: "сбой сети"}"
+            )
+        }
+    }
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     private var downloadJob: Job? = null
     private var activeCall: Call? = null
 
@@ -136,7 +149,20 @@ object StormDownloadManager {
 
         downloadJob?.cancel()
         downloadJob = scope.launch {
-            runDownloadLoop(context.applicationContext, game)
+            try {
+                runDownloadLoop(context.applicationContext, game)
+            } catch (t: Throwable) {
+                if (t is CancellationException) throw t
+                Log.error("[StormDownloadManager] Download failed with exception: ${t.message}")
+                val curr = _state.value
+                if (curr != null) {
+                    _state.value = curr.copy(
+                        status = StormDownloadStatus.ERROR,
+                        errorMessage = t.message ?: "Ошибка загрузки",
+                        statsText = "❌ Ошибка: ${t.message ?: "сбой сети"}"
+                    )
+                }
+            }
         }
     }
 
@@ -526,6 +552,9 @@ object StormDownloadManager {
                 bufferedOut.flush()
 
                 if (!isPaused && !isCancelled) {
+                    if (totalBytes > 0 && totalRead < totalBytes) {
+                        throw java.io.IOException("Incomplete transfer: received $totalRead of $totalBytes bytes")
+                    }
                     completed = true
                     break
                 }

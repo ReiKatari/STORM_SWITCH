@@ -570,16 +570,22 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
 
         val appCtx = context?.applicationContext
-        val cached = if (appCtx != null) getCachedCatalog(appCtx) else emptyList()
-        if (cached.isNotEmpty()) {
-            allGames.clear()
-            allGames.addAll(cached)
-            filterGames(binding.editSearch.text?.toString().orEmpty())
-            binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
-            binding.progressLoading.isVisible = false
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val cached = if (appCtx != null) getCachedCatalog(appCtx) else emptyList()
+            withContext(Dispatchers.Main) {
+                if (_binding != null && cached.isNotEmpty()) {
+                    synchronized(allGames) {
+                        allGames.clear()
+                        allGames.addAll(cached)
+                    }
+                    filterGames(binding.editSearch.text?.toString().orEmpty())
+                    binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
+                    binding.progressLoading.isVisible = false
 
-            if (appCtx != null) {
-                scheduleDownloadedStatusCheck(appCtx)
+                    if (appCtx != null) {
+                        scheduleDownloadedStatusCheck(appCtx)
+                    }
+                }
             }
         }
 
@@ -590,8 +596,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     private fun scheduleDownloadedStatusCheck(ctx: Context) {
         downloadCheckJob?.cancel()
+        val snapshot = synchronized(allGames) { allGames.toList() }
         downloadCheckJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            checkDownloadedStatus(allGames, ctx)
+            checkDownloadedStatus(snapshot, ctx)
             withContext(Dispatchers.Main) {
                 if (_binding != null) {
                     binding.recyclerGames.adapter?.notifyDataSetChanged()
@@ -615,8 +622,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
                 withContext(Dispatchers.Main) {
                     if (_binding == null) return@withContext
-                    allGames.clear()
-                    allGames.addAll(freshGames)
+                    synchronized(allGames) {
+                        allGames.clear()
+                        allGames.addAll(freshGames)
+                    }
                     filterGames(binding.editSearch.text?.toString().orEmpty())
                     binding.progressLoading.isVisible = false
                     binding.btnRefresh.isEnabled = true
@@ -1193,9 +1202,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     }
                 }
 
-                // Check HEAD Content-Disposition only if current extension is default .nsp, to detect .nsz / .xci / .xcz
+                // Check HEAD Content-Disposition only if current extension is completely empty
                 var extChanged = false
-                if (game.realExtension.isEmpty() || game.realExtension == ".nsp") {
+                if (game.realExtension.isEmpty()) {
                     try {
                         val headReq = Request.Builder()
                             .url("https://stormgamesworld.ru/api/games/${game.rawGameId}/download")
@@ -1204,14 +1213,16 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             .build()
                         val headResp = httpClient.newCall(headReq).execute()
                         val disp = headResp.header("Content-Disposition").orEmpty().lowercase(Locale.ROOT)
-                        val oldExt = game.realExtension
                         if (disp.contains(".nsz")) game.realExtension = ".nsz"
                         else if (disp.contains(".xcz")) game.realExtension = ".xcz"
                         else if (disp.contains(".xci")) game.realExtension = ".xci"
-                        if (oldExt != game.realExtension) {
+                        else if (disp.contains(".nsp")) game.realExtension = ".nsp"
+                        if (game.realExtension.isNotEmpty()) {
                             extChanged = true
                         }
-                    } catch (_: Exception) {}
+                    } catch (e: Exception) {
+                        Log.error("[StormGamesWorld] HEAD request error: ${e.message}")
+                    }
                 }
 
                 withContext(Dispatchers.Main) {
@@ -1663,11 +1674,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             ),
             "01008F1008DA6000" to listOf( // Darkest Dungeon [Ancestral Edition]
                 CloudFormatVariant(".nsp", "3,26 GB", 3497294656L),
-                CloudFormatVariant(".nsz", "658 KB", 673780L)
+                CloudFormatVariant(".nsz", "1,82 GB", 1954283520L)
             ),
             "0100E5E01C098000" to listOf( // Darkest Dungeon II
                 CloudFormatVariant(".nsp", "4,00 GB", 4298739840L),
-                CloudFormatVariant(".nsz", "917 KB", 939088L)
+                CloudFormatVariant(".nsz", "2,45 GB", 2630667468L)
             ),
             "0100F2C0115B6000" to listOf( // The Legend of Zelda: Tears of the Kingdom (ONLY NSZ in cloud)
                 CloudFormatVariant(".nsz", "15,45 GB", 16591941089L)

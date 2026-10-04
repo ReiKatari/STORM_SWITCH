@@ -746,8 +746,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         // Force EDS completely disabled for stability on Snapdragon 700 series.
         LOG_INFO(Render_Vulkan, "Adreno 6xx auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
-    } else if ((is_turnip || is_qualcomm) && effective_dyna_state == Settings::ExtendedDynamicState::EDS3) {
-        LOG_INFO(Render_Vulkan, "Adreno/Turnip auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability and prevent hangs on Homebrew/Adreno 830");
+    } else if ((is_turnip || is_qualcomm) && effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
+        LOG_INFO(Render_Vulkan, "Adreno/Turnip auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability and prevent pipeline cache invalidation");
         effective_dyna_state = Settings::ExtendedDynamicState::EDS1;
     }
 

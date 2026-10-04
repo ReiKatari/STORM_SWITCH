@@ -83,7 +83,7 @@ void ThreadManager::InvalidateRegion(DAddr addr, u64 size) {
 
 void ThreadManager::FlushAndInvalidateRegion(DAddr addr, u64 size, bool is_async) {
     if (Settings::IsGPULevelHigh()) {
-        PushCommand(FlushRegionCommand(addr, size), false, is_async);
+        PushCommand(FlushRegionCommand(addr, size), true, is_async);
     }
     rasterizer->OnCacheInvalidation(addr, size);
 }
@@ -105,6 +105,13 @@ u64 ThreadManager::PushCommand(CommandData&& command_data, bool block, bool is_a
     }
 
     return fence;
+}
+
+void ThreadManager::NotifyShutdown() {
+    if (thread.joinable()) {
+        thread.request_stop();
+        thread.join();
+    }
 }
 
 } // namespace VideoCommon::GPUThread

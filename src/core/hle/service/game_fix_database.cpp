@@ -5916,7 +5916,7 @@ static GameFixProfile CreateEnrichedProfile(const GameFixProfile& base, u64 targ
     return enriched;
 }
 
-static GameFixProfile CreateUniversalProfile(u64 title_id, const std::string& name_hint = "") {
+[[maybe_unused]] static GameFixProfile CreateUniversalProfile(u64 title_id, const std::string& name_hint = "") {
     GameFixProfile universal;
     universal.title_id = title_id;
     if (!name_hint.empty()) {
@@ -6005,11 +6005,7 @@ const GameFixProfile* GameFixDatabase::GetProfile(u64 title_id) {
         return ptr;
     }
 
-    // Unprofiled game: synthesize universal profile dynamically!
-    auto universal = std::make_unique<GameFixProfile>(CreateUniversalProfile(title_id));
-    auto* ptr = universal.get();
-    s_enriched_cache[title_id] = std::move(universal);
-    return ptr;
+    return nullptr;
 }
 
 const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, const std::string& name_or_path) {
@@ -6491,10 +6487,7 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         return it->second.get();
     }
 
-    auto universal = std::make_unique<GameFixProfile>(CreateUniversalProfile(pseudo_tid, clean_name));
-    auto* ptr = universal.get();
-    s_enriched_cache[pseudo_tid] = std::move(universal);
-    return ptr;
+    return nullptr;
 }
 
 bool GameFixDatabase::HasProfile(u64 title_id) {
@@ -6576,17 +6569,8 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
                 sections["Core"][key] = mem_val;
                 sections["Core"][key + "\\use_global"] = "false";
                 sections["Core"][key + "\\default"] = "false";
-                sections["System"][key] = mem_val;
-                sections["System"][key + "\\use_global"] = "false";
-                sections["System"][key + "\\default"] = "false";
             }
             if (key == "airplane_mode") {
-                sections["System"][key] = val;
-                sections["System"][key + "\\use_global"] = "false";
-                sections["System"][key + "\\default"] = "false";
-                sections["Services"][key] = val;
-                sections["Services"][key + "\\use_global"] = "false";
-                sections["Services"][key + "\\default"] = "false";
                 sections["Network"][key] = val;
                 sections["Network"][key + "\\use_global"] = "false";
                 sections["Network"][key + "\\default"] = "false";

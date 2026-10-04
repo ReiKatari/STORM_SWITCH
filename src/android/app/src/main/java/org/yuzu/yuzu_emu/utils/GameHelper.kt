@@ -73,7 +73,9 @@ object GameHelper {
                         if (!isUpdateOrDlcPath(game.path) && !isUpdateOrDlcPath(game.title)) {
                             cachedGameList.add(upgradeGameVersionIfNeeded(game))
                         }
-                    } catch (_: Exception) {}
+                    } catch (e: Exception) {
+                        Log.error("[GameHelper] Error decoding cached game: ${e.message}")
+                    }
                 }
             }
             return cachedGameList.toList()
@@ -90,26 +92,32 @@ object GameHelper {
                     if (!isUpdateOrDlcPath(game.path) && !isUpdateOrDlcPath(game.title)) {
                         cachedGameList.add(upgradeGameVersionIfNeeded(game))
                     }
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    Log.error("[GameHelper] Error decoding stored game: ${e.message}")
+                }
             }
         }
 
         // Ensure keys are loaded so that ROM metadata can be decrypted.
         NativeLibrary.reloadKeys()
 
-        // Reset metadata so we don't use stale information
-        GameMetadata.resetMetadata()
-
-        // Remove previous filesystem provider information so we can get up to date version info
-        NativeLibrary.clearFilesystemProvider()
+        // Reset metadata so we don't use stale information only when cache is empty
+        if (cachedGameList.isEmpty()) {
+            GameMetadata.resetMetadata()
+            NativeLibrary.clearFilesystemProvider()
+        }
 
         val mountedContainerUris = mutableSetOf<String>()
         mountExternalContentDirectories(mountedContainerUris)
 
         val cachedMapByPath = cachedGameList.associateBy { it.path }
-        val cachedMapByName = cachedGameList.associateBy {
-            try { FileUtil.getFilename(it.path.toUri()) } catch (_: Exception) { "" }
-        }.filterKeys { it.isNotEmpty() }
+        val cachedMapByName = cachedGameList.groupBy {
+            try { FileUtil.getFilename(it.path.toUri()) } catch (e: Exception) {
+                Log.error("[GameHelper] Error extracting filename for ${it.path}: ${e.message}")
+                ""
+            }
+        }.filter { it.key.isNotEmpty() && it.value.size == 1 }
+         .mapValues { it.value.first() }
 
         // Fast unified single-pass: Mount containers and discover games simultaneously
         gameDirs.forEach { gameDir ->
@@ -372,7 +380,20 @@ object GameHelper {
 
                 if (Game.extensions.contains(extension)) {
                     try {
-                        val cached = cachedMapByPath[filePath] ?: cachedMapByName[it.filename]
+                        val cached = cachedMapByPath[filePath] ?: cachedMapByName[it.filename]?.let { old ->
+                            if (old.path != filePath) {
+                                Game(
+                                    title = old.title,
+                                    path = filePath,
+                                    programId = old.programId,
+                                    developer = old.developer,
+                                    version = old.version,
+                                    internalVersion = old.internalVersion,
+                                    isHomebrew = old.isHomebrew,
+                                    addonCount = old.addonCount
+                                )
+                            } else old
+                        }
                         if (cached != null) {
                             games.add(cached)
                         } else {

@@ -1081,6 +1081,11 @@ void TextureCacheRuntime::EraseResolveShadow(VkImage msaa_image) {
 }
 
 void TextureCacheRuntime::BarrierFeedbackLoop() {
+    const auto driver_id = device.GetDriverID();
+    if (driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY || driver_id == VK_DRIVER_ID_MESA_TURNIP ||
+        driver_id == VK_DRIVER_ID_ARM_PROPRIETARY) {
+        return;
+    }
     scheduler.RequestOutsideRenderPassOperationContext();
 }
 

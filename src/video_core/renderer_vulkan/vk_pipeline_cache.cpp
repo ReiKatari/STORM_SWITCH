@@ -318,6 +318,9 @@ size_t GetTotalPipelineWorkers() {
     const size_t max_core_threads =
         std::max<size_t>(hardware_threads, 2ULL) - 1ULL;
 #ifdef __ANDROID__
+    if (Settings::values.eco_thermal_mode.GetValue()) {
+        return 2ULL; // Cap pipeline worker threads to 2 under thermal throttle to cool CPU
+    }
     const int configured = AndroidSettings::values.pipeline_worker_count.GetValue();
     const int clamped = std::clamp(configured, 2, 8);
     const size_t desired = static_cast<size_t>(clamped);

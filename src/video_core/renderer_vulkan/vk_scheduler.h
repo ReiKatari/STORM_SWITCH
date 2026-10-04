@@ -57,6 +57,11 @@ public:
     /// safe to touch worker resources.
     void WaitWorker();
 
+    /// Returns true if a fatal device loss occurred on the Vulkan device.
+    bool IsLost() const {
+        return is_lost.load(std::memory_order_relaxed);
+    }
+
     /// Sends currently recorded work to the worker thread.
     void DispatchWork();
 
@@ -313,6 +318,7 @@ private:
     std::mutex reserve_mutex;
     std::mutex queue_mutex;
     std::condition_variable_any event_cv;
+    std::atomic<bool> is_lost{false};
     std::jthread worker_thread;
 };
 

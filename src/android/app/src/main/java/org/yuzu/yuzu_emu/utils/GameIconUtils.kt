@@ -25,12 +25,18 @@ import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.YuzuApplication
 import org.yuzu.yuzu_emu.model.Game
 
+import java.io.File
+
 class GameIconFetcher(
     private val game: Game,
     private val options: Options
 ) : Fetcher {
     override suspend fun fetch(): FetchResult {
-        val decoded = try { decodeGameIcon(game.path) } catch (_: Throwable) { null }
+        val decoded = try {
+            getOrCacheGameIcon(game, options.context)
+        } catch (_: Throwable) {
+            null
+        }
         val drawable = decoded?.toDrawable(options.context.resources)
             ?: androidx.core.content.ContextCompat.getDrawable(options.context, R.drawable.default_icon)!!
         return DrawableResult(
@@ -40,8 +46,42 @@ class GameIconFetcher(
         )
     }
 
+    private fun getOrCacheGameIcon(game: Game, context: android.content.Context): Bitmap? {
+        val cacheKey = if (game.programIdHex.isNotEmpty() && game.programIdHex != "0") {
+            game.programIdHex
+        } else {
+            "game_${Integer.toHexString(game.path.hashCode())}"
+        }
+        val iconDir = File(context.cacheDir, "game_icons")
+        if (!iconDir.exists()) {
+            iconDir.mkdirs()
+        }
+        val iconFile = File(iconDir, "$cacheKey.png")
+        if (iconFile.exists() && iconFile.length() > 0) {
+            val cachedBmp = BitmapFactory.decodeFile(iconFile.absolutePath)
+            if (cachedBmp != null) {
+                return cachedBmp
+            }
+        }
+
+        val decoded = decodeGameIcon(game.path) ?: return null
+        try {
+            val tempFile = File(iconDir, "$cacheKey.tmp")
+            tempFile.outputStream().use { out ->
+                decoded.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+            if (tempFile.exists()) {
+                tempFile.renameTo(iconFile)
+            }
+        } catch (e: Exception) {
+            Log.error("[GameIconFetcher] Failed to cache icon to disk: ${e.message}")
+        }
+        return decoded
+    }
+
     private fun decodeGameIcon(uri: String): Bitmap? {
         val data = GameMetadata.getIcon(uri)
+        if (data.isEmpty()) return null
         return BitmapFactory.decodeByteArray(
             data,
             0,

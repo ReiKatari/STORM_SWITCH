@@ -232,15 +232,11 @@ public:
         if (!picture.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()))) {
             picture = GetDefaultIcon(size);
         }
+
+        QPixmap tip_pix = picture.scaled(96, 96, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         picture = picture.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
         setData(picture, Qt::DecorationRole);
-
-        QPixmap tip_pix;
-        if (!tip_pix.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()))) {
-            tip_pix = GetDefaultIcon(96);
-        }
-        tip_pix = tip_pix.scaled(96, 96, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
         QByteArray bArray;
         QBuffer buffer(&bArray);

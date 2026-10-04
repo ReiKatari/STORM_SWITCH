@@ -611,6 +611,9 @@ private:
         std::pair<Settings::CpuBackend, bool> cpu_backend;
         std::pair<Settings::FramePacingMode, bool> frame_pacing_mode;
         std::pair<bool, bool> dynamic_performance_scaler;
+        bool disable_macro_jit{false};
+        bool use_auto_stub{false};
+        bool disable_web_applet{true};
 
         void Capture();
         void Restore();
