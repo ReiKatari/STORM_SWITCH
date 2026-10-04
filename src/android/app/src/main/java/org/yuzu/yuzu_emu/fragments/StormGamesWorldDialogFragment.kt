@@ -1674,7 +1674,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             ),
             "01008F1008DA6000" to listOf( // Darkest Dungeon [Ancestral Edition]
                 CloudFormatVariant(".nsp", "3,26 GB", 3497294656L),
-                CloudFormatVariant(".nsz", "1,82 GB", 1954283520L)
+                CloudFormatVariant(".nsz", "1,16 GB", 1243524535L)
             ),
             "0100E5E01C098000" to listOf( // Darkest Dungeon II
                 CloudFormatVariant(".nsp", "4,00 GB", 4298739840L),

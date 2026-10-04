@@ -228,7 +228,7 @@ static const QMap<QString, QVector<KnownCloudVariant>>& GetKnownCloudVariants() 
         }},
         {QStringLiteral("01008F1008DA6000"), { // Darkest Dungeon [Ancestral Edition]
             {QStringLiteral(".nsp"), QStringLiteral("3,26 GB"), 3497294656LL},
-            {QStringLiteral(".nsz"), QStringLiteral("658 KB"), 673780LL}
+            {QStringLiteral(".nsz"), QStringLiteral("1,16 GB"), 1243524535LL}
         }},
         {QStringLiteral("0100E5E01C098000"), { // Darkest Dungeon II
             {QStringLiteral(".nsp"), QStringLiteral("4,00 GB"), 4298739840LL},
