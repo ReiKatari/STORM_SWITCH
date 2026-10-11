@@ -824,23 +824,81 @@ bool TextureCache<P>::BlitImage(const Tegra::Engines::Fermi2D::Surface& dst,
 template <class P>
 std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImageView(
     const Tegra::FramebufferConfig& config, DAddr cpu_addr) {
-    // TODO: Properly implement this
-    const auto it = page_table.find(cpu_addr >> YUZU_PAGEBITS);
+    const size_t bytes_per_pixel = (config.pixel_format == Service::android::PixelFormat::Rgb565) ? 2 : 4;
+    const size_t fb_size = (config.stride > 0 ? config.stride : config.width) * config.height * bytes_per_pixel;
+
+    auto it = page_table.find(cpu_addr >> YUZU_PAGEBITS);
+    if (it == page_table.end() && config.address != 0 && config.address != cpu_addr) {
+        it = page_table.find(config.address >> YUZU_PAGEBITS);
+    }
+    if (it == page_table.end() && fb_size > 0) {
+        const DAddr start_addr = (config.address != 0) ? config.address : cpu_addr;
+        const u64 start_page = start_addr >> YUZU_PAGEBITS;
+        const u64 end_page = (start_addr + fb_size - 1) >> YUZU_PAGEBITS;
+        for (u64 page = start_page; page <= end_page; ++page) {
+            auto candidate_it = page_table.find(page);
+            if (candidate_it != page_table.end()) {
+                it = candidate_it;
+                break;
+            }
+        }
+    }
     if (it == page_table.end()) {
         return {};
     }
-    const auto& image_map_ids = it->second;
+
     boost::container::small_vector<ImageId, 4> valid_image_ids;
-    for (const ImageMapId map_id : image_map_ids) {
-        const ImageMapView& map = slot_map_views[map_id];
-        const ImageBase& image = slot_images[map.image_id];
-        if (image.cpu_addr != cpu_addr) {
+    bool any_overlap_gpu_modified = false;
+
+    const DAddr search_base = (config.address != 0) ? config.address : cpu_addr;
+    const u64 start_page = search_base >> YUZU_PAGEBITS;
+    const u64 end_page = (fb_size > 0) ? ((search_base + fb_size - 1) >> YUZU_PAGEBITS) : start_page;
+
+    for (u64 page = start_page; page <= end_page; ++page) {
+        const auto page_it = page_table.find(page);
+        if (page_it == page_table.end()) {
             continue;
         }
-        if (image.image_view_ids.empty()) {
-            continue;
+        for (const ImageMapId map_id : page_it->second) {
+            const ImageMapView& map = slot_map_views[map_id];
+            const ImageBase& image = slot_images[map.image_id];
+
+            if (True(image.flags & ImageFlagBits::GpuModified)) {
+                any_overlap_gpu_modified = true;
+            }
+
+            if (image.info.type != ImageType::e2D && image.info.type != ImageType::Linear) {
+                continue;
+            }
+            if (GetFormatType(image.info.format) != SurfaceType::ColorTexture) {
+                continue;
+            }
+
+            // CRITICAL: Accelerated display requires the GPU to have actually rendered to this texture!
+            // If the GPU never modified it, the texture is empty/uninitialized on the GPU and the actual
+            // frame content resides in CPU guest memory. Presenting it would display a solid black/blank screen.
+            if (!True(image.flags & ImageFlagBits::GpuModified)) {
+                continue;
+            }
+            if (image.image_view_ids.empty()) {
+                continue;
+            }
+
+            const bool addr_match =
+                (image.cpu_addr == cpu_addr) ||
+                (config.address != 0 && image.cpu_addr == config.address) ||
+                (cpu_addr >= image.cpu_addr && cpu_addr < image.cpu_addr + image.guest_size_bytes) ||
+                (config.address != 0 && config.address >= image.cpu_addr && config.address < image.cpu_addr + image.guest_size_bytes) ||
+                (map.cpu_addr <= cpu_addr && cpu_addr < map.cpu_addr + map.size);
+
+            if (!addr_match) {
+                continue;
+            }
+
+            if (std::find(valid_image_ids.begin(), valid_image_ids.end(), map.image_id) == valid_image_ids.end()) {
+                valid_image_ids.push_back(map.image_id);
+            }
         }
-        valid_image_ids.push_back(map.image_id);
     }
 
     const auto view_format = [&]() {
@@ -870,11 +928,27 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
         return GetImageViewForFramebuffer(valid_image_ids.front());
     }
 
-    if (valid_image_ids.size() > 0) [[unlikely]] {
-        auto most_recent = std::ranges::max_element(valid_image_ids, [&](auto a, auto b) {
-            return slot_images[a].modification_tick < slot_images[b].modification_tick;
+    if (!valid_image_ids.empty()) [[unlikely]] {
+        auto most_recent = std::ranges::max_element(valid_image_ids, [&](ImageId a, ImageId b) {
+            const auto& img_a = slot_images[a];
+            const auto& img_b = slot_images[b];
+            const bool exact_a = (img_a.info.size.width == config.width && img_a.info.size.height == config.height);
+            const bool exact_b = (img_b.info.size.width == config.width && img_b.info.size.height == config.height);
+            if (exact_a != exact_b) {
+                return !exact_a && exact_b;
+            }
+            const bool mod_a = True(img_a.flags & ImageFlagBits::GpuModified);
+            const bool mod_b = True(img_b.flags & ImageFlagBits::GpuModified);
+            if (mod_a != mod_b) {
+                return !mod_a && mod_b;
+            }
+            return img_a.modification_tick < img_b.modification_tick;
         });
         return GetImageViewForFramebuffer(*most_recent);
+    }
+
+    if (any_overlap_gpu_modified && fb_size > 0) {
+        DownloadMemory(cpu_addr, fb_size);
     }
 
     return {};

@@ -4,6 +4,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 project(yuzu)
+add_compile_definitions(ZBIC_ZBIC_SUPPORT=1)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/find")

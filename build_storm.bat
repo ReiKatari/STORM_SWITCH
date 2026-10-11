@@ -13,11 +13,14 @@ if errorlevel 1 (
     exit /b 1
 )
 
-set "PATH=%PATH%;C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin;C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja;E:\STORM EDEN 3\tools\glslang\bin;C:\Users\ReiKatari\glslang\bin"
+set "PATH=%~dp0tools\glslang\bin;%PATH%;C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin;C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja"
 
-set "SRC_DIR=E:\STORM SWITCH 4\Build"
-set "BUILD_DIR=E:\STORM SWITCH 4\Build\build_ninja"
-set "OUTPUT_DIR=E:\STORM SWITCH 4\Assembling"
+set "SRC_DIR=%~dp0"
+if "%SRC_DIR:~-1%"=="\" set "SRC_DIR=%SRC_DIR:~0,-1%"
+set "BUILD_DIR=%SRC_DIR%\build_ninja"
+set "OUTPUT_DIR=%SRC_DIR%\..\Assembling"
+set "Qt6_DIR=%SRC_DIR%\.cache\cpm\qt6\6.11.1-windows-amd64\lib\cmake\Qt6"
+set "CPM_SOURCE_CACHE=%SRC_DIR%\.cache\cpm"
 
 set "CMAKE=C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
 set "NINJA=C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe"
@@ -28,11 +31,13 @@ cd /d "%BUILD_DIR%"
 echo [1/3] Running CMake configuration...
 "%CMAKE%" -G "Ninja" -DCMAKE_MAKE_PROGRAM="%NINJA%" ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DGIT_TAG="10.4.0" ^
-    -DGIT_RELEASE="10.4.0" ^
+    -DGIT_TAG="10.5.0" ^
+    -DGIT_RELEASE="10.5.0" ^
     -DENABLE_QT=ON ^
     -DENABLE_QT_TRANSLATION=ON ^
     -DYUZU_USE_BUNDLED_QT=ON ^
+    -DQt6_DIR="%Qt6_DIR%" ^
+    -DCPM_SOURCE_CACHE="%CPM_SOURCE_CACHE%" ^
     -DYUZU_CMD=ON ^
     -DYUZU_ROOM=ON ^
     -DYUZU_ROOM_STANDALONE=ON ^
@@ -69,6 +74,7 @@ copy /Y "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Redist\MSVC\14.
 if not exist "%OUTPUT_DIR%\user" (
     mkdir "%OUTPUT_DIR%\user"
     mkdir "%OUTPUT_DIR%\user\config"
+    mkdir "%OUTPUT_DIR%\user\config\custom"
     mkdir "%OUTPUT_DIR%\user\keys"
     mkdir "%OUTPUT_DIR%\user\nand"
     mkdir "%OUTPUT_DIR%\user\load"
@@ -76,21 +82,6 @@ if not exist "%OUTPUT_DIR%\user" (
     mkdir "%OUTPUT_DIR%\user\sdmc"
     mkdir "%OUTPUT_DIR%\user\shader"
     mkdir "%OUTPUT_DIR%\user\cache"
-)
-
-if not exist "%OUTPUT_DIR%\user\config\qt-config.ini" (
-    if exist "E:\STORM SWITCH 3\Assembling\user\config\qt-config.ini" (
-        copy /Y "E:\STORM SWITCH 3\Assembling\user\config\qt-config.ini" "%OUTPUT_DIR%\user\config\"
-    )
-)
-if not exist "%OUTPUT_DIR%\user\config\custom" (
-    if exist "E:\STORM SWITCH 3\Assembling\user\config\custom" (
-        xcopy /E /Y /I "E:\STORM SWITCH 3\Assembling\user\config\custom" "%OUTPUT_DIR%\user\config\custom\"
-    )
-)
-
-if exist "L:\CONSOLES\Nintendo Switch\STORM EDEN\user\keys" (
-    xcopy /Y /I "L:\CONSOLES\Nintendo Switch\STORM EDEN\user\keys\*" "%OUTPUT_DIR%\user\keys\"
 )
 
 echo ===================================================

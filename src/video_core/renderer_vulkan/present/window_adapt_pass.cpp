@@ -51,7 +51,8 @@ void WindowAdaptPass::Draw(const Device& device, RasterizerVulkan& rasterizer, S
 
     auto layer_it = layers.begin();
     for (size_t i = 0; i < layer_count; i++) {
-        switch (configs[i].blending) {
+        const auto blending = (i == 0) ? Tegra::BlendMode::Opaque : configs[i].blending;
+        switch (blending) {
         case Tegra::BlendMode::Opaque:
         default:
             graphics_pipelines[i] = *opaque_pipeline;

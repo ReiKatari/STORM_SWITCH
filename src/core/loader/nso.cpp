@@ -250,7 +250,9 @@ std::optional<AppLoader_NSO::DecompressedModule> AppLoader_NSO::DecompressModule
 #ifdef HAS_NCE
     // If we are computing the process code layout and using nce backend, patch.
     const auto& code = codeset.CodeSegment();
-    auto* patch = patches ? &patches->operator[](patch_index) : nullptr;
+    auto* patch = (patches && patch_index >= 0 && static_cast<size_t>(patch_index) < patches->size())
+                      ? &patches->operator[](patch_index)
+                      : nullptr;
     if (patch && !load_into_process) {
         //Set module ID using build_id from the NSO header
         patch->SetModuleID(nso_header.build_id);
@@ -353,7 +355,8 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
 
     const size_t module_start = [&]() -> size_t {
 #ifdef HAS_NCE
-        if (patches && load_into_process) {
+        if (patches && load_into_process && patch_index >= 0 &&
+            static_cast<size_t>(patch_index) < patches->size()) {
             auto* patch = &patches->operator[](patch_index);
             if (patch->GetPatchMode() == Core::NCE::PatchMode::PreText) {
                 return patch->GetSectionSize();

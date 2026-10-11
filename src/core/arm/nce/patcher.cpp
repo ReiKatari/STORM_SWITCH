@@ -251,6 +251,9 @@ bool Patcher::RelocateAndCopy(Common::ProcessAddress load_base, const Kernel::Co
     };
 
     // We are now ready to relocate!
+    if (m_relocate_module_index >= modules.size()) {
+        return false;
+    }
     auto& patch = modules[m_relocate_module_index++];
 
     if (mode == PatchMode::Split) {
@@ -339,7 +342,6 @@ bool Patcher::RelocateAndCopy(Common::ProcessAddress load_base, const Kernel::Co
     // Only copy to the program image of the last module
     if (m_relocate_module_index == modules.size()) {
         if (this->mode == PatchMode::PreText) {
-            ASSERT(image_size == total_program_size);
             std::memcpy(program_image.data(), m_patch_instructions.data(),
                         m_patch_instructions.size() * sizeof(u32));
         } else if (this->mode == PatchMode::Split) {

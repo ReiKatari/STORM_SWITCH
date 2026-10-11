@@ -179,6 +179,11 @@ void DownloadColorImage(vk::CommandBuffer& cmdbuf, VkImage image, VkBuffer buffe
 }
 
 vk::ImageView CreateWrappedImageView(const Device& device, vk::Image& image, VkFormat format) {
+    return CreateWrappedImageView(device, image, format, VkComponentMapping{});
+}
+
+vk::ImageView CreateWrappedImageView(const Device& device, vk::Image& image, VkFormat format,
+                                     VkComponentMapping components) {
     return device.GetLogical().CreateImageView(VkImageViewCreateInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .pNext = nullptr,
@@ -186,7 +191,7 @@ vk::ImageView CreateWrappedImageView(const Device& device, vk::Image& image, VkF
         .image = *image,
         .viewType = VK_IMAGE_VIEW_TYPE_2D,
         .format = format,
-        .components{},
+        .components = components,
         .subresourceRange{.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                           .baseMipLevel = 0,
                           .levelCount = 1,
