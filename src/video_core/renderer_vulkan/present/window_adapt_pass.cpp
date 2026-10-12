@@ -51,8 +51,7 @@ void WindowAdaptPass::Draw(const Device& device, RasterizerVulkan& rasterizer, S
 
     auto layer_it = layers.begin();
     for (size_t i = 0; i < layer_count; i++) {
-        const auto blending = (i == 0) ? Tegra::BlendMode::Opaque : configs[i].blending;
-        switch (blending) {
+        switch (configs[i].blending) {
         case Tegra::BlendMode::Opaque:
         default:
             graphics_pipelines[i] = *opaque_pipeline;
@@ -98,7 +97,7 @@ void WindowAdaptPass::Draw(const Device& device, RasterizerVulkan& rasterizer, S
         for (size_t i = 0; i < layer_count; i++) {
             cmdbuf.BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipelines[i]);
             cmdbuf.PushConstants(graphics_pipeline_layout,
-                                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                 VK_SHADER_STAGE_VERTEX_BIT,
                                  push_constants[i]);
             cmdbuf.BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_layout, 0,
                                       descriptor_sets[i], {});
@@ -124,7 +123,7 @@ void WindowAdaptPass::CreateDescriptorSetLayout(const Device& device) {
 
 void WindowAdaptPass::CreatePipelineLayout(const Device& device) {
     const VkPushConstantRange range{
-        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
         .offset = 0,
         .size = sizeof(PresentPushConstants),
     };

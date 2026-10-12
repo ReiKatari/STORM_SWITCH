@@ -177,17 +177,10 @@ void Layer::CreateRawImages(const Device& device, const Tegra::FramebufferConfig
     raw_images.resize(image_count);
     raw_image_views.resize(image_count);
 
-    const VkComponentMapping raw_components{
-        .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-        .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-        .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-        .a = VK_COMPONENT_SWIZZLE_ONE,
-    };
-
     for (size_t i = 0; i < image_count; ++i) {
         raw_images[i] =
             CreateWrappedImage(memory_allocator, {framebuffer.width, framebuffer.height}, format);
-        raw_image_views[i] = CreateWrappedImageView(device, raw_images[i], format, raw_components);
+        raw_image_views[i] = CreateWrappedImageView(device, raw_images[i], format);
     }
 }
 

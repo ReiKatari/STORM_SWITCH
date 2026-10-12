@@ -120,17 +120,19 @@ static const std::vector<GameFixProfile> s_profiles = {
         {
             {"Renderer\\nvdec_emulation", "3"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\enable_compute_pipelines", "true"},
-            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
             {"Renderer\\async_presentation", "true"},
-            {"Renderer\\use_fast_gpu_time", "false"},
-            {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\early_release_fences", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"}
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"}
         },
         {0x01008F1008DA6800ULL, 0x01008F1008C06000ULL}
     },
@@ -5409,19 +5411,9 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
         "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
         {
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\enable_compute_pipelines", "true"},
-            {"Renderer\\barrier_feedback_loops", "true"},
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\nvdec_emulation", "3"},
-            {"Renderer\\use_fast_gpu_time", "false"},
-            {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"}
+            {"Renderer\\async_presentation", "false"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\astc_recompression", "0"}
         }
     },
     {

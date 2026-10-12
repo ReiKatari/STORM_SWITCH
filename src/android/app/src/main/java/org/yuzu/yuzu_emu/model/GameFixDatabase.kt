@@ -35,17 +35,19 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
                 "Renderer\\async_presentation" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "System\\airplane_mode" to "true"
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -58,17 +60,19 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
                 "Renderer\\async_presentation" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "System\\airplane_mode" to "true"
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -81,17 +85,19 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
                 "Renderer\\async_presentation" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\early_release_fences" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "System\\airplane_mode" to "true"
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -6021,19 +6027,9 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "3",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "System\\airplane_mode" to "true"
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
         GameFixProfile(
@@ -6855,8 +6851,8 @@ object GameFixDatabase {
             lines.add("  • <b>Сглаживание:</b> По умолчанию")
             lines.add("  • <b>Фильтр масштабирования:</b> По умолчанию")
             lines.add("  • <b>Асинхронные шейдеры:</b> Включено (плавный геймплей)")
-            lines.add("  • <b>Обратное чтение буферов ГПУ:</b> Отключено")
-            lines.add("  • <b>Вычислительные конвейеры:</b> Отключено (стабильность драйвера)")
+            val compute = map["Renderer\\enable_compute_pipelines"] ?: "true"
+            lines.add(if (compute == "true" || compute == "1") "  • <b>Вычислительные конвейеры:</b> Включено (стабильность Vulkan)" else "  • <b>Вычислительные конвейеры:</b> Отключено")
             val syncMem = map["Renderer\\sync_memory_operations"] ?: "true"
             lines.add(if (syncMem == "true" || syncMem == "1") "  • <b>Синхронизация памяти ГПУ:</b> Включено (стабильные 2D/3D буферы)" else "  • <b>Синхронизация памяти ГПУ:</b> Отключено")
             lines.add("  • <b>Быстрое время ГПУ:</b> Отключено (стабильная синхронизация кадров)")
@@ -6880,7 +6876,8 @@ object GameFixDatabase {
                 else -> "4 ГБ DRAM"
             })
             lines.add("\n🛠️ <b>Система и сеть:</b>")
-            lines.add("  • <b>Режим «В самолете»:</b> Отключено (сеть активна)")
+            val airplane = map["System\\airplane_mode"] ?: "false"
+            lines.add(if (airplane == "true" || airplane == "1") "  • <b>Режим «В самолете»:</b> Включено (устраняет сетевые таймауты и сбои)" else "  • <b>Режим «В самолете»:</b> Отключено (сеть активна)")
         } else {
             lines.add("🎮 <b>Graphics and video:</b>")
             lines.add(if (gpuAcc == "1") "  • <b>GPU accuracy:</b> High (stable geometry and textures)" else "  • <b>GPU accuracy:</b> Normal (smooth 60 FPS, eliminates 200 ms latency)")
@@ -6902,7 +6899,8 @@ object GameFixDatabase {
             lines.add("  • <b>Scaling filter:</b> Default")
             lines.add("  • <b>Async shaders:</b> Enabled (smooth gameplay)")
             lines.add("  • <b>GPU buffer readback:</b> Disabled")
-            lines.add("  • <b>Compute pipelines:</b> Disabled (driver stability)")
+            val computeEn = map["Renderer\\enable_compute_pipelines"] ?: "true"
+            lines.add(if (computeEn == "true" || computeEn == "1") "  • <b>Compute pipelines:</b> Enabled (Vulkan stability)" else "  • <b>Compute pipelines:</b> Disabled")
             val syncMemEn = map["Renderer\\sync_memory_operations"] ?: "true"
             lines.add(if (syncMemEn == "true" || syncMemEn == "1") "  • <b>Sync GPU memory operations:</b> Enabled (stable 2D/3D buffers)" else "  • <b>Sync GPU memory operations:</b> Disabled")
             lines.add("  • <b>Fast GPU time:</b> Disabled (stable frame pacing)")
@@ -6926,7 +6924,8 @@ object GameFixDatabase {
                 else -> "4GB DRAM"
             })
             lines.add("\n🛠️ <b>System and network:</b>")
-            lines.add("  • <b>Airplane mode:</b> Disabled (network active)")
+            val airplaneEn = map["System\\airplane_mode"] ?: "false"
+            lines.add(if (airplaneEn == "true" || airplaneEn == "1") "  • <b>Airplane mode:</b> Enabled (prevents network timeouts)" else "  • <b>Airplane mode:</b> Disabled (network active)")
         }
         return lines.joinToString("\n")
     }
