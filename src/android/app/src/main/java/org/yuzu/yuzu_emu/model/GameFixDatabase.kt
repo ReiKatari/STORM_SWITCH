@@ -30,27 +30,22 @@ object GameFixDatabase {
             "Darkest Dungeon",
             "• Зависание и вылет вступительного видеоролика при программном декодировании NVDEC ЦП\n• Просадки кадровой частоты в подземельях\n• Сбои распределения памяти",
             "• Freezing and crash in opening cinematic with CPU NVDEC video decoding\n• Framerate drops in dungeons\n• Memory allocation faults",
-            "✓ Декодирование видео NVDEC: ЦП (FFmpeg) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ NVDEC Video Emulation: CPU (FFmpeg) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
+            "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
+            "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
-                "Renderer\\nvdec_emulation" to "1",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\async_presentation" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Cpu\\cpu_accuracy" to "0",
-                "Cpu\\cpu_backend" to "0",
-                "System\\airplane_mode" to "false",
-                "Core\\memory_layout_mode" to "0",
-                "System\\memory_layout_mode" to "0"
+                "System\\airplane_mode" to "true"
             )
         ),
         GameFixProfile(
@@ -58,27 +53,22 @@ object GameFixDatabase {
             "Darkest Dungeon (Update)",
             "• Зависание и вылет вступительного видеоролика при программном декодировании NVDEC ЦП\n• Просадки кадровой частоты в подземельях\n• Сбои распределения памяти",
             "• Freezing and crash in opening cinematic with CPU NVDEC video decoding\n• Framerate drops in dungeons\n• Memory allocation faults",
-            "✓ Декодирование видео NVDEC: ЦП (FFmpeg) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ NVDEC Video Emulation: CPU (FFmpeg) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
+            "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
+            "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
-                "Renderer\\nvdec_emulation" to "1",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\async_presentation" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Cpu\\cpu_accuracy" to "0",
-                "Cpu\\cpu_backend" to "0",
-                "System\\airplane_mode" to "false",
-                "Core\\memory_layout_mode" to "0",
-                "System\\memory_layout_mode" to "0"
+                "System\\airplane_mode" to "true"
             )
         ),
         GameFixProfile(
@@ -86,25 +76,22 @@ object GameFixDatabase {
             "Darkest Dungeon (Base)",
             "• Зависание и вылет вступительного видеоролика при программном декодировании NVDEC ЦП\n• Просадки кадровой частоты в подземельях\n• Сбои распределения памяти",
             "• Freezing and crash in opening cinematic with CPU NVDEC video decoding\n• Framerate drops in dungeons\n• Memory allocation faults",
-            "✓ Декодирование видео NVDEC: ЦП (FFmpeg) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ NVDEC Video Emulation: CPU (FFmpeg) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
+            "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
+            "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
-                "Renderer\\nvdec_emulation" to "1",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\gpu_accuracy" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\async_presentation" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Cpu\\cpu_accuracy" to "0",
-                "Cpu\\cpu_backend" to "0",
-                "System\\airplane_mode" to "false"
+                "System\\airplane_mode" to "true"
             )
         ),
         GameFixProfile(
@@ -6034,11 +6021,19 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\async_presentation" to "false",
-                "Renderer\\sync_memory_operations" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "System\\airplane_mode" to "true"
             )
         ),
         GameFixProfile(
@@ -6794,14 +6789,14 @@ object GameFixDatabase {
             "Renderer\\dma_accuracy" to "0",
             "Renderer\\async_presentation" to "true",
             "Renderer\\drs_resolution_lock" to "false",
-            "Renderer\\barrier_feedback_loops" to "false",
+            "Renderer\\barrier_feedback_loops" to "true",
             "Renderer\\use_reactive_flushing" to "false",
             "Renderer\\use_asynchronous_shaders" to "true",
             "Renderer\\scaling_filter" to "1",
             "Renderer\\anti_aliasing" to "0",
             "Renderer\\dyna_state" to defaultDynaState,
             "Renderer\\enable_gpu_buffer_readback" to "false",
-            "Renderer\\enable_compute_pipelines" to "false",
+            "Renderer\\enable_compute_pipelines" to "true",
             "Renderer\\sync_memory_operations" to "false",
             "Renderer\\use_fast_gpu_time" to "false",
             "Renderer\\early_release_fences" to "false",
@@ -6816,26 +6811,12 @@ object GameFixDatabase {
             "System\\memory_layout_mode" to "0"
         )
         fullMap.putAll(profile.settingsMap)
-        if (fullMap["Renderer\\nvdec_emulation"] == "2") {
+        if (fullMap["Renderer\\nvdec_emulation"] == "2" || fullMap["Renderer\\nvdec_emulation"] == "1") {
             fullMap["Renderer\\nvdec_emulation"] = "3"
         }
         if (!profile.settingsMap.containsKey("Renderer\\dyna_state")) {
             fullMap["Renderer\\dyna_state"] = defaultDynaState
         }
-        // CRITICAL ANDROID HARDWARE SAFETY OVERRIDES:
-        // Qualcomm and Turnip drivers on Adreno GPUs (Snapdragon 8 Elite / Adreno 830) and Mali GPUs
-        // deadlock when compute pipelines, fast GPU time, barrier feedback loops, early release fences,
-        // sync memory operations or >4GB DRAM are enabled with NCE.
-        fullMap["Renderer\\enable_compute_pipelines"] = "false"
-        fullMap["Renderer\\use_fast_gpu_time"] = "false"
-        fullMap["Renderer\\barrier_feedback_loops"] = "false"
-        fullMap["Renderer\\early_release_fences"] = "false"
-        fullMap["Renderer\\sync_memory_operations"] = "false"
-        fullMap["Renderer\\async_presentation"] = "true"
-        fullMap["Core\\memory_layout_mode"] = "0"
-        fullMap["System\\memory_layout_mode"] = "0"
-        fullMap["System\\airplane_mode"] = "false"
-        fullMap["Cpu\\cpu_backend"] = targetCpuBackend
         return fullMap
     }
 

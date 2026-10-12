@@ -115,27 +115,22 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Darkest Dungeon",
         "• Зависание и вылет вступительного видеоролика при программном декодировании NVDEC ЦП\n• Просадки кадровой частоты в подземельях\n• Сбои распределения памяти",
         "• Freezing and crash in opening cinematic with CPU NVDEC video decoding\n• Framerate drops in dungeons\n• Memory allocation faults",
-        "✓ Декодирование видео NVDEC: ЦП (FFmpeg) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
-        "✓ NVDEC Video Emulation: CPU (FFmpeg) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
+        "✓ Декодирование видео NVDEC: Гибридное (Hybrid 3) — стабильное воспроизведение вступительных роликов\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Режим «В самолете»: Включено\n✓ Точность ГПУ: Обычная",
+        "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) — stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
         {
-            {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\vram_garbage_collection", "false"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Renderer\\dma_accuracy", "0"},
-            {"Renderer\\async_presentation", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Cpu\\cpu_accuracy", "0"},
-            {"Cpu\\cpu_backend", "0"},
-            {"System\\airplane_mode", "false"},
-            {"Core\\memory_layout_mode", "0"},
-            {"System\\memory_layout_mode", "0"}
+            {"System\\airplane_mode", "true"}
         },
         {0x01008F1008DA6800ULL, 0x01008F1008C06000ULL}
     },
@@ -5411,14 +5406,22 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Well Dweller",
         "• Рассинхронизация 2D-кадров\n• Потеря резкости пиксель-арта колодца",
         "• 2D frame presentation pacing jitter\n• Well pixel art sharpness degradation",
-        "",
-        "",
+        "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+        "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
         {
-            {"Renderer\\async_presentation", "false"},
-            {"Renderer\\sync_memory_operations", "true"},
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\nvdec_emulation", "1"}
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"System\\airplane_mode", "true"}
         }
     },
     {
@@ -6736,21 +6739,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 full_key == "Renderer\\backend") {
                 continue;
             }
-#ifdef __ANDROID__
-            if (full_key == "Renderer\\early_release_fences" ||
-                full_key == "Renderer\\use_fast_gpu_time" ||
-                full_key == "Renderer\\enable_compute_pipelines" ||
-                full_key == "Renderer\\barrier_feedback_loops" ||
-                full_key == "Renderer\\sync_memory_operations" ||
-                full_key == "System\\airplane_mode" ||
-                full_key == "Services\\airplane_mode" ||
-                full_key == "Network\\airplane_mode") {
-                continue;
-            }
-            if (full_key == "Renderer\\async_presentation" && (val == "false" || val == "0")) {
-                continue;
-            }
-#endif
+
             if (full_key == "Renderer\\dma_accuracy" && val == "0") {
                 continue;
             }
@@ -6790,11 +6779,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
 #endif
                 apply_setting(Settings::values.nvdec_emulation, nvdec_val);
             } else if (full_key == "Renderer\\async_presentation") {
-#ifdef __ANDROID__
-                apply_setting(Settings::values.async_presentation, true);
-#else
                 apply_setting(Settings::values.async_presentation, val == "true" || val == "1");
-#endif
             } else if (full_key == "Renderer\\accelerate_astc") {
                 apply_setting(Settings::values.accelerate_astc, static_cast<Settings::AstcDecodeMode>(safe_stoi(val, 1)));
             } else if (full_key == "Renderer\\gpu_fence_behavior") {
@@ -6861,38 +6846,6 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 apply_setting(Settings::values.use_auto_stub, val == "true" || val == "1");
             }
         }
-#ifdef __ANDROID__
-        Settings::values.early_release_fences.SetGlobal(false);
-        Settings::values.early_release_fences.SetValue(false);
-
-        Settings::values.barrier_feedback_loops.SetGlobal(false);
-        Settings::values.barrier_feedback_loops.SetValue(false);
-
-        Settings::values.enable_compute_pipelines.SetGlobal(false);
-        Settings::values.enable_compute_pipelines.SetValue(false);
-
-        Settings::values.use_fast_gpu_time.SetGlobal(false);
-        Settings::values.use_fast_gpu_time.SetValue(false);
-
-        Settings::values.sync_memory_operations.SetGlobal(false);
-        Settings::values.sync_memory_operations.SetValue(false);
-
-        Settings::values.async_presentation.SetGlobal(false);
-        Settings::values.async_presentation.SetValue(true);
-
-        Settings::values.airplane_mode.SetGlobal(false);
-        Settings::values.airplane_mode.SetValue(false);
-
-        Settings::values.memory_layout_mode.SetGlobal(false);
-        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
-
-#if defined(HAS_NCE)
-        if (Settings::values.cpu_backend.GetValue() != Settings::CpuBackend::Dynarmic) {
-            Settings::values.cpu_backend.SetGlobal(false);
-            Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Nce);
-        }
-#endif
-#endif
         Settings::UpdateGPUAccuracy();
         Settings::UpdateRescalingInfo();
         LOG_INFO(Frontend, "Directly applied GameFix profile in-memory for {:#016x}", title_id);

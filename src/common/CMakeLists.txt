@@ -248,10 +248,13 @@ endif()
 target_link_libraries(common PUBLIC fmt::fmt stb::headers Threads::Threads unordered_dense::unordered_dense)
 target_link_libraries(common PRIVATE lz4::lz4 zstd::zstd)
 
+# Ensure Nintendo Switch ZBIC decompression support is active across all platforms
+set_source_files_properties(zbic.c PROPERTIES COMPILE_DEFINITIONS "ZBIC_ZBIC_SUPPORT=1")
+
 # Please refer to src/common/demangle.cpp
 if (WIN32)
     target_link_libraries(common PRIVATE LLVM::Demangle)
-    set_source_files_properties(zbic.c PROPERTIES COMPILE_DEFINITIONS "ZBIC_ZBIC_SUPPORT=1" COMPILE_FLAGS "/wd4242 /wd4244 /wd4267 /wd4018 /wd4100 /wd4127 /wd4996 /wd4701 /wd4702 /wd4706")
+    set_source_files_properties(zbic.c PROPERTIES COMPILE_FLAGS "/wd4242 /wd4244 /wd4267 /wd4018 /wd4100 /wd4127 /wd4996 /wd4701 /wd4702 /wd4706")
 endif()
 
 if(ANDROID)
