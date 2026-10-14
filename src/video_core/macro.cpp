@@ -647,6 +647,8 @@ bool MacroInterpreterImpl::EvaluateBranchCondition(Macro::BranchCondition cond, 
     switch (cond) {
     case Macro::BranchCondition::Zero:
         return value == 0;
+    case Macro::BranchCondition::NotZero:
+        return value != 0;
     default:
         return false;
     }

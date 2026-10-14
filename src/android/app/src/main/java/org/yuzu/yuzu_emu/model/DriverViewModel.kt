@@ -341,10 +341,17 @@ class DriverViewModel : ViewModel() {
         val isCurrentSelected = currentSelectedPath.equals(driverPath, ignoreCase = true) ||
             (file.name.isNotEmpty() && File(currentSelectedPath).name.equals(file.name, ignoreCase = true))
 
+        reloadDriverData()
+
         if (isCurrentSelected) {
-            StringSetting.DRIVER_PATH.setString("")
+            val fallbackDriverPath = driverData.firstOrNull()?.first ?: ""
+            StringSetting.DRIVER_PATH.setString(fallbackDriverPath)
             if (activeGame == null) {
-                GpuDriverHelper.installDefaultDriver()
+                if (fallbackDriverPath.isNotEmpty() && File(fallbackDriverPath).exists()) {
+                    GpuDriverHelper.installCustomDriver(File(fallbackDriverPath))
+                } else {
+                    GpuDriverHelper.installDefaultDriver()
+                }
                 NativeConfig.saveGlobalConfig()
             } else {
                 NativeConfig.savePerGameConfig()
@@ -352,7 +359,6 @@ class DriverViewModel : ViewModel() {
             wipeAllShaders()
         }
 
-        reloadDriverData()
         updateDriverList()
         updateName()
 
@@ -472,6 +478,13 @@ class DriverViewModel : ViewModel() {
 
                 if (!isCustomDriverForGame) {
                     selectedDriverPath = StringSetting.DRIVER_PATH.getString(needsGlobal = (game == null))
+                    if (selectedDriverPath.isNotEmpty() && !File(selectedDriverPath).exists()) {
+                        val fallback = GpuDriverHelper.getDrivers().firstOrNull()?.first
+                        if (!fallback.isNullOrEmpty()) {
+                            selectedDriverPath = fallback
+                            StringSetting.DRIVER_PATH.setString(fallback)
+                        }
+                    }
                 }
 
                 val selectedDriverFile = File(selectedDriverPath)

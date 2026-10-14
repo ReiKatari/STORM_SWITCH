@@ -101,6 +101,9 @@ object PerGameDrircGenerator {
             cleanId.startsWith("0100CC80140F8") || // Triangle Strategy
             cleanId.startsWith("010023400DA34") || // Blasphemous
             cleanId.startsWith("010067901A51A") || // Blasphemous 2
+            cleanId.startsWith("010004D00A9C0") || // Aggelos
+            cleanId.startsWith("010040F01EC60") || // Aggelos 2
+            cleanTitle.contains("aggelos") ||
             cleanTitle.contains("streets of rage") ||
             cleanTitle.contains("hollow knight") ||
             cleanTitle.contains("cuphead") ||

@@ -2,31 +2,48 @@ Stop-Process -Name 'storm_eden', 'storm_eden-cli', 'storm_eden-room', 'STORM_SWI
 Start-Sleep -Milliseconds 500
 
 $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe'
-$sha1 = '10C44A100C93E316872A1BEF4D46269EA9C52269'
+$baseDir = Split-Path -Parent $PSScriptRoot
+$assemblingDir = Join-Path $baseDir "Assembling"
+$filesDir = Join-Path $baseDir "Files"
 
-$version = '10.5.0'
-if (Test-Path 'E:\STORM SWITCH 4\Build\GIT-RELEASE') {
-    $v = (Get-Content 'E:\STORM SWITCH 4\Build\GIT-RELEASE' -Raw).Trim()
+$sha1 = $env:STORM_CERT_THUMBPRINT
+if (-not $sha1 -and (Test-Path 'F:\STORM ALL PROJECTS\.storm-secrets\storm_signing.properties')) {
+    $propsLine = Get-Content 'F:\STORM ALL PROJECTS\.storm-secrets\storm_signing.properties' | Where-Object { $_ -match '^STORM_CERT_THUMBPRINT=' }
+    if ($propsLine) { $sha1 = ($propsLine -split '=', 2)[1].Trim() }
+}
+if (-not $sha1) {
+    $cert = Get-ChildItem Cert:\CurrentUser\My -ErrorAction SilentlyContinue | Where-Object { $_.Subject -match 'STORM SERTIFICATE' } | Select-Object -First 1
+    if ($cert) { $sha1 = $cert.Thumbprint }
+}
+
+$version = '11.0.0'
+if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
+    $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
 }
 
 Write-Host "Bundling MSVC CRT libraries into Assembling..."
-Copy-Item "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Redist\MSVC\14.51.36231\x64\Microsoft.VC145.CRT\*.dll" 'E:\STORM SWITCH 4\Assembling\' -Force
-Copy-Item "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Redist\MSVC\14.51.36231\x64\Microsoft.VC145.OpenMP\*.dll" 'E:\STORM SWITCH 4\Assembling\' -Force
+Copy-Item "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Redist\MSVC\14.51.36231\x64\Microsoft.VC145.CRT\*.dll" "$assemblingDir\" -Force
+Copy-Item "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Redist\MSVC\14.51.36231\x64\Microsoft.VC145.OpenMP\*.dll" "$assemblingDir\" -Force
 
-Get-ChildItem -Path 'E:\STORM SWITCH 4\Assembling' -Recurse | Unblock-File -ErrorAction SilentlyContinue
+Get-ChildItem -Path $assemblingDir -Recurse | Unblock-File -ErrorAction SilentlyContinue
 
 Write-Host "Copying freshly compiled $version binaries from build_ninja\bin to Assembling..."
-Copy-Item 'E:\STORM SWITCH 4\Build\build_ninja\bin\STORM_SWITCH*.exe' 'E:\STORM SWITCH 4\Assembling\' -Force
-Remove-Item 'E:\STORM SWITCH 4\Assembling\*.pdb' -Force -ErrorAction SilentlyContinue
+Copy-Item "$PSScriptRoot\build_ninja\bin\STORM_SWITCH*.exe" "$assemblingDir\" -Force
+Remove-Item "$assemblingDir\*.pdb" -Force -ErrorAction SilentlyContinue
 
-Write-Host "Signing Assembling executables..."
-& $signtool sign /sha1 $sha1 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH.exe'
-if (Test-Path 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH-cli.exe') {
-    & $signtool sign /sha1 $sha1 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH-cli.exe'
+Write-Host "Signing Assembling executables with unified STORM SERTIFICATE..."
+& $signtool sign /sha1 $sha1 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "$assemblingDir\STORM_SWITCH.exe"
+if (Test-Path "$assemblingDir\STORM_SWITCH-cli.exe") {
+    & $signtool sign /sha1 $sha1 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "$assemblingDir\STORM_SWITCH-cli.exe"
 }
-if (Test-Path 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH-room.exe') {
-    & $signtool sign /sha1 $sha1 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH-room.exe'
+if (Test-Path "$assemblingDir\STORM_SWITCH-room.exe") {
+    & $signtool sign /sha1 $sha1 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "$assemblingDir\STORM_SWITCH-room.exe"
+}
+
+$sevenZip = "$assemblingDir\7z.exe"
+if (-not (Test-Path $sevenZip)) {
+    $sevenZip = 'C:\Program Files\7-Zip\7z.exe'
 }
 
 function Prepare-Staging($targetDir, $includeCrt) {
@@ -34,44 +51,40 @@ function Prepare-Staging($targetDir, $includeCrt) {
     New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
 
     # 1. Copy Executables and 7z
-    Copy-Item 'E:\STORM SWITCH 4\Assembling\STORM_SWITCH*.exe' $targetDir -Force
-    Copy-Item 'E:\STORM SWITCH 4\Assembling\7z.*' $targetDir -Force
+    Copy-Item "$assemblingDir\STORM_SWITCH*.exe" $targetDir -Force
+    Copy-Item "$assemblingDir\7z.*" $targetDir -Force
 
     # 2. If Windows 10, bundle VC CRT dlls
     if ($includeCrt) {
-        Copy-Item 'E:\STORM SWITCH 4\Assembling\*.dll' $targetDir -Force
+        Copy-Item "$assemblingDir\*.dll" $targetDir -Force
     }
 
-    # 3. Create pristine user directory tree
-    $subdirs = @('cache', 'config', 'config\custom', 'keys', 'load', 'nand', 'screenshots', 'sdmc', 'shader')
-    foreach ($sd in $subdirs) {
-        New-Item -ItemType Directory -Path "$targetDir\user\$sd" -Force | Out-Null
-    }
-
-    # 4. Copy custom configurations if present
-    if (Test-Path 'E:\STORM SWITCH 4\Assembling\user\config\custom') {
-        Copy-Item 'E:\STORM SWITCH 4\Assembling\user\config\custom\*.ini' "$targetDir\user\config\custom\" -Force -ErrorAction SilentlyContinue
-    }
+    # 3. Create empty user directory
+    New-Item -ItemType Directory -Path "$targetDir\user" -Force | Out-Null
 }
 
 Write-Host "Preparing Windows 11 staging..."
-$stageWin11 = 'E:\STORM SWITCH 4\Temp_Package_Win11'
+$stageWin11 = Join-Path $baseDir "Temp_Package_Win11"
 Prepare-Staging $stageWin11 $false
 
-$zipPathWin11 = "E:\STORM SWITCH 4\Files\STORM_SWITCH_${version}_Windows11.zip"
+$zipPathWin11 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows11.zip"
 if (Test-Path $zipPathWin11) { Remove-Item $zipPathWin11 -Force }
-& 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathWin11 "$stageWin11\*" -mx=9
-Unblock-File $zipPathWin11
+Push-Location $stageWin11
+& $sevenZip a -tzip $zipPathWin11 * -mx=9
+Pop-Location
+Unblock-File $zipPathWin11 -ErrorAction SilentlyContinue
 Remove-Item $stageWin11 -Recurse -Force
 
 Write-Host "Preparing Windows 10 staging (with VC CRT)..."
-$stageWin10 = 'E:\STORM SWITCH 4\Temp_Package_Win10'
+$stageWin10 = Join-Path $baseDir "Temp_Package_Win10"
 Prepare-Staging $stageWin10 $true
 
-$zipPathWin10 = "E:\STORM SWITCH 4\Files\STORM_SWITCH_${version}_Windows10.zip"
+$zipPathWin10 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows10.zip"
 if (Test-Path $zipPathWin10) { Remove-Item $zipPathWin10 -Force }
-& 'C:\Program Files\7-Zip\7z.exe' a -tzip $zipPathWin10 "$stageWin10\*" -mx=9
-Unblock-File $zipPathWin10
+Push-Location $stageWin10
+& $sevenZip a -tzip $zipPathWin10 * -mx=9
+Pop-Location
+Unblock-File $zipPathWin10 -ErrorAction SilentlyContinue
 Remove-Item $stageWin10 -Recurse -Force
 
-Write-Host "All Windows $version executables signed and packaged successfully into E:\STORM SWITCH 4\Files!"
+Write-Host "All Windows $version executables signed and packaged successfully into $filesDir!"

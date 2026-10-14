@@ -1,4 +1,4 @@
-$version = "10.5.0"
+$version = "11.0.0"
 $baseDir = Split-Path -Parent $PSScriptRoot
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
@@ -80,13 +80,7 @@ foreach ($f in $crtDlls) {
         Copy-Item "$assemblingDir\$f" "$stageWin10\" -Force
     }
 }
-foreach ($d in $userDirs) {
-    $fullPath = Join-Path $stageWin10 $d
-    New-Item -ItemType Directory -Path $fullPath -Force | Out-Null
-}
-if (Test-Path "$assemblingDir\user\config\custom") {
-    Copy-Item "$assemblingDir\user\config\custom\*.ini" "$stageWin10\user\config\custom\" -Force -ErrorAction SilentlyContinue
-}
+New-Item -ItemType Directory -Path (Join-Path $stageWin10 "user") -Force | Out-Null
 
 # Staging Windows 11
 $stageWin11 = Join-Path $stagingRoot "win11"
@@ -94,13 +88,7 @@ New-Item -ItemType Directory -Path $stageWin11 -Force | Out-Null
 foreach ($f in $commonFiles) {
     Copy-Item "$assemblingDir\$f" "$stageWin11\" -Force
 }
-foreach ($d in $userDirs) {
-    $fullPath = Join-Path $stageWin11 $d
-    New-Item -ItemType Directory -Path $fullPath -Force | Out-Null
-}
-if (Test-Path "$assemblingDir\user\config\custom") {
-    Copy-Item "$assemblingDir\user\config\custom\*.ini" "$stageWin11\user\config\custom\" -Force -ErrorAction SilentlyContinue
-}
+New-Item -ItemType Directory -Path (Join-Path $stageWin11 "user") -Force | Out-Null
 
 # Zip Windows 10
 $zipWin10 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows10.zip"

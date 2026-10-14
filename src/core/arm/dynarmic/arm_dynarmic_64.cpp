@@ -154,8 +154,20 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
         if (m_debugger_enabled) {
             ReturnException(pc, InstructionBreakpoint);
         } else {
-            m_parent.LogBacktrace(m_process);
-            LOG_CRITICAL(Core_ARM, "ExceptionRaised(exception = {}, pc = {:08X}, code = {:08X})", static_cast<std::size_t>(exception), pc, m_memory.Read32(pc));
+            if (Settings::values.cpuopt_ignore_memory_aborts.GetValue() && m_memory.Read32(pc) == 0) {
+                const u64 lr = m_parent.m_jit->GetRegister(30);
+                if (lr != 0 && (lr & 3) == 0 && lr != pc && m_memory.IsValidVirtualAddressRange(lr, sizeof(u32)) && m_memory.Read32(lr) != 0) {
+                    m_parent.m_jit->SetRegister(0, 0);
+                    m_parent.m_jit->SetRegister(1, 0);
+                    m_parent.m_jit->SetPC(lr);
+                    return;
+                }
+            }
+            static std::atomic<u32> s_exception_log_count{0};
+            if (s_exception_log_count.fetch_add(1, std::memory_order_relaxed) < 8) {
+                m_parent.LogBacktrace(m_process);
+                LOG_CRITICAL(Core_ARM, "ExceptionRaised(exception = {}, pc = {:08X}, code = {:08X})", static_cast<std::size_t>(exception), pc, m_memory.Read32(pc));
+            }
         }
     }
 }

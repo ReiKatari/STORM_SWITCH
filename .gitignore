@@ -94,3 +94,29 @@ tools/
 
 # Build-time generated external sources
 externals/generated
+
+# Unified STORM SERTIFICATE & SIGNATURE & Clean Git Rules (Never commit)
+.storm-secrets/
+*.jks
+*.keystore
+*.pfx
+*.p12
+*.pem
+*.key
+*.cer
+*.crt
+*.der
+*.pk8
+*SERTIFICATE*
+*SIGNATURE*
+*signing.properties
+*keystore.properties
+local.properties
+.repowise/
+.om-project
+__pycache__/
+*logcat*
+temp_*
+test_*
+crash_*
+
