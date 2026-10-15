@@ -487,7 +487,7 @@ abstract class SettingsItem(
                     titleId = R.string.overlay_position,
                     descriptionId = R.string.overlay_position_description,
                     choicesId = R.array.statsPosition,
-                    valuesId = R.array.staticThemeValues
+                    valuesId = R.array.statsPositionValues
                 )
             )
 
@@ -576,7 +576,7 @@ abstract class SettingsItem(
                     titleId = R.string.overlay_position,
                     descriptionId = 0,
                     choicesId = R.array.statsPosition,
-                    valuesId = R.array.staticThemeValues
+                    valuesId = R.array.statsPositionValues
                 )
             )
             put(
@@ -1219,6 +1219,13 @@ abstract class SettingsItem(
                     BooleanSetting.CPU_AFFINITY_PINNING,
                     titleId = R.string.cpu_affinity_pinning,
                     descriptionId = R.string.cpu_affinity_pinning_description
+                )
+            )
+            put(
+                SwitchSetting(
+                    BooleanSetting.STORM_TIER2_COMPILER,
+                    titleId = R.string.storm_tier2_compiler,
+                    descriptionId = R.string.storm_tier2_compiler_description
                 )
             )
             put(

@@ -7,7 +7,13 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 
+#include "common/settings.h"
+#include "core/arm/arm_interface.h"
+#ifdef HAS_NCE
+#include "core/arm/nce/patcher.h"
+#endif
 #include "core/hle/kernel/k_process.h"
+#include "core/hle/kernel/k_shared_memory.h"
 
 #include "core/hle/service/cmif_serialization.h"
 #include "core/hle/service/ro/ro.h"
@@ -36,14 +42,20 @@ constexpr u64 InvalidContextId = 0xffffffffffffffffULL;
 using Sha256Hash = std::array<u8, 32>;
 
 struct NroInfo {
-    u64 base_address;
-    u64 nro_heap_address;
-    u64 nro_heap_size;
-    u64 bss_heap_address;
-    u64 bss_heap_size;
-    u64 code_size;
-    u64 rw_size;
-    ModuleId module_id;
+    u64 base_address{};
+    u64 nro_heap_address{};
+    u64 nro_heap_size{};
+    u64 bss_heap_address{};
+    u64 bss_heap_size{};
+    u64 code_size{};
+    u64 rw_size{};
+    ModuleId module_id{};
+#ifdef HAS_NCE
+    Kernel::KSharedMemory* patch_memory{nullptr};
+    u64 patch_address{};
+    u64 patch_size{};
+    std::vector<u8> original_text{};
+#endif
 };
 
 struct NrrInfo {
@@ -76,6 +88,22 @@ struct ProcessContext {
 
     void Finalize(Kernel::KernelCore& kernel) {
         ASSERT(m_in_use);
+
+#ifdef HAS_NCE
+        if (m_process) {
+            for (size_t i = 0; i < MaxNroInfos; ++i) {
+                if (m_nro_in_use[i] && m_nro_infos[i].patch_memory != nullptr) {
+                    (void)m_nro_infos[i].patch_memory->Unmap(
+                        *m_process, m_nro_infos[i].patch_address, m_nro_infos[i].patch_size);
+                    m_process->RemoveSharedMemory(kernel, m_nro_infos[i].patch_memory,
+                                                  m_nro_infos[i].patch_address,
+                                                  m_nro_infos[i].patch_size);
+                    m_nro_infos[i].patch_memory->Close(kernel);
+                    m_nro_infos[i].patch_memory = nullptr;
+                }
+            }
+        }
+#endif
 
         if (m_process) {
             m_process->Close(kernel);
@@ -386,8 +414,9 @@ public:
         R_SUCCEED();
     }
 
-    Result MapManualLoadModuleMemory(u64* out_address, size_t context_id, u64 nro_address,
-                                     u64 nro_size, u64 bss_address, u64 bss_size) {
+    Result MapManualLoadModuleMemory(Kernel::KernelCore& kernel, u64* out_address,
+                                     size_t context_id, u64 nro_address, u64 nro_size,
+                                     u64 bss_address, u64 bss_size) {
         // Get context.
         ProcessContext* context = this->GetContextById(context_id);
         ASSERT(context != nullptr);
@@ -403,6 +432,7 @@ public:
         // Check we have space for a new NRO.
         NroInfo* nro_info = nullptr;
         R_TRY(context->GetFreeNroInfo(std::addressof(nro_info)));
+        *nro_info = {};
         nro_info->nro_heap_address = nro_address;
         nro_info->nro_heap_size = nro_size;
         nro_info->bss_heap_address = bss_address;
@@ -422,9 +452,77 @@ public:
                                    std::addressof(ro_size), std::addressof(rw_size),
                                    nro_info->base_address, nro_size, bss_size));
 
+#ifdef HAS_NCE
+        if (Settings::IsNceEnabled() && rx_size > 0) {
+            auto* process = context->GetProcess();
+            auto& memory = process->GetMemory();
+
+            nro_info->original_text.resize(rx_size);
+            memory.ReadBlock(nro_info->base_address, nro_info->original_text.data(), rx_size);
+
+            std::vector<u8> image(total_size);
+            std::memcpy(image.data(), nro_info->original_text.data(), rx_size);
+
+            Kernel::CodeSet::Segment code{.offset = 0, .addr = 0, .size = static_cast<u32>(rx_size)};
+            Core::NCE::Patcher patch;
+            patch.PatchText(image, code);
+            patch.RelocateAndCopy(nro_info->base_address, code, image,
+                                  std::addressof(process->GetPostHandlers()));
+
+            const u64 patch_address = nro_info->base_address + total_size;
+            const size_t patch_size = patch.GetSectionSize();
+            constexpr auto permission = Kernel::Svc::MemoryPermission::ReadExecute;
+
+            if (patch_size > 0 && image.size() >= total_size + patch_size) {
+                auto* patch_memory = Kernel::KSharedMemory::Create(kernel);
+                if (R_SUCCEEDED(patch_memory->Initialize(kernel, kernel.System().DeviceMemory(),
+                                                         process, permission, permission,
+                                                         patch_size))) {
+                    std::memcpy(patch_memory->GetPointer(), image.data() + total_size, patch_size);
+                    if (R_SUCCEEDED(process->AddSharedMemory(kernel, patch_memory, patch_address,
+                                                             patch_size)) &&
+                        R_SUCCEEDED(
+                            patch_memory->Map(*process, patch_address, patch_size, permission))) {
+                        nro_info->patch_memory = patch_memory;
+                        nro_info->patch_address = patch_address;
+                        nro_info->patch_size = patch_size;
+                        memory.WriteBlock(nro_info->base_address, image.data(), rx_size);
+                    } else {
+                        patch_memory->Close(kernel);
+                    }
+                } else {
+                    patch_memory->Close(kernel);
+                }
+            }
+        }
+#endif
+
         // Set NRO perms.
         R_TRY(SetNroPerms(context->GetProcess(), nro_info->base_address, rx_size, ro_size,
                           rw_size + bss_size));
+
+#ifdef HAS_NCE
+        if (Settings::IsNceEnabled()) {
+            auto* process = context->GetProcess();
+            auto& buffer = kernel.System().DeviceMemory().buffer;
+            if (auto* base_ptr = reinterpret_cast<char*>(buffer.VirtualBasePointer())) {
+                char* nro_start = base_ptr + nro_info->base_address;
+                __builtin___clear_cache(nro_start, nro_start + rx_size);
+                if (nro_info->patch_size > 0) {
+                    char* patch_start = base_ptr + nro_info->patch_address;
+                    __builtin___clear_cache(patch_start, patch_start + nro_info->patch_size);
+                }
+            }
+            for (size_t i = 0; i < Core::Hardware::NUM_CPU_CORES; ++i) {
+                if (auto* arm = process->GetArmInterface(i)) {
+                    arm->InvalidateCacheRange(nro_info->base_address, rx_size);
+                    if (nro_info->patch_size > 0) {
+                        arm->InvalidateCacheRange(nro_info->patch_address, nro_info->patch_size);
+                    }
+                }
+            }
+        }
+#endif
 
         context->SetNroInfoInUse(nro_info, true);
         nro_info->code_size = rx_size + ro_size;
@@ -433,7 +531,8 @@ public:
         R_SUCCEED();
     }
 
-    Result UnmapManualLoadModuleMemory(size_t context_id, u64 nro_address) {
+    Result UnmapManualLoadModuleMemory(Kernel::KernelCore& kernel, size_t context_id,
+                                       u64 nro_address) {
         // Get context.
         ProcessContext* context = this->GetContextById(context_id);
         ASSERT(context != nullptr);
@@ -447,12 +546,30 @@ public:
         R_TRY(context->GetNroInfoByAddress(std::addressof(nro_info), nro_address));
 
         // Unmap.
-        const NroInfo nro_backup = *nro_info;
+        const NroInfo nro_backup = std::move(*nro_info);
         {
             // Nintendo does this unconditionally, whether or not the actual unmap succeeds.
             context->SetNroInfoInUse(nro_info, false);
-            std::memset(nro_info, 0, sizeof(*nro_info));
+            *nro_info = {};
         }
+
+#ifdef HAS_NCE
+        if (auto* process = context->GetProcess(); process != nullptr) {
+            if (!nro_backup.original_text.empty()) {
+                process->GetMemory().WriteBlock(nro_backup.base_address,
+                                                nro_backup.original_text.data(),
+                                                nro_backup.original_text.size());
+            }
+            if (nro_backup.patch_memory != nullptr) {
+                (void)nro_backup.patch_memory->Unmap(*process, nro_backup.patch_address,
+                                                     nro_backup.patch_size);
+                process->RemoveSharedMemory(kernel, nro_backup.patch_memory,
+                                            nro_backup.patch_address, nro_backup.patch_size);
+                nro_backup.patch_memory->Close(kernel);
+            }
+        }
+#endif
+
         R_RETURN(UnmapNro(context->GetProcess(), nro_backup.base_address,
                           nro_backup.nro_heap_address, nro_backup.code_size + nro_backup.rw_size,
                           nro_backup.bss_heap_address, nro_backup.bss_heap_size));
@@ -532,13 +649,14 @@ public:
     Result MapManualLoadModuleMemory(Out<u64> out_load_address, ClientProcessId client_pid,
                                      u64 nro_address, u64 nro_size, u64 bss_address, u64 bss_size) {
         R_TRY(m_ro->ValidateProcess(m_context_id, *client_pid));
-        R_RETURN(m_ro->MapManualLoadModuleMemory(out_load_address.Get(), m_context_id, nro_address,
-                                                 nro_size, bss_address, bss_size));
+        R_RETURN(m_ro->MapManualLoadModuleMemory(system.Kernel(), out_load_address.Get(),
+                                                 m_context_id, nro_address, nro_size, bss_address,
+                                                 bss_size));
     }
 
     Result UnmapManualLoadModuleMemory(ClientProcessId client_pid, u64 nro_address) {
         R_TRY(m_ro->ValidateProcess(m_context_id, *client_pid));
-        R_RETURN(m_ro->UnmapManualLoadModuleMemory(m_context_id, nro_address));
+        R_RETURN(m_ro->UnmapManualLoadModuleMemory(system.Kernel(), m_context_id, nro_address));
     }
 
     Result RegisterModuleInfo(ClientProcessId client_pid, u64 nrr_address, u64 nrr_size) {

@@ -74,19 +74,17 @@ public:
         if (it == registered_services.end() && !block) {
             LOG_DEBUG(Service, "Can't find service: {}", name);
             return nullptr;
-        } else if (block) {
-            using namespace std::literals::chrono_literals;
-            while (it == registered_services.end()) {
-                l.unlock();
-                Kernel::Svc::SleepThread(
-                    kernel.System(),
-                    std::chrono::duration_cast<std::chrono::nanoseconds>(100ms).count());
-                l.lock();
-                it = registered_services.find(name);
+        } else if (block && it == registered_services.end()) {
+            WaitForService(l, name);
+            it = registered_services.find(name);
+            if (it == registered_services.end()) {
+                return nullptr;
             }
         }
         return std::static_pointer_cast<T>(it->second());
     }
+
+    void WaitForService(std::unique_lock<std::mutex>& l, const std::string& name) const;
 
     void InvokeControlRequest(HLERequestContext& context);
 

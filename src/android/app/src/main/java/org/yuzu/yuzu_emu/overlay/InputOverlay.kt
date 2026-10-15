@@ -292,8 +292,8 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         val joystickCount = overlayJoysticks.size
         for (i in 0 until joystickCount) {
             val joystick = overlayJoysticks[i]
-            // If this touch was already claimed by a button or dpad, do not pass ACTION_DOWN to the joystick
-            if (isButtonOrDpadTracking(pointerId) && joystick.trackId != pointerId) {
+            // If this touch was already claimed by a button or dpad, do not pass ACTION_DOWN to an untracked joystick
+            if (joystick.trackId == -1 && isButtonOrDpadTracking(pointerId)) {
                 continue
             }
             if (!joystick.updateStatus(event)) {

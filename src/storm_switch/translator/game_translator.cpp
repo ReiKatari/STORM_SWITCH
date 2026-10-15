@@ -900,24 +900,56 @@ QString GameTranslator::PerformWindowsOCR(const QImage& image, const QString& la
 #ifdef _WIN32
     if (image.isNull()) return QString();
     try {
-        winrt::init_apartment(winrt::apartment_type::single_threaded);
+        winrt::init_apartment(winrt::apartment_type::multi_threaded);
+    } catch (...) {
+        // Apartment already initialized on this worker thread
+    }
 
-        QByteArray bytes;
-        QBuffer qbuffer(&bytes);
-        qbuffer.open(QIODevice::WriteOnly);
-        image.save(&qbuffer, "BMP");
+    try {
+        // Upscale small subtitle regions (< 110px height) 2x with smooth filtering for higher CJK/Latin OCR accuracy
+        QImage src_img = image;
+        if (src_img.height() > 0 && src_img.height() < 110 && src_img.width() < 2048) {
+            src_img = src_img.scaled(src_img.width() * 2, src_img.height() * 2,
+                                     Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        if (src_img.format() != QImage::Format_ARGB32 &&
+            src_img.format() != QImage::Format_RGB32) {
+            src_img = src_img.convertToFormat(QImage::Format_ARGB32);
+        }
 
-        auto stream = winrt::Windows::Storage::Streams::InMemoryRandomAccessStream();
-        auto writer = winrt::Windows::Storage::Streams::DataWriter(stream);
-        writer.WriteBytes(winrt::array_view<const uint8_t>(
-            reinterpret_cast<const uint8_t*>(bytes.constData()),
-            reinterpret_cast<const uint8_t*>(bytes.constData()) + bytes.size()));
-        writer.StoreAsync().get();
-        writer.DetachStream();
-        stream.Seek(0);
+        // Fast direct BGRA8 buffer copy when stride is tightly packed (avoids BMP encode/decode overhead)
+        winrt::Windows::Graphics::Imaging::SoftwareBitmap software_bitmap{nullptr};
+        const int w = src_img.width();
+        const int h = src_img.height();
+        if (w > 0 && h > 0 && src_img.bytesPerLine() == w * 4) {
+            const uint32_t byte_len = static_cast<uint32_t>(w * h * 4);
+            winrt::Windows::Storage::Streams::Buffer winrt_buf(byte_len);
+            winrt_buf.Length(byte_len);
+            std::memcpy(winrt_buf.data(), src_img.constBits(), byte_len);
+            software_bitmap =
+                winrt::Windows::Graphics::Imaging::SoftwareBitmap::CreateCopyFromBuffer(
+                    winrt_buf,
+                    winrt::Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8,
+                    w, h,
+                    winrt::Windows::Graphics::Imaging::BitmapAlphaMode::Ignore);
+        } else {
+            QByteArray bytes;
+            QBuffer qbuffer(&bytes);
+            qbuffer.open(QIODevice::WriteOnly);
+            src_img.save(&qbuffer, "BMP");
 
-        auto decoder = winrt::Windows::Graphics::Imaging::BitmapDecoder::CreateAsync(stream).get();
-        auto software_bitmap = decoder.GetSoftwareBitmapAsync().get();
+            auto stream = winrt::Windows::Storage::Streams::InMemoryRandomAccessStream();
+            auto writer = winrt::Windows::Storage::Streams::DataWriter(stream);
+            writer.WriteBytes(winrt::array_view<const uint8_t>(
+                reinterpret_cast<const uint8_t*>(bytes.constData()),
+                reinterpret_cast<const uint8_t*>(bytes.constData()) + bytes.size()));
+            writer.StoreAsync().get();
+            writer.DetachStream();
+            stream.Seek(0);
+
+            auto decoder = winrt::Windows::Graphics::Imaging::BitmapDecoder::CreateAsync(stream).get();
+            software_bitmap = decoder.GetSoftwareBitmapAsync().get();
+        }
 
         std::wstring lang_tag = L"en-US";
         if (lang_code == QStringLiteral("ja")) {
@@ -938,23 +970,30 @@ QString GameTranslator::PerformWindowsOCR(const QImage& image, const QString& la
             lang_tag = L"es-ES";
         }
 
-        winrt::Windows::Globalization::Language lang(lang_tag);
-        winrt::Windows::Media::Ocr::OcrEngine engine = nullptr;
+        // Cache OcrEngine per thread + language tag to eliminate ~45 ms engine init per frame
+        thread_local std::wstring s_cached_tag;
+        thread_local winrt::Windows::Media::Ocr::OcrEngine s_cached_engine{nullptr};
 
-        if (winrt::Windows::Media::Ocr::OcrEngine::IsLanguageSupported(lang)) {
-            engine = winrt::Windows::Media::Ocr::OcrEngine::TryCreateFromLanguage(lang);
-        }
-        if (!engine) {
-            auto avail = winrt::Windows::Media::Ocr::OcrEngine::AvailableRecognizerLanguages();
-            if (avail.Size() > 0) {
-                engine = winrt::Windows::Media::Ocr::OcrEngine::TryCreateFromLanguage(avail.GetAt(0));
-            } else {
-                engine = winrt::Windows::Media::Ocr::OcrEngine::TryCreateFromUserProfileLanguages();
+        if (!s_cached_engine || s_cached_tag != lang_tag) {
+            winrt::Windows::Globalization::Language lang(lang_tag);
+            winrt::Windows::Media::Ocr::OcrEngine engine{nullptr};
+            if (winrt::Windows::Media::Ocr::OcrEngine::IsLanguageSupported(lang)) {
+                engine = winrt::Windows::Media::Ocr::OcrEngine::TryCreateFromLanguage(lang);
             }
+            if (!engine) {
+                auto avail = winrt::Windows::Media::Ocr::OcrEngine::AvailableRecognizerLanguages();
+                if (avail.Size() > 0) {
+                    engine = winrt::Windows::Media::Ocr::OcrEngine::TryCreateFromLanguage(avail.GetAt(0));
+                } else {
+                    engine = winrt::Windows::Media::Ocr::OcrEngine::TryCreateFromUserProfileLanguages();
+                }
+            }
+            s_cached_engine = engine;
+            s_cached_tag = lang_tag;
         }
 
-        if (engine) {
-            auto ocr_result = engine.RecognizeAsync(software_bitmap).get();
+        if (s_cached_engine && software_bitmap) {
+            auto ocr_result = s_cached_engine.RecognizeAsync(software_bitmap).get();
             std::wstring recognized_text(ocr_result.Text());
             return QString::fromStdWString(recognized_text);
         }
@@ -1105,13 +1144,25 @@ QString GameTranslator::SanitizeOcrText(const QString& text) const {
     static const QRegularExpression hyphen_break(QStringLiteral(R"((?<=\w)-\s*[\r\n]+\s*(?=\w))"));
     cleaned.replace(hyphen_break, QString());
 
-    // 2. Collapse line breaks into single spaces within sentences
-    cleaned.replace(QRegularExpression(QStringLiteral(R"([\r\n]+)")), QStringLiteral(" "));
+    // 2. Remove stray CJK inter-character spaces produced by Windows OCR
+    static const QRegularExpression cjk_space(
+        QStringLiteral(R"((?<=[\x{3000}-\x{9FFF}\x{FF00}-\x{FFEF}])\s+(?=[\x{3000}-\x{9FFF}\x{FF00}-\x{FFEF}]))"));
+    cleaned.replace(cjk_space, QString());
 
-    // 3. Collapse multiple whitespace characters into a single space
-    cleaned.replace(QRegularExpression(QStringLiteral(R"(\s{2,})")), QStringLiteral(" "));
+    // 3. Collapse line breaks into single spaces within sentences
+    static const QRegularExpression line_breaks(QStringLiteral(R"([\r\n]+)"));
+    cleaned.replace(line_breaks, QStringLiteral(" "));
 
-    return cleaned.trimmed();
+    // 4. Collapse multiple whitespace characters into a single space
+    static const QRegularExpression multi_space(QStringLiteral(R"(\s{2,})"));
+    cleaned.replace(multi_space, QStringLiteral(" "));
+
+    cleaned = cleaned.trimmed();
+    // Ignore 1-character non-letter OCR artifacts
+    if (cleaned.size() == 1 && !cleaned[0].isLetterOrNumber()) {
+        return QString();
+    }
+    return cleaned;
 }
 
 void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString& text, const QString& src_lang, const QString& tgt_lang, const QString& cache_key) {
@@ -1120,10 +1171,146 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
         return;
     }
 
-    QUrl url;
-    QUrlQuery query;
     const QString sl = src_lang.isEmpty() ? QStringLiteral("auto") : src_lang;
     const QString tl = tgt_lang.isEmpty() ? QStringLiteral("ru") : tgt_lang;
+    const QString provider = m_provider_combo ? m_provider_combo->currentData().toString() : QStringLiteral("google");
+    const QString api_key = m_api_key_edit ? m_api_key_edit->text().trimmed() : QString();
+
+    // Endpoint -1: Selected AI / Neural Provider (DeepL / OpenAI / Gemini / Ollama) with automatic fallback to endpoint 0
+    if (endpoint_index == -1) {
+        if (provider == QStringLiteral("deepl") && !api_key.isEmpty()) {
+            m_status_label->setText(tr("🌐 Перевод через DeepL Neural API..."));
+            const bool is_free = api_key.endsWith(QStringLiteral(":fx"));
+            QUrl url(is_free ? QStringLiteral("https://api-free.deepl.com/v2/translate")
+                             : QStringLiteral("https://api.deepl.com/v2/translate"));
+            QNetworkRequest req(url);
+            req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+            req.setRawHeader("Authorization", QStringLiteral("DeepL-Auth-Key %1").arg(api_key).toUtf8());
+            QJsonObject body;
+            body[QStringLiteral("text")] = QJsonArray{text};
+            body[QStringLiteral("target_lang")] = tl.left(2).toUpper();
+            if (sl != QStringLiteral("auto")) {
+                body[QStringLiteral("source_lang")] = sl.left(2).toUpper();
+            }
+            QNetworkReply* reply = m_network_mgr->post(req, QJsonDocument(body).toJson(QJsonDocument::Compact));
+            connect(reply, &QNetworkReply::finished, this, [this, reply, text, src_lang, tgt_lang, cache_key]() {
+                reply->deleteLater();
+                QString translated_result;
+                if (reply->error() == QNetworkReply::NoError) {
+                    const QJsonObject obj = QJsonDocument::fromJson(reply->readAll()).object();
+                    const QJsonArray translations = obj[QStringLiteral("translations")].toArray();
+                    if (!translations.isEmpty()) {
+                        translated_result = translations[0].toObject()[QStringLiteral("text")].toString().trimmed();
+                    }
+                }
+                if (!translated_result.isEmpty()) {
+                    m_translation_cache.insert(cache_key, translated_result);
+                    m_last_translated_input = text;
+                    m_last_translated_output = translated_result;
+                    m_translated_edit->setText(translated_result);
+                    m_hud_overlay->SetSubtitleText(translated_result);
+                    m_status_label->setText(tr("✅ Перевод завершён (DeepL)"));
+                    SaveCache();
+                    if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
+                } else {
+                    ExecuteTranslationRequest(0, text, src_lang, tgt_lang, cache_key);
+                }
+            });
+            return;
+        } else if ((provider == QStringLiteral("openai") || provider == QStringLiteral("ollama")) &&
+                   (provider == QStringLiteral("ollama") || !api_key.isEmpty())) {
+            const bool is_ollama = (provider == QStringLiteral("ollama"));
+            m_status_label->setText(is_ollama ? tr("🤖 Перевод через локальный Ollama LLM...")
+                                              : tr("🤖 Перевод через OpenAI GPT-4o-mini..."));
+            QUrl url(is_ollama ? QStringLiteral("http://127.0.0.1:11434/v1/chat/completions")
+                               : QStringLiteral("https://api.openai.com/v1/chat/completions"));
+            QNetworkRequest req(url);
+            req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+            if (!api_key.isEmpty()) {
+                req.setRawHeader("Authorization", QStringLiteral("Bearer %1").arg(api_key).toUtf8());
+            }
+            QJsonObject sys_msg{
+                {QStringLiteral("role"), QStringLiteral("system")},
+                {QStringLiteral("content"),
+                 QStringLiteral("You are a professional video game localization translator. Translate the following game dialogue accurately and naturally into '%1'. Output ONLY the translation without quotes or commentary.").arg(tl)}};
+            QJsonObject usr_msg{
+                {QStringLiteral("role"), QStringLiteral("user")},
+                {QStringLiteral("content"), text}};
+            QJsonObject body{
+                {QStringLiteral("model"), is_ollama ? (api_key.isEmpty() ? QStringLiteral("qwen2.5:7b") : api_key)
+                                                    : QStringLiteral("gpt-4o-mini")},
+                {QStringLiteral("messages"), QJsonArray{sys_msg, usr_msg}},
+                {QStringLiteral("temperature"), 0.2}};
+            QNetworkReply* reply = m_network_mgr->post(req, QJsonDocument(body).toJson(QJsonDocument::Compact));
+            connect(reply, &QNetworkReply::finished, this, [this, reply, text, src_lang, tgt_lang, cache_key]() {
+                reply->deleteLater();
+                QString translated_result;
+                if (reply->error() == QNetworkReply::NoError) {
+                    const QJsonObject obj = QJsonDocument::fromJson(reply->readAll()).object();
+                    const QJsonArray choices = obj[QStringLiteral("choices")].toArray();
+                    if (!choices.isEmpty()) {
+                        translated_result = choices[0].toObject()[QStringLiteral("message")]
+                                                .toObject()[QStringLiteral("content")].toString().trimmed();
+                    }
+                }
+                if (!translated_result.isEmpty()) {
+                    m_translation_cache.insert(cache_key, translated_result);
+                    m_last_translated_input = text;
+                    m_last_translated_output = translated_result;
+                    m_translated_edit->setText(translated_result);
+                    m_hud_overlay->SetSubtitleText(translated_result);
+                    m_status_label->setText(tr("✅ Перевод завершён (AI LLM)"));
+                    SaveCache();
+                    if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
+                } else {
+                    ExecuteTranslationRequest(0, text, src_lang, tgt_lang, cache_key);
+                }
+            });
+            return;
+        } else if (provider == QStringLiteral("gemini") && !api_key.isEmpty()) {
+            m_status_label->setText(tr("🤖 Перевод через Google Gemini Flash..."));
+            QUrl url(QStringLiteral("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=%1").arg(api_key));
+            QNetworkRequest req(url);
+            req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+            QJsonObject part{{QStringLiteral("text"),
+                              QStringLiteral("Translate this video game dialogue naturally into '%1' (output ONLY the translated text):\n%2").arg(tl, text)}};
+            QJsonObject content{{QStringLiteral("parts"), QJsonArray{part}}};
+            QJsonObject body{{QStringLiteral("contents"), QJsonArray{content}}};
+            QNetworkReply* reply = m_network_mgr->post(req, QJsonDocument(body).toJson(QJsonDocument::Compact));
+            connect(reply, &QNetworkReply::finished, this, [this, reply, text, src_lang, tgt_lang, cache_key]() {
+                reply->deleteLater();
+                QString translated_result;
+                if (reply->error() == QNetworkReply::NoError) {
+                    const QJsonObject obj = QJsonDocument::fromJson(reply->readAll()).object();
+                    const QJsonArray cands = obj[QStringLiteral("candidates")].toArray();
+                    if (!cands.isEmpty()) {
+                        const QJsonArray parts = cands[0].toObject()[QStringLiteral("content")]
+                                                     .toObject()[QStringLiteral("parts")].toArray();
+                        if (!parts.isEmpty()) {
+                            translated_result = parts[0].toObject()[QStringLiteral("text")].toString().trimmed();
+                        }
+                    }
+                }
+                if (!translated_result.isEmpty()) {
+                    m_translation_cache.insert(cache_key, translated_result);
+                    m_last_translated_input = text;
+                    m_last_translated_output = translated_result;
+                    m_translated_edit->setText(translated_result);
+                    m_hud_overlay->SetSubtitleText(translated_result);
+                    m_status_label->setText(tr("✅ Перевод завершён (Gemini)"));
+                    SaveCache();
+                    if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
+                } else {
+                    ExecuteTranslationRequest(0, text, src_lang, tgt_lang, cache_key);
+                }
+            });
+            return;
+        }
+        endpoint_index = 0;
+    }
+
+    QUrl url;
+    QUrlQuery query;
 
     if (endpoint_index == 0) {
         m_status_label->setText(tr("🌐 Перевод через Google Web API..."));
@@ -1244,7 +1431,9 @@ void GameTranslator::PerformOnlineTranslation(const QString& text, const QString
         return;
     }
 
-    ExecuteTranslationRequest(0, cleaned_text, src_lang, tgt_lang, cache_key);
+    const QString provider = m_provider_combo ? m_provider_combo->currentData().toString() : QStringLiteral("google");
+    const int start_endpoint = (provider != QStringLiteral("google")) ? -1 : 0;
+    ExecuteTranslationRequest(start_endpoint, cleaned_text, src_lang, tgt_lang, cache_key);
 }
 
 std::vector<SpeechSegment> GameTranslator::ParseDialogueSegments(const QString& text) {

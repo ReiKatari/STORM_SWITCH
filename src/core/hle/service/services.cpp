@@ -101,10 +101,10 @@ Services::Services(std::shared_ptr<SM::ServiceManager>& sm, Core::System& system
     for (auto const& e : std::vector<std::pair<std::string_view, void (*)(Core::System&)>>{
         {"sm",         &SM::LoopProcess},
         {"settings",   &Set::LoopProcess},
+        {"am",         &AM::LoopProcess},
         {"psc",        &PSC::LoopProcess},
         {"glue",       &Glue::LoopProcess},
         {"hid",        &HID::LoopProcess},
-        {"am",         &AM::LoopProcess},
         {"account",    &Account::LoopProcess},
         {"aoc",        &AOC::LoopProcess},
         {"apm",        &APM::LoopProcess},

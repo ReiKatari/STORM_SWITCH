@@ -14,14 +14,18 @@ IOlscServiceForApplication::IOlscServiceForApplication(Core::System& system_)
             {10, nullptr, "VerifySaveDataBackupLicenseAsync"},
             {13, D<&IOlscServiceForApplication::GetSaveDataBackupSetting>, "GetSaveDataBackupSetting"},
             {14, D<&IOlscServiceForApplication::SetSaveDataBackupSettingEnabled>, "SetSaveDataBackupSettingEnabled"},
-            {15, nullptr, "SetCustomData"},
-            {16, nullptr, "DeleteSaveDataBackupSetting"},
-            {18, nullptr, "GetSaveDataBackupInfoCache"},
+            {15, D<&IOlscServiceForApplication::SetCustomData>, "SetCustomData"},
+            {16, D<&IOlscServiceForApplication::DeleteSaveDataBackupSetting>, "DeleteSaveDataBackupSetting"},
+            {18, D<&IOlscServiceForApplication::GetSaveDataBackupInfoCache>, "GetSaveDataBackupInfoCache"},
             {19, nullptr, "UpdateSaveDataBackupInfoCacheAsync"},
             {22, nullptr, "DeleteSaveDataBackupAsync"},
             {25, nullptr, "ListDownloadableSaveDataBackupInfoAsync"},
             {26, nullptr, "DownloadSaveDataBackupAsync"},
             {27, nullptr, "UploadSaveDataBackupAsync"},
+            {40, D<&IOlscServiceForApplication::Unknown40>, "Unknown40"}, // [20.0.0+]
+            {42, D<&IOlscServiceForApplication::Unknown42>, "Unknown42"}, // [21.0.0+]
+            {50, D<&IOlscServiceForApplication::Unknown40>, "Unknown50"}, // [22.0.0+]
+            {60, D<&IOlscServiceForApplication::Unknown42>, "Unknown60"}, // [23.0.0+]
             {9010, nullptr, "VerifySaveDataBackupLicenseAsyncForDebug"},
             {9013, nullptr, "GetSaveDataBackupSettingForDebug"},
             {9014, nullptr, "SetSaveDataBackupSettingEnabledForDebug"},
@@ -57,6 +61,33 @@ Result IOlscServiceForApplication::SetSaveDataBackupSettingEnabled(bool enabled,
                                                                    NS::Uid account_id) {
     LOG_WARNING(Service_OLSC, "(STUBBED) called, enabled={}, account_id={}", enabled,
                 account_id.uuid.FormattedString());
+    R_SUCCEED();
+}
+
+Result IOlscServiceForApplication::SetCustomData() {
+    LOG_WARNING(Service_OLSC, "(STUBBED) called");
+    R_SUCCEED();
+}
+
+Result IOlscServiceForApplication::DeleteSaveDataBackupSetting() {
+    LOG_WARNING(Service_OLSC, "(STUBBED) called");
+    R_SUCCEED();
+}
+
+Result IOlscServiceForApplication::GetSaveDataBackupInfoCache(Out<u32> out_count) {
+    LOG_WARNING(Service_OLSC, "(STUBBED) called");
+    *out_count = 0;
+    R_SUCCEED();
+}
+
+Result IOlscServiceForApplication::Unknown40(Out<u8> out_val) {
+    LOG_WARNING(Service_OLSC, "(STUBBED) called");
+    *out_val = 0;
+    R_SUCCEED();
+}
+
+Result IOlscServiceForApplication::Unknown42() {
+    LOG_WARNING(Service_OLSC, "(STUBBED) called");
     R_SUCCEED();
 }
 

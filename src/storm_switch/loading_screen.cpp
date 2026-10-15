@@ -307,9 +307,9 @@ void LoadingScreen::OnLoadProgress(VideoCore::LoadCallbackStage stage, std::size
 
         // Launch data card remains displayed until the game actually starts rendering frames
         // (MainWindow::OnLoadComplete connected to GRenderWindow::FirstFrameDisplayed).
-        // Safety watchdog (3.5s) ensures the screen doesn't stay indefinitely if video output delays.
+        // Safety watchdog (45s) ensures the screen doesn't stay indefinitely if video output delays.
         if (watchdog_timer) {
-            watchdog_timer->start(3500);
+            watchdog_timer->start(45000);
         }
     }
 

@@ -34,15 +34,22 @@ static bool CheckAOCTitleIDMatchesBase(u64 title_id, u64 base) {
 static std::vector<u64> AccumulateAOCTitleIDs(Core::System& system) {
     std::vector<u64> add_on_content;
     const auto& rcu = system.GetContentProvider();
+    const u64 current_base_id = FileSys::GetBaseTitleID(system.GetApplicationProcessProgramID());
     const auto list_data =
         rcu.ListEntriesFilter(FileSys::TitleType::AOC, FileSys::ContentRecordType::Data);
-    std::transform(list_data.begin(), list_data.end(), std::back_inserter(add_on_content),
-                   [](const FileSys::ContentProviderEntry& rce) { return rce.title_id; });
+    for (const FileSys::ContentProviderEntry& rce : list_data) {
+        if (current_base_id == 0 || CheckAOCTitleIDMatchesBase(rce.title_id, current_base_id)) {
+            add_on_content.push_back(rce.title_id);
+        }
+    }
 
     const auto list_prog =
         rcu.ListEntriesFilter(FileSys::TitleType::AOC, FileSys::ContentRecordType::Program);
-    std::transform(list_prog.begin(), list_prog.end(), std::back_inserter(add_on_content),
-                   [](const FileSys::ContentProviderEntry& rce) { return rce.title_id; });
+    for (const FileSys::ContentProviderEntry& rce : list_prog) {
+        if (current_base_id == 0 || CheckAOCTitleIDMatchesBase(rce.title_id, current_base_id)) {
+            add_on_content.push_back(rce.title_id);
+        }
+    }
 
     std::sort(add_on_content.begin(), add_on_content.end());
     add_on_content.erase(std::unique(add_on_content.begin(), add_on_content.end()),
@@ -66,7 +73,7 @@ static std::vector<u64> AccumulateAOCTitleIDs(Core::System& system) {
                                 tid, static_cast<int>(entry->GetStatus()));
                     return true;
                 }
-                LOG_INFO(Service_AOC, "Indexed DLC title_id={:016X}", tid);
+                LOG_DEBUG(Service_AOC, "Indexed DLC title_id={:016X}", tid);
                 return false;
             }),
         add_on_content.end());

@@ -94,6 +94,7 @@ void GameListModel::AddEntry(const QList<QStandardItem*>& entry_items, GameListD
     } else {
         parent->appendRow(entry_items);
     }
+    emit ShowList(true);
 }
 
 void GameListModel::DonePopulating(const QStringList& watch_list) {

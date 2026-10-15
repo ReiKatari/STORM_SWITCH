@@ -4,15 +4,18 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <thread>
 #include <tuple>
 #include "common/assert.h"
 #include "common/scope_exit.h"
 #include "core/core.h"
+#include "core/core_timing.h"
 #include "core/hle/kernel/k_client_port.h"
 #include "core/hle/kernel/k_client_session.h"
 #include "core/hle/kernel/k_port.h"
 #include "core/hle/kernel/k_scoped_resource_reservation.h"
 #include "core/hle/kernel/k_server_port.h"
+#include "core/hle/kernel/k_thread.h"
 #include "core/hle/result.h"
 #include "core/hle/service/cmif_types.h"
 #include "core/hle/service/ipc_helpers.h"
@@ -38,6 +41,27 @@ ServiceManager::~ServiceManager() {
 
     if (deferral_event) {
         deferral_event->Close(kernel);
+    }
+}
+
+void ServiceManager::WaitForService(std::unique_lock<std::mutex>& l,
+                                    const std::string& name) const {
+    using namespace std::literals::chrono_literals;
+    while (registered_services.find(name) == registered_services.end()) {
+        if (kernel.IsShuttingDown()) {
+            return;
+        }
+        l.unlock();
+        auto* const thread = Kernel::GetCurrentThreadPointer(kernel);
+        if (thread != nullptr && thread->GetHostContext() != nullptr &&
+            kernel.System().CoreTiming().IsRunning()) {
+            Kernel::Svc::SleepThread(
+                kernel.System(),
+                std::chrono::duration_cast<std::chrono::nanoseconds>(10ms).count());
+        } else {
+            std::this_thread::sleep_for(5ms);
+        }
+        l.lock();
     }
 }
 

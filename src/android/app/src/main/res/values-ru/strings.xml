@@ -1711,4 +1711,6 @@
     <string name="thermal_emergency_limit">Порог термической паузы</string>
     <string name="thermal_emergency_limit_description">Пороговая температура для срабатывания экстренной паузы</string>
     <string name="thermal_emergency_pause_toast">🌡️ Экстренная пауза: нагрев чипсета %1$s°C. Охлаждение устройства...</string>
+    <string name="storm_tier2_compiler">Компилятор STORM Tier-2 (Суперблок JIT)</string>
+    <string name="storm_tier2_compiler_description">Оптимизирующий компилятор STORM Tier-2 без накладных расходов (преобразует инструкции ARMv8.3 PAC/BTI в суперблоки и ускоряет чтение таймеров CNTVCT_EL0)</string>
 </resources>

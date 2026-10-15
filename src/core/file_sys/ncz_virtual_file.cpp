@@ -177,13 +177,13 @@ NCZVirtualFile::NCZVirtualFile(VirtualFile file_)
                 is_header_uncompressed = true;
                 uncompressed_header_size = offset;
                 found_magic = true;
-                LOG_INFO(Service_FS, "Found NCZ magic {:016X} at offset 0x{:X} for {}", magic, offset, file->GetName());
+                LOG_DEBUG(Service_FS, "Found NCZ magic {:016X} at offset 0x{:X} for {}", magic, offset, file->GetName());
                 break;
             }
         }
 
         if (!found_magic) {
-            LOG_INFO(Service_FS, "No NCZ magic in file {}, treating as raw NCA pass-through", file->GetName());
+            LOG_DEBUG(Service_FS, "No NCZ magic in file {}, treating as raw NCA pass-through", file->GetName());
             decompressed_size = file->GetSize();
             is_valid = true;
             is_raw_nca = true;
@@ -223,8 +223,7 @@ NCZVirtualFile::NCZVirtualFile(VirtualFile file_)
             auto& sec = sections[i];
             section_solid_offsets.push_back(current_solid_offset);
             
-            u8* bytes = reinterpret_cast<u8*>(&sec);
-            LOG_INFO(Service_FS, "NCZSECTN {}: Section [{}]: offset={:016X}, size={:016X}, crypto_type={}, solid_offset={:016X}", file->GetName(), i, sec.offset, sec.size, sec.crypto_type, current_solid_offset);
+            LOG_DEBUG(Service_FS, "NCZSECTN {}: Section [{}]: offset={:016X}, size={:016X}, crypto_type={}, solid_offset={:016X}", file->GetName(), i, sec.offset, sec.size, sec.crypto_type, current_solid_offset);
             
             // For header_uncompressed, only the portion of the section
             // after 0x4000 is in the ZSTD stream

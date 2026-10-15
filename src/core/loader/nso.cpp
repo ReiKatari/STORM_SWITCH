@@ -398,7 +398,7 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Kernel::KProcess& process, Core::
     const u32 image_size = decompressed->image_size;
     if (!load_into_process) {
 #ifdef HAS_NCE
-        auto* patch = patches ? &patches->operator[](patch_index) : nullptr;
+        auto* patch = (patches && !patches->empty()) ? &patches->back() : nullptr;
         if (patch && patch->GetPatchMode() == Core::NCE::PatchMode::Split) {
             return load_base + patch->GetPreSectionSize() + image_size + patch->GetSectionSize();
         } else if (patch && patch->GetPatchMode() == Core::NCE::PatchMode::PreText) {

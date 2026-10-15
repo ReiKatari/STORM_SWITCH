@@ -379,6 +379,7 @@ class SettingsFragmentPresenter(
             add(BooleanSetting.ECO_FRAME_PACING.key)
             add(BooleanSetting.SMART_SHADER_THROTTLE.key)
             add(BooleanSetting.CPU_AFFINITY_PINNING.key)
+            add(BooleanSetting.STORM_TIER2_COMPILER.key)
             add(BooleanSetting.VULKAN_PIPELINE_CACHE.key)
             add(BooleanSetting.VRAM_GARBAGE_COLLECTION.key)
             add(BooleanSetting.THERMAL_EMERGENCY_PROTECTION.key)
@@ -1325,6 +1326,7 @@ class SettingsFragmentPresenter(
 
             add(IntSetting.CPU_BACKEND.key)
             add(IntSetting.CPU_ACCURACY.key)
+            add(BooleanSetting.STORM_TIER2_COMPILER.key)
             add(BooleanSetting.USE_AUTO_STUB.key)
             add(SettingsItem.FASTMEM_COMBINED)
             add(BooleanSetting.CPUOPT_UNSAFE_HOST_MMU.key)

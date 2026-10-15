@@ -2268,5 +2268,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="thermal_emergency_limit">Thermal pause limit</string>
     <string name="thermal_emergency_limit_description">Threshold temperature for emergency pause</string>
     <string name="thermal_emergency_pause_toast">🌡️ Emergency pause: chipset temperature %1$s°C. Cooling device down...</string>
+    <string name="storm_tier2_compiler">STORM Tier-2 JIT Compiler</string>
+    <string name="storm_tier2_compiler_description">Zero-overhead instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads)</string>
 </resources>
 

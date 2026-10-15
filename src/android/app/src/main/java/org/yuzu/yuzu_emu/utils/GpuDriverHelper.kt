@@ -142,6 +142,12 @@ object GpuDriverHelper {
                     }
                 }
             } catch (_: Exception) {}
+            NativeLibrary.initializeGpuDriver(
+                hookLibPath,
+                driverInstallationPath,
+                null,
+                fileRedirectionPath
+            )
             return
         }
 

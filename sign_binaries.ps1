@@ -16,7 +16,7 @@ if (-not $sha1) {
     if ($cert) { $sha1 = $cert.Thumbprint }
 }
 
-$version = '11.0.0'
+$version = '11.5.0'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -52,7 +52,9 @@ function Prepare-Staging($targetDir, $includeCrt) {
 
     # 1. Copy Executables and 7z
     Copy-Item "$assemblingDir\STORM_SWITCH*.exe" $targetDir -Force
-    Copy-Item "$assemblingDir\7z.*" $targetDir -Force
+    if (Test-Path "$assemblingDir\7z.*") {
+        Copy-Item "$assemblingDir\7z.*" $targetDir -Force
+    }
 
     # 2. If Windows 10, bundle VC CRT dlls
     if ($includeCrt) {
@@ -63,6 +65,11 @@ function Prepare-Staging($targetDir, $includeCrt) {
     New-Item -ItemType Directory -Path "$targetDir\user" -Force | Out-Null
 }
 
+if (Test-Path "M:\CONSOLES\Nintendo Switch\STORM SWITCH") {
+    Write-Host "Syncing signed executables to M:\CONSOLES\Nintendo Switch\STORM SWITCH..."
+    Copy-Item "$assemblingDir\STORM_SWITCH*.exe" "M:\CONSOLES\Nintendo Switch\STORM SWITCH\" -Force
+}
+
 Write-Host "Preparing Windows 11 staging..."
 $stageWin11 = Join-Path $baseDir "Temp_Package_Win11"
 Prepare-Staging $stageWin11 $false
@@ -70,7 +77,11 @@ Prepare-Staging $stageWin11 $false
 $zipPathWin11 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows11.zip"
 if (Test-Path $zipPathWin11) { Remove-Item $zipPathWin11 -Force }
 Push-Location $stageWin11
-& $sevenZip a -tzip $zipPathWin11 * -mx=9
+if (Test-Path $sevenZip) {
+    & $sevenZip a -tzip $zipPathWin11 * -mx=9
+} else {
+    & tar.exe -a -c -f $zipPathWin11 *
+}
 Pop-Location
 Unblock-File $zipPathWin11 -ErrorAction SilentlyContinue
 Remove-Item $stageWin11 -Recurse -Force
@@ -82,7 +93,11 @@ Prepare-Staging $stageWin10 $true
 $zipPathWin10 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows10.zip"
 if (Test-Path $zipPathWin10) { Remove-Item $zipPathWin10 -Force }
 Push-Location $stageWin10
-& $sevenZip a -tzip $zipPathWin10 * -mx=9
+if (Test-Path $sevenZip) {
+    & $sevenZip a -tzip $zipPathWin10 * -mx=9
+} else {
+    & tar.exe -a -c -f $zipPathWin10 *
+}
 Pop-Location
 Unblock-File $zipPathWin10 -ErrorAction SilentlyContinue
 Remove-Item $stageWin10 -Recurse -Force

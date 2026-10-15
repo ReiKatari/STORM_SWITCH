@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <limits>
 #include <utility>
 
 #ifdef _MSC_VER
@@ -23,9 +24,15 @@ namespace Common {
 
 // This function multiplies 2 u64 values and divides it by a u64 value.
 [[nodiscard]] static inline u64 MultiplyAndDivide64(u64 a, u64 b, u64 d) {
+    if (d == 0) {
+        return 0;
+    }
 #if defined(_MSC_VER) && !defined(__clang__)
     u128 r{};
     r[0] = _umul128(a, b, &r[1]);
+    if (r[1] >= d) {
+        return (std::numeric_limits<u64>::max)();
+    }
     u64 remainder;
 #if _MSC_VER < 1923
     return udiv128(r[1], r[0], d, &remainder);

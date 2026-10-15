@@ -150,6 +150,8 @@ public:
     StagingBufferPool& staging_buffer_pool;
     BlitImageHelper& blit_image_helper;
     RenderPassCache& render_pass_cache;
+    DescriptorPool& descriptor_pool;
+    ComputePassDescriptorQueue& compute_pass_descriptor_queue;
     std::optional<ASTCDecoderPass> astc_decoder_pass;
 
     std::optional<BlockLinearUnswizzle3DPass> bl3d_unswizzle_pass;

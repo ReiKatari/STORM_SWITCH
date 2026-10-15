@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2019 yuzu Emulator Project
@@ -22,6 +22,10 @@ ConfigureNetwork::ConfigureNetwork(const Core::System& system_, QWidget* parent)
 ConfigureNetwork::~ConfigureNetwork() = default;
 
 void ConfigureNetwork::ApplyConfiguration() {
+    if (Settings::IsConfiguringGlobal()) {
+        Settings::values.network_interface.SetGlobal(true);
+        Settings::values.airplane_mode.SetGlobal(true);
+    }
     Settings::values.network_interface = ui->network_interface->currentText().toStdString();
     Settings::values.airplane_mode = ui->airplane_mode->isChecked();
 }

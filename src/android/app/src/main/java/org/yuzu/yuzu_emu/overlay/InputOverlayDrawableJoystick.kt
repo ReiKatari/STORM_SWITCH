@@ -217,7 +217,7 @@ class InputOverlayDrawableJoystick(
             xAxis = cos(angle.toDouble()).toFloat() * radius
             yAxis = sin(angle.toDouble()).toFloat() * radius
             setInnerBounds()
-            return oldXAxis != xAxis && oldYAxis != yAxis
+            return oldXAxis != xAxis || oldYAxis != yAxis
         }
         return false
     }

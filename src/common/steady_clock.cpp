@@ -11,35 +11,40 @@
 #endif
 
 #include "common/steady_clock.h"
+#include "common/uint128.h"
 
 namespace Common {
 
 #ifdef _WIN32
-static s64 WindowsQueryPerformanceFrequency() {
-    LARGE_INTEGER frequency;
+static u64 WindowsQueryPerformanceFrequency() {
+    LARGE_INTEGER frequency{};
     QueryPerformanceFrequency(&frequency);
-    return frequency.QuadPart;
+    return frequency.QuadPart > 0 ? static_cast<u64>(frequency.QuadPart) : 10'000'000ULL;
 }
 
-static s64 WindowsQueryPerformanceCounter() {
-    LARGE_INTEGER counter;
+static u64 WindowsQueryPerformanceCounter() {
+    LARGE_INTEGER counter{};
     QueryPerformanceCounter(&counter);
-    return counter.QuadPart;
+    return counter.QuadPart > 0 ? static_cast<u64>(counter.QuadPart) : 0ULL;
 }
 
 static s64 GetSystemTimeNS() {
-    static auto pf = (decltype(&GetSystemTimePreciseAsFileTime))(void*)GetProcAddress(GetModuleHandle(TEXT("Kernel32.dll")), "GetSystemTimePreciseAsFileTime"); // Windows 8+
+    static auto pf = reinterpret_cast<decltype(&GetSystemTimePreciseAsFileTime)>(
+        reinterpret_cast<void*>(GetProcAddress(GetModuleHandle(TEXT("Kernel32.dll")),
+                                               "GetSystemTimePreciseAsFileTime"))); // Windows 8+
     if (pf) {
         // GetSystemTimePreciseAsFileTime returns the file time in 100ns units.
-        constexpr s64 Multiplier = 100;
+        constexpr u64 Multiplier = 100;
         // Convert Windows epoch to Unix epoch.
-        constexpr s64 WindowsEpochToUnixEpoch = 0x19DB1DED53E8000LL;
-        FILETIME filetime;
+        constexpr u64 WindowsEpochToUnixEpoch = 0x19DB1DED53E8000ULL;
+        FILETIME filetime{};
         pf(&filetime);
-        return Multiplier * ((s64(filetime.dwHighDateTime) << 32) + s64(filetime.dwLowDateTime) - WindowsEpochToUnixEpoch);
+        const u64 raw_ticks =
+            (static_cast<u64>(filetime.dwHighDateTime) << 32) | static_cast<u64>(filetime.dwLowDateTime);
+        return static_cast<s64>((raw_ticks - WindowsEpochToUnixEpoch) * Multiplier);
     } else {
         // Only Windows XP and below error out here
-        LARGE_INTEGER ticks;
+        LARGE_INTEGER ticks{};
         QueryPerformanceCounter(&ticks);
         return ticks.QuadPart;
     }
@@ -50,9 +55,9 @@ SteadyClock::time_point SteadyClock::Now() noexcept {
 #if defined(_WIN32)
     static const auto timer_freq = WindowsQueryPerformanceFrequency();
     const auto counter = WindowsQueryPerformanceCounter();
-    const auto whole = (counter / timer_freq) * period::den;
-    const auto part = (counter % timer_freq) * period::den / timer_freq;
-    return time_point{duration{whole + part}};
+    const auto whole = (counter / timer_freq) * static_cast<u64>(period::den);
+    const auto part = MultiplyAndDivide64(counter % timer_freq, static_cast<u64>(period::den), timer_freq);
+    return time_point{duration{static_cast<s64>(whole + part)}};
 #elif defined(__APPLE__)
     return time_point{duration{clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)}};
 #else

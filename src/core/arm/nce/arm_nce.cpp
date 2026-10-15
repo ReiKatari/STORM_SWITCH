@@ -12,7 +12,9 @@
 #include "core/arm/nce/arm_nce.h"
 #include "core/arm/nce/interpreter_visitor.h"
 #include "core/arm/nce/patcher.h"
+#include "core/constants.h"
 #include "core/core.h"
+#include "core/core_timing.h"
 #include "core/memory.h"
 
 #include "core/hle/kernel/k_process.h"
@@ -27,6 +29,7 @@ namespace {
 
 struct sigaction g_orig_bus_action;
 struct sigaction g_orig_segv_action;
+struct sigaction g_orig_ill_action;
 
 // Verify assembly offsets.
 using NativeExecutionParameters = Kernel::KThread::NativeExecutionParameters;
@@ -226,11 +229,193 @@ bool ArmNce::HandleGuestAccessFault(GuestContext* guest_ctx, void* raw_info, voi
 }
 
 void ArmNce::HandleHostAlignmentFault(int sig, void* raw_info, void* raw_context) {
-    return g_orig_bus_action.sa_sigaction(sig, static_cast<siginfo_t*>(raw_info), raw_context);
+    if (g_orig_bus_action.sa_sigaction) {
+        g_orig_bus_action.sa_sigaction(sig, static_cast<siginfo_t*>(raw_info), raw_context);
+    }
 }
 
 void ArmNce::HandleHostAccessFault(int sig, void* raw_info, void* raw_context) {
-    return g_orig_segv_action.sa_sigaction(sig, static_cast<siginfo_t*>(raw_info), raw_context);
+    if (g_orig_segv_action.sa_sigaction) {
+        g_orig_segv_action.sa_sigaction(sig, static_cast<siginfo_t*>(raw_info), raw_context);
+    }
+}
+
+void ArmNce::HandleHostIllegalInstruction(int sig, void* raw_info, void* raw_context) {
+    if (g_orig_ill_action.sa_sigaction) {
+        g_orig_ill_action.sa_sigaction(sig, static_cast<siginfo_t*>(raw_info), raw_context);
+    }
+}
+
+bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_info,
+                                           void* raw_context) {
+    auto& host_ctx = static_cast<ucontext_t*>(raw_context)->uc_mcontext;
+    auto* fpctx = GetFloatingPointState(host_ctx);
+    auto* thread = guest_ctx->parent->m_running_thread;
+    auto* process = thread->GetOwnerProcess();
+    auto& memory = process->GetMemory();
+    auto& thread_params = thread->GetNativeExecutionParameters();
+
+    const u64 fastmem_base =
+        reinterpret_cast<u64>(guest_ctx->system->DeviceMemory().buffer.VirtualBasePointer());
+    const u64 guest_pc = (host_ctx.pc >= fastmem_base) ? (host_ctx.pc - fastmem_base) : host_ctx.pc;
+
+    if (!memory.IsValidVirtualAddressRange(guest_pc, sizeof(u32))) {
+        const u64 lr = host_ctx.regs[30];
+        const u64 guest_lr = (lr >= fastmem_base) ? (lr - fastmem_base) : lr;
+        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc &&
+            memory.IsValidVirtualAddressRange(guest_lr, sizeof(u32))) {
+            LOG_WARNING(Core_ARM, "NCE SIGILL at unmapped PC {:#x}, returning to LR {:#x}",
+                        host_ctx.pc, lr);
+            host_ctx.regs[0] = 0;
+            host_ctx.regs[1] = 0;
+            host_ctx.pc = lr;
+            return true;
+        }
+        return HandleFailedGuestFault(guest_ctx, raw_info, raw_context);
+    }
+
+    // Try the NCE instruction interpreter first.
+    if (auto next_pc = MatchAndExecuteOneInstruction(memory, &host_ctx, fpctx)) {
+        host_ctx.pc = *next_pc;
+        return true;
+    }
+
+    u32 inst = 0;
+    std::memcpy(&inst, reinterpret_cast<const void*>(host_ctx.pc), sizeof(u32));
+
+    // 1. Emulate unpatched MRS Xt, <sysreg> (encoding: 0xD5300000 | (sysreg << 5) | rt)
+    if ((inst & 0xFFF00000U) == 0xD5300000U) {
+        const u32 rt = inst & 0x1FU;
+        const u32 sysreg = (inst >> 5) & 0x7FFFU;
+        u64 val = 0;
+        switch (sysreg) {
+        case 0x5E82: // TPIDR_EL0
+            val = thread_params.tpidr_el0;
+            break;
+        case 0x5E83: // TPIDRRO_EL0
+            val = thread_params.tpidrro_el0;
+            break;
+        case 0x5F00: // CNTFRQ_EL0
+            val = Hardware::CNTFREQ;
+            break;
+        case 0x5F01: // CNTPCT_EL0
+        case 0x5F02: // CNTVCT_EL0
+            val = guest_ctx->system->CoreTiming().GetClockTicks();
+            break;
+        case 0x5801: // CTR_EL0 (Cortex-A57 cache type register)
+            val = 0x8444C004ULL;
+            break;
+        case 0x5807: // DCZID_EL0 (64-byte cache line zeroing)
+            val = 0x00000004ULL;
+            break;
+        case 0x4000: // MIDR_EL1 (Nintendo Switch Tegra X1 Cortex-A57 r1p3)
+            val = 0x411FD073ULL;
+            break;
+        case 0x5920: // RNDR
+        case 0x5921: // RNDRRS
+            val = guest_ctx->system->CoreTiming().GetClockTicks() ^ 0x9E3779B97F4A7C15ULL;
+            break;
+        default:
+            val = 0;
+            break;
+        }
+        if (rt < 31) {
+            host_ctx.regs[rt] = val;
+        }
+        LOG_DEBUG(Core_ARM, "NCE emulated trapped MRS sysreg={:#x} -> X{}={:#x} at pc={:#x}",
+                  sysreg, rt, val, host_ctx.pc);
+        host_ctx.pc += 4;
+        return true;
+    }
+
+    // 2. Emulate unpatched MSR <sysreg>, Xt / SYS / HINT / PAC / BTI
+    if ((inst & 0xFFF00000U) == 0xD5100000U || (inst & 0xFFF80000U) == 0xD5080000U ||
+        (inst & 0xFFFFF01FU) == 0xD503201FU) {
+        if ((inst & 0xFFF00000U) == 0xD5100000U) {
+            const u32 rt = inst & 0x1FU;
+            const u32 sysreg = (inst >> 5) & 0x7FFFU;
+            if (sysreg == 0x5E82) { // TPIDR_EL0
+                thread_params.tpidr_el0 = (rt < 31) ? host_ctx.regs[rt] : 0;
+            }
+        }
+        host_ctx.pc += 4;
+        return true;
+    }
+
+    // 3. Handle UDF (#0x0000xxxx), BRK (#0xD420xxxx), or trapped instructions (e.g. Frostbite Career Mode OOM/assert traps)
+    u32 next_inst = 0;
+    if (memory.IsValidVirtualAddressRange(guest_pc + 4, sizeof(u32))) {
+        std::memcpy(&next_inst, reinterpret_cast<const void*>(host_ctx.pc + 4), sizeof(u32));
+    }
+
+    // Check if next_inst is the start of a new function (prologue) or zeroed padding, meaning
+    // the current instruction is a noreturn trap (__builtin_trap / abort) at the end of a function.
+    const bool next_is_prologue_or_zero =
+        (next_inst == 0x00000000U) ||
+        ((next_inst & 0xFFC07FFFU) == 0xA9807BFDU) || // STP X29, X30, [SP, #-imm]!
+        ((next_inst & 0xFFC003FFU) == 0xA98003E0U) || // STP Xn, Xm, [SP, #-imm]!
+        ((next_inst & 0xFF0003FFU) == 0xD10003FFU) || // SUB SP, SP, #imm
+        (next_inst == 0xD503233FU) ||                 // PACIASP
+        ((next_inst & 0xFFFFFF3FU) == 0xD503241FU);   // BTI
+
+    if (inst == 0x00000000U && next_inst == 0x00000000U) {
+        // PC jumped into zero-filled memory; return to LR if valid
+        const u64 lr = host_ctx.regs[30];
+        const u64 guest_lr = (lr >= fastmem_base) ? (lr - fastmem_base) : lr;
+        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc &&
+            memory.IsValidVirtualAddressRange(guest_lr, sizeof(u32))) {
+            LOG_WARNING(Core_ARM, "NCE SIGILL in zeroed memory at {:#x}, returning to LR {:#x}",
+                        host_ctx.pc, lr);
+            host_ctx.regs[0] = 0;
+            host_ctx.regs[1] = 0;
+            host_ctx.pc = lr;
+            return true;
+        }
+    }
+
+    if (next_is_prologue_or_zero) {
+        // Scan backwards up to 128 instructions to locate the function's own epilogue (RET = 0xD65F03C0)
+        for (u32 k = 1; k <= 128; ++k) {
+            if (guest_pc < k * 4) {
+                break;
+            }
+            const u64 cand_pc = host_ctx.pc - static_cast<u64>(k) * 4;
+            u32 cand_inst = 0;
+            std::memcpy(&cand_inst, reinterpret_cast<const void*>(cand_pc), sizeof(u32));
+            if (cand_inst == 0xD65F03C0U) { // RET
+                // Walk backwards across contiguous epilogue restore instructions (LDP/LDR from SP, ADD SP, SP)
+                u64 epilogue_pc = cand_pc;
+                for (u32 j = 1; j <= 16 && (guest_pc >= (k + j) * 4); ++j) {
+                    const u64 prev_pc = cand_pc - static_cast<u64>(j) * 4;
+                    u32 prev_inst = 0;
+                    std::memcpy(&prev_inst, reinterpret_cast<const void*>(prev_pc), sizeof(u32));
+                    const bool is_ldp_sp = ((prev_inst & 0x7FC003E0U) == 0x294003E0U) || // LDP Xt1, Xt2, [SP, #imm]
+                                           ((prev_inst & 0x7FC003E0U) == 0x28C003E0U);   // LDP Xt1, Xt2, [SP], #imm
+                    const bool is_ldr_sp = ((prev_inst & 0xBFC003E0U) == 0xB94003E0U) || // LDR Xt, [SP, #imm]
+                                           ((prev_inst & 0xBFE00FE0U) == 0xB84007E0U);   // LDR Xt, [SP], #imm
+                    const bool is_add_sp = ((prev_inst & 0xFF0003FFU) == 0x910003FFU);   // ADD SP, SP, #imm
+                    if (is_ldp_sp || is_ldr_sp || is_add_sp) {
+                        epilogue_pc = prev_pc;
+                    } else {
+                        break;
+                    }
+                }
+                LOG_WARNING(Core_ARM,
+                            "NCE recovered guest trap inst={:#010x} at pc={:#x} via function epilogue at {:#x}",
+                            inst, host_ctx.pc, epilogue_pc);
+                host_ctx.regs[0] = 0;
+                host_ctx.regs[1] = 0;
+                host_ctx.pc = epilogue_pc;
+                return true;
+            }
+        }
+    }
+
+    LOG_WARNING(Core_ARM, "NCE skipping trapped/illegal guest instruction {:#010x} at pc={:#x}",
+                inst, host_ctx.pc);
+    host_ctx.regs[0] = 0;
+    host_ctx.pc += 4;
+    return true;
 }
 
 void ArmNce::LockThread(Kernel::KThread* thread) {
@@ -353,6 +538,7 @@ void ArmNce::Initialize() {
         sigaddset(&signal_mask, BreakFromRunCodeSignal);
         sigaddset(&signal_mask, GuestAlignmentFaultSignal);
         sigaddset(&signal_mask, GuestAccessFaultSignal);
+        sigaddset(&signal_mask, GuestIllegalInstructionSignal);
 
         struct sigaction return_to_run_code_action {};
         return_to_run_code_action.sa_flags = SA_SIGINFO | SA_ONSTACK;
@@ -374,7 +560,7 @@ void ArmNce::Initialize() {
         alignment_fault_action.sa_sigaction =
             reinterpret_cast<HandlerType>(&ArmNce::GuestAlignmentFaultSignalHandler);
         alignment_fault_action.sa_mask = signal_mask;
-        Common::SigAction(GuestAlignmentFaultSignal, &alignment_fault_action, nullptr);
+        Common::SigAction(GuestAlignmentFaultSignal, &alignment_fault_action, &g_orig_bus_action);
 
         struct sigaction access_fault_action {};
         access_fault_action.sa_flags = SA_SIGINFO | SA_ONSTACK | SA_RESTART;
@@ -382,6 +568,14 @@ void ArmNce::Initialize() {
             reinterpret_cast<HandlerType>(&ArmNce::GuestAccessFaultSignalHandler);
         access_fault_action.sa_mask = signal_mask;
         Common::SigAction(GuestAccessFaultSignal, &access_fault_action, &g_orig_segv_action);
+
+        struct sigaction illegal_instruction_action {};
+        illegal_instruction_action.sa_flags = SA_SIGINFO | SA_ONSTACK;
+        illegal_instruction_action.sa_sigaction =
+            reinterpret_cast<HandlerType>(&ArmNce::GuestIllegalInstructionSignalHandler);
+        illegal_instruction_action.sa_mask = signal_mask;
+        Common::SigAction(GuestIllegalInstructionSignal, &illegal_instruction_action,
+                          &g_orig_ill_action);
     });
 }
 
@@ -451,6 +645,15 @@ void ArmNce::ClearInstructionCache() {
 }
 
 void ArmNce::InvalidateCacheRange(u64 addr, std::size_t size) {
+#ifdef __aarch64__
+    auto* base_ptr = reinterpret_cast<char*>(m_system.DeviceMemory().buffer.VirtualBasePointer());
+    if (base_ptr != nullptr && size > 0) {
+        char* start = (addr >= reinterpret_cast<u64>(base_ptr)) ? reinterpret_cast<char*>(addr)
+                                                                : (base_ptr + addr);
+        __builtin___clear_cache(start, start + size);
+        return;
+    }
+#endif
     this->ClearInstructionCache();
 }
 

@@ -230,123 +230,123 @@ void PlayerControlPreview::UpdateColors() {
     switch (current_skin) {
     case ControllerSkin::ClassicBlack:
     default:
-        colors.primary = QColor(42, 45, 52, 235);
-        colors.left = QColor(36, 38, 44);
-        colors.right = QColor(36, 38, 44);
-        colors.grip_left_highlight = QColor(62, 66, 74);
-        colors.grip_right_highlight = QColor(62, 66, 74);
-        colors.grip_left_shadow = QColor(20, 22, 26);
-        colors.grip_right_shadow = QColor(20, 22, 26);
-        colors.body_inner = QColor(28, 30, 36, 180);
-        colors.body_rim = QColor(75, 82, 92);
-        colors.emblem = QColor(0, 0, 0, 0);
-        colors.emblem_secondary = QColor(0, 0, 0, 0);
-        colors.home_led = QColor(0, 210, 255);
+        colors.primary = QColor(38, 42, 50, 232);
+        colors.left = QColor(32, 35, 42);
+        colors.right = QColor(32, 35, 42);
+        colors.grip_left_highlight = QColor(68, 74, 86);
+        colors.grip_right_highlight = QColor(68, 74, 86);
+        colors.grip_left_shadow = QColor(16, 18, 22);
+        colors.grip_right_shadow = QColor(16, 18, 22);
+        colors.body_inner = QColor(22, 26, 32, 195);
+        colors.body_rim = QColor(88, 96, 112);
+        colors.emblem = QColor(205, 170, 82, 210);
+        colors.emblem_secondary = QColor(18, 68, 52, 210);
+        colors.home_led = QColor(0, 220, 255);
         break;
 
     case ControllerSkin::Xenoblade2:
-        colors.primary = QColor(38, 41, 46, 235);
-        colors.left = QColor(215, 38, 75);
-        colors.right = QColor(215, 38, 75);
-        colors.grip_left_highlight = QColor(245, 85, 120);
-        colors.grip_right_highlight = QColor(245, 85, 120);
-        colors.grip_left_shadow = QColor(140, 18, 45);
-        colors.grip_right_shadow = QColor(140, 18, 45);
-        colors.body_inner = QColor(30, 25, 32, 190);
-        colors.body_rim = QColor(230, 60, 95);
-        colors.emblem = QColor(0, 245, 185);
-        colors.emblem_secondary = QColor(255, 215, 60);
-        colors.home_led = QColor(0, 245, 185);
+        colors.primary = QColor(34, 37, 44, 242);
+        colors.left = QColor(224, 34, 74);
+        colors.right = QColor(224, 34, 74);
+        colors.grip_left_highlight = QColor(255, 98, 134);
+        colors.grip_right_highlight = QColor(255, 98, 134);
+        colors.grip_left_shadow = QColor(132, 14, 40);
+        colors.grip_right_shadow = QColor(132, 14, 40);
+        colors.body_inner = QColor(26, 22, 30, 210);
+        colors.body_rim = QColor(245, 68, 106);
+        colors.emblem = QColor(0, 252, 196);
+        colors.emblem_secondary = QColor(255, 218, 68);
+        colors.home_led = QColor(0, 252, 196);
         break;
 
     case ControllerSkin::SmashBrosUltimate:
-        colors.primary = QColor(36, 38, 42, 235);
-        colors.left = QColor(238, 240, 244);
-        colors.right = QColor(238, 240, 244);
+        colors.primary = QColor(30, 33, 38, 244);
+        colors.left = QColor(242, 245, 250);
+        colors.right = QColor(242, 245, 250);
         colors.grip_left_highlight = QColor(255, 255, 255);
         colors.grip_right_highlight = QColor(255, 255, 255);
-        colors.grip_left_shadow = QColor(170, 175, 182);
-        colors.grip_right_shadow = QColor(170, 175, 182);
-        colors.body_inner = QColor(25, 26, 30, 190);
-        colors.body_rim = QColor(200, 205, 215);
-        colors.emblem = QColor(245, 248, 252, 220);
-        colors.emblem_secondary = QColor(30, 32, 38, 200);
-        colors.home_led = QColor(255, 225, 100);
+        colors.grip_left_shadow = QColor(162, 168, 178);
+        colors.grip_right_shadow = QColor(162, 168, 178);
+        colors.body_inner = QColor(20, 22, 26, 210);
+        colors.body_rim = QColor(215, 222, 235);
+        colors.emblem = QColor(248, 250, 255, 240);
+        colors.emblem_secondary = QColor(255, 195, 65, 220);
+        colors.home_led = QColor(255, 220, 90);
         break;
 
     case ControllerSkin::ZeldaTotk:
-        colors.primary = QColor(32, 36, 42, 240);
-        colors.left = QColor(26, 28, 34);
-        colors.right = QColor(245, 245, 248);
-        colors.grip_left_highlight = QColor(54, 58, 68);
+        colors.primary = QColor(28, 32, 38, 245);
+        colors.left = QColor(24, 27, 33);
+        colors.right = QColor(246, 246, 242);
+        colors.grip_left_highlight = QColor(58, 64, 75);
         colors.grip_right_highlight = QColor(255, 255, 255);
-        colors.grip_left_shadow = QColor(14, 16, 20);
-        colors.grip_right_shadow = QColor(185, 188, 195);
-        colors.body_inner = QColor(22, 25, 30, 200);
-        colors.body_rim = QColor(218, 168, 38);
-        colors.emblem = QColor(56, 225, 176);
-        colors.emblem_secondary = QColor(230, 185, 45);
-        colors.home_led = QColor(56, 225, 176);
+        colors.grip_left_shadow = QColor(12, 14, 18);
+        colors.grip_right_shadow = QColor(182, 180, 172);
+        colors.body_inner = QColor(18, 22, 26, 215);
+        colors.body_rim = QColor(228, 180, 48);
+        colors.emblem = QColor(52, 238, 184);
+        colors.emblem_secondary = QColor(238, 192, 52);
+        colors.home_led = QColor(52, 238, 184);
         break;
 
     case ControllerSkin::Splatoon3:
-        colors.primary = QColor(38, 40, 46, 230);
-        colors.left = QColor(218, 253, 33);
-        colors.right = QColor(122, 38, 235);
-        colors.grip_left_highlight = QColor(238, 255, 105);
-        colors.grip_right_highlight = QColor(175, 95, 255);
-        colors.grip_left_shadow = QColor(155, 185, 15);
-        colors.grip_right_shadow = QColor(72, 18, 155);
-        colors.body_inner = QColor(32, 28, 40, 190);
-        colors.body_rim = QColor(218, 253, 33);
-        colors.emblem = QColor(218, 253, 33, 215);
-        colors.emblem_secondary = QColor(140, 50, 245, 215);
-        colors.home_led = QColor(218, 253, 33);
+        colors.primary = QColor(32, 34, 42, 242);
+        colors.left = QColor(222, 255, 28);
+        colors.right = QColor(126, 36, 245);
+        colors.grip_left_highlight = QColor(244, 255, 118);
+        colors.grip_right_highlight = QColor(184, 102, 255);
+        colors.grip_left_shadow = QColor(148, 178, 10);
+        colors.grip_right_shadow = QColor(68, 14, 152);
+        colors.body_inner = QColor(24, 22, 34, 210);
+        colors.body_rim = QColor(222, 255, 28);
+        colors.emblem = QColor(222, 255, 28, 235);
+        colors.emblem_secondary = QColor(146, 52, 255, 235);
+        colors.home_led = QColor(222, 255, 28);
         break;
 
     case ControllerSkin::MonsterHunterRise:
-        colors.primary = QColor(40, 44, 48, 240);
-        colors.left = QColor(48, 52, 58);
-        colors.right = QColor(48, 52, 58);
-        colors.grip_left_highlight = QColor(75, 80, 90);
-        colors.grip_right_highlight = QColor(75, 80, 90);
-        colors.grip_left_shadow = QColor(26, 28, 32);
-        colors.grip_right_shadow = QColor(26, 28, 32);
-        colors.body_inner = QColor(28, 30, 34, 200);
-        colors.body_rim = QColor(220, 175, 65);
-        colors.emblem = QColor(225, 180, 65);
-        colors.emblem_secondary = QColor(175, 90, 250);
-        colors.home_led = QColor(185, 125, 255);
+        colors.primary = QColor(34, 36, 42, 245);
+        colors.left = QColor(44, 47, 54);
+        colors.right = QColor(44, 47, 54);
+        colors.grip_left_highlight = QColor(82, 86, 98);
+        colors.grip_right_highlight = QColor(82, 86, 98);
+        colors.grip_left_shadow = QColor(20, 22, 26);
+        colors.grip_right_shadow = QColor(20, 22, 26);
+        colors.body_inner = QColor(22, 24, 28, 215);
+        colors.body_rim = QColor(232, 186, 68);
+        colors.emblem = QColor(238, 192, 72);
+        colors.emblem_secondary = QColor(186, 88, 255);
+        colors.home_led = QColor(192, 118, 255);
         break;
 
     case ControllerSkin::PokemonScarletViolet:
-        colors.primary = QColor(36, 38, 44, 235);
-        colors.left = QColor(228, 45, 60);
-        colors.right = QColor(75, 65, 215);
-        colors.grip_left_highlight = QColor(255, 95, 110);
-        colors.grip_right_highlight = QColor(125, 115, 255);
-        colors.grip_left_shadow = QColor(150, 22, 35);
-        colors.grip_right_shadow = QColor(42, 35, 145);
-        colors.body_inner = QColor(30, 30, 38, 190);
-        colors.body_rim = QColor(255, 180, 60);
-        colors.emblem = QColor(255, 180, 50);
-        colors.emblem_secondary = QColor(225, 230, 240);
-        colors.home_led = QColor(255, 90, 90);
+        colors.primary = QColor(30, 32, 40, 244);
+        colors.left = QColor(235, 42, 58);
+        colors.right = QColor(82, 62, 228);
+        colors.grip_left_highlight = QColor(255, 102, 118);
+        colors.grip_right_highlight = QColor(138, 122, 255);
+        colors.grip_left_shadow = QColor(145, 18, 30);
+        colors.grip_right_shadow = QColor(38, 28, 142);
+        colors.body_inner = QColor(22, 24, 32, 210);
+        colors.body_rim = QColor(255, 192, 64);
+        colors.emblem = QColor(255, 192, 56);
+        colors.emblem_secondary = QColor(120, 235, 255);
+        colors.home_led = QColor(255, 85, 95);
         break;
 
     case ControllerSkin::CyberStorm:
-        colors.primary = QColor(14, 16, 22, 245);
-        colors.left = QColor(0, 225, 250);
-        colors.right = QColor(255, 30, 95);
-        colors.grip_left_highlight = QColor(120, 245, 255);
-        colors.grip_right_highlight = QColor(255, 110, 160);
-        colors.grip_left_shadow = QColor(0, 120, 145);
-        colors.grip_right_shadow = QColor(150, 15, 55);
-        colors.body_inner = QColor(8, 10, 15, 230);
-        colors.body_rim = QColor(0, 240, 255, 180);
-        colors.emblem = QColor(0, 245, 255);
-        colors.emblem_secondary = QColor(255, 35, 115);
-        colors.home_led = QColor(0, 255, 240);
+        colors.primary = QColor(12, 14, 20, 248);
+        colors.left = QColor(0, 232, 255);
+        colors.right = QColor(255, 24, 102);
+        colors.grip_left_highlight = QColor(135, 248, 255);
+        colors.grip_right_highlight = QColor(255, 115, 168);
+        colors.grip_left_shadow = QColor(0, 110, 138);
+        colors.grip_right_shadow = QColor(142, 10, 52);
+        colors.body_inner = QColor(6, 8, 14, 238);
+        colors.body_rim = QColor(0, 245, 255, 210);
+        colors.emblem = QColor(0, 248, 255);
+        colors.emblem_secondary = QColor(255, 28, 118);
+        colors.home_led = QColor(0, 255, 242);
         break;
     }
 
@@ -560,16 +560,29 @@ void PlayerControlPreview::ResetView() {
 
 
 void PlayerControlPreview::SetRotation(float rx, float ry, float z) {
-    rot_x = rx;
+    rot_x = std::clamp(rx, -75.0f, 75.0f);
     rot_y = ry;
+    while (rot_y > 180.0f) {
+        rot_y -= 360.0f;
+    }
+    while (rot_y < -180.0f) {
+        rot_y += 360.0f;
+    }
+    is_rear_view = (std::abs(rot_y) > 90.0f);
     zoom = std::clamp(z, 0.65f, 2.0f);
     update();
 }
 
 void PlayerControlPreview::ToggleRearView() {
-    is_rear_view = !is_rear_view;
-    rot_x = 0.0f;
-    rot_y = 0.0f;
+    if (std::abs(rot_y) <= 90.0f) {
+        rot_y = 180.0f;
+        rot_x = 0.0f;
+        is_rear_view = true;
+    } else {
+        rot_y = 0.0f;
+        rot_x = 0.0f;
+        is_rear_view = false;
+    }
     update();
 }
 
@@ -577,7 +590,7 @@ void PlayerControlPreview::SetRearView(bool rear) {
     if (is_rear_view != rear) {
         is_rear_view = rear;
         rot_x = 0.0f;
-        rot_y = 0.0f;
+        rot_y = rear ? 180.0f : 0.0f;
         update();
     }
 }
@@ -603,8 +616,15 @@ void PlayerControlPreview::mouseMoveEvent(QMouseEvent* event) {
     if (is_mouse_dragging) {
         const QPoint delta = event->pos() - last_mouse_pos;
         last_mouse_pos = event->pos();
-        rot_y = std::clamp(rot_y + static_cast<float>(delta.x()) * 0.25f, -20.0f, 20.0f);
-        rot_x = std::clamp(rot_x - static_cast<float>(delta.y()) * 0.25f, -15.0f, 15.0f);
+        rot_y += static_cast<float>(delta.x()) * 0.55f;
+        while (rot_y > 180.0f) {
+            rot_y -= 360.0f;
+        }
+        while (rot_y < -180.0f) {
+            rot_y += 360.0f;
+        }
+        rot_x = std::clamp(rot_x - static_cast<float>(delta.y()) * 0.45f, -75.0f, 75.0f);
+        is_rear_view = (std::abs(rot_y) > 90.0f);
         update();
         event->accept();
         return;
@@ -674,44 +694,69 @@ void PlayerControlPreview::paintEvent(QPaintEvent* event) {
         return;
     }
 
+    auto draw_current_style = [&](QPainter& painter, QPointF c) {
+        switch (controller_type) {
+        case Core::HID::NpadStyleIndex::Handheld:
+            DrawHandheldController(painter, c);
+            break;
+        case Core::HID::NpadStyleIndex::JoyconDual:
+            DrawDualController(painter, c);
+            break;
+        case Core::HID::NpadStyleIndex::JoyconLeft:
+            DrawLeftController(painter, c);
+            break;
+        case Core::HID::NpadStyleIndex::JoyconRight:
+            DrawRightController(painter, c);
+            break;
+        case Core::HID::NpadStyleIndex::GameCube:
+            DrawGCController(painter, c);
+            break;
+        default:
+            DrawProController(painter, c);
+            break;
+        }
+    };
+
+    const float rad_y = rot_y * PI_CONST / 180.0f;
+    const float rad_x = rot_x * PI_CONST / 180.0f;
+    const float cos_y = std::cos(rad_y);
+    const float sin_y = std::sin(rad_y);
+    const float cos_x = std::cos(rad_x);
+    const float sin_x = std::sin(rad_x);
+    const float safe_cos_y = (cos_y >= 0.0f) ? std::max(0.18f, cos_y) : std::min(-0.18f, cos_y);
+    const float safe_cos_x = std::max(0.22f, cos_x);
+
+    // Volumetric 3D depth extrusion slices for Handheld / Joy-Con / GameCube styles when rotated
+    if (std::abs(rot_x) > 1.0f || std::abs(rot_y) > 1.0f) {
+        constexpr int depth_slices = 8;
+        for (int s = depth_slices; s >= 1; --s) {
+            p.save();
+            const float z_off = static_cast<float>(s) * 2.2f * (cos_y >= 0.0f ? -1.0f : 1.0f);
+            const float dx = z_off * sin_y * zoom;
+            const float dy = -z_off * cos_y * sin_x * zoom;
+            QTransform t;
+            t.translate(center.x() + dx, center.y() + dy);
+            t.scale(zoom * safe_cos_y, zoom * safe_cos_x);
+            t.shear(-sin_y * sin_x * 0.28f, sin_y * 0.12f);
+            t.translate(-center.x(), -center.y());
+            p.setTransform(t, true);
+            p.setOpacity(0.22);
+            draw_current_style(p, center);
+            p.restore();
+        }
+    }
+
     p.save();
     if (rot_x != 0.0f || rot_y != 0.0f || zoom != 1.0f) {
-        const float rad_y = rot_y * PI_CONST / 180.0f;
-        const float rad_x = rot_x * PI_CONST / 180.0f;
-        const float cos_y = std::cos(rad_y);
-        const float sin_y = std::sin(rad_y);
-        const float cos_x = std::cos(rad_x);
-        const float sin_x = std::sin(rad_x);
-
         QTransform t;
         t.translate(center.x(), center.y());
-        t.scale(zoom * cos_y, zoom * cos_x);
-        t.shear(-sin_y * sin_x * 0.30f, sin_y * 0.12f);
+        t.scale(zoom * safe_cos_y, zoom * safe_cos_x);
+        t.shear(-sin_y * sin_x * 0.28f, sin_y * 0.12f);
         t.translate(-center.x(), -center.y());
         p.setTransform(t, true);
     }
-
-    switch (controller_type) {
-    case Core::HID::NpadStyleIndex::Handheld:
-        DrawHandheldController(p, center);
-        break;
-    case Core::HID::NpadStyleIndex::JoyconDual:
-        DrawDualController(p, center);
-        break;
-    case Core::HID::NpadStyleIndex::JoyconLeft:
-        DrawLeftController(p, center);
-        break;
-    case Core::HID::NpadStyleIndex::JoyconRight:
-        DrawRightController(p, center);
-        break;
-    case Core::HID::NpadStyleIndex::GameCube:
-        DrawGCController(p, center);
-        break;
-    default:
-        DrawProController(p, center);
-        break;
-    }
-
+    p.setOpacity(1.0);
+    draw_current_style(p, center);
     p.restore();
 }
 
@@ -1626,672 +1671,605 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     const QPointF left_radar  = center + QPointF(-115.0f, 182.0f);
     const QPointF right_radar = center + QPointF( 115.0f, 182.0f);
 
+    const bool front_facing = (cos_y >= 0.0f);
+    constexpr float Z_FRONT = 13.0f;
+    constexpr float Z_REAR  = -13.0f;
+    constexpr float Z_GRIP_FRONT = 15.0f;
+    constexpr float Z_GRIP_REAR  = -15.0f;
 
-    // =========================================================================
-    // MODE A: REAR VIEW (Р’РР” РЎР—РђР”Р) вЂ” PHOTOREALISTIC
-    // =========================================================================
-    if (is_rear_view) {
-        // 1. Studio Drop Shadow beneath rear chassis
-        {
-            const auto sp = Project(0.0f, 115.0f, -10.0f);
-            const float s_rx = 250.0f * sp.scale;
-            const float s_ry = 90.0f * sp.scale;
-            QRadialGradient floor_shadow(sp.pt, s_rx);
-            floor_shadow.setColorAt(0.0, QColor(0, 0, 0, 160));
-            floor_shadow.setColorAt(0.35, QColor(0, 0, 0, 95));
-            floor_shadow.setColorAt(0.70, QColor(0, 0, 0, 35));
-            floor_shadow.setColorAt(1.0, QColor(0, 0, 0, 0));
-            p.setPen(Qt::NoPen);
-            p.setBrush(floor_shadow);
-            p.drawEllipse(sp.pt, s_rx, s_ry);
-        }
-
-        // 2. Top Shoulder assembly from behind: USB-C port, Sync button, status LED
-        {
-            const auto usbc_pos = Project(0.0f, -88.0f, 2.0f);
-            const float port_w = 8.5f * usbc_pos.scale;
-            const float port_h = 4.0f * usbc_pos.scale;
-            p.setPen(QPen(QColor(52, 58, 68), 1.2f));
-            QRadialGradient port_g(usbc_pos.pt, port_w * 1.5f);
-            port_g.setColorAt(0.0, QColor(6, 8, 12));
-            port_g.setColorAt(0.6, QColor(12, 14, 18));
-            port_g.setColorAt(1.0, QColor(28, 32, 38));
-            p.setBrush(port_g);
-            p.drawRoundedRect(QRectF(usbc_pos.pt.x() - port_w, usbc_pos.pt.y() - port_h,
-                                     port_w * 2.0f, port_h * 2.0f), 3.0f, 2.0f);
-
-            p.setPen(Qt::NoPen);
-            QLinearGradient tongue_g(usbc_pos.pt - QPointF(0, port_h * 0.3f),
-                                     usbc_pos.pt + QPointF(0, port_h * 0.3f));
-            tongue_g.setColorAt(0.0, QColor(170, 175, 188));
-            tongue_g.setColorAt(0.5, QColor(195, 200, 212));
-            tongue_g.setColorAt(1.0, QColor(140, 145, 155));
-            p.setBrush(tongue_g);
-            p.drawRoundedRect(QRectF(usbc_pos.pt.x() - port_w * 0.6f, usbc_pos.pt.y() - port_h * 0.3f,
-                                     port_w * 1.2f, port_h * 0.6f), 1.0f, 1.0f);
-
-            const auto sync_pos = Project(22.0f, -88.0f, 2.0f);
-            QRadialGradient sync_g(sync_pos.pt, 3.2f * sync_pos.scale);
-            sync_g.setColorAt(0.0, QColor(48, 52, 60));
-            sync_g.setColorAt(0.6, QColor(32, 35, 42));
-            sync_g.setColorAt(1.0, QColor(20, 22, 28));
-            p.setPen(QPen(QColor(55, 60, 70), 0.8f));
-            p.setBrush(sync_g);
-            p.drawEllipse(sync_pos.pt, 3.0f * sync_pos.scale, 3.0f * sync_pos.scale);
-
-            const auto sync_led = Project(-22.0f, -88.0f, 2.0f);
-            if (is_connected) {
-                QRadialGradient led_glow(sync_led.pt, 6.0f * sync_led.scale);
-                led_glow.setColorAt(0.0, QColor(0, 245, 140, 190));
-                led_glow.setColorAt(0.5, QColor(0, 245, 140, 70));
-                led_glow.setColorAt(1.0, QColor(0, 245, 140, 0));
-                p.setPen(Qt::NoPen);
-                p.setBrush(led_glow);
-                p.drawEllipse(sync_led.pt, 6.0f * sync_led.scale, 6.0f * sync_led.scale);
-            }
-            p.setPen(Qt::NoPen);
-            p.setBrush(is_connected ? QColor(0, 245, 140) : QColor(35, 40, 48));
-            p.drawEllipse(sync_led.pt, 2.0f * sync_led.scale, 2.0f * sync_led.scale);
-        }
-
-        // 3. Triggers ZL & ZR and Bumpers L & R from behind with clear gap
-        auto DrawRearBumper = [&](bool is_left, bool pressed, const QString& label) {
-            const float sgn = is_left ? -1.0f : 1.0f;
-            const float dy = pressed ? 3.5f : 0.0f;
-            const auto p_t_in  = Project(sgn * 56.0f,  -174.0f + dy, 6.0f);
-            const auto p_t_out = Project(sgn * 122.0f, -166.0f + dy, 6.0f);
-            const auto p_b_out = Project(sgn * 124.0f, -153.0f + dy, 6.0f);
-            const auto p_b_in  = Project(sgn * 54.0f,  -158.0f + dy, 6.0f);
-
-            QPolygonF poly;
-            poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
-
-            const QColor b_col = pressed ? colors.highlight : colors.button;
-            QLinearGradient bg(p_t_in.pt, p_b_in.pt);
-            bg.setColorAt(0.0, b_col.lighter(120));
-            bg.setColorAt(0.5, b_col);
-            bg.setColorAt(1.0, b_col.darker(125));
-
-            p.setPen(QPen(pressed ? colors.indicator : QColor(55, 62, 75), 1.5f));
-            p.setBrush(bg);
-            p.drawPolygon(poly);
-
-            const auto lbl_pos = Project(sgn * 88.0f, -163.0f + dy, 6.5f);
-            const float lbl_w = 36.0f * lbl_pos.scale;
-            const float lbl_h = 18.0f * lbl_pos.scale;
-            const QRectF lbl_rect(lbl_pos.pt.x() - lbl_w * 0.5f, lbl_pos.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h);
-
-            QFont font_lbl(QStringLiteral("Segoe UI"), 9, QFont::Bold);
-            p.setFont(font_lbl);
-            p.setPen(pressed ? QColor(255, 255, 255) : QColor(220, 230, 245));
-            p.drawText(lbl_rect, Qt::AlignCenter, label);
-        };
-        DrawRearBumper(true, button_values[L].value, QStringLiteral("L"));
-        DrawRearBumper(false, button_values[R].value, QStringLiteral("R"));
-
-        auto DrawRearTrigger = [&](bool is_left, float analog, bool pressed, const QString& label) {
-            const float sgn = is_left ? -1.0f : 1.0f;
-            const float dy = analog * 6.5f;
-            const bool is_active = (analog > 0.05f || pressed);
-
-            // Elevated trigger in rear view with gap from bumper
-            const auto p_t_in  = Project(sgn * 58.0f,  -145.0f + dy, -6.0f);
-            const auto p_t_out = Project(sgn * 126.0f, -138.0f + dy, -6.0f);
-            const auto p_b_out = Project(sgn * 128.0f, -120.0f + dy, -6.0f);
-            const auto p_b_in  = Project(sgn * 56.0f,  -125.0f + dy, -6.0f);
-
-            QPolygonF trig_poly;
-            trig_poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
-
-            const QColor t_col = is_active ? colors.indicator : colors.button;
-            QLinearGradient tg(p_t_in.pt, p_b_in.pt);
-            tg.setColorAt(0.0, t_col.lighter(125));
-            tg.setColorAt(0.5, t_col);
-            tg.setColorAt(1.0, t_col.darker(125));
-
-            p.setPen(QPen(is_active ? colors.indicator.lighter(130) : QColor(50, 58, 72), 1.6f));
-            p.setBrush(tg);
-            p.drawPolygon(trig_poly);
-
-            const auto lbl = Project(sgn * 92.0f, -132.0f + dy, -5.5f);
-            const float lbl_w = 40.0f * lbl.scale;
-            const float lbl_h = 20.0f * lbl.scale;
-            const QRectF lbl_rect(lbl.pt.x() - lbl_w * 0.5f, lbl.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h);
-
-            QFont font_lbl(QStringLiteral("Segoe UI"), 10, QFont::Bold);
-            p.setFont(font_lbl);
-            p.setPen(is_active ? QColor(255, 255, 255) : QColor(220, 230, 245));
-            p.drawText(lbl_rect, Qt::AlignCenter, label);
-        };
-        DrawRearTrigger(true, zl_analog, button_values[ZL].value, QStringLiteral("ZL"));
-        DrawRearTrigger(false, zr_analog, button_values[ZR].value, QStringLiteral("ZR"));
-
-        // 4. Rear Shell Body
-        {
-            QPolygonF rear_body;
-            for (std::size_t i = 0; i < pro_body.size() / 2; ++i) {
-                rear_body << Project(pro_body[i * 2 + 0] * 0.94f, pro_body[i * 2 + 1] * 0.95f, 0.0f).pt;
-            }
-            for (int i = static_cast<int>(pro_body.size() / 2) - 1; i >= 0; --i) {
-                rear_body << Project(-pro_body[i * 2 + 0] * 0.94f, pro_body[i * 2 + 1] * 0.95f, 0.0f).pt;
-            }
-
-            const auto rt = Project(0.0f, -90.0f, 0.0f);
-            const auto rb = Project(0.0f, 60.0f, 0.0f);
-            QLinearGradient rear_grad(rt.pt, rb.pt);
-            rear_grad.setColorAt(0.0, colors.primary.darker(130));
-            rear_grad.setColorAt(0.2, colors.primary.darker(142));
-            rear_grad.setColorAt(0.5, colors.primary.darker(152));
-            rear_grad.setColorAt(0.8, colors.primary.darker(162));
-            rear_grad.setColorAt(1.0, colors.primary.darker(175));
-
-            p.setPen(QPen(QColor(18, 20, 25), 1.2f));
-            p.setBrush(rear_grad);
-            p.drawPolygon(rear_body);
-        }
-
-        // 5. Rear Handles with diamond anti-slip grip texture
-        auto DrawRearHandle = [&](bool is_left) {
-            const float sgn = is_left ? 1.0f : -1.0f;
-            const QColor grip_col = is_left ? colors.right : colors.left;
-
-            QPolygonF rear_handle;
-            for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
-                const float lx = -sgn * pro_left_handle[i * 2 + 0] * 0.94f;
-                const float ly = pro_left_handle[i * 2 + 1] * 0.95f;
-                rear_handle << Project(lx, ly, 0.0f).pt;
-            }
-
-            const auto h_top = Project(sgn * 185.0f, -20.0f, 0.0f);
-            const auto h_bot = Project(sgn * 145.0f, 130.0f, 0.0f);
-            QLinearGradient h_grad(h_top.pt, h_bot.pt);
-            h_grad.setColorAt(0.0, grip_col.darker(135));
-            h_grad.setColorAt(0.3, grip_col.darker(150));
-            h_grad.setColorAt(0.7, grip_col.darker(160));
-            h_grad.setColorAt(1.0, grip_col.darker(145));
-
-            p.setPen(QPen(QColor(18, 20, 25), 1.2f));
-            p.setBrush(h_grad);
-            p.drawPolygon(rear_handle);
-
-            // Diamond Anti-Slip Texture
-            p.setPen(Qt::NoPen);
-            const int start_x = is_left ? 120 : -182;
-            const int end_x   = is_left ? 182 : -120;
-            for (int dy = -10; dy <= 95; dy += 11) {
-                for (int dx = start_x; dx <= end_x; dx += 11) {
-                    const int offset = ((dy / 11) % 2 == 0) ? 5 : 0;
-                    const auto dot = Project(static_cast<float>(dx + offset), static_cast<float>(dy), 0.1f);
-                    const float ds = 2.0f * dot.scale;
-                    QPolygonF diamond;
-                    diamond << QPointF(dot.pt.x(), dot.pt.y() - ds)
-                            << QPointF(dot.pt.x() + ds * 0.7f, dot.pt.y())
-                            << QPointF(dot.pt.x(), dot.pt.y() + ds)
-                            << QPointF(dot.pt.x() - ds * 0.7f, dot.pt.y());
-                    p.setBrush(QColor(255, 255, 255, 14));
-                    p.drawPolygon(diamond);
-                }
-            }
-        };
-        DrawRearHandle(true);
-        DrawRearHandle(false);
-
-        // 6. Central Recessed Battery Hatch Panel
-        {
-            QPolygonF batt_hatch;
-            batt_hatch << Project(-46.0f, -40.0f, 0.0f).pt
-                       << Project( 46.0f, -40.0f, 0.0f).pt
-                       << Project( 44.0f,  30.0f, 0.0f).pt
-                       << Project(-44.0f,  30.0f, 0.0f).pt;
-
-            const auto bht = Project(0.0f, -40.0f, 0.0f);
-            const auto bhb = Project(0.0f, 30.0f, 0.0f);
-            QLinearGradient bh_grad(bht.pt, bhb.pt);
-            bh_grad.setColorAt(0.0, colors.primary.darker(165));
-            bh_grad.setColorAt(0.3, colors.primary.darker(175));
-            bh_grad.setColorAt(0.7, colors.primary.darker(180));
-            bh_grad.setColorAt(1.0, colors.primary.darker(170));
-
-            p.setPen(QPen(QColor(25, 28, 35), 1.2f));
-            p.setBrush(bh_grad);
-            p.drawPolygon(batt_hatch);
-
-            p.setPen(QPen(QColor(85, 90, 102, 90), 0.8f));
-            p.drawLine(Project(-45.5f, -39.5f, 0.0f).pt, Project(45.5f, -39.5f, 0.0f).pt);
-
-            // Nintendo Switch Logo Engraving
-            const auto logo_pos = Project(0.0f, -15.0f, 0.1f);
-            p.setPen(QPen(QColor(140, 145, 155, 130), 1.0f));
-            p.setBrush(Qt::NoBrush);
-            const float lw = 14.0f * logo_pos.scale;
-            const float lh = 18.0f * logo_pos.scale;
-            p.drawRoundedRect(QRectF(logo_pos.pt.x() - lw, logo_pos.pt.y() - lh * 0.5f, lw * 2.0f, lh), 3.0f, 3.0f);
-            p.drawLine(QPointF(logo_pos.pt.x(), logo_pos.pt.y() - lh * 0.5f),
-                       QPointF(logo_pos.pt.x(), logo_pos.pt.y() + lh * 0.5f));
-            p.setBrush(QColor(140, 145, 155, 130));
-            p.drawEllipse(QPointF(logo_pos.pt.x() - lw * 0.5f, logo_pos.pt.y() - lh * 0.2f), 1.5f * logo_pos.scale, 1.5f * logo_pos.scale);
-            p.drawEllipse(QPointF(logo_pos.pt.x() + lw * 0.5f, logo_pos.pt.y() + lh * 0.2f), 1.5f * logo_pos.scale, 1.5f * logo_pos.scale);
-
-            p.setPen(QColor(110, 115, 125, 120));
-            SetTextFont(p, 0.60f * logo_pos.scale);
-            DrawText(p, Project(0.0f, 10.0f, 0.1f).pt, 0.60f * logo_pos.scale, QStringLiteral("MOD. HAC-013  5V=500mA"));
-
-            // 4 Steel Phillips Screws
-            auto DrawScrew = [&](float sx, float sy) {
-                const auto sp = Project(sx, sy, 0.1f);
-                const float sr = 3.0f * sp.scale;
-                QRadialGradient screw_grad(sp.pt - QPointF(sr * 0.2f, sr * 0.2f), sr * 1.2f);
-                screw_grad.setColorAt(0.0, QColor(120, 125, 140));
-                screw_grad.setColorAt(0.4, QColor(85, 90, 100));
-                screw_grad.setColorAt(0.8, QColor(55, 60, 68));
-                screw_grad.setColorAt(1.0, QColor(28, 30, 36));
-                p.setPen(QPen(QColor(20, 22, 28), 0.8f));
-                p.setBrush(screw_grad);
-                p.drawEllipse(sp.pt, sr, sr);
-                p.setPen(QPen(QColor(35, 38, 45), 0.9f));
-                p.drawLine(QPointF(sp.pt.x() - sr * 0.5f, sp.pt.y()), QPointF(sp.pt.x() + sr * 0.5f, sp.pt.y()));
-                p.drawLine(QPointF(sp.pt.x(), sp.pt.y() - sr * 0.5f), QPointF(sp.pt.x(), sp.pt.y() + sr * 0.5f));
-            };
-            DrawScrew(-50.0f, -25.0f);
-            DrawScrew( 50.0f, -25.0f);
-            DrawScrew(-48.0f,  35.0f);
-            DrawScrew( 48.0f,  35.0f);
-        }
-
-        // 7. Orientation Badge "Р’РР” РЎР—РђР”Р"
-        {
-            const auto badge_pos = center + QPointF(0.0f, -145.0f);
-            p.setPen(QPen(colors.indicator, 1.0f));
-            p.setBrush(QColor(15, 20, 28, 200));
-            p.drawRoundedRect(QRectF(badge_pos.x() - 48.0f, badge_pos.y() - 11.0f, 96.0f, 22.0f), 5.0f, 5.0f);
-            p.setPen(colors.indicator);
-            SetTextFont(p, 0.70f);
-            DrawText(p, badge_pos, 0.70f, QStringLiteral("Р’РР” РЎР—РђР”Р"));
-        }
-
-        // 8. Draw HUD elements in Rear View
-        DrawPhotorealisticBattery(bat_pos);
-        DrawColorfulGyroscope(gyro_pos, smooth_euler, 16.0f);
-        DrawModernStickRadar(true, left_radar);
-        DrawModernStickRadar(false, right_radar);
-        return;
-    }
-
-    // =========================================================================
-    // MODE B: FRONT VIEW (Р’РР” РЎРџР•Р Р•Р”Р) вЂ” PHOTOREALISTIC STUDIO PRESENTATION
-    // Deterministic Back-to-Front Layering: Buttons & Sticks CAN NEVER DISAPPEAR!
-    // =========================================================================
-
-    // -------------------------------------------------------------------------
-    // LAYER 1: Ambient Studio Drop Shadow with Contact Shadows
-    // -------------------------------------------------------------------------
+    // 1. Studio Floor Shadow & Contact Shadows
     {
-        const auto sp = Project(0.0f, 115.0f, -10.0f);
-        const float s_rx = 250.0f * sp.scale;
-        const float s_ry = 90.0f * sp.scale;
+        const auto sp = Project(0.0f, 122.0f, -18.0f);
+        const float s_rx = 255.0f * sp.scale;
+        const float s_ry = 86.0f * sp.scale;
         QRadialGradient floor_shadow(sp.pt, s_rx);
-        floor_shadow.setColorAt(0.0, QColor(0, 0, 0, 160));
-        floor_shadow.setColorAt(0.35, QColor(0, 0, 0, 95));
-        floor_shadow.setColorAt(0.70, QColor(0, 0, 0, 35));
+        floor_shadow.setColorAt(0.0, QColor(0, 0, 0, 175));
+        floor_shadow.setColorAt(0.38, QColor(0, 0, 0, 105));
+        floor_shadow.setColorAt(0.72, QColor(0, 0, 0, 38));
         floor_shadow.setColorAt(1.0, QColor(0, 0, 0, 0));
         p.setPen(Qt::NoPen);
         p.setBrush(floor_shadow);
         p.drawEllipse(sp.pt, s_rx, s_ry);
-
-        auto DrawContactShadow = [&](float cx, float cy, float rx, float ry, int alpha) {
-            const auto cp = Project(cx, cy, -8.0f);
-            QRadialGradient cs(cp.pt, rx * cp.scale);
-            cs.setColorAt(0.0, QColor(0, 0, 0, alpha));
-            cs.setColorAt(0.6, QColor(0, 0, 0, alpha / 3));
-            cs.setColorAt(1.0, QColor(0, 0, 0, 0));
-            p.setBrush(cs);
-            p.drawEllipse(cp.pt, rx * cp.scale, ry * cp.scale);
-        };
-        DrawContactShadow(-155.0f, 128.0f, 38.0f, 14.0f, 160);
-        DrawContactShadow( 155.0f, 128.0f, 38.0f, 14.0f, 160);
-        DrawContactShadow(   0.0f,  68.0f, 55.0f, 16.0f, 130);
     }
 
-    // -------------------------------------------------------------------------
-    // LAYER 2: Triggers (ZL / ZR) & Bumpers (L / R) with Clear Offset & High Visibility
-    // -------------------------------------------------------------------------
-    auto DrawShoulderTrigger = [&](bool is_left, float analog, bool pressed, const QString& label) {
-        const float sgn = is_left ? -1.0f : 1.0f;
-        const bool is_active = (analog > 0.05f || pressed);
-        const float dy = analog * 7.0f;
-
-        const auto p_t_in  = Project(sgn * 60.0f,  -175.0f + dy, -16.0f);
-        const auto p_t_out = Project(sgn * 126.0f, -166.0f + dy, -16.0f);
-        const auto p_b_out = Project(sgn * 128.0f, -149.0f + dy, -16.0f);
-        const auto p_b_in  = Project(sgn * 58.0f,  -154.0f + dy, -16.0f);
-
-        QPolygonF trig_poly;
-        trig_poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
-
-        QLinearGradient tg(p_t_in.pt, p_b_in.pt);
-        if (is_active) {
-            tg.setColorAt(0.0, colors.indicator.lighter(135));
-            tg.setColorAt(0.4, colors.indicator);
-            tg.setColorAt(1.0, colors.indicator.darker(120));
-        } else {
-            tg.setColorAt(0.0, QColor(64, 70, 84));
-            tg.setColorAt(0.3, QColor(46, 52, 62));
-            tg.setColorAt(0.8, QColor(30, 34, 42));
-            tg.setColorAt(1.0, QColor(22, 25, 30));
+    auto BuildBodyPolygon = [&](float z_plane, float xy_scale = 1.0f) -> QPolygonF {
+        QPolygonF poly;
+        poly.reserve(static_cast<int>(pro_body.size()));
+        for (std::size_t i = 0; i < pro_body.size() / 2; ++i) {
+            poly << Project(pro_body[i * 2 + 0] * xy_scale, pro_body[i * 2 + 1] * xy_scale, z_plane).pt;
         }
-
-        p.setPen(QPen(is_active ? colors.indicator.lighter(130) : QColor(56, 64, 78), 1.8f));
-        p.setBrush(tg);
-        p.drawPolygon(trig_poly);
-
-        // Top specular metallic rim
-        p.setPen(QPen(is_active ? QColor(255, 255, 255, 190) : QColor(255, 255, 255, 50), 1.2f));
-        p.drawLine(p_t_in.pt, p_t_out.pt);
-
-        // Prominent bold label "ZL" / "ZR"
-        const auto lbl_pos = Project(sgn * 92.0f, -161.0f + dy, -15.0f);
-        const float lbl_w = 42.0f * lbl_pos.scale;
-        const float lbl_h = 22.0f * lbl_pos.scale;
-        const QRectF lbl_rect(lbl_pos.pt.x() - lbl_w * 0.5f, lbl_pos.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h);
-
-        QFont font_lbl(QStringLiteral("Segoe UI"), 10, QFont::Bold);
-        p.setFont(font_lbl);
-        p.setPen(is_active ? QColor(255, 255, 255) : QColor(215, 225, 240));
-        p.drawText(lbl_rect, Qt::AlignCenter, label);
+        for (int i = static_cast<int>(pro_body.size() / 2) - 1; i >= 0; --i) {
+            poly << Project(-pro_body[i * 2 + 0] * xy_scale, pro_body[i * 2 + 1] * xy_scale, z_plane).pt;
+        }
+        return poly;
     };
 
-    DrawShoulderTrigger(true, zl_analog, button_values[ZL].value, QStringLiteral("ZL"));
-    DrawShoulderTrigger(false, zr_analog, button_values[ZR].value, QStringLiteral("ZR"));
-
-    auto DrawShoulderBumper = [&](bool is_left, bool pressed, const QString& label) {
+    auto BuildHandlePolygon = [&](bool is_left, float z_plane, float xy_scale = 1.0f) -> QPolygonF {
         const float sgn = is_left ? -1.0f : 1.0f;
-        const float dy = pressed ? 3.5f : 0.0f;
-
-        const auto p_t_in  = Project(sgn * 56.0f,  -144.0f + dy, 6.0f);
-        const auto p_t_out = Project(sgn * 122.0f, -137.0f + dy, 6.0f);
-        const auto p_b_out = Project(sgn * 124.0f, -123.0f + dy, 6.0f);
-        const auto p_b_in  = Project(sgn * 54.0f,  -127.0f + dy, 6.0f);
-
-        QPolygonF bump_poly;
-        bump_poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
-
-        QLinearGradient bg(p_t_in.pt, p_b_in.pt);
-        if (pressed) {
-            bg.setColorAt(0.0, colors.highlight.lighter(135));
-            bg.setColorAt(0.4, colors.highlight);
-            bg.setColorAt(1.0, colors.highlight.darker(120));
-        } else {
-            bg.setColorAt(0.0, QColor(78, 85, 100));
-            bg.setColorAt(0.3, colors.button);
-            bg.setColorAt(0.8, colors.button.darker(110));
-            bg.setColorAt(1.0, colors.button.darker(125));
+        QPolygonF poly;
+        poly.reserve(static_cast<int>(pro_left_handle.size() / 2));
+        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
+            const float hx = sgn * pro_left_handle[i * 2 + 0] * xy_scale;
+            const float hy = pro_left_handle[i * 2 + 1] * xy_scale;
+            poly << Project(hx, hy, z_plane).pt;
         }
-
-        p.setPen(QPen(pressed ? colors.indicator : QColor(64, 72, 88), 1.6f));
-        p.setBrush(bg);
-        p.drawPolygon(bump_poly);
-
-        // Specular highlight line along top edge
-        p.setPen(QPen(QColor(255, 255, 255, pressed ? 170 : 55), 1.2f));
-        p.drawLine(p_t_in.pt, p_t_out.pt);
-
-        // Prominent bold label "L" / "R"
-        const auto lbl_pos = Project(sgn * 88.0f, -134.0f + dy, 7.0f);
-        const float lbl_w = 36.0f * lbl_pos.scale;
-        const float lbl_h = 18.0f * lbl_pos.scale;
-        const QRectF lbl_rect(lbl_pos.pt.x() - lbl_w * 0.5f, lbl_pos.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h);
-
-        QFont font_lbl(QStringLiteral("Segoe UI"), 10, QFont::Bold);
-        p.setFont(font_lbl);
-        p.setPen(pressed ? QColor(255, 255, 255) : QColor(230, 240, 255));
-        p.drawText(lbl_rect, Qt::AlignCenter, label);
+        return poly;
     };
 
-    DrawShoulderBumper(true, button_values[L].value, QStringLiteral("L"));
-    DrawShoulderBumper(false, button_values[R].value, QStringLiteral("R"));
+    auto DrawVolumetricMidsection3D = [&](bool step_rear_to_front) {
+        constexpr int SLICES = 16;
+        const float z_start = step_rear_to_front ? Z_REAR : Z_FRONT;
+        const float z_end   = step_rear_to_front ? Z_FRONT : Z_REAR;
+        const float hg_start = step_rear_to_front ? Z_GRIP_REAR : Z_GRIP_FRONT;
+        const float hg_end   = step_rear_to_front ? Z_GRIP_FRONT : Z_GRIP_REAR;
 
-    // -------------------------------------------------------------------------
-    // LAYER 3: Ergonomic Palm Handles (Left and Right)
-    // -------------------------------------------------------------------------
+        for (int s = 1; s < SLICES; ++s) {
+            const float t = static_cast<float>(s) / static_cast<float>(SLICES);
+            const float z_cur = z_start + t * (z_end - z_start);
+            const float hg_cur = hg_start + t * (hg_end - hg_start);
+            const float bevel = 0.968f + 0.032f * std::sin(t * PI_CONST);
+            const bool is_seam = (s == SLICES / 2);
+
+            const int shade_factor = 148 - static_cast<int>(28.0f * std::sin(t * PI_CONST));
+            QColor wall_col = colors.primary.darker(shade_factor);
+            wall_col.setAlpha(255);
+
+            p.setPen(is_seam ? QPen(QColor(8, 10, 14, 240), 1.8f * zoom)
+                             : QPen(colors.body_rim.darker(155), 1.0f));
+            p.setBrush(wall_col);
+            p.drawPolygon(BuildBodyPolygon(z_cur, bevel));
+
+            auto draw_handle_slice = [&](bool is_left) {
+                const QColor g_col = (is_left ? colors.left : colors.right).darker(shade_factor - 8);
+                p.setPen(is_seam ? QPen(QColor(8, 10, 14, 235), 1.6f * zoom)
+                                 : QPen(g_col.darker(135), 1.0f));
+                p.setBrush(g_col);
+                p.drawPolygon(BuildHandlePolygon(is_left, hg_cur, bevel));
+            };
+            if (sin_y >= 0.0f) {
+                draw_handle_slice(true);
+                draw_handle_slice(false);
+            } else {
+                draw_handle_slice(false);
+                draw_handle_slice(true);
+            }
+        }
+
+        // 3D Top Expansion / USB-C / Sync Housing Wall
+        {
+            QPolygonF top_wall;
+            top_wall << Project(-52.0f, -130.0f, -9.0f).pt
+                     << Project( 52.0f, -130.0f, -9.0f).pt
+                     << Project( 52.0f, -130.0f,  9.0f).pt
+                     << Project(-52.0f, -130.0f,  9.0f).pt;
+            p.setPen(QPen(QColor(45, 50, 62), 1.2f));
+            p.setBrush(QColor(20, 23, 29));
+            p.drawPolygon(top_wall);
+
+            const auto usbc_pos = Project(0.0f, -131.0f, 0.0f);
+            const float port_w = 9.5f * usbc_pos.scale;
+            const float port_h = 4.2f * usbc_pos.scale;
+            p.setPen(QPen(QColor(82, 90, 106), 1.2f));
+            p.setBrush(QColor(8, 10, 14));
+            p.drawRoundedRect(QRectF(usbc_pos.pt.x() - port_w, usbc_pos.pt.y() - port_h,
+                                     port_w * 2.0f, port_h * 2.0f), 3.0f, 2.0f);
+            p.setPen(Qt::NoPen);
+            p.setBrush(QColor(185, 192, 206));
+            p.drawRoundedRect(QRectF(usbc_pos.pt.x() - port_w * 0.62f, usbc_pos.pt.y() - port_h * 0.30f,
+                                     port_w * 1.24f, port_h * 0.60f), 1.0f, 1.0f);
+
+            const auto sync_pos = Project(24.0f, -131.0f, 0.0f);
+            p.setPen(QPen(QColor(65, 72, 85), 0.9f));
+            p.setBrush(QColor(34, 38, 46));
+            p.drawEllipse(sync_pos.pt, 3.2f * sync_pos.scale, 3.2f * sync_pos.scale);
+
+            const auto led_pos = Project(-24.0f, -131.0f, 0.0f);
+            p.setPen(Qt::NoPen);
+            p.setBrush(is_connected ? QColor(0, 248, 148) : QColor(42, 48, 56));
+            p.drawEllipse(led_pos.pt, 2.3f * led_pos.scale, 2.3f * led_pos.scale);
+        }
+
+        auto DrawVolumetricTrigger3D = [&](bool is_left, float analog, bool pressed, const QString& label) {
+            const float sgn = is_left ? -1.0f : 1.0f;
+            const bool is_active = (analog > 0.05f || pressed);
+            const float dy = analog * 7.5f;
+            const float dz = -analog * 3.5f;
+
+            for (int ts = 0; ts < 5; ++ts) {
+                const float z_t = -17.0f + dz + ts * 2.4f;
+                const auto p_t_in  = Project(sgn * 58.0f,  -168.0f + dy, z_t);
+                const auto p_t_out = Project(sgn * 126.0f, -159.0f + dy, z_t);
+                const auto p_b_out = Project(sgn * 128.0f, -141.0f + dy, z_t);
+                const auto p_b_in  = Project(sgn * 56.0f,  -146.0f + dy, z_t);
+
+                QPolygonF trig_poly;
+                trig_poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
+
+                QLinearGradient tg(p_t_in.pt, p_b_in.pt);
+                if (is_active) {
+                    tg.setColorAt(0.0, colors.indicator.lighter(135));
+                    tg.setColorAt(0.5, colors.indicator);
+                    tg.setColorAt(1.0, colors.indicator.darker(125));
+                } else {
+                    tg.setColorAt(0.0, QColor(74, 82, 98));
+                    tg.setColorAt(0.4, QColor(48, 54, 66));
+                    tg.setColorAt(1.0, QColor(24, 28, 35));
+                }
+                p.setPen(QPen(is_active ? colors.indicator.lighter(135) : QColor(62, 70, 86), 1.4f));
+                p.setBrush(tg);
+                p.drawPolygon(trig_poly);
+            }
+
+            const float z_lbl = front_facing ? (-7.0f + dz) : (-17.5f + dz);
+            const auto lbl_pos = Project(sgn * 92.0f, -154.0f + dy, z_lbl);
+            const float lbl_w = 42.0f * lbl_pos.scale;
+            const float lbl_h = 20.0f * lbl_pos.scale;
+            QFont font_lbl(QStringLiteral("Segoe UI"), 10, QFont::Bold);
+            p.setFont(font_lbl);
+            p.setPen(is_active ? QColor(255, 255, 255) : QColor(225, 235, 250));
+            p.drawText(QRectF(lbl_pos.pt.x() - lbl_w * 0.5f, lbl_pos.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h),
+                       Qt::AlignCenter, label);
+        };
+
+        auto DrawVolumetricBumper3D = [&](bool is_left, bool pressed, const QString& label) {
+            const float sgn = is_left ? -1.0f : 1.0f;
+            const float dy = pressed ? 3.8f : 0.0f;
+
+            for (int bs = 0; bs < 5; ++bs) {
+                const float z_b = 1.5f + bs * 2.2f;
+                const auto p_t_in  = Project(sgn * 55.0f,  -142.0f + dy, z_b);
+                const auto p_t_out = Project(sgn * 122.0f, -135.0f + dy, z_b);
+                const auto p_b_out = Project(sgn * 124.0f, -121.0f + dy, z_b);
+                const auto p_b_in  = Project(sgn * 53.0f,  -125.0f + dy, z_b);
+
+                QPolygonF bump_poly;
+                bump_poly << p_t_in.pt << p_t_out.pt << p_b_out.pt << p_b_in.pt;
+
+                QLinearGradient bg(p_t_in.pt, p_b_in.pt);
+                if (pressed) {
+                    bg.setColorAt(0.0, colors.highlight.lighter(135));
+                    bg.setColorAt(0.5, colors.highlight);
+                    bg.setColorAt(1.0, colors.highlight.darker(125));
+                } else {
+                    bg.setColorAt(0.0, QColor(86, 94, 110));
+                    bg.setColorAt(0.4, colors.button);
+                    bg.setColorAt(1.0, colors.button.darker(130));
+                }
+                p.setPen(QPen(pressed ? colors.indicator : QColor(70, 78, 95), 1.4f));
+                p.setBrush(bg);
+                p.drawPolygon(bump_poly);
+            }
+
+            const float z_lbl = front_facing ? 10.8f : 1.2f;
+            const auto lbl_pos = Project(sgn * 88.0f, -132.0f + dy, z_lbl);
+            const float lbl_w = 36.0f * lbl_pos.scale;
+            const float lbl_h = 18.0f * lbl_pos.scale;
+            QFont font_lbl(QStringLiteral("Segoe UI"), 10, QFont::Bold);
+            p.setFont(font_lbl);
+            p.setPen(pressed ? QColor(255, 255, 255) : QColor(235, 242, 255));
+            p.drawText(QRectF(lbl_pos.pt.x() - lbl_w * 0.5f, lbl_pos.pt.y() - lbl_h * 0.5f, lbl_w, lbl_h),
+                       Qt::AlignCenter, label);
+        };
+
+        if (step_rear_to_front) {
+            DrawVolumetricTrigger3D(true, zl_analog, button_values[ZL].value, QStringLiteral("ZL"));
+            DrawVolumetricTrigger3D(false, zr_analog, button_values[ZR].value, QStringLiteral("ZR"));
+            DrawVolumetricBumper3D(true, button_values[L].value, QStringLiteral("L"));
+            DrawVolumetricBumper3D(false, button_values[R].value, QStringLiteral("R"));
+        } else {
+            DrawVolumetricBumper3D(true, button_values[L].value, QStringLiteral("L"));
+            DrawVolumetricBumper3D(false, button_values[R].value, QStringLiteral("R"));
+            DrawVolumetricTrigger3D(true, zl_analog, button_values[ZL].value, QStringLiteral("ZL"));
+            DrawVolumetricTrigger3D(false, zr_analog, button_values[ZR].value, QStringLiteral("ZR"));
+        }
+    };
+
+    auto DrawRearShell3D = [&]() {
+        {
+            const QPolygonF rear_body = BuildBodyPolygon(Z_REAR, 0.985f);
+            const auto rt = Project(0.0f, -95.0f, Z_REAR);
+            const auto rb = Project(0.0f,  60.0f, Z_REAR);
+            QLinearGradient rear_grad(rt.pt, rb.pt);
+            rear_grad.setColorAt(0.0, colors.primary.darker(118));
+            rear_grad.setColorAt(0.3, colors.primary.darker(132));
+            rear_grad.setColorAt(0.7, colors.primary.darker(145));
+            rear_grad.setColorAt(1.0, colors.primary.darker(162));
+
+            p.setPen(QPen(colors.body_rim.darker(130), 1.3f));
+            p.setBrush(rear_grad);
+            p.drawPolygon(rear_body);
+        }
+
+        auto DrawRearGrip3D = [&](bool is_left) {
+            const float sgn = is_left ? -1.0f : 1.0f;
+            const QColor main_col = is_left ? colors.left : colors.right;
+            const QColor hi_col   = is_left ? colors.grip_left_highlight : colors.grip_right_highlight;
+            const QColor sh_col   = is_left ? colors.grip_left_shadow : colors.grip_right_shadow;
+
+            const QPolygonF rear_handle = BuildHandlePolygon(is_left, Z_GRIP_REAR, 0.985f);
+            const auto h_outer = Project(sgn * 190.0f, 10.0f, Z_GRIP_REAR);
+            const auto h_inner = Project(sgn * 100.0f, 10.0f, Z_GRIP_REAR);
+            QLinearGradient h_grad(h_outer.pt, h_inner.pt);
+            h_grad.setColorAt(0.0, hi_col.darker(108));
+            h_grad.setColorAt(0.35, main_col.darker(115));
+            h_grad.setColorAt(0.75, main_col.darker(132));
+            h_grad.setColorAt(1.0, sh_col.darker(120));
+
+            p.setPen(QPen(QColor(16, 18, 24, 210), 1.2f));
+            p.setBrush(h_grad);
+            p.drawPolygon(rear_handle);
+
+            p.setPen(Qt::NoPen);
+            const int start_x = is_left ? -182 : 130;
+            const int end_x   = is_left ? -130 : 182;
+            for (int dy = -15; dy <= 95; dy += 11) {
+                for (int dx = start_x; dx <= end_x; dx += 11) {
+                    const int offset = ((dy / 11) % 2 == 0) ? 5 : 0;
+                    const auto dot = Project(static_cast<float>(dx + offset), static_cast<float>(dy), Z_GRIP_REAR - 0.2f);
+                    const float ds = 1.9f * dot.scale;
+                    QPolygonF diamond;
+                    diamond << QPointF(dot.pt.x(), dot.pt.y() - ds)
+                            << QPointF(dot.pt.x() + ds * 0.68f, dot.pt.y())
+                            << QPointF(dot.pt.x(), dot.pt.y() + ds)
+                            << QPointF(dot.pt.x() - ds * 0.68f, dot.pt.y());
+                    p.setBrush(QColor(255, 255, 255, 18));
+                    p.drawPolygon(diamond);
+                }
+            }
+        };
+        DrawRearGrip3D(true);
+        DrawRearGrip3D(false);
+
+        {
+            const float z_hatch = Z_REAR - 0.4f;
+            QPolygonF batt_hatch;
+            batt_hatch << Project(-48.0f, -44.0f, z_hatch).pt
+                       << Project( 48.0f, -44.0f, z_hatch).pt
+                       << Project( 45.0f,  32.0f, z_hatch).pt
+                       << Project(-45.0f,  32.0f, z_hatch).pt;
+
+            const auto bht = Project(0.0f, -44.0f, z_hatch);
+            const auto bhb = Project(0.0f,  32.0f, z_hatch);
+            QLinearGradient bh_grad(bht.pt, bhb.pt);
+            bh_grad.setColorAt(0.0, colors.primary.darker(152));
+            bh_grad.setColorAt(0.5, colors.primary.darker(168));
+            bh_grad.setColorAt(1.0, colors.primary.darker(158));
+
+            p.setPen(QPen(colors.body_rim.darker(135), 1.2f));
+            p.setBrush(bh_grad);
+            p.drawPolygon(batt_hatch);
+
+            if (current_skin == ControllerSkin::ClassicBlack) {
+                p.setPen(QPen(QColor(195, 165, 78, 120), 1.1f));
+                p.drawLine(Project(-38.0f, -32.0f, z_hatch - 0.1f).pt, Project(38.0f, -32.0f, z_hatch - 0.1f).pt);
+                p.drawLine(Project(-28.0f,  18.0f, z_hatch - 0.1f).pt, Project(28.0f,  18.0f, z_hatch - 0.1f).pt);
+            } else if (current_skin == ControllerSkin::CyberStorm) {
+                p.setPen(QPen(QColor(0, 245, 255, 180), 1.5f * zoom));
+                p.drawLine(Project(-42.0f, -38.0f, z_hatch - 0.1f).pt, Project(-18.0f, -38.0f, z_hatch - 0.1f).pt);
+                p.drawLine(Project( 18.0f, -38.0f, z_hatch - 0.1f).pt, Project( 42.0f, -38.0f, z_hatch - 0.1f).pt);
+                p.setPen(QPen(QColor(255, 28, 118, 180), 1.5f * zoom));
+                p.drawLine(Project(-38.0f,  26.0f, z_hatch - 0.1f).pt, Project( 38.0f,  26.0f, z_hatch - 0.1f).pt);
+            } else {
+                p.setPen(QPen(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 130), 1.3f * zoom));
+                p.setBrush(Qt::NoBrush);
+                const auto emb_c = Project(0.0f, -14.0f, z_hatch - 0.1f);
+                p.drawEllipse(emb_c.pt, 22.0f * emb_c.scale, 22.0f * emb_c.scale);
+            }
+
+            const auto logo_pos = Project(0.0f, -15.0f, z_hatch - 0.2f);
+            const float lw = 13.5f * logo_pos.scale;
+            const float lh = 17.5f * logo_pos.scale;
+            p.setPen(QPen(QColor(175, 182, 196, 155), 1.1f));
+            p.setBrush(Qt::NoBrush);
+            p.drawRoundedRect(QRectF(logo_pos.pt.x() - lw, logo_pos.pt.y() - lh * 0.5f, lw * 2.0f, lh), 3.0f, 3.0f);
+            p.drawLine(QPointF(logo_pos.pt.x(), logo_pos.pt.y() - lh * 0.5f),
+                       QPointF(logo_pos.pt.x(), logo_pos.pt.y() + lh * 0.5f));
+
+            p.setPen(QColor(150, 158, 172, 145));
+            SetTextFont(p, 0.58f * logo_pos.scale);
+            DrawText(p, Project(0.0f, 12.0f, z_hatch - 0.2f).pt, 0.58f * logo_pos.scale,
+                     current_skin == ControllerSkin::CyberStorm
+                         ? QStringLiteral("STORM PRO 3D // HAC-013")
+                         : QStringLiteral("MOD. HAC-013  5V=500mA"));
+
+            auto DrawScrew = [&](float sx, float sy) {
+                const auto sp = Project(sx, sy, z_hatch - 0.2f);
+                const float sr = 3.2f * sp.scale;
+                QRadialGradient screw_grad(sp.pt - QPointF(sr * 0.2f, sr * 0.2f), sr * 1.2f);
+                screw_grad.setColorAt(0.0, QColor(145, 152, 168));
+                screw_grad.setColorAt(0.5, QColor(88, 94, 106));
+                screw_grad.setColorAt(1.0, QColor(28, 30, 36));
+                p.setPen(QPen(QColor(18, 20, 26), 0.8f));
+                p.setBrush(screw_grad);
+                p.drawEllipse(sp.pt, sr, sr);
+                p.setPen(QPen(QColor(32, 35, 42), 0.9f));
+                p.drawLine(QPointF(sp.pt.x() - sr * 0.52f, sp.pt.y()), QPointF(sp.pt.x() + sr * 0.52f, sp.pt.y()));
+                p.drawLine(QPointF(sp.pt.x(), sp.pt.y() - sr * 0.52f), QPointF(sp.pt.x(), sp.pt.y() + sr * 0.52f));
+            };
+            DrawScrew(-52.0f, -26.0f);
+            DrawScrew( 52.0f, -26.0f);
+            DrawScrew(-49.0f,  36.0f);
+            DrawScrew( 49.0f,  36.0f);
+        }
+    };
+
+    auto DrawFrontShellAndControls3D = [&]() {
     auto DrawErgonomicHandle = [&](bool is_left) {
         const float sgn = is_left ? -1.0f : 1.0f;
         const QColor main_col = is_left ? colors.left : colors.right;
         const QColor hi_col   = is_left ? colors.grip_left_highlight : colors.grip_right_highlight;
         const QColor sh_col   = is_left ? colors.grip_left_shadow : colors.grip_right_shadow;
 
-        QPolygonF handle_poly;
-        for (std::size_t i = 0; i < pro_left_handle.size() / 2; ++i) {
-            const float hx = sgn * pro_left_handle[i * 2 + 0];
-            const float ly = pro_left_handle[i * 2 + 1];
-            handle_poly << Project(hx, ly, 4.0f).pt;
-        }
+        const QPolygonF handle_poly = BuildHandlePolygon(is_left, Z_GRIP_FRONT, 1.0f);
 
-        const auto p_outer = Project(sgn * 192.0f, 10.0f, 4.0f);
-        const auto p_inner = Project(sgn * 100.0f, 10.0f, 4.0f);
+        const auto p_outer = Project(sgn * 192.0f, 10.0f, Z_GRIP_FRONT);
+        const auto p_inner = Project(sgn * 100.0f, 10.0f, Z_GRIP_FRONT);
         QLinearGradient h_grad(p_outer.pt, p_inner.pt);
-        h_grad.setColorAt(0.0,  hi_col.lighter(120));
-        h_grad.setColorAt(0.12, hi_col);
-        h_grad.setColorAt(0.35, main_col.lighter(108));
-        h_grad.setColorAt(0.55, main_col);
-        h_grad.setColorAt(0.80, main_col.darker(114));
+        h_grad.setColorAt(0.0,  hi_col.lighter(124));
+        h_grad.setColorAt(0.14, hi_col);
+        h_grad.setColorAt(0.38, main_col.lighter(110));
+        h_grad.setColorAt(0.60, main_col);
+        h_grad.setColorAt(0.82, main_col.darker(115));
         h_grad.setColorAt(1.0,  sh_col);
 
-        p.setPen(QPen(QColor(18, 20, 24, 180), 1.2f));
+        p.setPen(QPen(QColor(16, 18, 24, 200), 1.3f));
         p.setBrush(h_grad);
         p.drawPolygon(handle_poly);
 
-        // Specular highlight streak
         {
-            const auto sp = Project(sgn * 175.0f, -10.0f, 4.3f);
-            QRadialGradient sg(sp.pt, 50.0f * sp.scale);
-            sg.setColorAt(0.0, QColor(255, 255, 255, 40));
-            sg.setColorAt(0.5, QColor(255, 255, 255, 12));
+            const auto sp = Project(sgn * 174.0f, -8.0f, Z_GRIP_FRONT + 0.3f);
+            QRadialGradient sg(sp.pt, 54.0f * sp.scale);
+            sg.setColorAt(0.0, QColor(255, 255, 255, 52));
+            sg.setColorAt(0.5, QColor(255, 255, 255, 16));
             sg.setColorAt(1.0, QColor(255, 255, 255, 0));
             p.setPen(Qt::NoPen);
             p.setBrush(sg);
-            p.drawEllipse(sp.pt, 9.0f * sp.scale, 52.0f * sp.scale);
+            p.drawEllipse(sp.pt, 10.0f * sp.scale, 54.0f * sp.scale);
         }
 
-        // Diamond Anti-Slip Grip Texture
         p.setPen(Qt::NoPen);
         const int start_x = is_left ? -182 : 130;
         const int end_x   = is_left ? -130 : 182;
         for (int dy = -20; dy <= 95; dy += 11) {
             for (int dx = start_x; dx <= end_x; dx += 11) {
                 const int offset = ((dy / 11) % 2 == 0) ? 5 : 0;
-                const auto dot = Project(static_cast<float>(dx + offset), static_cast<float>(dy), 4.2f);
-                const float ds = 1.8f * dot.scale;
+                const auto dot = Project(static_cast<float>(dx + offset), static_cast<float>(dy), Z_GRIP_FRONT + 0.2f);
+                const float ds = 1.9f * dot.scale;
                 QPolygonF diamond;
                 diamond << QPointF(dot.pt.x(), dot.pt.y() - ds)
-                        << QPointF(dot.pt.x() + ds * 0.65f, dot.pt.y())
+                        << QPointF(dot.pt.x() + ds * 0.68f, dot.pt.y())
                         << QPointF(dot.pt.x(), dot.pt.y() + ds)
-                        << QPointF(dot.pt.x() - ds * 0.65f, dot.pt.y());
-                p.setBrush(QColor(255, 255, 255, 18));
+                        << QPointF(dot.pt.x() - ds * 0.68f, dot.pt.y());
+                p.setBrush(QColor(255, 255, 255, 22));
                 p.drawPolygon(diamond);
             }
         }
 
-        // Zelda TotK: Gold metallic tip and Zonai swirl on right grip
-        if (!is_left && current_skin == ControllerSkin::ZeldaTotk) {
-            QPolygonF gold_tip;
-            gold_tip << Project(135.0f, 85.0f, 4.2f).pt
-                     << Project(180.0f, 80.0f, 4.2f).pt
-                     << Project(160.0f, 138.0f, 4.2f).pt
-                     << Project(135.0f, 120.0f, 4.2f).pt;
-            QLinearGradient gold_grad(Project(135.0f, 85.0f, 4.2f).pt, Project(160.0f, 138.0f, 4.2f).pt);
-            gold_grad.setColorAt(0.0, QColor(255, 235, 130));
-            gold_grad.setColorAt(0.25, QColor(245, 210, 80));
-            gold_grad.setColorAt(0.5, QColor(218, 168, 38));
-            gold_grad.setColorAt(0.75, QColor(190, 140, 28));
-            gold_grad.setColorAt(1.0, QColor(155, 110, 18));
-            p.setPen(QPen(QColor(160, 120, 20), 1.0f));
-            p.setBrush(gold_grad);
-            p.drawPolygon(gold_tip);
+        if (current_skin == ControllerSkin::ZeldaTotk) {
+            if (!is_left) {
+                QPolygonF gold_tip;
+                gold_tip << Project(134.0f, 84.0f, Z_GRIP_FRONT + 0.25f).pt
+                         << Project(181.0f, 79.0f, Z_GRIP_FRONT + 0.25f).pt
+                         << Project(160.0f, 138.0f, Z_GRIP_FRONT + 0.25f).pt
+                         << Project(134.0f, 120.0f, Z_GRIP_FRONT + 0.25f).pt;
+                QLinearGradient gold_grad(Project(134.0f, 84.0f, Z_GRIP_FRONT + 0.25f).pt,
+                                          Project(160.0f, 138.0f, Z_GRIP_FRONT + 0.25f).pt);
+                gold_grad.setColorAt(0.0, QColor(255, 240, 145));
+                gold_grad.setColorAt(0.4, QColor(235, 188, 48));
+                gold_grad.setColorAt(1.0, QColor(150, 108, 18));
+                p.setPen(QPen(QColor(165, 122, 22), 1.1f));
+                p.setBrush(gold_grad);
+                p.drawPolygon(gold_tip);
 
-            p.setPen(QPen(QColor(218, 168, 38, 220), 2.2f * zoom, Qt::SolidLine, Qt::RoundCap));
-            p.setBrush(Qt::NoBrush);
-            p.drawLine(Project(125.0f, -10.0f, 4.25f).pt, Project(148.0f, 18.0f, 4.25f).pt);
-            p.drawLine(Project(148.0f, 18.0f, 4.25f).pt, Project(138.0f, 44.0f, 4.25f).pt);
-            p.drawLine(Project(138.0f, 44.0f, 4.25f).pt, Project(158.0f, 72.0f, 4.25f).pt);
+                p.setPen(QPen(QColor(228, 180, 48, 235), 2.3f * zoom, Qt::SolidLine, Qt::RoundCap));
+                p.setBrush(Qt::NoBrush);
+                p.drawLine(Project(124.0f, -12.0f, Z_GRIP_FRONT + 0.3f).pt, Project(150.0f, 16.0f, Z_GRIP_FRONT + 0.3f).pt);
+                p.drawLine(Project(150.0f, 16.0f, Z_GRIP_FRONT + 0.3f).pt, Project(138.0f, 44.0f, Z_GRIP_FRONT + 0.3f).pt);
+                p.drawLine(Project(138.0f, 44.0f, Z_GRIP_FRONT + 0.3f).pt, Project(160.0f, 72.0f, Z_GRIP_FRONT + 0.3f).pt);
+            } else {
+                p.setPen(QPen(QColor(52, 238, 184, 185), 1.8f * zoom, Qt::SolidLine, Qt::RoundCap));
+                p.drawLine(Project(-126.0f, -8.0f, Z_GRIP_FRONT + 0.3f).pt, Project(-152.0f, 22.0f, Z_GRIP_FRONT + 0.3f).pt);
+                p.drawLine(Project(-152.0f, 22.0f, Z_GRIP_FRONT + 0.3f).pt, Project(-140.0f, 56.0f, Z_GRIP_FRONT + 0.3f).pt);
+            }
+        } else if (current_skin == ControllerSkin::Xenoblade2) {
+            p.setPen(QPen(QColor(255, 218, 68, 210), 1.8f * zoom));
+            p.drawLine(Project(sgn * 124.0f, -14.0f, Z_GRIP_FRONT + 0.3f).pt, Project(sgn * 162.0f, 24.0f, Z_GRIP_FRONT + 0.3f).pt);
+            p.drawLine(Project(sgn * 162.0f, 24.0f, Z_GRIP_FRONT + 0.3f).pt, Project(sgn * 145.0f, 78.0f, Z_GRIP_FRONT + 0.3f).pt);
+        } else if (current_skin == ControllerSkin::CyberStorm) {
+            const QColor neon_c = is_left ? QColor(0, 248, 255, 220) : QColor(255, 28, 118, 220);
+            p.setPen(QPen(neon_c, 2.2f * zoom));
+            p.drawLine(Project(sgn * 116.0f, -24.0f, Z_GRIP_FRONT + 0.3f).pt, Project(sgn * 142.0f, 28.0f, Z_GRIP_FRONT + 0.3f).pt);
+            p.drawLine(Project(sgn * 142.0f, 28.0f, Z_GRIP_FRONT + 0.3f).pt, Project(sgn * 134.0f, 88.0f, Z_GRIP_FRONT + 0.3f).pt);
+        } else if (current_skin == ControllerSkin::MonsterHunterRise) {
+            p.setPen(QPen(QColor(238, 192, 72, 200), 2.2f * zoom, Qt::SolidLine, Qt::RoundCap));
+            p.drawLine(Project(sgn * 128.0f, 0.0f, Z_GRIP_FRONT + 0.3f).pt, Project(sgn * 164.0f, 45.0f, Z_GRIP_FRONT + 0.3f).pt);
+            p.drawLine(Project(sgn * 136.0f, 28.0f, Z_GRIP_FRONT + 0.3f).pt, Project(sgn * 168.0f, 75.0f, Z_GRIP_FRONT + 0.3f).pt);
         }
     };
 
     DrawErgonomicHandle(true);
     DrawErgonomicHandle(false);
 
-    // -------------------------------------------------------------------------
-    // LAYER 4: Parting Line Seams (Grooves between Handles and Chassis)
-    // -------------------------------------------------------------------------
     auto DrawHandleSeam = [&](bool is_left) {
         const float sgn = is_left ? -1.0f : 1.0f;
-        p.setPen(QPen(QColor(10, 12, 16, 200), 1.5f));
-        p.drawLine(Project(sgn * 98.0f, -35.0f, 3.5f).pt, Project(sgn * 98.0f, 55.0f, 3.5f).pt);
-        p.setPen(QPen(QColor(255, 255, 255, 30), 0.8f));
-        p.drawLine(Project(sgn * 99.5f, -34.0f, 3.5f).pt, Project(sgn * 99.5f, 54.0f, 3.5f).pt);
+        const QColor seam_glow = (current_skin == ControllerSkin::CyberStorm)
+                                     ? (is_left ? QColor(0, 248, 255, 190) : QColor(255, 28, 118, 190))
+                                     : QColor(255, 255, 255, 38);
+        p.setPen(QPen(QColor(8, 10, 14, 220), 1.8f));
+        p.drawLine(Project(sgn * 98.0f, -35.0f, Z_FRONT + 0.5f).pt, Project(sgn * 98.0f, 55.0f, Z_FRONT + 0.5f).pt);
+        p.setPen(QPen(seam_glow, 1.1f));
+        p.drawLine(Project(sgn * 99.5f, -34.0f, Z_FRONT + 0.6f).pt, Project(sgn * 99.5f, 54.0f, Z_FRONT + 0.6f).pt);
     };
     DrawHandleSeam(true);
     DrawHandleSeam(false);
 
-    // -------------------------------------------------------------------------
-    // LAYER 5: Central Chassis Faceplate (Curved Studio Lighting)
-    // -------------------------------------------------------------------------
     {
-        QPolygonF front_body;
-        for (std::size_t i = 0; i < pro_body.size() / 2; ++i) {
-            front_body << Project(pro_body[i * 2 + 0], pro_body[i * 2 + 1], 2.0f).pt;
-        }
-        for (int i = static_cast<int>(pro_body.size() / 2) - 1; i >= 0; --i) {
-            front_body << Project(-pro_body[i * 2 + 0], pro_body[i * 2 + 1], 2.0f).pt;
-        }
+        const QPolygonF front_body = BuildBodyPolygon(Z_FRONT, 1.0f);
 
-        const auto p_top = Project(0.0f, -95.0f, 2.0f);
-        const auto p_bot = Project(0.0f,  60.0f, 2.0f);
+        const auto p_top = Project(0.0f, -95.0f, Z_FRONT);
+        const auto p_bot = Project(0.0f,  60.0f, Z_FRONT);
         QLinearGradient body_grad(p_top.pt, p_bot.pt);
-        body_grad.setColorAt(0.0,  colors.primary.lighter(130));
-        body_grad.setColorAt(0.08, colors.primary.lighter(118));
-        body_grad.setColorAt(0.22, colors.primary.lighter(108));
-        body_grad.setColorAt(0.45, colors.primary);
-        body_grad.setColorAt(0.65, colors.primary.darker(106));
-        body_grad.setColorAt(0.85, colors.primary.darker(115));
+        body_grad.setColorAt(0.0,  colors.primary.lighter(135));
+        body_grad.setColorAt(0.10, colors.primary.lighter(120));
+        body_grad.setColorAt(0.28, colors.primary.lighter(108));
+        body_grad.setColorAt(0.50, colors.primary);
+        body_grad.setColorAt(0.75, colors.primary.darker(110));
         body_grad.setColorAt(1.0,  colors.primary.darker(128));
 
-        p.setPen(QPen(QColor(18, 20, 24, 160), 1.2f));
+        p.setPen(QPen(colors.body_rim, 1.4f));
         p.setBrush(body_grad);
         p.drawPolygon(front_body);
 
-        // Overhead studio softbox specular bloom
         {
-            const auto sp = Project(-15.0f, -65.0f, 2.3f);
-            QRadialGradient sg(sp.pt, 50.0f * sp.scale);
-            sg.setColorAt(0.0, QColor(255, 255, 255, 42));
-            sg.setColorAt(0.4, QColor(255, 255, 255, 15));
+            const auto sp = Project(-14.0f, -64.0f, Z_FRONT + 0.3f);
+            QRadialGradient sg(sp.pt, 54.0f * sp.scale);
+            sg.setColorAt(0.0, QColor(255, 255, 255, 48));
+            sg.setColorAt(0.45, QColor(255, 255, 255, 16));
             sg.setColorAt(1.0, QColor(255, 255, 255, 0));
             p.setPen(Qt::NoPen);
             p.setBrush(sg);
-            p.drawEllipse(sp.pt, 50.0f * sp.scale, 22.0f * sp.scale);
+            p.drawEllipse(sp.pt, 54.0f * sp.scale, 23.0f * sp.scale);
         }
 
-        // Secondary subtle specular on lower bridge
-        {
-            const auto sp2 = Project(10.0f, 15.0f, 2.3f);
-            QRadialGradient sg2(sp2.pt, 35.0f * sp2.scale);
-            sg2.setColorAt(0.0, QColor(255, 255, 255, 22));
-            sg2.setColorAt(0.6, QColor(255, 255, 255, 6));
-            sg2.setColorAt(1.0, QColor(255, 255, 255, 0));
-            p.setBrush(sg2);
-            p.drawEllipse(sp2.pt, 35.0f * sp2.scale, 12.0f * sp2.scale);
-        }
-
-        // Anti-friction concentric glossy rings around joystick wells
-        auto DrawAntiFrictionRing = [&](float cx, float cy) {
-            const auto ring_p = Project(cx, cy, 2.05f);
+        auto DrawAntiFrictionRing = [&](float cx, float cy, bool is_left_well) {
+            const auto ring_p = Project(cx, cy, Z_FRONT + 0.15f);
+            QColor ring_col = QColor(255, 255, 255, 32);
+            if (current_skin == ControllerSkin::Splatoon3) {
+                ring_col = is_left_well ? QColor(222, 255, 28, 210) : QColor(146, 52, 255, 210);
+            } else if (current_skin == ControllerSkin::CyberStorm) {
+                ring_col = is_left_well ? QColor(0, 248, 255, 220) : QColor(255, 28, 118, 220);
+            } else if (current_skin == ControllerSkin::ZeldaTotk || current_skin == ControllerSkin::MonsterHunterRise) {
+                ring_col = QColor(238, 192, 52, 210);
+            } else if (current_skin == ControllerSkin::Xenoblade2) {
+                ring_col = QColor(0, 252, 196, 195);
+            } else if (current_skin == ControllerSkin::PokemonScarletViolet) {
+                ring_col = is_left_well ? QColor(255, 95, 110, 210) : QColor(138, 122, 255, 210);
+            }
             p.setBrush(Qt::NoBrush);
-            p.setPen(QPen(QColor(255, 255, 255, 18), 1.5f * ring_p.scale));
-            p.drawEllipse(ring_p.pt, 30.5f * ring_p.scale, 30.5f * ring_p.scale);
-            p.setPen(QPen(QColor(10, 12, 16, 60), 1.0f * ring_p.scale));
-            p.drawEllipse(ring_p.pt, 32.0f * ring_p.scale, 32.0f * ring_p.scale);
+            p.setPen(QPen(ring_col, 1.8f * ring_p.scale));
+            p.drawEllipse(ring_p.pt, 30.8f * ring_p.scale, 30.8f * ring_p.scale);
+            p.setPen(QPen(QColor(10, 12, 16, 95), 1.0f * ring_p.scale));
+            p.drawEllipse(ring_p.pt, 32.2f * ring_p.scale, 32.2f * ring_p.scale);
         };
-        DrawAntiFrictionRing(-78.0f, -38.0f);
-        DrawAntiFrictionRing( 48.0f,  24.0f);
+        DrawAntiFrictionRing(-78.0f, -38.0f, true);
+        DrawAntiFrictionRing( 48.0f,  24.0f, false);
 
-        // ClassicBlack: Translucent PCB & Easter Egg
         if (current_skin == ControllerSkin::ClassicBlack) {
             QPolygonF pcb;
-            pcb << Project(-62.0f, -60.0f, 1.8f).pt
-                << Project( 62.0f, -60.0f, 1.8f).pt
-                << Project( 62.0f,  45.0f, 1.8f).pt
-                << Project(-62.0f,  45.0f, 1.8f).pt;
-            p.setPen(QPen(QColor(18, 48, 38, 180), 1.2f));
-            p.setBrush(QColor(12, 34, 26, 175));
+            pcb << Project(-68.0f, -64.0f, Z_FRONT + 0.1f).pt
+                << Project( 68.0f, -64.0f, Z_FRONT + 0.1f).pt
+                << Project( 64.0f,  48.0f, Z_FRONT + 0.1f).pt
+                << Project(-64.0f,  48.0f, Z_FRONT + 0.1f).pt;
+            p.setPen(QPen(QColor(22, 68, 52, 195), 1.2f));
+            p.setBrush(QColor(12, 42, 32, 185));
             p.drawPolygon(pcb);
 
-            p.setPen(QPen(QColor(195, 160, 75, 140), 1.0f));
-            p.drawLine(Project(-55.0f, -40.0f, 1.85f).pt, Project(-25.0f, -40.0f, 1.85f).pt);
-            p.drawLine(Project(-25.0f, -40.0f, 1.85f).pt, Project(-15.0f, -20.0f, 1.85f).pt);
-            p.drawLine(Project(-15.0f, -20.0f, 1.85f).pt, Project( 15.0f, -20.0f, 1.85f).pt);
-            p.drawLine(Project( 15.0f, -20.0f, 1.85f).pt, Project( 25.0f, -40.0f, 1.85f).pt);
-            p.drawLine(Project( 25.0f, -40.0f, 1.85f).pt, Project( 55.0f, -40.0f, 1.85f).pt);
+            QPolygonF ic_chip;
+            ic_chip << Project(-14.0f, -24.0f, Z_FRONT + 0.14f).pt
+                    << Project( 14.0f, -24.0f, Z_FRONT + 0.14f).pt
+                    << Project( 14.0f,   2.0f, Z_FRONT + 0.14f).pt
+                    << Project(-14.0f,   2.0f, Z_FRONT + 0.14f).pt;
+            p.setPen(QPen(QColor(195, 165, 78, 175), 1.0f));
+            p.setBrush(QColor(16, 18, 22, 220));
+            p.drawPolygon(ic_chip);
 
-            const auto ee_pos = Project(48.0f, 44.0f, 1.88f);
-            p.setPen(QColor(195, 160, 75, 160));
-            SetTextFont(p, 0.55f * ee_pos.scale);
-            DrawText(p, ee_pos.pt, 0.55f * ee_pos.scale, QStringLiteral("thnx2 allgamefans!"));
+            p.setPen(QPen(QColor(212, 178, 84, 165), 1.15f * zoom));
+            p.drawLine(Project(-58.0f, -42.0f, Z_FRONT + 0.15f).pt, Project(-26.0f, -42.0f, Z_FRONT + 0.15f).pt);
+            p.drawLine(Project(-26.0f, -42.0f, Z_FRONT + 0.15f).pt, Project(-14.0f, -20.0f, Z_FRONT + 0.15f).pt);
+            p.drawLine(Project( 14.0f, -20.0f, Z_FRONT + 0.15f).pt, Project( 26.0f, -42.0f, Z_FRONT + 0.15f).pt);
+            p.drawLine(Project( 26.0f, -42.0f, Z_FRONT + 0.15f).pt, Project( 58.0f, -42.0f, Z_FRONT + 0.15f).pt);
+            p.drawLine(Project(-42.0f,   8.0f, Z_FRONT + 0.15f).pt, Project(-14.0f,  -6.0f, Z_FRONT + 0.15f).pt);
+            p.drawLine(Project( 14.0f,  -6.0f, Z_FRONT + 0.15f).pt, Project( 42.0f,  -6.0f, Z_FRONT + 0.15f).pt);
+
+            const auto ee_pos = Project(48.0f, -8.0f, Z_FRONT + 0.18f);
+            p.setPen(QColor(225, 192, 92, 195));
+            SetTextFont(p, 0.56f * ee_pos.scale);
+            DrawText(p, ee_pos.pt, 0.56f * ee_pos.scale, QStringLiteral("thnx2 allgamefans!"));
         }
     }
 
     // -------------------------------------------------------------------------
-    // LAYER 6: Authentic Limited Edition Factory Artwork (Р Р°СЃРєСЂР°СЃРєРё)
+    // LAYER 6: Authentic Limited Edition Factory Artwork (All 8 Skins in 3D)
     // -------------------------------------------------------------------------
+    const float Z_ART = Z_FRONT + 0.25f;
     switch (current_skin) {
     case ControllerSkin::ZeldaTotk: {
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
-        const auto c_proj = Project(0.0f, -8.0f, 2.2f);
+        const auto c_proj = Project(0.0f, -8.0f, Z_ART);
         {
-            QRadialGradient eye_glow(c_proj.pt, 36.0f * c_proj.scale);
-            eye_glow.setColorAt(0.0, QColor(230, 185, 45, 0));
-            eye_glow.setColorAt(0.65, QColor(230, 185, 45, 0));
-            eye_glow.setColorAt(0.85, QColor(230, 185, 45, 50));
-            eye_glow.setColorAt(1.0, QColor(230, 185, 45, 0));
+            QRadialGradient eye_glow(c_proj.pt, 40.0f * c_proj.scale);
+            eye_glow.setColorAt(0.0, QColor(56, 225, 176, 45));
+            eye_glow.setColorAt(0.55, QColor(238, 192, 52, 40));
+            eye_glow.setColorAt(0.85, QColor(238, 192, 52, 65));
+            eye_glow.setColorAt(1.0, QColor(238, 192, 52, 0));
             p.setPen(Qt::NoPen);
             p.setBrush(eye_glow);
-            p.drawEllipse(c_proj.pt, 36.0f * c_proj.scale, 36.0f * c_proj.scale);
+            p.drawEllipse(c_proj.pt, 40.0f * c_proj.scale, 40.0f * c_proj.scale);
         }
-        p.setPen(QPen(QColor(230, 185, 45, 245), 3.2f * zoom, Qt::SolidLine, Qt::RoundCap));
+        // Concentric Zonai gold & luminous dragon rings
+        p.setPen(QPen(QColor(238, 192, 52, 250), 3.0f * zoom, Qt::SolidLine, Qt::RoundCap));
         p.setBrush(Qt::NoBrush);
-        p.drawEllipse(c_proj.pt, 29.0f * c_proj.scale, 29.0f * c_proj.scale);
-        p.setPen(QPen(QColor(56, 225, 176, 230), 2.2f * zoom));
+        p.drawEllipse(c_proj.pt, 30.0f * c_proj.scale, 30.0f * c_proj.scale);
+        p.setPen(QPen(QColor(238, 192, 52, 165), 1.3f * zoom, Qt::DashLine));
+        p.drawEllipse(c_proj.pt, 24.5f * c_proj.scale, 24.5f * c_proj.scale);
+        p.setPen(QPen(QColor(46, 238, 186, 235), 2.2f * zoom));
         p.drawEllipse(c_proj.pt, 18.5f * c_proj.scale, 18.5f * c_proj.scale);
         p.setPen(Qt::NoPen);
-        p.setBrush(QColor(56, 225, 176, 220));
-        p.drawEllipse(c_proj.pt, 4.5f * c_proj.scale, 4.5f * c_proj.scale);
+        p.setBrush(QColor(46, 238, 186, 235));
+        p.drawEllipse(c_proj.pt, 4.8f * c_proj.scale, 4.8f * c_proj.scale);
+
+        // Sacred Tear of the Kingdom Crest
         {
-            const auto tear_bot = Project(0.0f, 6.0f, 2.22f);
+            const auto tear_bot = Project(0.0f, 7.0f, Z_ART + 0.04f);
             QPainterPath tear_path;
-            tear_path.moveTo(Project(0.0f, -18.0f, 2.22f).pt);
-            tear_path.cubicTo(Project(8.0f, -8.0f, 2.22f).pt,
-                              Project(6.0f, 2.0f, 2.22f).pt,
+            tear_path.moveTo(Project(0.0f, -19.0f, Z_ART + 0.04f).pt);
+            tear_path.cubicTo(Project(8.5f, -8.0f, Z_ART + 0.04f).pt,
+                              Project(6.5f, 2.5f, Z_ART + 0.04f).pt,
                               tear_bot.pt);
-            tear_path.cubicTo(Project(-6.0f, 2.0f, 2.22f).pt,
-                              Project(-8.0f, -8.0f, 2.22f).pt,
-                              Project(0.0f, -18.0f, 2.22f).pt);
-            p.setPen(QPen(QColor(230, 185, 45, 210), 1.6f * zoom));
-            p.setBrush(QColor(230, 185, 45, 55));
+            tear_path.cubicTo(Project(-6.5f, 2.5f, Z_ART + 0.04f).pt,
+                              Project(-8.5f, -8.0f, Z_ART + 0.04f).pt,
+                              Project(0.0f, -19.0f, Z_ART + 0.04f).pt);
+            p.setPen(QPen(QColor(238, 192, 52, 230), 1.7f * zoom));
+            p.setBrush(QColor(238, 192, 52, 65));
             p.drawPath(tear_path);
         }
-        p.setPen(QPen(QColor(230, 185, 45, 190), 1.5f * zoom));
+        // Zonai Golden Circuit Spirals across chassis
+        p.setPen(QPen(QColor(238, 192, 52, 210), 1.6f * zoom));
         p.setBrush(Qt::NoBrush);
-        p.drawLine(Project(28.0f, -30.0f, 2.2f).pt, Project(50.0f, -20.0f, 2.2f).pt);
-        p.drawLine(Project(50.0f, -20.0f, 2.2f).pt, Project(45.0f, -8.0f, 2.2f).pt);
-        p.drawLine(Project(45.0f, -8.0f, 2.2f).pt, Project(62.0f, 5.0f, 2.2f).pt);
-        p.drawLine(Project(-28.0f, -30.0f, 2.2f).pt, Project(-50.0f, -20.0f, 2.2f).pt);
-        p.drawLine(Project(-50.0f, -20.0f, 2.2f).pt, Project(-45.0f, -8.0f, 2.2f).pt);
+        p.drawLine(Project(28.0f, -30.0f, Z_ART).pt, Project(52.0f, -20.0f, Z_ART).pt);
+        p.drawLine(Project(52.0f, -20.0f, Z_ART).pt, Project(46.0f, -6.0f, Z_ART).pt);
+        p.drawLine(Project(46.0f, -6.0f, Z_ART).pt, Project(66.0f, 8.0f, Z_ART).pt);
+        p.drawLine(Project(-28.0f, -30.0f, Z_ART).pt, Project(-52.0f, -20.0f, Z_ART).pt);
+        p.drawLine(Project(-52.0f, -20.0f, Z_ART).pt, Project(-46.0f, -6.0f, Z_ART).pt);
+        p.drawLine(Project(-46.0f, -6.0f, Z_ART).pt, Project(-66.0f, 8.0f, Z_ART).pt);
         p.setPen(Qt::NoPen);
-        p.setBrush(QColor(56, 225, 176, 200));
-        for (auto& ep : {std::pair{50.0f, -20.0f}, std::pair{45.0f, -8.0f},
-                         std::pair{-50.0f, -20.0f}, std::pair{-45.0f, -8.0f}}) {
-            const auto dp = Project(ep.first, ep.second, 2.22f);
-            p.drawEllipse(dp.pt, 2.4f * dp.scale, 2.4f * dp.scale);
+        p.setBrush(QColor(46, 238, 186, 220));
+        for (auto& ep : {std::pair{52.0f, -20.0f}, std::pair{46.0f, -6.0f},
+                         std::pair{-52.0f, -20.0f}, std::pair{-46.0f, -6.0f},
+                         std::pair{66.0f, 8.0f}, std::pair{-66.0f, 8.0f}}) {
+            const auto dp = Project(ep.first, ep.second, Z_ART + 0.05f);
+            p.drawEllipse(dp.pt, 2.5f * dp.scale, 2.5f * dp.scale);
         }
         p.restore();
         break;
@@ -2300,50 +2278,64 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     case ControllerSkin::CyberStorm: {
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
-        auto DrawNeonLine = [&](float x1, float y1, float x2, float y2, const QColor& col, float width = 1.8f) {
-            const auto pa = Project(x1, y1, 2.22f);
-            const auto pb = Project(x2, y2, 2.22f);
-            p.setPen(QPen(QColor(col.red(), col.green(), col.blue(), 55), (width + 4.0f) * zoom));
+        auto DrawNeonLine = [&](float x1, float y1, float x2, float y2, const QColor& col, float width = 1.9f) {
+            const auto pa = Project(x1, y1, Z_ART + 0.04f);
+            const auto pb = Project(x2, y2, Z_ART + 0.04f);
+            p.setPen(QPen(QColor(col.red(), col.green(), col.blue(), 65), (width + 4.5f) * zoom, Qt::SolidLine, Qt::RoundCap));
             p.drawLine(pa.pt, pb.pt);
-            p.setPen(QPen(col, width * zoom));
+            p.setPen(QPen(col, width * zoom, Qt::SolidLine, Qt::RoundCap));
             p.drawLine(pa.pt, pb.pt);
         };
 
-        DrawNeonLine(-60.0f, -25.0f, -30.0f, -25.0f, QColor(0, 240, 255, 245));
-        DrawNeonLine(-30.0f, -25.0f, -12.0f, -45.0f, QColor(0, 240, 255, 245));
-        DrawNeonLine(-12.0f, -45.0f,  12.0f, -45.0f, QColor(0, 240, 255, 245));
-        DrawNeonLine( 12.0f, -45.0f,  30.0f, -25.0f, QColor(0, 240, 255, 245));
-        DrawNeonLine( 30.0f, -25.0f,  60.0f, -25.0f, QColor(0, 240, 255, 245));
-        DrawNeonLine(-50.0f, -10.0f, -20.0f, -10.0f, QColor(0, 240, 255, 170), 1.2f);
-        DrawNeonLine( 20.0f, -10.0f,  50.0f, -10.0f, QColor(0, 240, 255, 170), 1.2f);
+        // Upper & lower cybernetic PCB bus traces
+        DrawNeonLine(-62.0f, -25.0f, -30.0f, -25.0f, QColor(0, 248, 255, 250));
+        DrawNeonLine(-30.0f, -25.0f, -12.0f, -46.0f, QColor(0, 248, 255, 250));
+        DrawNeonLine(-12.0f, -46.0f,  12.0f, -46.0f, QColor(0, 248, 255, 250));
+        DrawNeonLine( 12.0f, -46.0f,  30.0f, -25.0f, QColor(0, 248, 255, 250));
+        DrawNeonLine( 30.0f, -25.0f,  62.0f, -25.0f, QColor(0, 248, 255, 250));
+        DrawNeonLine(-52.0f, -10.0f, -20.0f, -10.0f, QColor(0, 248, 255, 190), 1.3f);
+        DrawNeonLine( 20.0f, -10.0f,  52.0f, -10.0f, QColor(0, 248, 255, 190), 1.3f);
+        DrawNeonLine(-34.0f,  26.0f,  -8.0f,  12.0f, QColor(255, 28, 118, 210), 1.4f);
+        DrawNeonLine(  8.0f,  12.0f,  34.0f,  26.0f, QColor(255, 28, 118, 210), 1.4f);
 
         p.setPen(Qt::NoPen);
-        for (auto& np_pos : {std::pair{-60.0f, -25.0f}, std::pair{-30.0f, -25.0f},
-                             std::pair{30.0f, -25.0f}, std::pair{60.0f, -25.0f},
-                             std::pair{-12.0f, -45.0f}, std::pair{12.0f, -45.0f}}) {
-            const auto np = Project(np_pos.first, np_pos.second, 2.24f);
-            QRadialGradient dot_glow(np.pt, 5.0f * np.scale);
-            dot_glow.setColorAt(0.0, QColor(0, 240, 255, 210));
-            dot_glow.setColorAt(0.5, QColor(0, 240, 255, 60));
-            dot_glow.setColorAt(1.0, QColor(0, 240, 255, 0));
+        for (auto& np_pos : {std::pair{-62.0f, -25.0f}, std::pair{-30.0f, -25.0f},
+                             std::pair{30.0f, -25.0f}, std::pair{62.0f, -25.0f},
+                             std::pair{-12.0f, -46.0f}, std::pair{12.0f, -46.0f}}) {
+            const auto np = Project(np_pos.first, np_pos.second, Z_ART + 0.06f);
+            QRadialGradient dot_glow(np.pt, 5.5f * np.scale);
+            dot_glow.setColorAt(0.0, QColor(0, 248, 255, 225));
+            dot_glow.setColorAt(0.5, QColor(0, 248, 255, 70));
+            dot_glow.setColorAt(1.0, QColor(0, 248, 255, 0));
             p.setBrush(dot_glow);
-            p.drawEllipse(np.pt, 5.0f * np.scale, 5.0f * np.scale);
-            p.setBrush(QColor(0, 240, 255));
-            p.drawEllipse(np.pt, 2.5f * np.scale, 2.5f * np.scale);
+            p.drawEllipse(np.pt, 5.5f * np.scale, 5.5f * np.scale);
+            p.setBrush(QColor(180, 255, 255));
+            p.drawEllipse(np.pt, 2.4f * np.scale, 2.4f * np.scale);
         }
 
-        DrawNeonLine( 4.0f, -26.0f, -4.0f, -14.0f, QColor(255, 20, 120, 255), 2.5f);
-        DrawNeonLine(-4.0f, -14.0f,  2.0f, -14.0f, QColor(255, 20, 120, 255), 2.5f);
-        DrawNeonLine( 2.0f, -14.0f, -2.0f,  -2.0f, QColor(255, 20, 120, 255), 2.5f);
+        // STORM Cyber Hex Emblem + Lightning Core
+        QPolygonF hex;
+        for (int i = 0; i < 6; ++i) {
+            const float a = i * (PI_CONST / 3.0f) + (PI_CONST / 6.0f);
+            hex << Project(std::cos(a) * 16.0f, -14.0f + std::sin(a) * 16.0f, Z_ART + 0.05f).pt;
+        }
+        p.setPen(QPen(QColor(0, 248, 255, 200), 1.4f * zoom));
+        p.setBrush(QColor(8, 14, 26, 210));
+        p.drawPolygon(hex);
+
+        DrawNeonLine( 4.5f, -26.0f, -4.5f, -14.0f, QColor(255, 28, 118, 255), 2.6f);
+        DrawNeonLine(-4.5f, -14.0f,  2.5f, -14.0f, QColor(255, 28, 118, 255), 2.6f);
+        DrawNeonLine( 2.5f, -14.0f, -3.0f,  -2.0f, QColor(255, 28, 118, 255), 2.6f);
 
         {
-            const auto bolt_c = Project(0.0f, -14.0f, 2.25f);
-            QRadialGradient bg(bolt_c.pt, 16.0f * bolt_c.scale);
-            bg.setColorAt(0.0, QColor(255, 20, 120, 60));
-            bg.setColorAt(0.6, QColor(255, 20, 120, 15));
-            bg.setColorAt(1.0, QColor(255, 20, 120, 0));
+            const auto bolt_c = Project(0.0f, -14.0f, Z_ART + 0.08f);
+            QRadialGradient bg(bolt_c.pt, 18.0f * bolt_c.scale);
+            bg.setColorAt(0.0, QColor(255, 28, 118, 80));
+            bg.setColorAt(0.6, QColor(0, 248, 255, 25));
+            bg.setColorAt(1.0, QColor(0, 248, 255, 0));
+            p.setPen(Qt::NoPen);
             p.setBrush(bg);
-            p.drawEllipse(bolt_c.pt, 16.0f * bolt_c.scale, 16.0f * bolt_c.scale);
+            p.drawEllipse(bolt_c.pt, 18.0f * bolt_c.scale, 18.0f * bolt_c.scale);
         }
         p.restore();
         break;
@@ -2352,55 +2344,51 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     case ControllerSkin::SmashBrosUltimate: {
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
-        const auto p1 = Project(-16.0f, -80.0f, 2.2f);
-        const auto p2 = Project(-5.0f,   55.0f, 2.2f);
+        const auto p1 = Project(-16.0f, -80.0f, Z_ART);
+        const auto p2 = Project(-5.0f,   55.0f, Z_ART);
         QLinearGradient cross_v_grad(p1.pt, p2.pt);
-        cross_v_grad.setColorAt(0.0,  QColor(255, 255, 255, 245));
-        cross_v_grad.setColorAt(0.15, QColor(218, 222, 232, 235));
-        cross_v_grad.setColorAt(0.35, QColor(195, 202, 214, 230));
-        cross_v_grad.setColorAt(0.55, QColor(170, 175, 188, 225));
-        cross_v_grad.setColorAt(0.80, QColor(140, 146, 158, 225));
-        cross_v_grad.setColorAt(1.0,  QColor(230, 235, 245, 240));
+        cross_v_grad.setColorAt(0.0,  QColor(255, 255, 255, 250));
+        cross_v_grad.setColorAt(0.18, QColor(232, 236, 245, 245));
+        cross_v_grad.setColorAt(0.45, QColor(205, 212, 224, 240));
+        cross_v_grad.setColorAt(0.75, QColor(168, 175, 188, 235));
+        cross_v_grad.setColorAt(1.0,  QColor(240, 245, 255, 245));
 
         QPolygonF bar_v;
-        bar_v << Project(-18.0f, -75.0f, 2.2f).pt
-              << Project( -6.0f, -75.0f, 2.2f).pt
-              << Project( -6.0f,  55.0f, 2.2f).pt
-              << Project(-18.0f,  55.0f, 2.2f).pt;
-        p.setPen(QPen(QColor(50, 52, 60, 200), 1.2f));
+        bar_v << Project(-18.5f, -76.0f, Z_ART).pt
+              << Project( -5.5f, -76.0f, Z_ART).pt
+              << Project( -5.5f,  55.0f, Z_ART).pt
+              << Project(-18.5f,  55.0f, Z_ART).pt;
+        p.setPen(QPen(QColor(42, 46, 54, 210), 1.2f));
         p.setBrush(cross_v_grad);
         p.drawPolygon(bar_v);
 
-        p.setPen(QPen(QColor(255, 255, 255, 110), 0.8f));
-        p.drawLine(Project(-18.0f, -75.0f, 2.21f).pt, Project(-18.0f, 55.0f, 2.21f).pt);
-
-        const auto p3 = Project(-110.0f, -28.0f, 2.2f);
-        const auto p4 = Project( 110.0f, -16.0f, 2.2f);
+        const auto p3 = Project(-112.0f, -28.0f, Z_ART);
+        const auto p4 = Project( 112.0f, -16.0f, Z_ART);
         QLinearGradient cross_h_grad(p3.pt, p4.pt);
-        cross_h_grad.setColorAt(0.0,  QColor(255, 255, 255, 245));
-        cross_h_grad.setColorAt(0.20, QColor(218, 222, 232, 235));
-        cross_h_grad.setColorAt(0.50, QColor(185, 190, 205, 230));
-        cross_h_grad.setColorAt(0.80, QColor(155, 160, 175, 225));
-        cross_h_grad.setColorAt(1.0,  QColor(230, 235, 245, 240));
+        cross_h_grad.setColorAt(0.0,  QColor(255, 255, 255, 250));
+        cross_h_grad.setColorAt(0.25, QColor(230, 235, 245, 245));
+        cross_h_grad.setColorAt(0.55, QColor(195, 202, 215, 238));
+        cross_h_grad.setColorAt(0.85, QColor(162, 168, 182, 235));
+        cross_h_grad.setColorAt(1.0,  QColor(238, 242, 252, 245));
 
         QPolygonF bar_h;
-        bar_h << Project(-110.0f, -28.0f, 2.2f).pt
-              << Project( 110.0f, -28.0f, 2.2f).pt
-              << Project( 110.0f, -16.0f, 2.2f).pt
-              << Project(-110.0f, -16.0f, 2.2f).pt;
-        p.setPen(QPen(QColor(50, 52, 60, 200), 1.2f));
+        bar_h << Project(-112.0f, -28.5f, Z_ART).pt
+              << Project( 112.0f, -28.5f, Z_ART).pt
+              << Project( 112.0f, -15.5f, Z_ART).pt
+              << Project(-112.0f, -15.5f, Z_ART).pt;
+        p.setPen(QPen(QColor(42, 46, 54, 210), 1.2f));
         p.setBrush(cross_h_grad);
         p.drawPolygon(bar_h);
 
         {
-            const auto cross_c = Project(-12.0f, -22.0f, 2.25f);
-            QRadialGradient flare(cross_c.pt, 14.0f * cross_c.scale);
-            flare.setColorAt(0.0, QColor(255, 255, 255, 100));
-            flare.setColorAt(0.5, QColor(255, 210, 80, 35));
-            flare.setColorAt(1.0, QColor(255, 210, 80, 0));
+            const auto cross_c = Project(-12.0f, -22.0f, Z_ART + 0.06f);
+            QRadialGradient flare(cross_c.pt, 18.0f * cross_c.scale);
+            flare.setColorAt(0.0, QColor(255, 255, 255, 135));
+            flare.setColorAt(0.45, QColor(255, 215, 90, 55));
+            flare.setColorAt(1.0, QColor(255, 215, 90, 0));
             p.setPen(Qt::NoPen);
             p.setBrush(flare);
-            p.drawEllipse(cross_c.pt, 14.0f * cross_c.scale, 14.0f * cross_c.scale);
+            p.drawEllipse(cross_c.pt, 18.0f * cross_c.scale, 18.0f * cross_c.scale);
         }
         p.restore();
         break;
@@ -2409,42 +2397,48 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     case ControllerSkin::Xenoblade2: {
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
-        const auto crystal_center = Project(0.0f, -16.0f, 2.2f);
+        // Diagonal Pyra/Mythra Crimson & Emerald Trim Stripes
+        p.setPen(QPen(QColor(225, 42, 78, 185), 2.0f * zoom));
+        p.drawLine(Project(-68.0f, 18.0f, Z_ART).pt, Project(-26.0f, -12.0f, Z_ART).pt);
+        p.drawLine(Project( 68.0f, 18.0f, Z_ART).pt, Project( 26.0f, -12.0f, Z_ART).pt);
+
+        const auto crystal_center = Project(0.0f, -16.0f, Z_ART);
         {
-            QRadialGradient crystal_glow(crystal_center.pt, 28.0f * crystal_center.scale);
-            crystal_glow.setColorAt(0.0, QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 75));
-            crystal_glow.setColorAt(0.5, QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 25));
-            crystal_glow.setColorAt(1.0, QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 0));
+            QRadialGradient crystal_glow(crystal_center.pt, 32.0f * crystal_center.scale);
+            crystal_glow.setColorAt(0.0, QColor(0, 252, 196, 110));
+            crystal_glow.setColorAt(0.5, QColor(0, 252, 196, 40));
+            crystal_glow.setColorAt(1.0, QColor(0, 252, 196, 0));
             p.setPen(Qt::NoPen);
             p.setBrush(crystal_glow);
-            p.drawEllipse(crystal_center.pt, 28.0f * crystal_center.scale, 28.0f * crystal_center.scale);
+            p.drawEllipse(crystal_center.pt, 32.0f * crystal_center.scale, 32.0f * crystal_center.scale);
         }
+        // Aegis Zohar Core Crystal
         QPolygonF crystal;
-        crystal << Project(  0.0f, -32.0f, 2.2f).pt
-                << Project( 14.0f, -16.0f, 2.2f).pt
-                << Project(  0.0f,   0.0f, 2.2f).pt
-                << Project(-14.0f, -16.0f, 2.2f).pt;
-        QLinearGradient crystal_grad(Project(0.0f, -32.0f, 2.2f).pt, Project(0.0f, 0.0f, 2.2f).pt);
-        crystal_grad.setColorAt(0.0, QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 255));
-        crystal_grad.setColorAt(0.4, QColor(colors.emblem.lighter(135).red(), colors.emblem.lighter(135).green(), colors.emblem.lighter(135).blue(), 235));
+        crystal << Project(  0.0f, -34.0f, Z_ART + 0.04f).pt
+                << Project( 14.5f, -16.0f, Z_ART + 0.04f).pt
+                << Project(  0.0f,   2.0f, Z_ART + 0.04f).pt
+                << Project(-14.5f, -16.0f, Z_ART + 0.04f).pt;
+        QLinearGradient crystal_grad(Project(0.0f, -34.0f, Z_ART).pt, Project(0.0f, 2.0f, Z_ART).pt);
+        crystal_grad.setColorAt(0.0, QColor(160, 255, 230));
+        crystal_grad.setColorAt(0.4, colors.emblem.lighter(125));
         crystal_grad.setColorAt(0.7, colors.emblem);
-        crystal_grad.setColorAt(1.0, colors.emblem.darker(125));
-        p.setPen(QPen(QColor(255, 255, 255, 230), 1.5f));
+        crystal_grad.setColorAt(1.0, colors.emblem.darker(130));
+        p.setPen(QPen(QColor(255, 235, 145, 240), 1.6f));
         p.setBrush(crystal_grad);
         p.drawPolygon(crystal);
 
-        p.setPen(QPen(QColor(255, 255, 255, 160), 1.0f));
-        p.drawLine(Project(0.0f, -32.0f, 2.2f).pt, Project(0.0f, 0.0f, 2.2f).pt);
-        p.drawLine(Project(-14.0f, -16.0f, 2.2f).pt, Project(14.0f, -16.0f, 2.2f).pt);
+        p.setPen(QPen(QColor(255, 255, 255, 185), 1.1f));
+        p.drawLine(Project(0.0f, -34.0f, Z_ART + 0.05f).pt, Project(0.0f, 2.0f, Z_ART + 0.05f).pt);
+        p.drawLine(Project(-14.5f, -16.0f, Z_ART + 0.05f).pt, Project(14.5f, -16.0f, Z_ART + 0.05f).pt);
 
         p.setPen(QPen(colors.emblem_secondary, 2.2f * zoom));
-        p.setBrush(QColor(colors.emblem_secondary.red(), colors.emblem_secondary.green(), colors.emblem_secondary.blue(), 85));
+        p.setBrush(QColor(colors.emblem_secondary.red(), colors.emblem_secondary.green(), colors.emblem_secondary.blue(), 105));
         QPolygonF wing_l;
-        wing_l << Project(-18.0f, -14.0f, 2.2f).pt << Project(-38.0f, -24.0f, 2.2f).pt
-               << Project(-32.0f, -10.0f, 2.2f).pt << Project(-18.0f,  -5.0f, 2.2f).pt;
+        wing_l << Project(-18.0f, -14.0f, Z_ART).pt << Project(-42.0f, -26.0f, Z_ART).pt
+               << Project(-34.0f,  -9.0f, Z_ART).pt << Project(-18.0f,  -4.0f, Z_ART).pt;
         QPolygonF wing_r;
-        wing_r << Project( 18.0f, -14.0f, 2.2f).pt << Project( 38.0f, -24.0f, 2.2f).pt
-               << Project( 32.0f, -10.0f, 2.2f).pt << Project( 18.0f,  -5.0f, 2.2f).pt;
+        wing_r << Project( 18.0f, -14.0f, Z_ART).pt << Project( 42.0f, -26.0f, Z_ART).pt
+               << Project( 34.0f,  -9.0f, Z_ART).pt << Project( 18.0f,  -4.0f, Z_ART).pt;
         p.drawPolygon(wing_l);
         p.drawPolygon(wing_r);
         p.restore();
@@ -2455,37 +2449,42 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
         p.setPen(Qt::NoPen);
+        // Acid Yellow Ink Splat Cluster
         {
-            const auto sp1 = Project(-25.0f, -28.0f, 2.2f);
-            QRadialGradient splat1(sp1.pt, 18.0f * sp1.scale);
-            splat1.setColorAt(0.0, QColor(218, 253, 33, 235));
-            splat1.setColorAt(0.6, QColor(200, 240, 25, 200));
-            splat1.setColorAt(1.0, QColor(180, 220, 20, 110));
+            const auto sp1 = Project(-25.0f, -28.0f, Z_ART);
+            QRadialGradient splat1(sp1.pt, 20.0f * sp1.scale);
+            splat1.setColorAt(0.0, QColor(232, 255, 45, 248));
+            splat1.setColorAt(0.65, QColor(212, 248, 22, 225));
+            splat1.setColorAt(1.0, QColor(185, 225, 15, 140));
             p.setBrush(splat1);
-            p.drawEllipse(sp1.pt, 18.0f * sp1.scale, 14.0f * sp1.scale);
-            const auto sp1a = Project(-38.0f, -20.0f, 2.2f);
-            p.drawEllipse(sp1a.pt, 10.0f * sp1a.scale, 9.0f * sp1a.scale);
-            const auto sp1b = Project(-18.0f, -38.0f, 2.2f);
-            p.drawEllipse(sp1b.pt, 7.0f * sp1b.scale, 6.0f * sp1b.scale);
-
-            p.setBrush(QColor(255, 255, 255, 120));
-            p.drawEllipse(Project(-27.0f, -30.0f, 2.22f).pt, 3.5f * sp1.scale, 2.5f * sp1.scale);
+            p.drawEllipse(sp1.pt, 19.0f * sp1.scale, 15.0f * sp1.scale);
+            for (auto& drop : {std::tuple{-39.0f, -20.0f, 10.5f, 9.2f},
+                               std::tuple{-17.0f, -39.0f, 7.5f, 6.5f},
+                               std::tuple{-44.0f, -34.0f, 4.2f, 4.0f},
+                               std::tuple{-10.0f, -18.0f, 5.0f, 4.5f}}) {
+                const auto dp = Project(std::get<0>(drop), std::get<1>(drop), Z_ART);
+                p.drawEllipse(dp.pt, std::get<2>(drop) * dp.scale, std::get<3>(drop) * dp.scale);
+            }
+            p.setBrush(QColor(255, 255, 255, 145));
+            p.drawEllipse(Project(-27.0f, -30.0f, Z_ART + 0.04f).pt, 4.0f * sp1.scale, 2.8f * sp1.scale);
         }
+        // Electric Violet Ink Splat Cluster
         {
-            const auto sp2 = Project(22.0f, 10.0f, 2.2f);
-            QRadialGradient splat2(sp2.pt, 16.0f * sp2.scale);
-            splat2.setColorAt(0.0, QColor(140, 50, 245, 235));
-            splat2.setColorAt(0.6, QColor(122, 38, 235, 200));
-            splat2.setColorAt(1.0, QColor(100, 25, 210, 110));
+            const auto sp2 = Project(22.0f, 10.0f, Z_ART);
+            QRadialGradient splat2(sp2.pt, 18.0f * sp2.scale);
+            splat2.setColorAt(0.0, QColor(158, 65, 255, 248));
+            splat2.setColorAt(0.65, QColor(135, 42, 245, 225));
+            splat2.setColorAt(1.0, QColor(108, 28, 218, 140));
             p.setBrush(splat2);
-            p.drawEllipse(sp2.pt, 16.0f * sp2.scale, 13.0f * sp2.scale);
-            const auto sp2a = Project(35.0f, 18.0f, 2.2f);
-            p.drawEllipse(sp2a.pt, 9.0f * sp2a.scale, 8.0f * sp2a.scale);
-            const auto sp2b = Project(30.0f, 0.0f, 2.2f);
-            p.drawEllipse(sp2b.pt, 6.0f * sp2b.scale, 5.5f * sp2b.scale);
-
-            p.setBrush(QColor(255, 255, 255, 110));
-            p.drawEllipse(Project(20.0f, 8.0f, 2.22f).pt, 3.0f * sp2.scale, 2.0f * sp2.scale);
+            p.drawEllipse(sp2.pt, 17.0f * sp2.scale, 14.0f * sp2.scale);
+            for (auto& drop : {std::tuple{36.0f, 18.0f, 9.5f, 8.2f},
+                               std::tuple{31.0f, -1.0f, 6.5f, 5.8f},
+                               std::tuple{8.0f, 22.0f, 4.8f, 4.2f}}) {
+                const auto dp = Project(std::get<0>(drop), std::get<1>(drop), Z_ART);
+                p.drawEllipse(dp.pt, std::get<2>(drop) * dp.scale, std::get<3>(drop) * dp.scale);
+            }
+            p.setBrush(QColor(255, 255, 255, 130));
+            p.drawEllipse(Project(20.0f, 8.0f, Z_ART + 0.04f).pt, 3.4f * sp2.scale, 2.2f * sp2.scale);
         }
         p.restore();
         break;
@@ -2494,26 +2493,34 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     case ControllerSkin::MonsterHunterRise: {
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
-        const auto mc = Project(0.0f, -25.0f, 2.2f);
+        const auto mc = Project(0.0f, -22.0f, Z_ART);
         {
-            QRadialGradient mh_glow(mc.pt, 28.0f * mc.scale);
-            mh_glow.setColorAt(0.0, QColor(225, 180, 65, 55));
-            mh_glow.setColorAt(0.7, QColor(225, 180, 65, 15));
-            mh_glow.setColorAt(1.0, QColor(225, 180, 65, 0));
+            QRadialGradient mh_glow(mc.pt, 34.0f * mc.scale);
+            mh_glow.setColorAt(0.0, QColor(238, 192, 68, 75));
+            mh_glow.setColorAt(0.65, QColor(238, 192, 68, 22));
+            mh_glow.setColorAt(1.0, QColor(238, 192, 68, 0));
             p.setPen(Qt::NoPen);
             p.setBrush(mh_glow);
-            p.drawEllipse(mc.pt, 28.0f * mc.scale, 28.0f * mc.scale);
+            p.drawEllipse(mc.pt, 34.0f * mc.scale, 34.0f * mc.scale);
         }
+        // Kamura / Magnamalo Golden Crest & Dual Wyvern Blades
         p.setPen(QPen(colors.emblem, 2.2f * zoom));
-        p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 95));
+        p.setBrush(QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 115));
         QPolygonF blade1;
-        blade1 << Project(0.0f, -42.0f, 2.2f).pt << Project(14.0f, -22.0f, 2.2f).pt << Project(0.0f, -8.0f, 2.2f).pt;
+        blade1 << Project(0.0f, -44.0f, Z_ART).pt << Project(16.0f, -22.0f, Z_ART).pt << Project(0.0f, -6.0f, Z_ART).pt;
         QPolygonF blade2;
-        blade2 << Project(0.0f, -42.0f, 2.2f).pt << Project(-14.0f, -22.0f, 2.2f).pt << Project(0.0f, -8.0f, 2.2f).pt;
+        blade2 << Project(0.0f, -44.0f, Z_ART).pt << Project(-16.0f, -22.0f, Z_ART).pt << Project(0.0f, -6.0f, Z_ART).pt;
         p.drawPolygon(blade1);
         p.drawPolygon(blade2);
-        p.setPen(QPen(colors.emblem, 1.4f * zoom));
-        p.drawLine(Project(0.0f, -42.0f, 2.22f).pt, Project(0.0f, -8.0f, 2.22f).pt);
+
+        // Fierce Magnamalo Horn Tusks
+        p.setPen(QPen(colors.emblem.lighter(115), 1.8f * zoom));
+        p.setBrush(Qt::NoBrush);
+        p.drawLine(Project(-16.0f, -22.0f, Z_ART).pt, Project(-38.0f, -34.0f, Z_ART).pt);
+        p.drawLine(Project(-38.0f, -34.0f, Z_ART).pt, Project(-28.0f, -12.0f, Z_ART).pt);
+        p.drawLine(Project( 16.0f, -22.0f, Z_ART).pt, Project( 38.0f, -34.0f, Z_ART).pt);
+        p.drawLine(Project( 38.0f, -34.0f, Z_ART).pt, Project( 28.0f, -12.0f, Z_ART).pt);
+        p.drawLine(Project(0.0f, -44.0f, Z_ART + 0.04f).pt, Project(0.0f, -6.0f, Z_ART + 0.04f).pt);
         p.restore();
         break;
     }
@@ -2521,24 +2528,28 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     case ControllerSkin::PokemonScarletViolet: {
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
+        // Naranja & Uva Academy Golden Crest Shield
         QPolygonF shield;
-        shield << Project(  0.0f, -36.0f, 2.2f).pt << Project( 18.0f, -30.0f, 2.2f).pt
-               << Project( 18.0f,  -8.0f, 2.2f).pt << Project(  0.0f,  12.0f, 2.2f).pt
-               << Project(-18.0f,  -8.0f, 2.2f).pt << Project(-18.0f, -30.0f, 2.2f).pt;
-        QLinearGradient shield_grad(Project(-18.0f, -30.0f, 2.2f).pt, Project(18.0f, -8.0f, 2.2f).pt);
-        shield_grad.setColorAt(0.0, QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 130));
-        shield_grad.setColorAt(0.5, QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 90));
-        shield_grad.setColorAt(1.0, QColor(colors.emblem.red(), colors.emblem.green(), colors.emblem.blue(), 55));
-        p.setPen(QPen(colors.emblem, 2.0f * zoom));
+        shield << Project(  0.0f, -38.0f, Z_ART).pt << Project( 20.0f, -31.0f, Z_ART).pt
+               << Project( 19.0f,  -7.0f, Z_ART).pt << Project(  0.0f,  14.0f, Z_ART).pt
+               << Project(-19.0f,  -7.0f, Z_ART).pt << Project(-20.0f, -31.0f, Z_ART).pt;
+        QLinearGradient shield_grad(Project(-20.0f, -31.0f, Z_ART).pt, Project(20.0f, -7.0f, Z_ART).pt);
+        shield_grad.setColorAt(0.0, QColor(238, 42, 58, 165));
+        shield_grad.setColorAt(0.48, QColor(245, 200, 72, 130));
+        shield_grad.setColorAt(0.52, QColor(245, 200, 72, 130));
+        shield_grad.setColorAt(1.0, QColor(112, 48, 228, 165));
+        p.setPen(QPen(colors.emblem, 2.2f * zoom));
         p.setBrush(shield_grad);
         p.drawPolygon(shield);
-        p.setPen(QPen(colors.emblem, 1.2f * zoom));
-        p.drawLine(Project(0.0f, -36.0f, 2.2f).pt, Project(0.0f, 12.0f, 2.2f).pt);
-        p.setPen(Qt::NoPen);
-        p.setBrush(QColor(228, 45, 60, 190));
-        p.drawEllipse(Project(-8.0f, -18.0f, 2.22f).pt, 4.5f * zoom, 4.5f * zoom);
-        p.setBrush(QColor(75, 65, 215, 190));
-        p.drawEllipse(Project(8.0f, -18.0f, 2.22f).pt, 4.5f * zoom, 4.5f * zoom);
+        p.setPen(QPen(colors.emblem, 1.4f * zoom));
+        p.drawLine(Project(0.0f, -38.0f, Z_ART + 0.03f).pt, Project(0.0f, 14.0f, Z_ART + 0.03f).pt);
+
+        // Terastal Pokeball Crown Jewels
+        p.setPen(QPen(QColor(255, 235, 160, 200), 0.9f));
+        p.setBrush(QColor(245, 52, 68, 230));
+        p.drawEllipse(Project(-8.5f, -18.0f, Z_ART + 0.05f).pt, 4.8f * zoom, 4.8f * zoom);
+        p.setBrush(QColor(118, 58, 242, 230));
+        p.drawEllipse(Project(8.5f, -18.0f, Z_ART + 0.05f).pt, 4.8f * zoom, 4.8f * zoom);
         p.restore();
         break;
     }
@@ -2548,7 +2559,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     }
 
     // -------------------------------------------------------------------------
-    // LAYER 7: Sockets & Wells with Ambient Shadows & Bevel Rings
+    // LAYER 7: Recessed Stick Sockets & Wells at Z_FRONT
     // -------------------------------------------------------------------------
     auto DrawStickSocket = [&](float well_x, float well_y) {
         constexpr int well_pts = 28;
@@ -2558,21 +2569,20 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             const float ang = 2.0f * PI_CONST * k / well_pts;
             const float cos_a = std::cos(ang);
             const float sin_a = std::sin(ang);
-            well_outer_poly << Project(well_x + 30.0f * cos_a, well_y + 30.0f * sin_a, 2.0f).pt;
-            well_inner_poly << Project(well_x + 24.0f * cos_a, well_y + 24.0f * sin_a, -4.0f).pt;
+            well_outer_poly << Project(well_x + 30.0f * cos_a, well_y + 30.0f * sin_a, Z_FRONT + 0.2f).pt;
+            well_inner_poly << Project(well_x + 24.0f * cos_a, well_y + 24.0f * sin_a, Z_FRONT - 4.0f).pt;
         }
 
-        p.setPen(QPen(QColor(15, 17, 22), 1.2f));
-        p.setBrush(QColor(18, 20, 24));
+        p.setPen(QPen(QColor(14, 16, 22), 1.2f));
+        p.setBrush(QColor(18, 20, 26));
         p.drawPolygon(well_outer_poly);
 
-        const auto sock_proj = Project(well_x, well_y, -4.0f);
+        const auto sock_proj = Project(well_x, well_y, Z_FRONT - 4.0f);
         QRadialGradient socket_grad(sock_proj.pt, 28.0f * sock_proj.scale);
-        socket_grad.setColorAt(0.0, QColor(6, 7, 10));
-        socket_grad.setColorAt(0.4, QColor(10, 11, 14));
-        socket_grad.setColorAt(0.7, QColor(16, 18, 22));
-        socket_grad.setColorAt(0.9, QColor(28, 32, 38));
-        socket_grad.setColorAt(1.0, QColor(42, 46, 54));
+        socket_grad.setColorAt(0.0, QColor(5, 6, 9));
+        socket_grad.setColorAt(0.45, QColor(10, 12, 16));
+        socket_grad.setColorAt(0.75, QColor(18, 20, 26));
+        socket_grad.setColorAt(1.0, QColor(40, 44, 54));
         p.setPen(Qt::NoPen);
         p.setBrush(socket_grad);
         p.drawPolygon(well_inner_poly);
@@ -2582,7 +2592,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     DrawStickSocket( 48.0f,  24.0f);
 
     // -------------------------------------------------------------------------
-    // LAYER 8: 3D D-Pad (Directional Pad) at (-48.0f, 24.0f)
+    // LAYER 8: 3D Volumetric Extruded D-Pad at (-48.0f, 24.0f)
     // -------------------------------------------------------------------------
     {
         const float cx = -48.0f;
@@ -2602,23 +2612,36 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             {-arm_len, arm_w},  {-arm_len, -arm_w}, {-arm_w, -arm_w}
         };
 
+        const float dpad_base_z = Z_FRONT + 0.3f;
         auto GetTopZ = [&](float x, float y) -> float {
-            float z = 8.5f;
-            if (up)    z += (y < -arm_w ? -4.5f : (y > arm_w ? +1.8f : -2.0f));
-            if (down)  z += (y > arm_w ? -4.5f : (y < -arm_w ? +1.8f : -2.0f));
-            if (left)  z += (x < -arm_w ? -4.5f : (x > arm_w ? +1.8f : -2.0f));
-            if (right) z += (x > arm_w ? -4.5f : (x < -arm_w ? +1.8f : -2.0f));
+            float z = Z_FRONT + 7.5f;
+            if (up)    z += (y < -arm_w ? -3.8f : (y > arm_w ? +1.4f : -1.5f));
+            if (down)  z += (y > arm_w ? -3.8f : (y < -arm_w ? +1.4f : -1.5f));
+            if (left)  z += (x < -arm_w ? -3.8f : (x > arm_w ? +1.4f : -1.5f));
+            if (right) z += (x > arm_w ? -3.8f : (x < -arm_w ? +1.4f : -1.5f));
             return z;
         };
 
+        const QColor dpad_col = (current_skin == ControllerSkin::ZeldaTotk)
+                                    ? QColor(225, 176, 42)
+                                    : colors.button;
+
+        std::array<QPointF, 12> base_proj;
         std::array<QPointF, 12> top_proj;
         for (int i = 0; i < 12; ++i) {
-            top_proj[i] = Project(cx + cross_pts[i].x, cy + cross_pts[i].y, GetTopZ(cross_pts[i].x, cross_pts[i].y)).pt;
+            base_proj[i] = Project(cx + cross_pts[i].x, cy + cross_pts[i].y, dpad_base_z).pt;
+            top_proj[i]  = Project(cx + cross_pts[i].x, cy + cross_pts[i].y, GetTopZ(cross_pts[i].x, cross_pts[i].y)).pt;
         }
 
-        const QColor dpad_col = (current_skin == ControllerSkin::ZeldaTotk)
-                                    ? QColor(218, 168, 38)
-                                    : colors.button;
+        // Draw 3D Extruded Side Walls of the D-Pad Cross
+        p.setPen(QPen(QColor(14, 16, 20), 0.7f));
+        for (int i = 0; i < 12; ++i) {
+            const int nxt = (i + 1) % 12;
+            QPolygonF wall;
+            wall << base_proj[i] << base_proj[nxt] << top_proj[nxt] << top_proj[i];
+            p.setBrush((i % 2 == 0) ? dpad_col.darker(150) : dpad_col.darker(175));
+            p.drawPolygon(wall);
+        }
 
         QPolygonF top_poly;
         for (int i = 0; i < 12; ++i) {
@@ -2627,29 +2650,29 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
 
         const auto dpad_c = Project(cx, cy, GetTopZ(0.0f, 0.0f));
         QRadialGradient dpad_grad(dpad_c.pt, 26.0f * dpad_c.scale);
-        dpad_grad.setColorAt(0.0, dpad_col.lighter(112));
-        dpad_grad.setColorAt(0.4, dpad_col);
-        dpad_grad.setColorAt(0.8, dpad_col.darker(110));
-        dpad_grad.setColorAt(1.0, dpad_col.darker(120));
+        dpad_grad.setColorAt(0.0, dpad_col.lighter(118));
+        dpad_grad.setColorAt(0.45, dpad_col);
+        dpad_grad.setColorAt(0.85, dpad_col.darker(112));
+        dpad_grad.setColorAt(1.0, dpad_col.darker(125));
 
-        p.setPen(QPen(QColor(18, 20, 24), 1.2f));
+        p.setPen(QPen(QColor(18, 20, 26), 1.2f));
         p.setBrush(dpad_grad);
         p.drawPolygon(top_poly);
 
-        const auto center_proj = Project(cx, cy, GetTopZ(0.0f, 0.0f) - 1.2f);
+        const auto center_proj = Project(cx, cy, GetTopZ(0.0f, 0.0f) - 1.0f);
         QRadialGradient hub_grad(center_proj.pt, 6.0f * center_proj.scale);
         hub_grad.setColorAt(0.0, dpad_col.darker(115));
-        hub_grad.setColorAt(0.6, dpad_col.darker(130));
-        hub_grad.setColorAt(1.0, dpad_col.darker(145));
+        hub_grad.setColorAt(0.6, dpad_col.darker(132));
+        hub_grad.setColorAt(1.0, dpad_col.darker(148));
         p.setPen(QPen(QColor(15, 17, 22), 0.8f));
         p.setBrush(hub_grad);
         p.drawEllipse(center_proj.pt, 5.5f * center_proj.scale, 5.5f * center_proj.scale);
 
         auto DrawDpadArm = [&](Direction dir, bool is_pressed, float ax, float ay) {
             const float top_z = GetTopZ(ax, ay);
-            const auto arm_proj = Project(cx + ax, cy + ay, top_z + 0.1f);
+            const auto arm_proj = Project(cx + ax, cy + ay, top_z + 0.15f);
             const QColor arr_col = is_pressed ? colors.indicator
-                                 : ((current_skin == ControllerSkin::ZeldaTotk) ? QColor(56, 225, 176) : colors.font2);
+                                 : ((current_skin == ControllerSkin::ZeldaTotk) ? QColor(46, 238, 186) : colors.font2);
             p.setPen(arr_col);
             p.setBrush(arr_col);
             DrawArrow(p, arm_proj.pt, dir, 0.88f * arm_proj.scale);
@@ -2661,47 +2684,75 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     }
 
     // -------------------------------------------------------------------------
-    // LAYER 9: 3D Face Buttons (ABXY) вЂ” Acrylic Glass Domes
+    // LAYER 9: 3D Volumetric Cylindrical Face Buttons (ABXY)
     // -------------------------------------------------------------------------
     auto DrawPhotorealisticButton = [&](int btn_id, float bx, float by, Symbol sym) {
         const bool pressed = button_values[btn_id].value;
-        const float top_z = pressed ? 5.0f : 12.0f;
-        constexpr float r = 10.0f;
+        const float base_z = Z_FRONT + 0.25f;
+        const float top_z  = Z_FRONT + (pressed ? 3.8f : 9.8f);
+        constexpr float r = 10.2f;
 
-        const auto b_center = Project(bx, by, top_z);
-
+        // 1. Button Bezel Socket on Front Shell
         {
-            const auto sock = Project(bx, by, 2.5f);
+            const auto sock = Project(bx, by, base_z);
             p.setPen(QPen(QColor(10, 12, 16), 1.0f));
-            p.setBrush(QColor(14, 16, 20));
+            p.setBrush(QColor(14, 16, 22));
             p.drawEllipse(sock.pt, (r + 1.8f) * sock.scale, (r + 1.8f) * sock.scale);
         }
 
-        p.setPen(QPen(pressed ? colors.font : QColor(22, 24, 30), 1.2f));
+        // 2. 3D Cylindrical Side Skirt Wall (from base_z to top_z)
+        {
+            constexpr int cyl_seg = 18;
+            for (int k = 0; k < cyl_seg; ++k) {
+                const float a0 = (2.0f * PI_CONST * k) / cyl_seg;
+                const float a1 = (2.0f * PI_CONST * (k + 1)) / cyl_seg;
+                const auto b0 = Project(bx + r * std::cos(a0), by + r * std::sin(a0), base_z).pt;
+                const auto b1 = Project(bx + r * std::cos(a1), by + r * std::sin(a1), base_z).pt;
+                const auto t1 = Project(bx + r * std::cos(a1), by + r * std::sin(a1), top_z).pt;
+                const auto t0 = Project(bx + r * std::cos(a0), by + r * std::sin(a0), top_z).pt;
+                QPolygonF seg_poly;
+                seg_poly << b0 << b1 << t1 << t0;
+                const float light = 0.5f + 0.5f * std::cos(a0 + 0.7f);
+                const QColor wall_c = pressed
+                    ? colors.indicator.darker(static_cast<int>(145 - light * 30))
+                    : colors.button.darker(static_cast<int>(170 - light * 40));
+                p.setPen(Qt::NoPen);
+                p.setBrush(wall_c);
+                p.drawPolygon(seg_poly);
+            }
+        }
+
+        // 3. Acrylic Dome Cap at top_z
+        const auto b_center = Project(bx, by, top_z);
+        QColor rim_pen = pressed ? colors.font : QColor(22, 24, 30);
+        if (!pressed && current_skin == ControllerSkin::CyberStorm) {
+            rim_pen = QColor(0, 248, 255, 190);
+        }
+        p.setPen(QPen(rim_pen, 1.25f));
         if (pressed) {
             QRadialGradient glow_grad(b_center.pt, r * b_center.scale);
-            glow_grad.setColorAt(0.0, colors.indicator.lighter(140));
-            glow_grad.setColorAt(0.3, colors.indicator.lighter(115));
-            glow_grad.setColorAt(0.7, colors.indicator);
-            glow_grad.setColorAt(1.0, colors.indicator.darker(115));
+            glow_grad.setColorAt(0.0, colors.indicator.lighter(145));
+            glow_grad.setColorAt(0.35, colors.indicator.lighter(115));
+            glow_grad.setColorAt(0.75, colors.indicator);
+            glow_grad.setColorAt(1.0, colors.indicator.darker(120));
             p.setBrush(glow_grad);
         } else {
             QRadialGradient btn_grad(b_center.pt - QPointF(r * 0.35f * b_center.scale, r * 0.35f * b_center.scale),
                                      r * 1.4f * b_center.scale);
-            btn_grad.setColorAt(0.0, QColor(92, 98, 112));
-            btn_grad.setColorAt(0.2, QColor(74, 80, 92));
-            btn_grad.setColorAt(0.5, colors.button);
-            btn_grad.setColorAt(0.8, colors.button.darker(125));
-            btn_grad.setColorAt(1.0, colors.button.darker(145));
+            btn_grad.setColorAt(0.0, colors.button.lighter(165));
+            btn_grad.setColorAt(0.25, colors.button.lighter(130));
+            btn_grad.setColorAt(0.55, colors.button);
+            btn_grad.setColorAt(0.85, colors.button.darker(125));
+            btn_grad.setColorAt(1.0, colors.button.darker(148));
             p.setBrush(btn_grad);
         }
         p.drawEllipse(b_center.pt, r * b_center.scale, r * b_center.scale);
 
         if (!pressed) {
             p.setPen(Qt::NoPen);
-            p.setBrush(QColor(255, 255, 255, 55));
-            const auto spec = Project(bx - 2.8f, by - 3.8f, top_z + 0.1f);
-            p.drawEllipse(spec.pt, 5.0f * spec.scale, 3.0f * spec.scale);
+            p.setBrush(QColor(255, 255, 255, 65));
+            const auto spec = Project(bx - 2.8f, by - 3.8f, top_z + 0.15f);
+            p.drawEllipse(spec.pt, 5.2f * spec.scale, 3.0f * spec.scale);
         }
 
         p.setPen(colors.transparent);
@@ -2715,7 +2766,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     DrawPhotorealisticButton(Y, 58.0f, -38.0f, Symbol::Y);
 
     // -------------------------------------------------------------------------
-    // LAYER 10: 3D Analog Joysticks with Live 2D Tilt & Steel Shaft
+    // LAYER 10: 3D Volumetric Analog Thumbsticks (Ball-Joint + Steel Stem + Cap)
     // -------------------------------------------------------------------------
     auto DrawPhotorealisticStick = [&](bool is_left) {
         const auto stick_id = is_left ? Settings::NativeAnalog::LStick : Settings::NativeAnalog::RStick;
@@ -2728,24 +2779,36 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         const float well_x = is_left ? -78.0f : 48.0f;
         const float well_y = is_left ? -38.0f : 24.0f;
 
-        const float pad_x = well_x + sx * 13.0f;
-        const float pad_y = well_y + sy * 13.0f;
+        const float pad_x = well_x + sx * 13.5f;
+        const float pad_y = well_y + sy * 13.5f;
 
-        float pad_z = 24.0f - (sx * sx + sy * sy) * 2.5f;
+        float pad_z = (Z_FRONT + 22.0f) - (sx * sx + sy * sy) * 2.8f;
         if (is_click_pressed) {
-            pad_z -= 5.0f;
+            pad_z -= 4.8f;
         }
 
-        // Metallic Steel Stem
+        // 1. Spherical Pivot Ball-Joint Dome inside socket
         {
-            const auto p_base = Project(well_x, well_y, -3.0f);
-            const auto p_top = Project(pad_x, pad_y, pad_z - 3.0f);
+            const auto dome_p = Project(well_x + sx * 3.0f, well_y + sy * 3.0f, Z_FRONT - 1.5f);
+            QRadialGradient dome_g(dome_p.pt - QPointF(3.0f * dome_p.scale, 3.0f * dome_p.scale), 16.0f * dome_p.scale);
+            dome_g.setColorAt(0.0, colors.button.lighter(130));
+            dome_g.setColorAt(0.5, colors.button);
+            dome_g.setColorAt(1.0, QColor(12, 14, 18));
+            p.setPen(QPen(QColor(10, 12, 16), 0.9f));
+            p.setBrush(dome_g);
+            p.drawEllipse(dome_p.pt, 15.0f * dome_p.scale, 15.0f * dome_p.scale);
+        }
+
+        // 2. Machined Anodized Steel Stem Shaft
+        {
+            const auto p_base = Project(well_x + sx * 2.5f, well_y + sy * 2.5f, Z_FRONT - 0.5f);
+            const auto p_top  = Project(pad_x, pad_y, pad_z - 3.5f);
 
             const QPointF dir = p_top.pt - p_base.pt;
             const float len = std::max(0.001f, std::sqrt(float(dir.x() * dir.x() + dir.y() * dir.y())));
             const QPointF norm(-dir.y() / len, dir.x() / len);
 
-            const float shaft_r = 4.8f * p_base.scale;
+            const float shaft_r = 5.2f * p_base.scale;
             const QPointF w = norm * shaft_r;
 
             QPolygonF shaft_poly;
@@ -2755,64 +2818,81 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                        << (p_top.pt - w * 0.90f);
 
             QLinearGradient shaft_grad(p_base.pt - w, p_base.pt + w);
-            shaft_grad.setColorAt(0.0, QColor(50, 54, 62));
-            shaft_grad.setColorAt(0.2, QColor(95, 100, 115));
-            shaft_grad.setColorAt(0.35, QColor(195, 200, 215));
-            shaft_grad.setColorAt(0.5, QColor(220, 225, 235));
-            shaft_grad.setColorAt(0.65, QColor(155, 160, 175));
-            shaft_grad.setColorAt(0.8, QColor(85, 90, 100));
-            shaft_grad.setColorAt(1.0, QColor(38, 42, 48));
+            shaft_grad.setColorAt(0.0, QColor(45, 50, 58));
+            shaft_grad.setColorAt(0.25, QColor(110, 118, 132));
+            shaft_grad.setColorAt(0.45, QColor(215, 222, 236));
+            shaft_grad.setColorAt(0.55, QColor(235, 240, 250));
+            shaft_grad.setColorAt(0.75, QColor(135, 142, 156));
+            shaft_grad.setColorAt(1.0, QColor(36, 40, 48));
 
-            p.setPen(QPen(QColor(25, 28, 32), 0.8f));
+            p.setPen(QPen(QColor(22, 25, 30), 0.8f));
             p.setBrush(shaft_grad);
             p.drawPolygon(shaft_poly);
         }
 
-        // Rubber Thumb-Pad
+        // 3. 3D Extruded Rubber Thumb-Pad Skirt & Concave Cap
         {
             constexpr float r_rim = 22.0f;
             constexpr float r_bowl = 15.5f;
+            const float skirt_z = pad_z - 4.0f;
+
+            // Cylindrical 3D skirt under thumb cap (visible when tilted/rotated)
+            constexpr int cap_seg = 20;
+            for (int k = 0; k < cap_seg; ++k) {
+                const float a0 = (2.0f * PI_CONST * k) / cap_seg;
+                const float a1 = (2.0f * PI_CONST * (k + 1)) / cap_seg;
+                const auto b0 = Project(pad_x + (r_rim - 1.2f) * std::cos(a0), pad_y + (r_rim - 1.2f) * std::sin(a0), skirt_z).pt;
+                const auto b1 = Project(pad_x + (r_rim - 1.2f) * std::cos(a1), pad_y + (r_rim - 1.2f) * std::sin(a1), skirt_z).pt;
+                const auto t1 = Project(pad_x + r_rim * std::cos(a1), pad_y + r_rim * std::sin(a1), pad_z).pt;
+                const auto t0 = Project(pad_x + r_rim * std::cos(a0), pad_y + r_rim * std::sin(a0), pad_z).pt;
+                QPolygonF seg;
+                seg << b0 << b1 << t1 << t0;
+                p.setPen(Qt::NoPen);
+                p.setBrush((k % 2 == 0) ? colors.button.darker(155) : colors.button.darker(175));
+                p.drawPolygon(seg);
+            }
 
             const auto cap_center = Project(pad_x, pad_y, pad_z);
 
-            p.setPen(QPen(is_click_pressed ? colors.indicator : QColor(20, 22, 28), 1.2f));
+            p.setPen(QPen(is_click_pressed ? colors.indicator : QColor(20, 22, 28), 1.3f));
             if (is_click_pressed) {
                 p.setBrush(colors.highlight);
             } else {
                 QRadialGradient pad_grad(cap_center.pt - QPointF(r_rim * 0.3f * cap_center.scale, r_rim * 0.3f * cap_center.scale),
                                          r_rim * 1.4f * cap_center.scale);
-                pad_grad.setColorAt(0.0, QColor(88, 94, 108));
-                pad_grad.setColorAt(0.25, QColor(68, 72, 84));
-                pad_grad.setColorAt(0.55, colors.button);
-                pad_grad.setColorAt(0.8, colors.button.darker(120));
-                pad_grad.setColorAt(1.0, colors.button.darker(145));
+                pad_grad.setColorAt(0.0, colors.button.lighter(155));
+                pad_grad.setColorAt(0.30, colors.button.lighter(120));
+                pad_grad.setColorAt(0.60, colors.button);
+                pad_grad.setColorAt(0.85, colors.button.darker(122));
+                pad_grad.setColorAt(1.0, colors.button.darker(148));
                 p.setBrush(pad_grad);
             }
             p.drawEllipse(cap_center.pt, r_rim * cap_center.scale, r_rim * cap_center.scale);
 
-            // Cardinal Notches
+            // 8 Tactile Grip Notches around Outer Rim
             p.setPen(Qt::NoPen);
-            p.setBrush(is_click_pressed ? colors.font : QColor(16, 18, 22, 210));
-            constexpr std::array<float, 4> notch_rads = {0.0f, float(PI_CONST * 0.5f), float(PI_CONST), float(PI_CONST * 1.5f)};
-            for (float n_ang : notch_rads) {
-                const auto notch_proj = Project(pad_x + std::cos(n_ang) * (r_rim - 2.5f),
-                                                pad_y + std::sin(n_ang) * (r_rim - 2.5f),
+            p.setBrush(is_click_pressed ? colors.font : QColor(15, 17, 22, 215));
+            for (int n = 0; n < 8; ++n) {
+                const float n_ang = n * (PI_CONST * 0.25f);
+                const auto notch_proj = Project(pad_x + std::cos(n_ang) * (r_rim - 2.6f),
+                                                pad_y + std::sin(n_ang) * (r_rim - 2.6f),
                                                 pad_z + 0.2f);
-                p.drawEllipse(notch_proj.pt, 2.0f * notch_proj.scale, 2.0f * notch_proj.scale);
+                const float nr = (n % 2 == 0 ? 2.1f : 1.4f) * notch_proj.scale;
+                p.drawEllipse(notch_proj.pt, nr, nr);
             }
 
             // Concave Dish
-            const auto bowl_center = Project(pad_x, pad_y, pad_z - 1.8f);
-            p.setPen(QPen(QColor(12, 14, 18), 0.8f));
+            const auto bowl_center = Project(pad_x, pad_y, pad_z - 1.6f);
+            p.setPen(QPen(QColor(12, 14, 18), 0.9f));
             if (is_click_pressed) {
                 p.setBrush(colors.highlight2);
             } else {
                 QRadialGradient bowl_grad(bowl_center.pt, r_bowl * bowl_center.scale);
                 bowl_grad.setColorAt(0.0, colors.button2.darker(135));
-                bowl_grad.setColorAt(0.3, colors.button2.darker(120));
-                bowl_grad.setColorAt(0.6, colors.button2);
-                bowl_grad.setColorAt(0.85, colors.button2.lighter(105));
-                bowl_grad.setColorAt(1.0, QColor(62, 66, 76));
+                bowl_grad.setColorAt(0.35, colors.button2.darker(118));
+                bowl_grad.setColorAt(0.65, colors.button2);
+                bowl_grad.setColorAt(0.90, colors.button2.lighter(110));
+                bowl_grad.setColorAt(1.0, QColor(68, 74, 86));
                 p.setBrush(bowl_grad);
             }
             p.drawEllipse(bowl_center.pt, r_bowl * bowl_center.scale, r_bowl * bowl_center.scale);
@@ -2820,8 +2900,8 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             if (!is_click_pressed) {
                 const auto spec = Project(pad_x - 4.0f, pad_y - 6.0f, pad_z + 0.3f);
                 p.setPen(Qt::NoPen);
-                p.setBrush(QColor(255, 255, 255, 42));
-                p.drawEllipse(spec.pt, 8.0f * spec.scale, 4.5f * spec.scale);
+                p.setBrush(QColor(255, 255, 255, 46));
+                p.drawEllipse(spec.pt, 8.2f * spec.scale, 4.5f * spec.scale);
             }
         }
     };
@@ -2830,24 +2910,29 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     DrawPhotorealisticStick(false);
 
     // -------------------------------------------------------------------------
-    // LAYER 11: Auxiliary Buttons (-, +, Screenshot, Home) with Halo
+    // LAYER 11: 3D Auxiliary Buttons (-, +, Screenshot, Home) with LED Halo
     // -------------------------------------------------------------------------
     // Minus (-)
     {
         const bool pressed = button_values[Minus].value;
-        const float z = pressed ? 3.5f : 7.0f;
+        const float z = Z_FRONT + (pressed ? 2.2f : 5.5f);
+        const auto base_p = Project(-24.0f, -58.0f, Z_FRONT + 0.2f);
+        p.setPen(Qt::NoPen);
+        p.setBrush(colors.button.darker(160));
+        p.drawEllipse(base_p.pt, 7.3f * base_p.scale, 7.3f * base_p.scale);
+
         const auto proj = Project(-24.0f, -58.0f, z);
         QRadialGradient aux_grad(proj.pt, 7.5f * proj.scale);
-        aux_grad.setColorAt(0.0, (pressed ? colors.indicator.lighter(120) : QColor(60, 65, 75)));
+        aux_grad.setColorAt(0.0, (pressed ? colors.indicator.lighter(120) : colors.button.lighter(135)));
         aux_grad.setColorAt(0.6, (pressed ? colors.indicator : colors.button));
-        aux_grad.setColorAt(1.0, (pressed ? colors.indicator.darker(120) : colors.button.darker(130)));
+        aux_grad.setColorAt(1.0, (pressed ? colors.indicator.darker(120) : colors.button.darker(135)));
         p.setPen(QPen(pressed ? colors.font : QColor(18, 20, 24), 1.0f));
         p.setBrush(aux_grad);
         p.drawEllipse(proj.pt, 7.0f * proj.scale, 7.0f * proj.scale);
 
         p.setPen(colors.font2);
         p.setBrush(colors.font2);
-        const auto sym_proj = Project(-24.0f, -58.0f, z + 0.1f);
+        const auto sym_proj = Project(-24.0f, -58.0f, z + 0.15f);
         p.drawRect(QRectF(sym_proj.pt.x() - 3.5f * sym_proj.scale, sym_proj.pt.y() - 0.7f * sym_proj.scale,
                           7.0f * sym_proj.scale, 1.4f * sym_proj.scale));
     }
@@ -2855,19 +2940,24 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     // Plus (+)
     {
         const bool pressed = button_values[Plus].value;
-        const float z = pressed ? 3.5f : 7.0f;
+        const float z = Z_FRONT + (pressed ? 2.2f : 5.5f);
+        const auto base_p = Project(24.0f, -58.0f, Z_FRONT + 0.2f);
+        p.setPen(Qt::NoPen);
+        p.setBrush(colors.button.darker(160));
+        p.drawEllipse(base_p.pt, 7.3f * base_p.scale, 7.3f * base_p.scale);
+
         const auto proj = Project(24.0f, -58.0f, z);
         QRadialGradient aux_grad(proj.pt, 7.5f * proj.scale);
-        aux_grad.setColorAt(0.0, (pressed ? colors.indicator.lighter(120) : QColor(60, 65, 75)));
+        aux_grad.setColorAt(0.0, (pressed ? colors.indicator.lighter(120) : colors.button.lighter(135)));
         aux_grad.setColorAt(0.6, (pressed ? colors.indicator : colors.button));
-        aux_grad.setColorAt(1.0, (pressed ? colors.indicator.darker(120) : colors.button.darker(130)));
+        aux_grad.setColorAt(1.0, (pressed ? colors.indicator.darker(120) : colors.button.darker(135)));
         p.setPen(QPen(pressed ? colors.font : QColor(18, 20, 24), 1.0f));
         p.setBrush(aux_grad);
         p.drawEllipse(proj.pt, 7.0f * proj.scale, 7.0f * proj.scale);
 
         p.setPen(colors.font2);
         p.setBrush(colors.font2);
-        const auto sym_proj = Project(24.0f, -58.0f, z + 0.1f);
+        const auto sym_proj = Project(24.0f, -58.0f, z + 0.15f);
         p.drawRect(QRectF(sym_proj.pt.x() - 3.5f * sym_proj.scale, sym_proj.pt.y() - 0.7f * sym_proj.scale,
                           7.0f * sym_proj.scale, 1.4f * sym_proj.scale));
         p.drawRect(QRectF(sym_proj.pt.x() - 0.7f * sym_proj.scale, sym_proj.pt.y() - 3.5f * sym_proj.scale,
@@ -2877,11 +2967,11 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     // Screenshot
     {
         const bool pressed = button_values[Screenshot].value;
-        const float z = pressed ? 3.0f : 6.0f;
+        const float z = Z_FRONT + (pressed ? 2.0f : 4.8f);
         const auto proj = Project(-16.0f, -28.0f, z);
         p.setPen(QPen(pressed ? colors.font : QColor(18, 20, 24), 1.0f));
         QRadialGradient scr_grad(proj.pt, 6.0f * proj.scale);
-        scr_grad.setColorAt(0.0, (pressed ? colors.indicator.lighter(115) : QColor(55, 60, 70)));
+        scr_grad.setColorAt(0.0, (pressed ? colors.indicator.lighter(115) : colors.button.lighter(130)));
         scr_grad.setColorAt(0.7, (pressed ? colors.indicator : colors.button));
         scr_grad.setColorAt(1.0, (pressed ? colors.indicator.darker(115) : colors.button.darker(125)));
         p.setBrush(scr_grad);
@@ -2896,25 +2986,25 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     // Home with glowing LED halo
     {
         const bool pressed = button_values[Home].value;
-        const float z = pressed ? 3.0f : 6.0f;
+        const float z = Z_FRONT + (pressed ? 2.0f : 4.8f);
 
-        const auto halo_proj = Project(16.0f, -28.0f, 2.5f);
-        QRadialGradient led_grad(halo_proj.pt, 14.0f * halo_proj.scale);
+        const auto halo_proj = Project(16.0f, -28.0f, Z_FRONT + 0.4f);
+        QRadialGradient led_grad(halo_proj.pt, 14.5f * halo_proj.scale);
         led_grad.setColorAt(0.0, colors.home_led);
-        led_grad.setColorAt(0.4, QColor(colors.home_led.red(), colors.home_led.green(), colors.home_led.blue(), 85));
+        led_grad.setColorAt(0.45, QColor(colors.home_led.red(), colors.home_led.green(), colors.home_led.blue(), 95));
         QColor led_fade = colors.home_led;
         led_fade.setAlpha(0);
         led_grad.setColorAt(1.0, led_fade);
         p.setPen(Qt::NoPen);
         p.setBrush(led_grad);
-        p.drawEllipse(halo_proj.pt, 14.0f * halo_proj.scale, 14.0f * halo_proj.scale);
+        p.drawEllipse(halo_proj.pt, 14.5f * halo_proj.scale, 14.5f * halo_proj.scale);
 
         const auto proj = Project(16.0f, -28.0f, z);
         QRadialGradient home_grad(proj.pt - QPointF(2.0f * proj.scale, 2.0f * proj.scale), 8.0f * proj.scale);
-        home_grad.setColorAt(0.0, QColor(72, 78, 92));
+        home_grad.setColorAt(0.0, colors.button.lighter(140));
         home_grad.setColorAt(0.4, (pressed ? colors.indicator : colors.button));
         home_grad.setColorAt(1.0, (pressed ? colors.indicator.darker(120) : colors.button.darker(135)));
-        p.setPen(QPen(colors.home_led, 1.4f));
+        p.setPen(QPen(colors.home_led, 1.5f));
         p.setBrush(home_grad);
         p.drawEllipse(proj.pt, 7.0f * proj.scale, 7.0f * proj.scale);
 
@@ -2924,7 +3014,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     }
 
     // -------------------------------------------------------------------------
-    // LAYER 12: Player Indicator LEDs (Lower Chin)
+    // LAYER 12: Player Indicator LEDs (Lower Chin at Z_FRONT + 0.35f)
     // -------------------------------------------------------------------------
     {
         constexpr std::array<float, 4> led_x = {-15.0f, -5.0f, 5.0f, 15.0f};
@@ -2932,33 +3022,65 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
                             bool(led_pattern.position3), bool(led_pattern.position4)};
 
         for (int i = 0; i < 4; ++i) {
-            const auto proj = Project(led_x[i], 52.0f, 2.5f);
+            const auto proj = Project(led_x[i], 52.0f, Z_FRONT + 0.35f);
             p.setPen(Qt::NoPen);
             p.setBrush(on[i] ? colors.indicator : QColor(30, 35, 42));
-            p.drawRoundedRect(QRectF(proj.pt.x() - 2.2f * proj.scale, proj.pt.y() - 1.2f * proj.scale,
-                                     4.4f * proj.scale, 2.4f * proj.scale), 0.8f, 0.8f);
+            p.drawRoundedRect(QRectF(proj.pt.x() - 2.3f * proj.scale, proj.pt.y() - 1.2f * proj.scale,
+                                     4.6f * proj.scale, 2.4f * proj.scale), 0.8f, 0.8f);
             if (on[i]) {
-                QRadialGradient glow(proj.pt, 5.5f * proj.scale);
+                QRadialGradient glow(proj.pt, 6.0f * proj.scale);
                 glow.setColorAt(0.0, colors.indicator);
                 QColor fade = colors.indicator;
                 fade.setAlpha(0);
                 glow.setColorAt(1.0, fade);
                 p.setBrush(glow);
-                p.drawEllipse(proj.pt, 5.5f * proj.scale, 5.5f * proj.scale);
+                p.drawEllipse(proj.pt, 6.0f * proj.scale, 6.0f * proj.scale);
             }
         }
+    }
+    }; // end DrawFrontShellAndControls3D
+
+    // =========================================================================
+    // EXECUTE 3D VOLUMETRIC DEPTH-SORTED PASSES (360° ORBIT & PITCH)
+    // =========================================================================
+    if (front_facing) {
+        DrawRearShell3D();
+        DrawVolumetricMidsection3D(true);
+        DrawFrontShellAndControls3D();
+    } else {
+        DrawFrontShellAndControls3D();
+        DrawVolumetricMidsection3D(false);
+        DrawRearShell3D();
+    }
+
+    // 3D Camera Orbit Telemetry Badge (shown when rotated or flipped)
+    if (std::abs(rot_x) > 1.0f || std::abs(rot_y) > 1.0f) {
+        const auto badge_pos = center + QPointF(0.0f, -152.0f);
+        QString view_name = front_facing ? QStringLiteral("3D ОБЗОР") : QStringLiteral("ВИД СЗАДИ");
+        if (rot_x < -35.0f) {
+            view_name = QStringLiteral("ВИД СВЕРХУ (ТОРЦЫ)");
+        } else if (rot_x > 35.0f) {
+            view_name = QStringLiteral("ВИД СНИЗУ");
+        } else if (std::abs(rot_y) > 55.0f && std::abs(rot_y) < 125.0f) {
+            view_name = (rot_y > 0.0f) ? QStringLiteral("ПРОФИЛЬ СПРАВА") : QStringLiteral("ПРОФИЛЬ СЛЕВА");
+        }
+        const QString badge_text = QStringLiteral("%1  [%2° / %3°]")
+                                       .arg(view_name)
+                                       .arg(static_cast<int>(std::round(rot_y)))
+                                       .arg(static_cast<int>(std::round(rot_x)));
+        p.setPen(QPen(colors.indicator, 1.1f));
+        p.setBrush(QColor(12, 16, 24, 215));
+        p.drawRoundedRect(QRectF(badge_pos.x() - 78.0f, badge_pos.y() - 11.0f, 156.0f, 22.0f), 6.0f, 6.0f);
+        p.setPen(colors.indicator.lighter(120));
+        SetTextFont(p, 0.66f);
+        DrawText(p, badge_pos, 0.66f, badge_text);
     }
 
     // -------------------------------------------------------------------------
     // LAYER 13: HUD Overlays (Non-Overlapping, Beautifully Positioned)
     // -------------------------------------------------------------------------
-    // Battery Card (Upper-Left)
     DrawPhotorealisticBattery(bat_pos);
-
-    // Colorful 3D Gyroscope (Upper-Right)
     DrawColorfulGyroscope(gyro_pos, smooth_euler, 16.0f);
-
-    // Precision Analog Stick Radars (Under Controller, Centered L/R)
     DrawModernStickRadar(true, left_radar);
     DrawModernStickRadar(false, right_radar);
 

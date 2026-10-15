@@ -1293,6 +1293,10 @@ void KProcess::LoadModule(KernelCore& kernel, CodeSet code_set, KProcessAddress 
     if (this->IsApplication() && Settings::IsNceEnabled() && patch.size != 0) {
         auto& buffer = kernel.System().DeviceMemory().buffer;
         const auto& code = code_set.CodeSegment();
+        if (auto* base_ptr = reinterpret_cast<char*>(buffer.VirtualBasePointer())) {
+            char* mod_start = base_ptr + GetInteger(base_addr);
+            __builtin___clear_cache(mod_start, mod_start + code_set.memory.size());
+        }
         buffer.Protect(GetInteger(base_addr + code.addr), code.size,
                        Common::MemoryPermission::Read | Common::MemoryPermission::Execute);
         buffer.Protect(GetInteger(base_addr + patch.addr), patch.size,

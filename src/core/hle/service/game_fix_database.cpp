@@ -15,8 +15,25 @@
 #include "common/fs/path_util.h"
 #include "common/logging.h"
 #include "common/settings.h"
+#ifdef __ANDROID__
+#include <unistd.h>
+#endif
 
 namespace Core {
+
+#ifdef __ANDROID__
+namespace {
+bool HasAtLeast7GbHostRam() {
+    const long pages = sysconf(_SC_PHYS_PAGES);
+    const long page_size = sysconf(_SC_PAGESIZE);
+    if (pages > 0 && page_size > 0) {
+        const u64 total_ram_bytes = static_cast<u64>(pages) * static_cast<u64>(page_size);
+        return total_ram_bytes >= (7ULL * 1024 * 1024 * 1024);
+    }
+    return false;
+}
+} // namespace
+#endif
 
 static const std::vector<GameFixProfile> s_profiles = {
     {
@@ -274,7 +291,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\gpu_accuracy", "0"}
         },
-        {0x0100D2800D5C2000ULL}
+        {0x0100D2800D5C2000ULL, 0x01003A00184E6000ULL}
     },
     {
         0x0100F2200C984000ULL,
@@ -383,32 +400,41 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01005B101DC84000ULL,
         "EA SPORTS FC 25",
-        "• Зависание при старте игры / черный экран на заставке EA\n• Нехватка памяти Frostbite Engine (вылет при загрузке стадиона)\n• Зависание на сетевой аутентификации",
-        "• Boot hang / black screen on EA splash screen\n• Frostbite Engine out-of-memory crash\n• Network handshake freeze",
-        "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Быстрая память: Включено",
-        "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Fastmem: Enabled",
+        "• Зависание при старте игры / черный экран на заставке EA\n• Нехватка памяти Frostbite Engine (вылет при загрузке стадиона и режима Карьеры)\n• Зависание на сетевой аутентификации",
+        "• Boot hang / black screen on EA splash screen\n• Frostbite Engine out-of-memory and Career Mode crash\n• Network handshake freeze",
+        "✓ Память: 8GB DRAM (критично для движка Frostbite и Карьеры)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Патчер NCE для динамических NRO (ldr:ro): Включено\n✓ Быстрая память: Включено",
+        "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine & Career Mode)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Runtime NRO NCE Patcher (ldr:ro): Enabled\n✓ Fastmem: Enabled",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
             {"Renderer\\use_asynchronous_shaders", "false"},
-            {"Cpu\\cpuopt_fastmem", "true"}
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Debugging\\use_auto_stub", "true"}
         }
     },
     {
         0x010077D0238FA000ULL,
-        "EA SPORTS FC 26",
-        "• Зависание при старте игры / черный экран на заставке EA\n• Нехватка памяти Frostbite Engine (вылет при загрузке стадиона)\n• Зависание на сетевой аутентификации",
-        "• Boot hang / black screen on EA splash screen\n• Frostbite Engine out-of-memory crash\n• Network handshake freeze",
-        "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Быстрая память: Включено",
-        "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Fastmem: Enabled",
+        "EA SPORTS FC 26 / FC 27",
+        "• Вылет при входе в режим Карьеры (SIGILL при загрузке динамических NRO-модулей Frostbite)\n• Зависание при старте игры / черный экран на заставке EA\n• Нехватка памяти Frostbite Engine (вылет при загрузке стадиона)\n• Зависание на сетевой аутентификации",
+        "• Career Mode crash (SIGILL on dynamic Frostbite NRO module load)\n• Boot hang / black screen on EA splash screen\n• Frostbite Engine out-of-memory crash\n• Network handshake freeze",
+        "✓ Память: 8GB DRAM (критично для движка Frostbite и режима Карьеры)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Патчер NCE для динамических NRO (ldr:ro): Включено\n✓ Авто-заглушки сервисов HLE: Включено\n✓ Быстрая память: Включено",
+        "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine & Career Mode)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Runtime NRO NCE Patcher (ldr:ro): Enabled\n✓ HLE Service Auto-Stub: Enabled\n✓ Fastmem: Enabled",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
             {"Renderer\\use_asynchronous_shaders", "false"},
-            {"Cpu\\cpuopt_fastmem", "true"}
-        }
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Debugging\\use_auto_stub", "true"}
+        },
+        {0x010077D0238FA800ULL, 0x01005B101DC84800ULL}
     },
     {
         0x01008CA01F186000ULL,
@@ -508,16 +534,22 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100BCB0176D0000ULL,
         "Hogwarts Legacy",
-        "• Некорректное изображение, сбои освещения и геометрии\n• Вылет при переходе между локациями Хогвартса из-за нехватки памяти",
-        "• Corrupted rendering, lighting and geometry glitches\n• Out-of-memory crash during Hogwarts area transitions",
-        "✓ Память: 8GB DRAM (критично для стабильности)\n✓ Реактивная очистка: Отключено (исправление освещения замка)\n✓ Barrier Feedback Loops: Включено\n✓ Сжатие ASTC: Отключено",
-        "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Reactive Flushing: Disabled (Fixes castle lighting)\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "• Фиолетовые круги и радужные засветы освещения (NaN/Inf в шейдерах точечного света и Bloom UE4 на драйверах AK 1.04 / Qualcomm / Turnip)\n• Некорректное изображение, сбои освещения и геометрии\n• Вылет при переходе между локациями Хогвартса из-за нехватки памяти",
+        "• Purple circles and rainbow lighting artifacts (NaN/Inf in UE4 point-light attenuation and Bloom shaders on AK 1.04 / Qualcomm / Turnip drivers)\n• Corrupted rendering, lighting and geometry glitches\n• Out-of-memory crash during Hogwarts area transitions",
+        "✓ Память: 8GB DRAM (критично для стабильности)\n✓ Исправление Bloom и FP16/MUFU NaN-защита: Включено (устраняет фиолетовые круги и радугу днем и ночью)\n✓ Реактивная очистка: Отключено (исправление освещения замка)\n✓ Barrier Feedback Loops: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Fix Bloom & FP16/MUFU NaN Sanitization: Enabled (Eliminates purple circles and rainbow lighting day & night)\n✓ Reactive Flushing: Disabled (Fixes castle lighting)\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
+            {"Renderer\\fix_bloom_effects", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\dyna_state", "1"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\barrier_feedback_loops", "true"},
-            {"Renderer\\astc_recompression", "0"}
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         },
         {0x0100B5B0112F8000ULL, 0x0100D1801648E000ULL}
     },
@@ -589,7 +621,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "false"},
             {"Renderer\\enable_gpu_buffer_readback", "false"}
         },
-        {0x0100916014D8C000ULL, 0x0100726014352000ULL}
+        {0x0100916014D8C000ULL}
     },
     {
         0x010020D01AD24000ULL,
@@ -977,52 +1009,72 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100C88011246000ULL,
         "Disco Elysium: The Final Cut",
-        "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
-        "• Out of memory (нехватка памяти) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
-        "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
+        "• Вылеты при смене локаций и артефакты освещения/тумана Unity\n• Просадки FPS при включенной высокой точности ГПУ и реактивной очистке\n• Размытие текста диалогов TextMeshPro и цветовые артефакты портретов",
+        "• Out of memory crash on zone transitions and Unity lighting/fog glitches\n• FPS drops caused by High GPU Accuracy and Reactive Flushing stalls\n• TextMeshPro dialogue font blur and color artifacts on painted portraits",
+        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Точность ГПУ: Обычная (высокий FPS без статтеров)\n✓ Вычислительные конвейеры: Включено (корректный туман и освещение)\n✓ Исправление Bloom и FP16 NaN-защита: Включено\n✓ Реактивная очистка: Отключено (без задержек 200 мс)\n✓ Сжатие ASTC: Отключено (гибридный декодер)",
+        "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ GPU Accuracy: Normal (High FPS without stalls)\n✓ Compute Pipelines: Enabled (Correct fog and dynamic lighting)\n✓ Fix Bloom & FP16 NaN Sanitization: Enabled\n✓ Reactive Flushing: Disabled (Zero 200ms stalls)\n✓ ASTC Recompression: Uncompressed (Hybrid decode)",
         {
+            {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"},
             {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\dyna_state", "0"},
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\fix_bloom_effects", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"}
-        }
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"System\\airplane_mode", "false"}
+        },
+        {0x0100726014352000ULL, 0x01008C300F7F0000ULL, 0x0100E26014466000ULL}
     },
     {
         0x01008C300F7F0000ULL,
         "Disco Elysium: The Final Cut (WW)",
-        "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
-        "• Out of memory (нехватка памяти) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
-        "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
+        "• Вылеты при смене локаций и артефакты освещения/тумана Unity\n• Размытие текста диалогов TextMeshPro и цветовые артефакты портретов",
+        "• Out of memory crash on zone transitions and Unity lighting/fog glitches\n• TextMeshPro dialogue font blur and color artifacts on painted portraits",
+        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Точность ГПУ: Обычная\n✓ Вычислительные конвейеры: Включено\n✓ Исправление Bloom: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ GPU Accuracy: Normal\n✓ Compute Pipelines: Enabled\n✓ Fix Bloom: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
+            {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"},
             {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\dyna_state", "0"},
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\fix_bloom_effects", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"}
-        }
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"System\\airplane_mode", "false"}
+        },
+        {0x0100726014352000ULL}
     },
     {
         0x0100E26014466000ULL,
         "Disco Elysium: The Final Cut (Asia)",
-        "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
-        "• Out of memory (нехватка памяти) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
-        "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
+        "• Вылеты при смене локаций и артефакты освещения/тумана Unity\n• Размытие текста диалогов TextMeshPro и цветовые артефакты портретов",
+        "• Out of memory crash on zone transitions and Unity lighting/fog glitches\n• TextMeshPro dialogue font blur and color artifacts on painted portraits",
+        "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Точность ГПУ: Обычная\n✓ Вычислительные конвейеры: Включено\n✓ Исправление Bloom: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ GPU Accuracy: Normal\n✓ Compute Pipelines: Enabled\n✓ Fix Bloom: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
+            {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"},
             {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\dyna_state", "0"},
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\fix_bloom_effects", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"}
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"System\\airplane_mode", "false"}
         }
     },
     {
@@ -1041,12 +1093,13 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100FF500E34A000ULL,
         "Xenoblade Chronicles: Definitive Edition",
-        "• Мерцание текстур открытого мира и артефакты облаков",
-        "• Open world texture shimmering and cloud rendering artifacts",
-        "✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: Расширенное\n✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM",
-        "✓ GPU Accuracy: High\n✓ Dynamic State: EDS2\n✓ ASTC Recompression: BC3\n✓ Memory Layout: 6GB DRAM",
+        "• Черный экран и 0 FPS при запуске под NCE на Android\n• Мерцание текстур открытого мира и артефакты облаков",
+        "• Black screen and 0 FPS boot hang under NCE on Android\n• Open world texture shimmering and cloud rendering artifacts",
+        "✓ Бэкенд ЦП: Dynarmic JIT (устраняет зависание 0 FPS под NCE)\n✓ Точность ГПУ: Обычная\n✓ Динамическое состояние: Расширенное\n✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM",
+        "✓ CPU Backend: Dynarmic JIT (Fixes NCE 0 FPS black screen hang)\n✓ GPU Accuracy: Normal\n✓ Dynamic State: EDS2\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 6GB DRAM",
         {
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Cpu\\cpu_backend", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\dyna_state", "2"},
             {"Renderer\\astc_recompression", "0"},
             {"System\\memory_layout_mode", "1"},
@@ -1256,15 +1309,22 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100A38018D5A000ULL,
         "EA SPORTS FC 24",
-        "• Зависание на заставке EA Connect\n• Утечки памяти в режиме карьеры",
-        "• EA Connect splash freeze\n• Career mode memory leaks",
-        "✓ Режим полета (В самолете): Включено (пропуск серверов EA)\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
-        "✓ Airplane Mode: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
+        "• Вылет при входе в режим Карьеры (SIGILL при загрузке динамических NRO-модулей Frostbite)\n• Зависание на заставке EA Connect\n• Утечки памяти в режиме карьеры",
+        "• Career Mode crash (SIGILL on dynamic Frostbite NRO module load)\n• EA Connect splash freeze\n• Career mode memory leaks",
+        "✓ Память: 8GB DRAM (критично для движка Frostbite и режима Карьеры)\n✓ Режим полета (В самолете): Включено (пропуск серверов EA)\n✓ Асинхронные шейдеры: Отключено\n✓ Патчер NCE для динамических NRO (ldr:ro): Включено\n✓ Авто-заглушки сервисов HLE: Включено",
+        "✓ Memory Layout: 8GB DRAM (Critical for Frostbite & Career Mode)\n✓ Airplane Mode: Enabled\n✓ Asynchronous Shaders: Disabled\n✓ Runtime NRO NCE Patcher (ldr:ro): Enabled\n✓ HLE Service Auto-Stub: Enabled",
         {
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
-            {"System\\memory_layout_mode", "2"}
-        }
+            {"Network\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Debugging\\use_auto_stub", "true"}
+        },
+        {0x0100A38018D5A800ULL}
     },
     {
         0x01001F5010DFA000ULL,
@@ -1560,13 +1620,13 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100FF500E34A000ULL,
         "Xenoblade Chronicles: Definitive Edition",
-        "• Размытие текстур персонажей на расстоянии\n• Мерцание травяного покрова на равнинах Гуры",
-        "• Distant character texture blur\n• Bionis Leg grass shimmering",
-        "✓ Точность ГПУ: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Память: 6GB DRAM",
-        "✓ GPU Accuracy: High\n✓ Anisotropic Filtering: 16x\n✓ Memory Layout: 6GB DRAM",
+        "• Черный экран и 0 FPS при запуске под NCE на Android\n• Размытие текстур персонажей на расстоянии и мерцание травяного покрова",
+        "• Black screen and 0 FPS boot hang under NCE on Android\n• Distant character texture blur and Bionis Leg grass shimmering",
+        "✓ Бэкенд ЦП: Dynarmic JIT (устраняет зависание 0 FPS под NCE)\n✓ Точность ГПУ: Обычная\n✓ Память: 6GB DRAM",
+        "✓ CPU Backend: Dynarmic JIT (Fixes NCE 0 FPS black screen hang)\n✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM",
         {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\max_anisotropy", "5"},
+            {"Cpu\\cpu_backend", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"System\\memory_layout_mode", "1"}
         }
     },
@@ -2733,16 +2793,23 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01007E300B70C000ULL,
         "Borderlands Legendary Collection (1, 2, TPS)",
-        "• Задержка старта на 60+ секунд и зависание при сетевом опросе SHiFT\n• Просадки FPS при взрывах стихий",
-        "• 60+ second boot freeze during SHiFT network ping\n• Elemental explosion particle slowdowns",
-        "✓ Режим полёта: Включено (мгновенный старт без ожидания SHiFT)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
-        "✓ Airplane Mode: Enabled (Instant boot without SHiFT timeout)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
+        "• Зависание на логотипах 2K и Gearbox при запуске (Borderlands 2)\n• Задержка старта на 60+ секунд при сетевом опросе SHiFT\n• Просадки FPS при взрывах стихий",
+        "• Hang on 2K and Gearbox splash logos on boot (Borderlands 2)\n• 60+ second boot freeze during SHiFT network ping\n• Elemental explosion particle slowdowns",
+        "✓ Синхронизация операций памяти: Включено (устраняет зависание на логотипе 2K/Gearbox)\n✓ Режим полёта: Включено (мгновенный старт без ожидания SHiFT)\n✓ Память: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ Sync Memory Operations: Enabled (Fixes 2K/Gearbox logo hang)\n✓ Airplane Mode: Enabled (Instant boot without SHiFT timeout)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
         {
+            {"Renderer\\sync_memory_operations", "true"},
             {"System\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\gpu_accuracy", "1"}
-        }
+            {"Renderer\\gpu_accuracy", "0"}
+        },
+        {0x010064E009F7E000ULL, 0x0100C5800B70E000ULL, 0x01008C30113B0000ULL}
     },
     {
         0x01001B300B9BE000ULL,
@@ -3087,15 +3154,33 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100FF500E34A000ULL,
         "Xenoblade Chronicles: Definitive Edition",
-        "• Просадки FPS и утечки VRAM в открытых локациях (Bionis Leg)\n• Микрофризы при подгрузке текстур высокого разрешения",
-        "• Framerate drops and VRAM pressure in large open zones (Bionis Leg)\n• Texture streaming micro-stutters",
-        "✓ Точность ГПУ: Обычная (стабильная производительность)\n✓ Сжатие ASTC: Отключено (чистые текстуры без задержек)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6GB DRAM",
-        "✓ GPU Accuracy: Normal (Smooth performance)\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
+        "• Черный экран и 0 FPS при запуске под NCE на Android\n• Просадки FPS и утечки VRAM в открытых локациях (Bionis Leg)\n• Микрофризы при подгрузке текстур высокого разрешения",
+        "• Black screen and 0 FPS boot hang under NCE on Android\n• Framerate drops and VRAM pressure in large open zones (Bionis Leg)\n• Texture streaming micro-stutters",
+        "✓ Бэкенд ЦП: Dynarmic JIT (устраняет зависание 0 FPS под NCE)\n✓ Точность ГПУ: Обычная (стабильная производительность)\n✓ Сжатие ASTC: Отключено (чистые текстуры без задержек)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6GB DRAM",
+        "✓ CPU Backend: Dynarmic JIT (Fixes NCE 0 FPS black screen hang)\n✓ GPU Accuracy: Normal (Smooth performance)\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
         {
+            {"Cpu\\cpu_backend", "0"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\astc_recompression", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
+            {"System\\memory_layout_mode", "1"}
+        }
+    },
+    {
+        0x010087201207C000ULL,
+        "Kingdoms of Amalur: Re-Reckoning",
+        "• Вылет или зависание на черном экране при запуске в режиме NCE на Android\n• Микрофризы при подгрузке открытых зон",
+        "• Crash or black screen hang on startup under NCE on Android\n• Micro-stutters during open zone streaming",
+        "✓ Бэкенд ЦП: Dynarmic JIT (требуется для стабильной работы 32-бит/64-бит кода движка)\n✓ Точность ГПУ: Обычная\n✓ Память: 6GB DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
+        "✓ CPU Backend: Dynarmic JIT (Required for engine code stability)\n✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        {
+            {"Cpu\\cpu_backend", "0"},
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
         }
     },
@@ -3460,19 +3545,26 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x0100000000000053ULL,
-        "S.T.A.L.K.E.R.: Shadow of Chernobyl (OpenXRay Switch)",
-        "• Порт движка X-Ray 1.6 (OpenXRay) для S.T.A.L.K.E.R.: Тень Чернобыля\n• Загрузка DB-архивов и gamedata\n• 8 ГБ DRAM для локаций Зоны",
-        "• OpenXRay engine port for S.T.A.L.K.E.R.: Shadow of Chernobyl\n• DB archives and gamedata loading\n• 8GB DRAM for Zone locations",
-        "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто / Небезопасная\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
+        0x010071B01D260000ULL,
+        "S.T.A.L.K.E.R.: Legends of the Zone Trilogy / OpenXRay Switch",
+        "• Зависание и вылет при запуске из-за необработанных HLE-сервисов и онлайн-проверок\n• Нехватка стандартной памяти в локациях Зоны (Тень Чернобыля, Чистое Небо, Зов Припяти)",
+        "• Startup crash and hang due to unhandled HLE services and online checks\n• Memory exhaustion in Zone locations (Shadow of Chernobyl, Clear Sky, Call of Pripyat)",
+        "✓ Авто-заглушки сервисов HLE (Auto-Stub): Включено\n✓ Режим полёта: Включено\n✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено",
+        "✓ HLE Service Auto-Stub: Enabled\n✓ Airplane Mode: Enabled\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
         {
-            {"System\\memory_layout_mode", "1"},
-            {"Cpu\\cpu_accuracy", "1"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"},
+            {"Debugging\\use_auto_stub", "true"},
+            {"System\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
-        }
+        },
+        {0x0100C6B01D262000ULL, 0x010004401D264000ULL, 0x0100000000000053ULL}
     },
     {
         0x010000000000005CULL,
@@ -4287,8 +4379,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Alan Wake Remastered",
         "• Искажение луча света фонарика и артефакты теней\n• Размытие и нечеткость шрифтов субтитров и интерфейса",
         "• Flashlight cone illumination artifacts and shadow glitch\n• Blurry subtitle fonts and distorted UI text rendering",
-        "✓ Динамическое состояние: Базовое (EDS 1 — корректный луч фонарика)\n✓ Сжатие ASTC: Отключено (четкие шрифты и интерфейс)\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Быстрое время ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM",
-        "✓ Dynamic State: Basic (EDS 1 — correct flashlight cone)\n✓ ASTC Recompression: Uncompressed (sharp text and UI)\n✓ GPU Buffer Readback: Enabled\n✓ Fast GPU Time: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
+        "✓ Динамическое состояние: Базовое (EDS 1 — корректный луч фонарика)\n✓ Сжатие ASTC: Отключено (четкие шрифты и интерфейс)\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Барьеры ГПУ и точность DMA: Сбалансированный / Безопасная\n✓ Быстрое время ГПУ: Отключено\n✓ Память: 6 ГБ DRAM",
+        "✓ Dynamic State: Basic (EDS 1 — correct flashlight cone)\n✓ ASTC Recompression: Uncompressed (sharp text and UI)\n✓ GPU Buffer Readback: Enabled\n✓ GPU Fence & DMA Accuracy: Balanced / Safe\n✓ Fast GPU Time: Disabled\n✓ Memory Layout: 6GB DRAM",
         {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\dyna_state", "1"},
@@ -4301,8 +4393,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\vram_garbage_collection", "false"},
-            {"Renderer\\gpu_fence_behavior", "0"},
-            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\gpu_fence_behavior", "1"},
+            {"Renderer\\dma_accuracy", "1"},
             {"Renderer\\early_release_fences", "false"},
             {"Renderer\\enable_compute_pipelines", "true"},
             {"Renderer\\scaling_filter", "1"},
@@ -4313,7 +4405,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"},
             {"System\\airplane_mode", "true"},
-        }
+        },
+        {0x0100F830138E6000ULL, 0x010074B01456A000ULL, 0x010065F014C5E000ULL}
     },
     {
         0x019232F2781D0000ULL,
@@ -4495,20 +4588,21 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Точность ГПУ: Высокая (устранение графических багов)\n✓ Быстрое время ГПУ: Отключено (исправление вылета Device Loss после заставки)\n✓ Динамическое состояние: Базовое (EDS1, стабильность конвейеров)\n✓ Синхронизация памяти: Включено (стабильность Unreal Engine 4 и устранение Device Loss)\n✓ Barrier Feedback Loops: Отключено (стабильность конвейеров)\n✓ Декодирование ASTC: ГПУ\n✓ NVDEC: Программный (устранение зависаний видеороликов)\n✓ Совместимое масштабирование (Legacy Rescale): Включено (устранение наложения текстур лица и глаз при 2X+)\n✓ Память: 6GB DRAM (стабильность со всеми DLC)",
         "✓ GPU Accuracy: High (Fixes graphical glitches)\n✓ Fast GPU Time: Disabled (Fixes Device Loss crash after cutscenes)\n✓ Dynamic State: Basic (EDS1, pipeline stability)\n✓ Sync Memory Operations: Enabled (Unreal Engine 4 stability and Device Loss fix)\n✓ Barrier Feedback Loops: Disabled (Pipeline stability)\n✓ ASTC Decoding: GPU\n✓ NVDEC: CPU (Fixes cutscene freezes)\n✓ Rescale Compatibility Mode: Enabled (Fixes face and eye decal ghosting at 2X+)\n✓ Memory Layout: 6GB DRAM (Stability with all DLCs)",
         {
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\barrier_feedback_loops", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\early_release_fences", "false"},
             {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\drs_resolution_lock", "false"},
-            {"Renderer\\rescale_hack", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Renderer\\rescale_hack", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"}
         },
         {
             0x0100EA6010560000ULL,
@@ -4521,23 +4615,24 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Captain Tsubasa 2 - World Fighters",
         "• Сбои после создания персонажа при неточной синхронизации ГПУ\n• Вылет Device Loss и сбои при переходе от заставки к матчу\n• Задержки компиляции шейдеров спецэффектов футбольных ударов\n• Нагрузка на память при наличии дополнений",
         "• Crashes after character creation on inaccurate GPU sync\n• Device Loss crash during transition from cutscene to match\n• Shader compilation drops during special soccer shot effects\n• Memory pressure with DLCs installed",
-        "✓ Точность ГПУ: Высокая (устранение сбоев после создания персонажа)\n✓ Быстрое время ГПУ: Отключено (исправление вылета Device Loss после заставки)\n✓ Динамическое состояние: Базовое (EDS1, стабильность конвейеров)\n✓ Синхронизация памяти: Включено (стабильность Unreal Engine 4 и устранение Device Loss)\n✓ Barrier Feedback Loops: Отключено (стабильность конвейеров)\n✓ Декодирование ASTC: ГПУ\n✓ NVDEC: Программный (стабильность видеороликов)\n✓ Совместимое масштабирование: Включено\n✓ Память: 6GB DRAM (стабильность с дополнениями)",
-        "✓ GPU Accuracy: High (Fixes character creation crash)\n✓ Fast GPU Time: Disabled (Fixes Device Loss crash after cutscenes)\n✓ Dynamic State: Basic (EDS1, pipeline stability)\n✓ Sync Memory Operations: Enabled (Unreal Engine 4 stability and Device Loss fix)\n✓ Barrier Feedback Loops: Disabled (Pipeline stability)\n✓ ASTC Decoding: GPU\n✓ NVDEC: CPU (Video stability)\n✓ Rescale Compatibility Mode: Enabled\n✓ Memory Layout: 6GB DRAM (DLC stability)",
+        "✓ Точность ГПУ: Высокая (устранение сбоев после создания персонажа)\n✓ Быстрое время ГПУ: Отключено (исправление вылета Device Loss после заставки)\n✓ Динамическое состояние: Базовое (EDS1, стабильность конвейеров)\n✓ Синхронизация памяти: Включено (стабильность Unreal Engine 4 и устранение Device Loss)\n✓ Barrier Feedback Loops: Включено (стабильность конвейеров)\n✓ Декодирование ASTC: ГПУ\n✓ NVDEC: ГПУ (стабильность видеороликов)\n✓ Вычислительные конвейеры: Включено\n✓ Память: 8GB DRAM (стабильность с дополнениями и модами)",
+        "✓ GPU Accuracy: High (Fixes character creation crash)\n✓ Fast GPU Time: Disabled (Fixes Device Loss crash after cutscenes)\n✓ Dynamic State: Basic (EDS1, pipeline stability)\n✓ Sync Memory Operations: Enabled (Unreal Engine 4 stability and Device Loss fix)\n✓ Barrier Feedback Loops: Enabled (Pipeline stability)\n✓ ASTC Decoding: GPU\n✓ NVDEC: GPU (Video stability)\n✓ Compute Pipelines: Enabled\n✓ Memory Layout: 8GB DRAM (DLC and mod stability)",
         {
-            {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\nvdec_emulation", "3"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\barrier_feedback_loops", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\early_release_fences", "false"},
             {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\drs_resolution_lock", "false"},
-            {"Renderer\\rescale_hack", "true"},
-            {"Core\\memory_layout_mode", "1"},
-            {"System\\memory_layout_mode", "1"}
+            {"Renderer\\rescale_hack", "false"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"}
         }
     },
     {
@@ -4691,16 +4786,20 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01007DE013A48000ULL,
         "Golden Force",
-        "• Задержка ввода в динамичных платформенных секциях\n• Нестабильность кадровой частоты 60 FPS",
-        "• Input latency during precision platforming sections\n• 60 FPS frame pacing instability",
-        "",
-        "",
+        "• Задержка ввода в динамичных платформенных секциях\n• Нестабильность кадровой частоты 60 FPS\n• Чёрный экран и сбой конвейера Unity при низкой точности ГПУ и модах локализации",
+        "• Input latency during precision platforming sections\n• 60 FPS frame pacing instability\n• Black screen and Unity pipeline crash on Low GPU Accuracy with localization mods",
+        "✓ Точность ГПУ: Высокая\n✓ Вычислительные конвейеры: Включено\n✓ Память: 8GB DRAM",
+        "✓ GPU Accuracy: High\n✓ Compute Pipelines: Enabled\n✓ Memory Layout: 8GB DRAM",
         {
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\astc_recompression", "0"}
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"}
         }
     },
     {
@@ -4948,14 +5047,21 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01008E20257E0000ULL,
         "Qliphah in Providence's Shadow",
-        "• Артефакты темных полутонов и освещения\n• Замыливание спрайтов при сжатии ASTC",
-        "• Dark lighting gradient banding artifacts\n• Sprite blurring under ASTC recompression",
-        "",
-        "",
+        "• Зависание и вылет после первого удара в бою из-за нехватки памяти (4GB) и отключенных compute-шейдеров спецэффектов\n• Артефакты темных полутонов и освещения\n• Замыливание спрайтов при сжатии ASTC",
+        "• Freeze and crash after first combat hit due to 4GB memory limit and disabled compute shaders\n• Dark lighting gradient banding artifacts\n• Sprite blurring under ASTC recompression",
+        "✓ Память: 8GB DRAM (устранение вылетов при боевых спецэффектах и модах)\n✓ Вычислительные конвейеры: Включено (устранение зависания при первом ударе)\n✓ Точность ГПУ: Высокая\n✓ Синхронизация и Reactive Flushing: Включено",
+        "✓ Memory Layout: 8GB DRAM (Fixes combat hit OOM crashes with mods)\n✓ Compute Pipelines: Enabled (Fixes freeze on first hit)\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\astc_recompression", "0"}
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\enable_compute_pipelines", "true"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"}
         }
     },
     {
@@ -5467,8 +5573,8 @@ static const std::vector<GameFixProfile> s_profiles = {
 
 static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     // 1-15: Графика и видео
-    {"Renderer\\gpu_accuracy", "0"},
-    {"Renderer\\nvdec_emulation", "3"},
+    {"Renderer\\gpu_accuracy", "1"},
+    {"Renderer\\nvdec_emulation", "2"},
     {"Renderer\\accelerate_astc", "1"},
     {"Renderer\\astc_recompression", "0"},
     {"Renderer\\use_asynchronous_shaders", "true"},
@@ -5486,8 +5592,8 @@ static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     {"Cpu\\cpu_accuracy", "0"},
     {"Cpu\\cpuopt_fastmem", "true"},
     {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-    {"Core\\memory_layout_mode", "0"},
-    {"System\\memory_layout_mode", "0"},
+    {"Core\\memory_layout_mode", "2"},
+    {"System\\memory_layout_mode", "2"},
 
     // 20: Система и сеть
     {"System\\airplane_mode", "false"},
@@ -5495,7 +5601,7 @@ static const std::unordered_map<std::string, std::string> s_baseline_ini = {
     {"Network\\airplane_mode", "false"},
 
     // Дополнительные флаги стабильности Vulkan
-    {"Renderer\\enable_compute_pipelines", "false"},
+    {"Renderer\\enable_compute_pipelines", "true"},
     {"Renderer\\use_vulkan_driver_pipeline_cache", "true"},
     {"Renderer\\enable_gpu_buffer_readback", "false"}
 };
@@ -6435,7 +6541,25 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         if (game_lower.find("openjk") != std::string::npos && (lower.find("openjk") != std::string::npos || lower.find("jedi outcast") != std::string::npos || lower.find("jedi academy") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
-        if (game_lower.find("openxray") != std::string::npos && (lower.find("openxray") != std::string::npos || lower.find("stalker") != std::string::npos || lower.find("s.t.a.l.k.e.r") != std::string::npos)) {
+        if (game_lower.find("openxray") != std::string::npos && (lower.find("openxray") != std::string::npos || lower.find("stalker") != std::string::npos || lower.find("s.t.a.l.k.e.r") != std::string::npos || lower.find("chernobyl") != std::string::npos || lower.find("pripyat") != std::string::npos || lower.find("clear sky") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("ea sports fc 26") != std::string::npos && (lower.find("fc 27") != std::string::npos || lower.find("fc27") != std::string::npos || lower.find("fc 26") != std::string::npos || lower.find("fc26") != std::string::npos || lower.find("fifa 27") != std::string::npos || lower.find("fifa 26") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("ea sports fc 25") != std::string::npos && (lower.find("fc 25") != std::string::npos || lower.find("fc25") != std::string::npos || lower.find("fifa 25") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("ea sports fc 24") != std::string::npos && (lower.find("fc 24") != std::string::npos || lower.find("fc24") != std::string::npos || lower.find("fifa 24") != std::string::npos || lower.find("fifa") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("disco elysium") != std::string::npos && (lower.find("disco elysium") != std::string::npos || lower.find("disco_elysium") != std::string::npos || lower.find("0100726014352000") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("hogwarts legacy") != std::string::npos && (lower.find("hogwarts") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("amalur") != std::string::npos && (lower.find("amalur") != std::string::npos || lower.find("re-reckoning") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
         if (game_lower.find("rsdk") != std::string::npos && (lower.find("rsdk") != std::string::npos || lower.find("sonic cd") != std::string::npos || lower.find("data.rsdk") != std::string::npos)) {
@@ -6560,7 +6684,7 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
                 if (!mem_val.empty()) {
                     mode = std::atoi(mem_val.c_str());
                 }
-                if (mode >= 2) {
+                if (mode >= 2 && !HasAtLeast7GbHostRam()) {
                     mem_val = "1";
                 }
 #endif
@@ -6572,6 +6696,9 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
                 sections["Network"][key] = val;
                 sections["Network"][key + "\\use_global"] = "false";
                 sections["Network"][key + "\\default"] = "false";
+                sections["Services"][key] = val;
+                sections["Services"][key + "\\use_global"] = "false";
+                sections["Services"][key + "\\default"] = "false";
             }
         }
     }
@@ -6693,9 +6820,12 @@ bool GameFixDatabase::AreFixesEnabled() {
     return s_fixes_enabled;
 }
 
-bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
+bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name_or_path) {
     try {
         const auto* profile = GetProfile(title_id);
+        if (!profile && !name_or_path.empty()) {
+            profile = GetProfileByTitleOrPath(title_id, name_or_path);
+        }
         if (!profile) {
             return false;
         }
@@ -6711,11 +6841,6 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
         };
 
         auto apply_setting = [](auto& setting, auto val) {
-            if constexpr (requires { setting.UsingGlobal(); }) {
-                if (!setting.UsingGlobal()) {
-                    return;
-                }
-            }
             if constexpr (requires { setting.SetGlobal(false); }) {
                 setting.SetGlobal(false);
             }
@@ -6732,12 +6857,6 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
                 continue;
             }
 
-            if (full_key == "Renderer\\dma_accuracy" && val == "0") {
-                continue;
-            }
-            if (full_key == "Renderer\\gpu_fence_behavior" && val == "0") {
-                continue;
-            }
             if (full_key == "Renderer\\gpu_accuracy") {
                 apply_setting(Settings::values.gpu_accuracy, static_cast<Settings::GpuAccuracy>(safe_stoi(val, 0)));
             } else if (full_key == "Renderer\\drs_resolution_lock") {
@@ -6805,7 +6924,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id) {
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
                 int mode = safe_stoi(val, 0);
 #ifdef __ANDROID__
-                if (mode >= 2) {
+                if (mode >= 2 && !HasAtLeast7GbHostRam()) {
                     mode = 1;
                 }
 #endif

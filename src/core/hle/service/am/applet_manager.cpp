@@ -263,7 +263,10 @@ void AppletManager::SetWindowSystem(WindowSystem* window_system) {
         return;
     }
 
-    m_cv.wait(lk, [&] { return m_pending_process != nullptr; });
+    m_cv.wait(lk, [&] { return m_pending_process != nullptr || m_system.IsShuttingDown(); });
+    if (!m_pending_process || m_system.IsShuttingDown()) {
+        return;
+    }
 
     if (Settings::values.enable_overlay && m_window_system->GetOverlayDisplayApplet() == nullptr) {
         if (auto overlay_process = CreateProcess(m_system, static_cast<u64>(AppletProgramId::OverlayDisplay), 0, 0)) {
@@ -304,9 +307,15 @@ void AppletManager::SetWindowSystem(WindowSystem* window_system) {
         lp.is_account_selected = 1;
 
         Account::ProfileManager profile_manager{};
-        const auto uuid = profile_manager.GetUser(static_cast<s32>(Settings::values.current_user));
-        ASSERT(uuid.has_value() && uuid->IsValid());
-        lp.current_user = *uuid;
+        auto uuid = profile_manager.GetUser(static_cast<s32>(Settings::values.current_user));
+        if (!uuid.has_value() || !uuid->IsValid()) {
+            uuid = profile_manager.GetUser(0);
+        }
+        if (uuid.has_value() && uuid->IsValid()) {
+            lp.current_user = *uuid;
+        } else {
+            lp.current_user = Common::UUID::MakeDefault();
+        }
 
         std::vector<u8> buffer(sizeof(LaunchParameterAccountPreselectedUser));
         std::memcpy(buffer.data(), &lp, buffer.size());

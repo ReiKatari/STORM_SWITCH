@@ -54,7 +54,7 @@ IApplicationFunctions::IApplicationFunctions(Core::System& system_, std::shared_
         {32, D<&IApplicationFunctions::BeginBlockingHomeButton>, "BeginBlockingHomeButton"},
         {33, D<&IApplicationFunctions::EndBlockingHomeButton>, "EndBlockingHomeButton"},
         {34, nullptr, "SelectApplicationLicense"},
-        {35, nullptr, "GetDeviceSaveDataSizeMax"},
+        {35, D<&IApplicationFunctions::GetDeviceSaveDataSizeMax>, "GetDeviceSaveDataSizeMax"},
         {36, nullptr, "GetLimitedApplicationLicense"},
         {37, nullptr, "GetLimitedApplicationLicenseUpgradableEvent"},
         {40, D<&IApplicationFunctions::NotifyRunning>, "NotifyRunning"},
@@ -78,25 +78,30 @@ IApplicationFunctions::IApplicationFunctions(Core::System& system_, std::shared_
         {121, D<&IApplicationFunctions::ClearUserChannel>, "ClearUserChannel"},
         {122, D<&IApplicationFunctions::UnpopToUserChannel>, "UnpopToUserChannel"},
         {123, D<&IApplicationFunctions::GetPreviousProgramIndex>, "GetPreviousProgramIndex"},
-        {124, nullptr, "EnableApplicationAllThreadDumpOnCrash"},
+        {124, D<&IApplicationFunctions::EnableApplicationAllThreadDumpOnCrash>, "EnableApplicationAllThreadDumpOnCrash"},
         {130, D<&IApplicationFunctions::GetGpuErrorDetectedSystemEvent>, "GetGpuErrorDetectedSystemEvent"},
-        {131, nullptr, "SetDelayTimeToAbortOnGpuError"},
+        {131, D<&IApplicationFunctions::SetDelayTimeToAbortOnGpuError>, "SetDelayTimeToAbortOnGpuError"},
         {140, D<&IApplicationFunctions::GetFriendInvitationStorageChannelEvent>, "GetFriendInvitationStorageChannelEvent"},
         {141, D<&IApplicationFunctions::TryPopFromFriendInvitationStorageChannel>, "TryPopFromFriendInvitationStorageChannel"},
         {150, D<&IApplicationFunctions::GetNotificationStorageChannelEvent>, "GetNotificationStorageChannelEvent"},
-        {151, nullptr, "TryPopFromNotificationStorageChannel"},
+        {151, D<&IApplicationFunctions::TryPopFromNotificationStorageChannel>, "TryPopFromNotificationStorageChannel"},
         {160, D<&IApplicationFunctions::GetHealthWarningDisappearedSystemEvent>, "GetHealthWarningDisappearedSystemEvent"},
-        {170, nullptr, "SetHdcpAuthenticationActivated"},
-        {180, nullptr, "GetLaunchRequiredVersion"},
-        {181, nullptr, "UpgradeLaunchRequiredVersion"},
-        {190, nullptr, "SendServerMaintenanceOverlayNotification"},
-        {200, nullptr, "GetLastApplicationExitReason"},
+        {170, D<&IApplicationFunctions::SetHdcpAuthenticationActivated>, "SetHdcpAuthenticationActivated"},
+        {180, D<&IApplicationFunctions::GetLaunchRequiredVersion>, "GetLaunchRequiredVersion"},
+        {181, D<&IApplicationFunctions::UpgradeLaunchRequiredVersion>, "UpgradeLaunchRequiredVersion"},
+        {190, D<&IApplicationFunctions::SendServerMaintenanceOverlayNotification>, "SendServerMaintenanceOverlayNotification"},
+        {200, D<&IApplicationFunctions::GetLastApplicationExitReason>, "GetLastApplicationExitReason"},
         {210, D<&IApplicationFunctions::GetUnknownEvent210>, "Unknown210"},
-        {220, nullptr, "Unknown220"}, // [20.0.0+]
+        {220, D<&IApplicationFunctions::Unknown220>, "Unknown220"}, // [20.0.0+]
+        {230, D<&IApplicationFunctions::Unknown220>, "Unknown230"}, // [21.0.0+]
+        {240, D<&IApplicationFunctions::Unknown330>, "Unknown240"}, // [22.0.0+]
+        {250, D<&IApplicationFunctions::Unknown220>, "Unknown250"}, // [23.0.0+]
         {300, nullptr, "CreateMovieWriter"}, // [19.0.0+]
-        {310, nullptr, "Unknown310"}, // [20.0.0+]
-        {320, nullptr, "Unknown320"}, // [20.0.0+]
+        {310, D<&IApplicationFunctions::Unknown310>, "Unknown310"}, // [20.0.0+]
+        {320, D<&IApplicationFunctions::Unknown310>, "Unknown320"}, // [20.0.0+]
         {330, D<&IApplicationFunctions::Unknown330>, "Unknown330"}, // [20.0.0+]
+        {340, D<&IApplicationFunctions::Unknown330>, "Unknown340"}, // [22.0.0+]
+        {350, D<&IApplicationFunctions::Unknown310>, "Unknown350"}, // [23.0.0+]
         {500, nullptr, "StartContinuousRecordingFlushForDebug"},
         {1000, nullptr, "CreateMovieMaker"},
         {1001, D<&IApplicationFunctions::PrepareForJit>, "PrepareForJit"},
@@ -511,10 +516,71 @@ Result IApplicationFunctions::GetHealthWarningDisappearedSystemEvent(
     R_SUCCEED();
 }
 
+Result IApplicationFunctions::GetDeviceSaveDataSizeMax(Out<u64> out_max_normal_size,
+                                                        Out<u64> out_max_journal_size) {
+    LOG_WARNING(Service_AM, "(STUBBED) called");
+    *out_max_normal_size = 0xFFFFFFF;
+    *out_max_journal_size = 0xFFFFFFF;
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::EnableApplicationAllThreadDumpOnCrash() {
+    LOG_WARNING(Service_AM, "(STUBBED) called");
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::SetDelayTimeToAbortOnGpuError() {
+    LOG_WARNING(Service_AM, "(STUBBED) called");
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::TryPopFromNotificationStorageChannel(
+    Out<SharedPointer<IStorage>> out_storage) {
+    LOG_DEBUG(Service_AM, "called");
+    return AM::ResultNoDataInChannel;
+}
+
+Result IApplicationFunctions::SetHdcpAuthenticationActivated(bool activated) {
+    LOG_WARNING(Service_AM, "(STUBBED) called, activated={}", activated);
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::GetLaunchRequiredVersion(Out<u32> out_version) {
+    LOG_WARNING(Service_AM, "(STUBBED) called");
+    *out_version = 0;
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::UpgradeLaunchRequiredVersion() {
+    LOG_WARNING(Service_AM, "(STUBBED) called");
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::SendServerMaintenanceOverlayNotification() {
+    LOG_WARNING(Service_AM, "(STUBBED) called");
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::GetLastApplicationExitReason(Out<s32> out_reason) {
+    LOG_WARNING(Service_AM, "(STUBBED) called");
+    *out_reason = 0;
+    R_SUCCEED();
+}
+
 Result IApplicationFunctions::GetUnknownEvent210(
     OutCopyHandle<Kernel::KReadableEvent> out_event) {
     LOG_DEBUG(Service_AM, "called");
     *out_event = m_applet->unknown_event.GetHandle();
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::Unknown220() {
+    LOG_DEBUG(Service_AM, "(STUBBED) called");
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::Unknown310() {
+    LOG_DEBUG(Service_AM, "(STUBBED) called");
     R_SUCCEED();
 }
 

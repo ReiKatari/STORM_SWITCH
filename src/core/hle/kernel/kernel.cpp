@@ -1237,8 +1237,12 @@ void KernelCore::SuspendEmulation(bool suspended) {
         return true;
     };
 
+    u32 wait_iterations = 0;
     while (!TryWait()) {
-        // ...
+        if (IsShuttingDown() && ++wait_iterations > 500) {
+            break;
+        }
+        std::this_thread::yield();
     }
 }
 

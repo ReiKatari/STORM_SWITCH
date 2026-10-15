@@ -349,12 +349,14 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         per_game_config->ReloadAllValues();
     }
     u64 early_title_id = 0;
+    std::string early_title;
     try {
         const auto early_file = m_system.GetFilesystem()->OpenFile(filepath, FileSys::OpenMode::Read);
         if (early_file) {
             auto early_loader = Loader::GetLoader(m_system, early_file);
             if (early_loader) {
                 early_loader->ReadProgramId(early_title_id);
+                early_loader->ReadTitle(early_title);
             }
         }
     } catch (...) {}
@@ -367,16 +369,38 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         LOG_INFO(Frontend, "Enforced 4GB DRAM for Darkest Dungeon on Android to prevent out-of-bounds crash");
     }
 
-    // On Android devices, clamp 8GB DRAM (mode 2) to 6GB (mode 1)
-    if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_8Gb) {
+    // Only clamp 8GB DRAM (mode 2) to 6GB (mode 1) on low-RAM Android devices (< 7 GB physical RAM).
+    // Devices with >= 8 GB RAM need full 8GB guest DRAM for Frostbite Career Mode (EA Sports FC 24/25/26/27),
+    // Hogwarts Legacy, Mortal Kombat 1, and Diablo II: Resurrected.
+    const u64 host_ram_bytes = static_cast<u64>(sysconf(_SC_PHYS_PAGES)) * static_cast<u64>(sysconf(_SC_PAGESIZE));
+    if (host_ram_bytes > 0 && host_ram_bytes < 7ULL * 1024ULL * 1024ULL * 1024ULL &&
+        Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_8Gb) {
         Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
-        LOG_INFO(Frontend, "Clamped memory_layout_mode 8GB to 6GB for Android stability");
+        LOG_INFO(Frontend, "Clamped memory_layout_mode 8GB to 6GB on low-RAM Android device ({} MB)",
+                 host_ram_bytes / (1024ULL * 1024ULL));
     }
 #endif
 
-    if (early_title_id != 0 && Core::GameFixDatabase::AreFixesEnabled()) {
-        if (Core::GameFixDatabase::ApplyProfileDirectly(early_title_id)) {
-            LOG_INFO(Frontend, "Applied early GameFix profile for title_id={:016X}", early_title_id);
+    if (Core::GameFixDatabase::AreFixesEnabled()) {
+        bool applied_early = false;
+        if (early_title_id != 0) {
+            applied_early = Core::GameFixDatabase::ApplyProfileDirectly(early_title_id);
+            if (applied_early) {
+                LOG_INFO(Frontend, "Applied early GameFix profile for title_id={:016X}", early_title_id);
+            }
+        }
+        if (!applied_early) {
+            const Core::GameFixProfile* by_name = nullptr;
+            if (!early_title.empty()) {
+                by_name = Core::GameFixDatabase::GetProfileByTitleOrPath(early_title_id, early_title);
+            }
+            if (!by_name && !filepath.empty()) {
+                by_name = Core::GameFixDatabase::GetProfileByTitleOrPath(early_title_id, filepath);
+            }
+            if (by_name && Core::GameFixDatabase::ApplyProfileDirectly(by_name->title_id)) {
+                LOG_INFO(Frontend, "Applied early GameFix profile by title match '{}' -> {:016X}",
+                         early_title.empty() ? filepath : early_title, by_name->title_id);
+            }
         }
     }
 

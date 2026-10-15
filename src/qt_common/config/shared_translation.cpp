@@ -74,6 +74,15 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
         {"Debugging", "Отладка", "تصحيح الأخطاء", "Debugging", "Débogage", "调试", "デバッグ", "Depuración"},
         {"Custom CPU Ticks", "Пользовательские такты ЦП", "ترددات مخصصة للمعالج", "Benutzerdefinierte CPU-Ticks", "Ticks CPU personnalisés", "自定义 CPU 时钟节拍", "カスタム CPU ティック", "Ticks de CPU personalizados"},
         {"CPU Affinity Pinning", "Привязка потоков ЦП", "تثبيت أنوية المعالج", "CPU-Affinity Pinning", "Affinité des cœurs CPU", "CPU 核心亲和性绑定", "CPU アフィニティ固定", "Fijación de afinidad de CPU"},
+        {"STORM Tier-2 JIT Compiler", "Компилятор STORM Tier-2 (Суперблок JIT)", "مترجم STORM Tier-2 JIT", "STORM Tier-2 JIT-Compiler", "Compilateur JIT STORM Tier-2", "STORM Tier-2 JIT 编译器", "STORM Tier-2 JIT コンパイラ", "Compilador JIT STORM Tier-2"},
+        {"Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).",
+         "Включает оптимизирующий компилятор STORM Tier-2 без накладных расходов (преобразует инструкции ARMv8.3 PAC/BTI в суперблоки и ускоряет чтение таймеров CNTVCT_EL0).",
+         "يفعل محسن تعليمات STORM Tier-2 ومضبط JIT الفائق بدون حمل إضافي.",
+         "Aktiviert den verlustfreien STORM Tier-2 Befehls-Voroptimierer und Superblock-JIT-Tuner.",
+         "Active le pré-optimiseur d'instructions STORM Tier-2 sans surcoût et le réglage JIT superbloc.",
+         "启用零开销 STORM Tier-2 指令预优化器与超块 JIT 调优器。",
+         "ゼロオーバーヘッドの STORM Tier-2 命令プリオプティマイザおよびスーパーブロック JIT チューナーを有効にします。",
+         "Habilita el preoptimizador de instrucciones STORM Tier-2 sin sobrecarga y el ajustador JIT de superbloques."},
 
         // Screenshot 4 & Graphics settings
         {"API:", "Графический API:", "واجهة برمجة الرسوميات:", "Grafik-API:", "API graphique :", "图形 API:", "グラフィックス API:", "API de gráficos:"},
@@ -827,6 +836,8 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
     // STORM Optimization Settings
     INSERT(Settings, cpu_affinity_pinning, tr("CPU Affinity Pinning"),
            tr("Pins emulation threads to physical performance cores."));
+    INSERT(Settings, use_storm_tier2_compiler, tr("STORM Tier-2 JIT Compiler"),
+           tr("Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads)."));
     INSERT(Settings, eco_frame_pacing, tr("Eco Frame Pacing"),
            tr("Reduces power draw and frame stuttering with adaptive delivery."));
     INSERT(Settings, drs_resolution_lock, tr("Lock Dynamic Resolution"),
@@ -1006,11 +1017,11 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                               PAIR(ScalingFilter, ScaleForce, tr("ScaleForce")),
                               PAIR(ScalingFilter, Fsr, tr("AMD FidelityFX Super Resolution")),
                               PAIR(ScalingFilter, Area, tr("Area")),
-                              PAIR(ScalingFilter, Mmpx, tr("MMPX")),
                               PAIR(ScalingFilter, ZeroTangent, tr("Zero-Tangent")),
                               PAIR(ScalingFilter, BSpline, tr("B-Spline")),
                               PAIR(ScalingFilter, Mitchell, tr("Mitchell")),
                               PAIR(ScalingFilter, Spline1, tr("Spline-1")),
+                              PAIR(ScalingFilter, Mmpx, tr("MMPX")),
                               PAIR(ScalingFilter, Sgsr, tr("Snapdragon Game Super Resolution")),
                               PAIR(ScalingFilter, SgsrEdge, tr("Snapdragon Game Super Resolution EdgeDir")),
                           }});

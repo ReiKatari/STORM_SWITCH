@@ -9,6 +9,7 @@
 #include "core/arm/dynarmic/arm_dynarmic_32.h"
 #include "core/arm/dynarmic/dynarmic_cp15.h"
 #include "core/arm/dynarmic/dynarmic_exclusive_monitor.h"
+#include "core/arm/dynarmic/storm_tier2_compiler.h"
 #include "core/core_timing.h"
 #include "core/hle/kernel/k_process.h"
 
@@ -316,6 +317,7 @@ void ArmDynarmic32::MakeJit(Common::PageTable* page_table) {
         config.fastmem_pointer = std::nullopt;
         config.fastmem_exclusive_access = false;
     }
+    StormTier2Compiler::ApplyTier2Config32(config, page_table == nullptr);
     m_jit.emplace(config);
 }
 

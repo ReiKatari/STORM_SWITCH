@@ -918,15 +918,21 @@ TextureCacheRuntime::TextureCacheRuntime(const Device& device_, Scheduler& sched
                                          StagingBufferPool& staging_buffer_pool_,
                                          BlitImageHelper& blit_image_helper_,
                                          RenderPassCache& render_pass_cache_,
-                                         DescriptorPool& descriptor_pool,
-                                         ComputePassDescriptorQueue& compute_pass_descriptor_queue)
+                                         DescriptorPool& descriptor_pool_,
+                                         ComputePassDescriptorQueue& compute_pass_descriptor_queue_)
     : device{device_}, scheduler{scheduler_}, memory_allocator{memory_allocator_},
       staging_buffer_pool{staging_buffer_pool_}, blit_image_helper{blit_image_helper_},
-      render_pass_cache{render_pass_cache_}, resolution{Settings::values.resolution_info} {
+      render_pass_cache{render_pass_cache_}, descriptor_pool{descriptor_pool_},
+      compute_pass_descriptor_queue{compute_pass_descriptor_queue_},
+      resolution{Settings::values.resolution_info} {
     const auto astc_mode = Settings::values.accelerate_astc.GetValue();
     if (astc_mode == Settings::AstcDecodeMode::Gpu || astc_mode == Settings::AstcDecodeMode::Hybrid) {
         astc_decoder_pass.emplace(device, scheduler, descriptor_pool, staging_buffer_pool,
                                   compute_pass_descriptor_queue, memory_allocator);
+    }
+    if (Settings::values.gpu_unswizzle_enabled.GetValue()) {
+        bl3d_unswizzle_pass.emplace(device, scheduler, descriptor_pool,
+                                    staging_buffer_pool, compute_pass_descriptor_queue);
     }
     if (!device.IsKhrImageFormatListSupported()) {
         return;
@@ -944,11 +950,6 @@ TextureCacheRuntime::TextureCacheRuntime(const Device& device_, Scheduler& sched
                 view_formats[index_a].push_back(view_info.format);
             }
         }
-    }
-
-    if (Settings::values.gpu_unswizzle_enabled.GetValue()) {
-        bl3d_unswizzle_pass.emplace(device, scheduler, descriptor_pool,
-                                   staging_buffer_pool, compute_pass_descriptor_queue);
     }
 }
 
@@ -3077,7 +3078,16 @@ void TextureCacheRuntime::AccelerateImageUpload(
     u32 z_start, u32 z_count) {
 
     if (IsPixelFormatASTC(image.info.format)) {
+        if (!astc_decoder_pass) {
+            astc_decoder_pass.emplace(device, scheduler, descriptor_pool, staging_buffer_pool,
+                                      compute_pass_descriptor_queue, memory_allocator);
+        }
         return astc_decoder_pass->Assemble(image, map, swizzles);
+    }
+
+    if (Settings::values.gpu_unswizzle_enabled.GetValue() && !bl3d_unswizzle_pass) {
+        bl3d_unswizzle_pass.emplace(device, scheduler, descriptor_pool,
+                                    staging_buffer_pool, compute_pass_descriptor_queue);
     }
 
     if (!Settings::values.gpu_unswizzle_enabled.GetValue() || !bl3d_unswizzle_pass) {

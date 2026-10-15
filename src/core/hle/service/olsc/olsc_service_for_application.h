@@ -21,6 +21,11 @@ private:
     Result Initialize(ClientProcessId process_id);
     Result GetSaveDataBackupSetting(Out<u8> out_save_data_backup_setting);
     Result SetSaveDataBackupSettingEnabled(bool enabled, NS::Uid account_id);
+    Result SetCustomData();
+    Result DeleteSaveDataBackupSetting();
+    Result GetSaveDataBackupInfoCache(Out<u32> out_count);
+    Result Unknown40(Out<u8> out_val);
+    Result Unknown42();
 
     bool initialized{};
 };

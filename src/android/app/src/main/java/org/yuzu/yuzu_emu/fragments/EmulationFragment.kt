@@ -1275,10 +1275,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
             container.removeAllViews()
 
-            if (game != null) {
-                quickSettings.ensureCustomConfigLoaded()
-            }
-
             if (shouldUseCustom) {
                 quickSettings.addPerGameConfigStatusIndicator(container)
             }
@@ -2223,7 +2219,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 if (emulationViewModel.emulationStarted.value &&
                     !emulationViewModel.isEmulationStopping.value
                 ) {
-                    val needsGlobal = NativeConfig.isPerGameConfigLoaded()
+                    val needsGlobal = false
                     sb.setLength(0)
 
                     val perfStats = NativeLibrary.getPerfStats()
@@ -2354,8 +2350,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                     // Emergency thermal protection: if enabled and battery/chipset reaches user-configured threshold,
                     // trigger forced pause to allow the hardware to cool down safely.
-                    val thermalProtectionEnabled = BooleanSetting.THERMAL_EMERGENCY_PROTECTION.getBoolean(NativeConfig.isPerGameConfigLoaded())
-                    val thermalLimit = IntSetting.THERMAL_EMERGENCY_LIMIT.getInt(NativeConfig.isPerGameConfigLoaded()).toFloat().coerceIn(44.0f, 60.0f)
+                    val thermalProtectionEnabled = BooleanSetting.THERMAL_EMERGENCY_PROTECTION.getBoolean()
+                    val thermalLimit = IntSetting.THERMAL_EMERGENCY_LIMIT.getInt().toFloat().coerceIn(44.0f, 60.0f)
                     if (thermalProtectionEnabled && currentBatteryTemp >= thermalLimit && this@EmulationFragment::emulationState.isInitialized && !emulationState.isPaused) {
                         pauseEmulationAndCaptureFrame()
                         context?.let { ctx ->
@@ -2380,14 +2376,14 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     private fun updateStatsPosition(position: Int) {
         updateOverlayPosition(binding.showStatsOverlayText, position)
-        updateSocPosition(IntSetting.SOC_OVERLAY_POSITION.getInt(NativeConfig.isPerGameConfigLoaded()))
+        updateSocPosition(IntSetting.SOC_OVERLAY_POSITION.getInt())
     }
 
     private fun updateSocPosition(position: Int) {
         val params = binding.showSocOverlayText.layoutParams as FrameLayout.LayoutParams
-        val statsPos = IntSetting.PERF_OVERLAY_POSITION.getInt(NativeConfig.isPerGameConfigLoaded())
+        val statsPos = IntSetting.PERF_OVERLAY_POSITION.getInt()
         val isSamePos = position == statsPos
-        val offset = if (isSamePos && BooleanSetting.SHOW_PERFORMANCE_OVERLAY.getBoolean(NativeConfig.isPerGameConfigLoaded())) {
+        val offset = if (isSamePos && BooleanSetting.SHOW_PERFORMANCE_OVERLAY.getBoolean()) {
             resources.getDimensionPixelSize(R.dimen.spacing_xtralarge) + 16
         } else {
             0
@@ -2500,47 +2496,29 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 ) {
                     sb.setLength(0)
 
-                    if (BooleanSetting.SHOW_BUILD_ID.getBoolean(
-                            NativeConfig.isPerGameConfigLoaded()
-                        )
-                    ) {
+                    if (BooleanSetting.SHOW_BUILD_ID.getBoolean()) {
                         appendWithPipe(buildId)
                     }
 
-                    if (BooleanSetting.SHOW_DRIVER_VERSION.getBoolean(
-                            NativeConfig.isPerGameConfigLoaded()
-                        )
-                    ) {
+                    if (BooleanSetting.SHOW_DRIVER_VERSION.getBoolean()) {
                         appendWithPipe(driverInUse)
                     }
 
-                    if (BooleanSetting.SHOW_DEVICE_MODEL.getBoolean(
-                            NativeConfig.isPerGameConfigLoaded()
-                        )
-                    ) {
+                    if (BooleanSetting.SHOW_DEVICE_MODEL.getBoolean()) {
                         appendWithPipe(Build.MODEL)
                     }
 
-                    if (BooleanSetting.SHOW_GPU_MODEL.getBoolean(
-                            NativeConfig.isPerGameConfigLoaded()
-                        )
-                    ) {
+                    if (BooleanSetting.SHOW_GPU_MODEL.getBoolean()) {
                         appendWithPipe(gpuModel)
                     }
 
                     if (Build.VERSION.SDK_INT >= 31) {
-                        if (BooleanSetting.SHOW_SOC_MODEL.getBoolean(
-                                NativeConfig.isPerGameConfigLoaded()
-                            )
-                        ) {
+                        if (BooleanSetting.SHOW_SOC_MODEL.getBoolean()) {
                             appendWithPipe(Build.SOC_MODEL)
                         }
                     }
 
-                    if (BooleanSetting.SHOW_FW_VERSION.getBoolean(
-                            NativeConfig.isPerGameConfigLoaded()
-                        )
-                    ) {
+                    if (BooleanSetting.SHOW_FW_VERSION.getBoolean()) {
                         appendWithPipe(fwVersion)
                     }
 
@@ -2552,10 +2530,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
 
 
-                    if (BooleanSetting.SOC_OVERLAY_BACKGROUND.getBoolean(
-                            NativeConfig.isPerGameConfigLoaded()
-                        )
-                    ) {
+                    if (BooleanSetting.SOC_OVERLAY_BACKGROUND.getBoolean()) {
                         binding.showSocOverlayText.setBackgroundResource(
                             R.color.yuzu_transparent_black
                         )
@@ -2691,8 +2666,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     }
 
                     // 5. Game Resolution
-                    val isDocked = BooleanSetting.USE_DOCKED_MODE.getBoolean(NativeConfig.isPerGameConfigLoaded())
-                    val resSetting = IntSetting.RENDERER_RESOLUTION.getInt(NativeConfig.isPerGameConfigLoaded())
+                    val isDocked = BooleanSetting.USE_DOCKED_MODE.getBoolean()
+                    val resSetting = IntSetting.RENDERER_RESOLUTION.getInt()
                     val (baseW, baseH) = if (isDocked) Pair(1920, 1080) else Pair(1280, 720)
                     val scale = when (resSetting) {
                         0 -> 0.5f
@@ -2731,10 +2706,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     params.setMargins(0, topMargin, resources.getDimensionPixelSize(R.dimen.spacing_large), 0)
                     binding.showLoadOverlayText.layoutParams = params
 
-                    if (BooleanSetting.SOC_OVERLAY_BACKGROUND.getBoolean(
-                            NativeConfig.isPerGameConfigLoaded()
-                        )
-                    ) {
+                    if (BooleanSetting.SOC_OVERLAY_BACKGROUND.getBoolean()) {
                         binding.showLoadOverlayText.setBackgroundResource(
                             R.color.yuzu_transparent_black
                         )
@@ -2868,12 +2840,17 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     override fun surfaceCreated(holder: SurfaceHolder) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    holder.surface.setFrameRate(60.0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
+                val targetRate = if (BooleanSetting.RENDERER_FRAME_GEN.getBoolean()) {
+                    IntSetting.RENDERER_FRAME_GEN_TARGET_RATE.getInt().toFloat().let { if (it > 0f) it else 120.0f }
                 } else {
-                    holder.surface.setFrameRate(60.0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
+                    60.0f
                 }
-                Log.info("[EmulationFragment] Locked surface frame rate to 60.0 FPS (LTPO refresh lock)")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
+                } else {
+                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
+                }
+                Log.info("[EmulationFragment] Locked surface frame rate to $targetRate FPS (LTPO refresh lock)")
             } catch (e: Exception) {
                 Log.warning("[EmulationFragment] Failed to lock surface frame rate: ${e.message}")
             }
@@ -2884,10 +2861,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         Log.debug("[EmulationFragment] Surface changed. Resolution: " + width + "x" + height)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    holder.surface.setFrameRate(60.0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
+                val targetRate = if (BooleanSetting.RENDERER_FRAME_GEN.getBoolean()) {
+                    IntSetting.RENDERER_FRAME_GEN_TARGET_RATE.getInt().toFloat().let { if (it > 0f) it else 120.0f }
                 } else {
-                    holder.surface.setFrameRate(60.0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
+                    60.0f
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
+                } else {
+                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
                 }
             } catch (e: Exception) {
                 Log.warning("[EmulationFragment] Failed to update surface frame rate: ${e.message}")

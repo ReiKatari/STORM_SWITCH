@@ -659,9 +659,15 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
         return;
     }
 
-    // Step 1: Instant emission of all cached games (0 disk seeks, sub-millisecond per title)
+    // Step 1: Instant emission of all cached games (0 disk seeks, single batched UI update)
     std::vector<FoundFileInfo> uncached_files;
     uncached_files.reserve(found_files.size());
+    std::vector<std::string> deferred_provider_files;
+    deferred_provider_files.reserve(found_files.size());
+    std::vector<QList<QStandardItem*>> cached_batch;
+    cached_batch.reserve(found_files.size());
+
+    const auto cache_dir_base = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list";
 
     for (const auto& file_info : found_files) {
         if (stop_requested) {
@@ -673,47 +679,55 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
             cache_it->second.mtime == file_info.mtime_val) {
             const auto& cached = cache_it->second;
             if (!cached.is_bootable) {
-                // File was verified as non-bootable (e.g. update or DLC).
-                // Register in provider so DLCs and updates are not lost after ClearAllEntries!
                 if (Settings::values.ext_content_from_game_dirs.GetValue()) {
-                    const auto file = vfs->OpenFile(file_info.physical_name, FileSys::OpenMode::Read);
-                    if (file && file->GetSize() > 0) {
-                        provider->AddEntriesFromContainer(file);
-                    }
+                    deferred_provider_files.push_back(file_info.physical_name);
                 }
                 continue;
-            }
-
-            if (Settings::values.ext_content_from_game_dirs.GetValue()) {
-                const auto file = vfs->OpenFile(file_info.physical_name, FileSys::OpenMode::Read);
-                if (file && file->GetSize() > 0) {
-                    provider->AddEntriesFromContainer(file);
-                }
             }
 
             if (!emitted_entries.contains(file_info.physical_name) && cached.program_id != 0 &&
                 (cached.program_id & 0xFFF) == 0) {
                 std::vector<u8> icon_bytes;
                 const auto icon_file_path = Common::FS::PathToUTF8String(
-                    Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" /
-                    fmt::format("{:016X}.jpeg", cached.program_id));
+                    cache_dir_base / fmt::format("{:016X}.jpeg", cached.program_id));
                 QFile ifile(QString::fromStdString(icon_file_path));
                 if (ifile.open(QFile::ReadOnly)) {
-                    const auto qdata = ifile.readAll();
-                    icon_bytes.assign(qdata.begin(), qdata.end());
+                    const qint64 sz = ifile.size();
+                    if (sz > 0) {
+                        icon_bytes.resize(static_cast<std::size_t>(sz));
+                        ifile.read(reinterpret_cast<char*>(icon_bytes.data()), sz);
+                    }
                 }
-                auto entry = MakeCachedGameListEntry(
+                cached_batch.push_back(MakeCachedGameListEntry(
                     file_info.physical_name, cached.name, cached.file_size, icon_bytes,
                     QString::fromStdString(cached.file_type_string), cached.program_id,
                     play_time_manager, QString::fromStdString(cached.patch_versions),
                     QString::fromStdString(cached.file_version),
-                    QString::fromStdString(cached.addons_text));
-
-                RecordEvent([=](GameListModel* model) { model->AddEntry(entry, parent_dir); });
+                    QString::fromStdString(cached.addons_text)));
                 emitted_entries.insert(file_info.physical_name);
             }
         } else {
             uncached_files.push_back(file_info);
+        }
+    }
+
+    if (!cached_batch.empty()) {
+        RecordEvent([batch = std::move(cached_batch), parent_dir](GameListModel* model) mutable {
+            for (auto& entry : batch) {
+                model->AddEntry(entry, parent_dir);
+            }
+            emit model->ShowList(true);
+        });
+    }
+
+    // Register deferred external content containers (updates/DLCs) after all cached UI rows are emitted
+    for (const auto& phys_path : deferred_provider_files) {
+        if (stop_requested) {
+            return;
+        }
+        const auto file = vfs->OpenFile(phys_path, FileSys::OpenMode::Read);
+        if (file && file->GetSize() > 0) {
+            provider->AddEntriesFromContainer(file, true);
         }
     }
 
@@ -722,6 +736,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
     }
 
     // Step 2: Process uncached games (single container open, single loader, progressive streaming)
+    std::size_t newly_cached_count = 0;
     for (const auto& file_info : uncached_files) {
         if (stop_requested) {
             break;
@@ -792,7 +807,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
             } else if (Settings::values.ext_content_from_game_dirs.GetValue() &&
                        (file_type == Loader::FileType::XCI || file_type == Loader::FileType::XCZ ||
                         file_type == Loader::FileType::NSP || file_type == Loader::FileType::NSZ)) {
-                provider->AddEntriesFromContainer(file);
+                provider->AddEntriesFromContainer(file, true);
             }
 
             if (!has_base_game) {
@@ -802,10 +817,13 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 meta.is_bootable = false;
                 metadata_cache[file_info.physical_name] = std::move(meta);
                 metadata_cache_dirty = true;
+                if (++newly_cached_count % 8 == 0) {
+                    SaveMetadataCache();
+                }
                 continue;
             }
 
-            const auto addEntry = [this, &file_info, parent_dir](
+            const auto addEntry = [this, &file_info, parent_dir, &newly_cached_count](
                                       std::unique_ptr<Loader::AppLoader>& app_loader,
                                       const u64 id) {
                 if (id == 0 || (id & 0xFFF) != 0) {
@@ -881,6 +899,10 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 meta.addons_text = addons_str.toStdString();
                 meta.is_bootable = true;
                 metadata_cache[file_info.physical_name] = std::move(meta);
+                metadata_cache_dirty = true;
+                if (++newly_cached_count % 8 == 0) {
+                    SaveMetadataCache();
+                }
                 const bool already_emitted = emitted_entries.contains(file_info.physical_name);
                 emitted_entries.insert(file_info.physical_name);
 

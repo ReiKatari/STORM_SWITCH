@@ -81,7 +81,18 @@ private:
     Result GetNotificationStorageChannelEvent(OutCopyHandle<Kernel::KReadableEvent> out_event);
     Result GetHealthWarningDisappearedSystemEvent(OutCopyHandle<Kernel::KReadableEvent> out_event);
     Result CreateApplicationAndRequestToStart(u64 application_id);
+    Result GetDeviceSaveDataSizeMax(Out<u64> out_max_normal_size, Out<u64> out_max_journal_size);
+    Result EnableApplicationAllThreadDumpOnCrash();
+    Result SetDelayTimeToAbortOnGpuError();
+    Result TryPopFromNotificationStorageChannel(Out<SharedPointer<IStorage>> out_storage);
+    Result SetHdcpAuthenticationActivated(bool activated);
+    Result GetLaunchRequiredVersion(Out<u32> out_version);
+    Result UpgradeLaunchRequiredVersion();
+    Result SendServerMaintenanceOverlayNotification();
+    Result GetLastApplicationExitReason(Out<s32> out_reason);
     Result GetUnknownEvent210(OutCopyHandle<Kernel::KReadableEvent> out_event);
+    Result Unknown220();
+    Result Unknown310();
     Result Unknown330(Out<u8> out);
     Result PrepareForJit();
 

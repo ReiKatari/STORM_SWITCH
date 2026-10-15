@@ -274,6 +274,7 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                             });
 
     std::set<std::string> used_files;
+    std::set<u64> repacked_base_program_tids;
 
     struct CandidateNca {
         VirtualFile raw_file;
@@ -429,6 +430,30 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
 
                     VirtualFile matched_file = nullptr;
                     std::shared_ptr<NCA> matched_cand_nca = nullptr;
+                    std::string matched_cand_name;
+                    const bool is_base_program_record =
+                        (rec.type == ContentRecordType::Program && (cnmt.GetTitleID() & 0x800) == 0);
+
+                    auto IsBetterProgramCandidate = [&](const CandidateNca& cand) -> bool {
+                        if (!matched_cand_nca) {
+                            return true;
+                        }
+                        if (!is_base_program_record) {
+                            return false;
+                        }
+                        const bool cur_ok =
+                            (matched_cand_nca->GetStatus() == Loader::ResultStatus::Success);
+                        const bool new_ok =
+                            (cand.nca->GetStatus() == Loader::ResultStatus::Success);
+                        if (new_ok != cur_ok) {
+                            return new_ok;
+                        }
+                        const std::size_t cur_sz =
+                            matched_file ? matched_file->GetSize() : 0;
+                        const std::size_t new_sz =
+                            cand.v_file ? cand.v_file->GetSize() : 0;
+                        return new_sz > cur_sz;
+                    };
 
                     // Pass 1: Exact Title ID + Content Type match
                     for (const auto& cand : candidates) {
@@ -436,11 +461,14 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                         if (cand.nca && (cand.nca->GetStatus() == Loader::ResultStatus::Success ||
                             cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS)) {
                             if (cand.nca->GetTitleId() == cnmt.GetTitleID() && MatchesType(cand.nca->GetType())) {
-                                LOG_DEBUG(Service_FS, "Exact TitleID & Type fallback matched record type {} to file {}", static_cast<int>(rec.type), cand.name);
-                                matched_file = cand.v_file;
-                                matched_cand_nca = cand.nca;
-                                used_files.insert(cand.name);
-                                break;
+                                if (IsBetterProgramCandidate(cand)) {
+                                    matched_file = cand.v_file;
+                                    matched_cand_nca = cand.nca;
+                                    matched_cand_name = cand.name;
+                                    if (!is_base_program_record) {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -453,11 +481,14 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                                 cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS)) {
                                 bool base_matches = (FileSys::GetBaseTitleID(cand.nca->GetTitleId()) == FileSys::GetBaseTitleID(cnmt.GetTitleID()));
                                 if (base_matches && MatchesType(cand.nca->GetType())) {
-                                    LOG_DEBUG(Service_FS, "Base TitleID & Type fallback matched record type {} to file {}", static_cast<int>(rec.type), cand.name);
-                                    matched_file = cand.v_file;
-                                    matched_cand_nca = cand.nca;
-                                    used_files.insert(cand.name);
-                                    break;
+                                    if (IsBetterProgramCandidate(cand)) {
+                                        matched_file = cand.v_file;
+                                        matched_cand_nca = cand.nca;
+                                        matched_cand_name = cand.name;
+                                        if (!is_base_program_record) {
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -470,11 +501,14 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                             if (cand.nca && (cand.nca->GetStatus() == Loader::ResultStatus::Success ||
                                 cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS)) {
                                 if (cand.nca->GetTitleId() == cnmt.GetTitleID()) {
-                                    LOG_DEBUG(Service_FS, "Exact TitleID fallback matched record type {} to file {}", static_cast<int>(rec.type), cand.name);
-                                    matched_file = cand.v_file;
-                                    matched_cand_nca = cand.nca;
-                                    used_files.insert(cand.name);
-                                    break;
+                                    if (IsBetterProgramCandidate(cand)) {
+                                        matched_file = cand.v_file;
+                                        matched_cand_nca = cand.nca;
+                                        matched_cand_name = cand.name;
+                                        if (!is_base_program_record) {
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -487,23 +521,40 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                             if (cand.nca && (cand.nca->GetStatus() == Loader::ResultStatus::Success ||
                                 cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS)) {
                                 if (MatchesType(cand.nca->GetType())) {
-                                    LOG_DEBUG(Service_FS, "Type-based fallback matched record type {} to file {}", static_cast<int>(rec.type), cand.name);
-                                    matched_file = cand.v_file;
-                                    matched_cand_nca = cand.nca;
-                                    used_files.insert(cand.name);
-                                    break;
+                                    if (IsBetterProgramCandidate(cand)) {
+                                        matched_file = cand.v_file;
+                                        matched_cand_nca = cand.nca;
+                                        matched_cand_name = cand.name;
+                                        if (!is_base_program_record) {
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
+                    }
+
+                    if (!matched_cand_name.empty()) {
+                        used_files.insert(matched_cand_name);
                     }
 
                     next_file = matched_file;
                     if (matched_cand_nca != nullptr) {
                         auto next_nca = matched_cand_nca;
                         if (next_nca->GetType() == NCAContentType::Program) {
-                            program_status[next_nca->GetTitleId()] = next_nca->GetStatus();
-                            if ((next_nca->GetTitleId() & 0xFFFULL) == 0) {
-                                program_ids.insert(next_nca->GetTitleId());
+                            const u64 prog_tid = (next_nca->GetTitleId() != 0)
+                                                     ? next_nca->GetTitleId()
+                                                     : cnmt.GetTitleID();
+                            if (program_status.find(prog_tid) == program_status.end() ||
+                                next_nca->GetStatus() == Loader::ResultStatus::Success) {
+                                program_status[prog_tid] = next_nca->GetStatus();
+                            }
+                            if ((prog_tid & 0xFFFULL) == 0) {
+                                program_ids.insert(prog_tid);
+                                if (is_base_program_record &&
+                                    next_nca->GetStatus() == Loader::ResultStatus::Success) {
+                                    repacked_base_program_tids.insert(prog_tid);
+                                }
                             }
                         }
 
@@ -519,16 +570,39 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                                 ncas[next_nca->GetTitleId()][{cnmt.GetType(), rec.type}] =
                                     std::move(next_nca);
                             } else {
-                                auto& target_map = ncas[cnmt.GetTitleID()];
-                                auto existing = target_map.find({cnmt.GetType(), rec.type});
+                                const u64 update_tid =
+                                    ((cnmt.GetTitleID() & 0x800) != 0)
+                                        ? cnmt.GetTitleID()
+                                        : (FileSys::GetBaseTitleID(
+                                               next_nca->GetTitleId() != 0 ? next_nca->GetTitleId()
+                                                                           : cnmt.GetTitleID()) |
+                                           0x800ULL);
+                                auto& target_map = ncas[update_tid];
+                                const TitleType eff_type = TitleType::Update;
+                                auto existing = target_map.find({eff_type, rec.type});
 
                                 if (existing != target_map.end() && rec.type == ContentRecordType::Program) {
                                     continue;
                                 }
-                                ncas[cnmt.GetTitleID()][{cnmt.GetType(), rec.type}] = std::move(next_nca);
+                                target_map[{eff_type, rec.type}] = std::move(next_nca);
                             }
                         } else {
-                            ncas[cnmt.GetTitleID()][{cnmt.GetType(), rec.type}] = std::move(next_nca);
+                            const u64 target_tid = (next_nca->GetTitleId() != 0)
+                                                       ? next_nca->GetTitleId()
+                                                       : cnmt.GetTitleID();
+                            auto& target_map = ncas[target_tid];
+                            auto existing = target_map.find({cnmt.GetType(), rec.type});
+                            if (existing != target_map.end() && rec.type == ContentRecordType::Program) {
+                                const bool old_ok =
+                                    existing->second &&
+                                    existing->second->GetStatus() == Loader::ResultStatus::Success;
+                                const bool new_ok =
+                                    next_nca->GetStatus() == Loader::ResultStatus::Success;
+                                if (old_ok && !new_ok) {
+                                    continue;
+                                }
+                            }
+                            target_map[{cnmt.GetType(), rec.type}] = std::move(next_nca);
                         }
                         continue;
                     }
@@ -546,9 +620,15 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                 auto next_nca = std::make_shared<NCA>(std::move(next_file));
 
                 if (next_nca->GetType() == NCAContentType::Program) {
-                    program_status[next_nca->GetTitleId()] = next_nca->GetStatus();
-                    if ((next_nca->GetTitleId() & 0xFFFULL) == 0) {
-                        program_ids.insert(next_nca->GetTitleId());
+                    const u64 prog_tid = (next_nca->GetTitleId() != 0)
+                                             ? next_nca->GetTitleId()
+                                             : cnmt.GetTitleID();
+                    if (program_status.find(prog_tid) == program_status.end() ||
+                        next_nca->GetStatus() == Loader::ResultStatus::Success) {
+                        program_status[prog_tid] = next_nca->GetStatus();
+                    }
+                    if ((prog_tid & 0xFFFULL) == 0) {
+                        program_ids.insert(prog_tid);
                     }
                 }
 
@@ -566,13 +646,21 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                         ncas[next_nca->GetTitleId()][{cnmt.GetType(), rec.type}] =
                             std::move(next_nca);
                     } else {
-                        auto& target_map = ncas[cnmt.GetTitleID()];
-                        auto existing = target_map.find({cnmt.GetType(), rec.type});
+                        const u64 update_tid =
+                            ((cnmt.GetTitleID() & 0x800) != 0)
+                                ? cnmt.GetTitleID()
+                                : (FileSys::GetBaseTitleID(
+                                       next_nca->GetTitleId() != 0 ? next_nca->GetTitleId()
+                                                                   : cnmt.GetTitleID()) |
+                                   0x800ULL);
+                        auto& target_map = ncas[update_tid];
+                        const TitleType eff_type = TitleType::Update;
+                        auto existing = target_map.find({eff_type, rec.type});
 
                         if (existing != target_map.end() && rec.type == ContentRecordType::Program) {
                             continue;
                         }
-                        ncas[cnmt.GetTitleID()][{cnmt.GetType(), rec.type}] = std::move(next_nca);
+                        target_map[{eff_type, rec.type}] = std::move(next_nca);
                     }
                 } else {
                     const u64 target_tid = (next_nca->GetTitleId() != 0)
@@ -582,9 +670,42 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                     auto existing = target_map.find({cnmt.GetType(), rec.type});
 
                     if (existing != target_map.end() && rec.type == ContentRecordType::Program) {
-                        continue;
+                        const bool old_ok =
+                            existing->second &&
+                            existing->second->GetStatus() == Loader::ResultStatus::Success;
+                        const bool new_ok =
+                            next_nca->GetStatus() == Loader::ResultStatus::Success;
+                        if (old_ok && !new_ok) {
+                            continue;
+                        }
                     }
                     target_map[{cnmt.GetType(), rec.type}] = std::move(next_nca);
+                }
+            }
+        }
+    }
+
+    // If a container's base Application Program NCA was repacked/merged (matched via content fallback
+    // rather than exact CNMT hash), any leftover BKTR delta update NCA in the same container cannot
+    // be applied on top of the already-modified base RomFS without corrupting it.
+    for (const u64 base_tid : repacked_base_program_tids) {
+        program_status[base_tid] = Loader::ResultStatus::Success;
+        const u64 update_tid = (FileSys::GetBaseTitleID(base_tid) | 0x800ULL);
+        for (const u64 check_tid : {base_tid, update_tid}) {
+            auto map_it = ncas.find(check_tid);
+            if (map_it == ncas.end()) {
+                continue;
+            }
+            for (auto inner_it = map_it->second.begin(); inner_it != map_it->second.end();) {
+                if (inner_it->first.second == ContentRecordType::Program &&
+                    inner_it->second &&
+                    inner_it->second->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS) {
+                    LOG_WARNING(Service_FS,
+                                "Ignoring leftover BKTR update NCA in repacked SuperNSP container for title {:016X}",
+                                base_tid);
+                    inner_it = map_it->second.erase(inner_it);
+                } else {
+                    ++inner_it;
                 }
             }
         }

@@ -39,6 +39,7 @@ object PerGameDrircGenerator {
         LEGEND_OF_HEROES,
         SONIC,
         LITTLE_NIGHTMARES,
+        DISCO_ELYSIUM,
         UNIVERSAL_DEFAULT
     }
 
@@ -70,13 +71,22 @@ object PerGameDrircGenerator {
         // 2. Diablo Series (Flawless D32 Float Depth, Zero Strobing)
         if (cleanId.startsWith("01002A801458A") || // Diablo II USA
             cleanId.startsWith("0100916014D8C") || // Diablo II EUR
-            cleanId.startsWith("0100726014352") || // Diablo II JPN
             cleanId.startsWith("01001B300B9BE") || // Diablo III
             cleanId.startsWith("01001B700A654") || // Diablo III Eternal
             cleanId.startsWith("0100D1AB10000000") || // DevilutionX
             cleanTitle.contains("diablo")
         ) {
             return GameProfileType.DIABLO
+        }
+
+        // 2b. Disco Elysium: The Final Cut (Unity Deferred Lighting & TextMeshPro Swizzle)
+        if (cleanId.startsWith("0100726014352") ||
+            cleanId.startsWith("0100C88011246") ||
+            cleanId.startsWith("01008C300F7F0") ||
+            cleanId.startsWith("0100E26014466") ||
+            cleanTitle.contains("disco elysium")
+        ) {
+            return GameProfileType.DISCO_ELYSIUM
         }
 
         // 3. Streets of Rage 4 & 2D Action Sprites (Pristine Pixel Art & Video Cutscenes)
@@ -609,13 +619,17 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
             }
             GameProfileType.HOGWARTS_LEGACY -> {
-                optionsBuilder.append("\n            <!-- HOGWARTS LEGACY (Complex UE4 Geometry & 8GB Huge Heap Buffer) -->\n")
+                optionsBuilder.append("\n            <!-- HOGWARTS LEGACY (UE4 Deferred Lighting, Zero Purple/Rainbow Circles, 8GB Huge Heap) -->\n")
                 optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_gmem_pinning_zelda\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_direction_fix\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_huge_heap_8gb_align\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
             }
             GameProfileType.THE_WITCHER_3 -> {
@@ -771,6 +785,16 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_subpass_fusion\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_subpass_fusion_v2\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
+            }
+            GameProfileType.DISCO_ELYSIUM -> {
+                optionsBuilder.append("\n            <!-- DISCO ELYSIUM: THE FINAL CUT (Unity Deferred Lighting, Fog Compute & TextMeshPro Swizzle) -->\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_a8_unorm_swizzle_one\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_r8_unorm_swizzle_alpha\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
             }
             GameProfileType.UNIVERSAL_DEFAULT -> {
                 optionsBuilder.append("\n            <!-- UNIVERSAL STORM SWITCH DEFAULT ENGINE RULES -->\n")

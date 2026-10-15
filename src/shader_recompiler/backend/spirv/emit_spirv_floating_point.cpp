@@ -3,6 +3,7 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "common/settings.h"
 #include "shader_recompiler/backend/spirv/emit_spirv_instructions.h"
 #include "shader_recompiler/backend/spirv/spirv_emit_context.h"
 #include "shader_recompiler/frontend/ir/modifiers.h"
@@ -19,7 +20,9 @@ Id Decorate(EmitContext& ctx, IR::Inst* inst, Id op) {
 
 Id Clamp(EmitContext& ctx, Id type, Id value, Id zero, Id one) {
     if (ctx.profile.has_broken_spirv_clamp) {
-        return ctx.OpFMin(type, ctx.OpFMax(type, value, zero), one);
+        // Put finite bounds (zero / one) as the first operand so IEEE-754 fmax/fmin
+        // deterministically flushes NaN in 'value' to 'zero' (matching Maxwell .SAT).
+        return ctx.OpFMin(type, one, ctx.OpFMax(type, zero, value));
     } else {
         return ctx.OpFClamp(type, value, zero, one);
     }

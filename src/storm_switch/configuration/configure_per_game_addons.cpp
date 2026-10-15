@@ -511,12 +511,19 @@ void ConfigurePerGameAddons::LoadConfiguration() {
                 version_display = QStringLiteral("1.0.0");
             }
         } else if (patch.type == FileSys::PatchType::Mod) {
-            // Mods are displayed in the list and can be toggled on/off
+            name = tr("Модификация #%1").arg(mod_counter++);
+            version_display = QString::fromStdString(patch.name);
         }
 
         auto* const first_item = new QStandardItem;
         first_item->setText(name);
         first_item->setCheckable(true);
+        if (patch.type == FileSys::PatchType::Mod) {
+            first_item->setData(QString::fromStdString(patch.name), PATCH_NAME);
+            if (!patch.location.empty()) {
+                first_item->setData(QString::fromStdString(patch.location), PATCH_LOCATION);
+            }
+        }
 
         const bool is_external_update = patch.type == FileSys::PatchType::Update &&
                                         patch.source == FileSys::PatchSource::External &&
@@ -549,6 +556,12 @@ void ConfigurePerGameAddons::LoadConfiguration() {
             update_added = true;
             update_rows.push_back(QList<QStandardItem*>{
                 first_item, new QStandardItem{version_display}});
+        } else if (patch.type == FileSys::PatchType::Mod) {
+            auto* const second_item = new QStandardItem{version_display};
+            if (!patch.location.empty()) {
+                second_item->setData(QString::fromStdString(patch.location), PATCH_LOCATION);
+            }
+            mod_rows.push_back(QList<QStandardItem*>{first_item, second_item});
         }
     }
 
@@ -646,6 +659,10 @@ void ConfigurePerGameAddons::LoadConfiguration() {
     }
     for (auto& pair : dlc_rows) {
         list_items.push_back(std::move(pair.second));
+        item_model->appendRow(list_items.back());
+    }
+    for (auto& row : mod_rows) {
+        list_items.push_back(std::move(row));
         item_model->appendRow(list_items.back());
     }
 

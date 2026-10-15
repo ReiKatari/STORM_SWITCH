@@ -1450,11 +1450,11 @@ void MainWindow::InitializeWidgets() {
             {Settings::ScalingFilter::ScaleForce, QStringLiteral("ScaleForce")},
             {Settings::ScalingFilter::Fsr, QStringLiteral("FSR")},
             {Settings::ScalingFilter::Area, QStringLiteral("Area")},
-            {Settings::ScalingFilter::Mmpx, QStringLiteral("MMPX")},
             {Settings::ScalingFilter::ZeroTangent, QStringLiteral("Zero-Tangent")},
             {Settings::ScalingFilter::BSpline, QStringLiteral("B-Spline")},
             {Settings::ScalingFilter::Mitchell, QStringLiteral("Mitchell")},
             {Settings::ScalingFilter::Spline1, QStringLiteral("Spline-1")},
+            {Settings::ScalingFilter::Mmpx, QStringLiteral("MMPX")},
             {Settings::ScalingFilter::Sgsr, QStringLiteral("SGSR")},
             {Settings::ScalingFilter::SgsrEdge, QStringLiteral("SGSR EdgeDir")},
         };
@@ -3867,7 +3867,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
     if ((dont_ask || m_is_cmd_line_launch) && !force_show) {
         Core::GameFixDatabase::SetFixesEnabled(true);
-        Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+        Core::GameFixDatabase::ApplyProfileDirectly(title_id, game_path.toStdString());
         return GameFixDialogResult::ApplyAndLaunch;
     }
 
@@ -4190,7 +4190,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
     if (action == GameFixDialogResult::ApplyAndLaunch) {
         Core::GameFixDatabase::SetFixesEnabled(true);
-        Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+        Core::GameFixDatabase::ApplyProfileDirectly(title_id, game_path.toStdString());
         if (force_show) {
             QMessageBox::information(this, tr("🛡️ Авто-исправление"),
                 tr("Параметры авто-исправления успешно применены для текущей сессии игры: %1").arg(clean_game_name));
@@ -4279,7 +4279,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
     if (type == StartGameType::Normal) {
         if (params.launch_type == Service::AM::LaunchType::ApplicationInitiated) {
-            Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+            Core::GameFixDatabase::ApplyProfileDirectly(title_id, filename.toStdString());
         } else {
             const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
             if (fix_result == GameFixDialogResult::Cancel) {
@@ -4327,7 +4327,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         QtCommon::system->ApplySettings();
 
         if (Core::GameFixDatabase::AreFixesEnabled()) {
-            Core::GameFixDatabase::ApplyProfileDirectly(title_id);
+            Core::GameFixDatabase::ApplyProfileDirectly(title_id, filename.toStdString());
             QtCommon::system->ApplySettings();
             statusBar()->showMessage(tr("🛡️ Авто-исправление: Применено"), 8000);
         } else if (Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString()) != nullptr) {
@@ -4371,24 +4371,55 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
     std::string title_name;
     std::string title_version;
+    std::string title_developer;
+    QPixmap game_icon_pix;
     const auto res = QtCommon::system->GetGameName(title_name);
 
     const FileSys::PatchManager pm(title_id, QtCommon::system->GetFileSystemController(),
                                    QtCommon::system->GetContentProvider());
-    const auto metadata = pm.GetControlMetadata();
-    std::string title_developer;
-    QPixmap game_icon_pix;
-    if (metadata.first != nullptr) {
-        title_version = metadata.first->GetVersionString();
-        title_name = metadata.first->GetApplicationName();
-        title_developer = metadata.first->GetDeveloperName();
+
+    if (QtCommon::system != nullptr && QtCommon::system->HasAppLoader()) {
+        FileSys::NACP app_nacp{};
+        if (QtCommon::system->GetAppLoader().ReadControlData(app_nacp) == Loader::ResultStatus::Success) {
+            title_version = app_nacp.GetVersionString();
+            if (title_name.empty()) {
+                title_name = app_nacp.GetApplicationName();
+            }
+            title_developer = app_nacp.GetDeveloperName();
+        }
     }
-    if (metadata.second != nullptr) {
-        const auto bytes = metadata.second->ReadAllBytes();
-        game_icon_pix.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
-    } else if (QtCommon::system != nullptr && QtCommon::system->HasAppLoader()) {
+
+    if (title_id != 0) {
+        const auto cached_icon_path = Common::FS::PathToUTF8String(
+            Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" /
+            fmt::format("{:016X}.jpeg", title_id));
+        if (Common::FS::Exists(cached_icon_path)) {
+            game_icon_pix.load(QString::fromStdString(cached_icon_path));
+        }
+    }
+
+    if (game_icon_pix.isNull() && QtCommon::system != nullptr && QtCommon::system->HasAppLoader()) {
         std::vector<u8> bytes;
-        if (QtCommon::system->GetAppLoader().ReadIcon(bytes) == Loader::ResultStatus::Success) {
+        if (QtCommon::system->GetAppLoader().ReadIcon(bytes) == Loader::ResultStatus::Success && !bytes.empty()) {
+            game_icon_pix.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
+        }
+    }
+
+    if (title_name.empty() || title_version.empty() || game_icon_pix.isNull()) {
+        const auto metadata = pm.GetControlMetadata();
+        if (metadata.first != nullptr) {
+            if (title_version.empty()) {
+                title_version = metadata.first->GetVersionString();
+            }
+            if (title_name.empty()) {
+                title_name = metadata.first->GetApplicationName();
+            }
+            if (title_developer.empty()) {
+                title_developer = metadata.first->GetDeveloperName();
+            }
+        }
+        if (game_icon_pix.isNull() && metadata.second != nullptr) {
+            const auto bytes = metadata.second->ReadAllBytes();
             game_icon_pix.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
         }
     }
@@ -4529,6 +4560,10 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     emulation_running = true;
     if (ui->action_Fullscreen->isChecked()) {
         ShowFullscreen();
+    }
+    if (ui->action_Single_Window_Mode->isChecked() && loading_screen->isVisible()) {
+        loading_screen->setGeometry(ui->centralwidget->rect());
+        loading_screen->raise();
     }
     OnStartGame();
 }
@@ -7311,15 +7346,6 @@ void MainWindow::ApplyDynamicSettingChange() {
     const bool is_running = QtCommon::system && QtCommon::system->IsPoweredOn();
     if (is_running) {
         QtCommon::system->ApplySettings();
-        const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
-        if (title_id != 0) {
-            const auto custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
-            const auto specific_config = fmt::format("{:016X}", title_id);
-            if (std::filesystem::exists(custom_path / (specific_config + ".ini"))) {
-                QtConfig per_game_config(specific_config, Config::ConfigType::PerGameConfig, false);
-                per_game_config.SaveAllValues();
-            }
-        }
     }
     if (config) {
         config->SaveAllValues();

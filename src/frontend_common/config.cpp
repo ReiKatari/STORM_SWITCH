@@ -290,8 +290,37 @@ void Config::ReadDataStorageValues() {
 
     using namespace Common::FS;
 
-    const auto setPath = [this](const EdenPath& path, const char* setting) {
-        SetEdenPath(path, ReadStringSetting(std::string(setting)));
+    const auto resolvePortableOrConfiguredPath = [](const EdenPath& path,
+                                                    std::string configured_path) -> std::string {
+        const std::string current_default = GetEdenPathString(path);
+        if (configured_path.empty()) {
+            return current_default;
+        }
+        if (!Common::FS::Exists(configured_path) && !current_default.empty()) {
+            return current_default;
+        }
+        const std::string eden_dir = GetEdenPathString(EdenPath::EdenDir);
+        if (!eden_dir.empty()) {
+            std::string norm_conf = configured_path;
+            std::string norm_eden = eden_dir;
+            std::replace(norm_conf.begin(), norm_conf.end(), '\\', '/');
+            std::replace(norm_eden.begin(), norm_eden.end(), '\\', '/');
+            while (!norm_eden.empty() && norm_eden.back() == '/') {
+                norm_eden.pop_back();
+            }
+            if (norm_conf.find(norm_eden) != 0 &&
+                (norm_conf.find("/user/") != std::string::npos ||
+                 norm_conf.ends_with("/user")) &&
+                !current_default.empty()) {
+                return current_default;
+            }
+        }
+        return configured_path;
+    };
+
+    const auto setPath = [&resolvePortableOrConfiguredPath, this](const EdenPath& path,
+                                                                  const char* setting) {
+        SetEdenPath(path, resolvePortableOrConfiguredPath(path, ReadStringSetting(std::string(setting))));
     };
 
     setPath(EdenPath::NANDDir, "nand_directory");
@@ -301,10 +330,11 @@ void Config::ReadDataStorageValues() {
     setPath(EdenPath::TASDir, "tas_directory");
 
     const auto save_dir_setting = ReadStringSetting(std::string("save_directory"));
-    if (save_dir_setting.empty()) {
+    if (save_dir_setting.empty() || !Common::FS::Exists(save_dir_setting)) {
         SetEdenPath(EdenPath::SaveDir, GetEdenPathString(EdenPath::NANDDir));
     } else {
-        SetEdenPath(EdenPath::SaveDir, save_dir_setting);
+        SetEdenPath(EdenPath::SaveDir,
+                    resolvePortableOrConfiguredPath(EdenPath::NANDDir, save_dir_setting));
     }
 
     ReadCategory(Settings::Category::DataStorage);

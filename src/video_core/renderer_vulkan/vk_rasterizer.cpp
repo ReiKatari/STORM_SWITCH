@@ -490,8 +490,6 @@ void RasterizerVulkan::DrawTexture() {
 
     UpdateDynamicStates();
 
-    query_cache.NotifySegment(true);
-    query_cache.CounterEnable(VideoCommon::QueryType::ZPassPixelCount64, maxwell3d->regs.zpass_pixel_count_enable);
     const auto& draw_texture_state = maxwell3d->draw_manager.draw_texture_state;
     const auto& sampler = texture_cache.GetSampler(draw_texture_state.src_sampler, false);
     const auto& texture = texture_cache.GetImageView(draw_texture_state.src_texture);
@@ -526,6 +524,9 @@ void RasterizerVulkan::DrawTexture() {
         return;
     }
 
+    query_cache.NotifySegment(true);
+    query_cache.CounterEnable(VideoCommon::QueryType::ZPassPixelCount64, maxwell3d->regs.zpass_pixel_count_enable);
+
     Region2D dst_region = {Offset2D{.x = ScaleDst(draw_texture_state.dst_x0),
                                     .y = ScaleDst(draw_texture_state.dst_y0)},
                            Offset2D{.x = ScaleDst(draw_texture_state.dst_x1),
@@ -556,27 +557,11 @@ void RasterizerVulkan::Clear(u32 layer_count) {
     std::scoped_lock lock{texture_cache.mutex};
     texture_cache.UpdateRenderTargets(true);
     const Framebuffer* const framebuffer = texture_cache.GetFramebuffer();
+    if (!framebuffer) {
+        return;
+    }
     const VkExtent2D render_area = framebuffer->RenderArea();
 
-    constexpr bool ENABLE_DEFERRED_CLEAR = true;
-    const bool color_full_channels = regs.clear_surface.R && regs.clear_surface.G &&
-                                     regs.clear_surface.B && regs.clear_surface.A;
-    const bool stencil_partial = use_stencil && framebuffer->HasAspectStencilBit() &&
-                                 regs.stencil_front_mask != 0xFF && regs.stencil_front_mask != 0;
-    const bool ds_used = use_depth || use_stencil;
-    const bool ds_deferrable =
-        !ds_used || ((!framebuffer->HasAspectDepthBit() || use_depth) &&
-                     (!framebuffer->HasAspectStencilBit() || use_stencil) && !stencil_partial);
-    const bool can_defer_clear = ENABLE_DEFERRED_CLEAR && !regs.clear_control.use_scissor &&
-                                 regs.clear_surface.layer == 0 &&
-                                 !scheduler.IsRenderPassActive() &&
-                                 (!use_color || color_full_channels) && ds_deferrable;
-    if (!can_defer_clear) {
-        scheduler.RequestRenderpass(framebuffer);
-    }
-
-    query_cache.NotifySegment(true);
-    query_cache.CounterEnable(VideoCommon::QueryType::ZPassPixelCount64, maxwell3d->regs.zpass_pixel_count_enable);
     u32 up_scale = 1;
     u32 down_shift = 0;
     if (framebuffer->IsRescaled()) {
@@ -638,6 +623,25 @@ void RasterizerVulkan::Clear(u32 layer_count) {
     };
     if (!clamp_rect_to_render_area(clear_rect.rect)) {
         return;
+    }
+
+    constexpr bool ENABLE_DEFERRED_CLEAR = true;
+    const bool color_full_channels = regs.clear_surface.R && regs.clear_surface.G &&
+                                     regs.clear_surface.B && regs.clear_surface.A;
+    const bool stencil_partial = use_stencil && framebuffer->HasAspectStencilBit() &&
+                                 regs.stencil_front_mask != 0xFF && regs.stencil_front_mask != 0;
+    const bool ds_used = use_depth || use_stencil;
+    const bool ds_deferrable =
+        !ds_used || ((!framebuffer->HasAspectDepthBit() || use_depth) &&
+                     (!framebuffer->HasAspectStencilBit() || use_stencil) && !stencil_partial);
+    const bool can_defer_clear = ENABLE_DEFERRED_CLEAR && !regs.clear_control.use_scissor &&
+                                 regs.clear_surface.layer == 0 &&
+                                 !scheduler.IsRenderPassActive() &&
+                                 (!use_color || color_full_channels) && ds_deferrable;
+    if (!can_defer_clear) {
+        scheduler.RequestRenderpass(framebuffer);
+        query_cache.NotifySegment(true);
+        query_cache.CounterEnable(VideoCommon::QueryType::ZPassPixelCount64, maxwell3d->regs.zpass_pixel_count_enable);
     }
 
     const u32 color_attachment = regs.clear_surface.RT;

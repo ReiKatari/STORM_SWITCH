@@ -114,10 +114,19 @@ void TitleDatabase::LoadDataSync() {
     // 2. Check emulator config, keys & cache paths
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "titledb" / "titledb.json");
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "titledb" / "titles.json");
+    candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "titledb" / "nutdb_America.json");
+    candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "titledb" / "nutdb.json");
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::KeysDir) / "titledb.json");
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::KeysDir) / "titles.json");
+    candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::KeysDir) / "nutdb_America.json");
+    candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::KeysDir) / "nutdb.json");
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "titledb.json");
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "titles.json");
+    candidate_paths.push_back("F:/STORM SWITCH BOX/tools/nscb/zconfig/DB/nutdb_America.json");
+    candidate_paths.push_back("F:/STORM SWITCH BOX/tools/nscb/zconfig/DB/nutdb.json");
+    candidate_paths.push_back("F:/STORM SWITCH BOX/Assembling/tools/nscb/zconfig/DB/nutdb_America.json");
+    candidate_paths.push_back("F:/STORM SWITCH BOX/Assembling/tools/nscb/zconfig/DB/nutdb.json");
+    candidate_paths.push_back("E:/STORM SWITCH BOX/tools/nscb/zconfig/DB/nutdb_America.json");
     candidate_paths.push_back("E:/STORM SWITCH BOX/tools/nscb/zconfig/DB/nutdb.json");
     candidate_paths.push_back("E:/STORM SWITCH BOX/tools/nscb/zconfig/DB/titledb.json");
 
@@ -228,7 +237,7 @@ void TitleDatabase::LoadDataSync() {
             }
 
             const bool is_dlc_item = (tid_val != 0) && (((tid_val & 0x1FFF) >= 0x1000) || ((tid_val & 0xFFF) > 0 && (tid_val & 0x800) == 0));
-            if ((entry.name.empty() || is_dlc_item) && !entry.description.empty()) {
+            if (entry.name.empty() && !entry.description.empty()) {
                 const std::string extracted = ExtractDlcTitleFromDesc(entry.description);
                 if (!extracted.empty()) {
                     entry.name = extracted;
@@ -267,6 +276,36 @@ void TitleDatabase::LoadDataSync() {
             }
 
             temp_db.emplace(std::move(key), std::move(entry));
+        }
+
+        // Supplement with built-in 2026 Tinfoil DLC names for newest releases not yet in local nutdb
+        struct BuiltinDlc {
+            u64 tid;
+            const char* name;
+        };
+        static constexpr BuiltinDlc s_builtin_dlcs[] = {
+            // Captain Tsubasa 2: World Fighters (01009720213B0000)
+            {0x01009720213B1001ULL, "Captain Tsubasa 2: World Fighters - Pre-Order Bonus Pack"},
+            {0x01009720213B1002ULL, "Captain Tsubasa 2: World Fighters - Deluxe Edition Uniform & Ball Set"},
+            {0x01009720213B1003ULL, "Captain Tsubasa 2: World Fighters - Character Pass Season 1"},
+            {0x01009720213B1004ULL, "Captain Tsubasa 2: World Fighters - Classic BGM & Goal Celebration Pack"},
+            {0x01009720213B1005ULL, "Captain Tsubasa 2: World Fighters - New Champions Collaboration Pack"},
+            {0x01009720213B1006ULL, "Captain Tsubasa 2: World Fighters - Training & Ability Boost Pack"},
+            // Qliphah in Providence's Shadow (01008E20257E0000)
+            {0x01008E20257E1001ULL, "Qliphah in Providence's Shadow - Special Costume Set"},
+            {0x01008E20257E1002ULL, "Qliphah in Providence's Shadow - Starter Support Relic Pack"},
+        };
+        for (const auto& bdlc : s_builtin_dlcs) {
+            if (temp_by_id.find(bdlc.tid) == temp_by_id.end()) {
+                Entry entry;
+                entry.id = fmt::format("{:016X}", bdlc.tid);
+                entry.name = bdlc.name;
+                temp_by_id.emplace(bdlc.tid, entry);
+                const u64 base_id = (bdlc.tid & ~0x1000ULL) & ~0xFFFULL;
+                temp_base_dlcs[base_id].push_back(entry);
+                temp_base_dlc_counts[base_id]++;
+                temp_db.emplace(entry.id, std::move(entry));
+            }
         }
 
         // Sort DLC lists by Title ID

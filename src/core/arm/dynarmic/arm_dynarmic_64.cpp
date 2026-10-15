@@ -8,6 +8,7 @@
 #include "core/arm/dynarmic/arm_dynarmic.h"
 #include "core/arm/dynarmic/arm_dynarmic_64.h"
 #include "core/arm/dynarmic/dynarmic_exclusive_monitor.h"
+#include "core/arm/dynarmic/storm_tier2_compiler.h"
 #include "core/core_timing.h"
 #include "core/hle/kernel/k_process.h"
 
@@ -50,7 +51,8 @@ std::optional<u32> DynarmicCallbacks64::MemoryReadCode(u64 vaddr) {
         m_memory.ReadBlock(aligned_vaddr, &cached_code_page, sizeof(cached_code_page));
         last_code_addr = aligned_vaddr;
     }
-    return cached_code_page.inst[(vaddr & Core::Memory::YUZU_PAGEMASK) / sizeof(u32)];
+    return StormTier2Compiler::OptimizeInstruction64(
+        cached_code_page.inst[(vaddr & Core::Memory::YUZU_PAGEMASK) / sizeof(u32)]);
 }
 
 void DynarmicCallbacks64::MemoryWrite8(u64 vaddr, u8 value) {
@@ -139,6 +141,7 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
                 m_parent.m_jit->SetRegister(0, 0);
                 m_parent.m_jit->SetRegister(1, 0);
                 m_parent.m_jit->SetPC(lr);
+                m_parent.m_jit->HaltExecution(BreakLoop);
                 return;
             }
             LOG_CRITICAL(Core_ARM, "Cannot execute instruction at unmapped address {:#016x} (LR {:#016x})", pc, lr);
@@ -160,6 +163,7 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
                     m_parent.m_jit->SetRegister(0, 0);
                     m_parent.m_jit->SetRegister(1, 0);
                     m_parent.m_jit->SetPC(lr);
+                    m_parent.m_jit->HaltExecution(BreakLoop);
                     return;
                 }
             }
@@ -382,6 +386,7 @@ void ArmDynarmic64::MakeJit(Common::PageTable* page_table, std::size_t address_s
         config.fastmem_pointer = std::nullopt;
         config.fastmem_exclusive_access = false;
     }
+    StormTier2Compiler::ApplyTier2Config64(config, page_table == nullptr);
     m_jit.emplace(config);
 }
 

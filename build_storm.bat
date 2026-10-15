@@ -7,6 +7,7 @@ echo ===================================================
 
 taskkill /F /IM STORM_SWITCH.exe /IM STORM_SWITCH-cli.exe /IM STORM_SWITCH-room.exe 2>nul
 
+set "VSLANG=1033"
 call "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" amd64
 if errorlevel 1 (
     echo [ERROR] Failed to set up Visual Studio environment.
@@ -31,8 +32,10 @@ cd /d "%BUILD_DIR%"
 echo [1/3] Running CMake configuration...
 "%CMAKE%" -G "Ninja" -DCMAKE_MAKE_PROGRAM="%NINJA%" ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DGIT_TAG="11.0.0" ^
-    -DGIT_RELEASE="11.0.0" ^
+    -DCMAKE_CXX_FLAGS_RELEASE="/MD /O2 /Ob2 /DNDEBUG" ^
+    -DCMAKE_C_FLAGS_RELEASE="/MD /O2 /Ob2 /DNDEBUG" ^
+    -DGIT_TAG="11.5.0" ^
+    -DGIT_RELEASE="11.5.0" ^
     -DENABLE_QT=ON ^
     -DENABLE_QT_TRANSLATION=ON ^
     -DYUZU_USE_BUNDLED_QT=ON ^
@@ -82,6 +85,12 @@ if not exist "%OUTPUT_DIR%\user" (
     mkdir "%OUTPUT_DIR%\user\sdmc"
     mkdir "%OUTPUT_DIR%\user\shader"
     mkdir "%OUTPUT_DIR%\user\cache"
+)
+
+if exist "M:\CONSOLES\Nintendo Switch\STORM SWITCH" (
+    echo Syncing executables to M:\CONSOLES\Nintendo Switch\STORM SWITCH...
+    copy /Y "%OUTPUT_DIR%\STORM_SWITCH*.exe" "M:\CONSOLES\Nintendo Switch\STORM SWITCH\" >nul 2>nul
+    copy /Y "%OUTPUT_DIR%\STORM_SWITCH*.pdb" "M:\CONSOLES\Nintendo Switch\STORM SWITCH\" >nul 2>nul
 )
 
 echo ===================================================

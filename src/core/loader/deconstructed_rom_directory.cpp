@@ -50,7 +50,7 @@ struct PatchCollection {
         size_t total_size{};
 #ifdef HAS_NCE
         for (auto& patcher : patchers) {
-            total_size += patcher.GetSectionSize();
+            total_size += patcher.GetSectionSize() + patcher.GetPreSectionSize();
         }
 #endif
         return total_size;

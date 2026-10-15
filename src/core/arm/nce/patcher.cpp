@@ -89,7 +89,8 @@ bool Patcher::PatchText(std::span<const u8> program_image, const Kernel::CodeSet
             const uintptr_t this_offset = i * sizeof(u32);
             const uintptr_t next_offset = this_offset + sizeof(u32);
 
-            pre_buffer = use_split && (this_offset < MaxRelativeBranch);
+            constexpr size_t SplitPreBufferThreshold = MaxRelativeBranch - 8_MiB;
+            pre_buffer = use_split && (this_offset < SplitPreBufferThreshold);
 
             // Relocate to pre- or post-patch
             if (pre_buffer) {
@@ -131,8 +132,9 @@ bool Patcher::PatchText(std::span<const u8> program_image, const Kernel::CodeSet
             continue;
         }
 
-        // MRS Xn, CNTPCT_EL0
-        if (auto mrs = MRS{inst}; mrs.Verify() && mrs.GetSystemReg() == CntpctEl0) {
+        // MRS Xn, CNTPCT_EL0 / CNTVCT_EL0
+        if (auto mrs = MRS{inst};
+            mrs.Verify() && (mrs.GetSystemReg() == CntpctEl0 || mrs.GetSystemReg() == CntvctEl0)) {
             bool pre_buffer = false;
             auto ret = AddRelocations(pre_buffer);
             if (pre_buffer) {
@@ -289,13 +291,15 @@ bool Patcher::RelocateAndCopy(Common::ProcessAddress load_base, const Kernel::Co
         }
 
         // Trampolines (split pre + post)
-        for (const Trampoline& rel : patch.m_trampolines_pre) {
-            out_trampolines->insert({RebasePc(rel.module_offset),
-                                     GetInteger(load_base) + rel.patch_offset});
-        }
-        for (const Trampoline& rel : patch.m_trampolines) {
-            out_trampolines->insert({RebasePc(rel.module_offset),
-                                     GetInteger(load_base) + pre_patch_size + image_size + rel.patch_offset});
+        if (out_trampolines != nullptr) {
+            for (const Trampoline& rel : patch.m_trampolines_pre) {
+                out_trampolines->insert({RebasePc(rel.module_offset),
+                                         GetInteger(load_base) + rel.patch_offset});
+            }
+            for (const Trampoline& rel : patch.m_trampolines) {
+                out_trampolines->insert({RebasePc(rel.module_offset),
+                                         GetInteger(load_base) + pre_patch_size + image_size + rel.patch_offset});
+            }
         }
 
         if (!m_patch_instructions_pre.empty()) {
@@ -322,7 +326,7 @@ bool Patcher::RelocateAndCopy(Common::ProcessAddress load_base, const Kernel::Co
         }
     }
 
-    if (mode != PatchMode::Split) {
+    if (mode != PatchMode::Split && out_trampolines != nullptr) {
         for (const Trampoline& rel : patch.m_trampolines) {
             out_trampolines->insert({RebasePc(rel.module_offset), RebasePatch(rel.patch_offset)});
         }

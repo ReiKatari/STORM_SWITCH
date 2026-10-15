@@ -73,12 +73,6 @@ namespace AndroidSettings {
             linkage, false, "invert_confirm_back_controller_buttons", Settings::Category::Android};
 
         // Optimization and Thermal Features
-        Settings::SwitchableSetting<bool, false> eco_thermal_mode{linkage, false, "eco_thermal_mode", Settings::Category::Android};
-        Settings::SwitchableSetting<bool, false> eco_frame_pacing{linkage, false, "eco_frame_pacing", Settings::Category::Android};
-        Settings::SwitchableSetting<bool, false> smart_shader_throttle{linkage, false, "smart_shader_throttle", Settings::Category::Android};
-        Settings::SwitchableSetting<bool, false> cpu_affinity_pinning{linkage, false, "cpu_affinity_pinning", Settings::Category::Android};
-        Settings::SwitchableSetting<bool, false> vulkan_pipeline_cache{linkage, true, "vulkan_pipeline_cache", Settings::Category::Android};
-        Settings::SwitchableSetting<bool, false> vram_garbage_collection{linkage, false, "vram_garbage_collection", Settings::Category::Android};
         Settings::SwitchableSetting<bool, false> thermal_emergency_protection{linkage, false, "thermal_emergency_protection", Settings::Category::Android};
         Settings::SwitchableSetting<s32, false> thermal_emergency_limit{linkage, 48, "thermal_emergency_limit", Settings::Category::Android};
 
@@ -194,20 +188,20 @@ namespace AndroidSettings {
         Settings::Setting<bool> show_build_id{linkage, true, "show_build_id",
                                                   Settings::Category::Overlay,
                                                   Settings::Specialization::Default, true, true,
-                                                  &show_performance_overlay};
+                                                  &show_soc_overlay};
         Settings::Setting<bool> show_driver_version{linkage, true, "show_driver_version",
                                                   Settings::Category::Overlay,
                                                   Settings::Specialization::Default, true, true,
-                                                  &show_performance_overlay};
+                                                  &show_soc_overlay};
         Settings::Setting<bool> show_device_model{linkage, true, "show_device_model",
                                                   Settings::Category::Overlay,
                                                   Settings::Specialization::Default, true, true,
-                                                  &show_performance_overlay};
+                                                  &show_soc_overlay};
 
         Settings::Setting<bool> show_gpu_model{linkage, true, "show_gpu_model",
                                                Settings::Category::Overlay,
                                                Settings::Specialization::Default, true, true,
-                                               &show_performance_overlay};
+                                               &show_soc_overlay};
 
         Settings::Setting<bool> show_soc_model{linkage, true, "show_soc_model",
                                                Settings::Category::Overlay,
@@ -217,7 +211,7 @@ namespace AndroidSettings {
         Settings::Setting<bool> show_fw_version{linkage, true, "show_firmware_version",
                                                 Settings::Category::Overlay,
                                                 Settings::Specialization::Default, true, true,
-                                                &show_performance_overlay};
+                                                &show_soc_overlay};
 
         Settings::Setting<bool> soc_overlay_background{linkage, false, "soc_overlay_background",
                                                        Settings::Category::Overlay,

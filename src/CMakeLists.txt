@@ -7,15 +7,15 @@
 # Enable modules to include each other's files
 include_directories(.)
 
+# CMake seems to only define _DEBUG on Windows
+set_property(DIRECTORY APPEND PROPERTY
+    COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG> $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
+
 # Dynarmic
 if ((ARCHITECTURE_x86_64 OR ARCHITECTURE_arm64 OR ARCHITECTURE_riscv64 OR ARCHITECTURE_loongarch64) AND NOT YUZU_STATIC_ROOM)
     add_subdirectory(dynarmic)
     add_library(dynarmic::dynarmic ALIAS dynarmic)
 endif()
-
-# CMake seems to only define _DEBUG on Windows
-set_property(DIRECTORY APPEND PROPERTY
-    COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG> $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
 
 if (YUZU_STATIC_BUILD)
     add_compile_definitions(QT_STATICPLUGIN)

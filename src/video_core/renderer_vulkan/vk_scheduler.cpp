@@ -429,7 +429,9 @@ void Scheduler::InvalidateState() {
 
 void Scheduler::EndPendingOperations() {
     query_cache->CounterClose(VideoCommon::QueryType::StreamingByteCount);
+    query_cache->CounterEnable(VideoCommon::QueryType::ZPassPixelCount64, false);
     query_cache->CounterReset(VideoCommon::QueryType::ZPassPixelCount64);
+    query_cache->NotifySegment(false);
     EndRenderPass();
 }
 

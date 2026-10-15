@@ -16,6 +16,7 @@ enum SystemRegister : u32 {
     TpidrroEl0 = 0x5E83,
     CntfrqEl0 = 0x5F00,
     CntpctEl0 = 0x5F01,
+    CntvctEl0 = 0x5F02,
 };
 
 // https://developer.arm.com/documentation/ddi0596/2021-12/Base-Instructions/SVC--Supervisor-Call-

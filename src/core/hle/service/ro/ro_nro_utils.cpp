@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "common/settings.h"
 #include "core/hle/kernel/k_process.h"
 #include "core/hle/service/ro/ro_nro_utils.h"
 #include "core/hle/service/ro/ro_results.h"
@@ -82,11 +83,18 @@ Result EnsureGuardPages(Kernel::KProcessPageTable& page_table, u64 map_address, 
     R_UNLESS(memory_info.GetSvcState() == Kernel::Svc::MemoryState::Free,
              Kernel::ResultInvalidState);
 
-    // Ensure page after mapping is unmapped.
+    // Ensure page after mapping is unmapped (and on NCE, ensure enough space for the NCE patch section + guard pages).
     R_TRY(page_table.QueryInfo(std::addressof(memory_info), std::addressof(page_info),
                                map_address + map_size));
     R_UNLESS(memory_info.GetSvcState() == Kernel::Svc::MemoryState::Free,
              Kernel::ResultInvalidState);
+#ifdef HAS_NCE
+    if (Settings::IsNceEnabled()) {
+        const u64 min_nce_slack = std::max<u64>(map_size, 4ULL * 1024 * 1024) + 4 * Kernel::PageSize;
+        R_UNLESS(memory_info.GetEndAddress() >= map_address + map_size + min_nce_slack,
+                 Kernel::ResultInvalidState);
+    }
+#endif
 
     // Successfully verified guard pages.
     R_SUCCEED();

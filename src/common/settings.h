@@ -591,8 +591,9 @@ struct Values {
 
     SwitchableSetting<bool> early_release_fences{linkage, false, "early_release_fences",
                                                  Category::RendererAdvanced, Specialization::Default, true, true};
-    SwitchableSetting<int> optimize_spirv_output{linkage, 1, "optimize_spirv_output",
-                                                 Category::RendererAdvanced, Specialization::Default, true, true};
+    SwitchableSetting<SpirvOptimizeMode, true> optimize_spirv_output{
+        linkage, SpirvOptimizeMode::OnLoad, "optimize_spirv_output",
+        Category::RendererAdvanced, Specialization::Default, true, true};
     SwitchableSetting<bool> use_fast_gpu_time{linkage, false, "use_fast_gpu_time",
                                               Category::RendererAdvanced, Specialization::Default, true, true};
     SwitchableSetting<bool> enable_frame_skipping{linkage, true, "enable_frame_skipping",
@@ -1030,6 +1031,15 @@ struct Values {
                                                        Specialization::Default,
                                                        true,
                                                        true};
+
+    // STORM Tier-2 Superblock JIT Compiler
+    SwitchableSetting<bool> use_storm_tier2_compiler{linkage,
+                                                     true,
+                                                     "use_storm_tier2_compiler",
+                                                     Category::Cpu,
+                                                     Specialization::Default,
+                                                     true,
+                                                     true};
 };
 
 extern Values values;

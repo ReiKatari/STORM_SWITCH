@@ -164,18 +164,22 @@ struct System::Impl {
     }
 
     void RefreshTime(System& system) {
-        if (!system.IsPoweredOn()) {
+        if (!system.IsPoweredOn() || system.IsShuttingDown()) {
             return;
         }
 
         auto settings_service =
             system.ServiceManager().GetService<Service::Set::ISystemSettingsServer>("set:sys",
-                                                                                    true);
+                                                                                    false);
         auto static_service_a =
-            system.ServiceManager().GetService<Service::Glue::Time::StaticService>("time:a", true);
+            system.ServiceManager().GetService<Service::Glue::Time::StaticService>("time:a", false);
 
         auto static_service_s =
-            system.ServiceManager().GetService<Service::PSC::Time::StaticService>("time:s", true);
+            system.ServiceManager().GetService<Service::PSC::Time::StaticService>("time:s", false);
+
+        if (!settings_service || !static_service_a || !static_service_s) {
+            return;
+        }
 
         std::shared_ptr<Service::PSC::Time::SystemClock> user_clock;
         static_service_a->GetStandardUserSystemClock(&user_clock);
@@ -437,6 +441,7 @@ struct System::Impl {
         kernel.SuspendEmulation(true);
         kernel.CloseServices();
         kernel.ShutdownCores();
+        cpu_manager.Shutdown();
 
         // Reset GPU and Audio before services so BufferQueue/nvnflinger are safe during GPU teardown
         gpu_core.reset();
@@ -451,7 +456,6 @@ struct System::Impl {
         app_loader.reset();
         perf_stats.reset();
 
-        cpu_manager.Shutdown();
         debugger.reset();
         kernel.Shutdown();
         device_memory.reset();

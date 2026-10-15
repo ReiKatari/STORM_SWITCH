@@ -432,17 +432,29 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             UISettings::values.controller_skin = static_cast<u32>(skin);
         });
 
-        auto* const hint_3d = new QLabel(tr("ЛКМ — наклон | Двойной клик — перевернуть | Колесико — зум"), this);
+        auto* const hint_3d = new QLabel(tr("ЛКМ — 3D вращение 360° | Двойной клик — 180° | Колесико — зум"), this);
         hint_3d->setStyleSheet(QStringLiteral("background: transparent; color: #888888; font-size: 11px;"));
 
-        auto* const btn_flip_view = new QPushButton(tr("🔄 Повернуть геймпад"), this);
-        btn_flip_view->setToolTip(tr("Перевернуть геймпад: вид спереди или сзади"));
+        auto* const btn_iso_view = new QPushButton(tr("📐 3D Вид"), this);
+        btn_iso_view->setToolTip(tr("Изометрический объемный 3D-ракурс геймпада"));
+        connect(btn_iso_view, &QPushButton::clicked, [this] {
+            ui->controllerFrame->SetRotation(-24.0f, 36.0f);
+        });
+
+        auto* const btn_top_view = new QPushButton(tr("⬆️ Торцы"), this);
+        btn_top_view->setToolTip(tr("Вид сверху на курки ZL/ZR, бамперы L/R и разъем USB-C"));
+        connect(btn_top_view, &QPushButton::clicked, [this] {
+            ui->controllerFrame->SetRotation(-62.0f, 0.0f);
+        });
+
+        auto* const btn_flip_view = new QPushButton(tr("🔄 180°"), this);
+        btn_flip_view->setToolTip(tr("Перевернуть геймпад на 180°: вид спереди или сзади"));
         connect(btn_flip_view, &QPushButton::clicked, [this] {
             ui->controllerFrame->ToggleRearView();
         });
 
         auto* const btn_reset_view = new QPushButton(tr("↺ Сброс"), this);
-        btn_reset_view->setToolTip(tr("Сбросить наклон и зум к исходному виду"));
+        btn_reset_view->setToolTip(tr("Сбросить 3D-вращение и зум к исходному виду"));
         connect(btn_reset_view, &QPushButton::clicked, [this] {
             ui->controllerFrame->ResetView();
         });
@@ -451,6 +463,8 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         top_toolbar->addWidget(combo_skin);
         top_toolbar->addStretch(1);
         top_toolbar->addWidget(hint_3d);
+        top_toolbar->addWidget(btn_iso_view);
+        top_toolbar->addWidget(btn_top_view);
         top_toolbar->addWidget(btn_flip_view);
         top_toolbar->addWidget(btn_reset_view);
 

@@ -838,6 +838,19 @@ void ConfigureGameBananaMods::DownloadAndInstallMod(const GameBananaFile& file_i
             return;
         }
 
+        // Mark this mod folder as installed from GameBanana
+        {
+            const auto gb_marker_path = target_mod_dir / ".gamebanana.json";
+            QFile gb_marker(QString::fromStdString(gb_marker_path.string()));
+            if (gb_marker.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                QJsonObject meta;
+                meta[QStringLiteral("source")] = QStringLiteral("gamebanana");
+                meta[QStringLiteral("name")] = clean_mod_name;
+                gb_marker.write(QJsonDocument(meta).toJson(QJsonDocument::Compact));
+                gb_marker.close();
+            }
+        }
+
         // Enable the mod in settings if it was disabled
         auto& disabled = Settings::values.disabled_addons[title_id];
         disabled.erase(std::remove(disabled.begin(), disabled.end(), clean_mod_name.toStdString()), disabled.end());
@@ -896,6 +909,13 @@ void ConfigureGameBananaMods::RefreshInstalledMods() {
     if (std::filesystem::exists(load_dir) && std::filesystem::is_directory(load_dir)) {
         for (const auto& entry : std::filesystem::directory_iterator(load_dir)) {
             if (!entry.is_directory()) continue;
+
+            // Only show mods actually installed from GameBanana on the GameBanana tab.
+            // Manually installed mods (like MOD - M. RUS) are managed on the Add-ons tab.
+            std::error_code marker_ec;
+            if (!std::filesystem::exists(entry.path() / ".gamebanana.json", marker_ec)) {
+                continue;
+            }
 
             const QString mod_name = QString::fromStdString(entry.path().filename().string());
             if (mod_name.isEmpty()) continue;

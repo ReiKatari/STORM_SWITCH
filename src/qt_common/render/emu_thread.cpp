@@ -39,6 +39,10 @@ void EmuThread::run() {
     gpu.ReleaseContext();
     gpu.Start();
 
+    if (m_should_run) {
+        QtCommon::system->Run();
+    }
+
     QtCommon::system->GetCpuManager().OnGpuReady();
 
     if (QtCommon::system->DebuggerEnabled()) {

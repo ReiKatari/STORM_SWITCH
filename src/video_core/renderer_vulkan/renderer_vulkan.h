@@ -105,6 +105,7 @@ private:
     std::optional<TurboMode> turbo_mode;
 
     Frame applet_frame;
+    std::vector<Tegra::FramebufferConfig> last_framebuffers;
 };
 
 } // namespace Vulkan

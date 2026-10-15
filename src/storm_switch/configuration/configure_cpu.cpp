@@ -90,6 +90,7 @@ void ConfigureCpu::Setup(const ConfigurationShared::Builder& builder) {
             backend_combobox = widget->combobox;
         } else if (setting->Id() == Settings::values.cpu_ticks.Id() ||
                    setting->Id() == Settings::values.cpu_affinity_pinning.Id() ||
+                   setting->Id() == Settings::values.use_storm_tier2_compiler.Id() ||
                    setting->Id() == Settings::values.cpu_clock.Id()) {
             if (widget->IsInputOrSelectionControl()) {
                 general_inputs.push_back(widget);

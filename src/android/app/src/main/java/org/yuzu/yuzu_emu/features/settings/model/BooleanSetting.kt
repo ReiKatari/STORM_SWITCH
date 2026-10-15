@@ -103,6 +103,7 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     ECO_FRAME_PACING("eco_frame_pacing"),
     SMART_SHADER_THROTTLE("smart_shader_throttle"),
     CPU_AFFINITY_PINNING("cpu_affinity_pinning"),
+    STORM_TIER2_COMPILER("use_storm_tier2_compiler"),
     VULKAN_PIPELINE_CACHE("use_vulkan_driver_pipeline_cache"),
     VRAM_GARBAGE_COLLECTION("vram_garbage_collection"),
     THERMAL_EMERGENCY_PROTECTION("thermal_emergency_protection"),
