@@ -28,7 +28,7 @@ UpdateDialog::UpdateDialog(const Common::Net::Release& release, QWidget* parent)
     ui->version->setText(
         tr("%1 is available for download.").arg(QString::fromStdString(release.title)));
     ui->url->setText(
-        tr("<a href=\"%1\">View on Forgejo</a>").arg(QString::fromStdString(release.html_url)));
+        tr("<a href=\"%1\">View on GitHub</a>").arg(QString::fromStdString(release.html_url)));
 
     std::string text{release.body};
     if (auto pos = text.find("# Packages"); pos != std::string::npos) {

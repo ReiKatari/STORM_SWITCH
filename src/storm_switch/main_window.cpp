@@ -6782,6 +6782,14 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
                 current_ver = current_ver.mid(1);
             }
 
+            if (clean_tag.compare(current_ver, Qt::CaseInsensitive) == 0) {
+                if (manual_check) {
+                    QMessageBox::information(this, tr("STORM SWITCH — Обновления"),
+                                             tr("У вас установлена последняя актуальная версия STORM SWITCH (%1).\nОбновлений не найдено.").arg(current_ver));
+                }
+                return;
+            }
+
             auto parse_version = [](const QString& ver_str) -> std::vector<int> {
                 std::vector<int> parts;
                 const auto list = ver_str.split(QLatin1Char('.'), Qt::SkipEmptyParts);

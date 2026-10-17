@@ -42,18 +42,24 @@ std::optional<Common::Net::Release> UpdateChecker::GetUpdate() {
         return std::nullopt;
 
     const std::string build = result[0];
-#else
     std::string tag = latest->tag;
     std::string build = Common::g_build_version;
-    while (!tag.empty() && (tag.front() == 'v' || tag.front() == 'V')) {
+    while (!tag.empty() && (tag.front() == 'v' || tag.front() == 'V' || tag.front() == ' ')) {
         tag = tag.substr(1);
     }
-    while (!build.empty() && (build.front() == 'v' || build.front() == 'V')) {
+    while (!tag.empty() && (tag.back() == ' ' || tag.back() == '\r' || tag.back() == '\n')) {
+        tag.pop_back();
+    }
+    while (!build.empty() && (build.front() == 'v' || build.front() == 'V' || build.front() == ' ')) {
         build = build.substr(1);
+    }
+    while (!build.empty() && (build.back() == ' ' || build.back() == '\r' || build.back() == '\n')) {
+        build.pop_back();
     }
 #endif
 
-    if (tag.empty()) {
+    if (tag.empty() || tag == build) {
+        LOG_INFO(Frontend, "Current version '{}' matches or exceeds remote tag '{}', no update needed.", build, tag);
         return std::nullopt;
     }
 

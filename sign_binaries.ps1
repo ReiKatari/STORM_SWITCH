@@ -16,7 +16,7 @@ if (-not $sha1) {
     if ($cert) { $sha1 = $cert.Thumbprint }
 }
 
-$version = '11.5.0'
+$version = '12.0.0'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }

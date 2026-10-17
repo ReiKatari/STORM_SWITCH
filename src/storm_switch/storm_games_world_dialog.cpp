@@ -3,6 +3,7 @@
 
 #include "storm_switch/storm_games_world_dialog.h"
 #include "storm_switch/storm_catalog_cache.h"
+#include "common/scm_rev.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -2207,7 +2208,9 @@ void StormGamesWorldDialog::OnStartDownload() {
     ext_param = ext_param.toLower();
     const QUrl download_url(QStringLiteral("https://stormgamesworld.ru/api/games/%1/download?format=%2").arg(raw_id).arg(ext_param));
     QNetworkRequest req(download_url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH/11.0.0 (Windows x64)"));
+    req.setHeader(QNetworkRequest::UserAgentHeader,
+                  QStringLiteral("STORM_SWITCH/%1 (Windows x64)")
+                      .arg(QString::fromUtf8(Common::g_build_version)));
     req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     req.setRawHeader("Connection", "keep-alive");

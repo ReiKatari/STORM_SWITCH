@@ -15,8 +15,24 @@ endfunction()
 get_timestamp(BUILD_DATE)
 
 set(REPO_NAME "STORM SWITCH")
-set(BUILD_VERSION "11.0.0")
-set(GIT_TAG "11.0.0")
+
+# Determine version priority:
+# 1. BUILD_VERSION (if passed via -DBUILD_VERSION=...)
+# 2. GIT_RELEASE (if passed via -DGIT_RELEASE=... or read from GIT-RELEASE file)
+# 3. GIT_TAG (if passed via -DGIT_TAG=... or read from GIT-TAG file)
+# 4. Fallback default 12.0.0
+if (NOT DEFINED BUILD_VERSION OR BUILD_VERSION STREQUAL "")
+    if (DEFINED GIT_RELEASE AND NOT GIT_RELEASE STREQUAL "")
+        set(BUILD_VERSION "${GIT_RELEASE}")
+    elseif (DEFINED GIT_TAG AND NOT GIT_TAG STREQUAL "")
+        set(BUILD_VERSION "${GIT_TAG}")
+    else()
+        set(BUILD_VERSION "12.0.0")
+    endif()
+endif()
+
+set(GIT_TAG "${BUILD_VERSION}")
+set(GIT_RELEASE "${BUILD_VERSION}")
 set(GIT_REFSPEC "main")
 set(IS_DEV_BUILD false)
 set(IS_NIGHTLY_BUILD false)

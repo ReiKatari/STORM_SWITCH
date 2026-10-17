@@ -424,17 +424,21 @@ bool TextureCache<P>::RescaleRenderTargets() {
         bool any_rescaled = false;
         bool can_rescale = true;
         const auto check_rescale = [&](ImageViewId view_id, ImageId& id_save) {
-            if (view_id != NULL_IMAGE_VIEW_ID && view_id != ImageViewId{}) {
+            if (view_id != NULL_IMAGE_VIEW_ID && view_id != ImageViewId{} && slot_image_views.contains(view_id)) {
                 const auto& view = slot_image_views[view_id];
                 const auto image_id = view.image_id;
                 id_save = image_id;
-                auto& image = slot_images[image_id];
-                can_rescale &= ImageCanRescale(image);
-                any_rescaled |= True(image.flags & ImageFlagBits::Rescaled) ||
-                                GetFormatType(image.info.format) != SurfaceType::ColorTexture;
-                scale_rating = std::max<u32>(scale_rating, image.scale_tick <= frame_tick
-                                                               ? image.scale_rating + 1U
-                                                               : image.scale_rating);
+                if (image_id != CORRUPT_ID && slot_images.contains(image_id)) {
+                    auto& image = slot_images[image_id];
+                    can_rescale &= ImageCanRescale(image);
+                    any_rescaled |= True(image.flags & ImageFlagBits::Rescaled) ||
+                                    GetFormatType(image.info.format) != SurfaceType::ColorTexture;
+                    scale_rating = std::max<u32>(scale_rating, image.scale_tick <= frame_tick
+                                                                   ? image.scale_rating + 1U
+                                                                   : image.scale_rating);
+                } else {
+                    id_save = CORRUPT_ID;
+                }
             } else {
                 id_save = CORRUPT_ID;
             }
@@ -456,7 +460,7 @@ bool TextureCache<P>::RescaleRenderTargets() {
         if (can_rescale) {
             rescaled = any_rescaled || scale_rating >= 2;
             const auto scale_up = [this](ImageId image_id) {
-                if (image_id != CORRUPT_ID) {
+                if (image_id != CORRUPT_ID && slot_images.contains(image_id)) {
                     Image& image = slot_images[image_id];
                     ScaleUp(image);
                 }
@@ -471,7 +475,7 @@ bool TextureCache<P>::RescaleRenderTargets() {
         } else {
             rescaled = false;
             const auto scale_down = [this](ImageId image_id) {
-                if (image_id != CORRUPT_ID) {
+                if (image_id != CORRUPT_ID && slot_images.contains(image_id)) {
                     Image& image = slot_images[image_id];
                     ScaleDown(image);
                 }
@@ -484,7 +488,7 @@ bool TextureCache<P>::RescaleRenderTargets() {
         }
     } while (has_deleted_images);
     const auto set_rating = [this, scale_rating](ImageId image_id) {
-        if (image_id != CORRUPT_ID) {
+        if (image_id != CORRUPT_ID && slot_images.contains(image_id)) {
             Image& image = slot_images[image_id];
             image.scale_rating = scale_rating;
             if (image.scale_tick <= frame_tick) {

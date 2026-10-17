@@ -108,8 +108,15 @@ void Scheduler::DispatchWork() {
 
 void Scheduler::BeginRenderPassImpl(const Framebuffer* framebuffer, VkRenderPass renderpass,
                                     const VkClearValue* clear_values, u32 clear_value_count) {
+    if (!framebuffer) {
+        return;
+    }
     const VkFramebuffer framebuffer_handle = framebuffer->Handle();
     const VkExtent2D render_area = framebuffer->RenderArea();
+    if (renderpass == VK_NULL_HANDLE || framebuffer_handle == VK_NULL_HANDLE ||
+        render_area.width == 0 || render_area.height == 0) {
+        return;
+    }
     state.renderpass = renderpass;
     state.framebuffer = framebuffer_handle;
     state.render_area = render_area;
@@ -154,6 +161,14 @@ void Scheduler::RealizeDeferredClear() {
     const DeferredClear dc = deferred_clear;
     deferred_clear = {};
 
+    if (dc.framebuffer->Handle() == VK_NULL_HANDLE) {
+        return;
+    }
+    const VkExtent2D render_area = dc.framebuffer->RenderArea();
+    if (render_area.width == 0 || render_area.height == 0) {
+        return;
+    }
+
     std::array<VkClearValue, 9> clear_values{};
     u32 count = 0;
     const RenderPassKey& base = dc.framebuffer->RenderPassKeyBase();
@@ -170,6 +185,9 @@ void Scheduler::RealizeDeferredClear() {
         dc.framebuffer->DiscardsMsaaColor() ? dc.color_clear_mask : 0u;
     const VkRenderPass renderpass = dc.framebuffer->RenderPassVariant(
         dc.color_clear_mask, dc.depth_stencil, color_discard_mask);
+    if (renderpass == VK_NULL_HANDLE) {
+        return;
+    }
     EndRenderPass();
     BeginRenderPassImpl(dc.framebuffer, renderpass, clear_values.data(), count);
 }
@@ -204,13 +222,22 @@ bool Scheduler::DeferDepthStencilClear(const Framebuffer* framebuffer, const VkC
 }
 
 void Scheduler::RequestRenderpass(const Framebuffer* framebuffer) {
-    if (deferred_clear.framebuffer == framebuffer) {
-        RealizeDeferredClear();
+    if (!framebuffer) {
+        EndRenderPass();
         return;
     }
     const VkRenderPass renderpass = framebuffer->RenderPass();
     const VkFramebuffer framebuffer_handle = framebuffer->Handle();
     const VkExtent2D render_area = framebuffer->RenderArea();
+    if (renderpass == VK_NULL_HANDLE || framebuffer_handle == VK_NULL_HANDLE ||
+        render_area.width == 0 || render_area.height == 0) {
+        EndRenderPass();
+        return;
+    }
+    if (deferred_clear.framebuffer == framebuffer) {
+        RealizeDeferredClear();
+        return;
+    }
     if (renderpass == state.renderpass && framebuffer_handle == state.framebuffer &&
         render_area.width == state.render_area.width &&
         render_area.height == state.render_area.height) {

@@ -378,6 +378,11 @@ u32 GetCubebLatency() {
 
 #ifdef _WIN32
     auto com_init_result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    SCOPE_EXIT {
+        if (SUCCEEDED(com_init_result)) {
+            CoUninitialize();
+        }
+    };
 #endif
 
     // Init cubeb
@@ -395,12 +400,6 @@ u32 GetCubebLatency() {
         LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
         // Return a large latency so we choose SDL instead.
         return 10000u;
-    }
-#endif
-
-#ifdef _WIN32
-    if (SUCCEEDED(com_init_result)) {
-        CoUninitialize();
     }
 #endif
 

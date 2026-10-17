@@ -106,9 +106,17 @@ void SyncpointManager::Wait(std::atomic<u32>& syncpoint, std::condition_variable
     }
 
     std::unique_lock lk(guard);
-    if (!wait_cv.wait_for(lk, std::chrono::milliseconds(1000), pred)) {
-        LOG_WARNING(HW_GPU, "Syncpoint wait timed out! expected={}, current={}",
-                    expected_value, syncpoint.load(std::memory_order_relaxed));
+    u32 timeout_count = 0;
+    while (!pred()) {
+        if (!wait_cv.wait_for(lk, std::chrono::seconds(5), pred)) {
+            LOG_WARNING(HW_GPU, "Syncpoint wait timed out (attempt {})! expected={}, current={}",
+                        ++timeout_count, expected_value, syncpoint.load(std::memory_order_relaxed));
+            if (timeout_count >= 6) {
+                LOG_CRITICAL(HW_GPU, "Syncpoint wait deadlocked after 30s! expected={}, current={}",
+                             expected_value, syncpoint.load(std::memory_order_relaxed));
+                break;
+            }
+        }
     }
 }
 

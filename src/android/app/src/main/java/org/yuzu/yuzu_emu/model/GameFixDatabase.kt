@@ -243,8 +243,8 @@ object GameFixDatabase {
             "Mortal Kombat 1",
             "• Мгновенный вылет при запуске (UE4 TaskGraph / атомики)\n• Зависание на заставке WB Games и вылет по нехватке памяти (OOM)\n• Сбои Extended Dynamic State в шейдерах арены\n• Пропадание текстур персонажей и окружения при длительной игре",
             "• Instant crash on launch (UE4 TaskGraph / atomics)\n• WB Games intro freeze and Out of Memory crash\n• Extended Dynamic State arena shader crashes\n• Character and environment texture streaming dropouts",
-            "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal",
+            "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Высокая",
+            "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
@@ -269,7 +269,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\gpu_accuracy" to "0"
+                "Renderer\\gpu_accuracy" to "1"
             )
         ),
         GameFixProfile(
@@ -277,8 +277,8 @@ object GameFixDatabase {
             "Mortal Kombat 1 (Alt)",
             "• Мгновенный вылет при запуске (UE4 TaskGraph / атомики)\n• Зависание на заставке WB Games и вылет по нехватке памяти (OOM)\n• Сбои Extended Dynamic State в шейдерах арены\n• Пропадание текстур персонажей и окружения при длительной игре",
             "• Instant crash on launch (UE4 TaskGraph / atomics)\n• WB Games intro freeze and Out of Memory crash\n• Extended Dynamic State arena shader crashes\n• Character and environment texture streaming dropouts",
-            "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Обычная",
-            "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal",
+            "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Высокая",
+            "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
@@ -303,7 +303,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\gpu_accuracy" to "0"
+                "Renderer\\gpu_accuracy" to "1"
             )
         ),
         GameFixProfile(
@@ -5102,8 +5102,8 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -5111,9 +5111,12 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\dyna_state" to "1",
                 "Renderer\\drs_resolution_lock" to "false",
                 "Renderer\\rescale_hack" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1"
             )
@@ -5126,8 +5129,8 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\nvdec_emulation" to "3",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -5135,11 +5138,14 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\dyna_state" to "1",
                 "Renderer\\drs_resolution_lock" to "false",
                 "Renderer\\rescale_hack" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2"
             )
         ),
         GameFixProfile(

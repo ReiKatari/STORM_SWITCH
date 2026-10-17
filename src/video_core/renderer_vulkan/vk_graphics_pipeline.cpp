@@ -605,7 +605,13 @@ bool GraphicsPipeline::ConfigureDraw(const RescalingPushConstant& rescaling,
         return false;
     }
 
-    scheduler.RequestRenderpass(texture_cache.GetFramebuffer());
+    const auto* current_fb = texture_cache.GetFramebuffer();
+    if (!current_fb || current_fb->Handle() == VK_NULL_HANDLE ||
+        current_fb->RenderPass() == VK_NULL_HANDLE) {
+        return false;
+    }
+
+    scheduler.RequestRenderpass(current_fb);
     if (!is_built.load(std::memory_order::relaxed)) {
         // Wait for the pipeline to be built
         scheduler.Record([this](vk::CommandBuffer) {
@@ -613,8 +619,7 @@ bool GraphicsPipeline::ConfigureDraw(const RescalingPushConstant& rescaling,
             build_condvar.wait(lock, [this] { return is_built.load(std::memory_order::relaxed); });
         });
     }
-    const auto* current_fb = texture_cache.GetFramebuffer();
-    const bool is_rescaling{current_fb != nullptr ? current_fb->IsRescaled() : texture_cache.IsRescaling()};
+    const bool is_rescaling{current_fb->IsRescaled()};
     const bool update_rescaling{scheduler.UpdateRescaling(is_rescaling)};
     const bool bind_pipeline{scheduler.UpdateGraphicsPipeline(this)};
     const bool bind_descriptor_buffer{

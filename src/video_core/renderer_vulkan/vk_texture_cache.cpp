@@ -2318,6 +2318,8 @@ bool Image::ScaleUp(bool ignore) {
         ignore = false;
     }
     current_image = &Image::scaled_image;
+    storage_image_views.clear();
+    storage_image_views.resize(info.resources.levels);
     if (ignore) {
         return true;
     }
@@ -2329,6 +2331,8 @@ bool Image::ScaleUp(bool ignore) {
         if (!success) {
             flags &= ~ImageFlagBits::Rescaled;
             current_image = &Image::original_image;
+            storage_image_views.clear();
+            storage_image_views.resize(info.resources.levels);
             return false;
         }
         return true;
@@ -2352,6 +2356,8 @@ bool Image::ScaleDown(bool ignore) {
     ASSERT(info.type != ImageType::Linear);
     flags &= ~ImageFlagBits::Rescaled;
     current_image = &Image::original_image;
+    storage_image_views.clear();
+    storage_image_views.resize(info.resources.levels);
     if (ignore) {
         return true;
     }
@@ -2383,11 +2389,20 @@ bool Image::BlitScaleHelper(bool scale_up) {
     const auto& resolution = runtime->resolution;
     const u32 scaled_width = resolution.ScaleUp(info.size.width);
     const u32 scaled_height = is_2d ? resolution.ScaleUp(info.size.height) : info.size.height;
-    std::unique_ptr<ImageView>& blit_view = scale_up ? scale_view : normal_view;
-    std::optional<Framebuffer>& blit_framebuffer = scale_up ? scale_framebuffer : normal_framebuffer;
-    if (!blit_view) {
+
+    if (!normal_view) {
+        const auto prev_image = current_image;
+        current_image = &Image::original_image;
         const auto view_info = ImageViewInfo(ImageViewType::e2D, info.format);
-        blit_view = std::make_unique<ImageView>(*runtime, view_info, NULL_IMAGE_ID, *this);
+        normal_view = std::make_unique<ImageView>(*runtime, view_info, NULL_IMAGE_ID, *this);
+        current_image = prev_image;
+    }
+    if (!scale_view) {
+        const auto prev_image = current_image;
+        current_image = &Image::scaled_image;
+        const auto view_info = ImageViewInfo(ImageViewType::e2D, info.format);
+        scale_view = std::make_unique<ImageView>(*runtime, view_info, NULL_IMAGE_ID, *this);
+        current_image = prev_image;
     }
 
     const auto [samples_x, samples_y] = VideoCommon::SamplesLog2(info.num_samples);
@@ -2404,27 +2419,38 @@ bool Image::BlitScaleHelper(bool scale_up) {
         .end = {s32(dst_width), s32(dst_height)},
     };
     const VkExtent2D extent{
-        .width = (std::max)(scaled_width, info.size.width) >> samples_x,
-        .height = (std::max)(scaled_height, info.size.height) >> samples_y,
+        .width = dst_width,
+        .height = dst_height,
     };
 
-    auto* view_ptr = blit_view.get();
+    ImageView* const dst_view = scale_up ? scale_view.get() : normal_view.get();
+    ImageView& src_view = scale_up ? *normal_view : *scale_view;
+    std::optional<Framebuffer>& blit_framebuffer = scale_up ? scale_framebuffer : normal_framebuffer;
+
     if (aspect_mask == VK_IMAGE_ASPECT_COLOR_BIT) {
-        if (!blit_framebuffer)
-            blit_framebuffer.emplace(*runtime, view_ptr, nullptr, extent, scale_up);
+        if (!blit_framebuffer) {
+            blit_framebuffer.emplace(*runtime, dst_view, nullptr, extent, scale_up);
+        }
         if (info.num_samples > 1) {
-            runtime->blit_image_helper.BlitColorMSAA(&*blit_framebuffer, *blit_view,
+            runtime->blit_image_helper.BlitColorMSAA(&*blit_framebuffer, src_view,
                 dst_region, src_region);
         } else {
-            runtime->blit_image_helper.BlitColor(&*blit_framebuffer, *blit_view,
+            runtime->blit_image_helper.BlitColor(&*blit_framebuffer, src_view,
                 dst_region, src_region, operation, BLIT_OPERATION);
         }
-    } else if (aspect_mask == (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) &&
-               info.num_samples == 1) {
-        if (!blit_framebuffer)
-            blit_framebuffer.emplace(*runtime, nullptr, view_ptr, extent, scale_up);
-        runtime->blit_image_helper.BlitDepthStencil(&*blit_framebuffer, *blit_view,
-            dst_region, src_region, operation, BLIT_OPERATION);
+    } else if ((aspect_mask & VK_IMAGE_ASPECT_DEPTH_BIT) != 0) {
+        if (!blit_framebuffer) {
+            blit_framebuffer.emplace(*runtime, nullptr, dst_view, extent, scale_up);
+        }
+        if ((aspect_mask & VK_IMAGE_ASPECT_STENCIL_BIT) != 0 &&
+            runtime->device.IsExtShaderStencilExportSupported() &&
+            info.num_samples == 1) {
+            runtime->blit_image_helper.BlitDepthStencil(&*blit_framebuffer, src_view,
+                dst_region, src_region, operation, BLIT_OPERATION);
+        } else {
+            runtime->blit_image_helper.ResolveDepthStencil(&*blit_framebuffer, src_view,
+                dst_region, src_region);
+        }
     } else {
         // Device does not support scaling this format
         flags &= ~ImageFlagBits::Rescaled;
@@ -2432,6 +2458,7 @@ bool Image::BlitScaleHelper(bool scale_up) {
         LOG_WARNING(Render_Vulkan, "Device does not support scaling format {}", info.format);
         return false;
     }
+    current_image = scale_up ? &Image::scaled_image : &Image::original_image;
     return true;
 }
 
