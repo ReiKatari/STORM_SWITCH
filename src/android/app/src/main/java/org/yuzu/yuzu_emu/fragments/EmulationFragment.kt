@@ -2209,23 +2209,25 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             )
         }
         binding.showStatsOverlayText.setVisible(showPerfOverlay)
-        if (showPerfOverlay) {
-            val SYSTEM_FPS = 0
-            val FPS = 1
-            val FRAMETIME = 2
-            //val SPEED = 3
-            val sb = StringBuilder()
-            perfStatsUpdater = {
-                if (emulationViewModel.emulationStarted.value &&
-                    !emulationViewModel.isEmulationStopping.value
-                ) {
-                    val needsGlobal = false
-                    sb.setLength(0)
+        val SYSTEM_FPS = 0
+        val FPS = 1
+        val FRAMETIME = 2
+        //val SPEED = 3
+        val sb = StringBuilder()
+        perfStatsUpdater = {
+            if (emulationViewModel.emulationStarted.value &&
+                !emulationViewModel.isEmulationStopping.value
+            ) {
+                val needsGlobal = !NativeConfig.isPerGameConfigLoaded()
+                val perfStats = NativeLibrary.getPerfStats()
+                val systemFps = perfStats[SYSTEM_FPS]
+                val actualFps = perfStats[FPS]
+                val isFrameGen = BooleanSetting.RENDERER_FRAME_GEN.getBoolean(needsGlobal) && LosslessScalingHelper.isInstalled()
 
-                    val perfStats = NativeLibrary.getPerfStats()
-                    val systemFps = perfStats[SYSTEM_FPS]
-                    val actualFps = perfStats[FPS]
-                    val isFrameGen = BooleanSetting.RENDERER_FRAME_GEN.getBoolean(needsGlobal) && LosslessScalingHelper.isInstalled()
+                val currentShowPerfOverlay = BooleanSetting.SHOW_PERFORMANCE_OVERLAY.getBoolean(needsGlobal)
+                binding.showStatsOverlayText.setVisible(currentShowPerfOverlay)
+                if (currentShowPerfOverlay) {
+                    sb.setLength(0)
 
                     if (BooleanSetting.SHOW_FPS.getBoolean(needsGlobal)) {
                         val fpsText = if (isFrameGen && systemFps > 0.0) {
@@ -2339,39 +2341,38 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     }
 
                     binding.showStatsOverlayText.text = sb.toString()
+                }
 
-                    // Auto-correction floating button: show ONLY if FPS < 30.0 and battery temp >= 40.0°C
-                    val currentBatteryTemp = getBatteryTemperature()
-                    val shouldShowAutoCorrection = actualFps > 0.0 && actualFps < 30.0 && currentBatteryTemp >= 40.0f
-                    val targetVisibility = if (shouldShowAutoCorrection) View.VISIBLE else View.GONE
-                    if (binding.buttonFloatingAutoCorrection.visibility != targetVisibility) {
-                        binding.buttonFloatingAutoCorrection.visibility = targetVisibility
-                    }
+                // Auto-correction floating button: show ONLY if FPS < 30.0 and battery temp >= 40.0°C
+                val currentBatteryTemp = getBatteryTemperature()
+                val shouldShowAutoCorrection = actualFps > 0.0 && actualFps < 30.0 && currentBatteryTemp >= 40.0f
+                val targetVisibility = if (shouldShowAutoCorrection) View.VISIBLE else View.GONE
+                if (binding.buttonFloatingAutoCorrection.visibility != targetVisibility) {
+                    binding.buttonFloatingAutoCorrection.visibility = targetVisibility
+                }
 
-                    // Emergency thermal protection: if enabled and battery/chipset reaches user-configured threshold,
-                    // trigger forced pause to allow the hardware to cool down safely.
-                    val thermalProtectionEnabled = BooleanSetting.THERMAL_EMERGENCY_PROTECTION.getBoolean()
-                    val thermalLimit = IntSetting.THERMAL_EMERGENCY_LIMIT.getInt().toFloat().coerceIn(44.0f, 60.0f)
-                    if (thermalProtectionEnabled && currentBatteryTemp >= thermalLimit && this@EmulationFragment::emulationState.isInitialized && !emulationState.isPaused) {
-                        pauseEmulationAndCaptureFrame()
-                        context?.let { ctx ->
-                            val tempStr = String.format(java.util.Locale.US, "%.1f", currentBatteryTemp)
-                            val toastMsg = ctx.getString(R.string.thermal_emergency_pause_toast, tempStr)
-                            android.widget.Toast.makeText(
-                                ctx,
-                                toastMsg,
-                                android.widget.Toast.LENGTH_LONG
-                            ).show()
-                        }
+                // Emergency thermal protection: if enabled and battery/chipset reaches user-configured threshold,
+                // trigger forced pause to allow the hardware to cool down safely.
+                val thermalProtectionEnabled = BooleanSetting.THERMAL_EMERGENCY_PROTECTION.getBoolean(needsGlobal)
+                val thermalLimit = IntSetting.THERMAL_EMERGENCY_LIMIT.getInt(needsGlobal).toFloat().coerceIn(44.0f, 60.0f)
+                if (thermalProtectionEnabled && currentBatteryTemp >= thermalLimit && this@EmulationFragment::emulationState.isInitialized && !emulationState.isPaused) {
+                    pauseEmulationAndCaptureFrame()
+                    context?.let { ctx ->
+                        val tempStr = String.format(java.util.Locale.US, "%.1f", currentBatteryTemp)
+                        val toastMsg = ctx.getString(R.string.thermal_emergency_pause_toast, tempStr)
+                        android.widget.Toast.makeText(
+                            ctx,
+                            toastMsg,
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
-                perfStatsUpdateHandler.postDelayed(perfStatsRunnable!!, 800)
             }
-            perfStatsRunnable = Runnable { perfStatsUpdater?.invoke() }
-            perfStatsUpdateHandler.post(perfStatsRunnable!!)
-        } else {
-            perfStatsRunnable?.let { perfStatsUpdateHandler.removeCallbacks(it) }
+            perfStatsUpdateHandler.postDelayed(perfStatsRunnable!!, 800)
         }
+        perfStatsRunnable?.let { perfStatsUpdateHandler.removeCallbacks(it) }
+        perfStatsRunnable = Runnable { perfStatsUpdater?.invoke() }
+        perfStatsUpdateHandler.post(perfStatsRunnable!!)
     }
 
     private fun updateStatsPosition(position: Int) {
@@ -2840,8 +2841,13 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     override fun surfaceCreated(holder: SurfaceHolder) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
             try {
+                val displayMaxRate = activity?.display?.supportedModes?.maxOfOrNull { it.refreshRate }
+                    ?: activity?.display?.refreshRate
+                    ?: 60.0f
                 val targetRate = if (BooleanSetting.RENDERER_FRAME_GEN.getBoolean()) {
                     IntSetting.RENDERER_FRAME_GEN_TARGET_RATE.getInt().toFloat().let { if (it > 0f) it else 120.0f }
+                } else if (displayMaxRate > 60.0f) {
+                    displayMaxRate
                 } else {
                     60.0f
                 }
@@ -2861,8 +2867,13 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         Log.debug("[EmulationFragment] Surface changed. Resolution: " + width + "x" + height)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
             try {
+                val displayMaxRate = activity?.display?.supportedModes?.maxOfOrNull { it.refreshRate }
+                    ?: activity?.display?.refreshRate
+                    ?: 60.0f
                 val targetRate = if (BooleanSetting.RENDERER_FRAME_GEN.getBoolean()) {
                     IntSetting.RENDERER_FRAME_GEN_TARGET_RATE.getInt().toFloat().let { if (it > 0f) it else 120.0f }
+                } else if (displayMaxRate > 60.0f) {
+                    displayMaxRate
                 } else {
                     60.0f
                 }

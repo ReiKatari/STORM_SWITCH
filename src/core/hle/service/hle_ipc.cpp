@@ -15,6 +15,8 @@
 #include "common/common_types.h"
 #include "common/logging.h"
 #include "common/scratch_buffer.h"
+#include "common/settings.h"
+#include "core/core.h"
 #include "core/guest_memory.h"
 #include "core/hle/kernel/k_auto_object.h"
 #include "core/hle/kernel/k_handle_table.h"
@@ -25,6 +27,7 @@
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/service/hle_ipc.h"
 #include "core/hle/service/ipc_helpers.h"
+#include "core/hle/service/sm/sm.h"
 #include "core/memory.h"
 
 namespace Service {
@@ -45,8 +48,9 @@ bool SessionRequestManager::HasSessionRequestHandler(const HLERequestContext& co
         const auto& message_header = context.GetDomainMessageHeader();
         const auto object_id = message_header.object_id;
 
-        if (object_id > DomainHandlerCount()) {
-            LOG_CRITICAL(IPC, "object_id {} is too big!", object_id);
+        if (object_id == 0 || object_id > DomainHandlerCount()) {
+            LOG_CRITICAL(IPC, "object_id {} is out of bounds (count={})!", object_id,
+                         DomainHandlerCount());
             return false;
         }
         return !DomainHandler(object_id - 1).expired();
@@ -69,9 +73,31 @@ Result SessionRequestManager::CompleteSyncRequest(Kernel::KServerSession* server
             result = this->SessionHandler().HandleSyncRequest(*server_session, context);
         }
     } else {
-        LOG_WARNING(IPC, "Session handler is invalid, stubbing response!");
-        IPC::ResponseBuilder rb(context, 2);
-        rb.Push(ResultSuccess);
+        switch (context.GetCommandType()) {
+        case IPC::CommandType::Close:
+        case IPC::CommandType::TIPC_Close: {
+            IPC::ResponseBuilder rb{context, 2};
+            rb.Push(ResultSuccess);
+            result = IPC::ResultSessionClosed;
+            break;
+        }
+        case IPC::CommandType::ControlWithContext:
+        case IPC::CommandType::Control: {
+            kernel.System().ServiceManager().InvokeControlRequest(context);
+            break;
+        }
+        default: {
+            LOG_WARNING(IPC,
+                        "Session handler is invalid or auto-stubbed (cmd={}), stubbing response!",
+                        context.GetCommand());
+            IPC::ResponseBuilder rb{context, 2};
+            rb.Push(ResultSuccess);
+            break;
+        }
+        }
+        if (kernel.System().IsPoweredOn()) {
+            context.WriteToOutgoingCommandBuffer();
+        }
     }
 
     if (convert_to_domain) {
@@ -97,34 +123,53 @@ Result SessionRequestManager::HandleDomainSyncRequest(Kernel::KServerSession* se
     const u32 object_id{domain_message_header.object_id};
     switch (domain_message_header.command) {
     case IPC::DomainMessageHeader::CommandType::SendMessage:
-        if (object_id > this->DomainHandlerCount()) {
+        if (object_id == 0 || object_id > this->DomainHandlerCount()) {
             LOG_CRITICAL(IPC,
-                         "object_id {} is too big! This probably means a recent service call "
+                         "object_id {} is out of bounds! This probably means a recent service call "
                          "needed to return a new interface!",
                          object_id);
-            LOG_CRITICAL(IPC, "Returning error for out-of-bounds object_id");
-            return ResultSuccess; // Ignore error if asserts are off
+            IPC::ResponseBuilder rb{context, 2};
+            rb.Push(ResultSuccess);
+            if (kernel.System().IsPoweredOn()) {
+                context.WriteToOutgoingCommandBuffer();
+            }
+            return ResultSuccess;
         }
         if (auto strong_ptr = this->DomainHandler(object_id - 1).lock()) {
             return strong_ptr->HandleSyncRequest(*server_session, context);
         } else {
-            LOG_CRITICAL(IPC, "Domain handler expired for object_id={}", object_id);
+            LOG_WARNING(IPC, "Domain handler expired for object_id={}, stubbing response!",
+                        object_id);
+            IPC::ResponseBuilder rb{context, 2};
+            rb.Push(ResultSuccess);
+            if (kernel.System().IsPoweredOn()) {
+                context.WriteToOutgoingCommandBuffer();
+            }
             return ResultSuccess;
         }
 
     case IPC::DomainMessageHeader::CommandType::CloseVirtualHandle: {
         LOG_DEBUG(IPC, "CloseVirtualHandle, object_id={:#08x}", object_id);
 
-        this->CloseDomainHandler(object_id - 1);
+        if (object_id > 0 && object_id <= this->DomainHandlerCount()) {
+            this->CloseDomainHandler(object_id - 1);
+        }
 
         IPC::ResponseBuilder rb{context, 2};
         rb.Push(ResultSuccess);
+        if (kernel.System().IsPoweredOn()) {
+            context.WriteToOutgoingCommandBuffer();
+        }
         return ResultSuccess;
     }
     }
 
     LOG_CRITICAL(IPC, "Unknown domain command={}", domain_message_header.command.Value());
-    LOG_CRITICAL(IPC, "Returning error for unknown domain command");
+    IPC::ResponseBuilder rb{context, 2};
+    rb.Push(ResultSuccess);
+    if (kernel.System().IsPoweredOn()) {
+        context.WriteToOutgoingCommandBuffer();
+    }
     return ResultSuccess;
 }
 
@@ -217,9 +262,21 @@ void HLERequestContext::ParseCommandBuffer(u32_le* src_cmdbuf, bool incoming) {
         }
 
         if (incoming) {
-            ASSERT(data_payload_header->magic == Common::MakeMagic('S', 'F', 'C', 'I'));
+            if (Settings::values.use_auto_stub.GetValue() &&
+                data_payload_header->magic != Common::MakeMagic('S', 'F', 'C', 'I')) {
+                LOG_WARNING(IPC, "Incoming IPC payload magic mismatch ({:#x}), auto-stubbing",
+                            data_payload_header->magic);
+            } else {
+                ASSERT(data_payload_header->magic == Common::MakeMagic('S', 'F', 'C', 'I'));
+            }
         } else {
-            ASSERT(data_payload_header->magic == Common::MakeMagic('S', 'F', 'C', 'O'));
+            if (Settings::values.use_auto_stub.GetValue() &&
+                data_payload_header->magic != Common::MakeMagic('S', 'F', 'C', 'O')) {
+                LOG_WARNING(IPC, "Outgoing IPC payload magic mismatch ({:#x}), auto-stubbing",
+                            data_payload_header->magic);
+            } else {
+                ASSERT(data_payload_header->magic == Common::MakeMagic('S', 'F', 'C', 'O'));
+            }
         }
     }
 

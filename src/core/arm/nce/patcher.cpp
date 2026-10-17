@@ -90,7 +90,10 @@ bool Patcher::PatchText(std::span<const u8> program_image, const Kernel::CodeSet
             const uintptr_t next_offset = this_offset + sizeof(u32);
 
             constexpr size_t SplitPreBufferThreshold = MaxRelativeBranch - 8_MiB;
-            pre_buffer = use_split && (this_offset < SplitPreBufferThreshold);
+            pre_buffer = use_split &&
+                         (this_offset + static_cast<size_t>(c_pre.offset()) + 0x100000 <
+                          MaxRelativeBranch) &&
+                         (this_offset < SplitPreBufferThreshold);
 
             // Relocate to pre- or post-patch
             if (pre_buffer) {

@@ -42,6 +42,7 @@ std::optional<Common::Net::Release> UpdateChecker::GetUpdate() {
         return std::nullopt;
 
     const std::string build = result[0];
+#else
     std::string tag = latest->tag;
     std::string build = Common::g_build_version;
     while (!tag.empty() && (tag.front() == 'v' || tag.front() == 'V' || tag.front() == ' ')) {

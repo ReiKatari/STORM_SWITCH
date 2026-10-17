@@ -84,7 +84,7 @@ class AutoCorrectionDialogFragment : DialogFragment() {
                 BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
                 BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
                 IntSetting.RENDERER_NVDEC_EMULATION.setInt(3)
-                IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3)
+                IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1)
                 BooleanSetting.RENDERER_FORCE_MAX_CLOCK.setBoolean(false)
                 IntSetting.MAX_ANISOTROPY.setInt(1) // 1X
 
@@ -120,7 +120,7 @@ class AutoCorrectionDialogFragment : DialogFragment() {
                 BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
                 BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
                 IntSetting.RENDERER_NVDEC_EMULATION.setInt(3)
-                IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3)
+                IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1)
 
                 if (NativeConfig.isPerGameConfigLoaded()) {
                     NativeConfig.savePerGameConfig()

@@ -92,6 +92,8 @@ android {
                         "-DYUZU_USE_BUNDLED_FFMPEG=ON",
                         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
                         "-DENABLE_UPDATE_CHECKER=ON",
+                        "-DBUILD_VERSION=${getGitVersion()}",
+                        "-DGIT_TAG=${getGitVersion()}",
                         "-DGIT_RELEASE=${getGitVersion()}",
                         "-DBUILD_TESTING=OFF",
                         "-DYUZU_TESTS=OFF",
@@ -435,7 +437,7 @@ fun getGitVersion(): String {
             return ver
         }
     }
-    return "12.0.0"
+    return "12.1.0"
 }
 
 

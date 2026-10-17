@@ -8,6 +8,7 @@
 #include <tuple>
 #include "common/assert.h"
 #include "common/scope_exit.h"
+#include "common/settings.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/hle/kernel/k_client_port.h"
@@ -232,9 +233,21 @@ Result SM::GetServiceImpl(Kernel::KClientSession** out_client_session, HLEReques
     }
 
     if (port_result != ResultSuccess) {
-        LOG_INFO(Service_SM, "Waiting for service {} to become available", name);
-        ctx.SetIsDeferred();
-        return Service::SM::ResultNotRegistered;
+        if (Settings::values.use_auto_stub.GetValue()) {
+            LOG_WARNING(Service_SM,
+                        "Service '{}' is not registered; auto-stubbing because use_auto_stub is enabled",
+                        name);
+            if (auto mgr = ctx.GetManager()) {
+                mgr->GetServerManager().RegisterNamedService(
+                    name, []() -> SessionRequestHandlerPtr { return nullptr; }, 64);
+                port_result = service_manager.GetServicePort(&client_port, name);
+            }
+        }
+        if (port_result != ResultSuccess) {
+            LOG_INFO(Service_SM, "Waiting for service {} to become available", name);
+            ctx.SetIsDeferred();
+            return Service::SM::ResultNotRegistered;
+        }
     }
 
     // Create a new session.

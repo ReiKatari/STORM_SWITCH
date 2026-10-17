@@ -259,17 +259,26 @@ void ComputeTopologyLocked(CpuTopologyState& state) {
             cores = std::move(by_frequency);
         }
     }
-    if (cores.empty()) {
-        LOG_WARNING(Common, "Could not determine CPU topology, thread placement is disabled");
-        return;
-    }
-
-    if (WeightsAreUniform(cores)) {
-        if (MidrsAreDistinct(cores)) {
-            LOG_WARNING(Common, "CPU clusters differ but rank identically, thread placement is "
-                                "disabled");
+    if (cores.empty() || WeightsAreUniform(cores)) {
+        if (total >= 4) {
+            const s32 split = total / 2;
+            for (s32 cpu = 0; cpu < total; ++cpu) {
+                if (!CPU_ISSET(cpu, &state.allowed)) {
+                    continue;
+                }
+                if (cpu >= split) {
+                    CPU_SET(cpu, &state.performance);
+                } else {
+                    CPU_SET(cpu, &state.efficiency);
+                }
+            }
+            state.separated = CPU_COUNT(&state.performance) > 0 && CPU_COUNT(&state.efficiency) > 0;
+            LOG_INFO(Common,
+                     "CPU topology fallback (upper/lower split): {} performance cores, {} "
+                     "efficiency cores",
+                     CPU_COUNT(&state.performance), CPU_COUNT(&state.efficiency));
         } else {
-            LOG_INFO(Common, "CPU cores are symmetric, thread placement is disabled");
+            LOG_INFO(Common, "CPU cores are symmetric or < 4, thread placement is disabled");
         }
         return;
     }
@@ -487,17 +496,42 @@ void SetCurrentThreadPriority(ThreadPriority new_priority) {
 #elif defined(__ANDROID__)
     const int nice_value = NiceValueForPriority(new_priority);
     const pid_t tid = gettid();
-    if (setpriority(PRIO_PROCESS, static_cast<id_t>(tid), nice_value) != 0) {
+    if (setpriority(PRIO_PROCESS, static_cast<id_t>(tid), nice_value) == 0) {
+        RememberCurrentThreadNice(tid, nice_value);
+    } else {
         LOG_WARNING(Common, "Could not set thread nice value to {}: {}", nice_value,
                     GetLastErrorMsg());
-        return;
     }
-    RememberCurrentThreadNice(tid, nice_value);
+    if (Settings::values.cpu_affinity_pinning.GetValue()) {
+        if (new_priority >= ThreadPriority::High) {
+            SetCurrentThreadToPerformanceCores();
+        } else if (new_priority == ThreadPriority::Low) {
+            SetCurrentThreadToEfficiencyCores();
+        }
+    }
 #elif defined(__linux__)
     const int nice_value = NiceValueForPriority(new_priority);
     if (setpriority(PRIO_PROCESS, 0, nice_value) != 0) {
         LOG_DEBUG(Common, "Could not set thread nice value to {}: {}", nice_value,
                   GetLastErrorMsg());
+    }
+    if (Settings::values.cpu_affinity_pinning.GetValue()) {
+        const unsigned int num_cores = std::min<unsigned int>(
+            std::thread::hardware_concurrency(), static_cast<unsigned int>(CPU_SETSIZE));
+        if (num_cores >= 4 &&
+            (new_priority >= ThreadPriority::High || new_priority == ThreadPriority::Low)) {
+            cpu_set_t cpuset;
+            CPU_ZERO(&cpuset);
+            const unsigned int split = num_cores / 2;
+            const unsigned int start_core = (new_priority >= ThreadPriority::High) ? split : 0;
+            const unsigned int end_core = (new_priority >= ThreadPriority::High) ? num_cores : split;
+            for (unsigned int c = start_core; c < end_core; ++c) {
+                CPU_SET(c, &cpuset);
+            }
+            if (sched_setaffinity(0, sizeof(cpu_set_t), &cpuset) != 0) {
+                LOG_DEBUG(Common, "Could not set thread CPU affinity: {}", GetLastErrorMsg());
+            }
+        }
     }
 #else
     const s32 max_prio = sched_get_priority_max(SCHED_OTHER);

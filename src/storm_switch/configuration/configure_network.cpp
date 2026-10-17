@@ -26,7 +26,9 @@ void ConfigureNetwork::ApplyConfiguration() {
         Settings::values.network_interface.SetGlobal(true);
         Settings::values.airplane_mode.SetGlobal(true);
     }
-    Settings::values.network_interface = ui->network_interface->currentText().toStdString();
+    if (!system.IsPoweredOn()) {
+        Settings::values.network_interface = ui->network_interface->currentText().toStdString();
+    }
     Settings::values.airplane_mode = ui->airplane_mode->isChecked();
 }
 
@@ -46,7 +48,11 @@ void ConfigureNetwork::SetConfiguration() {
     const bool runtime_lock = !system.IsPoweredOn();
     auto const network_interface = Settings::values.network_interface.GetValue();
     auto const airplane_mode = Settings::values.airplane_mode.GetValue();
-    ui->network_interface->setCurrentText(QString::fromStdString(network_interface));
+    const QString iface_qstr = QString::fromStdString(network_interface);
+    if (!iface_qstr.isEmpty() && ui->network_interface->findText(iface_qstr) == -1) {
+        ui->network_interface->addItem(iface_qstr);
+    }
+    ui->network_interface->setCurrentText(iface_qstr);
     ui->network_interface->setEnabled(runtime_lock);
     ui->airplane_mode->setChecked(airplane_mode);
 }

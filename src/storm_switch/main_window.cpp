@@ -383,6 +383,83 @@ QString GetTranslatedGameIconSize(size_t index) {
     return QCoreApplication::translate("MainWindow", default_game_icon_sizes[index].second);
 }
 
+bool GetActivePerGameConfigName(const QString& current_game_path,
+                                const QString& last_filename_booted,
+                                std::string& out_config_name) {
+    if (!QtCommon::system || !QtCommon::system->IsPoweredOn()) {
+        return false;
+    }
+    const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
+    if (title_id == 0) {
+        return false;
+    }
+    const QString& game_file = !current_game_path.isEmpty() ? current_game_path : last_filename_booted;
+    const std::filesystem::path custom_path =
+        Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
+    if (!game_file.isEmpty()) {
+        const auto utf8_str = game_file.toUtf8();
+        const auto file_path_hash =
+            Common::CityHash64(utf8_str.constData(), static_cast<std::size_t>(utf8_str.size()));
+        const auto specific_config = fmt::format("{:016X}_{:016X}", title_id, file_path_hash);
+        if (std::filesystem::exists(custom_path / (specific_config + ".ini"))) {
+            out_config_name = specific_config;
+            return true;
+        }
+    }
+    const auto legacy_config = fmt::format("{:016X}", title_id);
+    if (std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
+        out_config_name = legacy_config;
+        return true;
+    }
+    return false;
+}
+
+template <typename SettingType, typename ValueType, typename BackupPairType>
+void ApplyStatusBarSwitchableSetting(SettingType& setting, const ValueType& value,
+                                     bool session_backup_active, BackupPairType& backup_pair,
+                                     const QString& current_game_path = {},
+                                     const QString& last_filename_booted = {}) {
+    std::string per_game_config_name;
+    const bool has_per_game_file =
+        GetActivePerGameConfigName(current_game_path, last_filename_booted, per_game_config_name);
+    if (has_per_game_file || !setting.UsingGlobal()) {
+        setting.SetGlobal(false);
+        setting.SetValue(value);
+    } else {
+        setting.SetGlobal(true);
+        setting.SetValue(value);
+        if (session_backup_active) {
+            backup_pair = {value, true};
+        }
+    }
+}
+
+template <typename SettingType, typename ValueType, typename SessionBackupType, typename BackupPairType>
+    requires (!std::is_same_v<std::decay_t<SessionBackupType>, bool>)
+void ApplyStatusBarSwitchableSetting(SettingType& setting, const ValueType& value,
+                                     const SessionBackupType& session_backup, BackupPairType& backup_pair,
+                                     const QString& current_game_path = {},
+                                     const QString& last_filename_booted = {}) {
+    ApplyStatusBarSwitchableSetting(setting, value, session_backup.is_active, backup_pair,
+                                    current_game_path, last_filename_booted);
+}
+
+template <typename SettingType, typename ValueType>
+void ApplyStatusBarSwitchableSettingNoBackup(SettingType& setting, const ValueType& value,
+                                             const QString& current_game_path = {},
+                                             const QString& last_filename_booted = {}) {
+    std::string per_game_config_name;
+    const bool has_per_game_file =
+        GetActivePerGameConfigName(current_game_path, last_filename_booted, per_game_config_name);
+    if (has_per_game_file || !setting.UsingGlobal()) {
+        setting.SetGlobal(false);
+        setting.SetValue(value);
+    } else {
+        setting.SetGlobal(true);
+        setting.SetValue(value);
+    }
+}
+
 } // namespace
 
 #ifndef _WIN32
@@ -1417,7 +1494,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : aa_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.anti_aliasing.SetValue(opt.first);
+                ApplyStatusBarSwitchableSetting(Settings::values.anti_aliasing, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.anti_aliasing, current_game_path,
+                                                last_filename_booted);
                 UpdateAAText();
                 ApplyDynamicSettingChange();
             });
@@ -1460,11 +1540,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : filter_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.scaling_filter.SetGlobal(true);
-                Settings::values.scaling_filter.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.scaling_filter = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.scaling_filter, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.scaling_filter, current_game_path,
+                                                last_filename_booted);
                 UpdateFilterText();
                 ApplyDynamicSettingChange();
             });
@@ -1495,7 +1574,6 @@ void MainWindow::InitializeWidgets() {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
                 if (opt.first != Settings::values.use_docked_mode.GetValue()) {
                     OnToggleDockedMode();
-                    ApplyDynamicSettingChange();
                 }
             });
             act->setCheckable(true);
@@ -1523,11 +1601,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : gpu_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.gpu_accuracy.SetGlobal(true);
-                Settings::values.gpu_accuracy.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.gpu_accuracy = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.gpu_accuracy, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.gpu_accuracy, current_game_path,
+                                                last_filename_booted);
                 UpdateGPUAccuracyButton();
                 ApplyDynamicSettingChange();
             });
@@ -1560,7 +1637,9 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : api_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.renderer_backend.SetValue(opt.first);
+                ApplyStatusBarSwitchableSettingNoBackup(Settings::values.renderer_backend,
+                                                        opt.first, current_game_path,
+                                                        last_filename_booted);
                 UpdateAPIText();
                 ApplyDynamicSettingChange();
             });
@@ -1591,11 +1670,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
-                Settings::values.aspect_ratio.SetGlobal(true);
-                Settings::values.aspect_ratio.SetValue(item.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.aspect_ratio = {item.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.aspect_ratio, item.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.aspect_ratio, current_game_path,
+                                                last_filename_booted);
                 UpdateAspectText();
                 ApplyDynamicSettingChange();
             });
@@ -1624,11 +1702,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
-                Settings::values.dma_accuracy.SetGlobal(true);
-                Settings::values.dma_accuracy.SetValue(item.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.dma_accuracy = {item.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.dma_accuracy, item.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.dma_accuracy, current_game_path,
+                                                last_filename_booted);
                 UpdateDmaText();
                 ApplyDynamicSettingChange();
             });
@@ -1658,11 +1735,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
-                Settings::values.gpu_fence_behavior.SetGlobal(true);
-                Settings::values.gpu_fence_behavior.SetValue(item.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.gpu_fence_behavior = {item.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.gpu_fence_behavior, item.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.gpu_fence_behavior,
+                                                current_game_path, last_filename_booted);
                 UpdateGpuFenceText();
                 ApplyDynamicSettingChange();
             });
@@ -1690,11 +1766,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.vram_usage_mode.SetGlobal(true);
-                Settings::values.vram_usage_mode.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.vram_usage_mode = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.vram_usage_mode, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.vram_usage_mode, current_game_path,
+                                                last_filename_booted);
                 UpdateVramText();
                 ApplyDynamicSettingChange();
                 if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
@@ -1738,11 +1813,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.max_anisotropy.SetGlobal(true);
-                Settings::values.max_anisotropy.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.max_anisotropy = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.max_anisotropy, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.max_anisotropy, current_game_path,
+                                                last_filename_booted);
                 UpdateAnisotropyText();
                 ApplyDynamicSettingChange();
             });
@@ -1771,11 +1845,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.accelerate_astc.SetGlobal(true);
-                Settings::values.accelerate_astc.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.accelerate_astc = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.accelerate_astc, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.accelerate_astc, current_game_path,
+                                                last_filename_booted);
                 UpdateAstcDecodeText();
                 ApplyDynamicSettingChange();
             });
@@ -1804,11 +1877,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.astc_recompression.SetGlobal(true);
-                Settings::values.astc_recompression.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.astc_recompression = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.astc_recompression, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.astc_recompression,
+                                                current_game_path, last_filename_booted);
                 UpdateAstcRecompressText();
                 ApplyDynamicSettingChange();
             });
@@ -2008,11 +2080,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : res_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.resolution_setup.SetGlobal(true);
-                Settings::values.resolution_setup.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.resolution_setup = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.resolution_setup, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.resolution_setup,
+                                                current_game_path, last_filename_booted);
                 UpdateResScaleText();
                 ApplyDynamicSettingChange();
                 if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
@@ -2049,21 +2120,19 @@ void MainWindow::InitializeWidgets() {
     airplane_mode_button->setFocusPolicy(Qt::NoFocus);
     UpdateAirplaneModeButton();
     connect(airplane_mode_button, &QPushButton::clicked, this, [this] {
-        Settings::values.airplane_mode.SetGlobal(true);
-        Settings::values.airplane_mode.SetValue(!Settings::values.airplane_mode.GetValue());
-        if (m_session_backup.is_active) {
-            m_session_backup.airplane_mode = {Settings::values.airplane_mode.GetValue(), true};
-        }
+        ApplyStatusBarSwitchableSetting(Settings::values.airplane_mode,
+                                        !Settings::values.airplane_mode.GetValue(),
+                                        m_session_backup.is_active, m_session_backup.airplane_mode,
+                                        current_game_path, last_filename_booted);
         UpdateAirplaneModeButton();
         ApplyDynamicSettingChange();
     });
     airplane_mode_button->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(airplane_mode_button, &QPushButton::customContextMenuRequested, [this] {
-        Settings::values.airplane_mode.SetGlobal(true);
-        Settings::values.airplane_mode.SetValue(!Settings::values.airplane_mode.GetValue());
-        if (m_session_backup.is_active) {
-            m_session_backup.airplane_mode = {Settings::values.airplane_mode.GetValue(), true};
-        }
+        ApplyStatusBarSwitchableSetting(Settings::values.airplane_mode,
+                                        !Settings::values.airplane_mode.GetValue(),
+                                        m_session_backup.is_active, m_session_backup.airplane_mode,
+                                        current_game_path, last_filename_booted);
         UpdateAirplaneModeButton();
         ApplyDynamicSettingChange();
     });
@@ -2084,8 +2153,8 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : vsync_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.vsync_mode.SetGlobal(true);
-                Settings::values.vsync_mode.SetValue(opt.first);
+                ApplyStatusBarSwitchableSettingNoBackup(Settings::values.vsync_mode, opt.first,
+                                                        current_game_path, last_filename_booted);
                 UpdateVSyncText();
                 ApplyDynamicSettingChange();
             });
@@ -2181,11 +2250,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : nvdec_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.nvdec_emulation.SetGlobal(true);
-                Settings::values.nvdec_emulation.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.nvdec_emulation = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.nvdec_emulation, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.nvdec_emulation, current_game_path,
+                                                last_filename_booted);
                 UpdateNvdecText();
                 ApplyDynamicSettingChange();
             });
@@ -2213,11 +2281,10 @@ void MainWindow::InitializeWidgets() {
         };
         for (const auto& opt : cpu_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
-                Settings::values.cpu_accuracy.SetGlobal(true);
-                Settings::values.cpu_accuracy.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.cpu_accuracy = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.cpu_accuracy, opt.first,
+                                                m_session_backup.is_active,
+                                                m_session_backup.cpu_accuracy, current_game_path,
+                                                last_filename_booted);
                 UpdateCpuAccuracyText();
                 ApplyDynamicSettingChange();
             });
@@ -2236,13 +2303,19 @@ void MainWindow::InitializeWidgets() {
     disk_cache_button->setFocusPolicy(Qt::NoFocus);
     UpdateDiskCacheText();
     connect(disk_cache_button, &QPushButton::clicked, this, [this] {
-        Settings::values.use_disk_shader_cache.SetValue(!Settings::values.use_disk_shader_cache.GetValue());
+        ApplyStatusBarSwitchableSettingNoBackup(
+            Settings::values.use_disk_shader_cache,
+            !Settings::values.use_disk_shader_cache.GetValue(), current_game_path,
+            last_filename_booted);
         UpdateDiskCacheText();
         ApplyDynamicSettingChange();
     });
     disk_cache_button->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(disk_cache_button, &QPushButton::customContextMenuRequested, [this] {
-        Settings::values.use_disk_shader_cache.SetValue(!Settings::values.use_disk_shader_cache.GetValue());
+        ApplyStatusBarSwitchableSettingNoBackup(
+            Settings::values.use_disk_shader_cache,
+            !Settings::values.use_disk_shader_cache.GetValue(), current_game_path,
+            last_filename_booted);
         UpdateDiskCacheText();
         ApplyDynamicSettingChange();
     });
@@ -6223,8 +6296,11 @@ void MainWindow::OnToggleDockedMode() {
         controller_dialog->refreshConfiguration();
     }
 
-    Settings::values.use_docked_mode.SetValue(is_docked ? Settings::ConsoleMode::Handheld
-                                                        : Settings::ConsoleMode::Docked);
+    const auto new_mode = is_docked ? Settings::ConsoleMode::Handheld
+                                    : Settings::ConsoleMode::Docked;
+    ApplyStatusBarSwitchableSetting(Settings::values.use_docked_mode, new_mode,
+                                    m_session_backup, m_session_backup.use_docked_mode,
+                                    current_game_path);
     ApplyDynamicSettingChange();
     UpdateDockedButton();
     UpdateResScaleText();
@@ -6232,15 +6308,19 @@ void MainWindow::OnToggleDockedMode() {
 }
 
 void MainWindow::OnToggleGpuAccuracy() {
-    switch (Settings::values.gpu_accuracy.GetValue()) {
+    auto new_acc = Settings::values.gpu_accuracy.GetValue();
+    switch (new_acc) {
     case Settings::GpuAccuracy::Low:
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+        new_acc = Settings::GpuAccuracy::High;
         break;
     case Settings::GpuAccuracy::High:
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Low);
+        new_acc = Settings::GpuAccuracy::Low;
         break;
     }
 
+    ApplyStatusBarSwitchableSetting(Settings::values.gpu_accuracy, new_acc,
+                                    m_session_backup, m_session_backup.gpu_accuracy,
+                                    current_game_path);
     ApplyDynamicSettingChange();
     UpdateGPUAccuracyButton();
 }
@@ -6289,7 +6369,9 @@ void MainWindow::OnToggleAdaptingFilter() {
     filter = Settings::ScalingFilter(u32(filter) + 1);
     if (u32(filter) > u32(Settings::EnumMetadata<Settings::ScalingFilter>::GetLast()))
         filter = Settings::EnumMetadata<Settings::ScalingFilter>::GetFirst();
-    Settings::values.scaling_filter.SetValue(filter);
+    ApplyStatusBarSwitchableSetting(Settings::values.scaling_filter, filter,
+                                    m_session_backup, m_session_backup.scaling_filter,
+                                    current_game_path);
     filter_status_button->setChecked(true);
     ApplyDynamicSettingChange();
     UpdateFilterText();
@@ -6322,7 +6404,8 @@ void MainWindow::OnToggleGraphicsAPI() {
     default:
         break;
     }
-    Settings::values.renderer_backend.SetValue(api);
+    ApplyStatusBarSwitchableSettingNoBackup(Settings::values.renderer_backend, api,
+                                            current_game_path);
     renderer_status_button->setChecked(api == Settings::RendererBackend::Vulkan);
     ApplyDynamicSettingChange();
     UpdateAPIText();
@@ -7355,7 +7438,13 @@ void MainWindow::ApplyDynamicSettingChange() {
     if (is_running) {
         QtCommon::system->ApplySettings();
     }
-    if (config) {
+    std::string per_game_config_name;
+    const bool has_per_game_file =
+        GetActivePerGameConfigName(current_game_path, last_filename_booted, per_game_config_name);
+    if (has_per_game_file) {
+        QtConfig per_game_config(per_game_config_name, Config::ConfigType::PerGameConfig, false);
+        per_game_config.SaveAllValues();
+    } else if (config) {
         config->SaveAllValues();
     }
     UpdateStatusButtons();
@@ -8496,7 +8585,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : dec_options) {
             auto* act = decode_menu->addAction(opt.second, [this, opt] {
-                Settings::values.accelerate_astc.SetValue(opt.first);
+                ApplyStatusBarSwitchableSetting(Settings::values.accelerate_astc, opt.first,
+                                                m_session_backup, m_session_backup.accelerate_astc,
+                                                current_game_path);
                 UpdateAstcDecodeText();
                 ApplyDynamicSettingChange();
             });
@@ -8521,7 +8612,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : rec_options) {
             auto* act = recomp_menu->addAction(opt.second, [this, opt] {
-                Settings::values.astc_recompression.SetValue(opt.first);
+                ApplyStatusBarSwitchableSetting(Settings::values.astc_recompression, opt.first,
+                                                m_session_backup, m_session_backup.astc_recompression,
+                                                current_game_path);
                 UpdateAstcRecompressText();
                 ApplyDynamicSettingChange();
             });
@@ -8557,7 +8650,8 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& pair : api_options) {
             auto* act = api_menu->addAction(pair.second, [this, pair] {
-                Settings::values.renderer_backend.SetValue(pair.first);
+                ApplyStatusBarSwitchableSettingNoBackup(Settings::values.renderer_backend, pair.first,
+                                                        current_game_path);
                 UpdateAPIText();
                 ApplyDynamicSettingChange();
             });
@@ -8580,7 +8674,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& pair : gpu_acc_options) {
             auto* act = gpu_acc_menu->addAction(pair.second, [this, pair] {
-                Settings::values.gpu_accuracy.SetValue(pair.first);
+                ApplyStatusBarSwitchableSetting(Settings::values.gpu_accuracy, pair.first,
+                                                m_session_backup, m_session_backup.gpu_accuracy,
+                                                current_game_path);
                 UpdateGPUAccuracyButton();
                 ApplyDynamicSettingChange();
             });
@@ -8604,11 +8700,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : cpu_options) {
             auto* act = cpu_acc_menu->addAction(opt.second, [this, opt] {
-                Settings::values.cpu_accuracy.SetGlobal(true);
-                Settings::values.cpu_accuracy.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.cpu_accuracy = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.cpu_accuracy, opt.first,
+                                                m_session_backup, m_session_backup.cpu_accuracy,
+                                                current_game_path);
                 UpdateCpuAccuracyText();
                 ApplyDynamicSettingChange();
             });
@@ -8633,8 +8727,8 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : vsync_options) {
             auto* act = vsync_menu->addAction(opt.second, [this, opt] {
-                Settings::values.vsync_mode.SetGlobal(true);
-                Settings::values.vsync_mode.SetValue(opt.first);
+                ApplyStatusBarSwitchableSettingNoBackup(Settings::values.vsync_mode, opt.first,
+                                                        current_game_path);
                 UpdateVSyncText();
                 ApplyDynamicSettingChange();
             });
@@ -8659,11 +8753,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : nvdec_options) {
             auto* act = nvdec_menu->addAction(opt.second, [this, opt] {
-                Settings::values.nvdec_emulation.SetGlobal(true);
-                Settings::values.nvdec_emulation.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.nvdec_emulation = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.nvdec_emulation, opt.first,
+                                                m_session_backup, m_session_backup.nvdec_emulation,
+                                                current_game_path);
                 UpdateNvdecText();
                 ApplyDynamicSettingChange();
             });
@@ -8688,11 +8780,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& item : dma_options) {
             auto* act = dma_menu->addAction(item.second, [this, item] {
-                Settings::values.dma_accuracy.SetGlobal(true);
-                Settings::values.dma_accuracy.SetValue(item.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.dma_accuracy = {item.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.dma_accuracy, item.first,
+                                                m_session_backup, m_session_backup.dma_accuracy,
+                                                current_game_path);
                 UpdateDmaText();
                 ApplyDynamicSettingChange();
             });
@@ -8718,11 +8808,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& item : fence_options) {
             auto* act = fence_menu->addAction(item.second, [this, item] {
-                Settings::values.gpu_fence_behavior.SetGlobal(true);
-                Settings::values.gpu_fence_behavior.SetValue(item.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.gpu_fence_behavior = {item.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.gpu_fence_behavior, item.first,
+                                                m_session_backup, m_session_backup.gpu_fence_behavior,
+                                                current_game_path);
                 UpdateGpuFenceText();
                 ApplyDynamicSettingChange();
             });
@@ -8748,11 +8836,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& item : pacing_options) {
             auto* act = pacing_menu->addAction(item.second, [this, item] {
-                Settings::values.frame_pacing_mode.SetGlobal(true);
-                Settings::values.frame_pacing_mode.SetValue(item.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.frame_pacing_mode = {item.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.frame_pacing_mode, item.first,
+                                                m_session_backup, m_session_backup.frame_pacing_mode,
+                                                current_game_path);
                 ApplyDynamicSettingChange();
             });
             act->setCheckable(true);
@@ -8797,11 +8883,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : res_options) {
             auto* act = res_menu->addAction(opt.second, [this, opt] {
-                Settings::values.resolution_setup.SetGlobal(true);
-                Settings::values.resolution_setup.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.resolution_setup = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.resolution_setup, opt.first,
+                                                m_session_backup, m_session_backup.resolution_setup,
+                                                current_game_path);
                 UpdateResScaleText();
                 ApplyDynamicSettingChange();
                 if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
@@ -8837,11 +8921,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : aspect_options) {
             auto* act = aspect_menu->addAction(opt.second, [this, opt] {
-                Settings::values.aspect_ratio.SetGlobal(true);
-                Settings::values.aspect_ratio.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.aspect_ratio = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.aspect_ratio, opt.first,
+                                                m_session_backup, m_session_backup.aspect_ratio,
+                                                current_game_path);
                 UpdateAspectText();
                 ApplyDynamicSettingChange();
             });
@@ -8865,11 +8947,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : vram_options) {
             auto* act = vram_menu->addAction(opt.second, [this, opt] {
-                Settings::values.vram_usage_mode.SetGlobal(true);
-                Settings::values.vram_usage_mode.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.vram_usage_mode = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.vram_usage_mode, opt.first,
+                                                m_session_backup, m_session_backup.vram_usage_mode,
+                                                current_game_path);
                 UpdateVramText();
                 ApplyDynamicSettingChange();
                 if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
@@ -8909,11 +8989,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& opt : aniso_options) {
             auto* act = aniso_menu->addAction(opt.second, [this, opt] {
-                Settings::values.max_anisotropy.SetGlobal(true);
-                Settings::values.max_anisotropy.SetValue(opt.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.max_anisotropy = {opt.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.max_anisotropy, opt.first,
+                                                m_session_backup, m_session_backup.max_anisotropy,
+                                                current_game_path);
                 UpdateAnisotropyText();
                 ApplyDynamicSettingChange();
             });
@@ -8937,11 +9015,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& pair : aa_options) {
             auto* act = aa_menu->addAction(pair.second, [this, pair] {
-                Settings::values.anti_aliasing.SetGlobal(true);
-                Settings::values.anti_aliasing.SetValue(pair.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.anti_aliasing = {pair.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.anti_aliasing, pair.first,
+                                                m_session_backup, m_session_backup.anti_aliasing,
+                                                current_game_path);
                 UpdateAAText();
                 ApplyDynamicSettingChange();
             });
@@ -8977,11 +9053,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         };
         for (const auto& pair : filter_options) {
             auto* act = filter_menu->addAction(pair.second, [this, pair] {
-                Settings::values.scaling_filter.SetGlobal(true);
-                Settings::values.scaling_filter.SetValue(pair.first);
-                if (m_session_backup.is_active) {
-                    m_session_backup.scaling_filter = {pair.first, true};
-                }
+                ApplyStatusBarSwitchableSetting(Settings::values.scaling_filter, pair.first,
+                                                m_session_backup, m_session_backup.scaling_filter,
+                                                current_game_path);
                 UpdateFilterText();
                 ApplyDynamicSettingChange();
             });
@@ -8997,7 +9071,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             QStringLiteral("💽 磁盘着色器缓存"),
             QStringLiteral("💽 ディスクシェーダーキャッシュ")
         ), [this] {
-            Settings::values.use_disk_shader_cache.SetValue(!Settings::values.use_disk_shader_cache.GetValue());
+            ApplyStatusBarSwitchableSettingNoBackup(
+                Settings::values.use_disk_shader_cache,
+                !Settings::values.use_disk_shader_cache.GetValue(), current_game_path);
             UpdateDiskCacheText();
             ApplyDynamicSettingChange();
         });
@@ -9047,26 +9123,34 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             QStringLiteral("⚡ 速度制限")
         ));
         speed_menu->addAction(QStringLiteral("100%"), [this] {
-            Settings::values.use_speed_limit.SetValue(true);
-            Settings::values.speed_limit.SetValue(100);
+            ApplyStatusBarSwitchableSettingNoBackup(Settings::values.use_speed_limit, true,
+                                                    current_game_path);
+            ApplyStatusBarSwitchableSettingNoBackup(Settings::values.speed_limit, static_cast<u16>(100),
+                                                    current_game_path);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
         speed_menu->addAction(QStringLiteral("150%"), [this] {
-            Settings::values.use_speed_limit.SetValue(true);
-            Settings::values.speed_limit.SetValue(150);
+            ApplyStatusBarSwitchableSettingNoBackup(Settings::values.use_speed_limit, true,
+                                                    current_game_path);
+            ApplyStatusBarSwitchableSettingNoBackup(Settings::values.speed_limit, static_cast<u16>(150),
+                                                    current_game_path);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
         speed_menu->addAction(QStringLiteral("200%"), [this] {
-            Settings::values.use_speed_limit.SetValue(true);
-            Settings::values.speed_limit.SetValue(200);
+            ApplyStatusBarSwitchableSettingNoBackup(Settings::values.use_speed_limit, true,
+                                                    current_game_path);
+            ApplyStatusBarSwitchableSettingNoBackup(Settings::values.speed_limit, static_cast<u16>(200),
+                                                    current_game_path);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
         speed_menu->addAction(QStringLiteral("300%"), [this] {
-            Settings::values.use_speed_limit.SetValue(true);
-            Settings::values.speed_limit.SetValue(300);
+            ApplyStatusBarSwitchableSettingNoBackup(Settings::values.use_speed_limit, true,
+                                                    current_game_path);
+            ApplyStatusBarSwitchableSettingNoBackup(Settings::values.speed_limit, static_cast<u16>(300),
+                                                    current_game_path);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
@@ -9078,7 +9162,8 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             QStringLiteral("无速度限制"),
             QStringLiteral("速度制限なし")
         ), [this] {
-            Settings::values.use_speed_limit.SetValue(false);
+            ApplyStatusBarSwitchableSettingNoBackup(Settings::values.use_speed_limit, false,
+                                                    current_game_path);
             UpdateSpeedLimitText();
             ApplyDynamicSettingChange();
         });
@@ -9091,7 +9176,10 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             QStringLiteral("✈️ 飞行模式"),
             QStringLiteral("✈️ 機内モード")
         ), [this] {
-            Settings::values.airplane_mode.SetValue(!Settings::values.airplane_mode.GetValue());
+            ApplyStatusBarSwitchableSetting(Settings::values.airplane_mode,
+                                            !Settings::values.airplane_mode.GetValue(),
+                                            m_session_backup, m_session_backup.airplane_mode,
+                                            current_game_path);
             UpdateAirplaneModeButton();
             ApplyDynamicSettingChange();
         });

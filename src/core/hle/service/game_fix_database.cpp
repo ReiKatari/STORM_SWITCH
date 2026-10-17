@@ -25,7 +25,7 @@ namespace Core {
 namespace {
 bool HasAtLeast7GbHostRam() {
     const long pages = sysconf(_SC_PHYS_PAGES);
-    const long page_size = sysconf(_SC_PAGESIZE);
+    const long page_size = sysconf(_SC_PAGE_SIZE);
     if (pages > 0 && page_size > 0) {
         const u64 total_ram_bytes = static_cast<u64>(pages) * static_cast<u64>(page_size);
         return total_ram_bytes >= (7ULL * 1024 * 1024 * 1024);
@@ -542,7 +542,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
             {"Renderer\\fix_bloom_effects", "true"},
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\dyna_state", "1"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\barrier_feedback_loops", "true"},
@@ -849,12 +849,18 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Prince of Persia: The Lost Crown",
         "• Чёрный экран при воспроизведении видеовставок и анимаций амулетов",
         "• Black screen during video cutscenes and amulet animations",
-        "✓ Декодирование видео (NVDEC): На GPU\n✓ Fastmem Exclusives: Отключено",
-        "✓ NVDEC Video Emulation: GPU\n✓ Fastmem Exclusives: Disabled",
+        "✓ Декодирование видео (NVDEC): На ЦП\n✓ Точность DMA: Безопасная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Fastmem Exclusives: Отключено",
+        "✓ NVDEC Video Emulation: CPU\n✓ DMA Accuracy: Safe\n✓ Dynamic State: Basic (EDS1)\n✓ Fastmem Exclusives: Disabled",
         {
-            {"Renderer\\nvdec_emulation", "2"},
+            {"Renderer\\dma_accuracy", "1"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_fastmem_exclusives", "false"}
-        }
+        },
+        {0x0100BB70144F8000ULL}
     },
     {
         0x010063B017DAE000ULL,
@@ -1023,7 +1029,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\enable_compute_pipelines", "true"},
             {"Renderer\\fix_bloom_effects", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_fastmem", "false"},
+            {"Cpu\\cpuopt_fastmem_exclusives", "false"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\airplane_mode", "false"}
@@ -1047,7 +1054,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\enable_compute_pipelines", "true"},
             {"Renderer\\fix_bloom_effects", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_fastmem", "false"},
+            {"Cpu\\cpuopt_fastmem_exclusives", "false"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\airplane_mode", "false"}
@@ -1071,11 +1079,13 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\enable_compute_pipelines", "true"},
             {"Renderer\\fix_bloom_effects", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_fastmem", "false"},
+            {"Cpu\\cpuopt_fastmem_exclusives", "false"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\airplane_mode", "false"}
-        }
+        },
+        {0x0100726014352000ULL}
     },
     {
         0x01003AE017DB0000ULL,
@@ -1320,11 +1330,13 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Network\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
             {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Renderer\\use_reactive_flushing", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Debugging\\disable_web_applet", "true"},
             {"Debugging\\use_auto_stub", "true"}
         },
-        {0x0100A38018D5A800ULL}
+        {0x0100346016EE8000ULL, 0x0100A38018D5A800ULL}
     },
     {
         0x01001F5010DFA000ULL,
@@ -1466,13 +1478,18 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Prince of Persia: The Lost Crown",
         "• Статтеры при активации способностей управления временем\n• Искажение фоновых слоев",
         "• Time powers activation stutter\n• Background parallax distortion",
-        "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Сжатие ASTC: Отключено",
-        "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed",
+        "✓ Декодирование видео (NVDEC): На ЦП\n✓ Точность DMA: Безопасная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ NVDEC Video Emulation: CPU\n✓ DMA Accuracy: Safe\n✓ Dynamic State: Basic (EDS1)\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
+            {"Renderer\\dma_accuracy", "1"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_fastmem_exclusives", "false"},
             {"Renderer\\astc_recompression", "0"}
-        }
+        },
+        {0x010034B01314C000ULL}
     },
     {
         0x01007820195A6000ULL,
@@ -3182,7 +3199,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"}
-        }
+        },
+        {0x010066E012594000ULL}
     },
     {
         0x0100E95004038000ULL,
@@ -4385,6 +4403,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\gpu_accuracy", "0"},
             {"Renderer\\dyna_state", "1"},
             {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\enable_gpu_buffer_readback", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -6694,9 +6713,13 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
                     mem_val = "1";
                 }
 #endif
+                sections[sec][key] = mem_val;
                 sections["Core"][key] = mem_val;
                 sections["Core"][key + "\\use_global"] = "false";
                 sections["Core"][key + "\\default"] = "false";
+                sections["System"][key] = mem_val;
+                sections["System"][key + "\\use_global"] = "false";
+                sections["System"][key + "\\default"] = "false";
             }
             if (key == "airplane_mode") {
                 sections["Network"][key] = val;

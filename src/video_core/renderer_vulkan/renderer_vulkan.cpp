@@ -10,6 +10,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <fmt/ranges.h>
@@ -255,6 +256,22 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
         return;
     }
 
+    const auto frame_start = std::chrono::steady_clock::now();
+    static u32 s_skip_counter = 0;
+    if (Settings::values.enable_frame_skipping.GetValue() &&
+        !Settings::values.frame_gen.GetValue() &&
+        s_last_composite_time.time_since_epoch().count() != 0) {
+        const double delta_ms =
+            std::chrono::duration<double, std::milli>(frame_start - s_last_composite_time).count();
+        if (delta_ms > 40.0 && (++s_skip_counter % 4 == 0)) {
+            scheduler.DispatchWork();
+            gpu.RendererFrameEndNotify();
+            rasterizer.TickFrame();
+            s_last_composite_time = frame_start;
+            return;
+        }
+    }
+
     RenderScreenshot(framebuffers);
     Frame* frame = present_manager.GetRenderFrame();
 
@@ -263,19 +280,22 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
                                render_window.GetFramebufferLayout(), swapchain.GetImageCount(),
                                swapchain.GetImageViewFormat());
 
-    size_t generated_frames = 0;
 #ifdef HAS_LSFG
-    void(frame_gen.WantedGenerations(present_manager.MaxExtraFrames()));
+    if (Settings::values.frame_gen.GetValue()) {
+        void(frame_gen.WantedGenerations(present_manager.MaxExtraFrames()));
 
-    frame_gen.Process(device, frame, swapchain.GetImageFormat(), GuestExtent(framebuffers));
+        frame_gen.Process(device, frame, swapchain.GetImageFormat(), GuestExtent(framebuffers));
 
-    generated_frames = frame_gen.GeneratedFrameCount();
-    for (size_t generation = 0; generation < generated_frames; ++generation) {
-        Frame* generated = present_manager.GetRenderFrame();
-        blit_swapchain.PrepareFrame(device, generated, render_window.GetFramebufferLayout());
-        frame_gen.GenerateInto(device, generated, generation);
-        scheduler.Flush(*generated->render_ready);
-        present_manager.Present(generated);
+        const size_t generated_frames = frame_gen.GeneratedFrameCount();
+        if (generated_frames > 0) {
+            for (size_t generation = 0; generation < generated_frames; ++generation) {
+                Frame* generated = present_manager.GetRenderFrame();
+                blit_swapchain.PrepareFrame(device, generated, render_window.GetFramebufferLayout());
+                frame_gen.GenerateInto(device, generated, generation);
+                scheduler.Flush(*generated->render_ready);
+                present_manager.Present(generated);
+            }
+        }
     }
 #endif
 
@@ -287,15 +307,34 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     gpu.RendererFrameEndNotify();
     rasterizer.TickFrame();
 
+    const auto now = std::chrono::steady_clock::now();
+    if (Settings::values.eco_frame_pacing.GetValue() ||
+        Settings::values.eco_thermal_mode.GetValue()) {
+        const double target_frame_ms =
+            Settings::values.eco_thermal_mode.GetValue() ? 33.333 : 16.667;
+        if (s_last_composite_time.time_since_epoch().count() != 0) {
+            const double elapsed_ms =
+                std::chrono::duration<double, std::milli>(now - s_last_composite_time).count();
+            if (elapsed_ms > 0.0 && elapsed_ms < target_frame_ms) {
+                const auto sleep_duration = std::chrono::duration<double, std::milli>(
+                    target_frame_ms - elapsed_ms);
+                std::this_thread::sleep_for(
+                    std::chrono::duration_cast<std::chrono::microseconds>(sleep_duration));
+            }
+        }
+    }
+
     // Dynamic Performance Scaler — feed frame time
     if (s_performance_scaler) {
-        const auto now = std::chrono::steady_clock::now();
+        const auto end_time = std::chrono::steady_clock::now();
         if (s_last_composite_time.time_since_epoch().count() != 0) {
             const double frame_ms =
-                std::chrono::duration<double, std::milli>(now - s_last_composite_time).count();
+                std::chrono::duration<double, std::milli>(end_time - s_last_composite_time).count();
             s_performance_scaler->ReportFrameTime(frame_ms);
         }
-        s_last_composite_time = now;
+        s_last_composite_time = end_time;
+    } else {
+        s_last_composite_time = std::chrono::steady_clock::now();
     }
 }
 

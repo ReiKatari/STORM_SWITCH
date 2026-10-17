@@ -43,7 +43,15 @@ namespace Tegra {
 
 namespace {
 constexpr u64 GpuClockMultiplier(Settings::GpuClock clock) {
-    return 1;
+    switch (clock) {
+    case Settings::GpuClock::Boost:
+        return 2;
+    case Settings::GpuClock::Overclock:
+        return 4;
+    case Settings::GpuClock::Normal:
+    default:
+        return 1;
+    }
 }
 } // Anonymous namespace
 
@@ -156,7 +164,14 @@ struct GPU::Impl {
 
     [[nodiscard]] u64 GetTicks() const {
         const u64 gpu_tick = system.CoreTiming().GetGPUTicks();
-        return gpu_tick / GpuClockMultiplier(Settings::values.gpu_clock.GetValue());
+        if (Settings::values.drs_resolution_lock.GetValue()) {
+            return gpu_tick / 512;
+        }
+        const auto clock = Settings::values.gpu_clock.GetValue();
+        if (Settings::values.use_fast_gpu_time.GetValue() && clock == Settings::GpuClock::Normal) {
+            return gpu_tick / 256;
+        }
+        return gpu_tick / GpuClockMultiplier(clock);
     }
 
     void RendererFrameEndNotify() {

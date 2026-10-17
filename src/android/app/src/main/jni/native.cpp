@@ -862,7 +862,8 @@ static bool s_has_saved_thermal_state = false;
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_setThermalThrottle(JNIEnv* env, jclass clazz, jboolean throttle) {
     const bool should_throttle = static_cast<bool>(throttle);
-    Settings::values.eco_thermal_mode = should_throttle;
+    Settings::values.eco_thermal_mode.SetValue(should_throttle);
+    Settings::values.eco_frame_pacing.SetValue(should_throttle);
     if (should_throttle) {
         if (!s_has_saved_thermal_state) {
             s_pre_thermal_res = Settings::values.resolution_setup.GetValue();
@@ -871,12 +872,14 @@ void Java_org_yuzu_yuzu_1emu_NativeLibrary_setThermalThrottle(JNIEnv* env, jclas
         }
         if (Settings::values.resolution_setup.GetValue() > Settings::ResolutionSetup::Res3_4X) {
             Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res3_4X);
+            Settings::UpdateRescalingInfo();
         }
         LOG_INFO(Frontend, "Thermal Governor: Throttling ACTIVATED (eco mode ON, scaling 0.75x)");
     } else {
         if (s_has_saved_thermal_state) {
             Settings::values.resolution_setup.SetValue(s_pre_thermal_res);
             Settings::values.speed_limit.SetValue(s_pre_thermal_speed);
+            Settings::UpdateRescalingInfo();
             s_has_saved_thermal_state = false;
         }
         LOG_INFO(Frontend, "Thermal Governor: Throttling DEACTIVATED (normal scaling restored)");

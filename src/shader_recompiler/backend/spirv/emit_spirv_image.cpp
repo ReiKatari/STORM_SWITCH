@@ -590,16 +590,14 @@ Id EmitImageSampleExplicitLod(EmitContext& ctx, IR::Inst* inst, const IR::Value&
     Id result = Emit(&EmitContext::OpImageSparseSampleExplicitLod,
                      &EmitContext::OpImageSampleExplicitLod, ctx, inst, result_type,
                      Texture(ctx, info, index), coords, operands.Mask(), operands.Span());
-#ifdef __ANDROID__
-    if (!is_integer && Settings::values.fix_bloom_effects.GetValue()) {
-        const Id min_hdr = ctx.ConstantComposite(ctx.F32[4], ctx.Const(-65000.0f), ctx.Const(-65000.0f),
-                                                 ctx.Const(-65000.0f), ctx.Const(-65000.0f));
+    if (Settings::values.fix_bloom_effects.GetValue() && !is_integer) {
+        const Id scaled = ctx.OpVectorTimesScalar(ctx.F32[4], result, ctx.Const(0.98f));
+        const Id min_hdr = ctx.ConstantComposite(ctx.F32[4], ctx.Const(0.0f), ctx.Const(0.0f),
+                                                 ctx.Const(0.0f), ctx.Const(0.0f));
         const Id max_hdr = ctx.ConstantComposite(ctx.F32[4], ctx.Const(65000.0f), ctx.Const(65000.0f),
                                                  ctx.Const(65000.0f), ctx.Const(65000.0f));
-        result = ctx.OpFMin(ctx.F32[4], max_hdr, ctx.OpFMax(ctx.F32[4], min_hdr, result));
-        result = ctx.OpVectorTimesScalar(ctx.F32[4], result, ctx.Const(0.98f));
+        result = ctx.OpFMin(ctx.F32[4], max_hdr, ctx.OpFMax(ctx.F32[4], min_hdr, scaled));
     }
-#endif
     return is_integer ? ctx.OpBitcast(ctx.F32[4], result) : result;
 }
 

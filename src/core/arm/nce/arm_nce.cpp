@@ -118,9 +118,15 @@ void ArmNce::SaveGuestContext(GuestContext* guest_ctx, void* raw_context) {
 bool ArmNce::HandleFailedGuestFault(GuestContext* guest_ctx, void* raw_info, void* raw_context) {
     auto& host_ctx = static_cast<ucontext_t*>(raw_context)->uc_mcontext;
     auto* info = static_cast<siginfo_t*>(raw_info);
+    auto& memory = guest_ctx->parent->m_running_thread->GetOwnerProcess()->GetMemory();
+    const u64 fastmem_base =
+        reinterpret_cast<u64>(guest_ctx->system->DeviceMemory().buffer.VirtualBasePointer());
+    const u64 guest_pc = (host_ctx.pc >= fastmem_base) ? (host_ctx.pc - fastmem_base) : host_ctx.pc;
 
     // We can't handle the access, so determine why we crashed.
-    const bool is_prefetch_abort = host_ctx.pc == reinterpret_cast<u64>(info->si_addr);
+    const bool is_prefetch_abort =
+        (host_ctx.pc == reinterpret_cast<u64>(info->si_addr)) ||
+        !memory.IsValidVirtualAddressRange(guest_pc, sizeof(u32));
 
     // For data aborts or when ignoring memory aborts, handle gracefully.
     // For data aborts, skip the faulting instruction (pc += 4).
@@ -130,39 +136,43 @@ bool ArmNce::HandleFailedGuestFault(GuestContext* guest_ctx, void* raw_info, voi
         // Some guest object wrappers guard a pointer with CBZ immediately before loading its
         // type field. A packed handle can incorrectly reach this path as a non-null pointer. If
         // this exact sequence faults, follow the wrapper's own null-object return path.
-        u32 fault_instruction{};
-        u32 null_check_instruction{};
-        std::memcpy(&fault_instruction, reinterpret_cast<const void*>(host_ctx.pc),
-                    sizeof(fault_instruction));
-        std::memcpy(&null_check_instruction, reinterpret_cast<const void*>(host_ctx.pc - 4),
-                    sizeof(null_check_instruction));
-        constexpr u32 LoadTypeFromX0 = 0xB9400808; // ldr w8, [x0, #8]
-        constexpr u32 CbzX0Mask = 0xFF00001F;
-        constexpr u32 CbzX0 = 0xB4000000;
-        const s64 fault_delta = static_cast<s64>(reinterpret_cast<u64>(info->si_addr)) -
-                                static_cast<s64>(host_ctx.regs[0]);
-        if (fault_instruction == LoadTypeFromX0 &&
-            (null_check_instruction & CbzX0Mask) == CbzX0 && fault_delta == 8) {
-            const s64 branch_words = static_cast<s32>(null_check_instruction << 8) >> 13;
-            const u64 null_return_pc = host_ctx.pc - 4 + branch_words * 4;
-            if (null_return_pc > host_ctx.pc && null_return_pc - host_ctx.pc <= 0x100) {
-                LOG_WARNING(Core_ARM,
-                            "Recovered invalid NCE object through null guard: pc={:#x}, "
-                            "x0={:#x}, null_return_pc={:#x}",
-                            host_ctx.pc, host_ctx.regs[0], null_return_pc);
-                host_ctx.regs[0] = 0;
-                host_ctx.pc = null_return_pc;
-                return true;
+        if (guest_pc >= 4 && memory.IsValidVirtualAddressRange(guest_pc - 4, sizeof(u32) * 2)) {
+            u32 fault_instruction{};
+            u32 null_check_instruction{};
+            std::memcpy(&fault_instruction, reinterpret_cast<const void*>(host_ctx.pc),
+                        sizeof(fault_instruction));
+            std::memcpy(&null_check_instruction, reinterpret_cast<const void*>(host_ctx.pc - 4),
+                        sizeof(null_check_instruction));
+            constexpr u32 LoadTypeFromX0 = 0xB9400808; // ldr w8, [x0, #8]
+            constexpr u32 CbzX0Mask = 0xFF00001F;
+            constexpr u32 CbzX0 = 0xB4000000;
+            const s64 fault_delta = static_cast<s64>(reinterpret_cast<u64>(info->si_addr)) -
+                                    static_cast<s64>(host_ctx.regs[0]);
+            if (fault_instruction == LoadTypeFromX0 &&
+                (null_check_instruction & CbzX0Mask) == CbzX0 && fault_delta == 8) {
+                const s64 branch_words = static_cast<s32>(null_check_instruction << 8) >> 13;
+                const u64 null_return_pc = host_ctx.pc - 4 + branch_words * 4;
+                if (null_return_pc > host_ctx.pc && null_return_pc - host_ctx.pc <= 0x100) {
+                    LOG_WARNING(Core_ARM,
+                                "Recovered invalid NCE object through null guard: pc={:#x}, "
+                                "x0={:#x}, null_return_pc={:#x}",
+                                host_ctx.pc, host_ctx.regs[0], null_return_pc);
+                    host_ctx.regs[0] = 0;
+                    host_ctx.pc = null_return_pc;
+                    return true;
+                }
             }
         }
 
         // For data aborts, safely advance PC and recover, preventing game crashes on NCE (7.3.2 behavior)
         host_ctx.pc += 4;
         return true;
-    } else if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
+    } else if (Settings::values.cpuopt_ignore_memory_aborts.GetValue() ||
+               info->si_signo == SIGILL) {
         const u64 lr = host_ctx.regs[30];
-        auto& memory = guest_ctx->parent->m_running_thread->GetOwnerProcess()->GetMemory();
-        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc && memory.IsValidVirtualAddressRange(lr, sizeof(u32))) {
+        const u64 guest_lr = (lr >= fastmem_base) ? (lr - fastmem_base) : lr;
+        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc &&
+            memory.IsValidVirtualAddressRange(guest_lr, sizeof(u32))) {
             host_ctx.regs[0] = 0;
             host_ctx.regs[1] = 0;
             host_ctx.pc = lr;

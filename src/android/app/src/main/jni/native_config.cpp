@@ -20,9 +20,25 @@
 std::unique_ptr<AndroidConfig> global_config;
 std::unique_ptr<AndroidConfig> per_game_config;
 
+static std::string ResolveSettingKey(std::string key) {
+    if (key == "fast_cpu_time") {
+        return "cpu_clock";
+    }
+    if (key == "fast_gpu_time") {
+        return "gpu_clock";
+    }
+    if (key == "player_select_applet") {
+        return "player_select_applet_mode";
+    }
+    if (key == "fe_shader_mode") {
+        return "fix_bloom_effects";
+    }
+    return key;
+}
+
 template <typename T>
 Settings::Setting<T>* getSetting(JNIEnv* env, jstring jkey) {
-    auto key = Common::Android::GetJString(env, jkey);
+    auto key = ResolveSettingKey(Common::Android::GetJString(env, jkey));
     auto basic_setting = Settings::values.linkage.by_key[key];
     if (basic_setting != 0) {
         return static_cast<Settings::Setting<T>*>(basic_setting);
@@ -36,7 +52,7 @@ Settings::Setting<T>* getSetting(JNIEnv* env, jstring jkey) {
 }
 
 static Settings::BasicSetting* getBasicSetting(JNIEnv* env, jstring jkey) {
-    auto key = Common::Android::GetJString(env, jkey);
+    auto key = ResolveSettingKey(Common::Android::GetJString(env, jkey));
     auto basic_setting = Settings::values.linkage.by_key[key];
     if (basic_setting != 0) {
         return basic_setting;

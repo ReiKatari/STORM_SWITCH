@@ -41,8 +41,9 @@ function(run_git_command variable)
 endfunction()
 
 function(trim var)
-    string(REGEX REPLACE "\n" "" new "${${var}}")
-    set(${var} ${new} PARENT_SCOPE)
+    string(REGEX REPLACE "[\r\n]" "" new "${${var}}")
+    string(STRIP "${new}" new)
+    set(${var} "${new}" PARENT_SCOPE)
 endfunction()
 
 set(TAG_FILE ${CMAKE_SOURCE_DIR}/GIT-TAG)

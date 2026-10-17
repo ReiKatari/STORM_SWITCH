@@ -310,7 +310,7 @@ if (ENABLE_LSFG)
         renderer_vulkan/present/lsfg_shaders.cpp
         renderer_vulkan/present/lsfg_shaders.h
     )
-    target_compile_definitions(video_core PUBLIC HAS_LSFG)
+    target_compile_definitions(video_core PUBLIC HAS_LSFG ENABLE_LSFG)
 endif()
 
 if (ENABLE_OPENGL)

@@ -132,23 +132,20 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             try {
                 val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
-                if (powerManager != null) {
-                    if (thermalListener == null) {
-                        val listener = PowerManager.OnThermalStatusChangedListener { status ->
-                            // Proactive Multi-stage Thermal Shield:
-                            // Moderate warning (status >= 2) activates protective eco governor before severe throttling (status >= 3)
-                            val shouldThrottle = status >= PowerManager.THERMAL_STATUS_MODERATE
-                            if (shouldThrottle != isThermalThrottled) {
-                                isThermalThrottled = shouldThrottle
-                                NativeLibrary.setThermalThrottle(shouldThrottle)
-                                Log.info("[ThermalMonitor] Proactive thermal status changed: status=$status, throttle=$shouldThrottle")
-                            }
+                if (powerManager != null && thermalListener == null) {
+                    val listener = PowerManager.OnThermalStatusChangedListener { status ->
+                        // Proactive Multi-stage Thermal Shield:
+                        // Moderate warning (status >= 2) activates protective eco governor before severe throttling (status >= 3)
+                        val shouldThrottle = status >= PowerManager.THERMAL_STATUS_MODERATE
+                        if (shouldThrottle != isThermalThrottled) {
+                            isThermalThrottled = shouldThrottle
+                            NativeLibrary.setThermalThrottle(shouldThrottle)
+                            Log.info("[ThermalMonitor] Proactive thermal status changed: status=$status, throttle=$shouldThrottle")
                         }
-                        powerManager.addThermalStatusListener(listener)
-                        thermalListener = listener
-                        Log.info("[ThermalMonitor] Registered PowerManager OnThermalStatusChangedListener")
                     }
-                    return
+                    powerManager.addThermalStatusListener(listener)
+                    thermalListener = listener
+                    Log.info("[ThermalMonitor] Registered PowerManager OnThermalStatusChangedListener")
                 }
             } catch (e: Exception) {
                 Log.warning("[ThermalMonitor] Failed to register PowerManager thermal listener: ${e.message}")

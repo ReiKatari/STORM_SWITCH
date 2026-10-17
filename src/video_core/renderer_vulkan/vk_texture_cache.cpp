@@ -1785,7 +1785,11 @@ void TextureCacheRuntime::CopyImageMSAA(Image& dst, Image& src,
 }
 
 u64 TextureCacheRuntime::GetDeviceLocalMemory() const {
-    return device.GetDeviceLocalMemory();
+    const u64 mem = device.GetDeviceLocalMemory();
+    if (Settings::values.vram_garbage_collection.GetValue()) {
+        return (mem * 3) / 4;
+    }
+    return mem;
 }
 
 u64 TextureCacheRuntime::GetDeviceMemoryUsage() const {
@@ -2303,6 +2307,15 @@ bool Image::ScaleUp(bool ignore) {
     ASSERT(info.type != ImageType::Linear);
     if (!info.rescaleable) {
         return false;
+    }
+    if (Settings::values.rescale_hack.GetValue() && info.type == ImageType::e2D) {
+        const u32 w = info.size.width;
+        const u32 h = info.size.height;
+        const bool is_pot = (w > 0 && (w & (w - 1)) == 0) && (h > 0 && (h & (h - 1)) == 0);
+        const bool is_standard_aspect = (w * 9 == h * 16) || (w * 10 == h * 16) || (w * 3 == h * 4);
+        if (h < 256 || (is_pot && !is_standard_aspect)) {
+            return false;
+        }
     }
     flags |= ImageFlagBits::Rescaled;
     has_scaled = true;

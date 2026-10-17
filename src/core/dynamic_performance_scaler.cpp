@@ -76,21 +76,34 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
 
     bool changed = false;
 
-    if (new_avg > target_frame_time_ms * kOverbudgetMargin) {
+    const bool thermal_governor = Settings::values.storm_thermal_governor.GetValue();
+    const bool eco_thermal = Settings::values.eco_thermal_mode.GetValue();
+    const bool thermal_active = thermal_governor || eco_thermal;
+
+    const double overbudget_margin = thermal_active ? 1.08 : kOverbudgetMargin;
+    const u32 overbudget_threshold =
+        thermal_active ? (std::max)(1U, kOverbudgetThreshold / 2) : kOverbudgetThreshold;
+    const int effective_min_level =
+        (eco_thermal && min_level_index >= 3) ? 2 : min_level_index;
+
+    if (new_avg > target_frame_time_ms * overbudget_margin) {
         // Frame is too slow
         consecutive_overbudget++;
         consecutive_underbudget = 0;
 
-        if (consecutive_overbudget >= kOverbudgetThreshold &&
-            current_level_index > min_level_index) {
+        if (consecutive_overbudget >= overbudget_threshold &&
+            current_level_index > effective_min_level) {
             // Under load: record level drop without mutating resolution_setup mid-game
             // Mutating resolution_setup dynamically breaks compiled Maxwell shaders and allocated VkImage dimensions
-            current_level_index--;
+            const int step = (eco_thermal && new_avg > target_frame_time_ms * 1.35) ? 2 : 1;
+            current_level_index = (std::max)(effective_min_level, current_level_index - step);
             consecutive_overbudget = 0;
+            changed = true;
 
             LOG_DEBUG(Core,
-                     "DynamicPerformanceScaler: Under load (avg {:.2f} ms > budget {:.2f} ms)",
-                     new_avg, target_frame_time_ms);
+                      "DynamicPerformanceScaler: Under load (avg {:.2f} ms > budget {:.2f} ms), "
+                      "stepped down to level index {}",
+                      new_avg, target_frame_time_ms, current_level_index);
         }
     } else if (new_avg < target_frame_time_ms * kUnderbudgetMargin) {
         // Frame is fast — room to increase quality
@@ -101,10 +114,12 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
             current_level_index < max_level_index) {
             current_level_index++;
             consecutive_underbudget = 0;
+            changed = true;
 
             LOG_DEBUG(Core,
-                     "DynamicPerformanceScaler: Frame stable (avg {:.2f} ms < {:.2f} ms)",
-                     new_avg, target_frame_time_ms * kUnderbudgetMargin);
+                      "DynamicPerformanceScaler: Frame stable (avg {:.2f} ms < {:.2f} ms), "
+                      "stepped up to level index {}",
+                      new_avg, target_frame_time_ms * kUnderbudgetMargin, current_level_index);
         }
     } else {
         // Within budget — reset both counters

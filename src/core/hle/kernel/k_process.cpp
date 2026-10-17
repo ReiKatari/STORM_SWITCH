@@ -1293,10 +1293,6 @@ void KProcess::LoadModule(KernelCore& kernel, CodeSet code_set, KProcessAddress 
     if (this->IsApplication() && Settings::IsNceEnabled() && patch.size != 0) {
         auto& buffer = kernel.System().DeviceMemory().buffer;
         const auto& code = code_set.CodeSegment();
-        if (auto* base_ptr = reinterpret_cast<char*>(buffer.VirtualBasePointer())) {
-            char* mod_start = base_ptr + GetInteger(base_addr);
-            __builtin___clear_cache(mod_start, mod_start + code_set.memory.size());
-        }
         buffer.Protect(GetInteger(base_addr + code.addr), code.size,
                        Common::MemoryPermission::Read | Common::MemoryPermission::Execute);
         buffer.Protect(GetInteger(base_addr + patch.addr), patch.size,
@@ -1306,6 +1302,12 @@ void KProcess::LoadModule(KernelCore& kernel, CodeSet code_set, KProcessAddress 
             buffer.Protect(GetInteger(base_addr + post_patch.addr), post_patch.size,
                            Common::MemoryPermission::Read | Common::MemoryPermission::Execute);
         }
+#ifdef __aarch64__
+        if (auto* base_ptr = reinterpret_cast<char*>(buffer.VirtualBasePointer())) {
+            char* mod_start = base_ptr + GetInteger(base_addr);
+            __builtin___clear_cache(mod_start, mod_start + code_set.memory.size());
+        }
+#endif
         ReprotectSegment(code_set.PatchSegment(), Svc::MemoryPermission::None);
         if (post_patch.size != 0) {
             ReprotectSegment(code_set.PostPatchSegment(), Svc::MemoryPermission::None);

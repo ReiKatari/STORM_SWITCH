@@ -537,11 +537,14 @@ object GameFixDatabase {
             "EA SPORTS FC 25",
             "• Зависание при старте игры / черный экран на заставке EA\n• Нехватка памяти Frostbite Engine (вылет при загрузке стадиона)\n• Зависание на сетевой аутентификации",
             "• Boot hang / black screen on EA splash screen\n• Frostbite Engine out-of-memory crash\n• Network handshake freeze",
-            "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Быстрая память: Включено",
-            "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Fastmem: Enabled",
+            "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Реактивная очистка: Включено\n✓ Веб-апплет: Отключено\n✓ Быстрая память: Включено",
+            "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Reactive Flushing: Enabled\n✓ Disable Web Applet: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
+                "Debugging\\disable_web_applet" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "System\\airplane_mode" to "true",
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -552,11 +555,14 @@ object GameFixDatabase {
             "EA SPORTS FC 26",
             "• Зависание при старте игры / черный экран на заставке EA\n• Нехватка памяти Frostbite Engine (вылет при загрузке стадиона)\n• Зависание на сетевой аутентификации",
             "• Boot hang / black screen on EA splash screen\n• Frostbite Engine out-of-memory crash\n• Network handshake freeze",
-            "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Быстрая память: Включено",
-            "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Fastmem: Enabled",
+            "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Реактивная очистка: Включено\n✓ Веб-апплет: Отключено\n✓ Быстрая память: Включено",
+            "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Reactive Flushing: Enabled\n✓ Disable Web Applet: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
+                "Debugging\\disable_web_applet" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "System\\airplane_mode" to "true",
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -662,13 +668,16 @@ object GameFixDatabase {
             "Hogwarts Legacy",
             "• Некорректное изображение, сбои освещения и геометрии\n• Вылет при переходе между локациями Хогвартса из-за нехватки памяти",
             "• Corrupted rendering, lighting and geometry glitches\n• Out-of-memory crash during Hogwarts area transitions",
-            "✓ Память: 8GB DRAM (критично для стабильности)\n✓ Реактивная очистка: Отключено (исправление освещения замка)\n✓ Обратная связь барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
-            "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Reactive Flushing: Disabled (Fixes castle lighting)\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
+            "✓ Память: 8GB DRAM (критично для стабильности)\n✓ Исправление свечения (Bloom): Включено\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: EDS1\n✓ Реактивная очистка: Отключено (исправление освещения замка)\n✓ Обратная связь барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
+            "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Fix Bloom Effects: Enabled\n✓ GPU Accuracy: High\n✓ Dynamic State: EDS1\n✓ Reactive Flushing: Disabled (Fixes castle lighting)\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
+                "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\dyna_state" to "1",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -726,12 +735,18 @@ object GameFixDatabase {
             "Hogwarts Legacy",
             "• Вылет из-за нехватки памяти при загрузке замка Хогвартс\n• Высокое потребление ОЗУ (>8.5 ГБ) на мобильных чипах",
             "• Out of memory (OOM) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
-            "✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
-            "✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
+            "✓ Память: 8GB DRAM (критично для стабильности)\n✓ Исправление свечения (Bloom): Включено\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: EDS1\n✓ Реактивная очистка: Отключено\n✓ Обратная связь барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
+            "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Fix Bloom Effects: Enabled\n✓ GPU Accuracy: High\n✓ Dynamic State: EDS1\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2",
+                "Renderer\\fix_bloom_effects" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\dyna_state" to "1",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\fsr_sharpening_slider" to "80",
-                "System\\memory_layout_mode" to "2"
+                "Renderer\\fsr_sharpening_slider" to "80"
             )
         ),
         GameFixProfile(
@@ -739,12 +754,18 @@ object GameFixDatabase {
             "Hogwarts Legacy",
             "• Вылет из-за нехватки памяти при загрузке замка Хогвартс\n• Высокое потребление ОЗУ (>8.5 ГБ) на мобильных чипах",
             "• Out of memory (OOM) crash when loading Hogwarts Castle\n• High RAM consumption (>8.5 GB) on mobile SoCs",
-            "✓ Сжатие текстур ASTC: Отключено\n✓ Режим памяти: 8GB DRAM",
-            "✓ ASTC Recompression: BC1 (lowers RAM to 4.8 GB)\n✓ Memory Layout: 8GB DRAM",
+            "✓ Память: 8GB DRAM (критично для стабильности)\n✓ Исправление свечения (Bloom): Включено\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: EDS1\n✓ Реактивная очистка: Отключено\n✓ Обратная связь барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
+            "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Fix Bloom Effects: Enabled\n✓ GPU Accuracy: High\n✓ Dynamic State: EDS1\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2",
+                "Renderer\\fix_bloom_effects" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\dyna_state" to "1",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\fsr_sharpening_slider" to "80",
-                "System\\memory_layout_mode" to "2"
+                "Renderer\\fsr_sharpening_slider" to "80"
             )
         ),
         GameFixProfile(
@@ -795,25 +816,22 @@ object GameFixDatabase {
         ),
         GameFixProfile(
             0x0100726014352000L,
-            "Diablo II: Resurrected",
-            "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
-            "• Character load / continue game crash (OOM)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Тайминги ГПУ: Включено (максимальный и стабильный FPS)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
-            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Maximum stable FPS)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
+            "Disco Elysium: The Final Cut",
+            "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
+            "• Out of memory (OOM) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
+            "✓ Память: 8GB DRAM (предотвращение вылетов Unity)\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Отключено (стабильность Unity GC)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено",
+            "✓ Memory Layout: 8GB DRAM (Prevents Unity OOM crashes)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Disabled (Unity GC stability)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: Disabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled",
             mapOf(
                 "Core\\memory_layout_mode" to "2",
                 "System\\memory_layout_mode" to "2",
-                "System\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\gpu_accuracy" to "0",
-                "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "false",
+                "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\dyna_state" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_reactive_flushing" to "false",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "false"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "true"
             )
         ),
         GameFixProfile(
@@ -1300,16 +1318,19 @@ object GameFixDatabase {
             "Disco Elysium: The Final Cut",
             "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
             "• Out of memory (OOM) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-            "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
-            "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
+            "✓ Память: 8GB DRAM (предотвращение вылетов Unity)\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Отключено (стабильность Unity GC)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено",
+            "✓ Memory Layout: 8GB DRAM (Prevents Unity OOM crashes)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Disabled (Unity GC stability)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: Disabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "false",
+                "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\dyna_state" to "0",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_reactive_flushing" to "true"
             )
         ),
         GameFixProfile(
@@ -1317,16 +1338,19 @@ object GameFixDatabase {
             "Disco Elysium: The Final Cut (WW)",
             "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
             "• Out of memory (OOM) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-            "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
-            "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
+            "✓ Память: 8GB DRAM (предотвращение вылетов Unity)\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Отключено (стабильность Unity GC)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено",
+            "✓ Memory Layout: 8GB DRAM (Prevents Unity OOM crashes)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Disabled (Unity GC stability)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: Disabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "false",
+                "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\dyna_state" to "0",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_reactive_flushing" to "true"
             )
         ),
         GameFixProfile(
@@ -1334,16 +1358,19 @@ object GameFixDatabase {
             "Disco Elysium: The Final Cut (Asia)",
             "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
             "• Out of memory (OOM) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-            "✓ Память: 6GB DRAM (предотвращение вылетов Unity)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Реактивная очистка: Включено",
-            "✓ Memory Layout: 6GB DRAM (Prevents Unity OOM crashes)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: EDS1\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled",
+            "✓ Память: 8GB DRAM (предотвращение вылетов Unity)\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Отключено (стабильность Unity GC)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено",
+            "✓ Memory Layout: 8GB DRAM (Prevents Unity OOM crashes)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Disabled (Unity GC stability)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: Disabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "false",
+                "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\dyna_state" to "0",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_reactive_flushing" to "true"
             )
         ),
         GameFixProfile(
@@ -1615,12 +1642,17 @@ object GameFixDatabase {
             "EA SPORTS FC 24",
             "• Зависание на заставке EA Connect\n• Утечки памяти в режиме карьеры",
             "• EA Connect splash freeze\n• Career mode memory leaks",
-            "✓ Режим полета (В самолете): Включено (пропуск серверов EA)\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
-            "✓ Airplane Mode: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
+            "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета (В самолете): Включено (пропуск серверов EA)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Реактивная очистка: Включено\n✓ Веб-апплет: Отключено\n✓ Быстрая память: Включено",
+            "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Reactive Flushing: Enabled\n✓ Disable Web Applet: Enabled\n✓ Fastmem: Enabled",
             mapOf(
+                "Core\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "2",
+                "Debugging\\disable_web_applet" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "System\\airplane_mode" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "2"
+                "Renderer\\use_asynchronous_shaders" to "false",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -6197,15 +6229,15 @@ object GameFixDatabase {
         return profiles.firstOrNull { profile ->
             val nameLower = profile.gameName.lowercase(java.util.Locale.ROOT)
             val keywords = when {
-                nameLower.contains("disco elysium") -> listOf("disco elysium", "elysium", "0100c88011246000", "01008c300f7f0000", "0100e26014466000")
+                nameLower.contains("disco elysium") -> listOf("disco elysium", "elysium", "0100c88011246000", "01008c300f7f0000", "0100e26014466000", "0100726014352000")
                 nameLower.contains("xenoblade") -> listOf("xenoblade", "0100ff500e34a000", "0100e95004038000", "010074f013262000")
                 nameLower.contains("witcher") -> listOf("witcher", "wild hunt", "0100e67012924000", "01003d100e9c6000")
                 nameLower.contains("arkham city") -> listOf("arkham city", "01003ae017db0000")
                 nameLower.contains("breath of the wild") -> listOf("breath of the wild", "botw", "01007ef00011e000")
                 nameLower.contains("tears of the kingdom") -> listOf("tears of the kingdom", "totk", "0100f2c0115b6000")
                 nameLower.contains("paper mario") -> listOf("paper mario", "thousand-year", "01004d701742a000")
-                nameLower.contains("hogwarts legacy") -> listOf("hogwarts", "0100b5b0112f8000", "0100d1801648e000")
-                nameLower.contains("diablo ii") -> listOf("diablo ii", "diablo 2", "resurrected", "0100916014d8c000")
+                nameLower.contains("hogwarts legacy") -> listOf("hogwarts", "0100bcb0176d0000", "0100b5b0112f8000", "0100d1801648e000")
+                nameLower.contains("diablo ii") -> listOf("diablo ii", "diablo 2", "resurrected", "01002a801458a000", "0100916014d8c000")
                 nameLower.contains("mechanicus") -> listOf("mechanicus", "warhammer", "0100c6000eea8000")
                 nameLower.contains("skywalker saga") -> listOf("skywalker saga", "lego star wars", "0100923008c54000")
                 nameLower.contains("bayonetta 3") -> listOf("bayonetta 3", "01004a4010fea000")
@@ -6669,32 +6701,32 @@ object GameFixDatabase {
 
                 val section = sections.getOrPut(sectionName) { mutableMapOf() }
 
-                // Critical Android safety: never preserve settings that cause driver deadlocks or NCE memory faults
-                val dangerousAndroidKeys = setOf(
-                    "enable_compute_pipelines", "use_fast_gpu_time", "barrier_feedback_loops", "early_release_fences"
-                )
-                if (keyName in dangerousAndroidKeys) {
-                    section[keyName] = "false"
-                    section["$keyName\\use_global"] = "false"
-                    section["$keyName\\default"] = "false"
-                    continue
-                }
-                if (keyName == "memory_layout_mode") {
-                    section[keyName] = "0"
-                    section["$keyName\\use_global"] = "false"
-                    section["$keyName\\default"] = "false"
-                    continue
-                }
-                if (keyName == "airplane_mode") {
-                    section[keyName] = "false"
-                    section["$keyName\\use_global"] = "false"
-                    section["$keyName\\default"] = "false"
-                    continue
-                }
-
                 // If this setting is explicitly specified by the GameFix profile, the profile MUST take precedence!
                 val isExplicitFixSetting = fix.settingsMap.containsKey(fullKey)
                 if (!isExplicitFixSetting) {
+                    // Critical Android safety: never preserve unvalidated user overrides that cause driver deadlocks or NCE memory faults
+                    val dangerousAndroidKeys = setOf(
+                        "enable_compute_pipelines", "use_fast_gpu_time", "barrier_feedback_loops", "early_release_fences"
+                    )
+                    if (keyName in dangerousAndroidKeys) {
+                        section[keyName] = value
+                        section["$keyName\\use_global"] = "false"
+                        section["$keyName\\default"] = "false"
+                        continue
+                    }
+                    if (keyName == "memory_layout_mode") {
+                        section[keyName] = "0"
+                        section["$keyName\\use_global"] = "false"
+                        section["$keyName\\default"] = "false"
+                        continue
+                    }
+                    if (keyName == "airplane_mode") {
+                        section[keyName] = "false"
+                        section["$keyName\\use_global"] = "false"
+                        section["$keyName\\default"] = "false"
+                        continue
+                    }
+
                     val isExplicitUserOverride = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true ||
                             (isFileCustom && section.containsKey(keyName) && keyName in protectedUserKeys)
                     if (isExplicitUserOverride && section.containsKey(keyName)) {

@@ -31,7 +31,7 @@ namespace Common {
     u128 r{};
     r[0] = _umul128(a, b, &r[1]);
     if (r[1] >= d) {
-        return (std::numeric_limits<u64>::max)();
+        r[1] %= d;
     }
     u64 remainder;
 #if _MSC_VER < 1923
@@ -39,6 +39,10 @@ namespace Common {
 #else
     return _udiv128(r[1], r[0], d, &remainder);
 #endif
+#elif defined(__SIZEOF_INT128__)
+    const unsigned __int128 product =
+        static_cast<unsigned __int128>(a) * static_cast<unsigned __int128>(b);
+    return static_cast<u64>(product / d);
 #else
     const u64 diva = a / d;
     const u64 moda = a % d;
@@ -115,6 +119,9 @@ namespace Common {
 // This function divides a u128 by a u32 value and produces two u64 values:
 // the result of division and the remainder
 [[nodiscard]] static inline std::pair<u64, u64> Divide128On32(u128 dividend, u32 divisor) {
+    if (divisor == 0) {
+        return {0, 0};
+    }
     u64 remainder = dividend[0] % divisor;
     u64 accum = dividend[0] / divisor;
     if (dividend[1] == 0)

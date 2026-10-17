@@ -7,6 +7,7 @@
 #include <chrono>
 #include <vector>
 #include "common/logging.h"
+#include "common/settings.h"
 #include "video_core/host1x/syncpoint_manager.h"
 
 namespace Tegra {
@@ -105,14 +106,42 @@ void SyncpointManager::Wait(std::atomic<u32>& syncpoint, std::condition_variable
         return;
     }
 
+    const auto behavior = Settings::values.gpu_fence_behavior.GetValue();
+    if (behavior == Settings::GpuFenceBehavior::Immediate) {
+        return;
+    }
+
+    std::chrono::milliseconds wait_interval{5000};
+    u32 max_timeouts = 6;
+    switch (behavior) {
+    case Settings::GpuFenceBehavior::Default:
+        wait_interval = std::chrono::milliseconds{1000};
+        max_timeouts = 3;
+        break;
+    case Settings::GpuFenceBehavior::Balanced:
+        wait_interval = std::chrono::milliseconds{2000};
+        max_timeouts = 5;
+        break;
+    case Settings::GpuFenceBehavior::Accurate:
+        wait_interval = std::chrono::milliseconds{5000};
+        max_timeouts = 6;
+        break;
+    case Settings::GpuFenceBehavior::Strict:
+        wait_interval = std::chrono::milliseconds{10000};
+        max_timeouts = 12;
+        break;
+    default:
+        break;
+    }
+
     std::unique_lock lk(guard);
     u32 timeout_count = 0;
     while (!pred()) {
-        if (!wait_cv.wait_for(lk, std::chrono::seconds(5), pred)) {
+        if (!wait_cv.wait_for(lk, wait_interval, pred)) {
             LOG_WARNING(HW_GPU, "Syncpoint wait timed out (attempt {})! expected={}, current={}",
                         ++timeout_count, expected_value, syncpoint.load(std::memory_order_relaxed));
-            if (timeout_count >= 6) {
-                LOG_CRITICAL(HW_GPU, "Syncpoint wait deadlocked after 30s! expected={}, current={}",
+            if (timeout_count >= max_timeouts) {
+                LOG_CRITICAL(HW_GPU, "Syncpoint wait deadlocked! expected={}, current={}",
                              expected_value, syncpoint.load(std::memory_order_relaxed));
                 break;
             }

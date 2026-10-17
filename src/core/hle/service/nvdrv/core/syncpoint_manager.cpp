@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: 2022 Skyline Team and Contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <chrono>
+#include <thread>
 #include "common/assert.h"
 #include "common/logging.h"
 #include "core/hle/service/nvdrv/core/syncpoint_manager.h"
@@ -143,14 +145,38 @@ void SyncpointManager::FlushSyncpoint(u32 id) {
     }
     const u32 max_val = syncpoint.counter_max.load();
     u32 cur_host_val = host1x.GetSyncpointManager().GetHostSyncpointValue(id);
+    u32 spin_count = 0;
     while (static_cast<s32>(max_val - cur_host_val) > 0) {
         host1x.GetSyncpointManager().IncrementHost(id);
-        cur_host_val = host1x.GetSyncpointManager().GetHostSyncpointValue(id);
+        const u32 next_host_val = host1x.GetSyncpointManager().GetHostSyncpointValue(id);
+        if (next_host_val == cur_host_val) {
+            if (++spin_count <= 32) {
+                std::this_thread::yield();
+            } else {
+                std::this_thread::sleep_for(std::chrono::microseconds(50));
+                if (spin_count > 64) {
+                    break;
+                }
+            }
+        }
+        cur_host_val = next_host_val;
     }
     u32 cur_guest_val = host1x.GetSyncpointManager().GetGuestSyncpointValue(id);
+    spin_count = 0;
     while (static_cast<s32>(max_val - cur_guest_val) > 0) {
         host1x.GetSyncpointManager().IncrementGuest(id);
-        cur_guest_val = host1x.GetSyncpointManager().GetGuestSyncpointValue(id);
+        const u32 next_guest_val = host1x.GetSyncpointManager().GetGuestSyncpointValue(id);
+        if (next_guest_val == cur_guest_val) {
+            if (++spin_count <= 32) {
+                std::this_thread::yield();
+            } else {
+                std::this_thread::sleep_for(std::chrono::microseconds(50));
+                if (spin_count > 64) {
+                    break;
+                }
+            }
+        }
+        cur_guest_val = next_guest_val;
     }
     syncpoint.counter_min.store(max_val);
 }
