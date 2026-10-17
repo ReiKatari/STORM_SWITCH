@@ -6870,6 +6870,11 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
         };
 
         auto apply_setting = [](auto& setting, auto val) {
+            if constexpr (requires { setting.UsingGlobal(); }) {
+                if (!setting.UsingGlobal()) {
+                    return;
+                }
+            }
             if constexpr (requires { setting.SetGlobal(false); }) {
                 setting.SetGlobal(false);
             }

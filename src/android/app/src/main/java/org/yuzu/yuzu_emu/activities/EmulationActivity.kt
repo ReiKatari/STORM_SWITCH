@@ -134,13 +134,11 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                 val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
                 if (powerManager != null && thermalListener == null) {
                     val listener = PowerManager.OnThermalStatusChangedListener { status ->
-                        // Proactive Multi-stage Thermal Shield:
-                        // Moderate warning (status >= 2) activates protective eco governor before severe throttling (status >= 3)
-                        val shouldThrottle = status >= PowerManager.THERMAL_STATUS_MODERATE
+                        val shouldThrottle = status >= PowerManager.THERMAL_STATUS_SEVERE
                         if (shouldThrottle != isThermalThrottled) {
                             isThermalThrottled = shouldThrottle
                             NativeLibrary.setThermalThrottle(shouldThrottle)
-                            Log.info("[ThermalMonitor] Proactive thermal status changed: status=$status, throttle=$shouldThrottle")
+                            Log.info("[ThermalMonitor] Thermal status changed: status=$status, throttle=$shouldThrottle")
                         }
                     }
                     powerManager.addThermalStatusListener(listener)
@@ -160,35 +158,25 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                     val rawBatteryTemp = batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
                     val batteryTempC = rawBatteryTemp / 10
 
-                    val thermalZones = File("/sys/class/thermal/").listFiles { f -> f.name.startsWith("thermal_zone") } ?: emptyArray()
-                    var maxSocTemp = 0
-                    for (zone in thermalZones) {
-                        val tempFile = File(zone, "temp")
-                        if (tempFile.canRead()) {
-                            val temp = tempFile.readText().trim().toIntOrNull() ?: 0
-                            val tempC = if (temp > 1000) temp / 1000 else temp
-                            if (tempC > maxSocTemp) maxSocTemp = tempC
-                        }
-                    }
-
-                    // Proactive Multi-stage Thermal Shield:
-                    // Trigger proactive mitigation at 42°C (battery) / 78°C (SoC) before severe OS emergency drops
-                    // Deactivate when chassis cools to 39°C / 72°C
+                    // Trigger eco thermal mitigation at 45°C battery temperature, deactivate at 42°C.
+                    // Do not read raw /sys/class/thermal/thermal_zone*/temp because Android OEMs use
+                    // heterogeneous units (milli-°C, deci-°C, virtual steps 100..900) where values <= 1000
+                    // falsely evaluate as > 78°C immediately on boot!
                     val shouldThrottle = if (isThermalThrottled) {
-                        (batteryTempC >= 39 && batteryTempC > 0) || maxSocTemp >= 72
+                        batteryTempC >= 42 && batteryTempC > 0
                     } else {
-                        (batteryTempC >= 42 && batteryTempC > 0) || maxSocTemp >= 78
+                        batteryTempC >= 45 && batteryTempC > 0
                     }
 
                     if (shouldThrottle != isThermalThrottled) {
                         isThermalThrottled = shouldThrottle
                         NativeLibrary.setThermalThrottle(shouldThrottle)
-                        Log.info("[ThermalMonitor] Proactive thermal throttle ${if (shouldThrottle) "ACTIVATED" else "DEACTIVATED"} (battery=${batteryTempC}°C, maxSoc=${maxSocTemp}°C)")
+                        Log.info("[ThermalMonitor] Battery thermal throttle ${if (shouldThrottle) "ACTIVATED" else "DEACTIVATED"} (battery=${batteryTempC}°C)")
                     }
                 } catch (_: Exception) {
                     // Thermal reading not available on all devices
                 }
-                delay(4000)
+                delay(5000)
             }
         }
     }

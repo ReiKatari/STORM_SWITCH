@@ -6655,6 +6655,56 @@ object GameFixDatabase {
         }
     }
 
+    /**
+     * Called right before opening Per-Game Settings or Per-Game Driver Manager in UI.
+     * If the existing per-game .ini file is a temporary Auto-Fix file (not user_custom = true),
+     * strip the temporary Auto-Fix settings (preserving only [GpuDriver] if present) so that
+     * C++ NativeConfig does not load all 26 temporary Auto-Fix overrides as use_global = false
+     * and bake them permanently into the user's custom settings!
+     */
+    fun prepareForUserCustomEdit(game: Game) {
+        try {
+            val file = SettingsFile.getCustomSettingsFile(game)
+            if (!file.exists() || !file.isFile) return
+            if (isUserCustomConfig(file)) return
+
+            val gpuDriverLines = mutableListOf<String>()
+            var inGpuDriver = false
+            var driverUseGlobal = true
+            for (line in file.readLines()) {
+                val trimmed = line.trim()
+                if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                    inGpuDriver = trimmed.equals("[GpuDriver]", ignoreCase = true)
+                    if (inGpuDriver) {
+                        gpuDriverLines.add(line)
+                    }
+                    continue
+                }
+                if (inGpuDriver) {
+                    gpuDriverLines.add(line)
+                    if (trimmed.startsWith("driver_path\\use_global", ignoreCase = true) &&
+                        (trimmed.endsWith("=false", ignoreCase = true) || trimmed.endsWith("= false", ignoreCase = true))) {
+                        driverUseGlobal = false
+                    }
+                }
+            }
+
+            if (!driverUseGlobal && gpuDriverLines.isNotEmpty()) {
+                val sb = StringBuilder()
+                sb.append("[StormSwitch]\nuser_custom = true\nstorm_fix_applied = false\n\n")
+                for (dLine in gpuDriverLines) {
+                    sb.append(dLine).append("\n")
+                }
+                file.writeText(sb.toString())
+            } else {
+                file.delete()
+            }
+            Log.info("[GameFixDatabase] Cleared temporary Auto-Fix file before opening per-game editor for ${game.title}")
+        } catch (e: Exception) {
+            Log.error("[GameFixDatabase] Error in prepareForUserCustomEdit: ${e.message}")
+        }
+    }
+
     private fun mergeFixIntoExistingConfig(file: java.io.File, fix: GameFixProfile) {
         try {
             val lines = file.readLines()
@@ -6677,6 +6727,51 @@ object GameFixDatabase {
             }
 
             val isFileCustom = isUserCustomConfig(file)
+
+            // If this is a user's custom per-game file (user_custom = true), DO NOT overwrite
+            // any setting where the user explicitly set use_global = false, and DO NOT inject
+            // all 26 default keys as use_global = false into their custom file on disk!
+            if (isFileCustom) {
+                for ((fullKey, value) in fix.settingsMap) {
+                    if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
+                        fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
+                        fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) {
+                        continue
+                    }
+                    val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
+                    val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
+                    val section = sections.getOrPut(sectionName) { mutableMapOf() }
+                    val userExplicitlyConfigured = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true
+                    if (userExplicitlyConfigured && section.containsKey(keyName)) {
+                        Log.info("[GameFixDatabase] Preserving user custom per-game setting $fullKey = ${section[keyName]}")
+                        continue
+                    }
+                    section[keyName] = value
+                    section["$keyName\\use_global"] = "false"
+                    section["$keyName\\default"] = "false"
+                }
+
+                val legacyEden = sections.remove("StormEden")
+                val stormSwitchSec = sections.getOrPut("StormSwitch") { mutableMapOf() }
+                if (legacyEden != null) {
+                    for ((k, v) in legacyEden) {
+                        stormSwitchSec.putIfAbsent(k, v)
+                    }
+                }
+                stormSwitchSec["storm_fix_applied"] = "false"
+                stormSwitchSec["user_custom"] = "true"
+
+                val sb = StringBuilder()
+                for ((sectionName, map) in sections) {
+                    sb.append("[$sectionName]\n")
+                    for ((k, v) in map) {
+                        sb.append("$k = $v\n")
+                    }
+                    sb.append("\n")
+                }
+                file.writeText(sb.toString())
+                return
+            }
 
             // Keys that must NEVER overwrite user manual settings unless explicitly specified in the profile
             val protectedUserKeys = setOf(
@@ -6701,40 +6796,13 @@ object GameFixDatabase {
 
                 val section = sections.getOrPut(sectionName) { mutableMapOf() }
 
-                // If this setting is explicitly specified by the GameFix profile, the profile MUST take precedence!
-                val isExplicitFixSetting = fix.settingsMap.containsKey(fullKey)
-                if (!isExplicitFixSetting) {
-                    // Critical Android safety: never preserve unvalidated user overrides that cause driver deadlocks or NCE memory faults
-                    val dangerousAndroidKeys = setOf(
-                        "enable_compute_pipelines", "use_fast_gpu_time", "barrier_feedback_loops", "early_release_fences"
-                    )
-                    if (keyName in dangerousAndroidKeys) {
-                        section[keyName] = value
-                        section["$keyName\\use_global"] = "false"
-                        section["$keyName\\default"] = "false"
+                val isExplicitUserOverride = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true &&
+                        section.containsKey(keyName) && keyName in protectedUserKeys
+                if (isExplicitUserOverride) {
+                    val existingVal = section[keyName]?.trim()
+                    if (existingVal != null && !existingVal.equals(value.trim(), ignoreCase = true)) {
+                        Log.info("[GameFixDatabase] Preserving user manual override for $fullKey = $existingVal (auto-fix $value skipped)")
                         continue
-                    }
-                    if (keyName == "memory_layout_mode") {
-                        section[keyName] = "0"
-                        section["$keyName\\use_global"] = "false"
-                        section["$keyName\\default"] = "false"
-                        continue
-                    }
-                    if (keyName == "airplane_mode") {
-                        section[keyName] = "false"
-                        section["$keyName\\use_global"] = "false"
-                        section["$keyName\\default"] = "false"
-                        continue
-                    }
-
-                    val isExplicitUserOverride = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true ||
-                            (isFileCustom && section.containsKey(keyName) && keyName in protectedUserKeys)
-                    if (isExplicitUserOverride && section.containsKey(keyName)) {
-                        val existingVal = section[keyName]?.trim()
-                        if (existingVal != null && (!existingVal.equals(value.trim(), ignoreCase = true) || isFileCustom)) {
-                            Log.info("[GameFixDatabase] Preserving user manual override for $fullKey = $existingVal (auto-fix $value skipped)")
-                            continue
-                        }
                     }
                 }
 
@@ -6751,7 +6819,7 @@ object GameFixDatabase {
                 }
             }
             stormSwitchSec["storm_fix_applied"] = "true"
-            stormSwitchSec["user_custom"] = if (isFileCustom) "true" else "false"
+            stormSwitchSec["user_custom"] = "false"
 
             val sb = StringBuilder()
             for ((sectionName, map) in sections) {

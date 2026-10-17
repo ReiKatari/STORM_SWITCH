@@ -84,10 +84,15 @@ class GameFixDialogFragment : DialogFragment() {
 
         binding.cardLaunchAutoFix.setOnClickListener {
             val ctx = context
+            val hadCustom = GameFixDatabase.isUserCustomConfig(currentGame)
+            val mode = if (hadCustom) GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM else GameFixDatabase.LaunchMode.AUTO_FIX
             try {
-                val hadCustom = GameFixDatabase.isUserCustomConfig(currentGame)
-                GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.AUTO_FIX
-                GameFixDatabase.applyCleanFix(currentGame)
+                GameFixDatabase.selectedLaunchMode = mode
+                if (hadCustom) {
+                    GameFixDatabase.applyFixWithCustomOverrides(currentGame)
+                } else {
+                    GameFixDatabase.applyCleanFix(currentGame)
+                }
                 if (ctx != null) {
                     val msg = if (hadCustom) {
                         if (isRu) "⚡ Авто-исправление: Рекомендуемые параметры применены с сохранением ваших настроек" else "⚡ Auto-Fix: Applied with your custom settings preserved"
@@ -99,7 +104,7 @@ class GameFixDialogFragment : DialogFragment() {
             } catch (_: Exception) {}
             val cb = onLaunchCallback
             dismissAllowingStateLoss()
-            cb?.invoke(GameFixDatabase.LaunchMode.AUTO_FIX)
+            cb?.invoke(mode)
         }
 
         binding.cardLaunchAutoFixCustom.setOnClickListener {

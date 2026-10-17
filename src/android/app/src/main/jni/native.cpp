@@ -589,14 +589,22 @@ u64 EmulationSession::GetProgramId(JNIEnv* env, jstring jprogramId) {
         return 0;
     }
     try {
-        return std::stoull(program_id_string, nullptr, 16);
-    } catch (...) {
-        try {
-            return std::stoull(program_id_string, nullptr, 10);
-        } catch (...) {
-            return 0;
+        std::size_t pos = 0;
+        const u64 val = std::stoull(program_id_string, &pos, 16);
+        if (pos == program_id_string.size()) {
+            return val;
         }
+    } catch (...) {
     }
+    try {
+        std::size_t pos = 0;
+        const u64 val = std::stoull(program_id_string, &pos, 10);
+        if (pos == program_id_string.size()) {
+            return val;
+        }
+    } catch (...) {
+    }
+    return 0;
 }
 
 static Core::SystemResultStatus RunEmulation(const std::string& filepath,
@@ -856,33 +864,18 @@ void Java_org_yuzu_yuzu_1emu_NativeLibrary_setAppDirectory(JNIEnv* env, jobject 
     Common::FS::SetAppDirectory(Common::Android::GetJString(env, j_directory));
 }
 
-static Settings::ResolutionSetup s_pre_thermal_res = Settings::ResolutionSetup::Res1X;
-static u16 s_pre_thermal_speed = 100;
-static bool s_has_saved_thermal_state = false;
-
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_setThermalThrottle(JNIEnv* env, jclass clazz, jboolean throttle) {
     const bool should_throttle = static_cast<bool>(throttle);
     Settings::values.eco_thermal_mode.SetValue(should_throttle);
     Settings::values.eco_frame_pacing.SetValue(should_throttle);
+    // NOTE: Never mutate Settings::values.resolution_setup or call Settings::UpdateRescalingInfo()
+    // mid-game! Changing resolution_setup while a game is running causes newly created or
+    // re-evaluated render targets to use 0.75x dimensions while existing VkImages/viewports stay
+    // at 1.0x, zooming in the image by 1.33x and cropping the right/bottom of the screen.
     if (should_throttle) {
-        if (!s_has_saved_thermal_state) {
-            s_pre_thermal_res = Settings::values.resolution_setup.GetValue();
-            s_pre_thermal_speed = Settings::values.speed_limit.GetValue();
-            s_has_saved_thermal_state = true;
-        }
-        if (Settings::values.resolution_setup.GetValue() > Settings::ResolutionSetup::Res3_4X) {
-            Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res3_4X);
-            Settings::UpdateRescalingInfo();
-        }
-        LOG_INFO(Frontend, "Thermal Governor: Throttling ACTIVATED (eco mode ON, scaling 0.75x)");
+        LOG_INFO(Frontend, "Thermal Governor: Throttling ACTIVATED (eco mode ON)");
     } else {
-        if (s_has_saved_thermal_state) {
-            Settings::values.resolution_setup.SetValue(s_pre_thermal_res);
-            Settings::values.speed_limit.SetValue(s_pre_thermal_speed);
-            Settings::UpdateRescalingInfo();
-            s_has_saved_thermal_state = false;
-        }
-        LOG_INFO(Frontend, "Thermal Governor: Throttling DEACTIVATED (normal scaling restored)");
+        LOG_INFO(Frontend, "Thermal Governor: Throttling DEACTIVATED (normal mode restored)");
     }
 }
 

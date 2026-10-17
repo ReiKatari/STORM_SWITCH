@@ -263,6 +263,11 @@ void AndroidConfig::SaveAndroidValues() {
     SaveDriverValues();
     SaveAndroidControlValues();
 
+    if (IsCustomConfig() && config) {
+        config->SetValue("StormSwitch", "user_custom", "true");
+        config->SetValue("StormSwitch", "storm_fix_applied", "false");
+    }
+
     WriteToIni();
 }
 

@@ -44,7 +44,11 @@ object SettingsFile {
     }
 
     fun loadCustomConfig(game: Game) {
-        val fileName = FileUtil.getFilename(Uri.parse(game.path))
-        NativeConfig.initializePerGameConfig(game.programId, fileName)
+        val customFile = getCustomSettingsFile(game)
+        val fileName = customFile.nameWithoutExtension.ifEmpty {
+            try { FileUtil.getFilename(Uri.parse(game.path)) } catch (_: Exception) { "" }
+        }
+        val programIdArg = game.programIdHex.trim().ifEmpty { game.programId }
+        NativeConfig.initializePerGameConfig(programIdArg, fileName)
     }
 }

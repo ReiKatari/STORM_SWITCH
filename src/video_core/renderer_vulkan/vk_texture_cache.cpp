@@ -2308,15 +2308,6 @@ bool Image::ScaleUp(bool ignore) {
     if (!info.rescaleable) {
         return false;
     }
-    if (Settings::values.rescale_hack.GetValue() && info.type == ImageType::e2D) {
-        const u32 w = info.size.width;
-        const u32 h = info.size.height;
-        const bool is_pot = (w > 0 && (w & (w - 1)) == 0) && (h > 0 && (h & (h - 1)) == 0);
-        const bool is_standard_aspect = (w * 9 == h * 16) || (w * 10 == h * 16) || (w * 3 == h * 4);
-        if (h < 256 || (is_pot && !is_standard_aspect)) {
-            return false;
-        }
-    }
     flags |= ImageFlagBits::Rescaled;
     has_scaled = true;
     if (!scaled_image) {
@@ -2451,18 +2442,17 @@ bool Image::BlitScaleHelper(bool scale_up) {
             runtime->blit_image_helper.BlitColor(&*blit_framebuffer, src_view,
                 dst_region, src_region, operation, BLIT_OPERATION);
         }
-    } else if ((aspect_mask & VK_IMAGE_ASPECT_DEPTH_BIT) != 0) {
+    } else if (aspect_mask == (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) &&
+               runtime->device.IsExtShaderStencilExportSupported()) {
         if (!blit_framebuffer) {
             blit_framebuffer.emplace(*runtime, nullptr, dst_view, extent, scale_up);
         }
-        if ((aspect_mask & VK_IMAGE_ASPECT_STENCIL_BIT) != 0 &&
-            runtime->device.IsExtShaderStencilExportSupported() &&
-            info.num_samples == 1) {
-            runtime->blit_image_helper.BlitDepthStencil(&*blit_framebuffer, src_view,
-                dst_region, src_region, operation, BLIT_OPERATION);
-        } else {
+        if (info.num_samples > 1) {
             runtime->blit_image_helper.ResolveDepthStencil(&*blit_framebuffer, src_view,
                 dst_region, src_region);
+        } else {
+            runtime->blit_image_helper.BlitDepthStencil(&*blit_framebuffer, src_view,
+                dst_region, src_region, operation, BLIT_OPERATION);
         }
     } else {
         // Device does not support scaling this format

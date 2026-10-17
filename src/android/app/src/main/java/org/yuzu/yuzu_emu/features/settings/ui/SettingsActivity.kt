@@ -59,6 +59,7 @@ class SettingsActivity : AppCompatActivity() {
             NativeConfig.reloadGlobalConfig()
         } else {
             NativeConfig.unloadPerGameConfig()
+            org.yuzu.yuzu_emu.model.GameFixDatabase.prepareForUserCustomEdit(args.game!!)
             SettingsFile.loadCustomConfig(args.game!!)
         }
         settingsViewModel.game = args.game

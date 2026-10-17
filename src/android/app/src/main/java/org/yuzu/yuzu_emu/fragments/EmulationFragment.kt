@@ -328,9 +328,14 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 GameFixDatabase.LaunchMode.AUTO_FIX -> {
                     NativeLibrary.setGameFixesEnabled(true)
                     shouldUseCustom = true
-                    GameFixDatabase.applyCleanFix(gameToUse)
+                    if (GameFixDatabase.isUserCustomConfig(gameToUse)) {
+                        GameFixDatabase.applyFixWithCustomOverrides(gameToUse)
+                        Log.info("[EmulationFragment] Loaded Auto-Fix profile preserving user custom overrides for ${gameToUse.title}")
+                    } else {
+                        GameFixDatabase.applyCleanFix(gameToUse)
+                        Log.info("[EmulationFragment] Loaded clean Auto-Fix profile for ${gameToUse.title}")
+                    }
                     SettingsFile.loadCustomConfig(gameToUse)
-                    Log.info("[EmulationFragment] Loaded clean Auto-Fix profile for ${gameToUse.title}")
                 }
                 GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM -> {
                     NativeLibrary.setGameFixesEnabled(true)
@@ -425,6 +430,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         } catch (e: Exception) {
             Log.warning("[EmulationFragment] Failed to configure Freedreno/Turnip driver: ${e.message}")
         }
+
+        // CRITICAL: Trigger per-game GPU driver installation BEFORE completeViewSetup() registers
+        // SurfaceHolder callbacks and collects driverViewModel.isInteractionAllowed, so _isDriverReady
+        // is set to false immediately and emulation waits until the per-game driver is extracted!
+        driverViewModel.onLaunchGame(if (shouldUseCustom) game else null)
 
         emulationState = EmulationState(game!!.path) {
             return@EmulationState driverViewModel.isInteractionAllowed.value &&
@@ -1224,8 +1234,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 emulationState.run(emulationActivity!!.isActivityRecreated)
             }
         }
-
-        driverViewModel.onLaunchGame(game)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

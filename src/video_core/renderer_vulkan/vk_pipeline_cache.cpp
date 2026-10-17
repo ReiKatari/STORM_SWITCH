@@ -437,15 +437,8 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
         .support_fp32_denorm_preserve = float_control.shaderDenormPreserveFloat32 != VK_FALSE,
         .support_fp16_denorm_flush = float_control.shaderDenormFlushToZeroFloat16 != VK_FALSE,
         .support_fp32_denorm_flush = float_control.shaderDenormFlushToZeroFloat32 != VK_FALSE,
-#ifdef __ANDROID__
-        .support_fp16_signed_zero_nan_preserve = false,
-#else
         .support_fp16_signed_zero_nan_preserve =
-            float_control.shaderSignedZeroInfNanPreserveFloat16 != VK_FALSE &&
-            driver_id != VK_DRIVER_ID_ARM_PROPRIETARY &&
-            driver_id != VK_DRIVER_ID_QUALCOMM_PROPRIETARY &&
-            !Settings::values.fix_bloom_effects.GetValue(),
-#endif
+            float_control.shaderSignedZeroInfNanPreserveFloat16 != VK_FALSE,
         .support_fp32_signed_zero_nan_preserve =
             float_control.shaderSignedZeroInfNanPreserveFloat32 != VK_FALSE,
         .support_fp64_signed_zero_nan_preserve =
@@ -500,15 +493,7 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
                                            driver_id == VK_DRIVER_ID_ARM_PROPRIETARY,
         .has_broken_unsigned_image_offsets = false,
         .has_broken_signed_operations = false,
-#ifdef __ANDROID__
-        .has_broken_fp16_float_controls = true,
-#else
-        .has_broken_fp16_float_controls = driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
-                                          driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
-                                          driver_id == VK_DRIVER_ID_MESA_TURNIP ||
-                                          driver_id == VK_DRIVER_ID_ARM_PROPRIETARY ||
-                                          Settings::values.fix_bloom_effects.GetValue(),
-#endif
+        .has_broken_fp16_float_controls = driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY,
         .has_broken_fp32_denorm_flush = driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY,
         .ignore_nan_fp_comparisons = false,
         .has_broken_spirv_subgroup_mask_vector_extract_dynamic =

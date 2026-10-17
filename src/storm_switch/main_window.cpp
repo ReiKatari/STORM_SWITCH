@@ -4350,6 +4350,28 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         params.program_id = title_id;
     }
 
+    if (title_id != 0 && type == StartGameType::Normal) {
+        const auto file_path_hash = Common::CityHash64(utf8_str.constData(), static_cast<std::size_t>(utf8_str.size()));
+        const auto specific_config = fmt::format("{:016X}_{:016X}", title_id, file_path_hash);
+        const auto legacy_config = fmt::format("{:016X}", title_id);
+
+        std::filesystem::path custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
+        std::string target_ini = (custom_path / (specific_config + ".ini")).string();
+
+        // Load per game settings FIRST if custom configuration file exists so user per-game
+        // overrides have UsingGlobal() == false before Auto-Fix runs!
+        std::string config_to_load = specific_config;
+        bool has_custom_ini = std::filesystem::exists(custom_path / (specific_config + ".ini"));
+        if (!has_custom_ini && std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
+            config_to_load = legacy_config;
+            has_custom_ini = true;
+        }
+
+        if (has_custom_ini) {
+            QtConfig per_game_config(config_to_load, Config::ConfigType::PerGameConfig);
+        }
+    }
+
     if (type == StartGameType::Normal) {
         if (params.launch_type == Service::AM::LaunchType::ApplicationInitiated) {
             Core::GameFixDatabase::ApplyProfileDirectly(title_id, filename.toStdString());
@@ -4365,24 +4387,6 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     }
 
     if (title_id != 0 && type == StartGameType::Normal) {
-        const auto file_path_hash = Common::CityHash64(utf8_str.constData(), static_cast<std::size_t>(utf8_str.size()));
-        const auto specific_config = fmt::format("{:016X}_{:016X}", title_id, file_path_hash);
-        const auto legacy_config = fmt::format("{:016X}", title_id);
-
-        std::filesystem::path custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
-        std::string target_ini = (custom_path / (specific_config + ".ini")).string();
-
-        // Load per game settings if custom configuration file exists
-        std::string config_to_load = specific_config;
-        bool has_custom_ini = std::filesystem::exists(custom_path / (specific_config + ".ini"));
-        if (!has_custom_ini && std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
-            config_to_load = legacy_config;
-            has_custom_ini = true;
-        }
-
-        if (has_custom_ini) {
-            QtConfig per_game_config(config_to_load, Config::ConfigType::PerGameConfig);
-        }
 
         // Always guarantee global player control bindings are preserved unless a custom profile was explicitly set
         bool has_custom_profile = false;

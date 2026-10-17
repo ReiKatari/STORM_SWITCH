@@ -131,6 +131,8 @@ class DriverViewModel : ViewModel() {
     fun onOpenDriverManager(game: Game?) {
         activeGame = game
         if (game != null) {
+            NativeConfig.unloadPerGameConfig()
+            org.yuzu.yuzu_emu.model.GameFixDatabase.prepareForUserCustomEdit(game)
             SettingsFile.loadCustomConfig(game)
         }
         updateDriverList()
@@ -477,7 +479,7 @@ class DriverViewModel : ViewModel() {
                 }
 
                 if (!isCustomDriverForGame) {
-                    selectedDriverPath = StringSetting.DRIVER_PATH.getString(needsGlobal = (game == null))
+                    selectedDriverPath = StringSetting.DRIVER_PATH.getString(needsGlobal = true)
                     if (selectedDriverPath.isNotEmpty() && !File(selectedDriverPath).exists()) {
                         val fallback = GpuDriverHelper.getDrivers().firstOrNull()?.first
                         if (!fallback.isNullOrEmpty()) {
