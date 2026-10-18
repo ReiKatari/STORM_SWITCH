@@ -157,12 +157,72 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
         if (m_debugger_enabled) {
             ReturnException(pc, InstructionBreakpoint);
         } else {
-            if (Settings::values.cpuopt_ignore_memory_aborts.GetValue() && m_memory.Read32(pc) == 0) {
+            if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
+                const auto is_valid_return_target = [&](u64 target) -> bool {
+                    if (target == 0 || (target & 3) != 0 || target == pc) {
+                        return false;
+                    }
+                    // Avoid jumping right back into the same abort stub around PC
+                    if (target >= (pc > 0x40 ? pc - 0x40 : 0) && target <= pc + 0x40) {
+                        return false;
+                    }
+                    if (!m_memory.IsValidVirtualAddressRange(target, sizeof(u32))) {
+                        return false;
+                    }
+                    const u32 target_inst = m_memory.Read32(target);
+                    // Reject UDF (#0x0000xxxx) and BRK (#0xD420xxxx) trap instructions
+                    if ((target_inst & 0xFFFF0000U) == 0U || (target_inst & 0xFFE0001FU) == 0xD4200000U) {
+                        return false;
+                    }
+                    return true;
+                };
+
+                // 1. Try direct LR return if LR points outside the abort stub
                 const u64 lr = m_parent.m_jit->GetRegister(30);
-                if (lr != 0 && (lr & 3) == 0 && lr != pc && m_memory.IsValidVirtualAddressRange(lr, sizeof(u32)) && m_memory.Read32(lr) != 0) {
+                if (is_valid_return_target(lr)) {
+                    LOG_WARNING(Core_ARM, "Recovering from guest trap at PC={:#010x} via LR={:#010x}", pc, lr);
                     m_parent.m_jit->SetRegister(0, 0);
                     m_parent.m_jit->SetRegister(1, 0);
                     m_parent.m_jit->SetPC(lr);
+                    m_parent.m_jit->HaltExecution(BreakLoop);
+                    return;
+                }
+
+                // 2. Walk the AArch64 Frame Pointer (X29) chain out of AbortImpl / nn::diag::detail::Abort
+                u64 fp = m_parent.m_jit->GetRegister(29);
+                for (int depth = 0; depth < 6; ++depth) {
+                    if (fp == 0 || (fp & 7) != 0 || !m_memory.IsValidVirtualAddressRange(fp, 16)) {
+                        break;
+                    }
+                    const u64 next_fp = m_memory.Read64(fp);
+                    const u64 saved_lr = m_memory.Read64(fp + 8);
+                    if (is_valid_return_target(saved_lr)) {
+                        LOG_WARNING(Core_ARM, "Recovering from guest abort at PC={:#010x} via FP unwind (depth={}) -> LR={:#010x}",
+                                    pc, depth + 1, saved_lr);
+                        m_parent.m_jit->SetRegister(29, next_fp);
+                        m_parent.m_jit->SetRegister(30, saved_lr);
+                        const u64 sp = m_parent.m_jit->GetSP();
+                        if (fp >= sp && (fp - sp) <= 0x10000) {
+                            m_parent.m_jit->SetSP(fp + 16);
+                        }
+                        m_parent.m_jit->SetRegister(0, 0);
+                        m_parent.m_jit->SetRegister(1, 0);
+                        m_parent.m_jit->SetPC(saved_lr);
+                        m_parent.m_jit->HaltExecution(BreakLoop);
+                        return;
+                    }
+                    if (next_fp <= fp || (next_fp - fp) > 0x100000) {
+                        break;
+                    }
+                    fp = next_fp;
+                }
+
+                // 3. Fallback: advance PC past the offending UDF/BRK/trap instruction so execution does not hang
+                if (m_memory.IsValidVirtualAddressRange(pc + 4, sizeof(u32))) {
+                    LOG_WARNING(Core_ARM, "Skipping guest trap instruction at PC={:#010x} -> {:#010x}", pc, pc + 4);
+                    m_parent.m_jit->SetRegister(0, 0);
+                    m_parent.m_jit->SetRegister(1, 0);
+                    m_parent.m_jit->SetPC(pc + 4);
                     m_parent.m_jit->HaltExecution(BreakLoop);
                     return;
                 }

@@ -167,7 +167,15 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
     }
 
     QPushButton* reset_button = ui->buttonBox->addButton(QDialogButtonBox::RestoreDefaults);
-    reset_button->setText(tr("Сбросить на стандартные"));
+    reset_button->setText(StormLang(
+        QStringLiteral("↺ Сбросить настройки"),
+        QStringLiteral("↺ Restore Defaults"),
+        QStringLiteral("↺ Standardeinstellungen"),
+        QStringLiteral("↺ Paramètres par défaut"),
+        QStringLiteral("↺ 恢复默认设置"),
+        QStringLiteral("↺ デフォルトに戻す"),
+        QStringLiteral("↺ استعادة الإعدادات الافتراضية"),
+        QStringLiteral("↺ Restaurar valores predeterminados")));
     connect(reset_button, &QAbstractButton::clicked, this, [this, specific_config, legacy_config, custom_path]() {
         std::error_code ec;
         std::filesystem::remove(custom_path / (specific_config + ".ini"), ec);
@@ -176,8 +184,20 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         for (const auto tab : *tab_group) {
             tab->SetConfiguration();
         }
-        QMessageBox::information(this, tr("Сброс настроек"),
-                                 tr("Персональные настройки игры сброшены на стандартные.\nИгра будет ориентироваться на глобальные настройки эмулятора."));
+        QMessageBox::information(
+            this,
+            StormLang(QStringLiteral("Сброс настроек"), QStringLiteral("Reset Settings"),
+                      QStringLiteral("Einstellungen zurücksetzen"), QStringLiteral("Réinitialiser les paramètres"),
+                      QStringLiteral("重置设置"), QStringLiteral("設定のリセット"),
+                      QStringLiteral("إعادة ضبط الإعدادات"), QStringLiteral("Restablecer configuración")),
+            StormLang(QStringLiteral("Персональные настройки игры сброшены на стандартные.\nИгра будет ориентироваться на глобальные настройки эмулятора."),
+                      QStringLiteral("Per-game custom settings have been reset to defaults.\nThe game will now use the global emulator settings."),
+                      QStringLiteral("Die spielspezifischen Einstellungen wurden zurückgesetzt.\nDas Spiel verwendet nun die globalen Emulator-Einstellungen."),
+                      QStringLiteral("Les paramètres personnalisés du jeu ont été réinitialisés.\nLe jeu utilisera désormais les paramètres globaux de l'émulateur."),
+                      QStringLiteral("游戏的自定义设置已恢复为默认值。\n游戏现在将使用模拟器的全局设置。"),
+                      QStringLiteral("ゲーム個別の設定がデフォルトにリセットされました。\n今後はエミュレータの全体設定が使用されます。"),
+                      QStringLiteral("تمت إعادة تعيين الإعدادات المخصصة للعبة إلى الوضع الافتراضي.\nستستخدم اللعبة الآن الإعدادات العامة للمحاكي."),
+                      QStringLiteral("La configuración personalizada del juego se ha restablecido.\nEl juego usará ahora la configuración global del emulador.")));
     });
 
     setStyleSheet(QStringLiteral(
@@ -216,19 +236,21 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "    color: #00F0FF;"
         "    border: 1px solid rgba(0, 210, 255, 0.25);"
         "    border-radius: 8px;"
-        "    margin-top: 14px;"
+        "    margin-top: 9px;"
         "    padding: 16px 12px 12px 12px;"
         "    background: rgba(15, 23, 42, 0.5);"
         "}"
         "QGroupBox::title {"
         "    subcontrol-origin: margin;"
         "    subcontrol-position: top left;"
-        "    left: 14px;"
+        "    top: 0px;"
+        "    left: 12px;"
         "    padding: 0 6px;"
         "    color: #00F0FF;"
         "    font-size: 12px;"
         "    font-weight: bold;"
-        "    background: transparent;"
+        "    background-color: #0F172A;"
+        "    border-radius: 3px;"
         "}"
         "QLabel, QCheckBox, QRadioButton {"
         "    background: transparent;"
@@ -305,19 +327,26 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "    background: transparent;"
         "    background-color: transparent;"
         "}"
-        "QCheckBox::indicator {"
-        "    width: 18px;"
-        "    height: 18px;"
+        "QCheckBox::indicator, QGroupBox::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {"
+        "    width: 16px;"
+        "    height: 16px;"
         "    border: 1px solid #475569;"
         "    border-radius: 4px;"
         "    background: #121826;"
+        "    image: none;"
         "}"
-        "QCheckBox::indicator:hover {"
+        "QCheckBox::indicator:hover, QGroupBox::indicator:hover, QTreeView::indicator:hover, QListView::indicator:hover, QTableView::indicator:hover {"
         "    border: 1px solid #00D2FF;"
         "}"
-        "QCheckBox::indicator:checked {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00D2FF, stop:1 #0088CC);"
+        "QCheckBox::indicator:checked, QGroupBox::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00F0FF, stop:1 #0088CC);"
         "    border: 1px solid #00F0FF;"
+        "    image: none;"
+        "}"
+        "QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
+        "    background: #121826;"
+        "    border: 1px solid #475569;"
+        "    image: none;"
         "}"
         "QPushButton {"
         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1E293B, stop:1 #334155);"

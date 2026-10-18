@@ -1450,13 +1450,13 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         const QRectF pct_rect(bat_pos.x() + 52.0f, bat_pos.y() + 6.0f, 68.0f, 18.0f);
         p.drawText(pct_rect, Qt::AlignVCenter | Qt::AlignLeft, pct_str);
 
-        // Subtext "Батарея" / "Зарядка" (Clean 8pt)
+        // Subtext "Battery" / "Charging" (Clean 8pt, localized)
         QFont font_sub(QStringLiteral("Segoe UI"), 8, QFont::Normal);
         p.setFont(font_sub);
         p.setPen(QColor(150, 160, 175));
         const QRectF sub_rect(bat_pos.x() + 52.0f, bat_pos.y() + 24.0f, 68.0f, 15.0f);
         p.drawText(sub_rect, Qt::AlignVCenter | Qt::AlignLeft,
-                   is_charging ? QStringLiteral("Зарядка") : QStringLiteral("Батарея"));
+                   is_charging ? tr("Charging") : tr("Battery"));
     };
 
     // =========================================================================
@@ -1548,7 +1548,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setFont(font_hdr);
         p.setPen(colors.indicator);
         const QRectF hdr_rect(gyro_c.x() - 50.0f, gyro_c.y() - 54.0f, 100.0f, 16.0f);
-        p.drawText(hdr_rect, Qt::AlignCenter, QStringLiteral("ГИРОСКОП"));
+        p.drawText(hdr_rect, Qt::AlignCenter, tr("GYROSCOPE"));
 
         // Angles text badge with clear, visible degree values
         const float pitch_deg = euler.x * 180.0f / PI_CONST;
@@ -3051,29 +3051,6 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         DrawFrontShellAndControls3D();
         DrawVolumetricMidsection3D(false);
         DrawRearShell3D();
-    }
-
-    // 3D Camera Orbit Telemetry Badge (shown when rotated or flipped)
-    if (std::abs(rot_x) > 1.0f || std::abs(rot_y) > 1.0f) {
-        const auto badge_pos = center + QPointF(0.0f, -152.0f);
-        QString view_name = front_facing ? QStringLiteral("3D ОБЗОР") : QStringLiteral("ВИД СЗАДИ");
-        if (rot_x < -35.0f) {
-            view_name = QStringLiteral("ВИД СВЕРХУ (ТОРЦЫ)");
-        } else if (rot_x > 35.0f) {
-            view_name = QStringLiteral("ВИД СНИЗУ");
-        } else if (std::abs(rot_y) > 55.0f && std::abs(rot_y) < 125.0f) {
-            view_name = (rot_y > 0.0f) ? QStringLiteral("ПРОФИЛЬ СПРАВА") : QStringLiteral("ПРОФИЛЬ СЛЕВА");
-        }
-        const QString badge_text = QStringLiteral("%1  [%2° / %3°]")
-                                       .arg(view_name)
-                                       .arg(static_cast<int>(std::round(rot_y)))
-                                       .arg(static_cast<int>(std::round(rot_x)));
-        p.setPen(QPen(colors.indicator, 1.1f));
-        p.setBrush(QColor(12, 16, 24, 215));
-        p.drawRoundedRect(QRectF(badge_pos.x() - 78.0f, badge_pos.y() - 11.0f, 156.0f, 22.0f), 6.0f, 6.0f);
-        p.setPen(colors.indicator.lighter(120));
-        SetTextFont(p, 0.66f);
-        DrawText(p, badge_pos, 0.66f, badge_text);
     }
 
     // -------------------------------------------------------------------------

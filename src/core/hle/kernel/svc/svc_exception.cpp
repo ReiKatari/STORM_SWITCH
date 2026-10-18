@@ -24,6 +24,13 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
 
     bool has_dumped_buffer{};
     std::vector<u8> debug_buffer;
+    bool is_benign_zero_err = false;
+    if (info2 == sizeof(u32) && info1 != 0) {
+        auto& memory = GetCurrentMemory(system.Kernel());
+        if (memory.IsValidVirtualAddressRange(info1, sizeof(u32)) && memory.Read32(info1) == 0) {
+            is_benign_zero_err = !system.DebuggerEnabled();
+        }
+    }
 
     const auto handle_debug_buffer = [&](u64 addr, u64 sz) {
         if (sz == 0 || addr == 0 || has_dumped_buffer) {
@@ -34,7 +41,12 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
 
         // This typically is an error code so we're going to assume this is the case
         if (sz == sizeof(u32)) {
-            LOG_CRITICAL(Debug_Emulated, "debug_buffer_err_code={:X}", memory.Read32(addr));
+            const u32 err_code = memory.IsValidVirtualAddressRange(addr, sizeof(u32)) ? memory.Read32(addr) : 0;
+            if (err_code == 0 && !system.DebuggerEnabled()) {
+                LOG_WARNING(Debug_Emulated, "debug_buffer_err_code={:X} (ignored benign break)", err_code);
+            } else {
+                LOG_CRITICAL(Debug_Emulated, "debug_buffer_err_code={:X}", err_code);
+            }
         } else {
             // We don't know what's in here so we'll hexdump it
             debug_buffer.resize(sz);
@@ -52,13 +64,23 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
     };
     switch (break_reason) {
     case BreakReason::Panic:
-        LOG_CRITICAL(Debug_Emulated, "Userspace PANIC! info1={:#016x}, info2={:#016x}", info1,
-                     info2);
+        if (is_benign_zero_err) {
+            LOG_WARNING(Debug_Emulated, "Userspace PANIC (err_code=0, continuing): info1={:#016x}, info2={:#016x}",
+                        info1, info2);
+        } else {
+            LOG_CRITICAL(Debug_Emulated, "Userspace PANIC! info1={:#016x}, info2={:#016x}", info1,
+                         info2);
+        }
         handle_debug_buffer(info1, info2);
         break;
     case BreakReason::Assert:
-        LOG_CRITICAL(Debug_Emulated, "Userspace Assertion failed! info1={:#016x}, info2={:#016x}",
-                     info1, info2);
+        if (is_benign_zero_err) {
+            LOG_WARNING(Debug_Emulated, "Userspace Assertion (err_code=0, continuing): info1={:#016x}, info2={:#016x}",
+                        info1, info2);
+        } else {
+            LOG_CRITICAL(Debug_Emulated, "Userspace Assertion failed! info1={:#016x}, info2={:#016x}",
+                         info1, info2);
+        }
         handle_debug_buffer(info1, info2);
         break;
     case BreakReason::User:
@@ -95,19 +117,26 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
         break;
     }
 
-    system.GetReporter().SaveSvcBreakReport(
-        static_cast<u32>(reason), notification_only, info1, info2,
-        has_dumped_buffer ? std::make_optional(debug_buffer) : std::nullopt);
+    if (!is_benign_zero_err) {
+        system.GetReporter().SaveSvcBreakReport(
+            static_cast<u32>(reason), notification_only, info1, info2,
+            has_dumped_buffer ? std::make_optional(debug_buffer) : std::nullopt);
+    }
 
     if (!notification_only) {
-        LOG_CRITICAL(
-            Debug_Emulated,
-            "Emulated program broke execution! reason={:#016x}, info1={:#016x}, info2={:#016x}",
-            reason, info1, info2);
-
-        handle_debug_buffer(info1, info2);
-
-        system.CurrentPhysicalCore().LogBacktrace(system.Kernel());
+        if (is_benign_zero_err) {
+            LOG_WARNING(
+                Debug_Emulated,
+                "Emulated program broke execution with err_code=0 (continuing)! reason={:#016x}, info1={:#016x}, info2={:#016x}",
+                reason, info1, info2);
+        } else {
+            LOG_CRITICAL(
+                Debug_Emulated,
+                "Emulated program broke execution! reason={:#016x}, info1={:#016x}, info2={:#016x}",
+                reason, info1, info2);
+            handle_debug_buffer(info1, info2);
+            system.CurrentPhysicalCore().LogBacktrace(system.Kernel());
+        }
     }
 
     const bool should_break = !notification_only;

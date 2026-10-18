@@ -156,7 +156,7 @@
           <item>
            <widget class="QRadioButton" name="radioDocked">
             <property name="text">
-             <string>В док-станции</string>
+             <string>Docked</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -166,7 +166,7 @@
           <item>
            <widget class="QRadioButton" name="radioUndocked">
             <property name="text">
-             <string>Портативный</string>
+             <string>Undocked</string>
             </property>
            </widget>
           </item>

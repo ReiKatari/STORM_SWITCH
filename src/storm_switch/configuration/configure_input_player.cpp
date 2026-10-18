@@ -395,30 +395,60 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
 
     // Setup 3D Pro Controller skin selector and interactive controls toolbar
     {
+        const auto ctrl_lang = [](const QString& ru, const QString& en, const QString& zh,
+                                  const QString& ja, const QString& ko, const QString& de,
+                                  const QString& fr, const QString& es, const QString& ar) -> QString {
+            std::string lang = UISettings::values.language.GetValue();
+            if (lang.empty()) {
+                lang = QLocale::system().name().toStdString();
+            }
+            if (lang.rfind("ru", 0) == 0) return ru;
+            if (lang.rfind("zh", 0) == 0) return zh;
+            if (lang.rfind("ja", 0) == 0) return ja;
+            if (lang.rfind("ko", 0) == 0) return ko;
+            if (lang.rfind("de", 0) == 0) return de;
+            if (lang.rfind("fr", 0) == 0) return fr;
+            if (lang.rfind("es", 0) == 0) return es;
+            if (lang.rfind("ar", 0) == 0) return ar;
+            return en;
+        };
+
         auto* const top_toolbar = new QHBoxLayout();
         top_toolbar->setContentsMargins(10, 6, 10, 4);
         top_toolbar->setSpacing(8);
 
-        auto* const skin_label = new QLabel(tr("Оформление:"), this);
+        auto* const skin_label = new QLabel(ctrl_lang(
+            QStringLiteral("Оформление:"), QStringLiteral("Skin:"), QStringLiteral("手柄外观:"),
+            QStringLiteral("スキン:"), QStringLiteral("스킨:"), QStringLiteral("Design:"),
+            QStringLiteral("Apparence :"), QStringLiteral("Diseño:"), QStringLiteral("المظهر:")), this);
         skin_label->setStyleSheet(QStringLiteral("background: transparent; font-weight: bold; font-size: 11px;"));
 
         auto* const combo_skin = new QComboBox(this);
         combo_skin->setMinimumWidth(230);
-        combo_skin->addItem(tr("Классический полупрозрачный"),
+        combo_skin->addItem(ctrl_lang(
+                                QStringLiteral("Классический полупрозрачный"),
+                                QStringLiteral("Classic Translucent Black"),
+                                QStringLiteral("经典半透明黑"),
+                                QStringLiteral("クラシック半透明ブラック"),
+                                QStringLiteral("클래식 반투명 블랙"),
+                                QStringLiteral("Klassisch Transparent-Schwarz"),
+                                QStringLiteral("Noir translucide classique"),
+                                QStringLiteral("Negro translúcido clásico"),
+                                QStringLiteral("أسود شفاف كلاسيكي")),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::ClassicBlack));
-        combo_skin->addItem(tr("Xenoblade Chronicles 2 (Pyra/Aegis)"),
+        combo_skin->addItem(QStringLiteral("Xenoblade Chronicles 2 (Pyra/Aegis)"),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::Xenoblade2));
-        combo_skin->addItem(tr("Super Smash Bros. Ultimate"),
+        combo_skin->addItem(QStringLiteral("Super Smash Bros. Ultimate"),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::SmashBrosUltimate));
-        combo_skin->addItem(tr("The Legend of Zelda: Tears of the Kingdom"),
+        combo_skin->addItem(QStringLiteral("The Legend of Zelda: Tears of the Kingdom"),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::ZeldaTotk));
-        combo_skin->addItem(tr("Splatoon 3 Neon"),
+        combo_skin->addItem(QStringLiteral("Splatoon 3 Neon"),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::Splatoon3));
-        combo_skin->addItem(tr("Monster Hunter Rise"),
+        combo_skin->addItem(QStringLiteral("Monster Hunter Rise"),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::MonsterHunterRise));
-        combo_skin->addItem(tr("Pokémon Scarlet and Violet"),
+        combo_skin->addItem(QStringLiteral("Pokémon Scarlet and Violet"),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::PokemonScarletViolet));
-        combo_skin->addItem(tr("STORM Cyberpunk OLED"),
+        combo_skin->addItem(QStringLiteral("STORM Cyberpunk OLED"),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::CyberStorm));
 
         const u32 cur_skin_idx = std::min(UISettings::values.controller_skin.GetValue(),
@@ -432,29 +462,83 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             UISettings::values.controller_skin = static_cast<u32>(skin);
         });
 
-        auto* const hint_3d = new QLabel(tr("ЛКМ — 3D вращение 360° | Двойной клик — 180° | Колесико — зум"), this);
+        auto* const hint_3d = new QLabel(ctrl_lang(
+            QStringLiteral("ЛКМ — 3D вращение 360° | Двойной клик — 180° | Колесико — зум"),
+            QStringLiteral("LMB — 360° 3D Orbit | Double Click — 180° Flip | Wheel — Zoom"),
+            QStringLiteral("左键 — 360° 3D 旋转 | 双击 — 180° 翻转 | 滚轮 — 缩放"),
+            QStringLiteral("左ドラッグ — 360° 3D回転 | ダブルクリック — 180°反転 | ホイール — ズーム"),
+            QStringLiteral("좌클릭 — 360° 3D 회전 | 더블클릭 — 180° 반전 | 휠 — 줌"),
+            QStringLiteral("LMT — 360° 3D-Drehung | Doppelklick — 180° | Mausrad — Zoom"),
+            QStringLiteral("Clic G — Rotation 3D 360° | Double-clic — 180° | Molette — Zoom"),
+            QStringLiteral("Clic Izq. — Rotación 3D 360° | Doble clic — 180° | Rueda — Zoom"),
+            QStringLiteral("زر الفأرة الأيسر — دوران 360° | نقر مزدوج — 180° | العجلة — تقريب")), this);
         hint_3d->setStyleSheet(QStringLiteral("background: transparent; color: #888888; font-size: 11px;"));
 
-        auto* const btn_iso_view = new QPushButton(tr("📐 3D Вид"), this);
-        btn_iso_view->setToolTip(tr("Изометрический объемный 3D-ракурс геймпада"));
+        auto* const btn_iso_view = new QPushButton(ctrl_lang(
+            QStringLiteral("📐 3D Вид"), QStringLiteral("📐 3D View"), QStringLiteral("📐 3D 视角"),
+            QStringLiteral("📐 3D表示"), QStringLiteral("📐 3D 뷰"), QStringLiteral("📐 3D-Ansicht"),
+            QStringLiteral("📐 Vue 3D"), QStringLiteral("📐 Vista 3D"), QStringLiteral("📐 عرض ثلاثي الأبعاد")), this);
+        btn_iso_view->setToolTip(ctrl_lang(
+            QStringLiteral("Изометрический объемный 3D-ракурс геймпада"),
+            QStringLiteral("Isometric 3D perspective view of the controller"),
+            QStringLiteral("手柄的等轴测 3D 立体视角"),
+            QStringLiteral("コントローラーのアイソメトリック3D視点"),
+            QStringLiteral("컨트롤러의 등각 3D 입체 뷰"),
+            QStringLiteral("Isometrische 3D-Perspektive des Controllers"),
+            QStringLiteral("Vue perspective 3D isométrique de la manette"),
+            QStringLiteral("Vista en perspectiva 3D isométrica del mando"),
+            QStringLiteral("عرض منظور ثلاثي الأبعاد ليد التحكم")));
         connect(btn_iso_view, &QPushButton::clicked, [this] {
             ui->controllerFrame->SetRotation(-24.0f, 36.0f);
         });
 
-        auto* const btn_top_view = new QPushButton(tr("⬆️ Торцы"), this);
-        btn_top_view->setToolTip(tr("Вид сверху на курки ZL/ZR, бамперы L/R и разъем USB-C"));
+        auto* const btn_top_view = new QPushButton(ctrl_lang(
+            QStringLiteral("⬆️ Торцы"), QStringLiteral("⬆️ Top / Triggers"), QStringLiteral("⬆️ 顶部肩键"),
+            QStringLiteral("⬆️ 上面 / トリガー"), QStringLiteral("⬆️ 상단 / 트리거"), QStringLiteral("⬆️ Schultertasten"),
+            QStringLiteral("⬆️ Gâchettes"), QStringLiteral("⬆️ Gatillos"), QStringLiteral("⬆️ الأزرار العلوية")), this);
+        btn_top_view->setToolTip(ctrl_lang(
+            QStringLiteral("Вид сверху на курки ZL/ZR, бамперы L/R и разъем USB-C"),
+            QStringLiteral("Top view of ZL/ZR triggers, L/R bumpers, and USB-C port"),
+            QStringLiteral("俯视查看 ZL/ZR 扳机、L/R 肩键及 USB-C 接口"),
+            QStringLiteral("ZL/ZRトリガー、L/Rバンパー、USB-C端子の上面表示"),
+            QStringLiteral("ZL/ZR 트리거, L/R 범퍼 및 USB-C 포트 상단 뷰"),
+            QStringLiteral("Draufsicht auf ZL/ZR-Trigger, L/R-Bumper und USB-C-Anschluss"),
+            QStringLiteral("Vue de dessus des gâchettes ZL/ZR, boutons L/R et port USB-C"),
+            QStringLiteral("Vista superior de gatillos ZL/ZR, botones L/R y puerto USB-C"),
+            QStringLiteral("عرض علوي لأزرار ZL/ZR و L/R ومنفذ USB-C")));
         connect(btn_top_view, &QPushButton::clicked, [this] {
             ui->controllerFrame->SetRotation(-62.0f, 0.0f);
         });
 
-        auto* const btn_flip_view = new QPushButton(tr("🔄 180°"), this);
-        btn_flip_view->setToolTip(tr("Перевернуть геймпад на 180°: вид спереди или сзади"));
+        auto* const btn_flip_view = new QPushButton(QStringLiteral("🔄 180°"), this);
+        btn_flip_view->setToolTip(ctrl_lang(
+            QStringLiteral("Перевернуть геймпад на 180°: вид спереди или сзади"),
+            QStringLiteral("Flip controller 180°: toggle front and rear view"),
+            QStringLiteral("180° 翻转手柄：切换正面与背面视图"),
+            QStringLiteral("コントローラーを180°反転：前面・背面を切り替え"),
+            QStringLiteral("컨트롤러 180° 반전: 전면 및 후면 뷰 전환"),
+            QStringLiteral("Controller um 180° drehen: Vorder- und Rückansicht"),
+            QStringLiteral("Retourner la manette à 180° : vue avant ou arrière"),
+            QStringLiteral("Voltear mando 180°: alternar vista frontal y trasera"),
+            QStringLiteral("قلب يد التحكم 180 درجة: التبديل بين الأمام والخلف")));
         connect(btn_flip_view, &QPushButton::clicked, [this] {
             ui->controllerFrame->ToggleRearView();
         });
 
-        auto* const btn_reset_view = new QPushButton(tr("↺ Сброс"), this);
-        btn_reset_view->setToolTip(tr("Сбросить 3D-вращение и зум к исходному виду"));
+        auto* const btn_reset_view = new QPushButton(ctrl_lang(
+            QStringLiteral("↺ Сброс"), QStringLiteral("↺ Reset"), QStringLiteral("↺ 重置"),
+            QStringLiteral("↺ リセット"), QStringLiteral("↺ 초기화"), QStringLiteral("↺ Zurücksetzen"),
+            QStringLiteral("↺ Réinitialiser"), QStringLiteral("↺ Restablecer"), QStringLiteral("↺ إعادة ضبط")), this);
+        btn_reset_view->setToolTip(ctrl_lang(
+            QStringLiteral("Сбросить 3D-вращение и зум к исходному виду"),
+            QStringLiteral("Reset 3D rotation and zoom to default view"),
+            QStringLiteral("将 3D 旋转与缩放重置为默认视图"),
+            QStringLiteral("3D回転とズームを初期状態にリセット"),
+            QStringLiteral("3D 회전 및 줌을 기본 뷰로 초기화"),
+            QStringLiteral("3D-Drehung und Zoom auf Standardansicht zurücksetzen"),
+            QStringLiteral("Réinitialiser la rotation 3D et le zoom à la vue par défaut"),
+            QStringLiteral("Restablecer rotación 3D y zoom a la vista predeterminada"),
+            QStringLiteral("إعادة ضبط الدوران والتقريب إلى الوضع الافتراضي")));
         connect(btn_reset_view, &QPushButton::clicked, [this] {
             ui->controllerFrame->ResetView();
         });
@@ -1280,17 +1364,19 @@ int ConfigureInputPlayer::GetIndexFromControllerType(Core::HID::NpadStyleIndex t
 void ConfigureInputPlayer::UpdateInputDevices() {
     input_devices = input_subsystem->GetInputDevices();
     ui->comboDevices->clear();
+    const std::string& lang = UISettings::values.language.GetValue();
+    const bool is_ru = lang.rfind("ru", 0) == 0;
     for (const auto& device : input_devices) {
         const auto raw_display = device.Get("display", "Unknown");
         QString display_str;
         if (raw_display == "Any") {
-            display_str = tr("Любое");
+            display_str = is_ru ? QStringLiteral("Любое") : tr("Any");
         } else if (raw_display == "Keyboard Only") {
-            display_str = tr("Только клавиатура");
+            display_str = is_ru ? QStringLiteral("Только клавиатура") : tr("Keyboard Only");
         } else if (raw_display == "Keyboard/Mouse") {
-            display_str = tr("Клавиатура/Мышь");
+            display_str = is_ru ? QStringLiteral("Клавиатура/Мышь") : tr("Keyboard/Mouse");
         } else if (raw_display == "Unknown") {
-            display_str = tr("Неизвестно");
+            display_str = is_ru ? QStringLiteral("Неизвестно") : tr("Unknown");
         } else {
             display_str = QString::fromStdString(raw_display);
         }

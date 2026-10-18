@@ -421,6 +421,45 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
         }
     }
 
+    // 4. If trapped inside AbortImpl / nn::diag::detail::Abort (UDF / BRK), walk AArch64 Frame Pointer (X29) chain
+    if ((inst & 0xFFFF0000U) == 0U || (inst & 0xFFE0001FU) == 0xD4200000U) {
+        u64 fp = host_ctx.regs[29];
+        for (int depth = 0; depth < 6; ++depth) {
+            const u64 guest_fp = (fp >= fastmem_base) ? (fp - fastmem_base) : fp;
+            if (guest_fp == 0 || (guest_fp & 7) != 0 || !memory.IsValidVirtualAddressRange(guest_fp, 16)) {
+                break;
+            }
+            const u64 next_fp = memory.Read64(guest_fp);
+            const u64 saved_lr = memory.Read64(guest_fp + 8);
+            const u64 guest_lr = (saved_lr >= fastmem_base) ? (saved_lr - fastmem_base) : saved_lr;
+            if (guest_lr != 0 && (guest_lr & 3) == 0 &&
+                (guest_lr < (guest_pc > 0x40 ? guest_pc - 0x40 : 0) || guest_lr > guest_pc + 0x40) &&
+                memory.IsValidVirtualAddressRange(guest_lr, sizeof(u32))) {
+                const u32 lr_inst = memory.Read32(guest_lr);
+                if ((lr_inst & 0xFFFF0000U) != 0U && (lr_inst & 0xFFE0001FU) != 0xD4200000U) {
+                    const u64 host_lr = (saved_lr >= fastmem_base) ? saved_lr : (fastmem_base + guest_lr);
+                    LOG_WARNING(Core_ARM,
+                                "NCE recovered guest abort trap {:#010x} at pc={:#x} via FP unwind (depth={}) -> lr={:#x}",
+                                inst, host_ctx.pc, depth + 1, host_lr);
+                    host_ctx.regs[29] = next_fp;
+                    host_ctx.regs[30] = host_lr;
+                    const u64 host_fp = (fp >= fastmem_base) ? fp : (fastmem_base + guest_fp);
+                    if (host_fp >= host_ctx.sp && (host_fp - host_ctx.sp) <= 0x10000) {
+                        host_ctx.sp = host_fp + 16;
+                    }
+                    host_ctx.regs[0] = 0;
+                    host_ctx.regs[1] = 0;
+                    host_ctx.pc = host_lr;
+                    return true;
+                }
+            }
+            if (next_fp <= fp || (next_fp - fp) > 0x100000) {
+                break;
+            }
+            fp = next_fp;
+        }
+    }
+
     LOG_WARNING(Core_ARM, "NCE skipping trapped/illegal guest instruction {:#010x} at pc={:#x}",
                 inst, host_ctx.pc);
     host_ctx.regs[0] = 0;

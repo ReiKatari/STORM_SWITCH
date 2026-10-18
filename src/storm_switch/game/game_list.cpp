@@ -481,13 +481,38 @@ void GameList::ToggleFavorite(u64 program_id) {
 }
 
 void GameList::PopupContextMenu(const QPoint& menu_location) {
+    const auto gl_lang = [](const QString& ru, const QString& en, const QString& zh,
+                            const QString& ja, const QString& ko, const QString& de,
+                            const QString& fr, const QString& es, const QString& ar) -> QString {
+        std::string lang = UISettings::values.language.GetValue();
+        if (lang.empty()) {
+            lang = QLocale::system().name().toStdString();
+        }
+        if (lang.rfind("ru", 0) == 0) return ru;
+        if (lang.rfind("zh", 0) == 0) return zh;
+        if (lang.rfind("ja", 0) == 0) return ja;
+        if (lang.rfind("ko", 0) == 0) return ko;
+        if (lang.rfind("de", 0) == 0) return de;
+        if (lang.rfind("fr", 0) == 0) return fr;
+        if (lang.rfind("es", 0) == 0) return es;
+        if (lang.rfind("ar", 0) == 0) return ar;
+        return en;
+    };
+
     QModelIndex item = m_currentView->indexAt(menu_location);
     if (!item.isValid()) {
         if (m_isTreeMode)
             return;
 
         QMenu blank_menu;
-        QAction* addGameDirAction = blank_menu.addAction(tr("📁 Добавить папку с играми..."));
+        std::string lang = UISettings::values.language.GetValue();
+        if (lang.empty()) {
+            lang = QLocale::system().name().toStdString();
+        }
+        const QString add_dir_text = (lang.rfind("ru", 0) == 0)
+                                         ? QStringLiteral("📁 Добавить папку с играми...")
+                                         : (QStringLiteral("📁 ") + tr("&Add New Game Directory"));
+        QAction* addGameDirAction = blank_menu.addAction(add_dir_text);
 
         connect(addGameDirAction, &QAction::triggered, this, &GameList::AddDirectory);
         blank_menu.exec(m_currentView->viewport()->mapToGlobal(menu_location));
@@ -527,52 +552,123 @@ void GameList::PopupContextMenu(const QPoint& menu_location) {
 }
 
 void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::string& path) {
-    QAction* favorite = context_menu.addAction(tr("⭐ Добавить в избранное"));
+    std::string cur_lang = UISettings::values.language.GetValue();
+    if (cur_lang.empty()) {
+        cur_lang = QLocale::system().name().toStdString();
+    }
+    const bool is_ru = (cur_lang.rfind("ru", 0) == 0);
+    const auto item_tr = [&](const QString& prefix, const char* en_source, const QString& ru_text) -> QString {
+        if (is_ru) {
+            return prefix + ru_text;
+        }
+        return prefix + tr(en_source);
+    };
+    const auto storm_tr = [&](const QString& ru, const QString& en, const QString& zh,
+                              const QString& ja, const QString& ko, const QString& de,
+                              const QString& fr, const QString& es, const QString& ar) -> QString {
+        if (is_ru) return ru;
+        if (cur_lang.rfind("zh", 0) == 0) return zh;
+        if (cur_lang.rfind("ja", 0) == 0) return ja;
+        if (cur_lang.rfind("ko", 0) == 0) return ko;
+        if (cur_lang.rfind("de", 0) == 0) return de;
+        if (cur_lang.rfind("fr", 0) == 0) return fr;
+        if (cur_lang.rfind("es", 0) == 0) return es;
+        if (cur_lang.rfind("ar", 0) == 0) return ar;
+        if (cur_lang.rfind("pt", 0) == 0) return en;
+        return en;
+    };
+
+    QAction* favorite = context_menu.addAction(item_tr(QStringLiteral("⭐ "), "Favorite", QStringLiteral("Добавить в избранное")));
     context_menu.addSeparator();
-    QAction* start_game = context_menu.addAction(tr("▶️ Запустить игру"));
+    QAction* start_game = context_menu.addAction(item_tr(QStringLiteral("▶️ "), "Start Game", QStringLiteral("Запустить игру")));
     QAction* start_game_global =
-        context_menu.addAction(tr("🚀 Запустить со стандартными настройками"));
+        context_menu.addAction(item_tr(QStringLiteral("🚀 "), "Start Game without Custom Configuration", QStringLiteral("Запустить со стандартными настройками")));
     context_menu.addSeparator();
-    QAction* open_save_location = context_menu.addAction(tr("💾 Открыть папку сохранений"));
-    QAction* sync_save = context_menu.addAction(tr("🔄 Синхронизация сохранения (STORM SAVE SYNC)..."));
-    QAction* open_mod_location = context_menu.addAction(tr("🧩 Открыть папку модов"));
+    QAction* open_save_location = context_menu.addAction(item_tr(QStringLiteral("💾 "), "Open Save Data Location", QStringLiteral("Открыть папку сохранений")));
+    QAction* sync_save = context_menu.addAction(storm_tr(
+        QStringLiteral("🔄 Синхронизация сохранения (STORM SAVE SYNC)..."),
+        QStringLiteral("🔄 Save Data Sync (STORM SAVE SYNC)..."),
+        QStringLiteral("🔄 存档同步 (STORM SAVE SYNC)..."),
+        QStringLiteral("🔄 セーブデータ同期 (STORM SAVE SYNC)..."),
+        QStringLiteral("🔄 세이브 데이터 동기화 (STORM SAVE SYNC)..."),
+        QStringLiteral("🔄 Speicherdaten-Synchronisation (STORM SAVE SYNC)..."),
+        QStringLiteral("🔄 Synchronisation des sauvegardes (STORM SAVE SYNC)..."),
+        QStringLiteral("🔄 Sincronización de partidas (STORM SAVE SYNC)..."),
+        QStringLiteral("🔄 مزامنة بيانات الحفظ (STORM SAVE SYNC)...")));
+    QAction* open_mod_location = context_menu.addAction(item_tr(QStringLiteral("🧩 "), "Open Mod Data Location", QStringLiteral("Открыть папку модов")));
     QAction* open_transferable_shader_cache =
-        context_menu.addAction(tr("⚡ Открыть кэш шейдеров"));
-    QAction* ryujinx = context_menu.addAction(tr("🔗 Связать с Ryujinx"));
+        context_menu.addAction(item_tr(QStringLiteral("⚡ "), "Open Transferable Pipeline Cache", QStringLiteral("Открыть кэш шейдеров")));
+    QAction* ryujinx = context_menu.addAction(item_tr(QStringLiteral("🔗 "), "Link to Ryujinx", QStringLiteral("Связать с Ryujinx")));
     context_menu.addSeparator();
-    QMenu* remove_menu = context_menu.addMenu(tr("🗑️ Удалить"));
-    QAction* remove_update = remove_menu->addAction(tr("Удалить установленное обновление"));
-    QAction* remove_dlc = remove_menu->addAction(tr("Удалить все установленные DLC"));
-    QAction* remove_custom_config = remove_menu->addAction(tr("Удалить индивидуальные настройки"));
-    QAction* remove_cache_storage = remove_menu->addAction(tr("Очистить хранилище кэша"));
-    QAction* remove_gl_shader_cache = remove_menu->addAction(tr("Удалить кэш шейдеров OpenGL"));
-    QAction* remove_vk_shader_cache = remove_menu->addAction(tr("Удалить кэш шейдеров Vulkan"));
+    QMenu* remove_menu = context_menu.addMenu(item_tr(QStringLiteral("🗑️ "), "Remove", QStringLiteral("Удалить")));
+    QAction* remove_update = remove_menu->addAction(item_tr(QString(), "Remove Installed Update", QStringLiteral("Удалить установленное обновление")));
+    QAction* remove_dlc = remove_menu->addAction(item_tr(QString(), "Remove All Installed DLC", QStringLiteral("Удалить все установленные DLC")));
+    QAction* remove_custom_config = remove_menu->addAction(item_tr(QString(), "Remove Custom Configuration", QStringLiteral("Удалить индивидуальные настройки")));
+    QAction* remove_cache_storage = remove_menu->addAction(item_tr(QString(), "Remove Cache Storage", QStringLiteral("Очистить хранилище кэша")));
+    QAction* remove_gl_shader_cache = remove_menu->addAction(item_tr(QString(), "Remove OpenGL Pipeline Cache", QStringLiteral("Удалить кэш шейдеров OpenGL")));
+    QAction* remove_vk_shader_cache = remove_menu->addAction(item_tr(QString(), "Remove Vulkan Pipeline Cache", QStringLiteral("Удалить кэш шейдеров Vulkan")));
     remove_menu->addSeparator();
-    QAction* remove_shader_cache = remove_menu->addAction(tr("Удалить все кэши шейдеров"));
-    QAction* remove_all_content = remove_menu->addAction(tr("Удалить весь установленный контент"));
-    QMenu* play_time_menu = context_menu.addMenu(tr("⏱️ Управление временем игры"));
-    QAction* set_play_time = play_time_menu->addAction(tr("Изменить время игры..."));
-    QAction* remove_play_time_data = play_time_menu->addAction(tr("Сбросить время игры"));
-    QMenu* dump_romfs_menu = context_menu.addMenu(tr("📦 Дамп RomFS"));
-    QAction* dump_romfs = dump_romfs_menu->addAction(tr("Дамп RomFS"));
-    QAction* dump_romfs_sdmc = dump_romfs_menu->addAction(tr("Дамп RomFS на SD-карту"));
-    QAction* verify_integrity = context_menu.addAction(tr("🔍 Проверить целостность"));
-    QAction* copy_tid = context_menu.addAction(tr("📋 Скопировать Title ID в буфер обмена"));
+    QAction* remove_shader_cache = remove_menu->addAction(item_tr(QString(), "Remove All Pipeline Caches", QStringLiteral("Удалить все кэши шейдеров")));
+    QAction* remove_all_content = remove_menu->addAction(item_tr(QString(), "Remove All Installed Contents", QStringLiteral("Удалить весь установленный контент")));
+    QMenu* play_time_menu = context_menu.addMenu(item_tr(QStringLiteral("⏱️ "), "Manage Play Time", QStringLiteral("Управление временем игры")));
+    QAction* set_play_time = play_time_menu->addAction(item_tr(QString(), "Edit Play Time Data", QStringLiteral("Изменить время игры...")));
+    QAction* remove_play_time_data = play_time_menu->addAction(item_tr(QString(), "Remove Play Time Data", QStringLiteral("Сбросить время игры")));
+    QMenu* dump_romfs_menu = context_menu.addMenu(item_tr(QStringLiteral("📦 "), "Dump RomFS", QStringLiteral("Дамп RomFS")));
+    QAction* dump_romfs = dump_romfs_menu->addAction(item_tr(QString(), "Dump RomFS", QStringLiteral("Дамп RomFS")));
+    QAction* dump_romfs_sdmc = dump_romfs_menu->addAction(item_tr(QString(), "Dump RomFS to SDMC", QStringLiteral("Дамп RomFS на SD-карту")));
+    QAction* verify_integrity = context_menu.addAction(item_tr(QStringLiteral("🔍 "), "Verify Integrity", QStringLiteral("Проверить целостность")));
+    QAction* copy_tid = context_menu.addAction(item_tr(QStringLiteral("📋 "), "Copy Title ID to Clipboard", QStringLiteral("Скопировать Title ID в буфер обмена")));
 #if !defined(__APPLE__)
-    QMenu* shortcut_menu = context_menu.addMenu(tr("🔗 Создать ярлык"));
-    QAction* create_desktop_shortcut = shortcut_menu->addAction(tr("На рабочий стол"));
+    QMenu* shortcut_menu = context_menu.addMenu(item_tr(QStringLiteral("🔗 "), "Create Shortcut", QStringLiteral("Создать ярлык")));
+    QAction* create_desktop_shortcut = shortcut_menu->addAction(item_tr(QString(), "Add to Desktop", QStringLiteral("На рабочий стол")));
     QAction* create_applications_menu_shortcut =
-        shortcut_menu->addAction(tr("В меню приложений"));
+        shortcut_menu->addAction(item_tr(QString(), "Add to Applications Menu", QStringLiteral("В меню приложений")));
 #endif
     context_menu.addSeparator();
-    QAction* mod_manager_action = context_menu.addAction(tr("🧩 Менеджер модов..."));
-    QAction* cheats_action = context_menu.addAction(tr("✨ Чит-коды..."));
+    QAction* mod_manager_action = context_menu.addAction(storm_tr(
+        QStringLiteral("🧩 Менеджер модов..."),
+        QStringLiteral("🧩 Mod Manager..."),
+        QStringLiteral("🧩 模组管理器..."),
+        QStringLiteral("🧩 Mod マネージャー..."),
+        QStringLiteral("🧩 모드 매니저..."),
+        QStringLiteral("🧩 Mod-Manager..."),
+        QStringLiteral("🧩 Gestionnaire de mods..."),
+        QStringLiteral("🧩 Gestor de mods..."),
+        QStringLiteral("🧩 مدير التعديلات...")));
+    QAction* cheats_action = context_menu.addAction(storm_tr(
+        QStringLiteral("✨ Чит-коды..."),
+        QStringLiteral("✨ Cheats..."),
+        QStringLiteral("✨ 金手指 / 作弊码..."),
+        QStringLiteral("✨ チートコード..."),
+        QStringLiteral("✨ 치트 코드..."),
+        QStringLiteral("✨ Cheats..."),
+        QStringLiteral("✨ Codes de triche..."),
+        QStringLiteral("✨ Trucos..."),
+        QStringLiteral("✨ رموز الغش...")));
     QAction* game_fix_action = nullptr;
     if (Core::GameFixDatabase::GetProfileByTitleOrPath(program_id, path) != nullptr) {
-        game_fix_action = context_menu.addAction(tr("🛡️ Авто-исправление игры..."));
+        game_fix_action = context_menu.addAction(storm_tr(
+            QStringLiteral("🛡️ Авто-исправление игры..."),
+            QStringLiteral("🛡️ Game Auto-Fix..."),
+            QStringLiteral("🛡️ 游戏自动修复..."),
+            QStringLiteral("🛡️ ゲーム自動修復..."),
+            QStringLiteral("🛡️ 게임 자동 수정..."),
+            QStringLiteral("🛡️ Spiel-Auto-Korrektur..."),
+            QStringLiteral("🛡️ Correction automatique du jeu..."),
+            QStringLiteral("🛡️ Corrección automática del juego..."),
+            QStringLiteral("🛡️ الإصلاح التلقائي للعبة...")));
     }
-    QAction* properties = context_menu.addAction(tr("⚙️ Свойства / Настройки игры..."));
-    QAction* reset_game_settings = context_menu.addAction(tr("🔄 Сбросить настройки игры на стандартные"));
+    QAction* properties = context_menu.addAction(item_tr(QStringLiteral("⚙️ "), "Configure Game", QStringLiteral("Свойства / Настройки игры...")));
+    QAction* reset_game_settings = context_menu.addAction(storm_tr(
+        QStringLiteral("🔄 Сбросить настройки игры на стандартные"),
+        QStringLiteral("🔄 Reset Per-Game Settings to Defaults"),
+        QStringLiteral("🔄 重置游戏独立设置为默认值"),
+        QStringLiteral("🔄 ゲーム個別設定をデフォルトにリセット"),
+        QStringLiteral("🔄 게임별 설정을 기본값으로 초기화"),
+        QStringLiteral("🔄 Spielspezifische Einstellungen zurücksetzen"),
+        QStringLiteral("🔄 Réinitialiser les paramètres du jeu par défaut"),
+        QStringLiteral("🔄 Restablecer configuración del juego a valores predeterminados"),
+        QStringLiteral("🔄 إعادة تعيين إعدادات اللعبة إلى الافتراضية")));
 
     favorite->setVisible(program_id != 0);
     favorite->setCheckable(true);
@@ -602,7 +698,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             emit OpenGameFixRequested(program_id, QString::fromStdString(path));
         });
     }
-    connect(reset_game_settings, &QAction::triggered, this, [this, program_id, path]() {
+    connect(reset_game_settings, &QAction::triggered, this, [this, program_id, path, storm_tr]() {
         const auto file_path_hash = Common::CityHash64(path.data(), path.size());
         const auto specific_config = fmt::format("{:016X}_{:016X}", program_id, file_path_hash);
         const auto legacy_config = fmt::format("{:016X}", program_id);
@@ -610,8 +706,22 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         std::error_code ec;
         std::filesystem::remove(custom_path / (specific_config + ".ini"), ec);
         std::filesystem::remove(custom_path / (legacy_config + ".ini"), ec);
-        QMessageBox::information(this, tr("Сброс настроек"),
-                                 tr("Персональные настройки игры сброшены на стандартные.\nИгра будет ориентироваться на глобальные настройки эмулятора."));
+        QMessageBox::information(
+            this,
+            storm_tr(QStringLiteral("Сброс настроек"), QStringLiteral("Reset Settings"),
+                     QStringLiteral("重置设置"), QStringLiteral("設定のリセット"),
+                     QStringLiteral("설정 초기화"), QStringLiteral("Einstellungen zurücksetzen"),
+                     QStringLiteral("Réinitialiser les paramètres"), QStringLiteral("Restablecer configuración"),
+                     QStringLiteral("إعادة ضبط الإعدادات")),
+            storm_tr(QStringLiteral("Персональные настройки игры сброшены на стандартные.\nИгра будет ориентироваться на глобальные настройки эмулятора."),
+                     QStringLiteral("Per-game custom settings have been reset to defaults.\nThe game will now use the global emulator settings."),
+                     QStringLiteral("游戏的自定义设置已恢复为默认值。\n游戏现在将使用模拟器的全局设置。"),
+                     QStringLiteral("ゲーム個別の設定がデフォルトにリセットされました。\n今後はエミュレータの全体設定が使用されます。"),
+                     QStringLiteral("게임의 사용자 지정 설정이 기본값으로 초기화되었습니다.\n이제 에뮬레이터의 전역 설정을 사용합니다."),
+                     QStringLiteral("Die spielspezifischen Einstellungen wurden zurückgesetzt.\nDas Spiel verwendet nun die globalen Emulator-Einstellungen."),
+                     QStringLiteral("Les paramètres personnalisés du jeu ont été réinitialisés.\nLe jeu utilisera désormais les paramètres globaux de l'émulateur."),
+                     QStringLiteral("La configuración personalizada del juego se ha restablecido.\nEl juego usará ahora la configuración global del emulador."),
+                     QStringLiteral("تمت إعادة تعيين الإعدادات المخصصة للعبة إلى الوضع الافتراضي.\nستستخدم اللعبة الآن الإعدادات العامة للمحاكي.")));
     });
     connect(favorite, &QAction::triggered, this,
             [this, program_id]() { ToggleFavorite(program_id); });

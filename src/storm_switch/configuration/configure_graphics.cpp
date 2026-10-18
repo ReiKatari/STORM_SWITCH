@@ -10,9 +10,11 @@
 #include <QCheckBox>
 #include <QColorDialog>
 #include <QComboBox>
+#include <QGroupBox>
 #include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
+#include <QLocale>
 #include <QPixmap>
 #include <QPushButton>
 #include <QSlider>
@@ -239,7 +241,19 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     QLayout& graphics_layout = *ui->graphics_widget->layout();
 
     std::map<u32, QWidget*> hold_graphics;
+    std::map<u32, QWidget*> hold_frame_gen;
     std::vector<QWidget*> hold_api;
+
+    const auto is_frame_gen_setting = [](u32 id) {
+        return id == Settings::values.frame_gen.Id() ||
+               id == Settings::values.frame_gen_multiplier.Id() ||
+               id == Settings::values.frame_gen_target_rate.Id() ||
+               id == Settings::values.frame_gen_flow_scale_auto.Id() ||
+               id == Settings::values.frame_gen_flow_scale.Id() ||
+               id == Settings::values.frame_gen_queue_target.Id() ||
+               id == Settings::values.frame_gen_fp16.Id() ||
+               id == Settings::values.frame_gen_dump_flow.Id();
+    };
 
     for (const auto setting : Settings::values.linkage.by_category[Settings::Category::Renderer]) {
         ConfigurationShared::Widget* widget = [&]() {
@@ -333,6 +347,8 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
             // Keep track of the resolution combobox to update other UI tabs that need it
             resolution_combobox = widget->combobox;
             hold_graphics.emplace(setting->Id(), widget);
+        } else if (is_frame_gen_setting(setting->Id())) {
+            hold_frame_gen.emplace(setting->Id(), widget);
         } else {
             hold_graphics.emplace(setting->Id(), widget);
         }
@@ -348,6 +364,57 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
         if (!w || !w->IsInputOrSelectionControl()) {
             graphics_layout.addWidget(widget);
+        }
+    }
+
+    if (!hold_frame_gen.empty()) {
+        auto* fg_group = new QGroupBox(this);
+        fg_group->setObjectName(QStringLiteral("frameGenGroupBox"));
+        auto get_fg_title = []() {
+            std::string lang = UISettings::values.language.GetValue();
+            if (lang.empty()) {
+                lang = QLocale::system().name().toStdString();
+            }
+            if (lang.rfind("ru", 0) == 0) return QStringLiteral("Генерация кадров (Lossless Scaling / LSFG)");
+            if (lang.rfind("zh", 0) == 0) return QStringLiteral("帧生成 (Lossless Scaling / LSFG)");
+            if (lang.rfind("ja", 0) == 0) return QStringLiteral("フレーム生成 (Lossless Scaling / LSFG)");
+            if (lang.rfind("ko", 0) == 0) return QStringLiteral("프레임 생성 (Lossless Scaling / LSFG)");
+            if (lang.rfind("de", 0) == 0) return QStringLiteral("Frame-Generierung (Lossless Scaling / LSFG)");
+            if (lang.rfind("fr", 0) == 0) return QStringLiteral("Génération d'images (Lossless Scaling / LSFG)");
+            if (lang.rfind("es", 0) == 0) return QStringLiteral("Generación de fotogramas (Lossless Scaling / LSFG)");
+            if (lang.rfind("ar", 0) == 0) return QStringLiteral("توليد الإطارات (Lossless Scaling / LSFG)");
+            return QStringLiteral("Frame Generation (Lossless Scaling / LSFG)");
+        };
+        fg_group->setTitle(get_fg_title());
+        auto* fg_layout = new QVBoxLayout(fg_group);
+        fg_layout->setContentsMargins(10, 14, 10, 10);
+        fg_layout->setSpacing(6);
+
+        const std::vector<u32> fg_order = {
+            Settings::values.frame_gen.Id(),
+            Settings::values.frame_gen_multiplier.Id(),
+            Settings::values.frame_gen_target_rate.Id(),
+            Settings::values.frame_gen_queue_target.Id(),
+            Settings::values.frame_gen_flow_scale_auto.Id(),
+            Settings::values.frame_gen_flow_scale.Id(),
+            Settings::values.frame_gen_fp16.Id(),
+            Settings::values.frame_gen_dump_flow.Id(),
+        };
+        for (const u32 fg_id : fg_order) {
+            auto it = hold_frame_gen.find(fg_id);
+            if (it != hold_frame_gen.end()) {
+                fg_layout->addWidget(it->second);
+            }
+        }
+        for (const auto& [id, widget] : hold_frame_gen) {
+            if (std::find(fg_order.begin(), fg_order.end(), id) == fg_order.end()) {
+                fg_layout->addWidget(widget);
+            }
+        }
+        if (auto* vbox = qobject_cast<QVBoxLayout*>(ui->graphics_widget->parentWidget() ? ui->graphics_widget->parentWidget()->layout() : nullptr)) {
+            vbox->addWidget(fg_group);
+        } else {
+            graphics_layout.addWidget(fg_group);
         }
     }
 
@@ -480,6 +547,21 @@ void ConfigureGraphics::changeEvent(QEvent* event) {
 
 void ConfigureGraphics::RetranslateUI() {
     ui->retranslateUi(this);
+    if (auto* fg_group = findChild<QGroupBox*>(QStringLiteral("frameGenGroupBox"))) {
+        std::string lang = UISettings::values.language.GetValue();
+        if (lang.empty()) {
+            lang = QLocale::system().name().toStdString();
+        }
+        if (lang.rfind("ru", 0) == 0) fg_group->setTitle(QStringLiteral("Генерация кадров (Lossless Scaling / LSFG)"));
+        else if (lang.rfind("zh", 0) == 0) fg_group->setTitle(QStringLiteral("帧生成 (Lossless Scaling / LSFG)"));
+        else if (lang.rfind("ja", 0) == 0) fg_group->setTitle(QStringLiteral("フレーム生成 (Lossless Scaling / LSFG)"));
+        else if (lang.rfind("ko", 0) == 0) fg_group->setTitle(QStringLiteral("프레임 생성 (Lossless Scaling / LSFG)"));
+        else if (lang.rfind("de", 0) == 0) fg_group->setTitle(QStringLiteral("Frame-Generierung (Lossless Scaling / LSFG)"));
+        else if (lang.rfind("fr", 0) == 0) fg_group->setTitle(QStringLiteral("Génération d'images (Lossless Scaling / LSFG)"));
+        else if (lang.rfind("es", 0) == 0) fg_group->setTitle(QStringLiteral("Generación de fotogramas (Lossless Scaling / LSFG)"));
+        else if (lang.rfind("ar", 0) == 0) fg_group->setTitle(QStringLiteral("توليد الإطارات (Lossless Scaling / LSFG)"));
+        else fg_group->setTitle(QStringLiteral("Frame Generation (Lossless Scaling / LSFG)"));
+    }
     UpdateResolutionItems();
 }
 

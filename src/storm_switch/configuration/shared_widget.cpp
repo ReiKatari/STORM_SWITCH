@@ -804,7 +804,9 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    if (other_setting == nullptr) {
+    if (other_setting == nullptr && setting.PairedSetting() != nullptr &&
+        (setting.PairedSetting()->Specialization() & Settings::SpecializationTypeMask) ==
+            Settings::Specialization::Paired) {
         other_setting = setting.PairedSetting();
     }
 

@@ -159,15 +159,16 @@ object StormHardwareCalibrator {
      */
     fun autoCalibrate(context: Context, force: Boolean = false) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val lastConfiguredVersion = prefs.getString(PREF_LAST_CONFIGURED_VERSION, null)
         val currentVersion = org.yuzu.yuzu_emu.BuildConfig.VERSION_NAME
-        val isVersionUpgrade = lastConfiguredVersion != currentVersion
 
-        if (!force && !isVersionUpgrade && prefs.getBoolean(PREF_HARDWARE_CALIBRATED, false)) {
+        if (!force && prefs.getBoolean(PREF_HARDWARE_CALIBRATED, false)) {
+            if (prefs.getString(PREF_LAST_CONFIGURED_VERSION, null) != currentVersion) {
+                prefs.edit().putString(PREF_LAST_CONFIGURED_VERSION, currentVersion).apply()
+            }
             return
         }
 
-        // Apply device-tailored defaults on first launch or version upgrade / clean install
+        // Apply device-tailored defaults on first launch / clean install or explicit reset
         applyPreset(StormPreset.DEFAULT, context)
         prefs.edit()
             .putBoolean(PREF_HARDWARE_CALIBRATED, true)
@@ -211,14 +212,14 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_VSYNC.setInt(if (profile.isAdreno && profile.tier >= HardwareTier.FLAGSHIP) 1 else 2)
         IntSetting.RENDERER_ANTI_ALIASING.setInt(0) // None
 
-        // Scaling filter: AMD FSR (6) with 80% Sharpening
-        IntSetting.RENDERER_SCALING_FILTER.setInt(6)
+        // Scaling filter: AMD FSR (5) with 80% Sharpening
+        IntSetting.RENDERER_SCALING_FILTER.setInt(5)
         IntSetting.FSR_SHARPENING_SLIDER.setInt(80)
 
-        // ASTC Decode: Hybrid (3) by default
-        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3)
+        // ASTC Decode: GPU (1) by default
+        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1)
         IntSetting.ASTC_RECOMPRESSION.setInt(0) // Uncompressed for 100% texture fidelity
-        IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
+        IntSetting.RENDERER_NVDEC_EMULATION.setInt(2) // GPU
         IntSetting.DMA_ACCURACY.setInt(1) // Normal
 
         // VRAM Usage Mode: Normal (1) for Flagships/High-midrange on Adreno, Conservative (0) for Mali / Dimensity / Adreno 6xx / RAM < 8GB
@@ -300,11 +301,11 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(0) // Conservative
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(2) // Fast
         IntSetting.RENDERER_ANTI_ALIASING.setInt(0)
-        IntSetting.RENDERER_SCALING_FILTER.setInt(6)
+        IntSetting.RENDERER_SCALING_FILTER.setInt(5)
         IntSetting.FSR_SHARPENING_SLIDER.setInt(80)
-        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3) // Hybrid
+        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1) // GPU
         IntSetting.ASTC_RECOMPRESSION.setInt(if (profile.isAdreno6xx) 2 else 0)
-        IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
+        IntSetting.RENDERER_NVDEC_EMULATION.setInt(2) // GPU
         IntSetting.MAX_ANISOTROPY.setInt(0)
         IntSetting.CPU_BACKEND.setInt(1)
         IntSetting.CPU_ACCURACY.setInt(0)
@@ -354,11 +355,11 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.totalRamGb < 8.0 || !profile.isAdreno || profile.isAdreno6xx) 0 else 1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(1) // Balanced
         IntSetting.RENDERER_ANTI_ALIASING.setInt(0)
-        IntSetting.RENDERER_SCALING_FILTER.setInt(6)
+        IntSetting.RENDERER_SCALING_FILTER.setInt(5)
         IntSetting.FSR_SHARPENING_SLIDER.setInt(80)
-        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3) // Hybrid
+        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1) // GPU
         IntSetting.ASTC_RECOMPRESSION.setInt(0)
-        IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
+        IntSetting.RENDERER_NVDEC_EMULATION.setInt(2) // GPU
         IntSetting.MAX_ANISOTROPY.setInt(0)
         IntSetting.CPU_BACKEND.setInt(1)
         IntSetting.CPU_ACCURACY.setInt(0)
@@ -408,11 +409,11 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP && !profile.isDimensity9400) 2 else 1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(0) // Strict
         IntSetting.RENDERER_ANTI_ALIASING.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP) 2 else 1)
-        IntSetting.RENDERER_SCALING_FILTER.setInt(6) // AMD FSR
+        IntSetting.RENDERER_SCALING_FILTER.setInt(5) // AMD FSR
         IntSetting.FSR_SHARPENING_SLIDER.setInt(90)
-        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(3) // Hybrid
+        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1) // GPU
         IntSetting.ASTC_RECOMPRESSION.setInt(0)
-        IntSetting.RENDERER_NVDEC_EMULATION.setInt(3) // Hybrid
+        IntSetting.RENDERER_NVDEC_EMULATION.setInt(2) // GPU
         IntSetting.MAX_ANISOTROPY.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP) 4 else 2)
         IntSetting.CPU_BACKEND.setInt(1)
         IntSetting.CPU_ACCURACY.setInt(if (profile.isDimensity9400) 0 else 1) // Accurate or Auto

@@ -5056,21 +5056,27 @@ static bool RomFSRawCopy(size_t total_size, size_t& read_size, QProgressDialog& 
 // translations_common? strings_common? qt_strings? who knows
 void MainWindow::OnGameListRemoveInstalledEntry(u64 program_id,
                                                 QtCommon::Game::InstalledEntryType type) {
-    const QString entry_question = [type] {
+    const std::string& lang = UISettings::values.language.GetValue();
+    const bool is_ru = lang.rfind("ru", 0) == 0;
+    const QString entry_question = [type, is_ru] {
         switch (type) {
         case QtCommon::Game::InstalledEntryType::Game:
-            return tr("Удалить установленный контент игры?");
+            return is_ru ? QStringLiteral("Удалить установленный контент игры?")
+                         : tr("Remove Installed Game Contents?");
         case QtCommon::Game::InstalledEntryType::Update:
-            return tr("Удалить установленное обновление игры?");
+            return is_ru ? QStringLiteral("Удалить установленное обновление игры?")
+                         : tr("Remove Installed Game Update?");
         case QtCommon::Game::InstalledEntryType::AddOnContent:
-            return tr("Удалить установленные DLC игры?");
+            return is_ru ? QStringLiteral("Удалить установленные DLC игры?")
+                         : tr("Remove Installed Game DLC?");
         default:
-            return tr("Удалить установленный элемент?");
+            return is_ru ? QStringLiteral("Удалить установленный элемент?")
+                         : tr("Remove Installed Game Entry?");
         }
     }();
 
-    if (!question(this, tr("Удаление"), entry_question, QMessageBox::Yes | QMessageBox::No,
-                  QMessageBox::No)) {
+    if (!question(this, is_ru ? QStringLiteral("Удаление") : tr("Removing"), entry_question,
+                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No)) {
         return;
     }
 
@@ -5096,24 +5102,32 @@ void MainWindow::OnGameListRemoveInstalledEntry(u64 program_id,
 
 void MainWindow::OnGameListRemoveFile(u64 program_id, QtCommon::Game::GameListRemoveTarget target,
                                       const std::string& game_path) {
-    const QString question = [target] {
+    const std::string& lang = UISettings::values.language.GetValue();
+    const bool is_ru = lang.rfind("ru", 0) == 0;
+    const QString question = [target, is_ru] {
         switch (target) {
         case QtCommon::Game::GameListRemoveTarget::GlShaderCache:
-            return tr("Удалить переносимый кэш шейдеров OpenGL?");
+            return is_ru ? QStringLiteral("Удалить переносимый кэш шейдеров OpenGL?")
+                         : tr("Delete OpenGL Transferable Shader Cache?");
         case QtCommon::Game::GameListRemoveTarget::VkShaderCache:
-            return tr("Удалить переносимый кэш шейдеров Vulkan?");
+            return is_ru ? QStringLiteral("Удалить переносимый кэш шейдеров Vulkan?")
+                         : tr("Delete Vulkan Transferable Shader Cache?");
         case QtCommon::Game::GameListRemoveTarget::AllShaderCache:
-            return tr("Удалить все кэши шейдеров?");
+            return is_ru ? QStringLiteral("Удалить все кэши шейдеров?")
+                         : tr("Delete All Transferable Shader Caches?");
         case QtCommon::Game::GameListRemoveTarget::CustomConfiguration:
-            return tr("Удалить пользовательскую конфигурацию игры?");
+            return is_ru ? QStringLiteral("Удалить пользовательскую конфигурацию игры?")
+                         : tr("Delete Custom Game Configuration?");
         case QtCommon::Game::GameListRemoveTarget::CacheStorage:
-            return tr("Удалить кэш хранилища?");
+            return is_ru ? QStringLiteral("Удалить кэш хранилища?")
+                         : tr("Delete Cache Storage?");
         default:
             return QString{};
         }
     }();
 
-    if (!MainWindow::question(this, tr("Удаление файла"), question, QMessageBox::Yes | QMessageBox::No,
+    if (!MainWindow::question(this, is_ru ? QStringLiteral("Удаление файла") : tr("File Removing"),
+                              question, QMessageBox::Yes | QMessageBox::No,
                               QMessageBox::No)) {
         return;
     }
@@ -10782,8 +10796,104 @@ void MainWindow::UpdateUITheme() {
 #endif
 }
 
+namespace {
+class StormFallbackTranslator final : public QTranslator {
+public:
+    explicit StormFallbackTranslator(QTranslator* base_translator, QObject* parent = nullptr)
+        : QTranslator(parent), base(base_translator) {}
+
+    QString translate(const char* context, const char* sourceText,
+                      const char* disambiguation = nullptr, int n = -1) const override {
+        if (!sourceText || sourceText[0] == '\0') {
+            return {};
+        }
+        std::string lang = UISettings::values.language.GetValue();
+        if (lang.empty()) {
+            lang = QLocale::system().name().toStdString();
+        }
+        const bool is_ru = lang.rfind("ru", 0) == 0;
+        const QString src = QString::fromUtf8(sourceText);
+
+        if (is_ru) {
+            if (src == QStringLiteral("Docked")) {
+                return QStringLiteral("В док-станции");
+            }
+            if (src == QStringLiteral("Undocked")) {
+                return QStringLiteral("Портативный");
+            }
+            return {};
+        }
+
+        // Map Russian source strings in custom STORM dialogs/widgets to standard English source strings
+        static const std::unordered_map<QString, const char*> ru_to_en = {
+            {QStringLiteral("Конфигурация"), "Configure"},
+            {QStringLiteral("Любое"), "Any"},
+            {QStringLiteral("Только клавиатура"), "Keyboard Only"},
+            {QStringLiteral("Клавиатура/Мышь"), "Keyboard/Mouse"},
+            {QStringLiteral("Неизвестно"), "Unknown"},
+            {QStringLiteral("Очистить"), "Clear"},
+            {QStringLiteral("Восстановить по умолчанию"), "Restore Default"},
+            {QStringLiteral("Подключить контроллер"), "Connect Controller"},
+            {QStringLiteral("Контроллер подключен"), "Controller Connected"},
+            {QStringLiteral("Движение"), "Motion"},
+            {QStringLiteral("Вибрация и тактильная отдача"), "HD Rumble & Haptics"},
+            {QStringLiteral("Игрок %1"), "Player %1"},
+            {QStringLiteral("Параметры управления"), "Input Settings"},
+            {QStringLiteral("Закрыть"), "Close"},
+            {QStringLiteral("Отмена"), "Cancel"},
+            {QStringLiteral("Применить"), "Apply"},
+            {QStringLiteral("Сохранить"), "Save"},
+            {QStringLiteral("Обновить"), "Refresh"},
+            {QStringLiteral("Удалить"), "Remove"},
+            {QStringLiteral("Добавить"), "Add"},
+            {QStringLiteral("Включить все"), "Enable All"},
+            {QStringLiteral("Отключить все"), "Disable All"},
+            {QStringLiteral("Открыть папку"), "Open Folder"},
+            {QStringLiteral("Готово"), "Ready"},
+            {QStringLiteral("Ошибка"), "Error"},
+            {QStringLiteral("Предупреждение"), "Warning"},
+            {QStringLiteral("Подтверждение"), "Confirmation"},
+            {QStringLiteral("Сброс настроек"), "Reset Settings"},
+            {QStringLiteral("В док-станции"), "Docked"},
+            {QStringLiteral("Портативный"), "Undocked"},
+        };
+
+        auto it = ru_to_en.find(src);
+        if (it != ru_to_en.end()) {
+            const char* en_src = it->second;
+            if (base && !base->isEmpty()) {
+                QString translated = base->translate(context, en_src, disambiguation, n);
+                if (!translated.isEmpty()) {
+                    return translated;
+                }
+                translated = base->translate("ConfigureInputPlayer", en_src, disambiguation, n);
+                if (!translated.isEmpty()) {
+                    return translated;
+                }
+                translated = base->translate("MainWindow", en_src, disambiguation, n);
+                if (!translated.isEmpty()) {
+                    return translated;
+                }
+            }
+            return QString::fromUtf8(en_src);
+        }
+        return {};
+    }
+
+private:
+    QTranslator* base{};
+};
+} // namespace
+
 void MainWindow::LoadTranslation() {
-    bool loaded;
+    static StormFallbackTranslator* fallback_translator = nullptr;
+    if (!fallback_translator) {
+        fallback_translator = new StormFallbackTranslator(&translator, qApp);
+    }
+    qApp->removeTranslator(fallback_translator);
+    qApp->removeTranslator(&translator);
+
+    bool loaded = false;
 
     if (UISettings::values.language.GetValue().empty()) {
         // If the selected language is empty, use system locale
@@ -10794,16 +10904,17 @@ void MainWindow::LoadTranslation() {
                                  QStringLiteral(":/languages/"));
     }
 
-    if (loaded)
+    if (loaded) {
         qApp->installTranslator(&translator);
-    else
+    } else {
         UISettings::values.language = std::string("en");
+    }
+    // Install fallback translator first/topmost so Russian source strings are translated in non-RU locales
+    qApp->installTranslator(fallback_translator);
 }
 
 void MainWindow::OnLanguageChanged(const QString& locale) {
-    if (UISettings::values.language.GetValue() != std::string("en")) {
-        qApp->removeTranslator(&translator);
-    }
+    qApp->removeTranslator(&translator);
 
     UISettings::values.language = locale.toStdString();
     LoadTranslation();
