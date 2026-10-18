@@ -30,12 +30,12 @@ class StormTier2Compiler {
 public:
     static constexpr u32 A64_NOP = 0xD503201FU;
 
-    [[nodiscard]] static inline u32 OptimizeInstruction64(u32 inst) noexcept {
+    [[nodiscard]] static inline u32 OptimizeInstruction64(u32 inst, bool enabled) noexcept {
         // Fast-path: 99.9% of A64 instructions are not in the 0xD5000000 system instruction space
         if ((inst & 0xFFC00000U) != 0xD5000000U) [[likely]] {
             return inst;
         }
-        if (!Settings::values.use_storm_tier2_compiler.GetValue()) {
+        if (!enabled) {
             return inst;
         }
 
@@ -62,6 +62,24 @@ public:
         return inst;
     }
 
+    [[nodiscard]] static inline u32 OptimizeInstruction64(u32 inst) noexcept {
+        if ((inst & 0xFFC00000U) != 0xD5000000U) [[likely]] {
+            return inst;
+        }
+        return OptimizeInstruction64(inst, Settings::values.use_storm_tier2_compiler.GetValue());
+    }
+
+    static inline void OptimizePage64(std::span<u32> page) noexcept {
+        if (!Settings::values.use_storm_tier2_compiler.GetValue()) {
+            return;
+        }
+        for (u32& inst : page) {
+            if ((inst & 0xFFC00000U) == 0xD5000000U) [[unlikely]] {
+                inst = OptimizeInstruction64(inst, true);
+            }
+        }
+    }
+
     static void ApplyTier2Config64(Dynarmic::A64::UserConfig& config, bool is_null_jit) noexcept {
         using namespace Common::Literals;
         if (!Settings::values.use_storm_tier2_compiler.GetValue()) {
@@ -69,9 +87,9 @@ public:
         }
         if (!is_null_jit) {
 #if defined(ARCHITECTURE_arm64)
-            config.code_cache_size = static_cast<std::uint32_t>(128_MiB);
+            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(128_MiB));
 #else
-            config.code_cache_size = static_cast<std::uint32_t>(256_MiB);
+            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(512_MiB));
 #endif
         }
 
@@ -83,6 +101,9 @@ public:
             config.optimizations |= Dynarmic::OptimizationFlag::GetSetElimination;
             config.optimizations |= Dynarmic::OptimizationFlag::ConstProp;
             config.optimizations |= Dynarmic::OptimizationFlag::MiscIROpt;
+            if (Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue()) {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreStandardFPCRValue;
+            }
         }
     }
 
@@ -93,9 +114,9 @@ public:
         }
         if (!is_null_jit) {
 #if defined(ARCHITECTURE_arm64)
-            config.code_cache_size = static_cast<std::uint32_t>(128_MiB);
+            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(128_MiB));
 #else
-            config.code_cache_size = static_cast<std::uint32_t>(256_MiB);
+            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(256_MiB));
 #endif
         }
 
@@ -107,6 +128,9 @@ public:
             config.optimizations |= Dynarmic::OptimizationFlag::GetSetElimination;
             config.optimizations |= Dynarmic::OptimizationFlag::ConstProp;
             config.optimizations |= Dynarmic::OptimizationFlag::MiscIROpt;
+            if (Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue()) {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreStandardFPCRValue;
+            }
         }
     }
 };

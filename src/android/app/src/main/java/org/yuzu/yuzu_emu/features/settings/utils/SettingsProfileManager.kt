@@ -53,7 +53,6 @@ object SettingsProfileManager {
         BooleanSetting.ENABLE_BUFFER_HISTORY,
         BooleanSetting.USE_OPTIMIZED_VERTEX_BUFFERS,
         BooleanSetting.SYNC_MEMORY_OPERATIONS,
-        BooleanSetting.RENDERER_SAMPLE_SHADING,
         BooleanSetting.RENDERER_FRAME_GEN
     )
 
@@ -76,6 +75,7 @@ object SettingsProfileManager {
         IntSetting.FRAME_PACING_MODE,
         IntSetting.FSR_SHARPENING_SLIDER,
         IntSetting.MAX_ANISOTROPY,
+        IntSetting.RENDERER_SAMPLE_SHADING,
         IntSetting.CPU_ACCURACY,
         IntSetting.CPU_BACKEND,
         IntSetting.MEMORY_LAYOUT,

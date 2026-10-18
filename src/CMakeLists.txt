@@ -128,6 +128,7 @@ if (MSVC AND NOT CXX_CLANG)
         /wd4702 # unreachable code (when used with LTO)
 
         $<$<CONFIG:Release>:/GS->   # No stack buffer overflow checks
+        /Gw                         # Optimize global data for linker dead-stripping
         /Gy                         # Enable function level linking
         /GR-                        # Disable run time type information
     )
@@ -145,7 +146,7 @@ if (MSVC AND NOT CXX_CLANG)
     endif()
 
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG   "/DEBUG /MANIFEST:NO" CACHE STRING "" FORCE)
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /MANIFEST:NO /INCREMENTAL:NO /OPT:REF,ICF" CACHE STRING "" FORCE)
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /MANIFEST:NO /INCREMENTAL:NO /OPT:REF /OPT:ICF=3" CACHE STRING "" FORCE)
 else()
     if (NOT MSVC)
         add_compile_options(

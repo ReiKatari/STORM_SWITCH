@@ -1110,6 +1110,11 @@ void Widget::ReloadFromSetting() {
     if (reload_func) {
         reload_func();
     }
+    if (!Settings::IsConfiguringGlobal() && restore_button != nullptr) {
+        const bool using_global = setting.UsingGlobal();
+        restore_button->setEnabled(!using_global);
+        restore_button->setVisible(!using_global);
+    }
 }
 
 void Widget::RetranslateUI() {

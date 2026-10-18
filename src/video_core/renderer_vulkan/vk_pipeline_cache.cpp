@@ -682,11 +682,19 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
     if (device.IsKhrPipelineExecutablePropertiesEnabled()) {
         state->statistics = std::make_unique<PipelineStatistics>(device);
     }
+    const std::size_t preload_thread_count =
+        device.HasBrokenParallelShaderCompiling()
+            ? 1ULL
+            : std::clamp<std::size_t>(
+                  std::max<std::size_t>(std::thread::hardware_concurrency(), 2ULL) - 1ULL, 2ULL,
+                  16ULL);
+    Common::ThreadWorker preload_workers(preload_thread_count, "VkPipelinePreload");
+
     const auto load_compute{[&](std::ifstream& file, FileEnvironment env) {
         ComputePipelineCacheKey key;
         file.read(reinterpret_cast<char*>(&key), sizeof(key));
 
-        workers.QueueWork([this, key, env_ = std::move(env), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
+        preload_workers.QueueWork([this, key, env_ = std::move(env), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
             ShaderPools pools;
             auto auto_state = state_weak.lock();
             PipelineStatistics* stats = auto_state ? auto_state->statistics.get() : nullptr;
@@ -739,7 +747,7 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
             return;
         }
 
-        workers.QueueWork([this, key, envs_ = std::move(envs), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
+        preload_workers.QueueWork([this, key, envs_ = std::move(envs), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
             ShaderPools pools;
             boost::container::static_vector<Shader::Environment*, 5> env_ptrs;
             for (auto& env : envs_) {
@@ -776,7 +784,7 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
         state->has_loaded.store(true, std::memory_order_release);
     }
 
-    workers.WaitForRequests(stop_loading);
+    preload_workers.WaitForRequests(stop_loading);
     callback(VideoCore::LoadCallbackStage::Build, state->total, state->total);
 
     if (use_vulkan_pipeline_cache) {

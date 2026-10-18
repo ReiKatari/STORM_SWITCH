@@ -238,6 +238,128 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     api_grid_layout->setContentsMargins(0, 0, 0, 0);
     api_layout->addWidget(api_grid_widget);
 
+    // 1-Click Performance Presets Bar
+    auto* presets_frame = new QFrame(api_grid_widget);
+    presets_frame->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(15, 23, 42, 0.7);"
+        "    border: 1px solid rgba(0, 210, 255, 0.3);"
+        "    border-radius: 8px;"
+        "    margin-bottom: 6px;"
+        "}"
+    ));
+    auto* presets_vbox = new QVBoxLayout(presets_frame);
+    presets_vbox->setContentsMargins(10, 6, 10, 8);
+    presets_vbox->setSpacing(6);
+
+    const bool is_ru = UISettings::values.language.GetValue().starts_with("ru") || UISettings::values.language.GetValue().empty();
+    auto* presets_title = new QLabel(is_ru ?
+        QStringLiteral("🚀 <b>Быстрые профили графики и производительности (в 1 клик):</b>") :
+        QStringLiteral("🚀 <b>1-Click Graphics & Performance Presets:</b>"), presets_frame);
+    presets_title->setStyleSheet(QStringLiteral("color: #00F0FF; font-size: 11.5px; border: none; background: transparent;"));
+    presets_vbox->addWidget(presets_title);
+
+    auto* presets_hbox = new QHBoxLayout();
+    presets_hbox->setSpacing(8);
+
+    const auto make_preset_btn = [&](const QString& text, const QString& tip, auto apply_fn) {
+        auto* btn = new QPushButton(text, presets_frame);
+        btn->setToolTip(tip);
+        btn->setCursor(Qt::PointingHandCursor);
+        btn->setStyleSheet(QStringLiteral(
+            "QPushButton {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1E293B, stop:1 #0F172A);"
+            "    color: #F8FAFC;"
+            "    font-weight: 600;"
+            "    font-size: 11.5px;"
+            "    padding: 5px 10px;"
+            "    border-radius: 5px;"
+            "    border: 1px solid rgba(0, 210, 255, 0.35);"
+            "}"
+            "QPushButton:hover {"
+            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284C7, stop:1 #0369A1);"
+            "    color: #FFFFFF;"
+            "    border: 1px solid #00F0FF;"
+            "}"
+        ));
+        connect(btn, &QPushButton::clicked, this, [this, apply_fn]() {
+            apply_fn();
+            Settings::UpdateGPUAccuracy();
+            Settings::UpdateRescalingInfo();
+            SetConfiguration();
+            ConfigurationShared::ReloadAllActiveWidgets();
+            ConfigurationShared::NotifyGlobalSettingChanged();
+        });
+        presets_hbox->addWidget(btn);
+    };
+
+    const auto set_preset = [](auto& setting, auto val) {
+        setting.SetGlobal(Settings::IsConfiguringGlobal());
+        setting.SetValue(val);
+    };
+
+    make_preset_btn(
+        is_ru ? QStringLiteral("⚡ Макс. FPS") : QStringLiteral("⚡ Max FPS"),
+        is_ru ? QStringLiteral("Максимальная скорость: точность GPU Low, асинхронные шейдеры, быстрый GPU-таймер")
+              : QStringLiteral("Maximum speed: Low GPU accuracy, async shaders, fast GPU time"),
+        [set_preset]() {
+            set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
+            set_preset(Settings::values.use_asynchronous_shaders, true);
+            set_preset(Settings::values.async_presentation, true);
+            set_preset(Settings::values.use_reactive_flushing, false);
+            set_preset(Settings::values.use_fast_gpu_time, true);
+            set_preset(Settings::values.vram_garbage_collection, true);
+            set_preset(Settings::values.storm_lowend_turbo, false);
+        });
+
+    make_preset_btn(
+        is_ru ? QStringLiteral("⚖️ Баланс (Рекомендуется)") : QStringLiteral("⚖️ Balanced (Recommended)"),
+        is_ru ? QStringLiteral("Идеальный баланс стабильности и FPS: точность GPU High, BC1, асинхронная презентация")
+              : QStringLiteral("Optimal stability & FPS balance: High GPU accuracy, BC1, async presentation"),
+        [set_preset]() {
+            set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
+            set_preset(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
+            set_preset(Settings::values.astc_recompression, Settings::AstcRecompression::Bc1);
+            set_preset(Settings::values.use_asynchronous_shaders, true);
+            set_preset(Settings::values.async_presentation, true);
+            set_preset(Settings::values.use_reactive_flushing, false);
+            set_preset(Settings::values.use_fast_gpu_time, true);
+            set_preset(Settings::values.storm_lowend_turbo, false);
+        });
+
+    make_preset_btn(
+        is_ru ? QStringLiteral("💎 4K Качество") : QStringLiteral("💎 4K Quality"),
+        is_ru ? QStringLiteral("Максимальное качество: 2X (4K), фильтр FSR, сглаживание SMAA, анизотропия 16x, ASTC без сжатия")
+              : QStringLiteral("Ultra visual quality: 2X (4K), FSR scaling, SMAA anti-aliasing, 16x AF, Uncompressed ASTC"),
+        [set_preset]() {
+            set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
+            set_preset(Settings::values.resolution_setup, Settings::ResolutionSetup::Res2X);
+            set_preset(Settings::values.scaling_filter, Settings::ScalingFilter::Fsr);
+            set_preset(Settings::values.anti_aliasing, Settings::AntiAliasing::Smaa);
+            set_preset(Settings::values.max_anisotropy, Settings::AnisotropyMode::X16);
+            set_preset(Settings::values.astc_recompression, Settings::AstcRecompression::Uncompressed);
+            set_preset(Settings::values.use_reactive_flushing, true);
+            set_preset(Settings::values.storm_lowend_turbo, false);
+        });
+
+    make_preset_btn(
+        is_ru ? QStringLiteral("🔋 Эко / Портатив") : QStringLiteral("🔋 Eco / Handheld"),
+        is_ru ? QStringLiteral("Для слабых ПК и портативных консолей: экономия VRAM, Low-End Turbo и термоконтроль")
+              : QStringLiteral("For low-end PCs and handhelds: VRAM governor, Low-End Turbo, thermal control"),
+        [set_preset]() {
+            set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
+            set_preset(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
+            set_preset(Settings::values.astc_recompression, Settings::AstcRecompression::Bc1);
+            set_preset(Settings::values.eco_thermal_mode, true);
+            set_preset(Settings::values.eco_frame_pacing, true);
+            set_preset(Settings::values.smart_shader_throttle, true);
+            set_preset(Settings::values.vram_budget_governor, true);
+            set_preset(Settings::values.storm_lowend_turbo, true);
+        });
+
+    presets_vbox->addLayout(presets_hbox);
+    api_grid_layout->addWidget(presets_frame);
+
     QLayout& graphics_layout = *ui->graphics_widget->layout();
 
     std::map<u32, QWidget*> hold_graphics;

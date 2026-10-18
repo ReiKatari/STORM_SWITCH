@@ -168,7 +168,8 @@ struct GPU::Impl {
             return gpu_tick / 512;
         }
         const auto clock = Settings::values.gpu_clock.GetValue();
-        if (Settings::values.use_fast_gpu_time.GetValue() && clock == Settings::GpuClock::Normal) {
+        if ((Settings::values.use_fast_gpu_time.GetValue() || Settings::values.storm_lowend_turbo.GetValue()) &&
+            clock == Settings::GpuClock::Normal) {
             return gpu_tick / 256;
         }
         return gpu_tick / GpuClockMultiplier(clock);

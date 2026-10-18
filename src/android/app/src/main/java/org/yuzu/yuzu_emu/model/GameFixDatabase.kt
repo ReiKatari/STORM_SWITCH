@@ -6721,8 +6721,15 @@ object GameFixDatabase {
                         fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) {
                         continue
                     }
-                    val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
                     val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
+                    val rawSection = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
+                    val sectionName = when (keyName) {
+                        "airplane_mode" -> "Services"
+                        "memory_layout_mode" -> "Core"
+                        else -> rawSection
+                    }
+                    if (keyName == "airplane_mode") sections["System"]?.remove("airplane_mode")
+                    if (keyName == "memory_layout_mode") sections["System"]?.remove("memory_layout_mode")
                     val section = sections.getOrPut(sectionName) { mutableMapOf() }
                     val userExplicitlyConfigured = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true
                     if (userExplicitlyConfigured && section.containsKey(keyName)) {
@@ -6774,8 +6781,15 @@ object GameFixDatabase {
                     fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) {
                     continue
                 }
-                val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
                 val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
+                val rawSection = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
+                val sectionName = when (keyName) {
+                    "airplane_mode" -> "Services"
+                    "memory_layout_mode" -> "Core"
+                    else -> rawSection
+                }
+                if (keyName == "airplane_mode") sections["System"]?.remove("airplane_mode")
+                if (keyName == "memory_layout_mode") sections["System"]?.remove("memory_layout_mode")
 
                 val section = sections.getOrPut(sectionName) { mutableMapOf() }
 
@@ -6843,9 +6857,14 @@ object GameFixDatabase {
                 }
             }
             for ((fullKey, fixValue) in fix.settingsMap) {
-                val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
                 val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
-                val section = sections[sectionName] ?: continue
+                val rawSection = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
+                val sectionName = when (keyName) {
+                    "airplane_mode" -> "Services"
+                    "memory_layout_mode" -> "Core"
+                    else -> rawSection
+                }
+                val section = sections[sectionName] ?: sections[rawSection] ?: continue
                 val userVal = section[keyName]?.trim()
                 if (userVal != null && !userVal.equals(fixValue.trim(), ignoreCase = true)) {
                     overrides.add(keyName)
@@ -6891,12 +6910,12 @@ object GameFixDatabase {
             "Cpu\\cpuopt_ignore_memory_aborts" to "true",
             "Cpu\\cpu_accuracy" to "0",
             "Cpu\\cpu_backend" to targetCpuBackend,
-            "System\\airplane_mode" to "false",
-            "Core\\memory_layout_mode" to "0",
-            "System\\memory_layout_mode" to "0"
+            "Services\\airplane_mode" to "false",
+            "Core\\memory_layout_mode" to "0"
         )
         fullMap.putAll(profile.settingsMap)
-        if (fullMap["Renderer\\nvdec_emulation"] == "2" || fullMap["Renderer\\nvdec_emulation"] == "1") {
+        if (!profile.settingsMap.containsKey("Renderer\\nvdec_emulation") &&
+            (fullMap["Renderer\\nvdec_emulation"] == "2" || fullMap["Renderer\\nvdec_emulation"] == "1")) {
             fullMap["Renderer\\nvdec_emulation"] = "3"
         }
         if (!profile.settingsMap.containsKey("Renderer\\dyna_state")) {
@@ -6965,7 +6984,7 @@ object GameFixDatabase {
                 else -> "4 ГБ DRAM"
             })
             lines.add("\n🛠️ <b>Система и сеть:</b>")
-            val airplane = map["System\\airplane_mode"] ?: "false"
+            val airplane = map["Services\\airplane_mode"] ?: map["System\\airplane_mode"] ?: "false"
             lines.add(if (airplane == "true" || airplane == "1") "  • <b>Режим «В самолете»:</b> Включено (устраняет сетевые таймауты и сбои)" else "  • <b>Режим «В самолете»:</b> Отключено (сеть активна)")
         } else {
             lines.add("🎮 <b>Graphics and video:</b>")
@@ -7013,7 +7032,7 @@ object GameFixDatabase {
                 else -> "4GB DRAM"
             })
             lines.add("\n🛠️ <b>System and network:</b>")
-            val airplaneEn = map["System\\airplane_mode"] ?: "false"
+            val airplaneEn = map["Services\\airplane_mode"] ?: map["System\\airplane_mode"] ?: "false"
             lines.add(if (airplaneEn == "true" || airplaneEn == "1") "  • <b>Airplane mode:</b> Enabled (prevents network timeouts)" else "  • <b>Airplane mode:</b> Disabled (network active)")
         }
         return lines.joinToString("\n")
@@ -7068,8 +7087,13 @@ object GameFixDatabase {
                     fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) {
                     continue
                 }
-                val sectionName = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
                 val keyName = if (fullKey.contains("\\")) fullKey.substringAfterLast("\\") else fullKey
+                val rawSection = if (fullKey.contains("\\")) fullKey.substringBefore("\\") else "Core"
+                val sectionName = when (keyName) {
+                    "airplane_mode" -> "Services"
+                    "memory_layout_mode" -> "Core"
+                    else -> rawSection
+                }
                 sections.getOrPut(sectionName) { mutableMapOf() }[keyName] = value
             }
             for ((sec, map) in sections) {

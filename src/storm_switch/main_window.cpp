@@ -550,11 +550,11 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     Common::FS::CreateEdenPaths();
     this->config = std::make_unique<QtConfig>();
 
-    // Upgrade migration: Reset core emulation settings to Zero-Regression Baseline on new build, preserving user data
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "9.9.0";
-    if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
-        LOG_INFO(Frontend, "Upgrade detected (stored: '{}', current: '{}'). Resetting core emulation settings to Zero-Regression Baseline while preserving user data...",
-                 UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
+    // Initialize core emulation settings to Zero-Regression Baseline on fresh install, preserving existing user settings on upgrade
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "12.4.0";
+    if (UISettings::values.config_version.GetValue().empty()) {
+        LOG_INFO(Frontend, "Fresh configuration detected. Initializing core emulation settings to Zero-Regression Baseline (version '{}')...",
+                 CURRENT_BUILD_VERSION);
 
         Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
         Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Bc1);
@@ -586,6 +586,9 @@ MainWindow::MainWindow(bool has_broken_vulkan)
         Settings::values.skip_cpu_inner_invalidation.SetValue(false);
         Settings::values.renderer_force_max_clock.SetValue(false);
 
+        UISettings::values.config_version.SetValue(std::string(CURRENT_BUILD_VERSION));
+        config->SaveAllValues();
+    } else if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
         UISettings::values.config_version.SetValue(std::string(CURRENT_BUILD_VERSION));
         config->SaveAllValues();
     }
@@ -4086,6 +4089,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         profile = Core::GameFixDatabase::GetProfile(title_id);
     }
 
+    Core::GameFixDatabase::SetExcludedKeys({});
+
     if (profile == nullptr) {
         return GameFixDialogResult::LaunchWithoutChanges;
     }
@@ -4132,7 +4137,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     fixDialog.setWindowFlags(fixDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
     fixDialog.setMinimumWidth(600);
     fixDialog.setMaximumWidth(660);
-    fixDialog.resize(620, 440);
+    fixDialog.resize(620, 460);
 
     fixDialog.setStyleSheet(QStringLiteral(
         "QDialog {"
@@ -4281,6 +4286,76 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     fixText->setWordWrap(true);
     fixText->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.4; background: transparent; border: none;"));
     fixLayout->addWidget(fixText);
+
+    // Interactive per-parameter checkboxes
+    std::vector<std::pair<std::string, QCheckBox*>> param_checkboxes;
+    if (!profile->ini_settings.empty()) {
+        auto* paramsContainer = new QFrame(fixCard);
+        paramsContainer->setStyleSheet(QStringLiteral(
+            "QFrame {"
+            "    background: rgba(15, 23, 42, 0.55);"
+            "    border: 1px solid rgba(0, 210, 255, 0.22);"
+            "    border-radius: 6px;"
+            "    margin-top: 4px;"
+            "}"
+        ));
+        auto* paramsLayout = new QVBoxLayout(paramsContainer);
+        paramsLayout->setContentsMargins(8, 6, 8, 6);
+        paramsLayout->setSpacing(4);
+
+        auto* paramsTitle = new QLabel(is_russian ?
+            QStringLiteral("⚙️ <b>Выбор применяемых параметров (можно отключить отдельные пункты):</b>") :
+            QStringLiteral("⚙️ <b>Select parameters to apply (uncheck to skip individual items):</b>"), paramsContainer);
+        paramsTitle->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11px; background: transparent; border: none;"));
+        paramsLayout->addWidget(paramsTitle);
+
+        auto* paramsGrid = new QGridLayout();
+        paramsGrid->setContentsMargins(0, 2, 0, 0);
+        paramsGrid->setHorizontalSpacing(12);
+        paramsGrid->setVerticalSpacing(4);
+
+        int idx = 0;
+        for (const auto& [k, v] : profile->ini_settings) {
+            if (k == "aspect_ratio" || k == "resolution_setup" || k == "use_docked_mode" ||
+                k == "anti_aliasing" || k == "scaling_filter" || k == "fsr_sharpening_slider" ||
+                k == "max_anisotropy" || k == "frame_pacing_mode" || k == "backend") {
+                continue;
+            }
+            auto* cb = new QCheckBox(QStringLiteral("%1 = %2").arg(QString::fromStdString(k), QString::fromStdString(v)), paramsContainer);
+            cb->setChecked(true);
+            cb->setStyleSheet(QStringLiteral(
+                "QCheckBox {"
+                "    color: #CBD5E1;"
+                "    font-size: 11px;"
+                "    font-family: 'Consolas', 'Segoe UI', monospace;"
+                "    spacing: 6px;"
+                "    background: transparent;"
+                "    border: none;"
+                "}"
+                "QCheckBox::indicator {"
+                "    width: 13px;"
+                "    height: 13px;"
+                "    border-radius: 3px;"
+                "    border: 1px solid rgba(0, 210, 255, 0.45);"
+                "    background: rgba(15, 23, 42, 0.8);"
+                "}"
+                "QCheckBox::indicator:checked {"
+                "    background: #00D2FF;"
+                "    border: 1px solid #00F0FF;"
+                "}"
+            ));
+            paramsGrid->addWidget(cb, idx / 2, idx % 2);
+            param_checkboxes.emplace_back(k, cb);
+            ++idx;
+        }
+        paramsLayout->addLayout(paramsGrid);
+        if (!param_checkboxes.empty()) {
+            fixLayout->addWidget(paramsContainer);
+        } else {
+            paramsContainer->deleteLater();
+        }
+    }
+
     scrollLayout->addWidget(fixCard);
 
     scrollLayout->addStretch(1);
@@ -4422,8 +4497,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     }
 
     fixDialog.adjustSize();
-    if (fixDialog.height() > 560) {
-        fixDialog.resize(fixDialog.width(), 560);
+    if (fixDialog.height() > 580) {
+        fixDialog.resize(fixDialog.width(), 580);
     }
 
     fixDialog.exec();
@@ -4437,6 +4512,13 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     Core::GameFixDatabase::SetDontAskAgain(title_id, (custom_path / (legacy_config + ".ini")).string(), new_dont_ask);
 
     if (action == GameFixDialogResult::ApplyAndLaunch) {
+        std::vector<std::string> excluded_keys;
+        for (const auto& [key, cb] : param_checkboxes) {
+            if (cb && !cb->isChecked()) {
+                excluded_keys.push_back(key);
+            }
+        }
+        Core::GameFixDatabase::SetExcludedKeys(excluded_keys);
         Core::GameFixDatabase::SetFixesEnabled(true);
         if (force_show) {
             Core::GameFixDatabase::ApplyProfileDirectly(title_id, game_path.toStdString());
@@ -4554,6 +4636,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
             const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
             if (fix_result == GameFixDialogResult::Cancel) {
                 LOG_INFO(Frontend, "Запуск игры отменен пользователем в диалоге авто-исправлений");
+                RestoreSessionSettings();
                 m_session_backup.is_active = false;
                 game_list->setEnabled(true);
                 return;

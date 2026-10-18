@@ -11,6 +11,10 @@
 #include <QScreen>
 #include <QGuiApplication>
 #include <QScrollArea>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QLabel>
 #include "common/cpu_features.h"
 #include "common/memory_detect.h"
 #ifdef _WIN32
@@ -171,6 +175,31 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     SetConfiguration();
     PopulateSelectionList();
     ui->selectorList->setFixedWidth(175);
+
+    m_search_edit = new QLineEdit(this);
+    m_search_edit->setObjectName(QStringLiteral("SettingsSearchEdit"));
+    m_search_edit->setClearButtonEnabled(true);
+    m_search_edit->setPlaceholderText(StormLang(
+        QStringLiteral("🔍 Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
+        QStringLiteral("🔍 Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)...")
+    ));
+    m_search_edit->setStyleSheet(QStringLiteral(
+        "QLineEdit#SettingsSearchEdit {"
+        "    background-color: #0F172A;"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    border-radius: 7px;"
+        "    padding: 6px 12px;"
+        "    color: #F8FAFC;"
+        "    font-size: 12.5px;"
+        "    margin-bottom: 4px;"
+        "}"
+        "QLineEdit#SettingsSearchEdit:focus {"
+        "    border: 1px solid #00F0FF;"
+        "    background-color: #162032;"
+        "}"
+    ));
+    ui->verticalLayout->insertWidget(0, m_search_edit);
+    connect(m_search_edit, &QLineEdit::textChanged, this, &ConfigureDialog::OnSearchTextChanged);
 
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
         if (index != -1) {
@@ -511,6 +540,13 @@ void ConfigureDialog::RetranslateUI() {
 
     ui->retranslateUi(this);
 
+    if (m_search_edit) {
+        m_search_edit->setPlaceholderText(StormLang(
+            QStringLiteral("🔍 Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
+            QStringLiteral("🔍 Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)...")
+        ));
+    }
+
     if (m_restore_defaults_btn) {
         m_restore_defaults_btn->setText(StormLang(
             QStringLiteral("↺ Сбросить настройки"),
@@ -810,3 +846,92 @@ void ConfigureDialog::OnRestoreDefaultsClicked() {
     info_box.setIcon(QMessageBox::Information);
     info_box.exec();
 }
+
+void ConfigureDialog::OnSearchTextChanged(const QString& text) {
+    const QString query = text.trimmed();
+    const bool has_query = !query.isEmpty();
+
+    const std::array<QWidget*, 15> all_tabs = {
+        general_tab.get(), hotkeys_tab.get(), ui_tab.get(), web_tab.get(), debug_tab_tab.get(),
+        system_tab.get(), profile_tab.get(), filesystem_tab.get(), applets_tab.get(),
+        cpu_tab.get(), graphics_tab.get(), graphics_advanced_tab.get(),
+        graphics_extensions_tab.get(), audio_tab.get(), network_tab.get()
+    };
+
+    auto widget_matches = [&](QWidget* w) -> bool {
+        if (!has_query) {
+            return true;
+        }
+        if (w->toolTip().contains(query, Qt::CaseInsensitive)) {
+            return true;
+        }
+        const auto labels = w->findChildren<QLabel*>();
+        for (const auto* lbl : labels) {
+            if (lbl->text().contains(query, Qt::CaseInsensitive) ||
+                lbl->toolTip().contains(query, Qt::CaseInsensitive)) {
+                return true;
+            }
+        }
+        const auto checkboxes = w->findChildren<QCheckBox*>();
+        for (const auto* cb : checkboxes) {
+            if (cb->text().contains(query, Qt::CaseInsensitive) ||
+                cb->toolTip().contains(query, Qt::CaseInsensitive)) {
+                return true;
+            }
+        }
+        const auto combos = w->findChildren<QComboBox*>();
+        for (const auto* combo : combos) {
+            for (int i = 0; i < combo->count(); ++i) {
+                if (combo->itemText(i).contains(query, Qt::CaseInsensitive)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    QWidget* first_matching_tab = nullptr;
+    for (QWidget* tab : all_tabs) {
+        if (!tab) {
+            continue;
+        }
+        bool tab_has_match = false;
+        const auto shared_widgets = tab->findChildren<ConfigurationShared::Widget*>();
+        if (!shared_widgets.isEmpty()) {
+            for (auto* sw : shared_widgets) {
+                const bool match = widget_matches(sw);
+                sw->setVisible(match);
+                if (match) {
+                    tab_has_match = true;
+                }
+            }
+        } else {
+            if (widget_matches(tab)) {
+                tab_has_match = true;
+            }
+        }
+        if (tab_has_match && !first_matching_tab) {
+            first_matching_tab = tab;
+        }
+    }
+
+    if (!has_query && graphics_tab) {
+        graphics_tab->SetConfiguration();
+    } else if (has_query && first_matching_tab) {
+        for (int row = 0; row < ui->selectorList->count(); ++row) {
+            auto* item = ui->selectorList->item(row);
+            const auto tabs = qvariant_cast<QList<QWidget*>>(item->data(Qt::UserRole));
+            const int tab_idx = tabs.indexOf(first_matching_tab);
+            if (tab_idx != -1) {
+                if (ui->selectorList->currentRow() != row) {
+                    ui->selectorList->setCurrentRow(row);
+                }
+                if (ui->tabWidget->currentIndex() != tab_idx) {
+                    ui->tabWidget->setCurrentIndex(tab_idx);
+                }
+                break;
+            }
+        }
+    }
+}
+

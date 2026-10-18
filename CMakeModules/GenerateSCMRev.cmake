@@ -8,7 +8,7 @@
 include(GetSCMRev)
 
 function(get_timestamp _var)
-    string(TIMESTAMP timestamp UTC)
+    string(TIMESTAMP timestamp "%Y-%m-%d" UTC)
     set(${_var} "${timestamp}" PARENT_SCOPE)
 endfunction()
 
@@ -25,7 +25,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 # 1. GIT_RELEASE (read fresh from GIT-RELEASE file by GetSCMRev)
 # 2. BUILD_VERSION (if passed via -DBUILD_VERSION=...)
 # 3. GIT_TAG (read from GIT-TAG file)
-# 4. Fallback default 12.3.0
+# 4. Fallback default 12.4.0
 if (DEFINED GIT_RELEASE AND NOT GIT_RELEASE STREQUAL "")
     string(STRIP "${GIT_RELEASE}" BUILD_VERSION)
 elseif (DEFINED BUILD_VERSION AND NOT BUILD_VERSION STREQUAL "")
@@ -33,7 +33,7 @@ elseif (DEFINED BUILD_VERSION AND NOT BUILD_VERSION STREQUAL "")
 elseif (DEFINED GIT_TAG AND NOT GIT_TAG STREQUAL "")
     string(STRIP "${GIT_TAG}" BUILD_VERSION)
 else()
-    set(BUILD_VERSION "12.3.0")
+    set(BUILD_VERSION "12.4.0")
 endif()
 
 set(GIT_TAG "${BUILD_VERSION}")

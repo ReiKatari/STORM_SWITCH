@@ -934,7 +934,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                 R.id.menu_settings_per_game -> {
                     val action = HomeNavigationDirections.actionGlobalSettingsActivity(
-                        args.game,
+                        game ?: args.game,
                         Settings.MenuTag.SECTION_ROOT
                     )
                     binding.inGameMenu.requestFocus()

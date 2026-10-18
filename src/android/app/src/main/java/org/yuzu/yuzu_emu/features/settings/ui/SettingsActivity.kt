@@ -55,11 +55,15 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         if (args.game == null) {
-            NativeConfig.unloadPerGameConfig()
+            if (!EmulationActivity.isEmulationRunning) {
+                NativeConfig.unloadPerGameConfig()
+            }
             NativeConfig.reloadGlobalConfig()
         } else {
-            NativeConfig.unloadPerGameConfig()
-            org.yuzu.yuzu_emu.model.GameFixDatabase.prepareForUserCustomEdit(args.game!!)
+            if (!EmulationActivity.isEmulationRunning) {
+                NativeConfig.unloadPerGameConfig()
+                org.yuzu.yuzu_emu.model.GameFixDatabase.prepareForUserCustomEdit(args.game!!)
+            }
             SettingsFile.loadCustomConfig(args.game!!)
         }
         settingsViewModel.game = args.game
@@ -139,6 +143,8 @@ class SettingsActivity : AppCompatActivity() {
         applyFullscreenPreference()
     }
 
+    private var settingsSavedInStop = false
+
     private fun saveSettings() {
         try {
             if (args.game == null) {
@@ -158,12 +164,13 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     fun navigateBack() {
-        saveSettings()
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
         if (navHostFragment.childFragmentManager.backStackEntryCount > 0) {
             navHostFragment.navController.popBackStack()
         } else {
+            saveSettings()
+            settingsSavedInStop = true
             finish()
         }
     }
@@ -177,12 +184,12 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        settingsSavedInStop = false
         ThemeHelper.applySystemBarsTheme(window, this)
         applyFullscreenPreference()
     }
 
     override fun onPause() {
-        saveSettings()
         super.onPause()
     }
 
@@ -194,20 +201,15 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        saveSettings()
+        if (!settingsSavedInStop) {
+            saveSettings()
+            settingsSavedInStop = true
+        }
         super.onStop()
         Log.info("[SettingsActivity] Settings activity stopping. Saving settings to INI...")
         if (isFinishing) {
             NativeInput.reloadInputDevices()
-            if (args.game == null) {
-                NativeConfig.saveGlobalConfig()
-                NativeLibrary.applySettings()
-            } else if (NativeConfig.isPerGameConfigLoaded()) {
-                NativeConfig.savePerGameConfig()
-                args.game?.let { GameFixDatabase.markConfigAsUserCustom(it) }
-                NativeLibrary.logSettings()
-                NativeLibrary.applySettings()
-
+            if (args.game != null && NativeConfig.isPerGameConfigLoaded()) {
                 if (!EmulationActivity.isEmulationRunning) {
                     NativeConfig.unloadPerGameConfig()
                 } else {
@@ -228,7 +230,9 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        saveSettings()
+        if (!settingsSavedInStop) {
+            saveSettings()
+        }
         if (args.game != null && !EmulationActivity.isEmulationRunning) {
             NativeConfig.unloadPerGameConfig()
             NativeConfig.reloadGlobalConfig()

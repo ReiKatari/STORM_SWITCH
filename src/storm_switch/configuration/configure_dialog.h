@@ -105,6 +105,8 @@ private:
     std::vector<VkDeviceInfo::Record>& vk_records;
     bool m_is_changing_language{false};
     QPushButton* m_restore_defaults_btn{nullptr};
+    class QLineEdit* m_search_edit{nullptr};
 
     void OnRestoreDefaultsClicked();
+    void OnSearchTextChanged(const QString& text);
 };

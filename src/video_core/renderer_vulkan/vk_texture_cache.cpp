@@ -1786,8 +1786,14 @@ void TextureCacheRuntime::CopyImageMSAA(Image& dst, Image& src,
 
 u64 TextureCacheRuntime::GetDeviceLocalMemory() const {
     const u64 mem = device.GetDeviceLocalMemory();
+    if (Settings::values.storm_lowend_turbo.GetValue()) {
+        return (mem * 7) / 10;
+    }
     if (Settings::values.vram_garbage_collection.GetValue()) {
         return (mem * 3) / 4;
+    }
+    if (Settings::values.vram_budget_governor.GetValue()) {
+        return (mem * 85) / 100;
     }
     return mem;
 }

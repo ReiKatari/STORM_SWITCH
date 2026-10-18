@@ -6638,6 +6638,20 @@ const std::vector<GameFixProfile>& GameFixDatabase::GetAllProfiles() {
 }
 
 static bool s_fixes_enabled = true;
+static std::vector<std::string> s_excluded_keys;
+
+void GameFixDatabase::SetExcludedKeys(const std::vector<std::string>& excluded_keys) {
+    s_excluded_keys = excluded_keys;
+}
+
+bool GameFixDatabase::IsKeyExcluded(const std::string& full_key) {
+    for (const auto& k : s_excluded_keys) {
+        if (k == full_key) {
+            return true;
+        }
+    }
+    return false;
+}
 
 bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::string& config_file_path) {
     const auto* profile = GetProfile(title_id);
@@ -6674,6 +6688,9 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
 
     // Merge settings from profile without touching aspect_ratio or user scaling preferences
     for (const auto& [full_key, val] : profile->ini_settings) {
+        if (IsKeyExcluded(full_key)) {
+            continue;
+        }
         if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" ||
             full_key == "System\\use_docked_mode" || full_key == "Renderer\\anti_aliasing" ||
             full_key == "Renderer\\scaling_filter" || full_key == "Renderer\\fsr_sharpening_slider" ||
@@ -6690,37 +6707,44 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
                 key == "max_anisotropy" || key == "frame_pacing_mode" || key == "backend") {
                 continue;
             }
+            if (key == "airplane_mode") {
+                sec = "Services";
+                if (sections.count("System")) {
+                    sections["System"].erase("airplane_mode");
+                    sections["System"].erase("airplane_mode\\use_global");
+                    sections["System"].erase("airplane_mode\\default");
+                }
+                if (sections.count("Network")) {
+                    sections["Network"].erase("airplane_mode");
+                    sections["Network"].erase("airplane_mode\\use_global");
+                    sections["Network"].erase("airplane_mode\\default");
+                }
+            } else if (key == "memory_layout_mode") {
+                sec = "Core";
+                if (sections.count("System")) {
+                    sections["System"].erase("memory_layout_mode");
+                    sections["System"].erase("memory_layout_mode\\use_global");
+                    sections["System"].erase("memory_layout_mode\\default");
+                }
+            } else if (key == "use_auto_stub" || key == "disable_web_applet" ||
+                       key == "disable_macro_jit" || key == "disable_macro_hle") {
+                sec = "Debugging";
+            }
             std::string sanitized_val = val;
+            if (key == "memory_layout_mode") {
+#ifdef __ANDROID__
+                int mode = 0;
+                if (!sanitized_val.empty()) {
+                    mode = std::atoi(sanitized_val.c_str());
+                }
+                if (mode >= 2 && !HasAtLeast7GbHostRam()) {
+                    sanitized_val = "1";
+                }
+#endif
+            }
             sections[sec][key] = sanitized_val;
             sections[sec][key + "\\use_global"] = "false";
             sections[sec][key + "\\default"] = "false";
-            if (key == "memory_layout_mode") {
-                std::string mem_val = val;
-#ifdef __ANDROID__
-                int mode = 0;
-                if (!mem_val.empty()) {
-                    mode = std::atoi(mem_val.c_str());
-                }
-                if (mode >= 2 && !HasAtLeast7GbHostRam()) {
-                    mem_val = "1";
-                }
-#endif
-                sections[sec][key] = mem_val;
-                sections["Core"][key] = mem_val;
-                sections["Core"][key + "\\use_global"] = "false";
-                sections["Core"][key + "\\default"] = "false";
-                sections["System"][key] = mem_val;
-                sections["System"][key + "\\use_global"] = "false";
-                sections["System"][key + "\\default"] = "false";
-            }
-            if (key == "airplane_mode") {
-                sections["Network"][key] = val;
-                sections["Network"][key + "\\use_global"] = "false";
-                sections["Network"][key + "\\default"] = "false";
-                sections["Services"][key] = val;
-                sections["Services"][key + "\\use_global"] = "false";
-                sections["Services"][key + "\\default"] = "false";
-            }
         }
     }
     sections["StormSwitch"]["storm_fix_applied"] = "true";
@@ -6874,6 +6898,9 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
         };
 
         for (const auto& [full_key, val] : profile->ini_settings) {
+            if (IsKeyExcluded(full_key)) {
+                continue;
+            }
             // STRICT PRESERVATION: Never override aspect ratio, user scaling filters or graphics API backend
             if (full_key == "Renderer\\aspect_ratio" || full_key == "Renderer\\resolution_setup" ||
                 full_key == "System\\use_docked_mode" || full_key == "Renderer\\anti_aliasing" ||

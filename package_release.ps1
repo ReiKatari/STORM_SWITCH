@@ -1,4 +1,4 @@
-$version = "12.3.0"
+$version = "12.4.0"
 $baseDir = Split-Path -Parent $PSScriptRoot
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
@@ -88,6 +88,11 @@ New-Item -ItemType Directory -Path $stageWin11 -Force | Out-Null
 foreach ($f in $commonFiles) {
     Copy-Item "$assemblingDir\$f" "$stageWin11\" -Force
 }
+foreach ($f in $crtDlls) {
+    if (Test-Path "$assemblingDir\$f") {
+        Copy-Item "$assemblingDir\$f" "$stageWin11\" -Force
+    }
+}
 New-Item -ItemType Directory -Path (Join-Path $stageWin11 "user") -Force | Out-Null
 
 # Zip Windows 10
@@ -111,4 +116,25 @@ Remove-Item $stagingRoot -Recurse -Force -ErrorAction SilentlyContinue
 Get-ChildItem -Path $filesDir | Unblock-File -ErrorAction SilentlyContinue
 Get-ChildItem -Path $assemblingDir | Unblock-File -ErrorAction SilentlyContinue
 
+$mTargetDir = "M:\CONSOLES\Nintendo Switch\STORM SWITCH"
+if (Test-Path $mTargetDir) {
+    Write-Host "Syncing executables to $mTargetDir..."
+    foreach ($exe in @("STORM_SWITCH.exe", "STORM_SWITCH-cli.exe", "STORM_SWITCH-room.exe")) {
+        $srcExe = Join-Path $assemblingDir $exe
+        $dstExe = Join-Path $mTargetDir $exe
+        if (Test-Path $srcExe) {
+            try {
+                Copy-Item $srcExe $dstExe -Force -ErrorAction Stop
+            } catch {
+                $oldExe = "$dstExe.old"
+                Remove-Item $oldExe -Force -ErrorAction SilentlyContinue
+                Move-Item $dstExe $oldExe -Force -ErrorAction SilentlyContinue
+                Copy-Item $srcExe $dstExe -Force
+                Remove-Item $oldExe -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+}
+
 Write-Host "Packaging complete for $version!"
+

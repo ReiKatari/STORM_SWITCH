@@ -1246,6 +1246,36 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                               PAIR(GameListMode, CarouselView, tr("Carousel View")),
                           }});
 
+    translations->insert({Settings::EnumMetadata<Settings::AudioEngine>::Index(),
+                          {
+                              PAIR(AudioEngine, Auto, tr("Auto")),
+                              PAIR(AudioEngine, Cubeb, tr("Cubeb")),
+                              PAIR(AudioEngine, Sdl3, tr("SDL3")),
+                              PAIR(AudioEngine, Null, tr("Null")),
+                          }});
+
+    translations->insert({Settings::EnumMetadata<Settings::TemperatureUnits>::Index(),
+                          {
+                              PAIR(TemperatureUnits, Celsius, tr("Celsius (°C)")),
+                              PAIR(TemperatureUnits, Fahrenheit, tr("Fahrenheit (°F)")),
+                          }});
+
+    translations->insert({Settings::EnumMetadata<Settings::GpuLogLevel>::Index(),
+                          {
+                              PAIR(GpuLogLevel, Off, tr("Off")),
+                              PAIR(GpuLogLevel, Errors, tr("Errors Only")),
+                              PAIR(GpuLogLevel, Standard, tr("Standard")),
+                              PAIR(GpuLogLevel, Verbose, tr("Verbose")),
+                              PAIR(GpuLogLevel, All, tr("All")),
+                          }});
+
+    translations->insert({Settings::EnumMetadata<Settings::SpeedMode>::Index(),
+                          {
+                              PAIR(SpeedMode, Standard, tr("Standard")),
+                              PAIR(SpeedMode, Turbo, tr("Turbo")),
+                              PAIR(SpeedMode, Slow, tr("Slow")),
+                          }});
+
 #undef PAIR
 #undef CTX_PAIR
 

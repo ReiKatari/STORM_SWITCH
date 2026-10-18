@@ -39,6 +39,8 @@ public:
     static int ResetAllDontAskAgain();
     static void SetFixesEnabled(bool enabled);
     static bool AreFixesEnabled();
+    static void SetExcludedKeys(const std::vector<std::string>& excluded_keys);
+    static bool IsKeyExcluded(const std::string& full_key);
 };
 
 } // namespace Core

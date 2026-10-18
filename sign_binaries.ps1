@@ -16,7 +16,7 @@ if (-not $sha1) {
     if ($cert) { $sha1 = $cert.Thumbprint }
 }
 
-$version = '12.3.0'
+$version = '12.4.0'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -56,7 +56,7 @@ function Prepare-Staging($targetDir, $includeCrt) {
         Copy-Item "$assemblingDir\7z.*" $targetDir -Force
     }
 
-    # 2. If Windows 10, bundle VC CRT dlls
+    # 2. Bundle VC CRT dlls so both Windows 10 and clean Windows 11 run out-of-the-box
     if ($includeCrt) {
         Copy-Item "$assemblingDir\*.dll" $targetDir -Force
     }
@@ -65,14 +65,29 @@ function Prepare-Staging($targetDir, $includeCrt) {
     New-Item -ItemType Directory -Path "$targetDir\user" -Force | Out-Null
 }
 
-if (Test-Path "M:\CONSOLES\Nintendo Switch\STORM SWITCH") {
-    Write-Host "Syncing signed executables to M:\CONSOLES\Nintendo Switch\STORM SWITCH..."
-    Copy-Item "$assemblingDir\STORM_SWITCH*.exe" "M:\CONSOLES\Nintendo Switch\STORM SWITCH\" -Force
+$mTargetDir = "M:\CONSOLES\Nintendo Switch\STORM SWITCH"
+if (Test-Path $mTargetDir) {
+    Write-Host "Syncing signed executables to $mTargetDir..."
+    foreach ($exe in @("STORM_SWITCH.exe", "STORM_SWITCH-cli.exe", "STORM_SWITCH-room.exe")) {
+        $srcExe = Join-Path $assemblingDir $exe
+        $dstExe = Join-Path $mTargetDir $exe
+        if (Test-Path $srcExe) {
+            try {
+                Copy-Item $srcExe $dstExe -Force -ErrorAction Stop
+            } catch {
+                $oldExe = "$dstExe.old"
+                Remove-Item $oldExe -Force -ErrorAction SilentlyContinue
+                Move-Item $dstExe $oldExe -Force -ErrorAction SilentlyContinue
+                Copy-Item $srcExe $dstExe -Force
+                Remove-Item $oldExe -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
 }
 
-Write-Host "Preparing Windows 11 staging..."
+Write-Host "Preparing Windows 11 staging (with VC CRT)..."
 $stageWin11 = Join-Path $baseDir "Temp_Package_Win11"
-Prepare-Staging $stageWin11 $false
+Prepare-Staging $stageWin11 $true
 
 $zipPathWin11 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows11.zip"
 if (Test-Path $zipPathWin11) { Remove-Item $zipPathWin11 -Force }
