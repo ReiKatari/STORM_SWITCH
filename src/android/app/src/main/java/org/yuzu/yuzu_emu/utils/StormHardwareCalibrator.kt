@@ -213,7 +213,7 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_ANTI_ALIASING.setInt(0) // None
 
         // Scaling filter: AMD FSR (5) with 80% Sharpening
-        IntSetting.RENDERER_SCALING_FILTER.setInt(5)
+        IntSetting.RENDERER_SCALING_FILTER.setInt(6)
         IntSetting.FSR_SHARPENING_SLIDER.setInt(80)
 
         // ASTC Decode: GPU (1) by default
@@ -301,7 +301,7 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(0) // Conservative
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(2) // Fast
         IntSetting.RENDERER_ANTI_ALIASING.setInt(0)
-        IntSetting.RENDERER_SCALING_FILTER.setInt(5)
+        IntSetting.RENDERER_SCALING_FILTER.setInt(6)
         IntSetting.FSR_SHARPENING_SLIDER.setInt(80)
         IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1) // GPU
         IntSetting.ASTC_RECOMPRESSION.setInt(if (profile.isAdreno6xx) 2 else 0)
@@ -355,7 +355,7 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.totalRamGb < 8.0 || !profile.isAdreno || profile.isAdreno6xx) 0 else 1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(1) // Balanced
         IntSetting.RENDERER_ANTI_ALIASING.setInt(0)
-        IntSetting.RENDERER_SCALING_FILTER.setInt(5)
+        IntSetting.RENDERER_SCALING_FILTER.setInt(6)
         IntSetting.FSR_SHARPENING_SLIDER.setInt(80)
         IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1) // GPU
         IntSetting.ASTC_RECOMPRESSION.setInt(0)
@@ -409,7 +409,7 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP && !profile.isDimensity9400) 2 else 1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(0) // Strict
         IntSetting.RENDERER_ANTI_ALIASING.setInt(if (profile.isAdreno6xx) 0 else if (profile.tier >= HardwareTier.FLAGSHIP) 2 else 1)
-        IntSetting.RENDERER_SCALING_FILTER.setInt(5) // AMD FSR
+        IntSetting.RENDERER_SCALING_FILTER.setInt(6) // AMD FSR
         IntSetting.FSR_SHARPENING_SLIDER.setInt(90)
         IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1) // GPU
         IntSetting.ASTC_RECOMPRESSION.setInt(0)

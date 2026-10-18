@@ -1,4 +1,4 @@
-$version = "12.2.0"
+$version = "12.3.0"
 $baseDir = Split-Path -Parent $PSScriptRoot
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()

@@ -6,6 +6,9 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
+#include <mutex>
+#include <unordered_map>
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
@@ -76,6 +79,24 @@ void Config::Initialize(const std::optional<std::string> config_path, bool reloa
 }
 
 void Config::WriteToIni() const {
+    std::string serialized;
+    if (config->Save(serialized, false) >= 0) {
+        struct CachedIniWrite {
+            std::string content;
+            std::chrono::steady_clock::time_point timestamp{};
+        };
+        static std::mutex s_write_cache_mutex;
+        static std::unordered_map<std::string, CachedIniWrite> s_write_cache;
+        const auto now = std::chrono::steady_clock::now();
+        std::scoped_lock lk(s_write_cache_mutex);
+        auto it = s_write_cache.find(config_loc);
+        if (it != s_write_cache.end() && it->second.content == serialized &&
+            (now - it->second.timestamp) < std::chrono::milliseconds(1500)) {
+            return;
+        }
+        s_write_cache[config_loc] = CachedIniWrite{std::move(serialized), now};
+    }
+
     std::string config_type;
     switch (type) {
     case ConfigType::GlobalConfig:

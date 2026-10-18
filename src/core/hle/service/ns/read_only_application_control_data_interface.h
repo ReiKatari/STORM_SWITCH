@@ -32,6 +32,10 @@ public:
                                          u32 supported_languages);
     Result ConvertApplicationLanguageToLanguageCode(Out<u64> out_language_code,
                                                     ApplicationLanguage application_language);
+    Result ConvertLanguageCodeToApplicationLanguage(Out<ApplicationLanguage> out_application_language,
+                                                    u64 language_code);
+    Result SelectApplicationDesiredLanguage(Out<ApplicationLanguage> out_desired_language,
+                                            u32 supported_languages);
     Result GetApplicationControlData2(
         OutBuffer<BufferAttr_HipcMapAlias> out_buffer,
         Out<u64> out_total_size,

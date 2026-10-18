@@ -141,6 +141,7 @@ struct TouchFromButtonMap {
 };
 
 Language GetDefaultSystemLanguage();
+Region GetDefaultSystemRegion();
 
 struct Values {
     Linkage linkage{};
@@ -821,7 +822,7 @@ struct Values {
                                                      Specialization::Default,
                                                      true,
                                                      true};
-    SwitchableSetting<Region, true> region_index{linkage, Region::Usa, "region_index", Category::System, Specialization::Default, true, true};
+    SwitchableSetting<Region, true> region_index{linkage, GetDefaultSystemRegion(), "region_index", Category::System, Specialization::Default, true, true};
     SwitchableSetting<TimeZone, true> time_zone_index{linkage, TimeZone::Auto, "time_zone_index", Category::System, Specialization::Default, true, true};
     Setting<u32> serial_battery{linkage, 0, "serial_battery", Category::Debugging};
     Setting<u32> serial_unit{linkage, 0, "serial_unit", Category::Debugging};

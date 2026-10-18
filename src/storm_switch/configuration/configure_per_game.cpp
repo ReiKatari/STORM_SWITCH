@@ -33,6 +33,7 @@
 #include "core/file_sys/control_metadata.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/xts_archive.h"
+#include "core/hle/service/game_fix_database.h"
 #include "core/loader/loader.h"
 #include "frontend_common/config.h"
 #include "qt_common/config/uisettings.h"
@@ -180,10 +181,12 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         std::error_code ec;
         std::filesystem::remove(custom_path / (specific_config + ".ini"), ec);
         std::filesystem::remove(custom_path / (legacy_config + ".ini"), ec);
+        Settings::RestoreGlobalState(false);
         game_config = std::make_unique<QtConfig>(specific_config, Config::ConfigType::PerGameConfig);
         for (const auto tab : *tab_group) {
             tab->SetConfiguration();
         }
+        ConfigurationShared::ReloadAllActiveWidgets();
         QMessageBox::information(
             this,
             StormLang(QStringLiteral("Сброс настроек"), QStringLiteral("Reset Settings"),
@@ -199,6 +202,47 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
                       QStringLiteral("تمت إعادة تعيين الإعدادات المخصصة للعبة إلى الوضع الافتراضي.\nستستخدم اللعبة الآن الإعدادات العامة للمحاكي."),
                       QStringLiteral("La configuración personalizada del juego se ha restablecido.\nEl juego usará ahora la configuración global del emulador.")));
     });
+
+    if (const auto* fix_profile = Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, file_name)) {
+        QPushButton* autofix_button = ui->buttonBox->addButton(
+            StormLang(QStringLiteral("⚡ Профиль Авто-фикса"),
+                      QStringLiteral("⚡ Auto-Fix Profile"),
+                      QStringLiteral("⚡ Auto-Fix-Profil"),
+                      QStringLiteral("⚡ Profil Auto-Fix"),
+                      QStringLiteral("⚡ 自动修复配置"),
+                      QStringLiteral("⚡ 自動修正プロファイル"),
+                      QStringLiteral("⚡ ملف الإصلاح التلقائي"),
+                      QStringLiteral("⚡ Perfil Auto-Fix")),
+            QDialogButtonBox::ActionRole);
+        autofix_button->setToolTip(QString::fromUtf8(fix_profile->fixes_ru.empty()
+                                                         ? fix_profile->fixes_en.c_str()
+                                                         : fix_profile->fixes_ru.c_str()));
+        connect(autofix_button, &QAbstractButton::clicked, this, [this, file_name]() {
+            Core::GameFixDatabase::ApplyProfileDirectly(title_id, file_name);
+            for (const auto tab : *tab_group) {
+                tab->SetConfiguration();
+            }
+            ConfigurationShared::ReloadAllActiveWidgets();
+            QMessageBox::information(
+                this,
+                StormLang(QStringLiteral("Профиль Авто-фикса применён"),
+                          QStringLiteral("Auto-Fix Profile Applied"),
+                          QStringLiteral("Auto-Fix-Profil angewendet"),
+                          QStringLiteral("Profil Auto-Fix appliqué"),
+                          QStringLiteral("已应用自动修复配置"),
+                          QStringLiteral("自動修正プロファイルを適用しました"),
+                          QStringLiteral("تم تطبيق ملف الإصلاح التلقائي"),
+                          QStringLiteral("Perfil Auto-Fix aplicado")),
+                StormLang(QStringLiteral("Рекомендованные настройки STORM GameFix для этой игры загружены в форму.\nНажмите «ОК» или «Применить», чтобы сохранить их."),
+                          QStringLiteral("Recommended STORM GameFix settings for this game have been loaded.\nClick OK or Apply to save them."),
+                          QStringLiteral("Die empfohlenen STORM GameFix-Einstellungen wurden geladen.\nKlicken Sie auf OK oder Anwenden, um sie zu speichern."),
+                          QStringLiteral("Les paramètres recommandés STORM GameFix ont été chargés.\nCliquez sur OK ou Appliquer pour enregistrer."),
+                          QStringLiteral("已加载推荐的 STORM GameFix 游戏配置。\n点击“确定”或“应用”以保存。"),
+                          QStringLiteral("推奨される STORM GameFix 設定が読み込まれました。\nOK または適用をクリックして保存してください。"),
+                          QStringLiteral("تم تحميل إعدادات STORM GameFix الموصى بها لهذه اللعبة.\nاضغط على موافق أو تطبيق للحفظ."),
+                          QStringLiteral("Se han cargado los ajustes recomendados de STORM GameFix.\nHaga clic en Aceptar o Aplicar para guardarlos.")));
+        });
+    }
 
     setStyleSheet(QStringLiteral(
         "QDialog#ConfigurePerGame {"

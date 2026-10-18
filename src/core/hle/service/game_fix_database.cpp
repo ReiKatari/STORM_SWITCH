@@ -4696,9 +4696,10 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\sync_memory_operations", "false"},
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\async_presentation", "false"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\enable_gpu_buffer_readback", "true"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\nvdec_emulation", "3"},
             {"Renderer\\use_asynchronous_shaders", "true"},
@@ -6035,10 +6036,7 @@ static GameFixProfile CreateEnrichedProfile(const GameFixProfile& base, u64 targ
     enriched.issues_ru = base.issues_ru;
     enriched.issues_en = base.issues_en;
 
-    enriched.ini_settings = s_baseline_ini;
-    for (const auto& [k, v] : base.ini_settings) {
-        enriched.ini_settings[k] = v;
-    }
+    enriched.ini_settings = base.ini_settings.empty() ? s_baseline_ini : base.ini_settings;
 
     enriched.fixes_ru = BuildFixesRu(enriched.ini_settings);
     enriched.fixes_en = BuildFixesEn(enriched.ini_settings);
@@ -6392,9 +6390,6 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         if (game_lower.find("luigi's mansion 3") != std::string::npos && (lower.find("mansion 3") != std::string::npos || lower.find("lm3") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
-        if (game_lower.find("no man's sky") != std::string::npos && (lower.find("no man") != std::string::npos || lower.find("nms") != std::string::npos)) {
-            return GetProfile(profile.title_id);
-        }
         if (game_lower.find("batman") != std::string::npos && (lower.find("batman") != std::string::npos || lower.find("arkham") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
@@ -6413,7 +6408,7 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         if (game_lower.find("demon slayer") != std::string::npos && (lower.find("demon slayer") != std::string::npos || lower.find("hinokami") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
-        if ((game_lower.find("gta v") != std::string::npos || game_lower.find("gta 5") != std::string::npos) && (lower.find("gta v") != std::string::npos || lower.find("gta 5") != std::string::npos || lower.find("gtav") != std::string::npos)) {
+        if ((game_lower.find("gta v") != std::string::npos || game_lower.find("gta 5") != std::string::npos) && (lower.find("gta v") != std::string::npos || lower.find("gta 5") != std::string::npos || lower.find("gtav") != std::string::npos || lower.find("0100b00b51230000") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
         if ((game_lower.find("gta") != std::string::npos || game_lower.find("grand theft auto") != std::string::npos) && (lower.find("gta") != std::string::npos || lower.find("grand theft auto") != std::string::npos || lower.find("san andreas") != std::string::npos || lower.find("vice city") != std::string::npos || lower.find("re3") != std::string::npos || lower.find("revc") != std::string::npos)) {
@@ -6519,9 +6514,6 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
             return GetProfile(profile.title_id);
         }
         if (game_lower.find("devilutionx") != std::string::npos && (lower.find("devilutionx") != std::string::npos || lower.find("diablo") != std::string::npos || lower.find("hellfire") != std::string::npos || lower.find("diabdat") != std::string::npos)) {
-            return GetProfile(profile.title_id);
-        }
-        if (game_lower.find("gta v") != std::string::npos && (lower.find("gta v") != std::string::npos || lower.find("gta 5") != std::string::npos || lower.find("0100b00b51230000") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
         if (game_lower.find("re3-sa") != std::string::npos && (lower.find("re3-sa") != std::string::npos || lower.find("san andreas") != std::string::npos || lower.find("gtasa") != std::string::npos)) {

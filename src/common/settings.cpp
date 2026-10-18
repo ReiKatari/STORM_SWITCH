@@ -38,6 +38,10 @@
 #include <windows.h>
 #endif
 
+#ifdef __ANDROID__
+#include <sys/system_properties.h>
+#endif
+
 namespace Settings {
 
 // Clang 14 and earlier have errors when explicitly instantiating these classes
@@ -144,13 +148,24 @@ Language GetDefaultSystemLanguage() {
         return Language::EnglishAmerican;
     }
 #else
+#ifdef __ANDROID__
+    char prop_buf[PROP_VALUE_MAX] = {};
+    if (__system_property_get("persist.sys.locale", prop_buf) <= 0 &&
+        __system_property_get("ro.product.locale", prop_buf) <= 0 &&
+        __system_property_get("persist.sys.language", prop_buf) <= 0) {
+        prop_buf[0] = '\0';
+    }
+    const char* lang_env = (prop_buf[0] != '\0') ? prop_buf : std::getenv("LC_ALL");
+#else
     const char* lang_env = std::getenv("LC_ALL");
+#endif
     if (!lang_env || !*lang_env) {
         lang_env = std::getenv("LANG");
     }
     if (lang_env) {
         std::string_view lang_str(lang_env);
-        if (lang_str.starts_with("ru") || lang_str.starts_with("be") || lang_str.starts_with("uk")) {
+        if (lang_str.starts_with("ru") || lang_str.starts_with("be") ||
+            lang_str.starts_with("uk") || lang_str.starts_with("kk")) {
             return Language::Russian;
         } else if (lang_str.starts_with("de")) {
             return Language::German;
@@ -160,20 +175,57 @@ Language GetDefaultSystemLanguage() {
             return Language::Italian;
         } else if (lang_str.starts_with("es")) {
             return Language::Spanish;
+        } else if (lang_str.starts_with("zh_TW") || lang_str.starts_with("zh-TW") ||
+                   lang_str.starts_with("zh_HK") || lang_str.starts_with("zh-HK") ||
+                   lang_str.starts_with("zh-Hant")) {
+            return Language::ChineseTraditional;
         } else if (lang_str.starts_with("zh")) {
             return Language::ChineseSimplified;
         } else if (lang_str.starts_with("ja")) {
             return Language::Japanese;
         } else if (lang_str.starts_with("ko")) {
             return Language::Korean;
+        } else if (lang_str.starts_with("pt_BR") || lang_str.starts_with("pt-BR")) {
+            return Language::PortugueseBrazilian;
         } else if (lang_str.starts_with("pt")) {
             return Language::Portuguese;
         } else if (lang_str.starts_with("pl")) {
             return Language::Polish;
+        } else if (lang_str.starts_with("nl")) {
+            return Language::Dutch;
+        } else if (lang_str.starts_with("th")) {
+            return Language::Thai;
         }
     }
     return Language::EnglishAmerican;
 #endif
+}
+
+Region GetDefaultSystemRegion() {
+    switch (GetDefaultSystemLanguage()) {
+    case Language::Japanese:
+        return Region::Japan;
+    case Language::Russian:
+    case Language::German:
+    case Language::French:
+    case Language::Italian:
+    case Language::Spanish:
+    case Language::Dutch:
+    case Language::Portuguese:
+    case Language::Polish:
+    case Language::EnglishBritish:
+        return Region::Europe;
+    case Language::Chinese:
+    case Language::ChineseSimplified:
+        return Region::China;
+    case Language::Korean:
+        return Region::Korea;
+    case Language::Taiwanese:
+    case Language::ChineseTraditional:
+        return Region::Taiwan;
+    default:
+        return Region::Usa;
+    }
 }
 
 std::string GetTimeZoneString(TimeZone time_zone) {

@@ -491,6 +491,7 @@ private:
     void UpdateAstcDecodeText();
     void UpdateAstcRecompressText();
     void UpdateAddonsStatusButton(u64 title_id = 0, const QString& game_name = {});
+    void UpdateGameFixStatusButton();
     void UpdateResScaleText();
     void UpdateAirplaneModeButton();
     void UpdateVSyncText();
@@ -596,6 +597,7 @@ private:
         std::pair<bool, bool> vram_garbage_collection;
         std::pair<bool, bool> drs_resolution_lock;
         std::pair<bool, bool> rescale_hack;
+        std::pair<bool, bool> fix_bloom_effects;
         std::pair<Settings::AspectRatio, bool> aspect_ratio;
         std::pair<Settings::VramUsageMode, bool> vram_usage_mode;
         std::pair<bool, bool> enable_frame_skipping;
@@ -648,6 +650,7 @@ private:
     QPushButton* astc_decode_button = nullptr;
     QPushButton* astc_recompress_button = nullptr;
     QPushButton* addons_status_button = nullptr;
+    QPushButton* gamefix_status_button = nullptr;
     QPushButton* res_scale_button = nullptr;
     QPushButton* airplane_mode_button = nullptr;
     QPushButton* vsync_mode_button = nullptr;

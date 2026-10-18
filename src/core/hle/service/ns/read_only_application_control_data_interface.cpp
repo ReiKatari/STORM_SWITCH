@@ -19,6 +19,7 @@
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/vfs/vfs.h"
 #include "core/hle/kernel/k_transfer_memory.h"
+#include "core/loader/loader.h"
 #include "core/hle/service/cmif_serialization.h"
 #include "core/hle/service/ns/language.h"
 #include "core/hle/service/ns/ns_types.h"
@@ -144,8 +145,8 @@ IReadOnlyApplicationControlDataInterface::IReadOnlyApplicationControlDataInterfa
         {0, D<&IReadOnlyApplicationControlDataInterface::GetApplicationControlData>, "GetApplicationControlData"},
         {1, D<&IReadOnlyApplicationControlDataInterface::GetApplicationDesiredLanguage>, "GetApplicationDesiredLanguage"},
         {2, D<&IReadOnlyApplicationControlDataInterface::ConvertApplicationLanguageToLanguageCode>, "ConvertApplicationLanguageToLanguageCode"},
-        {3, nullptr, "ConvertLanguageCodeToApplicationLanguage"},
-        {4, nullptr, "SelectApplicationDesiredLanguage"},
+        {3, D<&IReadOnlyApplicationControlDataInterface::ConvertLanguageCodeToApplicationLanguage>, "ConvertLanguageCodeToApplicationLanguage"},
+        {4, D<&IReadOnlyApplicationControlDataInterface::SelectApplicationDesiredLanguage>, "SelectApplicationDesiredLanguage"},
         {5, D<&IReadOnlyApplicationControlDataInterface::GetApplicationControlData2>, "GetApplicationControlData"},
         {13, &IReadOnlyApplicationControlDataInterface::ListApplicationTitle, "ListApplicationTitle"},
         {19, D<&IReadOnlyApplicationControlDataInterface::GetApplicationControlData3>, "GetApplicationControlData"},
@@ -165,7 +166,7 @@ const IReadOnlyApplicationControlDataInterface::CachedControlData&
 IReadOnlyApplicationControlDataInterface::GetOrCreateCachedControl(u64 application_id) {
     std::scoped_lock lock{s_cache_mutex};
     const auto it = s_control_cache.find(application_id);
-    if (it != s_control_cache.end()) {
+    if (it != s_control_cache.end() && it->second.has_nacp) {
         return it->second;
     }
 
@@ -189,8 +190,27 @@ IReadOnlyApplicationControlDataInterface::GetOrCreateCachedControl(u64 applicati
         }
     }
 
-    auto [emplaced_it, _] = s_control_cache.emplace(application_id, std::move(data));
-    return emplaced_it->second;
+    // Fallback to active AppLoader if ContentProvider does not have the Control NCA registered
+    if (!data.has_nacp) {
+        auto& app_loader = system.GetAppLoader();
+        FileSys::NACP loader_nacp{};
+        if (app_loader.ReadControlData(loader_nacp) == Loader::ResultStatus::Success) {
+            data.nacp_bytes = loader_nacp.GetRawBytes();
+            data.language_entry = loader_nacp.GetLanguageEntry();
+            data.has_nacp = true;
+        }
+        if (!data.has_icon) {
+            std::vector<u8> loader_icon;
+            if (app_loader.ReadIcon(loader_icon) == Loader::ResultStatus::Success &&
+                !loader_icon.empty()) {
+                data.icon_bytes = std::move(loader_icon);
+                data.has_icon = true;
+            }
+        }
+    }
+
+    s_control_cache[application_id] = std::move(data);
+    return s_control_cache[application_id];
 }
 
 Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData(
@@ -253,15 +273,20 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationDesiredLanguage(
         R_THROW(Service::NS::ResultApplicationLanguageNotFound);
     }
 
-    // Check if user's desired language is supported directly
+    // Check if user's desired language is supported directly, or if the game is an international
+    // release / repack / LayeredFS translation (where English is in NACP but Russian/etc. was added
+    // to RomFS or GameMaker/Unity/UE4 tables without rebuilding the NACP supported_languages bitmask).
     const auto desired_flag = GetSupportedLanguageFlag(*application_language);
-    if (supported_languages == 0 || (supported_languages & desired_flag) == desired_flag) {
+    constexpr u32 english_flags = (1U << static_cast<u32>(ApplicationLanguage::AmericanEnglish)) |
+                                  (1U << static_cast<u32>(ApplicationLanguage::BritishEnglish));
+    if (supported_languages == 0 || (supported_languages & desired_flag) == desired_flag ||
+        (supported_languages & english_flags) != 0) {
         *out_desired_language = *application_language;
         LOG_DEBUG(Service_NS, "Using user configured application language: {}", *application_language);
         R_SUCCEED();
     }
 
-    // Try to find a valid language from priority list
+    // Try to find a valid language from priority list (e.g. for Japanese-only or CJK-only titles)
     for (const auto lang : *priority_list) {
         const auto supported_flag = GetSupportedLanguageFlag(lang);
         if ((supported_languages & supported_flag) == supported_flag) {
@@ -271,7 +296,6 @@ Result IReadOnlyApplicationControlDataInterface::GetApplicationDesiredLanguage(
         }
     }
 
-    // If game NACP doesn't list it (e.g. fan translations, LayeredFS mods), still provide the user's requested language
     *out_desired_language = *application_language;
     LOG_DEBUG(Service_NS, "Defaulting to user configured application language: {}", *application_language);
     R_SUCCEED();
@@ -287,6 +311,25 @@ Result IReadOnlyApplicationControlDataInterface::ConvertApplicationLanguageToLan
 
     *out_language_code = static_cast<u64>(*language_code);
     R_SUCCEED();
+}
+
+Result IReadOnlyApplicationControlDataInterface::ConvertLanguageCodeToApplicationLanguage(
+    Out<ApplicationLanguage> out_application_language, u64 language_code) {
+    const auto application_language =
+        ConvertToApplicationLanguage(static_cast<Set::LanguageCode>(language_code));
+    if (application_language == std::nullopt) {
+        LOG_ERROR(Service_NS, "Application language not found! language_code={:016X}",
+                  language_code);
+        R_THROW(Service::NS::ResultApplicationLanguageNotFound);
+    }
+
+    *out_application_language = *application_language;
+    R_SUCCEED();
+}
+
+Result IReadOnlyApplicationControlDataInterface::SelectApplicationDesiredLanguage(
+    Out<ApplicationLanguage> out_desired_language, u32 supported_languages) {
+    return GetApplicationDesiredLanguage(out_desired_language, supported_languages);
 }
 
 Result IReadOnlyApplicationControlDataInterface::GetApplicationControlData2(

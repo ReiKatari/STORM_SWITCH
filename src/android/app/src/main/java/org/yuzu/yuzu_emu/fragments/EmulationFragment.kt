@@ -1451,6 +1451,30 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS
             )
 
+            quickSettings.addBooleanSetting(
+                R.string.renderer_reactive_flushing,
+                container,
+                BooleanSetting.RENDERER_REACTIVE_FLUSHING
+            )
+
+            quickSettings.addBooleanSetting(
+                R.string.enable_gpu_buffer_readback,
+                container,
+                BooleanSetting.ENABLE_GPU_BUFFER_READBACK
+            )
+
+            quickSettings.addBooleanSetting(
+                R.string.fix_bloom_effects,
+                container,
+                BooleanSetting.FIX_BLOOM_EFFECTS
+            )
+
+            quickSettings.addBooleanSetting(
+                R.string.frame_gen,
+                container,
+                BooleanSetting.RENDERER_FRAME_GEN
+            )
+
             quickSettings.addDivider(container)
 
             // --- Audio Section ---
@@ -1520,6 +1544,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 IntSetting.CPU_BACKEND,
                 R.array.cpuBackendArm64Names,
                 R.array.cpuBackendArm64Values
+            )
+
+            quickSettings.addBooleanSetting(
+                R.string.airplane_mode,
+                container,
+                BooleanSetting.AIRPLANE_MODE
             )
         }
     }

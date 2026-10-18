@@ -5211,14 +5211,16 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100A4601ECA8000L,
             "Crypt Custodian",
-            "• Зависание отрисовки поверхностей GameMaker при асинхронном выводе\n• Артефакты полупрозрачных частиц при пересжатии ASTC",
-            "• GameMaker 2D surface rendering freeze with async presentation\n• Transparent particle artifacts with ASTC recompression",
-            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
-            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            "• Бесконечная загрузка на стартовом экране (ожидание сетевого состояния nifm и барьеров поверхностей GameMaker)\n• Зависание отрисовки поверхностей GameMaker при асинхронном выводе\n• Артефакты полупрозрачных частиц при пересжатии ASTC",
+            "• Infinite loading screen hang (waiting on nifm network request state and GameMaker surface readback)\n• GameMaker 2D surface rendering freeze with async presentation\n• Transparent particle artifacts with ASTC recompression",
+            "✓ Принудительный синхронный вывод кадров и обратное чтение буферов ГПУ для GameMaker\n✓ Реактивная очистка памяти и точный режим ГПУ без зависаний на экране загрузки",
+            "✓ Synchronous presentation and GPU buffer readback for GameMaker surfaces\n✓ Reactive flushing and High GPU accuracy to prevent loading screen hangs",
             mapOf(
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\sync_memory_operations" to "false",
-                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -5228,14 +5230,16 @@ object GameFixDatabase {
         GameFixProfile(
             0x0100A4601ECA8800L,
             "Crypt Custodian (Update)",
-            "• Зависание отрисовки поверхностей GameMaker при асинхронном выводе\n• Артефакты полупрозрачных частиц при пересжатии ASTC",
-            "• GameMaker 2D surface rendering freeze with async presentation\n• Transparent particle artifacts with ASTC recompression",
-            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
-            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
+            "• Бесконечная загрузка на стартовом экране (ожидание сетевого состояния nifm и барьеров поверхностей GameMaker)\n• Зависание отрисовки поверхностей GameMaker при асинхронном выводе\n• Артефакты полупрозрачных частиц при пересжатии ASTC",
+            "• Infinite loading screen hang (waiting on nifm network request state and GameMaker surface readback)\n• GameMaker 2D surface rendering freeze with async presentation\n• Transparent particle artifacts with ASTC recompression",
+            "✓ Принудительный синхронный вывод кадров и обратное чтение буферов ГПУ для GameMaker\n✓ Реактивная очистка памяти и точный режим ГПУ без зависаний на экране загрузки",
+            "✓ Synchronous presentation and GPU buffer readback for GameMaker surfaces\n✓ Reactive flushing and High GPU accuracy to prevent loading screen hangs",
             mapOf(
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\sync_memory_operations" to "false",
-                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\nvdec_emulation" to "3",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6229,10 +6233,15 @@ object GameFixDatabase {
         return profiles.firstOrNull { profile ->
             val nameLower = profile.gameName.lowercase(java.util.Locale.ROOT)
             val keywords = when {
+                nameLower.contains("crypt custodian") -> listOf("crypt custodian", "0100a4601eca8000", "0100a4601eca8800")
                 nameLower.contains("disco elysium") -> listOf("disco elysium", "elysium", "0100c88011246000", "01008c300f7f0000", "0100e26014466000", "0100726014352000")
+                nameLower.contains("definitive edition") && nameLower.contains("xenoblade") -> listOf("xenoblade", "definitive", "0100ff500e34a000")
+                nameLower.contains("xenoblade chronicles 2") -> listOf("xenoblade 2", "0100e95004038000")
                 nameLower.contains("xenoblade") -> listOf("xenoblade", "0100ff500e34a000", "0100e95004038000", "010074f013262000")
                 nameLower.contains("witcher") -> listOf("witcher", "wild hunt", "0100e67012924000", "01003d100e9c6000")
                 nameLower.contains("arkham city") -> listOf("arkham city", "01003ae017db0000")
+                nameLower.contains("arkham knight") -> listOf("arkham knight", "010023a017e94000")
+                nameLower.contains("batman") || nameLower.contains("arkham") -> listOf("batman", "arkham", "010039b0182da000")
                 nameLower.contains("breath of the wild") -> listOf("breath of the wild", "botw", "01007ef00011e000")
                 nameLower.contains("tears of the kingdom") -> listOf("tears of the kingdom", "totk", "0100f2c0115b6000")
                 nameLower.contains("paper mario") -> listOf("paper mario", "thousand-year", "01004d701742a000")
@@ -6241,13 +6250,14 @@ object GameFixDatabase {
                 nameLower.contains("mechanicus") -> listOf("mechanicus", "warhammer", "0100c6000eea8000")
                 nameLower.contains("skywalker saga") -> listOf("skywalker saga", "lego star wars", "0100923008c54000")
                 nameLower.contains("bayonetta 3") -> listOf("bayonetta 3", "01004a4010fea000")
-                nameLower.contains("shin megami tensei v") -> listOf("vengeance", "shin megami", "smt v", "smtv", "01006f801bc4c000")
-                nameLower.contains("luigi's mansion 3") -> listOf("luigi's mansion 3", "luigis mansion", "0100d7c000b02000")
+                nameLower.contains("bayonetta") -> listOf("bayonetta", "0100778006e88000", "01007a5004656000")
+                nameLower.contains("shin megami tensei") -> listOf("vengeance", "shin megami", "megami tensei", "smt v", "smt5", "smtv", "01006f801bc4c000", "01007e3019808000")
+                nameLower.contains("luigi's mansion 3") || nameLower.contains("lm3") -> listOf("luigi's mansion 3", "luigis mansion", "lm3", "0100d7c000b02000", "0100dca0064a6000")
+                nameLower.contains("mansion 2") -> listOf("mansion 2", "dark moon", "0100c8901844a000")
                 nameLower.contains("scarlet") -> listOf("scarlet", "0100a3d008c5c000")
                 nameLower.contains("violet") -> listOf("violet", "01008f6008c5e000")
-                nameLower.contains("arkham knight") -> listOf("arkham knight", "010023a017e94000")
                 nameLower.contains("doom eternal") -> listOf("doom eternal", "0100bb600dc30000")
-                nameLower.contains("animal well") -> listOf("animal well", "01002d001ad24000", "010020d01ad24000", "010092c01d9f8000", "0100c9e01b854000")
+                nameLower.contains("animal well") -> listOf("animal well", "animal_well", "01002d001ad24000", "010020d01ad24000", "010092c01d9f8000", "0100650017170000", "0100c9e01b854000")
                 nameLower.contains("mortal kombat 1") || nameLower.contains("mk1") -> listOf("mortal kombat 1", "mk1", "01006560184e6000", "0100d2800d5c2000", "010066b019e0e000")
                 nameLower.contains("mortal kombat") -> listOf("mortal kombat", "mk11", "0100b1100c4d0000", "0100f2200c984000")
                 nameLower.contains("hot pursuit") || nameLower.contains("need for speed") -> listOf("need for speed", "hot pursuit", "nfs", "010074600ee26000", "0100b9000d000000")
@@ -6256,28 +6266,28 @@ object GameFixDatabase {
                 nameLower.contains("splintered fate") || nameLower.contains("tmnt") -> listOf("splintered fate", "tmnt", "ninja turtles", "01005cf01e784000")
                 nameLower.contains("mario odyssey") -> listOf("odyssey", "mario odyssey", "0100000000010000")
                 nameLower.contains("wonder") -> listOf("wonder", "mario wonder", "010015100b5b4000")
-                nameLower.contains("metroid prime") -> listOf("metroid prime", "remastered", "0100121014688000")
+                nameLower.contains("metroid prime") -> listOf("metroid prime", "prime remastered", "remastered", "0100121014688000")
                 nameLower.contains("animal crossing") -> listOf("animal crossing", "horizons", "01006f8002326000")
-                nameLower.contains("persona 5") -> listOf("persona 5", "p5r", "01000a10041ea000")
-                nameLower.contains("smash bros") -> listOf("smash bros", "ssbu", "01006a800016e000")
+                nameLower.contains("persona 5") -> listOf("persona 5", "p5r", "01000a10041ea000", "01005ca0157ca000")
+                nameLower.contains("smash bros") -> listOf("smash bros", "smash", "ssbu", "01006a800016e000")
                 nameLower.contains("fc 24") || nameLower.contains("fifa") -> listOf("ea sports fc", "fc 24", "fifa", "0100a38018d5a000", "0100346016ee8000")
-                nameLower.contains("sonic frontiers") -> listOf("sonic frontiers", "frontiers", "01004c90141a4000")
-                nameLower.contains("arceus") -> listOf("legends: arceus", "arceus", "01001f5010dfa000")
+                nameLower.contains("sonic frontiers") -> listOf("sonic frontiers", "frontiers", "01004c90141a4000", "0100508013ae0000")
+                nameLower.contains("legends: arceus") || nameLower.contains("arceus") -> listOf("legends: arceus", "arceus", "01001f5010dfa000")
                 nameLower.contains("sword") || nameLower.contains("shield") -> listOf("sword", "shield", "0100abf008968000", "01008db008c2c000")
                 nameLower.contains("kirby") -> listOf("kirby", "forgotten land", "01004d300c5ae000")
                 nameLower.contains("tokyo 2020") || nameLower.contains("olympic") -> listOf("tokyo 2020", "olympic", "010034b00e14c000", "0100c60010228000", "01008f400e75a000", "0100ba700e340000")
-                nameLower.contains("three houses") -> listOf("three houses", "010055d009f78000")
+                nameLower.contains("three houses") -> listOf("three houses", "fe3h", "010055d009f78000", "01005fa00bafa000")
                 nameLower.contains("engage") -> listOf("engage", "0100a6301214e000")
-                nameLower.contains("astral chain") -> listOf("astral chain", "01007300020fa000")
-                nameLower.contains("dragon quest") -> listOf("dragon quest", "dq xi", "dq11", "01006c300e9f0000")
+                nameLower.contains("astral chain") -> listOf("astral chain", "astral_chain", "01007300020fa000")
+                nameLower.contains("dragon quest") -> listOf("dragon quest", "dq xi", "dq11", "01006c300e9f0000", "01004c00000ce000")
                 nameLower.contains("triangle strategy") -> listOf("triangle strategy", "0100cc80140f8000")
                 nameLower.contains("red dead") -> listOf("red dead", "rdr", "01007820195a6000")
                 nameLower.contains("crash") -> listOf("crash bandicoot", "crash 4", "010071700f8ba000")
                 nameLower.contains("spyro") -> listOf("spyro", "reignited", "0100b6e00b360000")
-                nameLower.contains("monster hunter") -> listOf("monster hunter", "mhgu", "gen ultimate", "0100770008dd8000", "0100b04011742000")
-                nameLower.contains("crisis core") -> listOf("crisis core", "ffvii reunion", "010034501659e000")
+                nameLower.contains("monster hunter") -> listOf("monster hunter", "mhgu", "gen ultimate", "mhr", "sunbreak", "0100770008dd8000", "0100b04011742000", "0100830007780000")
+                nameLower.contains("crisis core") -> listOf("crisis core", "ffvii reunion", "ffvii", "reunion", "010034501659e000", "01005e3017b46000")
                 nameLower.contains("pikmin") -> listOf("pikmin", "010069200e60e000")
-                nameLower.contains("peach") -> listOf("princess peach", "showtime", "0100fa701a7ca000")
+                nameLower.contains("showtime") || nameLower.contains("peach") -> listOf("princess peach", "showtime", "0100fa701a7ca000", "010006701b4b2000")
                 nameLower.contains("hollow knight") -> listOf("hollow knight", "01000bc0000a0000")
                 nameLower.contains("hades") -> listOf("hades", "0100735010b46000")
                 nameLower.contains("dead cells") -> listOf("dead cells", "01003d200baa2000")
@@ -6286,9 +6296,9 @@ object GameFixDatabase {
                 nameLower.contains("alien") -> listOf("alien", "isolation", "01000cd00de1e000")
                 nameLower.contains("wisps") || nameLower.contains("ori") -> listOf("ori", "wisps", "01009850119bc000")
                 nameLower.contains("sea of stars") -> listOf("sea of stars", "010041b01211e000")
-                nameLower.contains("octopath") -> listOf("octopath", "0100656017e9c000")
+                nameLower.contains("octopath") -> listOf("octopath", "octopath2", "0100656017e9c000", "0100d15017d3e000")
                 nameLower.contains("bravely") -> listOf("bravely default", "010052c00bab8000")
-                nameLower.contains("mario rpg") -> listOf("mario rpg", "0100bc0018138000")
+                nameLower.contains("super mario rpg") || nameLower.contains("mario rpg") -> listOf("mario rpg", "0100bc0018138000", "01008d3017b4c000")
                 nameLower.contains("metroid dread") -> listOf("metroid dread", "dread", "01005af00ba7a000")
                 nameLower.contains("tropical freeze") -> listOf("tropical freeze", "donkey kong", "010077200889e000")
                 nameLower.contains("dream land") -> listOf("dream land", "0100483017770000")
@@ -6298,7 +6308,7 @@ object GameFixDatabase {
                 nameLower.contains("bomberman") -> listOf("bomberman", "0100e2b017dae000")
                 nameLower.contains("advance wars") -> listOf("advance wars", "re-boot", "01002390146ac000")
                 nameLower.contains("warioware") -> listOf("warioware", "move it", "01002d801a1de000")
-                nameLower.contains("no man's sky") -> listOf("no man's sky", "no man", "nms", "0100d6f015f70000")
+                nameLower.contains("no man's sky") || nameLower.contains("nms") -> listOf("no man's sky", "no man", "nms", "0100d6f015f70000", "0100de801648e000")
                 nameLower.contains("portal") -> listOf("portal", "01000bd016550000")
                 nameLower.contains("persona 4") -> listOf("persona 4", "p4g", "010058c01570e000")
                 nameLower.contains("persona 3") -> listOf("persona 3", "p3p", "010072001570a000")
@@ -6319,31 +6329,22 @@ object GameFixDatabase {
                 nameLower.contains("slay the spire") -> listOf("slay the spire", "slay_the_spire", "0100216008e88000")
                 nameLower.contains("into the breach") -> listOf("into the breach", "into_the_breach", "01008c300b4d2000")
                 nameLower.contains("tales of") -> listOf("tales", "berseria", "symphonia", "vesperia", "graces", "0100c4d01d026000", "010049401732a000", "010060900b976000")
-                nameLower.contains("astral chain") -> listOf("astral chain", "astral_chain", "01007300020fa000")
-                nameLower.contains("three houses") -> listOf("three houses", "fe3h", "01005fa00bafa000")
-                nameLower.contains("smash bros") -> listOf("smash", "ssbu", "01006a800016e000")
-                nameLower.contains("dragon quest") -> listOf("dragon quest", "dq11", "01004c00000ce000")
                 nameLower.contains("nier") -> listOf("nier", "automata", "01007d401662a000")
-                nameLower.contains("bayonetta") -> listOf("bayonetta", "0100778006e88000", "01007a5004656000")
-                nameLower.contains("persona 5") -> listOf("persona 5", "p5r", "01005ca0157ca000")
                 nameLower.contains("live a live") -> listOf("live a live", "live_a_live", "0100780016140000")
                 nameLower.contains("tony hawk") -> listOf("tony hawk", "thps", "01000bd00e756000")
                 nameLower.contains("nitro-fueled") -> listOf("nitro", "ctr", "0100f7a00b704000")
-                nameLower.contains("mortal kombat 1") || nameLower.contains("mk1") -> listOf("mortal kombat 1", "mk1", "01006560184e6000", "0100d2800d5c2000")
-                nameLower.contains("mortal kombat") -> listOf("mortal kombat", "mk11", "0100b1100c4d0000", "0100f2200c984000")
                 nameLower.contains("gothic") -> listOf("gothic", "010041201a5ec000", "01007e101bb46000")
                 nameLower.contains("prince of persia") || nameLower.contains("lost crown") -> listOf("prince of persia", "lost crown", "01008c1019972000")
                 nameLower.contains("echoes of wisdom") -> listOf("echoes of wisdom", "wisdom", "01008cf01ba04000")
-                nameLower.contains("luigi's mansion 3") || nameLower.contains("lm3") -> listOf("luigi's mansion 3", "lm3", "0100dca0064a6000")
-                nameLower.contains("no man's sky") || nameLower.contains("nms") -> listOf("no man's sky", "nms", "0100de801648e000")
-                nameLower.contains("batman") || nameLower.contains("arkham") -> listOf("batman", "arkham", "010039b0182da000")
                 nameLower.contains("kingdom come") || nameLower.contains("kcd") -> listOf("kingdom come", "kcd", "010062c015792000")
                 nameLower.contains("tomb raider") -> listOf("tomb raider", "0100c4d018a0e000")
                 nameLower.contains("borderlands") -> listOf("borderlands", "01007e300b70c000")
                 nameLower.contains("demon slayer") -> listOf("demon slayer", "hinokami", "01005e4017c7a000")
-                nameLower.contains("gta v") || nameLower.contains("gta 5") || nameLower.contains("gtav") -> listOf("gta v", "gta 5", "grand theft auto v", "0100000000000055")
-                nameLower.contains("gta") || nameLower.contains("grand theft auto") || nameLower.contains("re3") || nameLower.contains("revc") -> listOf("gta", "grand theft auto", "san andreas", "vice city", "re3", "revc", "0100000000000034")
-                nameLower.contains("monster hunter") -> listOf("monster hunter", "mhr", "sunbreak", "0100830007780000")
+                nameLower.contains("gta v") || nameLower.contains("gta 5") || nameLower.contains("gtav") -> listOf("gta v", "gta 5", "grand theft auto v", "0100000000000055", "0100b00b51230000")
+                nameLower.contains("re3-sa") -> listOf("re3-sa", "san andreas", "gtasa", "0100671000000000")
+                nameLower.contains("revc") -> listOf("revc", "vice city", "gtavc", "0100672000000000")
+                nameLower.contains("re3") -> listOf("re3", "gta 3", "gta iii", "gta3", "0100673000000000")
+                nameLower.contains("gta") || nameLower.contains("grand theft auto") -> listOf("gta", "grand theft auto", "san andreas", "vice city", "re3", "revc", "0100000000000034")
                 nameLower.contains("burnout paradise") -> listOf("burnout", "paradise", "010052900fa62000")
                 nameLower.contains("overcooked") -> listOf("overcooked", "0100650012270000")
                 nameLower.contains("neighborville") -> listOf("neighborville", "pvz", "01001fb012014000")
@@ -6356,31 +6357,14 @@ object GameFixDatabase {
                 nameLower.contains("51 worldwide") -> listOf("clubhouse", "51 worldwide", "01005b900c09a000")
                 nameLower.contains("tennis aces") -> listOf("tennis aces", "mario tennis", "0100bde00862a000")
                 nameLower.contains("super rush") -> listOf("super rush", "mario golf", "0100874011ee6000")
-                nameLower.contains("shin megami tensei") -> listOf("megami tensei", "smt5", "smtv", "vengeance", "01007e3019808000")
-                nameLower.contains("metroid prime") -> listOf("metroid prime", "prime remastered", "0100121014688000")
-                nameLower.contains("crisis core") -> listOf("crisis core", "ffvii", "reunion", "01005e3017b46000")
-                nameLower.contains("octopath traveler") -> listOf("octopath", "octopath2", "0100d15017d3e000")
-                nameLower.contains("sonic frontiers") -> listOf("sonic frontiers", "frontiers", "0100508013ae0000")
                 nameLower.contains("tactics ogre") -> listOf("tactics ogre", "reborn", "0100570017106000")
                 nameLower.contains("dragon's dogma") -> listOf("dragon's dogma", "dragons dogma", "dark arisen", "0100ae600ba12000")
                 nameLower.contains("warframe") -> listOf("warframe", "01000b300b250000")
                 nameLower.contains("brotato") -> listOf("brotato", "010077001a8d4000")
                 nameLower.contains("vampire survivors") -> listOf("vampire survivors", "vampire", "survivors", "010085c019864000")
-                nameLower.contains("definitive edition") && nameLower.contains("xenoblade") -> listOf("xenoblade", "definitive", "0100ff500e34a000")
-                nameLower.contains("xenoblade chronicles 2") -> listOf("xenoblade 2", "0100e95004038000")
-                nameLower.contains("super mario rpg") -> listOf("mario rpg", "01008d3017b4c000")
-                nameLower.contains("showtime") -> listOf("showtime", "princess peach", "010006701b4b2000")
-                nameLower.contains("mansion 2") -> listOf("mansion 2", "dark moon", "0100c8901844a000")
                 nameLower.contains("f-zero") -> listOf("f-zero", "fzero", "0100b9301a4a0000")
                 nameLower.contains("3d all-stars") -> listOf("3d all-stars", "all stars", "sunshine", "galaxy", "0100427010476000")
-                nameLower.contains("legends: arceus") || nameLower.contains("arceus") -> listOf("arceus", "01001f5010dfa000")
-                nameLower.contains("scarlet") -> listOf("scarlet", "0100a3d008c5c000")
-                nameLower.contains("violet") -> listOf("violet", "01008f6008c5e000")
                 nameLower.contains("devilutionx") -> listOf("devilutionx", "diablo", "hellfire", "diabdat", "0100d1ab10000000")
-                nameLower.contains("gta v") -> listOf("gta v", "gta 5", "grand theft auto v", "0100b00b51230000")
-                nameLower.contains("re3-sa") -> listOf("re3-sa", "san andreas", "gtasa", "0100671000000000")
-                nameLower.contains("revc") -> listOf("revc", "vice city", "gtavc", "0100672000000000")
-                nameLower.contains("re3") -> listOf("re3", "gta 3", "gta iii", "gta3", "0100673000000000")
                 nameLower.contains("xash3d") -> listOf("xash3d", "half-life", "halflife", "valve.wad", "0100000000000018")
                 nameLower.contains("gzdoom") -> listOf("gzdoom", "prboom", "crispy", "doom.wad", "doom2.wad", "sigil", "plutonia", "0100d00100000000")
                 nameLower.contains("dhewm3") -> listOf("dhewm3", "doom 3", "doom3", "0100d00300000000")
@@ -6401,7 +6385,6 @@ object GameFixDatabase {
                 nameLower.contains("openra") -> listOf("openra", "dune legacy", "command & conquer", "red alert", "0100000000000091")
                 nameLower.contains("retroarch") -> listOf("retroarch", "ppsspp", "flycast", "scummvm", "melonds", "mgba", "duckstation", "0100000000001000")
                 nameLower.contains("homebrew utilities") -> listOf("nx-shell", "dbi", "goldleaf", "jksv", "checkpoint", "edizon", "awoo", "tesla", "0100000000003000")
-                nameLower.contains("animal well") -> listOf("animal well", "animal_well", "01002d001ad24000", "010020d01ad24000", "0100650017170000", "0100c9e01b854000")
                 nameLower.contains("defender of the crown") -> listOf("defender of the crown", "defender_of_the_crown", "0100b11027658000")
                 nameLower.contains("marvel cosmic invasion") -> listOf("marvel cosmic invasion", "cosmic invasion", "010059d020c26000")
                 nameLower.contains("underling uprising") -> listOf("underling uprising", "underling", "010057901e9e6000")
@@ -6784,7 +6767,7 @@ object GameFixDatabase {
                 "gpu_fence_behavior", "dma_accuracy"
             )
 
-            val settings = getFullSettingsMap(fix)
+            val settings = if (fix.settingsMap.isNotEmpty()) fix.settingsMap else getFullSettingsMap(fix)
             for ((fullKey, value) in settings) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                     fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
@@ -7077,7 +7060,7 @@ object GameFixDatabase {
             sb.append("storm_fix_applied = true\n")
             sb.append("user_custom = false\n\n")
 
-            val settings = getFullSettingsMap(fix)
+            val settings = if (fix.settingsMap.isNotEmpty()) fix.settingsMap else getFullSettingsMap(fix)
             val sections = mutableMapOf<String, MutableMap<String, String>>()
             for ((fullKey, value) in settings) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||

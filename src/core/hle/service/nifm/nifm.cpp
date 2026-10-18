@@ -348,27 +348,27 @@ public:
             {2, &IRequest::GetSystemEventReadableHandles, "GetSystemEventReadableHandles"},
             {3, &IRequest::Cancel, "Cancel"},
             {4, &IRequest::Submit, "Submit"},
-            {5, nullptr, "SetRequirement"},
+            {5, &IRequest::SetRequirement, "SetRequirement"},
             {6, &IRequest::SetRequirementPreset, "SetRequirementPreset"},
-            {8, nullptr, "SetPriority"},
+            {8, &IRequest::SetPriority, "SetPriority"},
             {9, &IRequest::SetNetworkProfileId, "SetNetworkProfileId"},
-            {10, nullptr, "SetRejectable"},
+            {10, &IRequest::SetRejectable, "SetRejectable"},
             {11, &IRequest::SetConnectionConfirmationOption, "SetConnectionConfirmationOption"},
-            {12, nullptr, "SetPersistent"},
-            {13, nullptr, "SetInstant"},
-            {14, nullptr, "SetSustainable"},
-            {15, nullptr, "SetRawPriority"},
-            {16, nullptr, "SetGreedy"},
-            {17, nullptr, "SetSharable"},
-            {18, nullptr, "SetRequirementByRevision"},
-            {19, nullptr, "GetRequirement"},
-            {20, nullptr, "GetRevision"},
+            {12, &IRequest::SetPersistent, "SetPersistent"},
+            {13, &IRequest::SetInstant, "SetInstant"},
+            {14, &IRequest::SetSustainable, "SetSustainable"},
+            {15, &IRequest::SetRawPriority, "SetRawPriority"},
+            {16, &IRequest::SetGreedy, "SetGreedy"},
+            {17, &IRequest::SetSharable, "SetSharable"},
+            {18, &IRequest::SetRequirementByRevision, "SetRequirementByRevision"},
+            {19, &IRequest::GetRequirement, "GetRequirement"},
+            {20, &IRequest::GetRevision, "GetRevision"},
             {21, &IRequest::GetAppletInfo, "GetAppletInfo"},
-            {22, nullptr, "GetAdditionalInfo"},
-            {23, nullptr, "SetKeptInSleep"},
-            {24, nullptr, "RegisterSocketDescriptor"},
-            {25, nullptr, "UnregisterSocketDescriptor"},
-            {26, nullptr, "GetNetworkAccessStatus"}, //21.0.0+
+            {22, &IRequest::GetAdditionalInfo, "GetAdditionalInfo"},
+            {23, &IRequest::SetKeptInSleep, "SetKeptInSleep"},
+            {24, &IRequest::RegisterSocketDescriptor, "RegisterSocketDescriptor"},
+            {25, &IRequest::UnregisterSocketDescriptor, "UnregisterSocketDescriptor"},
+            {26, &IRequest::GetNetworkAccessStatus, "GetNetworkAccessStatus"}, // 21.0.0+
         };
         RegisterHandlers(functions);
 
@@ -383,6 +383,11 @@ public:
     }
 
 private:
+    bool HasNetworkConnection() const {
+        return Network::GetHostIPv4Address().has_value() &&
+               !Settings::values.airplane_mode.GetValue();
+    }
+
     void Submit(HLERequestContext& ctx) {
         LOG_DEBUG(Service_NIFM, "(STUBBED) called");
 
@@ -395,11 +400,25 @@ private:
     }
 
     void GetRequestState(HLERequestContext& ctx) {
-        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called, state={}", static_cast<u32>(state));
+
+        if (state == RequestState::OnHold) {
+            if (HasNetworkConnection()) {
+                UpdateState(RequestState::Accepted);
+            } else {
+                UpdateState(RequestState::Invalid);
+            }
+        }
 
         IPC::ResponseBuilder rb{ctx, 3};
         rb.Push(ResultSuccess);
         rb.PushEnum(state);
+    }
+
+    void SetRequirement(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
     }
 
     void SetRequirementPreset(HLERequestContext& ctx) {
@@ -408,6 +427,12 @@ private:
 
         LOG_WARNING(Service_NIFM, "(STUBBED) called, param_1={}", param_1);
 
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void SetPriority(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
         IPC::ResponseBuilder rb{ctx, 2};
         rb.Push(ResultSuccess);
     }
@@ -423,26 +448,127 @@ private:
         LOG_WARNING(Service_NIFM, "(STUBBED) called, ssid_length={}", ssid_length);
 
         IPC::ResponseBuilder rb{ctx, 2};
-        rb.Push(1);
+        rb.Push(ResultSuccess);
+    }
+
+    void SetRejectable(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void SetPersistent(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void SetInstant(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void SetSustainable(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void SetRawPriority(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void SetGreedy(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void SetSharable(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void SetRequirementByRevision(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void GetRequirement(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 11};
+        rb.Push(ResultSuccess);
+        rb.Push<u64>(0);
+        rb.Push<u64>(0);
+        rb.Push<u64>(0);
+        rb.Push<u64>(0);
+        rb.Push<u32>(0);
+    }
+
+    void GetRevision(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 3};
+        rb.Push(ResultSuccess);
+        rb.Push<u32>(1);
+    }
+
+    void GetAdditionalInfo(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        std::vector<u8> out_buffer(ctx.GetWriteBufferSize());
+        ctx.WriteBuffer(out_buffer);
+        IPC::ResponseBuilder rb{ctx, 3};
+        rb.Push(ResultSuccess);
+        rb.Push<u32>(0);
+    }
+
+    void SetKeptInSleep(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void RegisterSocketDescriptor(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void UnregisterSocketDescriptor(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void GetNetworkAccessStatus(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_NIFM, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 3};
+        rb.Push(ResultSuccess);
+        rb.Push<u8>(HasNetworkConnection() ? 1 : 0);
     }
 
     void GetResult(HLERequestContext& ctx) {
         LOG_DEBUG(Service_NIFM, "(STUBBED) called");
 
         const auto result = [this] {
-            const auto has_connection = Network::GetHostIPv4Address().has_value() &&
-                                        !Settings::values.airplane_mode.GetValue();
+            const auto has_connection = HasNetworkConnection();
             switch (state) {
             case RequestState::NotSubmitted:
                 return has_connection ? ResultSuccess : ResultNetworkCommunicationDisabled;
             case RequestState::OnHold:
                 if (has_connection) {
                     UpdateState(RequestState::Accepted);
+                    return ResultSuccess;
                 } else {
                     UpdateState(RequestState::Invalid);
+                    return ResultNetworkCommunicationDisabled;
                 }
-                return ResultPendingConnection;
             case RequestState::Accepted:
+                return has_connection ? ResultSuccess : ResultNetworkCommunicationDisabled;
             default:
                 return ResultSuccess;
             }

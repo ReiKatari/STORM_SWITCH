@@ -25,24 +25,24 @@
 #include "storm_switch/configuration/configure_system.h"
 #include "storm_switch/configuration/shared_widget.h"
 
+#include <QLocale>
+#include "qt_common/config/uisettings.h"
+
+// 20-bit blocklist covering all Settings::Language values (0..19, including Thai=19).
+// Allows Russian (bit 8) and European languages on both Americas and Europe so existing configs
+// do not show false warnings.
 constexpr std::array<u32, 7> LOCALE_BLOCKLIST{
-    // pzzefezrpnkzeidfej
-    // thhsrnhutlohsternp
-    // BHH4CG          U
-    // Raa1AB          S
-    //  nn9
-    //  ts
-    0b0100011100001100000, // Japan
-    0b0000001101001100100, // Americas
-    0b0100110100001000010, // Europe
-    0b0100110100001000010, // Australia
-    0b0000000000000000000, // China
-    0b0100111100001000000, // Korea
-    0b0100111100001000000, // Taiwan
+    0b00100011100001100000, // Japan
+    0b00000001100001100100, // Americas
+    0b00100110100001000010, // Europe
+    0b00100110100001000010, // Australia
+    0b00000000000000000000, // China
+    0b00100111100001000000, // Korea
+    0b00100111100001000000, // Taiwan
 };
 
 static bool IsValidLocale(u32 region_index, u32 language_index) {
-    if (region_index >= LOCALE_BLOCKLIST.size()) {
+    if (region_index >= LOCALE_BLOCKLIST.size() || language_index >= 20) {
         return false;
     }
     return ((LOCALE_BLOCKLIST.at(region_index) >> language_index) & 1) == 0;
@@ -67,10 +67,34 @@ ConfigureSystem::ConfigureSystem(Core::System& system_,
         const bool valid_locale = IsValidLocale(region_index, language_index);
         ui->label_warn_invalid_locale->setVisible(!valid_locale);
         if (!valid_locale) {
+            std::string lang = UISettings::values.language.GetValue();
+            if (lang.empty()) {
+                lang = QLocale::system().name().toStdString();
+            }
+            QString fmt_str = tr("Warning: \"%1\" is not a valid language for region \"%2\"");
+            if (lang.rfind("ru", 0) == 0) {
+                fmt_str = QStringLiteral("Внимание: язык «%1» не является стандартным для региона «%2»");
+            } else if (lang.rfind("de", 0) == 0) {
+                fmt_str = QStringLiteral("Warnung: „%1“ ist keine gültige Sprache für die Region „%2“");
+            } else if (lang.rfind("fr", 0) == 0) {
+                fmt_str = QStringLiteral("Attention : « %1 » n'est pas une langue valide pour la région « %2 »");
+            } else if (lang.rfind("es", 0) == 0) {
+                fmt_str = QStringLiteral("Advertencia: \"%1\" no es un idioma válido para la región \"%2\"");
+            } else if (lang.rfind("it", 0) == 0) {
+                fmt_str = QStringLiteral("Attenzione: \"%1\" non è una lingua valida per la regione \"%2\"");
+            } else if (lang.rfind("pt", 0) == 0) {
+                fmt_str = QStringLiteral("Aviso: \"%1\" não é um idioma válido para a região \"%2\"");
+            } else if (lang.rfind("zh", 0) == 0) {
+                fmt_str = QStringLiteral("警告：“%1”不是区域“%2”的有效语言");
+            } else if (lang.rfind("ja", 0) == 0) {
+                fmt_str = QStringLiteral("警告: 「%1」はリージョン「%2」の有効な言語ではありません");
+            } else if (lang.rfind("ko", 0) == 0) {
+                fmt_str = QStringLiteral("경고: \"%1\"은(는) \"%2\" 지역에 유효한 언어가 아닙니다");
+            } else if (lang.rfind("ar", 0) == 0) {
+                fmt_str = QStringLiteral("تحذير: \"%1\" ليست لغة صالحة للمنطقة \"%2\"");
+            }
             ui->label_warn_invalid_locale->setText(
-                tr("Warning: \"%1\" is not a valid language for region \"%2\"")
-                    .arg(combo_language->currentText())
-                    .arg(combo_region->currentText()));
+                fmt_str.arg(combo_language->currentText()).arg(combo_region->currentText()));
         }
     };
 

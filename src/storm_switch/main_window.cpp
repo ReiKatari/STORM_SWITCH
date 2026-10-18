@@ -2054,6 +2054,180 @@ void MainWindow::InitializeWidgets() {
     addons_status_button->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(addons_status_button, &QPushButton::customContextMenuRequested, show_addons_menu);
 
+    // Setup GameFix / Quick Settings button
+    gamefix_status_button = new QPushButton();
+    gamefix_status_button->setObjectName(QStringLiteral("TogglableStatusBarButton"));
+    gamefix_status_button->setFocusPolicy(Qt::NoFocus);
+    UpdateGameFixStatusButton();
+    auto show_gamefix_menu = [this]() {
+        if (m_current_addons_title_id == 0 && game_list) {
+            const auto [tid, path] = game_list->GetSelectedGameInfo();
+            if (tid != 0) {
+                m_current_addons_title_id = tid;
+                m_current_addons_game_path = path.toStdString();
+                m_current_addons_game_name = QFileInfo(path).completeBaseName();
+            }
+        }
+        QMenu context_menu(this);
+        const auto* profile = Core::GameFixDatabase::GetProfileByTitleOrPath(
+            m_current_addons_title_id, m_current_addons_game_path);
+        const QString header_text = profile != nullptr
+            ? StormLang(QStringLiteral("🛡️ Профиль: %1"), QStringLiteral("🛡️ Profile: %1"),
+                        QStringLiteral("🛡️ Profil: %1"), QStringLiteral("🛡️ Profil : %1"),
+                        QStringLiteral("🛡️ 配置文件: %1"), QStringLiteral("🛡️ プロファイル: %1"))
+                  .arg(QString::fromStdString(profile->game_name))
+            : StormLang(QStringLiteral("⚡ Быстрые настройки и Авто-фикс"),
+                        QStringLiteral("⚡ Quick Settings & Auto-Fix"),
+                        QStringLiteral("⚡ Schnelleinstellungen & Auto-Fix"),
+                        QStringLiteral("⚡ Paramètres rapides & Auto-Fix"),
+                        QStringLiteral("⚡ 快捷设置与自动修复"),
+                        QStringLiteral("⚡ クイック設定と自動修正"));
+        auto* hdr = context_menu.addAction(header_text);
+        hdr->setEnabled(false);
+        context_menu.addSeparator();
+
+        if (profile != nullptr) {
+            context_menu.addAction(StormLang(
+                QStringLiteral("🛡️ Открыть диалог авто-исправления игры..."),
+                QStringLiteral("🛡️ Open Game Auto-Fix Dialog..."),
+                QStringLiteral("🛡️ Spiel-Auto-Fix-Dialog öffnen..."),
+                QStringLiteral("🛡️ Ouvrir le dialogue d'auto-correction..."),
+                QStringLiteral("🛡️ 打开游戏自动修复对话框..."),
+                QStringLiteral("🛡️ ゲーム自動修正ダイアログを開く...")
+            ), [this] {
+                ShowGameFixDialog(m_current_addons_title_id,
+                                  QString::fromStdString(m_current_addons_game_path), true);
+                UpdateStatusButtons();
+            });
+            context_menu.addSeparator();
+        }
+
+        auto* act_fg = context_menu.addAction(StormLang(
+            QStringLiteral("🚀 Генерация кадров LSFG (x2 FPS)"),
+            QStringLiteral("🚀 LSFG Frame Generation (x2 FPS)"),
+            QStringLiteral("🚀 LSFG-Bildgenerierung (x2 FPS)"),
+            QStringLiteral("🚀 Génération d'images LSFG (x2 FPS)"),
+            QStringLiteral("🚀 LSFG 帧生成 (x2 FPS)"),
+            QStringLiteral("🚀 LSFG フレーム生成 (x2 FPS)")
+        ), [this] {
+            ApplyStatusBarSwitchableSetting(Settings::values.frame_gen,
+                                            !Settings::values.frame_gen.GetValue(),
+                                            m_session_backup.is_active, m_session_backup.frame_gen,
+                                            current_game_path, last_filename_booted);
+            UpdateStatusButtons();
+            ApplyDynamicSettingChange();
+        });
+        act_fg->setCheckable(true);
+        act_fg->setChecked(Settings::values.frame_gen.GetValue());
+
+        auto* act_drs = context_menu.addAction(StormLang(
+            QStringLiteral("🔒 Блокировка динамического разрешения (100% DRS)"),
+            QStringLiteral("🔒 Dynamic Resolution Lock (100% DRS)"),
+            QStringLiteral("🔒 Dynamische Auflösungssperre (100% DRS)"),
+            QStringLiteral("🔒 Verrouillage de résolution dynamique (100% DRS)"),
+            QStringLiteral("🔒 动态分辨率锁定 (100% DRS)"),
+            QStringLiteral("🔒 動的解像度ロック (100% DRS)")
+        ), [this] {
+            ApplyStatusBarSwitchableSetting(Settings::values.drs_resolution_lock,
+                                            !Settings::values.drs_resolution_lock.GetValue(),
+                                            m_session_backup.is_active,
+                                            m_session_backup.drs_resolution_lock, current_game_path,
+                                            last_filename_booted);
+            UpdateStatusButtons();
+            ApplyDynamicSettingChange();
+        });
+        act_drs->setCheckable(true);
+        act_drs->setChecked(Settings::values.drs_resolution_lock.GetValue());
+
+        auto* act_rf = context_menu.addAction(StormLang(
+            QStringLiteral("⚡ Реактивная очистка буферов (Reactive Flushing)"),
+            QStringLiteral("⚡ Reactive Buffer Flushing"),
+            QStringLiteral("⚡ Reaktives Puffer-Flushing"),
+            QStringLiteral("⚡ Vidage réactif des tampons"),
+            QStringLiteral("⚡ 响应式缓冲刷新 (Reactive Flushing)"),
+            QStringLiteral("⚡ リアクティブフラッシング")
+        ), [this] {
+            ApplyStatusBarSwitchableSetting(Settings::values.use_reactive_flushing,
+                                            !Settings::values.use_reactive_flushing.GetValue(),
+                                            m_session_backup.is_active,
+                                            m_session_backup.use_reactive_flushing,
+                                            current_game_path, last_filename_booted);
+            UpdateStatusButtons();
+            ApplyDynamicSettingChange();
+        });
+        act_rf->setCheckable(true);
+        act_rf->setChecked(Settings::values.use_reactive_flushing.GetValue());
+
+        auto* act_rb = context_menu.addAction(StormLang(
+            QStringLiteral("🔄 Обратное чтение буферов ГПУ (GPU Readback)"),
+            QStringLiteral("🔄 GPU Buffer Readback"),
+            QStringLiteral("🔄 GPU-Puffer-Readback"),
+            QStringLiteral("🔄 Lecture inverse des tampons GPU"),
+            QStringLiteral("🔄 GPU 缓冲回读 (Readback)"),
+            QStringLiteral("🔄 GPU バッファリードバック")
+        ), [this] {
+            ApplyStatusBarSwitchableSetting(Settings::values.enable_gpu_buffer_readback,
+                                            !Settings::values.enable_gpu_buffer_readback.GetValue(),
+                                            m_session_backup.is_active,
+                                            m_session_backup.enable_gpu_buffer_readback,
+                                            current_game_path, last_filename_booted);
+            UpdateStatusButtons();
+            ApplyDynamicSettingChange();
+        });
+        act_rb->setCheckable(true);
+        act_rb->setChecked(Settings::values.enable_gpu_buffer_readback.GetValue());
+
+        auto* act_bloom = context_menu.addAction(StormLang(
+            QStringLiteral("✨ Защита свечения HDR (Fix Bloom Effects)"),
+            QStringLiteral("✨ HDR Bloom Protection (Fix Bloom Effects)"),
+            QStringLiteral("✨ HDR-Bloom-Schutz (Fix Bloom Effects)"),
+            QStringLiteral("✨ Protection HDR Bloom"),
+            QStringLiteral("✨ HDR 泛光修复 (Fix Bloom Effects)"),
+            QStringLiteral("✨ HDR ブルーム保護")
+        ), [this] {
+            ApplyStatusBarSwitchableSetting(Settings::values.fix_bloom_effects,
+                                            !Settings::values.fix_bloom_effects.GetValue(),
+                                            m_session_backup.is_active,
+                                            m_session_backup.fix_bloom_effects, current_game_path,
+                                            last_filename_booted);
+            UpdateStatusButtons();
+            ApplyDynamicSettingChange();
+        });
+        act_bloom->setCheckable(true);
+        act_bloom->setChecked(Settings::values.fix_bloom_effects.GetValue());
+
+        if (m_session_backup.is_active) {
+            context_menu.addSeparator();
+            context_menu.addAction(StormLang(
+                QStringLiteral("♻️ Сбросить настройки сессии к глобальным"),
+                QStringLiteral("♻️ Reset Session Settings to Global"),
+                QStringLiteral("♻️ Sitzungseinstellungen auf Global zurücksetzen"),
+                QStringLiteral("♻️ Réinitialiser la session aux paramètres globaux"),
+                QStringLiteral("♻️ 将会话设置重置为全局"),
+                QStringLiteral("♻️ セッション設定をグローバルにリセット")
+            ), [this] {
+                m_session_backup.Restore();
+                m_session_backup.Capture();
+                Core::GameFixDatabase::SetFixesEnabled(false);
+                UpdateStatusButtons();
+                ApplyDynamicSettingChange();
+                statusBar()->showMessage(StormLang(
+                    QStringLiteral("♻️ Настройки текущей сессии сброшены к глобальным"),
+                    QStringLiteral("♻️ Current session settings reset to global"),
+                    QStringLiteral("♻️ Aktuelle Sitzungseinstellungen auf Global zurückgesetzt"),
+                    QStringLiteral("♻️ Paramètres de session réinitialisés aux valeurs globales"),
+                    QStringLiteral("♻️ 当前会话设置已重置为全局"),
+                    QStringLiteral("♻️ 現在のセッション設定をグローバルにリセットしました")
+                ), 5000);
+            });
+        }
+
+        ShowMenuAtWidget(context_menu, gamefix_status_button);
+    };
+    connect(gamefix_status_button, &QPushButton::clicked, show_gamefix_menu);
+    gamefix_status_button->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(gamefix_status_button, &QPushButton::customContextMenuRequested, show_gamefix_menu);
+
     // Setup Resolution Scale button
     res_scale_button = new QPushButton();
     res_scale_button->setObjectName(QStringLiteral("TogglableStatusBarButton"));
@@ -2499,7 +2673,7 @@ void MainWindow::InitializeWidgets() {
     statusBar()->insertPermanentWidget(1, createGroup(
         1, StormLang(QStringLiteral("ДОПОЛНЕНИЯ"), QStringLiteral("ADD-ONS"), QStringLiteral("ADD-ONS"), QStringLiteral("EXTENSIONS"), QStringLiteral("附加组件"), QStringLiteral("アドオン")),
         QStringLiteral("#e040fb"),
-        {addons_status_button}));
+        {addons_status_button, gamefix_status_button}));
 
     // --- Group 2: RENDER (Cyan accent) ---
     statusBar()->insertPermanentWidget(2, createGroup(
@@ -3778,6 +3952,7 @@ void MainWindow::StormSessionBackup::Capture() {
     vram_garbage_collection = capture_switchable(Settings::values.vram_garbage_collection);
     drs_resolution_lock = capture_switchable(Settings::values.drs_resolution_lock);
     rescale_hack = capture_switchable(Settings::values.rescale_hack);
+    fix_bloom_effects = capture_switchable(Settings::values.fix_bloom_effects);
     aspect_ratio = capture_switchable(Settings::values.aspect_ratio);
     vram_usage_mode = capture_switchable(Settings::values.vram_usage_mode);
     enable_frame_skipping = capture_switchable(Settings::values.enable_frame_skipping);
@@ -3837,6 +4012,7 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.vram_garbage_collection, vram_garbage_collection);
     restore_switchable(Settings::values.drs_resolution_lock, drs_resolution_lock);
     restore_switchable(Settings::values.rescale_hack, rescale_hack);
+    restore_switchable(Settings::values.fix_bloom_effects, fix_bloom_effects);
     restore_switchable(Settings::values.aspect_ratio, aspect_ratio);
     restore_switchable(Settings::values.vram_usage_mode, vram_usage_mode);
     restore_switchable(Settings::values.enable_frame_skipping, enable_frame_skipping);
@@ -3940,7 +4116,6 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
     if ((dont_ask || m_is_cmd_line_launch) && !force_show) {
         Core::GameFixDatabase::SetFixesEnabled(true);
-        Core::GameFixDatabase::ApplyProfileDirectly(title_id, game_path.toStdString());
         return GameFixDialogResult::ApplyAndLaunch;
     }
 
@@ -4263,8 +4438,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
     if (action == GameFixDialogResult::ApplyAndLaunch) {
         Core::GameFixDatabase::SetFixesEnabled(true);
-        Core::GameFixDatabase::ApplyProfileDirectly(title_id, game_path.toStdString());
         if (force_show) {
+            Core::GameFixDatabase::ApplyProfileDirectly(title_id, game_path.toStdString());
             QMessageBox::information(this, tr("🛡️ Авто-исправление"),
                 tr("Параметры авто-исправления успешно применены для текущей сессии игры: %1").arg(clean_game_name));
         }
@@ -4374,7 +4549,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
     if (type == StartGameType::Normal) {
         if (params.launch_type == Service::AM::LaunchType::ApplicationInitiated) {
-            Core::GameFixDatabase::ApplyProfileDirectly(title_id, filename.toStdString());
+            Core::GameFixDatabase::SetFixesEnabled(true);
         } else {
             const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
             if (fix_result == GameFixDialogResult::Cancel) {
@@ -7991,6 +8166,7 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
             QStringLiteral("选择或启动游戏以查看附加组件"),
             QStringLiteral("ゲームを選択または起動してアドオンを表示")
         ));
+        UpdateGameFixStatusButton();
         return;
     }
 
@@ -8152,6 +8328,81 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
             apply_button_style(file_dlc_count, tinfoil_dlc_count);
         }, Qt::QueuedConnection);
     }).detach();
+    UpdateGameFixStatusButton();
+}
+
+void MainWindow::UpdateGameFixStatusButton() {
+    if (!gamefix_status_button) return;
+    const auto* profile = Core::GameFixDatabase::GetProfileByTitleOrPath(
+        m_current_addons_title_id, m_current_addons_game_path);
+    const bool fixes_active = Core::GameFixDatabase::AreFixesEnabled() && profile != nullptr;
+    if (fixes_active) {
+        gamefix_status_button->setText(StormLang(
+            QStringLiteral("АВТО-ФИКС:\nАКТИВЕН"),
+            QStringLiteral("AUTO-FIX:\nACTIVE"),
+            QStringLiteral("AUTO-FIX:\nAKTIV"),
+            QStringLiteral("AUTO-FIX:\nACTIF"),
+            QStringLiteral("自动修复:\n已激活"),
+            QStringLiteral("自動修正:\n有効")
+        ));
+        gamefix_status_button->setStyleSheet(QStringLiteral(
+            "QPushButton#TogglableStatusBarButton, QPushButton {"
+            "  background-color: #0b2433;"
+            "  color: #00e5ff;"
+            "  border: 1px solid #00e5ff;"
+            "  border-radius: 4px;"
+            "  padding: 2px 5px;"
+            "  font-size: 6.8pt;"
+            "  font-weight: 800;"
+            "  min-height: 26px;"
+            "  min-width: 44px;"
+            "}"
+            "QPushButton#TogglableStatusBarButton:hover, QPushButton:hover {"
+            "  background-color: #00e5ff;"
+            "  color: #000000;"
+            "}"
+        ));
+        gamefix_status_button->setToolTip(StormLang(
+            QStringLiteral("🛡️ Активен профиль авто-исправления: %1\nНажмите для меню быстрых настроек (LSFG, DRS 100%, Reactive Flushing)"),
+            QStringLiteral("🛡️ Active Auto-Fix profile: %1\nClick for Quick Settings menu (LSFG, DRS 100%, Reactive Flushing)"),
+            QStringLiteral("🛡️ Aktives Auto-Fix-Profil: %1\nKlicken für Schnelleinstellungen"),
+            QStringLiteral("🛡️ Profil Auto-Fix actif : %1\nCliquer pour les paramètres rapides"),
+            QStringLiteral("🛡️ 已激活自动修复配置: %1\n点击打开快捷设置菜单"),
+            QStringLiteral("🛡️ 自動修正プロファイル有効: %1\nクリックしてクイック設定メニューを表示")
+        ).arg(QString::fromStdString(profile->game_name)));
+    } else if (profile != nullptr) {
+        gamefix_status_button->setText(StormLang(
+            QStringLiteral("АВТО-ФИКС:\nДОСТУПЕН"),
+            QStringLiteral("AUTO-FIX:\nREADY"),
+            QStringLiteral("AUTO-FIX:\nBEREIT"),
+            QStringLiteral("AUTO-FIX:\nPRÊT"),
+            QStringLiteral("自动修复:\n可用"),
+            QStringLiteral("自動修正:\n利用可能")
+        ));
+        gamefix_status_button->setStyleSheet(QString{});
+        gamefix_status_button->setToolTip(StormLang(
+            QStringLiteral("🛡️ Доступен профиль авто-исправления: %1\nНажмите для применения или вызова быстрых настроек"),
+            QStringLiteral("🛡️ Auto-Fix profile available: %1\nClick to apply or open Quick Settings"),
+            QStringLiteral("🛡️ Auto-Fix-Profil verfügbar: %1\nKlicken zum Anwenden oder für Schnelleinstellungen"),
+            QStringLiteral("🛡️ Profil Auto-Fix disponible : %1\nCliquer pour appliquer ou ouvrir les paramètres rapides"),
+            QStringLiteral("🛡️ 自动修复配置可用: %1\n点击应用或打开快捷设置"),
+            QStringLiteral("🛡️ 自動修正プロファイル利用可能: %1\nクリックして適用またはクイック設定を開く")
+        ).arg(QString::fromStdString(profile->game_name)));
+    } else {
+        const bool fg_on = Settings::values.frame_gen.GetValue();
+        gamefix_status_button->setText(fg_on
+            ? StormLang(QStringLiteral("БЫСТРЫЕ:\nLSFG ВКЛ"), QStringLiteral("QUICK:\nLSFG ON"), QStringLiteral("SCHNELL:\nLSFG EIN"), QStringLiteral("RAPIDE:\nLSFG ON"), QStringLiteral("快捷设置:\nLSFG 开启"), QStringLiteral("クイック:\nLSFG オン"))
+            : StormLang(QStringLiteral("БЫСТРЫЕ:\nОПЦИИ"), QStringLiteral("QUICK:\nOPTIONS"), QStringLiteral("SCHNELL:\nOPTIONEN"), QStringLiteral("RAPIDE:\nOPTIONS"), QStringLiteral("快捷设置:\n选项"), QStringLiteral("クイック:\n設定")));
+        gamefix_status_button->setStyleSheet(QString{});
+        gamefix_status_button->setToolTip(StormLang(
+            QStringLiteral("⚡ Меню быстрых настроек (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
+            QStringLiteral("⚡ Quick Settings menu (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
+            QStringLiteral("⚡ Schnelleinstellungsmenü (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
+            QStringLiteral("⚡ Menu des paramètres rapides (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
+            QStringLiteral("⚡ 快捷设置菜单 (LSFG 帧生成, DRS 100%, 响应式刷新, GPU 回读, HDR 泛光)"),
+            QStringLiteral("⚡ クイック設定メニュー (LSFG フレーム生成, DRS 100%, リアクティブフラッシング, GPU リードバック, HDR ブルーム)")
+        ));
+    }
 }
 
 void MainWindow::UpdateAirplaneModeButton() {
@@ -9385,6 +9636,7 @@ void MainWindow::UpdateStatusButtons() {
     UpdateRefreshButton();
     UpdateMuteButton();
     UpdateVolumeUI();
+    UpdateGameFixStatusButton();
 }
 
 // TODO(crueter): Use this for game list stuff
@@ -9654,7 +9906,11 @@ void MainWindow::SetFirmwareVersion() {
     const std::string display_version(firmware_data.display_version.data());
     const std::string display_title(firmware_data.display_title.data());
 
-    LOG_INFO(Frontend, "Installed firmware: {}", display_version);
+    static std::string s_last_logged_fw;
+    if (s_last_logged_fw != display_version) {
+        s_last_logged_fw = display_version;
+        LOG_INFO(Frontend, "Installed firmware: {}", display_version);
+    }
 
     firmware_label->setAlignment(Qt::AlignCenter);
     firmware_label->setText(StormLang(

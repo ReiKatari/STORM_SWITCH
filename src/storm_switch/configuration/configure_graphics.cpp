@@ -382,6 +382,8 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
             if (lang.rfind("de", 0) == 0) return QStringLiteral("Frame-Generierung (Lossless Scaling / LSFG)");
             if (lang.rfind("fr", 0) == 0) return QStringLiteral("Génération d'images (Lossless Scaling / LSFG)");
             if (lang.rfind("es", 0) == 0) return QStringLiteral("Generación de fotogramas (Lossless Scaling / LSFG)");
+            if (lang.rfind("it", 0) == 0) return QStringLiteral("Generazione di fotogrammi (Lossless Scaling / LSFG)");
+            if (lang.rfind("pt", 0) == 0) return QStringLiteral("Geração de quadros (Lossless Scaling / LSFG)");
             if (lang.rfind("ar", 0) == 0) return QStringLiteral("توليد الإطارات (Lossless Scaling / LSFG)");
             return QStringLiteral("Frame Generation (Lossless Scaling / LSFG)");
         };
@@ -559,6 +561,8 @@ void ConfigureGraphics::RetranslateUI() {
         else if (lang.rfind("de", 0) == 0) fg_group->setTitle(QStringLiteral("Frame-Generierung (Lossless Scaling / LSFG)"));
         else if (lang.rfind("fr", 0) == 0) fg_group->setTitle(QStringLiteral("Génération d'images (Lossless Scaling / LSFG)"));
         else if (lang.rfind("es", 0) == 0) fg_group->setTitle(QStringLiteral("Generación de fotogramas (Lossless Scaling / LSFG)"));
+        else if (lang.rfind("it", 0) == 0) fg_group->setTitle(QStringLiteral("Generazione di fotogrammi (Lossless Scaling / LSFG)"));
+        else if (lang.rfind("pt", 0) == 0) fg_group->setTitle(QStringLiteral("Geração de quadros (Lossless Scaling / LSFG)"));
         else if (lang.rfind("ar", 0) == 0) fg_group->setTitle(QStringLiteral("توليد الإطارات (Lossless Scaling / LSFG)"));
         else fg_group->setTitle(QStringLiteral("Frame Generation (Lossless Scaling / LSFG)"));
     }

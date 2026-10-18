@@ -221,6 +221,13 @@ std::vector<u8> NACP::GetRawBytes() const {
     std::vector<u8> out(sizeof(RawNACP));
     RawNACP modified_raw = raw;
     modified_raw.supported_languages = static_cast<SupportedLanguage>(GetSupportedLanguages());
+    const auto lang = GetCurrentSystemLanguage();
+    const auto lang_idx = static_cast<size_t>(lang);
+    if (modified_raw.titles_data_format == TitleDataFormat::Uncompressed && lang_idx < 16) {
+        if (modified_raw.language_entries.language_entries[lang_idx].application_name[0] == '\0') {
+            modified_raw.language_entries.language_entries[lang_idx] = GetLanguageEntry();
+        }
+    }
     std::memcpy(out.data(), &modified_raw, sizeof(RawNACP));
     return out;
 }
