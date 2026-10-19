@@ -202,12 +202,6 @@
              <height>0</height>
             </size>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>68</width>
-             <height>16777215</height>
-            </size>
-           </property>
            <property name="styleSheet">
             <string notr="true">min-width: 68px;</string>
            </property>
@@ -246,12 +240,6 @@
             <size>
              <width>68</width>
              <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>68</width>
-             <height>16777215</height>
             </size>
            </property>
            <property name="styleSheet">
@@ -466,24 +454,6 @@
           <height>0</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>68</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="sizeIncrement">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="baseSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
         </property>
@@ -506,24 +476,6 @@
         <property name="minimumSize">
          <size>
           <width>68</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>68</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="sizeIncrement">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="baseSize">
-         <size>
-          <width>0</width>
           <height>0</height>
          </size>
         </property>

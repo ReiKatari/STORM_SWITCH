@@ -174,20 +174,9 @@ DeviceMemoryManager<Traits>::DeviceMemoryManager(const DeviceMemory& device_memo
     , device_inter{nullptr}
     , compressed_device_addr(1ULL << (physical_max_bits - Memory::YUZU_PAGEBITS))
     , tracked_entries(device_as_size >> Memory::YUZU_PAGEBITS)
+    , cached_pages(num_counter_entries)
 {
     impl = std::make_unique<DeviceMemoryManagerAllocator<Traits>>();
-    cached_pages = std::make_unique<CachedPages>();
-
-    const size_t total_virtual = device_as_size >> Memory::YUZU_PAGEBITS;
-    for (size_t i = 0; i < total_virtual; i++) {
-        tracked_entries[i].compressed_physical_ptr = 0;
-        tracked_entries[i].continuity_tracker = 1;
-        tracked_entries[i].cpu_backing_address = 0;
-    }
-    const size_t total_phys = compressed_device_addr.size();
-    for (size_t i = 0; i < total_phys; i++) {
-        compressed_device_addr[i] = 0;
-    }
 }
 
 template <typename Traits>
@@ -342,7 +331,8 @@ u8* DeviceMemoryManager<Traits>::GetSpan(const DAddr src_addr, const std::size_t
     size_t page_index = src_addr >> page_bits;
     if (page_index >= tracked_entries.size()) return nullptr;
     size_t subbits = src_addr & page_mask;
-    if ((static_cast<size_t>(tracked_entries[page_index].continuity_tracker) << page_bits) >= size + subbits) {
+    const size_t tracker = (std::max)(size_t(1), static_cast<size_t>(tracked_entries[page_index].continuity_tracker));
+    if ((tracker << page_bits) >= size + subbits) {
         return GetPointer<u8>(src_addr);
     }
     return nullptr;
@@ -353,7 +343,8 @@ const u8* DeviceMemoryManager<Traits>::GetSpan(const DAddr src_addr, const std::
     size_t page_index = src_addr >> page_bits;
     if (page_index >= tracked_entries.size()) return nullptr;
     size_t subbits = src_addr & page_mask;
-    if ((static_cast<size_t>(tracked_entries[page_index].continuity_tracker) << page_bits) >= size + subbits) {
+    const size_t tracker = (std::max)(size_t(1), static_cast<size_t>(tracked_entries[page_index].continuity_tracker));
+    if ((tracker << page_bits) >= size + subbits) {
         return GetPointer<u8>(src_addr);
     }
     return nullptr;
@@ -642,7 +633,7 @@ void DeviceMemoryManager<Traits>::UpdatePagesCachedCountNoLock(DAddr addr, size_
     };
     size_t old_vpage = (base_vaddress >> Memory::YUZU_PAGEBITS) - 1;
     for (; page != page_end; ++page) {
-        CounterAtomicType& count = cached_pages->at(page >> subentries_shift).Count(page);
+        CounterAtomicType& count = cached_pages[page >> subentries_shift].Count(page);
         auto [asid_2, vpage] = ExtractCPUBacking(page);
         vpage >>= Memory::YUZU_PAGEBITS;
 

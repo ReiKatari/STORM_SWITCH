@@ -526,9 +526,14 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     const bool is_mvk = driver_id == VK_DRIVER_ID_MOLTENVK;
     const bool is_qualcomm = driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY;
     const bool is_turnip = driver_id == VK_DRIVER_ID_MESA_TURNIP;
+    const std::string_view device_name_sv{properties.properties.deviceName};
     const bool is_mali = driver_id == VK_DRIVER_ID_ARM_PROPRIETARY ||
                          properties.properties.vendorID == 0x13B5 ||
-                         std::string_view(properties.properties.deviceName).find("Mali") != std::string_view::npos;
+                         device_name_sv.find("Mali") != std::string_view::npos ||
+                         device_name_sv.find("Immortalis") != std::string_view::npos;
+    const bool is_xclipse = driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY ||
+                            properties.properties.vendorID == 0x144D ||
+                            device_name_sv.find("Xclipse") != std::string_view::npos;
 
     if (!is_suitable)
         LOG_WARNING(Render_Vulkan, "Unsuitable driver - continuing anyways");
@@ -576,7 +581,7 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         IsFormatSupported(VK_FORMAT_D24_UNORM_S8_UINT,
                           VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, FormatType::Optimal);
 
-    supports_conditional_barriers = !(is_intel_anv || is_intel_windows);
+    supports_conditional_barriers = !(is_intel_anv || is_intel_windows || is_mali || is_xclipse);
 
     CollectPhysicalMemoryInfo();
     CollectToolingInfo();
@@ -674,6 +679,9 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     if (is_mali) {
         // Mali drivers have strict descriptor pool memory constraints; lower to 64 sets per pool
         sets_per_pool = 64;
+    } else if (is_xclipse) {
+        // Samsung Xclipse RDNA mobile drivers prefer 128 sets per pool
+        sets_per_pool = 128;
     } else if (is_amd_driver || is_nvidia) {
         // AMD/NVIDIA drivers benefit from a higher amount of Sets per Pool in heavy titles.
         sets_per_pool = 512;
@@ -709,9 +717,9 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         features.shader_float16_int8.shaderFloat16 = false;
     }
 
-    if (features.shader_float16_int8.shaderFloat16 && (is_qualcomm || is_turnip)) {
-        // Adreno FP16 rounding/denormals cause severe UE4 lighting & post-processing artifacts (e.g. Achilles: Legends Untold)
-        LOG_WARNING(Render_Vulkan, "Adreno auto-optimization: Disabling shaderFloat16 to prevent UE4 lighting and post-process artifacts");
+    if (features.shader_float16_int8.shaderFloat16 && (is_qualcomm || is_turnip || is_mali || is_xclipse)) {
+        // Mobile GPU FP16 rounding/denormals cause severe UE4 lighting & post-processing artifacts
+        LOG_WARNING(Render_Vulkan, "Mobile GPU auto-optimization: Disabling shaderFloat16 to prevent UE4 lighting and post-process artifacts");
         features.shader_float16_int8.shaderFloat16 = false;
     }
 
@@ -751,13 +759,14 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     const auto dyna_state = Settings::values.dyna_state.GetValue();
     auto effective_dyna_state = dyna_state;
 
-    if (is_adreno_6xx || is_qualcomm) {
-        // Adreno 6xx hardware and stock Qualcomm proprietary drivers (e.g. Adreno 750 on Snapdragon 8 Gen 3)
-        // crash in libllvm-qgl.so or hang on ExtendedDynamicState pipelines.
-        LOG_INFO(Render_Vulkan, "Adreno 6xx / Qualcomm proprietary driver auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
+    if (is_adreno_6xx || is_qualcomm || is_mali || is_xclipse) {
+        // Adreno 6xx, stock Qualcomm proprietary drivers, ARM Mali/Immortalis, and Samsung Xclipse
+        // crash or corrupt pipelines on ExtendedDynamicState.
+        LOG_INFO(Render_Vulkan, "Mobile GPU / driver auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
-    } else if ((is_turnip || is_mali) && effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
-        LOG_INFO(Render_Vulkan, "Turnip/Mali auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability and prevent pipeline cache invalidation");
+    } else if ((is_turnip || (is_intel_windows && is_integrated)) &&
+               effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
+        LOG_INFO(Render_Vulkan, "Turnip/Intel iGPU auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::EDS1;
     }
 
@@ -795,8 +804,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         break;
     }
 
-    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 6xx and stock Qualcomm proprietary drivers
-    if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_6xx || is_qualcomm) {
+    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 6xx, stock Qualcomm proprietary drivers, Mali, and Xclipse
+    if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_6xx || is_qualcomm || is_mali || is_xclipse) {
         RemoveExtensionFeature(extensions.vertex_input_dynamic_state, features.vertex_input_dynamic_state, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
     }
 

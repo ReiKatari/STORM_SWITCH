@@ -364,7 +364,9 @@ std::size_t RealVfsFile::Write(const u8* data, std::size_t length, std::size_t o
     if (!reference->file || !reference->file->Seek(static_cast<s64>(offset))) {
         return 0;
     }
-    return reference->file->WriteSpan(std::span{data, length});
+    const auto written = reference->file->WriteSpan(std::span{data, length});
+    reference->file->Flush();
+    return written;
 }
 
 bool RealVfsFile::Rename(std::string_view name) {

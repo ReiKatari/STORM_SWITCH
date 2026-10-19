@@ -247,6 +247,95 @@ static inline void ApplyDarkToTopLevel(QWidget* w, bool on) {
     ApplyWindowsTitleBarDarkMode(reinterpret_cast<HWND>(wid), on);
 }
 
+#include <QFontMetrics>
+#include <QGroupBox>
+
+static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
+    auto* dlg = qobject_cast<QDialog*>(w);
+    if (!dlg || !dlg->isWindow()) {
+        return;
+    }
+    if (dlg->inherits("InGameNotification") || dlg->inherits("PerformanceOverlay") ||
+        dlg->inherits("FloatingTranslateButton")) {
+        return;
+    }
+
+    // 1. Ensure unified STORM square checkbox/groupbox/radio indicator and QGroupBox::title styling
+    const QString cur_qss = dlg->styleSheet();
+    if (!cur_qss.isEmpty() && !cur_qss.contains(QStringLiteral("QCheckBox::indicator"))) {
+        dlg->setStyleSheet(cur_qss + QStringLiteral(
+            "\nQGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; top: 0px; left: 12px; padding: 0 6px; }"
+            "\nQCheckBox::indicator, QGroupBox::indicator, QRadioButton::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {"
+            " width: 16px; height: 16px; border: 1px solid #475569; border-radius: 4px; background: #121826; image: none; }"
+            "\nQCheckBox::indicator:hover, QGroupBox::indicator:hover, QRadioButton::indicator:hover, QTreeView::indicator:hover, QListView::indicator:hover, QTableView::indicator:hover {"
+            " border: 1px solid #00D2FF; }"
+            "\nQCheckBox::indicator:checked, QGroupBox::indicator:checked, QRadioButton::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
+            " background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00F0FF, stop:1 #0088CC); border: 1px solid #00F0FF; image: none; }"
+            "\nQCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QRadioButton::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
+            " background: #121826; border: 1px solid #475569; image: none; }"));
+    }
+
+    QScreen* scr = dlg->screen();
+    if (!scr && dlg->parentWidget()) {
+        scr = dlg->parentWidget()->screen();
+    }
+    if (!scr) {
+        scr = QGuiApplication::primaryScreen();
+    }
+    const QRect avail = scr ? scr->availableGeometry() : QRect(0, 0, 1920, 1040);
+    const int max_w = std::max(480, avail.width() - 36);
+    const int max_h = std::max(360, avail.height() - 44);
+
+    // 2. Ensure QGroupBox titles are never clipped horizontally
+    for (auto* gb : dlg->findChildren<QGroupBox*>()) {
+        if (!gb->title().isEmpty()) {
+            QFont f = gb->font();
+            f.setBold(true);
+            const QFontMetrics fm(f);
+            const int extra = gb->isCheckable() ? 58 : 38;
+            const int needed = std::min(fm.horizontalAdvance(gb->title()) + extra, std::max(200, max_w - 60));
+            if (gb->minimumWidth() < needed && gb->maximumWidth() >= needed) {
+                gb->setMinimumWidth(needed);
+            }
+        }
+    }
+
+    // 3. Clamp minimumSize and current size to available screen geometry
+    const bool is_fixed = (dlg->minimumSize() == dlg->maximumSize()) && (dlg->minimumWidth() > 0);
+    if (!is_fixed) {
+        dlg->setSizeGripEnabled(true);
+        if (dlg->minimumWidth() > max_w || dlg->minimumHeight() > max_h) {
+            dlg->setMinimumSize(std::min(dlg->minimumWidth(), max_w),
+                                std::min(dlg->minimumHeight(), max_h));
+        }
+        if (!dlg->isMaximized() && !dlg->isFullScreen()) {
+            const int target_w = std::min(dlg->width(), max_w);
+            const int target_h = std::min(dlg->height(), max_h);
+            if (target_w != dlg->width() || target_h != dlg->height()) {
+                dlg->resize(target_w, target_h);
+            }
+            const QRect fg = dlg->frameGeometry();
+            int nx = dlg->x();
+            int ny = dlg->y();
+            if (fg.right() > avail.right()) {
+                nx -= (fg.right() - avail.right());
+            }
+            if (fg.bottom() > avail.bottom()) {
+                ny -= (fg.bottom() - avail.bottom());
+            }
+            if (nx < avail.left()) {
+                nx = avail.left() + 8;
+            }
+            if (ny < avail.top()) {
+                ny = avail.top() + 8;
+            }
+            if (nx != dlg->x() || ny != dlg->y()) {
+                dlg->move(nx, ny);
+            }
+        }
+    }
+}
+
 namespace {
 struct TitlebarFilter final : QObject {
     bool dark;
@@ -272,6 +361,11 @@ struct TitlebarFilter final : QObject {
         if (auto* w = qobject_cast<QWidget*>(obj)) {
             switch (ev->type()) {
             case QEvent::Show:
+                in_filter = true;
+                ApplyDarkToTopLevel(w, dark);
+                EnsureModalDialogScalableAndStyled(w);
+                in_filter = false;
+                break;
             case QEvent::WindowStateChange:
                 in_filter = true;
                 ApplyDarkToTopLevel(w, dark);
@@ -551,7 +645,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Initialize core emulation settings to Zero-Regression Baseline on fresh install, preserving existing user settings on upgrade
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "12.5.0";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "12.6.0";
     if (UISettings::values.config_version.GetValue().empty()) {
         LOG_INFO(Frontend, "Fresh configuration detected. Initializing core emulation settings to Zero-Regression Baseline (version '{}')...",
                  CURRENT_BUILD_VERSION);
@@ -4665,8 +4759,12 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
             Core::GameFixDatabase::ApplyProfileDirectly(title_id, filename.toStdString());
             QtCommon::system->ApplySettings();
             statusBar()->showMessage(tr("🛡️ Авто-исправление: Применено"), 8000);
-        } else if (Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString()) != nullptr) {
-            statusBar()->showMessage(tr("⚠️ Авто-исправление: Не применено"), 8000);
+        } else {
+            Core::GameFixDatabase::SanitizeSettingsForHostHardware();
+            QtCommon::system->ApplySettings();
+            if (Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString()) != nullptr) {
+                statusBar()->showMessage(tr("⚠️ Авто-исправление: Не применено"), 8000);
+            }
         }
         UpdateStatusButtons();
     }
@@ -10207,8 +10305,8 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
     const int parent_width = this->width();
     const int parent_height = this->height();
-    const int target_width = std::clamp(static_cast<int>(parent_width * 0.96), 1450, 2400);
-    const int target_height = std::clamp(static_cast<int>(parent_height * 0.90), 680, 1200);
+    const int target_width = std::clamp(static_cast<int>(parent_width * 0.92), 760, 1800);
+    const int target_height = std::clamp(static_cast<int>(parent_height * 0.88), 520, 1080);
 
     QDialog dlg(this);
     dlg.setWindowTitle(StormLang(
@@ -10220,7 +10318,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
         QStringLiteral("STORM SWITCH — アドオンマネージャー")
     ));
     dlg.resize(target_width, target_height);
-    dlg.setMinimumSize(1300, 600);
+    dlg.setMinimumSize(680, 460);
     dlg.setStyleSheet(QStringLiteral(
         "QDialog { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', sans-serif; }"
         "QLabel { color: #ffffff; }"

@@ -15,27 +15,137 @@
 #include "common/fs/path_util.h"
 #include "common/logging.h"
 #include "common/settings.h"
-#ifdef __ANDROID__
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#elif defined(__ANDROID__) || defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
 #endif
 
 namespace Core {
 
-#ifdef __ANDROID__
 namespace {
-bool HasAtLeast7GbHostRam() {
+u64 GetHostPhysicalRamBytes() {
+#ifdef _WIN32
+    MEMORYSTATUSEX mem_info{};
+    mem_info.dwLength = sizeof(mem_info);
+    if (GlobalMemoryStatusEx(&mem_info)) {
+        return static_cast<u64>(mem_info.ullTotalPhys);
+    }
+    return 0;
+#elif defined(__ANDROID__) || defined(__linux__) || defined(__APPLE__)
     const long pages = sysconf(_SC_PHYS_PAGES);
     const long page_size = sysconf(_SC_PAGE_SIZE);
     if (pages > 0 && page_size > 0) {
-        const u64 total_ram_bytes = static_cast<u64>(pages) * static_cast<u64>(page_size);
+        return static_cast<u64>(pages) * static_cast<u64>(page_size);
+    }
+    return 0;
+#else
+    return 0;
+#endif
+}
+
+bool HasAtLeast7GbHostRam() {
+    const u64 total_ram_bytes = GetHostPhysicalRamBytes();
+    if (total_ram_bytes > 0) {
         return total_ram_bytes >= (7ULL * 1024 * 1024 * 1024);
     }
-    return false;
+    return true;
+}
+
+bool HasAtLeast5GbHostRam() {
+    const u64 total_ram_bytes = GetHostPhysicalRamBytes();
+    if (total_ram_bytes > 0) {
+        return total_ram_bytes >= (5200ULL * 1024 * 1024);
+    }
+    return true;
 }
 } // namespace
-#endif
 
 static const std::vector<GameFixProfile> s_profiles = {
+    {
+        0x0100C8000CEAE000ULL,
+        "Crysis Remastered",
+        "• Графические искажения и битые кадровые буферы из-за несовпадения макета GENERAL в BlitColor\n• Просадки FPS при включении маскировки и тепловизора нанокостюма (CryEngine SVOGI)\n• Зависания видеороликов при аппаратном декодировании",
+        "• Visual corruption and broken framebuffers caused by GENERAL layout mismatch in BlitColor\n• Framerate drops when activating Nanosuit Cloak and Thermal Vision (CryEngine SVOGI)\n• Cutscene freezes with hardware video decoding",
+        "✓ Точность ГПУ: Обычная (исправлена синхронизация BlitColor и проходов рендеринга)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим «В самолете»: Включено",
+        "✓ GPU Accuracy: Normal (Fixed BlitColor and renderpass state synchronization)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        },
+        {0x0100C8000CEAE800ULL}
+    },
+    {
+        0x0100232014B9C000ULL,
+        "Crysis 2 Remastered",
+        "• Искажения постобработки и размытия в движении CryEngine\n• Просадки FPS в городских боях Нью-Йорка\n• Сбои потоковой подгрузки текстур",
+        "• CryEngine post-processing and motion blur artifacts\n• Framerate drops in New York urban combat\n• Texture streaming stalls",
+        "✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим «В самолете»: Включено",
+        "✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        },
+        {0x0100232014B9C800ULL}
+    },
+    {
+        0x010073E014BA0000ULL,
+        "Crysis 3 Remastered",
+        "• Искажения освещения и отражений воды в куполе Либерти\n• Просадки FPS при высокой детализации растительности\n• Сбои памяти при загрузке уровней",
+        "• Lighting and water reflection glitches in the Liberty Dome\n• Framerate drops in dense foliage areas\n• Memory faults during level transitions",
+        "✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим «В самолете»: Включено",
+        "✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\gpu_fence_behavior", "0"},
+            {"Renderer\\dma_accuracy", "0"},
+            {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\nvdec_emulation", "3"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"System\\airplane_mode", "true"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"}
+        },
+        {0x010073E014BA0800ULL}
+    },
     {
         0x010033001F050000ULL,
         "Ys vs. Trails in the Sky: Alternative Saga",
@@ -6576,6 +6686,15 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         if (game_lower.find("hogwarts legacy") != std::string::npos && (lower.find("hogwarts") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
+        if (game_lower == "crysis 3 remastered" && (lower.find("crysis 3") != std::string::npos || lower.find("crysis3") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower == "crysis 2 remastered" && (lower.find("crysis 2") != std::string::npos || lower.find("crysis2") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower == "crysis remastered" && lower.find("crysis") != std::string::npos && lower.find("crysis 2") == std::string::npos && lower.find("crysis 3") == std::string::npos) {
+            return GetProfile(profile.title_id);
+        }
         if (game_lower.find("amalur") != std::string::npos && (lower.find("amalur") != std::string::npos || lower.find("re-reckoning") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
@@ -6732,15 +6851,15 @@ bool GameFixDatabase::ApplyProfileToPerGameConfig(u64 title_id, const std::strin
             }
             std::string sanitized_val = val;
             if (key == "memory_layout_mode") {
-#ifdef __ANDROID__
                 int mode = 0;
                 if (!sanitized_val.empty()) {
                     mode = std::atoi(sanitized_val.c_str());
                 }
-                if (mode >= 2 && !HasAtLeast7GbHostRam()) {
+                if (mode >= 1 && !HasAtLeast5GbHostRam()) {
+                    sanitized_val = "0";
+                } else if (mode >= 2 && !HasAtLeast7GbHostRam()) {
                     sanitized_val = "1";
                 }
-#endif
             }
             sections[sec][key] = sanitized_val;
             sections[sec][key + "\\use_global"] = "false";
@@ -6865,6 +6984,38 @@ bool GameFixDatabase::AreFixesEnabled() {
     return s_fixes_enabled;
 }
 
+void GameFixDatabase::SanitizeSettingsForHostHardware() {
+    const u64 ram_bytes = GetHostPhysicalRamBytes();
+    if (ram_bytes == 0) {
+        return;
+    }
+
+    const auto mem_mode = Settings::values.memory_layout_mode.GetValue();
+    if (!HasAtLeast5GbHostRam()) {
+        if (mem_mode != Settings::MemoryLayout::Memory_4Gb) {
+            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+            LOG_INFO(Frontend, "Hardware Auto-Correction: Clamped memory_layout_mode to 4GB on <=4GB RAM device ({} MB)",
+                     ram_bytes / (1024ULL * 1024ULL));
+        }
+        if (Settings::values.vram_usage_mode.GetValue() != Settings::VramUsageMode::Conservative) {
+            Settings::values.vram_usage_mode.SetValue(Settings::VramUsageMode::Conservative);
+        }
+        if (Settings::values.astc_recompression.GetValue() == Settings::AstcRecompression::Uncompressed) {
+            Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Bc3);
+            LOG_INFO(Frontend, "Hardware Auto-Correction: Enabled BC3 ASTC recompression on <=4GB RAM device to prevent OOM");
+        }
+    } else if (!HasAtLeast7GbHostRam()) {
+        if (mem_mode == Settings::MemoryLayout::Memory_8Gb) {
+            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
+            LOG_INFO(Frontend, "Hardware Auto-Correction: Clamped memory_layout_mode 8GB -> 6GB on <7GB RAM device ({} MB)",
+                     ram_bytes / (1024ULL * 1024ULL));
+        }
+        if (Settings::values.vram_usage_mode.GetValue() == Settings::VramUsageMode::Aggressive) {
+            Settings::values.vram_usage_mode.SetValue(Settings::VramUsageMode::Conservative);
+        }
+    }
+}
+
 bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name_or_path) {
     try {
         const auto* profile = GetProfile(title_id);
@@ -6872,6 +7023,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
             profile = GetProfileByTitleOrPath(title_id, name_or_path);
         }
         if (!profile) {
+            SanitizeSettingsForHostHardware();
             return false;
         }
 
@@ -6976,11 +7128,11 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
                 apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
                 int mode = safe_stoi(val, 0);
-#ifdef __ANDROID__
-                if (mode >= 2 && !HasAtLeast7GbHostRam()) {
+                if (mode >= 1 && !HasAtLeast5GbHostRam()) {
+                    mode = 0;
+                } else if (mode >= 2 && !HasAtLeast7GbHostRam()) {
                     mode = 1;
                 }
-#endif
                 apply_setting(Settings::values.memory_layout_mode, static_cast<Settings::MemoryLayout>(mode));
             } else if (full_key == "System\\language_index") {
                 apply_setting(Settings::values.language_index, static_cast<Settings::Language>(safe_stoi(val, 1)));
@@ -7010,6 +7162,7 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
                 apply_setting(Settings::values.use_auto_stub, val == "true" || val == "1");
             }
         }
+        SanitizeSettingsForHostHardware();
         Settings::UpdateGPUAccuracy();
         Settings::UpdateRescalingInfo();
         LOG_INFO(Frontend, "Directly applied GameFix profile in-memory for {:#016x}", title_id);

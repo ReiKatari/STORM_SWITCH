@@ -1014,6 +1014,16 @@ void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
 }
 
 void RasterizerVulkan::WaitForIdle() {
+    query_cache.NotifyWFI();
+
+    // Avoid breaking an active tiled GMEM render pass on Normal GPU accuracy when no
+    // transform feedback is active; EndRenderPass() emits full attachment barriers on close.
+    if (scheduler.IsRenderPassActive() && !scheduler.HasTransformFeedback() &&
+        !Settings::IsGPULevelHigh()) {
+        fence_manager.SignalOrdering();
+        return;
+    }
+
     // Everything but wait pixel operations. This intentionally includes FRAGMENT_SHADER_BIT because
     // fragment shaders can still write storage buffers.
     VkPipelineStageFlags flags =
@@ -1025,8 +1035,6 @@ void RasterizerVulkan::WaitForIdle() {
     if (device.IsExtTransformFeedbackSupported()) {
         flags |= VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT;
     }
-
-    query_cache.NotifyWFI();
 
     scheduler.RequestOutsideRenderPassOperationContext();
     scheduler.Record([event = *wfi_event, flags](vk::CommandBuffer cmdbuf) {
@@ -1145,9 +1153,11 @@ void RasterizerVulkan::LoadDiskResources(u64 title_id, std::stop_token stop_load
 
 void RasterizerVulkan::FlushWork() {
 #ifdef __ANDROID__
+    static constexpr u32 MIN_DRAWS_TO_FLUSH = 128;
     static constexpr u32 DRAWS_TO_DISPATCH = 512;
     static constexpr u32 CHECK_MASK = 3;
 #else
+    static constexpr u32 MIN_DRAWS_TO_FLUSH = 512;
     static constexpr u32 DRAWS_TO_DISPATCH = 4096;
     static constexpr u32 CHECK_MASK = 7;
 #endif // __ANDROID__
@@ -1156,7 +1166,19 @@ void RasterizerVulkan::FlushWork() {
     if ((++draw_counter & CHECK_MASK) != CHECK_MASK) {
         return;
     }
+    if (draw_counter < MIN_DRAWS_TO_FLUSH) {
+        return;
+    }
     if (draw_counter < DRAWS_TO_DISPATCH) {
+        if (!scheduler.IsRenderPassActive()) {
+            scheduler.Flush();
+            draw_counter = 0;
+        } else {
+            scheduler.DispatchWork();
+        }
+        return;
+    }
+    if (scheduler.IsRenderPassActive() && draw_counter < DRAWS_TO_DISPATCH * 2) {
         scheduler.DispatchWork();
         return;
     }

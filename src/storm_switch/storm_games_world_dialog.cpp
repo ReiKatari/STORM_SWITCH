@@ -913,9 +913,9 @@ void StormGamesWorldDialog::SetupUI() {
         const QRect parent_geom = parentWidget()->geometry();
         setGeometry(parent_geom);
     } else {
-        resize(1380, 800);
+        resize(1180, 720);
     }
-    setMinimumSize(960, 600);
+    setMinimumSize(680, 460);
 
     auto* root_layout = new QVBoxLayout(this);
     root_layout->setContentsMargins(12, 12, 12, 12);

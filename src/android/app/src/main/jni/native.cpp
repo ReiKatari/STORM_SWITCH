@@ -403,6 +403,7 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
             }
         }
     }
+    Core::GameFixDatabase::SanitizeSettingsForHostHardware();
 
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();

@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 #include <QComboBox>
+#include <QFontMetrics>
 #include <QInputDialog>
 #include <QLabel>
 #include <QMenu>
@@ -414,8 +415,8 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         };
 
         auto* const top_toolbar = new QHBoxLayout();
-        top_toolbar->setContentsMargins(10, 6, 10, 4);
-        top_toolbar->setSpacing(8);
+        top_toolbar->setContentsMargins(6, 4, 6, 2);
+        top_toolbar->setSpacing(4);
 
         auto* const skin_label = new QLabel(ctrl_lang(
             QStringLiteral("Оформление:"), QStringLiteral("Skin:"), QStringLiteral("手柄外观:"),
@@ -424,7 +425,9 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         skin_label->setStyleSheet(QStringLiteral("background: transparent; font-weight: bold; font-size: 11px;"));
 
         auto* const combo_skin = new QComboBox(this);
-        combo_skin->setMinimumWidth(230);
+        combo_skin->setMinimumWidth(140);
+        combo_skin->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+        combo_skin->setMinimumContentsLength(14);
         combo_skin->addItem(ctrl_lang(
                                 QStringLiteral("Классический полупрозрачный"),
                                 QStringLiteral("Classic Translucent Black"),
@@ -472,12 +475,18 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             QStringLiteral("Clic G — Rotation 3D 360° | Double-clic — 180° | Molette — Zoom"),
             QStringLiteral("Clic Izq. — Rotación 3D 360° | Doble clic — 180° | Rueda — Zoom"),
             QStringLiteral("زر الفأرة الأيسر — دوران 360° | نقر مزدوج — 180° | العجلة — تقريب")), this);
-        hint_3d->setStyleSheet(QStringLiteral("background: transparent; color: #888888; font-size: 11px;"));
+        hint_3d->setWordWrap(true);
+        hint_3d->setAlignment(Qt::AlignCenter);
+        hint_3d->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+        hint_3d->setStyleSheet(QStringLiteral("background: transparent; color: #888888; font-size: 11px; padding: 2px 6px;"));
+
+        const QString compact_btn_style = QStringLiteral("padding: 3px 8px; font-size: 11px;");
 
         auto* const btn_iso_view = new QPushButton(ctrl_lang(
             QStringLiteral("📐 3D Вид"), QStringLiteral("📐 3D View"), QStringLiteral("📐 3D 视角"),
             QStringLiteral("📐 3D表示"), QStringLiteral("📐 3D 뷰"), QStringLiteral("📐 3D-Ansicht"),
             QStringLiteral("📐 Vue 3D"), QStringLiteral("📐 Vista 3D"), QStringLiteral("📐 عرض ثلاثي الأبعاد")), this);
+        btn_iso_view->setStyleSheet(compact_btn_style);
         btn_iso_view->setToolTip(ctrl_lang(
             QStringLiteral("Изометрический объемный 3D-ракурс геймпада"),
             QStringLiteral("Isometric 3D perspective view of the controller"),
@@ -496,6 +505,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             QStringLiteral("⬆️ Торцы"), QStringLiteral("⬆️ Top / Triggers"), QStringLiteral("⬆️ 顶部肩键"),
             QStringLiteral("⬆️ 上面 / トリガー"), QStringLiteral("⬆️ 상단 / 트리거"), QStringLiteral("⬆️ Schultertasten"),
             QStringLiteral("⬆️ Gâchettes"), QStringLiteral("⬆️ Gatillos"), QStringLiteral("⬆️ الأزرار العلوية")), this);
+        btn_top_view->setStyleSheet(compact_btn_style);
         btn_top_view->setToolTip(ctrl_lang(
             QStringLiteral("Вид сверху на курки ZL/ZR, бамперы L/R и разъем USB-C"),
             QStringLiteral("Top view of ZL/ZR triggers, L/R bumpers, and USB-C port"),
@@ -511,6 +521,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         });
 
         auto* const btn_flip_view = new QPushButton(QStringLiteral("🔄 180°"), this);
+        btn_flip_view->setStyleSheet(compact_btn_style);
         btn_flip_view->setToolTip(ctrl_lang(
             QStringLiteral("Перевернуть геймпад на 180°: вид спереди или сзади"),
             QStringLiteral("Flip controller 180°: toggle front and rear view"),
@@ -529,6 +540,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             QStringLiteral("↺ Сброс"), QStringLiteral("↺ Reset"), QStringLiteral("↺ 重置"),
             QStringLiteral("↺ リセット"), QStringLiteral("↺ 초기화"), QStringLiteral("↺ Zurücksetzen"),
             QStringLiteral("↺ Réinitialiser"), QStringLiteral("↺ Restablecer"), QStringLiteral("↺ إعادة ضبط")), this);
+        btn_reset_view->setStyleSheet(compact_btn_style);
         btn_reset_view->setToolTip(ctrl_lang(
             QStringLiteral("Сбросить 3D-вращение и зум к исходному виду"),
             QStringLiteral("Reset 3D rotation and zoom to default view"),
@@ -544,9 +556,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         });
 
         top_toolbar->addWidget(skin_label);
-        top_toolbar->addWidget(combo_skin);
-        top_toolbar->addStretch(1);
-        top_toolbar->addWidget(hint_3d);
+        top_toolbar->addWidget(combo_skin, 1);
         top_toolbar->addWidget(btn_iso_view);
         top_toolbar->addWidget(btn_top_view);
         top_toolbar->addWidget(btn_flip_view);
@@ -554,6 +564,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
 
         ui->verticalLayout_4->addLayout(top_toolbar);
         ui->verticalLayout_4->addStretch(1);
+        ui->verticalLayout_4->addWidget(hint_3d);
     }
 
     for (int button_id = 0; button_id < Settings::NativeButton::NumButtons; ++button_id) {
@@ -1014,6 +1025,20 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             &ConfigureInputPlayer::SaveProfile);
 
     LoadConfiguration();
+
+    QFont title_font = font();
+    title_font.setPixelSize(12);
+    title_font.setBold(true);
+    const QFontMetrics title_fm(title_font);
+    for (auto* box : findChildren<QGroupBox*>()) {
+        if (box->title().size() > 3) {
+            const int title_w =
+                title_fm.horizontalAdvance(box->title()) + (box->isCheckable() ? 64 : 40);
+            if (box->minimumWidth() < title_w) {
+                box->setMinimumWidth(title_w);
+            }
+        }
+    }
 }
 
 ConfigureInputPlayer::~ConfigureInputPlayer() {
@@ -1067,6 +1092,20 @@ void ConfigureInputPlayer::changeEvent(QEvent* event) {
 void ConfigureInputPlayer::RetranslateUI() {
     ui->retranslateUi(this);
     UpdateUI();
+
+    QFont title_font = font();
+    title_font.setPixelSize(12);
+    title_font.setBold(true);
+    const QFontMetrics title_fm(title_font);
+    for (auto* box : findChildren<QGroupBox*>()) {
+        if (box->title().size() > 3) {
+            const int title_w =
+                title_fm.horizontalAdvance(box->title()) + (box->isCheckable() ? 64 : 40);
+            if (box->minimumWidth() < title_w) {
+                box->setMinimumWidth(title_w);
+            }
+        }
+    }
 }
 
 void ConfigureInputPlayer::LoadConfiguration() {

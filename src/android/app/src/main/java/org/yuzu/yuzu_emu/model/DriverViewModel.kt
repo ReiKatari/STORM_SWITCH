@@ -489,11 +489,29 @@ class DriverViewModel : ViewModel() {
                     }
                 }
 
-                val selectedDriverFile = File(selectedDriverPath)
-                val selectedDriverMetadata = if (selectedDriverPath.isNotEmpty() && selectedDriverFile.exists()) {
+                var selectedDriverFile = File(selectedDriverPath)
+                var selectedDriverMetadata = if (selectedDriverPath.isNotEmpty() && selectedDriverFile.exists()) {
                     GpuDriverHelper.getMetadataFromZip(selectedDriverFile)
                 } else {
                     GpuDriverMetadata()
+                }
+                if (selectedDriverMetadata.name != null &&
+                    GpuDriverHelper.isAdreno8xx() &&
+                    !GpuDriverHelper.isDriverCompatibleWithAdreno8xx(selectedDriverMetadata)) {
+                    val compatibleDriver = GpuDriverHelper.getDrivers().firstOrNull {
+                        GpuDriverHelper.isDriverCompatibleWithAdreno8xx(it.second)
+                    }
+                    if (compatibleDriver != null) {
+                        Log.warning("[DriverViewModel] Auto-switching incompatible driver '${selectedDriverMetadata.name}' on Adreno 8xx to '${compatibleDriver.second.name}'")
+                        selectedDriverPath = compatibleDriver.first
+                        selectedDriverFile = File(selectedDriverPath)
+                        selectedDriverMetadata = compatibleDriver.second
+                    } else {
+                        Log.warning("[DriverViewModel] Auto-reverting incompatible driver '${selectedDriverMetadata.name}' on Adreno 8xx to System GPU Driver")
+                        selectedDriverPath = ""
+                        selectedDriverFile = File("")
+                        selectedDriverMetadata = GpuDriverMetadata()
+                    }
                 }
                 val installedMetadata = GpuDriverHelper.installedCustomDriverData
 
@@ -533,6 +551,9 @@ class DriverViewModel : ViewModel() {
                 if (game != null) {
                     GpuDriverHelper.applyPerGameDriverConfig(game.programIdHex, game.title)
                 }
+
+                // Re-sanitize active settings after final driver selection (Turnip vs System driver)
+                org.yuzu.yuzu_emu.utils.StormHardwareCalibrator.sanitizeSettingsForHardware()
 
                 setDriverReady()
             }

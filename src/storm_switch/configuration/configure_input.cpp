@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2016 Citra Emulator Project
@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <thread>
+#include <QFontMetrics>
+#include <QScrollArea>
 #include <QTabBar>
 
 #include "common/settings.h"
@@ -107,7 +109,12 @@ void ConfigureInput::Initialize(InputCommon::InputSubsystem* input_subsystem,
 
     for (std::size_t i = 0; i < player_tabs.size(); ++i) {
         QHBoxLayout* tab_layout = new QHBoxLayout(player_tabs[i]);
-        tab_layout->addWidget(player_controllers[i]);
+        tab_layout->setContentsMargins(0, 0, 0, 0);
+        auto* scroll_area = new QScrollArea(player_tabs[i]);
+        scroll_area->setWidgetResizable(true);
+        scroll_area->setFrameShape(QFrame::NoFrame);
+        scroll_area->setWidget(player_controllers[i]);
+        tab_layout->addWidget(scroll_area);
         connect(player_controllers[i], &ConfigureInputPlayer::Connected, [this, i](bool checked) {
             // Ensures that connecting a controller changes the number of players
             if (connected_controller_checkboxes[i]->isChecked() != checked) {
@@ -149,7 +156,12 @@ void ConfigureInput::Initialize(InputCommon::InputSubsystem* input_subsystem,
     advanced = new ConfigureInputAdvanced(hid_core, this);
 
     QHBoxLayout* advancedLayout = new QHBoxLayout(ui->tabAdvanced);
-    advancedLayout->addWidget(advanced);
+    advancedLayout->setContentsMargins(0, 0, 0, 0);
+    auto* adv_scroll = new QScrollArea(ui->tabAdvanced);
+    adv_scroll->setWidgetResizable(true);
+    adv_scroll->setFrameShape(QFrame::NoFrame);
+    adv_scroll->setWidget(advanced);
+    advancedLayout->addWidget(adv_scroll);
 
     connect(advanced, &ConfigureInputAdvanced::CallDebugControllerDialog,
             [this, input_subsystem, &hid_core, is_powered_on] {
@@ -242,6 +254,20 @@ void ConfigureInput::changeEvent(QEvent* event) {
 
 void ConfigureInput::RetranslateUI() {
     ui->retranslateUi(this);
+
+    QFont title_font = font();
+    title_font.setPixelSize(12);
+    title_font.setBold(true);
+    const QFontMetrics title_fm(title_font);
+    for (auto* box : findChildren<QGroupBox*>()) {
+        if (box->title().size() > 3) {
+            const int title_w =
+                title_fm.horizontalAdvance(box->title()) + (box->isCheckable() ? 64 : 40);
+            if (box->minimumWidth() < title_w) {
+                box->setMinimumWidth(title_w);
+            }
+        }
+    }
 }
 
 void ConfigureInput::LoadConfiguration() {
@@ -270,17 +296,27 @@ void ConfigureInput::LoadPlayerControllerIndices() {
 }
 
 void ConfigureInput::ClearAll() {
-    // We don't have a good way to know what tab is active, but we can find out by getting the
-    // parent of the consoleInputSettings
-    auto* player_tab = static_cast<ConfigureInputPlayer*>(ui->consoleInputSettings->parent());
-    player_tab->ClearAll();
+    auto* player_tab = qobject_cast<ConfigureInputPlayer*>(ui->consoleInputSettings->parentWidget());
+    if (!player_tab) {
+        const int idx = std::clamp(ui->tabWidget->currentIndex(), 0,
+                                   static_cast<int>(player_controllers.size()) - 1);
+        player_tab = player_controllers[idx];
+    }
+    if (player_tab) {
+        player_tab->ClearAll();
+    }
 }
 
 void ConfigureInput::RestoreDefaults() {
-    // We don't have a good way to know what tab is active, but we can find out by getting the
-    // parent of the consoleInputSettings
-    auto* player_tab = static_cast<ConfigureInputPlayer*>(ui->consoleInputSettings->parent());
-    player_tab->RestoreDefaults();
+    auto* player_tab = qobject_cast<ConfigureInputPlayer*>(ui->consoleInputSettings->parentWidget());
+    if (!player_tab) {
+        const int idx = std::clamp(ui->tabWidget->currentIndex(), 0,
+                                   static_cast<int>(player_controllers.size()) - 1);
+        player_tab = player_controllers[idx];
+    }
+    if (player_tab) {
+        player_tab->RestoreDefaults();
+    }
 
     ui->radioDocked->setChecked(true);
     ui->radioUndocked->setChecked(false);

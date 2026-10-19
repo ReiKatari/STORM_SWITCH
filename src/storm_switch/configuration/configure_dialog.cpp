@@ -14,6 +14,8 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QGroupBox>
+#include <QFontMetrics>
 #include <QLabel>
 #include "common/cpu_features.h"
 #include "common/memory_detect.h"
@@ -408,7 +410,7 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "    background: transparent;"
         "    background-color: transparent;"
         "}"
-        "QCheckBox::indicator, QGroupBox::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {"
+        "QCheckBox::indicator, QGroupBox::indicator, QRadioButton::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {"
         "    width: 16px;"
         "    height: 16px;"
         "    border: 1px solid #475569;"
@@ -416,15 +418,15 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "    background: #121826;"
         "    image: none;"
         "}"
-        "QCheckBox::indicator:hover, QGroupBox::indicator:hover, QTreeView::indicator:hover, QListView::indicator:hover, QTableView::indicator:hover {"
+        "QCheckBox::indicator:hover, QGroupBox::indicator:hover, QRadioButton::indicator:hover, QTreeView::indicator:hover, QListView::indicator:hover, QTableView::indicator:hover {"
         "    border: 1px solid #00D2FF;"
         "}"
-        "QCheckBox::indicator:checked, QGroupBox::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
+        "QCheckBox::indicator:checked, QGroupBox::indicator:checked, QRadioButton::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00F0FF, stop:1 #0088CC);"
         "    border: 1px solid #00F0FF;"
         "    image: none;"
         "}"
-        "QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
+        "QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QRadioButton::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
         "    background: #121826;"
         "    border: 1px solid #475569;"
         "    image: none;"
@@ -448,7 +450,6 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "}"
     ));
 
-    adjustSize();
     ui->selectorList->setCurrentRow(0);
 
     // Selects the leftmost button on the bottom bar (Cancel as of writing)
@@ -461,6 +462,17 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     });
 
     RetranslateUI();
+
+    setSizeGripEnabled(true);
+    if (QScreen* scr = screen() ? screen() : QGuiApplication::primaryScreen()) {
+        const QRect avail = scr->availableGeometry();
+        const int max_w = std::max(640, avail.width() - 48);
+        const int max_h = std::max(480, avail.height() - 48);
+        setMinimumSize(std::min(720, max_w), std::min(500, max_h));
+        resize(std::min(1160, max_w), std::min(760, max_h));
+    } else {
+        resize(1120, 720);
+    }
 }
 
 ConfigureDialog::~ConfigureDialog() {
@@ -650,6 +662,19 @@ void ConfigureDialog::RetranslateUI() {
 
     UpdateVisibleTabs();
     ui->tabWidget->setCurrentIndex(old_index);
+
+    for (auto* gb : findChildren<QGroupBox*>()) {
+        if (!gb->title().isEmpty()) {
+            QFont f = gb->font();
+            f.setBold(true);
+            const QFontMetrics fm(f);
+            const int extra = gb->isCheckable() ? 58 : 38;
+            const int needed = fm.horizontalAdvance(gb->title()) + extra;
+            if (gb->minimumWidth() < needed) {
+                gb->setMinimumWidth(needed);
+            }
+        }
+    }
 }
 
 void ConfigureDialog::HandleApplyButtonClicked() {

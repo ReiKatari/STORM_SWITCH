@@ -542,25 +542,6 @@ void RecordShaderReadBarrier(Scheduler& scheduler, const ImageView& image_view) 
         },
     });
 }
-
-void BeginRenderPass(vk::CommandBuffer& cmdbuf, const Framebuffer* framebuffer) {
-    const VkRenderPass render_pass = framebuffer->RenderPass();
-    const VkFramebuffer framebuffer_handle = framebuffer->Handle();
-    const VkExtent2D render_area = framebuffer->RenderArea();
-    const VkRenderPassBeginInfo renderpass_bi{
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .pNext = nullptr,
-        .renderPass = render_pass,
-        .framebuffer = framebuffer_handle,
-        .renderArea{
-            .offset{},
-            .extent = render_area,
-        },
-        .clearValueCount = 0,
-        .pClearValues = nullptr,
-    };
-    cmdbuf.BeginRenderPass(renderpass_bi, VK_SUBPASS_CONTENTS_INLINE);
-}
 } // Anonymous namespace
 
 BlitImageHelper::BlitImageHelper(const Device& device_, Scheduler& scheduler_,
@@ -662,10 +643,12 @@ void BlitImageHelper::BlitColor(const Framebuffer* dst_framebuffer, VkImageView 
         return;
     }
     scheduler.RequestOutsideRenderPassOperationContext();
-    scheduler.Record([this, dst_framebuffer, src_image_view, src_image, src_sampler, dst_region,
+    scheduler.Record([src_image](vk::CommandBuffer cmdbuf) {
+        TransitionImageLayout(cmdbuf, src_image, VK_IMAGE_LAYOUT_GENERAL);
+    });
+    scheduler.RequestRenderpass(dst_framebuffer);
+    scheduler.Record([this, src_image_view, src_sampler, dst_region,
                       src_region, src_size, pipeline, layout](vk::CommandBuffer cmdbuf) {
-        TransitionImageLayout(cmdbuf, src_image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        BeginRenderPass(cmdbuf, dst_framebuffer);
         const VkDescriptorSet descriptor_set = one_texture_descriptor_allocator.Commit();
         UpdateOneTextureDescriptorSet(device, descriptor_set, src_sampler, src_image_view);
         cmdbuf.BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
@@ -673,8 +656,8 @@ void BlitImageHelper::BlitColor(const Framebuffer* dst_framebuffer, VkImageView 
                                   nullptr);
         BindBlitState(cmdbuf, layout, dst_region, src_region, src_size);
         cmdbuf.Draw(3, 1, 0, 0);
-        cmdbuf.EndRenderPass();
     });
+    scheduler.InvalidateState();
 }
 
 void BlitImageHelper::BlitColorMSAA(const Framebuffer* dst_framebuffer,

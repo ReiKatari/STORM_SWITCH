@@ -179,7 +179,8 @@ Shader::RuntimeInfo MakeRuntimeInfo(std::span<const Shader::IR::Program> program
         info.previous_stage_stores.mask.set();
     }
     const Shader::Stage stage{program.stage};
-    const bool has_geometry{key.unique_hashes[4] != 0 && !programs[4].is_geometry_passthrough};
+    const bool has_geometry{key.unique_hashes[4] != 0 && !programs[4].is_geometry_passthrough &&
+                            device.UseGeometryShaders()};
     const bool gl_ndc{key.state.ndc_minus_one_to_one != 0};
     const float point_size{std::bit_cast<float>(key.state.point_size)};
     switch (stage) {
@@ -350,6 +351,40 @@ size_t GetTotalPipelineWorkers() {
     return std::clamp<size_t>(balanced_workers, 1ULL, 16ULL);
 #endif
 }
+
+struct FragmentTranslationCacheKey {
+    u64 unique_hash{};
+    Shader::Backend::Bindings initial_bindings{};
+    Shader::VaryingState previous_stage_stores{};
+    u32 alpha_test_func{};
+    u32 alpha_test_ref{};
+    u8 dual_source_blend{};
+    u8 force_early_z{};
+    u8 y_negate{};
+    std::array<Shader::AttributeType, 8> color_output_types{};
+
+    bool operator==(const FragmentTranslationCacheKey& rhs) const noexcept {
+        return std::memcmp(this, &rhs, sizeof(*this)) == 0;
+    }
+};
+
+struct FragmentTranslationCacheKeyHash {
+    size_t operator()(const FragmentTranslationCacheKey& k) const noexcept {
+        return static_cast<size_t>(
+            Common::CityHash64(reinterpret_cast<const char*>(&k), sizeof(k)));
+    }
+};
+
+struct CachedFragmentShader {
+    Shader::Info info;
+    Shader::Backend::Bindings out_bindings;
+    std::vector<u32> spirv;
+};
+
+std::mutex g_fragment_cache_mutex;
+ankerl::unordered_dense::map<FragmentTranslationCacheKey, CachedFragmentShader,
+                             FragmentTranslationCacheKeyHash>
+    g_fragment_translation_cache;
 
 } // Anonymous namespace
 
@@ -890,8 +925,16 @@ std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(
 
     // Layer passthrough generation for devices without VK_EXT_shader_viewport_index_layer
     Shader::IR::Program* layer_source_program{};
+    Shader::Environment* fragment_env{};
+    const bool allow_geometry_shaders = device.UseGeometryShaders();
 
     for (size_t index = 0; index < Maxwell::MaxShaderProgram; ++index) {
+        if (index == static_cast<u32>(Maxwell::ShaderType::Geometry) && !allow_geometry_shaders) {
+            if (key.unique_hashes[index] != 0) {
+                ++env_index;
+            }
+            continue;
+        }
         const bool is_emulated_stage = layer_source_program != nullptr &&
                                        index == static_cast<u32>(Maxwell::ShaderType::Geometry);
         if (key.unique_hashes[index] == 0 && is_emulated_stage) {
@@ -905,6 +948,14 @@ std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(
         }
         Shader::Environment& env{*envs[env_index]};
         ++env_index;
+
+        if (index == static_cast<u32>(Maxwell::ShaderType::Pixel)) {
+            fragment_env = &env;
+            if (Settings::values.dump_guest_shaders) {
+                env.Dump(hash, key.unique_hashes[index]);
+            }
+            continue;
+        }
 
         const u32 cfg_offset{static_cast<u32>(env.StartAddress() + sizeof(Shader::ProgramHeader))};
         Shader::Maxwell::Flow::CFG cfg(env, pools.flow_block, cfg_offset, index == 0);
@@ -922,7 +973,7 @@ std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(
             env.Dump(hash, key.unique_hashes[index]);
         }
 
-        if (programs[index].info.requires_layer_emulation) {
+        if (programs[index].info.requires_layer_emulation && allow_geometry_shaders) {
             layer_source_program = &programs[index];
         }
     }
@@ -933,6 +984,9 @@ std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(
     Shader::Backend::Bindings binding;
     for (size_t index = uses_vertex_a && uses_vertex_b ? 1 : 0; index < Maxwell::MaxShaderProgram;
          ++index) {
+        if (index == static_cast<u32>(Maxwell::ShaderType::Geometry) && !allow_geometry_shaders) {
+            continue;
+        }
         const bool is_emulated_stage = layer_source_program != nullptr &&
                                        index == static_cast<u32>(Maxwell::ShaderType::Geometry);
         if (key.unique_hashes[index] == 0 && !is_emulated_stage) {
@@ -947,9 +1001,55 @@ std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(
         const size_t stage_index{index - 1};
         infos[stage_index] = &program.info;
 
-        const auto runtime_info{MakeRuntimeInfo(programs, key, program, previous_stage, device)};
-        ConvertLegacyToGeneric(program, runtime_info);
-        const std::vector<u32> code{EmitSPIRV(profile, runtime_info, program, binding)};
+        std::vector<u32> code;
+        if (index == static_cast<u32>(Maxwell::ShaderType::Pixel) && fragment_env != nullptr) {
+            program.stage = Shader::Stage::Fragment;
+            const auto runtime_info{MakeRuntimeInfo(programs, key, program, previous_stage, device)};
+            const bool can_use_frag_cache =
+                runtime_info.previous_stage_legacy_stores_mapping.empty();
+            FragmentTranslationCacheKey frag_key{};
+            bool frag_cache_hit = false;
+            if (can_use_frag_cache) {
+                std::memset(&frag_key, 0, sizeof(frag_key));
+                frag_key.unique_hash = key.unique_hashes[index];
+                frag_key.initial_bindings = binding;
+                frag_key.previous_stage_stores = runtime_info.previous_stage_stores;
+                frag_key.alpha_test_func = key.state.alpha_test_func.Value();
+                frag_key.alpha_test_ref = key.state.alpha_test_ref;
+                frag_key.dual_source_blend = key.state.attachment0_dual_source_blend != 0 ? 1 : 0;
+                frag_key.force_early_z = runtime_info.force_early_z ? 1 : 0;
+                frag_key.y_negate = runtime_info.y_negate ? 1 : 0;
+                frag_key.color_output_types = runtime_info.color_output_types;
+                std::scoped_lock frag_lock{g_fragment_cache_mutex};
+                auto it = g_fragment_translation_cache.find(frag_key);
+                if (it != g_fragment_translation_cache.end()) {
+                    program.info = it->second.info;
+                    binding = it->second.out_bindings;
+                    code = it->second.spirv;
+                    frag_cache_hit = true;
+                }
+            }
+            if (!frag_cache_hit) {
+                const u32 cfg_offset{
+                    static_cast<u32>(fragment_env->StartAddress() + sizeof(Shader::ProgramHeader))};
+                Shader::Maxwell::Flow::CFG cfg(*fragment_env, pools.flow_block, cfg_offset, false);
+                program = TranslateProgram(pools.inst, pools.block, *fragment_env, cfg, host_info);
+                ConvertLegacyToGeneric(program, runtime_info);
+                code = EmitSPIRV(profile, runtime_info, program, binding);
+                if (can_use_frag_cache && !program.info.loads.Legacy()) {
+                    std::scoped_lock frag_lock{g_fragment_cache_mutex};
+                    if (g_fragment_translation_cache.size() >= 8192) {
+                        g_fragment_translation_cache.clear();
+                    }
+                    g_fragment_translation_cache.try_emplace(
+                        frag_key, CachedFragmentShader{program.info, binding, code});
+                }
+            }
+        } else {
+            const auto runtime_info{MakeRuntimeInfo(programs, key, program, previous_stage, device)};
+            ConvertLegacyToGeneric(program, runtime_info);
+            code = EmitSPIRV(profile, runtime_info, program, binding);
+        }
         device.SaveShader(code);
         modules[stage_index] = BuildShader(device, code);
 

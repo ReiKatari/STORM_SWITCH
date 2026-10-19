@@ -407,8 +407,8 @@ void TranslatorHUDOverlay::mouseMoveEvent(QMouseEvent* event) {
 GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     : QDialog(parent), m_system(system) {
     setWindowTitle(tr("🌐 STORM SWITCH — Авто-переводчик"));
-    resize(1360, 780);
-    setMinimumSize(1150, 650);
+    resize(1160, 700);
+    setMinimumSize(680, 460);
 
     setStyleSheet(QStringLiteral(
         "QDialog { background: #0B0F19; color: #F8FAFC; font-family: 'Segoe UI', sans-serif; }"

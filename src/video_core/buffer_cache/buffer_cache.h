@@ -947,9 +947,19 @@ void BufferCache<P>::BindHostGraphicsUniformBuffer(size_t stage, u32 index, u32 
             return alignment > 1 && (offset % alignment) != 0;
         }
     }();
-    const bool use_fast_buffer = needs_alignment_stream
-        || (has_host_buffer && size <= channel_state->uniform_buffer_skip_cache_size
-            && !memory_tracker.IsRegionGpuModified(device_addr, size));
+    const bool is_region_used_in_cmdbuf = [&] {
+        if constexpr (IS_OPENGL) {
+            return false;
+        } else {
+            return size <= 65536 && buffer.IsRegionUsed(offset, size);
+        }
+    }();
+    const bool use_fast_buffer =
+        needs_alignment_stream ||
+        (has_host_buffer && !memory_tracker.IsRegionGpuModified(device_addr, size) &&
+         (size <= channel_state->uniform_buffer_skip_cache_size ||
+          (is_region_used_in_cmdbuf &&
+           memory_tracker.IsRegionCpuModified(device_addr, size))));
     if (use_fast_buffer) {
         if constexpr (IS_OPENGL) {
             if (runtime.HasFastBufferSubData()) {

@@ -232,8 +232,7 @@ private:
 
     static constexpr size_t num_counter_entries =
         (1ULL << (device_virtual_bits - page_bits)) / subentries;
-    using CachedPages = std::array<CounterEntry, num_counter_entries>;
-    std::unique_ptr<CachedPages> cached_pages;
+    Common::VirtualBuffer<CounterEntry> cached_pages;
     Common::RangeMutex counter_guard;
     std::mutex mapping_guard;
 

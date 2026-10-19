@@ -100,6 +100,10 @@ public:
         state.has_xfb = true;
     }
 
+    [[nodiscard]] bool HasTransformFeedback() const noexcept {
+        return state.has_xfb;
+    }
+
     /// Assigns the query cache.
     void SetQueryCache(VideoCommon::QueryCacheBase<QueryCacheParams>& query_cache_) {
         query_cache = &query_cache_;

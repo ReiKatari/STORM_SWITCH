@@ -100,7 +100,7 @@ public:
             LOG_WARNING(Render_Vulkan, "QueryCache::Sync GetQueryResults failed with result={}, start={}, size={}",
                         static_cast<int>(query_result), start, size);
             for (size_t i = 0; i < size; ++i) {
-                host_results[start + i] = 0;
+                host_results[start + i] = 1;
             }
             return;
         }
@@ -246,6 +246,11 @@ public:
         const auto driver_id = device.GetDriverID();
         if (driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
             driver_id == VK_DRIVER_ID_ARM_PROPRIETARY || driver_id == VK_DRIVER_ID_MESA_TURNIP) {
+            AbandonCurrentQuery();
+            num_slots_used = 0;
+            first_accumulation_checkpoint = (std::numeric_limits<size_t>::max)();
+            last_accumulation_checkpoint = 0;
+            accumulation_since_last_sync = false;
             pending_sync.clear();
             sync_values_stash.clear();
             return;

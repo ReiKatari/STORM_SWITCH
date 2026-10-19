@@ -396,6 +396,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 }
             }
 
+            org.yuzu.yuzu_emu.utils.StormHardwareCalibrator.sanitizeSettingsForHardware(requireContext())
+
             runCatching { GameHelper.restoreContentForGame(gameToUse) }
                 .onFailure {
                     Log.warning(

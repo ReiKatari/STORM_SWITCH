@@ -41,6 +41,7 @@ public:
     static bool AreFixesEnabled();
     static void SetExcludedKeys(const std::vector<std::string>& excluded_keys);
     static bool IsKeyExcluded(const std::string& full_key);
+    static void SanitizeSettingsForHostHardware();
 };
 
 } // namespace Core

@@ -937,6 +937,7 @@ TextureCacheRuntime::TextureCacheRuntime(const Device& device_, Scheduler& sched
     if (!device.IsKhrImageFormatListSupported()) {
         return;
     }
+    const bool native_bgr = HasNativeBgr();
     for (size_t index_a = 0; index_a < VideoCore::Surface::MaxPixelFormat; index_a++) {
         const auto image_format = static_cast<PixelFormat>(index_a);
         if (IsPixelFormatASTC(image_format) && !device.IsOptimalAstcSupported()) {
@@ -944,10 +945,13 @@ TextureCacheRuntime::TextureCacheRuntime(const Device& device_, Scheduler& sched
         }
         for (size_t index_b = 0; index_b < VideoCore::Surface::MaxPixelFormat; index_b++) {
             const auto view_format = static_cast<PixelFormat>(index_b);
-            if (VideoCore::Surface::IsViewCompatible(image_format, view_format, false, true)) {
+            if (VideoCore::Surface::IsViewCompatible(image_format, view_format, false, native_bgr)) {
                 const auto view_info =
                     MaxwellToVK::SurfaceFormat(device, FormatType::Optimal, true, view_format);
-                view_formats[index_a].push_back(view_info.format);
+                if (std::ranges::find(view_formats[index_a], view_info.format) ==
+                    view_formats[index_a].end()) {
+                    view_formats[index_a].push_back(view_info.format);
+                }
             }
         }
     }

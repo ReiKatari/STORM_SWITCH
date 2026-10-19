@@ -117,8 +117,8 @@ QString LogViewerDialog::FindActiveLogPath() const {
 
 void LogViewerDialog::SetupUI() {
     setWindowTitle(tr("📜 Журнал работы (Логи) — STORM SWITCH"));
-    resize(1100, 720);
-    setMinimumSize(860, 560);
+    resize(1040, 680);
+    setMinimumSize(640, 440);
 
     auto* root_layout = new QVBoxLayout(this);
     root_layout->setContentsMargins(14, 14, 14, 14);

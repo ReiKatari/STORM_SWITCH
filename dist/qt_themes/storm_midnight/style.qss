@@ -31,43 +31,45 @@ QCheckBox, QRadioButton {
     font-weight: 500;
 }
 
-QCheckBox::indicator, QRadioButton::indicator,
+QCheckBox::indicator, QRadioButton::indicator, QGroupBox::indicator,
 QTreeView::indicator, QTableView::indicator, QListView::indicator, QAbstractItemView::indicator {
     width: 15px;
     height: 15px;
     border-radius: 3px;
     border: 1.5px solid #332655;
     background-color: #0b0914;
+    image: none;
 }
 
-QCheckBox::indicator:hover, QRadioButton::indicator:hover,
+QCheckBox::indicator:hover, QRadioButton::indicator:hover, QGroupBox::indicator:hover,
 QTreeView::indicator:hover, QTableView::indicator:hover, QListView::indicator:hover, QAbstractItemView::indicator:hover {
     border-color: #b388ff;
     background-color: #1a142e;
+    image: none;
 }
 
-QCheckBox::indicator:checked, QRadioButton::indicator:checked,
+QCheckBox::indicator:checked, QRadioButton::indicator:checked, QGroupBox::indicator:checked,
 QTreeView::indicator:checked, QTableView::indicator:checked, QListView::indicator:checked, QAbstractItemView::indicator:checked {
     background-color: #b388ff;
     border: 1.5px solid #b388ff;
     image: none;
 }
 
-QCheckBox::indicator:checked:hover, QRadioButton::indicator:checked:hover,
+QCheckBox::indicator:checked:hover, QRadioButton::indicator:checked:hover, QGroupBox::indicator:checked:hover,
 QTreeView::indicator:checked:hover, QTableView::indicator:checked:hover, QListView::indicator:checked:hover, QAbstractItemView::indicator:checked:hover {
     background-color: #d1b3ff;
     border-color: #d1b3ff;
     image: none;
 }
 
-QCheckBox::indicator:disabled, QRadioButton::indicator:disabled,
+QCheckBox::indicator:disabled, QRadioButton::indicator:disabled, QGroupBox::indicator:disabled,
 QTreeView::indicator:disabled, QTableView::indicator:disabled, QListView::indicator:disabled, QAbstractItemView::indicator:disabled {
     border-color: #231c40;
     background-color: #08060f;
     image: none;
 }
 
-QCheckBox::indicator:checked:disabled, QRadioButton::indicator:checked:disabled,
+QCheckBox::indicator:checked:disabled, QRadioButton::indicator:checked:disabled, QGroupBox::indicator:checked:disabled,
 QTreeView::indicator:checked:disabled, QTableView::indicator:checked:disabled, QListView::indicator:checked:disabled, QAbstractItemView::indicator:checked:disabled {
     background-color: #554477;
     border-color: #554477;

@@ -167,31 +167,43 @@ bool CoreTiming::HasPendingEvents() const {
 
 void CoreTiming::ScheduleEvent(std::chrono::nanoseconds ns_into_future,
                                const std::shared_ptr<EventType>& event_type, bool absolute_time) {
+    bool should_wake = true;
     {
         std::scoped_lock scope{basic_lock};
         const auto next_time{absolute_time ? ns_into_future : GetGlobalTimeNs() + ns_into_future};
+        const bool was_empty = event_queue.empty();
+        const s64 prev_head_time = was_empty ? std::numeric_limits<s64>::max() : event_queue.top().time;
 
         auto h{event_queue.emplace(Event{next_time.count(), event_fifo_id++, event_type, 0})};
         (*h).handle = h;
+        should_wake = wait_set || was_empty || next_time.count() < prev_head_time;
     }
 
-    event.Set();
+    if (should_wake) {
+        event.Set();
+    }
 }
 
 void CoreTiming::ScheduleLoopingEvent(std::chrono::nanoseconds start_time,
                                       std::chrono::nanoseconds resched_time,
                                       const std::shared_ptr<EventType>& event_type,
                                       bool absolute_time) {
+    bool should_wake = true;
     {
         std::scoped_lock scope{basic_lock};
         const auto next_time{absolute_time ? start_time : GetGlobalTimeNs() + start_time};
+        const bool was_empty = event_queue.empty();
+        const s64 prev_head_time = was_empty ? std::numeric_limits<s64>::max() : event_queue.top().time;
 
         auto h{event_queue.emplace(
             Event{next_time.count(), event_fifo_id++, event_type, resched_time.count()})};
         (*h).handle = h;
+        should_wake = wait_set || was_empty || next_time.count() < prev_head_time;
     }
 
-    event.Set();
+    if (should_wake) {
+        event.Set();
+    }
 }
 
 void CoreTiming::UnscheduleEvent(const std::shared_ptr<EventType>& event_type,

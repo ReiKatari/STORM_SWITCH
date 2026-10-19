@@ -109,8 +109,11 @@ public:
     }
 
     bool HasNativeBgr() const noexcept {
-        // All known Vulkan drivers can natively handle BGR textures
-        return true;
+        // Turnip and Qualcomm drivers disable UBWC framebuffer compression when BGR and RGB
+        // formats are mixed in VkImageFormatListCreateInfo on mutable images.
+        const auto driver_id = device.GetDriverID();
+        return driver_id != VK_DRIVER_ID_MESA_TURNIP &&
+               driver_id != VK_DRIVER_ID_QUALCOMM_PROPRIETARY;
     }
 
     [[nodiscard]] VkBuffer GetTemporaryBuffer(size_t needed_size);

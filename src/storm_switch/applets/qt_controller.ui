@@ -82,13 +82,13 @@
           <widget class="QWidget" name="controllersSupported" native="true">
            <property name="minimumSize">
             <size>
-             <width>70</width>
+             <width>165</width>
              <height>70</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>70</width>
+             <width>260</width>
              <height>70</height>
             </size>
            </property>
@@ -109,13 +109,13 @@
              <widget class="QLabel" name="controllersSupportedLabel">
               <property name="minimumSize">
                <size>
-                <width>70</width>
+                <width>165</width>
                 <height>70</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>70</width>
+                <width>260</width>
                 <height>70</height>
                </size>
               </property>
@@ -244,13 +244,13 @@
           <widget class="QWidget" name="playersSupported" native="true">
            <property name="minimumSize">
             <size>
-             <width>70</width>
+             <width>96</width>
              <height>70</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>70</width>
+             <width>160</width>
              <height>70</height>
             </size>
            </property>
@@ -2317,33 +2317,33 @@
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <property name="leftMargin">
-             <number>3</number>
+             <number>6</number>
             </property>
             <property name="topMargin">
-             <number>3</number>
+             <number>4</number>
             </property>
             <property name="rightMargin">
-             <number>3</number>
+             <number>6</number>
             </property>
             <property name="bottomMargin">
-             <number>3</number>
+             <number>4</number>
             </property>
             <item>
              <widget class="QPushButton" name="vibrationButton">
               <property name="minimumSize">
                <size>
-                <width>68</width>
+                <width>80</width>
                 <height>0</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>68</width>
+                <width>16777215</width>
                 <height>16777215</height>
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">min-width: 68px;</string>
+               <string notr="true">min-width: 80px;</string>
               </property>
               <property name="text">
                <string>Configure</string>
@@ -2363,33 +2363,33 @@
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <property name="leftMargin">
-             <number>3</number>
+             <number>6</number>
             </property>
             <property name="topMargin">
-             <number>3</number>
+             <number>4</number>
             </property>
             <property name="rightMargin">
-             <number>3</number>
+             <number>6</number>
             </property>
             <property name="bottomMargin">
-             <number>3</number>
+             <number>4</number>
             </property>
             <item>
              <widget class="QPushButton" name="motionButton">
               <property name="minimumSize">
                <size>
-                <width>68</width>
+                <width>80</width>
                 <height>0</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>68</width>
+                <width>16777215</width>
                 <height>16777215</height>
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">min-width: 68px;</string>
+               <string notr="true">min-width: 80px;</string>
               </property>
               <property name="text">
                <string>Configure</string>
@@ -2406,27 +2406,27 @@
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <property name="leftMargin">
-             <number>3</number>
+             <number>6</number>
             </property>
             <property name="topMargin">
-             <number>3</number>
+             <number>4</number>
             </property>
             <property name="rightMargin">
-             <number>3</number>
+             <number>6</number>
             </property>
             <property name="bottomMargin">
-             <number>3</number>
+             <number>4</number>
             </property>
             <item>
              <widget class="QPushButton" name="inputConfigButton">
               <property name="maximumSize">
                <size>
-                <width>68</width>
+                <width>16777215</width>
                 <height>16777215</height>
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">min-width: 68px;</string>
+               <string notr="true">min-width: 80px;</string>
               </property>
               <property name="text">
                <string>Create</string>

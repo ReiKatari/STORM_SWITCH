@@ -26,6 +26,84 @@ object GameFixDatabase {
 
     private val profiles = listOf(
         GameFixProfile(
+            0x0100C8000CEAE000L,
+            "Crysis Remastered",
+            "• Графические искажения и битые кадровые буферы из-за несовпадения макета GENERAL в BlitColor\n• Просадки FPS при включении маскировки и тепловизора нанокостюма (CryEngine SVOGI)\n• Зависания видеороликов при аппаратном декодировании",
+            "• Visual corruption and broken framebuffers caused by GENERAL layout mismatch in BlitColor\n• Framerate drops when activating Nanosuit Cloak and Thermal Vision (CryEngine SVOGI)\n• Cutscene freezes with hardware video decoding",
+            "✓ Точность ГПУ: Обычная (исправлена синхронизация BlitColor и проходов рендеринга)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим «В самолете»: Включено",
+            "✓ GPU Accuracy: Normal (Fixed BlitColor and renderpass state synchronization)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\nvdec_emulation" to "3",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100232014B9C000L,
+            "Crysis 2 Remastered",
+            "• Искажения постобработки и размытия в движении CryEngine\n• Просадки FPS в городских боях Нью-Йорка\n• Сбои потоковой подгрузки текстур",
+            "• CryEngine post-processing and motion blur artifacts\n• Framerate drops in New York urban combat\n• Texture streaming stalls",
+            "✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим «В самолете»: Включено",
+            "✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\nvdec_emulation" to "3",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x010073E014BA0000L,
+            "Crysis 3 Remastered",
+            "• Искажения освещения и отражений воды в куполе Либерти\n• Просадки FPS при высокой детализации растительности\n• Сбои памяти при загрузке уровней",
+            "• Lighting and water reflection glitches in the Liberty Dome\n• Framerate drops in dense foliage areas\n• Memory faults during level transitions",
+            "✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим «В самолете»: Включено",
+            "✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\nvdec_emulation" to "3",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "System\\airplane_mode" to "true",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1"
+            )
+        ),
+        GameFixProfile(
             0x01008F1008DA6000L,
             "Darkest Dungeon",
             "• Зависание и вылет вступительного видеоролика при программном декодировании NVDEC ЦП\n• Просадки кадровой частоты в подземельях\n• Сбои распределения памяти",
@@ -6715,7 +6793,9 @@ object GameFixDatabase {
             // any setting where the user explicitly set use_global = false, and DO NOT inject
             // all 26 default keys as use_global = false into their custom file on disk!
             if (isFileCustom) {
-                for ((fullKey, value) in fix.settingsMap) {
+                val customSettings = fix.settingsMap.toMutableMap()
+                org.yuzu.yuzu_emu.utils.StormHardwareCalibrator.sanitizeFixMapForHardware(customSettings)
+                for ((fullKey, value) in customSettings) {
                     if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                         fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
                         fullKey == "System\\use_docked_mode" || fullKey.endsWith("use_docked_mode")) {
@@ -6774,7 +6854,8 @@ object GameFixDatabase {
                 "gpu_fence_behavior", "dma_accuracy"
             )
 
-            val settings = if (fix.settingsMap.isNotEmpty()) fix.settingsMap else getFullSettingsMap(fix)
+            val settings = (if (fix.settingsMap.isNotEmpty()) fix.settingsMap else getFullSettingsMap(fix)).toMutableMap()
+            org.yuzu.yuzu_emu.utils.StormHardwareCalibrator.sanitizeFixMapForHardware(settings)
             for ((fullKey, value) in settings) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||
                     fullKey == "Renderer\\resolution_setup" || fullKey.endsWith("resolution_setup") ||
@@ -6883,8 +6964,18 @@ object GameFixDatabase {
             false
         }
         val targetCpuBackend = if (isDynarmic) "0" else "1"
-        val isAdreno = org.yuzu.yuzu_emu.utils.GpuDriverHelper.isAdrenoGpu()
-        val defaultDynaState = if (isAdreno) "1" else "0"
+        val hwProfile = try {
+            org.yuzu.yuzu_emu.utils.StormHardwareCalibrator.detectHardware(org.yuzu.yuzu_emu.YuzuApplication.appContext)
+        } catch (_: Throwable) {
+            null
+        }
+        val isTurnip = org.yuzu.yuzu_emu.utils.GpuDriverHelper.isTurnipDriverActive()
+        val canUseEds1 = if (hwProfile != null) {
+            hwProfile.isAdreno && !hwProfile.isAdreno6xx && isTurnip
+        } else {
+            org.yuzu.yuzu_emu.utils.GpuDriverHelper.isAdrenoGpu() && isTurnip
+        }
+        val defaultDynaState = if (canUseEds1) "1" else "0"
 
         val fullMap = mutableMapOf(
             "Renderer\\gpu_accuracy" to "0",
@@ -6921,6 +7012,7 @@ object GameFixDatabase {
         if (!profile.settingsMap.containsKey("Renderer\\dyna_state")) {
             fullMap["Renderer\\dyna_state"] = defaultDynaState
         }
+        org.yuzu.yuzu_emu.utils.StormHardwareCalibrator.sanitizeFixMapForHardware(fullMap)
         return fullMap
     }
 
@@ -7079,7 +7171,8 @@ object GameFixDatabase {
             sb.append("storm_fix_applied = true\n")
             sb.append("user_custom = false\n\n")
 
-            val settings = if (fix.settingsMap.isNotEmpty()) fix.settingsMap else getFullSettingsMap(fix)
+            val settings = (if (fix.settingsMap.isNotEmpty()) fix.settingsMap else getFullSettingsMap(fix)).toMutableMap()
+            org.yuzu.yuzu_emu.utils.StormHardwareCalibrator.sanitizeFixMapForHardware(settings)
             val sections = mutableMapOf<String, MutableMap<String, String>>()
             for ((fullKey, value) in settings) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||

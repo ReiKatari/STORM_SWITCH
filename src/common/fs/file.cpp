@@ -377,6 +377,9 @@ bool IOFile::SetSize(u64 size) const {
 
     errno = 0;
 
+    // Flush any unwritten buffered data prior to resizing the underlying file descriptor.
+    std::fflush(file);
+
 #ifdef _WIN32
     const auto set_size_result = _chsize_s(fileno(file), static_cast<s64>(size)) == 0;
 #else

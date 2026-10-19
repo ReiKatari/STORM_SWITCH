@@ -52,18 +52,29 @@ object GpuDriverHelper {
     }
 
     fun isAdreno8xx(): Boolean {
-        if (android.os.Build.MODEL.contains("S938", ignoreCase = true) ||
+        val soc = if (android.os.Build.VERSION.SDK_INT >= 31) android.os.Build.SOC_MODEL else ""
+        if (soc.contains("7635", ignoreCase = true) || android.os.Build.HARDWARE.contains("volcano", ignoreCase = true)) {
+            return false // Snapdragon 7s Gen 3 (Adreno 810) uses A7xx ISA/driver family
+        }
+        if (android.os.Build.MODEL.contains("S931", ignoreCase = true) ||
+            android.os.Build.MODEL.contains("S936", ignoreCase = true) ||
+            android.os.Build.MODEL.contains("S938", ignoreCase = true) ||
             android.os.Build.HARDWARE.contains("sun", ignoreCase = true) ||
+            android.os.Build.HARDWARE.contains("pakala", ignoreCase = true) ||
             android.os.Build.BOARD.contains("sun", ignoreCase = true) ||
             android.os.Build.DEVICE.contains("sun", ignoreCase = true) ||
             android.os.Build.PRODUCT.contains("sun", ignoreCase = true) ||
-            (android.os.Build.VERSION.SDK_INT >= 31 && android.os.Build.SOC_MODEL.contains("8750", ignoreCase = true))
+            soc.contains("8750", ignoreCase = true) ||
+            soc.contains("8735", ignoreCase = true)
         ) {
             return true
         }
         try {
             val model = hookLibPath?.let { getGpuModel(hookLibPath = it) } ?: ""
-            if (model.contains("830") || model.contains("Adreno (TM) 8", ignoreCase = true) || model.contains("Adreno 8", ignoreCase = true)) {
+            if (model.contains("810")) {
+                return false
+            }
+            if (model.contains("830") || model.contains("825") || model.contains("Adreno (TM) 8", ignoreCase = true) || model.contains("Adreno 8", ignoreCase = true)) {
                 return true
             }
         } catch (_: Throwable) {}
@@ -109,7 +120,7 @@ object GpuDriverHelper {
             }
         }
 
-        if (desc.contains("Adreno 8", ignoreCase = true) || desc.contains("830", ignoreCase = true) || desc.contains("Snapdragon 8 Elite", ignoreCase = true)) {
+        if (desc.contains("Adreno 8", ignoreCase = true) || desc.contains("830", ignoreCase = true) || desc.contains("825", ignoreCase = true) || desc.contains("Snapdragon 8 Elite", ignoreCase = true)) {
             return true
         }
 
@@ -159,7 +170,8 @@ object GpuDriverHelper {
             val activeDriverFile = File(activeDriverZipPath)
             if (activeDriverFile.exists()) {
                 val metadata = getMetadataFromZip(activeDriverFile)
-                if (metadata.name != null && metadata.minApi <= Build.VERSION.SDK_INT) {
+                if (metadata.name != null && metadata.minApi <= Build.VERSION.SDK_INT &&
+                    (!isAdreno8xx() || isDriverCompatibleWithAdreno8xx(metadata))) {
                     try {
                         FileUtil.unzipToInternalStorage(
                             activeDriverFile.path,
@@ -169,6 +181,20 @@ object GpuDriverHelper {
                     }
                 }
             }
+        }
+
+        // Guard Adreno 8xx (8 Elite / 8s Gen 4) against incompatible legacy A6xx/A7xx Turnip drivers
+        if (isAdreno8xx() && !isDriverCompatibleWithAdreno8xx(installedCustomDriverData)) {
+            Log.warning("[GpuDriverHelper] Auto-fallback: Installed custom driver '${installedCustomDriverData.name}' is incompatible with Adreno 8xx; reverting to compatible driver.")
+            try {
+                driverInstallationPath?.let { path ->
+                    val installDir = File(path)
+                    if (installDir.exists()) {
+                        installDir.deleteRecursively()
+                        installDir.mkdirs()
+                    }
+                }
+            } catch (_: Exception) {}
         }
 
         val customLib = installedCustomDriverData.libraryName

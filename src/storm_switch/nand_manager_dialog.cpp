@@ -49,8 +49,8 @@ void SetActiveNandProfileName(const std::string& name) {
 NandManagerDialog::NandManagerDialog(QWidget* parent, Core::System& system_)
     : QDialog(parent), system{system_} {
     setWindowTitle(tr("💾 STORM SWITCH — Менеджер профилей NAND"));
-    resize(1360, 780);
-    setMinimumSize(1150, 650);
+    resize(1160, 700);
+    setMinimumSize(680, 460);
 
     setStyleSheet(QStringLiteral(
         "QDialog { background-color: #0B0F19; color: #E2E8F0; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"

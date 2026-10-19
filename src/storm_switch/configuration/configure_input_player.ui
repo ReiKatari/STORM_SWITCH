@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1391</width>
-    <height>680</height>
+    <width>1040</width>
+    <height>560</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -118,7 +118,7 @@
           <item>
            <widget class="QComboBox" name="comboDevices">
             <property name="minimumContentsLength">
-             <number>60</number>
+             <number>14</number>
             </property>
            </widget>
           </item>
@@ -164,12 +164,6 @@
           </item>
           <item>
            <widget class="QPushButton" name="buttonProfilesSave">
-            <property name="maximumSize">
-             <size>
-              <width>68</width>
-              <height>16777215</height>
-             </size>
-            </property>
             <property name="styleSheet">
              <string notr="true">min-width: 68px;</string>
             </property>
@@ -180,12 +174,6 @@
           </item>
           <item>
            <widget class="QPushButton" name="buttonProfilesNew">
-            <property name="maximumSize">
-             <size>
-              <width>68</width>
-              <height>16777215</height>
-             </size>
-            </property>
             <property name="styleSheet">
              <string notr="true">min-width: 68px;</string>
             </property>
@@ -196,12 +184,6 @@
           </item>
           <item>
            <widget class="QPushButton" name="buttonProfilesDelete">
-            <property name="maximumSize">
-             <size>
-              <width>68</width>
-              <height>16777215</height>
-             </size>
-            </property>
             <property name="styleSheet">
              <string notr="true">min-width: 68px;</string>
             </property>
@@ -225,7 +207,7 @@
        </property>
        <layout class="QHBoxLayout" name="_2">
         <property name="sizeConstraint">
-         <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+         <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
         </property>
         <property name="leftMargin">
          <number>0</number>

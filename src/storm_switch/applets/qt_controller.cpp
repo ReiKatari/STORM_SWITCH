@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
@@ -6,6 +6,9 @@
 
 #include <algorithm>
 #include <thread>
+#include <QFontMetrics>
+#include <QGuiApplication>
+#include <QScreen>
 
 #include "common/assert.h"
 #include "common/settings.h"
@@ -225,6 +228,173 @@ QtControllerSelectorDialog::QtControllerSelectorDialog(
                 QCoreApplication::postEvent(this, event);
             });
 
+    // Apply unified STORM Settings styling: QGroupBox title positioning, square filled checkboxes
+    // and radio indicators without checkmarks, and clean dark panels.
+    setStyleSheet(QStringLiteral(
+        "QDialog {"
+        "    background-color: #0B0F19;"
+        "    color: #E2E8F0;"
+        "}"
+        "QGroupBox {"
+        "    font-weight: bold;"
+        "    color: #00F0FF;"
+        "    border: 1px solid rgba(0, 210, 255, 0.25);"
+        "    border-radius: 8px;"
+        "    margin-top: 9px;"
+        "    padding: 16px 10px 10px 10px;"
+        "    background: rgba(15, 23, 42, 0.5);"
+        "}"
+        "QGroupBox::title {"
+        "    subcontrol-origin: margin;"
+        "    subcontrol-position: top left;"
+        "    top: 0px;"
+        "    left: 12px;"
+        "    padding: 0 6px;"
+        "    color: #00F0FF;"
+        "    font-size: 12px;"
+        "    font-weight: bold;"
+        "    background-color: #0F172A;"
+        "    border-radius: 3px;"
+        "}"
+        "QGroupBox#groupPlayer1Connected, QGroupBox#groupPlayer2Connected,"
+        "QGroupBox#groupPlayer3Connected, QGroupBox#groupPlayer4Connected,"
+        "QGroupBox#groupPlayer5Connected, QGroupBox#groupPlayer6Connected,"
+        "QGroupBox#groupPlayer7Connected, QGroupBox#groupPlayer8Connected {"
+        "    padding: 14px 4px 4px 4px;"
+        "}"
+        "QGroupBox#groupPlayer1Connected::title, QGroupBox#groupPlayer2Connected::title,"
+        "QGroupBox#groupPlayer3Connected::title, QGroupBox#groupPlayer4Connected::title,"
+        "QGroupBox#groupPlayer5Connected::title, QGroupBox#groupPlayer6Connected::title,"
+        "QGroupBox#groupPlayer7Connected::title, QGroupBox#groupPlayer8Connected::title {"
+        "    subcontrol-origin: margin;"
+        "    subcontrol-position: top center;"
+        "    top: 0px;"
+        "    left: 0px;"
+        "    padding: 0 4px;"
+        "    background-color: #0F172A;"
+        "}"
+        "QLabel, QCheckBox, QRadioButton {"
+        "    color: #E2E8F0;"
+        "    spacing: 8px;"
+        "    font-size: 12px;"
+        "    background: transparent;"
+        "    background-color: transparent;"
+        "}"
+        "QGroupBox QWidget, QGroupBox QLabel, QGroupBox QCheckBox, QGroupBox QRadioButton {"
+        "    background: transparent;"
+        "    background-color: transparent;"
+        "}"
+        "QComboBox, QSpinBox, QDoubleSpinBox, QLineEdit {"
+        "    background-color: #121826;"
+        "    border: 1px solid #334155;"
+        "    border-radius: 6px;"
+        "    padding: 4px 8px;"
+        "    color: #F8FAFC;"
+        "    font-size: 12px;"
+        "    selection-background-color: #0088CC;"
+        "}"
+        "QComboBox:hover, QSpinBox:hover, QDoubleSpinBox:hover, QLineEdit:hover {"
+        "    border: 1px solid #00D2FF;"
+        "}"
+        "QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus, QLineEdit:focus {"
+        "    border: 1px solid #00F0FF;"
+        "    background-color: #162032;"
+        "}"
+        "QComboBox::drop-down {"
+        "    subcontrol-origin: padding;"
+        "    subcontrol-position: top right;"
+        "    width: 20px;"
+        "    border-left: 1px solid #334155;"
+        "    border-top-right-radius: 6px;"
+        "    border-bottom-right-radius: 6px;"
+        "}"
+        "QComboBox QAbstractItemView {"
+        "    background-color: #0F172A;"
+        "    border: 1px solid #334155;"
+        "    border-radius: 6px;"
+        "    selection-background-color: rgba(0, 210, 255, 0.25);"
+        "    selection-color: #00F0FF;"
+        "    color: #F8FAFC;"
+        "    outline: none;"
+        "    padding: 4px;"
+        "}"
+        "QCheckBox::indicator, QGroupBox::indicator, QRadioButton::indicator,"
+        "QTreeView::indicator, QListView::indicator, QTableView::indicator {"
+        "    width: 16px;"
+        "    height: 16px;"
+        "    border: 1px solid #475569;"
+        "    border-radius: 4px;"
+        "    background: #121826;"
+        "    image: none;"
+        "}"
+        "QCheckBox::indicator:hover, QGroupBox::indicator:hover, QRadioButton::indicator:hover,"
+        "QTreeView::indicator:hover, QListView::indicator:hover, QTableView::indicator:hover {"
+        "    border: 1px solid #00D2FF;"
+        "}"
+        "QCheckBox::indicator:checked, QGroupBox::indicator:checked, QRadioButton::indicator:checked,"
+        "QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00F0FF, stop:1 #0088CC);"
+        "    border: 1px solid #00F0FF;"
+        "    image: none;"
+        "}"
+        "QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QRadioButton::indicator:unchecked,"
+        "QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
+        "    background: #121826;"
+        "    border: 1px solid #475569;"
+        "    image: none;"
+        "}"
+        "QCheckBox::indicator:disabled, QGroupBox::indicator:disabled, QRadioButton::indicator:disabled {"
+        "    background: #0F172A;"
+        "    border: 1px solid #1E293B;"
+        "    image: none;"
+        "}"
+        "QCheckBox::indicator:checked:disabled, QGroupBox::indicator:checked:disabled, QRadioButton::indicator:checked:disabled {"
+        "    background: rgba(0, 210, 255, 0.35);"
+        "    border: 1px solid rgba(0, 240, 255, 0.45);"
+        "    image: none;"
+        "}"
+        "QWidget#Player1LEDs QCheckBox::indicator, QWidget#Player2LEDs QCheckBox::indicator,"
+        "QWidget#Player3LEDs QCheckBox::indicator, QWidget#Player4LEDs QCheckBox::indicator,"
+        "QWidget#Player5LEDs QCheckBox::indicator, QWidget#Player6LEDs QCheckBox::indicator,"
+        "QWidget#Player7LEDs QCheckBox::indicator, QWidget#Player8LEDs QCheckBox::indicator {"
+        "    width: 10px;"
+        "    height: 10px;"
+        "    border-radius: 2px;"
+        "}"
+        "QPushButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1E293B, stop:1 #334155);"
+        "    color: #F8FAFC;"
+        "    font-weight: 600;"
+        "    font-size: 12px;"
+        "    padding: 6px 14px;"
+        "    border-radius: 6px;"
+        "    border: 1px solid #475569;"
+        "}"
+        "QPushButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0099CC, stop:1 #006699);"
+        "    color: #FFFFFF;"
+        "    border: 1px solid #00D2FF;"
+        "}"
+        "QPushButton:pressed {"
+        "    background: #005580;"
+        "}"
+    ));
+
+    // Ensure QGroupBox titles (e.g. "Вибрация и тактильная отдача") are never clipped.
+    QFont title_font = font();
+    title_font.setPixelSize(12);
+    title_font.setBold(true);
+    const QFontMetrics title_fm(title_font);
+    for (auto* box : findChildren<QGroupBox*>()) {
+        if (!box->title().isEmpty()) {
+            const int title_w =
+                title_fm.horizontalAdvance(box->title()) + (box->isCheckable() ? 64 : 40);
+            if (box->minimumWidth() < title_w) {
+                box->setMinimumWidth(title_w);
+            }
+        }
+    }
+
     // Enhancement: Check if the parameters have already been met before disconnecting controllers.
     // If all the parameters are met AND only allows a single player,
     // stop the constructor here as we do not need to continue.
@@ -239,7 +409,17 @@ QtControllerSelectorDialog::QtControllerSelectorDialog(
         }
     }
 
-    resize(0, 0);
+    setSizeGripEnabled(true);
+    adjustSize();
+    if (QScreen* scr = screen() ? screen() : QGuiApplication::primaryScreen()) {
+        const QRect avail = scr->availableGeometry();
+        const int max_w = std::max(640, avail.width() - 40);
+        const int max_h = std::max(460, avail.height() - 40);
+        if (minimumWidth() > max_w || minimumHeight() > max_h) {
+            setMinimumSize(std::min(minimumWidth(), max_w), std::min(minimumHeight(), max_h));
+        }
+        resize(std::min(width(), max_w), std::min(height(), max_h));
+    }
 }
 
 QtControllerSelectorDialog::~QtControllerSelectorDialog() {
@@ -640,20 +820,22 @@ void QtControllerSelectorDialog::UpdateLEDPattern(std::size_t player_index) {
 
 void QtControllerSelectorDialog::UpdateBorderColor(std::size_t player_index) {
     if (!parameters.enable_border_color ||
-        player_index >= static_cast<std::size_t>(parameters.max_players) ||
-        player_groupboxes[player_index]->styleSheet().contains(QStringLiteral("QGroupBox"))) {
+        player_index >= static_cast<std::size_t>(parameters.max_players)) {
         return;
     }
 
-    player_groupboxes[player_index]->setStyleSheet(
-        player_groupboxes[player_index]->styleSheet().append(
-            QStringLiteral("QGroupBox#groupPlayer%1Connected:checked "
-                           "{ border: 1px solid rgba(%2, %3, %4, %5); }")
-                .arg(player_index + 1)
-                .arg(parameters.border_colors[player_index][0])
-                .arg(parameters.border_colors[player_index][1])
-                .arg(parameters.border_colors[player_index][2])
-                .arg(parameters.border_colors[player_index][3])));
+    const QString selector = QStringLiteral("QGroupBox#groupPlayer%1Connected:checked").arg(player_index + 1);
+    if (styleSheet().contains(selector)) {
+        return;
+    }
+
+    setStyleSheet(styleSheet() +
+                  QStringLiteral("%1 { border: 1px solid rgba(%2, %3, %4, %5); }")
+                      .arg(selector)
+                      .arg(parameters.border_colors[player_index][0])
+                      .arg(parameters.border_colors[player_index][1])
+                      .arg(parameters.border_colors[player_index][2])
+                      .arg(parameters.border_colors[player_index][3]));
 }
 
 void QtControllerSelectorDialog::SetExplainText(std::size_t player_index) {

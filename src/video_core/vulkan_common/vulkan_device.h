@@ -1092,6 +1092,11 @@ FN_MAX_LIMIT_LIST
         return properties.driver.driverID == VK_DRIVER_ID_MOLTENVK;
     }
 
+    bool UseGeometryShaders() const noexcept {
+        return features.features.geometryShader != VK_FALSE &&
+               properties.driver.driverID != VK_DRIVER_ID_QUALCOMM_PROPRIETARY;
+    }
+
     NvidiaArchitecture GetNvidiaArch() const noexcept {
         return nvidia_arch;
     }

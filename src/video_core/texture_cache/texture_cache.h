@@ -1886,7 +1886,9 @@ ImageId TextureCache<P>::FindDMAImage(const ImageInfo& info, GPUVAddr gpu_addr) 
             if (existing_image.gpu_addr == gpu_addr && existing.type == info.type &&
                 existing.pitch == info.pitch &&
                 IsPitchLinearSameSize(existing, info, strict_size) &&
-                IsViewCompatible(existing.format, info.format, false, true)) {
+                IsViewCompatible(existing.format, info.format,
+                                 runtime.HasBrokenTextureViewFormats(),
+                                 runtime.HasNativeBgr())) {
                 image_id = existing_image_id;
                 image_ids.push_back(existing_image_id);
                 return true;

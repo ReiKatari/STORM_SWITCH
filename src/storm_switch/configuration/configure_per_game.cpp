@@ -15,9 +15,13 @@
 
 #include <QAbstractButton>
 #include <QCheckBox>
+#include <QFontMetrics>
+#include <QGroupBox>
+#include <QGuiApplication>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRegularExpression>
+#include <QScreen>
 #include <QString>
 #include <QTabBar>
 #include <QTimer>
@@ -137,8 +141,17 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
 
     setFocusPolicy(Qt::ClickFocus);
     setWindowTitle(tr("Properties"));
-    resize(1440, 800);
-    setMinimumSize(1350, 740);
+    setSizeGripEnabled(true);
+    if (QScreen* scr = screen() ? screen() : QGuiApplication::primaryScreen()) {
+        const QRect avail = scr->availableGeometry();
+        const int max_w = std::max(680, avail.width() - 48);
+        const int max_h = std::max(480, avail.height() - 48);
+        setMinimumSize(std::min(720, max_w), std::min(500, max_h));
+        resize(std::min(1240, max_w), std::min(740, max_h));
+    } else {
+        setMinimumSize(720, 500);
+        resize(1200, 720);
+    }
 
     ui->display_name->setLineWrapMode(QTextEdit::WidgetWidth);
     ui->display_filename->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -371,7 +384,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "    background: transparent;"
         "    background-color: transparent;"
         "}"
-        "QCheckBox::indicator, QGroupBox::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {"
+        "QCheckBox::indicator, QGroupBox::indicator, QRadioButton::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {"
         "    width: 16px;"
         "    height: 16px;"
         "    border: 1px solid #475569;"
@@ -379,15 +392,15 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "    background: #121826;"
         "    image: none;"
         "}"
-        "QCheckBox::indicator:hover, QGroupBox::indicator:hover, QTreeView::indicator:hover, QListView::indicator:hover, QTableView::indicator:hover {"
+        "QCheckBox::indicator:hover, QGroupBox::indicator:hover, QRadioButton::indicator:hover, QTreeView::indicator:hover, QListView::indicator:hover, QTableView::indicator:hover {"
         "    border: 1px solid #00D2FF;"
         "}"
-        "QCheckBox::indicator:checked, QGroupBox::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
+        "QCheckBox::indicator:checked, QGroupBox::indicator:checked, QRadioButton::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00F0FF, stop:1 #0088CC);"
         "    border: 1px solid #00F0FF;"
         "    image: none;"
         "}"
-        "QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
+        "QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QRadioButton::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
         "    background: #121826;"
         "    border: 1px solid #475569;"
         "    image: none;"
@@ -411,6 +424,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "}"
     ));
 
+    RetranslateUI();
     LoadConfiguration();
 }
 
@@ -470,6 +484,19 @@ void ConfigurePerGame::RetranslateUI() {
         ui->tabWidget->setTabText(10, tr("Input Profiles"));
         ui->tabWidget->setTabText(11, tr("Network"));
         ui->tabWidget->setTabText(12, tr("Applets"));
+    }
+
+    for (auto* gb : findChildren<QGroupBox*>()) {
+        if (!gb->title().isEmpty()) {
+            QFont f = gb->font();
+            f.setBold(true);
+            const QFontMetrics fm(f);
+            const int extra = gb->isCheckable() ? 58 : 38;
+            const int needed = fm.horizontalAdvance(gb->title()) + extra;
+            if (gb->minimumWidth() < needed) {
+                gb->setMinimumWidth(needed);
+            }
+        }
     }
 }
 
@@ -585,7 +612,7 @@ void ConfigurePerGame::LoadConfiguration() {
         const auto bytes = control.second->ReadAllBytes();
         map.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
 
-        const int icon_dim = (std::max)({ui->icon_view->width(), ui->icon_view->height(), 240});
+        const int icon_dim = (std::max)({ui->icon_view->width(), ui->icon_view->height(), 160});
         scene->addPixmap(map.scaled(icon_dim, icon_dim,
                                     Qt::KeepAspectRatio, Qt::SmoothTransformation));
     } else {
@@ -596,7 +623,7 @@ void ConfigurePerGame::LoadConfiguration() {
             QPixmap map;
             map.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
 
-            const int icon_dim = (std::max)({ui->icon_view->width(), ui->icon_view->height(), 240});
+            const int icon_dim = (std::max)({ui->icon_view->width(), ui->icon_view->height(), 160});
             scene->addPixmap(map.scaled(icon_dim, icon_dim,
                                         Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }

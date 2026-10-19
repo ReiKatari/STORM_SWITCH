@@ -43,8 +43,8 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
         ? QStringLiteral("0x%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper()
         : game_name;
     setWindowTitle(tr("STORM SWITCH — Менеджер модов: %1").arg(display_title));
-    resize(1360, 780);
-    setMinimumSize(1150, 650);
+    resize(1160, 700);
+    setMinimumSize(680, 460);
     setAcceptDrops(true);
 
     setStyleSheet(QStringLiteral(
