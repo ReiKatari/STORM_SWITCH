@@ -150,6 +150,7 @@ QPushButton* Widget::CreateRestoreGlobalButton(bool using_global, QWidget* paren
 QLabel* Widget::CreateLabel(const QString& text) {
     QLabel* qt_label = new QLabel(text, this->parent);
     qt_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    qt_label->setMinimumHeight(24);
     qt_label->setAttribute(Qt::WA_TranslucentBackground, true);
     qt_label->setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
     return qt_label;
@@ -160,11 +161,12 @@ QWidget* Widget::CreateCheckBox(Settings::BasicSetting* bool_setting, const QStr
                                 std::function<void()>& restore_func,
                                 const std::function<void()>& touch) {
     checkbox = new QCheckBox(label, this);
+    checkbox->setMinimumHeight(26);
     checkbox->setAttribute(Qt::WA_TranslucentBackground, true);
     checkbox->setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
     checkbox->setCheckState(bool_setting->ToString() == "true" ? Qt::CheckState::Checked
                                                                : Qt::CheckState::Unchecked);
-    checkbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    checkbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     if (!bool_setting->Save() && !Settings::IsConfiguringGlobal() && runtime_lock) {
         checkbox->setEnabled(false);
@@ -356,6 +358,8 @@ QWidget* Widget::CreateLineEdit(std::function<std::string()>& serializer,
     const QString text = QString::fromStdString(setting.ToString());
     line_edit = new QLineEdit(this);
     line_edit->setText(text);
+    line_edit->setMinimumHeight(28);
+    line_edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     serializer = [this]() { return line_edit->text().toStdString(); };
 
@@ -488,7 +492,8 @@ QWidget* Widget::CreateSlider(bool reversed, float multiplier, const QString& gi
     layout->addWidget(slider);
     layout->addWidget(feedback);
 
-    container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    container->setMinimumHeight(28);
+    container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     layout->setContentsMargins(0, 0, 0, 0);
 
@@ -603,7 +608,8 @@ QWidget* Widget::CreateSpinBox(const QString& given_suffix,
     spinbox->setRange(min_val, max_val);
     spinbox->setValue(default_val);
     spinbox->setSuffix(suffix);
-    spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    spinbox->setMinimumHeight(28);
+    spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     serializer = [this]() { return std::to_string(spinbox->value()); };
 
@@ -651,7 +657,8 @@ QWidget* Widget::CreateDoubleSpinBox(const QString& given_suffix,
     double_spinbox->setRange(min_val, max_val);
     double_spinbox->setValue(default_val);
     double_spinbox->setSuffix(suffix);
-    double_spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    double_spinbox->setMinimumHeight(28);
+    double_spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     serializer = [this]() { return fmt::format("{:f}", double_spinbox->value()); };
 
@@ -751,7 +758,8 @@ QWidget* Widget::CreateDateTimeEdit(bool disabled, bool restrict,
     date_time_edit = new QDateTimeEdit(this);
     date_time_edit->setDateTime(default_val);
     date_time_edit->setMinimumDateTime(QDateTime::fromSecsSinceEpoch(0));
-    date_time_edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    date_time_edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    date_time_edit->setMinimumHeight(28);
 
     serializer = [this]() { return std::to_string(date_time_edit->dateTime().toSecsSinceEpoch()); };
 
@@ -801,8 +809,11 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
     created = true;
     const auto type_id = setting.TypeId();
 
+    setMinimumHeight(32);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
     QHBoxLayout* layout = new QHBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setContentsMargins(0, 1, 0, 1);
 
     if (other_setting == nullptr && setting.PairedSetting() != nullptr &&
         (setting.PairedSetting()->Specialization() & Settings::SpecializationTypeMask) ==

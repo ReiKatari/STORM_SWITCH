@@ -167,43 +167,31 @@ bool CoreTiming::HasPendingEvents() const {
 
 void CoreTiming::ScheduleEvent(std::chrono::nanoseconds ns_into_future,
                                const std::shared_ptr<EventType>& event_type, bool absolute_time) {
-    bool should_wake = true;
     {
         std::scoped_lock scope{basic_lock};
         const auto next_time{absolute_time ? ns_into_future : GetGlobalTimeNs() + ns_into_future};
-        const bool was_empty = event_queue.empty();
-        const s64 prev_head_time = was_empty ? std::numeric_limits<s64>::max() : event_queue.top().time;
 
         auto h{event_queue.emplace(Event{next_time.count(), event_fifo_id++, event_type, 0})};
         (*h).handle = h;
-        should_wake = wait_set || was_empty || next_time.count() < prev_head_time;
     }
 
-    if (should_wake) {
-        event.Set();
-    }
+    event.Set();
 }
 
 void CoreTiming::ScheduleLoopingEvent(std::chrono::nanoseconds start_time,
                                       std::chrono::nanoseconds resched_time,
                                       const std::shared_ptr<EventType>& event_type,
                                       bool absolute_time) {
-    bool should_wake = true;
     {
         std::scoped_lock scope{basic_lock};
         const auto next_time{absolute_time ? start_time : GetGlobalTimeNs() + start_time};
-        const bool was_empty = event_queue.empty();
-        const s64 prev_head_time = was_empty ? std::numeric_limits<s64>::max() : event_queue.top().time;
 
         auto h{event_queue.emplace(
             Event{next_time.count(), event_fifo_id++, event_type, resched_time.count()})};
         (*h).handle = h;
-        should_wake = wait_set || was_empty || next_time.count() < prev_head_time;
     }
 
-    if (should_wake) {
-        event.Set();
-    }
+    event.Set();
 }
 
 void CoreTiming::UnscheduleEvent(const std::shared_ptr<EventType>& event_type,
@@ -265,11 +253,8 @@ void CoreTiming::ResetTicks() {
 }
 
 u64 CoreTiming::GetClockTicks() const {
-    u64 fres = is_multicore ? Common::g_wall_clock.GetCNTPCT() : Common::WallClock::CPUTickToCNTPCT(cpu_ticks);
-    if (const u32 target = CpuClockTargetMhz(Settings::values.cpu_clock.GetValue());
-        target != CPU_CLOCK_BASE_MHZ) {
-        fres = fres * target / CPU_CLOCK_BASE_MHZ;
-    }
+    const u64 fres = is_multicore ? Common::g_wall_clock.GetCNTPCT()
+                                  : Common::WallClock::CPUTickToCNTPCT(cpu_ticks);
     if (::Settings::values.sync_core_speed.GetValue()) {
         auto const ticks = f64(fres);
         auto const speed_limit = f64(Settings::SpeedLimit()) * 0.01;

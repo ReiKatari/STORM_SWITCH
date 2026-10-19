@@ -489,9 +489,32 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         }
     }
 
+    graphics_layout.setSpacing(6);
+    if (ui->verticalLayout_4) {
+        ui->verticalLayout_4->setSpacing(8);
+    }
+    if (ui->verticalLayout_2) {
+        ui->verticalLayout_2->setSpacing(10);
+    }
+    if (ui->bg_widget) {
+        ui->bg_widget->setMinimumHeight(30);
+    }
+    if (ui->bg_button) {
+        ui->bg_button->setMinimumHeight(26);
+    }
+    if (ui->scrollArea) {
+        ui->scrollArea->setWidgetResizable(true);
+        ui->scrollArea->setFrameShape(QFrame::NoFrame);
+        ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        ui->scrollArea->setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
+        ui->scrollArea->setMinimumSize(240, 180);
+    }
+
     if (!hold_frame_gen.empty()) {
-        auto* fg_group = new QGroupBox(this);
+        auto* fg_group = new QGroupBox(ui->scrollAreaWidgetContents ? ui->scrollAreaWidgetContents : this);
         fg_group->setObjectName(QStringLiteral("frameGenGroupBox"));
+        fg_group->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
         auto get_fg_title = []() {
             std::string lang = UISettings::values.language.GetValue();
             if (lang.empty()) {
@@ -511,7 +534,7 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         };
         fg_group->setTitle(get_fg_title());
         auto* fg_layout = new QVBoxLayout(fg_group);
-        fg_layout->setContentsMargins(10, 14, 10, 10);
+        fg_layout->setContentsMargins(10, 16, 10, 10);
         fg_layout->setSpacing(6);
 
         const std::vector<u32> fg_order = {
@@ -535,8 +558,8 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
                 fg_layout->addWidget(widget);
             }
         }
-        if (auto* vbox = qobject_cast<QVBoxLayout*>(ui->graphics_widget->parentWidget() ? ui->graphics_widget->parentWidget()->layout() : nullptr)) {
-            vbox->addWidget(fg_group);
+        if (ui->verticalLayout_2) {
+            ui->verticalLayout_2->addWidget(fg_group);
         } else {
             graphics_layout.addWidget(fg_group);
         }

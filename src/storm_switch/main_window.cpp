@@ -95,6 +95,7 @@
 #include <QStyleHints>
 #endif
 
+#include <QAbstractScrollArea>
 #include <QActionGroup>
 #include <QCheckBox>
 #include <QComboBox>
@@ -109,6 +110,7 @@
 #include <QPalette>
 #include <QProgressDialog>
 #include <QScreen>
+#include <QScrollArea>
 #include <QShortcut>
 #include <QStatusBar>
 #include <QTableWidget>
@@ -284,7 +286,12 @@ static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
     }
     const QRect avail = scr ? scr->availableGeometry() : QRect(0, 0, 1920, 1040);
     const int max_w = std::max(480, avail.width() - 36);
-    const int max_h = std::max(360, avail.height() - 44);
+    const int max_h = std::max(360, avail.height() - 56);
+
+    for (auto* sa : dlg->findChildren<QScrollArea*>()) {
+        sa->setWidgetResizable(true);
+        sa->setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
+    }
 
     // 2. Ensure QGroupBox titles are never clipped horizontally
     for (auto* gb : dlg->findChildren<QGroupBox*>()) {
@@ -300,7 +307,7 @@ static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
         }
     }
 
-    // 3. Clamp minimumSize and current size to available screen geometry
+    // 3. Clamp minimumSize, maximumSize, and current size to available screen geometry
     const bool is_fixed = (dlg->minimumSize() == dlg->maximumSize()) && (dlg->minimumWidth() > 0);
     if (!is_fixed) {
         dlg->setSizeGripEnabled(true);
@@ -308,26 +315,55 @@ static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
             dlg->setMinimumSize(std::min(dlg->minimumWidth(), max_w),
                                 std::min(dlg->minimumHeight(), max_h));
         }
+        if (dlg->maximumHeight() > max_h || dlg->maximumWidth() > max_w) {
+            dlg->setMaximumSize(std::min(dlg->maximumWidth(), max_w),
+                                std::min(dlg->maximumHeight(), max_h));
+        }
         if (!dlg->isMaximized() && !dlg->isFullScreen()) {
-            const int target_w = std::min(dlg->width(), max_w);
-            const int target_h = std::min(dlg->height(), max_h);
+            int target_w = std::min(dlg->width(), max_w);
+            int target_h = std::min(dlg->height(), max_h);
+            const QString obj_name = dlg->objectName();
+            if (obj_name == QStringLiteral("ConfigureDialog") ||
+                obj_name == QStringLiteral("ConfigurePerGame")) {
+                if (QWidget* main_win = dlg->parentWidget() ? dlg->parentWidget()->window() : nullptr) {
+                    if (main_win->isVisible() && !main_win->isMinimized()) {
+                        if (avail.height() <= 920) {
+                            target_h = std::clamp(std::min(main_win->height() - 16, avail.height() - 68),
+                                                  std::min(460, max_h), max_h);
+                        } else {
+                            target_h = std::clamp(main_win->height(), std::min(540, max_h), max_h);
+                        }
+                    }
+                } else if (avail.height() <= 920) {
+                    target_h = std::clamp(avail.height() - 68, std::min(460, max_h), max_h);
+                }
+            }
             if (target_w != dlg->width() || target_h != dlg->height()) {
                 dlg->resize(target_w, target_h);
             }
-            const QRect fg = dlg->frameGeometry();
             int nx = dlg->x();
             int ny = dlg->y();
-            if (fg.right() > avail.right()) {
-                nx -= (fg.right() - avail.right());
+            if (QWidget* main_win = dlg->parentWidget() ? dlg->parentWidget()->window() : nullptr) {
+                if (main_win->isVisible() && !main_win->isMinimized() &&
+                    (obj_name == QStringLiteral("ConfigureDialog") ||
+                     obj_name == QStringLiteral("ConfigurePerGame"))) {
+                    nx = main_win->x() + (main_win->width() - target_w) / 2;
+                    ny = main_win->y() + (main_win->height() - target_h) / 2;
+                }
             }
-            if (fg.bottom() > avail.bottom()) {
-                ny -= (fg.bottom() - avail.bottom());
+            const int frame_extra_h = std::max(32, dlg->frameGeometry().height() - dlg->height());
+            const int frame_extra_w = std::max(8, dlg->frameGeometry().width() - dlg->width());
+            if (nx + target_w + frame_extra_w > avail.right()) {
+                nx = avail.right() - target_w - frame_extra_w - 4;
             }
-            if (nx < avail.left()) {
-                nx = avail.left() + 8;
+            if (ny + target_h + frame_extra_h > avail.bottom()) {
+                ny = avail.bottom() - target_h - frame_extra_h - 4;
             }
-            if (ny < avail.top()) {
-                ny = avail.top() + 8;
+            if (nx < avail.left() + 4) {
+                nx = avail.left() + 4;
+            }
+            if (ny < avail.top() + 4) {
+                ny = avail.top() + 4;
             }
             if (nx != dlg->x() || ny != dlg->y()) {
                 dlg->move(nx, ny);

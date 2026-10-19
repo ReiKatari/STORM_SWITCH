@@ -14,6 +14,7 @@
 #include <fmt/ranges.h>
 
 #include <QAbstractButton>
+#include <QAbstractScrollArea>
 #include <QCheckBox>
 #include <QFontMetrics>
 #include <QGroupBox>
@@ -22,6 +23,7 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QScreen>
+#include <QScrollArea>
 #include <QString>
 #include <QTabBar>
 #include <QTimer>
@@ -142,15 +144,43 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
     setFocusPolicy(Qt::ClickFocus);
     setWindowTitle(tr("Properties"));
     setSizeGripEnabled(true);
-    if (QScreen* scr = screen() ? screen() : QGuiApplication::primaryScreen()) {
+    ui->tabWidget->setMinimumSize(320, 200);
+    ui->tabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    for (auto* sa : findChildren<QScrollArea*>()) {
+        sa->setWidgetResizable(true);
+        sa->setFrameShape(QFrame::NoFrame);
+        sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        sa->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        sa->setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
+        sa->setMinimumSize(200, 160);
+    }
+
+    QScreen* scr = (parentWidget() && parentWidget()->screen()) ? parentWidget()->screen()
+                   : (screen() ? screen() : QGuiApplication::primaryScreen());
+    if (scr) {
         const QRect avail = scr->availableGeometry();
         const int max_w = std::max(680, avail.width() - 48);
-        const int max_h = std::max(480, avail.height() - 48);
-        setMinimumSize(std::min(720, max_w), std::min(500, max_h));
-        resize(std::min(1240, max_w), std::min(740, max_h));
+        const int max_h = std::max(420, avail.height() - 56);
+        setMinimumSize(std::min(720, max_w), std::min(440, max_h));
+        setMaximumSize(max_w, max_h);
+
+        int target_h = std::min(680, max_h);
+        if (QWidget* main_win = parentWidget() ? parentWidget()->window() : nullptr) {
+            if (main_win->isVisible() && !main_win->isMinimized()) {
+                if (avail.height() <= 920) {
+                    target_h = std::clamp(std::min(main_win->height() - 16, avail.height() - 68),
+                                          std::min(460, max_h), max_h);
+                } else {
+                    target_h = std::clamp(main_win->height(), std::min(540, max_h), max_h);
+                }
+            }
+        } else if (avail.height() <= 920) {
+            target_h = std::clamp(avail.height() - 68, std::min(460, max_h), max_h);
+        }
+        resize(std::min(1200, max_w), target_h);
     } else {
-        setMinimumSize(720, 500);
-        resize(1200, 720);
+        setMinimumSize(720, 440);
+        resize(1160, 680);
     }
 
     ui->display_name->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -320,6 +350,29 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget {"
         "    background: transparent;"
         "    background-color: transparent;"
+        "}"
+        "QScrollBar:vertical {"
+        "    background: #0B0F19;"
+        "    width: 10px;"
+        "    margin: 2px 2px 2px 0px;"
+        "    border-radius: 5px;"
+        "    border: none;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "    background: rgba(0, 210, 255, 0.45);"
+        "    min-height: 28px;"
+        "    border-radius: 5px;"
+        "}"
+        "QScrollBar::handle:vertical:hover {"
+        "    background: #00F0FF;"
+        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+        "    height: 0px;"
+        "    background: none;"
+        "    border: none;"
+        "}"
+        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
+        "    background: transparent;"
         "}"
         "QComboBox, QSpinBox, QDoubleSpinBox, QLineEdit {"
         "    background-color: #121826;"

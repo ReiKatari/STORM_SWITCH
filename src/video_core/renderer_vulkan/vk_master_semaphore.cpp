@@ -66,14 +66,19 @@ void MasterSemaphore::Refresh() {
 
     u64 this_tick{};
     u64 counter{};
-    do {
-        this_tick = gpu_tick.load(std::memory_order_acquire);
-        counter = semaphore.GetCounter();
-        if (counter < this_tick) {
-            return;
-        }
-    } while (!gpu_tick.compare_exchange_weak(this_tick, counter, std::memory_order_release,
-                                             std::memory_order_relaxed));
+    try {
+        do {
+            this_tick = gpu_tick.load(std::memory_order_acquire);
+            counter = semaphore.GetCounter();
+            if (counter < this_tick) {
+                return;
+            }
+        } while (!gpu_tick.compare_exchange_weak(this_tick, counter, std::memory_order_release,
+                                                 std::memory_order_relaxed));
+    } catch (const vk::Exception&) {
+        const u64 fallback = current_tick.load(std::memory_order_acquire);
+        gpu_tick.store(fallback, std::memory_order_release);
+    }
 }
 
 void MasterSemaphore::Wait(u64 tick) {
@@ -104,7 +109,13 @@ void MasterSemaphore::Wait(u64 tick) {
     }
 
     // If none of the above is hit, fallback to a regular wait
-    while (!semaphore.Wait(tick)) {
+    try {
+        while (!semaphore.Wait(tick)) {
+        }
+    } catch (const vk::Exception&) {
+        gpu_tick.store(std::max(gpu_tick.load(std::memory_order_relaxed), tick),
+                       std::memory_order_release);
+        return;
     }
 
     Refresh();

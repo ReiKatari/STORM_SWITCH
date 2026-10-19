@@ -73,6 +73,15 @@ void ConfigureGraphicsAdvanced::Setup(const ConfigurationShared::Builder& builde
             normal_layout.addWidget(widget);
         }
     }
+    normal_layout.setSpacing(6);
+    if (ui->scrollArea) {
+        ui->scrollArea->setWidgetResizable(true);
+        ui->scrollArea->setFrameShape(QFrame::NoFrame);
+        ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        ui->scrollArea->setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
+        ui->scrollArea->setMinimumSize(240, 180);
+    }
 }
 
 void ConfigureGraphicsAdvanced::ApplyConfiguration() {
