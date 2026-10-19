@@ -121,12 +121,25 @@ bool ArmNce::HandleFailedGuestFault(GuestContext* guest_ctx, void* raw_info, voi
     auto& memory = guest_ctx->parent->m_running_thread->GetOwnerProcess()->GetMemory();
     const u64 fastmem_base =
         reinterpret_cast<u64>(guest_ctx->system->DeviceMemory().buffer.VirtualBasePointer());
-    const u64 guest_pc = (host_ctx.pc >= fastmem_base) ? (host_ctx.pc - fastmem_base) : host_ctx.pc;
+
+    const auto ResolveProcessAddr = [&](u64 addr, size_t sz = sizeof(u32)) -> std::optional<u64> {
+        if (memory.IsValidVirtualAddressRange(addr, sz)) {
+            return addr;
+        }
+        if (addr >= fastmem_base && memory.IsValidVirtualAddressRange(addr - fastmem_base, sz)) {
+            return addr - fastmem_base;
+        }
+        if (addr < fastmem_base && memory.IsValidVirtualAddressRange(addr + fastmem_base, sz)) {
+            return addr + fastmem_base;
+        }
+        return std::nullopt;
+    };
+
+    const auto resolved_pc = ResolveProcessAddr(host_ctx.pc);
 
     // We can't handle the access, so determine why we crashed.
     const bool is_prefetch_abort =
-        (host_ctx.pc == reinterpret_cast<u64>(info->si_addr)) ||
-        !memory.IsValidVirtualAddressRange(guest_pc, sizeof(u32));
+        (host_ctx.pc == reinterpret_cast<u64>(info->si_addr)) || !resolved_pc.has_value();
 
     // For data aborts or when ignoring memory aborts, handle gracefully.
     // For data aborts, skip the faulting instruction (pc += 4).
@@ -136,7 +149,7 @@ bool ArmNce::HandleFailedGuestFault(GuestContext* guest_ctx, void* raw_info, voi
         // Some guest object wrappers guard a pointer with CBZ immediately before loading its
         // type field. A packed handle can incorrectly reach this path as a non-null pointer. If
         // this exact sequence faults, follow the wrapper's own null-object return path.
-        if (guest_pc >= 4 && memory.IsValidVirtualAddressRange(guest_pc - 4, sizeof(u32) * 2)) {
+        if (*resolved_pc >= 4 && ResolveProcessAddr(host_ctx.pc - 4, sizeof(u32) * 2).has_value()) {
             u32 fault_instruction{};
             u32 null_check_instruction{};
             std::memcpy(&fault_instruction, reinterpret_cast<const void*>(host_ctx.pc),
@@ -170,12 +183,11 @@ bool ArmNce::HandleFailedGuestFault(GuestContext* guest_ctx, void* raw_info, voi
     } else if (Settings::values.cpuopt_ignore_memory_aborts.GetValue() ||
                info->si_signo == SIGILL) {
         const u64 lr = host_ctx.regs[30];
-        const u64 guest_lr = (lr >= fastmem_base) ? (lr - fastmem_base) : lr;
-        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc &&
-            memory.IsValidVirtualAddressRange(guest_lr, sizeof(u32))) {
+        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc && ResolveProcessAddr(lr).has_value()) {
+            const u64 host_lr = (lr >= fastmem_base) ? lr : (fastmem_base + lr);
             host_ctx.regs[0] = 0;
             host_ctx.regs[1] = 0;
-            host_ctx.pc = lr;
+            host_ctx.pc = host_lr;
             return true;
         }
     }
@@ -224,8 +236,8 @@ bool ArmNce::HandleGuestAccessFault(GuestContext* guest_ctx, void* raw_info, voi
     auto& memory = guest_ctx->parent->m_running_thread->GetOwnerProcess()->GetMemory();
 
     bool handled = memory.InvalidateNCE(addr, Memory::YUZU_PAGESIZE);
-    // Handle accesses which split a page boundary (e.g. unaligned 128-bit vector / atomic access)
-    if ((fault_addr + 16) > (addr + Memory::YUZU_PAGESIZE)) {
+    // Handle accesses which split a page boundary (e.g. unaligned 128-bit vector, STP Qn, or 64-byte DC ZVA)
+    if ((fault_addr + 64) > (addr + Memory::YUZU_PAGESIZE)) {
         handled |= memory.InvalidateNCE(addr + Memory::YUZU_PAGESIZE, Memory::YUZU_PAGESIZE);
     }
 
@@ -267,22 +279,35 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
 
     const u64 fastmem_base =
         reinterpret_cast<u64>(guest_ctx->system->DeviceMemory().buffer.VirtualBasePointer());
-    const u64 guest_pc = (host_ctx.pc >= fastmem_base) ? (host_ctx.pc - fastmem_base) : host_ctx.pc;
 
-    if (!memory.IsValidVirtualAddressRange(guest_pc, sizeof(u32))) {
+    const auto ResolveProcessAddr = [&](u64 addr, size_t sz = sizeof(u32)) -> std::optional<u64> {
+        if (memory.IsValidVirtualAddressRange(addr, sz)) {
+            return addr;
+        }
+        if (addr >= fastmem_base && memory.IsValidVirtualAddressRange(addr - fastmem_base, sz)) {
+            return addr - fastmem_base;
+        }
+        if (addr < fastmem_base && memory.IsValidVirtualAddressRange(addr + fastmem_base, sz)) {
+            return addr + fastmem_base;
+        }
+        return std::nullopt;
+    };
+
+    const auto resolved_pc = ResolveProcessAddr(host_ctx.pc);
+    if (!resolved_pc.has_value()) {
         const u64 lr = host_ctx.regs[30];
-        const u64 guest_lr = (lr >= fastmem_base) ? (lr - fastmem_base) : lr;
-        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc &&
-            memory.IsValidVirtualAddressRange(guest_lr, sizeof(u32))) {
+        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc && ResolveProcessAddr(lr).has_value()) {
+            const u64 host_lr = (lr >= fastmem_base) ? lr : (fastmem_base + lr);
             LOG_WARNING(Core_ARM, "NCE SIGILL at unmapped PC {:#x}, returning to LR {:#x}",
-                        host_ctx.pc, lr);
+                        host_ctx.pc, host_lr);
             host_ctx.regs[0] = 0;
             host_ctx.regs[1] = 0;
-            host_ctx.pc = lr;
+            host_ctx.pc = host_lr;
             return true;
         }
         return HandleFailedGuestFault(guest_ctx, raw_info, raw_context);
     }
+    const u64 guest_pc = (host_ctx.pc >= fastmem_base) ? (host_ctx.pc - fastmem_base) : host_ctx.pc;
 
     // Try the NCE instruction interpreter first.
     if (auto next_pc = MatchAndExecuteOneInstruction(memory, &host_ctx, fpctx)) {
@@ -354,7 +379,7 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
 
     // 3. Handle UDF (#0x0000xxxx), BRK (#0xD420xxxx), or trapped instructions (e.g. Frostbite Career Mode OOM/assert traps)
     u32 next_inst = 0;
-    if (memory.IsValidVirtualAddressRange(guest_pc + 4, sizeof(u32))) {
+    if (ResolveProcessAddr(host_ctx.pc + 4).has_value()) {
         std::memcpy(&next_inst, reinterpret_cast<const void*>(host_ctx.pc + 4), sizeof(u32));
     }
 
@@ -371,14 +396,13 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
     if (inst == 0x00000000U && next_inst == 0x00000000U) {
         // PC jumped into zero-filled memory; return to LR if valid
         const u64 lr = host_ctx.regs[30];
-        const u64 guest_lr = (lr >= fastmem_base) ? (lr - fastmem_base) : lr;
-        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc &&
-            memory.IsValidVirtualAddressRange(guest_lr, sizeof(u32))) {
+        if (lr != 0 && (lr & 3) == 0 && lr != host_ctx.pc && ResolveProcessAddr(lr).has_value()) {
+            const u64 host_lr = (lr >= fastmem_base) ? lr : (fastmem_base + lr);
             LOG_WARNING(Core_ARM, "NCE SIGILL in zeroed memory at {:#x}, returning to LR {:#x}",
-                        host_ctx.pc, lr);
+                        host_ctx.pc, host_lr);
             host_ctx.regs[0] = 0;
             host_ctx.regs[1] = 0;
-            host_ctx.pc = lr;
+            host_ctx.pc = host_lr;
             return true;
         }
     }
@@ -390,6 +414,9 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
                 break;
             }
             const u64 cand_pc = host_ctx.pc - static_cast<u64>(k) * 4;
+            if (!ResolveProcessAddr(cand_pc).has_value()) {
+                break;
+            }
             u32 cand_inst = 0;
             std::memcpy(&cand_inst, reinterpret_cast<const void*>(cand_pc), sizeof(u32));
             if (cand_inst == 0xD65F03C0U) { // RET
@@ -397,6 +424,9 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
                 u64 epilogue_pc = cand_pc;
                 for (u32 j = 1; j <= 16 && (guest_pc >= (k + j) * 4); ++j) {
                     const u64 prev_pc = cand_pc - static_cast<u64>(j) * 4;
+                    if (!ResolveProcessAddr(prev_pc).has_value()) {
+                        break;
+                    }
                     u32 prev_inst = 0;
                     std::memcpy(&prev_inst, reinterpret_cast<const void*>(prev_pc), sizeof(u32));
                     const bool is_ldp_sp = ((prev_inst & 0x7FC003E0U) == 0x294003E0U) || // LDP Xt1, Xt2, [SP, #imm]
@@ -425,25 +455,29 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
     if ((inst & 0xFFFF0000U) == 0U || (inst & 0xFFE0001FU) == 0xD4200000U) {
         u64 fp = host_ctx.regs[29];
         for (int depth = 0; depth < 6; ++depth) {
-            const u64 guest_fp = (fp >= fastmem_base) ? (fp - fastmem_base) : fp;
-            if (guest_fp == 0 || (guest_fp & 7) != 0 || !memory.IsValidVirtualAddressRange(guest_fp, 16)) {
+            if (fp == 0 || (fp & 7) != 0) {
                 break;
             }
-            const u64 next_fp = memory.Read64(guest_fp);
-            const u64 saved_lr = memory.Read64(guest_fp + 8);
-            const u64 guest_lr = (saved_lr >= fastmem_base) ? (saved_lr - fastmem_base) : saved_lr;
-            if (guest_lr != 0 && (guest_lr & 3) == 0 &&
-                (guest_lr < (guest_pc > 0x40 ? guest_pc - 0x40 : 0) || guest_lr > guest_pc + 0x40) &&
-                memory.IsValidVirtualAddressRange(guest_lr, sizeof(u32))) {
-                const u32 lr_inst = memory.Read32(guest_lr);
+            const auto resolved_fp = ResolveProcessAddr(fp, 16);
+            if (!resolved_fp.has_value()) {
+                break;
+            }
+            const u64 next_fp = memory.Read64(*resolved_fp);
+            const u64 saved_lr = memory.Read64(*resolved_fp + 8);
+            const u64 rel_lr = (saved_lr >= fastmem_base) ? (saved_lr - fastmem_base) : saved_lr;
+            const auto resolved_lr = ResolveProcessAddr(saved_lr);
+            if (rel_lr != 0 && (rel_lr & 3) == 0 &&
+                (rel_lr < (guest_pc > 0x40 ? guest_pc - 0x40 : 0) || rel_lr > guest_pc + 0x40) &&
+                resolved_lr.has_value()) {
+                const u32 lr_inst = memory.Read32(*resolved_lr);
                 if ((lr_inst & 0xFFFF0000U) != 0U && (lr_inst & 0xFFE0001FU) != 0xD4200000U) {
-                    const u64 host_lr = (saved_lr >= fastmem_base) ? saved_lr : (fastmem_base + guest_lr);
+                    const u64 host_lr = (saved_lr >= fastmem_base) ? saved_lr : (fastmem_base + rel_lr);
                     LOG_WARNING(Core_ARM,
                                 "NCE recovered guest abort trap {:#010x} at pc={:#x} via FP unwind (depth={}) -> lr={:#x}",
                                 inst, host_ctx.pc, depth + 1, host_lr);
                     host_ctx.regs[29] = next_fp;
                     host_ctx.regs[30] = host_lr;
-                    const u64 host_fp = (fp >= fastmem_base) ? fp : (fastmem_base + guest_fp);
+                    const u64 host_fp = (fp >= fastmem_base) ? fp : (fastmem_base + fp);
                     if (host_fp >= host_ctx.sp && (host_fp - host_ctx.sp) <= 0x10000) {
                         host_ctx.sp = host_fp + 16;
                     }

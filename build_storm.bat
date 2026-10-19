@@ -34,9 +34,9 @@ echo [1/3] Running CMake configuration...
     -DCMAKE_BUILD_TYPE=Release ^
     -DCMAKE_CXX_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
     -DCMAKE_C_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
-    -DGIT_TAG="12.4.0" ^
-    -DGIT_RELEASE="12.4.0" ^
-    -DBUILD_VERSION="12.4.0" ^
+    -DGIT_TAG="12.5.0" ^
+    -DGIT_RELEASE="12.5.0" ^
+    -DBUILD_VERSION="12.5.0" ^
     -DENABLE_QT=ON ^
     -DENABLE_QT_TRANSLATION=ON ^
     -DYUZU_USE_BUNDLED_QT=ON ^

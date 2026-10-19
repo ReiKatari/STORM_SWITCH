@@ -1304,8 +1304,18 @@ void KProcess::LoadModule(KernelCore& kernel, CodeSet code_set, KProcessAddress 
         }
 #ifdef __aarch64__
         if (auto* base_ptr = reinterpret_cast<char*>(buffer.VirtualBasePointer())) {
-            char* mod_start = base_ptr + GetInteger(base_addr);
-            __builtin___clear_cache(mod_start, mod_start + code_set.memory.size());
+            const u64 raw_base = GetInteger(base_addr);
+            const u64 host_base = reinterpret_cast<u64>(base_ptr);
+            char* mod_start = (raw_base >= host_base) ? reinterpret_cast<char*>(raw_base)
+                                                      : (base_ptr + raw_base);
+            __builtin___clear_cache(mod_start + GetInteger(code.addr),
+                                    mod_start + GetInteger(code.addr) + code.size);
+            __builtin___clear_cache(mod_start + GetInteger(patch.addr),
+                                    mod_start + GetInteger(patch.addr) + patch.size);
+            if (post_patch.size != 0) {
+                __builtin___clear_cache(mod_start + GetInteger(post_patch.addr),
+                                        mod_start + GetInteger(post_patch.addr) + post_patch.size);
+            }
         }
 #endif
         ReprotectSegment(code_set.PatchSegment(), Svc::MemoryPermission::None);

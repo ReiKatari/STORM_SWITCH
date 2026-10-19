@@ -82,6 +82,7 @@ private:
     void WriteMsrHandler(ModuleDestLabel module_dest, oaknut::XReg src_reg, oaknut::VectorCodeGenerator& code);
     void WriteCntfrqHandler(ModuleDestLabel module_dest, oaknut::XReg dest_reg, oaknut::VectorCodeGenerator& code);
     void WriteCntpctHandler(ModuleDestLabel module_dest, oaknut::XReg dest_reg, oaknut::VectorCodeGenerator& code);
+    void WriteImmediateHandler(ModuleDestLabel module_dest, oaknut::XReg dest_reg, u64 imm_value, oaknut::VectorCodeGenerator& code);
 
     // Convenience wrappers using default code generator
     void WriteLoadContext() { WriteLoadContext(c); }
@@ -93,6 +94,7 @@ private:
     void WriteMsrHandler(ModuleDestLabel module_dest, oaknut::XReg src_reg) { WriteMsrHandler(module_dest, src_reg, c); }
     void WriteCntfrqHandler(ModuleDestLabel module_dest, oaknut::XReg dest_reg) { WriteCntfrqHandler(module_dest, dest_reg, c); }
     void WriteCntpctHandler(ModuleDestLabel module_dest, oaknut::XReg dest_reg) { WriteCntpctHandler(module_dest, dest_reg, c); }
+    void WriteImmediateHandler(ModuleDestLabel module_dest, oaknut::XReg dest_reg, u64 imm_value) { WriteImmediateHandler(module_dest, dest_reg, imm_value, c); }
 
 private:
     void BranchToPatch(uintptr_t module_dest) {

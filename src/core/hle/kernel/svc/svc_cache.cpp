@@ -16,17 +16,32 @@ void FlushEntireDataCache(Core::System& system) {
 }
 
 Result FlushDataCache(Core::System& system, uint64_t address, uint64_t size) {
-    R_THROW(ResultNotImplemented);
+    if (size == 0) {
+        R_SUCCEED();
+    }
+    auto& page_table = GetCurrentProcess(system.Kernel()).GetPageTable();
+    R_UNLESS(page_table.Contains(address, size), ResultInvalidCurrentMemory);
+    R_RETURN(GetCurrentMemory(system.Kernel()).FlushDataCache(address, size));
 }
 
 Result InvalidateProcessDataCache(Core::System& system, Handle process_handle, uint64_t address,
                                   uint64_t size) {
-    R_THROW(ResultNotImplemented);
+    R_UNLESS(size > 0, ResultInvalidSize);
+    KScopedAutoObject process = GetCurrentProcess(system.Kernel()).GetHandleTable().GetObject<KProcess>(system.Kernel(), process_handle);
+    R_UNLESS(process.IsNotNull(), ResultInvalidHandle);
+    auto& page_table = process->GetPageTable();
+    R_UNLESS(page_table.Contains(address, size), ResultInvalidCurrentMemory);
+    R_RETURN(process->GetMemory().InvalidateDataCache(address, size));
 }
 
 Result StoreProcessDataCache(Core::System& system, Handle process_handle, uint64_t address,
                              uint64_t size) {
-    R_THROW(ResultNotImplemented);
+    R_UNLESS(size > 0, ResultInvalidSize);
+    KScopedAutoObject process = GetCurrentProcess(system.Kernel()).GetHandleTable().GetObject<KProcess>(system.Kernel(), process_handle);
+    R_UNLESS(process.IsNotNull(), ResultInvalidHandle);
+    auto& page_table = process->GetPageTable();
+    R_UNLESS(page_table.Contains(address, size), ResultInvalidCurrentMemory);
+    R_RETURN(process->GetMemory().StoreDataCache(address, size));
 }
 
 Result FlushProcessDataCache(Core::System& system, Handle process_handle, u64 address, u64 size) {

@@ -95,7 +95,19 @@ Result SetResourceLimitLimitValue(Core::System& system, Handle resource_limit_ha
 
 Result GetResourceLimitPeakValue(Core::System& system, int64_t* out_peak_value,
                                  Handle resource_limit_handle, LimitableResource which) {
-    R_THROW(ResultNotImplemented);
+    LOG_DEBUG(Kernel_SVC, "called, resource_limit_handle={:08X}, which={}", resource_limit_handle,
+              which);
+
+    R_UNLESS(IsValidResourceType(which), ResultInvalidEnumValue);
+
+    KScopedAutoObject resource_limit = GetCurrentProcess(system.Kernel())
+        .GetHandleTable()
+        .GetObject<KResourceLimit>(system.Kernel(), resource_limit_handle);
+    R_UNLESS(resource_limit.IsNotNull(), ResultInvalidHandle);
+
+    *out_peak_value = resource_limit->GetCurrentValue(which);
+
+    R_SUCCEED();
 }
 
 Result GetResourceLimitLimitValue64(Core::System& system, int64_t* out_limit_value,

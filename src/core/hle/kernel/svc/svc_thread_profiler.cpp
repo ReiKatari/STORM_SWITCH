@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "core/core.h"
+#include "core/hle/kernel/k_thread.h"
 #include "core/hle/kernel/svc.h"
 #include "core/hle/kernel/svc_results.h"
 
@@ -13,7 +15,16 @@ Result GetDebugFutureThreadInfo(Core::System& system, lp64::LastThreadContext* o
 
 Result GetLastThreadInfo(Core::System& system, lp64::LastThreadContext* out_context,
                          uint64_t* out_tls_address, uint32_t* out_flags) {
-    R_THROW(ResultNotImplemented);
+    if (out_context != nullptr) {
+        *out_context = {};
+    }
+    if (out_tls_address != nullptr) {
+        *out_tls_address = GetInteger(GetCurrentThread(system.Kernel()).GetTlsAddress());
+    }
+    if (out_flags != nullptr) {
+        *out_flags = 0;
+    }
+    R_SUCCEED();
 }
 
 Result GetDebugFutureThreadInfo64(Core::System& system, lp64::LastThreadContext* out_context,

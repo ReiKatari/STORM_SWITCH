@@ -709,6 +709,12 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         features.shader_float16_int8.shaderFloat16 = false;
     }
 
+    if (features.shader_float16_int8.shaderFloat16 && (is_qualcomm || is_turnip)) {
+        // Adreno FP16 rounding/denormals cause severe UE4 lighting & post-processing artifacts (e.g. Achilles: Legends Untold)
+        LOG_WARNING(Render_Vulkan, "Adreno auto-optimization: Disabling shaderFloat16 to prevent UE4 lighting and post-process artifacts");
+        features.shader_float16_int8.shaderFloat16 = false;
+    }
+
     if (is_intel_windows) {
         LOG_WARNING(Render_Vulkan,
                     "Intel proprietary drivers do not support MSAA->MSAA image blits. "
@@ -745,14 +751,13 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     const auto dyna_state = Settings::values.dyna_state.GetValue();
     auto effective_dyna_state = dyna_state;
 
-    if (is_adreno_6xx) {
-        // Adreno 6xx hardware command processor registers have severe issues with
-        // ExtendedDynamicState — vertex glitches, pipeline hangs, VK_ERROR_DEVICE_LOST.
-        // Force EDS completely disabled for stability on Snapdragon 700 series.
-        LOG_INFO(Render_Vulkan, "Adreno 6xx auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
+    if (is_adreno_6xx || is_qualcomm) {
+        // Adreno 6xx hardware and stock Qualcomm proprietary drivers (e.g. Adreno 750 on Snapdragon 8 Gen 3)
+        // crash in libllvm-qgl.so or hang on ExtendedDynamicState pipelines.
+        LOG_INFO(Render_Vulkan, "Adreno 6xx / Qualcomm proprietary driver auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
-    } else if ((is_turnip || is_qualcomm || is_mali) && effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
-        LOG_INFO(Render_Vulkan, "Adreno/Turnip/Mali auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability and prevent pipeline cache invalidation");
+    } else if ((is_turnip || is_mali) && effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
+        LOG_INFO(Render_Vulkan, "Turnip/Mali auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability and prevent pipeline cache invalidation");
         effective_dyna_state = Settings::ExtendedDynamicState::EDS1;
     }
 
@@ -790,8 +795,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         break;
     }
 
-    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 6xx (driver crashes on dynamic vertex buffer binding)
-    if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_6xx) {
+    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 6xx and stock Qualcomm proprietary drivers
+    if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_6xx || is_qualcomm) {
         RemoveExtensionFeature(extensions.vertex_input_dynamic_state, features.vertex_input_dynamic_state, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
     }
 

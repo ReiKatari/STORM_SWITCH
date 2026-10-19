@@ -505,14 +505,21 @@ public:
         if (Settings::IsNceEnabled()) {
             auto* process = context->GetProcess();
             auto& buffer = kernel.System().DeviceMemory().buffer;
+#ifdef __aarch64__
             if (auto* base_ptr = reinterpret_cast<char*>(buffer.VirtualBasePointer())) {
-                char* nro_start = base_ptr + nro_info->base_address;
+                const u64 host_base = reinterpret_cast<u64>(base_ptr);
+                char* nro_start = (nro_info->base_address >= host_base)
+                                      ? reinterpret_cast<char*>(nro_info->base_address)
+                                      : (base_ptr + nro_info->base_address);
                 __builtin___clear_cache(nro_start, nro_start + rx_size);
                 if (nro_info->patch_size > 0) {
-                    char* patch_start = base_ptr + nro_info->patch_address;
+                    char* patch_start = (nro_info->patch_address >= host_base)
+                                            ? reinterpret_cast<char*>(nro_info->patch_address)
+                                            : (base_ptr + nro_info->patch_address);
                     __builtin___clear_cache(patch_start, patch_start + nro_info->patch_size);
                 }
             }
+#endif
             for (size_t i = 0; i < Core::Hardware::NUM_CPU_CORES; ++i) {
                 if (auto* arm = process->GetArmInterface(i)) {
                     arm->InvalidateCacheRange(nro_info->base_address, rx_size);

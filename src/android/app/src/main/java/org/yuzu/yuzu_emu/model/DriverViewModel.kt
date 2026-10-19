@@ -44,7 +44,7 @@ class DriverViewModel : ViewModel() {
             _isDeletingDrivers
         ) { loading, ready, deleting ->
             !loading && ready && !deleting
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), initialValue = false)
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = true)
 
     var driverData = GpuDriverHelper.getDrivers()
 

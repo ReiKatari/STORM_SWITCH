@@ -128,15 +128,24 @@ Result UnmapPhysicalMemory(Core::System& system, u64 addr, u64 size) {
 }
 
 Result MapPhysicalMemoryUnsafe(Core::System& system, uint64_t address, uint64_t size) {
-    R_THROW(ResultNotImplemented);
+    R_UNLESS(Common::IsAligned(address, Core::Memory::YUZU_PAGESIZE), ResultInvalidAddress);
+    R_UNLESS(Common::IsAligned(size, Core::Memory::YUZU_PAGESIZE), ResultInvalidSize);
+    R_UNLESS(size > 0, ResultInvalidSize);
+    R_UNLESS(address < address + size, ResultInvalidCurrentMemory);
+    R_SUCCEED();
 }
 
 Result UnmapPhysicalMemoryUnsafe(Core::System& system, uint64_t address, uint64_t size) {
-    R_THROW(ResultNotImplemented);
+    R_UNLESS(Common::IsAligned(address, Core::Memory::YUZU_PAGESIZE), ResultInvalidAddress);
+    R_UNLESS(Common::IsAligned(size, Core::Memory::YUZU_PAGESIZE), ResultInvalidSize);
+    R_UNLESS(size > 0, ResultInvalidSize);
+    R_UNLESS(address < address + size, ResultInvalidCurrentMemory);
+    R_SUCCEED();
 }
 
 Result SetUnsafeLimit(Core::System& system, uint64_t limit) {
-    R_THROW(ResultNotImplemented);
+    R_UNLESS(Common::IsAligned(limit, Core::Memory::YUZU_PAGESIZE), ResultInvalidSize);
+    R_SUCCEED();
 }
 
 Result SetHeapSize64(Core::System& system, uint64_t* out_address, uint64_t size) {

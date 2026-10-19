@@ -19,7 +19,46 @@
 #undef CreateEvent
 #endif
 
+#ifdef __ANDROID__
+#include <algorithm>
+#include <cctype>
+#include <cstring>
+#include <string>
+#include <sys/system_properties.h>
+#endif
+
 namespace AudioCore::Sink {
+#ifdef __ANDROID__
+namespace {
+bool ShouldPreferOpenSLESOnAndroid() {
+    auto get_prop_lower = [](const char* key) {
+        char buf[PROP_VALUE_MAX]{};
+        __system_property_get(key, buf);
+        std::string s(buf);
+        std::transform(s.begin(), s.end(), s.begin(),
+                       [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        return s;
+    };
+    const std::string zui = get_prop_lower("ro.build.version.zui");
+    const std::string zuk = get_prop_lower("ro.com.zuk.version.os");
+    const std::string manufacturer = get_prop_lower("ro.product.manufacturer");
+    const std::string brand = get_prop_lower("ro.product.brand");
+    const std::string model = get_prop_lower("ro.product.model");
+    if (!zui.empty() || !zuk.empty()) {
+        return true;
+    }
+    if (manufacturer.find("lenovo") != std::string::npos ||
+        brand.find("lenovo") != std::string::npos ||
+        model.find("tb321") != std::string::npos ||
+        model.find("tb320") != std::string::npos ||
+        model.find("tb-9707") != std::string::npos ||
+        model.find("y700") != std::string::npos) {
+        return true;
+    }
+    return false;
+}
+} // namespace
+#endif
 /**
  * Cubeb sink stream, responsible for sinking samples to hardware.
  */
@@ -226,8 +265,14 @@ CubebSink::CubebSink(std::string_view target_device_name) {
 #endif
 
 #if defined(__ANDROID__)
-    if (cubeb_init(&ctx, "STORM SWITCH", "aaudio") != CUBEB_OK) {
-        if (cubeb_init(&ctx, "STORM SWITCH", "opensles") != CUBEB_OK) {
+    const bool prefer_opensles = ShouldPreferOpenSLESOnAndroid();
+    const char* first_backend = prefer_opensles ? "opensles" : "aaudio";
+    const char* second_backend = prefer_opensles ? "aaudio" : "opensles";
+    if (prefer_opensles) {
+        LOG_INFO(Audio_Sink, "Lenovo/ZUI device detected: prioritizing OpenSL ES over AAudio to prevent Dolby MMAP silence");
+    }
+    if (cubeb_init(&ctx, "STORM SWITCH", first_backend) != CUBEB_OK) {
+        if (cubeb_init(&ctx, "STORM SWITCH", second_backend) != CUBEB_OK) {
             if (cubeb_init(&ctx, "STORM SWITCH", nullptr) != CUBEB_OK) {
                 LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
                 return;
@@ -387,8 +432,11 @@ u32 GetCubebLatency() {
 
     // Init cubeb
 #if defined(__ANDROID__)
-    if (cubeb_init(&ctx, "STORM SWITCH Latency Getter", "aaudio") != CUBEB_OK) {
-        if (cubeb_init(&ctx, "STORM SWITCH Latency Getter", "opensles") != CUBEB_OK) {
+    const bool prefer_opensles = ShouldPreferOpenSLESOnAndroid();
+    const char* first_backend = prefer_opensles ? "opensles" : "aaudio";
+    const char* second_backend = prefer_opensles ? "aaudio" : "opensles";
+    if (cubeb_init(&ctx, "STORM SWITCH Latency Getter", first_backend) != CUBEB_OK) {
+        if (cubeb_init(&ctx, "STORM SWITCH Latency Getter", second_backend) != CUBEB_OK) {
             if (cubeb_init(&ctx, "STORM SWITCH Latency Getter", nullptr) != CUBEB_OK) {
                 LOG_CRITICAL(Audio_Sink, "cubeb_init failed");
                 return 10000u;

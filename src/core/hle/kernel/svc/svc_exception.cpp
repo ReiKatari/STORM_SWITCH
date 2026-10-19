@@ -47,8 +47,8 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
             } else {
                 LOG_CRITICAL(Debug_Emulated, "debug_buffer_err_code={:X}", err_code);
             }
-        } else {
-            // We don't know what's in here so we'll hexdump it
+        } else if (sz <= 4096 && memory.IsValidVirtualAddressRange(addr, sz)) {
+            // We don't know what's in here so we'll hexdump it (clamped to 4KB to prevent bad_alloc when info2 is an address/line)
             debug_buffer.resize(sz);
             memory.ReadBlock(addr, debug_buffer.data(), sz);
             std::string hexdump;

@@ -16,6 +16,13 @@
 #include "common/scope_exit.h"
 #include "core/core.h"
 
+#ifdef __ANDROID__
+#include <algorithm>
+#include <cctype>
+#include <string>
+#include <sys/system_properties.h>
+#endif
+
 namespace AudioCore::Sink {
 
 namespace {
@@ -29,7 +36,28 @@ namespace {
         // Keep in sync with cubeb_sink.cpp name.
         SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", "STORM SWITCH");
 #if defined(__ANDROID__)
-        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "aaudio,opensles");
+        auto get_prop_lower = [](const char* key) {
+            char buf[PROP_VALUE_MAX]{};
+            __system_property_get(key, buf);
+            std::string s(buf);
+            std::transform(s.begin(), s.end(), s.begin(),
+                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            return s;
+        };
+        const std::string zui = get_prop_lower("ro.build.version.zui");
+        const std::string zuk = get_prop_lower("ro.com.zuk.version.os");
+        const std::string manufacturer = get_prop_lower("ro.product.manufacturer");
+        const std::string brand = get_prop_lower("ro.product.brand");
+        const std::string model = get_prop_lower("ro.product.model");
+        const bool prefer_opensles =
+            !zui.empty() || !zuk.empty() ||
+            manufacturer.find("lenovo") != std::string::npos ||
+            brand.find("lenovo") != std::string::npos ||
+            model.find("tb321") != std::string::npos ||
+            model.find("tb320") != std::string::npos ||
+            model.find("tb-9707") != std::string::npos ||
+            model.find("y700") != std::string::npos;
+        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, prefer_opensles ? "opensles,aaudio" : "aaudio,opensles");
 #endif
         if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
             LOG_CRITICAL(Audio_Sink, "SDL_InitSubSystem audio failed: {}", SDL_GetError());

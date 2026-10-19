@@ -12,6 +12,9 @@
 namespace Core::NCE {
 
 enum SystemRegister : u32 {
+    MidrEl1 = 0x4000,
+    CtrEl0 = 0x5801,
+    DczidEl0 = 0x5807,
     TpidrEl0 = 0x5E82,
     TpidrroEl0 = 0x5E83,
     CntfrqEl0 = 0x5F00,
