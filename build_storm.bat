@@ -45,7 +45,7 @@ echo [1/3] Running CMake configuration...
     -DYUZU_CMD=ON ^
     -DYUZU_ROOM=ON ^
     -DYUZU_ROOM_STANDALONE=ON ^
-    -DENABLE_WEB_SERVICE=OFF ^
+    -DENABLE_WEB_SERVICE=ON ^
     -DBUILD_TESTING=OFF ^
     "%SRC_DIR%"
 

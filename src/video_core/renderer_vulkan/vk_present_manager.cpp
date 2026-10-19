@@ -452,8 +452,10 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
     // If the size of the incoming frames has changed, recreate the swapchain
     // to account for that.
     const bool is_suboptimal = swapchain.NeedsRecreation();
+    const VkExtent2D current_extent = swapchain.GetExtent();
     const bool size_changed =
-        swapchain.GetWidth() != frame->width || swapchain.GetHeight() != frame->height;
+        swapchain.GetWidth() != frame->width || swapchain.GetHeight() != frame->height ||
+        current_extent.width != frame->width || current_extent.height != frame->height;
     if (is_suboptimal || size_changed) {
         RecreateSwapchain(frame);
     }

@@ -182,9 +182,12 @@ void GRenderWindow::OnFramebufferSizeChanged() {
     // Screen changes potentially incur a change in screen DPI, hence we should update the
     // framebuffer size
     const qreal pixel_ratio = windowPixelRatio();
-    const u32 width = this->width() * pixel_ratio;
-    const u32 height = this->height() * pixel_ratio;
+    const u32 width = static_cast<u32>((std::max)(std::round(this->width() * pixel_ratio), qreal{1.0}));
+    const u32 height = static_cast<u32>((std::max)(std::round(this->height() * pixel_ratio), qreal{1.0}));
     UpdateCurrentFramebufferLayout(width, height);
+    if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+        QtCommon::system->GPU().RefreshPresent();
+    }
 }
 
 void GRenderWindow::BackupGeometry() {
@@ -732,6 +735,9 @@ void GRenderWindow::focusOutEvent(QFocusEvent* event) {
 
 void GRenderWindow::resizeEvent(QResizeEvent* event) {
     QWidget::resizeEvent(event);
+    if (child_widget) {
+        child_widget->setGeometry(0, 0, this->width(), this->height());
+    }
     OnFramebufferSizeChanged();
 }
 

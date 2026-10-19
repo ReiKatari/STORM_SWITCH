@@ -23,7 +23,7 @@ namespace WebService {
 
 constexpr std::array<const char, 1> API_VERSION{'1'};
 
-constexpr std::size_t TIMEOUT_SECONDS = 30;
+constexpr std::size_t TIMEOUT_SECONDS = 10;
 
 struct Client::Impl {
     Impl(std::string host_, std::string username_, std::string token_)
@@ -33,9 +33,12 @@ struct Client::Impl {
             jwt = jwt_cache.jwt;
         }
 
+        if (this->host.empty()) {
+            this->host = "api.ynet-fun.xyz";
+        }
         // Normalize host expression
-        if (!this->host.empty() && this->host.back() == '/') {
-            static_cast<void>(this->host.pop_back());
+        while (!this->host.empty() && this->host.back() == '/') {
+            this->host.pop_back();
         }
     }
 
@@ -77,6 +80,7 @@ struct Client::Impl {
             cli->set_connection_timeout(TIMEOUT_SECONDS);
             cli->set_read_timeout(TIMEOUT_SECONDS);
             cli->set_write_timeout(TIMEOUT_SECONDS);
+            cli->set_follow_location(true);
 #ifdef YUZU_BUNDLED_OPENSSL
             cli->load_ca_cert_store(kCert, sizeof(kCert));
 #endif

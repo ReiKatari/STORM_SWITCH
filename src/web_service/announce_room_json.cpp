@@ -129,7 +129,24 @@ AnnounceMultiplayerRoom::RoomList RoomJson::GetRoomList() {
     if (reply.empty()) {
         return {};
     }
-    return nlohmann::json::parse(reply).at("rooms").get<AnnounceMultiplayerRoom::RoomList>();
+    try {
+        const auto parsed = nlohmann::json::parse(reply);
+        if (!parsed.contains("rooms") || !parsed["rooms"].is_array()) {
+            return {};
+        }
+        AnnounceMultiplayerRoom::RoomList room_list;
+        for (const auto& room_json : parsed["rooms"]) {
+            try {
+                room_list.push_back(room_json.get<AnnounceMultiplayerRoom::Room>());
+            } catch (const nlohmann::json::exception& e) {
+                LOG_WARNING(WebService, "Skipping malformed room entry: {}", e.what());
+            }
+        }
+        return room_list;
+    } catch (const nlohmann::json::exception& e) {
+        LOG_ERROR(WebService, "Failed to parse lobby room list JSON: {}", e.what());
+        return {};
+    }
 }
 
 void RoomJson::Delete() {

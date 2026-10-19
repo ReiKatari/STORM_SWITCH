@@ -282,8 +282,8 @@ private:
         if (text_log) {
             output_log += fmt::format("Log Text: {}\n", *text_log);
         }
-        LOG_DEBUG(Service_LM, "LogManager {} ({}):\n{}", NameOf(entry.severity),
-                  DestinationToString(destination), output_log);
+        LOG_INFO(Service_LM, "LogManager {} ({}):\n{}", NameOf(entry.severity),
+                 DestinationToString(destination), output_log);
     }
 
     static std::string DestinationToString(LogDestination destination) {

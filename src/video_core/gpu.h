@@ -220,6 +220,8 @@ public:
 
     void WaitForComposite();
 
+    void RefreshPresent();
+
     std::vector<u8> GetAppletCaptureBuffer();
 
     /// Performs any additional setup necessary in order to begin GPU emulation.

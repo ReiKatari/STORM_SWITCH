@@ -298,6 +298,24 @@ struct GPU::Impl {
         WaitForSyncOperation(fence);
     }
 
+    void RefreshPresent() {
+        if (shutting_down.load(std::memory_order_relaxed) || !renderer) {
+            return;
+        }
+        bool expected = false;
+        if (!refresh_present_pending.compare_exchange_strong(expected, true,
+                                                             std::memory_order_acq_rel)) {
+            return;
+        }
+        (void)RequestSyncOperation([this] {
+            refresh_present_pending.store(false, std::memory_order_release);
+            if (!shutting_down.load(std::memory_order_relaxed) && renderer) {
+                renderer->RefreshPresent();
+            }
+        });
+        gpu_thread.TickGPU(is_async);
+    }
+
     std::vector<u8> GetAppletCaptureBuffer() {
         std::vector<u8> out;
 
@@ -323,6 +341,7 @@ struct GPU::Impl {
     VideoCore::ShaderNotify shader_notify;
     /// When true, we are about to shut down emulation session, so terminate outstanding tasks
     std::atomic_bool shutting_down{};
+    std::atomic_bool refresh_present_pending{false};
 
     std::array<std::atomic<u32>, Service::Nvidia::MaxSyncPoints> syncpoints{};
 
@@ -471,6 +490,10 @@ void GPU::RequestComposite(std::vector<Tegra::FramebufferConfig>&& layers,
 
 void GPU::WaitForComposite() {
     impl->WaitForComposite();
+}
+
+void GPU::RefreshPresent() {
+    impl->RefreshPresent();
 }
 
 std::vector<u8> GPU::GetAppletCaptureBuffer() {

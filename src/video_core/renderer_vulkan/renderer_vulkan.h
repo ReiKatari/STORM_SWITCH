@@ -49,6 +49,7 @@ public:
     ~RendererVulkan() override;
 
     void Composite(std::span<const Tegra::FramebufferConfig> framebuffers) override;
+    void RefreshPresent() override;
 
     std::vector<u8> GetAppletCaptureBuffer() override;
 

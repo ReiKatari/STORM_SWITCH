@@ -7817,7 +7817,10 @@ void MainWindow::UpdateStatusBar() {
         "QLabel { background-color: rgba(0, 229, 255, 0.10); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.30); "
         "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
 
-    const QString ms_str = QString::number(results.frametime * 1000.0, 'f', 2);
+    const double ft_ms = (std::isfinite(results.frametime) && results.frametime >= 0.0)
+                             ? (results.frametime * 1000.0)
+                             : 0.0;
+    const QString ms_str = QString::number(ft_ms, 'f', 2);
     emu_frametime_label->setText(StormLang(
         QStringLiteral("⏱️ %1 мс").arg(ms_str),
         QStringLiteral("⏱️ %1 ms").arg(ms_str),
@@ -7837,7 +7840,7 @@ void MainWindow::UpdateStatusBar() {
     static u32 s_fps_log_counter = 0;
     if (++s_fps_log_counter >= 5) {
         s_fps_log_counter = 0;
-        LOG_INFO(Frontend, "Performance: FPS: {:.1f} | Frametime: {:.2f} ms | Speed: {:.0f}%", display_fps, results.frametime * 1000.0, results.emulation_speed * 100.0);
+        LOG_INFO(Frontend, "Performance: FPS: {:.1f} | Frametime: {:.2f} ms | Speed: {:.0f}%", display_fps, ft_ms, results.emulation_speed * 100.0);
     }
 }
 
@@ -7847,6 +7850,9 @@ void MainWindow::ApplyDynamicSettingChange() {
     const bool is_running = QtCommon::system && QtCommon::system->IsPoweredOn();
     if (is_running) {
         QtCommon::system->ApplySettings();
+        if (render_window) {
+            render_window->OnFramebufferSizeChanged();
+        }
     }
     std::string per_game_config_name;
     const bool has_per_game_file =

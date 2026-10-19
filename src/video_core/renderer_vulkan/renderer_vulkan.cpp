@@ -256,9 +256,15 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
         return;
     }
 
+    const auto& current_layout = render_window.GetFramebufferLayout();
+    const auto current_extent = swapchain.GetExtent();
+    const bool extent_mismatch =
+        current_extent.width != current_layout.width || current_extent.height != current_layout.height;
+
     const auto frame_start = std::chrono::steady_clock::now();
     static u32 s_skip_counter = 0;
-    if (Settings::values.enable_frame_skipping.GetValue() &&
+    if (!extent_mismatch &&
+        Settings::values.enable_frame_skipping.GetValue() &&
         !Settings::values.frame_gen.GetValue() &&
         s_last_composite_time.time_since_epoch().count() != 0) {
         const double delta_ms =
@@ -336,6 +342,14 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     } else {
         s_last_composite_time = std::chrono::steady_clock::now();
     }
+}
+
+void RendererVulkan::RefreshPresent() {
+    if (last_framebuffers.empty() || !render_window.IsShown()) {
+        return;
+    }
+    const auto framebuffers_copy = last_framebuffers;
+    Composite(framebuffers_copy);
 }
 
 void RendererVulkan::Report() const {

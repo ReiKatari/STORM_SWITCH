@@ -4801,26 +4801,16 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100A4601ECA8000ULL,
         "Crypt Custodian",
-        "• Зависание на экране загрузки (Loading) в движке Unity IL2CPP при асинхронном обратном чтении буферов GPU и раннем освобождении барьеров\n• Вылет драйвера Vulkan при компиляции конвейеров частиц и пересжатии ASTC",
-        "• Unity IL2CPP Loading screen hang caused by GPU buffer readback and early fence release\n• Vulkan pipeline crash and transparent particle artifacts with ASTC recompression",
+        "• Зависание и аварийная остановка на экране LOADING... (gml_Object_o_load_Step_0) в движке GameMaker Studio 2 YYC из-за ошибки округления FRINTX/llrint при предзагрузке 21 текстурной группы\n• Артефакты прозрачности частиц и шрифтов при пересжатии ASTC",
+        "• LOADING... screen hang/abort (gml_Object_o_load_Step_0) in GameMaker Studio 2 YYC caused by FRINTX/llrint rounding overflow when prefetching 21 texture groups\n• Transparent particle and font artifacts with ASTC recompression",
         "",
         "",
         {
-            {"Renderer\\async_presentation", "false"},
             {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\enable_gpu_buffer_readback", "false"},
-            {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\gpu_accuracy", "0"},
-            {"Renderer\\gpu_fence_behavior", "2"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\drs_resolution_lock", "false"},
-            {"Renderer\\dynamic_performance_scaler", "false"},
-            {"Core\\sync_core_speed", "false"},
-            {"Core\\cpu_clock", "0"},
-            {"Core\\gpu_clock", "0"},
             {"Cpu\\cpuopt_fastmem", "true"}
         },
         {0x0100A4601ECA8800ULL}
@@ -7160,6 +7150,26 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
                 apply_setting(Settings::values.cpuopt_recompile_exclusives, val == "true" || val == "1");
             } else if (full_key == "Cpu\\cpuopt_unsafe_unfuse_fma") {
                 apply_setting(Settings::values.cpuopt_unsafe_unfuse_fma, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_unsafe_host_mmu") {
+                apply_setting(Settings::values.cpuopt_unsafe_host_mmu, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_unsafe_reduce_fp_error") {
+                apply_setting(Settings::values.cpuopt_unsafe_reduce_fp_error, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\cpuopt_unsafe_ignore_standard_fpcr") {
+                apply_setting(Settings::values.cpuopt_unsafe_ignore_standard_fpcr, val == "true" || val == "1");
+            } else if (full_key == "Cpu\\use_storm_tier2_compiler") {
+                apply_setting(Settings::values.use_storm_tier2_compiler, val == "true" || val == "1");
+            } else if (full_key == "Core\\sync_core_speed" || full_key == "System\\sync_core_speed") {
+                apply_setting(Settings::values.sync_core_speed, val == "true" || val == "1");
+            } else if (full_key == "Core\\cpu_clock" || full_key == "Cpu\\cpu_clock") {
+                apply_setting(Settings::values.cpu_clock, static_cast<Settings::CpuClock>(safe_stoi(val, 0)));
+            } else if (full_key == "Core\\gpu_clock" || full_key == "Renderer\\gpu_clock") {
+                apply_setting(Settings::values.gpu_clock, static_cast<Settings::GpuClock>(safe_stoi(val, 0)));
+            } else if (full_key == "Renderer\\force_max_clock") {
+                apply_setting(Settings::values.renderer_force_max_clock, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\enable_frame_skipping") {
+                apply_setting(Settings::values.enable_frame_skipping, val == "true" || val == "1");
+            } else if (full_key == "Renderer\\vertex_input_dynamic_state") {
+                apply_setting(Settings::values.vertex_input_dynamic_state, val == "true" || val == "1");
             } else if (full_key == "Debugging\\disable_macro_hle") {
                 apply_setting(Settings::values.disable_macro_hle, val == "true" || val == "1");
             } else if (full_key == "Debugging\\disable_macro_jit") {

@@ -124,11 +124,32 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
     }
 
     if (!notification_only) {
+        if (auto* process = GetCurrentProcessPointer(system.Kernel()); process != nullptr) {
+            const u64 plr_addr = GetInteger(process->GetProcessLocalRegionAddress());
+            auto& memory = GetCurrentMemory(system.Kernel());
+            if (plr_addr != 0 && memory.IsValidVirtualAddressRange(plr_addr + 0x1c0, 16)) {
+                const u64 dying_addr = memory.Read64(plr_addr + 0x1c0);
+                const u64 dying_size = memory.Read64(plr_addr + 0x1c8);
+                if (dying_addr != 0 && dying_size > 0 && dying_size <= 0x10000 &&
+                    memory.IsValidVirtualAddressRange(dying_addr, dying_size)) {
+                    std::string dying_msg(dying_size, '\0');
+                    memory.ReadBlock(dying_addr, dying_msg.data(), dying_size);
+                    if (const auto nul_pos = dying_msg.find('\0'); nul_pos != std::string::npos) {
+                        dying_msg.resize(nul_pos);
+                    }
+                    if (!dying_msg.empty()) {
+                        LOG_CRITICAL(Debug_Emulated, "Process DyingMessage ({:#x}, size={:#x}):\n{}",
+                                     dying_addr, dying_size, dying_msg);
+                    }
+                }
+            }
+        }
         if (is_benign_zero_err) {
             LOG_WARNING(
                 Debug_Emulated,
                 "Emulated program broke execution with err_code=0 (continuing)! reason={:#016x}, info1={:#016x}, info2={:#016x}",
                 reason, info1, info2);
+            system.CurrentPhysicalCore().LogBacktrace(system.Kernel());
         } else {
             LOG_CRITICAL(
                 Debug_Emulated,

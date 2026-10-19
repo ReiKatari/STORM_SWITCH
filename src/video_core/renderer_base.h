@@ -40,6 +40,9 @@ public:
     /// Finalize rendering the guest frame and draw into the presentation texture
     virtual void Composite(std::span<const Tegra::FramebufferConfig> layers) = 0;
 
+    /// Re-present the most recent guest frame when the host window is resized or settings change
+    virtual void RefreshPresent() {}
+
     /// Get the tiled applet layer capture buffer
     virtual std::vector<u8> GetAppletCaptureBuffer() = 0;
 
