@@ -84,6 +84,7 @@ public:
     static bool ParseConnectionKey(const QString& key, QString& out_ip, quint16& out_port);
     static QString FormatDateTime(const QDateTime& dt);
     static QString FormatSize(qint64 bytes);
+    static void CreateAutoBackupForTitle(u64 title_id);
 
 private slots:
     void OnNewTcpConnection();
@@ -94,6 +95,7 @@ private slots:
     void OnConnectClicked();
     void OnCopyKeyClicked();
     void OnSyncAllClicked();
+    void OnTimeMachineClicked();
     void OnRefreshClicked();
     void OnDiscoveredDeviceSelected(int index);
     void OnTableItemDoubleClicked(int row, int column);

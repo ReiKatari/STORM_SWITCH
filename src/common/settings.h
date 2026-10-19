@@ -689,6 +689,20 @@ struct Values {
                                          Specialization::Default,
                                          true,
                                          true};
+    SwitchableSetting<bool> auto_aspect_ratio_patch{linkage,
+                                                    true,
+                                                    "auto_aspect_ratio_patch",
+                                                    Category::Renderer,
+                                                    Specialization::Default,
+                                                    true,
+                                                    true};
+    SwitchableSetting<bool> auto_60fps_unlock{linkage,
+                                              false,
+                                              "auto_60fps_unlock",
+                                              Category::Renderer,
+                                              Specialization::Default,
+                                              true,
+                                              true};
     SwitchableSetting<bool> vram_budget_governor{linkage,
                                                  false,
                                                  "vram_budget_governor",

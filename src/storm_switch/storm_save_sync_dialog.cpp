@@ -771,6 +771,12 @@ void StormSaveSyncDialog::SetupUI() {
     connect(m_refresh_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnRefreshClicked);
     bottom_layout->addWidget(m_refresh_btn);
 
+    auto* time_machine_btn = new QPushButton(tr("🕰️ Тайм-машина (Бэкапы)"), this);
+    time_machine_btn->setStyleSheet(QStringLiteral("border: 1px solid #A855F7; color: #E9D5FF; font-weight: bold;"));
+    time_machine_btn->setToolTip(tr("Просмотр и восстановление автоматических и ручных резервных копий сохранений"));
+    connect(time_machine_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnTimeMachineClicked);
+    bottom_layout->addWidget(time_machine_btn);
+
     m_sync_all_btn = new QPushButton(tr("⚡ Синхронизировать всё"), this);
     m_sync_all_btn->setStyleSheet(QStringLiteral("background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0099CC, stop:1 #006699); border: 1px solid #00D2FF; color: #FFFFFF; font-weight: bold;"));
     connect(m_sync_all_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnSyncAllClicked);
@@ -1998,3 +2004,167 @@ void StormSaveSyncDialog::OnRefreshClicked() {
     }
     BroadcastDiscovery();
 }
+
+void StormSaveSyncDialog::CreateAutoBackupForTitle(u64 title_id) {
+    if (title_id == 0) return;
+    const QString tid_str = QStringLiteral("%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper();
+    const auto nand_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::NANDDir);
+    const auto save_root = nand_dir / "user" / "save" / "0000000000000000";
+
+    std::error_code ec;
+    if (!std::filesystem::exists(save_root, ec)) return;
+
+    std::filesystem::path found_save_dir;
+    for (const auto& user_entry : std::filesystem::directory_iterator(save_root, ec)) {
+        if (!user_entry.is_directory()) continue;
+        const auto candidate = user_entry.path() / tid_str.toStdString();
+        if (std::filesystem::exists(candidate, ec) && !std::filesystem::is_empty(candidate, ec)) {
+            found_save_dir = candidate;
+            break;
+        }
+    }
+    if (found_save_dir.empty()) return;
+
+    const auto backups_root = nand_dir / "user" / "save_backups" / tid_str.toStdString();
+    std::filesystem::create_directories(backups_root, ec);
+
+    const QString stamp = QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd_HH-mm-ss"));
+    const auto target_backup = backups_root / (tid_str.toStdString() + "_auto_" + stamp.toStdString());
+    std::filesystem::copy(found_save_dir, target_backup,
+                          std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing,
+                          ec);
+
+    // Keep at most 5 recent auto-backups per game
+    std::vector<std::filesystem::path> existing_backups;
+    for (const auto& b_entry : std::filesystem::directory_iterator(backups_root, ec)) {
+        if (b_entry.is_directory()) {
+            existing_backups.push_back(b_entry.path());
+        }
+    }
+    std::sort(existing_backups.begin(), existing_backups.end());
+    while (existing_backups.size() > 5) {
+        std::filesystem::remove_all(existing_backups.front(), ec);
+        existing_backups.erase(existing_backups.begin());
+    }
+}
+
+void StormSaveSyncDialog::OnTimeMachineClicked() {
+    QString selected_tid;
+    if (m_saves_table && m_saves_table->currentRow() >= 0) {
+        if (auto* item = m_saves_table->item(m_saves_table->currentRow(), 1)) {
+            selected_tid = item->text().trimmed().toUpper();
+        }
+    }
+    if (selected_tid.isEmpty() && m_target_program_id != 0) {
+        selected_tid = QStringLiteral("%1").arg(m_target_program_id, 16, 16, QLatin1Char('0')).toUpper();
+    }
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("🕰️ Тайм-машина сохранений (Локальные снимки и бэкапы)"));
+    dlg.resize(780, 460);
+    dlg.setStyleSheet(styleSheet());
+
+    auto* vbox = new QVBoxLayout(&dlg);
+    vbox->setContentsMargins(14, 14, 14, 14);
+    vbox->setSpacing(10);
+
+    auto* info_lbl = new QLabel(
+        tr("Автоматические снимки сохранений создаются при каждом запуске и выходе из игры (хранится до 5 последних копий на игру). Вы также можете создать снимок вручную или откатить сохранение к любой точке."),
+        &dlg);
+    info_lbl->setWordWrap(true);
+    info_lbl->setStyleSheet(QStringLiteral("color: #CBD5E1; font-size: 12px;"));
+    vbox->addWidget(info_lbl);
+
+    auto* table = new QTableWidget(&dlg);
+    table->setColumnCount(4);
+    table->setHorizontalHeaderLabels({tr("Игра"), tr("Title ID"), tr("Дата снимка"), tr("Путь к бэкапу")});
+    table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    table->setSelectionMode(QAbstractItemView::SingleSelection);
+    table->verticalHeader()->setVisible(false);
+    vbox->addWidget(table, 1);
+
+    auto populate_backups = [&]() {
+        table->setRowCount(0);
+        const auto nand_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::NANDDir);
+        const auto backups_root = nand_dir / "user" / "save_backups";
+        std::error_code ec;
+        if (std::filesystem::exists(backups_root, ec)) {
+            for (const auto& tid_dir : std::filesystem::directory_iterator(backups_root, ec)) {
+                if (!tid_dir.is_directory()) continue;
+                const QString tid = QString::fromStdString(tid_dir.path().filename().string()).toUpper();
+                if (!selected_tid.isEmpty() && tid != selected_tid) continue;
+                const QString gname = ResolveGameTitle(tid);
+                for (const auto& snap : std::filesystem::directory_iterator(tid_dir.path(), ec)) {
+                    if (!snap.is_directory()) continue;
+                    const int r = table->rowCount();
+                    table->insertRow(r);
+                    table->setItem(r, 0, new QTableWidgetItem(gname));
+                    table->setItem(r, 1, new QTableWidgetItem(tid));
+                    const QFileInfo fi(QString::fromStdString(Common::FS::PathToUTF8String(snap.path())));
+                    table->setItem(r, 2, new QTableWidgetItem(fi.lastModified().toString(QStringLiteral("dd.MM.yyyy HH:mm:ss"))));
+                    table->setItem(r, 3, new QTableWidgetItem(fi.absoluteFilePath()));
+                }
+            }
+        }
+    };
+    populate_backups();
+
+    auto* btn_row = new QHBoxLayout();
+    auto* btn_create_now = new QPushButton(tr("➕ Создать снимок выбранной игры"), &dlg);
+    connect(btn_create_now, &QPushButton::clicked, &dlg, [&]() {
+        if (selected_tid.isEmpty() && !m_items.isEmpty()) {
+            selected_tid = m_items.firstKey();
+        }
+        if (selected_tid.isEmpty()) {
+            QMessageBox::information(&dlg, tr("Тайм-машина"), tr("Выберите игру в таблице сохранений для создания снимка."));
+            return;
+        }
+        bool ok = false;
+        const u64 tid_val = selected_tid.toULongLong(&ok, 16);
+        if (ok && tid_val != 0) {
+            CreateAutoBackupForTitle(tid_val);
+            populate_backups();
+        }
+    });
+    btn_row->addWidget(btn_create_now);
+
+    auto* btn_restore = new QPushButton(tr("⏪ Восстановить выбранный снимок"), &dlg);
+    btn_restore->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold;"));
+    connect(btn_restore, &QPushButton::clicked, &dlg, [&]() {
+        const int r = table->currentRow();
+        if (r < 0) return;
+        const QString tid = table->item(r, 1)->text();
+        const QString snap_path = table->item(r, 3)->text();
+        if (QMessageBox::question(&dlg, tr("Восстановление сохранения"),
+                                  tr("Заменить текущее сохранение игры %1 снимком от %2?")
+                                      .arg(table->item(r, 0)->text(), table->item(r, 2)->text()),
+                                  QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes) {
+            return;
+        }
+        const auto dst_dir = GetLocalSaveDirForTitle(tid);
+        std::error_code ec;
+        std::filesystem::remove_all(dst_dir, ec);
+        std::filesystem::create_directories(dst_dir, ec);
+        std::filesystem::copy(std::filesystem::path(Common::FS::ToU8String(snap_path.toStdString())),
+                              dst_dir,
+                              std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing,
+                              ec);
+        ScanLocalSaves();
+        PopulateTable();
+        QMessageBox::information(&dlg, tr("Тайм-машина"), tr("✅ Сохранение успешно восстановлено из снимка!"));
+    });
+    btn_row->addWidget(btn_restore);
+
+    btn_row->addStretch(1);
+    auto* btn_close = new QPushButton(tr("Закрыть"), &dlg);
+    connect(btn_close, &QPushButton::clicked, &dlg, &QDialog::accept);
+    btn_row->addWidget(btn_close);
+    vbox->addLayout(btn_row);
+
+    dlg.exec();
+}
+

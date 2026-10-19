@@ -60,9 +60,39 @@ float EmulationAspectRatio(Settings::AspectRatio aspect, float window_aspect_rat
         return 10.0f / 16.0f;
     case Settings::AspectRatio::Stretch:
         return window_aspect_ratio;
+    case Settings::AspectRatio::R32_9:
+        return 9.0f / 32.0f;
+    case Settings::AspectRatio::R1_1:
+        return 1.0f;
+    case Settings::AspectRatio::R3_2:
+        return 2.0f / 3.0f;
+    case Settings::AspectRatio::R5_4:
+        return 4.0f / 5.0f;
+    case Settings::AspectRatio::R18_9:
+        return 9.0f / 18.0f;
+    case Settings::AspectRatio::R19_5_9:
+        return 9.0f / 19.5f;
+    case Settings::AspectRatio::R20_9:
+        return 9.0f / 20.0f;
+    case Settings::AspectRatio::R21_10:
+        return 10.0f / 21.0f;
+    case Settings::AspectRatio::R24_10:
+        return 10.0f / 24.0f;
+    case Settings::AspectRatio::R32_10:
+        return 10.0f / 32.0f;
+    case Settings::AspectRatio::R48_9:
+        return 9.0f / 48.0f;
+    case Settings::AspectRatio::Auto_Window:
+        return window_aspect_ratio > 0.01f ? window_aspect_ratio : (9.0f / 16.0f);
     default:
         return float(ScreenUndocked::Height) / ScreenUndocked::Width;
     }
+}
+
+float AspectRatioWidthOverHeight(Settings::AspectRatio aspect, float window_width_over_height) noexcept {
+    const float h_over_w = (window_width_over_height > 0.01f) ? (1.0f / window_width_over_height) : (9.0f / 16.0f);
+    const float emu_h_over_w = EmulationAspectRatio(aspect, h_over_w);
+    return (emu_h_over_w > 0.001f) ? (1.0f / emu_h_over_w) : (16.0f / 9.0f);
 }
 
 } // namespace Layout

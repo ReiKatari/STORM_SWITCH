@@ -48,6 +48,7 @@ private slots:
     void OnAddZip();
     void OnDeleteMod();
     void OnOpenModFolder();
+    void OnGenerateAutoPatch();
     void OnItemChanged(QTableWidgetItem* item);
     void OnApplyAndClose();
 

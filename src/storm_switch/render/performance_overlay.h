@@ -56,7 +56,12 @@ private slots:
     void OnBrowseAmiibo();
     void OnToggleDocked();
     void OnSpeedLimitChanged(int index);
+    void OnAspectRatioChanged(int index);
     void OnDpsToggled(bool checked);
+    void OnAutoAspectPatchToggled(bool checked);
+    void OnAuto60FpsToggled(bool checked);
+    void OnLsfgToggled(bool checked);
+    void OnHdr10Toggled(bool checked);
     void OnToggleGpuAccuracy();
 
 private:
@@ -97,12 +102,15 @@ private:
     QLabel* m_lbl_fps_min = nullptr;
     QLabel* m_lbl_fps_max = nullptr;
     QLabel* m_lbl_fps_avg = nullptr;
+    QLabel* m_lbl_fps_1low = nullptr;
     QLabel* m_lbl_ft = nullptr;
     QLabel* m_lbl_ft_min = nullptr;
     QLabel* m_lbl_ft_max = nullptr;
     QLabel* m_lbl_ft_avg = nullptr;
     QLabel* m_lbl_dps = nullptr;
     QLabel* m_lbl_res = nullptr;
+    QLabel* m_lbl_lsfg = nullptr;
+    QLabel* m_lbl_shaders = nullptr;
     FpsGraphWidget* m_fpsGraph = nullptr;
 
     // Cheats tab
@@ -135,7 +143,12 @@ private:
     QLabel* m_docked_status = nullptr;
     QPushButton* m_btn_toggle_docked = nullptr;
     QComboBox* m_speed_limit_combo = nullptr;
+    QComboBox* m_aspect_combo = nullptr;
     QCheckBox* m_chk_dps = nullptr;
+    QCheckBox* m_chk_auto_aspect = nullptr;
+    QCheckBox* m_chk_60fps_unlock = nullptr;
+    QCheckBox* m_chk_lsfg = nullptr;
+    QCheckBox* m_chk_hdr10 = nullptr;
     QPushButton* m_btn_gpu_acc = nullptr;
 
     // Dragging

@@ -44,6 +44,7 @@ class ConfigureNetwork;
 class ConfigureApplets;
 
 class QGraphicsScene;
+class QLineEdit;
 class QStandardItem;
 class QStandardItemModel;
 class QTreeView;
@@ -74,6 +75,7 @@ private:
     void RetranslateUI();
 
     void HandleApplyButtonClicked();
+    void OnSearchTextChanged(const QString& text);
 
     void LoadConfiguration();
 
@@ -82,6 +84,7 @@ private:
     u64 title_id;
 
     QGraphicsScene* scene;
+    QLineEdit* m_search_edit{nullptr};
 
     std::unique_ptr<QtConfig> game_config;
 

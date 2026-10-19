@@ -681,7 +681,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Initialize core emulation settings to Zero-Regression Baseline on fresh install, preserving existing user settings on upgrade
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "12.6.0";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "12.7.0";
     if (UISettings::values.config_version.GetValue().empty()) {
         LOG_INFO(Frontend, "Fresh configuration detected. Initializing core emulation settings to Zero-Regression Baseline (version '{}')...",
                  CURRENT_BUILD_VERSION);
@@ -1795,11 +1795,23 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_aspect = Settings::values.aspect_ratio.GetValue();
         const std::vector<std::pair<Settings::AspectRatio, QString>> items = {
-            {Settings::AspectRatio::R16_9, QStringLiteral("16:9")},
-            {Settings::AspectRatio::R4_3, QStringLiteral("4:3")},
-            {Settings::AspectRatio::R21_9, QStringLiteral("21:9")},
-            {Settings::AspectRatio::R16_10, QStringLiteral("16:10")},
+            {Settings::AspectRatio::R16_9, StormLang(QStringLiteral("16:9 (Стандарт HD)"), QStringLiteral("16:9 (Standard HD)"))},
+            {Settings::AspectRatio::R4_3, StormLang(QStringLiteral("4:3 (Классический)"), QStringLiteral("4:3 (Classic)"))},
+            {Settings::AspectRatio::R21_9, StormLang(QStringLiteral("21:9 (Ультраширокий)"), QStringLiteral("21:9 (Ultrawide)"))},
+            {Settings::AspectRatio::R16_10, StormLang(QStringLiteral("16:10 (Ноутбуки / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"))},
             {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"))},
+            {Settings::AspectRatio::R32_9, StormLang(QStringLiteral("32:9 (Супер-ультраширокий)"), QStringLiteral("32:9 (Super Ultrawide)"))},
+            {Settings::AspectRatio::R1_1, StormLang(QStringLiteral("1:1 (Квадратный)"), QStringLiteral("1:1 (Square)"))},
+            {Settings::AspectRatio::R3_2, StormLang(QStringLiteral("3:2 (Surface / Планшеты)"), QStringLiteral("3:2 (Surface / Tablets)"))},
+            {Settings::AspectRatio::R5_4, StormLang(QStringLiteral("5:4 (Мониторы SXGA)"), QStringLiteral("5:4 (SXGA Monitors)"))},
+            {Settings::AspectRatio::R18_9, StormLang(QStringLiteral("18:9 / 2:1 (Смартфоны Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium Mobile)"))},
+            {Settings::AspectRatio::R19_5_9, StormLang(QStringLiteral("19.5:9 (Современные смартфоны)"), QStringLiteral("19.5:9 (Modern Smartphones)"))},
+            {Settings::AspectRatio::R20_9, StormLang(QStringLiteral("20:9 (Игровые смартфоны)"), QStringLiteral("20:9 (Gaming Smartphones)"))},
+            {Settings::AspectRatio::R21_10, StormLang(QStringLiteral("21:10 (Широкоформатный)"), QStringLiteral("21:10 (Widescreen)"))},
+            {Settings::AspectRatio::R24_10, StormLang(QStringLiteral("24:10 / 2.4:1 (Киноформат)"), QStringLiteral("24:10 / 2.4:1 (Cinema)"))},
+            {Settings::AspectRatio::R32_10, StormLang(QStringLiteral("32:10 (Двойной 16:10)"), QStringLiteral("32:10 (Dual 16:10)"))},
+            {Settings::AspectRatio::R48_9, StormLang(QStringLiteral("48:9 (Три монитора 16:9)"), QStringLiteral("48:9 (Triple 16:9 Surround)"))},
+            {Settings::AspectRatio::Auto_Window, StormLang(QStringLiteral("Авто по пропорциям окна (3D без растяжения)"), QStringLiteral("Auto Window Aspect (3D Native)"))},
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
@@ -2328,6 +2340,55 @@ void MainWindow::InitializeWidgets() {
         });
         act_bloom->setCheckable(true);
         act_bloom->setChecked(Settings::values.fix_bloom_effects.GetValue());
+
+        context_menu.addSeparator();
+        auto* act_ar_patch = context_menu.addAction(StormLang(
+            QStringLiteral("📐 Авто-патч 3D-камеры под формат экрана (Auto Aspect Patch)"),
+            QStringLiteral("📐 Auto-Patch 3D Camera Aspect Ratio")
+        ), [this] {
+            ApplyStatusBarSwitchableSettingNoBackup(
+                Settings::values.auto_aspect_ratio_patch,
+                !Settings::values.auto_aspect_ratio_patch.GetValue(),
+                current_game_path, last_filename_booted);
+            UpdateStatusButtons();
+            ApplyDynamicSettingChange();
+        });
+        act_ar_patch->setCheckable(true);
+        act_ar_patch->setChecked(Settings::values.auto_aspect_ratio_patch.GetValue());
+
+        auto* act_fps_unlock = context_menu.addAction(StormLang(
+            QStringLiteral("🚀 Авто-снятие лимита 30 FPS -> 60/120 FPS (Auto FPS Unlock)"),
+            QStringLiteral("🚀 Auto-Unlock 30 FPS Cap -> 60/120 FPS")
+        ), [this] {
+            const bool next = !Settings::values.auto_60fps_unlock.GetValue();
+            ApplyStatusBarSwitchableSettingNoBackup(
+                Settings::values.auto_60fps_unlock, next,
+                current_game_path, last_filename_booted);
+            if (next) {
+                Settings::values.use_speed_limit.SetValue(true);
+                if (Settings::values.speed_limit.GetValue() < 100) {
+                    Settings::values.speed_limit.SetValue(100);
+                }
+            }
+            UpdateStatusButtons();
+            ApplyDynamicSettingChange();
+        });
+        act_fps_unlock->setCheckable(true);
+        act_fps_unlock->setChecked(Settings::values.auto_60fps_unlock.GetValue());
+
+        auto* act_hdr = context_menu.addAction(StormLang(
+            QStringLiteral("🌈 Авто-HDR10 (Inverse Tone Mapping)"),
+            QStringLiteral("🌈 Auto-HDR10 (Inverse Tone Mapping)")
+        ), [this] {
+            ApplyStatusBarSwitchableSettingNoBackup(
+                Settings::values.enable_hdr10,
+                !Settings::values.enable_hdr10.GetValue(),
+                current_game_path, last_filename_booted);
+            UpdateStatusButtons();
+            ApplyDynamicSettingChange();
+        });
+        act_hdr->setCheckable(true);
+        act_hdr->setChecked(Settings::values.enable_hdr10.GetValue());
 
         if (m_session_backup.is_active) {
             context_menu.addSeparator();
@@ -5155,6 +5216,12 @@ void MainWindow::OnEmulationStopped() {
                 }
             }
         }
+        if (QtCommon::system) {
+            const u64 stopped_prog_id = QtCommon::system->GetApplicationProcessProgramID();
+            if (stopped_prog_id != 0) {
+                StormSaveSyncDialog::CreateAutoBackupForTitle(stopped_prog_id);
+            }
+        }
         QtCommon::emu_thread.reset();
     }
 
@@ -6070,8 +6137,12 @@ void MainWindow::OnStartGame() {
     UpdateMenuState();
     OnTasStateChanged();
 
-    play_time_manager->SetProgramId(QtCommon::system->GetApplicationProcessProgramID());
+    const u64 started_prog_id = QtCommon::system->GetApplicationProcessProgramID();
+    play_time_manager->SetProgramId(started_prog_id);
     play_time_manager->Start();
+    if (started_prog_id != 0) {
+        StormSaveSyncDialog::CreateAutoBackupForTitle(started_prog_id);
+    }
 
     discord_rpc->Update();
     Common::FeralGamemode::Start();
@@ -8098,6 +8169,42 @@ void MainWindow::UpdateAspectText() {
     case Settings::AspectRatio::Stretch:
         val_text = StormLang(QStringLiteral("РАСТЯНУТЬ"), QStringLiteral("STRETCH"), QStringLiteral("STRECKEN"), QStringLiteral("ÉTIRER"), QStringLiteral("拉伸"), QStringLiteral("引き伸ばし"));
         break;
+    case Settings::AspectRatio::R32_9:
+        val_text = QStringLiteral("32:9");
+        break;
+    case Settings::AspectRatio::R1_1:
+        val_text = QStringLiteral("1:1");
+        break;
+    case Settings::AspectRatio::R3_2:
+        val_text = QStringLiteral("3:2");
+        break;
+    case Settings::AspectRatio::R5_4:
+        val_text = QStringLiteral("5:4");
+        break;
+    case Settings::AspectRatio::R18_9:
+        val_text = QStringLiteral("18:9");
+        break;
+    case Settings::AspectRatio::R19_5_9:
+        val_text = QStringLiteral("19.5:9");
+        break;
+    case Settings::AspectRatio::R20_9:
+        val_text = QStringLiteral("20:9");
+        break;
+    case Settings::AspectRatio::R21_10:
+        val_text = QStringLiteral("21:10");
+        break;
+    case Settings::AspectRatio::R24_10:
+        val_text = QStringLiteral("24:10");
+        break;
+    case Settings::AspectRatio::R32_10:
+        val_text = QStringLiteral("32:10");
+        break;
+    case Settings::AspectRatio::R48_9:
+        val_text = QStringLiteral("48:9");
+        break;
+    case Settings::AspectRatio::Auto_Window:
+        val_text = StormLang(QStringLiteral("АВТО ОКНО"), QStringLiteral("AUTO WIN"));
+        break;
     default:
         val_text = QStringLiteral("16:9");
         break;
@@ -9405,11 +9512,23 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         ));
         const auto cur_aspect = Settings::values.aspect_ratio.GetValue();
         const std::vector<std::pair<Settings::AspectRatio, QString>> aspect_options = {
-            {Settings::AspectRatio::R16_9, QStringLiteral("16:9")},
-            {Settings::AspectRatio::R4_3, QStringLiteral("4:3")},
-            {Settings::AspectRatio::R21_9, QStringLiteral("21:9")},
-            {Settings::AspectRatio::R16_10, QStringLiteral("16:10")},
+            {Settings::AspectRatio::R16_9, StormLang(QStringLiteral("16:9 (Стандарт HD)"), QStringLiteral("16:9 (Standard HD)"))},
+            {Settings::AspectRatio::R4_3, StormLang(QStringLiteral("4:3 (Классический)"), QStringLiteral("4:3 (Classic)"))},
+            {Settings::AspectRatio::R21_9, StormLang(QStringLiteral("21:9 (Ультраширокий)"), QStringLiteral("21:9 (Ultrawide)"))},
+            {Settings::AspectRatio::R16_10, StormLang(QStringLiteral("16:10 (Ноутбуки / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"))},
             {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"))},
+            {Settings::AspectRatio::R32_9, StormLang(QStringLiteral("32:9 (Супер-ультраширокий)"), QStringLiteral("32:9 (Super Ultrawide)"))},
+            {Settings::AspectRatio::R1_1, StormLang(QStringLiteral("1:1 (Квадратный)"), QStringLiteral("1:1 (Square)"))},
+            {Settings::AspectRatio::R3_2, StormLang(QStringLiteral("3:2 (Surface / Планшеты)"), QStringLiteral("3:2 (Surface / Tablets)"))},
+            {Settings::AspectRatio::R5_4, StormLang(QStringLiteral("5:4 (Мониторы SXGA)"), QStringLiteral("5:4 (SXGA Monitors)"))},
+            {Settings::AspectRatio::R18_9, StormLang(QStringLiteral("18:9 / 2:1 (Смартфоны Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium Mobile)"))},
+            {Settings::AspectRatio::R19_5_9, StormLang(QStringLiteral("19.5:9 (Современные смартфоны)"), QStringLiteral("19.5:9 (Modern Smartphones)"))},
+            {Settings::AspectRatio::R20_9, StormLang(QStringLiteral("20:9 (Игровые смартфоны)"), QStringLiteral("20:9 (Gaming Smartphones)"))},
+            {Settings::AspectRatio::R21_10, StormLang(QStringLiteral("21:10 (Широкоформатный)"), QStringLiteral("21:10 (Widescreen)"))},
+            {Settings::AspectRatio::R24_10, StormLang(QStringLiteral("24:10 / 2.4:1 (Киноформат)"), QStringLiteral("24:10 / 2.4:1 (Cinema)"))},
+            {Settings::AspectRatio::R32_10, StormLang(QStringLiteral("32:10 (Двойной 16:10)"), QStringLiteral("32:10 (Dual 16:10)"))},
+            {Settings::AspectRatio::R48_9, StormLang(QStringLiteral("48:9 (Три монитора 16:9)"), QStringLiteral("48:9 (Triple 16:9 Surround)"))},
+            {Settings::AspectRatio::Auto_Window, StormLang(QStringLiteral("Авто по пропорциям окна (3D без растяжения)"), QStringLiteral("Auto Window Aspect (3D Native)"))},
         };
         for (const auto& opt : aspect_options) {
             auto* act = aspect_menu->addAction(opt.second, [this, opt] {

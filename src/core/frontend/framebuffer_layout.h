@@ -40,5 +40,6 @@ struct FramebufferLayout {
 
 FramebufferLayout DefaultFrameLayout(u32 width, u32 height) noexcept;
 float EmulationAspectRatio(Settings::AspectRatio aspect, float window_aspect_ratio) noexcept;
+float AspectRatioWidthOverHeight(Settings::AspectRatio aspect, float window_width_over_height = 16.0f / 9.0f) noexcept;
 
 } // namespace Layout

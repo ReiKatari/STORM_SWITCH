@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
+#include <cmath>
 #include <cstddef>
 #include <cstring>
 #include <set>
@@ -33,6 +35,7 @@
 #include "core/file_sys/vfs/vfs_cached.h"
 #include "core/file_sys/vfs/vfs_layered.h"
 #include "core/file_sys/vfs/vfs_vector.h"
+#include "core/frontend/framebuffer_layout.h"
 #include "core/hle/service/filesystem/filesystem.h"
 #include "core/hle/service/ns/language.h"
 #include "core/hle/service/set/settings_server.h"
@@ -556,6 +559,46 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
         return nso;
     }
 
+    if (Settings::values.auto_aspect_ratio_patch.GetValue() &&
+        (name == "main" || name == "subsdk0" || name == "subsdk1")) {
+        const auto aspect = Settings::values.aspect_ratio.GetValue();
+        if (aspect != Settings::AspectRatio::R16_9 &&
+            aspect != Settings::AspectRatio::Stretch &&
+            aspect != Settings::AspectRatio::Auto_Window) {
+            const float target_aspect = Layout::AspectRatioWidthOverHeight(aspect);
+            if (std::abs(target_aspect - (16.0f / 9.0f)) > 0.005f) {
+                const u32 target_bits = std::bit_cast<u32>(target_aspect);
+                const u32 default_bits = std::bit_cast<u32>(16.0f / 9.0f);
+                const u32 default_bits_alt = default_bits - 1;
+                size_t patched_count = 0;
+
+                for (size_t seg_idx = 1; seg_idx <= 2 && seg_idx < header.segments.size(); ++seg_idx) {
+                    const size_t seg_start = sizeof(Loader::NSOHeader) + header.segments[seg_idx].location;
+                    const size_t seg_size = header.segments[seg_idx].size;
+                    if (seg_start >= out.size() || seg_size < sizeof(u32)) {
+                        continue;
+                    }
+                    const size_t seg_end = std::min(out.size(), seg_start + seg_size);
+                    size_t seg_patched = 0;
+                    for (size_t pos = seg_start; pos + sizeof(u32) <= seg_end && seg_patched < 64; pos += sizeof(u32)) {
+                        u32 val = 0;
+                        std::memcpy(&val, out.data() + pos, sizeof(u32));
+                        if (val == default_bits || val == default_bits_alt) {
+                            std::memcpy(out.data() + pos, &target_bits, sizeof(u32));
+                            ++seg_patched;
+                            ++patched_count;
+                        }
+                    }
+                }
+
+                if (patched_count > 0) {
+                    LOG_INFO(Loader, "    - Auto-patched {} 3D aspect ratio constants in '{}' to {:.4f}",
+                             patched_count, name, target_aspect);
+                }
+            }
+        }
+    }
+
     std::memcpy(out.data(), &header, sizeof(header));
     return out;
 }
@@ -565,6 +608,16 @@ bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) 
     const auto build_id = build_id_raw.substr(0, build_id_raw.find_last_not_of('0') + 1);
 
     LOG_INFO(Loader, "Querying NSO patch existence for build_id={}, name={}", build_id, name);
+
+    if (Settings::values.auto_aspect_ratio_patch.GetValue() &&
+        (name == "main" || name == "subsdk0" || name == "subsdk1")) {
+        const auto aspect = Settings::values.aspect_ratio.GetValue();
+        if (aspect != Settings::AspectRatio::R16_9 &&
+            aspect != Settings::AspectRatio::Stretch &&
+            aspect != Settings::AspectRatio::Auto_Window) {
+            return true;
+        }
+    }
 
     const auto patch_dirs = GetPatchDirs();
     if (patch_dirs.empty()) {

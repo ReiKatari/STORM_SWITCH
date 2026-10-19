@@ -8,6 +8,7 @@
 
 #include <boost/container/small_vector.hpp>
 
+#include "common/settings.h"
 #include "core/hle/service/nvdrv/devices/nvdisp_disp0.h"
 #include "core/hle/service/nvnflinger/buffer_item.h"
 #include "core/hle/service/nvnflinger/buffer_item_consumer.h"
@@ -41,6 +42,10 @@ s32 NormalizeSwapInterval(f32* out_speed_scale, s32 swap_interval) {
     // For standard game intervals (1..49): never allow guest to throttle emulation below 100%!
     if (out_speed_scale) {
         *out_speed_scale = 1.0f;
+    }
+
+    if (Settings::values.auto_60fps_unlock.GetValue()) {
+        return 1;
     }
 
     // Clamp game swap interval to 1..4 (60 to 15 FPS), preventing any permanent lock below 15 FPS

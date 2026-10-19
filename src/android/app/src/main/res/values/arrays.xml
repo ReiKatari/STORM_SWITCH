@@ -302,6 +302,18 @@
         <item>@string/ratio_force_twenty_one_nine</item>
         <item>@string/ratio_force_sixteen_ten</item>
         <item>@string/ratio_stretch</item>
+        <item>32:9 (Super Ultrawide)</item>
+        <item>1:1 (Square)</item>
+        <item>3:2 (Surface / Tablets)</item>
+        <item>5:4 (SXGA)</item>
+        <item>18:9 / 2:1 (Univisium Mobile)</item>
+        <item>19.5:9 (Modern Smartphones)</item>
+        <item>20:9 (Gaming Smartphones)</item>
+        <item>21:10 (Widescreen)</item>
+        <item>24:10 / 2.4:1 (Cinema)</item>
+        <item>32:10 (Dual 16:10)</item>
+        <item>48:9 (Triple 16:9)</item>
+        <item>Auto Window Aspect (3D Native)</item>
     </string-array>
 
     <integer-array name="rendererAspectRatioValues">
@@ -310,6 +322,18 @@
         <item>2</item>
         <item>3</item>
         <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
     </integer-array>
 
     <string-array name="rendererScalingFilterNames">

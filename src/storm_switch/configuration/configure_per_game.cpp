@@ -16,9 +16,12 @@
 #include <QAbstractButton>
 #include <QAbstractScrollArea>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QFontMetrics>
 #include <QGroupBox>
 #include <QGuiApplication>
+#include <QLabel>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRegularExpression>
@@ -126,6 +129,16 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
     });
 
     ui->setupUi(this);
+
+    m_search_edit = new QLineEdit(this);
+    m_search_edit->setClearButtonEnabled(true);
+    m_search_edit->setPlaceholderText(StormLang(
+        QStringLiteral("🔍 Быстрый поиск настройки в свойствах игры (например: 21:9, 60 FPS, LSFG, Vulkan, память)..."),
+        QStringLiteral("🔍 Quick search per-game settings (e.g. 21:9, 60 FPS, LSFG, Vulkan, memory)...")));
+    if (ui->verticalLayout_3) {
+        ui->verticalLayout_3->insertWidget(0, m_search_edit);
+    }
+    connect(m_search_edit, &QLineEdit::textChanged, this, &ConfigurePerGame::OnSearchTextChanged);
 
         ui->tabWidget->addTab(addons_tab.get(), tr("Add-Ons"));
     ui->tabWidget->addTab(gamebanana_tab.get(), StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"), QStringLiteral("تعديلات GameBanana"), QStringLiteral("Mods de GameBanana")));
@@ -556,6 +569,77 @@ void ConfigurePerGame::RetranslateUI() {
 void ConfigurePerGame::HandleApplyButtonClicked() {
     UISettings::values.configuration_applied = true;
     ApplyConfiguration();
+}
+
+void ConfigurePerGame::OnSearchTextChanged(const QString& text) {
+    const QString query = text.trimmed();
+    const bool has_query = !query.isEmpty();
+
+    const std::array<QWidget*, 13> all_tabs = {
+        addons_tab.get(), gamebanana_tab.get(), amiibo_tab.get(), cheats_tab.get(),
+        system_tab.get(), cpu_tab.get(), graphics_tab.get(), graphics_advanced_tab.get(),
+        graphics_extensions_tab.get(), audio_tab.get(), input_tab.get(), network_tab.get(),
+        applets_tab.get()
+    };
+
+    auto widget_matches = [&](QWidget* w) -> bool {
+        if (!has_query) {
+            return true;
+        }
+        if (w->toolTip().contains(query, Qt::CaseInsensitive)) {
+            return true;
+        }
+        for (const auto* lbl : w->findChildren<QLabel*>()) {
+            if (lbl->text().contains(query, Qt::CaseInsensitive) ||
+                lbl->toolTip().contains(query, Qt::CaseInsensitive)) {
+                return true;
+            }
+        }
+        for (const auto* cb : w->findChildren<QCheckBox*>()) {
+            if (cb->text().contains(query, Qt::CaseInsensitive) ||
+                cb->toolTip().contains(query, Qt::CaseInsensitive)) {
+                return true;
+            }
+        }
+        for (const auto* combo : w->findChildren<QComboBox*>()) {
+            for (int i = 0; i < combo->count(); ++i) {
+                if (combo->itemText(i).contains(query, Qt::CaseInsensitive)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    QWidget* first_matching_tab = nullptr;
+    for (QWidget* tab : all_tabs) {
+        if (!tab) continue;
+        bool tab_has_match = false;
+        const auto shared_widgets = tab->findChildren<ConfigurationShared::Widget*>();
+        if (!shared_widgets.isEmpty()) {
+            for (auto* sw : shared_widgets) {
+                const bool match = widget_matches(sw);
+                sw->setVisible(match);
+                if (match) {
+                    tab_has_match = true;
+                }
+            }
+        } else if (widget_matches(tab)) {
+            tab_has_match = true;
+        }
+        if (tab_has_match && !first_matching_tab) {
+            first_matching_tab = tab;
+        }
+    }
+
+    if (!has_query && graphics_tab) {
+        graphics_tab->SetConfiguration();
+    } else if (has_query && first_matching_tab) {
+        const int idx = ui->tabWidget->indexOf(first_matching_tab);
+        if (idx >= 0 && ui->tabWidget->currentIndex() != idx) {
+            ui->tabWidget->setCurrentIndex(idx);
+        }
+    }
 }
 
 void ConfigurePerGame::LoadFromFile(FileSys::VirtualFile file_) {

@@ -36,6 +36,8 @@
 #include "qt_common/abstract/frontend.h"
 #include "storm_switch/main_window.h"
 #include "storm_switch/render/performance_overlay.h"
+#include "video_core/gpu.h"
+#include "video_core/shader_notify.h"
 
 // Custom lightweight FPS / Frametime Graph Widget
 class FpsGraphWidget : public QWidget {
@@ -301,7 +303,7 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     ft_box->addStretch(1);
     layout->addLayout(ft_box);
 
-    // Row 2: FPS
+    // Row 2: FPS + 1% Low
     auto* fps_box = new QHBoxLayout();
     auto* fps_title = new QLabel(tr("FPS игры:"), tab);
     fps_title->setStyleSheet(QStringLiteral("font-weight: bold; color: #38BDF8; font-size: 13px;"));
@@ -311,28 +313,40 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     m_lbl_fps->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 15px; color: #00D2FF;"));
     fps_box->addWidget(m_lbl_fps);
 
-    fps_box->addSpacing(15);
+    fps_box->addSpacing(12);
     m_lbl_fps_min = new QLabel(tr("Min: 0"), tab);
     m_lbl_fps_max = new QLabel(tr("Max: 0"), tab);
     m_lbl_fps_avg = new QLabel(tr("Avg: 0"), tab);
+    m_lbl_fps_1low = new QLabel(tr("1% Low: 0"), tab);
     m_lbl_fps_min->setStyleSheet(QStringLiteral("color: #94A3B8;"));
     m_lbl_fps_max->setStyleSheet(QStringLiteral("color: #94A3B8;"));
     m_lbl_fps_avg->setStyleSheet(QStringLiteral("color: #94A3B8;"));
+    m_lbl_fps_1low->setStyleSheet(QStringLiteral("font-weight: bold; color: #F59E0B;"));
     fps_box->addWidget(m_lbl_fps_min);
     fps_box->addWidget(m_lbl_fps_max);
     fps_box->addWidget(m_lbl_fps_avg);
+    fps_box->addWidget(m_lbl_fps_1low);
     fps_box->addStretch(1);
     layout->addLayout(fps_box);
 
-    // Row 3: DPS & Resolution
+    // Row 3: DPS, Resolution, LSFG & Shaders
     auto* info_box = new QHBoxLayout();
     m_lbl_dps = new QLabel(tr("DPS: Выкл"), tab);
     m_lbl_dps->setStyleSheet(QStringLiteral("font-weight: bold; color: #34D399;"));
     info_box->addWidget(m_lbl_dps);
 
-    m_lbl_res = new QLabel(tr("Разрешение: 100%"), tab);
+    m_lbl_res = new QLabel(tr("Масштаб: 1.0x"), tab);
     m_lbl_res->setStyleSheet(QStringLiteral("color: #CBD5E1;"));
     info_box->addWidget(m_lbl_res);
+
+    m_lbl_lsfg = new QLabel(tr("LSFG: Выкл"), tab);
+    m_lbl_lsfg->setStyleSheet(QStringLiteral("font-weight: bold; color: #38BDF8;"));
+    info_box->addWidget(m_lbl_lsfg);
+
+    m_lbl_shaders = new QLabel(tr("Шейдеры: 0"), tab);
+    m_lbl_shaders->setStyleSheet(QStringLiteral("color: #A78BFA;"));
+    info_box->addWidget(m_lbl_shaders);
+
     info_box->addStretch(1);
     layout->addLayout(info_box);
 
@@ -443,8 +457,8 @@ void PerformanceOverlay::SetupAmiiboTab(QWidget* tab) {
 
 void PerformanceOverlay::SetupCfwTab(QWidget* tab) {
     auto* layout = new QVBoxLayout(tab);
-    layout->setContentsMargins(12, 12, 12, 12);
-    layout->setSpacing(12);
+    layout->setContentsMargins(12, 10, 12, 10);
+    layout->setSpacing(8);
 
     // 1. ReverseNX (Docked / Handheld on the fly)
     auto* docked_box = new QHBoxLayout();
@@ -453,12 +467,41 @@ void PerformanceOverlay::SetupCfwTab(QWidget* tab) {
     docked_box->addWidget(m_docked_status, 1);
 
     m_btn_toggle_docked = new QPushButton(tr("🔄 Переключить (ReverseNX)"), tab);
-    m_btn_toggle_docked->setStyleSheet(QStringLiteral("padding: 6px 14px; font-weight: bold; border-color: #00D2FF; color: #00D2FF;"));
+    m_btn_toggle_docked->setStyleSheet(QStringLiteral("padding: 5px 14px; font-weight: bold; border-color: #00D2FF; color: #00D2FF;"));
     connect(m_btn_toggle_docked, &QPushButton::clicked, this, &PerformanceOverlay::OnToggleDocked);
     docked_box->addWidget(m_btn_toggle_docked);
     layout->addLayout(docked_box);
 
-    // 2. FPS Locker / Speed limit
+    // 2. Universal Aspect Ratio Selector (All 17 formats)
+    auto* aspect_box = new QHBoxLayout();
+    auto* aspect_lbl = new QLabel(tr("Формат экрана (Все режимы):"), tab);
+    aspect_lbl->setStyleSheet(QStringLiteral("font-weight: 500;"));
+    aspect_box->addWidget(aspect_lbl);
+
+    m_aspect_combo = new QComboBox(tab);
+    m_aspect_combo->addItem(tr("16:9 (Стандарт)"), static_cast<u32>(Settings::AspectRatio::R16_9));
+    m_aspect_combo->addItem(tr("4:3 (Классический)"), static_cast<u32>(Settings::AspectRatio::R4_3));
+    m_aspect_combo->addItem(tr("21:9 (UltraWide)"), static_cast<u32>(Settings::AspectRatio::R21_9));
+    m_aspect_combo->addItem(tr("16:10 (Steam Deck / WUXGA)"), static_cast<u32>(Settings::AspectRatio::R16_10));
+    m_aspect_combo->addItem(tr("Растянуть во всё окно (Stretch)"), static_cast<u32>(Settings::AspectRatio::Stretch));
+    m_aspect_combo->addItem(tr("32:9 (Super UltraWide)"), static_cast<u32>(Settings::AspectRatio::R32_9));
+    m_aspect_combo->addItem(tr("1:1 (Квадрат)"), static_cast<u32>(Settings::AspectRatio::R1_1));
+    m_aspect_combo->addItem(tr("3:2 (Surface / Портатив)"), static_cast<u32>(Settings::AspectRatio::R3_2));
+    m_aspect_combo->addItem(tr("5:4 (SXGA)"), static_cast<u32>(Settings::AspectRatio::R5_4));
+    m_aspect_combo->addItem(tr("18:9 (2:1 Univisium)"), static_cast<u32>(Settings::AspectRatio::R18_9));
+    m_aspect_combo->addItem(tr("19.5:9 (Смартфоны)"), static_cast<u32>(Settings::AspectRatio::R19_5_9));
+    m_aspect_combo->addItem(tr("20:9 (Киноформат)"), static_cast<u32>(Settings::AspectRatio::R20_9));
+    m_aspect_combo->addItem(tr("21:10 (Широкий 16:10)"), static_cast<u32>(Settings::AspectRatio::R21_10));
+    m_aspect_combo->addItem(tr("24:10 (3840x1600 UltraWide+)"), static_cast<u32>(Settings::AspectRatio::R24_10));
+    m_aspect_combo->addItem(tr("32:10 (Super UltraWide 16:10)"), static_cast<u32>(Settings::AspectRatio::R32_10));
+    m_aspect_combo->addItem(tr("48:9 (Три монитора 3x16:9)"), static_cast<u32>(Settings::AspectRatio::R48_9));
+    m_aspect_combo->addItem(tr("Авто по размеру окна (3D Fit)"), static_cast<u32>(Settings::AspectRatio::Auto_Window));
+    connect(m_aspect_combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &PerformanceOverlay::OnAspectRatioChanged);
+    aspect_box->addWidget(m_aspect_combo, 1);
+    layout->addLayout(aspect_box);
+
+    // 3. FPS Locker / Speed limit
     auto* fps_limit_box = new QHBoxLayout();
     auto* fps_limit_lbl = new QLabel(tr("Лимит частоты кадров (FPS Locker):"), tab);
     fps_limit_lbl->setStyleSheet(QStringLiteral("font-weight: 500;"));
@@ -474,14 +517,40 @@ void PerformanceOverlay::SetupCfwTab(QWidget* tab) {
     fps_limit_box->addWidget(m_speed_limit_combo, 1);
     layout->addLayout(fps_limit_box);
 
-    // 3. DPS Toggle
-    m_chk_dps = new QCheckBox(tr("Динамическое масштабирование разрешения (DPS)"), tab);
+    // 4. Toggles Grid (DPS, Auto-Aspect 3D Patch, Auto 60 FPS Unlock, LSFG, HDR10)
+    m_chk_auto_aspect = new QCheckBox(tr("Авто-патч 3D-камеры под формат экрана (без растяжения)"), tab);
+    m_chk_auto_aspect->setChecked(Settings::values.auto_aspect_ratio_patch.GetValue());
+    m_chk_auto_aspect->setStyleSheet(QStringLiteral("font-weight: bold; color: #38BDF8;"));
+    connect(m_chk_auto_aspect, &QCheckBox::toggled, this, &PerformanceOverlay::OnAutoAspectPatchToggled);
+    layout->addWidget(m_chk_auto_aspect);
+
+    m_chk_60fps_unlock = new QCheckBox(tr("Авто-разблокировка 60/120 FPS (Снятие лимита 30 FPS VSync)"), tab);
+    m_chk_60fps_unlock->setChecked(Settings::values.auto_60fps_unlock.GetValue());
+    m_chk_60fps_unlock->setStyleSheet(QStringLiteral("font-weight: bold; color: #A78BFA;"));
+    connect(m_chk_60fps_unlock, &QCheckBox::toggled, this, &PerformanceOverlay::OnAuto60FpsToggled);
+    layout->addWidget(m_chk_60fps_unlock);
+
+    auto* row_toggles = new QHBoxLayout();
+    m_chk_dps = new QCheckBox(tr("Динамическое разрешение (DPS)"), tab);
     m_chk_dps->setChecked(Settings::values.dynamic_performance_scaler.GetValue());
     m_chk_dps->setStyleSheet(QStringLiteral("font-weight: bold; color: #34D399;"));
     connect(m_chk_dps, &QCheckBox::toggled, this, &PerformanceOverlay::OnDpsToggled);
-    layout->addWidget(m_chk_dps);
+    row_toggles->addWidget(m_chk_dps);
 
-    // 4. GPU Accuracy
+    m_chk_lsfg = new QCheckBox(tr("Генерация кадров LSFG"), tab);
+    m_chk_lsfg->setChecked(Settings::values.frame_gen.GetValue());
+    m_chk_lsfg->setStyleSheet(QStringLiteral("font-weight: bold; color: #F59E0B;"));
+    connect(m_chk_lsfg, &QCheckBox::toggled, this, &PerformanceOverlay::OnLsfgToggled);
+    row_toggles->addWidget(m_chk_lsfg);
+
+    m_chk_hdr10 = new QCheckBox(tr("Auto-HDR10"), tab);
+    m_chk_hdr10->setChecked(Settings::values.enable_hdr10.GetValue());
+    m_chk_hdr10->setStyleSheet(QStringLiteral("font-weight: bold; color: #F472B6;"));
+    connect(m_chk_hdr10, &QCheckBox::toggled, this, &PerformanceOverlay::OnHdr10Toggled);
+    row_toggles->addWidget(m_chk_hdr10);
+    layout->addLayout(row_toggles);
+
+    // 5. GPU Accuracy
     auto* gpu_acc_box = new QHBoxLayout();
     auto* gpu_acc_lbl = new QLabel(tr("Точность эмуляции GPU:"), tab);
     gpu_acc_lbl->setStyleSheet(QStringLiteral("font-weight: 500;"));
@@ -500,7 +569,7 @@ void PerformanceOverlay::SetExpanded(bool expanded) {
     m_is_expanded = expanded;
     if (m_is_expanded) {
         m_stack->setCurrentWidget(m_expanded_widget);
-        setFixedSize(650, 470);
+        setFixedSize(670, 500);
         RefreshCheats();
         RefreshSaveSlots();
         RefreshAmiiboList();
@@ -556,6 +625,17 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
 
             if (m_lbl_fps_min) m_lbl_fps_min->setText(tr("Min: %1").arg(min_fps, 0, 'f', 0));
             if (m_lbl_fps_max) m_lbl_fps_max->setText(tr("Max: %1").arg(max_fps, 0, 'f', 0));
+
+            if (m_lbl_fps_1low) {
+                std::vector<double> sorted_fps(m_fpsSamples.begin(), m_fpsSamples.end());
+                std::sort(sorted_fps.begin(), sorted_fps.end());
+                const size_t low_count = std::max<size_t>(1, sorted_fps.size() / 10);
+                double low_sum = 0.0;
+                for (size_t i = 0; i < low_count; ++i) {
+                    low_sum += sorted_fps[i];
+                }
+                m_lbl_fps_1low->setText(tr("1% Low: %1").arg(low_sum / static_cast<double>(low_count), 0, 'f', 0));
+            }
 
             m_compact_fpsGraph->setSamples(m_fpsSamples, max_fps);
             if (m_fpsGraph) m_fpsGraph->setSamples(m_fpsSamples, max_fps);
@@ -613,6 +693,19 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
         const auto& ri = Settings::values.resolution_info;
         const float res_scale = static_cast<float>(ri.up_scale) / static_cast<float>(1U << ri.down_shift);
         m_lbl_res->setText(tr("Масштаб: %1x").arg(res_scale, 0, 'f', 1));
+    }
+
+    if (m_lbl_lsfg) {
+        if (Settings::values.frame_gen.GetValue()) {
+            m_lbl_lsfg->setText(tr("LSFG: %1x").arg(Settings::values.frame_gen_multiplier.GetValue()));
+        } else {
+            m_lbl_lsfg->setText(tr("LSFG: Выкл"));
+        }
+    }
+
+    if (m_lbl_shaders) {
+        const int building = const_cast<VideoCore::ShaderNotify&>(shaders).ShadersBuilding();
+        m_lbl_shaders->setText(building > 0 ? tr("Шейдеры: +%1").arg(building) : tr("Шейдеры: OK"));
     }
 }
 
@@ -868,6 +961,16 @@ void PerformanceOverlay::RefreshCfwInfo() {
     m_docked_status->setText(is_docked ? tr("Режим Switch: ТВ (Docked)") : tr("Режим Switch: Портативный (Handheld)"));
     m_docked_status->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 13px; color: %1;").arg(is_docked ? QStringLiteral("#38BDF8") : QStringLiteral("#34D399")));
 
+    if (m_aspect_combo) {
+        m_aspect_combo->blockSignals(true);
+        const u32 cur_aspect = static_cast<u32>(Settings::values.aspect_ratio.GetValue());
+        const int idx = m_aspect_combo->findData(cur_aspect);
+        if (idx >= 0) {
+            m_aspect_combo->setCurrentIndex(idx);
+        }
+        m_aspect_combo->blockSignals(false);
+    }
+
     const bool has_speed_limit = Settings::values.use_speed_limit.GetValue();
     const u16 speed = Settings::values.speed_limit.GetValue();
 
@@ -883,9 +986,30 @@ void PerformanceOverlay::RefreshCfwInfo() {
     }
     m_speed_limit_combo->blockSignals(false);
 
+    if (m_chk_auto_aspect) {
+        m_chk_auto_aspect->blockSignals(true);
+        m_chk_auto_aspect->setChecked(Settings::values.auto_aspect_ratio_patch.GetValue());
+        m_chk_auto_aspect->blockSignals(false);
+    }
+    if (m_chk_60fps_unlock) {
+        m_chk_60fps_unlock->blockSignals(true);
+        m_chk_60fps_unlock->setChecked(Settings::values.auto_60fps_unlock.GetValue());
+        m_chk_60fps_unlock->blockSignals(false);
+    }
     m_chk_dps->blockSignals(true);
     m_chk_dps->setChecked(Settings::values.dynamic_performance_scaler.GetValue());
     m_chk_dps->blockSignals(false);
+
+    if (m_chk_lsfg) {
+        m_chk_lsfg->blockSignals(true);
+        m_chk_lsfg->setChecked(Settings::values.frame_gen.GetValue());
+        m_chk_lsfg->blockSignals(false);
+    }
+    if (m_chk_hdr10) {
+        m_chk_hdr10->blockSignals(true);
+        m_chk_hdr10->setChecked(Settings::values.enable_hdr10.GetValue());
+        m_chk_hdr10->blockSignals(false);
+    }
 
     const auto gpu_acc = Settings::values.gpu_accuracy.GetValue();
     m_btn_gpu_acc->setText(gpu_acc == Settings::GpuAccuracy::High ? tr("Точность GPU: High") : tr("Точность GPU: Normal"));
@@ -895,6 +1019,15 @@ void PerformanceOverlay::OnToggleDocked() {
     if (m_mainWindow) {
         m_mainWindow->OnToggleDockedMode();
         RefreshCfwInfo();
+    }
+}
+
+void PerformanceOverlay::OnAspectRatioChanged(int index) {
+    if (!m_aspect_combo || index < 0) return;
+    const u32 val = m_aspect_combo->itemData(index).toUInt();
+    Settings::values.aspect_ratio.SetValue(static_cast<Settings::AspectRatio>(val));
+    if (m_mainWindow) {
+        m_mainWindow->OnDynamicSettingChangedFromUI();
     }
 }
 
@@ -920,6 +1053,22 @@ void PerformanceOverlay::OnSpeedLimitChanged(int index) {
 
 void PerformanceOverlay::OnDpsToggled(bool checked) {
     Settings::values.dynamic_performance_scaler.SetValue(checked);
+}
+
+void PerformanceOverlay::OnAutoAspectPatchToggled(bool checked) {
+    Settings::values.auto_aspect_ratio_patch.SetValue(checked);
+}
+
+void PerformanceOverlay::OnAuto60FpsToggled(bool checked) {
+    Settings::values.auto_60fps_unlock.SetValue(checked);
+}
+
+void PerformanceOverlay::OnLsfgToggled(bool checked) {
+    Settings::values.frame_gen.SetValue(checked);
+}
+
+void PerformanceOverlay::OnHdr10Toggled(bool checked) {
+    Settings::values.enable_hdr10.SetValue(checked);
 }
 
 void PerformanceOverlay::OnToggleGpuAccuracy() {

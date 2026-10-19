@@ -94,9 +94,32 @@ u32 CalculateWidth(u32 height, Settings::AspectRatio ratio) {
         return height * 21 / 9;
     case Settings::AspectRatio::R16_10:
         return height * 16 / 10;
+    case Settings::AspectRatio::R32_9:
+        return height * 32 / 9;
+    case Settings::AspectRatio::R1_1:
+        return height;
+    case Settings::AspectRatio::R3_2:
+        return height * 3 / 2;
+    case Settings::AspectRatio::R5_4:
+        return height * 5 / 4;
+    case Settings::AspectRatio::R18_9:
+        return height * 18 / 9;
+    case Settings::AspectRatio::R19_5_9:
+        return height * 39 / 18;
+    case Settings::AspectRatio::R20_9:
+        return height * 20 / 9;
+    case Settings::AspectRatio::R21_10:
+        return height * 21 / 10;
+    case Settings::AspectRatio::R24_10:
+        return height * 24 / 10;
+    case Settings::AspectRatio::R32_10:
+        return height * 32 / 10;
+    case Settings::AspectRatio::R48_9:
+        return height * 48 / 9;
     case Settings::AspectRatio::R16_9:
     case Settings::AspectRatio::Stretch:
-        // TODO: Move this function wherever appropriate to implement Stretched aspect
+    case Settings::AspectRatio::Auto_Window:
+    default:
         break;
     }
     return height * 16 / 9;

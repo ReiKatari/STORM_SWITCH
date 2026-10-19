@@ -209,8 +209,22 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
         {"Real applet", "Настоящий апплет", "بريمج حقيقي", "Echtes Applet", "Véritable applet", "真实小程序", "実際のアプレット", "Applet real"},
         {"CPU Asynchronous", "ЦП (Асинхронно)", "المعالج (غير متزامن)", "CPU asynchron", "CPU asynchrone", "CPU 异步", "CPU 非同期", "CPU asíncrono"},
         {"Force 4:3", "Принудительно 4:3", "إجبار 4:3", "4:3 erzwingen", "Forcer 4:3", "强制 4:3", "強制 4:3", "Forzar 4:3"},
-        {"Force 21:9", "Принудительно 21:9", "إجبار 21:9", "21:9 erzwingen", "Forcer 21:9", "强制 21:9", "強制 21:9", "Forzar 21:9"},
-        {"Force 16:10", "Принудительно 16:10", "إجبار 16:10", "16:10 erzwingen", "Forcer 16:10", "强制 16:10", "強制 16:10", "Forzar 16:10"},
+        {"Force 21:9", "Принудительно 21:9 (UltraWide)", "إجبار 21:9", "21:9 erzwingen", "Forcer 21:9", "强制 21:9", "強制 21:9", "Forzar 21:9"},
+        {"Force 16:10", "Принудительно 16:10 (Steam Deck / WUXGA)", "إجبار 16:10", "16:10 erzwingen", "Forcer 16:10", "强制 16:10", "強制 16:10", "Forzar 16:10"},
+        {"Force 32:9 (Super UltraWide)", "Принудительно 32:9 (Super UltraWide)", "إجبار 32:9", "32:9 erzwingen", "Forcer 32:9", "强制 32:9", "強制 32:9", "Forzar 32:9"},
+        {"Force 1:1 (Square)", "Принудительно 1:1 (Квадрат)", "إجبار 1:1", "1:1 erzwingen", "Forcer 1:1", "强制 1:1", "強制 1:1", "Forzar 1:1"},
+        {"Force 3:2 (Portable / Surface)", "Принудительно 3:2 (Surface / Портатив)", "إجبار 3:2", "3:2 erzwingen", "Forcer 3:2", "强制 3:2", "強制 3:2", "Forzar 3:2"},
+        {"Force 5:4 (SXGA)", "Принудительно 5:4 (SXGA)", "إجبار 5:4", "5:4 erzwingen", "Forcer 5:4", "强制 5:4", "強制 5:4", "Forzar 5:4"},
+        {"Force 18:9 (2:1 Univisium)", "Принудительно 18:9 (2:1 Univisium)", "إجبار 18:9", "18:9 erzwingen", "Forcer 18:9", "强制 18:9", "強制 18:9", "Forzar 18:9"},
+        {"Force 19.5:9 (Modern Mobile)", "Принудительно 19.5:9 (Смартфоны)", "إجبار 19.5:9", "19.5:9 erzwingen", "Forcer 19.5:9", "强制 19.5:9", "強制 19.5:9", "Forzar 19.5:9"},
+        {"Force 20:9 (Cinema Mobile)", "Принудительно 20:9 (Киноформат)", "إجبار 20:9", "20:9 erzwingen", "Forcer 20:9", "强制 20:9", "強制 20:9", "Forzar 20:9"},
+        {"Force 21:10 (Wide 16:10)", "Принудительно 21:10 (Широкий 16:10)", "إجبار 21:10", "21:10 erzwingen", "Forcer 21:10", "强制 21:10", "強制 21:10", "Forzar 21:10"},
+        {"Force 24:10 (3840x1600 UltraWide+)", "Принудительно 24:10 (3840x1600 UltraWide+)", "إجبار 24:10", "24:10 erzwingen", "Forcer 24:10", "强制 24:10", "強制 24:10", "Forzar 24:10"},
+        {"Force 32:10 (Super UltraWide 16:10)", "Принудительно 32:10 (Super UltraWide 16:10)", "إجبار 32:10", "32:10 erzwingen", "Forcer 32:10", "强制 32:10", "強制 32:10", "Forzar 32:10"},
+        {"Force 48:9 (Triple Monitor 3x16:9)", "Принудительно 48:9 (Три монитора 3x16:9)", "إجبار 48:9", "48:9 erzwingen", "Forcer 48:9", "强制 48:9", "強制 48:9", "Forzar 48:9"},
+        {"Auto Window Aspect (True 3D Fit)", "Авто по размеру окна (Честный 3D-формат)", "تلقائي حسب النافذة", "Automatisch an Fenster anpassen (3D)", "Format auto de la fenêtre (3D)", "自动窗口比例 (3D)", "ウィンドウ比率に自動調整 (3D)", "Ajuste automático a la ventana (3D)"},
+        {"Auto-Patch 3D Aspect Ratio (No Stretch)", "Авто-патч 3D-камеры под формат экрана (без растяжения)", "تصحيح تلقائي لأبعاد 3D", "3D-Seitenverhältnis automatisch patchen", "Patch auto du format 3D", "自动修补 3D 宽高比", "3Dアスペクト比自動パッチ", "Parche automático de aspecto 3D"},
+        {"Auto-Unlock 60/120 FPS", "Авто-разблокировка 60/120 FPS", "فتح 60/120 إطار تلقائياً", "60/120 FPS automatisch entsperren", "Déverrouillage auto 60/120 FPS", "自动解锁 60/120 FPS", "60/120 FPS 自動ロック解除", "Desbloqueo automático de 60/120 FPS"},
         {"Nearest Neighbor", "Ближайший сосед", "أقرب جار", "Nächster Nachbar", "Plus proche voisin", "最近邻", "最近傍", "Vecino más cercano"},
         {"Bilinear", "Билинейный", "ثنائي الخطي", "Bilinear", "Bilinéaire", "双线性", "バイリニア", "Bilineal"},
         {"Bicubic", "Бикубический", "ثنائي التكعيب", "Bikubisch", "Bicubique", "双三次", "バイキュービック", "Bicúbico"},
@@ -649,6 +663,10 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Stretches the renderer to fit the specified aspect ratio.\nMost games only support "
               "16:9, so modifications are required to get other ratios.\nAlso controls the "
               "aspect ratio of captured screenshots."));
+    INSERT(Settings, auto_aspect_ratio_patch, tr("Auto-Patch 3D Aspect Ratio (No Stretch)"),
+           tr("Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry."));
+    INSERT(Settings, auto_60fps_unlock, tr("Auto-Unlock 60/120 FPS"),
+           tr("Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering."));
     INSERT(Settings, use_disk_shader_cache, tr("Use persistent pipeline cache"),
            tr("Allows saving shaders to storage for faster loading on following game "
               "boots.\nDisabling it is only intended for debugging."));
@@ -1066,6 +1084,18 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                               PAIR(AspectRatio, R21_9, tr("Force 21:9")),
                               PAIR(AspectRatio, R16_10, tr("Force 16:10")),
                               PAIR(AspectRatio, Stretch, tr("Stretch to Window")),
+                              PAIR(AspectRatio, R32_9, tr("Force 32:9 (Super UltraWide)")),
+                              PAIR(AspectRatio, R1_1, tr("Force 1:1 (Square)")),
+                              PAIR(AspectRatio, R3_2, tr("Force 3:2 (Portable / Surface)")),
+                              PAIR(AspectRatio, R5_4, tr("Force 5:4 (SXGA)")),
+                              PAIR(AspectRatio, R18_9, tr("Force 18:9 (2:1 Univisium)")),
+                              PAIR(AspectRatio, R19_5_9, tr("Force 19.5:9 (Modern Mobile)")),
+                              PAIR(AspectRatio, R20_9, tr("Force 20:9 (Cinema Mobile)")),
+                              PAIR(AspectRatio, R21_10, tr("Force 21:10 (Wide 16:10)")),
+                              PAIR(AspectRatio, R24_10, tr("Force 24:10 (3840x1600 UltraWide+)")),
+                              PAIR(AspectRatio, R32_10, tr("Force 32:10 (Super UltraWide 16:10)")),
+                              PAIR(AspectRatio, R48_9, tr("Force 48:9 (Triple Monitor 3x16:9)")),
+                              PAIR(AspectRatio, Auto_Window, tr("Auto Window Aspect (True 3D Fit)")),
                           }});
     translations->insert({Settings::EnumMetadata<Settings::AnisotropyMode>::Index(),
                           {

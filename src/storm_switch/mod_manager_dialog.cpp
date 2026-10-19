@@ -2,8 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <algorithm>
+#include <bit>
+#include <cmath>
+#include <cstring>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDesktopServices>
 #include <QDir>
 #include <QDirIterator>
@@ -11,6 +16,8 @@
 #include <QDropEvent>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFormLayout>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -27,8 +34,19 @@
 #include <fmt/format.h>
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
+#include "common/hex_util.h"
+#include "common/lz4_compression.h"
 #include "common/settings.h"
 #include "core/core.h"
+#include "core/file_sys/card_image.h"
+#include "core/file_sys/content_archive.h"
+#include "core/file_sys/patch_manager.h"
+#include "core/file_sys/registered_cache.h"
+#include "core/file_sys/submission_package.h"
+#include "core/file_sys/xts_archive.h"
+#include "core/frontend/framebuffer_layout.h"
+#include "core/hle/service/filesystem/filesystem.h"
+#include "core/loader/nso.h"
 #include "qt_common/abstract/frontend.h"
 #include "qt_common/config/uisettings.h"
 #include "qt_common/util/mod.h"
@@ -90,6 +108,13 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
     auto* open_folder_btn = new QPushButton(tr("📁 Открыть папку модов"), this);
     connect(open_folder_btn, &QPushButton::clicked, this, &ModManagerDialog::OnOpenModFolder);
     bottom_layout->addWidget(open_folder_btn);
+
+    auto* gen_patch_btn = new QPushButton(tr("⚡ Генератор патчей 60/120 FPS и всех форматов экрана..."), this);
+    gen_patch_btn->setStyleSheet(QStringLiteral(
+        "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0F766E, stop:1 #0284C7); "
+        "color: #FFFFFF; font-weight: bold; border: 1px solid #38BDF8;"));
+    connect(gen_patch_btn, &QPushButton::clicked, this, &ModManagerDialog::OnGenerateAutoPatch);
+    bottom_layout->addWidget(gen_patch_btn);
 
     bottom_layout->addStretch(1);
 
@@ -172,6 +197,11 @@ void ModManagerDialog::SetupPriorityTab(QWidget* tab) {
     auto* btn_add_zip = new QPushButton(tr("📦 Добавить ZIP..."), tab);
     connect(btn_add_zip, &QPushButton::clicked, this, &ModManagerDialog::OnAddZip);
     btn_layout->addWidget(btn_add_zip);
+
+    auto* btn_auto_patch = new QPushButton(tr("⚡ Авто-патч 60 FPS / Экран..."), tab);
+    btn_auto_patch->setStyleSheet(QStringLiteral("color: #38BDF8; font-weight: bold;"));
+    connect(btn_auto_patch, &QPushButton::clicked, this, &ModManagerDialog::OnGenerateAutoPatch);
+    btn_layout->addWidget(btn_auto_patch);
 
     btn_delete = new QPushButton(tr("🗑️ Удалить мод"), tab);
     btn_delete->setStyleSheet(QStringLiteral("color: #EF4444;"));
@@ -522,3 +552,275 @@ void ModManagerDialog::OnApplyAndClose() {
     UISettings::values.is_game_list_reload_pending.exchange(true);
     accept();
 }
+
+void ModManagerDialog::OnGenerateAutoPatch() {
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("⚡ Генератор патчей 60/120 FPS и всех форматов экрана"));
+    dlg.setMinimumWidth(560);
+    dlg.setStyleSheet(styleSheet() + QStringLiteral(
+        "QGroupBox { border: 1px solid #1E293B; border-radius: 8px; margin-top: 10px; padding-top: 12px; color: #00D2FF; font-weight: bold; }"
+        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }"
+        "QComboBox { background: #0F172A; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; color: #F1F5F9; }"
+        "QCheckBox { color: #E2E8F0; spacing: 8px; }"
+    ));
+
+    auto* vbox = new QVBoxLayout(&dlg);
+    vbox->setContentsMargins(14, 14, 14, 14);
+    vbox->setSpacing(12);
+
+    auto* desc = new QLabel(
+        tr("Автоматическое создание ExeFS-мода (<b>.pchtxt</b>) и настройка 3D-камеры / разблокировки FPS для игры <b>%1</b>.")
+            .arg(game_name.isEmpty() ? QStringLiteral("0x%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper() : game_name),
+        &dlg);
+    desc->setWordWrap(true);
+    desc->setStyleSheet(QStringLiteral("background: rgba(14, 165, 233, 0.12); border: 1px solid #0284C7; border-radius: 6px; padding: 8px; color: #BAE6FD;"));
+    vbox->addWidget(desc);
+
+    // Aspect Ratio Group (All 17 variants)
+    auto* aspect_group = new QGroupBox(tr("🖥️ Формат экрана и 3D-камера (Все доступные варианты)"), &dlg);
+    auto* aspect_layout = new QVBoxLayout(aspect_group);
+    auto* aspect_combo = new QComboBox(aspect_group);
+
+    struct AspectOption {
+        Settings::AspectRatio ratio;
+        QString tag;
+        QString label;
+    };
+    const std::vector<AspectOption> aspect_options = {
+        {Settings::AspectRatio::R16_9,       QStringLiteral("16x9"),     tr("16:9 — Стандартный экран (FullHD / QHD / 4K)")},
+        {Settings::AspectRatio::R16_10,      QStringLiteral("16x10"),    tr("16:10 — Steam Deck / Ноутбуки WUXGA")},
+        {Settings::AspectRatio::R21_9,       QStringLiteral("21x9"),     tr("21:9 — Ультраширокий UltraWide (2560x1080 / 3440x1440)")},
+        {Settings::AspectRatio::R32_9,       QStringLiteral("32x9"),     tr("32:9 — Супер-ультраширокий Super UltraWide (5120x1440)")},
+        {Settings::AspectRatio::R4_3,        QStringLiteral("4x3"),      tr("4:3 — Классический экран")},
+        {Settings::AspectRatio::R18_9,       QStringLiteral("18x9"),     tr("18:9 — Univisium (2:1)")},
+        {Settings::AspectRatio::R19_5_9,     QStringLiteral("19_5x9"),   tr("19.5:9 — Современные смартфоны / OLED")},
+        {Settings::AspectRatio::R20_9,       QStringLiteral("20x9"),     tr("20:9 — Широкий киноформат / Смартфоны")},
+        {Settings::AspectRatio::R21_10,      QStringLiteral("21x10"),    tr("21:10 — Широкий 16:10")},
+        {Settings::AspectRatio::R24_10,      QStringLiteral("24x10"),    tr("24:10 — UltraWide+ (3840x1600)")},
+        {Settings::AspectRatio::R32_10,      QStringLiteral("32x10"),    tr("32:10 — Super UltraWide (3840x1200)")},
+        {Settings::AspectRatio::R48_9,       QStringLiteral("48x9"),     tr("48:9 — Три монитора Surround (3x 16:9)")},
+        {Settings::AspectRatio::R3_2,        QStringLiteral("3x2"),      tr("3:2 — Портативные дисплеи / Surface")},
+        {Settings::AspectRatio::R5_4,        QStringLiteral("5x4"),      tr("5:4 — Мониторы SXGA (1280x1024)")},
+        {Settings::AspectRatio::R1_1,        QStringLiteral("1x1"),      tr("1:1 — Квадратный формат")},
+        {Settings::AspectRatio::Auto_Window, QStringLiteral("AutoWin"),  tr("Авто по размеру окна — Честный 3D-формат")},
+        {Settings::AspectRatio::Stretch,     QStringLiteral("Stretch"),  tr("Растянуть во всё окно (Stretch)")},
+    };
+
+    const auto current_aspect = Settings::values.aspect_ratio.GetValue();
+    int initial_aspect_idx = 2; // Default to 21:9 in patch generator if currently 16:9
+    for (size_t i = 0; i < aspect_options.size(); ++i) {
+        aspect_combo->addItem(aspect_options[i].label, static_cast<u32>(aspect_options[i].ratio));
+        if (aspect_options[i].ratio == current_aspect && current_aspect != Settings::AspectRatio::R16_9) {
+            initial_aspect_idx = static_cast<int>(i);
+        }
+    }
+    aspect_combo->setCurrentIndex(initial_aspect_idx);
+    aspect_layout->addWidget(aspect_combo);
+
+    auto* chk_3d_frustum = new QCheckBox(
+        tr("Патчить матрицу 3D-камеры в NSO (.rodata/.data) без растяжения моделей"), aspect_group);
+    chk_3d_frustum->setChecked(true);
+    aspect_layout->addWidget(chk_3d_frustum);
+    vbox->addWidget(aspect_group);
+
+    // FPS Unlock Group
+    auto* fps_group = new QGroupBox(tr("🚀 Разблокировка частоты кадров (FPS Unlock & LSFG)"), &dlg);
+    auto* fps_layout = new QVBoxLayout(fps_group);
+    auto* fps_combo = new QComboBox(fps_group);
+    fps_combo->addItem(tr("60 FPS — Разблокировка VSync и лимита 30 FPS"), 60);
+    fps_combo->addItem(tr("90 FPS — Разблокировка 60 FPS + ускорение 150%"), 90);
+    fps_combo->addItem(tr("120 FPS — Разблокировка 60 FPS + Генерация кадров LSFG x2"), 120);
+    fps_combo->addItem(tr("240 FPS — Разблокировка 60 FPS + Генерация кадров LSFG x4"), 240);
+    fps_combo->addItem(tr("Без изменения FPS (только патч формата экрана)"), 0);
+    fps_combo->setCurrentIndex(0);
+    fps_layout->addWidget(fps_combo);
+    vbox->addWidget(fps_group);
+
+    auto* btn_row = new QHBoxLayout();
+    btn_row->addStretch(1);
+    auto* cancel_b = new QPushButton(tr("Отмена"), &dlg);
+    connect(cancel_b, &QPushButton::clicked, &dlg, &QDialog::reject);
+    btn_row->addWidget(cancel_b);
+
+    auto* create_b = new QPushButton(tr("⚡ Сгенерировать и активировать патч"), &dlg);
+    create_b->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border-color: #00D2FF;"));
+    connect(create_b, &QPushButton::clicked, &dlg, &QDialog::accept);
+    btn_row->addWidget(create_b);
+    vbox->addLayout(btn_row);
+
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    const int sel_aspect_idx = std::clamp(aspect_combo->currentIndex(), 0, static_cast<int>(aspect_options.size()) - 1);
+    const auto chosen_aspect = aspect_options[sel_aspect_idx].ratio;
+    const QString aspect_tag = aspect_options[sel_aspect_idx].tag;
+    const int target_fps = fps_combo->currentData().toInt();
+    const bool patch_3d = chk_3d_frustum->isChecked();
+
+    // Apply live runtime settings
+    Settings::values.aspect_ratio.SetValue(chosen_aspect);
+    Settings::values.auto_aspect_ratio_patch.SetValue(patch_3d);
+    if (target_fps >= 60) {
+        Settings::values.auto_60fps_unlock.SetValue(true);
+        if (target_fps == 90) {
+            Settings::values.use_speed_limit.SetValue(true);
+            Settings::values.speed_limit.SetValue(150);
+        } else if (target_fps == 120) {
+            Settings::values.frame_gen.SetValue(true);
+            Settings::values.frame_gen_multiplier.SetValue(2);
+            Settings::values.frame_gen_target_rate.SetValue(120);
+        } else if (target_fps == 240) {
+            Settings::values.frame_gen.SetValue(true);
+            Settings::values.frame_gen_multiplier.SetValue(4);
+            Settings::values.frame_gen_target_rate.SetValue(240);
+        }
+    }
+
+    // Try to locate main NSO to extract exact build_id and .rodata/.data 16:9 float offsets
+    std::string build_id_hex;
+    std::vector<u32> patched_nso_offsets;
+    const float target_aspect_val = Layout::AspectRatioWidthOverHeight(chosen_aspect);
+    const u32 target_bits = std::bit_cast<u32>(target_aspect_val);
+    const u32 default_bits = std::bit_cast<u32>(16.0f / 9.0f);
+    const u32 default_bits_alt = default_bits - 1;
+
+    FileSys::VirtualFile main_nso = nullptr;
+    try {
+        const FileSys::PatchManager pm{title_id, system.GetFileSystemController(), system.GetContentProvider()};
+        FileSys::VirtualDir exefs = nullptr;
+        const auto update_nca = system.GetContentProvider().GetEntry(
+            FileSys::GetUpdateTitleID(title_id), FileSys::ContentRecordType::Program);
+        if (update_nca && update_nca->GetExeFS()) {
+            exefs = update_nca->GetExeFS();
+        }
+        if (!exefs) {
+            const auto base_nca = system.GetContentProvider().GetEntry(
+                title_id, FileSys::ContentRecordType::Program);
+            if (base_nca && base_nca->GetExeFS()) {
+                exefs = base_nca->GetExeFS();
+            }
+        }
+        if (!exefs && !game_path.isEmpty()) {
+            const auto vfile = Core::GetGameFileFromPath(system.GetFilesystem(), game_path.toStdString());
+            if (vfile) {
+                FileSys::NSP nsp(vfile, title_id);
+                if (nsp.GetStatus() == Loader::ResultStatus::Success && nsp.GetExeFS() != nullptr) {
+                    exefs = nsp.GetExeFS();
+                } else {
+                    FileSys::XCI xci(vfile, title_id);
+                    if (xci.GetStatus() == Loader::ResultStatus::Success && xci.GetProgramNCA() && xci.GetProgramNCA()->GetExeFS()) {
+                        exefs = xci.GetProgramNCA()->GetExeFS();
+                    }
+                }
+            }
+        }
+        if (exefs) {
+            exefs = pm.PatchExeFS(exefs);
+            if (exefs) {
+                main_nso = exefs->GetFile("main");
+            }
+        }
+    } catch (...) {}
+
+    if (main_nso && main_nso->GetSize() >= sizeof(Loader::NSOHeader)) {
+        Loader::NSOHeader nso_header{};
+        if (main_nso->ReadObject(&nso_header) == sizeof(Loader::NSOHeader) &&
+            nso_header.magic == Common::MakeMagic('N', 'S', 'O', '0')) {
+            const auto bid_raw = Common::HexToString(nso_header.build_id);
+            const auto last_nz = bid_raw.find_last_not_of('0');
+            build_id_hex = (last_nz != std::string::npos) ? bid_raw.substr(0, last_nz + 1) : bid_raw.substr(0, 40);
+
+            if (patch_3d && std::abs(target_aspect_val - (16.0f / 9.0f)) > 0.005f) {
+                for (size_t seg_idx = 1; seg_idx <= 2 && seg_idx < nso_header.segments.size(); ++seg_idx) {
+                    const u32 seg_size = nso_header.segments[seg_idx].size;
+                    const u32 seg_loc = nso_header.segments[seg_idx].location;
+                    if (seg_size < sizeof(u32) || seg_size > 128 * 1024 * 1024) {
+                        continue;
+                    }
+                    std::vector<u8> seg_data(seg_size, 0);
+                    if (nso_header.IsSegmentCompressed(seg_idx)) {
+                        const u32 comp_size = nso_header.segments_compressed_size[seg_idx];
+                        std::vector<u8> comp_buf(comp_size);
+                        const size_t read_b = main_nso->Read(comp_buf.data(), comp_size, nso_header.segments[seg_idx].offset);
+                        void(Common::Compression::DecompressDataLZ4(seg_data.data(), seg_size, comp_buf.data(), read_b));
+                    } else {
+                        main_nso->Read(seg_data.data(), seg_size, nso_header.segments[seg_idx].offset);
+                    }
+                    for (u32 pos = 0; pos + sizeof(u32) <= seg_size && patched_nso_offsets.size() < 64; pos += sizeof(u32)) {
+                        u32 val = 0;
+                        std::memcpy(&val, seg_data.data() + pos, sizeof(u32));
+                        if (val == default_bits || val == default_bits_alt) {
+                            patched_nso_offsets.push_back(seg_loc + pos);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (build_id_hex.empty() && system.IsPoweredOn() && system.GetApplicationProcessProgramID() == title_id) {
+        const auto bid_raw = Common::HexToString(system.GetApplicationProcessBuildID());
+        const auto last_nz = bid_raw.find_last_not_of('0');
+        build_id_hex = (last_nz != std::string::npos) ? bid_raw.substr(0, last_nz + 1) : bid_raw.substr(0, 40);
+    }
+    if (build_id_hex.empty()) {
+        build_id_hex = fmt::format("{:016X}000000000000000000000000", title_id);
+    }
+
+    // Create mod directory in load/<TitleID>/
+    const QString tid_str = QStringLiteral("%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper();
+    const QString load_dir = QString::fromStdString(Common::FS::PathToUTF8String(
+        Common::FS::GetEdenPath(Common::FS::EdenPath::LoadDir)));
+    const QString mod_folder_name = (target_fps > 0)
+        ? QStringLiteral("STORM_AutoPatch_%1_%2FPS").arg(aspect_tag).arg(target_fps)
+        : QStringLiteral("STORM_AutoPatch_%1").arg(aspect_tag);
+    const QString mod_root = QDir(QDir(load_dir).filePath(tid_str)).filePath(mod_folder_name);
+    const QString exefs_dir = QDir(mod_root).filePath(QStringLiteral("exefs"));
+    QDir().mkpath(exefs_dir);
+
+    const QString pchtxt_path = QDir(exefs_dir).filePath(QStringLiteral("%1.pchtxt").arg(QString::fromStdString(build_id_hex).toUpper()));
+    {
+        std::ofstream pf(pchtxt_path.toStdString(), std::ios::trunc);
+        if (pf.is_open()) {
+            pf << "@nsobid-" << build_id_hex << "\n\n";
+            pf << "@flag print_values\n";
+            pf << "@flag offset_shift 0x100\n\n";
+            pf << "// Generated by STORM SWITCH 12.7.0 Universal Aspect Ratio & FPS Auto-Patcher\n";
+            pf << fmt::format("// Target Aspect Ratio: {} ({:.5f}), Target FPS: {}\n",
+                              aspect_tag.toStdString(), target_aspect_val, target_fps > 0 ? target_fps : 60);
+            pf << "@enabled\n";
+            const u8 b0 = static_cast<u8>(target_bits & 0xFF);
+            const u8 b1 = static_cast<u8>((target_bits >> 8) & 0xFF);
+            const u8 b2 = static_cast<u8>((target_bits >> 16) & 0xFF);
+            const u8 b3 = static_cast<u8>((target_bits >> 24) & 0xFF);
+            for (const u32 off : patched_nso_offsets) {
+                pf << fmt::format("{:08X} {:02X}{:02X}{:02X}{:02X}\n", off, b0, b1, b2, b3);
+            }
+            pf << "@stop\n";
+        }
+    }
+
+    // Ensure the new mod is enabled
+    auto& disabled = Settings::values.disabled_addons[title_id];
+    disabled.erase(std::remove(disabled.begin(), disabled.end(), mod_folder_name.toStdString()), disabled.end());
+
+    RefreshModsList();
+    SavePriorities();
+
+    QMessageBox::information(
+        this,
+        tr("⚡ Авто-патч успешно создан и активирован"),
+        tr("Создан и включён мод <b>%1</b>!<br><br>"
+           "• <b>Формат экрана:</b> %2 (коэффициент W/H: %3)<br>"
+           "• <b>Найдено и пропатчено констант 3D-камеры в NSO:</b> %4 (+ активен динамический перехват в реальном времени)<br>"
+           "• <b>Режим FPS:</b> %5<br>"
+           "• <b>Файл патча:</b> <code>%6</code>")
+            .arg(mod_folder_name,
+                 aspect_options[sel_aspect_idx].label,
+                 QString::number(target_aspect_val, 'f', 4),
+                 QString::number(patched_nso_offsets.size()),
+                 fps_combo->currentText(),
+                 pchtxt_path));
+}
+

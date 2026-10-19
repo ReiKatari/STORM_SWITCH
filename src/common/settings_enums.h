@@ -148,7 +148,7 @@ ENUM(NvdecEmulation, Off, Cpu, Gpu, Hybrid);
 ENUM(ResolutionSetup, Res1_4X, Res1_2X, Res3_4X, Res1X, Res5_4X, Res3_2X, Res2X, Res3X, Res4X, Res5X, Res6X, Res7X, Res8X);
 ENUM(ScalingFilter, NearestNeighbor, Bilinear, Bicubic, Gaussian, Lanczos, ScaleForce, Fsr, Area, ZeroTangent, BSpline, Mitchell, Spline1, Mmpx, Sgsr, SgsrEdge);
 ENUM(AntiAliasing, None, Fxaa, Smaa);
-ENUM(AspectRatio, R16_9, R4_3, R21_9, R16_10, Stretch);
+ENUM(AspectRatio, R16_9, R4_3, R21_9, R16_10, Stretch, R32_9, R1_1, R3_2, R5_4, R18_9, R19_5_9, R20_9, R21_10, R24_10, R32_10, R48_9, Auto_Window);
 ENUM(ConsoleMode, Handheld, Docked);
 ENUM(AppletMode, HLE, LLE);
 ENUM(SpirvOptimizeMode, Never, OnLoad, Always);
