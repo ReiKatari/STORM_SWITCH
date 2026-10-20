@@ -134,7 +134,13 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
     m_search_edit->setClearButtonEnabled(true);
     m_search_edit->setPlaceholderText(StormLang(
         QStringLiteral("🔍 Быстрый поиск настройки в свойствах игры (например: 21:9, 60 FPS, LSFG, Vulkan, память)..."),
-        QStringLiteral("🔍 Quick search per-game settings (e.g. 21:9, 60 FPS, LSFG, Vulkan, memory)...")));
+        QStringLiteral("🔍 Quick search per-game settings (e.g. 21:9, 60 FPS, LSFG, Vulkan, memory)..."),
+        QStringLiteral("🔍 Spiel-Einstellungen schnell suchen (z. B. 21:9, 60 FPS, LSFG, Vulkan, Speicher)..."),
+        QStringLiteral("🔍 Recherche rapide des paramètres du jeu (ex. 21:9, 60 FPS, LSFG, Vulkan, mémoire)..."),
+        QStringLiteral("🔍 快速搜索此游戏设置（例如：21:9、60 FPS、LSFG、Vulkan、内存）..."),
+        QStringLiteral("🔍 ゲーム別設定をクイック検索（例：21:9、60 FPS、LSFG、Vulkan、メモリ）..."),
+        QStringLiteral("🔍 بحث سريع في إعدادات اللعبة (مثل: 21:9، 60 FPS، LSFG، Vulkan، الذاكرة)..."),
+        QStringLiteral("🔍 Búsqueda rápida de ajustes del juego (ej.: 21:9, 60 FPS, LSFG, Vulkan, memoria)...")));
     if (ui->verticalLayout_3) {
         ui->verticalLayout_3->insertWidget(0, m_search_edit);
     }
@@ -536,6 +542,17 @@ void ConfigurePerGame::showEvent(QShowEvent* event) {
 
 void ConfigurePerGame::RetranslateUI() {
     ui->retranslateUi(this);
+    if (m_search_edit) {
+        m_search_edit->setPlaceholderText(StormLang(
+            QStringLiteral("🔍 Быстрый поиск настройки в свойствах игры (например: 21:9, 60 FPS, LSFG, Vulkan, память)..."),
+            QStringLiteral("🔍 Quick search per-game settings (e.g. 21:9, 60 FPS, LSFG, Vulkan, memory)..."),
+            QStringLiteral("🔍 Spiel-Einstellungen schnell suchen (z. B. 21:9, 60 FPS, LSFG, Vulkan, Speicher)..."),
+            QStringLiteral("🔍 Recherche rapide des paramètres du jeu (ex. 21:9, 60 FPS, LSFG, Vulkan, mémoire)..."),
+            QStringLiteral("🔍 快速搜索此游戏设置（例如：21:9、60 FPS、LSFG、Vulkan、内存）..."),
+            QStringLiteral("🔍 ゲーム別設定をクイック検索（例：21:9、60 FPS、LSFG、Vulkan、メモリ）..."),
+            QStringLiteral("🔍 بحث سريع في إعدادات اللعبة (مثل: 21:9، 60 FPS، LSFG، Vulkan، الذاكرة)..."),
+            QStringLiteral("🔍 Búsqueda rápida de ajustes del juego (ej.: 21:9, 60 FPS, LSFG, Vulkan, memoria)...")));
+    }
     if (ui->tabWidget and ui->tabWidget->count() >= 13) {
         ui->tabWidget->setTabText(0, tr("Add-Ons"));
         ui->tabWidget->setTabText(1, StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"), QStringLiteral("تعديلات GameBanana"), QStringLiteral("Mods de GameBanana")));

@@ -6,7 +6,7 @@
 #include <string>
 #include <QLocale>
 #include <QString>
-#include "storm_switch/uisettings.h"
+#include "qt_common/config/uisettings.h"
 
 inline QString StormLang(const QString& ru, const QString& en,
                          const QString& de = QString(), const QString& fr = QString(),

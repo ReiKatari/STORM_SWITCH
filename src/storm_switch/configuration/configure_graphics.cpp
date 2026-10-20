@@ -37,6 +37,7 @@
 #include "ui_configure_graphics.h"
 #include "storm_switch/configuration/configuration_shared.h"
 #include "storm_switch/configuration/configure_graphics.h"
+#include "storm_switch/common/storm_lang.h"
 #include "storm_switch/configuration/shared_widget.h"
 
 ConfigureGraphics::ConfigureGraphics(
@@ -128,6 +129,7 @@ ConfigureGraphics::ConfigureGraphics(
     if (Settings::IsConfiguringGlobal()) {
         ui->bg_widget->setEnabled(Settings::values.bg_red.UsingGlobal());
     }
+    RetranslateUI();
 }
 
 void ConfigureGraphics::PopulateVSyncModeSelection(bool use_setting) {
@@ -252,18 +254,25 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     presets_vbox->setContentsMargins(10, 6, 10, 8);
     presets_vbox->setSpacing(6);
 
-    const bool is_ru = UISettings::values.language.GetValue().starts_with("ru") || UISettings::values.language.GetValue().empty();
-    auto* presets_title = new QLabel(is_ru ?
-        QStringLiteral("🚀 <b>Быстрые профили графики и производительности (в 1 клик):</b>") :
-        QStringLiteral("🚀 <b>1-Click Graphics & Performance Presets:</b>"), presets_frame);
+    auto* presets_title = new QLabel(StormLang(
+        QStringLiteral("🚀 <b>Быстрые профили графики и производительности (в 1 клик):</b>"),
+        QStringLiteral("🚀 <b>1-Click Graphics & Performance Presets:</b>"),
+        QStringLiteral("🚀 <b>1-Klick-Grafik- & Leistungsprofile:</b>"),
+        QStringLiteral("🚀 <b>Profils graphiques et performances en 1 clic :</b>"),
+        QStringLiteral("🚀 <b>一键图形与性能预设配置：</b>"),
+        QStringLiteral("🚀 <b>ワンクリック描画・パフォーマンスプリセット:</b>"),
+        QStringLiteral("🚀 <b>ملفات تعريف الرسوميات والأداء بنقرة واحدة:</b>"),
+        QStringLiteral("🚀 <b>Perfiles de gráficos y rendimiento en 1 clic:</b>")), presets_frame);
+    presets_title->setObjectName(QStringLiteral("presetsTitleLabel"));
     presets_title->setStyleSheet(QStringLiteral("color: #00F0FF; font-size: 11.5px; border: none; background: transparent;"));
     presets_vbox->addWidget(presets_title);
 
     auto* presets_hbox = new QHBoxLayout();
     presets_hbox->setSpacing(8);
 
-    const auto make_preset_btn = [&](const QString& text, const QString& tip, auto apply_fn) {
+    const auto make_preset_btn = [&](const QString& obj_name, const QString& text, const QString& tip, auto apply_fn) {
         auto* btn = new QPushButton(text, presets_frame);
+        btn->setObjectName(obj_name);
         btn->setToolTip(tip);
         btn->setCursor(Qt::PointingHandCursor);
         btn->setStyleSheet(QStringLiteral(
@@ -299,9 +308,19 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     };
 
     make_preset_btn(
-        is_ru ? QStringLiteral("⚡ Макс. FPS") : QStringLiteral("⚡ Max FPS"),
-        is_ru ? QStringLiteral("Максимальная скорость: точность GPU Low, асинхронные шейдеры, быстрый GPU-таймер")
-              : QStringLiteral("Maximum speed: Low GPU accuracy, async shaders, fast GPU time"),
+        QStringLiteral("presetBtnMaxFps"),
+        StormLang(QStringLiteral("⚡ Макс. FPS"), QStringLiteral("⚡ Max FPS"),
+                  QStringLiteral("⚡ Max. FPS"), QStringLiteral("⚡ FPS Max"),
+                  QStringLiteral("⚡ 最高帧率"), QStringLiteral("⚡ 最大 FPS"),
+                  QStringLiteral("⚡ أقصى إطارات"), QStringLiteral("⚡ Máx. FPS")),
+        StormLang(QStringLiteral("Максимальная скорость: точность ГП «Нормальный», асинхронные шейдеры, быстрый таймер ГП"),
+                  QStringLiteral("Maximum speed: Low GPU accuracy, async shaders, fast GPU time"),
+                  QStringLiteral("Maximale Geschwindigkeit: Niedrige GPU-Genauigkeit, asynchrone Shader, schnelle GPU-Zeit"),
+                  QStringLiteral("Vitesse maximale : Précision GPU basse, shaders asynchrones, temps GPU rapide"),
+                  QStringLiteral("最高速度：低 GPU 精度、异步着色器、快速 GPU 时间"),
+                  QStringLiteral("最高速度：GPU 精度（低）、非同期シェーダー、高速 GPU 時間"),
+                  QStringLiteral("أقصى سرعة: دقة GPU منخفضة، تظليل غير متزامن، وقت GPU سريع"),
+                  QStringLiteral("Velocidad máxima: precisión GPU baja, sombreadores asíncronos, tiempo GPU rápido")),
         [set_preset]() {
             set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
             set_preset(Settings::values.use_asynchronous_shaders, true);
@@ -313,9 +332,19 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         });
 
     make_preset_btn(
-        is_ru ? QStringLiteral("⚖️ Баланс (Рекомендуется)") : QStringLiteral("⚖️ Balanced (Recommended)"),
-        is_ru ? QStringLiteral("Идеальный баланс стабильности и FPS: точность GPU High, BC1, асинхронная презентация")
-              : QStringLiteral("Optimal stability & FPS balance: High GPU accuracy, BC1, async presentation"),
+        QStringLiteral("presetBtnBalanced"),
+        StormLang(QStringLiteral("⚖️ Баланс (Рекомендуется)"), QStringLiteral("⚖️ Balanced (Recommended)"),
+                  QStringLiteral("⚖️ Ausgewogen (Empfohlen)"), QStringLiteral("⚖️ Équilibré (Recommandé)"),
+                  QStringLiteral("⚖️ 平衡（推荐）"), QStringLiteral("⚖️ バランス（推奨）"),
+                  QStringLiteral("⚖️ متوازن (موصى به)"), QStringLiteral("⚖️ Equilibrado (Recomendado)")),
+        StormLang(QStringLiteral("Идеальный баланс стабильности и FPS: точность ГП «Высокий», сжатие BC1, асинхронная презентация"),
+                  QStringLiteral("Optimal stability & FPS balance: High GPU accuracy, BC1, async presentation"),
+                  QStringLiteral("Optimale Balance aus Stabilität & FPS: Hohe GPU-Genauigkeit, BC1, asynchrone Präsentation"),
+                  QStringLiteral("Équilibre optimal stabilité & FPS : Précision GPU élevée, BC1, présentation asynchrone"),
+                  QStringLiteral("最佳稳定性与帧率平衡：高 GPU 精度、BC1 压缩、异步呈现"),
+                  QStringLiteral("安定性と FPS の最適バランス：GPU 精度（高）、BC1、非同期プレゼンテーション"),
+                  QStringLiteral("توازن مثالي بين الاستقرار والإطارات: دقة GPU عالية، BC1، عرض غير متزامن"),
+                  QStringLiteral("Equilibrio óptimo entre estabilidad y FPS: precisión GPU alta, BC1, presentación asíncrona")),
         [set_preset]() {
             set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
             set_preset(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
@@ -328,9 +357,19 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         });
 
     make_preset_btn(
-        is_ru ? QStringLiteral("💎 4K Качество") : QStringLiteral("💎 4K Quality"),
-        is_ru ? QStringLiteral("Максимальное качество: 2X (4K), фильтр FSR, сглаживание SMAA, анизотропия 16x, ASTC без сжатия")
-              : QStringLiteral("Ultra visual quality: 2X (4K), FSR scaling, SMAA anti-aliasing, 16x AF, Uncompressed ASTC"),
+        QStringLiteral("presetBtn4k"),
+        StormLang(QStringLiteral("💎 4K Качество"), QStringLiteral("💎 4K Quality"),
+                  QStringLiteral("💎 4K-Qualität"), QStringLiteral("💎 Qualité 4K"),
+                  QStringLiteral("💎 4K 极致画质"), QStringLiteral("💎 4K 高画質"),
+                  QStringLiteral("💎 جودة 4K"), QStringLiteral("💎 Calidad 4K")),
+        StormLang(QStringLiteral("Максимальное качество: 2X (4K), фильтр FSR, сглаживание SMAA, анизотропия 16x, ASTC без сжатия"),
+                  QStringLiteral("Ultra visual quality: 2X (4K), FSR scaling, SMAA anti-aliasing, 16x AF, Uncompressed ASTC"),
+                  QStringLiteral("Maximale Bildqualität: 2X (4K), FSR-Skalierung, SMAA-Kantenglättung, 16x AF, unkomprimiertes ASTC"),
+                  QStringLiteral("Qualité visuelle ultra : 2X (4K), mise à l'échelle FSR, anticrénelage SMAA, AF 16x, ASTC non compressé"),
+                  QStringLiteral("极致视觉画质：2X (4K)、FSR 缩放、SMAA 抗锯齿、16x 各向异性过滤、未压缩 ASTC"),
+                  QStringLiteral("最高画質：2X (4K)、FSR スケーリング、SMAA アンチエイリアス、16x 異方性フィルタリング、非圧縮 ASTC"),
+                  QStringLiteral("جودة بصرية فائقة: 2X (4K)، تحجيم FSR، تنعيم SMAA، تصفية 16x، ASTC غير مضغوط"),
+                  QStringLiteral("Calidad visual ultra: 2X (4K), escalado FSR, antialiasing SMAA, AF 16x, ASTC sin comprimir")),
         [set_preset]() {
             set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
             set_preset(Settings::values.resolution_setup, Settings::ResolutionSetup::Res2X);
@@ -343,9 +382,19 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         });
 
     make_preset_btn(
-        is_ru ? QStringLiteral("🔋 Эко / Портатив") : QStringLiteral("🔋 Eco / Handheld"),
-        is_ru ? QStringLiteral("Для слабых ПК и портативных консолей: экономия VRAM, Low-End Turbo и термоконтроль")
-              : QStringLiteral("For low-end PCs and handhelds: VRAM governor, Low-End Turbo, thermal control"),
+        QStringLiteral("presetBtnEco"),
+        StormLang(QStringLiteral("🔋 Эко / Портатив"), QStringLiteral("🔋 Eco / Handheld"),
+                  QStringLiteral("🔋 Eco / Handheld"), QStringLiteral("🔋 Éco / Portable"),
+                  QStringLiteral("🔋 节能 / 掌机"), QStringLiteral("🔋 エコ / 携帯機"),
+                  QStringLiteral("🔋 اقتصادي / محمول"), QStringLiteral("🔋 Eco / Portátil")),
+        StormLang(QStringLiteral("Для слабых ПК и портативных консолей: экономия видеопамяти, Турбо для слабых ПК и термоконтроль"),
+                  QStringLiteral("For low-end PCs and handhelds: VRAM governor, Low-End Turbo, thermal control"),
+                  QStringLiteral("Für schwache PCs und Handhelds: VRAM-Begrenzer, Low-End-Turbo, Temperaturregelung"),
+                  QStringLiteral("Pour PC modestes et consoles portables : Économie VRAM, Turbo bas de gamme, contrôle thermique"),
+                  QStringLiteral("适用于低配电脑与掌机：显存预算控制、低端设备加速与温度控制"),
+                  QStringLiteral("低スペック PC・携帯機向け：VRAM 節約、低スペック高速化、温度管理"),
+                  QStringLiteral("للأجهزة الضعيفة والمحمولة: توفير ذاكرة الفيديو، توربو للأجهزة الضعيفة، التحكم الحراري"),
+                  QStringLiteral("Para PCs de gama baja y portátiles: ahorro de VRAM, Turbo de gama baja y control térmico")),
         [set_preset]() {
             set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
             set_preset(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
@@ -616,23 +665,40 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
 const QString ConfigureGraphics::TranslateVSyncMode(VkPresentModeKHR mode,
                                                     Settings::RendererBackend backend) const {
+    const bool is_ogl = (backend == Settings::RendererBackend::OpenGL_GLSL ||
+                         backend == Settings::RendererBackend::OpenGL_GLASM ||
+                         backend == Settings::RendererBackend::OpenGL_SPIRV);
     switch (mode) {
     case VK_PRESENT_MODE_IMMEDIATE_KHR:
-        return (backend == Settings::RendererBackend::OpenGL_GLSL ||
-                backend == Settings::RendererBackend::OpenGL_GLASM ||
-                backend == Settings::RendererBackend::OpenGL_SPIRV)
-                   ? tr("Off")
-                   : QStringLiteral("Immediate (%1)").arg(tr("VSync Off"));
+        return is_ogl
+                   ? StormLang(QStringLiteral("Выкл."), QStringLiteral("Off"),
+                               QStringLiteral("Aus"), QStringLiteral("Désactivé"),
+                               QStringLiteral("关闭"), QStringLiteral("オフ"),
+                               QStringLiteral("إيقاف"), QStringLiteral("Desactivado"))
+                   : StormLang(QStringLiteral("Immediate (VSync Выкл.)"), QStringLiteral("Immediate (VSync Off)"),
+                               QStringLiteral("Immediate (VSync Aus)"), QStringLiteral("Immediate (VSync Désactivé)"),
+                               QStringLiteral("Immediate (垂直同步关闭)"), QStringLiteral("Immediate (VSync オフ)"),
+                               QStringLiteral("Immediate (إيقاف VSync)"), QStringLiteral("Immediate (VSync Desactivado)"));
     case VK_PRESENT_MODE_MAILBOX_KHR:
-        return QStringLiteral("Mailbox (%1)").arg(tr("Recommended"));
+        return StormLang(QStringLiteral("Mailbox (Рекомендуется)"), QStringLiteral("Mailbox (Recommended)"),
+                         QStringLiteral("Mailbox (Empfohlen)"), QStringLiteral("Mailbox (Recommandé)"),
+                         QStringLiteral("Mailbox (推荐)"), QStringLiteral("Mailbox (推奨)"),
+                         QStringLiteral("Mailbox (موصى به)"), QStringLiteral("Mailbox (Recomendado)"));
     case VK_PRESENT_MODE_FIFO_KHR:
-        return (backend == Settings::RendererBackend::OpenGL_GLSL ||
-                backend == Settings::RendererBackend::OpenGL_GLASM ||
-                backend == Settings::RendererBackend::OpenGL_SPIRV)
-                   ? tr("On")
-                   : QStringLiteral("FIFO (%1)").arg(tr("VSync On"));
+        return is_ogl
+                   ? StormLang(QStringLiteral("Вкл."), QStringLiteral("On"),
+                               QStringLiteral("Ein"), QStringLiteral("Activé"),
+                               QStringLiteral("开启"), QStringLiteral("オン"),
+                               QStringLiteral("تشغيل"), QStringLiteral("Activado"))
+                   : StormLang(QStringLiteral("FIFO (VSync Вкл.)"), QStringLiteral("FIFO (VSync On)"),
+                               QStringLiteral("FIFO (VSync Ein)"), QStringLiteral("FIFO (VSync Activé)"),
+                               QStringLiteral("FIFO (垂直同步开启)"), QStringLiteral("FIFO (VSync オン)"),
+                               QStringLiteral("FIFO (تشغيل VSync)"), QStringLiteral("FIFO (VSync Activado)"));
     case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
-        return QStringLiteral("FIFO Relaxed");
+        return StormLang(QStringLiteral("FIFO Relaxed (Адаптивный VSync)"), QStringLiteral("FIFO Relaxed"),
+                         QStringLiteral("FIFO Relaxed (Adaptives VSync)"), QStringLiteral("FIFO Relaxed (VSync adaptatif)"),
+                         QStringLiteral("FIFO Relaxed (自适应垂直同步)"), QStringLiteral("FIFO Relaxed (適応型 VSync)"),
+                         QStringLiteral("FIFO Relaxed (مزامنة متكيفة)"), QStringLiteral("FIFO Relaxed (VSync adaptativo)"));
     default:
         return {};
     }
@@ -694,23 +760,118 @@ void ConfigureGraphics::changeEvent(QEvent* event) {
 
 void ConfigureGraphics::RetranslateUI() {
     ui->retranslateUi(this);
-    if (auto* fg_group = findChild<QGroupBox*>(QStringLiteral("frameGenGroupBox"))) {
-        std::string lang = UISettings::values.language.GetValue();
-        if (lang.empty()) {
-            lang = QLocale::system().name().toStdString();
-        }
-        if (lang.rfind("ru", 0) == 0) fg_group->setTitle(QStringLiteral("Генерация кадров (Lossless Scaling / LSFG)"));
-        else if (lang.rfind("zh", 0) == 0) fg_group->setTitle(QStringLiteral("帧生成 (Lossless Scaling / LSFG)"));
-        else if (lang.rfind("ja", 0) == 0) fg_group->setTitle(QStringLiteral("フレーム生成 (Lossless Scaling / LSFG)"));
-        else if (lang.rfind("ko", 0) == 0) fg_group->setTitle(QStringLiteral("프레임 생성 (Lossless Scaling / LSFG)"));
-        else if (lang.rfind("de", 0) == 0) fg_group->setTitle(QStringLiteral("Frame-Generierung (Lossless Scaling / LSFG)"));
-        else if (lang.rfind("fr", 0) == 0) fg_group->setTitle(QStringLiteral("Génération d'images (Lossless Scaling / LSFG)"));
-        else if (lang.rfind("es", 0) == 0) fg_group->setTitle(QStringLiteral("Generación de fotogramas (Lossless Scaling / LSFG)"));
-        else if (lang.rfind("it", 0) == 0) fg_group->setTitle(QStringLiteral("Generazione di fotogrammi (Lossless Scaling / LSFG)"));
-        else if (lang.rfind("pt", 0) == 0) fg_group->setTitle(QStringLiteral("Geração de quadros (Lossless Scaling / LSFG)"));
-        else if (lang.rfind("ar", 0) == 0) fg_group->setTitle(QStringLiteral("توليد الإطارات (Lossless Scaling / LSFG)"));
-        else fg_group->setTitle(QStringLiteral("Frame Generation (Lossless Scaling / LSFG)"));
+    ui->groupBox_2->setTitle(StormLang(
+        QStringLiteral("Настройки API"), QStringLiteral("API Settings"),
+        QStringLiteral("API-Einstellungen"), QStringLiteral("Paramètres de l'API"),
+        QStringLiteral("API 设置"), QStringLiteral("API 設定"),
+        QStringLiteral("إعدادات API"), QStringLiteral("Configuración de API")));
+    ui->groupBox->setTitle(StormLang(
+        QStringLiteral("Настройки графики"), QStringLiteral("Graphics Settings"),
+        QStringLiteral("Grafikeinstellungen"), QStringLiteral("Paramètres graphiques"),
+        QStringLiteral("图形设置"), QStringLiteral("グラフィック設定"),
+        QStringLiteral("إعدادات الرسوميات"), QStringLiteral("Configuración gráfica")));
+    ui->label->setText(StormLang(
+        QStringLiteral("Цвет фона:"), QStringLiteral("Background Color:"),
+        QStringLiteral("Hintergrundfarbe:"), QStringLiteral("Couleur d'arrière-plan :"),
+        QStringLiteral("背景颜色："), QStringLiteral("背景色:"),
+        QStringLiteral("لون الخلفية:"), QStringLiteral("Color de fondo:")));
+    const QString bg_tip = StormLang(
+        QStringLiteral("Выбирает цвет фона за пределами игрового изображения (при чёрных полосах по краям экрана)."),
+        QStringLiteral("Selects the background color shown behind the game image (letterbox/pillarbox borders)."),
+        QStringLiteral("Wählt die Hintergrundfarbe hinter dem Spielbild (Letterbox-/Pillarbox-Ränder)."),
+        QStringLiteral("Sélectionne la couleur d'arrière-plan affichée derrière l'image du jeu (bordures)."),
+        QStringLiteral("选择游戏画面周围显示的背景颜色（黑边区域）。"),
+        QStringLiteral("ゲーム画面の余白に表示される背景色を選択します。"),
+        QStringLiteral("يحدد لون الخلفية المعروض خلف صورة اللعبة."),
+        QStringLiteral("Selecciona el color de fondo mostrado detrás de la imagen del juego."));
+    ui->bg_widget->setToolTip(bg_tip);
+    ui->label->setToolTip(bg_tip);
+    ui->bg_button->setToolTip(bg_tip);
+
+    if (auto* presets_title = findChild<QLabel*>(QStringLiteral("presetsTitleLabel"))) {
+        presets_title->setText(StormLang(
+            QStringLiteral("🚀 <b>Быстрые профили графики и производительности (в 1 клик):</b>"),
+            QStringLiteral("🚀 <b>1-Click Graphics & Performance Presets:</b>"),
+            QStringLiteral("🚀 <b>1-Klick-Grafik- & Leistungsprofile:</b>"),
+            QStringLiteral("🚀 <b>Profils graphiques et performances en 1 clic :</b>"),
+            QStringLiteral("🚀 <b>一键图形与性能预设配置：</b>"),
+            QStringLiteral("🚀 <b>ワンクリック描画・パフォーマンスプリセット:</b>"),
+            QStringLiteral("🚀 <b>ملفات تعريف الرسوميات والأداء بنقرة واحدة:</b>"),
+            QStringLiteral("🚀 <b>Perfiles de gráficos y rendimiento en 1 clic:</b>")));
     }
+    if (auto* btn = findChild<QPushButton*>(QStringLiteral("presetBtnMaxFps"))) {
+        btn->setText(StormLang(QStringLiteral("⚡ Макс. FPS"), QStringLiteral("⚡ Max FPS"),
+                               QStringLiteral("⚡ Max. FPS"), QStringLiteral("⚡ FPS Max"),
+                               QStringLiteral("⚡ 最高帧率"), QStringLiteral("⚡ 最大 FPS"),
+                               QStringLiteral("⚡ أقصى إطارات"), QStringLiteral("⚡ Máx. FPS")));
+        btn->setToolTip(StormLang(
+            QStringLiteral("Максимальная скорость: точность ГП «Нормальный», асинхронные шейдеры, быстрый таймер ГП"),
+            QStringLiteral("Maximum speed: Low GPU accuracy, async shaders, fast GPU time"),
+            QStringLiteral("Maximale Geschwindigkeit: Niedrige GPU-Genauigkeit, asynchrone Shader, schnelle GPU-Zeit"),
+            QStringLiteral("Vitesse maximale : Précision GPU basse, shaders asynchrones, temps GPU rapide"),
+            QStringLiteral("最高速度：低 GPU 精度、异步着色器、快速 GPU 时间"),
+            QStringLiteral("最高速度：GPU 精度（低）、非同期シェーダー、高速 GPU 時間"),
+            QStringLiteral("أقصى سرعة: دقة GPU منخفضة، تظليل غير متزامن، وقت GPU سريع"),
+            QStringLiteral("Velocidad máxima: precisión GPU baja, sombreadores asíncronos, tiempo GPU rápido")));
+    }
+    if (auto* btn = findChild<QPushButton*>(QStringLiteral("presetBtnBalanced"))) {
+        btn->setText(StormLang(QStringLiteral("⚖️ Баланс (Рекомендуется)"), QStringLiteral("⚖️ Balanced (Recommended)"),
+                               QStringLiteral("⚖️ Ausgewogen (Empfohlen)"), QStringLiteral("⚖️ Équilibré (Recommandé)"),
+                               QStringLiteral("⚖️ 平衡（推荐）"), QStringLiteral("⚖️ バランス（推奨）"),
+                               QStringLiteral("⚖️ متوازن (موصى به)"), QStringLiteral("⚖️ Equilibrado (Recomendado)")));
+        btn->setToolTip(StormLang(
+            QStringLiteral("Идеальный баланс стабильности и FPS: точность ГП «Высокий», сжатие BC1, асинхронная презентация"),
+            QStringLiteral("Optimal stability & FPS balance: High GPU accuracy, BC1, async presentation"),
+            QStringLiteral("Optimale Balance aus Stabilität & FPS: Hohe GPU-Genauigkeit, BC1, asynchrone Präsentation"),
+            QStringLiteral("Équilibre optimal stabilité & FPS : Précision GPU élevée, BC1, présentation asynchrone"),
+            QStringLiteral("最佳稳定性与帧率平衡：高 GPU 精度、BC1 压缩、异步呈现"),
+            QStringLiteral("安定性と FPS の最適バランス：GPU 精度（高）、BC1、非同期プレゼンテーション"),
+            QStringLiteral("توازن مثالي بين الاستقرار والإطارات: دقة GPU عالية، BC1، عرض غير متزامن"),
+            QStringLiteral("Equilibrio óptimo entre estabilidad y FPS: precisión GPU alta, BC1, presentación asíncrona")));
+    }
+    if (auto* btn = findChild<QPushButton*>(QStringLiteral("presetBtn4k"))) {
+        btn->setText(StormLang(QStringLiteral("💎 4K Качество"), QStringLiteral("💎 4K Quality"),
+                               QStringLiteral("💎 4K-Qualität"), QStringLiteral("💎 Qualité 4K"),
+                               QStringLiteral("💎 4K 极致画质"), QStringLiteral("💎 4K 高画質"),
+                               QStringLiteral("💎 جودة 4K"), QStringLiteral("💎 Calidad 4K")));
+        btn->setToolTip(StormLang(
+            QStringLiteral("Максимальное качество: 2X (4K), фильтр FSR, сглаживание SMAA, анизотропия 16x, ASTC без сжатия"),
+            QStringLiteral("Ultra visual quality: 2X (4K), FSR scaling, SMAA anti-aliasing, 16x AF, Uncompressed ASTC"),
+            QStringLiteral("Maximale Bildqualität: 2X (4K), FSR-Skalierung, SMAA-Kantenglättung, 16x AF, unkomprimiertes ASTC"),
+            QStringLiteral("Qualité visuelle ultra : 2X (4K), mise à l'échelle FSR, anticrénelage SMAA, AF 16x, ASTC non compressé"),
+            QStringLiteral("极致视觉画质：2X (4K)、FSR 缩放、SMAA 抗锯齿、16x 各向异性过滤、未压缩 ASTC"),
+            QStringLiteral("最高画質：2X (4K)、FSR スケーリング、SMAA アンチエイリアス、16x 異方性フィルタリング、非圧縮 ASTC"),
+            QStringLiteral("جودة بصرية فائقة: 2X (4K)، تحجيم FSR، تنعيم SMAA، تصفية 16x، ASTC غير مضغوط"),
+            QStringLiteral("Calidad visual ultra: 2X (4K), escalado FSR, antialiasing SMAA, AF 16x, ASTC sin comprimir")));
+    }
+    if (auto* btn = findChild<QPushButton*>(QStringLiteral("presetBtnEco"))) {
+        btn->setText(StormLang(QStringLiteral("🔋 Эко / Портатив"), QStringLiteral("🔋 Eco / Handheld"),
+                               QStringLiteral("🔋 Eco / Handheld"), QStringLiteral("🔋 Éco / Portable"),
+                               QStringLiteral("🔋 节能 / 掌机"), QStringLiteral("🔋 エコ / 携帯機"),
+                               QStringLiteral("🔋 اقتصادي / محمول"), QStringLiteral("🔋 Eco / Portátil")));
+        btn->setToolTip(StormLang(
+            QStringLiteral("Для слабых ПК и портативных консолей: экономия видеопамяти, Турбо для слабых ПК и термоконтроль"),
+            QStringLiteral("For low-end PCs and handhelds: VRAM governor, Low-End Turbo, thermal control"),
+            QStringLiteral("Für schwache PCs und Handhelds: VRAM-Begrenzer, Low-End-Turbo, Temperaturregelung"),
+            QStringLiteral("Pour PC modestes et consoles portables : Économie VRAM, Turbo bas de gamme, contrôle thermique"),
+            QStringLiteral("适用于低配电脑与掌机：显存预算控制、低端设备加速与温度控制"),
+            QStringLiteral("低スペック PC・携帯機向け：VRAM 節約、低スペック高速化、温度管理"),
+            QStringLiteral("للأجهزة الضعيفة والمحمولة: توفير ذاكرة الفيديو، توربو للأجهزة الضعيفة، التحكم الحراري"),
+            QStringLiteral("Para PCs de gama baja y portátiles: ahorro de VRAM, Turbo de gama baja y control térmico")));
+    }
+
+    if (auto* fg_group = findChild<QGroupBox*>(QStringLiteral("frameGenGroupBox"))) {
+        fg_group->setTitle(StormLang(
+            QStringLiteral("Генерация кадров (Lossless Scaling / LSFG)"),
+            QStringLiteral("Frame Generation (Lossless Scaling / LSFG)"),
+            QStringLiteral("Frame-Generierung (Lossless Scaling / LSFG)"),
+            QStringLiteral("Génération d'images (Lossless Scaling / LSFG)"),
+            QStringLiteral("帧生成 (Lossless Scaling / LSFG)"),
+            QStringLiteral("フレーム生成 (Lossless Scaling / LSFG)"),
+            QStringLiteral("توليد الإطارات (Lossless Scaling / LSFG)"),
+            QStringLiteral("Generación de fotogramas (Lossless Scaling / LSFG)")));
+    }
+    PopulateVSyncModeSelection(false);
     UpdateResolutionItems();
 }
 

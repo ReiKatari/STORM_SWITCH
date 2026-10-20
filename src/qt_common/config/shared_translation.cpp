@@ -506,6 +506,79 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
          "ターゲットフレームレートを維持するために描画解像度を自動的に調整します。負荷が高い時は解像度を下げ、余裕がある時は復元します。",
          "Ajusta automáticamente la resolución de renderizado para mantener los FPS objetivo. Cuando los fotogramas tardan más, la resolución se reduce; cuando van rápido, se restablece."},
 
+        {"Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.",
+         "Автоматически патчит константы 3D-камеры в исполняемых файлах игры под выбранное соотношение сторон (4:3, 16:10, 18:9, 21:9, 32:9, 48:9 и др.) без растяжения 3D-геометрии.",
+         "يقوم تلقائياً بتعديل ثوابت الكاميرا ثلاثية الأبعاد في ملفات اللعبة لتتناسب مع نسبة العرض إلى الارتفاع المحددة (4:3، 16:10، 18:9، 21:9، 32:9، 48:9، إلخ) دون تمديد الهندسة ثلاثية الأبعاد.",
+         "Patcht automatisch die 3D-Kamera-Frustum-Konstanten in Spiel-Executables passend zum gewählten Seitenverhältnis (4:3, 16:10, 18:9, 21:9, 32:9, 48:9 usw.) ohne Streckung der 3D-Geometrie.",
+         "Patche automatiquement les constantes de caméra 3D dans les exécutables du jeu pour correspondre au format d'image sélectionné (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) sans étirer la géométrie 3D.",
+         "自动修补游戏可执行文件中的 3D 摄像机视锥体常量，以匹配所选宽高比（4:3、16:10、18:9、21:9、32:9、48:9 等），而不会拉伸 3D 几何图形。",
+         "選択したアスペクト比（4:3、16:10、18:9、21:9、32:9、48:9 など）に合わせてゲーム実行ファイル内の 3D カメラ定数を自動パッチし、3D ジオメトリの引き伸ばしを防ぎます。",
+         "Parchea automáticamente las constantes de cámara 3D en los ejecutables del juego según la relación de aspecto seleccionada (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) sin estirar la geometría 3D."},
+
+        {"Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.",
+         "Автоматически снимает ограничение 30 FPS (интервал VSync), позволяя рендерить игру при 60/120 FPS.",
+         "يفك تلقائياً قيد 30 إطاراً في الثانية (فاصل VSync) للسماح بالعرض بمعدل 60/120 إطاراً في الثانية.",
+         "Hebt das 30-FPS-VSync-Limit automatisch auf, um Rendering mit 60/120 FPS zu ermöglichen.",
+         "Déverrouille automatiquement la limite VSync de 30 FPS pour permettre un rendu à 60/120 FPS.",
+         "自动解除 30 FPS 垂直同步（交换间隔）上限，允许以 60/120 FPS 进行渲染。",
+         "30 FPS の垂直同期（スワップ間隔）制限を自動解除し、60/120 FPS での描画を可能にします。",
+         "Desbloquea automáticamente el límite VSync de 30 FPS para permitir el renderizado a 60/120 FPS."},
+
+        {"Selects the scaling filter used when adapting the rendered image to the window size.\nBilinear and Bicubic are standard filters.\nAMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.",
+         "Выбирает фильтр масштабирования при адаптации изображения под размер окна.\nБилинейный и Бикубический — стандартные фильтры.\nAMD FidelityFX Super Resolution (FSR) и Qualcomm SGSR обеспечивают чёткий апскейлинг.",
+         "يحدد مرشح التحجيم المستخدم عند تكييف الصورة المعروضة مع حجم النافذة.\nثنائي الخطية وثنائي التكعيب هما مرشحان قياسيان.\nيوفر FSR وSGSR ترقية حادة للصورة.",
+         "Wählt den Skalierungsfilter zur Anpassung des gerenderten Bildes an die Fenstergröße.\nBilinear und Bikubisch sind Standardfilter.\nAMD FSR und Qualcomm SGSR bieten scharfes Upscaling.",
+         "Sélectionne le filtre de mise à l'échelle utilisé pour adapter l'image rendue à la taille de la fenêtre.\nBilinéaire et Bicubique sont des filtres standards.\nAMD FSR et Qualcomm SGSR offrent une mise à l'échelle nette.",
+         "选择将渲染图像适配到窗口大小时使用的缩放过滤器。\n双线性和双三次为标准过滤器。\nAMD FSR 和高通 SGSR 提供清晰的超分辨率缩放。",
+         "描画画像をウィンドウサイズに合わせる際のスケーリングフィルターを選択します。\nバイリニアとバイキュービックは標準フィルターです。\nAMD FSR と Qualcomm SGSR はシャープなアップスケーリングを提供します。",
+         "Selecciona el filtro de escalado al adaptar la imagen renderizada al tamaño de la ventana.\nBilineal y Bicúbico son filtros estándar.\nAMD FSR y Qualcomm SGSR ofrecen un reescalado nítido."},
+
+        {"The GPU Accuracy Level to use.\nNormal is faster, but may cause graphical issues in some games.\nHigh is slower, but fixes graphical issues in some games.\nUpdate frequency controls how often GPU state is synchronized when using Normal accuracy.",
+         "Уровень точности ГП.\n«Нормальный» работает быстрее, но может вызывать графические артефакты в некоторых играх.\n«Высокий» медленнее, но исправляет графические ошибки.\nЧастота обновления определяет периодичность синхронизации состояния ГП.",
+         "مستوى دقة معالج الرسوميات.\nعادي أسرع ولكنه قد يسبب مشاكل رسومية في بعض الألعاب.\nعالي أبطأ ولكنه يصلح المشاكل الرسومية.",
+         "Die zu verwendende GPU-Genauigkeitsstufe.\nNormal ist schneller, kann aber in einigen Spielen Grafikfehler verursachen.\nHoch ist langsamer, behebt aber Grafikprobleme.",
+         "Le niveau de précision du GPU à utiliser.\nNormal est plus rapide, mais peut causer des problèmes graphiques.\nÉlevé est plus lent, mais corrige les problèmes graphiques.",
+         "要使用的 GPU 精度级别。\n标准速度更快，但在某些游戏中可能导致图形问题。\n高精度较慢，但可修复图形问题。",
+         "使用する GPU 精度レベル。\nノーマルは高速ですが、一部のゲームで描画不具合が発生する場合があります。\nハイは低速ですが、描画不具合を修正します。",
+         "Nivel de precisión de GPU.\nNormal es más rápido, pero puede causar fallos gráficos en algunos juegos.\nAlto es más lento, pero corrige errores gráficos."},
+
+        {"The DMA accuracy level to use.\nNormal is faster, but may cause graphical issues in some games.\nSafe is slower, but fixes graphical issues in some games.",
+         "Уровень точности DMA.\n«Нормально» работает быстрее, но может вызывать графические ошибки в отдельных играх.\n«Безопасно» медленнее, но устраняет графические сбои.",
+         "مستوى دقة DMA.\nعادي أسرع ولكنه قد يسبب مشاكل رسومية.\nآمن أبطأ ولكنه يصلح المشاكل الرسومية.",
+         "Die zu verwendende DMA-Genauigkeitsstufe.\nNormal ist schneller, kann aber Grafikfehler verursachen.\nSicher ist langsamer, behebt aber Grafikprobleme.",
+         "Le niveau de précision DMA à utiliser.\nNormal est plus rapide, mais peut causer des problèmes graphiques.\nSûr est plus lent, mais corrige les problèmes graphiques.",
+         "要使用的 DMA 精度级别。\n标准速度更快，但可能导致图形问题。\n安全较慢，但可修复图形问题。",
+         "使用する DMA 精度レベル。\nノーマルは高速ですが、描画不具合が発生する場合があります。\nセーフは低速ですが、描画不具合を修正します。",
+         "Nivel de precisión DMA.\nNormal es más rápido, pero puede causar fallos gráficos.\nSeguro es más lento, pero corrige errores gráficos."},
+
+        {"Controls how GPU fences are synchronized.\nDefault follows the GPU accuracy setting.\nImmediate signals fences right away (fastest, least accurate).\nBalanced waits only when required.\nAccurate always waits for the GPU to finish (slowest, most accurate).",
+         "Управляет синхронизацией барьеров (fences) ГП.\n«По умолчанию» следует настройке точности ГП.\n«Мгновенно» сигнализирует барьеры сразу (быстрее всего).\n«Сбалансированно» ждёт только при необходимости.\n«Точно» всегда дожидается завершения команд ГП.",
+         "يتحكم في كيفية مزامنة حواجز GPU.\nالافتراضي يتبع إعداد دقة GPU.\nفوري يرسل الإشارات فوراً.\nمتوازن ينتظر عند الضرورة فقط.\nدقيق ينتظر دائماً انتهاء GPU.",
+         "Steuert die Synchronisierung von GPU-Fences.\nStandard folgt der GPU-Genauigkeit.\nSofort signalisiert Fences direkt (am schnellsten).\nAusgewogen wartet nur bei Bedarf.\nPräzise wartet immer auf die GPU (am genauesten).",
+         "Contrôle la synchronisation des barrières GPU.\nPar défaut suit la précision GPU.\nImmédiat signale immédiatement.\nÉquilibré attend uniquement si nécessaire.\nPrécis attend toujours la fin du GPU.",
+         "控制 GPU 栅栏（Fence）的同步方式。\n默认遵循 GPU 精度设置。\n立即会马上发出信号（最快）。\n平衡仅在需要时等待。\n精确始终等待 GPU 完成（最准）。",
+         "GPU フェンスの同期方法を制御します。\nデフォルトは GPU 精度設定に従います。\n即時（最速）、バランス（必要時のみ待機）、正確（常に GPU 完了を待機）から選択できます。",
+         "Controla cómo se sincronizan las vallas (fences) de GPU.\nPredeterminado sigue la precisión de GPU.\nInmediato señala al instante.\nEquilibrado espera solo cuando es necesario.\nPreciso espera siempre a la GPU."},
+
+        {"Enables reading modified GPU buffers back to CPU memory.\nRequired by some games for proper physics or rendering effects, but significantly reduces performance.",
+         "Включает обратное чтение изменённых буферов ГП в память ЦП.\nТребуется некоторым играм для корректной физики или эффектов рендеринга, но заметно снижает производительность.",
+         "يمكّن قراءة مخازن GPU المعدلة مرة أخرى إلى ذاكرة CPU.\nمطلوب لبعض الألعاب للفيزياء أو التأثيرات، ولكنه يقلل الأداء.",
+         "Aktiviert das Zurücklesen geänderter GPU-Puffer in den CPU-Speicher.\nWird von einigen Spielen für Physik oder Effekte benötigt, verringert jedoch die Leistung.",
+         "Active la relecture des tampons GPU modifiés vers la mémoire CPU.\nRequis par certains jeux pour la physique ou les effets, mais réduit les performances.",
+         "启用将修改后的 GPU 缓冲区读回 CPU 内存。\n某些游戏需要此功能才能实现正常的物理或渲染效果，但会显著降低性能。",
+         "変更された GPU バッファを CPU メモリへ書き戻す機能を有効にします。\n一部のゲームで物理演算やエフェクトに必要ですが、パフォーマンスが低下します。",
+         "Habilita la lectura de búferes de GPU modificados de vuelta a la memoria de CPU.\nNecesario en algunos juegos para físicas o efectos, pero reduce el rendimiento."},
+
+        // Missing Combobox items
+        {"Polish (polski)", "Польский (polski)", "البولندية (polski)", "Polnisch (polski)", "Polonais (polski)", "波兰语 (polski)", "ポーランド語 (polski)", "Polaco (polski)"},
+        {"Celsius (°C)", "Цельсий (°C)", "مئوية (°C)", "Celsius (°C)", "Celsius (°C)", "摄氏度 (°C)", "摂氏 (°C)", "Celsius (°C)"},
+        {"Fahrenheit (°F)", "Фаренгейт (°F)", "فهرنهايت (°F)", "Fahrenheit (°F)", "Fahrenheit (°F)", "华氏度 (°F)", "華氏 (°F)", "Fahrenheit (°F)"},
+        {"Errors Only", "Только ошибки", "الأخطاء فقط", "Nur Fehler", "Erreurs uniquement", "仅错误", "エラーのみ", "Solo errores"},
+        {"Standard", "Стандартный", "قياسي", "Standard", "Standard", "标准", "標準", "Estándar"},
+        {"Verbose", "Подробный", "مفصل", "Ausführlich", "Détaillé", "详细", "詳細", "Detallado"},
+        {"All", "Все", "الكل", "Alle", "Tout", "全部", "すべて", "Todo"},
+        {"Turbo", "Турбо", "توربو", "Turbo", "Turbo", "加速 (Turbo)", "ターボ", "Turbo"},
+        {"Slow", "Замедление", "بطيء", "Langsam", "Lent", "减速 (Slow)", "スロー", "Lento"},
     };
 
     for (const auto& item : s_table) {
@@ -648,7 +721,8 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Forces to render at a different resolution.\n"
               "Higher resolutions require more VRAM and bandwidth.\n"
               "Options lower than 1X can cause artifacts."));
-    INSERT(Settings, scaling_filter, tr("Window Adapting Filter:"), QString());
+    INSERT(Settings, scaling_filter, tr("Window Adapting Filter:"),
+           tr("Selects the scaling filter used when adapting the rendered image to the window size.\nBilinear and Bicubic are standard filters.\nAMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling."));
     INSERT(Settings, fsr_sharpening_slider, tr("FSR Sharpness:"),
            tr("Determines how sharpened the image will look using FSR's or SGSR's dynamic contrast."));
     INSERT(Settings, anti_aliasing, tr("Anti-Aliasing Method:"),

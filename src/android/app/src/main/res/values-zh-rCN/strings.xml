@@ -1511,4 +1511,16 @@
     <string name="thermal_emergency_limit">过热暂停温度阈值</string>
     <string name="thermal_emergency_limit_description">触发紧急过热保护的最高温度阈值</string>
     <string name="thermal_emergency_pause_toast">🌡️ 紧急过热暂停：芯片温度 %1$s°C。正在冷却设备...</string>
+    <string name="ratio_32_9">32:9 (超级超宽屏)</string>
+    <string name="ratio_1_1">1:1 (正方形)</string>
+    <string name="ratio_3_2">3:2 (Surface / 平板)</string>
+    <string name="ratio_5_4">5:4 (SXGA 显示器)</string>
+    <string name="ratio_18_9">18:9 / 2:1 (Univisium 手机)</string>
+    <string name="ratio_19_5_9">19.5:9 (现代智能手机)</string>
+    <string name="ratio_20_9">20:9 (游戏手机)</string>
+    <string name="ratio_21_10">21:10 (宽屏)</string>
+    <string name="ratio_24_10">24:10 / 2.4:1 (电影宽银幕)</string>
+    <string name="ratio_32_10">32:10 (双 16:10)</string>
+    <string name="ratio_48_9">48:9 (三联屏 16:9)</string>
+    <string name="ratio_auto_window">按屏幕比例自动适配 (3D 原生无拉伸)</string>
 </resources>

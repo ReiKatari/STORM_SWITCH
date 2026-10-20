@@ -1507,4 +1507,16 @@
     <string name="thermal_emergency_limit">Seuil de pause thermique</string>
     <string name="thermal_emergency_limit_description">Température seuil pour le déclenchement de la pause d\'urgence</string>
     <string name="thermal_emergency_pause_toast">🌡️ Pause d\'urgence : température du chipset %1$s°C. Refroidissement de l\'appareil...</string>
+    <string name="ratio_32_9">32:9 (Super ultra-large)</string>
+    <string name="ratio_1_1">1:1 (Carré)</string>
+    <string name="ratio_3_2">3:2 (Surface / Tablettes)</string>
+    <string name="ratio_5_4">5:4 (Moniteurs SXGA)</string>
+    <string name="ratio_18_9">18:9 / 2:1 (Mobile Univisium)</string>
+    <string name="ratio_19_5_9">19.5:9 (Smartphones modernes)</string>
+    <string name="ratio_20_9">20:9 (Smartphones gaming)</string>
+    <string name="ratio_21_10">21:10 (Écran large)</string>
+    <string name="ratio_24_10">24:10 / 2.4:1 (Cinéma)</string>
+    <string name="ratio_32_10">32:10 (Double 16:10)</string>
+    <string name="ratio_48_9">48:9 (Triple 16:9)</string>
+    <string name="ratio_auto_window">Auto selon l\'écran (3D natif)</string>
 </resources>

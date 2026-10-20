@@ -2270,5 +2270,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="thermal_emergency_pause_toast">🌡️ Emergency pause: chipset temperature %1$s°C. Cooling device down...</string>
     <string name="storm_tier2_compiler">STORM Tier-2 JIT Compiler</string>
     <string name="storm_tier2_compiler_description">Zero-overhead instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads)</string>
+    <string name="ratio_32_9">32:9 (Super Ultrawide)</string>
+    <string name="ratio_1_1">1:1 (Square)</string>
+    <string name="ratio_3_2">3:2 (Surface / Tablets)</string>
+    <string name="ratio_5_4">5:4 (SXGA)</string>
+    <string name="ratio_18_9">18:9 / 2:1 (Univisium Mobile)</string>
+    <string name="ratio_19_5_9">19.5:9 (Modern Smartphones)</string>
+    <string name="ratio_20_9">20:9 (Gaming Smartphones)</string>
+    <string name="ratio_21_10">21:10 (Widescreen)</string>
+    <string name="ratio_24_10">24:10 / 2.4:1 (Cinema)</string>
+    <string name="ratio_32_10">32:10 (Dual 16:10)</string>
+    <string name="ratio_48_9">48:9 (Triple 16:9)</string>
+    <string name="ratio_auto_window">Auto Window Aspect (3D Native)</string>
 </resources>
 

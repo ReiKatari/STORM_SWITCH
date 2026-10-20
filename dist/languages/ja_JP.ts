@@ -1,4 +1,5 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
 <TS version="2.1" language="ja_JP" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
@@ -309,7 +310,7 @@ This would ban both their forum username and their IP address.</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="50" />
       <source>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</source>
-      <translation>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</translation>
+      <translation>Horizon の内蔵オーバーレイアプレットを有効化します。Home ボタンを1秒長押しして表示します。</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="54" />
@@ -382,7 +383,7 @@ Disabling it means unlocking the framerate to the maximum your PC can reach.</tr
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="78" />
       <source>Turbo Speed</source>
-      <translation>Turbo Speed</translation>
+      <translation>ターボ速度</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="79" />
@@ -392,7 +393,7 @@ Disabling it means unlocking the framerate to the maximum your PC can reach.</tr
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="81" />
       <source>Slow Speed</source>
-      <translation>Slow Speed</translation>
+      <translation>低速</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="82" />
@@ -402,14 +403,14 @@ Disabling it means unlocking the framerate to the maximum your PC can reach.</tr
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="85" />
       <source>Synchronize Core Speed</source>
-      <translation>Synchronize Core Speed</translation>
+      <translation>コア速度を同期</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="86" />
       <source>Synchronizes CPU core speed with the game's maximum rendering speed to boost FPS without affecting game speed (animations, physics, etc.).
 Can help reduce stuttering at lower framerates.</source>
-      <translation>Synchronizes CPU core speed with the game's maximum rendering speed to boost FPS without affecting game speed (animations, physics, etc.).
-Can help reduce stuttering at lower framerates.</translation>
+      <translation>ゲームの最大描画速度に CPU コア速度を同期させ、ゲーム自体の速度に影響を与えずに FPS を向上させます。
+低フレームレート時のカクつきを抑えます。</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="91" />
@@ -442,7 +443,7 @@ Use Boost (1700MHz) to run at the Switch's highest native clock, or Fast (2000MH
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="103" />
       <source>Custom CPU Ticks</source>
-      <translation>Custom CPU Ticks</translation>
+      <translation>カスタム CPU ティック</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="104" />
@@ -625,7 +626,7 @@ Also controls the aspect ratio of captured screenshots.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="165" />
       <source>Use persistent pipeline cache</source>
-      <translation>Use persistent pipeline cache</translation>
+      <translation>永続パイプラインキャッシュを使用</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="166" />
@@ -637,7 +638,7 @@ Disabling it is only intended for debugging.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="169" />
       <source>Use asynchronous GPU emulation</source>
-      <translation>Use asynchronous GPU emulation</translation>
+      <translation>非同期 GPU エミュレーション</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="170" />
@@ -656,9 +657,9 @@ This option should always remain enabled.</translation>
       <source>Specifies how videos should be decoded.
 It can either use the CPU or the GPU for decoding, or perform no decoding at all (black screen on videos).
 In most cases, GPU decoding provides the best performance.</source>
-      <translation>Specifies how videos should be decoded.
-It can either use the CPU or the GPU for decoding, or perform no decoding at all (black screen on videos).
-In most cases, GPU decoding provides the best performance.</translation>
+      <translation>動画のデコード方法を指定します。
+CPU または GPU を使用するか、デコードを行わない（動画が黒画面になります）かを選択できます。
+通常は GPU デコードが最も高いパフォーマンスを発揮します。</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="175" />
@@ -672,11 +673,10 @@ CPU: Use the CPU for decoding.
 GPU: Use the GPU's compute shaders to decode ASTC textures (recommended).
 CPU Asynchronously: Use the CPU to decode ASTC textures on demand. EliminatesASTC decoding
 stuttering but may present artifacts.</source>
-      <translation>This option controls how ASTC textures should be decoded.
-CPU: Use the CPU for decoding.
-GPU: Use the GPU's compute shaders to decode ASTC textures (recommended).
-CPU Asynchronously: Use the CPU to decode ASTC textures on demand. EliminatesASTC decoding
-stuttering but may present artifacts.</translation>
+      <translation>ASTC テクスチャのデコード方法を制御します。
+CPU: CPU でデコードします。
+GPU: GPU コンピュートシェーダーを使用します (推奨)。
+CPU 非同期: 必要に応じてデコードし、スタッターを解消しますが一時的な乱れが生じる場合があります。</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="181" />
@@ -695,7 +695,7 @@ BC1/BC3: The intermediate format will be recompressed to BC1 or BC3 format,
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="186" />
       <source>Frame Pacing Mode (Vulkan only)</source>
-      <translation>Frame Pacing Mode (Vulkan only)</translation>
+      <translation>フレームペーシングモード (Vulkan のみ)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="187" />
@@ -705,7 +705,7 @@ BC1/BC3: The intermediate format will be recompressed to BC1 or BC3 format,
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="189" />
       <source>VRAM Usage Mode:</source>
-      <translation>VRAM Usage Mode:</translation>
+      <translation>VRAM 使用モード:</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="190" />
@@ -817,7 +817,7 @@ Default follows the GPU Accuracy setting.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="227" />
       <source>GPU Fence Behavior:</source>
-      <translation>GPU Fence Behavior:</translation>
+      <translation>GPU フェンス動作:</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="228" />
@@ -837,7 +837,7 @@ Default follows the GPU Accuracy setting.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="229" />
       <source>Enable GPU buffer readback</source>
-      <translation>Enable GPU buffer readback</translation>
+      <translation>GPU バッファのリードバックを有効化</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="230" />
@@ -849,7 +849,7 @@ Some games require this to render certain effects properly.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="231" />
       <source>Enable asynchronous shader compilation</source>
-      <translation>Enable asynchronous shader compilation</translation>
+      <translation>非同期シェーダーコンパイルを有効化</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="232" />
@@ -859,7 +859,7 @@ Some games require this to render certain effects properly.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="233" />
       <source>Fast GPU Time</source>
-      <translation>Fast GPU Time</translation>
+      <translation>高速 GPU タイマー</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="234" />
@@ -947,7 +947,7 @@ Compute pipelines are always enabled on all other drivers.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="262" />
       <source>Enable Reactive Flushing</source>
-      <translation>Enable Reactive Flushing</translation>
+      <translation>リアクティブフラッシュを有効化</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="263" />
@@ -967,7 +967,7 @@ Compute pipelines are always enabled on all other drivers.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="268" />
       <source>Barrier feedback loops</source>
-      <translation>Barrier feedback loops</translation>
+      <translation>バリアフィードバックループ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="269" />
@@ -977,7 +977,7 @@ Compute pipelines are always enabled on all other drivers.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="270" />
       <source>Enable buffer history</source>
-      <translation>Enable buffer history</translation>
+      <translation>バッファ履歴を有効化</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="271" />
@@ -1077,7 +1077,7 @@ Mainly used for speedrunning.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="305" />
       <source>Custom RTC Date:</source>
-      <translation>Custom RTC Date:</translation>
+      <translation>カスタム RTC 日時:</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="306" />
@@ -1217,27 +1217,27 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="382" />
       <source>Custom frontend</source>
-      <translation>Custom frontend</translation>
+      <translation>カスタムフロントエンド</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="383" />
       <source>Real applet</source>
-      <translation>Real applet</translation>
+      <translation>実際のアプレット</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="388" />
       <source>Never</source>
-      <translation>Never</translation>
+      <translation>なし</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="389" />
       <source>On Load</source>
-      <translation>On Load</translation>
+      <translation>読み込み時</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="390" />
       <source>Always</source>
-      <translation>Always</translation>
+      <translation>常に</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="394" />
@@ -1298,12 +1298,12 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="415" />
       <source>Conservative</source>
-      <translation>Conservative</translation>
+      <translation>控えめ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="416" />
       <source>Aggressive</source>
-      <translation>Aggressive</translation>
+      <translation>積極的</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="420" />
@@ -1333,7 +1333,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="429" />
       <source>Fast</source>
-      <translation>Fast</translation>
+      <translation>高速</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="430" />
@@ -1352,27 +1352,27 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="435" />
       <source>Unsafe (fast)</source>
-      <translation>Unsafe (fast)</translation>
+      <translation>非安全 (高速)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="436" />
       <source>Safe (stable)</source>
-      <translation>Safe (stable)</translation>
+      <translation>安全 (安定)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="441" />
       <source>Immediate</source>
-      <translation>Immediate</translation>
+      <translation>即時</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="442" />
       <source>Balanced</source>
-      <translation>Balanced</translation>
+      <translation>バランス</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="444" />
       <source>Strict</source>
-      <translation>Strict</translation>
+      <translation>厳格</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="451" />
@@ -1387,7 +1387,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="453" />
       <source>Debugging</source>
-      <translation>Debugging</translation>
+      <translation>デバッグ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="457" />
@@ -1492,27 +1492,27 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="490" />
       <source>Nearest Neighbor</source>
-      <translation>Nearest Neighbor</translation>
+      <translation>最近傍</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="491" />
       <source>Bilinear</source>
-      <translation>Bilinear</translation>
+      <translation>バイリニア</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="492" />
       <source>Bicubic</source>
-      <translation>Bicubic</translation>
+      <translation>バイキュービック</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="493" />
       <source>Gaussian</source>
-      <translation>Gaussian</translation>
+      <translation>ガウス</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="494" />
       <source>Lanczos</source>
-      <translation>Lanczos</translation>
+      <translation>ランチョス</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="495" />
@@ -2036,17 +2036,17 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="632" />
       <source>10GB DRAM (Unsafe)</source>
-      <translation>10GB DRAM (Unsafe)</translation>
+      <translation>10GB DRAM (非安全)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="633" />
       <source>12GB DRAM (Unsafe)</source>
-      <translation>12GB DRAM (Unsafe)</translation>
+      <translation>12GB DRAM (非安全)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="637" />
       <source>Docked</source>
-      <translation>Docked</translation>
+      <translation>TV モード</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="638" />
@@ -2057,7 +2057,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="642" />
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="655" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>オフ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="643" />
@@ -2088,78 +2088,78 @@ When a program attempts to open the controller applet, it is immediately closed.
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="656" />
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="680" />
       <source>Medium (256)</source>
-      <translation>Medium (256)</translation>
+      <translation>中 (256)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="657" />
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="681" />
       <source>High (512)</source>
-      <translation>High (512)</translation>
+      <translation>高 (512)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="661" />
       <source>Very Small (16 MB)</source>
-      <translation>Very Small (16 MB)</translation>
+      <translation>極小 (16 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="662" />
       <source>Small (32 MB)</source>
-      <translation>Small (32 MB)</translation>
+      <translation>小 (32 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="663" />
       <source>Normal (128 MB)</source>
-      <translation>Normal (128 MB)</translation>
+      <translation>標準 (128 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="664" />
       <source>Large (256 MB)</source>
-      <translation>Large (256 MB)</translation>
+      <translation>大 (256 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="665" />
       <source>Very Large (512 MB)</source>
-      <translation>Very Large (512 MB)</translation>
+      <translation>極大 (512 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="669" />
       <source>Very Low (4 MB)</source>
-      <translation>Very Low (4 MB)</translation>
+      <translation>極低 (4 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="670" />
       <source>Low (8 MB)</source>
-      <translation>Low (8 MB)</translation>
+      <translation>低 (8 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="671" />
       <source>Normal (16 MB)</source>
-      <translation>Normal (16 MB)</translation>
+      <translation>標準 (16 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="672" />
       <source>Medium (32 MB)</source>
-      <translation>Medium (32 MB)</translation>
+      <translation>中 (32 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="673" />
       <source>High (64 MB)</source>
-      <translation>High (64 MB)</translation>
+      <translation>高 (64 MB)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="677" />
       <source>Very Low (32)</source>
-      <translation>Very Low (32)</translation>
+      <translation>極低 (32)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="678" />
       <source>Low (64)</source>
-      <translation>Low (64)</translation>
+      <translation>低 (64)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="679" />
       <source>Normal (128)</source>
-      <translation>Normal (128)</translation>
+      <translation>標準 (128)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="686" />
@@ -2169,29 +2169,52 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="687" />
       <source>ExtendedDynamicState 1</source>
-      <translation>ExtendedDynamicState 1</translation>
+      <translation>拡張ダイナミックステート 1</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="688" />
       <source>ExtendedDynamicState 2</source>
-      <translation>ExtendedDynamicState 2</translation>
+      <translation>拡張ダイナミックステート 2</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="689" />
       <source>ExtendedDynamicState 3</source>
-      <translation>ExtendedDynamicState 3</translation>
+      <translation>拡張ダイナミックステート 3</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="694" />
       <source>Tree View</source>
-      <translation>Tree View</translation>
+      <translation>ツリー表示</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="695" />
       <source>Grid View</source>
-      <translation>Grid View</translation>
+      <translation>グリッド表示</translation>
     </message>
-  <message><source>CPU Affinity Pinning</source><translation>CPU アフィニティ固定</translation></message><message><source>Low-End Turbo</source><translation>低スペック高速化</translation></message><message><source>Thermal Governor</source><translation>温度ガバナー</translation></message><message><source>FP16 Frame Generation</source><translation>FP16 フレーム生成</translation></message><message><source>Auto Optical Flow Scale</source><translation>自動オプティカルフロースケール</translation></message><message><source>Emulate BGR565</source><translation>BGR565 をエミュレート</translation></message></context>
+  <message><source>CPU Affinity Pinning</source><translation>CPU アフィニティ固定</translation></message><message><source>Low-End Turbo</source><translation>低スペック高速化</translation></message><message><source>Thermal Governor</source><translation>温度ガバナー</translation></message><message><source>FP16 Frame Generation</source><translation>FP16 フレーム生成</translation></message><message><source>Auto Optical Flow Scale</source><translation>自動オプティカルフロースケール</translation></message><message><source>Emulate BGR565</source><translation>BGR565 をエミュレート</translation></message><message><source>CPU Clocks</source><translation>CPU クロック</translation></message><message><source>GPU Clocks</source><translation>GPU クロック</translation></message><message><source>Eco Thermal Mode</source><translation>エコ熱管理モード</translation></message><message><source>Custom RTC Offset:</source><translation>RTC オフセット:</translation></message><message><source>Custom RTC Offset</source><translation>RTC オフセット</translation></message><message><source>Custom RTC</source><translation>カスタム RTC 日時</translation></message><message><source>Custom RNG Seed</source><translation>カスタム RNG シード</translation></message><message><source>STORM Tier-2 JIT Compiler</source><translation>STORM Tier-2 JIT コンパイラ</translation></message><message><source>Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).</source><translation>ゼロオーバーヘッドの STORM Tier-2 命令プリオプティマイザおよびスーパーブロック JIT チューナーを有効にします。</translation></message><message><source>Eco Frame Pacing</source><translation>エコフレームペーシング</translation></message><message><source>Enable Frame Generation (LSFG)</source><translation>フレーム生成を有効化 (LSFG)</translation></message><message><source>Generates intermediate frames using Lossless Scaling optical flow to double or quadruple FPS.</source><translation>Lossless Scaling オプティカルフローを使用して中間フレームを生成し、FPS を 2〜4 倍に向上させます。</translation></message><message><source>Frame Generation Multiplier:</source><translation>フレーム生成倍率:</translation></message><message><source>Multiplier for generated frames (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</source><translation>生成フレームの倍率（2x = 2倍 FPS、3x = 3倍 FPS、4x = 4倍 FPS）。</translation></message><message><source>Target Frame Rate (Hz):</source><translation>目標フレームレート (Hz):</translation></message><message><source>Target output frame rate in Hz for Frame Generation.</source><translation>フレーム生成の目標出力フレームレート (Hz)。</translation></message><message><source>Optical Flow Scale (%):</source><translation>オプティカルフロースケール (%):</translation></message><message><source>Manual resolution scale percentage for optical flow estimation.</source><translation>オプティカルフロー推定の手動解像度スケール（%）。</translation></message><message><source>Frame Queue Depth:</source><translation>フレームキュー深度:</translation></message><message><source>Number of frames queued for optical flow interpolation.</source><translation>オプティカルフロー補間のためにキューイングされるフレーム数。</translation></message><message><source>Debug Optical Flow Vectors</source><translation>オプティカルフローベクトルのデバッグ表示</translation></message><message><source>Visualizes optical flow motion vectors on screen for debugging.</source><translation>デバッグ用にオプティカルフローの動きベクトルを画面上に可視化します。</translation></message><message><source>Automatically calculates optical flow grid scale for frame generation.</source><translation>フレーム生成用のオプティカルフローグリッドスケールを自動計算します。</translation></message><message><source>Uses 16-bit half precision floating point for frame generation.</source><translation>フレーム生成に 16 ビット半精度浮動小数点 (FP16) を使用して高速化します。</translation></message><message><source>Lock Dynamic Resolution</source><translation>動的解像度ロック</translation></message><message><source>Force Maximum Clocks (PC and Mobile)</source><translation>最大クロックを強制</translation></message><message><source>Early Release Fences</source><translation>フェンスの早期解放</translation></message><message><source>Optimize SPIR-V Output</source><translation>SPIR-V 出力を最適化</translation></message><message><source>Enable Frame Skipping</source><translation>フレームスキップを有効化</translation></message><message><source>Smart Shader Throttle</source><translation>スマートシェーダースロットル</translation></message><message><source>VRAM Garbage Collection</source><translation>VRAM ガベージコレクション</translation></message><message><source>Enable HDR10</source><translation>HDR10 を有効化</translation></message><message><source>VRAM Budget Governor</source><translation>VRAM 予算ガバナー</translation></message><message><source>Floating Translate Button</source><translation>フローティング翻訳ボタン</translation></message><message><source>Normal</source><translation>標準</translation></message><message><source>Boost</source><translation>ブースト</translation></message><message><source>Overclock</source><translation>オーバークロック</translation></message><message><source>BC5 (High quality)</source><translation>BC5 (高品質)</translation></message><message><source>Hybrid Video Decoding</source><translation>ハイブリッド</translation></message><message><source>Hybrid</source><translation>ハイブリッド</translation></message><message><source>Carousel View</source><translation>カルーセル表示</translation></message><message><source>Force 32:9 (Super UltraWide)</source><translation>強制 32:9</translation></message><message><source>Force 1:1 (Square)</source><translation>強制 1:1</translation></message><message><source>Force 3:2 (Portable / Surface)</source><translation>強制 3:2</translation></message><message><source>Force 5:4 (SXGA)</source><translation>強制 5:4</translation></message><message><source>Force 18:9 (2:1 Univisium)</source><translation>強制 18:9</translation></message><message><source>Force 19.5:9 (Modern Mobile)</source><translation>強制 19.5:9</translation></message><message><source>Force 20:9 (Cinema Mobile)</source><translation>強制 20:9</translation></message><message><source>Force 21:10 (Wide 16:10)</source><translation>強制 21:10</translation></message><message><source>Force 24:10 (3840x1600 UltraWide+)</source><translation>強制 24:10</translation></message><message><source>Force 32:10 (Super UltraWide 16:10)</source><translation>強制 32:10</translation></message><message><source>Force 48:9 (Triple Monitor 3x16:9)</source><translation>強制 48:9</translation></message><message><source>Auto Window Aspect (True 3D Fit)</source><translation>ウィンドウ比率に自動調整 (3D)</translation></message><message><source>Auto-Patch 3D Aspect Ratio (No Stretch)</source><translation>3Dアスペクト比自動パッチ</translation></message><message><source>Auto-Unlock 60/120 FPS</source><translation>60/120 FPS 自動ロック解除</translation></message><message><source>Portuguese (Português)</source><translation>ポルトガル語 (Português)</translation></message><message><source>Traditional Chinese</source><translation>繁体字中国語</translation></message><message><source>Brazilian Portuguese</source><translation>ブラジルポルトガル語</translation></message><message><source>Raises the clock the emulated CPU reports, which removes some FPS limiters.
+Weaker CPUs may see reduced performance, and certain games may behave improperly.</source><translation>エミュレートされた CPU が報告するクロックを引き上げ、一部の FPS 制限を解除します。
+低性能な CPU ではパフォーマンスが低下する場合があり、一部のゲームで不具合が生じる可能性があります。</translation></message><message><source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source><translation>GPU の処理が実際よりも速く完了したとゲームに認識させ、動的解像度や描画距離の低下を防ぎます。</translation></message><message><source>Pins emulation threads to physical performance cores.</source><translation>エミュレーションスレッドを物理的な高性能コアに固定します。</translation></message><message><source>Reduces power draw and frame stuttering with adaptive delivery.</source><translation>適応型フレーム配信により消費電力を抑え、画面のカクつきを低減します。</translation></message><message><source>Locks dynamic resolution scale to prevent resolution drops.</source><translation>動的解像度スケーリングを固定し、解像度の低下を防止します。</translation></message><message><source>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</source><translation>バックグラウンドのシェーダーコンパイルスレッドの優先度を動的に調整し、マイクロスタッターを防ぎます。</translation></message><message><source>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</source><translation>未使用のテクスチャバッファと ASTC キャッシュをバックグラウンドで定期解放し、VRAM リークを防ぎます。</translation></message><message><source>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</source><translation>VRAM の使用率が85%を超えた際に非アクティブなテクスチャをアンロードし、メモリ不足によるクラッシュを防ぎます。</translation></message><message><source>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</source><translation>エントリー向けマルチコア CPU や低スペック GPU での滑らかさを最大化します。</translation></message><message><source>Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.</source><translation>フレーム待機中にターゲットフレームレートを維持したまま、CPU と GPU の温度を 10〜15℃ 低減させます。</translation></message><message><source>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</source><translation>CPU と GPU を最高パフォーマンス状態に固定し、省電力やサーマルスロットリングを無効化します。</translation></message><message><source>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</source><translation>対応する HDR および OLED ディスプレイ向けに HDR10 (BT.2020 PQ / ST2084) 色空間を有効化します。</translation></message><message><source>Emulates BGR565 color format by software swapping red and blue channels.</source><translation>赤と青のチャンネルをソフトウェアで入れ替えることで BGR565 カラーフォーマットを再現します。</translation></message><message><source>Releases synchronization fences earlier to reduce frame presentation latency.</source><translation>同期フェンスを早期に解放し、フレーム表示の遅延を低減します。</translation></message><message><source>Runs optimization passes on compiled SPIR-V shaders.</source><translation>コンパイルされた SPIR-V シェーダーに対して最適化パスを実行します。</translation></message><message><source>Uses fast monotonic GPU timer queries for frame pacing.</source><translation>高速な単調増加 GPU タイマークエリを使用してフレームペーシングを行います。</translation></message><message><source>Skips rendering non-critical frames when emulation falls behind target rate.</source><translation>エミュレーションが目標速度に追いつかない場合、重要度の低いフレームの描画をスキップします。</translation></message><message><source>Reduces power consumption and fan noise on portable devices.</source><translation>ポータブルデバイスでの消費電力とファンの騒音を抑制します。</translation></message><message><source>Displays floating quick translation overlay button.</source><translation>フローティングクイック翻訳ボタンを表示します。</translation></message><message><source>Dynamic performance scaler</source><translation>動的パフォーマンススケーラー</translation></message><message><source>Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.</source><translation>ターゲットフレームレートを維持するために描画解像度を自動的に調整します。負荷が高い時は解像度を下げ、余裕がある時は復元します。</translation></message><message><source>Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.</source><translation>選択したアスペクト比（4:3、16:10、18:9、21:9、32:9、48:9 など）に合わせてゲーム実行ファイル内の 3D カメラ定数を自動パッチし、3D ジオメトリの引き伸ばしを防ぎます。</translation></message><message><source>Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.</source><translation>30 FPS の垂直同期（スワップ間隔）制限を自動解除し、60/120 FPS での描画を可能にします。</translation></message><message><source>Selects the scaling filter used when adapting the rendered image to the window size.
+Bilinear and Bicubic are standard filters.
+AMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.</source><translation>描画画像をウィンドウサイズに合わせる際のスケーリングフィルターを選択します。
+バイリニアとバイキュービックは標準フィルターです。
+AMD FSR と Qualcomm SGSR はシャープなアップスケーリングを提供します。</translation></message><message><source>The GPU Accuracy Level to use.
+Normal is faster, but may cause graphical issues in some games.
+High is slower, but fixes graphical issues in some games.
+Update frequency controls how often GPU state is synchronized when using Normal accuracy.</source><translation>使用する GPU 精度レベル。
+ノーマルは高速ですが、一部のゲームで描画不具合が発生する場合があります。
+ハイは低速ですが、描画不具合を修正します。</translation></message><message><source>The DMA accuracy level to use.
+Normal is faster, but may cause graphical issues in some games.
+Safe is slower, but fixes graphical issues in some games.</source><translation>使用する DMA 精度レベル。
+ノーマルは高速ですが、描画不具合が発生する場合があります。
+セーフは低速ですが、描画不具合を修正します。</translation></message><message><source>Controls how GPU fences are synchronized.
+Default follows the GPU accuracy setting.
+Immediate signals fences right away (fastest, least accurate).
+Balanced waits only when required.
+Accurate always waits for the GPU to finish (slowest, most accurate).</source><translation>GPU フェンスの同期方法を制御します。
+デフォルトは GPU 精度設定に従います。
+即時（最速）、バランス（必要時のみ待機）、正確（常に GPU 完了を待機）から選択できます。</translation></message><message><source>Enables reading modified GPU buffers back to CPU memory.
+Required by some games for proper physics or rendering effects, but significantly reduces performance.</source><translation>変更された GPU バッファを CPU メモリへ書き戻す機能を有効にします。
+一部のゲームで物理演算やエフェクトに必要ですが、パフォーマンスが低下します。</translation></message><message><source>Polish (polski)</source><translation>ポーランド語 (polski)</translation></message><message><source>Celsius (°C)</source><translation>摂氏 (°C)</translation></message><message><source>Fahrenheit (°F)</source><translation>華氏 (°F)</translation></message><message><source>Errors Only</source><translation>エラーのみ</translation></message><message><source>Standard</source><translation>標準</translation></message><message><source>Verbose</source><translation>詳細</translation></message><message><source>All</source><translation>すべて</translation></message><message><source>Turbo</source><translation>ターボ</translation></message><message><source>Slow</source><translation>スロー</translation></message></context>
   <context>
     <name>ConfigureApplets</name>
     <message>

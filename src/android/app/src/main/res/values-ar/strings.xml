@@ -1179,4 +1179,16 @@
     <string name="add_folders">إضافة مجلد</string>
     <string name="percent">%1$d%%</string>
 
+    <string name="ratio_32_9">32:9 (فائق العرض)</string>
+    <string name="ratio_1_1">1:1 (مربع)</string>
+    <string name="ratio_3_2">3:2 (Surface / الأجهزة اللوحية)</string>
+    <string name="ratio_5_4">5:4 (شاشات SXGA)</string>
+    <string name="ratio_18_9">18:9 / 2:1 (هواتف Univisium)</string>
+    <string name="ratio_19_5_9">19.5:9 (الهواتف الذكية الحديثة)</string>
+    <string name="ratio_20_9">20:9 (هواتف الألعاب)</string>
+    <string name="ratio_21_10">21:10 (شاشة عريضة)</string>
+    <string name="ratio_24_10">24:10 / 2.4:1 (سينمائي)</string>
+    <string name="ratio_32_10">32:10 (مزدوج 16:10)</string>
+    <string name="ratio_48_9">48:9 (ثلاث شاشات 16:9)</string>
+    <string name="ratio_auto_window">تلقائي حسب أبعاد الشاشة (3D أصلي)</string>
 </resources>

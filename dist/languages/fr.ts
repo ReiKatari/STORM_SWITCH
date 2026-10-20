@@ -1,4 +1,5 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
 <TS version="2.1" language="fr" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
@@ -309,7 +310,7 @@ Cela bannirait à la fois son nom d'utilisateur du forum et son adresse IP.</tra
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="50" />
       <source>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</source>
-      <translation>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</translation>
+      <translation>Active l'applet de superposition intégrée d'Horizon. Maintenez le bouton Home enfoncé pendant 1 seconde pour l'afficher.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="54" />
@@ -382,7 +383,7 @@ Désactiver cette option signifie débloquer le framerate jusqu’au maximum que
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="78" />
       <source>Turbo Speed</source>
-      <translation>Turbo Speed</translation>
+      <translation>Vitesse Turbo</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="79" />
@@ -392,7 +393,7 @@ Désactiver cette option signifie débloquer le framerate jusqu’au maximum que
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="81" />
       <source>Slow Speed</source>
-      <translation>Slow Speed</translation>
+      <translation>Vitesse lente</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="82" />
@@ -637,7 +638,7 @@ Le désactiver est uniquement destiné au débogage.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="169" />
       <source>Use asynchronous GPU emulation</source>
-      <translation>Use asynchronous GPU emulation</translation>
+      <translation>Émulation GPU asynchrone</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="170" />
@@ -693,7 +694,7 @@ BC1/BC3 : Le format intermédiaire sera recompressé en BC1 ou BC3, ce qui éc
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="186" />
       <source>Frame Pacing Mode (Vulkan only)</source>
-      <translation>Frame Pacing Mode (Vulkan only)</translation>
+      <translation>Mode de calage d'images (Vulkan uniquement)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="187" />
@@ -815,7 +816,7 @@ Default follows the GPU Accuracy setting.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="227" />
       <source>GPU Fence Behavior:</source>
-      <translation>GPU Fence Behavior:</translation>
+      <translation>Comportement des barrières GPU :</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="228" />
@@ -835,7 +836,7 @@ Default follows the GPU Accuracy setting.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="229" />
       <source>Enable GPU buffer readback</source>
-      <translation>Enable GPU buffer readback</translation>
+      <translation>Activer la relecture du tampon GPU</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="230" />
@@ -975,7 +976,7 @@ Les pipelines de calcul sont toujours activés sur tous les autres pilotes.</tra
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="270" />
       <source>Enable buffer history</source>
-      <translation>Enable buffer history</translation>
+      <translation>Activer l'historique du tampon</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="271" />
@@ -1361,7 +1362,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="441" />
       <source>Immediate</source>
-      <translation>Immediate</translation>
+      <translation>Immédiat</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="442" />
@@ -2190,7 +2191,32 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
       <source>Grid View</source>
       <translation>Vue en grille</translation>
     </message>
-  <message><source>CPU Affinity Pinning</source><translation>Affinité des cœurs CPU</translation></message><message><source>Low-End Turbo</source><translation>Turbo pour machines modestes</translation></message><message><source>Thermal Governor</source><translation>Régulateur thermique</translation></message><message><source>FP16 Frame Generation</source><translation>Génération d'images FP16</translation></message><message><source>Auto Optical Flow Scale</source><translation>Échelle de flux optique automatique</translation></message><message><source>Emulate BGR565</source><translation>Émuler BGR565</translation></message></context>
+  <message><source>CPU Affinity Pinning</source><translation>Affinité des cœurs CPU</translation></message><message><source>Low-End Turbo</source><translation>Turbo pour machines modestes</translation></message><message><source>Thermal Governor</source><translation>Régulateur thermique</translation></message><message><source>FP16 Frame Generation</source><translation>Génération d'images FP16</translation></message><message><source>Auto Optical Flow Scale</source><translation>Échelle de flux optique automatique</translation></message><message><source>Emulate BGR565</source><translation>Émuler BGR565</translation></message><message><source>CPU Clocks</source><translation>Fréquences CPU</translation></message><message><source>GPU Clocks</source><translation>Fréquences GPU</translation></message><message><source>Eco Thermal Mode</source><translation>Mode thermique éco</translation></message><message><source>Custom RTC Offset:</source><translation>Décalage RTC :</translation></message><message><source>Custom RTC Offset</source><translation>Décalage RTC</translation></message><message><source>Custom RTC</source><translation>Date RTC personnalisée</translation></message><message><source>Custom RNG Seed</source><translation>Graine RNG personnalisée</translation></message><message><source>STORM Tier-2 JIT Compiler</source><translation>Compilateur JIT STORM Tier-2</translation></message><message><source>Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).</source><translation>Active le pré-optimiseur d'instructions STORM Tier-2 sans surcoût et le réglage JIT superbloc.</translation></message><message><source>Eco Frame Pacing</source><translation>Régulation d'images éco</translation></message><message><source>Enable Frame Generation (LSFG)</source><translation>Activer la génération d'images (LSFG)</translation></message><message><source>Generates intermediate frames using Lossless Scaling optical flow to double or quadruple FPS.</source><translation>Génère des images intermédiaires via le flux optique Lossless Scaling pour doubler ou quadrupler les FPS.</translation></message><message><source>Frame Generation Multiplier:</source><translation>Multiplicateur de génération d'images :</translation></message><message><source>Multiplier for generated frames (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</source><translation>Multiplicateur d'images générées (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</translation></message><message><source>Target Frame Rate (Hz):</source><translation>Fréquence d'images cible (Hz) :</translation></message><message><source>Target output frame rate in Hz for Frame Generation.</source><translation>Fréquence d'images de sortie cible en Hz pour la génération d'images.</translation></message><message><source>Optical Flow Scale (%):</source><translation>Échelle du flux optique (%) :</translation></message><message><source>Manual resolution scale percentage for optical flow estimation.</source><translation>Pourcentage d'échelle de résolution manuelle pour l'estimation du flux optique.</translation></message><message><source>Frame Queue Depth:</source><translation>Profondeur de la file d'images :</translation></message><message><source>Number of frames queued for optical flow interpolation.</source><translation>Nombre d'images mises en file d'attente pour l'interpolation du flux optique.</translation></message><message><source>Debug Optical Flow Vectors</source><translation>Déboguer les vecteurs de flux optique</translation></message><message><source>Visualizes optical flow motion vectors on screen for debugging.</source><translation>Visualise les vecteurs de mouvement du flux optique à l'écran pour le débogage.</translation></message><message><source>Automatically calculates optical flow grid scale for frame generation.</source><translation>Calcule automatiquement l'échelle de la grille de flux optique pour la génération d'images.</translation></message><message><source>Uses 16-bit half precision floating point for frame generation.</source><translation>Utilise la virgule flottante en demi-précision 16 bits pour la génération d'images.</translation></message><message><source>Lock Dynamic Resolution</source><translation>Verrouiller la résolution dynamique</translation></message><message><source>Force Maximum Clocks (PC and Mobile)</source><translation>Forcer les fréquences maximales</translation></message><message><source>Early Release Fences</source><translation>Libération anticipée des barrières</translation></message><message><source>Optimize SPIR-V Output</source><translation>Optimiser la sortie SPIR-V</translation></message><message><source>Enable Frame Skipping</source><translation>Activer le saut d'images</translation></message><message><source>Smart Shader Throttle</source><translation>Régulation intelligente des shaders</translation></message><message><source>VRAM Garbage Collection</source><translation>Nettoyage de la mémoire VRAM</translation></message><message><source>Enable HDR10</source><translation>Activer HDR10</translation></message><message><source>VRAM Budget Governor</source><translation>Régulateur de budget VRAM</translation></message><message><source>Floating Translate Button</source><translation>Bouton de traduction flottant</translation></message><message><source>Normal</source><translation>Normal</translation></message><message><source>Boost</source><translation>Boost</translation></message><message><source>Overclock</source><translation>Overclocking</translation></message><message><source>BC5 (High quality)</source><translation>BC5 (Haute qualité)</translation></message><message><source>Hybrid Video Decoding</source><translation>Hybride</translation></message><message><source>Hybrid</source><translation>Hybride</translation></message><message><source>Carousel View</source><translation>Vue carrousel</translation></message><message><source>Force 32:9 (Super UltraWide)</source><translation>Forcer 32:9</translation></message><message><source>Force 1:1 (Square)</source><translation>Forcer 1:1</translation></message><message><source>Force 3:2 (Portable / Surface)</source><translation>Forcer 3:2</translation></message><message><source>Force 5:4 (SXGA)</source><translation>Forcer 5:4</translation></message><message><source>Force 18:9 (2:1 Univisium)</source><translation>Forcer 18:9</translation></message><message><source>Force 19.5:9 (Modern Mobile)</source><translation>Forcer 19.5:9</translation></message><message><source>Force 20:9 (Cinema Mobile)</source><translation>Forcer 20:9</translation></message><message><source>Force 21:10 (Wide 16:10)</source><translation>Forcer 21:10</translation></message><message><source>Force 24:10 (3840x1600 UltraWide+)</source><translation>Forcer 24:10</translation></message><message><source>Force 32:10 (Super UltraWide 16:10)</source><translation>Forcer 32:10</translation></message><message><source>Force 48:9 (Triple Monitor 3x16:9)</source><translation>Forcer 48:9</translation></message><message><source>Auto Window Aspect (True 3D Fit)</source><translation>Format auto de la fenêtre (3D)</translation></message><message><source>Auto-Patch 3D Aspect Ratio (No Stretch)</source><translation>Patch auto du format 3D</translation></message><message><source>Auto-Unlock 60/120 FPS</source><translation>Déverrouillage auto 60/120 FPS</translation></message><message><source>Portuguese (Português)</source><translation>Portugais (Português)</translation></message><message><source>Traditional Chinese</source><translation>Chinois traditionnel</translation></message><message><source>Brazilian Portuguese</source><translation>Portugais brésilien</translation></message><message><source>Raises the clock the emulated CPU reports, which removes some FPS limiters.
+Weaker CPUs may see reduced performance, and certain games may behave improperly.</source><translation>Augmente la fréquence signalée par le processeur émulé, supprimant ainsi certains limiteurs de FPS.
+Les processeurs moins puissants peuvent voir leurs performances réduites.</translation></message><message><source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source><translation>Fait croire au jeu que le rendu GPU est plus rapide, évitant ainsi la baisse de résolution et de distance d'affichage.</translation></message><message><source>Pins emulation threads to physical performance cores.</source><translation>Assigne les threads d'émulation aux cœurs de performance physiques.</translation></message><message><source>Reduces power draw and frame stuttering with adaptive delivery.</source><translation>Réduit la consommation d'énergie et les saccades grâce à une distribution adaptative des images.</translation></message><message><source>Locks dynamic resolution scale to prevent resolution drops.</source><translation>Verrouille l'échelle de résolution dynamique pour éviter les chutes de netteté.</translation></message><message><source>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</source><translation>Régule dynamiquement la priorité des threads de compilation de shaders en arrière-plan pour éviter les micro-saccades.</translation></message><message><source>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</source><translation>Nettoyage périodique en arrière-plan des tampons de texture inutilisés et du cache ASTC pour éviter les fuites de VRAM.</translation></message><message><source>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</source><translation>Empêche les plantages par manque de mémoire en déchargeant les textures lorsque l'utilisation de la VRAM dépasse 85 %.</translation></message><message><source>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</source><translation>Maximise la fluidité sur les processeurs multicœurs d'entrée de gamme et les cartes graphiques modestes.</translation></message><message><source>Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.</source><translation>Réduit les températures CPU et GPU de 10 à 15 °C pendant les temps d'attente d'images sans baisser la fréquence cible.</translation></message><message><source>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</source><translation>Verrouille les performances maximales pour le CPU et le GPU, désactivant l'économie d'énergie agressive.</translation></message><message><source>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</source><translation>Active l'espace colorimétrique HDR10 (BT.2020 PQ / ST2084) pour les écrans compatibles.</translation></message><message><source>Emulates BGR565 color format by software swapping red and blue channels.</source><translation>Émule le format de couleur BGR565 par permutation logicielle des canaux rouge et bleu.</translation></message><message><source>Releases synchronization fences earlier to reduce frame presentation latency.</source><translation>Libère les barrières de synchronisation plus tôt pour réduire la latence d'affichage des images.</translation></message><message><source>Runs optimization passes on compiled SPIR-V shaders.</source><translation>Exécute des passes d'optimisation sur les shaders SPIR-V compilés.</translation></message><message><source>Uses fast monotonic GPU timer queries for frame pacing.</source><translation>Utilise des requêtes de minuterie GPU monotones et rapides pour le calage des images.</translation></message><message><source>Skips rendering non-critical frames when emulation falls behind target rate.</source><translation>Ignore le rendu des images non critiques lorsque l'émulation prend du retard sur la cadence cible.</translation></message><message><source>Reduces power consumption and fan noise on portable devices.</source><translation>Réduit la consommation d'énergie et le bruit du ventilateur sur les appareils portables.</translation></message><message><source>Displays floating quick translation overlay button.</source><translation>Affiche un bouton flottant de traduction rapide.</translation></message><message><source>Dynamic performance scaler</source><translation>Mise à l'échelle dynamique des performances</translation></message><message><source>Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.</source><translation>Ajuste automatiquement la résolution de rendu pour maintenir la fréquence d'images cible. Lorsque les images prennent trop de temps, la résolution diminue ; lorsque les images sont rapides, elle est rétablie.</translation></message><message><source>Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.</source><translation>Patche automatiquement les constantes de caméra 3D dans les exécutables du jeu pour correspondre au format d'image sélectionné (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) sans étirer la géométrie 3D.</translation></message><message><source>Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.</source><translation>Déverrouille automatiquement la limite VSync de 30 FPS pour permettre un rendu à 60/120 FPS.</translation></message><message><source>Selects the scaling filter used when adapting the rendered image to the window size.
+Bilinear and Bicubic are standard filters.
+AMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.</source><translation>Sélectionne le filtre de mise à l'échelle utilisé pour adapter l'image rendue à la taille de la fenêtre.
+Bilinéaire et Bicubique sont des filtres standards.
+AMD FSR et Qualcomm SGSR offrent une mise à l'échelle nette.</translation></message><message><source>The GPU Accuracy Level to use.
+Normal is faster, but may cause graphical issues in some games.
+High is slower, but fixes graphical issues in some games.
+Update frequency controls how often GPU state is synchronized when using Normal accuracy.</source><translation>Le niveau de précision du GPU à utiliser.
+Normal est plus rapide, mais peut causer des problèmes graphiques.
+Élevé est plus lent, mais corrige les problèmes graphiques.</translation></message><message><source>The DMA accuracy level to use.
+Normal is faster, but may cause graphical issues in some games.
+Safe is slower, but fixes graphical issues in some games.</source><translation>Le niveau de précision DMA à utiliser.
+Normal est plus rapide, mais peut causer des problèmes graphiques.
+Sûr est plus lent, mais corrige les problèmes graphiques.</translation></message><message><source>Controls how GPU fences are synchronized.
+Default follows the GPU accuracy setting.
+Immediate signals fences right away (fastest, least accurate).
+Balanced waits only when required.
+Accurate always waits for the GPU to finish (slowest, most accurate).</source><translation>Contrôle la synchronisation des barrières GPU.
+Par défaut suit la précision GPU.
+Immédiat signale immédiatement.
+Équilibré attend uniquement si nécessaire.
+Précis attend toujours la fin du GPU.</translation></message><message><source>Enables reading modified GPU buffers back to CPU memory.
+Required by some games for proper physics or rendering effects, but significantly reduces performance.</source><translation>Active la relecture des tampons GPU modifiés vers la mémoire CPU.
+Requis par certains jeux pour la physique ou les effets, mais réduit les performances.</translation></message><message><source>Polish (polski)</source><translation>Polonais (polski)</translation></message><message><source>Celsius (°C)</source><translation>Celsius (°C)</translation></message><message><source>Fahrenheit (°F)</source><translation>Fahrenheit (°F)</translation></message><message><source>Errors Only</source><translation>Erreurs uniquement</translation></message><message><source>Standard</source><translation>Standard</translation></message><message><source>Verbose</source><translation>Détaillé</translation></message><message><source>All</source><translation>Tout</translation></message><message><source>Turbo</source><translation>Turbo</translation></message><message><source>Slow</source><translation>Lent</translation></message></context>
   <context>
     <name>ConfigureApplets</name>
     <message>

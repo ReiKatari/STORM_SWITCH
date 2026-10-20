@@ -1713,4 +1713,16 @@
     <string name="thermal_emergency_pause_toast">🌡️ Экстренная пауза: нагрев чипсета %1$s°C. Охлаждение устройства...</string>
     <string name="storm_tier2_compiler">Компилятор STORM Tier-2 (Суперблок JIT)</string>
     <string name="storm_tier2_compiler_description">Оптимизирующий компилятор STORM Tier-2 без накладных расходов (преобразует инструкции ARMv8.3 PAC/BTI в суперблоки и ускоряет чтение таймеров CNTVCT_EL0)</string>
+    <string name="ratio_32_9">32:9 (Супер-ультраширокий)</string>
+    <string name="ratio_1_1">1:1 (Квадратный)</string>
+    <string name="ratio_3_2">3:2 (Surface / Планшеты)</string>
+    <string name="ratio_5_4">5:4 (Мониторы SXGA)</string>
+    <string name="ratio_18_9">18:9 / 2:1 (Смартфоны Univisium)</string>
+    <string name="ratio_19_5_9">19.5:9 (Современные смартфоны)</string>
+    <string name="ratio_20_9">20:9 (Игровые смартфоны)</string>
+    <string name="ratio_21_10">21:10 (Широкоформатный)</string>
+    <string name="ratio_24_10">24:10 / 2.4:1 (Киноформат)</string>
+    <string name="ratio_32_10">32:10 (Двойной 16:10)</string>
+    <string name="ratio_48_9">48:9 (Три монитора 16:9)</string>
+    <string name="ratio_auto_window">Авто по пропорциям экрана (3D без растяжения)</string>
 </resources>

@@ -1,4 +1,5 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
 <TS version="2.1" language="zh_CN" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
@@ -535,7 +536,7 @@ Please note this may result in deadlocks and other race conditions.</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="142" />
       <source>API:</source>
-      <translation>API:</translation>
+      <translation>图形 API:</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="143" />
@@ -820,7 +821,7 @@ Default follows the GPU Accuracy setting.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="227" />
       <source>GPU Fence Behavior:</source>
-      <translation>GPU Fence Behavior:</translation>
+      <translation>GPU 栅栏同步行为:</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="228" />
@@ -1362,7 +1363,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="441" />
       <source>Immediate</source>
-      <translation>Immediate</translation>
+      <translation>立即</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="442" />
@@ -1372,7 +1373,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="444" />
       <source>Strict</source>
-      <translation>Strict</translation>
+      <translation>严格</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="451" />
@@ -1512,7 +1513,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="494" />
       <source>Lanczos</source>
-      <translation>Lanczos</translation>
+      <translation>兰索斯</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="495" />
@@ -2031,7 +2032,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="631" />
       <source>8GB DRAM</source>
-      <translation>8GB DRAM</translation>
+      <translation>8GB 内存</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="632" />
@@ -2191,7 +2192,32 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>网格视图</translation>
     </message>
-  <message><source>CPU Affinity Pinning</source><translation>CPU 核心亲和性绑定</translation></message><message><source>Low-End Turbo</source><translation>低端设备加速</translation></message><message><source>Thermal Governor</source><translation>温度调节器</translation></message><message><source>FP16 Frame Generation</source><translation>FP16 帧生成</translation></message><message><source>Auto Optical Flow Scale</source><translation>自动光流缩放</translation></message><message><source>Emulate BGR565</source><translation>模拟 BGR565</translation></message></context>
+  <message><source>CPU Affinity Pinning</source><translation>CPU 核心亲和性绑定</translation></message><message><source>Low-End Turbo</source><translation>低端设备加速</translation></message><message><source>Thermal Governor</source><translation>温度调节器</translation></message><message><source>FP16 Frame Generation</source><translation>FP16 帧生成</translation></message><message><source>Auto Optical Flow Scale</source><translation>自动光流缩放</translation></message><message><source>Emulate BGR565</source><translation>模拟 BGR565</translation></message><message><source>CPU Clocks</source><translation>CPU 时钟</translation></message><message><source>GPU Clocks</source><translation>GPU 时钟</translation></message><message><source>Eco Thermal Mode</source><translation>环保节能模式</translation></message><message><source>Custom RTC Offset:</source><translation>RTC 偏移量:</translation></message><message><source>Custom RTC Offset</source><translation>RTC 偏移量</translation></message><message><source>Custom RTC</source><translation>自定义 RTC 时间</translation></message><message><source>Custom RNG Seed</source><translation>自定义随机数种子</translation></message><message><source>STORM Tier-2 JIT Compiler</source><translation>STORM Tier-2 JIT 编译器</translation></message><message><source>Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).</source><translation>启用零开销 STORM Tier-2 指令预优化器与超块 JIT 调优器。</translation></message><message><source>Eco Frame Pacing</source><translation>环保帧平滑</translation></message><message><source>Enable Frame Generation (LSFG)</source><translation>启用帧生成 (LSFG)</translation></message><message><source>Generates intermediate frames using Lossless Scaling optical flow to double or quadruple FPS.</source><translation>使用 Lossless Scaling 光流算法生成中间帧，使帧率翻倍或提升至 4 倍。</translation></message><message><source>Frame Generation Multiplier:</source><translation>帧生成倍率:</translation></message><message><source>Multiplier for generated frames (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</source><translation>生成帧的倍率（2x = 双倍帧率，3x = 三倍帧率，4x = 四倍帧率）。</translation></message><message><source>Target Frame Rate (Hz):</source><translation>目标帧率 (Hz):</translation></message><message><source>Target output frame rate in Hz for Frame Generation.</source><translation>帧生成的目标输出帧率 (Hz)。</translation></message><message><source>Optical Flow Scale (%):</source><translation>光流分辨率缩放 (%):</translation></message><message><source>Manual resolution scale percentage for optical flow estimation.</source><translation>用于光流运动估计的手动分辨率缩放百分比。</translation></message><message><source>Frame Queue Depth:</source><translation>帧队列深度:</translation></message><message><source>Number of frames queued for optical flow interpolation.</source><translation>用于光流插值缓冲的帧队列深度。</translation></message><message><source>Debug Optical Flow Vectors</source><translation>调试光流运动矢量</translation></message><message><source>Visualizes optical flow motion vectors on screen for debugging.</source><translation>在屏幕上可视化显示光流运动矢量以供调试。</translation></message><message><source>Automatically calculates optical flow grid scale for frame generation.</source><translation>自动计算适合当前分辨率的光流网格缩放比例以进行帧生成。</translation></message><message><source>Uses 16-bit half precision floating point for frame generation.</source><translation>使用 16 位半精度浮点计算进行帧生成加速。</translation></message><message><source>Lock Dynamic Resolution</source><translation>锁定动态分辨率</translation></message><message><source>Force Maximum Clocks (PC and Mobile)</source><translation>强制最高时钟频率</translation></message><message><source>Early Release Fences</source><translation>提前释放同步栅栏 (Fences)</translation></message><message><source>Optimize SPIR-V Output</source><translation>优化 SPIR-V 输出</translation></message><message><source>Enable Frame Skipping</source><translation>启用跳帧</translation></message><message><source>Smart Shader Throttle</source><translation>智能着色器节流</translation></message><message><source>VRAM Garbage Collection</source><translation>显存垃圾回收</translation></message><message><source>Enable HDR10</source><translation>启用 HDR10</translation></message><message><source>VRAM Budget Governor</source><translation>显存预算调度器</translation></message><message><source>Floating Translate Button</source><translation>悬浮翻译按钮</translation></message><message><source>Normal</source><translation>正常</translation></message><message><source>Boost</source><translation>加速</translation></message><message><source>Overclock</source><translation>超频</translation></message><message><source>BC5 (High quality)</source><translation>BC5 (高质量)</translation></message><message><source>Hybrid Video Decoding</source><translation>混合</translation></message><message><source>Hybrid</source><translation>混合</translation></message><message><source>Carousel View</source><translation>旋转木马视图</translation></message><message><source>Force 32:9 (Super UltraWide)</source><translation>强制 32:9</translation></message><message><source>Force 1:1 (Square)</source><translation>强制 1:1</translation></message><message><source>Force 3:2 (Portable / Surface)</source><translation>强制 3:2</translation></message><message><source>Force 5:4 (SXGA)</source><translation>强制 5:4</translation></message><message><source>Force 18:9 (2:1 Univisium)</source><translation>强制 18:9</translation></message><message><source>Force 19.5:9 (Modern Mobile)</source><translation>强制 19.5:9</translation></message><message><source>Force 20:9 (Cinema Mobile)</source><translation>强制 20:9</translation></message><message><source>Force 21:10 (Wide 16:10)</source><translation>强制 21:10</translation></message><message><source>Force 24:10 (3840x1600 UltraWide+)</source><translation>强制 24:10</translation></message><message><source>Force 32:10 (Super UltraWide 16:10)</source><translation>强制 32:10</translation></message><message><source>Force 48:9 (Triple Monitor 3x16:9)</source><translation>强制 48:9</translation></message><message><source>Auto Window Aspect (True 3D Fit)</source><translation>自动窗口比例 (3D)</translation></message><message><source>Auto-Patch 3D Aspect Ratio (No Stretch)</source><translation>自动修补 3D 宽高比</translation></message><message><source>Auto-Unlock 60/120 FPS</source><translation>自动解锁 60/120 FPS</translation></message><message><source>Portuguese (Português)</source><translation>葡萄牙语 (Português)</translation></message><message><source>Traditional Chinese</source><translation>繁体中文</translation></message><message><source>Brazilian Portuguese</source><translation>巴西葡萄牙语</translation></message><message><source>Raises the clock the emulated CPU reports, which removes some FPS limiters.
+Weaker CPUs may see reduced performance, and certain games may behave improperly.</source><translation>提高模拟 CPU 报告的时钟频率，以解除部分游戏的帧率限制。
+较弱的 CPU 可能会降低性能，某些游戏可能出现异常。</translation></message><message><source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source><translation>使游戏认为 GPU 工作比实际更快完成，从而防止其自动降低动态分辨率和渲染视距。</translation></message><message><source>Pins emulation threads to physical performance cores.</source><translation>将模拟线程绑定到物理性能核心 (P-Cores)。</translation></message><message><source>Reduces power draw and frame stuttering with adaptive delivery.</source><translation>通过自适应帧递送降低能耗并消除画面微卡顿。</translation></message><message><source>Locks dynamic resolution scale to prevent resolution drops.</source><translation>锁定动态分辨率缩放，防止画质分辨率下降。</translation></message><message><source>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</source><translation>动态调节后台着色器编译线程的优先级，消除微卡顿。</translation></message><message><source>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</source><translation>定期在后台回收未使用的纹理缓冲区和 ASTC 缓存，防止显存泄漏。</translation></message><message><source>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</source><translation>当显存占用超过 85% 时自动卸载非活动纹理，防止内存不足导致闪退崩溃。</translation></message><message><source>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</source><translation>在入门级多核处理器和弱 GPU 上最大化帧率平滑度。</translation></message><message><source>Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.</source><translation>在帧等待间隙将 CPU 和 GPU 温度降低 10-15°C，且完全不降低目标帧率。</translation></message><message><source>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</source><translation>锁定 CPU 和 GPU 的最高性能状态，禁用激进降频和节能限制。</translation></message><message><source>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</source><translation>为兼容的 HDR 和 OLED 显示器启用 HDR10 (BT.2020 PQ / ST2084) 色彩空间。</translation></message><message><source>Emulates BGR565 color format by software swapping red and blue channels.</source><translation>通过软件置换红蓝通道来模拟 BGR565 颜色格式。</translation></message><message><source>Releases synchronization fences earlier to reduce frame presentation latency.</source><translation>更早释放同步栅栏 (Fences)，以降低画面呈现的输入延迟。</translation></message><message><source>Runs optimization passes on compiled SPIR-V shaders.</source><translation>对编译后的 SPIR-V 着色器执行优化通道。</translation></message><message><source>Uses fast monotonic GPU timer queries for frame pacing.</source><translation>使用快速单调 GPU 计时器查询进行帧平滑。</translation></message><message><source>Skips rendering non-critical frames when emulation falls behind target rate.</source><translation>当模拟进度落后于目标帧率时，跳过非关键帧的渲染。</translation></message><message><source>Reduces power consumption and fan noise on portable devices.</source><translation>降低便携式设备的功耗与风扇噪音。</translation></message><message><source>Displays floating quick translation overlay button.</source><translation>在界面上显示悬浮快速翻译按钮。</translation></message><message><source>Dynamic performance scaler</source><translation>动态性能缩放</translation></message><message><source>Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.</source><translation>自动调整渲染分辨率以保持目标帧率。当帧生成时间过长时降低分辨率，当帧率充裕时恢复分辨率。</translation></message><message><source>Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.</source><translation>自动修补游戏可执行文件中的 3D 摄像机视锥体常量，以匹配所选宽高比（4:3、16:10、18:9、21:9、32:9、48:9 等），而不会拉伸 3D 几何图形。</translation></message><message><source>Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.</source><translation>自动解除 30 FPS 垂直同步（交换间隔）上限，允许以 60/120 FPS 进行渲染。</translation></message><message><source>Selects the scaling filter used when adapting the rendered image to the window size.
+Bilinear and Bicubic are standard filters.
+AMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.</source><translation>选择将渲染图像适配到窗口大小时使用的缩放过滤器。
+双线性和双三次为标准过滤器。
+AMD FSR 和高通 SGSR 提供清晰的超分辨率缩放。</translation></message><message><source>The GPU Accuracy Level to use.
+Normal is faster, but may cause graphical issues in some games.
+High is slower, but fixes graphical issues in some games.
+Update frequency controls how often GPU state is synchronized when using Normal accuracy.</source><translation>要使用的 GPU 精度级别。
+标准速度更快，但在某些游戏中可能导致图形问题。
+高精度较慢，但可修复图形问题。</translation></message><message><source>The DMA accuracy level to use.
+Normal is faster, but may cause graphical issues in some games.
+Safe is slower, but fixes graphical issues in some games.</source><translation>要使用的 DMA 精度级别。
+标准速度更快，但可能导致图形问题。
+安全较慢，但可修复图形问题。</translation></message><message><source>Controls how GPU fences are synchronized.
+Default follows the GPU accuracy setting.
+Immediate signals fences right away (fastest, least accurate).
+Balanced waits only when required.
+Accurate always waits for the GPU to finish (slowest, most accurate).</source><translation>控制 GPU 栅栏（Fence）的同步方式。
+默认遵循 GPU 精度设置。
+立即会马上发出信号（最快）。
+平衡仅在需要时等待。
+精确始终等待 GPU 完成（最准）。</translation></message><message><source>Enables reading modified GPU buffers back to CPU memory.
+Required by some games for proper physics or rendering effects, but significantly reduces performance.</source><translation>启用将修改后的 GPU 缓冲区读回 CPU 内存。
+某些游戏需要此功能才能实现正常的物理或渲染效果，但会显著降低性能。</translation></message><message><source>Polish (polski)</source><translation>波兰语 (polski)</translation></message><message><source>Celsius (°C)</source><translation>摄氏度 (°C)</translation></message><message><source>Fahrenheit (°F)</source><translation>华氏度 (°F)</translation></message><message><source>Errors Only</source><translation>仅错误</translation></message><message><source>Standard</source><translation>标准</translation></message><message><source>Verbose</source><translation>详细</translation></message><message><source>All</source><translation>全部</translation></message><message><source>Turbo</source><translation>加速 (Turbo)</translation></message><message><source>Slow</source><translation>减速 (Slow)</translation></message></context>
   <context>
     <name>ConfigureApplets</name>
     <message>

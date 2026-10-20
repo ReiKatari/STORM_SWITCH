@@ -1795,23 +1795,23 @@ void MainWindow::InitializeWidgets() {
         QMenu context_menu(this);
         const auto cur_aspect = Settings::values.aspect_ratio.GetValue();
         const std::vector<std::pair<Settings::AspectRatio, QString>> items = {
-            {Settings::AspectRatio::R16_9, StormLang(QStringLiteral("16:9 (Стандарт HD)"), QStringLiteral("16:9 (Standard HD)"))},
-            {Settings::AspectRatio::R4_3, StormLang(QStringLiteral("4:3 (Классический)"), QStringLiteral("4:3 (Classic)"))},
-            {Settings::AspectRatio::R21_9, StormLang(QStringLiteral("21:9 (Ультраширокий)"), QStringLiteral("21:9 (Ultrawide)"))},
-            {Settings::AspectRatio::R16_10, StormLang(QStringLiteral("16:10 (Ноутбуки / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"))},
-            {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"))},
-            {Settings::AspectRatio::R32_9, StormLang(QStringLiteral("32:9 (Супер-ультраширокий)"), QStringLiteral("32:9 (Super Ultrawide)"))},
-            {Settings::AspectRatio::R1_1, StormLang(QStringLiteral("1:1 (Квадратный)"), QStringLiteral("1:1 (Square)"))},
-            {Settings::AspectRatio::R3_2, StormLang(QStringLiteral("3:2 (Surface / Планшеты)"), QStringLiteral("3:2 (Surface / Tablets)"))},
-            {Settings::AspectRatio::R5_4, StormLang(QStringLiteral("5:4 (Мониторы SXGA)"), QStringLiteral("5:4 (SXGA Monitors)"))},
-            {Settings::AspectRatio::R18_9, StormLang(QStringLiteral("18:9 / 2:1 (Смартфоны Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium Mobile)"))},
-            {Settings::AspectRatio::R19_5_9, StormLang(QStringLiteral("19.5:9 (Современные смартфоны)"), QStringLiteral("19.5:9 (Modern Smartphones)"))},
-            {Settings::AspectRatio::R20_9, StormLang(QStringLiteral("20:9 (Игровые смартфоны)"), QStringLiteral("20:9 (Gaming Smartphones)"))},
-            {Settings::AspectRatio::R21_10, StormLang(QStringLiteral("21:10 (Широкоформатный)"), QStringLiteral("21:10 (Widescreen)"))},
-            {Settings::AspectRatio::R24_10, StormLang(QStringLiteral("24:10 / 2.4:1 (Киноформат)"), QStringLiteral("24:10 / 2.4:1 (Cinema)"))},
-            {Settings::AspectRatio::R32_10, StormLang(QStringLiteral("32:10 (Двойной 16:10)"), QStringLiteral("32:10 (Dual 16:10)"))},
-            {Settings::AspectRatio::R48_9, StormLang(QStringLiteral("48:9 (Три монитора 16:9)"), QStringLiteral("48:9 (Triple 16:9 Surround)"))},
-            {Settings::AspectRatio::Auto_Window, StormLang(QStringLiteral("Авто по пропорциям окна (3D без растяжения)"), QStringLiteral("Auto Window Aspect (3D Native)"))},
+            {Settings::AspectRatio::R16_9, StormLang(QStringLiteral("16:9 (Стандарт HD)"), QStringLiteral("16:9 (Standard HD)"), QStringLiteral("16:9 (Standard-HD)"), QStringLiteral("16:9 (Standard HD)"), QStringLiteral("16:9 (标准 HD)"), QStringLiteral("16:9 (標準 HD)"), QStringLiteral("16:9 (قياسي HD)"), QStringLiteral("16:9 (Estándar HD)"))},
+            {Settings::AspectRatio::R4_3, StormLang(QStringLiteral("4:3 (Классический)"), QStringLiteral("4:3 (Classic)"), QStringLiteral("4:3 (Klassisch)"), QStringLiteral("4:3 (Classique)"), QStringLiteral("4:3 (经典)"), QStringLiteral("4:3 (クラシック)"), QStringLiteral("4:3 (كلاسيكي)"), QStringLiteral("4:3 (Clásico)"))},
+            {Settings::AspectRatio::R21_9, StormLang(QStringLiteral("21:9 (Ультраширокий)"), QStringLiteral("21:9 (Ultrawide)"), QStringLiteral("21:9 (Ultrawide)"), QStringLiteral("21:9 (Ultra-large)"), QStringLiteral("21:9 (超宽屏)"), QStringLiteral("21:9 (ウルトラワイド)"), QStringLiteral("21:9 (عريض جداً)"), QStringLiteral("21:9 (Ultraancho)"))},
+            {Settings::AspectRatio::R16_10, StormLang(QStringLiteral("16:10 (Ноутбуки / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"), QStringLiteral("16:10 (PC portables / Steam Deck)"), QStringLiteral("16:10 (笔记本 / Steam Deck)"), QStringLiteral("16:10 (ノートPC / Steam Deck)"), QStringLiteral("16:10 (لابتوب / Steam Deck)"), QStringLiteral("16:10 (Portátiles / Steam Deck)"))},
+            {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"), QStringLiteral("تمديد للنافذة"), QStringLiteral("Estirar a la ventana"))},
+            {Settings::AspectRatio::R32_9, StormLang(QStringLiteral("32:9 (Супер-ультраширокий)"), QStringLiteral("32:9 (Super Ultrawide)"), QStringLiteral("32:9 (Super-Ultrawide)"), QStringLiteral("32:9 (Super ultra-large)"), QStringLiteral("32:9 (超级超宽屏)"), QStringLiteral("32:9 (スーパーウルトラワイド)"), QStringLiteral("32:9 (فائق العرض)"), QStringLiteral("32:9 (Súper ultraancho)"))},
+            {Settings::AspectRatio::R1_1, StormLang(QStringLiteral("1:1 (Квадратный)"), QStringLiteral("1:1 (Square)"), QStringLiteral("1:1 (Quadratisch)"), QStringLiteral("1:1 (Carré)"), QStringLiteral("1:1 (正方形)"), QStringLiteral("1:1 (正方形)"), QStringLiteral("1:1 (مربع)"), QStringLiteral("1:1 (Cuadrado)"))},
+            {Settings::AspectRatio::R3_2, StormLang(QStringLiteral("3:2 (Surface / Планшеты)"), QStringLiteral("3:2 (Surface / Tablets)"), QStringLiteral("3:2 (Surface / Tablets)"), QStringLiteral("3:2 (Surface / Tablettes)"), QStringLiteral("3:2 (Surface / 平板)"), QStringLiteral("3:2 (Surface / タブレット)"), QStringLiteral("3:2 (Surface / الأجهزة اللوحية)"), QStringLiteral("3:2 (Surface / Tabletas)"))},
+            {Settings::AspectRatio::R5_4, StormLang(QStringLiteral("5:4 (Мониторы SXGA)"), QStringLiteral("5:4 (SXGA Monitors)"), QStringLiteral("5:4 (SXGA-Monitore)"), QStringLiteral("5:4 (Moniteurs SXGA)"), QStringLiteral("5:4 (SXGA 显示器)"), QStringLiteral("5:4 (SXGA モニター)"), QStringLiteral("5:4 (شاشات SXGA)"), QStringLiteral("5:4 (Monitores SXGA)"))},
+            {Settings::AspectRatio::R18_9, StormLang(QStringLiteral("18:9 / 2:1 (Смартфоны Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium Mobile)"), QStringLiteral("18:9 / 2:1 (Univisium Mobil)"), QStringLiteral("18:9 / 2:1 (Mobile Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium 手机)"), QStringLiteral("18:9 / 2:1 (Univisium モバイル)"), QStringLiteral("18:9 / 2:1 (هواتف Univisium)"), QStringLiteral("18:9 / 2:1 (Móviles Univisium)"))},
+            {Settings::AspectRatio::R19_5_9, StormLang(QStringLiteral("19.5:9 (Современные смартфоны)"), QStringLiteral("19.5:9 (Modern Smartphones)"), QStringLiteral("19.5:9 (Moderne Smartphones)"), QStringLiteral("19.5:9 (Smartphones modernes)"), QStringLiteral("19.5:9 (现代智能手机)"), QStringLiteral("19.5:9 (最新スマートフォン)"), QStringLiteral("19.5:9 (الهواتف الذكية الحديثة)"), QStringLiteral("19.5:9 (Smartphones modernos)"))},
+            {Settings::AspectRatio::R20_9, StormLang(QStringLiteral("20:9 (Игровые смартфоны)"), QStringLiteral("20:9 (Gaming Smartphones)"), QStringLiteral("20:9 (Gaming-Smartphones)"), QStringLiteral("20:9 (Smartphones gaming)"), QStringLiteral("20:9 (游戏手机)"), QStringLiteral("20:9 (ゲーミングスマホ)"), QStringLiteral("20:9 (هواتف الألعاب)"), QStringLiteral("20:9 (Smartphones gaming)"))},
+            {Settings::AspectRatio::R21_10, StormLang(QStringLiteral("21:10 (Широкоформатный)"), QStringLiteral("21:10 (Widescreen)"), QStringLiteral("21:10 (Breitbild)"), QStringLiteral("21:10 (Écran large)"), QStringLiteral("21:10 (宽屏)"), QStringLiteral("21:10 (ワイドスクリーン)"), QStringLiteral("21:10 (شاشة عريضة)"), QStringLiteral("21:10 (Pantalla ancha)"))},
+            {Settings::AspectRatio::R24_10, StormLang(QStringLiteral("24:10 / 2.4:1 (Киноформат)"), QStringLiteral("24:10 / 2.4:1 (Cinema)"), QStringLiteral("24:10 / 2.4:1 (Kinoformat)"), QStringLiteral("24:10 / 2.4:1 (Cinéma)"), QStringLiteral("24:10 / 2.4:1 (电影宽银幕)"), QStringLiteral("24:10 / 2.4:1 (シネマ)"), QStringLiteral("24:10 / 2.4:1 (سينمائي)"), QStringLiteral("24:10 / 2.4:1 (Cine)"))},
+            {Settings::AspectRatio::R32_10, StormLang(QStringLiteral("32:10 (Двойной 16:10)"), QStringLiteral("32:10 (Dual 16:10)"), QStringLiteral("32:10 (Dual 16:10)"), QStringLiteral("32:10 (Double 16:10)"), QStringLiteral("32:10 (双 16:10)"), QStringLiteral("32:10 (デュアル 16:10)"), QStringLiteral("32:10 (مزدوج 16:10)"), QStringLiteral("32:10 (Doble 16:10)"))},
+            {Settings::AspectRatio::R48_9, StormLang(QStringLiteral("48:9 (Три монитора 16:9)"), QStringLiteral("48:9 (Triple 16:9 Surround)"), QStringLiteral("48:9 (Dreifach-16:9 Surround)"), QStringLiteral("48:9 (Triple écran 16:9)"), QStringLiteral("48:9 (三联屏 16:9)"), QStringLiteral("48:9 (トリプル 16:9)"), QStringLiteral("48:9 (ثلاث شاشات 16:9)"), QStringLiteral("48:9 (Triple monitor 16:9)"))},
+            {Settings::AspectRatio::Auto_Window, StormLang(QStringLiteral("Авто по пропорциям окна (3D без растяжения)"), QStringLiteral("Auto Window Aspect (3D Native)"), QStringLiteral("Automatisch nach Fenstergröße (3D Nativ)"), QStringLiteral("Auto selon la fenêtre (3D natif)"), QStringLiteral("按窗口比例自动适配 (3D 原生无拉伸)"), QStringLiteral("ウィンドウ比率に自動適応 (3D ネイティブ)"), QStringLiteral("تلقائي حسب أبعاد النافذة (3D أصلي)"), QStringLiteral("Auto según ventana (3D nativo)"))},
         };
         for (const auto& item : items) {
             auto* act = context_menu.addAction(item.second, [this, item] {
@@ -2344,7 +2344,13 @@ void MainWindow::InitializeWidgets() {
         context_menu.addSeparator();
         auto* act_ar_patch = context_menu.addAction(StormLang(
             QStringLiteral("📐 Авто-патч 3D-камеры под формат экрана (Auto Aspect Patch)"),
-            QStringLiteral("📐 Auto-Patch 3D Camera Aspect Ratio")
+            QStringLiteral("📐 Auto-Patch 3D Camera Aspect Ratio"),
+            QStringLiteral("📐 3D-Kamera-Seitenverhältnis automatisch patchen"),
+            QStringLiteral("📐 Patch auto du format d'image 3D"),
+            QStringLiteral("📐 自动修补 3D 摄像机宽高比（无拉伸）"),
+            QStringLiteral("📐 3D カメラアスペクト比自動パッチ"),
+            QStringLiteral("📐 تصحيح تلقائي لنسبة أبعاد الكاميرا 3D"),
+            QStringLiteral("📐 Auto-parche de relación de aspecto 3D")
         ), [this] {
             ApplyStatusBarSwitchableSettingNoBackup(
                 Settings::values.auto_aspect_ratio_patch,
@@ -2358,7 +2364,13 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_fps_unlock = context_menu.addAction(StormLang(
             QStringLiteral("🚀 Авто-снятие лимита 30 FPS -> 60/120 FPS (Auto FPS Unlock)"),
-            QStringLiteral("🚀 Auto-Unlock 30 FPS Cap -> 60/120 FPS")
+            QStringLiteral("🚀 Auto-Unlock 30 FPS Cap -> 60/120 FPS"),
+            QStringLiteral("🚀 30-FPS-Limit automatisch auf 60/120 FPS entsperren"),
+            QStringLiteral("🚀 Déverrouillage auto 30 FPS -> 60/120 FPS"),
+            QStringLiteral("🚀 自动解锁 30 FPS 限制 -> 60/120 FPS"),
+            QStringLiteral("🚀 30 FPS 制限を 60/120 FPS に自動解除"),
+            QStringLiteral("🚀 فتح قيد 30 إطاراً تلقائياً إلى 60/120 FPS"),
+            QStringLiteral("🚀 Auto-desbloqueo de 30 FPS -> 60/120 FPS")
         ), [this] {
             const bool next = !Settings::values.auto_60fps_unlock.GetValue();
             ApplyStatusBarSwitchableSettingNoBackup(
@@ -2378,7 +2390,13 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_hdr = context_menu.addAction(StormLang(
             QStringLiteral("🌈 Авто-HDR10 (Inverse Tone Mapping)"),
-            QStringLiteral("🌈 Auto-HDR10 (Inverse Tone Mapping)")
+            QStringLiteral("🌈 Auto-HDR10 (Inverse Tone Mapping)"),
+            QStringLiteral("🌈 Auto-HDR10 (Inverses Tone Mapping)"),
+            QStringLiteral("🌈 Auto-HDR10 (Tone Mapping inverse)"),
+            QStringLiteral("🌈 自动 HDR10（逆色调映射）"),
+            QStringLiteral("🌈 自動 HDR10（逆トーンマッピング）"),
+            QStringLiteral("🌈 تقنية Auto-HDR10 التلقائية"),
+            QStringLiteral("🌈 Auto-HDR10 (Mapeo de tonos inverso)")
         ), [this] {
             ApplyStatusBarSwitchableSettingNoBackup(
                 Settings::values.enable_hdr10,
@@ -8203,7 +8221,7 @@ void MainWindow::UpdateAspectText() {
         val_text = QStringLiteral("48:9");
         break;
     case Settings::AspectRatio::Auto_Window:
-        val_text = StormLang(QStringLiteral("АВТО ОКНО"), QStringLiteral("AUTO WIN"));
+        val_text = StormLang(QStringLiteral("АВТО ОКНО"), QStringLiteral("AUTO WIN"), QStringLiteral("AUTO FENST."), QStringLiteral("AUTO FEN."), QStringLiteral("自动窗口"), QStringLiteral("自動ウィンドウ"), QStringLiteral("تلقائي"), QStringLiteral("AUTO VENT."));
         break;
     default:
         val_text = QStringLiteral("16:9");
@@ -9512,23 +9530,23 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
         ));
         const auto cur_aspect = Settings::values.aspect_ratio.GetValue();
         const std::vector<std::pair<Settings::AspectRatio, QString>> aspect_options = {
-            {Settings::AspectRatio::R16_9, StormLang(QStringLiteral("16:9 (Стандарт HD)"), QStringLiteral("16:9 (Standard HD)"))},
-            {Settings::AspectRatio::R4_3, StormLang(QStringLiteral("4:3 (Классический)"), QStringLiteral("4:3 (Classic)"))},
-            {Settings::AspectRatio::R21_9, StormLang(QStringLiteral("21:9 (Ультраширокий)"), QStringLiteral("21:9 (Ultrawide)"))},
-            {Settings::AspectRatio::R16_10, StormLang(QStringLiteral("16:10 (Ноутбуки / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"))},
-            {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"))},
-            {Settings::AspectRatio::R32_9, StormLang(QStringLiteral("32:9 (Супер-ультраширокий)"), QStringLiteral("32:9 (Super Ultrawide)"))},
-            {Settings::AspectRatio::R1_1, StormLang(QStringLiteral("1:1 (Квадратный)"), QStringLiteral("1:1 (Square)"))},
-            {Settings::AspectRatio::R3_2, StormLang(QStringLiteral("3:2 (Surface / Планшеты)"), QStringLiteral("3:2 (Surface / Tablets)"))},
-            {Settings::AspectRatio::R5_4, StormLang(QStringLiteral("5:4 (Мониторы SXGA)"), QStringLiteral("5:4 (SXGA Monitors)"))},
-            {Settings::AspectRatio::R18_9, StormLang(QStringLiteral("18:9 / 2:1 (Смартфоны Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium Mobile)"))},
-            {Settings::AspectRatio::R19_5_9, StormLang(QStringLiteral("19.5:9 (Современные смартфоны)"), QStringLiteral("19.5:9 (Modern Smartphones)"))},
-            {Settings::AspectRatio::R20_9, StormLang(QStringLiteral("20:9 (Игровые смартфоны)"), QStringLiteral("20:9 (Gaming Smartphones)"))},
-            {Settings::AspectRatio::R21_10, StormLang(QStringLiteral("21:10 (Широкоформатный)"), QStringLiteral("21:10 (Widescreen)"))},
-            {Settings::AspectRatio::R24_10, StormLang(QStringLiteral("24:10 / 2.4:1 (Киноформат)"), QStringLiteral("24:10 / 2.4:1 (Cinema)"))},
-            {Settings::AspectRatio::R32_10, StormLang(QStringLiteral("32:10 (Двойной 16:10)"), QStringLiteral("32:10 (Dual 16:10)"))},
-            {Settings::AspectRatio::R48_9, StormLang(QStringLiteral("48:9 (Три монитора 16:9)"), QStringLiteral("48:9 (Triple 16:9 Surround)"))},
-            {Settings::AspectRatio::Auto_Window, StormLang(QStringLiteral("Авто по пропорциям окна (3D без растяжения)"), QStringLiteral("Auto Window Aspect (3D Native)"))},
+            {Settings::AspectRatio::R16_9, StormLang(QStringLiteral("16:9 (Стандарт HD)"), QStringLiteral("16:9 (Standard HD)"), QStringLiteral("16:9 (Standard-HD)"), QStringLiteral("16:9 (Standard HD)"), QStringLiteral("16:9 (标准 HD)"), QStringLiteral("16:9 (標準 HD)"), QStringLiteral("16:9 (قياسي HD)"), QStringLiteral("16:9 (Estándar HD)"))},
+            {Settings::AspectRatio::R4_3, StormLang(QStringLiteral("4:3 (Классический)"), QStringLiteral("4:3 (Classic)"), QStringLiteral("4:3 (Klassisch)"), QStringLiteral("4:3 (Classique)"), QStringLiteral("4:3 (经典)"), QStringLiteral("4:3 (クラシック)"), QStringLiteral("4:3 (كلاسيكي)"), QStringLiteral("4:3 (Clásico)"))},
+            {Settings::AspectRatio::R21_9, StormLang(QStringLiteral("21:9 (Ультраширокий)"), QStringLiteral("21:9 (Ultrawide)"), QStringLiteral("21:9 (Ultrawide)"), QStringLiteral("21:9 (Ultra-large)"), QStringLiteral("21:9 (超宽屏)"), QStringLiteral("21:9 (ウルトラワイド)"), QStringLiteral("21:9 (عريض جداً)"), QStringLiteral("21:9 (Ultraancho)"))},
+            {Settings::AspectRatio::R16_10, StormLang(QStringLiteral("16:10 (Ноутбуки / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"), QStringLiteral("16:10 (PC portables / Steam Deck)"), QStringLiteral("16:10 (笔记本 / Steam Deck)"), QStringLiteral("16:10 (ノートPC / Steam Deck)"), QStringLiteral("16:10 (لابتوب / Steam Deck)"), QStringLiteral("16:10 (Portátiles / Steam Deck)"))},
+            {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"), QStringLiteral("تمديد للنافذة"), QStringLiteral("Estirar a la ventana"))},
+            {Settings::AspectRatio::R32_9, StormLang(QStringLiteral("32:9 (Супер-ультраширокий)"), QStringLiteral("32:9 (Super Ultrawide)"), QStringLiteral("32:9 (Super-Ultrawide)"), QStringLiteral("32:9 (Super ultra-large)"), QStringLiteral("32:9 (超级超宽屏)"), QStringLiteral("32:9 (スーパーウルトラワイド)"), QStringLiteral("32:9 (فائق العرض)"), QStringLiteral("32:9 (Súper ultraancho)"))},
+            {Settings::AspectRatio::R1_1, StormLang(QStringLiteral("1:1 (Квадратный)"), QStringLiteral("1:1 (Square)"), QStringLiteral("1:1 (Quadratisch)"), QStringLiteral("1:1 (Carré)"), QStringLiteral("1:1 (正方形)"), QStringLiteral("1:1 (正方形)"), QStringLiteral("1:1 (مربع)"), QStringLiteral("1:1 (Cuadrado)"))},
+            {Settings::AspectRatio::R3_2, StormLang(QStringLiteral("3:2 (Surface / Планшеты)"), QStringLiteral("3:2 (Surface / Tablets)"), QStringLiteral("3:2 (Surface / Tablets)"), QStringLiteral("3:2 (Surface / Tablettes)"), QStringLiteral("3:2 (Surface / 平板)"), QStringLiteral("3:2 (Surface / タブレット)"), QStringLiteral("3:2 (Surface / الأجهزة اللوحية)"), QStringLiteral("3:2 (Surface / Tabletas)"))},
+            {Settings::AspectRatio::R5_4, StormLang(QStringLiteral("5:4 (Мониторы SXGA)"), QStringLiteral("5:4 (SXGA Monitors)"), QStringLiteral("5:4 (SXGA-Monitore)"), QStringLiteral("5:4 (Moniteurs SXGA)"), QStringLiteral("5:4 (SXGA 显示器)"), QStringLiteral("5:4 (SXGA モニター)"), QStringLiteral("5:4 (شاشات SXGA)"), QStringLiteral("5:4 (Monitores SXGA)"))},
+            {Settings::AspectRatio::R18_9, StormLang(QStringLiteral("18:9 / 2:1 (Смартфоны Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium Mobile)"), QStringLiteral("18:9 / 2:1 (Univisium Mobil)"), QStringLiteral("18:9 / 2:1 (Mobile Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium 手机)"), QStringLiteral("18:9 / 2:1 (Univisium モバイル)"), QStringLiteral("18:9 / 2:1 (هواتف Univisium)"), QStringLiteral("18:9 / 2:1 (Móviles Univisium)"))},
+            {Settings::AspectRatio::R19_5_9, StormLang(QStringLiteral("19.5:9 (Современные смартфоны)"), QStringLiteral("19.5:9 (Modern Smartphones)"), QStringLiteral("19.5:9 (Moderne Smartphones)"), QStringLiteral("19.5:9 (Smartphones modernes)"), QStringLiteral("19.5:9 (现代智能手机)"), QStringLiteral("19.5:9 (最新スマートフォン)"), QStringLiteral("19.5:9 (الهواتف الذكية الحديثة)"), QStringLiteral("19.5:9 (Smartphones modernos)"))},
+            {Settings::AspectRatio::R20_9, StormLang(QStringLiteral("20:9 (Игровые смартфоны)"), QStringLiteral("20:9 (Gaming Smartphones)"), QStringLiteral("20:9 (Gaming-Smartphones)"), QStringLiteral("20:9 (Smartphones gaming)"), QStringLiteral("20:9 (游戏手机)"), QStringLiteral("20:9 (ゲーミングスマホ)"), QStringLiteral("20:9 (هواتف الألعاب)"), QStringLiteral("20:9 (Smartphones gaming)"))},
+            {Settings::AspectRatio::R21_10, StormLang(QStringLiteral("21:10 (Широкоформатный)"), QStringLiteral("21:10 (Widescreen)"), QStringLiteral("21:10 (Breitbild)"), QStringLiteral("21:10 (Écran large)"), QStringLiteral("21:10 (宽屏)"), QStringLiteral("21:10 (ワイドスクリーン)"), QStringLiteral("21:10 (شاشة عريضة)"), QStringLiteral("21:10 (Pantalla ancha)"))},
+            {Settings::AspectRatio::R24_10, StormLang(QStringLiteral("24:10 / 2.4:1 (Киноформат)"), QStringLiteral("24:10 / 2.4:1 (Cinema)"), QStringLiteral("24:10 / 2.4:1 (Kinoformat)"), QStringLiteral("24:10 / 2.4:1 (Cinéma)"), QStringLiteral("24:10 / 2.4:1 (电影宽银幕)"), QStringLiteral("24:10 / 2.4:1 (シネマ)"), QStringLiteral("24:10 / 2.4:1 (سينمائي)"), QStringLiteral("24:10 / 2.4:1 (Cine)"))},
+            {Settings::AspectRatio::R32_10, StormLang(QStringLiteral("32:10 (Двойной 16:10)"), QStringLiteral("32:10 (Dual 16:10)"), QStringLiteral("32:10 (Dual 16:10)"), QStringLiteral("32:10 (Double 16:10)"), QStringLiteral("32:10 (双 16:10)"), QStringLiteral("32:10 (デュアル 16:10)"), QStringLiteral("32:10 (مزدوج 16:10)"), QStringLiteral("32:10 (Doble 16:10)"))},
+            {Settings::AspectRatio::R48_9, StormLang(QStringLiteral("48:9 (Три монитора 16:9)"), QStringLiteral("48:9 (Triple 16:9 Surround)"), QStringLiteral("48:9 (Dreifach-16:9 Surround)"), QStringLiteral("48:9 (Triple écran 16:9)"), QStringLiteral("48:9 (三联屏 16:9)"), QStringLiteral("48:9 (トリプル 16:9)"), QStringLiteral("48:9 (ثلاث شاشات 16:9)"), QStringLiteral("48:9 (Triple monitor 16:9)"))},
+            {Settings::AspectRatio::Auto_Window, StormLang(QStringLiteral("Авто по пропорциям окна (3D без растяжения)"), QStringLiteral("Auto Window Aspect (3D Native)"), QStringLiteral("Automatisch nach Fenstergröße (3D Nativ)"), QStringLiteral("Auto selon la fenêtre (3D natif)"), QStringLiteral("按窗口比例自动适配 (3D 原生无拉伸)"), QStringLiteral("ウィンドウ比率に自動適応 (3D ネイティブ)"), QStringLiteral("تلقائي حسب أبعاد النافذة (3D أصلي)"), QStringLiteral("Auto según ventana (3D nativo)"))},
         };
         for (const auto& opt : aspect_options) {
             auto* act = aspect_menu->addAction(opt.second, [this, opt] {

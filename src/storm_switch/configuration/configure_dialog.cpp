@@ -183,7 +183,13 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     m_search_edit->setClearButtonEnabled(true);
     m_search_edit->setPlaceholderText(StormLang(
         QStringLiteral("🔍 Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
-        QStringLiteral("🔍 Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)...")
+        QStringLiteral("🔍 Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)..."),
+        QStringLiteral("🔍 Einstellungen schnell suchen (z. B. Vulkan, FSR, Audio, Speicher, FPS)..."),
+        QStringLiteral("🔍 Recherche rapide des paramètres (ex. Vulkan, FSR, audio, mémoire, FPS)..."),
+        QStringLiteral("🔍 快速搜索设置（例如：Vulkan、FSR、音频、内存、帧率）..."),
+        QStringLiteral("🔍 設定をクイック検索（例：Vulkan、FSR、オーディオ、メモリ、フレーム）..."),
+        QStringLiteral("🔍 بحث سريع في الإعدادات (مثل: Vulkan، FSR، الصوت، الذاكرة، الإطارات)..."),
+        QStringLiteral("🔍 Búsqueda rápida de ajustes (ej.: Vulkan, FSR, audio, memoria, FPS)...")
     ));
     m_search_edit->setStyleSheet(QStringLiteral(
         "QLineEdit#SettingsSearchEdit {"
@@ -607,7 +613,13 @@ void ConfigureDialog::RetranslateUI() {
     if (m_search_edit) {
         m_search_edit->setPlaceholderText(StormLang(
             QStringLiteral("🔍 Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
-            QStringLiteral("🔍 Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)...")
+            QStringLiteral("🔍 Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)..."),
+            QStringLiteral("🔍 Einstellungen schnell suchen (z. B. Vulkan, FSR, Audio, Speicher, FPS)..."),
+            QStringLiteral("🔍 Recherche rapide des paramètres (ex. Vulkan, FSR, audio, mémoire, FPS)..."),
+            QStringLiteral("🔍 快速搜索设置（例如：Vulkan、FSR、音频、内存、帧率）..."),
+            QStringLiteral("🔍 設定をクイック検索（例：Vulkan、FSR、オーディオ、メモリ、フレーム）..."),
+            QStringLiteral("🔍 بحث سريع في الإعدادات (مثل: Vulkan، FSR، الصوت، الذاكرة، الإطارات)..."),
+            QStringLiteral("🔍 Búsqueda rápida de ajustes (ej.: Vulkan, FSR, audio, memoria, FPS)...")
         ));
     }
 
