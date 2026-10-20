@@ -108,27 +108,12 @@ bool Patcher::PatchText(std::span<const u8> program_image, const Kernel::CodeSet
 
         // SVC
         if (auto svc = SVC{inst}; svc.Verify()) {
-            const u32 svc_id = svc.GetValue();
             bool pre_buffer = false;
             auto ret = AddRelocations(pre_buffer);
-            auto& cg = pre_buffer ? c_pre : c;
-
-            // Fast-path 1: svcGetSystemTick (0x1E) -> inline CNTVCT_EL0 19.2MHz read into X0 with 0 host exits
-            if (svc_id == 0x1E) {
-                WriteCntpctHandler(ret, oaknut::XReg{0}, cg);
-                continue;
-            }
-
-            // Fast-path 2: svcFlushEntireDataCache (0x21) / svcFlushDataCache (0x22) -> inline X0 = 0 (ResultSuccess)
-            if (svc_id == 0x21 || svc_id == 0x22) {
-                WriteImmediateHandler(ret, oaknut::XReg{0}, 0, cg);
-                continue;
-            }
-
             if (pre_buffer) {
-                WriteSvcTrampoline(ret, svc_id, c_pre, m_save_context_pre, m_load_context_pre);
+                WriteSvcTrampoline(ret, svc.GetValue(), c_pre, m_save_context_pre, m_load_context_pre);
             } else {
-                WriteSvcTrampoline(ret, svc_id, c, m_save_context, m_load_context);
+                WriteSvcTrampoline(ret, svc.GetValue(), c, m_save_context, m_load_context);
             }
             continue;
         }
@@ -172,25 +157,6 @@ bool Patcher::PatchText(std::span<const u8> program_image, const Kernel::CodeSet
             } else {
                 WriteCntfrqHandler(ret, oaknut::XReg{static_cast<int>(mrs.GetRt())}, c);
             }
-            continue;
-        }
-
-        // MRS Xn, MIDR_EL1 / CTR_EL0 / DCZID_EL0 (Tegra X1 Cortex-A57 hardware constants)
-        if (auto mrs = MRS{inst};
-            mrs.Verify() && (mrs.GetSystemReg() == MidrEl1 || mrs.GetSystemReg() == CtrEl0 ||
-                             mrs.GetSystemReg() == DczidEl0)) {
-            u64 hw_val = 0;
-            if (mrs.GetSystemReg() == MidrEl1) {
-                hw_val = 0x411FD073ULL; // Tegra X1 Cortex-A57 r1p3
-            } else if (mrs.GetSystemReg() == CtrEl0) {
-                hw_val = 0x8444C004ULL; // 64-byte I/D cache line
-            } else {
-                hw_val = 0x00000004ULL; // 64-byte DC ZVA block size
-            }
-            bool pre_buffer = false;
-            auto ret = AddRelocations(pre_buffer);
-            WriteImmediateHandler(ret, oaknut::XReg{static_cast<int>(mrs.GetRt())}, hw_val,
-                                  pre_buffer ? c_pre : c);
             continue;
         }
 

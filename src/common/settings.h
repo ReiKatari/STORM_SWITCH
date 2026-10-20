@@ -690,7 +690,7 @@ struct Values {
                                          true,
                                          true};
     SwitchableSetting<bool> auto_aspect_ratio_patch{linkage,
-                                                    true,
+                                                    false,
                                                     "auto_aspect_ratio_patch",
                                                     Category::Renderer,
                                                     Specialization::Default,

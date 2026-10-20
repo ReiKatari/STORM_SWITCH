@@ -572,7 +572,7 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
                 const u32 default_bits_alt = default_bits - 1;
                 size_t patched_count = 0;
 
-                for (size_t seg_idx = 1; seg_idx <= 2 && seg_idx < header.segments.size(); ++seg_idx) {
+                for (size_t seg_idx = 1; seg_idx <= 1 && seg_idx < header.segments.size(); ++seg_idx) {
                     const size_t seg_start = sizeof(Loader::NSOHeader) + header.segments[seg_idx].location;
                     const size_t seg_size = header.segments[seg_idx].size;
                     if (seg_start >= out.size() || seg_size < sizeof(u32)) {
