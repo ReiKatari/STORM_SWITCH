@@ -154,13 +154,17 @@ void TextureCache<P>::RunGarbageCollector() {
         if ((!aggressive_mode && True(image.flags & ImageFlagBits::CostlyLoad)) || (!high_priority_mode && must_download)) {
             return false;
         }
-        if (!aggressive_mode && !must_download && True(image.flags & ImageFlagBits::GpuModified)) {
-            // Written by the GPU and not downloadable (e.g. depth, MSAA without download support,
-            // bad overlaps), so its contents exist only on the host. Deleting it hands the guest a
-            // blank image the next time it samples it - on TOTK this lost hundreds of shadow and
-            // render targets a minute once usage passed the expected threshold. Only give those
-            // up when memory is actually critical.
-            return false;
+        if (!must_download && True(image.flags & ImageFlagBits::GpuModified)) {
+            // Written by the GPU and not downloadable.
+            // Never destroy 1x 2D ColorTexture render targets (such as Diablo II: Resurrected's
+            // persistent font glyph atlases) even in aggressive_mode, as their rasterized glyphs
+            // exist only on the GPU and would permanently disappear after Act transitions!
+            const bool is_color_2d = image.info.type == ImageType::e2D &&
+                                     image.info.num_samples == 1 &&
+                                     GetFormatType(image.info.format) == SurfaceType::ColorTexture;
+            if (!aggressive_mode || is_color_2d) {
+                return false;
+            }
         }
         if (must_download && !vram_gc) {
             return false;

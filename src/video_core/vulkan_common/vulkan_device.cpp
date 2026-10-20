@@ -717,8 +717,9 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         features.shader_float16_int8.shaderFloat16 = false;
     }
 
-    if (features.shader_float16_int8.shaderFloat16 && (is_qualcomm || is_turnip || is_mali || is_xclipse)) {
-        // Mobile GPU FP16 rounding/denormals cause severe UE4 lighting & post-processing artifacts
+    if (features.shader_float16_int8.shaderFloat16 &&
+        (is_qualcomm || is_mali || is_xclipse || (is_turnip && Settings::values.fix_bloom_effects.GetValue()))) {
+        // Mobile GPU FP16 rounding/denormals cause UE4 lighting & post-processing artifacts when fix_bloom_effects is requested
         LOG_WARNING(Render_Vulkan, "Mobile GPU auto-optimization: Disabling shaderFloat16 to prevent UE4 lighting and post-process artifacts");
         features.shader_float16_int8.shaderFloat16 = false;
     }

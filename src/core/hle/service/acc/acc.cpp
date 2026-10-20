@@ -254,23 +254,96 @@ private:
     }
 };
 
+class AuthorizationAsyncContext final : public IAsyncContext {
+public:
+    explicit AuthorizationAsyncContext(Core::System& system_) : IAsyncContext{system_} {
+        MarkComplete();
+    }
+    ~AuthorizationAsyncContext() override = default;
+
+protected:
+    bool IsComplete() const override {
+        return true;
+    }
+    void Cancel() override {}
+    Result GetResult() const override {
+        return ResultSuccess;
+    }
+};
+
 class IAuthorizationRequest final : public ServiceFramework<IAuthorizationRequest> {
 public:
-    explicit IAuthorizationRequest(Core::System& system_, Common::UUID)
-        : ServiceFramework{system_, "IAuthorizationRequest"} {
+    explicit IAuthorizationRequest(Core::System& system_, Common::UUID uuid_)
+        : ServiceFramework{system_, "IAuthorizationRequest"},
+          async_ctx{std::make_shared<AuthorizationAsyncContext>(system_)},
+          session_id{uuid_} {
         // clang-format off
         static const FunctionInfo functions[] = {
-            {0, nullptr, "GetSessionId"},
-            {10, nullptr, "InvokeWithoutInteractionAsync"},
-            {19, nullptr, "IsAuthorized"},
-            {20, nullptr, "GetAuthorizationCode"},
-            {21, nullptr, "GetIdToken"},
-            {22, nullptr, "GetState"},
+            {0, &IAuthorizationRequest::GetSessionId, "GetSessionId"},
+            {10, &IAuthorizationRequest::InvokeWithoutInteractionAsync, "InvokeWithoutInteractionAsync"},
+            {19, &IAuthorizationRequest::IsAuthorized, "IsAuthorized"},
+            {20, &IAuthorizationRequest::GetAuthorizationCode, "GetAuthorizationCode"},
+            {21, &IAuthorizationRequest::GetIdToken, "GetIdToken"},
+            {22, &IAuthorizationRequest::GetState, "GetState"},
         };
         // clang-format on
 
         RegisterHandlers(functions);
     }
+
+private:
+    void GetSessionId(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_ACC, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 6};
+        rb.Push(ResultSuccess);
+        rb.PushRaw<Common::UUID>(session_id);
+    }
+
+    void InvokeWithoutInteractionAsync(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_ACC, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2, 0, 1};
+        rb.Push(ResultSuccess);
+        rb.PushIpcInterface(ctx, async_ctx);
+    }
+
+    void IsAuthorized(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_ACC, "(STUBBED) called -> returning false (offline)");
+        IPC::ResponseBuilder rb{ctx, 3};
+        rb.Push(ResultSuccess);
+        rb.Push<u8>(0);
+    }
+
+    void GetAuthorizationCode(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_ACC, "(STUBBED) called");
+        if (ctx.CanWriteBuffer()) {
+            std::vector<u8> empty(ctx.GetWriteBufferSize(), 0);
+            ctx.WriteBuffer(empty);
+        }
+        IPC::ResponseBuilder rb{ctx, 3};
+        rb.Push(ResultSuccess);
+        rb.Push<u32>(0);
+    }
+
+    void GetIdToken(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_ACC, "(STUBBED) called");
+        if (ctx.CanWriteBuffer()) {
+            std::vector<u8> empty(ctx.GetWriteBufferSize(), 0);
+            ctx.WriteBuffer(empty);
+        }
+        IPC::ResponseBuilder rb{ctx, 3};
+        rb.Push(ResultSuccess);
+        rb.Push<u32>(0);
+    }
+
+    void GetState(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_ACC, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 3};
+        rb.Push(ResultSuccess);
+        rb.Push<u32>(1);
+    }
+
+    std::shared_ptr<AuthorizationAsyncContext> async_ctx;
+    Common::UUID session_id;
 };
 
 class IOAuthProcedure final : public ServiceFramework<IOAuthProcedure> {
@@ -707,9 +780,9 @@ public:
             {4, &IManagerForApplication::LoadIdTokenCache, "LoadIdTokenCache"},
             {130, &IManagerForApplication::GetNintendoAccountUserResourceCacheForApplication, "GetNintendoAccountUserResourceCacheForApplication"},
             {136, &IManagerForApplication::GetNintendoAccountUserResourceCacheForApplication, "GetNintendoAccountUserResourceCache"}, // 19.0.0+
-            {150, nullptr, "CreateAuthorizationRequest"},
+            {150, &IManagerForApplication::CreateAuthorizationRequest, "CreateAuthorizationRequest"},
             {160, &IManagerForApplication::StoreOpenContext, "StoreOpenContext"},
-            {170, nullptr, "LoadNetworkServiceLicenseKindAsync"},
+            {170, &IManagerForApplication::LoadNetworkServiceLicenseKindAsync, "LoadNetworkServiceLicenseKindAsync"},
         };
         // clang-format on
 
@@ -717,6 +790,19 @@ public:
     }
 
 private:
+    void CreateAuthorizationRequest(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_ACC, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2, 0, 1};
+        rb.Push(ResultSuccess);
+        rb.PushIpcInterface<IAuthorizationRequest>(ctx, system, Common::UUID{});
+    }
+
+    void LoadNetworkServiceLicenseKindAsync(HLERequestContext& ctx) {
+        LOG_DEBUG(Service_ACC, "(STUBBED) called");
+        IPC::ResponseBuilder rb{ctx, 2, 0, 1};
+        rb.Push(ResultSuccess);
+        rb.PushIpcInterface(ctx, ensure_token_id);
+    }
     void CheckAvailability(HLERequestContext& ctx) {
         LOG_DEBUG(Service_ACC, "(STUBBED) called");
         IPC::ResponseBuilder rb{ctx, 2};

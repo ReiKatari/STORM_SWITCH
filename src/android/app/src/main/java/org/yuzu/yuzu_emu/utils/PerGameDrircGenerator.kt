@@ -40,6 +40,7 @@ object PerGameDrircGenerator {
         SONIC,
         LITTLE_NIGHTMARES,
         DISCO_ELYSIUM,
+        MARIO_RABBIDS,
         UNIVERSAL_DEFAULT
     }
 
@@ -71,6 +72,7 @@ object PerGameDrircGenerator {
         // 2. Diablo Series (Flawless D32 Float Depth, Zero Strobing)
         if (cleanId.startsWith("01002A801458A") || // Diablo II USA
             cleanId.startsWith("0100916014D8C") || // Diablo II EUR
+            cleanId.startsWith("0100726014352") || // Diablo II Resurrected Alt
             cleanId.startsWith("01001B300B9BE") || // Diablo III
             cleanId.startsWith("01001B700A654") || // Diablo III Eternal
             cleanId.startsWith("0100D1AB10000000") || // DevilutionX
@@ -80,13 +82,21 @@ object PerGameDrircGenerator {
         }
 
         // 2b. Disco Elysium: The Final Cut (Unity Deferred Lighting & TextMeshPro Swizzle)
-        if (cleanId.startsWith("0100726014352") ||
-            cleanId.startsWith("0100C88011246") ||
+        if (cleanId.startsWith("0100C88011246") ||
             cleanId.startsWith("01008C300F7F0") ||
             cleanId.startsWith("0100E26014466") ||
             cleanTitle.contains("disco elysium")
         ) {
             return GameProfileType.DISCO_ELYSIUM
+        }
+
+        // 2c. Mario + Rabbids Series (Snowdrop Engine Shadow Maps, Exposure & Fullscreen Quad)
+        if (cleanId.startsWith("010067300059A") || // Mario + Rabbids: Kingdom Battle
+            cleanId.startsWith("0100760012E4A") || // Mario + Rabbids: Kingdom Battle Gold
+            cleanId.startsWith("01005CA00F966") || // Mario + Rabbids: Sparks of Hope
+            cleanTitle.contains("rabbids")
+        ) {
+            return GameProfileType.MARIO_RABBIDS
         }
 
         // 3. Streets of Rage 4 & 2D Action Sprites (Pristine Pixel Art & Video Cutscenes)
@@ -450,7 +460,7 @@ object PerGameDrircGenerator {
             <option name="tu_a8xx_perfcntrs" value="true" />
             <option name="tu_a830_ubwc_pitch_clamp" value="true" />
             <option name="tu_a8xx_concurrent_queue_barrier_fix" value="true" />
-            <option name="tu_a8xx_barycentric_coord_clamp" value="true" />
+            <option name="tu_a8xx_barycentric_coord_clamp" value="false" />
             <option name="tu_a8xx_subgroup_ballot_fastpath" value="true" />
             <option name="tu_a830_concurrent_render_pass_align" value="true" />
             <option name="tu_shader_spirv_mem_fastpath" value="true" />
@@ -564,7 +574,18 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_a8xx_barycentric_coord_clamp\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_a8xx_barycentric_coord_clamp\" value=\"false\" />\n")
+            }
+            GameProfileType.MARIO_RABBIDS -> {
+                optionsBuilder.append("\n            <!-- MARIO + RABBIDS: SNOWDROP ENGINE (Shadow Maps, Exposure & Fullscreen Pass Fix) -->\n")
+                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_a8xx_barycentric_coord_clamp\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
             }
             GameProfileType.XENOBLADE -> {
                 optionsBuilder.append("\n            <!-- XENOBLADE CHRONICLES RULES (Monolith Soft Water & Cloud Depth Stability) -->\n")

@@ -1565,13 +1565,11 @@ void TextureCacheRuntime::CopyImage(Image& dst, Image& src,
     // As per the size-compatible formats section of vulkan, copy manually via ReinterpretImage
     // these images that aren't size-compatible
     if (BytesPerBlock(src.info.format) != BytesPerBlock(dst.info.format)) {
-#ifdef _WIN32
-        // On Windows, linear images cause device loss when used in image copies.
-        // Tested with TitleID: 0x010067300059A00 (Mario + Rabbids Kingdom Battle)
+        // Linear images with mismatched block sizes cause corruption or device loss in ReinterpretImage.
+        // Tested with TitleID: 0x010067300059A000 (Mario + Rabbids Kingdom Battle)
         if (src.info.type == ImageType::Linear || dst.info.type == ImageType::Linear) {
             return;
         }
-#endif
         auto oneCopy = VideoCommon::ImageCopy{
             .src_offset = VideoCommon::Offset3D(0, 0, 0),
             .dst_offset = VideoCommon::Offset3D(0, 0, 0),

@@ -17,6 +17,10 @@
 #include <QGroupBox>
 #include <QFontMetrics>
 #include <QLabel>
+#include <QListWidget>
+#include <QKeyEvent>
+#include <QTimer>
+#include <QScrollBar>
 #include "common/cpu_features.h"
 #include "common/memory_detect.h"
 #ifdef _WIN32
@@ -207,7 +211,46 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "}"
     ));
     ui->verticalLayout->insertWidget(0, m_search_edit);
+
+    m_search_results_list = new QListWidget(this);
+    m_search_results_list->setObjectName(QStringLiteral("SettingsSearchResultsList"));
+    m_search_results_list->setVisible(false);
+    m_search_results_list->setMaximumHeight(210);
+    m_search_results_list->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_search_results_list->setCursor(Qt::PointingHandCursor);
+    m_search_results_list->setStyleSheet(QStringLiteral(
+        "QListWidget#SettingsSearchResultsList {"
+        "    background-color: #0B1325;"
+        "    border: 1px solid #00F0FF;"
+        "    border-radius: 7px;"
+        "    padding: 4px;"
+        "    color: #F8FAFC;"
+        "    font-size: 12px;"
+        "    margin-bottom: 6px;"
+        "    outline: none;"
+        "}"
+        "QListWidget#SettingsSearchResultsList::item {"
+        "    padding: 6px 10px;"
+        "    border-radius: 5px;"
+        "    margin: 1px 0px;"
+        "}"
+        "QListWidget#SettingsSearchResultsList::item:hover {"
+        "    background-color: rgba(0, 240, 255, 0.16);"
+        "    color: #FFFFFF;"
+        "}"
+        "QListWidget#SettingsSearchResultsList::item:selected {"
+        "    background-color: rgba(0, 240, 255, 0.26);"
+        "    border-left: 3px solid #00F0FF;"
+        "    color: #FFFFFF;"
+        "    font-weight: 600;"
+        "}"
+    ));
+    ui->verticalLayout->insertWidget(1, m_search_results_list);
+    m_search_edit->installEventFilter(this);
+
     connect(m_search_edit, &QLineEdit::textChanged, this, &ConfigureDialog::OnSearchTextChanged);
+    connect(m_search_results_list, &QListWidget::itemClicked, this, &ConfigureDialog::ActivateSearchResult);
+    connect(m_search_results_list, &QListWidget::itemActivated, this, &ConfigureDialog::ActivateSearchResult);
 
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
         if (index != -1) {
@@ -513,23 +556,24 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         setMinimumSize(std::min(720, max_w), std::min(440, max_h));
         setMaximumSize(max_w, max_h);
 
-        int target_h = std::min(680, max_h);
+        int target_w = std::min(1340, max_w);
+        int target_h = std::min(610, max_h);
         if (QWidget* main_win = parentWidget() ? parentWidget()->window() : nullptr) {
             if (main_win->isVisible() && !main_win->isMinimized()) {
+                target_w = std::clamp(main_win->width() - 36, std::min(1240, max_w), max_w);
                 if (avail.height() <= 920) {
-                    target_h = std::clamp(std::min(main_win->height() - 16, avail.height() - 68),
-                                          std::min(460, max_h), max_h);
+                    target_h = std::clamp(std::min(main_win->height() - 56, avail.height() - 88),
+                                          std::min(460, max_h), std::min(610, max_h));
                 } else {
-                    target_h = std::clamp(main_win->height(), std::min(540, max_h), max_h);
+                    target_h = std::clamp(main_win->height() - 80, std::min(540, max_h), std::min(620, max_h));
                 }
             }
         } else if (avail.height() <= 920) {
-            target_h = std::clamp(avail.height() - 68, std::min(460, max_h), max_h);
+            target_h = std::clamp(avail.height() - 88, std::min(460, max_h), std::min(600, max_h));
         }
-        const int target_w = std::min(1100, max_w);
         resize(target_w, target_h);
     } else {
-        resize(1060, 680);
+        resize(1280, 610);
     }
 }
 
@@ -942,91 +986,289 @@ void ConfigureDialog::OnRestoreDefaultsClicked() {
     info_box.exec();
 }
 
-void ConfigureDialog::OnSearchTextChanged(const QString& text) {
-    const QString query = text.trimmed();
-    const bool has_query = !query.isEmpty();
-
-    const std::array<QWidget*, 15> all_tabs = {
-        general_tab.get(), hotkeys_tab.get(), ui_tab.get(), web_tab.get(), debug_tab_tab.get(),
-        system_tab.get(), profile_tab.get(), filesystem_tab.get(), applets_tab.get(),
-        cpu_tab.get(), graphics_tab.get(), graphics_advanced_tab.get(),
-        graphics_extensions_tab.get(), audio_tab.get(), network_tab.get()
-    };
-
-    auto widget_matches = [&](QWidget* w) -> bool {
-        if (!has_query) {
-            return true;
-        }
-        if (w->toolTip().contains(query, Qt::CaseInsensitive)) {
-            return true;
-        }
-        const auto labels = w->findChildren<QLabel*>();
-        for (const auto* lbl : labels) {
-            if (lbl->text().contains(query, Qt::CaseInsensitive) ||
-                lbl->toolTip().contains(query, Qt::CaseInsensitive)) {
+bool ConfigureDialog::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == m_search_edit && event->type() == QEvent::KeyPress) {
+        auto* key_event = static_cast<QKeyEvent*>(event);
+        if (m_search_results_list && m_search_results_list->isVisible() &&
+            m_search_results_list->count() > 0) {
+            if (key_event->key() == Qt::Key_Down) {
+                int next_row = std::min(m_search_results_list->currentRow() + 1,
+                                        m_search_results_list->count() - 1);
+                m_search_results_list->setCurrentRow(next_row);
+                ActivateSearchResult(m_search_results_list->item(next_row));
+                return true;
+            }
+            if (key_event->key() == Qt::Key_Up) {
+                int prev_row = std::max(m_search_results_list->currentRow() - 1, 0);
+                m_search_results_list->setCurrentRow(prev_row);
+                ActivateSearchResult(m_search_results_list->item(prev_row));
+                return true;
+            }
+            if (key_event->key() == Qt::Key_Return || key_event->key() == Qt::Key_Enter) {
+                auto* cur_item = m_search_results_list->currentItem();
+                if (!cur_item && m_search_results_list->count() > 0) {
+                    cur_item = m_search_results_list->item(0);
+                }
+                if (cur_item) {
+                    ActivateSearchResult(cur_item);
+                    m_search_results_list->setVisible(false);
+                }
+                return true;
+            }
+            if (key_event->key() == Qt::Key_Escape) {
+                m_search_edit->clear();
                 return true;
             }
         }
-        const auto checkboxes = w->findChildren<QCheckBox*>();
-        for (const auto* cb : checkboxes) {
-            if (cb->text().contains(query, Qt::CaseInsensitive) ||
-                cb->toolTip().contains(query, Qt::CaseInsensitive)) {
-                return true;
-            }
-        }
-        const auto combos = w->findChildren<QComboBox*>();
-        for (const auto* combo : combos) {
-            for (int i = 0; i < combo->count(); ++i) {
-                if (combo->itemText(i).contains(query, Qt::CaseInsensitive)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    };
+    }
+    return QDialog::eventFilter(watched, event);
+}
 
-    QWidget* first_matching_tab = nullptr;
-    for (QWidget* tab : all_tabs) {
-        if (!tab) {
-            continue;
+void ConfigureDialog::ClearSearchHighlight() {
+    if (m_highlighted_widget) {
+        m_highlighted_widget->setStyleSheet(m_highlighted_prev_style);
+        m_highlighted_widget = nullptr;
+        m_highlighted_prev_style.clear();
+    }
+}
+
+void ConfigureDialog::ActivateSearchResult(QListWidgetItem* item) {
+    if (!item) {
+        return;
+    }
+    const int cat_row = item->data(Qt::UserRole).toInt();
+    const int tab_idx = item->data(Qt::UserRole + 1).toInt();
+    auto* target_widget = reinterpret_cast<QWidget*>(item->data(Qt::UserRole + 2).value<quintptr>());
+
+    if (cat_row >= 0 && cat_row < ui->selectorList->count()) {
+        if (ui->selectorList->currentRow() != cat_row) {
+            ui->selectorList->setCurrentRow(cat_row);
+            UpdateVisibleTabs();
         }
-        bool tab_has_match = false;
-        const auto shared_widgets = tab->findChildren<ConfigurationShared::Widget*>();
-        if (!shared_widgets.isEmpty()) {
-            for (auto* sw : shared_widgets) {
-                const bool match = widget_matches(sw);
-                sw->setVisible(match);
-                if (match) {
-                    tab_has_match = true;
-                }
-            }
-        } else {
-            if (widget_matches(tab)) {
-                tab_has_match = true;
-            }
-        }
-        if (tab_has_match && !first_matching_tab) {
-            first_matching_tab = tab;
+        if (tab_idx >= 0 && tab_idx < ui->tabWidget->count()) {
+            ui->tabWidget->setCurrentIndex(tab_idx);
         }
     }
 
-    if (!has_query && graphics_tab) {
-        graphics_tab->SetConfiguration();
-    } else if (has_query && first_matching_tab) {
-        for (int row = 0; row < ui->selectorList->count(); ++row) {
-            auto* item = ui->selectorList->item(row);
-            const auto tabs = qvariant_cast<QList<QWidget*>>(item->data(Qt::UserRole));
-            const int tab_idx = tabs.indexOf(first_matching_tab);
-            if (tab_idx != -1) {
-                if (ui->selectorList->currentRow() != row) {
-                    ui->selectorList->setCurrentRow(row);
-                }
-                if (ui->tabWidget->currentIndex() != tab_idx) {
-                    ui->tabWidget->setCurrentIndex(tab_idx);
-                }
+    ClearSearchHighlight();
+    if (target_widget) {
+        target_widget->setVisible(true);
+        m_highlighted_widget = target_widget;
+        m_highlighted_prev_style = target_widget->styleSheet();
+        target_widget->setStyleSheet(
+            m_highlighted_prev_style +
+            QStringLiteral(" QWidget { border: 1px solid #00F0FF; background-color: rgba(0, 240, 255, 0.12); border-radius: 6px; }"));
+
+        QWidget* p = target_widget->parentWidget();
+        while (p && p != this) {
+            if (auto* scroll = qobject_cast<QScrollArea*>(p)) {
+                QTimer::singleShot(0, this, [scroll, target_widget]() {
+                    scroll->ensureWidgetVisible(target_widget, 24, 48);
+                });
                 break;
             }
+            p = p->parentWidget();
         }
+    }
+}
+
+void ConfigureDialog::OnSearchTextChanged(const QString& text) {
+    const QString query = text.trimmed();
+    const bool has_query = query.length() >= 2;
+    const QStringList tokens = query.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+
+    ClearSearchHighlight();
+
+    auto matches_all_tokens = [&](const QString& haystack) -> bool {
+        if (!has_query) {
+            return true;
+        }
+        for (const QString& tok : tokens) {
+            if (!haystack.contains(tok, Qt::CaseInsensitive)) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    auto extract_widget_summary = [](QWidget* w, QString& out_title, QString& out_value, QString& out_search_blob) {
+        QStringList titles;
+        QStringList values;
+        QStringList blobs;
+
+        if (!w->toolTip().isEmpty()) {
+            blobs << w->toolTip();
+        }
+        if (auto* gb = qobject_cast<QGroupBox*>(w)) {
+            if (!gb->title().isEmpty()) {
+                titles << gb->title();
+                blobs << gb->title();
+            }
+        }
+        for (const auto* lbl : w->findChildren<QLabel*>()) {
+            const QString t = lbl->text().trimmed();
+            if (!t.isEmpty() && t.length() < 120) {
+                titles << t;
+                blobs << t;
+            }
+            if (!lbl->toolTip().isEmpty()) {
+                blobs << lbl->toolTip();
+            }
+        }
+        for (const auto* cb : w->findChildren<QCheckBox*>()) {
+            const QString t = cb->text().trimmed();
+            if (!t.isEmpty()) {
+                titles << t;
+                blobs << t;
+            }
+            values << (cb->isChecked() ? QStringLiteral("✓") : QStringLiteral("—"));
+            if (!cb->toolTip().isEmpty()) {
+                blobs << cb->toolTip();
+            }
+        }
+        for (const auto* combo : w->findChildren<QComboBox*>()) {
+            if (!combo->currentText().isEmpty()) {
+                values << combo->currentText().trimmed();
+            }
+            for (int i = 0; i < combo->count(); ++i) {
+                blobs << combo->itemText(i);
+            }
+        }
+        titles.removeDuplicates();
+        values.removeDuplicates();
+        out_title = titles.isEmpty() ? w->accessibleName() : titles.first();
+        out_value = values.join(QStringLiteral(", "));
+        out_search_blob = blobs.join(QLatin1Char(' '));
+    };
+
+    struct SearchCandidate {
+        int score;
+        int cat_row;
+        int tab_idx;
+        QString display_text;
+        QString tooltip;
+        QWidget* widget;
+    };
+    std::vector<SearchCandidate> candidates;
+
+    for (int row = 0; row < ui->selectorList->count(); ++row) {
+        auto* cat_item = ui->selectorList->item(row);
+        const QString cat_name = cat_item->text();
+        const auto tabs = qvariant_cast<QList<QWidget*>>(cat_item->data(Qt::UserRole));
+
+        for (int t_idx = 0; t_idx < tabs.size(); ++t_idx) {
+            QWidget* tab = tabs[t_idx];
+            if (!tab) {
+                continue;
+            }
+            const QString tab_name = GetLocalizedTabText(tab->accessibleName());
+            const auto shared_widgets = tab->findChildren<ConfigurationShared::Widget*>();
+
+            if (!shared_widgets.isEmpty()) {
+                for (auto* sw : shared_widgets) {
+                    QString title, val, blob;
+                    extract_widget_summary(sw, title, val, blob);
+                    const QString full_blob = cat_name + QLatin1Char(' ') + tab_name + QLatin1Char(' ') + blob;
+                    const bool match = matches_all_tokens(full_blob);
+                    sw->setVisible(match);
+                    if (has_query && match && !title.isEmpty()) {
+                        int score = 10;
+                        if (title.startsWith(query, Qt::CaseInsensitive)) {
+                            score = 100;
+                        } else if (title.contains(query, Qt::CaseInsensitive)) {
+                            score = 70;
+                        } else if (val.contains(query, Qt::CaseInsensitive)) {
+                            score = 50;
+                        }
+                        const QString disp = val.isEmpty()
+                            ? QStringLiteral("⚡ [%1 › %2]  %3").arg(cat_name, tab_name, title)
+                            : QStringLiteral("⚡ [%1 › %2]  %3  —  %4").arg(cat_name, tab_name, title, val);
+                        candidates.push_back({score, row, t_idx, disp, sw->toolTip(), sw});
+                    }
+                }
+            } else if (has_query) {
+                // Non-ConfigurationShared tabs (General, Audio, System, Controls, Hotkeys, Network, etc.)
+                const auto group_boxes = tab->findChildren<QGroupBox*>();
+                bool added_subwidget = false;
+                for (auto* gb : group_boxes) {
+                    QString title, val, blob;
+                    extract_widget_summary(gb, title, val, blob);
+                    const QString full_blob = cat_name + QLatin1Char(' ') + tab_name + QLatin1Char(' ') + blob;
+                    if (matches_all_tokens(full_blob) && !title.isEmpty()) {
+                        int score = title.startsWith(query, Qt::CaseInsensitive) ? 95
+                                  : (title.contains(query, Qt::CaseInsensitive) ? 65 : 20);
+                        const QString disp = val.isEmpty()
+                            ? QStringLiteral("⚡ [%1 › %2]  %3").arg(cat_name, tab_name, title)
+                            : QStringLiteral("⚡ [%1 › %2]  %3  —  %4").arg(cat_name, tab_name, title, val);
+                        candidates.push_back({score, row, t_idx, disp, gb->toolTip(), gb});
+                        added_subwidget = true;
+                    }
+                }
+                if (!added_subwidget) {
+                    QString title, val, blob;
+                    extract_widget_summary(tab, title, val, blob);
+                    const QString full_blob = cat_name + QLatin1Char(' ') + tab_name + QLatin1Char(' ') + blob;
+                    if (matches_all_tokens(full_blob)) {
+                        const QString disp = QStringLiteral("⚡ [%1 › %2]  %3").arg(cat_name, tab_name, title.isEmpty() ? tab_name : title);
+                        candidates.push_back({15, row, t_idx, disp, tab->toolTip(), tab});
+                    }
+                }
+            }
+        }
+    }
+
+    if (!has_query) {
+        m_search_results_list->clear();
+        m_search_results_list->setVisible(false);
+        if (graphics_tab) {
+            graphics_tab->SetConfiguration();
+        }
+        return;
+    }
+
+    std::stable_sort(candidates.begin(), candidates.end(), [](const SearchCandidate& a, const SearchCandidate& b) {
+        return a.score > b.score;
+    });
+
+    m_search_results_list->clear();
+    QSet<QString> seen_displays;
+    const int max_results = 35;
+    for (const auto& c : candidates) {
+        if (seen_displays.contains(c.display_text)) {
+            continue;
+        }
+        seen_displays.insert(c.display_text);
+        auto* item = new QListWidgetItem(c.display_text, m_search_results_list);
+        item->setData(Qt::UserRole, c.cat_row);
+        item->setData(Qt::UserRole + 1, c.tab_idx);
+        item->setData(Qt::UserRole + 2, QVariant::fromValue(reinterpret_cast<quintptr>(c.widget)));
+        if (!c.tooltip.isEmpty()) {
+            item->setToolTip(c.tooltip);
+        }
+        if (m_search_results_list->count() >= max_results) {
+            break;
+        }
+    }
+
+    if (m_search_results_list->count() > 0) {
+        m_search_results_list->setVisible(true);
+        m_search_results_list->setCurrentRow(0);
+        const int row_h = std::max(28, m_search_results_list->sizeHintForRow(0));
+        const int list_h = std::clamp(m_search_results_list->count() * row_h + 12, 42, 195);
+        m_search_results_list->setFixedHeight(list_h);
+        ActivateSearchResult(m_search_results_list->item(0));
+    } else {
+        auto* empty_item = new QListWidgetItem(
+            StormLang(QStringLiteral("Ничего не найдено по запросу «%1»"),
+                      QStringLiteral("No settings found for '%1'"),
+                      QStringLiteral("Keine Einstellungen für „%1“ gefunden"),
+                      QStringLiteral("Aucun paramètre trouvé pour « %1 »"),
+                      QStringLiteral("未找到与“%1”相关的设置"),
+                      QStringLiteral("「%1」に一致する設定が見つかりません")).arg(query),
+            m_search_results_list);
+        empty_item->setData(Qt::UserRole, -1);
+        m_search_results_list->setFixedHeight(40);
+        m_search_results_list->setVisible(true);
     }
 }
 

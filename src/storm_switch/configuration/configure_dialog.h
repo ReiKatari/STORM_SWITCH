@@ -106,7 +106,13 @@ private:
     bool m_is_changing_language{false};
     QPushButton* m_restore_defaults_btn{nullptr};
     class QLineEdit* m_search_edit{nullptr};
+    class QListWidget* m_search_results_list{nullptr};
+    QWidget* m_highlighted_widget{nullptr};
+    QString m_highlighted_prev_style{};
 
+    bool eventFilter(QObject* watched, QEvent* event) override;
+    void ClearSearchHighlight();
+    void ActivateSearchResult(class QListWidgetItem* item);
     void OnRestoreDefaultsClicked();
     void OnSearchTextChanged(const QString& text);
 };

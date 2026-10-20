@@ -1321,9 +1321,13 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     const float cos_x = std::cos(rad_x);
     const float sin_x = std::sin(rad_x);
 
-    // Scaling: 36% larger, shifted slightly up to give space below for modern stick monitors
-    constexpr float base_scale = 1.36f;
-    const QPointF controller_center = center + QPointF(0.0f, -32.0f);
+    // Responsive scaling so 3D controller and side HUD cards never overlap at any window size
+    const float hud_w = static_cast<float>(rect().width());
+    const float hud_h = static_cast<float>(rect().height());
+    const float avail_ctrl_w = std::max(160.0f, hud_w - 250.0f);
+    const float avail_ctrl_h = std::max(140.0f, hud_h - 32.0f);
+    const float base_scale = std::clamp(std::min(avail_ctrl_w / 375.0f, avail_ctrl_h / 295.0f), 0.54f, 1.18f);
+    const QPointF controller_center(hud_w * 0.5f, hud_h * 0.5f + 6.0f * base_scale);
 
     auto Project = [&](float x, float y, float z = 0.0f) -> ProjectedPt {
         const float x1 = x * cos_y + z * sin_y;
@@ -1655,21 +1659,12 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.drawText(badge_rect, Qt::AlignCenter, coord_str);
     };
 
-    // Calculate non-overlapping HUD positions (Battery shifted safely to top-left)
-    const float hud_cx = static_cast<float>(center.x());
-    const float hud_cy = static_cast<float>(center.y());
-    const float hud_w  = static_cast<float>(rect().width());
-
-    const float bat_x = std::max(16.0f, hud_cx - 410.0f);
-    const float bat_y = std::max(16.0f, hud_cy - 210.0f);
-    const QPointF bat_pos(bat_x, bat_y);
-
-    const float gyro_x = std::min(hud_w - 68.0f, hud_cx + 330.0f);
-    const float gyro_y = std::max(60.0f, hud_cy - 170.0f);
-    const QPointF gyro_pos(gyro_x, gyro_y);
-
-    const QPointF left_radar  = center + QPointF(-115.0f, 182.0f);
-    const QPointF right_radar = center + QPointF( 115.0f, 182.0f);
+    // Calculate non-overlapping HUD positions in dedicated Left / Right HUD columns
+    const QPointF bat_pos(10.0f, 10.0f);
+    const QPointF gyro_pos(std::max(180.0f, hud_w - 66.0f), 56.0f);
+    const float radar_y = std::clamp(hud_h - 68.0f, 118.0f, std::max(118.0f, hud_h - 30.0f));
+    const QPointF left_radar(72.0f, radar_y);
+    const QPointF right_radar(std::max(210.0f, hud_w - 72.0f), radar_y);
 
     const bool front_facing = (cos_y >= 0.0f);
     constexpr float Z_FRONT = 13.0f;
@@ -3097,7 +3092,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             const float spacing = 6.0f;
             const float total_w = pressed_names.size() * badge_w + (pressed_names.size() - 1) * spacing;
             float start_x = center.x() - total_w * 0.5f;
-            const float badge_y = center.y() + 252.0f;
+            const float badge_y = std::max(36.0f, hud_h - 14.0f);
 
             for (const auto& name : pressed_names) {
                 QRectF b_rect(start_x, badge_y - badge_h * 0.5f, badge_w, badge_h);

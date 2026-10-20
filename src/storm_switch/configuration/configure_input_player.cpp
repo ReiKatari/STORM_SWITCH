@@ -562,9 +562,21 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         top_toolbar->addWidget(btn_flip_view);
         top_toolbar->addWidget(btn_reset_view);
 
-        ui->verticalLayout_4->addLayout(top_toolbar);
-        ui->verticalLayout_4->addStretch(1);
-        ui->verticalLayout_4->addWidget(hint_3d);
+        ui->bottomMiddleLayout->insertLayout(1, top_toolbar);
+        ui->bottomMiddleLayout->insertWidget(3, hint_3d);
+        ui->bottomMiddleLayout->setStretch(2, 1);
+    }
+
+    ui->_2->setStretch(0, 0);
+    ui->_2->setStretch(1, 1);
+    ui->_2->setStretch(2, 0);
+
+    for (auto* btn : findChildren<QPushButton*>()) {
+        if (btn->maximumWidth() <= 75) {
+            btn->setMinimumWidth(68);
+            btn->setMaximumWidth(16777215);
+            btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        }
     }
 
     for (int button_id = 0; button_id < Settings::NativeButton::NumButtons; ++button_id) {

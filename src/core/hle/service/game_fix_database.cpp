@@ -722,16 +722,20 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\dyna_state", "0"},
+            {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\vram_garbage_collection", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "false"},
             {"Renderer\\enable_gpu_buffer_readback", "false"}
         },
-        {0x0100916014D8C000ULL}
+        {0x0100916014D8C000ULL, 0x0100726014352000ULL}
     },
     {
         0x010020D01AD24000ULL,
@@ -1145,7 +1149,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\airplane_mode", "false"}
         },
-        {0x0100726014352000ULL, 0x01008C300F7F0000ULL, 0x0100E26014466000ULL}
+        {0x01008C300F7F0000ULL, 0x0100E26014466000ULL}
     },
     {
         0x01008C300F7F0000ULL,
@@ -1170,7 +1174,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\airplane_mode", "false"}
         },
-        {0x0100726014352000ULL}
+        {}
     },
     {
         0x0100E26014466000ULL,
@@ -1195,7 +1199,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\airplane_mode", "false"}
         },
-        {0x0100726014352000ULL}
+        {}
     },
     {
         0x01003AE017DB0000ULL,
@@ -1957,6 +1961,43 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Cpu\\cpuopt_fastmem", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"}
+        }
+    },
+    {
+        0x010067300059A000ULL,
+        "Mario + Rabbids: Kingdom Battle",
+        "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и черные тени Snowdrop Engine\n• Мерцание текстур персонажей",
+        "• Diagonal line across fullscreen quad on startup\n• Severe overexposure and pitch-black shadows (Snowdrop Engine)\n• Character model flickering",
+        "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Динамическое состояние: Отключено\n✓ Асинхронные шейдеры: Включено",
+        "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Dynamic State: Disabled\n✓ Asynchronous Shaders: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\dyna_state", "0"},
+            {"Renderer\\fix_bloom_effects", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"}
+        },
+        {0x0100760012E4A000ULL}
+    },
+    {
+        0x01005CA00F966000ULL,
+        "Mario + Rabbids: Sparks of Hope",
+        "• Сбои динамического освещения на планетах\n• Черные артефакты в катсценах и битвах\n• Просадки кадров",
+        "• Planet lighting pass corruption\n• Black shadow artifacts during cutscenes and tactical battles\n• Frame drops",
+        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Память: 8GB DRAM",
+        "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 8GB DRAM",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\dyna_state", "0"},
+            {"Renderer\\fix_bloom_effects", "false"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
     },
@@ -6678,7 +6719,10 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         if (game_lower.find("ea sports fc 24") != std::string::npos && (lower.find("fc 24") != std::string::npos || lower.find("fc24") != std::string::npos || lower.find("fifa 24") != std::string::npos || lower.find("fifa") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
-        if (game_lower.find("disco elysium") != std::string::npos && (lower.find("disco elysium") != std::string::npos || lower.find("disco_elysium") != std::string::npos || lower.find("0100726014352000") != std::string::npos)) {
+        if (game_lower.find("diablo ii") != std::string::npos && (lower.find("diablo ii") != std::string::npos || lower.find("diablo 2") != std::string::npos || lower.find("resurrected") != std::string::npos || lower.find("0100726014352000") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
+        if (game_lower.find("disco elysium") != std::string::npos && (lower.find("disco elysium") != std::string::npos || lower.find("disco_elysium") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }
         if (game_lower.find("hogwarts legacy") != std::string::npos && (lower.find("hogwarts") != std::string::npos)) {
@@ -7036,11 +7080,6 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
         };
 
         auto apply_setting = [](auto& setting, auto val) {
-            if constexpr (requires { setting.UsingGlobal(); }) {
-                if (!setting.UsingGlobal()) {
-                    return;
-                }
-            }
             if constexpr (requires { setting.SetGlobal(false); }) {
                 setting.SetGlobal(false);
             }

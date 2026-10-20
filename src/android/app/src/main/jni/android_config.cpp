@@ -14,7 +14,9 @@ AndroidConfig::AndroidConfig(const std::string& config_name, ConfigType config_t
     Initialize(config_name);
     if (config_type != ConfigType::InputProfile) {
         ReadAndroidValues();
-        SaveAndroidValues();
+        if (global) {
+            SaveAndroidValues();
+        }
     }
 }
 
@@ -24,7 +26,6 @@ void AndroidConfig::ReloadAllValues() {
 
     Reload();
     ReadAndroidValues();
-    SaveAndroidValues();
 }
 
 void AndroidConfig::SaveAllValues() {
@@ -262,11 +263,6 @@ void AndroidConfig::SaveAndroidValues() {
     }
     SaveDriverValues();
     SaveAndroidControlValues();
-
-    if (IsCustomConfig() && config) {
-        config->SetValue("StormSwitch", "user_custom", "true");
-        config->SetValue("StormSwitch", "storm_fix_applied", "false");
-    }
 
     WriteToIni();
 }

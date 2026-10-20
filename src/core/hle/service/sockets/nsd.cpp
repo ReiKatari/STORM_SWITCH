@@ -7,11 +7,13 @@
 #include "core/hle/service/ipc_helpers.h"
 #include "core/hle/service/sockets/nsd.h"
 
+#include "common/settings.h"
 #include "common/string_util.h"
 
 namespace Service::Sockets {
 
 constexpr Result ResultOverflow{ErrorModule::NSD, 6};
+constexpr Result ResultNotImplemented{ErrorModule::NSD, 405};
 
 // This is nn::oe::ServerEnvironmentType
 enum class ServerEnvironmentType : u8 {
@@ -72,6 +74,11 @@ static std::string ResolveImpl(const std::string& fqdn_in) {
 }
 
 static Result ResolveCommon(const std::string& fqdn_in, std::array<char, 0x100>& fqdn_out) {
+    if (Settings::values.airplane_mode.GetValue() ||
+        fqdn_in.find("battle.net") != std::string::npos ||
+        fqdn_in.find("blizzard.com") != std::string::npos) {
+        return ResultNotImplemented;
+    }
     const auto res = ResolveImpl(fqdn_in);
     if (res.size() >= fqdn_out.size()) {
         return ResultOverflow;
