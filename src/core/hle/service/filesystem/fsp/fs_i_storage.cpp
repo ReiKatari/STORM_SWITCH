@@ -19,6 +19,7 @@ IStorage::IStorage(Core::System& system_, FileSys::VirtualFile backend_)
         {3, D<&IStorage::SetSize>, "SetSize"},
         {4, D<&IStorage::GetSize>, "GetSize"},
         {5, D<&IStorage::OperateRange>, "OperateRange"},
+        {6, D<&IStorage::BatchRead>, "BatchRead"},
     };
     RegisterHandlers(functions);
 }
@@ -100,6 +101,13 @@ Result IStorage::OperateRange(Out<FsRangeInfo> out_info, u32 operation_type, s64
     LOG_DEBUG(Service_FS, "IStorage::OperateRange: op={}, offset={:#x}, size={}", operation_type, offset, size);
     *out_info = FsRangeInfo{};
     R_SUCCEED();
+}
+
+Result IStorage::BatchRead(
+    OutBuffer<BufferAttr_HipcMapAlias | BufferAttr_HipcMapTransferAllowsNonSecure | BufferAttr_HipcAutoSelect | BufferAttr_HipcPointer> out_bytes,
+    s64 offset, s64 length) {
+    LOG_DEBUG(Service_FS, "IStorage::BatchRead (HOS 23.0.0+): offset={:#x}, length={}", offset, length);
+    return Read(out_bytes, offset, length);
 }
 
 } // namespace Service::FileSystem

@@ -64,10 +64,7 @@ abstract class SettingsItem(
 
     val isEditable: Boolean
         get() {
-            // Can't change docked mode toggle when using handheld mode
-            if (setting.key == BooleanSetting.USE_DOCKED_MODE.key) {
-                return NativeInput.getStyleIndex(0) != NpadStyleIndex.Handheld
-            }
+            // Allow toggling docked/handheld mode freely regardless of controller style
 
             // Can't edit enable_qlaunch_button if firmware is not available
             if (setting.key == BooleanSetting.ENABLE_QLAUNCH_BUTTON.key) {
@@ -269,14 +266,15 @@ abstract class SettingsItem(
                 override val key = BooleanSetting.USE_DOCKED_MODE.key
 
                 override fun getBoolean(needsGlobal: Boolean): Boolean {
-                    if (NativeInput.getStyleIndex(0) == NpadStyleIndex.Handheld) {
-                        return false
-                    }
                     return BooleanSetting.USE_DOCKED_MODE.getBoolean(needsGlobal)
                 }
 
-                override fun setBoolean(value: Boolean) =
+                override fun setBoolean(value: Boolean) {
                     BooleanSetting.USE_DOCKED_MODE.setBoolean(value)
+                    if (value && NativeInput.getStyleIndex(0) == NpadStyleIndex.Handheld) {
+                        NativeInput.setStyleIndex(0, NpadStyleIndex.Fullkey)
+                    }
+                }
 
                 override val defaultValue = BooleanSetting.USE_DOCKED_MODE.defaultValue
 

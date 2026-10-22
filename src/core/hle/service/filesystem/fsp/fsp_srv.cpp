@@ -119,6 +119,9 @@ FSP_SRV::FSP_SRV(Core::System& system_)
         {205, D<&FSP_SRV::OpenDataStorageWithProgramIndex>, "OpenDataStorageWithProgramIndex"},
         {206, nullptr, "OpenDataStorageByPath"},
         {210, D<&FSP_SRV::SetCurrentProcess>, "SetCurrentProcess"},
+        {211, D<&FSP_SRV::OpenDataStorageByProgramIdForBatchRead>, "OpenDataStorageByProgramIdForBatchRead"}, // [23.0.0+]
+        {212, D<&FSP_SRV::OpenDataStorageWithProgramIndexForBatchRead>, "OpenDataStorageWithProgramIndexForBatchRead"}, // [23.0.0+]
+        {213, D<&FSP_SRV::OpenDataStorageByPathForBatchRead>, "OpenDataStorageByPathForBatchRead"}, // [23.0.0+]
         {400, nullptr, "OpenDeviceOperator"},
         {500, nullptr, "OpenSdCardDetectionEventNotifier"},
         {501, nullptr, "OpenGameCardDetectionEventNotifier"},
@@ -606,6 +609,29 @@ Result FSP_SRV::OpenDataStorageWithProgramIndex(OutInterface<IStorage> out_inter
     *out_interface = std::make_shared<IStorage>(system, std::move(patched_romfs));
 
     R_SUCCEED();
+}
+
+Result FSP_SRV::OpenDataStorageByProgramIdForBatchRead(OutInterface<IStorage> out_interface,
+                                                       u64 target_program_id) {
+    LOG_DEBUG(Service_FS, "called (HOS 23.0.0+ ProgramId={:016X})", target_program_id);
+    auto patched_romfs = romfs_controller->OpenPatchedRomFS(
+        target_program_id, FileSys::ContentRecordType::Program);
+    if (!patched_romfs) {
+        return OpenDataStorageByCurrentProcess(out_interface);
+    }
+    *out_interface = std::make_shared<IStorage>(system, std::move(patched_romfs));
+    R_SUCCEED();
+}
+
+Result FSP_SRV::OpenDataStorageWithProgramIndexForBatchRead(OutInterface<IStorage> out_interface,
+                                                            u8 program_index) {
+    LOG_DEBUG(Service_FS, "called (HOS 23.0.0+ program_index={})", program_index);
+    return OpenDataStorageWithProgramIndex(out_interface, program_index);
+}
+
+Result FSP_SRV::OpenDataStorageByPathForBatchRead(OutInterface<IStorage> out_interface) {
+    LOG_DEBUG(Service_FS, "called (HOS 23.0.0+ ByPath)");
+    return OpenDataStorageByCurrentProcess(out_interface);
 }
 
 Result FSP_SRV::IsSdCardAccessible(Out<bool> out_is_accessible) {

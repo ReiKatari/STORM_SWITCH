@@ -858,14 +858,14 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\gpu_accuracy" to "0",
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\dyna_state" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "false"
@@ -883,14 +883,14 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\gpu_accuracy" to "0",
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\dyna_state" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "false"
@@ -908,14 +908,14 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\gpu_accuracy" to "0",
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\dyna_state" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "false"
@@ -7273,7 +7273,7 @@ object GameFixDatabase {
             if (!file.parentFile.exists()) {
                 file.parentFile.mkdirs()
             }
-            if (file.exists() && file.length() > 0) {
+            if (file.exists() && file.length() > 0 && isUserCustomConfig(file)) {
                 mergeFixIntoExistingConfig(file, fix)
             } else {
                 applyCleanFix(game)

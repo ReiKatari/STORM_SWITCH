@@ -597,7 +597,7 @@ struct Values {
         Category::RendererAdvanced, Specialization::Default, true, true};
     SwitchableSetting<bool> use_fast_gpu_time{linkage, false, "use_fast_gpu_time",
                                               Category::RendererAdvanced, Specialization::Default, true, true};
-    SwitchableSetting<bool> enable_frame_skipping{linkage, true, "enable_frame_skipping",
+    SwitchableSetting<bool> enable_frame_skipping{linkage, false, "enable_frame_skipping",
                                                   Category::RendererAdvanced, Specialization::Default, true, true};
 
     SwitchableSetting<bool> use_disk_shader_cache{linkage, true, "use_disk_shader_cache",

@@ -1007,7 +1007,7 @@ void RasterizerVulkan::ReleaseFences(bool force) {
 
 void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
                                                 VideoCommon::CacheType which) {
-    if (Settings::IsGPULevelHigh() || True(which & VideoCommon::CacheType::TextureCache)) {
+    if (Settings::IsGPULevelHigh()) {
         FlushRegion(addr, size, which);
     }
     InvalidateRegion(addr, size, which);
@@ -1015,6 +1015,12 @@ void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
 
 void RasterizerVulkan::WaitForIdle() {
     query_cache.NotifyWFI();
+
+    if (scheduler.IsRenderPassActive() && !scheduler.HasTransformFeedback() &&
+        !Settings::IsGPULevelHigh()) {
+        fence_manager.SignalOrdering();
+        return;
+    }
 
     // Everything but wait pixel operations. This intentionally includes FRAGMENT_SHADER_BIT because
     // fragment shaders can still write storage buffers.
@@ -1046,7 +1052,16 @@ void RasterizerVulkan::TiledCacheBarrier() {
 }
 
 void RasterizerVulkan::FlushCommands() {
+#ifdef __ANDROID__
+    static constexpr u32 MIN_DRAWS_TO_FLUSH = 128;
+#else
+    static constexpr u32 MIN_DRAWS_TO_FLUSH = 512;
+#endif
     if (draw_counter == 0) {
+        return;
+    }
+    if (draw_counter < MIN_DRAWS_TO_FLUSH && scheduler.IsRenderPassActive() &&
+        !Settings::IsGPULevelHigh()) {
         return;
     }
     draw_counter = 0;
@@ -1145,8 +1160,8 @@ void RasterizerVulkan::LoadDiskResources(u64 title_id, std::stop_token stop_load
 
 void RasterizerVulkan::FlushWork() {
 #ifdef __ANDROID__
-    static constexpr u32 DRAWS_TO_DISPATCH = 512;
-    static constexpr u32 CHECK_MASK = 3;
+    static constexpr u32 DRAWS_TO_DISPATCH = 1024;
+    static constexpr u32 CHECK_MASK = 7;
 #else
     static constexpr u32 DRAWS_TO_DISPATCH = 4096;
     static constexpr u32 CHECK_MASK = 7;
@@ -1157,6 +1172,11 @@ void RasterizerVulkan::FlushWork() {
         return;
     }
     if (draw_counter < DRAWS_TO_DISPATCH) {
+        scheduler.DispatchWork();
+        return;
+    }
+    if (scheduler.IsRenderPassActive() && !Settings::IsGPULevelHigh() &&
+        draw_counter < DRAWS_TO_DISPATCH * 2) {
         scheduler.DispatchWork();
         return;
     }

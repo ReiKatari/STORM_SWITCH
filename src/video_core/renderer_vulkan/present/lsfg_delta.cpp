@@ -124,13 +124,14 @@ LsfgDelta::LsfgDelta(const Device& device, MemoryAllocator& memory_allocator,
         }
 
         for (size_t i = 0; i < LSFG_HISTORY_SLOTS; ++i) {
+            const LsfgImage& fallback_in = (*inputs)[i % LSFG_HISTORY_SLOTS][0];
             LsfgDescriptorWriter(pass.first_descriptor_sets[i])
                 .AddUniformBuffer(buffer, LsfgResources::BufferSize())
                 .AddSampler(border_sampler)
                 .AddSampler(edge_sampler)
                 .AddSampledImages((*inputs)[(i + 2) % LSFG_HISTORY_SLOTS])
                 .AddSampledImages((*inputs)[i % LSFG_HISTORY_SLOTS])
-                .AddSampledImage(previous_gamma)
+                .AddSampledImage(previous_gamma != nullptr ? *previous_gamma : fallback_in)
                 .AddStorageImages(temp1)
                 .Build(device);
             LsfgDescriptorWriter(pass.sixth_descriptor_sets[i])
@@ -139,8 +140,8 @@ LsfgDelta::LsfgDelta(const Device& device, MemoryAllocator& memory_allocator,
                 .AddSampler(edge_sampler)
                 .AddSampledImages((*inputs)[(i + 2) % LSFG_HISTORY_SLOTS])
                 .AddSampledImages((*inputs)[i % LSFG_HISTORY_SLOTS])
-                .AddSampledImage(previous_gamma)
-                .AddSampledImage(previous1)
+                .AddSampledImage(previous_gamma != nullptr ? *previous_gamma : fallback_in)
+                .AddSampledImage(previous1 != nullptr ? *previous1 : fallback_in)
                 .AddStorageImage(temp2[0])
                 .Build(device);
         }
@@ -166,7 +167,7 @@ LsfgDelta::LsfgDelta(const Device& device, MemoryAllocator& memory_allocator,
             .AddSampler(sampler)
             .AddSampler(edge_sampler)
             .AddSampledImages(temp2)
-            .AddSampledImage(previous_gamma)
+            .AddSampledImage(previous_gamma != nullptr ? *previous_gamma : temp2[0])
             .AddSampledImage(*flow_input)
             .AddStorageImage(out_image1)
             .Build(device);
@@ -190,7 +191,7 @@ LsfgDelta::LsfgDelta(const Device& device, MemoryAllocator& memory_allocator,
             .AddSampler(sampler)
             .AddSampler(edge_sampler)
             .AddSampledImage(temp1[0])
-            .AddSampledImage(previous2)
+            .AddSampledImage(previous2 != nullptr ? *previous2 : temp1[0])
             .AddStorageImage(out_image2)
             .Build(device);
     }

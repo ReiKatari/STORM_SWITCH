@@ -113,6 +113,7 @@
 #include <QScrollArea>
 #include <QShortcut>
 #include <QStatusBar>
+#include <QSystemTrayIcon>
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QtConcurrentRun>
@@ -484,7 +485,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #endif
 
 constexpr int default_mouse_hide_timeout = 2500;
-constexpr int default_input_update_timeout = 1;
+constexpr int default_input_update_timeout = 16;
 
 constexpr size_t CopyBufferSize = 1_MiB;
 
@@ -886,6 +887,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     // to prevent the UI from blowing up.
     UpdateUITheme();
     UpdateStatusButtons();
+    InitializeSystemTray();
 
     // Ensure all explicit StormLang translations are applied immediately at startup
     OnLanguageChanged(QString::fromStdString(UISettings::values.language.GetValue()));
@@ -2786,7 +2788,7 @@ void MainWindow::InitializeWidgets() {
             "  font-size: 6.8pt;"
             "  font-weight: 800;"
             "  letter-spacing: 0.8px;"
-            "  padding: 1px 6px;"
+            "  padding: 1px 8px;"
             "  margin: 0px 1px 2px 1px;"
             "  border: 1px solid rgba(255, 255, 255, 0.08);"
             "  border-radius: 3px;"
@@ -2802,11 +2804,11 @@ void MainWindow::InitializeWidgets() {
             "  color: #ffffff;"
             "  border: 1px solid rgba(255, 255, 255, 0.13);"
             "  border-radius: 4px;"
-            "  padding: 2px 5px;"
+            "  padding: 2px 3px;"
             "  font-size: 6.8pt;"
             "  font-weight: 700;"
             "  min-height: 26px;"
-            "  min-width: 44px;"
+            "  min-width: 36px;"
             "}"
             "QPushButton#TogglableStatusBarButton:hover, QPushButton:hover {"
             "  background-color: rgba(255, 255, 255, 0.16);"
@@ -4180,6 +4182,18 @@ void MainWindow::StormSessionBackup::Capture() {
     cpu_backend = capture_switchable(Settings::values.cpu_backend);
     frame_pacing_mode = capture_switchable(Settings::values.frame_pacing_mode);
     dynamic_performance_scaler = capture_switchable(Settings::values.dynamic_performance_scaler);
+    use_fast_gpu_time = capture_switchable(Settings::values.use_fast_gpu_time);
+    dyna_state = capture_switchable(Settings::values.dyna_state);
+    emulate_bgr565 = capture_switchable(Settings::values.emulate_bgr565);
+    use_video_framerate = capture_switchable(Settings::values.use_video_framerate);
+    use_vulkan_driver_pipeline_cache = capture_switchable(Settings::values.use_vulkan_driver_pipeline_cache);
+    use_disk_shader_cache = capture_switchable(Settings::values.use_disk_shader_cache);
+    enable_compute_pipelines = capture_switchable(Settings::values.enable_compute_pipelines);
+    vertex_input_dynamic_state = capture_switchable(Settings::values.vertex_input_dynamic_state);
+    disable_macro_hle = capture_switchable(Settings::values.disable_macro_hle);
+    sync_core_speed = capture_switchable(Settings::values.sync_core_speed);
+    language_index = capture_switchable(Settings::values.language_index);
+    region_index = capture_switchable(Settings::values.region_index);
     disable_macro_jit = Settings::values.disable_macro_jit.GetValue();
     use_auto_stub = Settings::values.use_auto_stub.GetValue();
     disable_web_applet = Settings::values.disable_web_applet.GetValue();
@@ -4240,6 +4254,18 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.cpu_backend, cpu_backend);
     restore_switchable(Settings::values.frame_pacing_mode, frame_pacing_mode);
     restore_switchable(Settings::values.dynamic_performance_scaler, dynamic_performance_scaler);
+    restore_switchable(Settings::values.use_fast_gpu_time, use_fast_gpu_time);
+    restore_switchable(Settings::values.dyna_state, dyna_state);
+    restore_switchable(Settings::values.emulate_bgr565, emulate_bgr565);
+    restore_switchable(Settings::values.use_video_framerate, use_video_framerate);
+    restore_switchable(Settings::values.use_vulkan_driver_pipeline_cache, use_vulkan_driver_pipeline_cache);
+    restore_switchable(Settings::values.use_disk_shader_cache, use_disk_shader_cache);
+    restore_switchable(Settings::values.enable_compute_pipelines, enable_compute_pipelines);
+    restore_switchable(Settings::values.vertex_input_dynamic_state, vertex_input_dynamic_state);
+    restore_switchable(Settings::values.disable_macro_hle, disable_macro_hle);
+    restore_switchable(Settings::values.sync_core_speed, sync_core_speed);
+    restore_switchable(Settings::values.language_index, language_index);
+    restore_switchable(Settings::values.region_index, region_index);
     Settings::values.disable_macro_jit.SetValue(disable_macro_jit);
     Settings::values.use_auto_stub.SetValue(use_auto_stub);
     Settings::values.disable_web_applet.SetValue(disable_web_applet);
@@ -4251,8 +4277,8 @@ void MainWindow::StormSessionBackup::Restore() {
 
 void MainWindow::RestoreSessionSettings() {
     if (m_session_backup.is_active) {
-        m_session_backup.Restore();
         Settings::RestoreGlobalState(false);
+        m_session_backup.Restore();
         if (config) {
             config->SaveAllValues();
         }
@@ -5234,6 +5260,7 @@ void MainWindow::OnEmulationStopped() {
                 }
             }
         }
+        Core::FlushPendingSaveStates();
         if (QtCommon::system) {
             const u64 stopped_prog_id = QtCommon::system->GetApplicationProcessProgramID();
             if (stopped_prog_id != 0) {
@@ -6172,6 +6199,11 @@ void MainWindow::OnStartGame() {
             floating_translate_button = new FloatingTranslateButton(target_parent);
             connect(floating_translate_button, &FloatingTranslateButton::TranslateRequested, this, &MainWindow::OnTranslateScreen);
             connect(floating_translate_button, &FloatingTranslateButton::OpenSettingsRequested, this, &MainWindow::OnOpenTranslatorSettings);
+            connect(floating_translate_button, &FloatingTranslateButton::ToggleHUDRequested, this, [this]() {
+                if (m_game_translator) {
+                    m_game_translator->ToggleHUD();
+                }
+            });
         } else if (render_window && floating_translate_button->parent() != render_window) {
             floating_translate_button->setParent(render_window);
         }
@@ -6284,7 +6316,12 @@ void MainWindow::OnExecuteProgram(std::size_t program_index) {
 }
 
 void MainWindow::OnExit() {
+    m_is_quitting_from_tray = true;
+    if (m_tray_icon) {
+        m_tray_icon->hide();
+    }
     ShutdownGame();
+    close();
 }
 
 void MainWindow::OnSaveConfig() {
@@ -6824,6 +6861,31 @@ void MainWindow::OnToggleGpuAccuracy() {
     UpdateGPUAccuracyButton();
 }
 
+void MainWindow::OnHealGraphicsArtifacts() {
+    ApplyStatusBarSwitchableSetting(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High,
+                                    m_session_backup, m_session_backup.gpu_accuracy,
+                                    current_game_path);
+    ApplyStatusBarSwitchableSetting(Settings::values.dma_accuracy, Settings::DmaAccuracy::Safe,
+                                    m_session_backup, m_session_backup.dma_accuracy,
+                                    current_game_path);
+    ApplyStatusBarSwitchableSetting(Settings::values.gpu_fence_behavior,
+                                    Settings::GpuFenceBehavior::Accurate,
+                                    m_session_backup, m_session_backup.gpu_fence_behavior,
+                                    current_game_path);
+    Settings::values.use_reactive_flushing.SetValue(true);
+    Settings::values.sync_memory_operations.SetValue(true);
+    ApplyDynamicSettingChange();
+    UpdateStatusButtons();
+    statusBar()->showMessage(StormLang(
+        QStringLiteral("Автолечение графики применено: GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
+        QStringLiteral("Graphics Auto-Heal applied: GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
+        QStringLiteral("Grafik-Auto-Heilung angewendet: GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
+        QStringLiteral("Auto-réparation graphique appliquée : GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
+        QStringLiteral("图形自动修复已应用：GPU 高精度 + 安全 DMA + 精确屏障 + 响应式刷新"),
+        QStringLiteral("グラフィックス自動修復を適用しました: GPU High + Safe DMA + Accurate Barriers + Reactive Flushing")
+    ), 5000);
+}
+
 void MainWindow::OnMute() {
     Settings::values.audio_muted.SetValue(!Settings::values.audio_muted.GetValue());
     ApplyDynamicSettingChange();
@@ -7020,7 +7082,7 @@ void MainWindow::StartSilentCheatsSync() {
             const QString url_str = QString(QStringLiteral("https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/cheats/%1.json"))
                                         .arg(tid_hex);
             QNetworkRequest request{QUrl(url_str)};
-            request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH_Emulator/7.2.2"));
+            request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH_Emulator/13.1.0"));
             request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
             auto* reply = nam->get(request);
@@ -7178,14 +7240,16 @@ void MainWindow::OnTranslateScreen() {
     if (!m_game_translator) {
         m_game_translator = new GameTranslator(*QtCommon::system, this);
     }
-    m_game_translator->show();
-    m_game_translator->raise();
-    m_game_translator->activateWindow();
+    if (m_game_translator->IsOverlayVisible()) {
+        m_game_translator->DismissOverlay();
+        return;
+    }
 
     if (render_window && QtCommon::system && QtCommon::system->IsPoweredOn()) {
         QImage lastFrame = render_window->GetLastFrame();
         if (!lastFrame.isNull()) {
             m_game_translator->TranslateFrame(lastFrame);
+            return;
         }
         QPointer<GameTranslator> safeTranslator = m_game_translator;
         render_window->CaptureFrame([safeTranslator](const QImage& frame) {
@@ -7193,6 +7257,10 @@ void MainWindow::OnTranslateScreen() {
                 safeTranslator->TranslateFrame(frame);
             }
         });
+    } else {
+        m_game_translator->show();
+        m_game_translator->raise();
+        m_game_translator->activateWindow();
     }
 }
 
@@ -8545,7 +8613,7 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
                 "  font-size: 6.8pt;"
                 "  font-weight: 800;"
                 "  min-height: 26px;"
-                "  min-width: 44px;"
+                "  min-width: 36px;"
                 "}"
                 "QPushButton#TogglableStatusBarButton:hover, QPushButton:hover {"
                 "  background-color: #00e676;"
@@ -8563,7 +8631,7 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
                 "  font-size: 6.8pt;"
                 "  font-weight: 800;"
                 "  min-height: 26px;"
-                "  min-width: 44px;"
+                "  min-width: 36px;"
                 "}"
                 "QPushButton#TogglableStatusBarButton:hover, QPushButton:hover {"
                 "  background-color: #ff5252;"
@@ -8703,7 +8771,7 @@ void MainWindow::UpdateGameFixStatusButton() {
             "  font-size: 6.8pt;"
             "  font-weight: 800;"
             "  min-height: 26px;"
-            "  min-width: 44px;"
+            "  min-width: 36px;"
             "}"
             "QPushButton#TogglableStatusBarButton:hover, QPushButton:hover {"
             "  background-color: #00e5ff;"
@@ -10018,9 +10086,156 @@ void MainWindow::UpdateUISettings() {
 }
 
 void MainWindow::UpdateInputDrivers() {
+    const bool high_rate = emulation_running || (controller_dialog && controller_dialog->isVisible());
+    const int desired_interval = high_rate ? 4 : 32;
+    if (update_input_timer.interval() != desired_interval) {
+        update_input_timer.setInterval(desired_interval);
+    }
     if (!input_subsystem)
         return;
     input_subsystem->PumpEvents();
+}
+
+void MainWindow::InitializeSystemTray() {
+    if (m_tray_icon || !QSystemTrayIcon::isSystemTrayAvailable()) {
+        return;
+    }
+
+    m_tray_icon = new QSystemTrayIcon(windowIcon(), this);
+    m_tray_icon->setToolTip(QStringLiteral("STORM SWITCH"));
+
+    m_tray_menu = new QMenu(this);
+    m_tray_menu->setObjectName(QStringLiteral("StormSystemTrayMenu"));
+    // STORM Ecosystem Tray Menu Standard:
+    // Pure text (NO icons, NO emojis), Segoe UI 9pt, bold first item, #141026 background, #8B5CF6 border, #2E2652 hover, #FFFFFF text
+    QFont menu_font(QStringLiteral("Segoe UI"), 9);
+    m_tray_menu->setFont(menu_font);
+    m_tray_menu->setStyleSheet(QStringLiteral(
+        "QMenu#StormSystemTrayMenu {"
+        "  background-color: #141026;"
+        "  color: #FFFFFF;"
+        "  border: 1px solid #8B5CF6;"
+        "  padding: 4px 0px;"
+        "  font-family: 'Segoe UI';"
+        "  font-size: 9pt;"
+        "}"
+        "QMenu#StormSystemTrayMenu::item {"
+        "  background-color: transparent;"
+        "  color: #FFFFFF;"
+        "  padding: 6px 20px 6px 14px;"
+        "  margin: 0px;"
+        "}"
+        "QMenu#StormSystemTrayMenu::item:selected {"
+        "  background-color: #2E2652;"
+        "  color: #FFFFFF;"
+        "}"
+        "QMenu#StormSystemTrayMenu::separator {"
+        "  height: 1px;"
+        "  background: #2E2652;"
+        "  margin: 4px 8px;"
+        "}"
+        "QMenu#StormSystemTrayMenu::icon {"
+        "  width: 0px;"
+        "  padding: 0px;"
+        "  margin: 0px;"
+        "}"
+    ));
+
+    m_tray_restore_action = m_tray_menu->addAction(QStringLiteral("Развернуть STORM SWITCH"));
+    QFont bold_font = menu_font;
+    bold_font.setBold(true);
+    m_tray_restore_action->setFont(bold_font);
+    m_tray_restore_action->setIconVisibleInMenu(false);
+
+    m_tray_about_action = m_tray_menu->addAction(QStringLiteral("О программе"));
+    m_tray_about_action->setFont(menu_font);
+    m_tray_about_action->setIconVisibleInMenu(false);
+
+    m_tray_menu->addSeparator();
+
+    m_tray_exit_action = m_tray_menu->addAction(QStringLiteral("Выход"));
+    m_tray_exit_action->setFont(menu_font);
+    m_tray_exit_action->setIconVisibleInMenu(false);
+
+    connect(m_tray_restore_action, &QAction::triggered, this, [this]() {
+        showNormal();
+        raise();
+        activateWindow();
+    });
+
+    connect(m_tray_about_action, &QAction::triggered, this, [this]() {
+        showNormal();
+        raise();
+        activateWindow();
+        OnAbout();
+    });
+
+    connect(m_tray_exit_action, &QAction::triggered, this, [this]() {
+        m_is_quitting_from_tray = true;
+        if (m_tray_icon) {
+            m_tray_icon->hide();
+        }
+        close();
+    });
+
+    connect(m_tray_icon, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {
+        if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
+            if (isHidden() || isMinimized()) {
+                showNormal();
+                raise();
+                activateWindow();
+            } else {
+                raise();
+                activateWindow();
+            }
+        }
+    });
+
+    m_tray_icon->setContextMenu(m_tray_menu);
+    UpdateSystemTrayStrings();
+    m_tray_icon->show();
+}
+
+void MainWindow::UpdateSystemTrayStrings() {
+    if (!m_tray_menu) {
+        return;
+    }
+    if (m_tray_restore_action) {
+        m_tray_restore_action->setText(StormLang(
+            QStringLiteral("Развернуть STORM SWITCH"),
+            QStringLiteral("Restore STORM SWITCH"),
+            QStringLiteral("STORM SWITCH wiederherstellen"),
+            QStringLiteral("Restaurer STORM SWITCH"),
+            QStringLiteral("展开 STORM SWITCH"),
+            QStringLiteral("STORM SWITCH を表示"),
+            QStringLiteral("استعادة STORM SWITCH"),
+            QStringLiteral("Restaurar STORM SWITCH")
+        ));
+    }
+    if (m_tray_about_action) {
+        m_tray_about_action->setText(StormLang(
+            QStringLiteral("О программе"),
+            QStringLiteral("About"),
+            QStringLiteral("Über das Programm"),
+            QStringLiteral("À propos"),
+            QStringLiteral("关于程序"),
+            QStringLiteral("バージョン情報"),
+            QStringLiteral("حول البرنامج"),
+            QStringLiteral("Acerca de")
+        ));
+    }
+    if (m_tray_exit_action) {
+        m_tray_exit_action->setText(StormLang(
+            QStringLiteral("Выход"),
+            QStringLiteral("Exit"),
+            QStringLiteral("Beenden"),
+            QStringLiteral("Quitter"),
+            QStringLiteral("退出"),
+            QStringLiteral("終了"),
+            QStringLiteral("خروج"),
+            QStringLiteral("Salir")
+        ));
+    }
 }
 
 void MainWindow::HideMouseCursor() {
@@ -10380,7 +10595,20 @@ bool MainWindow::ConfirmClose() {
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
+    // STORM Close-to-Tray Standard: minimize to system tray on [X] / Alt+F4; exit only from tray menu
+    if (!m_is_quitting_from_tray && !m_is_cmd_line_launch && m_tray_icon && m_tray_icon->isVisible()) {
+        UpdateUISettings();
+        UISettings::SaveWindowState();
+        hide();
+        event->ignore();
+        return;
+    }
+
     if (!ConfirmClose()) {
+        m_is_quitting_from_tray = false;
+        if (m_tray_icon) {
+            m_tray_icon->show();
+        }
         event->ignore();
         return;
     }
@@ -12000,6 +12228,7 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
     if (multiplayer_state) {
         multiplayer_state->retranslateUi();
     }
+    UpdateSystemTrayStrings();
     UpdateWindowTitle();
 }
 

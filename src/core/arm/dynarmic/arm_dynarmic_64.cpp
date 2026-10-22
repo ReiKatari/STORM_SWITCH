@@ -131,7 +131,11 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
         return;
     case Dynarmic::A64::Exception::SendEvent:
     case Dynarmic::A64::Exception::SendEventLocal:
+        return;
     case Dynarmic::A64::Exception::Yield:
+#if defined(_MSC_VER) && defined(ARCHITECTURE_x86_64)
+        _mm_pause();
+#endif
         return;
     case Dynarmic::A64::Exception::NoExecuteFault:
         if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {

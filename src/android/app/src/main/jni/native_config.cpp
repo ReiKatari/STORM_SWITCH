@@ -121,6 +121,11 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_unloadPerGameConfig(JNIEnv* env,
 
 jboolean Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getBoolean(JNIEnv* env, jobject obj,
                                                                jstring jkey, jboolean needGlobal) {
+    const auto raw_key = ResolveSettingKey(Common::Android::GetJString(env, jkey));
+    if (raw_key == "use_docked_mode") {
+        return Settings::values.use_docked_mode.GetValue(static_cast<bool>(needGlobal)) ==
+               Settings::ConsoleMode::Docked;
+    }
     auto setting = getSetting<bool>(env, jkey);
     if (setting == nullptr) {
         return false;
@@ -130,6 +135,13 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getBoolean(JNIEnv* env, jobj
 
 void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setBoolean(JNIEnv* env, jobject obj, jstring jkey,
                                                            jboolean value) {
+    const auto raw_key = ResolveSettingKey(Common::Android::GetJString(env, jkey));
+    if (raw_key == "use_docked_mode") {
+        Settings::values.use_docked_mode.SetGlobal(per_game_config == nullptr);
+        Settings::values.use_docked_mode.SetValue(
+            value ? Settings::ConsoleMode::Docked : Settings::ConsoleMode::Handheld);
+        return;
+    }
     auto setting = getSetting<bool>(env, jkey);
     if (setting == nullptr) {
         return;

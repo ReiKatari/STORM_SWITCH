@@ -930,6 +930,27 @@ void StormGamesWorldDialog::SetupUI() {
     search_edit->setClearButtonEnabled(true);
     top_bar->addWidget(search_edit, 1);
 
+    auto make_pill = [this](const QString& label, const QString& filter_token) {
+        auto* btn = new QPushButton(label, this);
+        btn->setCursor(Qt::PointingHandCursor);
+        btn->setStyleSheet(QStringLiteral(
+            "QPushButton { background-color: #131c2e; color: #94a3b8; border: 1px solid #1e293b; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: bold; }"
+            "QPushButton:hover { border-color: #00d2ff; color: #ffffff; background-color: #1a263d; }"));
+        connect(btn, &QPushButton::clicked, this, [this, filter_token]() {
+            if (!search_edit) return;
+            if (search_edit->text() == filter_token) {
+                search_edit->clear();
+            } else {
+                search_edit->setText(filter_token);
+            }
+        });
+        return btn;
+    };
+    top_bar->addWidget(make_pill(tr("Все"), QString()));
+    top_bar->addWidget(make_pill(tr("🇷🇺 RUS"), QStringLiteral("ru")));
+    top_bar->addWidget(make_pill(tr("📦 DLC"), QStringLiteral("dlc")));
+    top_bar->addWidget(make_pill(tr("⚡ MOD"), QStringLiteral("mod")));
+
     refresh_btn = new QPushButton(tr("🔄 Обновить каталог"), this);
     refresh_btn->setCursor(Qt::PointingHandCursor);
     top_bar->addWidget(refresh_btn);
@@ -1548,15 +1569,26 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
         }
 
         if (!lower_filter.isEmpty()) {
-            const bool match_title = g.title.toLower().contains(lower_filter);
-            const bool match_final = g.final_title.toLower().contains(lower_filter);
-            const bool match_tid = g.serial_id.toLower().contains(lower_filter);
-            QString ext_clean = g.real_extension;
-            ext_clean.remove(QLatin1Char('.'));
-            ext_clean = ext_clean.toLower();
-            const bool match_ext = ext_clean.contains(lower_filter) || g.real_extension.toLower().contains(lower_filter);
-            if (!match_title and !match_final and !match_tid and !match_ext) {
-                continue;
+            if (lower_filter == QStringLiteral("dlc")) {
+                if (g.dlc_count <= 0) continue;
+            } else if (lower_filter == QStringLiteral("mod")) {
+                if (g.mod_count <= 0) continue;
+            } else if (lower_filter == QStringLiteral("ru")) {
+                const bool has_ru = g.text_langs.contains(QStringLiteral("RU"), Qt::CaseInsensitive) ||
+                                    g.title.contains(QStringLiteral("рус"), Qt::CaseInsensitive) ||
+                                    g.final_title.contains(QStringLiteral("рус"), Qt::CaseInsensitive);
+                if (!has_ru) continue;
+            } else {
+                const bool match_title = g.title.toLower().contains(lower_filter);
+                const bool match_final = g.final_title.toLower().contains(lower_filter);
+                const bool match_tid = g.serial_id.toLower().contains(lower_filter);
+                QString ext_clean = g.real_extension;
+                ext_clean.remove(QLatin1Char('.'));
+                ext_clean = ext_clean.toLower();
+                const bool match_ext = ext_clean.contains(lower_filter) || g.real_extension.toLower().contains(lower_filter);
+                if (!match_title and !match_final and !match_tid and !match_ext) {
+                    continue;
+                }
             }
         }
 

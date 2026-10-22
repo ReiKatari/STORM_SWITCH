@@ -81,6 +81,7 @@ import org.yuzu.yuzu_emu.databinding.DialogOverlayAdjustBinding
 import org.yuzu.yuzu_emu.databinding.FragmentEmulationBinding
 import org.yuzu.yuzu_emu.dialogs.QuickSettings
 import org.yuzu.yuzu_emu.features.input.NativeInput
+import org.yuzu.yuzu_emu.features.input.model.NpadStyleIndex
 import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
 import org.yuzu.yuzu_emu.features.settings.model.IntSetting
 import org.yuzu.yuzu_emu.features.settings.model.Settings
@@ -1355,7 +1356,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 R.string.use_docked_mode,
                 container,
                 BooleanSetting.USE_DOCKED_MODE,
-            ) {
+            ) { enabled ->
+                if (enabled && NativeInput.getStyleIndex(0) == NpadStyleIndex.Handheld) {
+                    NativeInput.setStyleIndex(0, NpadStyleIndex.Fullkey)
+                }
+                NativeLibrary.applySettings()
                 addQuickSettings()
             }
 
@@ -2360,16 +2365,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                     if (sessionStartTime == 0L) {
                         sessionStartTime = android.os.SystemClock.elapsedRealtime()
-                    }
-                    val elapsedSecs = ((android.os.SystemClock.elapsedRealtime() - sessionStartTime) / 1000).coerceAtLeast(0)
-                    val hours = elapsedSecs / 3600
-                    val mins = (elapsedSecs % 3600) / 60
-                    val secs = elapsedSecs % 60
-                    val playtimeText = String.format("⏱️ Время игры: %02d:%02d:%02d", hours, mins, secs)
-                    if (sb.isNotEmpty()) {
-                        sb.append("\n").append(playtimeText)
-                    } else {
-                        sb.append(playtimeText)
                     }
 
                     if (BooleanSetting.PERF_OVERLAY_BACKGROUND.getBoolean(needsGlobal)) {

@@ -572,7 +572,25 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
                 const u32 default_bits_alt = default_bits - 1;
                 size_t patched_count = 0;
 
-                for (size_t seg_idx = 1; seg_idx <= 1 && seg_idx < header.segments.size(); ++seg_idx) {
+                auto is_plausible_camera_constant = [&](size_t pos, size_t seg_start, size_t seg_end) -> bool {
+                    // Reject if surrounded by printable ASCII characters (embedded string table)
+                    if (pos >= seg_start + 4 && pos + 8 <= seg_end) {
+                        bool all_ascii = true;
+                        for (size_t k = pos - 4; k < pos + 8; ++k) {
+                            const u8 ch = out[k];
+                            if (ch < 0x20 || ch > 0x7E) {
+                                all_ascii = false;
+                                break;
+                            }
+                        }
+                        if (all_ascii) {
+                            return false;
+                        }
+                    }
+                    return true;
+                };
+
+                for (size_t seg_idx = 1; seg_idx <= 2 && seg_idx < header.segments.size(); ++seg_idx) {
                     const size_t seg_start = sizeof(Loader::NSOHeader) + header.segments[seg_idx].location;
                     const size_t seg_size = header.segments[seg_idx].size;
                     if (seg_start >= out.size() || seg_size < sizeof(u32)) {
@@ -580,10 +598,12 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
                     }
                     const size_t seg_end = std::min(out.size(), seg_start + seg_size);
                     size_t seg_patched = 0;
-                    for (size_t pos = seg_start; pos + sizeof(u32) <= seg_end && seg_patched < 64; pos += sizeof(u32)) {
+                    const size_t max_seg_patches = (seg_idx == 1) ? 48 : 16;
+                    for (size_t pos = seg_start; pos + sizeof(u32) <= seg_end && seg_patched < max_seg_patches; pos += sizeof(u32)) {
                         u32 val = 0;
                         std::memcpy(&val, out.data() + pos, sizeof(u32));
-                        if (val == default_bits || val == default_bits_alt) {
+                        if ((val == default_bits || val == default_bits_alt) &&
+                            is_plausible_camera_constant(pos, seg_start, seg_end)) {
                             std::memcpy(out.data() + pos, &target_bits, sizeof(u32));
                             ++seg_patched;
                             ++patched_count;

@@ -30,6 +30,9 @@ private:
     Result SetSize(s64 size);
     Result GetSize(Out<u64> out_size);
     Result OperateRange(Out<FsRangeInfo> out_info, u32 operation_type, s64 offset, s64 size);
+    Result BatchRead(
+        OutBuffer<BufferAttr_HipcMapAlias | BufferAttr_HipcMapTransferAllowsNonSecure | BufferAttr_HipcAutoSelect | BufferAttr_HipcPointer> out_bytes,
+        s64 offset, s64 length);
 };
 
 } // namespace Service::FileSystem

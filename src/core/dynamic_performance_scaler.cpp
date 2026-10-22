@@ -9,6 +9,37 @@
 
 namespace Core {
 
+namespace {
+std::atomic<float> s_effective_scale{1.0f};
+
+float LevelToScaleMultiplier(Settings::ResolutionSetup level) noexcept {
+    switch (level) {
+    case Settings::ResolutionSetup::Res1_4X: return 0.25f;
+    case Settings::ResolutionSetup::Res1_2X: return 0.50f;
+    case Settings::ResolutionSetup::Res3_4X: return 0.75f;
+    case Settings::ResolutionSetup::Res1X:   return 1.00f;
+    case Settings::ResolutionSetup::Res5_4X: return 1.25f;
+    case Settings::ResolutionSetup::Res3_2X: return 1.50f;
+    case Settings::ResolutionSetup::Res2X:   return 2.00f;
+    case Settings::ResolutionSetup::Res3X:   return 3.00f;
+    case Settings::ResolutionSetup::Res4X:   return 4.00f;
+    case Settings::ResolutionSetup::Res5X:   return 5.00f;
+    case Settings::ResolutionSetup::Res6X:   return 6.00f;
+    case Settings::ResolutionSetup::Res7X:   return 7.00f;
+    case Settings::ResolutionSetup::Res8X:   return 8.00f;
+    default: return 1.00f;
+    }
+}
+} // Anonymous namespace
+
+float DynamicPerformanceScaler::GetEffectiveScaleFactor() noexcept {
+    if (!Settings::values.dynamic_performance_scaler.GetValue()) {
+        const auto& ri = Settings::values.resolution_info;
+        return static_cast<float>(ri.up_scale) / static_cast<float>(1U << ri.down_shift);
+    }
+    return s_effective_scale.load(std::memory_order_relaxed);
+}
+
 DynamicPerformanceScaler::DynamicPerformanceScaler() = default;
 
 DynamicPerformanceScaler::~DynamicPerformanceScaler() = default;
@@ -45,6 +76,8 @@ void DynamicPerformanceScaler::Initialize(Settings::ResolutionSetup user_resolut
     consecutive_overbudget = 0;
     consecutive_underbudget = 0;
     startup_frames = 0;
+    s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[current_level_index]),
+                            std::memory_order_relaxed);
 
     LOG_INFO(Core, "DynamicPerformanceScaler: Initialized — target {:.1f} FPS ({:.2f} ms), "
                    "max level index {} ({}x), min level index {}",
@@ -99,6 +132,11 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
             current_level_index = (std::max)(effective_min_level, current_level_index - step);
             consecutive_overbudget = 0;
             changed = true;
+            s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[current_level_index]),
+                                    std::memory_order_relaxed);
+            if (!Settings::values.smart_shader_throttle.GetValue()) {
+                Settings::values.smart_shader_throttle.SetValue(true);
+            }
 
             LOG_DEBUG(Core,
                       "DynamicPerformanceScaler: Under load (avg {:.2f} ms > budget {:.2f} ms), "
@@ -115,6 +153,8 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
             current_level_index++;
             consecutive_underbudget = 0;
             changed = true;
+            s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[current_level_index]),
+                                    std::memory_order_relaxed);
 
             LOG_DEBUG(Core,
                       "DynamicPerformanceScaler: Frame stable (avg {:.2f} ms < {:.2f} ms), "
@@ -164,6 +204,7 @@ void DynamicPerformanceScaler::Reset() {
 
     // Restore user's resolution
     const auto user_level = kLevelOrder[max_level_index];
+    s_effective_scale.store(LevelToScaleMultiplier(user_level), std::memory_order_relaxed);
     Settings::values.resolution_setup.SetValue(user_level);
     Settings::UpdateRescalingInfo();
 }

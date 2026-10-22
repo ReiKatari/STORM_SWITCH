@@ -77,7 +77,14 @@ class InputOverlayDrawableButton(
         val isActionUp =
             motionEvent == MotionEvent.ACTION_UP || motionEvent == MotionEvent.ACTION_POINTER_UP
 
-        if (isActionDown) {
+        if (motionEvent == MotionEvent.ACTION_CANCEL) {
+            if (trackId == -1) return false
+            pressedState = false
+            trackId = -1
+            return true
+        }
+
+        if (isActionDown && trackId == -1) {
             if (!bounds.contains(xPosition, yPosition)) {
                 return false
             }
@@ -86,10 +93,7 @@ class InputOverlayDrawableButton(
             return true
         }
 
-        if (isActionUp) {
-            if (trackId != pointerId) {
-                return false
-            }
+        if (isActionUp && trackId == pointerId) {
             pressedState = false
             trackId = -1
             return true

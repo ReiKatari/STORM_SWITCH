@@ -9,6 +9,7 @@
 #include <vector>
 #include <queue>
 
+#include "common/alignment.h"
 #include "common/logging.h"
 #include "common/settings.h"
 #include "shader_recompiler/exception.h"
@@ -119,6 +120,20 @@ void AddNVNStorageBuffers(IR::Program& program) {
         throw InvalidArgument("Invalid stage {}", program.stage);
     }()};
     auto& descs{program.info.storage_buffers_descriptors};
+    bool has_untracked_nvn_slot{false};
+    for (u32 index = 0; index < num_buffers; ++index) {
+        if (!program.info.nvn_buffer_used[index]) {
+            continue;
+        }
+        const u32 offset{base + index * descriptor_size};
+        if (std::ranges::find(descs, offset, &StorageBufferDescriptor::cbuf_offset) == descs.end()) {
+            has_untracked_nvn_slot = true;
+            break;
+        }
+    }
+    if (!has_untracked_nvn_slot) {
+        program.info.nvn_buffer_used.set();
+    }
     for (u32 index = 0; index < num_buffers; ++index) {
         if (!program.info.nvn_buffer_used[index]) {
             continue;
@@ -135,6 +150,20 @@ void AddNVNStorageBuffers(IR::Program& program) {
             .count = 1,
             .is_written = program.info.stores_global_memory,
         });
+    }
+    for (const auto& desc : descs) {
+        if ((program.info.constant_buffer_mask & (1U << desc.cbuf_index)) == 0) {
+            program.info.constant_buffer_mask |= 1U << desc.cbuf_index;
+            auto& cbufs{program.info.constant_buffer_descriptors};
+            cbufs.insert(
+                std::ranges::lower_bound(cbufs, desc.cbuf_index, {}, &ConstantBufferDescriptor::index),
+                ConstantBufferDescriptor{
+                    .index = desc.cbuf_index,
+                    .count = 1,
+                });
+        }
+        u32& cbuf_size{program.info.constant_buffer_used_sizes[desc.cbuf_index]};
+        cbuf_size = Common::AlignUp((std::max)(cbuf_size, desc.cbuf_offset + descriptor_size), 16u);
     }
 }
 
@@ -349,11 +378,13 @@ IR::Program MergeDualVertexPrograms(IR::Program& vertex_a, IR::Program& vertex_b
 
     Optimization::JoinTextureInfo(result.info, vertex_b.info);
     Optimization::JoinStorageInfo(result.info, vertex_b.info);
+    result.info.nvn_buffer_used |= vertex_b.info.nvn_buffer_used;
     Optimization::DeadCodeEliminationPass(result);
     if (Settings::values.renderer_debug) {
         Optimization::VerificationPass(result);
     }
     Optimization::CollectShaderInfoPass(env_vertex_b, result);
+    AddNVNStorageBuffers(result);
     return result;
 }
 

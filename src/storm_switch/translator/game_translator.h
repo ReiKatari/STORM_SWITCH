@@ -75,21 +75,33 @@ class TranslatorHUDOverlay : public QWidget {
 public:
     explicit TranslatorHUDOverlay(QWidget* parent = nullptr);
     void SetSubtitleText(const QString& text);
+    void SetSampledFrame(const QImage& frame);
+    void SetSmartBackgroundMatch(bool enabled);
     void SetFontSize(int pt);
     void SetTextColor(const QColor& color);
     void SetBackgroundOpacity(int opacityPercent);
+    QString GetSubtitleText() const { return m_text; }
+
+signals:
+    void DismissRequested();
 
 protected:
     void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
     QString m_text;
+    QColor m_sampled_bg{10, 14, 23};
+    QColor m_sampled_border{0, 229, 255};
+    bool m_smart_bg_match{true};
     int m_font_size{20};
     QColor m_text_color{0x00, 0xE5, 0xFF};
-    int m_bg_opacity{75};
+    int m_bg_opacity{82};
     QPoint m_drag_position;
+    QPoint m_press_pos;
+    bool m_dragging{false};
 };
 
 struct SpeechSegment {
@@ -99,9 +111,48 @@ struct SpeechSegment {
         Speaker2,
         Narrator
     };
+    enum class Persona {
+        Auto,
+        HeroMale,
+        HeroFemale,
+        YoungBoy,
+        YoungGirl,
+        CuteMascot,
+        WiseElder,
+        VillainBoss,
+        StoicKnight,
+        ScholarDetective,
+        MerchantTrickster,
+        CommanderGeneral,
+        PrincessNoble,
+        RobotAI,
+        MonsterDemon,
+        GentleHealer,
+        RivalHothead,
+        ChildBrat,
+        PirateMercenary,
+        MysteriousOracle,
+        NarratorBook
+    };
+    enum class Emotion {
+        Neutral,
+        Excited,
+        Question,
+        SadWhisper,
+        AngryThreat,
+        CalmThoughtful,
+        Shocked,
+        Mocking,
+        Tender,
+        Heroic
+    };
     Role role{Role::Default};
+    Persona persona{Persona::Auto};
+    Emotion emotion{Emotion::Neutral};
     QString speaker_name;
     QString text;
+    int pitch_Adjust{0};
+    int rate_Adjust{0};
 };
 
 class GameTranslator : public QDialog {
@@ -111,9 +162,12 @@ public:
     explicit GameTranslator(Core::System& system, QWidget* parent = nullptr);
     ~GameTranslator() override;
 
-    void TranslateFrame(const QImage& frame);
+    void TranslateFrame(const QImage& frame, bool show_hud_automatically = true);
     void SpeakText(const QString& text);
     void StopSpeech();
+    bool IsOverlayVisible() const;
+    void DismissOverlay();
+    void ToggleHUD();
 
 private slots:
     void OnTranslateClicked();
@@ -142,6 +196,12 @@ private:
     void ExtractTextFromImageAndTranslate(const QImage& frame);
     std::vector<SpeechSegment> ParseDialogueSegments(const QString& text);
     void SpeakSingleSegment(const SpeechSegment& segment);
+    void ProcessNextSpeechSegment();
+    SpeechSegment::Persona InferCharacterPersona(const QString& name, const QString& dialogue = QString());
+    SpeechSegment::Emotion DetectEmotionStyle(const QString& text) const;
+    QString NormalizeForRussianTts(const QString& text) const;
+    void LoadVoiceCast();
+    void SaveVoiceCast() const;
     QString GetCurrentTitleIdString() const;
     void LoadCache();
     void SaveCache();
@@ -156,6 +216,9 @@ private:
     QNetworkAccessManager* m_network_mgr{nullptr};
     QImage m_captured_frame;
     QHash<QString, QString> m_translation_cache;
+    QHash<QString, int> m_character_persona_cache;
+    std::vector<SpeechSegment> m_speech_queue;
+    QTimer* m_speech_queue_timer{nullptr};
     QString m_last_translated_input;
     QString m_last_translated_output;
     uint64_t m_last_frame_dhash{0};

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <span>
 #include <dynarmic/interface/A32/config.h>
 #include <dynarmic/interface/A64/config.h>
@@ -28,34 +29,87 @@ namespace Core {
  */
 class StormTier2Compiler {
 public:
-    static constexpr u32 A64_NOP = 0xD503201FU;
+    static constexpr u32 A64_NOP   = 0xD503201FU;
+    static constexpr u32 A64_YIELD = 0xD503203FU;
+    static constexpr u32 A64_WFE   = 0xD503205FU;
+    static constexpr u32 A64_WFI   = 0xD503207FU;
+    static constexpr u32 A64_SEV   = 0xD503209FU;
+    static constexpr u32 A64_SEVL  = 0xD50320BFU;
+
+    // ARMv8.7 WFET / WFIT (Hint encodings)
+    static constexpr u32 A64_WFET_MASK = 0xFFFFFFE0U;
+    static constexpr u32 A64_WFET_VAL  = 0xD5031000U;
+
+    // Redundant MOV Xd, Xm (encoded as ORR Xd, XZR, Xm: 0xAA0003E0 | (Rm << 16) | Rd)
+    static constexpr u32 A64_MOV_REG_MASK = 0xFFE0FFE0U;
+    static constexpr u32 A64_MOV_REG_VAL  = 0xAA0003E0U;
+
+    static inline std::atomic<u64> s_rewritten_inst_count{0};
+    static inline std::atomic<u64> s_superblock_opt_count{0};
+
+    [[nodiscard]] static inline u64 GetRewrittenCount() noexcept {
+        return s_rewritten_inst_count.load(std::memory_order_relaxed);
+    }
+
+    [[nodiscard]] static inline u64 GetSuperblockOptCount() noexcept {
+        return s_superblock_opt_count.load(std::memory_order_relaxed);
+    }
+
+    [[nodiscard]] static inline bool IsRedundantSelfMov64(u32 inst) noexcept {
+        if ((inst & A64_MOV_REG_MASK) != A64_MOV_REG_VAL) [[likely]] {
+            return false;
+        }
+        const u32 rd = inst & 0x1FU;
+        const u32 rm = (inst >> 16) & 0x1FU;
+        return rd == rm && rd != 31U;
+    }
 
     [[nodiscard]] static inline u32 OptimizeInstruction64(u32 inst, bool enabled) noexcept {
-        // Fast-path: 99.9% of A64 instructions are not in the 0xD5000000 system instruction space
-        if ((inst & 0xFFC00000U) != 0xD5000000U) [[likely]] {
-            return inst;
-        }
         if (!enabled) {
             return inst;
         }
 
+        // Fold redundant self-MOV (MOV Xd, Xd -> NOP)
+        if (IsRedundantSelfMov64(inst)) [[unlikely]] {
+            s_superblock_opt_count.fetch_add(1, std::memory_order_relaxed);
+            return A64_NOP;
+        }
+
+        // Fast-path: 99.9% of remaining A64 instructions are not in the 0xD5000000 system space
+        if ((inst & 0xFFC00000U) != 0xD5000000U) [[likely]] {
+            return inst;
+        }
+
         // 1. Rewrite MRS Xn, CNTVCT_EL0 (0xD53BE040 | Rt) -> MRS Xn, CNTPCT_EL0 (0xD53BE020 | Rt)
-        // SDK 18.x - 23.0.1 titles occasionally emit CNTVCT_EL0 directly; redirecting to CNTPCT_EL0
-        // enables Dynarmic's inline wall-clock / cycle counter path without trapping.
         if ((inst & 0xFFFFFFE0U) == 0xD53BE040U) [[unlikely]] {
+            s_rewritten_inst_count.fetch_add(1, std::memory_order_relaxed);
             return 0xD53BE020U | (inst & 0x1FU);
         }
 
-        // 2. Canonicalize ARMv8.3 PAC / ARMv8.5 BTI hint instructions in System Hint space
-        // System hints match 0xD503201F with CRm [11:8] and op2 [7:5]: Mask 0xFFFFF01F == 0xD503201F.
-        // Preserve YIELD (0xD503203F), WFE (0xD503205F), WFI (0xD503207F), SEV (0xD503209F), SEVL (0xD50320BF).
+        // 2. Eliminate basic-block exits on SEV (0xD503209F) & SEVL (0xD50320BF):
+        // Dynarmic terminates the basic block and exits to C++ ExceptionRaised (which is a no-op)
+        // on every SEV/SEVL. Rewriting them to NOP keeps spinlocks inside the JIT superblock.
+        if (inst == A64_SEV || inst == A64_SEVL) [[unlikely]] {
+            s_rewritten_inst_count.fetch_add(1, std::memory_order_relaxed);
+            return A64_NOP;
+        }
+
+        // 3. Fast WFE/WFET -> YIELD rewrite under Low-End Turbo / Unsafe CPU to avoid micro-stutters
+        if ((inst == A64_WFE || (inst & A64_WFET_MASK) == A64_WFET_VAL) &&
+            (Settings::values.storm_lowend_turbo.GetValue() ||
+             Settings::values.cpu_accuracy.GetValue() == Settings::CpuAccuracy::Unsafe)) [[unlikely]] {
+            s_rewritten_inst_count.fetch_add(1, std::memory_order_relaxed);
+            return A64_YIELD;
+        }
+
+        // 4. Canonicalize ARMv8.3 PAC / ARMv8.5 BTI hint instructions in System Hint space
+        // Preserve only YIELD (0xD503203F), WFE (0xD503205F), WFI (0xD503207F).
         if ((inst & 0xFFFFF01FU) == 0xD503201FU) [[unlikely]] {
             if (inst != A64_NOP &&
-                inst != 0xD503203FU && // YIELD
-                inst != 0xD503205FU && // WFE
-                inst != 0xD503207FU && // WFI
-                inst != 0xD503209FU && // SEV
-                inst != 0xD50320BFU) { // SEVL
+                inst != A64_YIELD &&
+                inst != A64_WFE &&
+                inst != A64_WFI) {
+                s_rewritten_inst_count.fetch_add(1, std::memory_order_relaxed);
                 return A64_NOP;
             }
         }
@@ -63,19 +117,25 @@ public:
     }
 
     [[nodiscard]] static inline u32 OptimizeInstruction64(u32 inst) noexcept {
-        if ((inst & 0xFFC00000U) != 0xD5000000U) [[likely]] {
+        if ((inst & 0xFFC00000U) != 0xD5000000U && !IsRedundantSelfMov64(inst)) [[likely]] {
             return inst;
         }
         return OptimizeInstruction64(inst, Settings::values.use_storm_tier2_compiler.GetValue());
     }
 
     static inline void OptimizePage64(std::span<u32> page) noexcept {
-        if (!Settings::values.use_storm_tier2_compiler.GetValue()) {
+        if (!Settings::values.use_storm_tier2_compiler.GetValue() || page.empty()) {
             return;
         }
-        for (u32& inst : page) {
-            if ((inst & 0xFFC00000U) == 0xD5000000U) [[unlikely]] {
+        for (size_t i = 0; i < page.size(); ++i) {
+            u32& inst = page[i];
+            if ((inst & 0xFFC00000U) == 0xD5000000U || IsRedundantSelfMov64(inst)) [[unlikely]] {
                 inst = OptimizeInstruction64(inst, true);
+            }
+            // Superblock 2-instruction peephole: collapse back-to-back YIELD hints into YIELD + NOP
+            if (i > 0 && inst == A64_YIELD && page[i - 1] == A64_YIELD) [[unlikely]] {
+                inst = A64_NOP;
+                s_superblock_opt_count.fetch_add(1, std::memory_order_relaxed);
             }
         }
     }
@@ -134,5 +194,9 @@ public:
         }
     }
 };
+
+namespace ARM {
+using StormTier2Compiler = ::Core::StormTier2Compiler;
+} // namespace ARM
 
 } // namespace Core

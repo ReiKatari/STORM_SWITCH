@@ -582,6 +582,20 @@ void BufferCache<P>::CommitAsyncFlushesHigh() {
         return;
     }
 
+    static constexpr size_t MAX_PENDING_ASYNC_BUFFERS = 3;
+    if (!Settings::IsGPULevelHigh() && async_buffers.size() >= MAX_PENDING_ASYNC_BUFFERS) {
+        size_t active_flushes = 0;
+        for (const auto& ab : async_buffers) {
+            if (ab.has_value()) {
+                ++active_flushes;
+            }
+        }
+        if (active_flushes >= MAX_PENDING_ASYNC_BUFFERS) {
+            async_buffers.emplace_back(std::optional<Async_Buffer>{});
+            return;
+        }
+    }
+
     auto it = committed_gpu_modified_ranges.begin();
     while (it != committed_gpu_modified_ranges.end()) {
         auto& current_intervals = *it;
@@ -827,14 +841,14 @@ void BufferCache<P>::BindHostVertexBuffers() {
             Buffer& buffer = slot_buffers[binding.buffer_id];
             TouchBuffer(buffer, binding.buffer_id);
             SynchronizeBuffer(buffer, binding.device_addr, binding.size);
+            const u32 offset = buffer.Offset(binding.device_addr);
+            buffer.MarkUsage(offset, binding.size);
             if (!flags[Dirty::VertexBuffer0 + index]) {
                 flush_bindings();
                 continue;
             }
             flags[Dirty::VertexBuffer0 + index] = false;
             const u32 stride = maxwell3d->regs.vertex_streams[index].stride;
-            const u32 offset = buffer.Offset(binding.device_addr);
-            buffer.MarkUsage(offset, binding.size);
             if (!bindings.buffers.empty() && index != last_index + 1) {
                 flush_bindings();
             }
@@ -857,6 +871,7 @@ void BufferCache<P>::BindHostVertexBuffers() {
             Buffer& buffer = slot_buffers[binding.buffer_id];
             TouchBuffer(buffer, binding.buffer_id);
             SynchronizeBuffer(buffer, binding.device_addr, binding.size);
+            buffer.MarkUsage(buffer.Offset(binding.device_addr), binding.size);
             if (!flags[Dirty::VertexBuffer0 + index]) {
                 continue;
             }
@@ -895,6 +910,7 @@ void BufferCache<P>::BindHostDrawIndirectBuffers() {
         Buffer& buffer = slot_buffers[binding.buffer_id];
         TouchBuffer(buffer, binding.buffer_id);
         SynchronizeBuffer(buffer, binding.device_addr, binding.size);
+        buffer.MarkUsage(buffer.Offset(binding.device_addr), binding.size);
     };
     if (current_draw_indirect->include_count) {
         bind_buffer(channel_state->count_buffer_binding);
@@ -939,9 +955,13 @@ void BufferCache<P>::BindHostGraphicsUniformBuffer(size_t stage, u32 index, u32 
             return alignment > 1 && (offset % alignment) != 0;
         }
     }();
-    const bool use_fast_buffer = needs_alignment_stream
-        || (has_host_buffer && size <= channel_state->uniform_buffer_skip_cache_size
-            && !memory_tracker.IsRegionGpuModified(device_addr, size));
+    const bool is_region_used_in_cmdbuf =
+        has_host_buffer && size <= 64_KiB && buffer.IsRegionUsed(offset, size) &&
+        memory_tracker.IsRegionCpuModified(device_addr, size) &&
+        !memory_tracker.IsRegionGpuModified(device_addr, size);
+    const bool use_fast_buffer = needs_alignment_stream || is_region_used_in_cmdbuf ||
+        (has_host_buffer && size <= channel_state->uniform_buffer_skip_cache_size &&
+         !memory_tracker.IsRegionGpuModified(device_addr, size));
     if (use_fast_buffer) {
         if constexpr (IS_OPENGL) {
             if (runtime.HasFastBufferSubData()) {
@@ -977,6 +997,7 @@ void BufferCache<P>::BindHostGraphicsUniformBuffer(size_t stage, u32 index, u32 
     if constexpr (HAS_PERSISTENT_UNIFORM_BUFFER_BINDINGS) {
         needs_bind |= channel_state->uniform_buffer_binding_sizes[stage][binding_index] != size;
     }
+    buffer.MarkUsage(offset, size);
     if (!needs_bind) {
         return;
     }
@@ -988,7 +1009,6 @@ void BufferCache<P>::BindHostGraphicsUniformBuffer(size_t stage, u32 index, u32 
     if constexpr (HAS_PERSISTENT_UNIFORM_BUFFER_BINDINGS) {
         channel_state->uniform_buffer_binding_sizes[stage][binding_index] = size;
     }
-    buffer.MarkUsage(offset, size);
     if constexpr (NEEDS_BIND_UNIFORM_INDEX) {
         runtime.BindUniformBuffer(stage, binding_index, buffer, offset, size);
     } else {

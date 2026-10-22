@@ -55,6 +55,7 @@ extern "C" {
 #include "frontend_common/play_time_manager.h"
 #include "core/constants.h"
 #include "core/core.h"
+#include "core/save_state.h"
 #include "core/cpu_manager.h"
 #include "core/crypto/key_manager.h"
 #include "core/file_sys/card_image.h"
@@ -479,6 +480,9 @@ void EmulationSession::ShutdownEmulation() {
 
     // Enable all controllers
     m_system.HIDCore().SetSupportedStyleTag({Core::HID::NpadStyleSet::All});
+
+    // Flush any background ZSTD save states before tearing down process
+    Core::FlushPendingSaveStates();
 
     // Shutdown the main emulated process
     m_system.DetachDebugger();

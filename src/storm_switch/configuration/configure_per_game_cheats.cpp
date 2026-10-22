@@ -138,8 +138,24 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
     bottom_layout->addWidget(status_label);
     main_layout->addLayout(bottom_layout);
 
+    auto* filter_enabled_btn = new QPushButton(tr("⚡ Только включённые"), this);
+    filter_enabled_btn->setCheckable(true);
+    connect(filter_enabled_btn, &QPushButton::toggled, this, [this](bool only_enabled) {
+        if (!tree_widget) return;
+        for (int i = 0; i < tree_widget->topLevelItemCount(); ++i) {
+            if (auto* it = tree_widget->topLevelItem(i)) {
+                it->setHidden(only_enabled && it->checkState(0) != Qt::Checked);
+            }
+        }
+    });
+    bottom_layout->insertWidget(2, filter_enabled_btn);
+
     // Connections
     connect(tree_widget, &QTreeWidget::itemChanged, this, &ConfigurePerGameCheats::OnItemChanged);
+    connect(tree_widget, &QTreeWidget::itemDoubleClicked, this, [](QTreeWidgetItem* item, int) {
+        if (!item) return;
+        item->setCheckState(0, item->checkState(0) == Qt::Checked ? Qt::Unchecked : Qt::Checked);
+    });
     connect(download_button, &QPushButton::clicked, this, &ConfigurePerGameCheats::OnDownloadOnlineCheats);
     connect(add_button, &QPushButton::clicked, this, &ConfigurePerGameCheats::OnAddCustomCheat);
     connect(open_folder_button, &QPushButton::clicked, this, &ConfigurePerGameCheats::OnOpenCheatsFolder);

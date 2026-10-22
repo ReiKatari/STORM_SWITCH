@@ -360,6 +360,46 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     installed_status_label->setStyleSheet(QStringLiteral("color: #38bdf8; font-weight: bold; font-size: 12px;"));
     installed_top_bar->addWidget(installed_status_label, 1);
 
+    auto* inst_search = new QLineEdit(this);
+    inst_search->setPlaceholderText(tr("🔍 Фильтр установленных модов..."));
+    inst_search->setClearButtonEnabled(true);
+    inst_search->setMinimumWidth(200);
+    connect(inst_search, &QLineEdit::textChanged, this, [this](const QString& q) {
+        if (!installed_tree) return;
+        const QString query = q.trimmed();
+        for (int i = 0; i < installed_tree->topLevelItemCount(); ++i) {
+            if (auto* it = installed_tree->topLevelItem(i)) {
+                const bool match = query.isEmpty() ||
+                    it->text(0).contains(query, Qt::CaseInsensitive) ||
+                    it->text(3).contains(query, Qt::CaseInsensitive);
+                it->setHidden(!match);
+            }
+        }
+    });
+    installed_top_bar->addWidget(inst_search);
+
+    auto* enable_all_mods_btn = new QPushButton(tr("✅ Вкл. все"), this);
+    connect(enable_all_mods_btn, &QPushButton::clicked, this, [this]() {
+        if (!installed_tree) return;
+        for (int i = 0; i < installed_tree->topLevelItemCount(); ++i) {
+            if (auto* it = installed_tree->topLevelItem(i); it && !it->isHidden()) {
+                it->setCheckState(0, Qt::Checked);
+            }
+        }
+    });
+    installed_top_bar->addWidget(enable_all_mods_btn);
+
+    auto* disable_all_mods_btn = new QPushButton(tr("⚪ Выкл. все"), this);
+    connect(disable_all_mods_btn, &QPushButton::clicked, this, [this]() {
+        if (!installed_tree) return;
+        for (int i = 0; i < installed_tree->topLevelItemCount(); ++i) {
+            if (auto* it = installed_tree->topLevelItem(i); it && !it->isHidden()) {
+                it->setCheckState(0, Qt::Unchecked);
+            }
+        }
+    });
+    installed_top_bar->addWidget(disable_all_mods_btn);
+
     refresh_installed_btn = new QPushButton(tr("🔄 Обновить"), this);
     refresh_installed_btn->setStyleSheet(QStringLiteral("font-weight: bold; padding: 5px 12px;"));
     installed_top_bar->addWidget(refresh_installed_btn);

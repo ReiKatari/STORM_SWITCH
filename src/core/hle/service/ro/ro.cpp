@@ -7,6 +7,7 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 
+#include "common/lz4_compression.h"
 #include "common/settings.h"
 #include "core/arm/arm_interface.h"
 #ifdef HAS_NCE
@@ -204,9 +205,38 @@ struct ProcessContext {
     }
 
     Result ValidateHasNroHash(u64 base_address, const NroHeader* nro_header) const {
+        // HOS 23.0.0+ (Atmosphere 1.12.1): Support LZ4-compressed NROs (AdditionalNroHeader NRA0 at +0x80)
+        const bool is_compressed_nro = nro_header->IsCompressed();
+        AdditionalNroHeader add_header{};
+        if (is_compressed_nro) {
+            R_UNLESS(nro_header->IsAlignedHeader(), RO::ResultInvalidNro);
+            R_UNLESS(nro_header->GetAdditionalHeaderOffset() == sizeof(NroHeader), RO::ResultInvalidNro);
+            m_process->GetMemory().ReadBlock(base_address + sizeof(NroHeader), std::addressof(add_header), sizeof(add_header));
+            R_UNLESS(add_header.IsMagicValid(), RO::ResultInvalidNro);
+            R_UNLESS(add_header.m_hash_size == sizeof(Sha256Hash), RO::ResultInvalidNro);
+            R_UNLESS(add_header.m_hash_offset == sizeof(NroHeader) + offsetof(AdditionalNroHeader, m_hash), RO::ResultInvalidNro);
+            R_UNLESS(add_header.m_compressed_size > 0 && add_header.m_compressed_size <= nro_header->m_size, RO::ResultInvalidNro);
+        }
+
         // Calculate hash.
-        Sha256Hash hash;
-        {
+        Sha256Hash hash{};
+        if (is_compressed_nro) {
+            std::memcpy(hash.data(), add_header.m_hash.data(), sizeof(Sha256Hash));
+            // Decompress payload after Page0 into guest NRO memory
+            constexpr size_t PageSize = Core::Memory::YUZU_PAGESIZE;
+            if (nro_header->m_size > PageSize) {
+                const size_t comp_len = std::min<size_t>(add_header.m_compressed_size, nro_header->m_size - PageSize);
+                std::vector<u8> comp_buf(comp_len);
+                m_process->GetMemory().ReadBlock(base_address + PageSize, comp_buf.data(), comp_len);
+                const size_t uncomp_len = nro_header->m_size - PageSize;
+                auto decompressed = Common::Compression::DecompressDataLZ4(comp_buf, uncomp_len);
+                if (!decompressed.empty()) {
+                    m_process->GetMemory().WriteBlock(base_address + PageSize, decompressed.data(),
+                                                      std::min<size_t>(uncomp_len, decompressed.size()));
+                }
+            }
+            R_SUCCEED();
+        } else {
             const u64 size = nro_header->m_size;
             std::vector<u8> nro_data(size);
             m_process->GetMemory().ReadBlock(base_address, nro_data.data(), size);

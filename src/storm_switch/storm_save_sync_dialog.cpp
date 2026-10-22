@@ -8,7 +8,9 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QComboBox>
+#include <QDesktopServices>
 #include <QDir>
+#include <QUrl>
 #include <QDirIterator>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -715,10 +717,20 @@ void StormSaveSyncDialog::SetupUI() {
     search_layout->addWidget(search_icon_lbl);
 
     m_search_edit = new QLineEdit(this);
-    m_search_edit->setPlaceholderText(tr("Поиск сохранений по названию игры или Title ID..."));
+    m_search_edit->setPlaceholderText(tr("Поиск сохранений по названию игры, Title ID или статусу..."));
     m_search_edit->setClearButtonEnabled(true);
     connect(m_search_edit, &QLineEdit::textChanged, this, &StormSaveSyncDialog::OnSearchFilterChanged);
     search_layout->addWidget(m_search_edit, 1);
+
+    auto* open_saves_btn = new QPushButton(tr("📂 Папка сохранений"), this);
+    open_saves_btn->setToolTip(tr("Открыть локальную папку сохранений NAND в Проводнике"));
+    connect(open_saves_btn, &QPushButton::clicked, this, [this]() {
+        const auto save_dir = GetActiveUserSaveDir();
+        std::error_code ec;
+        std::filesystem::create_directories(save_dir, ec);
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(Common::FS::PathToUTF8String(save_dir))));
+    });
+    search_layout->addWidget(open_saves_btn);
     main_layout->addLayout(search_layout);
 
     // Saves Table
@@ -1677,11 +1689,13 @@ void StormSaveSyncDialog::OnSearchFilterChanged(const QString& text) {
     for (int r = 0; r < m_saves_table->rowCount(); ++r) {
         auto* name_item = m_saves_table->item(r, 0);
         auto* tid_item = m_saves_table->item(r, 1);
+        auto* status_item = m_saves_table->item(r, 4);
         bool match = true;
         if (!query.isEmpty()) {
             const QString name_str = name_item ? name_item->text().toLower() : QString();
             const QString tid_str = tid_item ? tid_item->text().toLower() : QString();
-            match = name_str.contains(query) || tid_str.contains(query);
+            const QString st_str = status_item ? status_item->text().toLower() : QString();
+            match = name_str.contains(query) || tid_str.contains(query) || st_str.contains(query);
         }
         m_saves_table->setRowHidden(r, !match);
     }

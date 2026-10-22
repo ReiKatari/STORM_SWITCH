@@ -23,6 +23,11 @@ public:
     void LoadInterfaceLayout();
 
     void UpdateColumnVisibility(GameListModel* model);
+    void AdjustColumnsToViewport();
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+    void showEvent(QShowEvent* event) override;
 
 signals:
     void ItemExpandedChanged(const QModelIndex& item);
@@ -30,4 +35,8 @@ signals:
 
 private slots:
     void OnItemExpanded(const QModelIndex& item);
+
+private:
+    bool m_adjusting_columns = false;
+    bool m_user_resized_columns = false;
 };

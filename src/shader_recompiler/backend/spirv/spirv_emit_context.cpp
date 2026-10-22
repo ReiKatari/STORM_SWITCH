@@ -945,26 +945,46 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
     }
     using DefPtr = Id StorageDefinitions::*;
     const Id zero{u32_zero_value};
+    const bool aliasing{profile.support_descriptor_aliasing};
     const auto define_body{[&](DefPtr ssbo_member, Id addr, Id element_pointer, u32 shift,
-                               auto&& callback) {
+                               size_t count, auto&& callback) {
         AddLabel();
         const size_t num_buffers{info.storage_buffers_descriptors.size()};
         for (size_t index = 0; index < num_buffers; ++index) {
-            if (!info.nvn_buffer_used[index]) {
-                continue;
-            }
             const auto& ssbo{info.storage_buffers_descriptors[index]};
-            const Id ssbo_addr_cbuf_offset{Const(ssbo.cbuf_offset / 8)};
-            const Id ssbo_size_cbuf_offset{Const(ssbo.cbuf_offset / 4 + 2)};
-            const Id ssbo_addr_pointer{OpAccessChain(
-                uniform_types.U32x2, cbufs[ssbo.cbuf_index].U32x2, zero, ssbo_addr_cbuf_offset)};
-            const Id ssbo_size_pointer{OpAccessChain(uniform_types.U32, cbufs[ssbo.cbuf_index].U32,
-                                                     zero, ssbo_size_cbuf_offset)};
+            Id addr_u32x2{};
+            Id size_u32{};
+            if (aliasing) {
+                const Id ssbo_addr_cbuf_offset{Const(ssbo.cbuf_offset / 8)};
+                const Id ssbo_size_cbuf_offset{Const(ssbo.cbuf_offset / 4 + 2)};
+                const Id ssbo_addr_pointer{OpAccessChain(
+                    uniform_types.U32x2, cbufs[ssbo.cbuf_index].U32x2, zero, ssbo_addr_cbuf_offset)};
+                const Id ssbo_size_pointer{OpAccessChain(
+                    uniform_types.U32, cbufs[ssbo.cbuf_index].U32, zero, ssbo_size_cbuf_offset)};
+                addr_u32x2 = OpLoad(U32[2], ssbo_addr_pointer);
+                size_u32 = OpLoad(U32[1], ssbo_size_pointer);
+            } else {
+                const u32 vec_idx{ssbo.cbuf_offset / 16};
+                const u32 comp_idx{(ssbo.cbuf_offset / 4) % 4};
+                const Id vec_ptr{OpAccessChain(
+                    uniform_types.U32x4, cbufs[ssbo.cbuf_index].U32x4, zero, Const(vec_idx))};
+                const Id vec_val{OpLoad(U32[4], vec_ptr)};
+                if (comp_idx == 0) {
+                    addr_u32x2 = OpVectorShuffle(U32[2], vec_val, vec_val, 0, 1);
+                    size_u32 = OpCompositeExtract(U32[1], vec_val, 2);
+                } else {
+                    addr_u32x2 = OpVectorShuffle(U32[2], vec_val, vec_val, 2, 3);
+                    const Id next_ptr{OpAccessChain(
+                        uniform_types.U32x4, cbufs[ssbo.cbuf_index].U32x4, zero, Const(vec_idx + 1))};
+                    const Id next_val{OpLoad(U32[4], next_ptr)};
+                    size_u32 = OpCompositeExtract(U32[1], next_val, 0);
+                }
+            }
 
             const u64 ssbo_align_mask{~(profile.min_ssbo_alignment - 1U)};
-            const Id unaligned_addr{OpBitcast(U64, OpLoad(U32[2], ssbo_addr_pointer))};
+            const Id unaligned_addr{OpBitcast(U64, addr_u32x2)};
             const Id ssbo_addr{OpBitwiseAnd(U64, unaligned_addr, Constant(U64, ssbo_align_mask))};
-            const Id ssbo_size{OpUConvert(U64, OpLoad(U32[1], ssbo_size_pointer))};
+            const Id ssbo_size{OpUConvert(U64, size_u32)};
             const Id ssbo_end{OpIAdd(U64, ssbo_addr, ssbo_size)};
             const Id cond{OpLogicalAnd(U1, OpUGreaterThanEqual(U1, addr, ssbo_addr),
                                        OpULessThan(U1, addr, ssbo_end))};
@@ -973,33 +993,64 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
             OpSelectionMerge(else_label, spv::SelectionControlMask::MaskNone);
             OpBranchConditional(cond, then_label, else_label);
             AddLabel(then_label);
-            const Id ssbo_id{ssbos[index].*ssbo_member};
             const Id ssbo_offset{OpUConvert(U32[1], OpISub(U64, addr, ssbo_addr))};
-            const Id ssbo_index{OpShiftRightLogical(U32[1], ssbo_offset, Const(shift))};
-            const Id ssbo_pointer{OpAccessChain(element_pointer, ssbo_id, zero, ssbo_index)};
-            callback(ssbo_pointer);
+            if (aliasing || count == 1) {
+                const Id ssbo_id{ssbos[index].*ssbo_member};
+                const Id ssbo_index{OpShiftRightLogical(U32[1], ssbo_offset, Const(shift))};
+                const Id ssbo_pointer{OpAccessChain(element_pointer, ssbo_id, zero, ssbo_index)};
+                callback(ssbo_pointer, index, ssbo_offset, true);
+            } else {
+                const Id base_index{OpShiftRightLogical(U32[1], ssbo_offset, Const(2u))};
+                callback(base_index, index, ssbo_offset, false);
+            }
             AddLabel(else_label);
         }
     }};
-    const auto define_load{[&](DefPtr ssbo_member, Id element_pointer, Id type, u32 shift) {
+    const auto define_load{[&](DefPtr ssbo_member, Id element_pointer, Id type, u32 shift, size_t count) {
         const Id function_type{TypeFunction(type, U64)};
         const Id func_id{OpFunction(type, spv::FunctionControlMask::MaskNone, function_type)};
         const Id addr{OpFunctionParameter(U64)};
-        define_body(ssbo_member, addr, element_pointer, shift,
-                    [&](Id ssbo_pointer) { OpReturnValue(OpLoad(type, ssbo_pointer)); });
+        define_body(ssbo_member, addr, element_pointer, shift, count,
+                    [&](Id ptr_or_idx, size_t ssbo_idx, Id, bool direct) {
+                        if (direct) {
+                            OpReturnValue(OpLoad(type, ptr_or_idx));
+                        } else if (count == 2) {
+                            const Id ssbo_u32{ssbos[ssbo_idx].U32};
+                            const Id p0{OpAccessChain(storage_types.U32.element, ssbo_u32, zero, ptr_or_idx)};
+                            const Id p1{OpAccessChain(storage_types.U32.element, ssbo_u32, zero, OpIAdd(U32[1], ptr_or_idx, Const(1u)))};
+                            OpReturnValue(OpCompositeConstruct(U32[2], OpLoad(U32[1], p0), OpLoad(U32[1], p1)));
+                        } else {
+                            const Id ssbo_u32{ssbos[ssbo_idx].U32};
+                            const Id p0{OpAccessChain(storage_types.U32.element, ssbo_u32, zero, ptr_or_idx)};
+                            const Id p1{OpAccessChain(storage_types.U32.element, ssbo_u32, zero, OpIAdd(U32[1], ptr_or_idx, Const(1u)))};
+                            const Id p2{OpAccessChain(storage_types.U32.element, ssbo_u32, zero, OpIAdd(U32[1], ptr_or_idx, Const(2u)))};
+                            const Id p3{OpAccessChain(storage_types.U32.element, ssbo_u32, zero, OpIAdd(U32[1], ptr_or_idx, Const(3u)))};
+                            OpReturnValue(OpCompositeConstruct(U32[4], OpLoad(U32[1], p0), OpLoad(U32[1], p1), OpLoad(U32[1], p2), OpLoad(U32[1], p3)));
+                        }
+                    });
         OpReturnValue(ConstantNull(type));
         OpFunctionEnd();
         return func_id;
     }};
-    const auto define_write{[&](DefPtr ssbo_member, Id element_pointer, Id type, u32 shift) {
+    const auto define_write{[&](DefPtr ssbo_member, Id element_pointer, Id type, u32 shift, size_t count) {
         const Id function_type{TypeFunction(void_id, U64, type)};
         const Id func_id{OpFunction(void_id, spv::FunctionControlMask::MaskNone, function_type)};
         const Id addr{OpFunctionParameter(U64)};
         const Id data{OpFunctionParameter(type)};
-        define_body(ssbo_member, addr, element_pointer, shift, [&](Id ssbo_pointer) {
-            OpStore(ssbo_pointer, data);
-            OpReturn();
-        });
+        define_body(ssbo_member, addr, element_pointer, shift, count,
+                    [&](Id ptr_or_idx, size_t ssbo_idx, Id, bool direct) {
+                        if (direct) {
+                            OpStore(ptr_or_idx, data);
+                        } else {
+                            const Id ssbo_u32{ssbos[ssbo_idx].U32};
+                            for (u32 c = 0; c < static_cast<u32>(count); ++c) {
+                                const Id idx_c{c == 0 ? ptr_or_idx : OpIAdd(U32[1], ptr_or_idx, Const(c))};
+                                const Id ptr_c{OpAccessChain(storage_types.U32.element, ssbo_u32, zero, idx_c)};
+                                OpStore(ptr_c, OpCompositeExtract(U32[1], data, c));
+                            }
+                        }
+                        OpReturn();
+                    });
         OpReturn();
         OpFunctionEnd();
         return func_id;
@@ -1008,8 +1059,9 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
         [&](DefPtr ssbo_member, const StorageTypeDefinition& type_def, Id type, size_t size) {
             const Id element_type{type_def.element};
             const u32 shift{static_cast<u32>(std::countr_zero(size))};
-            const Id load_func{define_load(ssbo_member, element_type, type, shift)};
-            const Id write_func{define_write(ssbo_member, element_type, type, shift)};
+            const size_t count{size / sizeof(u32)};
+            const Id load_func{define_load(ssbo_member, element_type, type, shift, count)};
+            const Id write_func{define_write(ssbo_member, element_type, type, shift, count)};
             return std::make_pair(load_func, write_func);
         }};
     std::tie(load_global_func_u32, write_global_func_u32) =

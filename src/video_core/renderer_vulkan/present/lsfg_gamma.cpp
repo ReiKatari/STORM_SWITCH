@@ -94,13 +94,14 @@ LsfgGamma::LsfgGamma(const Device& device, MemoryAllocator& memory_allocator,
         }
 
         for (size_t i = 0; i < LSFG_HISTORY_SLOTS; ++i) {
+            const LsfgImage& fallback_prev = (*inputs)[i % LSFG_HISTORY_SLOTS][0];
             LsfgDescriptorWriter(pass.first_descriptor_sets[i])
                 .AddUniformBuffer(buffer, LsfgResources::BufferSize())
                 .AddSampler(border_sampler)
                 .AddSampler(edge_sampler)
                 .AddSampledImages((*inputs)[(i + 2) % LSFG_HISTORY_SLOTS])
                 .AddSampledImages((*inputs)[i % LSFG_HISTORY_SLOTS])
-                .AddSampledImage(previous)
+                .AddSampledImage(previous != nullptr ? *previous : fallback_prev)
                 .AddStorageImages(temp1)
                 .Build(device);
         }
@@ -126,7 +127,7 @@ LsfgGamma::LsfgGamma(const Device& device, MemoryAllocator& memory_allocator,
             .AddSampler(sampler)
             .AddSampler(edge_sampler)
             .AddSampledImages(temp2)
-            .AddSampledImage(previous)
+            .AddSampledImage(previous != nullptr ? *previous : temp2[0])
             .AddSampledImage(*flow_input)
             .AddStorageImage(out_image)
             .Build(device);

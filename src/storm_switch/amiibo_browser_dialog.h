@@ -8,6 +8,8 @@
 #include <QDialog>
 #include <QList>
 #include <QMap>
+#include <QSet>
+#include <QStringList>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QPixmap>
@@ -93,6 +95,11 @@ private:
     // UI elements
     QLineEdit* m_search_edit{nullptr};
     QComboBox* m_series_combo{nullptr};
+    QPushButton* m_fav_filter_btn{nullptr};
+    QPushButton* m_recent_filter_btn{nullptr};
+    QPushButton* m_toggle_fav_btn{nullptr};
+    QSet<QString> m_favorites;
+    QStringList m_recent_ids;
     QComboBox* m_type_combo{nullptr};
     QComboBox* m_target_game_combo{nullptr};
     QListWidget* m_amiibo_list{nullptr};

@@ -12,6 +12,12 @@ CheatsDialog::CheatsDialog(QWidget* parent, Core::System& system, u64 title_id, 
     setWindowTitle(tr("⚡ Менеджер чит-кодов"));
     resize(1160, 700);
     setMinimumSize(680, 460);
+    setStyleSheet(QStringLiteral(
+        "QDialog { background-color: #0b0e14; color: #e2e8f0; }"
+        "QLabel { color: #cbd5e1; font-size: 12px; }"
+        "QPushButton { background-color: #1a2232; color: #e2e8f0; border: 1px solid #2e3c56; border-radius: 6px; padding: 6px 14px; font-weight: bold; }"
+        "QPushButton:hover { background-color: #243048; border-color: #00d2ff; color: #ffffff; }"
+    ));
 
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(8, 8, 8, 8);

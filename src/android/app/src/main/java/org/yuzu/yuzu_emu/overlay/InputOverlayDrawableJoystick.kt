@@ -100,8 +100,8 @@ class InputOverlayDrawableJoystick(
         bounds = rectOuter
         defaultStateInnerBitmap.bounds = rectInner
         pressedStateInnerBitmap.bounds = rectInner
-        virtBounds = bounds
-        origBounds = outerBitmap.copyBounds()
+        virtBounds = Rect(rectOuter)
+        origBounds = Rect(rectOuter)
         boundsBoxBitmap.alpha = 0
         boundsBoxBitmap.bounds = virtBounds
         setInnerBounds()
@@ -131,7 +131,22 @@ class InputOverlayDrawableJoystick(
 
         val isRelCenter = BooleanSetting.JOYSTICK_REL_CENTER.getBoolean()
 
-        if (isActionDown) {
+        if (motionEvent == MotionEvent.ACTION_CANCEL) {
+            if (trackId == -1) return false
+            pressedState = false
+            xAxis = 0.0f
+            yAxis = 0.0f
+            outerBitmap.alpha = opacity
+            boundsBoxBitmap.alpha = 0
+            virtBounds = Rect(origBounds)
+            bounds = Rect(origBounds)
+            setInnerBounds()
+            trackId = -1
+            return true
+        }
+
+        var newlyClaimed = false
+        if (isActionDown && trackId == -1) {
             val touchMatches = if (isRelCenter && !inEditMode) {
                 val screenWidth = res.displayMetrics.widthPixels
                 if (joystick == NativeAnalog.LStick) {
@@ -143,30 +158,25 @@ class InputOverlayDrawableJoystick(
                 bounds.contains(xPosition, yPosition)
             }
 
-            if (!touchMatches) {
-                return false
+            if (touchMatches) {
+                pressedState = true
+                outerBitmap.alpha = 0
+                boundsBoxBitmap.alpha = opacity
+                if (isRelCenter && !inEditMode) {
+                    virtBounds.offset(
+                        xPosition - virtBounds.centerX(),
+                        yPosition - virtBounds.centerY()
+                    )
+                    bounds = Rect(virtBounds)
+                }
+                boundsBoxBitmap.bounds = Rect(virtBounds)
+                trackId = pointerId
+                setInnerBounds()
+                newlyClaimed = true
             }
-
-            pressedState = true
-            outerBitmap.alpha = 0
-            boundsBoxBitmap.alpha = opacity
-            if (isRelCenter && !inEditMode) {
-                virtBounds.offset(
-                    xPosition - virtBounds.centerX(),
-                    yPosition - virtBounds.centerY()
-                )
-                bounds = virtBounds
-            }
-            boundsBoxBitmap.bounds = virtBounds
-            trackId = pointerId
-            setInnerBounds()
-            return true
         }
 
-        if (isActionUp) {
-            if (trackId != pointerId) {
-                return false
-            }
+        if (isActionUp && trackId == pointerId) {
             pressedState = false
             xAxis = 0.0f
             yAxis = 0.0f
@@ -217,9 +227,9 @@ class InputOverlayDrawableJoystick(
             xAxis = cos(angle.toDouble()).toFloat() * radius
             yAxis = sin(angle.toDouble()).toFloat() * radius
             setInnerBounds()
-            return oldXAxis != xAxis || oldYAxis != yAxis
+            return newlyClaimed || oldXAxis != xAxis || oldYAxis != yAxis
         }
-        return false
+        return newlyClaimed
     }
 
     fun onConfigureTouch(event: MotionEvent): Boolean {

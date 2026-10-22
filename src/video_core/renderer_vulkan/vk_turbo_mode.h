@@ -24,7 +24,8 @@ public:
     void QueueSubmitted();
 
 private:
-    void Run(std::stop_token stop_token);
+    void Run(std::stop_token stop_token, const vk::Instance& instance,
+             const vk::InstanceDispatch& dld);
 
     std::mutex m_submission_lock;
     std::condition_variable_any m_submission_cv;

@@ -25,6 +25,7 @@
 #include <QNetworkRequest>
 #include <QProgressBar>
 #include <QPushButton>
+#include <QSettings>
 #include <QSplitter>
 #include <QTextEdit>
 #include <QUrl>
@@ -167,6 +168,31 @@ void AmiiboBrowserDialog::SetupUi() {
     connect(m_type_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &AmiiboBrowserDialog::OnSearchFilterChanged);
     filter_layout->addWidget(m_type_combo, 1);
 
+    QSettings settings(QStringLiteral("STORM_SWITCH"), QStringLiteral("AmiiboCabinet"));
+    const QStringList fav_list = settings.value(QStringLiteral("favorites")).toStringList();
+    m_favorites = QSet<QString>(fav_list.begin(), fav_list.end());
+    m_recent_ids = settings.value(QStringLiteral("recent")).toStringList();
+
+    m_fav_filter_btn = new QPushButton(tr("⭐ Избранное"), this);
+    m_fav_filter_btn->setCheckable(true);
+    m_fav_filter_btn->setCursor(Qt::PointingHandCursor);
+    m_fav_filter_btn->setToolTip(tr("Показать только избранные фигурки Amiibo"));
+    connect(m_fav_filter_btn, &QPushButton::toggled, this, [this](bool checked) {
+        if (checked && m_recent_filter_btn) m_recent_filter_btn->setChecked(false);
+        ApplyFilters();
+    });
+    filter_layout->addWidget(m_fav_filter_btn, 0);
+
+    m_recent_filter_btn = new QPushButton(tr("🕒 Недавние"), this);
+    m_recent_filter_btn->setCheckable(true);
+    m_recent_filter_btn->setCursor(Qt::PointingHandCursor);
+    m_recent_filter_btn->setToolTip(tr("Показать недавно использованные фигурки Amiibo"));
+    connect(m_recent_filter_btn, &QPushButton::toggled, this, [this](bool checked) {
+        if (checked && m_fav_filter_btn) m_fav_filter_btn->setChecked(false);
+        ApplyFilters();
+    });
+    filter_layout->addWidget(m_recent_filter_btn, 0);
+
     m_refresh_btn = new QPushButton(tr("🔄 Обновить базу"), this);
     connect(m_refresh_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnRefreshClicked);
     filter_layout->addWidget(m_refresh_btn, 0);
@@ -185,6 +211,9 @@ void AmiiboBrowserDialog::SetupUi() {
 
     m_amiibo_list = new QListWidget(this);
     connect(m_amiibo_list, &QListWidget::currentItemChanged, this, &AmiiboBrowserDialog::OnItemSelected);
+    connect(m_amiibo_list, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem*) {
+        OnLoadAmiiboClicked();
+    });
     left_layout->addWidget(m_amiibo_list);
 
     splitter->addWidget(left_container);
@@ -345,6 +374,28 @@ void AmiiboBrowserDialog::SetupUi() {
     // Action buttons inside details
     auto* act_btn_layout = new QHBoxLayout();
     act_btn_layout->setSpacing(6);
+
+    m_toggle_fav_btn = new QPushButton(tr("⭐ В избранное"), this);
+    m_toggle_fav_btn->setCursor(Qt::PointingHandCursor);
+    m_toggle_fav_btn->setEnabled(false);
+    connect(m_toggle_fav_btn, &QPushButton::clicked, this, [this]() {
+        auto* cur = m_amiibo_list->currentItem();
+        if (!cur) return;
+        const int idx = cur->data(Qt::UserRole).toInt();
+        if (idx < 0 || idx >= static_cast<int>(m_all_amiibos.size())) return;
+        const QString key = m_all_amiibos[idx].head + m_all_amiibos[idx].tail;
+        if (m_favorites.contains(key)) {
+            m_favorites.remove(key);
+            m_toggle_fav_btn->setText(tr("⭐ В избранное"));
+        } else {
+            m_favorites.insert(key);
+            m_toggle_fav_btn->setText(tr("🌟 В избранном"));
+        }
+        QSettings s(QStringLiteral("STORM_SWITCH"), QStringLiteral("AmiiboCabinet"));
+        s.setValue(QStringLiteral("favorites"), QStringList(m_favorites.begin(), m_favorites.end()));
+        ApplyFilters();
+    });
+    act_btn_layout->addWidget(m_toggle_fav_btn);
 
     m_save_btn = new QPushButton(tr("💾 Сохранить Amiibo (.bin)"), this);
     m_save_btn->setCursor(Qt::PointingHandCursor);
@@ -715,8 +766,15 @@ void AmiiboBrowserDialog::ApplyFilters() {
     const QString series_filter = m_series_combo->currentText();
     const int type_idx = m_type_combo->currentIndex();
 
+    const bool only_fav = m_fav_filter_btn && m_fav_filter_btn->isChecked();
+    const bool only_recent = m_recent_filter_btn && m_recent_filter_btn->isChecked();
+
     for (size_t i = 0; i < m_all_amiibos.size(); ++i) {
         const auto& a = m_all_amiibos[i];
+        const QString full_id = a.head + a.tail;
+
+        if (only_fav && !m_favorites.contains(full_id)) continue;
+        if (only_recent && !m_recent_ids.contains(full_id)) continue;
 
         if (m_series_combo->currentIndex() > 0 && a.amiibo_series != series_filter) {
             continue;
@@ -738,7 +796,10 @@ void AmiiboBrowserDialog::ApplyFilters() {
 
         m_filtered_indices.push_back(static_cast<int>(i));
 
-        auto* item = new QListWidgetItem(QStringLiteral("%1 [%2]").arg(a.name, a.amiibo_series));
+        const QString label = m_favorites.contains(full_id)
+            ? QStringLiteral("⭐ %1 [%2]").arg(a.name, a.amiibo_series)
+            : QStringLiteral("%1 [%2]").arg(a.name, a.amiibo_series);
+        auto* item = new QListWidgetItem(label);
         item->setData(Qt::UserRole, static_cast<int>(i));
         m_amiibo_list->addItem(item);
     }
@@ -814,6 +875,13 @@ void AmiiboBrowserDialog::DisplayAmiiboDetails(const AmiiboEntry& entry) {
 
     m_save_btn->setEnabled(true);
     m_load_btn->setEnabled(true);
+    if (m_toggle_fav_btn) {
+        m_toggle_fav_btn->setEnabled(true);
+        const QString full_id = entry.head + entry.tail;
+        m_toggle_fav_btn->setText(m_favorites.contains(full_id)
+            ? tr("🌟 В избранном")
+            : tr("⭐ В избранное"));
+    }
 }
 
 void AmiiboBrowserDialog::UpdateRewardCard(const AmiiboEntry& entry) {
@@ -1361,6 +1429,13 @@ void AmiiboBrowserDialog::OnLoadAmiiboClicked() {
     if (!cur) return;
     int idx = cur->data(Qt::UserRole).toInt();
     if (idx < 0 || idx >= static_cast<int>(m_all_amiibos.size())) return;
+
+    const QString full_id = m_all_amiibos[idx].head + m_all_amiibos[idx].tail;
+    m_recent_ids.removeAll(full_id);
+    m_recent_ids.prepend(full_id);
+    while (m_recent_ids.size() > 24) m_recent_ids.removeLast();
+    QSettings s(QStringLiteral("STORM_SWITCH"), QStringLiteral("AmiiboCabinet"));
+    s.setValue(QStringLiteral("recent"), m_recent_ids);
 
     QString saved_path = GenerateAndSaveAmiiboBin(m_all_amiibos[idx]);
     emit AmiiboSelectedForLoading(saved_path);

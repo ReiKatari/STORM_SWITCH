@@ -437,6 +437,14 @@ class DriverViewModel : ViewModel() {
     fun onLaunchGame(game: Game? = null) {
         _isDriverReady.value = false
 
+        if (game != null) {
+            try {
+                GpuDriverHelper.applyPerGameDriverConfig(game.programIdHex, game.title)
+            } catch (e: Exception) {
+                Log.warning("[DriverViewModel] Early applyPerGameDriverConfig failed: ${e.message}")
+            }
+        }
+
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 var selectedDriverPath = ""

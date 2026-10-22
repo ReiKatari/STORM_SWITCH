@@ -72,34 +72,23 @@ public:
     }
 
     void SignalFence(std::function<void()>&& func) {
-        const bool delay_fence =
-            Settings::IsGPUFenceBehaviorDefault()
-                ? Settings::IsGPULevelHigh()
-                : (Settings::IsGPUFenceBehaviorBalanced() ||
-                   Settings::IsGPUFenceBehaviorAccurate() ||
-                   Settings::IsGPUFenceBehaviorStrict());
-#ifdef __ANDROID__
-        const bool early_release = false;
-#else
+        const bool delay_fence = Settings::IsGPUFenceBehaviorStrict();
         const bool early_release = Settings::values.early_release_fences.GetValue();
-#endif
         const bool should_flush = ShouldFlush();
         if constexpr (!can_async_check) {
             TryReleasePendingFences<false>();
         }
         CommitAsyncFlushes();
-        const bool has_pending_wait = should_flush || ShouldWait();
-        const bool defer_operation = has_pending_wait || (delay_fence && !early_release);
         TFence new_fence = CreateFence(!should_flush);
         if constexpr (can_async_check) {
             guard.lock();
         }
-        if (defer_operation) {
+        if (delay_fence && !early_release) {
             uncommitted_operations.emplace_back(std::move(func));
         }
         pending_operations.emplace_back(std::move(uncommitted_operations));
         QueueFence(new_fence);
-        if (!defer_operation) {
+        if (!delay_fence || early_release) {
             func();
         }
         fences.push(std::move(new_fence));

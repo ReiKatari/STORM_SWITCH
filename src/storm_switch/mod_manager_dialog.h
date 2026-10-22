@@ -15,7 +15,9 @@ class System;
 }
 
 class ConfigureGameBananaMods;
+class QCheckBox;
 class QLabel;
+class QLineEdit;
 class QPushButton;
 class QTabWidget;
 
@@ -51,9 +53,15 @@ private slots:
     void OnGenerateAutoPatch();
     void OnItemChanged(QTableWidgetItem* item);
     void OnApplyAndClose();
+    void OnCnxBrowseSource();
+    void OnCnxBrowseIcon();
+    void OnCnxSaveConfig();
+    void OnCnxLoadConfig();
+    void OnCnxBuildInstaller();
 
 private:
     void SetupPriorityTab(QWidget* tab);
+    void SetupCnxBuilderTab(QWidget* tab);
     void RefreshModsList();
     void DetectConflicts();
     void SavePriorities();
@@ -72,6 +80,18 @@ private:
     QPushButton* btn_down{nullptr};
     QPushButton* btn_delete{nullptr};
     QLabel* conflict_summary_lbl{nullptr};
+
+    // CNX17 Mod & Forwarder Auto-Installer Builder widgets
+    QLineEdit* cnx_source_edit{nullptr};
+    QLineEdit* cnx_tid_edit{nullptr};
+    QLineEdit* cnx_name_edit{nullptr};
+    QLineEdit* cnx_author_edit{nullptr};
+    QLineEdit* cnx_version_edit{nullptr};
+    QLineEdit* cnx_icon_edit{nullptr};
+    QLabel* cnx_icon_preview{nullptr};
+    QCheckBox* cnx_overwrite_chk{nullptr};
+    QCheckBox* cnx_deploy_sdmc_chk{nullptr};
+    QLabel* cnx_status_lbl{nullptr};
 
     std::vector<ModEntryInfo> mods_list;
 };

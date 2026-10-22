@@ -336,6 +336,7 @@ std::optional<LowAddrInfo> TrackLowAddress(IR::Inst* inst) {
 std::optional<StorageBufferAddr> Track(const IR::Value& value, const Bias* bias) {
     const auto pred{[bias](const IR::Inst* inst) -> std::optional<StorageBufferAddr> {
         if (inst->GetOpcode() != IR::Opcode::GetCbufU32 &&
+            inst->GetOpcode() != IR::Opcode::GetCbufF32 &&
             inst->GetOpcode() != IR::Opcode::GetCbufU32x2) {
             return std::nullopt;
         }

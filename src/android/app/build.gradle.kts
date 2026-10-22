@@ -437,7 +437,7 @@ fun getGitVersion(): String {
             return ver
         }
     }
-    return "12.7.2"
+    return "13.1.0"
 }
 
 

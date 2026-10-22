@@ -167,31 +167,39 @@ bool CoreTiming::HasPendingEvents() const {
 
 void CoreTiming::ScheduleEvent(std::chrono::nanoseconds ns_into_future,
                                const std::shared_ptr<EventType>& event_type, bool absolute_time) {
+    bool should_wake = false;
     {
         std::scoped_lock scope{basic_lock};
         const auto next_time{absolute_time ? ns_into_future : GetGlobalTimeNs() + ns_into_future};
+        should_wake = event_queue.empty() || next_time.count() < event_queue.top().time;
 
         auto h{event_queue.emplace(Event{next_time.count(), event_fifo_id++, event_type, 0})};
         (*h).handle = h;
     }
 
-    event.Set();
+    if (should_wake) {
+        event.Set();
+    }
 }
 
 void CoreTiming::ScheduleLoopingEvent(std::chrono::nanoseconds start_time,
                                       std::chrono::nanoseconds resched_time,
                                       const std::shared_ptr<EventType>& event_type,
                                       bool absolute_time) {
+    bool should_wake = false;
     {
         std::scoped_lock scope{basic_lock};
         const auto next_time{absolute_time ? start_time : GetGlobalTimeNs() + start_time};
+        should_wake = event_queue.empty() || next_time.count() < event_queue.top().time;
 
         auto h{event_queue.emplace(
             Event{next_time.count(), event_fifo_id++, event_type, resched_time.count()})};
         (*h).handle = h;
     }
 
-    event.Set();
+    if (should_wake) {
+        event.Set();
+    }
 }
 
 void CoreTiming::UnscheduleEvent(const std::shared_ptr<EventType>& event_type,
@@ -253,8 +261,12 @@ void CoreTiming::ResetTicks() {
 }
 
 u64 CoreTiming::GetClockTicks() const {
-    const u64 fres = is_multicore ? Common::g_wall_clock.GetCNTPCT()
-                                  : Common::WallClock::CPUTickToCNTPCT(cpu_ticks);
+    u64 fres = is_multicore ? Common::g_wall_clock.GetCNTPCT()
+                            : Common::WallClock::CPUTickToCNTPCT(cpu_ticks);
+    const u32 target_mhz = CpuClockTargetMhz(Settings::values.cpu_clock.GetValue());
+    if (target_mhz != CPU_CLOCK_BASE_MHZ && target_mhz > 0) [[unlikely]] {
+        fres = (fres / target_mhz) * CPU_CLOCK_BASE_MHZ + ((fres % target_mhz) * CPU_CLOCK_BASE_MHZ) / target_mhz;
+    }
     if (::Settings::values.sync_core_speed.GetValue()) {
         auto const ticks = f64(fres);
         auto const speed_limit = f64(Settings::SpeedLimit()) * 0.01;

@@ -79,16 +79,21 @@ class InputOverlayDrawableDpad(
             motionEvent == MotionEvent.ACTION_DOWN || motionEvent == MotionEvent.ACTION_POINTER_DOWN
         val isActionUp =
             motionEvent == MotionEvent.ACTION_UP || motionEvent == MotionEvent.ACTION_POINTER_UP
-        if (isActionDown) {
-            if (!bounds.contains(xPosition, yPosition)) {
-                return false
-            }
-            trackId = pointerId
+        if (motionEvent == MotionEvent.ACTION_CANCEL) {
+            if (trackId == -1) return false
+            trackId = -1
+            upButtonState = false
+            downButtonState = false
+            leftButtonState = false
+            rightButtonState = false
+            return true
         }
-        if (isActionUp) {
-            if (trackId != pointerId) {
-                return false
+        if (isActionDown && trackId == -1) {
+            if (bounds.contains(xPosition, yPosition)) {
+                trackId = pointerId
             }
+        }
+        if (isActionUp && trackId == pointerId) {
             trackId = -1
             upButtonState = false
             downButtonState = false

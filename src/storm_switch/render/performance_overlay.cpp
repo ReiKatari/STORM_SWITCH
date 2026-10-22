@@ -27,7 +27,9 @@
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "common/settings.h"
+#include "core/arm/dynarmic/storm_tier2_compiler.h"
 #include "core/core.h"
+#include "core/dynamic_performance_scaler.h"
 #include "core/memory/cheat_engine.h"
 #include "core/perf_stats.h"
 #include "core/save_state.h"
@@ -550,15 +552,24 @@ void PerformanceOverlay::SetupCfwTab(QWidget* tab) {
     row_toggles->addWidget(m_chk_hdr10);
     layout->addLayout(row_toggles);
 
-    // 5. GPU Accuracy
+    // 5. GPU Accuracy & 1-Click Artifact Auto-Healer
     auto* gpu_acc_box = new QHBoxLayout();
-    auto* gpu_acc_lbl = new QLabel(tr("Точность эмуляции GPU:"), tab);
+    auto* gpu_acc_lbl = new QLabel(tr("Точность GPU:"), tab);
     gpu_acc_lbl->setStyleSheet(QStringLiteral("font-weight: 500;"));
     gpu_acc_box->addWidget(gpu_acc_lbl);
 
     m_btn_gpu_acc = new QPushButton(tr("Точность GPU: High"), tab);
     connect(m_btn_gpu_acc, &QPushButton::clicked, this, &PerformanceOverlay::OnToggleGpuAccuracy);
     gpu_acc_box->addWidget(m_btn_gpu_acc, 1);
+
+    m_btn_heal_gpu = new QPushButton(tr("🛠️ Автолечение артефактов"), tab);
+    m_btn_heal_gpu->setToolTip(tr("Мгновенно устраняет полосы, засветы и битые текстуры (GPU High + Safe DMA + Accurate Barriers + Reactive Flushing)"));
+    m_btn_heal_gpu->setStyleSheet(QStringLiteral(
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0F766E, stop:1 #0284C7); "
+        "border: 1px solid #38BDF8; border-radius: 6px; color: #FFFFFF; font-weight: bold; padding: 6px 12px; }"
+        "QPushButton:hover { background: #00D2FF; color: #000000; }"));
+    connect(m_btn_heal_gpu, &QPushButton::clicked, this, &PerformanceOverlay::OnAutoHealGraphicsArtifacts);
+    gpu_acc_box->addWidget(m_btn_heal_gpu, 1);
     layout->addLayout(gpu_acc_box);
 
     layout->addStretch(1);
@@ -674,12 +685,10 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
         }
     }
 
-    // Dynamic Performance Scaler status
+    // Dynamic Performance Scaler status (live adaptive scale factor)
     if (Settings::values.dynamic_performance_scaler.GetValue()) {
-        const auto& ri = Settings::values.resolution_info;
-        const float scale = static_cast<float>(ri.up_scale) /
-                            static_cast<float>(1U << ri.down_shift);
-        QString dpsText = tr("DPS: %1x").arg(scale, 0, 'f', scale < 1.0f ? 2 : 1);
+        const float scale = Core::DynamicPerformanceScaler::GetEffectiveScaleFactor();
+        QString dpsText = tr("DPS: %1x").arg(scale, 0, 'f', 2);
         m_compact_dps->setText(dpsText);
         m_compact_dps->setVisible(true);
         if (m_lbl_dps) m_lbl_dps->setText(dpsText);
@@ -705,7 +714,13 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
 
     if (m_lbl_shaders) {
         const int building = const_cast<VideoCore::ShaderNotify&>(shaders).ShadersBuilding();
-        m_lbl_shaders->setText(building > 0 ? tr("Шейдеры: +%1").arg(building) : tr("Шейдеры: OK"));
+        const u64 jit_opt = Core::ARM::StormTier2Compiler::GetRewrittenCount() +
+                            Core::ARM::StormTier2Compiler::GetSuperblockOptCount();
+        if (building > 0) {
+            m_lbl_shaders->setText(tr("Шейдеры: +%1 | JIT: %2").arg(building).arg(jit_opt));
+        } else {
+            m_lbl_shaders->setText(tr("Шейдеры: OK | JIT Tier-3: %1").arg(jit_opt));
+        }
     }
 }
 
@@ -1075,6 +1090,16 @@ void PerformanceOverlay::OnToggleGpuAccuracy() {
     if (m_mainWindow) {
         m_mainWindow->OnToggleGpuAccuracy();
         RefreshCfwInfo();
+    }
+}
+
+void PerformanceOverlay::OnAutoHealGraphicsArtifacts() {
+    if (m_mainWindow) {
+        m_mainWindow->OnHealGraphicsArtifacts();
+        RefreshCfwInfo();
+        if (m_btn_heal_gpu) {
+            m_btn_heal_gpu->setText(tr("✅ Артефакты устранены!"));
+        }
     }
 }
 

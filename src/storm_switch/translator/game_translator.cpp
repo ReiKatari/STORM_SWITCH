@@ -330,12 +330,47 @@ TranslatorHUDOverlay::TranslatorHUDOverlay(QWidget* parent)
     : QWidget(parent, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::SubWindow) {
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_ShowWithoutActivating);
-    resize(760, 120);
+    resize(820, 130);
     setWindowTitle(QStringLiteral("STORM SWITCH HUD"));
+    setCursor(Qt::PointingHandCursor);
+    setToolTip(tr("Клик: скрыть перевод и остановить озвучку | Перетаскивание: переместить HUD"));
 }
 
 void TranslatorHUDOverlay::SetSubtitleText(const QString& text) {
     m_text = text;
+    update();
+}
+
+void TranslatorHUDOverlay::SetSampledFrame(const QImage& frame) {
+    if (frame.isNull()) return;
+    const int w = frame.width();
+    const int h = frame.height();
+    const int y0 = (h * 70) / 100;
+    const int x0 = (w * 15) / 100;
+    const int x1 = (w * 85) / 100;
+    long long r_sum = 0, g_sum = 0, b_sum = 0, count = 0;
+    for (int y = y0; y < h; y += 6) {
+        for (int x = x0; x < x1; x += 8) {
+            const QColor c = frame.pixelColor(x, y);
+            r_sum += c.red();
+            g_sum += c.green();
+            b_sum += c.blue();
+            count++;
+        }
+    }
+    if (count > 0) {
+        int r = static_cast<int>(r_sum / count);
+        int g = static_cast<int>(g_sum / count);
+        int b = static_cast<int>(b_sum / count);
+        // Darken sampled background slightly to guarantee crisp Russian subtitle contrast
+        m_sampled_bg = QColor((r * 45) / 100, (g * 45) / 100, (b * 50) / 100);
+        m_sampled_border = QColor(std::min(255, r + 70), std::min(255, g + 90), std::min(255, b + 110));
+        update();
+    }
+}
+
+void TranslatorHUDOverlay::SetSmartBackgroundMatch(bool enabled) {
+    m_smart_bg_match = enabled;
     update();
 }
 
@@ -357,15 +392,21 @@ void TranslatorHUDOverlay::SetBackgroundOpacity(int opacityPercent) {
 void TranslatorHUDOverlay::paintEvent(QPaintEvent* /*event*/) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
+    p.setRenderHint(QPainter::TextAntialiasing);
 
     if (m_text.isEmpty()) return;
 
     int alpha = (m_bg_opacity * 255) / 100;
     QRect r = rect().adjusted(6, 6, -6, -6);
 
-    // Dark glass box
-    p.setPen(QPen(QColor(0, 229, 255, 160), 1.5));
-    p.setBrush(QColor(10, 14, 23, alpha));
+    QColor bg_col = m_smart_bg_match ? m_sampled_bg : QColor(10, 14, 23);
+    bg_col.setAlpha(alpha);
+    QColor border_col = m_smart_bg_match ? m_sampled_border : QColor(0, 229, 255);
+    border_col.setAlpha(185);
+
+    // Dark glass box matching the game's dialogue window aesthetic
+    p.setPen(QPen(border_col, 1.6));
+    p.setBrush(bg_col);
     p.drawRoundedRect(r, 12, 12);
 
     // Glow accent
@@ -378,24 +419,41 @@ void TranslatorHUDOverlay::paintEvent(QPaintEvent* /*event*/) {
 
     QRect textRect = r.adjusted(18, 12, -18, -12);
     // Shadow
-    p.setPen(QColor(0, 0, 0, 230));
+    p.setPen(QColor(0, 0, 0, 235));
     p.drawText(textRect.adjusted(2, 2, 2, 2), Qt::AlignCenter | Qt::TextWordWrap, m_text);
 
     // Main text
-    p.setPen(m_text_color);
+    QColor txt_col = m_smart_bg_match ? QColor(248, 250, 252) : m_text_color;
+    p.setPen(txt_col);
     p.drawText(textRect, Qt::AlignCenter | Qt::TextWordWrap, m_text);
 }
 
 void TranslatorHUDOverlay::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
-        m_drag_position = event->globalPosition().toPoint() - frameGeometry().topLeft();
+        m_press_pos = event->globalPosition().toPoint();
+        m_drag_position = m_press_pos - frameGeometry().topLeft();
+        m_dragging = false;
         event->accept();
     }
 }
 
 void TranslatorHUDOverlay::mouseMoveEvent(QMouseEvent* event) {
     if (event->buttons() & Qt::LeftButton) {
-        move(event->globalPosition().toPoint() - m_drag_position);
+        QPoint cur = event->globalPosition().toPoint();
+        if ((cur - m_press_pos).manhattanLength() > 6) {
+            m_dragging = true;
+            move(cur - m_drag_position);
+        }
+        event->accept();
+    }
+}
+
+void TranslatorHUDOverlay::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        if (!m_dragging) {
+            emit DismissRequested();
+        }
+        m_dragging = false;
         event->accept();
     }
 }
@@ -439,6 +497,10 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
 
     m_network_mgr = new QNetworkAccessManager(this);
     m_hud_overlay = new TranslatorHUDOverlay();
+    connect(m_hud_overlay, &TranslatorHUDOverlay::DismissRequested, this, &GameTranslator::DismissOverlay);
+    m_speech_queue_timer = new QTimer(this);
+    m_speech_queue_timer->setSingleShot(true);
+    connect(m_speech_queue_timer, &QTimer::timeout, this, &GameTranslator::ProcessNextSpeechSegment);
     m_auto_interval_timer = new QTimer(this);
     connect(m_auto_interval_timer, &QTimer::timeout, this, &GameTranslator::OnAutoIntervalTimerTimeout);
 
@@ -661,10 +723,18 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     m_hud_font_size_spin->setSuffix(tr(" pt"));
 
     m_hud_color_combo = new QComboBox(tab_hud);
+    m_hud_color_combo->addItem(tr("🎨 Авто под цвет диалога игры (Smart Match)"), QColor(0, 0, 0, 0));
     m_hud_color_combo->addItem(tr("Неоновый голубой (Cyan)"), QColor(0, 229, 255));
     m_hud_color_combo->addItem(tr("Золотисто-жёлтый (Gold)"), QColor(245, 158, 11));
     m_hud_color_combo->addItem(tr("Белоснежный (White)"), QColor(255, 255, 255));
     m_hud_color_combo->addItem(tr("Изумрудный (Green)"), QColor(16, 185, 129));
+    connect(m_hud_color_combo, &QComboBox::currentIndexChanged, this, [this](int idx) {
+        if (!m_hud_overlay) return;
+        m_hud_overlay->SetSmartBackgroundMatch(idx == 0);
+        if (idx > 0) {
+            m_hud_overlay->SetTextColor(m_hud_color_combo->currentData().value<QColor>());
+        }
+    });
 
     hud_layout->addRow(m_show_hud_check);
     hud_layout->addRow(m_enable_floating_btn_check);
@@ -674,8 +744,8 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     t3_layout->addWidget(hud_box);
 
     auto* hotkey_info = new QLabel(tr("⌨️ Быстрые клавиши:\n"
-                                       "• [F9] — Мгновенный перевод экрана\n"
-                                       "• [F5] — Быстрое сохранение игры\n"
+                                       "• [F9] — Мгновенный перевод экрана / скрыть перевод\n"
+                                       "• [F5] — Быстрое сохранение игры (< 20 мс)\n"
                                        "• [F6] — Быстрая загрузка игры"), tab_hud);
     hotkey_info->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 12px; background: #121826; padding: 12px; border-radius: 6px; border: 1px solid #1E293B;"));
     t3_layout->addWidget(hotkey_info);
@@ -691,10 +761,10 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     t4_layout->setContentsMargins(12, 12, 12, 12);
     t4_layout->setSpacing(12);
 
-    auto* tts_box = new QGroupBox(tr("🎭 Мультиголосовой синтез речи и автоопределение персонажей"), tab_tts);
+    auto* tts_box = new QGroupBox(tr("🎭 Мультиголосовой синтез речи и автоопределение персонажей (24 архетипа)"), tab_tts);
     auto* tts_form = new QFormLayout(tts_box);
 
-    m_multi_voice_check = new QCheckBox(tr("Включить умное распределение голосов (Персонажи + Рассказчик)"), tab_tts);
+    m_multi_voice_check = new QCheckBox(tr("Включить умное распределение голосов (Персонажи + Эмоции + Рассказчик)"), tab_tts);
     m_multi_voice_check->setChecked(true);
     tts_form->addRow(m_multi_voice_check);
 
@@ -729,7 +799,8 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     tts_btn_layout->addStretch(1);
     t4_layout->addLayout(tts_btn_layout);
 
-    auto* tts_info = new QLabel(tr("✨ Поддерживаются бесплатные онлайн нейро-голоса Edge TTS и все установленные в Windows SAPI5 / OneCore голоса (включая естественные голоса Microsoft Irina, Elena, Dmitry, Svetlana, Pavel)."), tab_tts);
+    auto* tts_info = new QLabel(tr("✨ Студийная система озвучки автоматически распознаёт плашку имени говорящего, закрепляет индивидуальный тембр за каждым персонажем игры (сохраняется в voice_cast_<TitleID>.json) и передаёт эмоциональную интонацию реплики (!, ?, ..., шёпот, угроза)."), tab_tts);
+    tts_info->setWordWrap(true);
     tts_info->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 12px; background: #121826; padding: 10px; border-radius: 6px;"));
     t4_layout->addWidget(tts_info);
     t4_layout->addStretch(1);
@@ -761,11 +832,13 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
 
     LoadSettings();
     LoadCache();
+    LoadVoiceCast();
 }
 
 GameTranslator::~GameTranslator() {
     SaveSettings();
     SaveCache();
+    SaveVoiceCast();
     if (m_hud_overlay) {
         delete m_hud_overlay;
     }
@@ -859,10 +932,40 @@ void GameTranslator::PopulateTTSVoices() {
     }
 }
 
-void GameTranslator::TranslateFrame(const QImage& frame) {
+bool GameTranslator::IsOverlayVisible() const {
+    return m_hud_overlay && m_hud_overlay->isVisible() && !m_hud_overlay->GetSubtitleText().isEmpty();
+}
+
+void GameTranslator::DismissOverlay() {
+    StopSpeech();
+    if (m_hud_overlay) {
+        m_hud_overlay->SetSubtitleText(QString());
+        m_hud_overlay->hide();
+    }
+}
+
+void GameTranslator::ToggleHUD() {
+    if (!m_hud_overlay) return;
+    if (m_hud_overlay->isVisible()) {
+        DismissOverlay();
+        if (m_show_hud_check) m_show_hud_check->setChecked(false);
+    } else {
+        if (m_show_hud_check) m_show_hud_check->setChecked(true);
+        m_hud_overlay->show();
+        m_hud_overlay->raise();
+    }
+}
+
+void GameTranslator::TranslateFrame(const QImage& frame, bool show_hud_automatically) {
     if (frame.isNull()) return;
     m_captured_frame = frame;
     m_roi_preview->SetImage(frame);
+    if (m_hud_overlay) {
+        m_hud_overlay->SetSampledFrame(frame);
+        if (show_hud_automatically && m_show_hud_check && !m_show_hud_check->isChecked()) {
+            m_show_hud_check->setChecked(true);
+        }
+    }
     ExtractTextFromImageAndTranslate(frame);
 }
 
@@ -994,8 +1097,101 @@ QString GameTranslator::PerformWindowsOCR(const QImage& image, const QString& la
 
         if (s_cached_engine && software_bitmap) {
             auto ocr_result = s_cached_engine.RecognizeAsync(software_bitmap).get();
-            std::wstring recognized_text(ocr_result.Text());
-            return QString::fromStdWString(recognized_text);
+            auto ocr_lines = ocr_result.Lines();
+            if (ocr_lines.Size() == 0) {
+                std::wstring recognized_text(ocr_result.Text());
+                return QString::fromStdWString(recognized_text);
+            }
+
+            // Spatial Line & Speaker Nameplate Assembler (ported from STORM DS architecture)
+            struct SpatialLine {
+                QString text;
+                double left{0};
+                double top{0};
+                double right{0};
+                double bottom{0};
+                double height() const { return std::max(1.0, bottom - top); }
+                double width() const { return std::max(1.0, right - left); }
+            };
+            std::vector<SpatialLine> lines;
+            lines.reserve(ocr_lines.Size());
+
+            for (uint32_t i = 0; i < ocr_lines.Size(); ++i) {
+                auto line = ocr_lines.GetAt(i);
+                QString ltext = QString::fromStdWString(std::wstring(line.Text())).trimmed();
+                if (ltext.isEmpty()) continue;
+
+                double min_x = 1e9, min_y = 1e9, max_x = 0.0, max_y = 0.0;
+                auto words = line.Words();
+                for (uint32_t w_idx = 0; w_idx < words.Size(); ++w_idx) {
+                    auto r = words.GetAt(w_idx).BoundingRect();
+                    min_x = std::min<double>(min_x, r.X);
+                    min_y = std::min<double>(min_y, r.Y);
+                    max_x = std::max<double>(max_x, r.X + r.Width);
+                    max_y = std::max<double>(max_y, r.Y + r.Height);
+                }
+                if (min_x > max_x) {
+                    min_x = 0; min_y = i * 24.0; max_x = 200; max_y = min_y + 20.0;
+                }
+                lines.push_back(SpatialLine{ltext, min_x, min_y, max_x, max_y});
+            }
+
+            std::sort(lines.begin(), lines.end(), [](const SpatialLine& a, const SpatialLine& b) {
+                if (std::abs(a.top - b.top) > std::min(a.height(), b.height()) * 0.55) {
+                    return a.top < b.top;
+                }
+                return a.left < b.left;
+            });
+
+            // Detect top-left Speaker Nameplate above main dialogue body
+            QStringList assembled_paragraphs;
+            QString current_paragraph;
+            for (size_t i = 0; i < lines.size(); ++i) {
+                const auto& cur = lines[i];
+                const bool is_first = (i == 0);
+                if (is_first && lines.size() >= 2) {
+                    const auto& next = lines[1];
+                    const bool is_short_name = (cur.text.size() >= 2 && cur.text.size() <= 22 &&
+                                                !cur.text.endsWith(QLatin1Char('.')) &&
+                                                !cur.text.endsWith(QLatin1Char('!')) &&
+                                                !cur.text.endsWith(QLatin1Char('?')) &&
+                                                !cur.text.contains(QLatin1Char(':')));
+                    const bool is_above_body = (next.top >= cur.bottom - cur.height() * 0.25 &&
+                                                cur.width() < std::max(next.width() * 0.85, w * 0.40));
+                    if (is_short_name && is_above_body) {
+                        current_paragraph = cur.text + QStringLiteral(": ");
+                        continue;
+                    }
+                }
+
+                if (i > 0) {
+                    const auto& prev = lines[i - 1];
+                    const double v_gap = cur.top - prev.bottom;
+                    const bool is_choice_item = cur.text.startsWith(QLatin1Char('-')) ||
+                                                cur.text.startsWith(QChar(0x2022)) ||
+                                                cur.text.startsWith(QChar(0x25B6));
+                    const bool is_new_speaker = cur.text.contains(QRegularExpression(QStringLiteral(R"(^[A-ZА-ЯЁ][\w\s]{1,20}:\s)")));
+                    if (v_gap > prev.height() * 1.35 || is_choice_item || is_new_speaker) {
+                        if (!current_paragraph.trimmed().isEmpty()) {
+                            assembled_paragraphs.push_back(current_paragraph.trimmed());
+                            current_paragraph.clear();
+                        }
+                    }
+                }
+
+                if (!current_paragraph.isEmpty() && !current_paragraph.endsWith(QLatin1Char(' '))) {
+                    if (current_paragraph.endsWith(QLatin1Char('-'))) {
+                        current_paragraph.chop(1);
+                    } else {
+                        current_paragraph += QLatin1Char(' ');
+                    }
+                }
+                current_paragraph += cur.text;
+            }
+            if (!current_paragraph.trimmed().isEmpty()) {
+                assembled_paragraphs.push_back(current_paragraph.trimmed());
+            }
+            return assembled_paragraphs.join(QLatin1Char('\n'));
         }
     } catch (const winrt::hresult_error& ex) {
         qWarning("Windows OCR exception: %ls", ex.message().c_str());
@@ -1137,6 +1333,41 @@ void GameTranslator::SaveCache() {
     }
 }
 
+void GameTranslator::LoadVoiceCast() {
+    const auto tid = GetCurrentTitleIdString().toStdString();
+    std::filesystem::path config_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir);
+    std::filesystem::path cast_path = config_dir / fmt::format("voice_cast_{}.json", tid);
+    std::error_code ec;
+    if (std::filesystem::exists(cast_path, ec)) {
+        QFile f(QString::fromStdString(cast_path.string()));
+        if (f.open(QIODevice::ReadOnly)) {
+            QJsonObject root = QJsonDocument::fromJson(f.readAll()).object();
+            f.close();
+            for (auto it = root.begin(); it != root.end(); ++it) {
+                m_character_persona_cache.insert(it.key(), it.value().toInt());
+            }
+        }
+    }
+}
+
+void GameTranslator::SaveVoiceCast() const {
+    if (m_character_persona_cache.isEmpty()) return;
+    const auto tid = GetCurrentTitleIdString().toStdString();
+    std::filesystem::path config_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir);
+    std::filesystem::path cast_path = config_dir / fmt::format("voice_cast_{}.json", tid);
+    static_cast<void>(Common::FS::CreateParentDir(cast_path));
+
+    QJsonObject root;
+    for (auto it = m_character_persona_cache.begin(); it != m_character_persona_cache.end(); ++it) {
+        root.insert(it.key(), it.value());
+    }
+    QFile f_out(QString::fromStdString(cast_path.string()));
+    if (f_out.open(QIODevice::WriteOnly)) {
+        f_out.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
+        f_out.close();
+    }
+}
+
 QString GameTranslator::SanitizeOcrText(const QString& text) const {
     if (text.isEmpty()) return text;
     QString cleaned = text;
@@ -1149,15 +1380,31 @@ QString GameTranslator::SanitizeOcrText(const QString& text) const {
         QStringLiteral(R"((?<=[\x{3000}-\x{9FFF}\x{FF00}-\x{FFEF}])\s+(?=[\x{3000}-\x{9FFF}\x{FF00}-\x{FFEF}]))"));
     cleaned.replace(cjk_space, QString());
 
-    // 3. Collapse line breaks into single spaces within sentences
-    static const QRegularExpression line_breaks(QStringLiteral(R"([\r\n]+)"));
-    cleaned.replace(line_breaks, QStringLiteral(" "));
+    // 3. DialogueSentenceAssembler: preserve speaker turns & bullet choices while merging wrapped lines
+    const QStringList raw_lines = cleaned.split(QRegularExpression(QStringLiteral(R"([\r\n]+)")), Qt::SkipEmptyParts);
+    QStringList paragraphs;
+    for (const QString& raw_line : raw_lines) {
+        QString line = raw_line.trimmed();
+        if (line.isEmpty()) continue;
+        static const QRegularExpression multi_space(QStringLiteral(R"(\s{2,})"));
+        line.replace(multi_space, QStringLiteral(" "));
 
-    // 4. Collapse multiple whitespace characters into a single space
-    static const QRegularExpression multi_space(QStringLiteral(R"(\s{2,})"));
-    cleaned.replace(multi_space, QStringLiteral(" "));
+        const bool is_speaker_line = line.contains(QRegularExpression(QStringLiteral(R"(^[A-ZА-ЯЁ][\w\s]{1,22}:\s)")));
+        const bool is_bullet = line.startsWith(QLatin1Char('-')) || line.startsWith(QChar(0x2022));
+        if (paragraphs.isEmpty() || is_speaker_line || is_bullet) {
+            paragraphs.push_back(line);
+        } else {
+            QString& prev = paragraphs.back();
+            if (!prev.endsWith(QLatin1Char('.')) && !prev.endsWith(QLatin1Char('!')) &&
+                !prev.endsWith(QLatin1Char('?'))) {
+                prev += QLatin1Char(' ') + line;
+            } else {
+                paragraphs.push_back(line);
+            }
+        }
+    }
 
-    cleaned = cleaned.trimmed();
+    cleaned = paragraphs.join(QLatin1Char('\n')).trimmed();
     // Ignore 1-character non-letter OCR artifacts
     if (cleaned.size() == 1 && !cleaned[0].isLetterOrNumber()) {
         return QString();
@@ -1209,6 +1456,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                     m_last_translated_output = translated_result;
                     m_translated_edit->setText(translated_result);
                     m_hud_overlay->SetSubtitleText(translated_result);
+                    if (m_show_hud_check && m_show_hud_check->isChecked()) m_hud_overlay->show();
                     m_status_label->setText(tr("✅ Перевод завершён (DeepL)"));
                     SaveCache();
                     if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
@@ -1232,7 +1480,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
             QJsonObject sys_msg{
                 {QStringLiteral("role"), QStringLiteral("system")},
                 {QStringLiteral("content"),
-                 QStringLiteral("You are a professional video game localization translator. Translate the following game dialogue accurately and naturally into '%1'. Output ONLY the translation without quotes or commentary.").arg(tl)}};
+                 QStringLiteral("You are a professional video game localization translator. Translate the following game dialogue accurately and naturally into '%1'. Preserve any 'Speaker: ' prefix. Output ONLY the translation without quotes or commentary.").arg(tl)}};
             QJsonObject usr_msg{
                 {QStringLiteral("role"), QStringLiteral("user")},
                 {QStringLiteral("content"), text}};
@@ -1259,6 +1507,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                     m_last_translated_output = translated_result;
                     m_translated_edit->setText(translated_result);
                     m_hud_overlay->SetSubtitleText(translated_result);
+                    if (m_show_hud_check && m_show_hud_check->isChecked()) m_hud_overlay->show();
                     m_status_label->setText(tr("✅ Перевод завершён (AI LLM)"));
                     SaveCache();
                     if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
@@ -1273,7 +1522,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
             QNetworkRequest req(url);
             req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
             QJsonObject part{{QStringLiteral("text"),
-                              QStringLiteral("Translate this video game dialogue naturally into '%1' (output ONLY the translated text):\n%2").arg(tl, text)}};
+                              QStringLiteral("Translate this video game dialogue naturally into '%1' (preserve any 'Speaker: ' prefix and output ONLY the translated text):\n%2").arg(tl, text)}};
             QJsonObject content{{QStringLiteral("parts"), QJsonArray{part}}};
             QJsonObject body{{QStringLiteral("contents"), QJsonArray{content}}};
             QNetworkReply* reply = m_network_mgr->post(req, QJsonDocument(body).toJson(QJsonDocument::Compact));
@@ -1297,6 +1546,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                     m_last_translated_output = translated_result;
                     m_translated_edit->setText(translated_result);
                     m_hud_overlay->SetSubtitleText(translated_result);
+                    if (m_show_hud_check && m_show_hud_check->isChecked()) m_hud_overlay->show();
                     m_status_label->setText(tr("✅ Перевод завершён (Gemini)"));
                     SaveCache();
                     if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
@@ -1389,6 +1639,10 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
 
             m_translated_edit->setText(translated_result);
             m_hud_overlay->SetSubtitleText(translated_result);
+            if (m_show_hud_check && m_show_hud_check->isChecked()) {
+                m_hud_overlay->show();
+                m_hud_overlay->raise();
+            }
             m_status_label->setText(tr("✅ Перевод завершён"));
             SaveCache();
 
@@ -1412,6 +1666,9 @@ void GameTranslator::PerformOnlineTranslation(const QString& text, const QString
     if (cleaned_text == m_last_translated_input && !m_last_translated_output.isEmpty()) {
         m_translated_edit->setText(m_last_translated_output);
         m_hud_overlay->SetSubtitleText(m_last_translated_output);
+        if (m_show_hud_check && m_show_hud_check->isChecked()) {
+            m_hud_overlay->show();
+        }
         m_status_label->setText(tr("✅ Перевод (без изменений)"));
         return;
     }
@@ -1423,6 +1680,9 @@ void GameTranslator::PerformOnlineTranslation(const QString& text, const QString
         m_last_translated_output = translated_result;
         m_translated_edit->setText(translated_result);
         m_hud_overlay->SetSubtitleText(translated_result);
+        if (m_show_hud_check && m_show_hud_check->isChecked()) {
+            m_hud_overlay->show();
+        }
         m_status_label->setText(tr("✅ Перевод (кэш)"));
 
         if (m_auto_speak_check->isChecked()) {
@@ -1436,6 +1696,163 @@ void GameTranslator::PerformOnlineTranslation(const QString& text, const QString
     ExecuteTranslationRequest(start_endpoint, cleaned_text, src_lang, tgt_lang, cache_key);
 }
 
+SpeechSegment::Persona GameTranslator::InferCharacterPersona(const QString& name, const QString& dialogue) {
+    const QString key = name.trimmed().toLower();
+    if (key.isEmpty()) {
+        return SpeechSegment::Persona::NarratorBook;
+    }
+    if (m_character_persona_cache.contains(key)) {
+        return static_cast<SpeechSegment::Persona>(m_character_persona_cache.value(key));
+    }
+
+    using P = SpeechSegment::Persona;
+    P result = P::HeroMale;
+
+    // Nintendo Switch & JRPG character roster + Russian/English titles
+    if (key.contains(QStringLiteral("зельд")) || key.contains(QStringLiteral("zelda")) ||
+        key.contains(QStringLiteral("пич")) || key.contains(QStringLiteral("peach")) ||
+        key.contains(QStringLiteral("розалин")) || key.contains(QStringLiteral("rosalina")) ||
+        key.contains(QStringLiteral("эдельгард")) || key.contains(QStringLiteral("edelgard")) ||
+        key.contains(QStringLiteral("принцесс")) || key.contains(QStringLiteral("princess")) ||
+        key.contains(QStringLiteral("мифа")) || key.contains(QStringLiteral("mipha")) ||
+        key.contains(QStringLiteral("мелиал")) || key.contains(QStringLiteral("melia"))) {
+        result = P::PrincessNoble;
+    } else if (key.contains(QStringLiteral("самус")) || key.contains(QStringLiteral("samus")) ||
+               key.contains(QStringLiteral("байонетт")) || key.contains(QStringLiteral("bayonetta")) ||
+               key.contains(QStringLiteral("жанн")) || key.contains(QStringLiteral("jeanne")) ||
+               key.contains(QStringLiteral("мио")) || key.contains(QStringLiteral("mio")) ||
+               key.contains(QStringLiteral("мифр")) || key.contains(QStringLiteral("mythra")) ||
+               key.contains(QStringLiteral("урбос")) || key.contains(QStringLiteral("urbosa")) ||
+               key.contains(QStringLiteral("хорнет")) || key.contains(QStringLiteral("hornet")) ||
+               key.contains(QStringLiteral("мелино")) || key.contains(QStringLiteral("melinoe")) ||
+               key.contains(QStringLiteral("макото")) || key.contains(QStringLiteral("makoto")) ||
+               key.contains(QStringLiteral("тифа")) || key.contains(QStringLiteral("tifa"))) {
+        result = P::HeroFemale;
+    } else if (key.contains(QStringLiteral("пира")) || key.contains(QStringLiteral("pyra")) ||
+               key.contains(QStringLiteral("айрис")) || key.contains(QStringLiteral("aerith")) ||
+               key.contains(QStringLiteral("мерседес")) || key.contains(QStringLiteral("mercedes")) ||
+               key.contains(QStringLiteral("марианн")) || key.contains(QStringLiteral("marianne"))) {
+        result = P::GentleHealer;
+    } else if (key.contains(QStringLiteral("пикачу")) || key.contains(QStringLiteral("pikachu")) ||
+               key.contains(QStringLiteral("тоад")) || key.contains(QStringLiteral("toad")) ||
+               key.contains(QStringLiteral("кирби")) || key.contains(QStringLiteral("kirby")) ||
+               key.contains(QStringLiteral("йоши")) || key.contains(QStringLiteral("yoshi")) ||
+               key.contains(QStringLiteral("моргана")) || key.contains(QStringLiteral("morgana")) ||
+               key.contains(QStringLiteral("рики")) || key.contains(QStringLiteral("riki")) ||
+               key.contains(QStringLiteral("тора")) || key.contains(QStringLiteral("tora")) ||
+               key.contains(QStringLiteral("рику")) || key.contains(QStringLiteral("riku")) ||
+               key.contains(QStringLiteral("манана")) || key.contains(QStringLiteral("manana"))) {
+        result = P::CuteMascot;
+    } else if (key.contains(QStringLiteral("ганон")) || key.contains(QStringLiteral("ganon")) ||
+               key.contains(QStringLiteral("боузер")) || key.contains(QStringLiteral("bowser")) ||
+               key.contains(QStringLiteral("сефирот")) || key.contains(QStringLiteral("sephiroth")) ||
+               key.contains(QStringLiteral("аид")) || key.contains(QStringLiteral("hades")) ||
+               key.contains(QStringLiteral("кронос")) || key.contains(QStringLiteral("chronos")) ||
+               key.contains(QStringLiteral("малос")) || key.contains(QStringLiteral("malos")) ||
+               key.contains(QStringLiteral("ридл")) || key.contains(QStringLiteral("ridley"))) {
+        result = P::VillainBoss;
+    } else if (key.contains(QStringLiteral("импа")) || key.contains(QStringLiteral("impa")) ||
+               key.contains(QStringLiteral("роам")) || key.contains(QStringLiteral("rhoam")) ||
+               key.contains(QStringLiteral("рауру")) || key.contains(QStringLiteral("rauru")) ||
+               key.contains(QStringLiteral("старейшин")) || key.contains(QStringLiteral("elder")) ||
+               key.contains(QStringLiteral("профессор")) || key.contains(QStringLiteral("professor")) ||
+               key.contains(QStringLiteral("оук")) || key.contains(QStringLiteral("oak"))) {
+        result = P::WiseElder;
+    } else if (key.contains(QStringLiteral("пурра")) || key.contains(QStringLiteral("purah")) ||
+               key.contains(QStringLiteral("робби")) || key.contains(QStringLiteral("robbie")) ||
+               key.contains(QStringLiteral("футаба")) || key.contains(QStringLiteral("futaba")) ||
+               key.contains(QStringLiteral("тайон")) || key.contains(QStringLiteral("taion")) ||
+               key.contains(QStringLiteral("детектив")) || key.contains(QStringLiteral("доктор"))) {
+        result = P::ScholarDetective;
+    } else if (key.contains(QStringLiteral("адам")) || key.contains(QStringLiteral("adam")) ||
+               key.contains(QStringLiteral("робот")) || key.contains(QStringLiteral("система")) ||
+               key.contains(QStringLiteral("терминал")) || key.contains(QStringLiteral("поппи")) ||
+               key.contains(QStringLiteral("poppi"))) {
+        result = P::RobotAI;
+    } else if (key.contains(QStringLiteral("нук")) || key.contains(QStringLiteral("nook")) ||
+               key.contains(QStringLiteral("бидл")) || key.contains(QStringLiteral("beedle")) ||
+               key.contains(QStringLiteral("торгов")) || key.contains(QStringLiteral("merchant"))) {
+        result = P::MerchantTrickster;
+    } else if (key.contains(QStringLiteral("риджу")) || key.contains(QStringLiteral("riju")) ||
+               key.contains(QStringLiteral("изабел")) || key.contains(QStringLiteral("isabelle")) ||
+               key.contains(QStringLiteral("анн")) || key.contains(QStringLiteral("ann")) ||
+               key.contains(QStringLiteral("юни")) || key.contains(QStringLiteral("eunie")) ||
+               key.contains(QStringLiteral("сена")) || key.contains(QStringLiteral("sena")) ||
+               key.contains(QStringLiteral("хару")) || key.contains(QStringLiteral("haru")) ||
+               key.endsWith(QLatin1Char('а')) || key.endsWith(QLatin1Char('я'))) {
+        result = P::YoungGirl;
+    } else if (key.contains(QStringLiteral("тулин")) || key.contains(QStringLiteral("tulin")) ||
+               key.contains(QStringLiteral("рекс")) || key.contains(QStringLiteral("rex")) ||
+               key.contains(QStringLiteral("луиджи")) || key.contains(QStringLiteral("luigi")) ||
+               key.contains(QStringLiteral("рюдзи")) || key.contains(QStringLiteral("ryuji"))) {
+        result = P::YoungBoy;
+    } else if (key.contains(QStringLiteral("дмитрий")) || key.contains(QStringLiteral("dimitri")) ||
+               key.contains(QStringLiteral("сидон")) || key.contains(QStringLiteral("sidon")) ||
+               key.contains(QStringLiteral("данбан")) || key.contains(QStringLiteral("dunban")) ||
+               key.contains(QStringLiteral("мета найт")) || key.contains(QStringLiteral("meta knight"))) {
+        result = P::StoicKnight;
+    } else {
+        // Fallback: check Russian past-tense verb gender in dialogue ("я сказала", "я пошла")
+        static const QRegularExpression fem_verb(QStringLiteral(R"(\b(я|сама)\s+\w+ла(сь)?\b)"),
+                                                 QRegularExpression::CaseInsensitiveOption);
+        if (fem_verb.match(dialogue).hasMatch()) {
+            result = P::HeroFemale;
+        } else {
+            const uint h = qHash(key);
+            static const std::array<P, 6> male_pool = {
+                P::HeroMale, P::StoicKnight, P::RivalHothead,
+                P::ScholarDetective, P::CommanderGeneral, P::PirateMercenary};
+            result = male_pool[h % male_pool.size()];
+        }
+    }
+
+    m_character_persona_cache.insert(key, static_cast<int>(result));
+    SaveVoiceCast();
+    return result;
+}
+
+SpeechSegment::Emotion GameTranslator::DetectEmotionStyle(const QString& text) const {
+    const QString t = text.trimmed();
+    if (t.contains(QStringLiteral("?!")) || t.contains(QStringLiteral("!?"))) {
+        return SpeechSegment::Emotion::Shocked;
+    }
+    if (t.endsWith(QStringLiteral("!!")) || t.contains(QStringLiteral("Берегись")) ||
+        t.contains(QStringLiteral("Вперёд")) || t.contains(QStringLiteral("Атакуем"))) {
+        return SpeechSegment::Emotion::Heroic;
+    }
+    if (t.endsWith(QLatin1Char('!'))) {
+        return SpeechSegment::Emotion::Excited;
+    }
+    if (t.endsWith(QLatin1Char('?'))) {
+        return SpeechSegment::Emotion::Question;
+    }
+    if (t.startsWith(QStringLiteral("...")) || t.startsWith(QChar(0x2026)) ||
+        t.contains(QStringLiteral("вздох")) || t.contains(QStringLiteral("прости"))) {
+        return SpeechSegment::Emotion::SadWhisper;
+    }
+    return SpeechSegment::Emotion::Neutral;
+}
+
+QString GameTranslator::NormalizeForRussianTts(const QString& text) const {
+    QString out = text;
+    // Expand common RPG abbreviations so Russian TTS pronounces them naturally
+    static const std::pair<QRegularExpression, QString> rules[] = {
+        {QRegularExpression(QStringLiteral(R"(\bHP\b)")), QStringLiteral("очки здоровья")},
+        {QRegularExpression(QStringLiteral(R"(\bMP\b)")), QStringLiteral("очки магии")},
+        {QRegularExpression(QStringLiteral(R"(\b(?:LV|LVL|Lv\.)\s*(\d+)\b)")), QStringLiteral("уровень \\1")},
+        {QRegularExpression(QStringLiteral(R"(\b(?:EXP|XP)\b)")), QStringLiteral("опыт")},
+        {QRegularExpression(QStringLiteral(R"(\bATK\b)")), QStringLiteral("атака")},
+        {QRegularExpression(QStringLiteral(R"(\bDEF\b)")), QStringLiteral("защита")},
+        {QRegularExpression(QStringLiteral(R"(\bSPD\b)")), QStringLiteral("скорость")},
+    };
+    for (const auto& [re, rep] : rules) {
+        out.replace(re, rep);
+    }
+    // Remove ornamental brackets that cause robotic pauses
+    out.replace(QRegularExpression(QStringLiteral(R"([\x{25A0}-\x{25FF}\x{2600}-\x{26FF}])")), QStringLiteral(" "));
+    return out.trimmed();
+}
+
 std::vector<SpeechSegment> GameTranslator::ParseDialogueSegments(const QString& text) {
     std::vector<SpeechSegment> segments;
     QStringList lines = text.split(QRegularExpression(QStringLiteral(R"([\r\n]+)")), Qt::SkipEmptyParts);
@@ -1445,7 +1862,7 @@ std::vector<SpeechSegment> GameTranslator::ParseDialogueSegments(const QString& 
         if (trimmed.isEmpty()) continue;
 
         // Pattern 1: "Character Name: Dialogue text"
-        static const QRegularExpression speakerPattern(QStringLiteral(R"(^([A-ZА-ЯЁ][a-zа-яёA-ZА-ЯЁ0-9\s]{1,24}):\s*(.*)$)"));
+        static const QRegularExpression speakerPattern(QStringLiteral(R"(^([A-ZА-ЯЁ][a-zа-яёA-ZА-ЯЁ0-9\s\-]{1,24}):\s*(.*)$)"));
         auto match = speakerPattern.match(trimmed);
         if (match.hasMatch()) {
             QString name = match.captured(1).trimmed();
@@ -1453,9 +1870,70 @@ std::vector<SpeechSegment> GameTranslator::ParseDialogueSegments(const QString& 
 
             SpeechSegment seg;
             seg.speaker_name = name;
-            seg.text = dialog;
-            // Alternate roles based on name hash
-            seg.role = (qHash(name) % 2 == 0) ? SpeechSegment::Role::Speaker1 : SpeechSegment::Role::Speaker2;
+            seg.text = NormalizeForRussianTts(dialog);
+            seg.persona = InferCharacterPersona(name, dialog);
+            seg.emotion = DetectEmotionStyle(dialog);
+
+            using P = SpeechSegment::Persona;
+            switch (seg.persona) {
+            case P::HeroFemale:
+            case P::PrincessNoble:
+            case P::GentleHealer:
+            case P::MysteriousOracle:
+                seg.role = SpeechSegment::Role::Speaker2;
+                seg.pitch_Adjust = +2;
+                seg.rate_Adjust = 0;
+                break;
+            case P::YoungGirl:
+                seg.role = SpeechSegment::Role::Speaker2;
+                seg.pitch_Adjust = +5;
+                seg.rate_Adjust = +1;
+                break;
+            case P::CuteMascot:
+                seg.role = SpeechSegment::Role::Speaker2;
+                seg.pitch_Adjust = +7;
+                seg.rate_Adjust = +2;
+                break;
+            case P::YoungBoy:
+            case P::ChildBrat:
+                seg.role = SpeechSegment::Role::Speaker1;
+                seg.pitch_Adjust = +3;
+                seg.rate_Adjust = +1;
+                break;
+            case P::VillainBoss:
+            case P::MonsterDemon:
+                seg.role = SpeechSegment::Role::Speaker1;
+                seg.pitch_Adjust = -6;
+                seg.rate_Adjust = -1;
+                break;
+            case P::WiseElder:
+                seg.role = SpeechSegment::Role::Narrator;
+                seg.pitch_Adjust = -4;
+                seg.rate_Adjust = -2;
+                break;
+            case P::StoicKnight:
+            case P::CommanderGeneral:
+                seg.role = SpeechSegment::Role::Speaker1;
+                seg.pitch_Adjust = -3;
+                seg.rate_Adjust = 0;
+                break;
+            default:
+                seg.role = SpeechSegment::Role::Speaker1;
+                seg.pitch_Adjust = 0;
+                seg.rate_Adjust = 0;
+                break;
+            }
+
+            if (seg.emotion == SpeechSegment::Emotion::Excited || seg.emotion == SpeechSegment::Emotion::Heroic) {
+                seg.pitch_Adjust += 2;
+                seg.rate_Adjust += 1;
+            } else if (seg.emotion == SpeechSegment::Emotion::Question) {
+                seg.pitch_Adjust += 2;
+            } else if (seg.emotion == SpeechSegment::Emotion::SadWhisper) {
+                seg.pitch_Adjust -= 2;
+                seg.rate_Adjust -= 1;
+            }
+
             segments.push_back(seg);
             continue;
         }
@@ -1466,7 +1944,9 @@ std::vector<SpeechSegment> GameTranslator::ParseDialogueSegments(const QString& 
         if (qMatch.hasMatch()) {
             SpeechSegment seg;
             seg.role = SpeechSegment::Role::Speaker2;
-            seg.text = qMatch.captured(1);
+            seg.text = NormalizeForRussianTts(qMatch.captured(1));
+            seg.emotion = DetectEmotionStyle(seg.text);
+            seg.pitch_Adjust = +2;
             segments.push_back(seg);
             continue;
         }
@@ -1474,14 +1954,17 @@ std::vector<SpeechSegment> GameTranslator::ParseDialogueSegments(const QString& 
         // Otherwise: Narrator segment
         SpeechSegment seg;
         seg.role = SpeechSegment::Role::Narrator;
-        seg.text = trimmed;
+        seg.persona = SpeechSegment::Persona::NarratorBook;
+        seg.text = NormalizeForRussianTts(trimmed);
+        seg.emotion = DetectEmotionStyle(trimmed);
+        seg.pitch_Adjust = -2;
         segments.push_back(seg);
     }
 
     if (segments.empty()) {
         SpeechSegment seg;
         seg.role = SpeechSegment::Role::Default;
-        seg.text = text;
+        seg.text = NormalizeForRussianTts(text);
         segments.push_back(seg);
     }
 
@@ -1491,17 +1974,34 @@ std::vector<SpeechSegment> GameTranslator::ParseDialogueSegments(const QString& 
 void GameTranslator::SpeakText(const QString& text) {
     if (text.trimmed().isEmpty()) return;
 
+    StopSpeech();
+    m_speech_queue.clear();
+
     if (!m_multi_voice_check->isChecked()) {
         SpeechSegment seg;
         seg.role = SpeechSegment::Role::Default;
-        seg.text = text;
-        SpeakSingleSegment(seg);
-        return;
+        seg.text = NormalizeForRussianTts(text);
+        m_speech_queue.push_back(seg);
+    } else {
+        m_speech_queue = ParseDialogueSegments(text);
     }
 
-    auto segments = ParseDialogueSegments(text);
-    for (const auto& seg : segments) {
-        SpeakSingleSegment(seg);
+    ProcessNextSpeechSegment();
+}
+
+void GameTranslator::ProcessNextSpeechSegment() {
+    if (m_speech_queue.empty()) {
+        return;
+    }
+    SpeechSegment current = m_speech_queue.front();
+    m_speech_queue.erase(m_speech_queue.begin());
+
+    SpeakSingleSegment(current);
+
+    if (!m_speech_queue.empty()) {
+        // Estimate natural speaking duration for this turn (~68 ms per character, min 1.1s)
+        const int est_ms = std::clamp(static_cast<int>(current.text.size()) * 68 + 450, 1100, 9500);
+        m_speech_queue_timer->start(est_ms);
     }
 }
 
@@ -1510,13 +2010,9 @@ void GameTranslator::SpeakSingleSegment(const SpeechSegment& segment) {
     if (segment.text.trimmed().isEmpty()) return;
 
     int vol = m_tts_volume_slider ? m_tts_volume_slider->value() : 100;
-    int rate = m_tts_rate_slider ? m_tts_rate_slider->value() : 0;
-
-    if (segment.role == SpeechSegment::Role::Speaker1) {
-        rate = std::clamp(rate - 1, -10, 10);
-    } else if (segment.role == SpeechSegment::Role::Speaker2) {
-        rate = std::clamp(rate + 2, -10, 10);
-    }
+    int rate = (m_tts_rate_slider ? m_tts_rate_slider->value() : 0) + segment.rate_Adjust;
+    rate = std::clamp(rate, -10, 10);
+    const int pitch = std::clamp(segment.pitch_Adjust, -10, 10);
 
     if (!m_sapi_voice) {
         CoInitialize(nullptr);
@@ -1533,45 +2029,74 @@ void GameTranslator::SpeakSingleSegment(const SpeechSegment& segment) {
             selectedVoice = m_narrator_voice_combo->currentData().toString();
         }
 
+        const bool want_female = (segment.role == SpeechSegment::Role::Speaker2);
         IEnumSpObjectTokens* pEnum = nullptr;
         if (SUCCEEDED(SpEnumTokens(SPCAT_VOICES, nullptr, nullptr, &pEnum)) && pEnum) {
             ULONG count = 0;
             pEnum->GetCount(&count);
+            ISpObjectToken* best_token = nullptr;
             for (ULONG i = 0; i < count; ++i) {
                 ISpObjectToken* pToken = nullptr;
                 if (SUCCEEDED(pEnum->Next(1, &pToken, nullptr)) && pToken) {
                     WCHAR* desc = nullptr;
                     if (SUCCEEDED(SpGetDescription(pToken, &desc)) && desc) {
                         QString name = QString::fromWCharArray(desc);
+                        const bool is_ru = name.contains(QStringLiteral("Russian"), Qt::CaseInsensitive) ||
+                                           name.contains(QStringLiteral("Русский"), Qt::CaseInsensitive) ||
+                                           name.contains(QStringLiteral("Irina"), Qt::CaseInsensitive) ||
+                                           name.contains(QStringLiteral("Pavel"), Qt::CaseInsensitive) ||
+                                           name.contains(QStringLiteral("Elena"), Qt::CaseInsensitive) ||
+                                           name.contains(QStringLiteral("Svetlana"), Qt::CaseInsensitive) ||
+                                           name.contains(QStringLiteral("Dmitry"), Qt::CaseInsensitive);
                         if (!selectedVoice.isEmpty() && name.contains(selectedVoice, Qt::CaseInsensitive)) {
-                            m_sapi_voice->SetVoice(pToken);
+                            if (best_token) best_token->Release();
+                            best_token = pToken;
+                            pToken = nullptr;
                             CoTaskMemFree(desc);
-                            pToken->Release();
                             break;
-                        } else if (name.contains(QStringLiteral("Russian"), Qt::CaseInsensitive) ||
-                                   name.contains(QStringLiteral("Русский"), Qt::CaseInsensitive) ||
-                                   name.contains(QStringLiteral("Irina"), Qt::CaseInsensitive) ||
-                                   name.contains(QStringLiteral("Pavel"), Qt::CaseInsensitive) ||
-                                   name.contains(QStringLiteral("Elena"), Qt::CaseInsensitive)) {
-                            m_sapi_voice->SetVoice(pToken);
+                        } else if (is_ru) {
+                            const bool token_female = name.contains(QStringLiteral("Irina"), Qt::CaseInsensitive) ||
+                                                      name.contains(QStringLiteral("Elena"), Qt::CaseInsensitive) ||
+                                                      name.contains(QStringLiteral("Svetlana"), Qt::CaseInsensitive) ||
+                                                      name.contains(QStringLiteral("Anna"), Qt::CaseInsensitive);
+                            if (!best_token || (token_female == want_female)) {
+                                if (best_token) best_token->Release();
+                                best_token = pToken;
+                                pToken = nullptr;
+                            }
                         }
                         CoTaskMemFree(desc);
                     }
-                    pToken->Release();
+                    if (pToken) pToken->Release();
                 }
+            }
+            if (best_token) {
+                m_sapi_voice->SetVoice(best_token);
+                best_token->Release();
             }
             pEnum->Release();
         }
 
         m_sapi_voice->SetVolume(static_cast<USHORT>(vol));
         m_sapi_voice->SetRate(rate);
-        std::wstring wtext = segment.text.toStdWString();
-        m_sapi_voice->Speak(wtext.c_str(), SPF_ASYNC | SPF_PURGEBEFORESPEAK, nullptr);
+
+        // Use SAPI5 XML <pitch middle='...'/> prosody tag for authentic character voice distinction
+        QString escaped = segment.text;
+        escaped.replace(QLatin1Char('&'), QStringLiteral("&amp;"));
+        escaped.replace(QLatin1Char('<'), QStringLiteral("&lt;"));
+        escaped.replace(QLatin1Char('>'), QStringLiteral("&gt;"));
+        const QString xml_payload = QStringLiteral("<pitch middle='%1'>%2</pitch>").arg(pitch).arg(escaped);
+        std::wstring wtext = xml_payload.toStdWString();
+        m_sapi_voice->Speak(wtext.c_str(), SPF_ASYNC | SPF_IS_XML | SPF_PURGEBEFORESPEAK, nullptr);
     }
 #endif
 }
 
 void GameTranslator::StopSpeech() {
+    if (m_speech_queue_timer) {
+        m_speech_queue_timer->stop();
+    }
+    m_speech_queue.clear();
 #ifdef _WIN32
     if (m_sapi_voice) {
         m_sapi_voice->Speak(nullptr, SPF_PURGEBEFORESPEAK, nullptr);
@@ -1597,7 +2122,7 @@ void GameTranslator::OnCopyClicked() {
 void GameTranslator::OnClearClicked() {
     m_original_edit->clear();
     m_translated_edit->clear();
-    m_hud_overlay->SetSubtitleText(QString());
+    DismissOverlay();
     m_status_label->setText(tr("Очищено"));
 }
 
@@ -1612,26 +2137,20 @@ void GameTranslator::OnProviderChanged(int index) {
 }
 
 void GameTranslator::OnTestTTSClicked() {
-    m_status_label->setText(tr("🔊 Тестирование: Рассказчик -> Герой -> Девушка..."));
-
-    SpeechSegment seg1{SpeechSegment::Role::Narrator, tr("Рассказчик"), tr("В сумерках у древней цитадели зашелестели флаги.")};
-    SpeechSegment seg2{SpeechSegment::Role::Speaker1, tr("Герой"), tr("Я чувствую приближение битвы, держись позади!")};
-    SpeechSegment seg3{SpeechSegment::Role::Speaker2, tr("Девушка"), tr("Не беспокойся обо мне, магия света наготове.")};
-
-    SpeakSingleSegment(seg1);
-    QTimer::singleShot(3200, this, [this, seg2]() {
-        SpeakSingleSegment(seg2);
-    });
-    QTimer::singleShot(6400, this, [this, seg3]() {
-        SpeakSingleSegment(seg3);
-    });
+    m_status_label->setText(tr("🔊 Тестирование: Рассказчик -> Герой -> Принцесса Зельда..."));
+    SpeakText(tr("Рассказчик: В сумерках у древней цитадели зашелестели флаги.\n"
+                 "Линк: Я чувствую приближение битвы, держись позади!\n"
+                 "Зельда: Не беспокойся обо мне, магия света наготове!"));
 }
 
 void GameTranslator::OnToggleHUDClicked(bool checked) {
     if (checked) {
         m_hud_overlay->SetFontSize(m_hud_font_size_spin->value());
         m_hud_overlay->SetBackgroundOpacity(m_hud_opacity_slider->value());
-        m_hud_overlay->SetTextColor(m_hud_color_combo->currentData().value<QColor>());
+        m_hud_overlay->SetSmartBackgroundMatch(m_hud_color_combo->currentIndex() == 0);
+        if (m_hud_color_combo->currentIndex() > 0) {
+            m_hud_overlay->SetTextColor(m_hud_color_combo->currentData().value<QColor>());
+        }
         m_hud_overlay->show();
         m_hud_overlay->raise();
     } else {

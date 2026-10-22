@@ -530,7 +530,7 @@ object StormHardwareCalibrator {
 
         // 2. CPU / System Defaults
         // Form factor adaptation: Tablets and active-cooled gaming handhelds with >=8GB RAM can use Docked mode
-        BooleanSetting.USE_DOCKED_MODE.setBoolean((profile.isTablet || (profile.isGamingDevice && profile.tier >= HardwareTier.FLAGSHIP)) && profile.totalRamGb >= 7.5)
+        BooleanSetting.USE_DOCKED_MODE.setBoolean(profile.isTablet && profile.tier >= HardwareTier.FLAGSHIP && profile.totalRamGb >= 8.0)
         IntSetting.CPU_BACKEND.setInt(1) // NCE
         IntSetting.CPU_ACCURACY.setInt(0) // Auto
 
@@ -666,7 +666,7 @@ object StormHardwareCalibrator {
         IntSetting.CPU_BACKEND.setInt(1)
         IntSetting.CPU_ACCURACY.setInt(0)
         IntSetting.MEMORY_LAYOUT.setInt(0)
-        BooleanSetting.USE_DOCKED_MODE.setBoolean((profile.isTablet || (profile.isGamingDevice && profile.tier >= HardwareTier.FLAGSHIP)) && profile.totalRamGb >= 7.5)
+        BooleanSetting.USE_DOCKED_MODE.setBoolean(profile.isTablet && profile.tier >= HardwareTier.FLAGSHIP && profile.totalRamGb >= 8.0)
         IntSetting.RENDERER_DYNA_STATE.setInt(if (canUseEds1) 1 else 0)
         val workers = if (profile.isMali || profile.isExynosOrXclipse || profile.isTensor || profile.isAdreno6xx || profile.totalRamGb < 6.0) 2 else if (profile.isAdreno830) 4 else (profile.cpuCores - 2).coerceIn(2, 4)
         IntSetting.ANDROID_PIPELINE_WORKERS.setInt(workers)

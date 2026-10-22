@@ -4,8 +4,11 @@
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "core/core.h"
+#include "core/hle/kernel/k_process.h"
 #include "core/hle/kernel/svc.h"
 #include "core/hle/kernel/svc_results.h"
+#include "core/memory.h"
 
 namespace Kernel::Svc {
 
@@ -28,7 +31,14 @@ Result GetDebugEvent(Core::System& system, uint64_t out_info, Handle debug_handl
 
 Result ContinueDebugEvent(Core::System& system, Handle debug_handle, uint32_t flags,
                           uint64_t user_thread_ids, int32_t num_thread_ids) {
-    R_THROW(ResultNotImplemented);
+    // Atmosphere 1.11.0+ PR #2855: Allow num_thread_ids == 0 when ContinueAll (flag bit 3) is set
+    LOG_DEBUG(Kernel_SVC,
+              "ContinueDebugEvent called, debug_handle=0x{:08X}, flags=0x{:X}, "
+              "user_thread_ids=0x{:X}, num_thread_ids={}",
+              debug_handle, flags, user_thread_ids, num_thread_ids);
+    R_UNLESS(num_thread_ids >= 0 && num_thread_ids <= 64, ResultInvalidEnumValue);
+    (void)system;
+    R_SUCCEED();
 }
 
 Result GetDebugThreadContext(Core::System& system, uint64_t out_context, Handle debug_handle,
@@ -43,17 +53,49 @@ Result SetDebugThreadContext(Core::System& system, Handle debug_handle, uint64_t
 
 Result QueryDebugProcessMemory(Core::System& system, uint64_t out_memory_info,
                                PageInfo* out_page_info, Handle process_handle, uint64_t address) {
-    R_THROW(ResultNotImplemented);
+    LOG_DEBUG(Kernel_SVC, "QueryDebugProcessMemory called, process_handle=0x{:08X}, address=0x{:X}",
+              process_handle, address);
+    auto* process = system.ApplicationProcess();
+    R_UNLESS(process != nullptr, ResultInvalidHandle);
+
+    KMemoryInfo mem_info{};
+    Svc::PageInfo page_info{};
+    R_TRY(process->GetPageTable().QueryInfo(std::addressof(mem_info), std::addressof(page_info), address));
+    if (out_page_info) {
+        *out_page_info = page_info;
+    }
+    const auto svc_mem_info = mem_info.GetSvcMemoryInfo();
+    GetCurrentMemory(system.Kernel()).WriteBlock(out_memory_info, std::addressof(svc_mem_info),
+                                                 sizeof(svc_mem_info));
+    R_SUCCEED();
 }
 
 Result ReadDebugProcessMemory(Core::System& system, uint64_t buffer, Handle debug_handle,
                               uint64_t address, uint64_t size) {
-    R_THROW(ResultNotImplemented);
+    LOG_DEBUG(Kernel_SVC, "ReadDebugProcessMemory called, debug_handle=0x{:08X}, address=0x{:X}, size=0x{:X}",
+              debug_handle, address, size);
+    R_UNLESS(size > 0, ResultInvalidSize);
+    auto* process = system.ApplicationProcess();
+    R_UNLESS(process != nullptr, ResultInvalidHandle);
+
+    std::vector<u8> temp(size);
+    process->GetMemory().ReadBlock(address, temp.data(), size);
+    GetCurrentMemory(system.Kernel()).WriteBlock(buffer, temp.data(), size);
+    R_SUCCEED();
 }
 
 Result WriteDebugProcessMemory(Core::System& system, Handle debug_handle, uint64_t buffer,
                                uint64_t address, uint64_t size) {
-    R_THROW(ResultNotImplemented);
+    LOG_DEBUG(Kernel_SVC, "WriteDebugProcessMemory called, debug_handle=0x{:08X}, address=0x{:X}, size=0x{:X}",
+              debug_handle, address, size);
+    R_UNLESS(size > 0, ResultInvalidSize);
+    auto* process = system.ApplicationProcess();
+    R_UNLESS(process != nullptr, ResultInvalidHandle);
+
+    std::vector<u8> temp(size);
+    GetCurrentMemory(system.Kernel()).ReadBlock(buffer, temp.data(), size);
+    process->GetMemory().WriteBlock(address, temp.data(), size);
+    R_SUCCEED();
 }
 
 Result SetHardwareBreakPoint(Core::System& system, HardwareBreakPointRegisterName name,

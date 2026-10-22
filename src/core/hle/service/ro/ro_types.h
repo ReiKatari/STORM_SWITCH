@@ -118,14 +118,19 @@ private:
 static_assert(sizeof(NrrHeader) == 0x350, "NrrHeader has wrong size");
 
 static constexpr u32 NRO_HEADER_MAGIC = Common::MakeMagic('N', 'R', 'O', '0');
+static constexpr u32 NRA0_HEADER_MAGIC = Common::MakeMagic('N', 'R', 'A', '0');
+
 struct NroHeader {
+    static constexpr u32 FlagAlignedHeader = 1U << 0;
+    static constexpr u32 FlagCompress      = 1U << 1;
+
     u32 m_entrypoint_insn;
     u32 m_mod_offset;
     INSERT_PADDING_BYTES_NOINIT(0x8);
     u32 m_magic;
-    INSERT_PADDING_BYTES_NOINIT(0x4);
+    u32 m_format_version;
     u32 m_size;
-    INSERT_PADDING_BYTES_NOINIT(0x4);
+    u32 m_flags;
     u32 m_text_offset;
     u32 m_text_size;
     u32 m_ro_offset;
@@ -133,10 +138,39 @@ struct NroHeader {
     u32 m_rw_offset;
     u32 m_rw_size;
     u32 m_bss_size;
-    INSERT_PADDING_BYTES_NOINIT(0x4);
+    u32 m_additional_header_offset;
     ModuleId m_module_id;
     INSERT_PADDING_BYTES_NOINIT(0x20);
+
+    bool IsAlignedHeader() const {
+        return (m_flags & FlagAlignedHeader) != 0;
+    }
+    bool IsCompressed() const {
+        return (m_flags & FlagCompress) != 0;
+    }
+    u32 GetFlags() const {
+        return m_flags;
+    }
+    u32 GetAdditionalHeaderOffset() const {
+        return m_additional_header_offset;
+    }
 };
 static_assert(sizeof(NroHeader) == 0x80, "NroHeader has wrong size");
+
+struct AdditionalNroHeader {
+    u32 m_magic;
+    INSERT_PADDING_BYTES_NOINIT(0xC);
+    u32 m_compressed_size;
+    INSERT_PADDING_BYTES_NOINIT(0x4);
+    u32 m_hash_size;
+    u32 m_hash_offset;
+    INSERT_PADDING_BYTES_NOINIT(0x40);
+    std::array<u8, 0x20> m_hash;
+
+    bool IsMagicValid() const {
+        return m_magic == NRA0_HEADER_MAGIC;
+    }
+};
+static_assert(sizeof(AdditionalNroHeader) == 0x80, "AdditionalNroHeader has wrong size");
 
 } // namespace Service::RO

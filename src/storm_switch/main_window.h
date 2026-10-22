@@ -185,6 +185,7 @@ public:
     bool IsAmiiboActive() const;
     void OnToggleDockedMode();
     void OnToggleGpuAccuracy();
+    void OnHealGraphicsArtifacts();
 
 
 signals:
@@ -613,6 +614,18 @@ private:
         std::pair<Settings::CpuBackend, bool> cpu_backend;
         std::pair<Settings::FramePacingMode, bool> frame_pacing_mode;
         std::pair<bool, bool> dynamic_performance_scaler;
+        std::pair<bool, bool> use_fast_gpu_time;
+        std::pair<Settings::ExtendedDynamicState, bool> dyna_state;
+        std::pair<bool, bool> emulate_bgr565;
+        std::pair<bool, bool> use_video_framerate;
+        std::pair<bool, bool> use_vulkan_driver_pipeline_cache;
+        std::pair<bool, bool> use_disk_shader_cache;
+        std::pair<bool, bool> enable_compute_pipelines;
+        std::pair<bool, bool> vertex_input_dynamic_state;
+        std::pair<bool, bool> disable_macro_hle;
+        std::pair<bool, bool> sync_core_speed;
+        std::pair<Settings::Language, bool> language_index;
+        std::pair<Settings::Region, bool> region_index;
         bool disable_macro_jit{false};
         bool use_auto_stub{false};
         bool disable_web_applet{true};
@@ -748,6 +761,15 @@ private:
     QAction* storm_save_sync_action{nullptr};
     QAction* log_viewer_action{nullptr};
     QAction* reset_gamefix_action{nullptr};
+
+    void InitializeSystemTray();
+    void UpdateSystemTrayStrings();
+    class QSystemTrayIcon* m_tray_icon{nullptr};
+    QMenu* m_tray_menu{nullptr};
+    QAction* m_tray_restore_action{nullptr};
+    QAction* m_tray_about_action{nullptr};
+    QAction* m_tray_exit_action{nullptr};
+    bool m_is_quitting_from_tray{false};
 
 protected:
     void dropEvent(QDropEvent* event) override;

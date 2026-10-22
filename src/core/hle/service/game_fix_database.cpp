@@ -723,13 +723,13 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
-            {"Renderer\\use_fast_gpu_time", "false"},
-            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\dyna_state", "0"},
             {"Renderer\\barrier_feedback_loops", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\vram_garbage_collection", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "false"},
@@ -1305,36 +1305,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"System\\memory_layout_mode", "1"},
             {"Renderer\\astc_recompression", "0"}
-        }
-    },
-    {
-        0x010067300059A000ULL,
-        "Mario + Rabbids: Kingdom Battle",
-        "• Сильный пересвет и ослепляющий блум\n• Черные тени и артефакты освещения\n• Мерцание текстур персонажей",
-        "• Severe overexposure and blinding bloom glow\n• Black shadows and lighting pass corruption\n• Character model flickering",
-        "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
-        {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\barrier_feedback_loops", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\use_asynchronous_shaders", "true"}
-        }
-    },
-    {
-        0x01005CA00F966000ULL,
-        "Mario + Rabbids: Sparks of Hope",
-        "• Сбои динамического освещения на планетах\n• Черные артефакты в катсценах и битвах\n• Просадки кадров",
-        "• Planet lighting pass corruption\n• Black shadow artifacts during cutscenes and tactical battles\n• Frame drops",
-        "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Память: 6GB DRAM",
-        "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 6GB DRAM",
-        {
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\barrier_feedback_loops", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\astc_recompression", "0"},
-            {"System\\memory_layout_mode", "1"}
         }
     },
     {
@@ -7080,7 +7050,10 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
         };
 
         auto apply_setting = [](auto& setting, auto val) {
-            if constexpr (requires { setting.SetGlobal(false); }) {
+            if constexpr (requires { setting.UsingGlobal(); setting.SetGlobal(false); }) {
+                if (!setting.UsingGlobal()) {
+                    return;
+                }
                 setting.SetGlobal(false);
             }
             setting.SetValue(val);

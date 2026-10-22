@@ -104,6 +104,9 @@ private:
     Result OpenPatchDataStorageByCurrentProcess(OutInterface<IStorage> out_interface,
                                                 FileSys::StorageId storage_id, u64 title_id);
     Result OpenDataStorageWithProgramIndex(OutInterface<IStorage> out_interface, u8 program_index);
+    Result OpenDataStorageByProgramIdForBatchRead(OutInterface<IStorage> out_interface, u64 target_program_id);
+    Result OpenDataStorageWithProgramIndexForBatchRead(OutInterface<IStorage> out_interface, u8 program_index);
+    Result OpenDataStorageByPathForBatchRead(OutInterface<IStorage> out_interface);
     Result IsSdCardAccessible(Out<bool> out_is_accessible);
     Result DisableAutoSaveDataCreation();
     Result SetGlobalAccessLogMode(AccessLogMode access_log_mode_);

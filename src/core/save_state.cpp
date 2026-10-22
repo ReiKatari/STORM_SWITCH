@@ -1,148 +1,370 @@
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <algorithm>
 #include <chrono>
+#include <cstring>
 #include <fstream>
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
+#include "common/alignment.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
 #include "common/zstd_compression.h"
+#include "core/arm/arm_interface.h"
 #include "core/core.h"
 #include "core/device_memory.h"
+#include "core/hle/kernel/board/nintendo/nx/k_system_control.h"
+#include "core/hle/kernel/k_memory_block.h"
+#include "core/hle/kernel/k_page_table_base.h"
 #include "core/hle/kernel/k_process.h"
 #include "core/hle/kernel/k_thread.h"
 #include "core/hle/kernel/kernel.h"
-#include "core/arm/arm_interface.h"
-#include "core/hle/kernel/board/nintendo/nx/k_system_control.h"
+#include "core/memory.h"
 #include "core/save_state.h"
 #include "video_core/gpu.h"
 
 namespace Core {
+
+namespace {
+
+constexpr u32 V2_CHUNK_SIZE = 4096; // 4 KB guest page granularity
+
+struct WritableRegion {
+    u64 address{};
+    u64 size{};
+};
+
+struct PackedRegionHeader {
+    u64 address{};
+    u64 size{};
+    u32 num_chunks{};
+    u32 stored_chunks{};
+};
+static_assert(sizeof(PackedRegionHeader) == 24, "PackedRegionHeader must be 24 bytes");
+
+struct CachedSaveState {
+    SaveStateHeader header{};
+    std::vector<ThreadSnapshot> threads;
+    std::vector<u8> uncompressed_payload;
+};
+
+std::mutex g_cache_mutex;
+std::unordered_map<std::string, std::shared_ptr<CachedSaveState>> g_ram_cache;
+std::vector<std::string> g_ram_cache_lru;
+constexpr std::size_t MAX_RAM_CACHED_SLOTS = 2;
+
+std::mutex g_flush_mutex;
+std::vector<std::jthread> g_flush_threads;
+
+void PutInRamCache(const std::string& key, std::shared_ptr<CachedSaveState> state) {
+    std::scoped_lock lk{g_cache_mutex};
+    g_ram_cache[key] = std::move(state);
+    std::erase(g_ram_cache_lru, key);
+    g_ram_cache_lru.push_back(key);
+    while (g_ram_cache_lru.size() > MAX_RAM_CACHED_SLOTS) {
+        const std::string oldest = g_ram_cache_lru.front();
+        g_ram_cache_lru.erase(g_ram_cache_lru.begin());
+        g_ram_cache.erase(oldest);
+    }
+}
+
+std::shared_ptr<CachedSaveState> GetFromRamCache(const std::string& key) {
+    std::scoped_lock lk{g_cache_mutex};
+    auto it = g_ram_cache.find(key);
+    if (it == g_ram_cache.end()) {
+        return nullptr;
+    }
+    std::erase(g_ram_cache_lru, key);
+    g_ram_cache_lru.push_back(key);
+    return it->second;
+}
+
+std::vector<WritableRegion> EnumerateWritableRegions(Kernel::KProcess& process) {
+    std::vector<WritableRegion> regions;
+    auto& page_table = process.GetPageTable();
+    const auto start = page_table.GetAddressSpaceStart();
+    const auto end = start + page_table.GetAddressSpaceSize();
+    auto address = start;
+
+    while (address < end) {
+        Kernel::KMemoryInfo info{};
+        Kernel::Svc::PageInfo page_info{};
+        if (page_table.QueryInfo(&info, &page_info, address).IsError()) {
+            break;
+        }
+
+        const auto svc_info = info.GetSvcMemoryInfo();
+        const bool is_writable =
+            (svc_info.permission & Kernel::Svc::MemoryPermission::Write) !=
+            Kernel::Svc::MemoryPermission::None;
+        const bool is_scannable_state =
+            svc_info.state != Kernel::Svc::MemoryState::Free &&
+            svc_info.state != Kernel::Svc::MemoryState::Inaccessible &&
+            svc_info.state != Kernel::Svc::MemoryState::Io &&
+            svc_info.state != Kernel::Svc::MemoryState::Kernel &&
+            svc_info.state != Kernel::Svc::MemoryState::Code &&
+            svc_info.state != Kernel::Svc::MemoryState::AliasCode &&
+            svc_info.state != Kernel::Svc::MemoryState::SharedCode;
+
+        if (is_writable && is_scannable_state && info.GetSize() > 0) {
+            const u64 reg_addr = static_cast<u64>(info.GetAddress());
+            const u64 reg_size = info.GetSize();
+            if (!regions.empty() && regions.back().address + regions.back().size == reg_addr) {
+                regions.back().size += reg_size;
+            } else {
+                regions.push_back(WritableRegion{reg_addr, reg_size});
+            }
+        }
+
+        const Common::ProcessAddress next = info.GetAddress() + info.GetSize();
+        if (next <= address) {
+            break;
+        }
+        address = next;
+    }
+    return regions;
+}
+
+bool IsChunkZero4KB(const u8* ptr, std::size_t len) {
+    const std::size_t words = len / sizeof(u64);
+    const auto* wptr = reinterpret_cast<const u64*>(ptr);
+    for (std::size_t i = 0; i < words; ++i) {
+        if (wptr[i] != 0) {
+            return false;
+        }
+    }
+    for (std::size_t i = words * sizeof(u64); i < len; ++i) {
+        if (ptr[i] != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool IsParkedInKernel(const Kernel::KThread& thread) {
+    if (thread.GetState() != Kernel::ThreadState::Waiting) {
+        return false;
+    }
+    const auto reason = thread.GetWaitReasonForDebugging();
+    return reason != Kernel::ThreadWaitReasonForDebugging::None &&
+           reason != Kernel::ThreadWaitReasonForDebugging::IPC;
+}
+
+SaveStateResult WriteSnapshotToDisk(const std::shared_ptr<CachedSaveState>& snapshot,
+                                    const std::filesystem::path& path) {
+    auto compressed = Common::Compression::CompressDataZSTD(
+        snapshot->uncompressed_payload.data(), snapshot->uncompressed_payload.size(), 1);
+    if (compressed.empty() && !snapshot->uncompressed_payload.empty()) {
+        LOG_ERROR(Core, "SaveState: ZSTD compression failed for {}", path.string());
+        return SaveStateResult::ErrorCompress;
+    }
+
+    SaveStateHeader header = snapshot->header;
+    header.dram_compressed_size = compressed.size();
+
+    auto tmp_path = path;
+    tmp_path += ".tmp";
+
+    std::ofstream file(tmp_path, std::ios::binary | std::ios::trunc);
+    if (!file.is_open()) {
+        LOG_ERROR(Core, "SaveState: Failed to open {} for writing", tmp_path.string());
+        return SaveStateResult::ErrorFileCreate;
+    }
+
+    file.write(reinterpret_cast<const char*>(&header), sizeof(header));
+
+    const u32 thread_data_size =
+        static_cast<u32>(snapshot->threads.size() * sizeof(ThreadSnapshot));
+    file.write(reinterpret_cast<const char*>(&thread_data_size), sizeof(thread_data_size));
+    if (!snapshot->threads.empty()) {
+        file.write(reinterpret_cast<const char*>(snapshot->threads.data()), thread_data_size);
+    }
+
+    if (!compressed.empty()) {
+        file.write(reinterpret_cast<const char*>(compressed.data()), compressed.size());
+    }
+    file.flush();
+    file.close();
+
+    std::error_code ec;
+    std::filesystem::rename(tmp_path, path, ec);
+    if (ec) {
+        std::filesystem::remove(path, ec);
+        ec.clear();
+        std::filesystem::rename(tmp_path, path, ec);
+        if (ec) {
+            LOG_ERROR(Core, "SaveState: Failed to rename {} -> {}: {}", tmp_path.string(),
+                      path.string(), ec.message());
+            return SaveStateResult::ErrorFileCreate;
+        }
+    }
+
+    LOG_INFO(Core,
+             "SaveState: Async disk flush complete for '{}' ({:.2f} MB compressed from {:.2f} MB "
+             "sparse payload)",
+             path.string(), static_cast<double>(compressed.size()) / (1024.0 * 1024.0),
+             static_cast<double>(snapshot->uncompressed_payload.size()) / (1024.0 * 1024.0));
+    return SaveStateResult::Success;
+}
+
+} // namespace
+
+void FlushPendingSaveStates() {
+    std::vector<std::jthread> threads_to_join;
+    {
+        std::scoped_lock lk{g_flush_mutex};
+        threads_to_join.swap(g_flush_threads);
+    }
+    for (auto& t : threads_to_join) {
+        if (t.joinable()) {
+            t.join();
+        }
+    }
+}
 
 SaveStateResult CreateSaveState(System& system, const std::filesystem::path& path) {
     if (!system.IsPoweredOn()) {
         return SaveStateResult::ErrorSystemNotRunning;
     }
 
-    LOG_INFO(Core, "Creating save state: {}", path.string());
+    auto* process = system.ApplicationProcess();
+    if (!process) {
+        return SaveStateResult::ErrorSystemNotRunning;
+    }
 
-    // Pause emulation
+    const auto t_start = std::chrono::steady_clock::now();
+
+    // Ensure any previous background disk write is completed before starting a new snapshot
+    FlushPendingSaveStates();
+
+    // Pause emulation briefly while capturing RAM snapshot
     system.StallApplication();
 
-    // Get DRAM data
-    auto& device_memory = system.DeviceMemory();
-    const u8* dram_ptr = device_memory.buffer.BackingBasePointer();
+    auto snapshot = std::make_shared<CachedSaveState>();
     const u64 dram_size = Kernel::Board::Nintendo::Nx::KSystemControl::Init::GetIntendedMemorySize();
 
-    // Compress DRAM with Sparse Page Encoding (64KB chunks) + Zstd level 1
-    constexpr u32 SPARSE_PAGE_SIZE = 64 * 1024;
-    const u32 total_pages = static_cast<u32>(dram_size / SPARSE_PAGE_SIZE);
-    const u32 bitmask_bytes = (total_pages + 7) / 8;
-    std::vector<u8> bitmask(bitmask_bytes, 0);
+    // 1. Enumerate only writable mapped guest memory regions (skips read-only .text/.rodata & unmapped heap)
+    const auto regions = EnumerateWritableRegions(*process);
+    auto& memory = system.ApplicationMemory();
 
-    std::vector<u8> packed_dram;
-    packed_dram.reserve(dram_size / 2);
-    packed_dram.resize(bitmask_bytes); // Reserve space at front for bitmask
+    u64 total_writable_bytes = 0;
+    for (const auto& reg : regions) {
+        total_writable_bytes += reg.size;
+    }
 
-    u32 stored_pages = 0;
-    for (u32 p = 0; p < total_pages; ++p) {
-        const u8* page_src = dram_ptr + (static_cast<u64>(p) * SPARSE_PAGE_SIZE);
-        const u64* word_ptr = reinterpret_cast<const u64*>(page_src);
-        constexpr std::size_t num_words = SPARSE_PAGE_SIZE / sizeof(u64);
-        bool is_zero = true;
-        for (std::size_t w = 0; w < num_words; ++w) {
-            if (word_ptr[w] != 0) {
-                is_zero = false;
-                break;
+    auto& payload = snapshot->uncompressed_payload;
+    payload.reserve(std::min<u64>(total_writable_bytes / 2 + 65536, 512ULL * 1024 * 1024));
+
+    const u32 region_count = static_cast<u32>(regions.size());
+    payload.resize(sizeof(u32));
+    std::memcpy(payload.data(), &region_count, sizeof(u32));
+
+    std::vector<u8> region_buf;
+    u32 total_chunks = 0;
+    u32 total_stored_chunks = 0;
+
+    for (const auto& reg : regions) {
+        region_buf.resize(reg.size);
+        if (!memory.ReadBlockUnsafe(reg.address, region_buf.data(), reg.size)) {
+            continue;
+        }
+
+        const u32 num_chunks = static_cast<u32>((reg.size + V2_CHUNK_SIZE - 1) / V2_CHUNK_SIZE);
+        const u32 bitmask_bytes = (num_chunks + 7) / 8;
+
+        const std::size_t header_offset = payload.size();
+        payload.resize(header_offset + sizeof(PackedRegionHeader) + bitmask_bytes, 0);
+
+        u32 stored_chunks = 0;
+        for (u32 c = 0; c < num_chunks; ++c) {
+            const u64 chunk_off = static_cast<u64>(c) * V2_CHUNK_SIZE;
+            const std::size_t chunk_len =
+                static_cast<std::size_t>(std::min<u64>(V2_CHUNK_SIZE, reg.size - chunk_off));
+            const u8* chunk_ptr = region_buf.data() + chunk_off;
+
+            if (!IsChunkZero4KB(chunk_ptr, chunk_len)) {
+                payload[header_offset + sizeof(PackedRegionHeader) + (c / 8)] |=
+                    static_cast<u8>(1u << (c % 8));
+                payload.insert(payload.end(), chunk_ptr, chunk_ptr + chunk_len);
+                stored_chunks++;
             }
         }
-        if (!is_zero) {
-            bitmask[p / 8] |= static_cast<u8>(1u << (p % 8));
-            packed_dram.insert(packed_dram.end(), page_src, page_src + SPARSE_PAGE_SIZE);
-            stored_pages++;
-        }
+
+        PackedRegionHeader reg_hdr{};
+        reg_hdr.address = reg.address;
+        reg_hdr.size = reg.size;
+        reg_hdr.num_chunks = num_chunks;
+        reg_hdr.stored_chunks = stored_chunks;
+        std::memcpy(payload.data() + header_offset, &reg_hdr, sizeof(PackedRegionHeader));
+
+        total_chunks += num_chunks;
+        total_stored_chunks += stored_chunks;
     }
-    std::memcpy(packed_dram.data(), bitmask.data(), bitmask_bytes);
 
-    LOG_INFO(Core, "Sparse Page Encoding: {} / {} non-zero pages ({:.1f} MB sparse vs {:.1f} MB full DRAM)...",
-             stored_pages, total_pages,
-             (double)packed_dram.size() / (1024 * 1024),
-             (double)dram_size / (1024 * 1024));
+    // 2. Collect thread contexts
+    auto& thread_list = process->GetThreadList();
+    for (auto& thread : thread_list) {
+        ThreadSnapshot snap{};
+        snap.thread_id = static_cast<u32>(thread.GetThreadId());
+        snap.core_id = static_cast<u32>(thread.GetActiveCore());
+        snap.tls_address = GetInteger(thread.GetTlsAddress());
 
-    auto compressed = Common::Compression::CompressDataZSTD(packed_dram.data(), packed_dram.size(), 1);
-    if (compressed.empty()) {
-        system.UnstallApplication();
-        return SaveStateResult::ErrorCompress;
-    }
-    LOG_INFO(Core, "Compressed to {} MB ({:.1f}% ratio)",
-             compressed.size() / (1024 * 1024),
-             100.0 * compressed.size() / dram_size);
-
-    // Collect thread contexts
-    auto& kernel = system.Kernel();
-    std::vector<ThreadSnapshot> thread_snapshots;
-
-    auto* process = kernel.ApplicationProcess();
-    if (process) {
-        auto& thread_list = process->GetThreadList();
-        for (auto& thread : thread_list) {
-            ThreadSnapshot snap{};
-            snap.thread_id = static_cast<u32>(thread.GetThreadId());
-            snap.core_id = static_cast<u32>(thread.GetActiveCore());
-            snap.tls_address = GetInteger(thread.GetTlsAddress());
-
-            auto ctx = thread.GetContext();
-            const auto core_id = thread.GetActiveCore();
-            if (core_id >= 0 && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES)) {
-                auto* arm = process->GetArmInterface(core_id);
-                if (arm) {
-                    arm->GetContext(ctx);
-                }
+        auto ctx = thread.GetContext();
+        const auto core_id = thread.GetActiveCore();
+        if (core_id >= 0 && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES)) {
+            if (auto* arm = process->GetArmInterface(core_id)) {
+                arm->GetContext(ctx);
             }
-            std::memcpy(snap.context_data, &ctx, std::min(sizeof(ctx), sizeof(snap.context_data)));
-
-            thread_snapshots.push_back(snap);
         }
+        std::memcpy(snap.context_data, &ctx, std::min(sizeof(ctx), sizeof(snap.context_data)));
+        snapshot->threads.push_back(snap);
     }
 
-    // Build header
-    SaveStateHeader header{};
-    header.title_id = system.GetApplicationProcessProgramID();
-    header.dram_size = dram_size;
-    header.dram_compressed_size = compressed.size();
-    header.num_threads = static_cast<u32>(thread_snapshots.size());
-    header.compression_level = 1;
-    header.flags = 1; // Bit 0: Sparse Page Encoding enabled
-    header.sparse_page_size = SPARSE_PAGE_SIZE;
-    header.num_sparse_pages = total_pages;
-    header.num_stored_pages = stored_pages;
-    header.timestamp = std::chrono::duration_cast<std::chrono::seconds>(
-                           std::chrono::system_clock::now().time_since_epoch())
-                           .count();
+    // 3. Populate header
+    snapshot->header.magic = SAVE_STATE_MAGIC;
+    snapshot->header.version = SAVE_STATE_VERSION;
+    snapshot->header.title_id = system.GetApplicationProcessProgramID();
+    snapshot->header.dram_size = dram_size;
+    snapshot->header.dram_compressed_size = payload.size();
+    snapshot->header.num_threads = static_cast<u32>(snapshot->threads.size());
+    snapshot->header.compression_level = 1;
+    snapshot->header.flags = SaveStateFlag_WritableRegions;
+    snapshot->header.sparse_page_size = V2_CHUNK_SIZE;
+    snapshot->header.num_sparse_pages = region_count;
+    snapshot->header.num_stored_pages = total_stored_chunks;
+    snapshot->header.timestamp = std::chrono::duration_cast<std::chrono::seconds>(
+                                     std::chrono::system_clock::now().time_since_epoch())
+                                     .count();
 
-    // Write to file
-    std::ofstream file(path, std::ios::binary);
-    if (!file.is_open()) {
-        system.UnstallApplication();
-        return SaveStateResult::ErrorFileCreate;
-    }
-
-    file.write(reinterpret_cast<const char*>(&header), sizeof(header));
-
-    // Write thread contexts
-    const u32 thread_data_size = static_cast<u32>(thread_snapshots.size() * sizeof(ThreadSnapshot));
-    file.write(reinterpret_cast<const char*>(&thread_data_size), sizeof(thread_data_size));
-    if (!thread_snapshots.empty()) {
-        file.write(reinterpret_cast<const char*>(thread_snapshots.data()), thread_data_size);
-    }
-
-    // Write compressed DRAM
-    file.write(reinterpret_cast<const char*>(compressed.data()), compressed.size());
-    file.close();
-
+    // Resume emulation immediately! ZSTD compression and disk I/O happen asynchronously.
     system.UnstallApplication();
 
-    LOG_INFO(Core, "Save state created successfully: {} threads, {} MB compressed",
-             thread_snapshots.size(), compressed.size() / (1024 * 1024));
+    const auto stall_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                              std::chrono::steady_clock::now() - t_start)
+                              .count();
+
+    // Store in instant RAM cache
+    PutInRamCache(path.string(), snapshot);
+
+    LOG_INFO(Core,
+             "SaveState: Instant RAM snapshot captured in {} ms ({} writable regions, {} / {} "
+             "non-zero 4KB pages = {:.2f} MB vs {:.0f} MB DRAM). Flushing to disk asynchronously...",
+             stall_ms, region_count, total_stored_chunks, total_chunks,
+             static_cast<double>(payload.size()) / (1024.0 * 1024.0),
+             static_cast<double>(dram_size) / (1024.0 * 1024.0));
+
+    // Launch background ZSTD compression + atomic disk write
+    {
+        std::scoped_lock lk{g_flush_mutex};
+        g_flush_threads.emplace_back([snapshot, path]() {
+            WriteSnapshotToDisk(snapshot, path);
+        });
+    }
 
     return SaveStateResult::Success;
 }
@@ -152,58 +374,175 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
         return SaveStateResult::ErrorSystemNotRunning;
     }
 
-    LOG_INFO(Core, "Loading save state: {}", path.string());
+    const auto t_start = std::chrono::steady_clock::now();
 
-    std::ifstream file(path, std::ios::binary);
-    if (!file.is_open()) {
-        return SaveStateResult::ErrorFileRead;
+    // 1. Check instant RAM cache first (0 ms disk/decompression overhead!)
+    std::shared_ptr<CachedSaveState> cached = GetFromRamCache(path.string());
+
+    if (!cached) {
+        // Ensure any in-flight background write to this file has finished
+        FlushPendingSaveStates();
+
+        std::ifstream file(path, std::ios::binary);
+        if (!file.is_open()) {
+            return SaveStateResult::ErrorFileRead;
+        }
+
+        auto disk_state = std::make_shared<CachedSaveState>();
+        file.read(reinterpret_cast<char*>(&disk_state->header), sizeof(disk_state->header));
+        if (disk_state->header.magic != SAVE_STATE_MAGIC) {
+            return SaveStateResult::ErrorInvalidMagic;
+        }
+        if (disk_state->header.version != 1 && disk_state->header.version != SAVE_STATE_VERSION) {
+            return SaveStateResult::ErrorVersionMismatch;
+        }
+
+        u32 thread_data_size = 0;
+        file.read(reinterpret_cast<char*>(&thread_data_size), sizeof(thread_data_size));
+        if (thread_data_size > 0) {
+            const u32 num_threads = thread_data_size / sizeof(ThreadSnapshot);
+            disk_state->threads.resize(num_threads);
+            file.read(reinterpret_cast<char*>(disk_state->threads.data()), thread_data_size);
+        }
+
+        std::vector<u8> compressed(disk_state->header.dram_compressed_size);
+        file.read(reinterpret_cast<char*>(compressed.data()), disk_state->header.dram_compressed_size);
+        file.close();
+
+        disk_state->uncompressed_payload = Common::Compression::DecompressDataZSTD(compressed);
+        if (disk_state->uncompressed_payload.empty() && !compressed.empty()) {
+            return SaveStateResult::ErrorDecompress;
+        }
+
+        cached = std::move(disk_state);
+        PutInRamCache(path.string(), cached);
     }
 
-    // Read header
-    SaveStateHeader header{};
-    file.read(reinterpret_cast<char*>(&header), sizeof(header));
+    const auto& header = cached->header;
+    const auto& thread_snapshots = cached->threads;
+    const auto& decompressed = cached->uncompressed_payload;
 
-    if (header.magic != SAVE_STATE_MAGIC) {
-        return SaveStateResult::ErrorInvalidMagic;
-    }
-    if (header.version != SAVE_STATE_VERSION) {
-        return SaveStateResult::ErrorVersionMismatch;
-    }
-
-    // Pause emulation
+    // Pause emulation for differential memory & thread restoration
     system.StallApplication();
 
-    // Read thread contexts
-    u32 thread_data_size = 0;
-    file.read(reinterpret_cast<char*>(&thread_data_size), sizeof(thread_data_size));
-
-    std::vector<ThreadSnapshot> thread_snapshots;
-    if (thread_data_size > 0) {
-        const u32 num_threads = thread_data_size / sizeof(ThreadSnapshot);
-        thread_snapshots.resize(num_threads);
-        file.read(reinterpret_cast<char*>(thread_snapshots.data()), thread_data_size);
-    }
-
-    // Read compressed DRAM
-    std::vector<u8> compressed(header.dram_compressed_size);
-    file.read(reinterpret_cast<char*>(compressed.data()), header.dram_compressed_size);
-    file.close();
-
-    // Decompress
-    LOG_INFO(Core, "Decompressing {} MB...", compressed.size() / (1024 * 1024));
-    auto decompressed = Common::Compression::DecompressDataZSTD(compressed);
-    if (decompressed.empty()) {
+    auto& kernel = system.Kernel();
+    auto* process = kernel.ApplicationProcess();
+    if (!process) {
         system.UnstallApplication();
-        return SaveStateResult::ErrorDecompress;
+        return SaveStateResult::ErrorSystemNotRunning;
     }
 
-    // Restore DRAM
-    auto& device_memory = system.DeviceMemory();
-    u8* dram_ptr = device_memory.buffer.BackingBasePointer();
+    // Collect stack tops of threads currently parked in a kernel wait fiber whose PC/wait
+    // differs from the saved state so we never corrupt an active host C++ fiber call stack.
+    std::vector<u64> protected_sleeping_stacks;
+    {
+        auto& thread_list = process->GetThreadList();
+        for (auto& thread : thread_list) {
+            if (!IsParkedInKernel(thread)) {
+                continue;
+            }
+            bool same_wait_site = false;
+            for (const auto& snap : thread_snapshots) {
+                if (static_cast<u32>(thread.GetThreadId()) == snap.thread_id) {
+                    Kernel::Svc::ThreadContext saved_ctx{};
+                    std::memcpy(&saved_ctx, snap.context_data,
+                                std::min(sizeof(saved_ctx), sizeof(snap.context_data)));
+                    const auto& live_ctx = thread.GetContext();
+                    if (live_ctx.pc == saved_ctx.pc && live_ctx.r[0] == saved_ctx.r[0]) {
+                        same_wait_site = true;
+                    }
+                    break;
+                }
+            }
+            if (!same_wait_site) {
+                protected_sleeping_stacks.push_back(GetInteger(thread.GetUserStackTop()));
+            }
+        }
+    }
 
-    if (header.flags & 1) { // Sparse Page Encoded
+    const auto is_protected_stack_region = [&](u64 reg_addr, u64 reg_size) {
+        return std::any_of(protected_sleeping_stacks.begin(), protected_sleeping_stacks.end(),
+                           [&](u64 stack_top) {
+                               return stack_top > reg_addr && stack_top <= reg_addr + reg_size;
+                           });
+    };
+
+    if (header.flags & SaveStateFlag_WritableRegions) {
+        // v2: Page-Table Writable Regions + Differential 4KB Page Restoration (WriteChanged)
+        if (decompressed.size() < sizeof(u32)) {
+            system.UnstallApplication();
+            return SaveStateResult::ErrorCorruptedFile;
+        }
+
+        u32 region_count = 0;
+        std::memcpy(&region_count, decompressed.data(), sizeof(u32));
+        std::size_t cursor = sizeof(u32);
+
+        auto& memory = system.ApplicationMemory();
+        std::vector<u8> live_page(V2_CHUNK_SIZE);
+        std::array<u8, V2_CHUNK_SIZE> zero_page{};
+        u64 diff_bytes_written = 0;
+
+        for (u32 r = 0; r < region_count; ++r) {
+            if (cursor + sizeof(PackedRegionHeader) > decompressed.size()) {
+                LOG_ERROR(Core, "SaveState: Truncated region header at region {}", r);
+                break;
+            }
+
+            PackedRegionHeader reg_hdr{};
+            std::memcpy(&reg_hdr, decompressed.data() + cursor, sizeof(PackedRegionHeader));
+            cursor += sizeof(PackedRegionHeader);
+
+            const u32 bitmask_bytes = (reg_hdr.num_chunks + 7) / 8;
+            if (cursor + bitmask_bytes > decompressed.size()) {
+                LOG_ERROR(Core, "SaveState: Truncated region bitmask at region {}", r);
+                break;
+            }
+            const u8* bitmask = decompressed.data() + cursor;
+            cursor += bitmask_bytes;
+
+            const bool skip_region = is_protected_stack_region(reg_hdr.address, reg_hdr.size);
+
+            for (u32 c = 0; c < reg_hdr.num_chunks; ++c) {
+                const u64 page_addr = reg_hdr.address + static_cast<u64>(c) * V2_CHUNK_SIZE;
+                const std::size_t chunk_len = static_cast<std::size_t>(
+                    std::min<u64>(V2_CHUNK_SIZE, reg_hdr.size - static_cast<u64>(c) * V2_CHUNK_SIZE));
+                const bool is_stored = (bitmask[c / 8] & (1u << (c % 8))) != 0;
+
+                const u8* target_data = zero_page.data();
+                if (is_stored) {
+                    if (cursor + chunk_len > decompressed.size()) {
+                        LOG_ERROR(Core, "SaveState: Truncated chunk data in region {}", r);
+                        break;
+                    }
+                    target_data = decompressed.data() + cursor;
+                    cursor += chunk_len;
+                }
+
+                if (skip_region) {
+                    continue;
+                }
+
+                // Differential WriteChanged check: only write (and invalidate GPU cache) if the
+                // 4KB page actually differs from live guest memory!
+                if (memory.ReadBlockUnsafe(page_addr, live_page.data(), chunk_len)) {
+                    if (std::memcmp(live_page.data(), target_data, chunk_len) != 0) {
+                        memory.WriteBlock(page_addr, target_data, chunk_len);
+                        diff_bytes_written += chunk_len;
+                    }
+                }
+            }
+        }
+
+        LOG_INFO(Core, "SaveState: Differential restore wrote {:.2f} MB of changed 4KB pages",
+                 static_cast<double>(diff_bytes_written) / (1024.0 * 1024.0));
+    } else if (header.flags & SaveStateFlag_SparsePages) {
+        // Legacy v1 Sparse Page Encoded (64KB full DRAM)
+        auto& device_memory = system.DeviceMemory();
+        u8* dram_ptr = device_memory.buffer.BackingBasePointer();
         const u32 page_size = header.sparse_page_size ? header.sparse_page_size : (64 * 1024);
-        const u32 total_pages = header.num_sparse_pages ? header.num_sparse_pages : static_cast<u32>(header.dram_size / page_size);
+        const u32 total_pages =
+            header.num_sparse_pages ? header.num_sparse_pages : static_cast<u32>(header.dram_size / page_size);
         const u32 bitmask_bytes = (total_pages + 7) / 8;
         if (decompressed.size() < bitmask_bytes) {
             system.UnstallApplication();
@@ -218,46 +557,48 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
         for (u32 p = 0; p < total_pages; ++p) {
             if ((bitmask[p / 8] & (1u << (p % 8))) != 0) {
                 if (page_data + page_size > data_end) {
-                    LOG_ERROR(Core, "Save state stream truncated while restoring page {}", p);
                     break;
                 }
                 std::memcpy(dram_ptr + (static_cast<u64>(p) * page_size), page_data, page_size);
                 page_data += page_size;
             }
         }
+        system.GPU().FlushAndInvalidateRegion(0, header.dram_size);
+        system.GPU().InvalidateGPUCache();
     } else {
+        // Legacy v1 Uncompressed
+        auto& device_memory = system.DeviceMemory();
+        u8* dram_ptr = device_memory.buffer.BackingBasePointer();
         if (decompressed.size() != header.dram_size) {
             system.UnstallApplication();
             return SaveStateResult::ErrorDecompress;
         }
         std::memcpy(dram_ptr, decompressed.data(), header.dram_size);
+        system.GPU().FlushAndInvalidateRegion(0, header.dram_size);
+        system.GPU().InvalidateGPUCache();
     }
 
-    // Invalidate GPU Cache and rasterizer buffers
-    system.GPU().FlushAndInvalidateRegion(0, header.dram_size);
-    system.GPU().InvalidateGPUCache();
-
-    // Restore thread contexts
-    auto& kernel = system.Kernel();
-    auto* process = kernel.ApplicationProcess();
-    if (process && !thread_snapshots.empty()) {
+    // Restore thread contexts safely
+    if (!thread_snapshots.empty()) {
         auto& thread_list = process->GetThreadList();
         for (auto& thread : thread_list) {
             for (const auto& snap : thread_snapshots) {
                 if (static_cast<u32>(thread.GetThreadId()) == snap.thread_id) {
+                    // Leave threads parked in incompatible kernel waits with their live fiber intact
+                    const u64 stack_top = GetInteger(thread.GetUserStackTop());
+                    if (std::find(protected_sleeping_stacks.begin(), protected_sleeping_stacks.end(),
+                                  stack_top) != protected_sleeping_stacks.end()) {
+                        break;
+                    }
+
                     auto& ctx = thread.GetContext();
                     std::memcpy(&ctx, snap.context_data,
                                 std::min(sizeof(ctx), sizeof(snap.context_data)));
                     const auto core_id = thread.GetActiveCore();
                     if (core_id >= 0 && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES)) {
-                        auto* arm = process->GetArmInterface(core_id);
-                        if (arm) {
+                        if (auto* arm = process->GetArmInterface(core_id)) {
                             arm->SetContext(ctx);
                         }
-                    }
-                    // Reset stale wait status to wake up sleeping threads safely
-                    if (thread.GetState() == Kernel::ThreadState::Waiting) {
-                        thread.WaitCancel(kernel);
                     }
                     break;
                 }
@@ -265,14 +606,17 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
         }
     }
 
-    // Reschedule cores to process woken threads immediately
+    // Reschedule cores immediately
     for (std::size_t c = 0; c < Core::Hardware::NUM_CPU_CORES; ++c) {
         kernel.Scheduler(c).RequestScheduleOnInterrupt(kernel);
     }
 
     system.UnstallApplication();
 
-    LOG_INFO(Core, "Save state loaded successfully");
+    const auto load_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                             std::chrono::steady_clock::now() - t_start)
+                             .count();
+    LOG_INFO(Core, "SaveState: Instant Quick Load completed in {} ms", load_ms);
     return SaveStateResult::Success;
 }
 
@@ -283,6 +627,10 @@ std::filesystem::path GetSaveStatePath(u64 title_id, u32 slot) {
 }
 
 bool GetSaveStateInfo(const std::filesystem::path& path, SaveStateHeader& header_out) {
+    if (auto cached = GetFromRamCache(path.string())) {
+        header_out = cached->header;
+        return true;
+    }
     std::ifstream file(path, std::ios::binary);
     if (!file.is_open()) {
         return false;

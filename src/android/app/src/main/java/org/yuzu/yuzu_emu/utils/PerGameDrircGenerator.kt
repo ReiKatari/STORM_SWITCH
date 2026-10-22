@@ -384,9 +384,6 @@ object PerGameDrircGenerator {
             cleanId.startsWith("010015100B5B4") ||
             cleanId.startsWith("010028600EBDA") || // 3D World
             cleanId.startsWith("0100152000022") || // Mario Kart 8
-            cleanId.startsWith("010067300059A") || // Mario + Rabbids
-            cleanId.startsWith("0100760012E4A") ||
-            cleanId.startsWith("01005CA00F966") ||
             cleanId.startsWith("01007EF01B842") || // Paper Mario TTYD
             cleanId.startsWith("01004D701742A") ||
             cleanId.startsWith("01004D300C5AE") || // Origami King
@@ -579,11 +576,13 @@ object PerGameDrircGenerator {
             GameProfileType.MARIO_RABBIDS -> {
                 optionsBuilder.append("\n            <!-- MARIO + RABBIDS: SNOWDROP ENGINE (Shadow Maps, Exposure & Fullscreen Pass Fix) -->\n")
                 optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_disable_lrz\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_a8xx_barycentric_coord_clamp\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_a8xx_barycentric_coord_clamp\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
             }

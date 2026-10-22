@@ -38,6 +38,10 @@ SFDNSRES::SFDNSRES(Core::System& system_) : ServiceFramework{system_, "sfdnsres"
         {13, &SFDNSRES::GetNameInfoRequestWithOptions, "GetNameInfoRequestWithOptions"},
         {14, &SFDNSRES::ResolverSetOptionRequest, "ResolverSetOptionRequest"},
         {15, &SFDNSRES::ResolverGetOptionRequest, "ResolverGetOptionRequest"},
+        {16, &SFDNSRES::ReportTelemetry, "ReportTelemetry"}, // [23.0.0+]
+        {100, &SFDNSRES::QueryAddrInfoRequestWithOptions, "QueryAddrInfoRequestWithOptions"}, // [23.0.0+]
+        {102, &SFDNSRES::FetchAddrInfoRequestWithOptions, "FetchAddrInfoRequestWithOptions"}, // [23.0.0+]
+        {104, &SFDNSRES::CancelQuery, "CancelQuery"}, // [23.0.0+]
     };
     RegisterHandlers(functions);
 }
@@ -502,6 +506,33 @@ void SFDNSRES::ResolverGetOptionRequest(HLERequestContext& ctx) {
     rb.Push(ResultSuccess);
     rb.Push<s32>(0); // option value
     rb.Push<s32>(0); // bsd errno
+}
+
+void SFDNSRES::ReportTelemetry(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "(HOS 23.0.0+) ReportTelemetry called");
+    IPC::ResponseBuilder rb{ctx, 2};
+    rb.Push(ResultSuccess);
+}
+
+void SFDNSRES::QueryAddrInfoRequestWithOptions(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "(HOS 23.0.0+ c-ares) QueryAddrInfoRequestWithOptions called");
+    GetAddrInfoRequestWithOptions(ctx);
+}
+
+void SFDNSRES::FetchAddrInfoRequestWithOptions(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "(HOS 23.0.0+ c-ares) FetchAddrInfoRequestWithOptions called");
+    IPC::ResponseBuilder rb{ctx, 6};
+    rb.Push(ResultSuccess);
+    rb.Push<u32>(0); // data_size
+    rb.Push<s32>(0); // netdb_error = 0 (Success)
+    rb.Push<s32>(0); // errno = 0
+    rb.Push<u32>(0);
+}
+
+void SFDNSRES::CancelQuery(HLERequestContext& ctx) {
+    LOG_DEBUG(Service, "(HOS 23.0.0+ c-ares) CancelQuery called");
+    IPC::ResponseBuilder rb{ctx, 2};
+    rb.Push(ResultSuccess);
 }
 
 } // namespace Service::Sockets

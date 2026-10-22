@@ -12,11 +12,17 @@ namespace Core {
 
 class System;
 
-/// Save state file format version
-constexpr u32 SAVE_STATE_VERSION = 1;
+/// Save state file format version (v2: Page-Table Writable Regions + 4KB Sparse + Instant RAM Cache)
+constexpr u32 SAVE_STATE_VERSION = 2;
 
 /// Save state magic header
 constexpr u32 SAVE_STATE_MAGIC = 0x53455353; // "SESS" (Storm Eden Save State)
+
+/// Header flags for SaveStateHeader::flags
+enum SaveStateFlags : u32 {
+    SaveStateFlag_SparsePages      = (1u << 0), // v1 64KB full-DRAM sparse encoding
+    SaveStateFlag_WritableRegions  = (1u << 1), // v2 Page-Table writable region 4KB sparse encoding
+};
 
 /// Header for save state files (.ses)
 struct SaveStateHeader {
@@ -28,10 +34,10 @@ struct SaveStateHeader {
     u32 num_threads{};
     u32 compression_level{};
     u64 timestamp{};
-    u32 flags{};             // Bit 0: Sparse Page Encoding
-    u32 sparse_page_size{};  // Chunk size (65536 = 64KB)
-    u32 num_sparse_pages{};  // Total page count
-    u32 num_stored_pages{};  // Number of non-zero pages stored
+    u32 flags{};             // Bit 0: v1 Sparse, Bit 1: v2 Writable Regions (4KB chunks)
+    u32 sparse_page_size{};  // Chunk size (4096 in v2, 65536 in v1)
+    u32 num_sparse_pages{};  // Number of regions (v2) or total pages (v1)
+    u32 num_stored_pages{};  // Number of non-zero 4KB chunks stored
     u8 reserved[16]{};
 };
 
@@ -59,11 +65,14 @@ enum class SaveStateResult {
     ErrorInvalidMagic,
 };
 
-/// Create a save state from the current emulation state
+/// Create a save state from the current emulation state (instant in-RAM snapshot + async disk flush)
 SaveStateResult CreateSaveState(System& system, const std::filesystem::path& path);
 
-/// Load a save state and restore the emulation state
+/// Load a save state and restore the emulation state (instant RAM hit + differential 4KB page restore)
 SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path);
+
+/// Wait for any pending background disk flush operations to finish
+void FlushPendingSaveStates();
 
 /// Get the default save state directory for a given title
 std::filesystem::path GetSaveStatePath(u64 title_id, u32 slot);

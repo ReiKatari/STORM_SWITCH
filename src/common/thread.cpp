@@ -479,6 +479,11 @@ void SetCurrentThreadPriority(ThreadPriority new_priority) {
             ULONG StateMask;
         } power_state{1, 0x1, 0};
         SetThreadInformation(GetCurrentThread(), static_cast<THREAD_INFORMATION_CLASS>(1), &power_state, sizeof(power_state));
+        if (Settings::values.cpu_affinity_pinning.GetValue()) {
+            SetCurrentThreadToPerformanceCores();
+        }
+    } else if (new_priority == ThreadPriority::Low && Settings::values.cpu_affinity_pinning.GetValue()) {
+        SetCurrentThreadToEfficiencyCores();
     }
 #elif defined(__HAIKU__)
     // TODO: We have priorities for 3D rendering applications - may help lavapipe?
@@ -582,6 +587,79 @@ void SetCurrentThreadName(const char* name) {
 #endif
 }
 
+#ifdef _WIN32
+namespace {
+void ApplyTopologicalCpuSetPinning(bool prefer_performance_cores) {
+    ULONG buffer_len = 0;
+    GetSystemCpuSetInformation(nullptr, 0, &buffer_len, GetCurrentProcess(), 0);
+    if (buffer_len == 0) {
+        return;
+    }
+    std::vector<u8> buffer(buffer_len);
+    auto* info = reinterpret_cast<SYSTEM_CPU_SET_INFORMATION*>(buffer.data());
+    if (!GetSystemCpuSetInformation(info, buffer_len, &buffer_len, GetCurrentProcess(), 0)) {
+        return;
+    }
+
+    std::vector<ULONG> p_core_sets;
+    std::vector<ULONG> e_core_sets;
+    std::vector<ULONG> ccd0_sets;
+    std::vector<ULONG> ccd1_sets;
+
+    BYTE max_efficiency = 0;
+    BYTE min_efficiency = 255;
+    BYTE first_cache_idx = 255;
+
+    ULONG offset = 0;
+    while (offset + sizeof(SYSTEM_CPU_SET_INFORMATION) <= buffer_len) {
+        const auto* cur = reinterpret_cast<const SYSTEM_CPU_SET_INFORMATION*>(buffer.data() + offset);
+        if (cur->Size == 0) break;
+        if (cur->Type == CpuSetInformation) {
+            max_efficiency = (std::max)(max_efficiency, cur->CpuSet.EfficiencyClass);
+            min_efficiency = (std::min)(min_efficiency, cur->CpuSet.EfficiencyClass);
+            if (first_cache_idx == 255) {
+                first_cache_idx = cur->CpuSet.LastLevelCacheIndex;
+            }
+        }
+        offset += cur->Size;
+    }
+
+    offset = 0;
+    while (offset + sizeof(SYSTEM_CPU_SET_INFORMATION) <= buffer_len) {
+        const auto* cur = reinterpret_cast<const SYSTEM_CPU_SET_INFORMATION*>(buffer.data() + offset);
+        if (cur->Size == 0) break;
+        if (cur->Type == CpuSetInformation) {
+            if (max_efficiency > min_efficiency) {
+                if (cur->CpuSet.EfficiencyClass == max_efficiency) {
+                    p_core_sets.push_back(cur->CpuSet.Id);
+                } else {
+                    e_core_sets.push_back(cur->CpuSet.Id);
+                }
+            }
+            if (cur->CpuSet.LastLevelCacheIndex == first_cache_idx) {
+                ccd0_sets.push_back(cur->CpuSet.Id);
+            } else {
+                ccd1_sets.push_back(cur->CpuSet.Id);
+            }
+        }
+        offset += cur->Size;
+    }
+
+    const std::vector<ULONG>* chosen = nullptr;
+    if (!p_core_sets.empty() && !e_core_sets.empty()) {
+        chosen = prefer_performance_cores ? &p_core_sets : &e_core_sets;
+    } else if (!ccd0_sets.empty() && !ccd1_sets.empty()) {
+        chosen = prefer_performance_cores ? &ccd0_sets : &ccd1_sets;
+    }
+
+    if (chosen && !chosen->empty()) {
+        SetThreadSelectedCpuSets(GetCurrentThread(), chosen->data(),
+                                 static_cast<ULONG>(chosen->size()));
+    }
+}
+} // Anonymous namespace
+#endif
+
 void SetCurrentThreadToPerformanceCores() {
 #if defined(__ANDROID__)
     ADPF::AddCurrentThread(ADPF::Session::Render);
@@ -590,6 +668,17 @@ void SetCurrentThreadToPerformanceCores() {
         return;
     }
     SetCurrentThreadCoreGroup(CoreGroup::Performance);
+#elif defined(_WIN32)
+    struct POWER_THROTTLING_STATE {
+        ULONG Version;
+        ULONG ControlMask;
+        ULONG StateMask;
+    } power_state{1, 0x1, 0};
+    SetThreadInformation(GetCurrentThread(), static_cast<THREAD_INFORMATION_CLASS>(1), &power_state,
+                         sizeof(power_state));
+    if (Settings::values.cpu_affinity_pinning.GetValue()) {
+        ApplyTopologicalCpuSetPinning(true);
+    }
 #endif
 }
 
@@ -601,6 +690,17 @@ void SetCurrentThreadToEfficiencyCores() {
         return;
     }
     SetCurrentThreadCoreGroup(CoreGroup::Efficiency);
+#elif defined(_WIN32)
+    struct POWER_THROTTLING_STATE {
+        ULONG Version;
+        ULONG ControlMask;
+        ULONG StateMask;
+    } power_state{1, 0x1, 0x1};
+    SetThreadInformation(GetCurrentThread(), static_cast<THREAD_INFORMATION_CLASS>(1), &power_state,
+                         sizeof(power_state));
+    if (Settings::values.cpu_affinity_pinning.GetValue()) {
+        ApplyTopologicalCpuSetPinning(false);
+    }
 #endif
 }
 

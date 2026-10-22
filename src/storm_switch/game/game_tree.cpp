@@ -1,10 +1,13 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <algorithm>
 #include <QApplication>
 #include <QHeaderView>
+#include <QResizeEvent>
 #include <QScroller>
 #include <QScrollerProperties>
+#include <QShowEvent>
 
 #include "qt_common/config/uisettings.h"
 #include "qt_common/game_list/game_list_p.h"
@@ -18,6 +21,7 @@ GameTree::GameTree(QWidget* parent) : QTreeView{parent} {
     setSelectionBehavior(QHeaderView::SelectRows);
     setVerticalScrollMode(QHeaderView::ScrollPerPixel);
     setHorizontalScrollMode(QHeaderView::ScrollPerPixel);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setSortingEnabled(true);
     setEditTriggers(QHeaderView::NoEditTriggers);
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -29,6 +33,14 @@ GameTree::GameTree(QWidget* parent) : QTreeView{parent} {
     header()->setSectionResizeMode(QHeaderView::Interactive);
     header()->setStretchLastSection(true);
 
+    connect(header(), &QHeaderView::sectionResized, this,
+            [this](int logicalIndex, int /*oldSize*/, int /*newSize*/) {
+                if (!m_adjusting_columns && QApplication::mouseButtons() != Qt::NoButton &&
+                    logicalIndex == GameListModel::COLUMN_NAME) {
+                    m_user_resized_columns = true;
+                }
+            });
+
     connect(this, &QTreeView::expanded, this, &GameTree::OnItemExpanded);
     connect(this, &QTreeView::collapsed, this, &GameTree::OnItemExpanded);
 }
@@ -36,13 +48,9 @@ GameTree::GameTree(QWidget* parent) : QTreeView{parent} {
 void GameTree::SetModel(GameListModel* model) {
     QTreeView::setModel(model);
     LoadInterfaceLayout();
-    header()->resizeSection(GameListModel::COLUMN_NAME, 1200);
-    header()->resizeSection(GameListModel::COLUMN_FILE_TYPE, 200);
-    header()->resizeSection(GameListModel::COLUMN_SIZE, 200);
-    header()->resizeSection(GameListModel::COLUMN_PLAY_TIME, 200);
-    header()->resizeSection(GameListModel::COLUMN_ADD_ONS, 300);
     header()->setStretchLastSection(true);
     UpdateColumnVisibility(model);
+    AdjustColumnsToViewport();
     sortByColumn(GameListModel::COLUMN_NAME, Qt::AscendingOrder);
 }
 
@@ -69,36 +77,90 @@ void GameTree::SaveInterfaceLayout() {
 }
 
 void GameTree::LoadInterfaceLayout() {
+    m_adjusting_columns = true;
     auto* hdr = header();
     hdr->setDefaultAlignment(Qt::AlignCenter);
     hdr->setStretchLastSection(true);
 
     if (UISettings::values.gamelist_header_state.isEmpty() ||
         !hdr->restoreState(UISettings::values.gamelist_header_state)) {
-        hdr->resizeSection(GameListModel::COLUMN_NAME, 1200);
-        hdr->resizeSection(GameListModel::COLUMN_FILE_TYPE, 200);
-        hdr->resizeSection(GameListModel::COLUMN_SIZE, 200);
-        hdr->resizeSection(GameListModel::COLUMN_PLAY_TIME, 200);
-        hdr->resizeSection(GameListModel::COLUMN_ADD_ONS, 300);
+        hdr->resizeSection(GameListModel::COLUMN_NAME, 1250);
+        hdr->resizeSection(GameListModel::COLUMN_FILE_TYPE, 135);
+        hdr->resizeSection(GameListModel::COLUMN_SIZE, 135);
+        hdr->resizeSection(GameListModel::COLUMN_PLAY_TIME, 140);
+        hdr->resizeSection(GameListModel::COLUMN_ADD_ONS, 200);
     } else {
-        if (hdr->sectionSize(GameListModel::COLUMN_NAME) < 1200) {
-            hdr->resizeSection(GameListModel::COLUMN_NAME, 1200);
+        if (hdr->sectionSize(GameListModel::COLUMN_FILE_TYPE) < 110 ||
+            hdr->sectionSize(GameListModel::COLUMN_FILE_TYPE) >= 195) {
+            hdr->resizeSection(GameListModel::COLUMN_FILE_TYPE, 135);
         }
-        if (hdr->sectionSize(GameListModel::COLUMN_FILE_TYPE) < 200) {
-            hdr->resizeSection(GameListModel::COLUMN_FILE_TYPE, 200);
+        if (hdr->sectionSize(GameListModel::COLUMN_SIZE) < 110 ||
+            hdr->sectionSize(GameListModel::COLUMN_SIZE) >= 195) {
+            hdr->resizeSection(GameListModel::COLUMN_SIZE, 135);
         }
-        if (hdr->sectionSize(GameListModel::COLUMN_SIZE) < 200) {
-            hdr->resizeSection(GameListModel::COLUMN_SIZE, 200);
+        if (hdr->sectionSize(GameListModel::COLUMN_PLAY_TIME) < 110 ||
+            hdr->sectionSize(GameListModel::COLUMN_PLAY_TIME) >= 195) {
+            hdr->resizeSection(GameListModel::COLUMN_PLAY_TIME, 140);
         }
-        if (hdr->sectionSize(GameListModel::COLUMN_PLAY_TIME) < 200) {
-            hdr->resizeSection(GameListModel::COLUMN_PLAY_TIME, 200);
-        }
-        if (hdr->sectionSize(GameListModel::COLUMN_ADD_ONS) < 300) {
-            hdr->resizeSection(GameListModel::COLUMN_ADD_ONS, 300);
+        if (hdr->sectionSize(GameListModel::COLUMN_ADD_ONS) < 160 ||
+            hdr->sectionSize(GameListModel::COLUMN_ADD_ONS) > 240) {
+            hdr->resizeSection(GameListModel::COLUMN_ADD_ONS, 200);
         }
     }
     hdr->setDefaultAlignment(Qt::AlignCenter);
     hdr->setStretchLastSection(true);
+    m_adjusting_columns = false;
+    AdjustColumnsToViewport();
+}
+
+void GameTree::AdjustColumnsToViewport() {
+    if (m_adjusting_columns) {
+        return;
+    }
+    const int vw = viewport() ? viewport()->width() : 0;
+    if (vw <= 480) {
+        return;
+    }
+
+    m_adjusting_columns = true;
+    auto* hdr = header();
+    const int w_type = isColumnHidden(GameListModel::COLUMN_FILE_TYPE)
+                           ? 0
+                           : hdr->sectionSize(GameListModel::COLUMN_FILE_TYPE);
+    const int w_size = isColumnHidden(GameListModel::COLUMN_SIZE)
+                           ? 0
+                           : hdr->sectionSize(GameListModel::COLUMN_SIZE);
+    const int w_time = isColumnHidden(GameListModel::COLUMN_PLAY_TIME)
+                           ? 0
+                           : hdr->sectionSize(GameListModel::COLUMN_PLAY_TIME);
+    const int w_addons = isColumnHidden(GameListModel::COLUMN_ADD_ONS) ? 0 : 200;
+    const int right_cols = w_type + w_size + w_time + w_addons;
+
+    const int cur_name = hdr->sectionSize(GameListModel::COLUMN_NAME);
+    const int target_name = std::max(360, vw - right_cols);
+
+    // By default (until the user manually drags the column divider), or if the total width
+    // overflows the viewport / leaves ADD_ONS overly stretched (>240px), fit COLUMN_NAME
+    // so ADD_ONS sits right against the right edge with zero horizontal scrolling.
+    if (!m_user_resized_columns || (cur_name + right_cols > vw) || cur_name <= 600 ||
+        hdr->sectionSize(GameListModel::COLUMN_ADD_ONS) > 240) {
+        if (!isColumnHidden(GameListModel::COLUMN_ADD_ONS)) {
+            hdr->resizeSection(GameListModel::COLUMN_ADD_ONS, w_addons);
+        }
+        hdr->resizeSection(GameListModel::COLUMN_NAME, target_name);
+    }
+    hdr->setStretchLastSection(true);
+    m_adjusting_columns = false;
+}
+
+void GameTree::resizeEvent(QResizeEvent* event) {
+    QTreeView::resizeEvent(event);
+    AdjustColumnsToViewport();
+}
+
+void GameTree::showEvent(QShowEvent* event) {
+    QTreeView::showEvent(event);
+    AdjustColumnsToViewport();
 }
 
 void GameTree::UpdateColumnVisibility(GameListModel* model) {
@@ -108,6 +170,7 @@ void GameTree::UpdateColumnVisibility(GameListModel* model) {
     setColumnHidden(GameListModel::COLUMN_SIZE, !UISettings::values.show_size);
     setColumnHidden(GameListModel::COLUMN_PLAY_TIME, !UISettings::values.show_play_time);
     header()->setStretchLastSection(true);
+    AdjustColumnsToViewport();
 }
 
 QString GameTree::GetLastFilterResultItem() const {

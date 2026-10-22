@@ -241,6 +241,49 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             else -> 0
         }
 
+        // Sanitize stale trackIds from any missed ACTION_POINTER_UP / gesture preemption
+        if (event.actionMasked != MotionEvent.ACTION_CANCEL) {
+            val count = event.pointerCount
+            for (b in overlayButtons) {
+                if (b.trackId != -1) {
+                    var found = false
+                    for (p in 0 until count) {
+                        if (event.getPointerId(p) == b.trackId) { found = true; break }
+                    }
+                    if (!found) {
+                        b.trackId = -1
+                        NativeInput.onOverlayButtonEvent(playerIndex, b.button, NativeInput.ButtonState.RELEASED)
+                        shouldUpdateView = true
+                    }
+                }
+            }
+            for (d in overlayDpads) {
+                if (d.trackId != -1) {
+                    var found = false
+                    for (p in 0 until count) {
+                        if (event.getPointerId(p) == d.trackId) { found = true; break }
+                    }
+                    if (!found) {
+                        d.trackId = -1
+                        shouldUpdateView = true
+                    }
+                }
+            }
+            for (j in overlayJoysticks) {
+                if (j.trackId != -1) {
+                    var found = false
+                    for (p in 0 until count) {
+                        if (event.getPointerId(p) == j.trackId) { found = true; break }
+                    }
+                    if (!found) {
+                        j.trackId = -1
+                        NativeInput.onOverlayJoystickEvent(playerIndex, j.joystick, 0f, 0f)
+                        shouldUpdateView = true
+                    }
+                }
+            }
+        }
+
         val buttonCount = overlayButtons.size
         for (i in 0 until buttonCount) {
             val button = overlayButtons[i]

@@ -66,6 +66,9 @@ public:
     /// Reset state without changing target/max level.
     void Reset();
 
+    /// Returns the live effective scale factor (e.g. 2.0f, 1.5f, 1.0f) for OSD telemetry & LOD adaptation.
+    [[nodiscard]] static float GetEffectiveScaleFactor() noexcept;
+
 private:
     /// Ordered list of resolution levels from lowest to highest quality.
     static constexpr Settings::ResolutionSetup kLevelOrder[] = {

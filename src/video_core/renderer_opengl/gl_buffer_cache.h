@@ -33,6 +33,7 @@ public:
     void MakeResident(GLenum access) noexcept;
 
     void MarkUsage(u64 offset, u64 size) {}
+    [[nodiscard]] bool IsRegionUsed(u64 /*offset*/, u64 /*size*/) const noexcept { return false; }
 
     [[nodiscard]] GLuint View(u32 offset, u32 size, VideoCore::Surface::PixelFormat format);
 

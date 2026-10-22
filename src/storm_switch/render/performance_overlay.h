@@ -63,6 +63,7 @@ private slots:
     void OnLsfgToggled(bool checked);
     void OnHdr10Toggled(bool checked);
     void OnToggleGpuAccuracy();
+    void OnAutoHealGraphicsArtifacts();
 
 private:
     void SetupUI();
@@ -150,6 +151,7 @@ private:
     QCheckBox* m_chk_lsfg = nullptr;
     QCheckBox* m_chk_hdr10 = nullptr;
     QPushButton* m_btn_gpu_acc = nullptr;
+    QPushButton* m_btn_heal_gpu = nullptr;
 
     // Dragging
     QPoint m_offset{25, 75};

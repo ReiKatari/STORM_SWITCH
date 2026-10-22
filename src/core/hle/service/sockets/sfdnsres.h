@@ -29,6 +29,10 @@ private:
     void GetHostByAddrRequestWithOptions(HLERequestContext& ctx);
     void ResolverSetOptionRequest(HLERequestContext& ctx);
     void ResolverGetOptionRequest(HLERequestContext& ctx);
+    void ReportTelemetry(HLERequestContext& ctx); // [23.0.0+]
+    void QueryAddrInfoRequestWithOptions(HLERequestContext& ctx); // [23.0.0+]
+    void FetchAddrInfoRequestWithOptions(HLERequestContext& ctx); // [23.0.0+]
+    void CancelQuery(HLERequestContext& ctx); // [23.0.0+]
 };
 
 } // namespace Service::Sockets
