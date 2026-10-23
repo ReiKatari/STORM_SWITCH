@@ -310,13 +310,15 @@ Result KPageTableBase::InitializeForProcess(Svc::CreateProcessFlag as_type, bool
 
     const size_t remaining_size = alloc_size - needed_size;
 
-    // Determine random placements for each region.
+    // Deterministic placements for each region so SESS v2 Save States (.ses) remain 100% address-compatible across restarts.
     size_t alias_rnd = 0, heap_rnd = 0, stack_rnd = 0, kmap_rnd = 0;
-    if (enable_aslr) {
-        alias_rnd = KSystemControl::GenerateRandomRange(0, remaining_size / RegionAlignment) * RegionAlignment;
-        heap_rnd = KSystemControl::GenerateRandomRange(0, remaining_size / RegionAlignment) * RegionAlignment;
-        stack_rnd = KSystemControl::GenerateRandomRange(0, remaining_size / RegionAlignment) * RegionAlignment;
-        kmap_rnd = KSystemControl::GenerateRandomRange(0, remaining_size / RegionAlignment) * RegionAlignment;
+    if (enable_aslr && remaining_size >= RegionAlignment) {
+        const size_t max_slots = (remaining_size / RegionAlignment) + 1;
+        const u64 base_hash = (static_cast<u64>(code_size) ^ GetInteger(code_address)) * 0x9E3779B97F4A7C15ULL;
+        alias_rnd = static_cast<size_t>((base_hash ^ 0x1111111111111111ULL) % max_slots) * RegionAlignment;
+        heap_rnd  = static_cast<size_t>((base_hash ^ 0x2222222222222222ULL) % max_slots) * RegionAlignment;
+        stack_rnd = static_cast<size_t>((base_hash ^ 0x3333333333333333ULL) % max_slots) * RegionAlignment;
+        kmap_rnd  = static_cast<size_t>((base_hash ^ 0x4444444444444444ULL) % max_slots) * RegionAlignment;
     }
 
     // Setup heap and alias regions.

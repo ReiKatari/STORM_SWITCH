@@ -254,9 +254,6 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    // Start background loading of TitleDB only after child-process / single-instance checks pass
-    TitleDB::TitleDatabase::Instance().EnsureLoaded();
-
 #ifdef YUZU_CRASH_DUMPS
     Breakpad::InstallCrashHandler();
 #endif

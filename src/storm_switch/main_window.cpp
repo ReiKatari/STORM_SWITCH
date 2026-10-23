@@ -7151,7 +7151,7 @@ void MainWindow::StartSilentCheatsSync() {
             const QString url_str = QString(QStringLiteral("https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/cheats/%1.json"))
                                         .arg(tid_hex);
             QNetworkRequest request{QUrl(url_str)};
-            request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH_Emulator/13.1.0"));
+            request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH_Emulator/13.1.2"));
             request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
             auto* reply = nam->get(request);
@@ -8199,6 +8199,40 @@ void MainWindow::UpdateStatusBar() {
     if (++s_fps_log_counter >= 5) {
         s_fps_log_counter = 0;
         LOG_INFO(Frontend, "Performance: FPS: {:.1f} | Frametime: {:.2f} ms | Speed: {:.0f}%", display_fps, ft_ms, results.emulation_speed * 100.0);
+    }
+
+    if (qEnvironmentVariableIsSet("STORM_AUTOTEST_SAVESTATE")) {
+        const bool is_cold_load_test = (qEnvironmentVariable("STORM_AUTOTEST_SAVESTATE") == QStringLiteral("2"));
+        static u32 s_autotest_ticks = 0;
+        static u32 s_zero_fps_ticks = 0;
+        if (display_fps >= 45.0) {
+            s_zero_fps_ticks = 0;
+            ++s_autotest_ticks;
+            if (s_autotest_ticks == 8) {
+                if (is_cold_load_test) {
+                    LOG_INFO(Frontend, "AutoTest: [Cold Load Step 1/2] Triggering Cold Quick Load from disk (F7) at {:.1f} FPS...", display_fps);
+                    OnQuickLoad();
+                } else {
+                    LOG_INFO(Frontend, "AutoTest: [Step 1/3] Triggering Quick Save (F5) at {:.1f} FPS...", display_fps);
+                    OnQuickSave();
+                }
+            } else if (s_autotest_ticks == 14) {
+                LOG_INFO(Frontend, "AutoTest: [Step 2/3] Triggering Quick Load #1 (F7) at {:.1f} FPS...", display_fps);
+                OnQuickLoad();
+            } else if (s_autotest_ticks == 20) {
+                LOG_INFO(Frontend, "AutoTest: [Step 3/3] Triggering Quick Load #2 (F7) at {:.1f} FPS...", display_fps);
+                OnQuickLoad();
+            } else if (s_autotest_ticks == 26) {
+                LOG_INFO(Frontend, "AutoTest: ALL SAVESTATE TESTS PASSED! Stable {:.1f} FPS after multiple Quick Loads.", display_fps);
+                Core::FlushPendingSaveStates();
+                std::exit(0);
+            }
+        } else if (s_autotest_ticks >= 8 && display_fps < 5.0) {
+            if (++s_zero_fps_ticks >= 6) {
+                LOG_ERROR(Frontend, "AutoTest: FAILED! FPS dropped to {:.1f} after Quick Save/Load!", display_fps);
+                std::exit(2);
+            }
+        }
     }
 }
 

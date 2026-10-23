@@ -282,9 +282,11 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
     // Add patch size to the total module size
     code_size += patch_ctx.GetTotalPatchSize();
 
-    // TODO: this is bad form of ASLR, it sucks
-    std::uintptr_t aslr_offset = ((::Settings::values.rng_seed_enabled.GetValue()
-        ? ::Settings::values.rng_seed.GetValue() : Common::Random::Random64(0)) << 12) & 0xfff000;
+    // Deterministic per-title ASLR offset so SESS v2 Save States (.ses) remain 100% address-compatible across emulator restarts
+    const u64 deterministic_seed = ::Settings::values.rng_seed_enabled.GetValue()
+        ? ::Settings::values.rng_seed.GetValue()
+        : (metadata.GetTitleID() ^ 0x53544F524D535734ULL);
+    std::uintptr_t aslr_offset = (deterministic_seed << 12) & 0xfff000;
 
     // Setup the process code layout
     if (process.LoadFromMetadata(system.Kernel(), metadata, code_size, fastmem_base, aslr_offset).IsError()) {

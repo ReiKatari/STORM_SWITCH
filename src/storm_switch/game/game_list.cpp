@@ -245,6 +245,7 @@ void GameList::ResetViewMode() {
     const auto mode = UISettings::values.game_list_mode.GetValue();
     game_list_mode = mode;
 
+    const bool was_initialized = (m_currentView != nullptr);
     if (m_currentView)
         layout->removeWidget(m_currentView);
 
@@ -303,7 +304,7 @@ void GameList::ResetViewMode() {
     if (m_isTreeMode != newTreeMode) {
         m_isTreeMode = newTreeMode;
         item_model->SetFlat(!m_isTreeMode);
-        if (!UISettings::values.game_dirs.empty()) {
+        if (was_initialized && !UISettings::values.game_dirs.empty()) {
             item_model->PopulateAsync(UISettings::values.game_dirs);
         }
     }

@@ -83,6 +83,11 @@ void Joycons::ScanThread(std::stop_token stop_token) {
     constexpr u16 nintendo_vendor_id = 0x057e;
     Common::SetCurrentThreadName("JoyconScanThread");
 
+    // Avoid racing with SDLDriver's initial SDL_InitSubSystem(SDL_INIT_GAMEPAD) HID enumeration
+    if (!Common::StoppableTimedWait(stop_token, std::chrono::milliseconds{1500})) {
+        return;
+    }
+
     do {
         SDL_hid_device_info* devs = SDL_hid_enumerate(nintendo_vendor_id, 0x0);
         SDL_hid_device_info* cur_dev = devs;
