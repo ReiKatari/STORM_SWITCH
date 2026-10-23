@@ -135,39 +135,21 @@ static void OverrideWindowsFont() {
 
 static Qt::HighDpiScaleFactorRoundingPolicy GetHighDpiRoundingPolicy() {
 #ifdef _WIN32
-    // For Windows, we want to avoid scaling artifacts on fractional scaling ratios.
-    // This is done by setting the optimal scaling policy for the primary screen.
-
-    // Create a temporary QApplication.
-    int temp_argc = 0;
-    char** temp_argv = nullptr;
-    QApplication temp{temp_argc, temp_argv};
-
-    // Get the current screen geometry.
-    const QScreen* primary_screen = QGuiApplication::primaryScreen();
-    if (primary_screen == nullptr) {
+    // Query primary screen dimensions directly via Win32 without constructing a temporary
+    // QApplication (which corrupts Qt6 global statics when destroyed before the main QApplication).
+    const int real_width = GetSystemMetrics(SM_CXSCREEN);
+    const int real_height = GetSystemMetrics(SM_CYSCREEN);
+    if (real_width <= 0 || real_height <= 0) {
         return Qt::HighDpiScaleFactorRoundingPolicy::PassThrough;
     }
-
-    const QRect screen_rect = primary_screen->geometry();
-    const qreal real_ratio = primary_screen->devicePixelRatio();
-    const qreal real_width = std::trunc(screen_rect.width() * real_ratio);
-    const qreal real_height = std::trunc(screen_rect.height() * real_ratio);
-
-    // Recommended minimum width and height for proper window fit.
-    // Any screen with a lower resolution than this will still have a scale of 1.
-    constexpr qreal minimum_width = 1350.0;
-    constexpr qreal minimum_height = 900.0;
-
-    const qreal width_ratio = std::max(1.0, real_width / minimum_width);
-    const qreal height_ratio = std::max(1.0, real_height / minimum_height);
-
-    // Get the lower of the 2 ratios and truncate, this is the maximum integer scale.
-    const qreal max_ratio = std::trunc(std::min(width_ratio, height_ratio));
-    return max_ratio > real_ratio ? Qt::HighDpiScaleFactorRoundingPolicy::Round
-                                  : Qt::HighDpiScaleFactorRoundingPolicy::Floor;
+    constexpr double minimum_width = 1350.0;
+    constexpr double minimum_height = 900.0;
+    const double width_ratio = (std::max)(1.0, static_cast<double>(real_width) / minimum_width);
+    const double height_ratio = (std::max)(1.0, static_cast<double>(real_height) / minimum_height);
+    const double max_ratio = std::trunc((std::min)(width_ratio, height_ratio));
+    return max_ratio >= 2.0 ? Qt::HighDpiScaleFactorRoundingPolicy::Round
+                            : Qt::HighDpiScaleFactorRoundingPolicy::Floor;
 #else
-    // Other OSes should be better than Windows at fractional scaling.
     return Qt::HighDpiScaleFactorRoundingPolicy::PassThrough;
 #endif
 }
@@ -205,9 +187,6 @@ int main(int argc, char* argv[]) {
         }
         abort();
     });
-    // Start background loading of TitleDB immediately at application startup
-    TitleDB::TitleDatabase::Instance().EnsureLoaded();
-
 #if YUZU_ROOM
     bool launch_room = false;
     for (int i = 1; i < argc; i++) {
@@ -228,14 +207,15 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    if (StartupChecks(argv[0], &has_broken_vulkan,
-                      Settings::values.perform_vulkan_check.GetValue())) {
-        return 0;
-    }
-
 #ifdef _WIN32
     HANDLE hSingleInstanceMutex = CreateMutexW(nullptr, TRUE, L"Global\\STORM_SWITCH_SingleInstanceMutex");
     if (hSingleInstanceMutex && GetLastError() == ERROR_ALREADY_EXISTS) {
+        AllowSetForegroundWindow(ASFW_ANY);
+        HANDLE hRestoreEvent = OpenEventW(EVENT_MODIFY_STATE, FALSE, L"Global\\STORM_SWITCH_RestoreEvent");
+        if (hRestoreEvent) {
+            SetEvent(hRestoreEvent);
+            CloseHandle(hRestoreEvent);
+        }
         HWND existingWnd = nullptr;
         EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
             wchar_t className[256];
@@ -255,18 +235,27 @@ int main(int argc, char* argv[]) {
         }, reinterpret_cast<LPARAM>(&existingWnd));
 
         if (existingWnd) {
-            ShowWindow(existingWnd, SW_RESTORE);
+            if (IsIconic(existingWnd)) {
+                ShowWindow(existingWnd, SW_RESTORE);
+            } else {
+                ShowWindow(existingWnd, SW_SHOW);
+            }
             SetForegroundWindow(existingWnd);
         }
-        MessageBoxW(nullptr,
-            L"Экземпляр STORM SWITCH уже запущен!\nГлавное окно активировано и выведено на передний план.",
-            L"STORM SWITCH", MB_OK | MB_ICONINFORMATION);
         if (hSingleInstanceMutex) {
             CloseHandle(hSingleInstanceMutex);
         }
         return 0;
     }
 #endif
+
+    if (StartupChecks(argv[0], &has_broken_vulkan,
+                      Settings::values.perform_vulkan_check.GetValue())) {
+        return 0;
+    }
+
+    // Start background loading of TitleDB only after child-process / single-instance checks pass
+    TitleDB::TitleDatabase::Instance().EnsureLoaded();
 
 #ifdef YUZU_CRASH_DUMPS
     Breakpad::InstallCrashHandler();

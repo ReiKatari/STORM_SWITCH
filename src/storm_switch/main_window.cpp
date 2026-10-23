@@ -3271,10 +3271,77 @@ void MainWindow::SetupMenuIcons() {
     const QColor col_grey(176, 190, 197);
 
     // File Menu
+    if (!quick_save_action) {
+        ui->menu_File->insertSeparator(ui->action_Load_Amiibo);
+
+        quick_save_action = new QAction(StormLang(
+            QStringLiteral("Быстрое сохранение (Слот 1)"),
+            QStringLiteral("Quick Save (Slot 1)"),
+            QStringLiteral("Schnellspeichern (Slot 1)"),
+            QStringLiteral("Sauvegarde rapide (Emplacement 1)"),
+            QStringLiteral("快速保存 (槽位 1)"),
+            QStringLiteral("クイックセーブ (スロット 1)")
+        ), this);
+        connect(quick_save_action, &QAction::triggered, this, &MainWindow::OnQuickSave);
+        ui->menu_File->insertAction(ui->action_Load_Amiibo, quick_save_action);
+
+        quick_load_action = new QAction(StormLang(
+            QStringLiteral("Быстрая загрузка (Слот 1)"),
+            QStringLiteral("Quick Load (Slot 1)"),
+            QStringLiteral("Schnellladen (Slot 1)"),
+            QStringLiteral("Chargement rapide (Emplacement 1)"),
+            QStringLiteral("快速读取 (槽位 1)"),
+            QStringLiteral("クイックロード (スロット 1)")
+        ), this);
+        connect(quick_load_action, &QAction::triggered, this, &MainWindow::OnQuickLoad);
+        ui->menu_File->insertAction(ui->action_Load_Amiibo, quick_load_action);
+
+        save_state_slots_menu = new QMenu(StormLang(
+            QStringLiteral("Сохранить состояние в слот"),
+            QStringLiteral("Save State to Slot"),
+            QStringLiteral("Status in Slot speichern"),
+            QStringLiteral("Sauvegarder l'état dans l'emplacement"),
+            QStringLiteral("保存状态到槽位"),
+            QStringLiteral("スロットにステートを保存")
+        ), ui->menu_File);
+        ui->menu_File->insertMenu(ui->action_Load_Amiibo, save_state_slots_menu);
+
+        load_state_slots_menu = new QMenu(StormLang(
+            QStringLiteral("Загрузить состояние из слота"),
+            QStringLiteral("Load State from Slot"),
+            QStringLiteral("Status aus Slot laden"),
+            QStringLiteral("Charger l'état depuis l'emplacement"),
+            QStringLiteral("从槽位读取状态"),
+            QStringLiteral("スロットからステートをロード")
+        ), ui->menu_File);
+        ui->menu_File->insertMenu(ui->action_Load_Amiibo, load_state_slots_menu);
+
+        for (int i = 0; i < 5; ++i) {
+            const int slot_num = i + 1;
+            save_slot_actions[i] = save_state_slots_menu->addAction(
+                QStringLiteral("Слот %1").arg(slot_num), this, [this, slot_num]() {
+                    OnSaveStateSlot(slot_num);
+                });
+            load_slot_actions[i] = load_state_slots_menu->addAction(
+                QStringLiteral("Слот %1").arg(slot_num), this, [this, slot_num]() {
+                    OnLoadStateSlot(slot_num);
+                });
+        }
+        connect(save_state_slots_menu, &QMenu::aboutToShow, this, &MainWindow::RefreshSaveStateMenus);
+        connect(load_state_slots_menu, &QMenu::aboutToShow, this, &MainWindow::RefreshSaveStateMenus);
+
+        ui->menu_File->insertSeparator(ui->action_Load_Amiibo);
+        RefreshSaveStateMenus();
+    }
+
     apply_action(ui->action_Install_File_NAND, QStringLiteral("nand"), col_blue);
     apply_action(ui->action_Load_File, QStringLiteral("folder_open"), col_yellow);
     apply_action(ui->action_Load_Folder, QStringLiteral("folder"), col_yellow);
     apply_menu(ui->menu_recent_files, QStringLiteral("clock"), col_teal);
+    apply_action(quick_save_action, QStringLiteral("save"), col_green);
+    apply_action(quick_load_action, QStringLiteral("restart"), col_cyan);
+    apply_menu(save_state_slots_menu, QStringLiteral("save"), col_teal);
+    apply_menu(load_state_slots_menu, QStringLiteral("folder_open"), col_blue);
     apply_action(ui->action_Load_Amiibo, QStringLiteral("amiibo"), col_amber);
     apply_action(ui->action_Amiibo_Online_Database, QStringLiteral("globe"), col_cyan);
     apply_menu(ui->menuOpen_Eden_Folders, QStringLiteral("folder"), col_yellow);
@@ -3448,6 +3515,12 @@ void MainWindow::InitializeHotkeys() {
 
     LinkActionShortcut(ui->action_Load_File, QStringLiteral("Load File"));
     LinkActionShortcut(ui->action_Load_Amiibo, QStringLiteral("Load/Remove Amiibo"));
+    if (quick_save_action) {
+        LinkActionShortcut(quick_save_action, QStringLiteral("Quick Save"));
+    }
+    if (quick_load_action) {
+        LinkActionShortcut(quick_load_action, QStringLiteral("Quick Load"));
+    }
     LinkActionShortcut(ui->action_Exit, QStringLiteral("Exit STORM SWITCH"));
     LinkActionShortcut(ui->action_Restart, QStringLiteral("Restart Emulation"));
     LinkActionShortcut(ui->action_Pause, QStringLiteral("Continue/Pause Emulation"));
@@ -3490,11 +3563,7 @@ void MainWindow::InitializeHotkeys() {
     auto* tesla_ctrl_f1 = new QShortcut(QKeySequence(QStringLiteral("Ctrl+F1")), this);
     connect(tesla_ctrl_f1, &QShortcut::activated, this, tesla_toggle);
 
-    auto* quick_save_f5 = new QShortcut(QKeySequence(Qt::Key_F5), this);
-    connect(quick_save_f5, &QShortcut::activated, this, &MainWindow::OnQuickSave);
-
-    auto* quick_load_f7 = new QShortcut(QKeySequence(Qt::Key_F7), this);
-    connect(quick_load_f7, &QShortcut::activated, this, &MainWindow::OnQuickLoad);
+    // Quick Save (F5) and Quick Load (F7) are managed via HotkeyRegistry & LinkActionShortcut
 
     static const QString main_window = QStringLiteral("Main Window");
     const auto connect_shortcut = [&]<typename Fn>(const QString& action_name, const Fn& function) {
@@ -7619,41 +7688,173 @@ void MainWindow::OnTogglePerfOverlay() {
 }
 
 void MainWindow::OnQuickSave() {
-    if (!emulation_running || !QtCommon::system || !QtCommon::system->IsPoweredOn()) {
-        return;
-    }
-    if (perf_overlay) {
-        perf_overlay->OnSaveSlot(1);
-        statusBar()->showMessage(tr("Быстрое сохранение: Слот 1 сохранен"), 4000);
-    } else {
-        const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
-        if (title_id == 0) return;
-        const auto path = Core::GetSaveStatePath(title_id, 1);
-        auto res = Core::CreateSaveState(*QtCommon::system, path);
-        if (res == Core::SaveStateResult::Success) {
-            statusBar()->showMessage(tr("Быстрое сохранение: Слот 1 сохранен"), 4000);
-        } else {
-            statusBar()->showMessage(tr("Ошибка быстрого сохранения"), 4000);
-        }
-    }
+    OnSaveStateSlot(1);
 }
 
 void MainWindow::OnQuickLoad() {
+    OnLoadStateSlot(1);
+}
+
+void MainWindow::OnSaveStateSlot(int slot) {
     if (!emulation_running || !QtCommon::system || !QtCommon::system->IsPoweredOn()) {
+        QMessageBox::information(
+            this,
+            StormLang(QStringLiteral("Быстрое сохранение SESS v2"),
+                      QStringLiteral("Quick Save SESS v2"),
+                      QStringLiteral("Schnellspeichern SESS v2"),
+                      QStringLiteral("Sauvegarde rapide SESS v2"),
+                      QStringLiteral("快速保存 SESS v2"),
+                      QStringLiteral("クイックセーブ SESS v2")),
+            StormLang(QStringLiteral("Запустите игру, чтобы создать мгновенное быстрое сохранение (Слот %1).\nВо время игры вы также можете нажать клавишу F5 (или настроить удобную клавишу/кнопку геймпада в меню «Эмуляция -> Параметры -> Общие -> Горячие клавиши»).").arg(slot),
+                      QStringLiteral("Launch a game first to create an instant Quick Save (Slot %1).\nDuring gameplay you can also press F5 (or customize the hotkey in Emulation -> Configure -> General -> Hotkeys).").arg(slot),
+                      QStringLiteral("Starten Sie zuerst ein Spiel, um eine Schnell-Speicherung (Slot %1) zu erstellen.").arg(slot),
+                      QStringLiteral("Lancez d'abord un jeu pour créer une sauvegarde rapide (Emplacement %1).").arg(slot),
+                      QStringLiteral("请先启动游戏以创建快速保存 (槽位 %1)。").arg(slot),
+                      QStringLiteral("クイックセーブ (スロット %1) を作成するには、まずゲームを起動してください。").arg(slot)));
+        return;
+    }
+    const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
+    if (title_id == 0) {
         return;
     }
     if (perf_overlay) {
-        perf_overlay->OnLoadSlot(1);
-        statusBar()->showMessage(tr("Быстрая загрузка: Слот 1 загружен"), 4000);
+        perf_overlay->OnSaveSlot(static_cast<u32>(slot));
     } else {
-        const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
-        if (title_id == 0) return;
-        const auto path = Core::GetSaveStatePath(title_id, 1);
-        auto res = Core::LoadSaveState(*QtCommon::system, path);
-        if (res == Core::SaveStateResult::Success) {
-            statusBar()->showMessage(tr("Быстрая загрузка: Слот 1 загружен"), 4000);
-        } else {
-            statusBar()->showMessage(tr("Ошибка быстрой загрузки (Слот 1 пуст или поврежден)"), 4000);
+        const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+        const auto res = Core::CreateSaveState(*QtCommon::system, path);
+        if (res != Core::SaveStateResult::Success) {
+            statusBar()->showMessage(StormLang(
+                QStringLiteral("Ошибка быстрого сохранения в Слот %1").arg(slot),
+                QStringLiteral("Failed to save state to Slot %1").arg(slot),
+                QStringLiteral("Fehler beim Speichern in Slot %1").arg(slot),
+                QStringLiteral("Échec de la sauvegarde dans l'emplacement %1").arg(slot),
+                QStringLiteral("保存到槽位 %1 失败").arg(slot),
+                QStringLiteral("スロット %1 へのセーブに失敗しました").arg(slot)), 4000);
+            return;
+        }
+    }
+    const QString msg = StormLang(
+        QStringLiteral("⚡ Быстрое сохранение: Слот %1 сохранён (SESS v2)").arg(slot),
+        QStringLiteral("⚡ Quick Save: Slot %1 saved (SESS v2)").arg(slot),
+        QStringLiteral("⚡ Schnellspeichern: Slot %1 gespeichert (SESS v2)").arg(slot),
+        QStringLiteral("⚡ Sauvegarde rapide : Emplacement %1 enregistré (SESS v2)").arg(slot),
+        QStringLiteral("⚡ 快速保存：槽位 %1 已保存 (SESS v2)").arg(slot),
+        QStringLiteral("⚡ クイックセーブ：スロット %1 に保存しました (SESS v2)").arg(slot));
+    statusBar()->showMessage(msg, 4000);
+    if (in_game_notification) {
+        in_game_notification->ShowNotification(QStringLiteral("SESS v2"), msg, QColor(0, 229, 255), QStringLiteral("💾"), 2500);
+    }
+    RefreshSaveStateMenus();
+}
+
+void MainWindow::OnLoadStateSlot(int slot) {
+    if (!emulation_running || !QtCommon::system || !QtCommon::system->IsPoweredOn()) {
+        QMessageBox::information(
+            this,
+            StormLang(QStringLiteral("Быстрая загрузка SESS v2"),
+                      QStringLiteral("Quick Load SESS v2"),
+                      QStringLiteral("Schnellladen SESS v2"),
+                      QStringLiteral("Chargement rapide SESS v2"),
+                      QStringLiteral("快速读取 SESS v2"),
+                      QStringLiteral("クイックロード SESS v2")),
+            StormLang(QStringLiteral("Запустите игру, чтобы загрузить быстрое сохранение из Слота %1.\nВо время игры вы можете нажать клавишу F7 (или настроить удобную клавишу/кнопку геймпада в меню «Эмуляция -> Параметры -> Общие -> Горячие клавиши»).").arg(slot),
+                      QStringLiteral("Launch a game first to load a Quick Save from Slot %1.\nDuring gameplay you can press F7 (or customize the hotkey in Emulation -> Configure -> General -> Hotkeys).").arg(slot),
+                      QStringLiteral("Starten Sie zuerst ein Spiel, um aus Slot %1 zu laden.").arg(slot),
+                      QStringLiteral("Lancez d'abord un jeu pour charger depuis l'emplacement %1.").arg(slot),
+                      QStringLiteral("请先启动游戏以从槽位 %1 读取快速保存。").arg(slot),
+                      QStringLiteral("スロット %1 からクイックロードするには、まずゲームを起動してください。").arg(slot)));
+        return;
+    }
+    const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
+    if (title_id == 0) {
+        return;
+    }
+    const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+    if (!std::filesystem::exists(path)) {
+        const QString empty_msg = StormLang(
+            QStringLiteral("⚠️ Слот %1 пуст — сначала сделайте быстрое сохранение (F5)").arg(slot),
+            QStringLiteral("⚠️ Slot %1 is empty — create a Quick Save (F5) first").arg(slot),
+            QStringLiteral("⚠️ Slot %1 ist leer — bitte zuerst speichern (F5)").arg(slot),
+            QStringLiteral("⚠️ L'emplacement %1 est vide — sauvegardez d'abord (F5)").arg(slot),
+            QStringLiteral("⚠️ 槽位 %1 为空 — 请先快速保存 (F5)").arg(slot),
+            QStringLiteral("⚠️ スロット %1 は空です — 先にクイックセーブ (F5) してください").arg(slot));
+        statusBar()->showMessage(empty_msg, 4000);
+        if (in_game_notification) {
+            in_game_notification->ShowNotification(QStringLiteral("SESS v2"), empty_msg, QColor(255, 193, 7), QStringLiteral("⚠️"), 3000);
+        }
+        return;
+    }
+    if (perf_overlay) {
+        perf_overlay->OnLoadSlot(static_cast<u32>(slot));
+    } else {
+        const auto res = Core::LoadSaveState(*QtCommon::system, path);
+        if (res != Core::SaveStateResult::Success) {
+            statusBar()->showMessage(StormLang(
+                QStringLiteral("Ошибка быстрой загрузки из Слота %1").arg(slot),
+                QStringLiteral("Failed to load state from Slot %1").arg(slot),
+                QStringLiteral("Fehler beim Laden aus Slot %1").arg(slot),
+                QStringLiteral("Échec du chargement depuis l'emplacement %1").arg(slot),
+                QStringLiteral("从槽位 %1 读取失败").arg(slot),
+                QStringLiteral("スロット %1 からのロードに失敗しました").arg(slot)), 4000);
+            return;
+        }
+    }
+    const QString msg = StormLang(
+        QStringLiteral("⚡ Быстрая загрузка: Слот %1 загружен (SESS v2)").arg(slot),
+        QStringLiteral("⚡ Quick Load: Slot %1 loaded (SESS v2)").arg(slot),
+        QStringLiteral("⚡ Schnellladen: Slot %1 geladen (SESS v2)").arg(slot),
+        QStringLiteral("⚡ Chargement rapide : Emplacement %1 chargé (SESS v2)").arg(slot),
+        QStringLiteral("⚡ 快速读取：槽位 %1 已加载 (SESS v2)").arg(slot),
+        QStringLiteral("⚡ クイックロード：スロット %1 をロードしました (SESS v2)").arg(slot));
+    statusBar()->showMessage(msg, 4000);
+    if (in_game_notification) {
+        in_game_notification->ShowNotification(QStringLiteral("SESS v2"), msg, QColor(0, 229, 255), QStringLiteral("💾"), 2500);
+    }
+}
+
+void MainWindow::RefreshSaveStateMenus() {
+    u64 title_id = 0;
+    if (emulation_running && QtCommon::system && QtCommon::system->IsPoweredOn()) {
+        title_id = QtCommon::system->GetApplicationProcessProgramID();
+    }
+    if (title_id == 0) {
+        title_id = m_current_addons_title_id;
+    }
+    for (int i = 0; i < 5; ++i) {
+        const int slot_num = i + 1;
+        QString suffix = StormLang(
+            QStringLiteral(" (Пусто)"),
+            QStringLiteral(" (Empty)"),
+            QStringLiteral(" (Leer)"),
+            QStringLiteral(" (Vide)"),
+            QStringLiteral(" (空)"),
+            QStringLiteral(" (空)"));
+        bool has_file = false;
+        if (title_id != 0) {
+            const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot_num));
+            std::error_code ec;
+            if (std::filesystem::exists(path, ec)) {
+                has_file = true;
+                const auto fsize = std::filesystem::file_size(path, ec);
+                const double mb = static_cast<double>(fsize) / (1024.0 * 1024.0);
+                QFileInfo fi(QString::fromStdString(Common::FS::PathToUTF8String(path)));
+                const QString dt = fi.lastModified().toString(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
+                suffix = QStringLiteral("  [%1 MB — %2]").arg(QString::number(mb, 'f', 2), dt);
+            }
+        }
+        const QString slot_prefix = StormLang(
+            QStringLiteral("Слот %1").arg(slot_num),
+            QStringLiteral("Slot %1").arg(slot_num),
+            QStringLiteral("Slot %1").arg(slot_num),
+            QStringLiteral("Emplacement %1").arg(slot_num),
+            QStringLiteral("槽位 %1").arg(slot_num),
+            QStringLiteral("スロット %1").arg(slot_num));
+        if (save_slot_actions[i]) {
+            save_slot_actions[i]->setText(slot_prefix + suffix);
+        }
+        if (load_slot_actions[i]) {
+            load_slot_actions[i]->setText(slot_prefix + suffix);
+            load_slot_actions[i]->setEnabled(has_file || title_id == 0);
         }
     }
 }
@@ -10194,6 +10395,26 @@ void MainWindow::InitializeSystemTray() {
     m_tray_icon->setContextMenu(m_tray_menu);
     UpdateSystemTrayStrings();
     m_tray_icon->show();
+
+#ifdef _WIN32
+    if (!m_restore_event) {
+        m_restore_event = CreateEventW(nullptr, FALSE, FALSE, L"Global\\STORM_SWITCH_RestoreEvent");
+        if (m_restore_event) {
+            m_restore_timer = new QTimer(this);
+            connect(m_restore_timer, &QTimer::timeout, this, [this]() {
+                if (m_restore_event && WaitForSingleObject(static_cast<HANDLE>(m_restore_event), 0) == WAIT_OBJECT_0) {
+                    if (isHidden() || isMinimized()) {
+                        showNormal();
+                    }
+                    setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+                    raise();
+                    activateWindow();
+                }
+            });
+            m_restore_timer->start(150);
+        }
+    }
+#endif
 }
 
 void MainWindow::UpdateSystemTrayStrings() {
@@ -10597,6 +10818,13 @@ bool MainWindow::ConfirmClose() {
 void MainWindow::closeEvent(QCloseEvent* event) {
     // STORM Close-to-Tray Standard: minimize to system tray on [X] / Alt+F4; exit only from tray menu
     if (!m_is_quitting_from_tray && !m_is_cmd_line_launch && m_tray_icon && m_tray_icon->isVisible()) {
+        if (emulation_running && QtCommon::emu_thread != nullptr) {
+            if (!ConfirmShutdownGame()) {
+                event->ignore();
+                return;
+            }
+            ShutdownGame();
+        }
         UpdateUISettings();
         UISettings::SaveWindowState();
         hide();
@@ -11665,6 +11893,12 @@ public:
             if (src == QStringLiteral("Undocked")) {
                 return QStringLiteral("Портативный");
             }
+            if (src == QStringLiteral("Quick Save")) {
+                return QStringLiteral("Быстрое сохранение (Слот 1)");
+            }
+            if (src == QStringLiteral("Quick Load")) {
+                return QStringLiteral("Быстрая загрузка (Слот 1)");
+            }
             return {};
         }
 
@@ -11845,6 +12079,47 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
             QStringLiteral("NAND にファイルをインストール...")
         ));
     }
+    if (quick_save_action) {
+        quick_save_action->setText(StormLang(
+            QStringLiteral("Быстрое сохранение (Слот 1)"),
+            QStringLiteral("Quick Save (Slot 1)"),
+            QStringLiteral("Schnellspeichern (Slot 1)"),
+            QStringLiteral("Sauvegarde rapide (Emplacement 1)"),
+            QStringLiteral("快速保存 (槽位 1)"),
+            QStringLiteral("クイックセーブ (スロット 1)")
+        ));
+    }
+    if (quick_load_action) {
+        quick_load_action->setText(StormLang(
+            QStringLiteral("Быстрая загрузка (Слот 1)"),
+            QStringLiteral("Quick Load (Slot 1)"),
+            QStringLiteral("Schnellladen (Slot 1)"),
+            QStringLiteral("Chargement rapide (Emplacement 1)"),
+            QStringLiteral("快速读取 (槽位 1)"),
+            QStringLiteral("クイックロード (スロット 1)")
+        ));
+    }
+    if (save_state_slots_menu) {
+        save_state_slots_menu->setTitle(StormLang(
+            QStringLiteral("Сохранить состояние в слот"),
+            QStringLiteral("Save State to Slot"),
+            QStringLiteral("Status in Slot speichern"),
+            QStringLiteral("Sauvegarder l'état dans l'emplacement"),
+            QStringLiteral("保存状态到槽位"),
+            QStringLiteral("スロットにステートを保存")
+        ));
+    }
+    if (load_state_slots_menu) {
+        load_state_slots_menu->setTitle(StormLang(
+            QStringLiteral("Загрузить состояние из слота"),
+            QStringLiteral("Load State from Slot"),
+            QStringLiteral("Status aus Slot laden"),
+            QStringLiteral("Charger l'état depuis l'emplacement"),
+            QStringLiteral("从槽位读取状态"),
+            QStringLiteral("スロットからステートをロード")
+        ));
+    }
+    RefreshSaveStateMenus();
     if (ui->action_Amiibo_Online_Database) {
         ui->action_Amiibo_Online_Database->setText(StormLang(
             QStringLiteral("Онлайн-база Amiibo..."),

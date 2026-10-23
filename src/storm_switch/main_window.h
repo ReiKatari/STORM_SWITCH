@@ -457,6 +457,9 @@ private slots:
     void OnCheckFirmwareDecryption();
     void OnQuickSave();
     void OnQuickLoad();
+    void OnSaveStateSlot(int slot);
+    void OnLoadStateSlot(int slot);
+    void RefreshSaveStateMenus();
 #ifdef __unix__
     void OnCheckGraphicsBackend();
 #endif
@@ -761,6 +764,14 @@ private:
     QAction* storm_save_sync_action{nullptr};
     QAction* log_viewer_action{nullptr};
     QAction* reset_gamefix_action{nullptr};
+    QAction* quick_save_action{nullptr};
+    QAction* quick_load_action{nullptr};
+    QMenu* save_state_slots_menu{nullptr};
+    QMenu* load_state_slots_menu{nullptr};
+    std::array<QAction*, 5> save_slot_actions{};
+    std::array<QAction*, 5> load_slot_actions{};
+    void* m_restore_event{nullptr};
+    QTimer* m_restore_timer{nullptr};
 
     void InitializeSystemTray();
     void UpdateSystemTrayStrings();
