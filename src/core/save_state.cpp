@@ -16,6 +16,7 @@
 #include "common/logging.h"
 #include "common/zstd_compression.h"
 #include "core/arm/arm_interface.h"
+#include "core/arm/exclusive_monitor.h"
 #include "core/core.h"
 #include "core/device_memory.h"
 #include "core/hle/kernel/board/nintendo/nx/k_system_control.h"
@@ -84,7 +85,7 @@ std::shared_ptr<CachedSaveState> GetFromRamCache(const std::string& key) {
     return it->second;
 }
 
-std::vector<WritableRegion> EnumerateWritableRegions(Kernel::KProcess& process) {
+std::vector<WritableRegion> EnumerateWritableRegions(Kernel::KProcess& process, bool allow_device_shared = false) {
     std::vector<WritableRegion> regions;
     auto& page_table = process.GetPageTable();
     const auto start = page_table.GetAddressSpaceStart();
@@ -102,23 +103,37 @@ std::vector<WritableRegion> EnumerateWritableRegions(Kernel::KProcess& process) 
         const bool is_writable =
             (svc_info.permission & Kernel::Svc::MemoryPermission::Write) !=
             Kernel::Svc::MemoryPermission::None;
-        const bool is_scannable_state =
-            svc_info.state != Kernel::Svc::MemoryState::Free &&
-            svc_info.state != Kernel::Svc::MemoryState::Inaccessible &&
-            svc_info.state != Kernel::Svc::MemoryState::Io &&
-            svc_info.state != Kernel::Svc::MemoryState::Kernel &&
-            svc_info.state != Kernel::Svc::MemoryState::Code &&
-            svc_info.state != Kernel::Svc::MemoryState::AliasCode &&
-            svc_info.state != Kernel::Svc::MemoryState::SharedCode;
 
-        if (is_writable && is_scannable_state && info.GetSize() > 0) {
+        // Only scan pure CPU game data regions (.data, .bss, Static, CPU Heap).
+        // Never overwrite Thread Stacks, ThreadLocal (TLS/IPC buffers), SharedMemory,
+        // TransferMemory (AudioRenderer), or IPC buffers.
+        const bool is_game_data_state =
+            svc_info.state == Kernel::Svc::MemoryState::CodeData ||
+            svc_info.state == Kernel::Svc::MemoryState::AliasCodeData ||
+            svc_info.state == Kernel::Svc::MemoryState::Static ||
+            svc_info.state == Kernel::Svc::MemoryState::Normal ||
+            svc_info.state == Kernel::Svc::MemoryState::Alias;
+
+        // Exclude kernel-locked, IPC-locked, and GPU-uncached (NVN GPFIFO / command buffer /
+        // syncpoint fence / render target) blocks so we never corrupt active HLE/Vulkan state.
+        const auto forbidden_attrs =
+            Kernel::Svc::MemoryAttribute::Locked |
+            Kernel::Svc::MemoryAttribute::IpcLocked |
+            Kernel::Svc::MemoryAttribute::Uncached |
+            (allow_device_shared ? Kernel::Svc::MemoryAttribute{}
+                                 : Kernel::Svc::MemoryAttribute::DeviceShared);
+
+        const bool is_safe_attr =
+            static_cast<u32>(svc_info.attribute & forbidden_attrs) == 0 &&
+            svc_info.ipc_count == 0 &&
+            (allow_device_shared || svc_info.device_count == 0 ||
+             svc_info.state == Kernel::Svc::MemoryState::CodeData ||
+             svc_info.state == Kernel::Svc::MemoryState::AliasCodeData);
+
+        if (is_writable && is_game_data_state && is_safe_attr && info.GetSize() > 0) {
             const u64 reg_addr = static_cast<u64>(info.GetAddress());
             const u64 reg_size = info.GetSize();
-            if (!regions.empty() && regions.back().address + regions.back().size == reg_addr) {
-                regions.back().size += reg_size;
-            } else {
-                regions.push_back(WritableRegion{reg_addr, reg_size});
-            }
+            regions.push_back(WritableRegion{reg_addr, reg_size});
         }
 
         const Common::ProcessAddress next = info.GetAddress() + info.GetSize();
@@ -127,7 +142,86 @@ std::vector<WritableRegion> EnumerateWritableRegions(Kernel::KProcess& process) 
         }
         address = next;
     }
+
+    // Fallback if a game mapped its entire Normal heap with DeviceShared
+    if (!allow_device_shared) {
+        bool has_heap = false;
+        for (const auto& reg : regions) {
+            if (reg.size >= 256 * 1024) {
+                has_heap = true;
+                break;
+            }
+        }
+        if (!has_heap) {
+            return EnumerateWritableRegions(process, true);
+        }
+    }
+
     return regions;
+}
+
+void WaitForCleanFrameBoundary(Kernel::KProcess& process) {
+    // Wait up to 8 ms for active userland game threads to reach their natural end-of-frame
+    // kernel wait (e.g. WaitSynchronization on VSync / NVN fence) before stalling cores.
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(8);
+    while (std::chrono::steady_clock::now() < deadline) {
+        bool any_user_thread_running_code = false;
+        {
+            auto& thread_list = process.GetThreadList();
+            for (const auto& thread : thread_list) {
+                if (!thread.IsUserThread() || thread.IsDummyThread()) {
+                    continue;
+                }
+                if (thread.GetState() == Kernel::ThreadState::Runnable) {
+                    any_user_thread_running_code = true;
+                    break;
+                }
+            }
+        }
+        if (!any_user_thread_running_code) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::microseconds(200));
+    }
+}
+
+struct ProtectedAddressRange {
+    u64 start{};
+    u64 end{};
+};
+
+std::vector<ProtectedAddressRange> CollectProtectedKernelSyncRanges(Kernel::KProcess& process) {
+    std::vector<ProtectedAddressRange> ranges;
+    auto& thread_list = process.GetThreadList();
+    for (const auto& thread : thread_list) {
+        // 1. Protect nn::os::ThreadType userland structure pointed to by TPIDR_EL0
+        const u64 tpidr = thread.GetTpidrEl0();
+        if (tpidr >= 0x1000) {
+            ranges.push_back({tpidr >= 64 ? tpidr - 64 : tpidr, tpidr + 512});
+        }
+        // 2. Protect TLS / IPC command buffer region
+        const u64 tls = GetInteger(thread.GetTlsAddress());
+        if (tls >= 0x1000) {
+            ranges.push_back({tls, tls + 0x200});
+        }
+        // 3. Protect active userland stack area (in case aliased in Normal/Alias heap)
+        const u64 stack_top = GetInteger(thread.GetUserStackTop());
+        if (stack_top >= 0x40000) {
+            ranges.push_back({stack_top - 0x40000, stack_top});
+        }
+        // 4. Protect active kernel mutex / condvar / address arbiter words in guest RAM
+        const u64 addr_key = GetInteger(thread.GetAddressKey());
+        if (addr_key >= 0x1000) {
+            const u64 aligned = addr_key & ~u64(63);
+            ranges.push_back({aligned, aligned + 64});
+        }
+        const u64 cv_key = thread.GetConditionVariableKey();
+        if (cv_key >= 0x1000) {
+            const u64 aligned = cv_key & ~u64(63);
+            ranges.push_back({aligned, aligned + 64});
+        }
+    }
+    return ranges;
 }
 
 bool IsChunkZero4KB(const u8* ptr, std::size_t len) {
@@ -144,15 +238,6 @@ bool IsChunkZero4KB(const u8* ptr, std::size_t len) {
         }
     }
     return true;
-}
-
-bool IsParkedInKernel(const Kernel::KThread& thread) {
-    if (thread.GetState() != Kernel::ThreadState::Waiting) {
-        return false;
-    }
-    const auto reason = thread.GetWaitReasonForDebugging();
-    return reason != Kernel::ThreadWaitReasonForDebugging::None &&
-           reason != Kernel::ThreadWaitReasonForDebugging::IPC;
 }
 
 SaveStateResult WriteSnapshotToDisk(const std::shared_ptr<CachedSaveState>& snapshot,
@@ -242,13 +327,16 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     // Ensure any previous background disk write is completed before starting a new snapshot
     FlushPendingSaveStates();
 
-    // Pause emulation briefly while capturing RAM snapshot
-    system.StallApplication();
+    // Align to a clean frame boundary wait before stalling CPU cores
+    WaitForCleanFrameBoundary(*process);
+
+    // Pause emulation briefly while capturing RAM snapshot (must hold returned lock!)
+    auto stall_lock = system.StallApplication();
 
     auto snapshot = std::make_shared<CachedSaveState>();
     const u64 dram_size = Kernel::Board::Nintendo::Nx::KSystemControl::Init::GetIntendedMemorySize();
 
-    // 1. Enumerate only writable mapped guest memory regions (skips read-only .text/.rodata & unmapped heap)
+    // 1. Enumerate only writable CPU game-data regions (skips read-only code & GPU/HLE pools)
     const auto regions = EnumerateWritableRegions(*process);
     auto& memory = system.ApplicationMemory();
 
@@ -306,7 +394,7 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
         total_stored_chunks += stored_chunks;
     }
 
-    // 2. Collect thread contexts
+    // 2. Collect thread metadata (Unload already saved true registers into thread.GetContext())
     auto& thread_list = process->GetThreadList();
     for (auto& thread : thread_list) {
         ThreadSnapshot snap{};
@@ -314,13 +402,7 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
         snap.core_id = static_cast<u32>(thread.GetActiveCore());
         snap.tls_address = GetInteger(thread.GetTlsAddress());
 
-        auto ctx = thread.GetContext();
-        const auto core_id = thread.GetActiveCore();
-        if (core_id >= 0 && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES)) {
-            if (auto* arm = process->GetArmInterface(core_id)) {
-                arm->GetContext(ctx);
-            }
-        }
+        const auto& ctx = thread.GetContext();
         std::memcpy(snap.context_data, &ctx, std::min(sizeof(ctx), sizeof(snap.context_data)));
         snapshot->threads.push_back(snap);
     }
@@ -343,6 +425,7 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
 
     // Resume emulation immediately! ZSTD compression and disk I/O happen asynchronously.
     system.UnstallApplication();
+    stall_lock.unlock();
 
     const auto stall_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                               std::chrono::steady_clock::now() - t_start)
@@ -419,53 +502,27 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
     }
 
     const auto& header = cached->header;
-    const auto& thread_snapshots = cached->threads;
     const auto& decompressed = cached->uncompressed_payload;
-
-    // Pause emulation for differential memory & thread restoration
-    system.StallApplication();
 
     auto& kernel = system.Kernel();
     auto* process = kernel.ApplicationProcess();
+    if (!process) {
+        return SaveStateResult::ErrorSystemNotRunning;
+    }
+
+    // Align to a clean frame boundary wait before stalling CPU cores
+    WaitForCleanFrameBoundary(*process);
+
+    // Pause emulation for differential memory restoration (must hold returned lock!)
+    auto stall_lock = system.StallApplication();
+
+    process = kernel.ApplicationProcess();
     if (!process) {
         system.UnstallApplication();
         return SaveStateResult::ErrorSystemNotRunning;
     }
 
-    // Collect stack tops of threads currently parked in a kernel wait fiber whose PC/wait
-    // differs from the saved state so we never corrupt an active host C++ fiber call stack.
-    std::vector<u64> protected_sleeping_stacks;
-    {
-        auto& thread_list = process->GetThreadList();
-        for (auto& thread : thread_list) {
-            if (!IsParkedInKernel(thread)) {
-                continue;
-            }
-            bool same_wait_site = false;
-            for (const auto& snap : thread_snapshots) {
-                if (static_cast<u32>(thread.GetThreadId()) == snap.thread_id) {
-                    Kernel::Svc::ThreadContext saved_ctx{};
-                    std::memcpy(&saved_ctx, snap.context_data,
-                                std::min(sizeof(saved_ctx), sizeof(snap.context_data)));
-                    const auto& live_ctx = thread.GetContext();
-                    if (live_ctx.pc == saved_ctx.pc && live_ctx.r[0] == saved_ctx.r[0]) {
-                        same_wait_site = true;
-                    }
-                    break;
-                }
-            }
-            if (!same_wait_site) {
-                protected_sleeping_stacks.push_back(GetInteger(thread.GetUserStackTop()));
-            }
-        }
-    }
-
-    const auto is_protected_stack_region = [&](u64 reg_addr, u64 reg_size) {
-        return std::any_of(protected_sleeping_stacks.begin(), protected_sleeping_stacks.end(),
-                           [&](u64 stack_top) {
-                               return stack_top > reg_addr && stack_top <= reg_addr + reg_size;
-                           });
-    };
+    const auto protected_ranges = CollectProtectedKernelSyncRanges(*process);
 
     if (header.flags & SaveStateFlag_WritableRegions) {
         // v2: Page-Table Writable Regions + Differential 4KB Page Restoration (WriteChanged)
@@ -480,6 +537,7 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
 
         auto& memory = system.ApplicationMemory();
         std::vector<u8> live_page(V2_CHUNK_SIZE);
+        std::vector<u8> patched_page(V2_CHUNK_SIZE);
         std::array<u8, V2_CHUNK_SIZE> zero_page{};
         u64 diff_bytes_written = 0;
 
@@ -501,7 +559,27 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
             const u8* bitmask = decompressed.data() + cursor;
             cursor += bitmask_bytes;
 
-            const bool skip_region = is_protected_stack_region(reg_hdr.address, reg_hdr.size);
+            // Verify whether this region is still a safe CPU game-data region in the live page table
+            Kernel::KMemoryInfo live_info{};
+            Kernel::Svc::PageInfo live_page_info{};
+            bool region_safe = true;
+            if (process->GetPageTable().QueryInfo(&live_info, &live_page_info, reg_hdr.address).IsSuccess()) {
+                const auto svc_info = live_info.GetSvcMemoryInfo();
+                if (svc_info.state == Kernel::Svc::MemoryState::Stack ||
+                    svc_info.state == Kernel::Svc::MemoryState::ThreadLocal ||
+                    svc_info.state == Kernel::Svc::MemoryState::Ipc ||
+                    svc_info.state == Kernel::Svc::MemoryState::NonSecureIpc ||
+                    svc_info.state == Kernel::Svc::MemoryState::NonDeviceIpc ||
+                    svc_info.state == Kernel::Svc::MemoryState::Shared ||
+                    svc_info.state == Kernel::Svc::MemoryState::Transferred ||
+                    svc_info.state == Kernel::Svc::MemoryState::SharedTransferred ||
+                    static_cast<u32>(svc_info.attribute &
+                                     (Kernel::Svc::MemoryAttribute::Locked |
+                                      Kernel::Svc::MemoryAttribute::IpcLocked |
+                                      Kernel::Svc::MemoryAttribute::Uncached)) != 0) {
+                    region_safe = false;
+                }
+            }
 
             for (u32 c = 0; c < reg_hdr.num_chunks; ++c) {
                 const u64 page_addr = reg_hdr.address + static_cast<u64>(c) * V2_CHUNK_SIZE;
@@ -519,15 +597,39 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                     cursor += chunk_len;
                 }
 
-                if (skip_region) {
+                if (!region_safe) {
                     continue;
                 }
 
-                // Differential WriteChanged check: only write (and invalidate GPU cache) if the
-                // 4KB page actually differs from live guest memory!
+                // Differential WriteChanged check: only write if the 4KB page differs from live RAM
                 if (memory.ReadBlockUnsafe(page_addr, live_page.data(), chunk_len)) {
                     if (std::memcmp(live_page.data(), target_data, chunk_len) != 0) {
-                        memory.WriteBlock(page_addr, target_data, chunk_len);
+                        const u64 page_end = page_addr + chunk_len;
+                        const u8* data_to_write = target_data;
+
+                        // Preserve any active kernel/OS synchronization structures on this page
+                        bool has_overlap = false;
+                        for (const auto& pr : protected_ranges) {
+                            if (pr.start < page_end && pr.end > page_addr) {
+                                if (!has_overlap) {
+                                    std::memcpy(patched_page.data(), target_data, chunk_len);
+                                    has_overlap = true;
+                                }
+                                const u64 ov_start = std::max(page_addr, pr.start) - page_addr;
+                                const u64 ov_end = std::min(page_end, pr.end) - page_addr;
+                                std::memcpy(patched_page.data() + ov_start,
+                                            live_page.data() + ov_start,
+                                            static_cast<std::size_t>(ov_end - ov_start));
+                            }
+                        }
+                        if (has_overlap) {
+                            data_to_write = patched_page.data();
+                            if (std::memcmp(live_page.data(), data_to_write, chunk_len) == 0) {
+                                continue;
+                            }
+                        }
+
+                        memory.WriteBlockUnsafe(page_addr, data_to_write, chunk_len);
                         diff_bytes_written += chunk_len;
                     }
                 }
@@ -563,7 +665,6 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                 page_data += page_size;
             }
         }
-        system.GPU().FlushAndInvalidateRegion(0, header.dram_size);
         system.GPU().InvalidateGPUCache();
     } else {
         // Legacy v1 Uncompressed
@@ -574,44 +675,20 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
             return SaveStateResult::ErrorDecompress;
         }
         std::memcpy(dram_ptr, decompressed.data(), header.dram_size);
-        system.GPU().FlushAndInvalidateRegion(0, header.dram_size);
         system.GPU().InvalidateGPUCache();
     }
 
-    // Restore thread contexts safely
-    if (!thread_snapshots.empty()) {
-        auto& thread_list = process->GetThreadList();
-        for (auto& thread : thread_list) {
-            for (const auto& snap : thread_snapshots) {
-                if (static_cast<u32>(thread.GetThreadId()) == snap.thread_id) {
-                    // Leave threads parked in incompatible kernel waits with their live fiber intact
-                    const u64 stack_top = GetInteger(thread.GetUserStackTop());
-                    if (std::find(protected_sleeping_stacks.begin(), protected_sleeping_stacks.end(),
-                                  stack_top) != protected_sleeping_stacks.end()) {
-                        break;
-                    }
-
-                    auto& ctx = thread.GetContext();
-                    std::memcpy(&ctx, snap.context_data,
-                                std::min(sizeof(ctx), sizeof(snap.context_data)));
-                    const auto core_id = thread.GetActiveCore();
-                    if (core_id >= 0 && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES)) {
-                        if (auto* arm = process->GetArmInterface(core_id)) {
-                            arm->SetContext(ctx);
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    // Reschedule cores immediately
+    // Clear exclusive monitor state across all physical cores before resuming
+    auto& monitor = process->GetExclusiveMonitor();
     for (std::size_t c = 0; c < Core::Hardware::NUM_CPU_CORES; ++c) {
-        kernel.Scheduler(c).RequestScheduleOnInterrupt(kernel);
+        monitor.ClearExclusive(c);
     }
 
+    // Never call kernel.Scheduler(c).RequestScheduleOnInterrupt(kernel) from the GUI thread!
+    // UnstallApplication() calls kernel.SuspendEmulation(false), which safely resumes and
+    // reschedules all cores from their own threads.
     system.UnstallApplication();
+    stall_lock.unlock();
 
     const auto load_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                              std::chrono::steady_clock::now() - t_start)
