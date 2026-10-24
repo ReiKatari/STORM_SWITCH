@@ -7998,6 +7998,41 @@ void MainWindow::OnEmulatorUpdateAvailable() {
     if (!version)
         return;
 
+    auto parse_ver = [](std::string s) {
+        while (!s.empty() && (s.front() == 'v' || s.front() == 'V' || s.front() == ' ')) {
+            s.erase(s.begin());
+        }
+        std::vector<int> parts;
+        std::string cur;
+        for (unsigned char c : s) {
+            if (c >= '0' && c <= '9') {
+                cur += static_cast<char>(c);
+            } else if (c == '.') {
+                if (!cur.empty()) {
+                    try { parts.push_back(std::stoi(cur)); } catch (...) { parts.push_back(0); }
+                    cur.clear();
+                }
+            }
+        }
+        if (!cur.empty()) {
+            try { parts.push_back(std::stoi(cur)); } catch (...) { parts.push_back(0); }
+        }
+        while (parts.size() < 3) parts.push_back(0);
+        return parts;
+    };
+
+    const auto remote_p = parse_ver(version->tag);
+    const auto local_p = parse_ver(std::string{Common::g_build_version});
+    bool is_newer = false;
+    for (size_t i = 0; i < std::max(remote_p.size(), local_p.size()); ++i) {
+        const int r = i < remote_p.size() ? remote_p[i] : 0;
+        const int l = i < local_p.size() ? local_p[i] : 0;
+        if (r > l) { is_newer = true; break; }
+        if (r < l) { is_newer = false; break; }
+    }
+    if (!is_newer)
+        return;
+
     UpdateDialog dialog(version.value(), this);
     dialog.exec();
 }

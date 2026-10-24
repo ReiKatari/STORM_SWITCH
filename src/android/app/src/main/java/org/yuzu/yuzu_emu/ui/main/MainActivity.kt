@@ -257,13 +257,40 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         }
     }
 
+    private fun parseVersionParts(versionStr: String): List<Int> {
+        val clean = versionStr.trim().removePrefix("v").removePrefix("V").trim()
+        val parts = Regex("\\d+").findAll(clean).map { it.value.toIntOrNull() ?: 0 }.toMutableList()
+        while (parts.size < 3) {
+            parts.add(0)
+        }
+        return parts
+    }
+
+    private fun isRemoteVersionNewer(remoteTag: String, currentVer: String): Boolean {
+        val cleanRemote = remoteTag.trim().removePrefix("v").removePrefix("V").trim()
+        val cleanLocal = currentVer.trim().removePrefix("v").removePrefix("V").trim()
+        if (cleanRemote.isEmpty() || cleanRemote.equals(cleanLocal, ignoreCase = true)) {
+            return false
+        }
+        val remoteParts = parseVersionParts(cleanRemote)
+        val localParts = parseVersionParts(cleanLocal)
+        val maxLen = maxOf(remoteParts.size, localParts.size)
+        for (i in 0 until maxLen) {
+            val r = if (i < remoteParts.size) remoteParts[i] else 0
+            val l = if (i < localParts.size) localParts[i] else 0
+            if (r > l) return true
+            if (r < l) return false
+        }
+        return false
+    }
+
     private fun checkForUpdates() {
         Thread {
             val latestVersion = NativeLibrary.checkForUpdate()
             if (latestVersion != null) {
-                val currentVersion = org.yuzu.yuzu_emu.BuildConfig.VERSION_NAME.trim().removePrefix("v").removePrefix("V")
-                val releaseTag = latestVersion.tag.trim().removePrefix("v").removePrefix("V")
-                if (releaseTag.equals(currentVersion, ignoreCase = true)) {
+                val currentVersion = org.yuzu.yuzu_emu.BuildConfig.VERSION_NAME.trim()
+                val releaseTag = latestVersion.tag.trim()
+                if (!isRemoteVersionNewer(releaseTag, currentVersion)) {
                     return@Thread
                 }
                 runOnUiThread {

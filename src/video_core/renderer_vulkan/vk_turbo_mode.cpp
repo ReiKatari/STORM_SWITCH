@@ -13,6 +13,7 @@
 #ifdef __ANDROID__
 #include <fcntl.h>
 #include <unistd.h>
+#include <cstdlib>
 #include <cstring>
 #if defined(ARCHITECTURE_arm64)
 #include <adrenotools/driver.h>
@@ -203,11 +204,73 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
     }
 #endif
 
+#if defined(__ANDROID__)
+    bool turbo_currently_enabled = true;
+    auto read_max_thermal_celsius = []() -> int {
+        static const char* const thermal_nodes[] = {
+            "/sys/class/kgsl/kgsl-3d0/temp",
+            "/sys/class/thermal/thermal_zone0/temp",
+            "/sys/class/thermal/thermal_zone1/temp",
+            "/sys/class/thermal/thermal_zone2/temp",
+            "/sys/class/thermal/thermal_zone3/temp",
+            "/sys/class/power_supply/battery/temp",
+        };
+        int max_c = 0;
+        char buf[32]{};
+        for (const char* tpath : thermal_nodes) {
+            int fd = open(tpath, O_RDONLY);
+            if (fd >= 0) {
+                ssize_t n = read(fd, buf, sizeof(buf) - 1);
+                close(fd);
+                if (n > 0) {
+                    buf[n] = '\0';
+                    int raw = std::atoi(buf);
+                    int c = raw;
+                    if ( std::strstr(tpath, "battery") != nullptr ) {
+                        // Battery temp is typically tenths of a degree C (e.g. 420 = 42.0C); map >=43C to >=72C equivalent
+                        c = (raw > 1000) ? (raw / 1000) : (raw / 10);
+                        if (c >= 43) {
+                            max_c = std::max(max_c, 75);
+                        }
+                    } else {
+                        if (raw > 1000) c = raw / 1000;
+                        else if (raw > 200) c = raw / 10;
+                        if (c > 0 && c < 125) {
+                            max_c = std::max(max_c, c);
+                        }
+                    }
+                }
+            }
+        }
+        return max_c;
+    };
+#endif
+
     while (!stop_token.stop_requested()) {
         std::unique_lock lk{m_submission_lock};
-        m_submission_cv.wait_for(lk, stop_token, std::chrono::seconds{1}, [&] {
+        m_submission_cv.wait_for(lk, stop_token, std::chrono::seconds{2}, [&] {
             return stop_token.stop_requested();
         });
+#if defined(__ANDROID__)
+        if (!stop_token.stop_requested()) {
+            const int temp_c = read_max_thermal_celsius();
+            if (turbo_currently_enabled && temp_c >= 72) {
+#if defined(ARCHITECTURE_arm64)
+                adrenotools_set_turbo(false);
+#endif
+                write_node("/sys/class/kgsl/kgsl-3d0/force_clk_on", "0\n");
+                write_node("/sys/class/kgsl/kgsl-3d0/force_bus_on", "0\n");
+                write_node("/sys/class/kgsl/kgsl-3d0/force_rail_on", "0\n");
+                turbo_currently_enabled = false;
+                LOG_INFO(Render_Vulkan, "STORM Thermal Guard: Mobile GPU turbo stepped down ({}C) to prevent overheating", temp_c);
+            } else if (!turbo_currently_enabled && temp_c > 0 && temp_c <= 64) {
+#if defined(ARCHITECTURE_arm64)
+                adrenotools_set_turbo(true);
+#endif
+                turbo_currently_enabled = true;
+            }
+        }
+#endif
     }
 }
 

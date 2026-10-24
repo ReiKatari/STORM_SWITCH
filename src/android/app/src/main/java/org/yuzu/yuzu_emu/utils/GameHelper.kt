@@ -110,6 +110,63 @@ object GameHelper {
         val mountedContainerUris = mutableSetOf<String>()
         mountExternalContentDirectories(mountedContainerUris)
 
+        val discoveredUpdateVersionsByPid = mutableMapOf<String, Pair<String, String>>()
+        val discoveredUpdateVersionsByTitle = mutableMapOf<String, Pair<String, String>>()
+
+        fun recordDiscoveredVersion(rawName: String, rawPath: String) {
+            val (ver, intVer) = resolveVersionFromNames(listOf(rawName, rawPath), "1.0.0", "0")
+            if (isBaseVersion(ver) && (intVer.toLongOrNull() ?: 0L) <= 0L) return
+            val idMatch = Regex("0100[0-9a-fA-F]{12}").find(rawName) ?: Regex("0100[0-9a-fA-F]{12}").find(rawPath)
+            if (idMatch != null) {
+                val parsed = idMatch.value.toULongOrNull(16)
+                if (parsed != null && parsed != 0uL) {
+                    val baseHex = String.format(Locale.ROOT, "%016X", (parsed and 0xFFFFFFFFFFFFE000uL).toLong())
+                    val prev = discoveredUpdateVersionsByPid[baseHex]
+                    if (prev == null || compareVersionStrings(ver, intVer, prev.first, prev.second) > 0) {
+                        discoveredUpdateVersionsByPid[baseHex] = Pair(ver, intVer)
+                    }
+                }
+            }
+            val cleanT = cleanGameTitle(rawName).lowercase(Locale.ROOT).trim()
+            if (cleanT.isNotEmpty()) {
+                val prevT = discoveredUpdateVersionsByTitle[cleanT]
+                if (prevT == null || compareVersionStrings(ver, intVer, prevT.first, prevT.second) > 0) {
+                    discoveredUpdateVersionsByTitle[cleanT] = Pair(ver, intVer)
+                }
+            }
+        }
+
+        // Also harvest any versions from previously cached entries before filtering out standalone updates/DLCs
+        cachedGameList.forEach { cg ->
+            recordDiscoveredVersion(cg.title, cg.path)
+            val pid = getBaseProgramIdHex(cg.programIdHex)
+            if (pid != "0") {
+                val prev = discoveredUpdateVersionsByPid[pid]
+                if (prev == null || compareVersionStrings(cg.version, cg.internalVersion, prev.first, prev.second) > 0) {
+                    discoveredUpdateVersionsByPid[pid] = Pair(cg.version, cg.internalVersion)
+                }
+            }
+        }
+
+        // Pass 1: Mount all external content containers (.nsp, .nsz, .xci, .xcz) across all gameDirs FIRST
+        // so ContentProvider knows about 100% of Updates and DLCs before Pass 2 queries GameMetadata!
+        val dirFilesCache = mutableListOf<Pair<Array<MinimalDocumentFile>, Int>>()
+        gameDirs.forEach { gameDir ->
+            val gameDirUri = gameDir.uriString.toUri()
+            if (FileUtil.isTreeUriValid(gameDirUri)) {
+                val scanDepth = if (gameDir.deepScan) 7 else 5
+                val topFiles = FileUtil.listFiles(gameDirUri)
+                dirFilesCache.add(Pair(topFiles, scanDepth))
+                scanContentContainersRecursive(topFiles, scanDepth) { containerFile ->
+                    val containerUri = containerFile.uri.toString()
+                    recordDiscoveredVersion(containerFile.filename, containerUri)
+                    if (mountedContainerUris.add(containerUri)) {
+                        NativeLibrary.addGameFolderFileToFilesystemProvider(containerUri)
+                    }
+                }
+            }
+        }
+
         val cachedMapByPath = cachedGameList.associateBy { it.path }
         val cachedMapByName = cachedGameList.groupBy {
             try { FileUtil.getFilename(it.path.toUri()) } catch (e: Exception) {
@@ -119,47 +176,72 @@ object GameHelper {
         }.filter { it.key.isNotEmpty() && it.value.size == 1 }
          .mapValues { it.value.first() }
 
-        // Fast unified single-pass: Mount containers and discover games simultaneously
-        gameDirs.forEach { gameDir ->
-            val gameDirUri = gameDir.uriString.toUri()
-            if (FileUtil.isTreeUriValid(gameDirUri)) {
-                val scanDepth = if (gameDir.deepScan) 7 else 5
-                scanAndAddGamesRecursive(
-                    games,
-                    FileUtil.listFiles(gameDirUri),
-                    scanDepth,
-                    mountedContainerUris,
-                    cachedMapByPath,
-                    cachedMapByName
-                )
-            }
+        // Pass 2: Discover bootable base games (excluding standalone updates and DLCs)
+        dirFilesCache.forEach { (topFiles, scanDepth) ->
+            scanAndAddGamesRecursive(
+                games,
+                topFiles,
+                scanDepth,
+                mountedContainerUris,
+                cachedMapByPath,
+                cachedMapByName
+            )
         }
 
         val finalGames = deduplicateGames(games)
 
-        // Upgrade and sanitize versions for all loaded games
+        // Upgrade and sanitize versions and addon counts for all deduplicated games
         finalGames.forEach { game ->
             upgradeGameVersionIfNeeded(game)
+            val freshAddons = runCatching { GameMetadata.getAddonCount(game.path) }.getOrDefault(0)
+            if (freshAddons > game.addonCount) {
+                game.addonCount = freshAddons
+            }
+            val freshVer = runCatching { GameMetadata.getVersion(game.path, true) }.getOrDefault("")
+            val freshIntVer = runCatching { GameMetadata.getInternalVersion(game.path) }.getOrDefault("")
+            if (compareVersionStrings(freshVer, freshIntVer, game.version, game.internalVersion) > 0) {
+                if (!isBaseVersion(freshVer)) game.version = freshVer
+                if ((freshIntVer.toLongOrNull() ?: 0L) > (game.internalVersion.toLongOrNull() ?: 0L)) {
+                    game.internalVersion = freshIntVer
+                }
+            }
+            val basePid = getBaseProgramIdHex(game.programIdHex)
+            val discPid = discoveredUpdateVersionsByPid[basePid]
+            if (discPid != null && compareVersionStrings(discPid.first, discPid.second, game.version, game.internalVersion) > 0) {
+                if (!isBaseVersion(discPid.first)) game.version = discPid.first
+                if ((discPid.second.toLongOrNull() ?: 0L) > (game.internalVersion.toLongOrNull() ?: 0L)) {
+                    game.internalVersion = discPid.second
+                }
+            }
+            val cleanT = cleanGameTitle(game.title).lowercase(Locale.ROOT).trim()
+            val discTitle = discoveredUpdateVersionsByTitle[cleanT]
+            if (discTitle != null && compareVersionStrings(discTitle.first, discTitle.second, game.version, game.internalVersion) > 0) {
+                if (!isBaseVersion(discTitle.first)) game.version = discTitle.first
+                if ((discTitle.second.toLongOrNull() ?: 0L) > (game.internalVersion.toLongOrNull() ?: 0L)) {
+                    game.internalVersion = discTitle.second
+                }
+            }
         }
 
-        // Preserve higher addon counts and non-base versions from cached metadata
+        // Preserve higher addon counts and versions from cached metadata across any same-ProgramID entry
         if (cachedGameList.isNotEmpty()) {
-            val cachedMap = cachedGameList.associateBy { it.programIdHex.uppercase(Locale.ROOT) }
             finalGames.forEach { game ->
-                val cached = cachedMap[game.programIdHex.uppercase(Locale.ROOT)]
-                if (cached != null) {
-                    if (cached.addonCount > game.addonCount) {
-                        game.addonCount = cached.addonCount
-                    }
-                    val currentVer = game.version.removePrefix("v").removePrefix("V").trim()
-                    val cachedVer = cached.version.removePrefix("v").removePrefix("V").trim()
-                    if (isBaseVersion(currentVer) && !isBaseVersion(cachedVer)) {
-                        game.version = cached.version
-                    }
-                    val currentIv = game.internalVersion.toLongOrNull() ?: 0L
-                    val cachedIv = cached.internalVersion.toLongOrNull() ?: 0L
-                    if (currentIv < 65536L && cachedIv >= 65536L) {
-                        game.internalVersion = cached.internalVersion
+                val basePid = getBaseProgramIdHex(game.programIdHex)
+                cachedGameList.forEach { cached ->
+                    if (getBaseProgramIdHex(cached.programIdHex) == basePid && basePid != "0") {
+                        if (cached.addonCount > game.addonCount) {
+                            game.addonCount = cached.addonCount
+                        }
+                        if (compareVersionStrings(cached.version, cached.internalVersion, game.version, game.internalVersion) > 0) {
+                            if (!isBaseVersion(cached.version)) {
+                                game.version = cached.version
+                            }
+                            val cachedIv = cached.internalVersion.toLongOrNull() ?: 0L
+                            val currentIv = game.internalVersion.toLongOrNull() ?: 0L
+                            if (cachedIv > currentIv) {
+                                game.internalVersion = cached.internalVersion
+                            }
+                        }
                     }
                 }
             }
@@ -207,89 +289,120 @@ object GameHelper {
         }
     }
 
-    fun getGameDeduplicationKey(game: Game): String {
-        val pid = game.programIdHex.trim()
-        if (pid != "0" && pid.isNotEmpty()) {
-            val normVer = game.version.removePrefix("v").removePrefix("V").trim()
-            val intVer = game.internalVersion.trim()
-            return "PID_${pid.uppercase(Locale.ROOT)}_V_${normVer}_IV_${intVer}"
+    fun getBaseProgramIdHex(rawHex: String): String {
+        val clean = rawHex.trim().uppercase(Locale.ROOT)
+        if (clean.isEmpty() || clean == "0" || clean == "0000000000000000") return "0"
+        val parsed = clean.toULongOrNull(16)
+        return if (parsed != null && parsed != 0uL) {
+            String.format(Locale.ROOT, "%016X", (parsed and 0xFFFFFFFFFFFFE000uL).toLong())
+        } else {
+            clean
         }
-        val ext = game.extension.uppercase(Locale.ROOT)
-        val extSuffix = if (ext.isNotEmpty()) "_$ext" else ""
+    }
+
+    fun compareVersionStrings(verA: String, intVerA: String, verB: String, intVerB: String): Int {
+        val ivA = intVerA.trim().toLongOrNull() ?: 0L
+        val ivB = intVerB.trim().toLongOrNull() ?: 0L
+        if (ivA != ivB && (ivA >= 65536L || ivB >= 65536L)) {
+            return ivA.compareTo(ivB)
+        }
+        val cleanA = verA.trim().removePrefix("v").removePrefix("V").trim()
+        val cleanB = verB.trim().removePrefix("v").removePrefix("V").trim()
+        val baseA = isBaseVersion(cleanA)
+        val baseB = isBaseVersion(cleanB)
+        if (!baseA && baseB) return 1
+        if (baseA && !baseB) return -1
+        val partsA = Regex("\\d+").findAll(cleanA).map { it.value.toIntOrNull() ?: 0 }.toList()
+        val partsB = Regex("\\d+").findAll(cleanB).map { it.value.toIntOrNull() ?: 0 }.toList()
+        val maxLen = maxOf(partsA.size, partsB.size)
+        for (i in 0 until maxLen) {
+            val a = if (i < partsA.size) partsA[i] else 0
+            val b = if (i < partsB.size) partsB[i] else 0
+            if (a != b) return a.compareTo(b)
+        }
+        return ivA.compareTo(ivB)
+    }
+
+    fun getGameDeduplicationKey(game: Game): String {
+        val ext = game.extension.uppercase(Locale.ROOT).ifEmpty { "NSP" }
+        val basePid = getBaseProgramIdHex(game.programIdHex)
+        if (basePid != "0" && basePid.isNotEmpty()) {
+            return "PID_${basePid}_FMT_${ext}"
+        }
         val cleanTitle = cleanGameTitle(game.title).lowercase(Locale.ROOT).trim()
         if (cleanTitle.isNotEmpty() && cleanTitle != "homebrew") {
-            return "TITLE_${cleanTitle}${extSuffix}"
+            return "TITLE_${cleanTitle}_FMT_${ext}"
         }
-        return "${game.path}${extSuffix}"
+        return "${game.path}_FMT_${ext}"
     }
 
     fun selectBetterGame(existing: Game, candidate: Game): Game {
-        // 1. Prefer non-update/patch container over an update dump
-        val existingIsUpdate = existing.path.contains("update", ignoreCase = true) ||
-            existing.path.contains("[upd", ignoreCase = true) ||
-            existing.path.contains("0100.*800", ignoreCase = true)
-        val candidateIsUpdate = candidate.path.contains("update", ignoreCase = true) ||
-            candidate.path.contains("[upd", ignoreCase = true) ||
-            candidate.path.contains("0100.*800", ignoreCase = true)
-        if (existingIsUpdate && !candidateIsUpdate) {
-            return candidate
+        // Compute the highest version, internalVersion, and addonCount across both entries
+        val bestVerPair = if (compareVersionStrings(candidate.version, candidate.internalVersion, existing.version, existing.internalVersion) > 0) {
+            Pair(
+                if (!isBaseVersion(candidate.version)) candidate.version else existing.version,
+                if ((candidate.internalVersion.toLongOrNull() ?: 0L) >= (existing.internalVersion.toLongOrNull() ?: 0L)) candidate.internalVersion else existing.internalVersion
+            )
+        } else {
+            Pair(
+                if (!isBaseVersion(existing.version)) existing.version else candidate.version,
+                if ((existing.internalVersion.toLongOrNull() ?: 0L) >= (candidate.internalVersion.toLongOrNull() ?: 0L)) existing.internalVersion else candidate.internalVersion
+            )
         }
-        if (!existingIsUpdate && candidateIsUpdate) {
-            return existing
+        val bestAddonCount = maxOf(existing.addonCount, candidate.addonCount)
+
+        // Choose which entry provides the bootable base game path
+        val existingIsUpdate = isUpdateOrDlcPath(existing.path) || isUpdateOrDlcPath(existing.title)
+        val candidateIsUpdate = isUpdateOrDlcPath(candidate.path) || isUpdateOrDlcPath(candidate.title)
+
+        val winner = when {
+            existingIsUpdate && !candidateIsUpdate -> candidate
+            !existingIsUpdate && candidateIsUpdate -> existing
+            else -> {
+                val cmp = compareVersionStrings(candidate.version, candidate.internalVersion, existing.version, existing.internalVersion)
+                if (cmp > 0) candidate else existing
+            }
         }
 
-        // 2. Compare internal versions
-        val existingIntVer = existing.internalVersion.toLongOrNull() ?: 0L
-        val candidateIntVer = candidate.internalVersion.toLongOrNull() ?: 0L
-        if (candidateIntVer > existingIntVer) {
-            return candidate
-        } else if (candidateIntVer < existingIntVer) {
-            return existing
-        }
-
-        // 3. Compare display version if internal version is equal
-        val existingVer = existing.version.removePrefix("v").removePrefix("V").trim()
-        val candidateVer = candidate.version.removePrefix("v").removePrefix("V").trim()
-        if (!isBaseVersion(candidateVer) && isBaseVersion(existingVer)) {
-            return candidate
-        } else if (isBaseVersion(candidateVer) && !isBaseVersion(existingVer)) {
-            return existing
-        }
-
-        // 4. Compare DLC / Addon count
-        if (candidate.addonCount > existing.addonCount) {
-            return candidate
-        } else if (candidate.addonCount < existing.addonCount) {
-            return existing
-        }
-
-        // 5. Prefer .xci / .xcz cartridges over loose .nsp
-        val candidateIsXci = candidate.path.endsWith(".xci", ignoreCase = true) ||
-            candidate.path.endsWith(".xcz", ignoreCase = true)
-        val existingIsXci = existing.path.endsWith(".xci", ignoreCase = true) ||
-            existing.path.endsWith(".xcz", ignoreCase = true)
-        if (candidateIsXci && !existingIsXci) {
-            return candidate
-        }
-        if (!candidateIsXci && existingIsXci) {
-            return existing
-        }
-
-        return existing
+        winner.version = bestVerPair.first
+        winner.internalVersion = bestVerPair.second
+        winner.addonCount = bestAddonCount
+        return winner
     }
 
     fun deduplicateGames(games: List<Game>): List<Game> {
-        val uniqueGamesMap = linkedMapOf<String, Game>()
+        val uniqueByPidMap = linkedMapOf<String, Game>()
         games.forEach { game ->
             val key = getGameDeduplicationKey(game)
-            val existing = uniqueGamesMap[key]
+            val existing = uniqueByPidMap[key]
             if (existing == null) {
-                uniqueGamesMap[key] = game
+                uniqueByPidMap[key] = game
             } else {
-                uniqueGamesMap[key] = selectBetterGame(existing, game)
+                uniqueByPidMap[key] = selectBetterGame(existing, game)
             }
         }
-        return uniqueGamesMap.values.toList()
+        val uniqueByTitleAndFormat = linkedMapOf<String, Game>()
+        uniqueByPidMap.values.forEach { game ->
+            val ext = game.extension.uppercase(Locale.ROOT).ifEmpty { "NSP" }
+            val cleanTitle = cleanGameTitle(game.title).lowercase(Locale.ROOT).trim()
+            val titleKey = if (cleanTitle.isNotEmpty() && cleanTitle != "homebrew") {
+                "TITLE_${cleanTitle}_FMT_${ext}"
+            } else {
+                getGameDeduplicationKey(game)
+            }
+            val existing = uniqueByTitleAndFormat[titleKey]
+            if (existing == null) {
+                uniqueByTitleAndFormat[titleKey] = game
+            } else {
+                uniqueByTitleAndFormat[titleKey] = selectBetterGame(existing, game)
+            }
+        }
+        return uniqueByTitleAndFormat.values.filterNot { g ->
+            val ext = g.extension.lowercase(Locale.ROOT)
+            val isCart = ext == "xci" || ext == "xcz"
+            !isCart && (isUpdateOrDlcPath(g.path) || isUpdateOrDlcPath(g.title)) &&
+                !runCatching { GameMetadata.isBaseGame(g.path) }.getOrDefault(false)
+        }
     }
 
     fun restoreContentForGame(game: Game) {
@@ -394,8 +507,11 @@ object GameHelper {
                                 )
                             } else old
                         }
+                        val isCartridge = extension == "xci" || extension == "xcz"
                         if (cached != null) {
-                            games.add(cached)
+                            if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename) && GameMetadata.isBaseGame(filePath))) {
+                                games.add(cached)
+                            }
                         } else {
                             val game = getGame(it.uri, true, false)
                             if (game != null) {
@@ -533,15 +649,20 @@ object GameHelper {
         if (lower.endsWith(".xci") || lower.endsWith(".xcz")) {
             return false
         }
-        if (lower.contains("[upd") || lower.contains("(upd") ||
-            lower.contains("[update") || lower.contains("(update") ||
-            lower.contains("[dlc") || lower.contains("(dlc") ||
-            lower.contains("[patch") || lower.contains("(patch")) {
+        val leaf = lower.substringAfterLast('/').substringAfterLast('\\')
+        if (leaf.contains("[upd") || leaf.contains("(upd") ||
+            leaf.contains("[update") || leaf.contains("(update") ||
+            leaf.contains("[dlc") || leaf.contains("(dlc") ||
+            leaf.contains("[patch") || leaf.contains("(patch")) {
             return true
         }
-        val match = Regex("\\[0100[0-9a-f]{8}[0-9a-f]{3}800\\]", RegexOption.IGNORE_CASE).find(lower)
-        if (match != null) {
-            return true
+        // Any 16-hex Switch Title ID in the leaf filename whose last 3 hex digits are NOT 000
+        // is an Update (800) or DLC (001..7FF), unless the filename explicitly marks a merged bundle (1G+)
+        if (!leaf.contains("1g+")) {
+            val tidMatches = Regex("0100[0-9a-f]{12}").findAll(leaf).toList()
+            if (tidMatches.isNotEmpty() && tidMatches.none { it.value.endsWith("000") }) {
+                return true
+            }
         }
         return false
     }

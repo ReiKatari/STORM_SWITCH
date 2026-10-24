@@ -854,8 +854,8 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (100% сохранение всех букв и глифов шрифта)\n✓ Тайминги ГПУ: Отключено (исключает пропуск рендера атласа букв)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
             "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Preserves 100% of font glyphs)\n✓ Fast GPU Time: Disabled (Prevents font atlas render skips)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -863,12 +863,15 @@ object GameFixDatabase {
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\vram_garbage_collection" to "true",
+                "Renderer\\vram_budget_governor" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\async_presentation" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "false"
+                "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
         GameFixProfile(
@@ -879,8 +882,8 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (100% сохранение всех букв и глифов шрифта)\n✓ Тайминги ГПУ: Отключено (исключает пропуск рендера атласа букв)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
             "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Preserves 100% of font glyphs)\n✓ Fast GPU Time: Disabled (Prevents font atlas render skips)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -888,12 +891,15 @@ object GameFixDatabase {
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\vram_garbage_collection" to "true",
+                "Renderer\\vram_budget_governor" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\async_presentation" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "false"
+                "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
         GameFixProfile(
@@ -904,8 +910,8 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (100% сохранение всех букв и глифов шрифта)\n✓ Тайминги ГПУ: Отключено (исключает пропуск рендера атласа букв)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
             "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Preserves 100% of font glyphs)\n✓ Fast GPU Time: Disabled (Prevents font atlas render skips)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -913,12 +919,15 @@ object GameFixDatabase {
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\vram_garbage_collection" to "true",
+                "Renderer\\vram_budget_governor" to "true",
+                "Renderer\\early_release_fences" to "true",
+                "Renderer\\async_presentation" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "false"
+                "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
         GameFixProfile(

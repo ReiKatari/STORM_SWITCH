@@ -72,6 +72,15 @@ Mouse::Mouse(std::string input_engine_) : InputEngine(std::move(input_engine_)) 
     wheel_position = {};
     last_mouse_change = {};
     last_motion_change = {};
+    last_mouse_move_time = std::chrono::steady_clock::now();
+
+    update_thread = std::jthread([this](std::stop_token stop_token) {
+        Common::SetCurrentThreadName("MouseUpdate");
+        while (!stop_token.stop_requested()) {
+            NotifyChanged();
+            std::this_thread::sleep_for(std::chrono::milliseconds(update_time));
+        }
+    });
 }
 
 void Mouse::UpdateStickInput() {
@@ -79,7 +88,30 @@ void Mouse::UpdateStickInput() {
         return;
     }
 
+    std::scoped_lock lock{mouse_mutex};
+    const auto now = std::chrono::steady_clock::now();
+    const auto idle_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - last_mouse_move_time).count();
+    const float deadzone_counterweight =
+        Settings::values.mouse_panning_deadzone_counterweight.GetValue() *
+        default_deadzone_counterweight;
+
+    // Immediately snap right stick back to (0, 0) when physical mouse movement stops,
+    // eliminating continuous camera drift after stopping the mouse (Issue #23).
+    if (idle_ms >= 25) {
+        last_mouse_change = {};
+        SetAxis(identifier, mouse_axis_x, 0.0f);
+        SetAxis(identifier, mouse_axis_y, 0.0f);
+        return;
+    }
+
     const float length = last_mouse_change.Length();
+    if (length <= deadzone_counterweight * 1.02f || length < 0.005f) {
+        last_mouse_change = {};
+        SetAxis(identifier, mouse_axis_x, 0.0f);
+        SetAxis(identifier, mouse_axis_y, 0.0f);
+        return;
+    }
 
     // Prevent input from exceeding the max range (1.0f) too much,
     // but allow some room to make it easier to sustain
@@ -94,13 +126,19 @@ void Mouse::UpdateStickInput() {
     // Decay input over time
     const float clamped_length = (std::min)(1.0f, length);
     const float decay_strength = Settings::values.mouse_panning_decay_strength.GetValue();
-    const float decay = 1 - clamped_length * clamped_length * decay_strength * 0.01f;
+    const float decay = 1.0f - clamped_length * clamped_length * decay_strength * 0.01f;
     const float min_decay = Settings::values.mouse_panning_min_decay.GetValue();
-    const float clamped_decay = (std::min)(1 - min_decay / 100.0f, decay);
+    const float clamped_decay = (std::min)(1.0f - min_decay / 100.0f, decay);
     last_mouse_change *= clamped_decay;
+
+    if (last_mouse_change.Length() <= deadzone_counterweight * 1.02f ||
+        last_mouse_change.Length() < 0.005f) {
+        last_mouse_change = {};
+    }
 }
 
 void Mouse::UpdateMotionInput() {
+    std::scoped_lock lock{mouse_mutex};
     const float sensitivity =
         IsMousePanningEnabled() ? default_motion_panning_sensitivity : default_motion_sensitivity;
 
@@ -137,6 +175,11 @@ void Mouse::Move(int x, int y, int center_x, int center_y) {
     if (IsMousePanningEnabled()) {
         const auto mouse_change =
             (Common::MakeVec(x, y) - Common::MakeVec(center_x, center_y)).Cast<float>();
+        if (mouse_change.x == 0.0f && mouse_change.y == 0.0f) {
+            return;
+        }
+        std::scoped_lock lock{mouse_mutex};
+        last_mouse_move_time = std::chrono::steady_clock::now();
         const float x_sensitivity =
             Settings::values.mouse_panning_x_sensitivity.GetValue() * default_panning_sensitivity;
         const float y_sensitivity =
@@ -236,6 +279,13 @@ void Mouse::MouseWheelChange(int x, int y) {
 
 void Mouse::ReleaseAllButtons() {
     ResetButtonState();
+    {
+        std::scoped_lock lock{mouse_mutex};
+        last_mouse_change = {};
+        last_motion_change = {};
+    }
+    SetAxis(identifier, mouse_axis_x, 0.0f);
+    SetAxis(identifier, mouse_axis_y, 0.0f);
     button_pressed = false;
 }
 

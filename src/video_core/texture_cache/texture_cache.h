@@ -150,19 +150,24 @@ void TextureCache<P>::RunGarbageCollector() {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
+        if (True(image.flags & ImageFlagBits::GpuModified)) {
+            // Never evict 1x 2D GPU-modified ColorTexture render targets (such as Diablo II: Resurrected's
+            // persistent UI/font glyph atlases), preserving 100% of UI text across Act transitions while
+            // allowing 3D world textures and unused buffers from previous Acts to be garbage-collected.
+            const bool is_color_2d = image.info.type == ImageType::e2D &&
+                                     image.info.num_samples == 1 &&
+                                     GetFormatType(image.info.format) == SurfaceType::ColorTexture &&
+                                     image.info.size.width <= 2048 && image.info.size.height <= 2048;
+            if (is_color_2d) {
+                return false;
+            }
+        }
         const bool must_download = image.IsSafeDownload() && False(image.flags & ImageFlagBits::BadOverlap);
         if ((!aggressive_mode && True(image.flags & ImageFlagBits::CostlyLoad)) || (!high_priority_mode && must_download)) {
             return false;
         }
         if (!must_download && True(image.flags & ImageFlagBits::GpuModified)) {
-            // Written by the GPU and not downloadable.
-            // Never destroy 1x 2D ColorTexture render targets (such as Diablo II: Resurrected's
-            // persistent font glyph atlases) even in aggressive_mode, as their rasterized glyphs
-            // exist only on the GPU and would permanently disappear after Act transitions!
-            const bool is_color_2d = image.info.type == ImageType::e2D &&
-                                     image.info.num_samples == 1 &&
-                                     GetFormatType(image.info.format) == SurfaceType::ColorTexture;
-            if (!aggressive_mode || is_color_2d) {
+            if (!aggressive_mode) {
                 return false;
             }
         }

@@ -438,7 +438,8 @@ ResultStatus AppLoader_NSP::ReadProgramId(u64& out_program_id) {
     out_program_id = nsp->GetProgramTitleID();
     if (out_program_id == 0) {
         for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
-            if (nca_item && nca_item->GetTitleId() != 0 &&
+            if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
+                nca_item->GetTitleId() != 0 &&
                 (nca_item->GetTitleId() & 0x800) == 0 &&
                 (nca_item->GetTitleId() & 0xFFF) == 0) {
                 out_program_id = nca_item->GetTitleId();
@@ -447,15 +448,12 @@ ResultStatus AppLoader_NSP::ReadProgramId(u64& out_program_id) {
         }
         for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
             if (nca_item && nca_item->GetTitleId() != 0) {
-                const u64 cand = FileSys::GetBaseTitleID(nca_item->GetTitleId());
-                if (cand != 0) {
-                    out_program_id = cand;
-                    return ResultStatus::Success;
-                }
+                out_program_id = nca_item->GetTitleId();
+                return ResultStatus::Success;
             }
         }
         if (file) {
-            std::regex id_regex(R"([0-9a-fA-F]{13}000)");
+            std::regex id_regex(R"(0100[0-9a-fA-F]{12})");
             std::smatch match;
             const std::string fname = file->GetName();
             if (std::regex_search(fname, match, id_regex)) {

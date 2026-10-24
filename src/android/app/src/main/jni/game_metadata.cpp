@@ -6,6 +6,7 @@
 
 #include <mutex>
 #include <regex>
+#include <set>
 #include "common/android/android_common.h"
 #include "common/string_util.h"
 #include "core/core.h"
@@ -278,17 +279,20 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
 
         entry.internal_version = std::to_string(internal_ver);
 
-        // Count DLC / Addons for this game from ContentProvider with cache
+        // Count DLC / Addons for this game from ContentProvider freshly so newly mounted DLCs are always included
         int aoc_count = 0;
-        if (auto it_aoc = m_aoc_count_cache.find(base_tid); it_aoc != m_aoc_count_cache.end()) {
-            aoc_count = it_aoc->second;
-        } else {
+        {
             const auto dlc_entries = instance.System().GetContentProvider().ListEntriesFilter(
                 FileSys::TitleType::AOC, FileSys::ContentRecordType::Data);
+            std::set<u64> unique_dlc_tids;
             for (const auto& dlc : dlc_entries) {
                 if (FileSys::GetBaseTitleID(dlc.title_id) == base_tid) {
-                    aoc_count++;
+                    unique_dlc_tids.insert(dlc.title_id);
                 }
+            }
+            aoc_count = static_cast<int>(unique_dlc_tids.size());
+            if (auto it_aoc = m_aoc_count_cache.find(base_tid); it_aoc != m_aoc_count_cache.end()) {
+                aoc_count = std::max(aoc_count, it_aoc->second);
             }
             m_aoc_count_cache[base_tid] = aoc_count;
         }
@@ -306,21 +310,19 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
             entry.is_base_game = true;
         } else {
             entry.isHomebrew = false;
-            const bool is_xci = (loader->GetFileType() == Loader::FileType::XCI || loader->GetFileType() == Loader::FileType::XCZ);
-            bool bootable = is_xci || Loader::IsBootableGameContainer(file);
-            if (!bootable) {
-                if (entry.programId != 0 && (entry.programId & 0xFFF) == 0 && (entry.programId & 0x800) == 0) {
+            const auto ftype = loader->GetFileType();
+            const bool is_xci = (ftype == Loader::FileType::XCI || ftype == Loader::FileType::XCZ);
+            const bool is_nsp = (ftype == Loader::FileType::NSP || ftype == Loader::FileType::NSZ);
+            bool bootable = false;
+            if (is_xci) {
+                bootable = true;
+            } else if (is_nsp) {
+                bootable = Loader::IsBootableGameContainer(file, ftype);
+                if (!bootable && raw_pid != 0 && (raw_pid & 0xFFF) == 0 && (raw_pid & 0x800) == 0) {
                     bootable = true;
-                } else {
-                    std::vector<u64> candidate_pids;
-                    loader->ReadProgramIds(candidate_pids);
-                    for (const auto id : candidate_pids) {
-                        if ((id & 0xFFF) == 0 && (id & 0x800) == 0) {
-                            bootable = true;
-                            break;
-                        }
-                    }
                 }
+            } else {
+                bootable = (raw_pid != 0 && (raw_pid & 0xFFF) == 0 && (raw_pid & 0x800) == 0);
             }
             entry.is_base_game = bootable;
         }
@@ -393,19 +395,19 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
                 return true;
             }
 
-            // If a valid base application program ID is found
-            if (program_id != 0 && (program_id & 0xFFF) == 0 && (program_id & 0x800) == 0) {
-                return true;
-            }
-            for (const auto id : pids) {
-                if ((id & 0xFFF) == 0 && (id & 0x800) == 0) {
-                    return true;
-                }
-            }
-
+            // For NSP/NSZ containers, strictly verify that the container holds a bootable base game NCA
+            // and is NOT a standalone Update (0x800) or DLC (0x001+) package
             if (is_container) {
                 if (Loader::IsBootableGameContainer(file, file_type)) {
                     return true;
+                }
+                if (program_id != 0 && (program_id & 0xFFF) != 0) {
+                    return false;
+                }
+                for (const auto id : pids) {
+                    if ((id & 0xFFF) != 0) {
+                        return false;
+                    }
                 }
             }
 
@@ -414,7 +416,11 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
                 return false;
             }
 
-            return true;
+            if (program_id != 0 && (program_id & 0xFFF) == 0 && (program_id & 0x800) == 0) {
+                return true;
+            }
+
+            return false;
         }
     }
     return false;

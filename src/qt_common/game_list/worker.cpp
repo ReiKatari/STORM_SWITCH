@@ -685,8 +685,9 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 continue;
             }
 
-            if (!emitted_entries.contains(file_info.physical_name) && cached.program_id != 0 &&
-                (cached.program_id & 0xFFF) == 0) {
+            const std::string dedup_key = fmt::format("{:016X}_{}", cached.program_id & 0xFFFFFFFFFFFFE000ULL, cached.file_type_string);
+            if (!emitted_entries.contains(file_info.physical_name) && !emitted_entries.contains(dedup_key) &&
+                cached.program_id != 0 && (cached.program_id & 0xFFF) == 0) {
                 std::vector<u8> icon_bytes;
                 const auto icon_file_path = Common::FS::PathToUTF8String(
                     cache_dir_base / fmt::format("{:016X}.jpeg", cached.program_id));
@@ -705,6 +706,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                     QString::fromStdString(cached.file_version),
                     QString::fromStdString(cached.addons_text)));
                 emitted_entries.insert(file_info.physical_name);
+                emitted_entries.insert(dedup_key);
             }
         } else {
             uncached_files.push_back(file_info);
@@ -720,7 +722,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
         });
     }
 
-    // Register deferred external content containers (updates/DLCs) after all cached UI rows are emitted
+    // Register external content containers (updates/DLCs) so ContentProvider has all updates & DLCs
     for (const auto& phys_path : deferred_provider_files) {
         if (stop_requested) {
             return;
@@ -733,6 +735,23 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
 
     if (uncached_files.empty() || stop_requested) {
         return;
+    }
+
+    // Pre-register all uncached containers in ContentProvider BEFORE building game entries
+    // so base games always see Updates and DLCs located in the same directory regardless of file order
+    if (Settings::values.ext_content_from_game_dirs.GetValue()) {
+        for (const auto& file_info : uncached_files) {
+            if (stop_requested) {
+                return;
+            }
+            const auto ext = Common::ToLower(std::string(Common::FS::GetExtensionFromFilename(file_info.physical_name)));
+            if (ext == "nsp" || ext == "nsz" || ext == "xci" || ext == "xcz") {
+                const auto file = vfs->OpenFile(file_info.physical_name, FileSys::OpenMode::Read);
+                if (file && file->GetSize() > 0) {
+                    provider->AddEntriesFromContainer(file, true);
+                }
+            }
+        }
     }
 
     // Step 2: Process uncached games (single container open, single loader, progressive streaming)
@@ -778,11 +797,20 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 }
             }
 
-            // Fallback: extract base Title ID from filename if container loader couldn't resolve it
-            if (!has_base_game) {
+            // For NSP/NSZ containers, verify that the container actually holds a bootable base game NCA
+            // and is not a standalone Update (0x800) or DLC (0x001+) package
+            if (file_type == Loader::FileType::NSP || file_type == Loader::FileType::NSZ) {
+                if (!Loader::IsBootableGameContainer(file, file_type)) {
+                    has_base_game = false;
+                }
+            }
+
+            // Fallback: extract base Title ID from leaf filename ONLY for cartridge dumps (XCI/XCZ)
+            if (!has_base_game && (file_type == Loader::FileType::XCI || file_type == Loader::FileType::XCZ)) {
+                const std::string leaf_name = std::filesystem::path(file_info.physical_name).filename().string();
                 static const std::regex base_id_pattern(R"([0-9a-fA-F]{13}000)");
                 std::smatch match;
-                if (std::regex_search(file_info.physical_name, match, base_id_pattern)) {
+                if (std::regex_search(leaf_name, match, base_id_pattern)) {
                     try {
                         const u64 parsed_id = std::stoull(match.str(), nullptr, 16);
                         if (parsed_id != 0) {
@@ -903,8 +931,10 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 if (++newly_cached_count % 8 == 0) {
                     SaveMetadataCache();
                 }
-                const bool already_emitted = emitted_entries.contains(file_info.physical_name);
+                const std::string dedup_key = fmt::format("{:016X}_{}", id & 0xFFFFFFFFFFFFE000ULL, file_type_str.toStdString());
+                const bool already_emitted = emitted_entries.contains(file_info.physical_name) || emitted_entries.contains(dedup_key);
                 emitted_entries.insert(file_info.physical_name);
+                emitted_entries.insert(dedup_key);
 
                 if (!already_emitted) {
                     RecordEvent([=](GameListModel* model) { model->AddEntry(entry, parent_dir); });

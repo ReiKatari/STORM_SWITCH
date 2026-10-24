@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <chrono>
+#include <mutex>
 #include <thread>
 
 #include "common/polyfill_thread.h"
@@ -113,6 +115,9 @@ private:
     Common::Vec3<float> last_motion_change;
     Common::Vec2<int> wheel_position;
     bool button_pressed = false;
+    std::chrono::steady_clock::time_point last_mouse_move_time{};
+    std::mutex mouse_mutex;
+    std::jthread update_thread;
 };
 
 } // namespace InputCommon

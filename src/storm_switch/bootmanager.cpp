@@ -508,6 +508,11 @@ void GRenderWindow::mouseMoveEvent(QMouseEvent* event) {
     const int center_x = width() / 2;
     const int center_y = height() / 2;
 
+    if (Settings::values.mouse_panning && !Settings::values.mouse_enabled &&
+        pos.x() == center_x && pos.y() == center_y) {
+        return;
+    }
+
     input_subsystem->GetMouse()->MouseMove(touch_x, touch_y);
     input_subsystem->GetMouse()->TouchMove(touch_x, touch_y);
     input_subsystem->GetMouse()->Move(pos.x(), pos.y(), center_x, center_y);
