@@ -62,7 +62,7 @@
                 android:id="@+id/text_control_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Кнопка A"
+                android:text="@string/overlay_ctrl_button_a"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -71,7 +71,7 @@
                 android:id="@+id/text_control_desc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Основная кнопка действия"
+                android:text="@string/overlay_ctrl_button_a_desc"
                 android:textColor="#38BDF8"
                 android:textSize="11sp" />
         </LinearLayout>

@@ -64,13 +64,13 @@ class TranslationSettingsDialogFragment : DialogFragment() {
 
         // 1. Engine
         val engines = listOf(
-            "google" to "Google Translate (Быстрый / Бесплатно)",
-            "yandex" to "Яндекс Переводчик (Качественный русский)",
-            "lingva" to "Lingva Neural (Без ограничений)",
-            "deepl" to "DeepL Neural API",
-            "libre" to "LibreTranslate (Open-Source / Бесплатно)",
-            "mymemory" to "MyMemory Translated",
-            "custom_ai" to "Нейросеть / Custom AI (OpenAI / Claude / Gemini / DeepSeek)"
+            "google" to getString(R.string.translator_engine_opt_google),
+            "yandex" to getString(R.string.translator_engine_opt_yandex),
+            "lingva" to getString(R.string.translator_engine_opt_lingva),
+            "deepl" to getString(R.string.translator_engine_opt_deepl),
+            "libre" to getString(R.string.translator_engine_opt_libre),
+            "mymemory" to getString(R.string.translator_engine_opt_mymemory),
+            "custom_ai" to getString(R.string.translator_engine_opt_custom_ai)
         )
         val engineAdapter = ArrayAdapter(requireContext(), R.layout.spinner_item_eden, engines.map { it.second }).apply {
             setDropDownViewResource(R.layout.spinner_dropdown_item_eden)
@@ -82,15 +82,15 @@ class TranslationSettingsDialogFragment : DialogFragment() {
 
         // 2. Source Lang
         val sourceLangs = listOf(
-            "auto" to "Автоопределение",
-            "ja" to "Японский (Japanese)",
-            "en" to "Английский (English)",
-            "zh" to "Китайский (Chinese)",
-            "ko" to "Корейский (Korean)",
-            "es" to "Испанский (Spanish)",
-            "fr" to "Французский (French)",
-            "de" to "Немецкий (German)",
-            "it" to "Итальянский (Italian)"
+            "auto" to getString(R.string.translator_lang_auto),
+            "ja" to getString(R.string.translator_lang_ja),
+            "en" to getString(R.string.translator_lang_en),
+            "zh" to getString(R.string.translator_lang_zh),
+            "ko" to getString(R.string.translator_lang_ko),
+            "es" to getString(R.string.translator_lang_es),
+            "fr" to getString(R.string.translator_lang_fr),
+            "de" to getString(R.string.translator_lang_de),
+            "it" to getString(R.string.translator_lang_it)
         )
         val sourceAdapter = ArrayAdapter(requireContext(), R.layout.spinner_item_eden, sourceLangs.map { it.second }).apply {
             setDropDownViewResource(R.layout.spinner_dropdown_item_eden)
@@ -102,14 +102,14 @@ class TranslationSettingsDialogFragment : DialogFragment() {
 
         // 3. Target Lang
         val targetLangs = listOf(
-            "ru" to "Русский (Russian)",
-            "en" to "Английский (English)",
-            "es" to "Испанский (Spanish)",
-            "de" to "Немецкий (German)",
-            "fr" to "Французский (French)",
-            "it" to "Итальянский (Italian)",
-            "zh" to "Китайский (Chinese)",
-            "ja" to "Японский (Japanese)"
+            "ru" to getString(R.string.translator_lang_ru),
+            "en" to getString(R.string.translator_lang_en),
+            "es" to getString(R.string.translator_lang_es),
+            "de" to getString(R.string.translator_lang_de),
+            "fr" to getString(R.string.translator_lang_fr),
+            "it" to getString(R.string.translator_lang_it),
+            "zh" to getString(R.string.translator_lang_zh),
+            "ja" to getString(R.string.translator_lang_ja)
         )
         val targetAdapter = ArrayAdapter(requireContext(), R.layout.spinner_item_eden, targetLangs.map { it.second }).apply {
             setDropDownViewResource(R.layout.spinner_dropdown_item_eden)
@@ -121,10 +121,10 @@ class TranslationSettingsDialogFragment : DialogFragment() {
 
         // 4. Style
         val styles = listOf(
-            "smart_background_match" to "Под стиль игры (Нативный)",
-            "semi_transparent" to "Полупрозрачный темный",
-            "translucent_bubble" to "Неоновый бабл",
-            "outline_only" to "Только контур"
+            "smart_background_match" to getString(R.string.translator_style_native),
+            "semi_transparent" to getString(R.string.translator_style_dark),
+            "translucent_bubble" to getString(R.string.translator_style_neon),
+            "outline_only" to getString(R.string.translator_style_outline)
         )
         val styleAdapter = ArrayAdapter(requireContext(), R.layout.spinner_item_eden, styles.map { it.second }).apply {
             setDropDownViewResource(R.layout.spinner_dropdown_item_eden)
@@ -136,11 +136,11 @@ class TranslationSettingsDialogFragment : DialogFragment() {
 
         // 5. Scan Region
         val regions = listOf(
-            "all" to "Весь игровой экран (100%)",
-            "bottom" to "Нижняя треть (Диалоговые окна)",
-            "center" to "Центральная область (Субтитры и катсцены)",
-            "top" to "Верхняя треть (Квесты, интерфейс и подсказки)",
-            "custom" to "Пользовательские области (Ручной выбор)"
+            "all" to getString(R.string.translator_roi_all),
+            "bottom" to getString(R.string.translator_roi_bottom),
+            "center" to getString(R.string.translator_roi_center),
+            "top" to getString(R.string.translator_roi_top),
+            "custom" to getString(R.string.translator_roi_custom)
         )
         val regionAdapter = ArrayAdapter(requireContext(), R.layout.spinner_item_eden, regions.map { it.second }).apply {
             setDropDownViewResource(R.layout.spinner_dropdown_item_eden)
@@ -164,9 +164,9 @@ class TranslationSettingsDialogFragment : DialogFragment() {
 
         val ttsSpeed = prefs.getFloat("translator_tts_speed", 1.0f)
         binding.sliderTtsSpeed.value = ttsSpeed.coerceIn(0.5f, 2.0f)
-        binding.textTtsSpeed.text = "Скорость озвучки: ${String.format("%.1f", ttsSpeed)}x"
+        binding.textTtsSpeed.text = getString(R.string.translator_lbl_tts_speed_fmt, String.format("%.1f", ttsSpeed))
         binding.sliderTtsSpeed.addOnChangeListener { _, value, _ ->
-            binding.textTtsSpeed.text = "Скорость озвучки: ${String.format("%.1f", value)}x"
+            binding.textTtsSpeed.text = getString(R.string.translator_lbl_tts_speed_fmt, String.format("%.1f", value))
         }
 
         binding.buttonTestTts.setOnClickListener {
@@ -181,9 +181,9 @@ class TranslationSettingsDialogFragment : DialogFragment() {
         binding.switchFloatingBtn.isChecked = enableFloating
         val opacity = prefs.getInt("translator_floating_btn_opacity", 90)
         binding.sliderFloatingOpacity.value = opacity.toFloat().coerceIn(20f, 100f)
-        binding.textFloatingOpacity.text = "Прозрачность кнопки: $opacity%"
+        binding.textFloatingOpacity.text = getString(R.string.translator_lbl_floating_opacity_fmt, opacity)
         binding.sliderFloatingOpacity.addOnChangeListener { _, value, _ ->
-            binding.textFloatingOpacity.text = "Прозрачность кнопки: ${value.toInt()}%"
+            binding.textFloatingOpacity.text = getString(R.string.translator_lbl_floating_opacity_fmt, value.toInt())
         }
     }
 

@@ -309,7 +309,7 @@ void ConfigurePerGameCheats::PopulateCheatTree() {
 
         QString preview_code = item.code.split(QStringLiteral("\n"), Qt::SkipEmptyParts).value(0, QString{});
         if (item.code.count(QStringLiteral("\n")) > 1) {
-            preview_code += QString(QStringLiteral(" (+%1 строк)")).arg(item.code.count(QStringLiteral("\n")));
+            preview_code += tr(" (+%1 строк)").arg(item.code.count(QStringLiteral("\n")));
         }
         tree_item->setText(3, preview_code);
         tree_item->setForeground(3, QColor(QStringLiteral("#a0aec0")));

@@ -22,6 +22,7 @@
 #include <cstring>
 #endif
 
+#include "core/save_state.h"
 #include "main_window.h"
 #include "qt_common/titledb.h"
 
@@ -356,6 +357,18 @@ int main(int argc, char* argv[]) {
     // After settings have been loaded by GMainWindow, apply the filter
     main_window.show();
 
+    app.setQuitOnLastWindowClosed(true);
     app.connect(&app, &QGuiApplication::applicationStateChanged, &main_window, &MainWindow::OnAppFocusStateChanged);
-    return app.exec();
+    const int exit_code = app.exec();
+    Core::FlushPendingSaveStates();
+    Common::Log::Stop();
+#ifdef _WIN32
+    if (hSingleInstanceMutex) {
+        ReleaseMutex(hSingleInstanceMutex);
+        CloseHandle(hSingleInstanceMutex);
+        hSingleInstanceMutex = nullptr;
+    }
+    ::TerminateProcess(::GetCurrentProcess(), static_cast<UINT>(exit_code));
+#endif
+    return exit_code;
 }

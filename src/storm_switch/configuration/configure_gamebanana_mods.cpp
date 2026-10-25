@@ -563,7 +563,7 @@ void ConfigureGameBananaMods::PopulateModTree() {
         const qint64 count_val = item.views > 0 ? item.views : item.downloads;
         tree_item->setText(2, FormatNumber(count_val));
         tree_item->setText(3, FormatNumber(item.likes));
-        tree_item->setText(4, item.category.isEmpty() ? QStringLiteral("Мод") : item.category);
+        tree_item->setText(4, item.category.isEmpty() ? tr("Мод") : item.category);
         tree_item->setData(0, Qt::UserRole, item.id);
         tree_item->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
         for (int i = 1; i < 5; ++i) {
@@ -746,7 +746,7 @@ void ConfigureGameBananaMods::LoadModDetails(int mod_id) {
         const qint64 views_count = obj.value(QStringLiteral("_nViewCount")).toVariant().toLongLong();
         const qint64 likes_count = obj.value(QStringLiteral("_nLikeCount")).toVariant().toLongLong();
 
-        QString html = QStringLiteral("<h2>%1</h2><p><b>Автор:</b> %2 &nbsp;|&nbsp; <b>👁️ Просмотров:</b> %3 &nbsp;|&nbsp; <b>❤️ Лайков:</b> %4</p><p><i>%5</i></p><hr/><div>%6</div>")
+        QString html = tr("<h2>%1</h2><p><b>Автор:</b> %2 &nbsp;|&nbsp; <b>👁️ Просмотров:</b> %3 &nbsp;|&nbsp; <b>❤️ Лайков:</b> %4</p><p><i>%5</i></p><hr/><div>%6</div>")
                            .arg(name, author, FormatNumber(views_count), FormatNumber(likes_count), desc, text.isEmpty() ? desc : text);
         detail_browser->setHtml(html);
 
@@ -765,7 +765,7 @@ void ConfigureGameBananaMods::LoadModDetails(int mod_id) {
 
             const double size_mb = static_cast<double>(file_info.size) / (1024.0 * 1024.0);
             const qint64 file_dl = fobj.value(QStringLiteral("_nDownloadCount")).toVariant().toLongLong();
-            QString item_label = QStringLiteral("%1 (%2 MB, 📥 %3 скач.)").arg(file_info.name, QString::number(size_mb, 'f', 1), FormatNumber(file_dl));
+            QString item_label = tr("%1 (%2 MB, 📥 %3 скач.)").arg(file_info.name, QString::number(size_mb, 'f', 1), FormatNumber(file_dl));
             if (!file_info.description.isEmpty()) {
                 item_label += QStringLiteral(" — %1").arg(file_info.description);
             }
@@ -979,9 +979,9 @@ void ConfigureGameBananaMods::RefreshInstalledMods() {
             const double size_mb = static_cast<double>(total_size) / (1024.0 * 1024.0);
             QString size_str;
             if (size_mb >= 1.0) {
-                size_str = QStringLiteral("%1 МБ").arg(QString::number(size_mb, 'f', 1));
+                size_str = tr("%1 МБ").arg(QString::number(size_mb, 'f', 1));
             } else {
-                size_str = QStringLiteral("%1 КБ").arg(QString::number(static_cast<double>(total_size) / 1024.0, 'f', 0));
+                size_str = tr("%1 КБ").arg(QString::number(static_cast<double>(total_size) / 1024.0, 'f', 0));
             }
 
             auto* tree_item = new QTreeWidgetItem(installed_tree);

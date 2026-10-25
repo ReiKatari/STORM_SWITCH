@@ -42,7 +42,7 @@
                     style="@style/SynthwaveText.Header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="📜 Журнал работы (Логи эмулятора)"
+                    android:text="@string/log_viewer_title"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -66,7 +66,7 @@
                 app:icon="@drawable/ic_refresh"
                 app:iconSize="18dp"
                 android:layout_marginEnd="4dp"
-                android:tooltipText="Обновить"
+                android:tooltipText="@string/storm_sync_refresh"
                 app:backgroundTint="#2D3748"
                 app:iconTint="#00F2FE" />
 
@@ -78,7 +78,7 @@
                 app:icon="@drawable/ic_copy"
                 app:iconSize="18dp"
                 android:layout_marginEnd="4dp"
-                android:tooltipText="Скопировать"
+                android:tooltipText="@string/storm_sync_copy"
                 app:backgroundTint="#2D3748"
                 app:iconTint="#FEB2B2" />
 
@@ -90,7 +90,7 @@
                 app:icon="@drawable/ic_save"
                 app:iconSize="18dp"
                 android:layout_marginEnd="4dp"
-                android:tooltipText="Сохранить в файл"
+                android:tooltipText="@string/log_viewer_save_file"
                 app:backgroundTint="#2D3748"
                 app:iconTint="#4FD1C5" />
 
@@ -102,7 +102,7 @@
                 app:icon="@drawable/ic_share"
                 app:iconSize="18dp"
                 android:layout_marginEnd="4dp"
-                android:tooltipText="Поделиться"
+                android:tooltipText="@string/log_viewer_share"
                 app:backgroundTint="#2D3748"
                 app:iconTint="#F6E05E" />
 
@@ -113,7 +113,7 @@
                 android:layout_height="38dp"
                 app:icon="@drawable/ic_clear"
                 app:iconSize="18dp"
-                android:tooltipText="Закрыть"
+                android:tooltipText="@string/storm_sync_close"
                 app:backgroundTint="#2D3748"
                 app:iconTint="#FFFFFF" />
         </LinearLayout>
@@ -143,7 +143,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
-                android:hint="Поиск в логах (Error, Warning, Vulkan, NSO...)"
+                android:hint="@string/log_viewer_search_hint"
                 android:textColor="#FFFFFF"
                 android:textColorHint="#38BDF8"
                 android:textSize="12sp"
@@ -180,7 +180,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="Все (All)"
+                    android:text="@string/log_viewer_chip_all"
                     android:textColor="#E2E8F0"
                     android:textSize="11sp" />
 
@@ -189,7 +189,7 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🚨 Ошибки (Errors)"
+                    android:text="@string/log_viewer_chip_errors"
                     android:textColor="#FF6B6B"
                     android:textSize="11sp" />
 
@@ -198,7 +198,7 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚠️ Предупреждения (Warnings)"
+                    android:text="@string/log_viewer_chip_warnings"
                     android:textColor="#FFD166"
                     android:textSize="11sp" />
 
@@ -207,7 +207,7 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ℹ️ Информация (Info)"
+                    android:text="@string/log_viewer_chip_info"
                     android:textColor="#4FD1C5"
                     android:textSize="11sp" />
             </com.google.android.material.chip.ChipGroup>

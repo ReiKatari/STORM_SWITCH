@@ -38,23 +38,23 @@ class OverlayScaleDialog(
 
     private fun getControlTitle(): String {
         return when (overlayControlData.id) {
-            OverlayControl.BUTTON_A.id -> "Кнопка A"
-            OverlayControl.BUTTON_B.id -> "Кнопка B"
-            OverlayControl.BUTTON_X.id -> "Кнопка X"
-            OverlayControl.BUTTON_Y.id -> "Кнопка Y"
-            OverlayControl.BUTTON_PLUS.id -> "Кнопка +"
-            OverlayControl.BUTTON_MINUS.id -> "Кнопка -"
-            OverlayControl.BUTTON_HOME.id -> "Кнопка Home"
-            OverlayControl.BUTTON_CAPTURE.id -> "Снимок экрана"
-            OverlayControl.BUTTON_L.id -> "Кнопка L"
-            OverlayControl.BUTTON_R.id -> "Кнопка R"
-            OverlayControl.BUTTON_ZL.id -> "Триггер ZL"
-            OverlayControl.BUTTON_ZR.id -> "Триггер ZR"
-            OverlayControl.BUTTON_STICK_L.id -> "Нажатие L-стика (L3)"
-            OverlayControl.BUTTON_STICK_R.id -> "Нажатие R-стика (R3)"
-            OverlayControl.STICK_L.id -> "Левый стик"
-            OverlayControl.STICK_R.id -> "Правый стик"
-            OverlayControl.COMBINED_DPAD.id -> "Крестовина (D-Pad)"
+            OverlayControl.BUTTON_A.id -> context.getString(R.string.overlay_ctrl_button_a)
+            OverlayControl.BUTTON_B.id -> context.getString(R.string.overlay_ctrl_button_b)
+            OverlayControl.BUTTON_X.id -> context.getString(R.string.overlay_ctrl_button_x)
+            OverlayControl.BUTTON_Y.id -> context.getString(R.string.overlay_ctrl_button_y)
+            OverlayControl.BUTTON_PLUS.id -> context.getString(R.string.overlay_ctrl_button_plus)
+            OverlayControl.BUTTON_MINUS.id -> context.getString(R.string.overlay_ctrl_button_minus)
+            OverlayControl.BUTTON_HOME.id -> context.getString(R.string.overlay_ctrl_button_home)
+            OverlayControl.BUTTON_CAPTURE.id -> context.getString(R.string.overlay_ctrl_button_capture)
+            OverlayControl.BUTTON_L.id -> context.getString(R.string.overlay_ctrl_button_l)
+            OverlayControl.BUTTON_R.id -> context.getString(R.string.overlay_ctrl_button_r)
+            OverlayControl.BUTTON_ZL.id -> context.getString(R.string.overlay_ctrl_button_zl)
+            OverlayControl.BUTTON_ZR.id -> context.getString(R.string.overlay_ctrl_button_zr)
+            OverlayControl.BUTTON_STICK_L.id -> context.getString(R.string.overlay_ctrl_stick_l3)
+            OverlayControl.BUTTON_STICK_R.id -> context.getString(R.string.overlay_ctrl_stick_r3)
+            OverlayControl.STICK_L.id -> context.getString(R.string.overlay_ctrl_stick_l)
+            OverlayControl.STICK_R.id -> context.getString(R.string.overlay_ctrl_stick_r)
+            OverlayControl.COMBINED_DPAD.id -> context.getString(R.string.overlay_ctrl_dpad)
             else -> context.getString(R.string.emulation_control_adjust)
         }
     }

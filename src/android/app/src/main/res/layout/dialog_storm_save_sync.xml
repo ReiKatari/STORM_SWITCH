@@ -42,7 +42,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Кроссплатформенная синхронизация сохранений"
+                android:text="@string/storm_sync_subtitle"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -52,7 +52,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Обновить"
+            android:contentDescription="@string/storm_sync_refresh"
             android:src="@drawable/ic_refresh"
             app:tint="?attr/colorPrimary" />
 
@@ -61,7 +61,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Закрыть"
+            android:contentDescription="@string/storm_sync_close"
             android:src="@drawable/ic_clear"
             app:tint="?attr/colorOnSurface" />
     </LinearLayout>
@@ -100,7 +100,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ключ этого устройства"
+                        android:text="@string/storm_sync_device_key_label"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="12sp" />
 
@@ -127,7 +127,7 @@
                             style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
-                            android:text="Скопировать"
+                            android:text="@string/storm_sync_copy"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="12sp"
                             app:backgroundTint="?attr/colorSurface"
@@ -140,7 +140,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="🟢 Сервер синхронизации активен (Ожидание подключений)"
+                        android:text="@string/storm_sync_server_active"
                         android:textColor="#10B981"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -166,7 +166,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Подключение к удалённому устройству"
+                        android:text="@string/storm_sync_remote_connect_title"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -184,7 +184,7 @@
                             android:layout_height="44dp"
                             android:layout_weight="1"
                             android:background="?attr/colorSurface"
-                            android:hint="Введите ключ или IP:порт..."
+                            android:hint="@string/storm_sync_remote_key_hint"
                             android:paddingHorizontal="10dp"
                             android:textColor="?attr/colorOnSurface"
                             android:textColorHint="?attr/colorOnSurfaceVariant"
@@ -196,7 +196,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="44dp"
                             android:layout_marginStart="8dp"
-                            android:text="Подключиться"
+                            android:text="@string/storm_sync_btn_connect"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="12sp"
                             app:backgroundTint="?attr/colorSurface"
@@ -216,7 +216,7 @@
                             style="@style/Widget.Material3.Button.TextButton"
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
-                            android:text="Поиск в сети Wi-Fi"
+                            android:text="@string/storm_sync_btn_search_wifi"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="12sp"
                             app:icon="@drawable/ic_network"
@@ -236,7 +236,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Статус: не подключено к удалённому устройству"
+                        android:text="@string/storm_sync_state_disconnected"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -265,7 +265,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Сохранения игр (0)"
+                    android:text="@string/storm_sync_saves_count_zero"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -275,7 +275,7 @@
                     style="@style/EdenButton.Primary"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:text="Синхронизировать всё"
+                    android:text="@string/storm_sync_btn_sync_all"
                     android:textColor="?attr/colorOnPrimary"
                     android:textSize="12sp"
                     android:textStyle="bold"
@@ -301,7 +301,7 @@
                     android:id="@+id/edit_search_saves"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Поиск сохранений по названию или ID..."
+                    android:hint="@string/storm_sync_search_hint"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
                     android:maxLines="1"
@@ -326,7 +326,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:gravity="center"
-                android:text="Сохранения не найдены. Подключитесь к устройству или начните игру."
+                android:text="@string/storm_sync_empty_saves"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="13sp"
                 android:visibility="gone" />

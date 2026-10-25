@@ -90,17 +90,17 @@ void LoadingScreen::SetGameInfo(const QString& name, const QString& version, con
     // --- Game information section ---
     QStringList game_info;
     if (!version.isEmpty()) {
-        game_info << QStringLiteral("<span style='color:#94a3b8;'>Версия:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>").arg(version);
+        game_info << tr("<span style='color:#94a3b8;'>Версия:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>").arg(version);
     }
     if (!dev.isEmpty()) {
-        game_info << QStringLiteral("<span style='color:#94a3b8;'>Разработчик:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>").arg(dev);
+        game_info << tr("<span style='color:#94a3b8;'>Разработчик:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>").arg(dev);
     }
     if (title_id != 0) {
         game_info << QStringLiteral("<span style='color:#94a3b8;'>ID:</span> <span style='color:#00d2ff; font-weight:600; font-family:monospace;'>%1</span>").arg(
             QString::number(title_id, 16).toUpper().rightJustified(16, QLatin1Char('0')));
     }
     if (!format.isEmpty()) {
-        game_info << QStringLiteral("<span style='color:#94a3b8;'>Формат:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>").arg(format.toUpper());
+        game_info << tr("<span style='color:#94a3b8;'>Формат:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>").arg(format.toUpper());
     }
 
     if (!game_info.isEmpty()) {
@@ -119,7 +119,7 @@ void LoadingScreen::SetGameInfo(const QString& name, const QString& version, con
                                         ? QStringLiteral("Dynarmic JIT")
                                         : QStringLiteral("Dynarmic JIT (Unsafe)");
 
-    meta_html += QStringLiteral(
+    meta_html += tr(
         "<span style='color:#94a3b8;'>Архитектура:</span> <span style='color:#e2e8f0; font-weight:600;'>64-bit ARM</span>"
         "&nbsp;&nbsp;·&nbsp;&nbsp;"
         "<span style='color:#94a3b8;'>Рендерер:</span> <span style='color:#e2e8f0; font-weight:600;'>%1</span>"

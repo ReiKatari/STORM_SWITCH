@@ -54,20 +54,20 @@ class SystemInfoDialogFragment : DialogFragment() {
 
         // 1. Device Info
         val deviceInfo = buildString {
-            append("• Производитель: ").append(Build.MANUFACTURER).append("\n")
-            append("• Модель: ").append(Build.MODEL).append(" (").append(Build.DEVICE).append(")\n")
-            append("• Продукт: ").append(Build.PRODUCT).append("\n")
-            append("• Архитектура ABI: ").append(Build.SUPPORTED_ABIS.joinToString(", ")).append("\n")
-            append("• Версия Android: ").append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")\n")
-            append("• Патч безопасности: ").append(Build.VERSION.SECURITY_PATCH).append("\n")
-            append("• Номер сборки: ").append(Build.ID)
+            append(getString(R.string.sysinfo_lbl_manufacturer)).append(Build.MANUFACTURER).append("\n")
+            append(getString(R.string.sysinfo_lbl_model)).append(Build.MODEL).append(" (").append(Build.DEVICE).append(")\n")
+            append(getString(R.string.sysinfo_lbl_product)).append(Build.PRODUCT).append("\n")
+            append(getString(R.string.sysinfo_lbl_abi)).append(Build.SUPPORTED_ABIS.joinToString(", ")).append("\n")
+            append(getString(R.string.sysinfo_lbl_android_ver)).append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")\n")
+            append(getString(R.string.sysinfo_lbl_sec_patch)).append(Build.VERSION.SECURITY_PATCH).append("\n")
+            append(getString(R.string.sysinfo_lbl_build_id)).append(Build.ID)
         }
         binding.textDeviceInfo.text = deviceInfo
 
         // 2. CPU / SoC Info
         val cpuInfo = buildString {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Build.SOC_MODEL.isNotBlank()) {
-                append("• Платформа SoC: ").append(Build.SOC_MODEL).append("\n")
+                append(getString(R.string.sysinfo_lbl_soc_platform)).append(Build.SOC_MODEL).append("\n")
             }
             val cpuSummary = try {
                 NativeLibrary.getCpuSummary()
@@ -75,9 +75,9 @@ class SystemInfoDialogFragment : DialogFragment() {
                 ""
             }
             if (cpuSummary.isNotEmpty() && cpuSummary != "Unknown") {
-                append("• Процессор: ").append(cpuSummary)
+                append(getString(R.string.sysinfo_lbl_processor)).append(cpuSummary)
             } else {
-                append("• Архитектура: ARM64-v8a / 64-bit Core")
+                append(getString(R.string.sysinfo_lbl_arch_arm64))
             }
         }
         binding.textCpuInfo.text = cpuInfo
@@ -86,18 +86,18 @@ class SystemInfoDialogFragment : DialogFragment() {
         val gpuInfo = buildString {
             try {
                 val gpuModel = NativeLibrary.getGpuModel()
-                append("• Модель GPU: ").append(if (gpuModel.isNotEmpty()) gpuModel else "Adreno / Mali GPU").append("\n")
+                append(getString(R.string.sysinfo_lbl_gpu_model)).append(if (gpuModel.isNotEmpty()) gpuModel else "Adreno / Mali GPU").append("\n")
 
                 val vulkanApi = NativeLibrary.getVulkanApiVersion()
                 append("• Vulkan API: ").append(if (vulkanApi.isNotEmpty()) vulkanApi else "1.3.x").append("\n")
 
                 val vulkanDriver = NativeLibrary.getVulkanDriverVersion()
-                append("• Версия драйвера: ").append(if (vulkanDriver.isNotEmpty()) vulkanDriver else "Vulkan Hardware Driver").append("\n")
+                append(getString(R.string.sysinfo_lbl_driver_ver)).append(if (vulkanDriver.isNotEmpty()) vulkanDriver else "Vulkan Hardware Driver").append("\n")
 
                 val frameGen = try { NativeLibrary.supportsFrameGeneration() } catch (_: Throwable) { false }
-                append("• Генерация кадров: ").append(if (frameGen) "Поддерживается" else "Не поддерживается")
+                append(getString(R.string.sysinfo_lbl_frame_gen)).append(if (frameGen) getString(R.string.sysinfo_val_supported) else getString(R.string.sysinfo_val_not_supported))
             } catch (e: Throwable) {
-                append("• Статус: ").append(e.message)
+                append(getString(R.string.sysinfo_lbl_status)).append(e.message)
             }
         }
         binding.textGpuInfo.text = gpuInfo
@@ -111,9 +111,9 @@ class SystemInfoDialogFragment : DialogFragment() {
             val totalDeviceRam = memInfo.totalMem / (1024 * 1024)
             val availDeviceRam = memInfo.availMem / (1024 * 1024)
 
-            append("• Общий объем RAM: ").append(totalDeviceRam).append(" MB\n")
-            append("• Доступно RAM: ").append(availDeviceRam).append(" MB\n")
-            append("• Порог нехватки памяти: ").append(memInfo.threshold / (1024 * 1024)).append(" MB")
+            append(getString(R.string.sysinfo_lbl_total_ram)).append(totalDeviceRam).append(" MB\n")
+            append(getString(R.string.sysinfo_lbl_avail_ram)).append(availDeviceRam).append(" MB\n")
+            append(getString(R.string.sysinfo_lbl_low_mem_thresh)).append(memInfo.threshold / (1024 * 1024)).append(" MB")
         }
         binding.textRamInfo.text = ramInfo
     }

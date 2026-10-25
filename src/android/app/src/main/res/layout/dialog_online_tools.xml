@@ -55,7 +55,7 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Закрыть"
+                android:contentDescription="@string/storm_sync_close"
                 android:src="@drawable/ic_clear"
                 app:tint="?attr/colorOnSurface" />
         </LinearLayout>
@@ -102,7 +102,7 @@
                 android:background="@drawable/badge_pill_emerald"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="2dp"
-                android:text="АКТИВНА"
+                android:text="@string/online_tools_badge_active"
                 android:textColor="#10B981"
                 android:textSize="10sp"
                 android:textStyle="bold" />
@@ -143,7 +143,7 @@
                 android:id="@+id/text_status"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Выберите версию из списка выше"
+                android:text="@string/online_tools_select_prompt"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp" />
 
@@ -182,7 +182,7 @@
                     android:layout_marginEnd="6dp"
                     app:cornerRadius="10dp"
                     app:backgroundTint="?attr/colorSurfaceVariant"
-                    android:text="Обновить"
+                    android:text="@string/storm_sync_refresh"
                     app:icon="@drawable/ic_refresh"
                     app:iconGravity="textStart"
                     app:iconTint="?attr/colorPrimary"
@@ -222,7 +222,7 @@
                 android:layout_marginTop="10dp"
                 app:cornerRadius="12dp"
                 app:backgroundTint="?attr/colorPrimary"
-                android:text="Скачать и установить"
+                android:text="@string/online_tools_btn_download_install"
                 app:icon="@drawable/ic_install"
                 app:iconGravity="textStart"
                 app:iconTint="?attr/colorOnPrimary"

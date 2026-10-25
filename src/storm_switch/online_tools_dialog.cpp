@@ -65,7 +65,7 @@ public:
         text_layout->addWidget(m_title_label);
 
         m_sub_label = new QLabel(
-            QStringLiteral("Файл: %1 • Размер: %2").arg(asset.name, asset.display_size), m_frame);
+            QObject::tr("Файл: %1 • Размер: %2").arg(asset.name, asset.display_size), m_frame);
         text_layout->addWidget(m_sub_label);
 
         card_layout->addLayout(text_layout, 1);
@@ -614,7 +614,7 @@ void OnlineToolsDialog::OnDownloadProgress(qint64 bytesReceived, qint64 bytesTot
         m_progress_bar->setValue((std::min)(100, percent));
 
         QString speed_str = (m_current_speed_mbps > 0.0)
-                                ? QStringLiteral(" • %1 МБ/с").arg(QString::number(m_current_speed_mbps, 'f', 1))
+                                ? tr(" • %1 МБ/с").arg(QString::number(m_current_speed_mbps, 'f', 1))
                                 : QString();
 
         QString eta_str;
@@ -622,9 +622,9 @@ void OnlineToolsDialog::OnDownloadProgress(qint64 bytesReceived, qint64 bytesTot
             const double remaining_mb = (total_expected - total_current) / (1024.0 * 1024.0);
             const int eta_sec = static_cast<int>(remaining_mb / m_current_speed_mbps);
             if (eta_sec < 60) {
-                eta_str = QStringLiteral(" • ~%1 сек.").arg(eta_sec);
+                eta_str = tr(" • ~%1 сек.").arg(eta_sec);
             } else {
-                eta_str = QStringLiteral(" • ~%1 мин. %2 сек.").arg(eta_sec / 60).arg(eta_sec % 60);
+                eta_str = tr(" • ~%1 мин. %2 сек.").arg(eta_sec / 60).arg(eta_sec % 60);
             }
         }
 
@@ -738,13 +738,13 @@ void OnlineToolsDialog::CancelOperation() {
 
 QString OnlineToolsDialog::FormatBytes(qint64 bytes) {
     if (bytes < 1024) {
-        return QStringLiteral("%1 Б").arg(bytes);
+        return tr("%1 Б").arg(bytes);
     } else if (bytes < 1024 * 1024) {
-        return QStringLiteral("%1 КБ").arg(QString::number(bytes / 1024.0, 'f', 1));
+        return tr("%1 КБ").arg(QString::number(bytes / 1024.0, 'f', 1));
     } else if (bytes < 1024LL * 1024 * 1024) {
-        return QStringLiteral("%1 МБ").arg(QString::number(bytes / (1024.0 * 1024.0), 'f', 1));
+        return tr("%1 МБ").arg(QString::number(bytes / (1024.0 * 1024.0), 'f', 1));
     } else {
-        return QStringLiteral("%1 ГБ").arg(QString::number(bytes / (1024.0 * 1024.0 * 1024.0), 'f', 2));
+        return tr("%1 ГБ").arg(QString::number(bytes / (1024.0 * 1024.0 * 1024.0), 'f', 2));
     }
 }
 

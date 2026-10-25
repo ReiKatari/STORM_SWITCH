@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
+import org.yuzu.yuzu_emu.YuzuApplication
 
 import android.app.Dialog
 import android.graphics.Color
@@ -238,7 +239,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
     }
 
     private fun detectInstalledInfo(): InstalledInfo {
-        val ctx = context?.applicationContext ?: return InstalledInfo(false, null, "Не определено")
+        val ctx = context?.applicationContext ?: return InstalledInfo(false, null, YuzuApplication.getLocalizedContext().getString(R.string.online_tools_status_unknown))
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
 
         return if (toolType == TYPE_FIRMWARE) {
@@ -255,13 +256,13 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
             if (isAvail || resolvedVer != null) {
                 val display = if (resolvedVer != null) {
-                    "Установлена версия: $resolvedVer"
+                    getString(R.string.online_tools_installed_ver_fmt, resolvedVer)
                 } else {
-                    "Установлена прошивка Switch"
+                    getString(R.string.online_tools_fw_installed)
                 }
                 InstalledInfo(true, resolvedVer, display)
             } else {
-                InstalledInfo(false, null, "Прошивка не установлена")
+                InstalledInfo(false, null, getString(R.string.online_tools_fw_not_installed))
             }
         } else {
             val savedVer = prefs.getString("installed_online_keys_version", null)
@@ -276,13 +277,13 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
             if (keysValid || detectedVer != null) {
                 val display = if (detectedVer != null) {
-                    "Установлена версия: $detectedVer"
+                    getString(R.string.online_tools_installed_ver_fmt, detectedVer)
                 } else {
-                    "Установлены ключи (prod.keys)"
+                    getString(R.string.online_tools_keys_installed)
                 }
                 InstalledInfo(true, detectedVer, display)
             } else {
-                InstalledInfo(false, null, "Ключи не установлены")
+                InstalledInfo(false, null, getString(R.string.online_tools_keys_not_installed))
             }
         }
     }
@@ -361,12 +362,12 @@ class OnlineToolsDialogFragment : DialogFragment() {
         binding.textInstalledStatus.text = currentInstalledInfo.displayText
         if (currentInstalledInfo.isInstalled) {
             binding.textInstalledStatusIcon.text = "🟢"
-            binding.badgeInstalledHeader.text = "АКТИВНА"
+            binding.badgeInstalledHeader.text = getString(R.string.online_tools_badge_active)
             binding.badgeInstalledHeader.setTextColor(0xFF10B981.toInt())
             binding.badgeInstalledHeader.setBackgroundResource(R.drawable.badge_pill_emerald)
         } else {
             binding.textInstalledStatusIcon.text = "⚪"
-            binding.badgeInstalledHeader.text = "НЕ УСТАНОВЛЕНА"
+            binding.badgeInstalledHeader.text = getString(R.string.online_tools_badge_not_installed)
             binding.badgeInstalledHeader.setTextColor(0xFFF59E0B.toInt())
             binding.badgeInstalledHeader.setBackgroundResource(R.drawable.badge_pill_amber)
         }
@@ -389,7 +390,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                         name = "$ver.zip",
                         size = sz,
                         downloadUrl = "https://github.com/ReiKatari/STORM_SWITCH_TOOLS/releases/download/STORM_SWITCH_TOOLS_FIRMWARES/$ver.zip",
-                        displayTitle = "Прошивка $ver",
+                        displayTitle = getString(R.string.online_tools_fw_title_fmt, ver),
                         displaySize = formatBytes(sz),
                         isRecommended = (i == 0)
                     )
@@ -419,7 +420,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                         name = "$ver.zip",
                         size = sz,
                         downloadUrl = "https://github.com/ReiKatari/STORM_SWITCH_TOOLS/releases/download/STORM_SWITCH_TOOLS_KEYS/$ver.zip",
-                        displayTitle = "Ключи дешифрования $ver",
+                        displayTitle = getString(R.string.online_tools_keys_title_fmt, ver),
                         displaySize = formatBytes(sz),
                         isRecommended = (i == 0)
                     )
@@ -434,7 +435,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
     private fun refreshCatalog() {
         binding.btnRefresh.isEnabled = false
-        binding.textStatus.text = "Проверка обновлений каталога в GitHub..."
+        binding.textStatus.text = getString(R.string.online_tools_checking_github)
 
         val tagName = if (toolType == TYPE_FIRMWARE) {
             "STORM_SWITCH_TOOLS_FIRMWARES"
@@ -483,7 +484,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                                     name = name,
                                     size = sz,
                                     downloadUrl = dlUrl,
-                                    displayTitle = if (toolType == TYPE_FIRMWARE) "Прошивка $ver" else "Ключи дешифрования $ver",
+                                    displayTitle = if (toolType == TYPE_FIRMWARE) getString(R.string.online_tools_fw_title_fmt, ver) else getString(R.string.online_tools_keys_title_fmt, ver),
                                     displaySize = formatBytes(sz),
                                     isRecommended = (i == 0)
                                 )
@@ -502,7 +503,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                                 selectedIndex = if (installedIdx >= 0) installedIdx else 0
                                 adapter.notifyDataSetChanged()
                                 updateSelectionStatus()
-                                binding.textStatus.text = "Каталог успешно обновлен из репозитория."
+                                binding.textStatus.text = getString(R.string.online_tools_catalog_updated)
                             }
                         }
                     }
@@ -522,14 +523,14 @@ class OnlineToolsDialogFragment : DialogFragment() {
             val isCurrentInstalled = isVersionMatching(asset.version, currentInstalledInfo.version)
 
             if (isCurrentInstalled) {
-                binding.textStatus.text = "Выбрана текущая установленная версия: ${asset.displayTitle} (${asset.displaySize})"
-                binding.btnInstall.text = "Переустановить"
+                binding.textStatus.text = getString(R.string.online_tools_selected_current_fmt, asset.displayTitle, asset.displaySize)
+                binding.btnInstall.text = getString(R.string.online_tools_btn_reinstall)
             } else if (currentInstalledInfo.isInstalled && currentInstalledInfo.version != null && compareVersions(asset.version, currentInstalledInfo.version!!) > 0) {
-                binding.textStatus.text = "Доступно обновление: ${asset.displayTitle} (${asset.displaySize})"
-                binding.btnInstall.text = "Обновить"
+                binding.textStatus.text = getString(R.string.online_tools_update_avail_fmt, asset.displayTitle, asset.displaySize)
+                binding.btnInstall.text = getString(R.string.online_tools_btn_update)
             } else {
                 binding.textStatus.text = getString(R.string.online_tools_selected_format, asset.displayTitle, asset.displaySize)
-                binding.btnInstall.text = "Скачать и установить"
+                binding.btnInstall.text = getString(R.string.online_tools_btn_download_install)
             }
             binding.btnInstall.isEnabled = !isDownloading
         }
@@ -562,12 +563,12 @@ class OnlineToolsDialogFragment : DialogFragment() {
             binding.progressBar.isIndeterminate = false
             binding.progressBar.progress = 0
             binding.btnInstall.isEnabled = (selectedIndex in assets.indices)
-            binding.btnInstall.text = "Скачать и установить"
+            binding.btnInstall.text = getString(R.string.online_tools_btn_download_install)
             binding.btnRefresh.isEnabled = true
             binding.btnCancel.isEnabled = true
             updateSelectionStatus()
             context?.let {
-                Toast.makeText(it, "Загрузка отменена", Toast.LENGTH_SHORT).show()
+                Toast.makeText(it, it.getString(R.string.storm_dl_cancelled), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -582,7 +583,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
         isDownloading = true
         binding.btnInstall.isEnabled = false
-        binding.btnInstall.text = "Загрузка..."
+        binding.btnInstall.text = getString(R.string.downloading)
         binding.btnRefresh.isEnabled = false
         binding.btnCancel.isEnabled = true
         binding.progressBar.isIndeterminate = false
@@ -635,10 +636,10 @@ class OnlineToolsDialogFragment : DialogFragment() {
                         val contentType = response.header("Content-Type") ?: ""
                         if (contentType.contains("text/html", ignoreCase = true)) {
                             response.close()
-                            throw java.io.IOException("Ответ сервера — веб-страница вместо файла")
+                            throw java.io.IOException(appContext.getString(R.string.online_tools_err_html))
                         }
 
-                        val body = response.body ?: throw java.io.IOException("Пустой ответ")
+                        val body = response.body ?: throw java.io.IOException(appContext.getString(R.string.online_tools_err_empty))
                         val totalLength = body.contentLength()
                         var downloaded = 0L
 
@@ -669,7 +670,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                                                         totalFormatted
                                                     )
                                                 } else {
-                                                    "Загрузка: $dlFormatted"
+                                                    appContext.getString(R.string.online_tools_downloading_short_fmt, dlFormatted)
                                                 }
                                             }
                                         }
@@ -707,7 +708,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 }
 
                 if (!downloadSuccess) {
-                    throw lastError ?: Exception("Не удалось загрузить файл из доступных источников")
+                    throw lastError ?: Exception(appContext.getString(R.string.online_tools_err_all_sources))
                 }
 
                 withContext(Dispatchers.Main) {
@@ -856,14 +857,14 @@ class OnlineToolsDialogFragment : DialogFragment() {
                     downloadJob = null
                     if (_binding != null) {
                         binding.btnInstall.isEnabled = true
-                        binding.btnInstall.text = "Скачать и установить"
+                        binding.btnInstall.text = getString(R.string.online_tools_btn_download_install)
                         binding.btnRefresh.isEnabled = true
                         binding.btnCancel.isEnabled = true
                         binding.progressBar.isIndeterminate = false
                         binding.progressBar.progress = 0
-                        val errText = e.localizedMessage ?: "Сбой сети"
-                        binding.textStatus.text = "Ошибка установки: $errText"
-                        Toast.makeText(appContext, "Сбой онлайн-установки: $errText", Toast.LENGTH_SHORT).show()
+                        val errText = e.localizedMessage ?: appContext.getString(R.string.storm_world_error_network_default)
+                        binding.textStatus.text = appContext.getString(R.string.online_tools_err_install_fmt, errText)
+                        Toast.makeText(appContext, appContext.getString(R.string.online_tools_toast_err_fmt, errText), Toast.LENGTH_SHORT).show()
                     }
                 }
             } finally {
@@ -899,7 +900,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
             holder.itemBinding.apply {
                 iconToolType.text = if (toolType == TYPE_FIRMWARE) "📦" else "🔑"
                 textToolTitle.text = asset.displayTitle
-                textToolSubtitle.text = "Файл: ${asset.name} • Размер: ${asset.displaySize}"
+                textToolSubtitle.text = root.context.getString(R.string.online_tools_item_subtitle_fmt, asset.name, asset.displaySize)
 
                 badgeInstalled.isVisible = isInstalled
                 badgeRecommended.isVisible = asset.isRecommended && !isInstalled

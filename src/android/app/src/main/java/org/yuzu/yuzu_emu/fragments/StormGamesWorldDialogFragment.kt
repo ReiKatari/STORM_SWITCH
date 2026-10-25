@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
+import org.yuzu.yuzu_emu.YuzuApplication
 
 import android.app.Dialog
 import android.content.Context
@@ -204,24 +205,20 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 NativeConfig.addGameDir(GameDir(uriStr, true))
             }
 
-            val friendlyName = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: "Каталог"
-            binding.detailSaveFolder.text = "📁 Каталог: $friendlyName ✏️"
-            Toast.makeText(ctx, "Каталог загрузки: $friendlyName", Toast.LENGTH_SHORT).show()
+            val friendlyName = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: ctx.getString(R.string.storm_world_folder_default_name)
+            binding.detailSaveFolder.text = ctx.getString(R.string.storm_world_folder_label_fmt, friendlyName)
+            Toast.makeText(ctx, ctx.getString(R.string.storm_world_toast_download_folder_fmt, friendlyName), Toast.LENGTH_SHORT).show()
         }
 
-    enum class SortMode(val titleRes: Int, val labelRu: String, val labelEn: String) {
-        TITLE_ASC(R.string.sort_by_title_asc, "А-Я", "A-Z"),
-        TITLE_DESC(R.string.sort_by_title_desc, "Я-А", "Z-A"),
-        SIZE_DESC(R.string.sort_by_size_desc, "Размер ↓", "Size ↓"),
-        SIZE_ASC(R.string.sort_by_size_asc, "Размер ↑", "Size ↑"),
-        RECOMMENDED(R.string.sort_by_addons_mods, "DLC и моды", "DLC and mods");
-
-        val label: String
-            get() = labelRu
+    enum class SortMode(val titleRes: Int, val shortLabelRes: Int) {
+        TITLE_ASC(R.string.sort_by_title_asc, R.string.storm_world_sort_az_short),
+        TITLE_DESC(R.string.sort_by_title_desc, R.string.storm_world_sort_za_short),
+        SIZE_DESC(R.string.sort_by_size_desc, R.string.storm_world_sort_size_desc_short),
+        SIZE_ASC(R.string.sort_by_size_asc, R.string.storm_world_sort_size_asc_short),
+        RECOMMENDED(R.string.sort_by_addons_mods, R.string.storm_world_sort_dlc_mods_short);
 
         fun getLabel(context: Context): String {
-            val lang = context.resources.configuration.locales[0].language
-            return if (lang == "ru") labelRu else labelEn
+            return context.getString(shortLabelRes)
         }
     }
 
@@ -436,7 +433,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         binding.btnClose.setOnClickListener {
             if (StormDownloadManager.isDownloading()) {
-                Toast.makeText(requireContext(), "Загрузка игры продолжается в фоновом режиме", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_world_toast_bg_download), Toast.LENGTH_SHORT).show()
             }
             dismiss()
         }
@@ -579,7 +576,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         allGames.addAll(cached)
                     }
                     filterGames(binding.editSearch.text?.toString().orEmpty())
-                    binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
+                    binding.textCatalogStatus.text = getString(R.string.storm_world_status_available_fmt, allGames.size)
                     binding.progressLoading.isVisible = false
 
                     if (appCtx != null) {
@@ -611,7 +608,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val appCtx = context?.applicationContext ?: return
         if (allGames.isEmpty()) {
             binding.progressLoading.isVisible = true
-            binding.textCatalogStatus.text = "Синхронизация каталога облака..."
+            binding.textCatalogStatus.text = getString(R.string.storm_world_status_syncing)
         }
         binding.textEmpty.isVisible = false
         binding.btnRefresh.isEnabled = false
@@ -629,10 +626,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     filterGames(binding.editSearch.text?.toString().orEmpty())
                     binding.progressLoading.isVisible = false
                     binding.btnRefresh.isEnabled = true
-                    binding.textCatalogStatus.text = "Доступно игр Nintendo Switch: ${allGames.size}"
+                    binding.textCatalogStatus.text = getString(R.string.storm_world_status_available_fmt, allGames.size)
                     if (allGames.isEmpty()) {
                         binding.textEmpty.isVisible = true
-                        binding.textEmpty.text = "Нет доступных игр в облаке"
+                        binding.textEmpty.text = getString(R.string.storm_world_empty_cloud)
                     }
                 }
 
@@ -645,9 +642,9 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.btnRefresh.isEnabled = true
                     if (allGames.isEmpty()) {
                         binding.textEmpty.isVisible = true
-                        binding.textEmpty.text = "Ошибка подключения: ${e.localizedMessage ?: "Сбой сети"}"
+                        binding.textEmpty.text = getString(R.string.storm_world_error_connection_fmt, e.localizedMessage ?: getString(R.string.storm_world_error_network_default))
                         context?.let { c ->
-                            Toast.makeText(c, "Не удалось загрузить каталог", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(c, c.getString(R.string.storm_world_toast_catalog_failed), Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -1010,7 +1007,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     private fun updatePaginationUI(totalPages: Int, totalItems: Int) {
         val binding = _binding ?: return
         binding.btnSortCatalog.text = currentSortMode.getLabel(binding.root.context)
-        binding.textPaginationInfo.text = "Страница $currentPage из $totalPages ($totalItems)"
+        binding.textPaginationInfo.text = getString(R.string.storm_world_pagination_fmt, currentPage, totalPages, totalItems)
 
         binding.btnPagePrev.isEnabled = currentPage > 1
         binding.btnPagePrev.alpha = if (currentPage > 1) 1.0f else 0.4f
@@ -1137,13 +1134,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         binding.detailGameDescription.text = if (game.description.isNotBlank() && game.description != "null") {
             game.description
         } else {
-            "Загрузка информации..."
+            getString(R.string.storm_world_loading_info)
         }
 
         loadCoverForGame(game, binding.detailGameCover)
 
         val targetDir = getTargetDownloadDirectoryDescription()
-        binding.detailSaveFolder.text = "📁 Каталог: $targetDir ✏️"
+        binding.detailSaveFolder.text = getString(R.string.storm_world_folder_label_fmt, targetDir)
         binding.detailSaveFolder.setOnClickListener {
             showDownloadDirectoryPicker()
         }
@@ -1187,7 +1184,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             val dObj = dlcsArr.optJSONObject(d) ?: continue
                             val dlcId = dObj.optString("id", "")
                             val rawName = dObj.optString("name", "").trim()
-                            val dlcName = StormWorldGameItem.sanitizeEncoding(if (rawName.isNotEmpty()) rawName else "Дополнение ${d + 1}")
+                            val dlcName = StormWorldGameItem.sanitizeEncoding(if (rawName.isNotEmpty()) rawName else getString(R.string.storm_world_dlc_fallback_fmt, d + 1))
                             val dlcDesc = StormWorldGameItem.sanitizeEncoding(dObj.optString("description", ""))
                             game.dlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
                         }
@@ -1238,7 +1235,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.detailGameDescription.text = if (game.description.isNotBlank() && game.description != "null") {
                         game.description
                     } else {
-                        "Описание отсутствует"
+                        getString(R.string.storm_world_no_description)
                     }
                     if (game.dlcCount > 0) {
                         binding.detailGameDlc.isVisible = true
@@ -1255,7 +1252,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             } catch (_: Exception) {
                 withContext(Dispatchers.Main) {
                     if (_binding == null || selectedGame?.id != game.id) return@withContext
-                    binding.detailGameDescription.text = "Описание отсутствует"
+                    binding.detailGameDescription.text = getString(R.string.storm_world_no_description)
                 }
             }
         }
@@ -1267,38 +1264,38 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val options = mutableListOf<String>()
         val actions = mutableListOf<() -> Unit>()
 
-        options.add("📂 Выбрать новую папку на устройстве...")
+        options.add(ctx.getString(R.string.storm_world_pick_new_folder))
         actions.add { selectDownloadDirLauncher.launch(null) }
 
         for (dir in gameDirs) {
             val uri = Uri.parse(dir.uriString)
             val name = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: dir.uriString
-            options.add("📁 Папка игр: $name")
+            options.add(ctx.getString(R.string.storm_world_game_folder_item_fmt, name))
             actions.add {
                 val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
                 prefs.edit().putString(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR, dir.uriString).apply()
-                binding.detailSaveFolder.text = "📁 Каталог: $name ✏️"
-                Toast.makeText(ctx, "Каталог загрузки: $name", Toast.LENGTH_SHORT).show()
+                binding.detailSaveFolder.text = ctx.getString(R.string.storm_world_folder_label_fmt, name)
+                Toast.makeText(ctx, ctx.getString(R.string.storm_world_toast_download_folder_fmt, name), Toast.LENGTH_SHORT).show()
             }
         }
 
-        options.add("🔄 По умолчанию (Download/STORM_SWITCH_GAMES)")
+        options.add(ctx.getString(R.string.storm_world_default_folder_option))
         actions.add {
             val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
             prefs.edit().remove(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR).apply()
             val defName = getTargetDownloadDirectoryDescription()
-            binding.detailSaveFolder.text = "📁 Каталог: $defName ✏️"
-            Toast.makeText(ctx, "Каталог сброшен по умолчанию", Toast.LENGTH_SHORT).show()
+            binding.detailSaveFolder.text = ctx.getString(R.string.storm_world_folder_label_fmt, defName)
+            Toast.makeText(ctx, ctx.getString(R.string.storm_world_toast_folder_reset), Toast.LENGTH_SHORT).show()
         }
 
         com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
-            .setTitle("Каталог для загрузки игр")
+            .setTitle(ctx.getString(R.string.storm_world_dialog_folder_title))
             .setItems(options.toTypedArray()) { _, which ->
                 if (which in actions.indices) {
                     actions[which].invoke()
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -1337,7 +1334,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val ctx = requireContext()
                 val primaryColor = ThemeHelper.getColor(ctx, com.google.android.material.R.attr.colorPrimary)
                 if (game.isDownloaded) {
-                    binding.btnStartDownload.text = "Скачано"
+                    binding.btnStartDownload.text = getString(R.string.storm_world_btn_downloaded)
                     binding.btnStartDownload.setIconResource(R.drawable.ic_check)
                     binding.btnStartDownload.isEnabled = false
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
@@ -1345,7 +1342,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.btnStartDownload.setTextColor(0xFFFFFFFF.toInt())
                     binding.btnStartDownload.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
                 } else {
-                    binding.btnStartDownload.text = "Скачать игру"
+                    binding.btnStartDownload.text = getString(R.string.storm_world_btn_download_game)
                     binding.btnStartDownload.setIconResource(R.drawable.ic_install)
                     binding.btnStartDownload.isEnabled = true
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
@@ -1364,8 +1361,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.progressDownload.isIndeterminate = true
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = false
-                    binding.btnStartDownload.text = "Подключение..."
-                    binding.btnPauseDownload.text = "Пауза"
+                    binding.btnStartDownload.text = getString(R.string.storm_world_btn_connecting)
+                    binding.btnPauseDownload.text = getString(R.string.storm_world_btn_pause)
                 }
 
                 StormDownloadStatus.DOWNLOADING -> {
@@ -1374,8 +1371,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.progressDownload.progress = progress.progressPercent
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = false
-                    binding.btnStartDownload.text = "Идет загрузка..."
-                    binding.btnPauseDownload.text = "Пауза"
+                    binding.btnStartDownload.text = getString(R.string.storm_world_btn_downloading)
+                    binding.btnPauseDownload.text = getString(R.string.storm_world_btn_pause)
                 }
 
                 StormDownloadStatus.PAUSED -> {
@@ -1384,13 +1381,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.progressDownload.progress = progress.progressPercent
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = true
-                    binding.btnStartDownload.text = "Возобновить"
-                    binding.btnPauseDownload.text = "Продолжить"
+                    binding.btnStartDownload.text = getString(R.string.storm_world_btn_unpause)
+                    binding.btnPauseDownload.text = getString(R.string.storm_world_btn_resume)
                 }
 
                 StormDownloadStatus.COMPLETED -> {
                     binding.layoutDownloadProgress.isVisible = false
-                    binding.btnStartDownload.text = "Скачано"
+                    binding.btnStartDownload.text = getString(R.string.storm_world_btn_downloaded)
                     binding.btnStartDownload.setIconResource(R.drawable.ic_check)
                     binding.btnStartDownload.isEnabled = false
                     binding.btnStartDownload.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
@@ -1406,15 +1403,15 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     binding.layoutDownloadProgress.isVisible = true
                     binding.textDownloadStats.text = progress.statsText
                     binding.btnStartDownload.isEnabled = true
-                    binding.btnStartDownload.text = "Повторить"
-                    binding.btnPauseDownload.text = "Повторить"
+                    binding.btnStartDownload.text = getString(R.string.storm_world_btn_retry)
+                    binding.btnPauseDownload.text = getString(R.string.storm_world_btn_retry)
                 }
 
                 else -> {}
             }
         } else {
             if (progress.status == StormDownloadStatus.DOWNLOADING || progress.status == StormDownloadStatus.CONNECTING) {
-                binding.textCatalogStatus.text = "Фоновая загрузка: ${progress.game.finalTitle.ifEmpty { progress.game.title }} (${progress.progressPercent}%)"
+                binding.textCatalogStatus.text = getString(R.string.storm_world_bg_download_status_fmt, progress.game.finalTitle.ifEmpty { progress.game.title }, progress.progressPercent)
             }
         }
     }
@@ -1477,7 +1474,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             loadCoverForGame(item, holder.b.imageGameCover)
 
             if (item.isDownloaded) {
-                holder.b.btnGameAction.text = "Скачано"
+                holder.b.btnGameAction.text = context.getString(R.string.storm_world_btn_downloaded)
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_check)
                 holder.b.btnGameAction.isEnabled = false
                 holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
@@ -1485,7 +1482,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 holder.b.btnGameAction.setTextColor(0xFFFFFFFF.toInt())
                 holder.b.btnGameAction.iconTint = android.content.res.ColorStateList.valueOf(0xFFFFFFFF.toInt())
             } else {
-                holder.b.btnGameAction.text = "Скачать"
+                holder.b.btnGameAction.text = context.getString(R.string.storm_world_btn_download_short)
                 holder.b.btnGameAction.setIconResource(R.drawable.ic_install)
                 holder.b.btnGameAction.isEnabled = !StormDownloadManager.isDownloading()
                 holder.b.btnGameAction.backgroundTintList = android.content.res.ColorStateList.valueOf(0x00000000)
@@ -1562,7 +1559,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                             val dObj = dlcsArr.optJSONObject(d) ?: continue
                             val dlcId = dObj.optString("id", "")
                             val rawName = dObj.optString("name", "").trim()
-                            val dlcName = StormWorldGameItem.sanitizeEncoding(if (rawName.isNotEmpty()) rawName else "Официальное дополнение (DLC #${d + 1})")
+                            val dlcName = StormWorldGameItem.sanitizeEncoding(if (rawName.isNotEmpty()) rawName else getString(R.string.storm_world_dlc_official_fallback_fmt, d + 1))
                             val dlcDesc = StormWorldGameItem.sanitizeEncoding(dObj.optString("description", ""))
                             fetchedDlcs.add(StormWorldDlcItem(id = dlcId, name = dlcName, description = dlcDesc))
                         }
@@ -1645,11 +1642,16 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         @JvmStatic
         fun localizeSizeString(sizeStr: String): String {
             if (sizeStr.isEmpty()) return sizeStr
+            val ctx = try { org.yuzu.yuzu_emu.YuzuApplication.appContext } catch (_: Exception) { null }
+            val gb = ctx?.getString(R.string.storm_world_unit_gb) ?: "GB"
+            val mb = ctx?.getString(R.string.storm_world_unit_mb) ?: "MB"
+            val kb = ctx?.getString(R.string.storm_world_unit_kb) ?: "KB"
+            val b = ctx?.getString(R.string.storm_world_unit_b) ?: "B"
             return sizeStr
-                .replace(Regex("(?i)\\bGB\\b"), "ГБ")
-                .replace(Regex("(?i)\\bMB\\b"), "МБ")
-                .replace(Regex("(?i)\\bKB\\b"), "КБ")
-                .replace(Regex("(?i)\\bB\\b"), "Б")
+                .replace(Regex("(?i)\\b(?:GB|ГБ)\\b"), gb)
+                .replace(Regex("(?i)\\b(?:MB|МБ)\\b"), mb)
+                .replace(Regex("(?i)\\b(?:KB|КБ)\\b"), kb)
+                .replace(Regex("(?i)\\b(?:B|Б)\\b"), b)
         }
 
         data class CloudFormatVariant(
@@ -1660,39 +1662,39 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         val KNOWN_CLOUD_FORMAT_VARIANTS = mapOf(
             "0100FC001ACE0000" to listOf( // Anvil Saga
-                CloudFormatVariant(".nsp", "694,29 МБ", 728016736L),
-                CloudFormatVariant(".nsz", "308,51 МБ", 323499452L)
+                CloudFormatVariant(".nsp", "694.29 MB", 728016736L),
+                CloudFormatVariant(".nsz", "308.51 MB", 323499452L)
             ),
             "010004D00A9C0000" to listOf( // Aggelos
-                CloudFormatVariant(".nsp", "112,93 МБ", 118411040L),
-                CloudFormatVariant(".nsz", "105,46 МБ", 110581026L)
+                CloudFormatVariant(".nsp", "112.93 MB", 118411040L),
+                CloudFormatVariant(".nsz", "105.46 MB", 110581026L)
             ),
             "010040F01EC60000" to listOf( // Aggelos 2
-                CloudFormatVariant(".nsp", "107,12 МБ", 112319264L),
-                CloudFormatVariant(".nsz", "89,56 МБ", 93908837L)
+                CloudFormatVariant(".nsp", "107.12 MB", 112319264L),
+                CloudFormatVariant(".nsz", "89.56 MB", 93908837L)
             ),
             "010020D01AD24000" to listOf( // Animal Well
-                CloudFormatVariant(".nsp", "37,63 МБ", 39457568L),
-                CloudFormatVariant(".nsz", "34,83 МБ", 36522797L)
+                CloudFormatVariant(".nsp", "37.63 MB", 39457568L),
+                CloudFormatVariant(".nsz", "34.83 MB", 36522797L)
             ),
             "0100F3E024DFC000" to listOf( // Another Eden Begins
-                CloudFormatVariant(".nsp", "3,61 ГБ", 3876480288L),
-                CloudFormatVariant(".nsz", "3,29 ГБ", 3535621250L)
+                CloudFormatVariant(".nsp", "3.61 GB", 3876480288L),
+                CloudFormatVariant(".nsz", "3.29 GB", 3535621250L)
             ),
             "01006DD02868A000" to listOf( // Artis Impact
-                CloudFormatVariant(".nsp", "1,39 ГБ", 1496537888L),
-                CloudFormatVariant(".nsz", "970,82 МБ", 1017977718L)
+                CloudFormatVariant(".nsp", "1.39 GB", 1496537888L),
+                CloudFormatVariant(".nsz", "970.82 MB", 1017977718L)
             ),
             "01008F1008DA6000" to listOf( // Darkest Dungeon [Ancestral Edition]
-                CloudFormatVariant(".nsp", "3,26 ГБ", 3497294656L),
-                CloudFormatVariant(".nsz", "1,16 ГБ", 1243524535L)
+                CloudFormatVariant(".nsp", "3.26 GB", 3497294656L),
+                CloudFormatVariant(".nsz", "1.16 GB", 1243524535L)
             ),
             "0100E5E01C098000" to listOf( // Darkest Dungeon II
-                CloudFormatVariant(".nsp", "4,00 ГБ", 4298739840L),
-                CloudFormatVariant(".nsz", "1,72 ГБ", 1844242747L)
+                CloudFormatVariant(".nsp", "4.00 GB", 4298739840L),
+                CloudFormatVariant(".nsz", "1.72 GB", 1844242747L)
             ),
             "0100F2C0115B6000" to listOf( // The Legend of Zelda: Tears of the Kingdom (ONLY NSZ in cloud)
-                CloudFormatVariant(".nsz", "15,45 ГБ", 16591941089L)
+                CloudFormatVariant(".nsz", "15.45 GB", 16591941089L)
             )
         )
 

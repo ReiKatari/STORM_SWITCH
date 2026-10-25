@@ -487,7 +487,7 @@ class AmiiboDialogFragment : DialogFragment() {
             binding.listInstalledAmiibo.adapter?.notifyDataSetChanged()
             binding.textEmptyInstalled.isVisible = installedAmiiboList.isEmpty()
             val countText = if (installedAmiiboList.size == 1) "1 Amiibo" else "${installedAmiiboList.size} Amiibo"
-            binding.textInstalledStatus.text = "Всего: $countText"
+            binding.textInstalledStatus.text = getString(R.string.amiibo_installed_total_fmt, countText)
         }
     }
 
@@ -510,7 +510,7 @@ class AmiiboDialogFragment : DialogFragment() {
             val b = holder.itemBinding
 
             b.textInstalledAmiiboName.text = item.name
-            b.textInstalledAmiiboInfo.text = "NTAG215 • ${item.sizeBytes} Б"
+            b.textInstalledAmiiboInfo.text = "NTAG215 • ${item.sizeBytes} ${b.root.context.getString(R.string.unit_b)}"
 
             b.buttonInjectInstalled.setOnClickListener {
                 lifecycleScope.launch(Dispatchers.IO) {

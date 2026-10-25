@@ -116,18 +116,18 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         val context = requireContext()
         val profile = StormHardwareCalibrator.detectHardware(context)
 
-        val formFactor = if (profile.isTablet) "Планшет" else "Смартфон"
-        binding.textHwSoc.text = "SoC / ЦП: ${profile.socName} (${profile.cpuCores} ядер, $formFactor)"
-        binding.textHwGpu.text = "ГПУ: ${profile.gpuName}"
-        binding.textHwRam.text = String.format("ОЗУ: %.1f ГБ (Доступно: %.1f ГБ)", profile.totalRamGb, profile.availRamGb)
+        val formFactor = if (profile.isTablet) getString(R.string.auto_opt_form_tablet) else getString(R.string.auto_opt_form_phone)
+        binding.textHwSoc.text = getString(R.string.auto_opt_soc_fmt, profile.socName, profile.cpuCores, formFactor)
+        binding.textHwGpu.text = getString(R.string.auto_opt_gpu_fmt, profile.gpuName)
+        binding.textHwRam.text = getString(R.string.auto_opt_ram_fmt, profile.totalRamGb, profile.availRamGb)
         val tierDesc = when (profile.tier) {
-            StormHardwareCalibrator.HardwareTier.FLAGSHIP_ELITE -> "Ультра-флагман (Snapdragon 8 Elite / 12GB+ RAM)"
-            StormHardwareCalibrator.HardwareTier.FLAGSHIP -> "Флагман (Высокая производительность, 12GB+ RAM)"
-            StormHardwareCalibrator.HardwareTier.HIGH_MIDRANGE -> "Продвинутый (Сбалансированная производительность, 8GB RAM)"
-            StormHardwareCalibrator.HardwareTier.MIDRANGE -> "Средний (6GB RAM)"
-            StormHardwareCalibrator.HardwareTier.BUDGET -> "Базовый (< 6GB RAM)"
+            StormHardwareCalibrator.HardwareTier.FLAGSHIP_ELITE -> getString(R.string.auto_opt_tier_elite)
+            StormHardwareCalibrator.HardwareTier.FLAGSHIP -> getString(R.string.auto_opt_tier_flagship)
+            StormHardwareCalibrator.HardwareTier.HIGH_MIDRANGE -> getString(R.string.auto_opt_tier_high_mid)
+            StormHardwareCalibrator.HardwareTier.MIDRANGE -> getString(R.string.auto_opt_tier_mid)
+            StormHardwareCalibrator.HardwareTier.BUDGET -> getString(R.string.auto_opt_tier_budget)
         }
-        binding.textHwTier.text = "Класс устройства: $tierDesc"
+        binding.textHwTier.text = getString(R.string.auto_opt_tier_label_fmt, tierDesc)
     }
 
     private fun setupModeSelectors() {

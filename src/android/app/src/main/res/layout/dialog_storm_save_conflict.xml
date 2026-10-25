@@ -31,7 +31,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Разрешение конфликта сохранений"
+                android:text="@string/storm_save_conflict_title"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="17sp"
                 android:textStyle="bold" />
@@ -50,7 +50,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="На текущем и удалённом устройствах обнаружены разные версии сохранения. Сравните время создания и выберите действие."
+        android:text="@string/storm_sync_conflict_desc"
         android:textColor="?attr/colorOnSurface"
         android:textSize="13sp" />
 
@@ -82,7 +82,7 @@
                     android:id="@+id/text_local_device_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Текущее устройство (Телефон)"
+                    android:text="@string/storm_sync_current_device_phone"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -128,7 +128,7 @@
                     android:id="@+id/text_remote_device_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Удалённое устройство (ПК)"
+                    android:text="@string/storm_sync_remote_device_pc"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -166,7 +166,7 @@
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="46dp"
-            android:text="Заменить текущее"
+            android:text="@string/storm_save_replace_current"
             android:textColor="?attr/colorOnSurface"
             android:textSize="13sp"
             app:backgroundTint="?attr/colorSurfaceVariant"
@@ -179,7 +179,7 @@
             android:layout_width="match_parent"
             android:layout_height="46dp"
             android:layout_marginTop="6dp"
-            android:text="Заменить на удалённом"
+            android:text="@string/storm_save_replace_remote"
             android:textColor="?attr/colorOnSurface"
             android:textSize="13sp"
             app:backgroundTint="?attr/colorSurfaceVariant"
@@ -192,7 +192,7 @@
             android:layout_width="match_parent"
             android:layout_height="46dp"
             android:layout_marginTop="6dp"
-            android:text="Сохранить оба варианта"
+            android:text="@string/storm_save_keep_both"
             android:textColor="?attr/colorOnPrimary"
             android:textSize="13sp"
             android:textStyle="bold"
@@ -204,7 +204,7 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginTop="4dp"
-            android:text="Отмена"
+            android:text="@android:string/cancel"
             android:textColor="?attr/colorOnSurfaceVariant" />
     </LinearLayout>
 </LinearLayout>

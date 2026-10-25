@@ -17,7 +17,17 @@
 #include "common/settings_enums.h"
 #include "config.h"
 
+#include <filesystem>
+#include <thread>
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#ifdef LoadString
+#undef LoadString
+#endif
+#include <share.h>
 #include "common/string_util.h"
 #endif
 
@@ -110,24 +120,48 @@ void Config::WriteToIni() const {
         break;
     }
     LOG_INFO(Config, "Writing {} configuration to: {}", config_type, config_loc);
+    const std::string tmp_loc = config_loc + ".tmp";
     FILE* fp = nullptr;
 #ifdef _WIN32
-    fp = _wfopen(Common::UTF8ToUTF16W(config_loc).data(), L"wb");
+    const auto w_tmp = Common::UTF8ToUTF16W(tmp_loc);
+    const auto w_dst = Common::UTF8ToUTF16W(config_loc);
+    fp = _wfsopen(w_tmp.data(), L"wb", _SH_DENYNO);
 #else
-    fp = fopen(config_loc.c_str(), "wb");
+    fp = fopen(tmp_loc.c_str(), "wb");
 #endif
 
     if (fp == nullptr) {
-        LOG_ERROR(Frontend, "Config file could not be saved!");
+        LOG_ERROR(Frontend, "Config temp file could not be opened for saving: {}", tmp_loc);
         return;
     }
 
     CSimpleIniA::FileWriter writer(fp);
     const SI_Error rc = config->Save(writer, false);
+    fflush(fp);
+    fclose(fp);
+
     if (rc < 0) {
         LOG_ERROR(Frontend, "Config file could not be saved!");
+#ifdef _WIN32
+        DeleteFileW(w_tmp.data());
+#else
+        std::remove(tmp_loc.c_str());
+#endif
+        return;
     }
-    fclose(fp);
+
+#ifdef _WIN32
+    if (!MoveFileExW(w_tmp.data(), w_dst.data(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+        if (CopyFileW(w_tmp.data(), w_dst.data(), FALSE)) {
+            DeleteFileW(w_tmp.data());
+        } else {
+            LOG_ERROR(Frontend, "Atomic config replace failed for: {}", config_loc);
+        }
+    }
+#else
+    std::error_code ec;
+    std::filesystem::rename(FS::ToU8String(tmp_loc), FS::ToU8String(config_loc), ec);
+#endif
 }
 
 void Config::SetUpIni() {
@@ -137,14 +171,35 @@ void Config::SetUpIni() {
 
     FILE* fp = nullptr;
 #ifdef _WIN32
-    _wfopen_s(&fp, Common::UTF8ToUTF16W(config_loc).data(), L"rb, ccs=UTF-8");
-    if (fp == nullptr) {
-        fp = _wfopen(Common::UTF8ToUTF16W(config_loc).data(), L"wb, ccs=UTF-8");
+    const auto w_loc = Common::UTF8ToUTF16W(config_loc);
+    const DWORD attrs = GetFileAttributesW(w_loc.data());
+    const bool file_exists = (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY));
+    if (file_exists) {
+        for (int attempt = 0; attempt < 5 && fp == nullptr; ++attempt) {
+            fp = _wfsopen(w_loc.data(), L"rb, ccs=UTF-8", _SH_DENYNO);
+            if (fp == nullptr) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            }
+        }
+        if (fp == nullptr) {
+            LOG_ERROR(Frontend, "Existing config file is locked and could not be read (preserving existing file): {}", config_loc);
+            return;
+        }
+    } else {
+        fp = _wfsopen(w_loc.data(), L"wb, ccs=UTF-8", _SH_DENYNO);
+        if (fp != nullptr) {
+            fclose(fp);
+            return;
+        }
     }
 #else
     fp = fopen(config_loc.c_str(), "rb");
     if (fp == nullptr) {
         fp = fopen(config_loc.c_str(), "wb");
+        if (fp != nullptr) {
+            fclose(fp);
+            return;
+        }
     }
 #endif
 
@@ -440,8 +495,10 @@ void Config::ReadScreenshotValues() {
     BeginGroup(Settings::TranslateCategory(Settings::Category::Screenshots));
 
     ReadCategory(Settings::Category::Screenshots);
-    FS::SetEdenPath(FS::EdenPath::ScreenshotsDir,
-                    ReadStringSetting(std::string("screenshot_path")));
+    const std::string screenshot_path = ReadStringSetting(std::string("screenshot_path"));
+    if (!screenshot_path.empty()) {
+        FS::SetEdenPath(FS::EdenPath::ScreenshotsDir, screenshot_path);
+    }
 
     EndGroup();
 }

@@ -278,7 +278,7 @@ class ReleaseAdapter(
                                         try {
                                             withContext(Dispatchers.Main) {
                                                 dialogBinding.status.text = if (index > 0) {
-                                                    "Загрузка через зеркало $index..."
+                                                    context.getString(R.string.release_dl_mirror_fmt, index)
                                                 } else {
                                                     context.getString(R.string.downloading)
                                                 }
@@ -297,7 +297,7 @@ class ReleaseAdapter(
 
                                                 val contentType = response.header("Content-Type") ?: ""
                                                 if (contentType.contains("text/html", ignoreCase = true)) {
-                                                    throw IOException("Ответ сервера — HTML страница")
+                                                    throw IOException(context.getString(R.string.online_tools_err_html))
                                                 }
 
                                                 val body = response.body ?: throw IOException(context.getString(R.string.empty_response_body))
@@ -320,9 +320,9 @@ class ReleaseAdapter(
                                                                     val mbRead = String.format("%.1f", totalBytesRead / (1024.0 * 1024.0))
                                                                     if (contentLength > 0) {
                                                                         val mbTotal = String.format("%.1f", contentLength / (1024.0 * 1024.0))
-                                                                        dialogBinding.status.text = "Загрузка: $mbRead / $mbTotal МБ"
+                                                                        dialogBinding.status.text = context.getString(R.string.release_dl_progress_mb_fmt, mbRead, mbTotal)
                                                                     } else {
-                                                                        dialogBinding.status.text = "Загружено: $mbRead МБ"
+                                                                        dialogBinding.status.text = context.getString(R.string.release_dl_done_mb_fmt, mbRead)
                                                                     }
                                                                 }
                                                             }

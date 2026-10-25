@@ -199,7 +199,7 @@
                     android:textStyle="bold"
                     android:singleLine="true"
                     android:maxLines="1"
-                    android:text="⭐ Рекомендуемая"
+                    android:text="@string/storm_world_badge_recommended"
                     android:visibility="gone"
                     tools:visibility="visible" />
             </LinearLayout>

@@ -349,7 +349,7 @@ class GameBananaDialogFragment : DialogFragment() {
             } else if (mod.description.isNotBlank()) {
                 mod.description
             } else {
-                "Описание мода отсутствует."
+                getString(R.string.gamebanana_no_mod_desc)
             }
 
             val descHeightPx = (150 * context.resources.displayMetrics.density).toInt()
@@ -388,7 +388,7 @@ class GameBananaDialogFragment : DialogFragment() {
 
             // Files Header
             val filesHeader = android.widget.TextView(context).apply {
-                text = "\n📦 Доступные файлы для скачивания:"
+                text = getString(R.string.gamebanana_avail_files_header)
                 setTextColor(0xFFFFCA28.toInt())
                 textSize = 14f
                 setTypeface(null, android.graphics.Typeface.BOLD)

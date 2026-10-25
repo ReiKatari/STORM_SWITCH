@@ -249,7 +249,7 @@ public:
         const QString formatted_size =
             size_bytes > 0 ? QtCommon::ReadableByteSize(size_bytes) : QStringLiteral("-");
 
-        const QString rich_tooltip = QStringLiteral(
+        const QString rich_tooltip = QObject::tr(
             R"(<table style="border-collapse: collapse; width: 640px;">)"
             R"(<tr>)"
             R"(<td style="vertical-align: middle; width: 110px; padding-right: 14px; text-align: center;">)"

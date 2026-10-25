@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
+import org.yuzu.yuzu_emu.R
 
 import android.app.Dialog
 import android.content.ClipData
@@ -95,11 +96,11 @@ class LogViewerDialogFragment : DialogFragment() {
         val isRunning = NativeLibrary.isRunning()
         val gameName = game?.title?.ifBlank { null } ?: game?.programIdHex ?: "STORM SWITCH"
         val progId = game?.programIdHex ?: ""
-        binding.textLogSubtitle.text = "$gameName ${if (progId.isNotEmpty()) "[$progId]" else ""} | ${if (isRunning) "⚡ В игре" else "⚪ Оффлайн"}"
+        binding.textLogSubtitle.text = "$gameName ${if (progId.isNotEmpty()) "[$progId]" else ""} | ${if (isRunning) getString(R.string.log_viewer_status_ingame) else getString(R.string.log_viewer_status_offline)}"
 
         binding.btnClose.setOnClickListener { dismissAllowingStateLoss() }
         binding.btnRefreshLog.setOnClickListener {
-            Toast.makeText(requireContext(), "🔄 Обновление журнала...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.log_viewer_toast_refreshing), Toast.LENGTH_SHORT).show()
             loadLogFile(true)
         }
         binding.btnCopyLog.setOnClickListener { copyLogToClipboard() }
@@ -179,7 +180,7 @@ class LogViewerDialogFragment : DialogFragment() {
 
             withContext(Dispatchers.Main) {
                 if (_binding == null) return@withContext
-                binding.textLogStats.text = "Всего строк: ${lines.size} | Размер: ${sizeKb} КБ"
+                binding.textLogStats.text = getString(R.string.log_viewer_stats_total_fmt, lines.size, sizeKb)
                 applyFilter()
 
                 if (scrollToBottom) {
@@ -224,15 +225,15 @@ class LogViewerDialogFragment : DialogFragment() {
         }
 
         val filterLabel = when (currentFilterType) {
-            FILTER_ERRORS -> "Ошибки"
-            FILTER_WARNINGS -> "Предупреждения"
-            FILTER_INFO -> "Информация"
-            else -> "Все"
+            FILTER_ERRORS -> getString(R.string.log_viewer_filter_errors_label)
+            FILTER_WARNINGS -> getString(R.string.log_viewer_filter_warnings_label)
+            FILTER_INFO -> getString(R.string.log_viewer_filter_info_label)
+            else -> getString(R.string.log_viewer_filter_all_label)
         }
-        binding.textLogStats.text = "Отобрано ($filterLabel): ${filteredLogLines.size} из ${rawLogLines.size}"
+        binding.textLogStats.text = getString(R.string.log_viewer_stats_filtered_fmt, filterLabel, filteredLogLines.size, rawLogLines.size)
 
         if (filteredLogLines.isEmpty()) {
-            binding.textLogContent.text = "По выбранному фильтру ничего не найдено"
+            binding.textLogContent.text = getString(R.string.log_viewer_empty_filtered)
         } else {
             binding.textLogContent.text = ssb
         }
@@ -245,14 +246,14 @@ class LogViewerDialogFragment : DialogFragment() {
             rawLogLines.joinToString("\n")
         }
         if (text.isBlank()) {
-            Toast.makeText(requireContext(), "Лог пуст", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.log_viewer_toast_empty), Toast.LENGTH_SHORT).show()
             return
         }
 
         val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("STORM SWITCH Log", text)
         clipboard.setPrimaryClip(clip)
-        Toast.makeText(requireContext(), "📋 Лог скопирован в буфер обмена (${filteredLogLines.size} строк)", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), getString(R.string.log_viewer_toast_copied_fmt, filteredLogLines.size), Toast.LENGTH_SHORT).show()
     }
 
     private fun saveLogToFile() {
@@ -263,7 +264,7 @@ class LogViewerDialogFragment : DialogFragment() {
         }
 
         if (textToSave.isBlank()) {
-            Toast.makeText(requireContext(), "Лог пуст, нечего сохранять", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.log_viewer_toast_empty_save), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -277,13 +278,13 @@ class LogViewerDialogFragment : DialogFragment() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         requireContext(),
-                        "💾 Лог успешно сохранён:\n${targetFile.name}",
+                        getString(R.string.log_viewer_toast_saved_fmt, targetFile.name),
                         Toast.LENGTH_LONG
                     ).show()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Ошибка при сохранении лога: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.log_viewer_toast_save_err_fmt, e.message ?: ""), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -297,7 +298,7 @@ class LogViewerDialogFragment : DialogFragment() {
         }
 
         if (textToShare.isBlank()) {
-            Toast.makeText(requireContext(), "Лог пуст", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.log_viewer_toast_empty), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -316,8 +317,8 @@ class LogViewerDialogFragment : DialogFragment() {
                 withContext(Dispatchers.Main) {
                     if (!isAdded || context == null) return@withContext
                     val filterSuffix = when (currentFilterType) {
-                        FILTER_ERRORS -> " (Только ошибки)"
-                        FILTER_WARNINGS -> " (Только предупреждения)"
+                        FILTER_ERRORS -> getString(R.string.log_viewer_suffix_errors)
+                        FILTER_WARNINGS -> getString(R.string.log_viewer_suffix_warnings)
                         else -> ""
                     }
                     val intent = Intent(Intent.ACTION_SEND).apply {
@@ -327,7 +328,7 @@ class LogViewerDialogFragment : DialogFragment() {
                         putExtra(Intent.EXTRA_TEXT, textToShare.take(4000))
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                    val chooser = Intent.createChooser(intent, "Поделиться журналом STORM SWITCH")
+                    val chooser = Intent.createChooser(intent, getString(R.string.log_viewer_share_title))
                     chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(chooser)
                 }
@@ -340,11 +341,11 @@ class LogViewerDialogFragment : DialogFragment() {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, textToShare.take(2000))
                         }
-                        val chooser = Intent.createChooser(intent, "Поделиться журналом STORM SWITCH")
+                        val chooser = Intent.createChooser(intent, getString(R.string.log_viewer_share_title))
                         chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         startActivity(chooser)
                     } catch (t: Throwable) {
-                        Toast.makeText(requireContext(), "Сбой отправки: ${e.localizedMessage ?: "Ошибка"}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.log_viewer_toast_share_err_fmt, e.localizedMessage ?: getString(R.string.storm_dl_error_default)), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -359,7 +360,7 @@ class LogViewerDialogFragment : DialogFragment() {
         }
 
         if (textToShare.isBlank()) {
-            Toast.makeText(requireContext(), "Лог пуст", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.log_viewer_toast_empty), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -381,10 +382,10 @@ class LogViewerDialogFragment : DialogFragment() {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_STREAM, uri)
                         putExtra(Intent.EXTRA_SUBJECT, "STORM SWITCH Log - ${game?.title ?: "Switch"}")
-                        putExtra(Intent.EXTRA_TEXT, "📊 Журнал работы STORM SWITCH (Игра: ${game?.title ?: "Switch"})\n\n" + textToShare.take(3000))
+                        putExtra(Intent.EXTRA_TEXT, getString(R.string.log_viewer_share_header_fmt, game?.title ?: "Switch") + textToShare.take(3000))
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                    val chooser = Intent.createChooser(intent, "🚀 Отправить лог в Telegram / MAX")
+                    val chooser = Intent.createChooser(intent, getString(R.string.log_viewer_share_tg_title))
                     chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(chooser)
                 }
@@ -397,11 +398,11 @@ class LogViewerDialogFragment : DialogFragment() {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, textToShare.take(2000))
                         }
-                        val chooser = Intent.createChooser(intent, "🚀 Отправить лог в Telegram / MAX")
+                        val chooser = Intent.createChooser(intent, getString(R.string.log_viewer_share_tg_title))
                         chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         startActivity(chooser)
                     } catch (t: Throwable) {
-                        Toast.makeText(requireContext(), "Сбой отправки: ${e.localizedMessage ?: "Ошибка"}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.log_viewer_toast_share_err_fmt, e.localizedMessage ?: getString(R.string.storm_dl_error_default)), Toast.LENGTH_SHORT).show()
                     }
                 }
             }

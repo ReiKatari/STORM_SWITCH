@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.translator
+import org.yuzu.yuzu_emu.R
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -136,13 +137,13 @@ class GameTranslatorManager(
             val bitmap = captureFrame(surfaceView)
             if (bitmap == null) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Не удалось захватить кадр игры", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(org.yuzu.yuzu_emu.R.string.translator_toast_capture_failed), Toast.LENGTH_SHORT).show()
                 }
                 return@launch
             }
 
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "🔍 Распознавание и перевод...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(org.yuzu.yuzu_emu.R.string.translator_toast_recognizing), Toast.LENGTH_SHORT).show()
             }
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
@@ -197,7 +198,7 @@ class GameTranslatorManager(
 
         if (detectedBlocks.isEmpty()) {
             withContext(Dispatchers.Main) {
-                val msg = if (rawBlocks.isNotEmpty()) "В выбранной области текст не найден" else "Текст на экране не обнаружен"
+                val msg = if (rawBlocks.isNotEmpty()) context.getString(org.yuzu.yuzu_emu.R.string.translator_toast_no_text_region) else context.getString(org.yuzu.yuzu_emu.R.string.translator_toast_no_text_screen)
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             }
             return

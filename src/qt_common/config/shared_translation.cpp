@@ -239,13 +239,14 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
         {"Chinese", "Китайский", "الصينية", "Chinesisch", "Chinois", "中文", "中国語", "Chino"},
         {"Korean (한국어)", "Корейский (한국어)", "الكورية (한국어)", "Koreanisch (한국어)", "Coréen (한국어)", "韩语 (한국어)", "韓国語 (한국어)", "Coreano (한국어)"},
         {"Dutch (Nederlands)", "Нидерландский (Nederlands)", "الهولندية (Nederlands)", "Niederländisch (Nederlands)", "Néerlandais (Nederlands)", "荷兰语 (Nederlands)", "オランダ語 (Nederlands)", "Holandés (Nederlands)"},
-        {"Portuguese (Português)", "Португальский (Português)", "البرتغالية (Português)", "Portugiesisch (Português)", "Portugais (Português)", "葡萄牙语 (Português)", "ポルトガル語 (Português)", "Portugués (Português)"},
+        {"Portuguese (português)", "Португальский (português)", "البرتغالية (português)", "Portugiesisch (português)", "Portugais (português)", "葡萄牙语 (português)", "ポルトガル語 (português)", "Portugués (português)"},
         {"Russian (Русский)", "Русский (Русский)", "الروسية (Русский)", "Russisch (Русский)", "Russe (Русский)", "俄语 (Русский)", "ロシア語 (Русский)", "Ruso (Русский)"},
         {"Taiwanese", "Тайваньский", "التايوانية", "Taiwanisch", "Taïwanais", "繁体中文 (台湾)", "台湾語", "Taiwanés"},
         {"British English", "Британский английский", "الإنجليزية البريطانية", "Britisches Englisch", "Anglais britannique", "英式英语", "イギリス英語", "Inglés británico"},
         {"Simplified Chinese", "Упрощенный китайский", "الصينية المبسطة", "Vereinfachtes Chinesisch", "Chinois simplifié", "简体中文", "簡体字中国語", "Chino simplificado"},
-        {"Traditional Chinese", "Традиционный китайский", "الصينية التقليدية", "Traditionelles Chinesisch", "Chinois traditionnel", "繁体中文", "繁体字中国語", "Chino tradicional"},
+        {"Traditional Chinese (正體中文)", "Традиционный китайский (正體中文)", "الصينية التقليدية (正體中文)", "Traditionelles Chinesisch (正體中文)", "Chinois traditionnel (正體中文)", "繁体中文 (正體中文)", "繁体字中国語 (正體中文)", "Chino tradicional (正體中文)"},
         {"Brazilian Portuguese", "Бразильский португальский", "البرتغالية البرازيلية", "Brasilianisches Portugiesisch", "Portugais brésilien", "巴西葡萄牙语", "ブラジルポルトガル語", "Portugués brasileño"},
+        {"Brazilian Portuguese (português do Brasil)", "Бразильский португальский (português do Brasil)", "البرتغالية البرازيلية (português do Brasil)", "Brasilianisches Portugiesisch (português do Brasil)", "Portugais brésilien (português do Brasil)", "巴西葡萄牙语 (português do Brasil)", "ブラジルポルトガル語 (português do Brasil)", "Portugués brasileño (português do Brasil)"},
         {"Latin American Spanish", "Латиноамериканский испанский", "الإسبانية الأمريكية اللاتينية", "Lateinamerikanisches Spanisch", "Espagnol d'Amérique latine", "拉美西班牙语", "ラテンアメリカスペイン語", "Español latinoamericano"},
 
         // Extensions and titles
@@ -533,7 +534,7 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
          "描画画像をウィンドウサイズに合わせる際のスケーリングフィルターを選択します。\nバイリニアとバイキュービックは標準フィルターです。\nAMD FSR と Qualcomm SGSR はシャープなアップスケーリングを提供します。",
          "Selecciona el filtro de escalado al adaptar la imagen renderizada al tamaño de la ventana.\nBilineal y Bicúbico son filtros estándar.\nAMD FSR y Qualcomm SGSR ofrecen un reescalado nítido."},
 
-        {"The GPU Accuracy Level to use.\nNormal is faster, but may cause graphical issues in some games.\nHigh is slower, but fixes graphical issues in some games.\nUpdate frequency controls how often GPU state is synchronized when using Normal accuracy.",
+        {"Controls the GPU emulation mode.\nMost games render fine with Fast, but Accurate is still required for some.\nParticles tend to only render correctly with Accurate mode.",
          "Уровень точности ГП.\n«Нормальный» работает быстрее, но может вызывать графические артефакты в некоторых играх.\n«Высокий» медленнее, но исправляет графические ошибки.\nЧастота обновления определяет периодичность синхронизации состояния ГП.",
          "مستوى دقة معالج الرسوميات.\nعادي أسرع ولكنه قد يسبب مشاكل رسومية في بعض الألعاب.\nعالي أبطأ ولكنه يصلح المشاكل الرسومية.",
          "Die zu verwendende GPU-Genauigkeitsstufe.\nNormal ist schneller, kann aber in einigen Spielen Grafikfehler verursachen.\nHoch ist langsamer, behebt aber Grafikprobleme.",
@@ -542,7 +543,7 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
          "使用する GPU 精度レベル。\nノーマルは高速ですが、一部のゲームで描画不具合が発生する場合があります。\nハイは低速ですが、描画不具合を修正します。",
          "Nivel de precisión de GPU.\nNormal es más rápido, pero puede causar fallos gráficos en algunos juegos.\nAlto es más lento, pero corrige errores gráficos."},
 
-        {"The DMA accuracy level to use.\nNormal is faster, but may cause graphical issues in some games.\nSafe is slower, but fixes graphical issues in some games.",
+        {"Controls the DMA read mode.\nUnsafe is faster, while Safe is more stable and can fix issues in some games.\nDefault follows the GPU Accuracy setting.",
          "Уровень точности DMA.\n«Нормально» работает быстрее, но может вызывать графические ошибки в отдельных играх.\n«Безопасно» медленнее, но устраняет графические сбои.",
          "مستوى دقة DMA.\nعادي أسرع ولكنه قد يسبب مشاكل رسومية.\nآمن أبطأ ولكنه يصلح المشاكل الرسومية.",
          "Die zu verwendende DMA-Genauigkeitsstufe.\nNormal ist schneller, kann aber Grafikfehler verursachen.\nSicher ist langsamer, behebt aber Grafikprobleme.",
@@ -551,7 +552,7 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
          "使用する DMA 精度レベル。\nノーマルは高速ですが、描画不具合が発生する場合があります。\nセーフは低速ですが、描画不具合を修正します。",
          "Nivel de precisión DMA.\nNormal es más rápido, pero puede causar fallos gráficos.\nSeguro es más lento, pero corrige errores gráficos."},
 
-        {"Controls how GPU fences are synchronized.\nDefault follows the GPU accuracy setting.\nImmediate signals fences right away (fastest, least accurate).\nBalanced waits only when required.\nAccurate always waits for the GPU to finish (slowest, most accurate).",
+        {"Controls the GPU fence synchronization behavior.\nImmediate is the fastest option, but can introduce some issues.\nBalanced offers better compatibility and may fix issues in some games.\nAccurate further improves compatibility at the cost of some performance.\nStrict is the slowest option, but can fix issues that require stricter synchronization.\nDefault follows the GPU Accuracy setting.",
          "Управляет синхронизацией барьеров (fences) ГП.\n«По умолчанию» следует настройке точности ГП.\n«Мгновенно» сигнализирует барьеры сразу (быстрее всего).\n«Сбалансированно» ждёт только при необходимости.\n«Точно» всегда дожидается завершения команд ГП.",
          "يتحكم في كيفية مزامنة حواجز GPU.\nالافتراضي يتبع إعداد دقة GPU.\nفوري يرسل الإشارات فوراً.\nمتوازن ينتظر عند الضرورة فقط.\nدقيق ينتظر دائماً انتهاء GPU.",
          "Steuert die Synchronisierung von GPU-Fences.\nStandard folgt der GPU-Genauigkeit.\nSofort signalisiert Fences direkt (am schnellsten).\nAusgewogen wartet nur bei Bedarf.\nPräzise wartet immer auf die GPU (am genauesten).",
@@ -560,7 +561,7 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
          "GPU フェンスの同期方法を制御します。\nデフォルトは GPU 精度設定に従います。\n即時（最速）、バランス（必要時のみ待機）、正確（常に GPU 完了を待機）から選択できます。",
          "Controla cómo se sincronizan las vallas (fences) de GPU.\nPredeterminado sigue la precisión de GPU.\nInmediato señala al instante.\nEquilibrado espera solo cuando es necesario.\nPreciso espera siempre a la GPU."},
 
-        {"Enables reading modified GPU buffers back to CPU memory.\nRequired by some games for proper physics or rendering effects, but significantly reduces performance.",
+        {"Preserves GPU-modified data by reading it back before uploading.\nSome games require this to render certain effects properly.",
          "Включает обратное чтение изменённых буферов ГП в память ЦП.\nТребуется некоторым играм для корректной физики или эффектов рендеринга, но заметно снижает производительность.",
          "يمكّن قراءة مخازن GPU المعدلة مرة أخرى إلى ذاكرة CPU.\nمطلوب لبعض الألعاب للفيزياء أو التأثيرات، ولكنه يقلل الأداء.",
          "Aktiviert das Zurücklesen geänderter GPU-Puffer in den CPU-Speicher.\nWird von einigen Spielen für Physik oder Effekte benötigt, verringert jedoch die Leistung.",
@@ -677,7 +678,6 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
     INSERT(Settings, cpu_ticks, tr("Custom CPU Ticks"),
            tr("Set a custom value of CPU ticks. Higher values can increase performance, but may "
               "cause deadlocks. A range of 77-21000 is recommended."));
-    INSERT(Settings, cpu_backend, tr("Backend:"), QString());
 
     // Cpu Debug
 

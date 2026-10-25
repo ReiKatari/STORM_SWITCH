@@ -108,7 +108,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@android:color/transparent"
-                        android:hint="Поиск..."
+                        android:hint="@string/cheats_search_hint"
                         android:textSize="11sp"
                         android:textColor="?attr/colorOnSurface"
                         android:textColorHint="?attr/colorOnSurfaceVariant"
@@ -278,7 +278,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Всего читов: 0 | Включено: 0"
+                android:text="@string/cheats_summary_zero"
                 android:textSize="10sp"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 

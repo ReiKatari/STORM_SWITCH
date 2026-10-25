@@ -200,7 +200,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
             if (badge == null) return
             val ver = formatVersion(model)
             if (checkUpdateAvailable(model)) {
-                badge.text = "$ver • Есть обновление"
+                badge.text = badge.context.getString(R.string.game_badge_update_avail_fmt, ver)
                 badge.setTextColor(0xFF00F0FF.toInt())
                 badge.setTypeface(null, android.graphics.Typeface.BOLD)
             } else {
@@ -236,7 +236,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
             }
             if (count > 0) {
                 badge.visibility = android.view.View.VISIBLE
-                badge.text = "Дополнений: $count"
+                badge.text = badge.context.getString(R.string.game_badge_dlc_count_fmt, count)
             } else {
                 badge.visibility = android.view.View.GONE
             }

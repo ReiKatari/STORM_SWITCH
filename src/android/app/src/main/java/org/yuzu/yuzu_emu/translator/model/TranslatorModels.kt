@@ -9,13 +9,13 @@ import org.json.JSONObject
 import java.util.UUID
 
 enum class TranslatorEngineType(val preferenceValue: String, val displayName: String) {
-    YANDEX("yandex", "Яндекс Переводчик (Бесплатно / Идеальный русский)"),
-    GOOGLE("google", "Google Translate (Бесплатно / Высокая скорость)"),
-    LINGVA("lingva", "Lingva Neural (Бесплатно / Без ограничений)"),
+    YANDEX("yandex", "Yandex Translate"),
+    GOOGLE("google", "Google Translate"),
+    LINGVA("lingva", "Lingva Neural"),
     DEEPL("deepl", "DeepL Neural API"),
-    LIBRE("libre", "LibreTranslate (Open-Source / Бесплатно)"),
+    LIBRE("libre", "LibreTranslate"),
     MYMEMORY("mymemory", "MyMemory Translated"),
-    CUSTOM_AI("custom_ai", "Нейросеть / Custom AI (OpenAI / Claude / Gemini / DeepSeek)");
+    CUSTOM_AI("custom_ai", "Neural Network / Custom AI (OpenAI / Claude / Gemini / DeepSeek)");
 
     companion object {
         fun fromPreference(value: String?): TranslatorEngineType {

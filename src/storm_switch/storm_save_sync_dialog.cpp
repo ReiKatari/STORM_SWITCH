@@ -282,10 +282,10 @@ QString StormSaveSyncDialog::FormatDateTime(const QDateTime& dt) {
 }
 
 QString StormSaveSyncDialog::FormatSize(qint64 bytes) {
-    if (bytes <= 0) return QStringLiteral("0 Б");
-    if (bytes < 1024) return QStringLiteral("%1 Б").arg(bytes);
-    if (bytes < 1024 * 1024) return QStringLiteral("%1 КБ").arg(QString::number(bytes / 1024.0, 'f', 1));
-    return QStringLiteral("%1 МБ").arg(QString::number(bytes / (1024.0 * 1024.0), 'f', 2));
+    if (bytes <= 0) return tr("0 Б");
+    if (bytes < 1024) return tr("%1 Б").arg(bytes);
+    if (bytes < 1024 * 1024) return tr("%1 КБ").arg(QString::number(bytes / 1024.0, 'f', 1));
+    return tr("%1 МБ").arg(QString::number(bytes / (1024.0 * 1024.0), 'f', 2));
 }
 
 QString StormSaveSyncDialog::GenerateConnectionKey(const QHostAddress& ip, quint16 port) {
@@ -560,7 +560,7 @@ void StormSaveSyncDialog::OnSwitchIpClicked() {
 
     for (const auto& info : m_available_ips) {
         const QString text = (info.ip == m_local_ip)
-            ? QStringLiteral("✓ %1 [Активен]").arg(info.name)
+            ? tr("✓ %1 [Активен]").arg(info.name)
             : info.name;
         auto* action = menu.addAction(text);
         const QString chosen_ip = info.ip;

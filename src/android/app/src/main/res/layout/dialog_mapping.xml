@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:gravity="center"
-        android:text="Нажмите кнопку или отклоните стик на геймпаде"
+        android:text="@string/mapping_press_prompt"
         android:textColor="#38BDF8"
         android:textSize="13sp"
         android:textStyle="bold" />

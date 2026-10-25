@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.translator.ui
+import org.yuzu.yuzu_emu.R
 
 import android.content.Context
 import android.graphics.*
@@ -256,7 +257,7 @@ class GameTranslationOverlayView @JvmOverloads constructor(
                 canvas.drawRoundRect(rect, 10f, 10f, regionBgPaint)
                 canvas.drawRoundRect(rect, 10f, 10f, regionBorderPaint)
 
-                val badgeText = "Область ${i + 1}"
+                val badgeText = context.getString(org.yuzu.yuzu_emu.R.string.translator_overlay_region_fmt, i + 1)
                 val badgeW = regionBadgeTextPaint.measureText(badgeText) + 20f
                 val badgeH = 34f
                 val badgeRect = RectF(l, max(0f, t - badgeH - 4f), l + badgeW, max(badgeH, t - 4f))
@@ -445,13 +446,13 @@ class GameTranslationOverlayView @JvmOverloads constructor(
         canvas.drawRoundRect(dockRect, 20f, 20f, borderPaint)
 
         var curY = startY + padV
-        drawColorfulDockButton(canvas, btnAddRect, startX + 16f, curY, dockW - 32f, btnH, "+ Добавить область", "#00E5FF")
+        drawColorfulDockButton(canvas, btnAddRect, startX + 16f, curY, dockW - 32f, btnH, context.getString(org.yuzu.yuzu_emu.R.string.translator_overlay_btn_add), "#00E5FF")
         curY += btnH + spacing
-        drawColorfulDockButton(canvas, btnClearRect, startX + 16f, curY, dockW - 32f, btnH, "🧹 Очистить", "#FFAA00")
+        drawColorfulDockButton(canvas, btnClearRect, startX + 16f, curY, dockW - 32f, btnH, context.getString(org.yuzu.yuzu_emu.R.string.translator_overlay_btn_clear), "#FFAA00")
         curY += btnH + spacing
-        drawColorfulDockButton(canvas, btnSaveRect, startX + 16f, curY, dockW - 32f, btnH, "💾 Сохранить", "#10B981")
+        drawColorfulDockButton(canvas, btnSaveRect, startX + 16f, curY, dockW - 32f, btnH, context.getString(org.yuzu.yuzu_emu.R.string.translator_overlay_btn_save), "#10B981")
         curY += btnH + spacing
-        drawColorfulDockButton(canvas, btnCloseRect, startX + 16f, curY, dockW - 32f, btnH, "✕ Закрыть", "#EF4444")
+        drawColorfulDockButton(canvas, btnCloseRect, startX + 16f, curY, dockW - 32f, btnH, context.getString(org.yuzu.yuzu_emu.R.string.translator_overlay_btn_close), "#EF4444")
     }
 
     private fun drawColorfulDockButton(canvas: Canvas, targetRect: RectF, x: Float, y: Float, w: Float, h: Float, text: String, colorHex: String) {

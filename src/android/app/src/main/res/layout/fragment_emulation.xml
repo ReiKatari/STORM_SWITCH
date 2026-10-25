@@ -193,7 +193,7 @@
                     android:fontFamily="sans-serif-medium"
                     android:textSize="15sp"
                     android:textColor="#00F0FF"
-                    android:text="❄️ Игра на паузе - идёт охлаждение устройства" />
+                    android:text="@string/emulation_cooling_paused_title" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/paused_cooling_temp"
@@ -202,7 +202,7 @@
                     android:layout_marginTop="4dp"
                     android:textSize="12sp"
                     android:textColor="#FFFFFF"
-                    android:text="🌡️ Температура: --°C ➔ Цель: 36.5°C" />
+                    android:text="@string/emulation_cooling_temp_default" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/paused_cooling_sub"
@@ -211,7 +211,7 @@
                     android:layout_marginTop="2dp"
                     android:textSize="11sp"
                     android:textColor="#38BDF8"
-                    android:text="⚡ Нагрузка на чипсет снята (&lt; 1 Вт)" />
+                    android:text="@string/emulation_cooling_chipset_unloaded" />
             </LinearLayout>
 
             <com.google.android.material.textview.MaterialTextView

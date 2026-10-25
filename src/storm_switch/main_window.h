@@ -455,12 +455,15 @@ private slots:
     void OnTranslateScreen();
     void OnOpenTranslatorSettings();
     void OnCheckFirmwareDecryption();
+public slots:
     void OnQuickSave();
     void OnQuickLoad();
     void OnSaveStateSlot(int slot);
     void OnLoadStateSlot(int slot);
     void OnSaveStateManager();
     void RefreshSaveStateMenus();
+
+private slots:
 #ifdef __unix__
     void OnCheckGraphicsBackend();
 #endif

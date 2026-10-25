@@ -1753,15 +1753,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             if (tempC > 0f) {
                 val targetTemp = (tempC - 3.0f).coerceAtMost(tempC - 1.0f).coerceAtLeast(35.0f)
                 if (tempC <= targetTemp) {
-                    b.pausedCoolingTemp.text = "✅ Охлаждение завершено: ${String.format(java.util.Locale.US, "%.1f", tempC)}°C"
+                    b.pausedCoolingTemp.text = getString(R.string.emulation_cooling_done_fmt, String.format(java.util.Locale.US, "%.1f", tempC))
                 } else {
-                    b.pausedCoolingTemp.text = "🌡️ Температура: ${String.format(java.util.Locale.US, "%.1f", tempC)}°C ➔ Цель: ${String.format(java.util.Locale.US, "%.1f", targetTemp)}°C"
+                    b.pausedCoolingTemp.text = getString(R.string.emulation_cooling_temp_fmt, String.format(java.util.Locale.US, "%.1f", tempC), String.format(java.util.Locale.US, "%.1f", targetTemp))
                 }
             } else {
-                b.pausedCoolingTemp.text = "🌡️ Идёт охлаждение чипсета"
+                b.pausedCoolingTemp.text = getString(R.string.emulation_cooling_in_progress)
             }
         } catch (_: Throwable) {
-            b.pausedCoolingTemp.text = "🌡️ Идёт охлаждение чипсета"
+            b.pausedCoolingTemp.text = getString(R.string.emulation_cooling_in_progress)
         }
     }
 
@@ -1831,20 +1831,20 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
         val engineNames = mapOf(
             "google" to "Google Translate",
-            "yandex" to "Яндекс Переводчик",
+            "yandex" to getString(R.string.translator_engine_yandex),
             "lingva" to "Lingva Neural",
             "deepl" to "DeepL Neural",
             "libre" to "LibreTranslate",
             "mymemory" to "MyMemory",
-            "custom_ai" to "Нейросеть / Custom AI"
+            "custom_ai" to getString(R.string.translator_engine_custom_ai)
         )
         menuBinding.textCurrentEngine.text = engineNames[curEngine] ?: curEngine
 
         menuBinding.switchAutoTranslate.isChecked = isAutoTranslate
-        menuBinding.textAutoTranslateStatus.text = if (isAutoTranslate) "Статус: [ Включен — автоскан ]" else "Статус: Отключен (по нажатию)"
+        menuBinding.textAutoTranslateStatus.text = if (isAutoTranslate) getString(R.string.translator_quick_auto_on) else getString(R.string.translator_quick_auto_off)
 
         menuBinding.switchTts.isChecked = autoSpeak
-        menuBinding.textTtsStatus.text = if (autoSpeak) "Озвучка: [ Включена ]" else "Озвучка: Отключена"
+        menuBinding.textTtsStatus.text = if (autoSpeak) getString(R.string.translator_quick_tts_on) else getString(R.string.translator_quick_tts_off)
 
         val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setView(menuBinding.root)
@@ -1860,13 +1860,13 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             val newMode = if (isAutoTranslate) "auto_screen_change" else "on_demand"
             prefs.edit().putString("translator_trigger_mode", newMode).apply()
             menuBinding.switchAutoTranslate.isChecked = isAutoTranslate
-            menuBinding.textAutoTranslateStatus.text = if (isAutoTranslate) "Статус: [ Включен — автоскан ]" else "Статус: Отключен (по нажатию)"
+            menuBinding.textAutoTranslateStatus.text = if (isAutoTranslate) getString(R.string.translator_quick_auto_on) else getString(R.string.translator_quick_auto_off)
             if (isAutoTranslate) {
                 gameTranslatorManager?.startAutoTranslateLoop(b.surfaceEmulation)
-                showEdenSnackbar("⚡ Авто-перевод активирован", true)
+                showEdenSnackbar(getString(R.string.translator_snack_auto_on), true)
             } else {
                 gameTranslatorManager?.stopAutoTranslateLoop()
-                showEdenSnackbar("⚡ Авто-перевод отключен", true)
+                showEdenSnackbar(getString(R.string.translator_snack_auto_off), true)
             }
         }
         menuBinding.itemAutoTranslate.setOnClickListener { toggleAutoTranslate() }
@@ -1885,21 +1885,21 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             autoSpeak = !autoSpeak
             prefs.edit().putBoolean("translator_auto_speak", autoSpeak).apply()
             menuBinding.switchTts.isChecked = autoSpeak
-            menuBinding.textTtsStatus.text = if (autoSpeak) "Озвучка: [ Включена ]" else "Озвучка: Отключена"
-            showEdenSnackbar(if (autoSpeak) "🔊 Озвучка TTS включена" else "🔇 Озвучка TTS выключена", true)
+            menuBinding.textTtsStatus.text = if (autoSpeak) getString(R.string.translator_quick_tts_on) else getString(R.string.translator_quick_tts_off)
+            showEdenSnackbar(if (autoSpeak) getString(R.string.translator_snack_tts_on) else getString(R.string.translator_snack_tts_off), true)
         }
         menuBinding.itemTtsVoice.setOnClickListener { toggleTts() }
 
         var enableFloating = prefs.getBoolean("translator_enable_floating_button", true)
         menuBinding.switchFloatingBtn.isChecked = enableFloating
-        menuBinding.textFloatingBtnStatus.text = if (enableFloating) "Кнопка: [ Отображается ]" else "Кнопка: Скрыта"
+        menuBinding.textFloatingBtnStatus.text = if (enableFloating) getString(R.string.translator_quick_float_on) else getString(R.string.translator_quick_float_off)
         val toggleFloating = {
             enableFloating = !enableFloating
             prefs.edit().putBoolean("translator_enable_floating_button", enableFloating).apply()
             menuBinding.switchFloatingBtn.isChecked = enableFloating
-            menuBinding.textFloatingBtnStatus.text = if (enableFloating) "Кнопка: [ Отображается ]" else "Кнопка: Скрыта"
+            menuBinding.textFloatingBtnStatus.text = if (enableFloating) getString(R.string.translator_quick_float_on) else getString(R.string.translator_quick_float_off)
             setupFloatingTranslateButton()
-            showEdenSnackbar(if (enableFloating) "👁️ Плавающая кнопка показана" else "🙈 Плавающая кнопка скрыта", true)
+            showEdenSnackbar(if (enableFloating) getString(R.string.translator_snack_float_on) else getString(R.string.translator_snack_float_off), true)
         }
         menuBinding.itemFloatingBtn.setOnClickListener { toggleFloating() }
 
@@ -1925,23 +1925,23 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     private fun showQuickEnginePicker() {
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
         val engines = listOf(
-            "google" to "Google Translate (Бесплатно / Быстрый)",
-            "yandex" to "Яндекс Переводчик (Идеальный русский)",
-            "lingva" to "Lingva Neural (Бесплатно)",
+            "google" to getString(R.string.translator_engine_google),
+            "yandex" to getString(R.string.translator_engine_yandex),
+            "lingva" to getString(R.string.translator_engine_lingva),
             "deepl" to "DeepL Neural API",
             "libre" to "LibreTranslate (Open-Source)",
             "mymemory" to "MyMemory Translated",
-            "custom_ai" to "Нейросеть (OpenAI / Claude / Gemini / DeepSeek)"
+            "custom_ai" to getString(R.string.translator_engine_custom_ai)
         )
         val curEngine = prefs.getString("translator_engine", "google") ?: "google"
         val selectedIdx = engines.indexOfFirst { it.first == curEngine }.coerceAtLeast(0)
 
         com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle("🤖 Выберите модель перевода")
+            .setTitle(getString(R.string.translator_dialog_select_model))
             .setSingleChoiceItems(engines.map { it.second }.toTypedArray(), selectedIdx) { dialog, which ->
                 val chosen = engines[which].first
                 prefs.edit().putString("translator_engine", chosen).apply()
-                android.widget.Toast.makeText(requireContext(), "Модель перевода: ${engines[which].second}", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(requireContext(), getString(R.string.translator_toast_model_selected_fmt, engines[which].second), android.widget.Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
             .setNegativeButton(android.R.string.cancel, null)
@@ -2005,11 +2005,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     }
                     bitmap.recycle()
                     withContext(Dispatchers.Main) {
-                        showEdenSnackbar("📸 Скриншот сохранён в Галерею: $fileName", true)
+                        showEdenSnackbar(getString(R.string.emulation_screenshot_saved_fmt, fileName), true)
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        showEdenSnackbar("Ошибка создания скриншота: ${e.localizedMessage}", false)
+                        showEdenSnackbar(getString(R.string.emulation_screenshot_err_fmt, e.localizedMessage ?: ""), false)
                     }
                 }
             }
@@ -2721,12 +2721,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     val actualH = (baseH * scale).toInt()
 
                     // Build formatted string
-                    sb.append("📺\u00A0${actualW}x${actualH}\u00A0|\u00A0⚙️\u00A0ЦП:\u00A0$cpuUsagePercent%")
+                    sb.append("📺\u00A0${actualW}x${actualH}\u00A0|\u00A0⚙️\u00A0${getString(R.string.emulation_hud_cpu)}\u00A0$cpuUsagePercent%")
                     if (gpuUsagePercent >= 0) {
-                        sb.append("\u00A0|\u00A0🎮\u00A0ГПУ:\u00A0$gpuUsagePercent%")
+                        sb.append("\u00A0|\u00A0🎮\u00A0${getString(R.string.emulation_hud_gpu)}\u00A0$gpuUsagePercent%")
                     }
                     if (ramText.isNotEmpty()) {
-                        sb.append("\u00A0|\u00A0💾\u00A0ОЗУ:\u00A0${ramText.replace(' ', '\u00A0')}")
+                        sb.append("\u00A0|\u00A0💾\u00A0${getString(R.string.emulation_hud_ram)}\u00A0${ramText.replace(' ', '\u00A0')}")
                     }
                     sb.append("\u00A0|\u00A0$tempIcon\u00A0${String.format(java.util.Locale.US, "%.1f°C", temp)}")
 

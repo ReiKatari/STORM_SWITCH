@@ -54,10 +54,10 @@ class YuzuApplication : Application() {
 
         val stormDownloadChannel = NotificationChannel(
             "storm_downloads_channel",
-            "STORM GAMES WORLD Загрузки",
+            getString(R.string.storm_notif_channel_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            setDescription("Уведомления о скачивании игр и обновлений")
+            setDescription(getString(R.string.storm_notif_channel_desc))
             setSound(null, null)
             enableVibration(false)
         }
@@ -71,7 +71,7 @@ class YuzuApplication : Application() {
     }
 
     override fun attachBaseContext(base: Context) {
-        super.attachBaseContext(base)
+        super.attachBaseContext(applyLanguage(base))
         org.yuzu.yuzu_emu.utils.CrashHandler.install(base)
     }
 
@@ -224,7 +224,7 @@ class YuzuApplication : Application() {
                     .edit()
                     .putInt("app_language", languageIndex)
                     .putString("app_language_code", langCode)
-                    .apply()
+                    .commit()
                 IntSetting.APP_LANGUAGE.setInt(languageIndex)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -262,11 +262,20 @@ class YuzuApplication : Application() {
                 "system"
             }
 
-            if (langCode == "system") {
-                return context
+            if (langCode == "system" || langCode.isEmpty()) {
+                val sysLocale = android.content.res.Resources.getSystem().configuration.locales[0]
+                Locale.setDefault(sysLocale)
+                val config = Configuration(context.resources.configuration)
+                config.setLocale(sysLocale)
+                config.setLocales(LocaleList(sysLocale))
+                config.setLayoutDirection(sysLocale)
+                @Suppress("DEPRECATION")
+                context.resources.updateConfiguration(config, context.resources.displayMetrics)
+                return context.createConfigurationContext(config)
             }
 
             val locale = when {
+                langCode == "pt" -> Locale.Builder().setLanguage("pt").setRegion("PT").build()
                 langCode.contains("-") -> {
                     val parts = langCode.split("-")
                     Locale.Builder().setLanguage(parts[0]).setRegion(parts[1]).build()

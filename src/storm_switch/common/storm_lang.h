@@ -8,6 +8,8 @@
 #include <QString>
 #include "qt_common/config/uisettings.h"
 
+QString StormLookupMultiLang(const QString& en_key, const std::string& lang);
+
 inline QString StormLang(const QString& ru, const QString& en,
                          const QString& de = QString(), const QString& fr = QString(),
                          const QString& zh = QString(), const QString& ja = QString(),
@@ -17,11 +19,17 @@ inline QString StormLang(const QString& ru, const QString& en,
         lang = QLocale::system().name().toStdString();
     }
     if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("en", 0) == 0) return en;
     if (lang.rfind("ar", 0) == 0 && !ar.isEmpty()) return ar;
     if (lang.rfind("es", 0) == 0 && !es.isEmpty()) return es;
     if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
     if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
     if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
     if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
+
+    const QString ml = StormLookupMultiLang(en, lang);
+    if (!ml.isEmpty()) {
+        return ml;
+    }
     return en;
 }

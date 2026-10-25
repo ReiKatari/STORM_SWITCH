@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.features.settings.utils
+import org.yuzu.yuzu_emu.YuzuApplication
 
 import android.content.Context
 import android.content.Intent
@@ -105,8 +106,8 @@ object SettingsProfileManager {
                 createDefaultProfile(
                     dir = dir,
                     id = "profile_balanced",
-                    name = "Сбалансированный",
-                    description = "Оптимальный баланс производительности, нагрева и качества графики",
+                    name = YuzuApplication.getLocalizedContext().getString(R.string.profile_default_balanced_name),
+                    description = YuzuApplication.getLocalizedContext().getString(R.string.profile_default_balanced_desc),
                     booleans = mapOf(
                         BooleanSetting.RENDERER_USE_SPEED_LIMIT.key to true,
                         BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.key to true,
@@ -149,8 +150,8 @@ object SettingsProfileManager {
                 createDefaultProfile(
                     dir = dir,
                     id = "profile_performance",
-                    name = "Максимальная производительность",
-                    description = "Приоритет максимальной частоты кадров и снижения энергопотребления",
+                    name = YuzuApplication.getLocalizedContext().getString(R.string.profile_default_perf_name),
+                    description = YuzuApplication.getLocalizedContext().getString(R.string.profile_default_perf_desc),
                     booleans = mapOf(
                         BooleanSetting.RENDERER_USE_SPEED_LIMIT.key to true,
                         BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.key to true,
@@ -195,8 +196,8 @@ object SettingsProfileManager {
                 createDefaultProfile(
                     dir = dir,
                     id = "profile_quality",
-                    name = "Максимальное качество",
-                    description = "Приоритет высокого разрешения, точности рендеринга и качества эффектов",
+                    name = YuzuApplication.getLocalizedContext().getString(R.string.profile_default_quality_name),
+                    description = YuzuApplication.getLocalizedContext().getString(R.string.profile_default_quality_desc),
                     booleans = mapOf(
                         BooleanSetting.RENDERER_USE_SPEED_LIMIT.key to true,
                         BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.key to true,
@@ -239,8 +240,8 @@ object SettingsProfileManager {
                 createDefaultProfile(
                     dir = dir,
                     id = "profile_eco_battery",
-                    name = "Энергосберегающий (2D и Инди)",
-                    description = "Максимальное время работы от батареи и минимальный нагрев для 2D-игр и инди-проектов",
+                    name = YuzuApplication.getLocalizedContext().getString(R.string.profile_default_eco_name),
+                    description = YuzuApplication.getLocalizedContext().getString(R.string.profile_default_eco_desc),
                     booleans = mapOf(
                         BooleanSetting.RENDERER_USE_SPEED_LIMIT.key to true,
                         BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.key to true,
@@ -328,8 +329,23 @@ object SettingsProfileManager {
                 if (content.isEmpty()) continue
                 val json = JSONObject(content)
                 val id = json.optString("id", file.nameWithoutExtension)
-                val name = json.optString("name", file.nameWithoutExtension)
-                val desc = json.optString("description", "")
+                val ctx = YuzuApplication.getLocalizedContext()
+                val rawName = json.optString("name", file.nameWithoutExtension)
+                val rawDesc = json.optString("description", "")
+                val name = when (id) {
+                    "profile_balanced" -> ctx.getString(R.string.profile_default_balanced_name)
+                    "profile_performance" -> ctx.getString(R.string.profile_default_perf_name)
+                    "profile_quality" -> ctx.getString(R.string.profile_default_quality_name)
+                    "profile_eco_battery" -> ctx.getString(R.string.profile_default_eco_name)
+                    else -> rawName
+                }
+                val desc = when (id) {
+                    "profile_balanced" -> ctx.getString(R.string.profile_default_balanced_desc)
+                    "profile_performance" -> ctx.getString(R.string.profile_default_perf_desc)
+                    "profile_quality" -> ctx.getString(R.string.profile_default_quality_desc)
+                    "profile_eco_battery" -> ctx.getString(R.string.profile_default_eco_desc)
+                    else -> rawDesc
+                }
                 val ts = json.optLong("timestamp", file.lastModified())
                 list.add(SettingsProfile(id = id, name = name, description = desc, isPreset = false, timestamp = ts, file = file))
             } catch (e: Exception) {

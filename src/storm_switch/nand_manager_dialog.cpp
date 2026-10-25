@@ -198,7 +198,7 @@ void NandManagerDialog::RefreshProfiles() {
         Common::FS::GetEdenPath(Common::FS::EdenPath::EdenDir) / "nand"));
 
     NandProfileItem default_item{};
-    default_item.name = QStringLiteral("Default (Основной)");
+    default_item.name = tr("Default (Основной)");
     default_item.path = default_nand_path;
     default_item.is_default = true;
     default_item.is_active = (active_name.isEmpty() || active_name == QStringLiteral("Default"));

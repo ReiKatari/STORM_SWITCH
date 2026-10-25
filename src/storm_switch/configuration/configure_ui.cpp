@@ -184,8 +184,18 @@ void ConfigureUi::SetConfiguration() {
     }
     {
         const QSignalBlocker blocker(ui->language_combobox);
-        ui->language_combobox->setCurrentIndex(ui->language_combobox->findData(
-            QString::fromStdString(UISettings::values.language.GetValue())));
+        const QString saved_lang = QString::fromStdString(UISettings::values.language.GetValue());
+        int lang_idx = ui->language_combobox->findData(saved_lang);
+        if (lang_idx < 0 && !saved_lang.isEmpty()) {
+            const QString prefix = saved_lang + QStringLiteral("_");
+            for (int i = 0; i < ui->language_combobox->count(); ++i) {
+                if (ui->language_combobox->itemData(i).toString().startsWith(prefix)) {
+                    lang_idx = i;
+                    break;
+                }
+            }
+        }
+        ui->language_combobox->setCurrentIndex(lang_idx >= 0 ? lang_idx : 0);
     }
     ui->show_add_ons->setChecked(UISettings::values.show_add_ons.GetValue());
     ui->show_size->setChecked(UISettings::values.show_size.GetValue());

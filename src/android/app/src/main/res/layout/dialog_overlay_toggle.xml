@@ -49,7 +49,7 @@
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Настройка отображения сенсорных элементов"
+                    android:text="@string/overlay_toggle_subtitle"
                     android:textSize="11sp"
                     android:textColor="#38BDF8" />
 

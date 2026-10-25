@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.services
+import org.yuzu.yuzu_emu.YuzuApplication
+import org.yuzu.yuzu_emu.R
 
 import android.content.Context
 import android.content.Intent
@@ -73,8 +75,8 @@ object StormDownloadManager {
         if (curr != null) {
             _state.value = curr.copy(
                 status = StormDownloadStatus.ERROR,
-                errorMessage = throwable.message ?: "Ошибка загрузки",
-                statsText = "❌ Ошибка: ${throwable.message ?: "сбой сети"}"
+                errorMessage = throwable.message ?: YuzuApplication.getLocalizedContext().getString(R.string.storm_dl_error_default),
+                statsText = YuzuApplication.getLocalizedContext().getString(R.string.storm_dl_stats_error_fmt, throwable.message ?: YuzuApplication.getLocalizedContext().getString(R.string.storm_world_error_network_default))
             )
         }
     }
@@ -132,7 +134,7 @@ object StormDownloadManager {
         val initialProgress = StormDownloadProgress(
             game = game,
             status = StormDownloadStatus.CONNECTING,
-            statsText = "Подключение к серверу загрузки..."
+            statsText = YuzuApplication.getLocalizedContext().getString(R.string.storm_dl_connecting)
         )
         _state.value = initialProgress
 
@@ -158,8 +160,8 @@ object StormDownloadManager {
                 if (curr != null) {
                     _state.value = curr.copy(
                         status = StormDownloadStatus.ERROR,
-                        errorMessage = t.message ?: "Ошибка загрузки",
-                        statsText = "❌ Ошибка: ${t.message ?: "сбой сети"}"
+                        errorMessage = t.message ?: YuzuApplication.getLocalizedContext().getString(R.string.storm_dl_error_default),
+                        statsText = YuzuApplication.getLocalizedContext().getString(R.string.storm_dl_stats_error_fmt, t.message ?: YuzuApplication.getLocalizedContext().getString(R.string.storm_world_error_network_default))
                     )
                 }
             }
@@ -176,7 +178,7 @@ object StormDownloadManager {
         if (curr != null) {
             _state.value = curr.copy(
                 status = StormDownloadStatus.PAUSED,
-                statsText = "⏸ Загрузка приостановлена"
+                statsText = YuzuApplication.getLocalizedContext().getString(R.string.storm_dl_paused)
             )
         }
 
@@ -214,7 +216,7 @@ object StormDownloadManager {
         if (curr != null) {
             _state.value = curr.copy(
                 status = StormDownloadStatus.CANCELLED,
-                statsText = "Загрузка отменена"
+                statsText = YuzuApplication.getLocalizedContext().getString(R.string.storm_dl_cancelled)
             )
         }
 
@@ -406,7 +408,7 @@ object StormDownloadManager {
         }
 
         if (activeTarget == null) {
-            throw RuntimeException("Не удалось открыть каталог для сохранения. Выберите доступную папку внизу карточки игры.")
+            throw RuntimeException(appContext.getString(R.string.storm_dl_err_open_dir))
         }
 
         var retryCount = 0
@@ -426,7 +428,7 @@ object StormDownloadManager {
                             break
                         }
                     }
-                    activeTarget ?: throw RuntimeException("Не удалось открыть целевой файл для записи")
+                    activeTarget ?: throw RuntimeException(appContext.getString(R.string.storm_dl_err_open_file))
                 }
 
                 var existingBytes = currentTarget.existingBytes
@@ -446,9 +448,9 @@ object StormDownloadManager {
 
                 val resumeMsg = if (existingBytes > 0L) {
                     val mb = existingBytes / (1024 * 1024)
-                    "Возобновление загрузки с ${mb} МБ (${currentTarget.targetDescription})..."
+                    appContext.getString(R.string.storm_dl_resuming_fmt, mb, currentTarget.targetDescription)
                 } else {
-                    "Подключение к серверу загрузки (${currentTarget.targetDescription})..."
+                    appContext.getString(R.string.storm_dl_connecting_target_fmt, currentTarget.targetDescription)
                 }
                 _state.value = _state.value?.copy(
                     status = StormDownloadStatus.DOWNLOADING,
@@ -468,7 +470,7 @@ object StormDownloadManager {
                     throw RuntimeException("HTTP ${resp.code}: ${resp.message}")
                 }
 
-                val body = resp.body ?: throw RuntimeException("Пустой ответ сервера")
+                val body = resp.body ?: throw RuntimeException(appContext.getString(R.string.storm_dl_err_empty_body))
                 val isPartial = (resp.code == 206)
 
                 if (existingBytes > 0L && !isPartial) {
@@ -527,12 +529,12 @@ object StormDownloadManager {
                         val etaSec = if (currentSpeedMbps > 0.05) (remMb / currentSpeedMbps).toInt() else 0
 
                         val statsText = if (totMb > 0) {
-                            val line1 = "Скачано: ${decimalFormat.format(recMb)} МБ из ${decimalFormat.format(totMb)} МБ ($pct%)"
-                            val line2 = "Скорость: ${decimalFormat.format(currentSpeedMbps)} МБ/с • Осталось: ${etaSec / 60} мин ${etaSec % 60} сек"
+                            val line1 = appContext.getString(R.string.storm_dl_stats_line1_total_fmt, decimalFormat.format(recMb), decimalFormat.format(totMb), pct)
+                            val line2 = appContext.getString(R.string.storm_dl_stats_line2_eta_fmt, decimalFormat.format(currentSpeedMbps), etaSec / 60, etaSec % 60)
                             "$line1\n$line2"
                         } else {
-                            val line1 = "Скачано: ${decimalFormat.format(recMb)} МБ"
-                            val line2 = "Скорость: ${decimalFormat.format(currentSpeedMbps)} МБ/с"
+                            val line1 = appContext.getString(R.string.storm_dl_stats_line1_nototal_fmt, decimalFormat.format(recMb))
+                            val line2 = appContext.getString(R.string.storm_dl_stats_line2_speed_fmt, decimalFormat.format(currentSpeedMbps))
                             "$line1\n$line2"
                         }
 
@@ -570,14 +572,14 @@ object StormDownloadManager {
 
                 if (retryCount <= maxRetries) {
                     _state.value = _state.value?.copy(
-                        statsText = "Повторное подключение (${e.localizedMessage ?: "Сбой"}). Попытка $retryCount из $maxRetries..."
+                        statsText = appContext.getString(R.string.storm_dl_reconnecting_fmt, e.localizedMessage ?: appContext.getString(R.string.storm_dl_err_connection_lost), retryCount, maxRetries)
                     )
                     delay(retryCount * 1200L)
                 } else {
                     _state.value = _state.value?.copy(
                         status = StormDownloadStatus.ERROR,
-                        errorMessage = e.message ?: "Сбой соединения",
-                        statsText = "Ошибка загрузки: ${e.localizedMessage}"
+                        errorMessage = e.message ?: appContext.getString(R.string.storm_dl_err_connection_lost),
+                        statsText = appContext.getString(R.string.storm_dl_stats_error_long_fmt, e.localizedMessage ?: "")
                     )
                     break
                 }
@@ -613,7 +615,7 @@ object StormDownloadManager {
                 game = game,
                 status = StormDownloadStatus.COMPLETED,
                 progressPercent = 100,
-                statsText = "✅ Игра успешно скачана!"
+                statsText = appContext.getString(R.string.storm_dl_completed)
             )
 
             val serviceIntent = Intent(appContext, StormDownloadService::class.java).apply {
@@ -629,13 +631,13 @@ object StormDownloadManager {
             if (curr != null) {
                 _state.value = curr.copy(
                     status = StormDownloadStatus.PAUSED,
-                    statsText = "⏸ Загрузка приостановлена"
+                    statsText = YuzuApplication.getLocalizedContext().getString(R.string.storm_dl_paused)
                 )
             }
         } else if (!isCancelled && _state.value?.status != StormDownloadStatus.ERROR) {
             _state.value = _state.value?.copy(
                 status = StormDownloadStatus.ERROR,
-                statsText = "Загрузка прервана. Нажмите «Возобновить»."
+                statsText = appContext.getString(R.string.storm_dl_interrupted_resume)
             )
         }
     }

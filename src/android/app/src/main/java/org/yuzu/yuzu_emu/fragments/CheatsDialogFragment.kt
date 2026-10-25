@@ -104,11 +104,11 @@ class CheatsDialogFragment : DialogFragment() {
             append("ID: ")
             append(game.programIdHex)
             if (versionStr.isNotEmpty()) {
-                append(" | Версия: ")
+                append(getString(R.string.cheat_header_version_prefix))
                 append(versionStr)
             }
-            append(if (isRunning) " | ⚡ В игре" else " | ⚪ Оффлайн")
-            append("\n⚡ Движок читов Atmosphere DMNT VM: Активен (60Hz / I-Cache Sync)")
+            append(if (isRunning) getString(R.string.cheat_header_in_game) else getString(R.string.cheat_header_offline))
+            append(getString(R.string.cheat_header_dmnt_active))
         }
 
         adapter = CheatsAdapter(
@@ -226,7 +226,7 @@ class CheatsDialogFragment : DialogFragment() {
             try {
                 var buildId = file.nameWithoutExtension.uppercase()
                 if (buildId == "CHEATS" || buildId == game.programIdHex) {
-                    buildId = "Все версии"
+                    buildId = getString(R.string.cheat_build_all_versions)
                 }
 
                 val lines = file.readLines(Charsets.UTF_8)
@@ -373,9 +373,9 @@ class CheatsDialogFragment : DialogFragment() {
     private fun saveCheats() {
         saveCheatsSilently()
         if (NativeLibrary.isRunning()) {
-            Toast.makeText(requireContext(), "⚡ Чит-коды активированы в игре!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.cheat_toast_activated_ingame), Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(requireContext(), "✅ Чит-коды успешно сохранены", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.cheat_toast_saved), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -539,11 +539,11 @@ class CheatsDialogFragment : DialogFragment() {
         }
 
         val nameEdit = EditText(context).apply {
-            hint = "Название чита (например: Бесконечные жизни)"
+            hint = getString(R.string.cheat_add_name_hint)
             textSize = 14f
         }
         val codeEdit = EditText(context).apply {
-            hint = "Код в формате Atmosphere (04000000 12345678 ...)"
+            hint = getString(R.string.cheat_add_code_hint)
             textSize = 12f
             minLines = 4
             typeface = android.graphics.Typeface.MONOSPACE
@@ -565,7 +565,7 @@ class CheatsDialogFragment : DialogFragment() {
                         val currentText = if (customFile.exists()) customFile.readText(Charsets.UTF_8) else ""
                         customFile.writeText("$currentText\n\n[$name]\n$code\n", Charsets.UTF_8)
                         loadCheatsFromDisk()
-                        Toast.makeText(context, "Чит добавлен!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, getString(R.string.cheat_toast_added), Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
@@ -606,7 +606,7 @@ class CheatsDialogFragment : DialogFragment() {
         }
 
         val titleTv = com.google.android.material.textview.MaterialTextView(context).apply {
-            text = "Текущее значение: $existingDec (0x$existingHex)"
+            text = getString(R.string.cheat_current_val_fmt, existingDec, existingHex)
             textSize = 13f
             setTextColor(ThemeHelper.getColor(context, androidx.appcompat.R.attr.colorPrimary))
             setPadding(0, 0, 0, 16)
@@ -614,7 +614,7 @@ class CheatsDialogFragment : DialogFragment() {
         layout.addView(titleTv)
 
         val inputLayout = com.google.android.material.textfield.TextInputLayout(context).apply {
-            hint = "Количество / Новое значение"
+            hint = getString(R.string.cheat_new_val_hint)
             boxBackgroundMode = com.google.android.material.textfield.TextInputLayout.BOX_BACKGROUND_OUTLINE
         }
         val inputEdit = com.google.android.material.textfield.TextInputEditText(context).apply {
@@ -647,7 +647,7 @@ class CheatsDialogFragment : DialogFragment() {
         layout.addView(presetsLayout)
 
         MaterialAlertDialogBuilder(context, R.style.EdenMaterialDialog)
-            .setTitle("✏️ Изменить кол-во: ${item.name}")
+            .setTitle(getString(R.string.cheat_edit_val_title_fmt, item.name))
             .setView(layout)
             .setPositiveButton(R.string.apply_driver_now) { _, _ ->
                 val entered = inputEdit.text.toString().trim().toLongOrNull() ?: 0L
@@ -673,7 +673,7 @@ class CheatsDialogFragment : DialogFragment() {
                 updateCheatInFile(item)
                 saveCheats()
                 adapter.notifyDataSetChanged()
-                Toast.makeText(context, "Значение обновлено: $entered (0x$newHex)", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.cheat_toast_val_updated_fmt, entered, newHex), Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -710,7 +710,7 @@ class CheatsDialogFragment : DialogFragment() {
     }
 
     private fun showCheatActionMenu(item: CheatModel) {
-        val options = arrayOf("✏️ Изменить кол-во / значение", "📋 Копировать код", "🗑️ Удалить чит")
+        val options = arrayOf(getString(R.string.cheat_menu_edit_val), getString(R.string.cheat_menu_copy_code), getString(R.string.cheat_menu_delete))
         MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setTitle(item.name)
             .setItems(options) { _, which ->
@@ -719,7 +719,7 @@ class CheatsDialogFragment : DialogFragment() {
                     1 -> {
                         val cm = requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                         cm.setPrimaryClip(android.content.ClipData.newPlainText("Cheat", "[${item.name}]\n${item.code}"))
-                        Toast.makeText(requireContext(), "Код скопирован", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.cheat_toast_code_copied), Toast.LENGTH_SHORT).show()
                     }
                     2 -> {
                         deleteCheat(item)
@@ -792,23 +792,23 @@ class CheatsDialogFragment : DialogFragment() {
             b.textBuildIdBadge.visibility = if (item.buildId.isNotEmpty()) View.VISIBLE else View.GONE
 
             if (isRunning && item.isEnabled) {
-                b.textCheatStatus.text = "⚡ В игре"
+                b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_active)
                 b.textCheatStatus.setTextColor(primaryColor)
             } else if (item.isEnabled) {
-                b.textCheatStatus.text = "✅ Включен"
+                b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_enabled)
                 b.textCheatStatus.setTextColor(primaryColor)
             } else {
-                b.textCheatStatus.text = "⚪ Выкл"
+                b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_disabled)
                 b.textCheatStatus.setTextColor(secondaryTextColor)
             }
 
-            val localizedDesc = getLocalizedCheatDescription(item.name, item.code)
+            val localizedDesc = getLocalizedCheatDescription(b.root.context, item.name, item.code)
             b.textCheatDescription.text = localizedDesc
             b.textCheatDescription.visibility = if (localizedDesc.isNotEmpty()) View.VISIBLE else View.GONE
 
             val lines = item.code.lines().filter { it.isNotBlank() }
             val firstLine = lines.firstOrNull() ?: ""
-            b.textCodePreview.text = if (lines.size > 1) "$firstLine (+${lines.size - 1} строк)" else firstLine
+            b.textCodePreview.text = if (lines.size > 1) b.root.context.getString(R.string.cheat_code_more_lines_fmt, firstLine, lines.size - 1) else firstLine
 
             // Show value editor button ONLY for numeric quantity cheats (money, items, ammo, stats, etc.)
             val isEditable = isNumericQuantityCheat(item.name, item.code)
@@ -820,13 +820,13 @@ class CheatsDialogFragment : DialogFragment() {
             b.checkboxCheat.setOnCheckedChangeListener { _, isChecked ->
                 onCheckChanged(item, isChecked)
                 if (isRunning && isChecked) {
-                    b.textCheatStatus.text = "⚡ В игре"
+                    b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_active)
                     b.textCheatStatus.setTextColor(primaryColor)
                 } else if (isChecked) {
-                    b.textCheatStatus.text = "✅ Включен"
+                    b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_enabled)
                     b.textCheatStatus.setTextColor(primaryColor)
                 } else {
-                    b.textCheatStatus.text = "⚪ Выкл"
+                    b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_disabled)
                     b.textCheatStatus.setTextColor(secondaryTextColor)
                 }
             }
@@ -843,47 +843,47 @@ class CheatsDialogFragment : DialogFragment() {
 
         override fun getItemCount(): Int = items.size
 
-        private fun getLocalizedCheatDescription(name: String, code: String): String {
+        private fun getLocalizedCheatDescription(ctx: android.content.Context, name: String, code: String): String {
             val lower = name.lowercase().trim()
             val baseDesc = when {
-                lower.contains("60fps") || lower.contains("60 fps") -> "Режим 60 кадров в секунду (60 FPS)"
-                lower.contains("30fps") || lower.contains("30 fps") -> "Фиксация 30 кадров в секунду (30 FPS)"
-                lower.contains("120fps") || lower.contains("120 fps") -> "Режим 120 кадров в секунду (120 FPS)"
-                lower.contains("unlock fps") || lower.contains("uncap fps") || lower.contains("no vsync") -> "Разблокировка частоты кадров"
-                lower.contains("dynamic res") || lower.contains("dynamic resolution") || lower.contains("drs") -> "Отключение динамического разрешения"
-                lower.contains("lod") || lower.contains("draw distance") || lower.contains("render distance") -> "Увеличенная дальность прорисовки (LOD)"
-                lower.contains("god mode") || lower.contains("godmode") || lower.contains("invincib") || lower.contains("no damage") -> "Бессмертие (Режим Бога)"
-                lower.contains("inf health") || lower.contains("inf hp") || lower.contains("infinite health") || lower.contains("infinite hp") || lower.contains("max hp") -> "Бесконечное здоровье (HP)"
-                lower.contains("inf stam") || lower.contains("infinite stam") || lower.contains("max stam") || lower.contains("stamina") -> "Бесконечная выносливость"
-                lower.contains("inf mana") || lower.contains("infinite mana") || lower.contains("inf mp") || lower.contains("infinite mp") || lower.contains("max mp") -> "Бесконечная мана (MP)"
-                lower.contains("shield") || lower.contains("armor") || lower.contains("defense") || lower.contains("def") -> "Максимальная броня / Защита"
-                lower.contains("money") || lower.contains("gold") || lower.contains("cash") || lower.contains("coins") || lower.contains("rupees") || lower.contains("zenny") || lower.contains("credits") || lower.contains("currency") -> "Деньги / Золото"
-                lower.contains("ammo") || lower.contains("bullet") || lower.contains("arrows") || lower.contains("shots") -> "Патроны / Боеприпасы"
-                lower.contains("all items") || lower.contains("inf item") || lower.contains("item x99") || lower.contains("material") || lower.contains("crafting") -> "Бесконечные предметы и ресурсы"
-                lower.contains("durability") || lower.contains("inf weapon") || lower.contains("never break") -> "Неразрушимое оружие (Бесконечная прочность)"
-                lower.contains("moon jump") || lower.contains("super jump") || lower.contains("high jump") || lower.contains("inf jump") -> "Лунный / Супер прыжок"
-                lower.contains("no clip") || lower.contains("noclip") || lower.contains("walk through") || lower.contains("fly") || lower.contains("flight") -> "Прохождение сквозь стены / Полет"
-                lower.contains("speed") || lower.contains("fast move") || lower.contains("movement") || lower.contains("fast run") -> "Увеличенная скорость движения"
-                lower.contains("one hit") || lower.contains("1 hit") || lower.contains("instant kill") || lower.contains("one shot") -> "Убийство с одного удара"
-                lower.contains("attack") || lower.contains("damage") || lower.contains("dmg") || lower.contains("power") || lower.contains("strength") -> "Увеличенный урон / Сила атаки"
-                lower.contains("cooldown") || lower.contains("no cd") || lower.contains("instant skill") -> "Без перезарядки способностей (No Cooldown)"
-                lower.contains("skill point") || lower.contains("sp") || lower.contains("ap") || lower.contains("talent") -> "Очки навыков / Способности (SP/AP)"
-                lower.contains("level") || lower.contains("lvl") || lower.contains("max level") || lower.contains("exp") || lower.contains("experience") -> "Уровень / Опыт"
-                lower.contains("fog") || lower.contains("disable fog") || lower.contains("remove fog") || lower.contains("no fog") -> "Отключение тумана и дымки"
-                lower.contains("widescreen") || lower.contains("21:9") || lower.contains("ultrawide") -> "Поддержка широкого экрана 21:9"
-                lower.contains("fov") || lower.contains("camera") || lower.contains("zoom") -> "Настройка угла обзора и камеры (FOV)"
-                lower.contains("drop rate") || lower.contains("100% drop") || lower.contains("max drop") || lower.contains("lucky") -> "100% шанс выпадения редких предметов"
-                lower.contains("unlock") || lower.contains("all characters") || lower.contains("costumes") || lower.contains("gallery") -> "Разблокировка всего контента"
-                lower.contains("timer") || lower.contains("freeze time") || lower.contains("inf time") -> "Заморозка таймера (Бесконечное время)"
-                lower.contains("master") || lower.contains("main code") -> "Главный мастер-код (Master Code)"
+                lower.contains("60fps") || lower.contains("60 fps") -> ctx.getString(R.string.cheat_desc_60fps)
+                lower.contains("30fps") || lower.contains("30 fps") -> ctx.getString(R.string.cheat_desc_30fps)
+                lower.contains("120fps") || lower.contains("120 fps") -> ctx.getString(R.string.cheat_desc_120fps)
+                lower.contains("unlock fps") || lower.contains("uncap fps") || lower.contains("no vsync") -> ctx.getString(R.string.cheat_desc_unlock_fps)
+                lower.contains("dynamic res") || lower.contains("dynamic resolution") || lower.contains("drs") -> ctx.getString(R.string.cheat_desc_dynamic_res)
+                lower.contains("lod") || lower.contains("draw distance") || lower.contains("render distance") -> ctx.getString(R.string.cheat_desc_lod)
+                lower.contains("god mode") || lower.contains("godmode") || lower.contains("invincib") || lower.contains("no damage") -> ctx.getString(R.string.cheat_desc_god_mode)
+                lower.contains("inf health") || lower.contains("inf hp") || lower.contains("infinite health") || lower.contains("infinite hp") || lower.contains("max hp") -> ctx.getString(R.string.cheat_desc_inf_health)
+                lower.contains("inf stam") || lower.contains("infinite stam") || lower.contains("max stam") || lower.contains("stamina") -> ctx.getString(R.string.cheat_desc_inf_stamina)
+                lower.contains("inf mana") || lower.contains("infinite mana") || lower.contains("inf mp") || lower.contains("infinite mp") || lower.contains("max mp") -> ctx.getString(R.string.cheat_desc_inf_mana)
+                lower.contains("shield") || lower.contains("armor") || lower.contains("defense") || lower.contains("def") -> ctx.getString(R.string.cheat_desc_armor)
+                lower.contains("money") || lower.contains("gold") || lower.contains("cash") || lower.contains("coins") || lower.contains("rupees") || lower.contains("zenny") || lower.contains("credits") || lower.contains("currency") -> ctx.getString(R.string.cheat_desc_money)
+                lower.contains("ammo") || lower.contains("bullet") || lower.contains("arrows") || lower.contains("shots") -> ctx.getString(R.string.cheat_desc_ammo)
+                lower.contains("all items") || lower.contains("inf item") || lower.contains("item x99") || lower.contains("material") || lower.contains("crafting") -> ctx.getString(R.string.cheat_desc_items)
+                lower.contains("durability") || lower.contains("inf weapon") || lower.contains("never break") -> ctx.getString(R.string.cheat_desc_durability)
+                lower.contains("moon jump") || lower.contains("super jump") || lower.contains("high jump") || lower.contains("inf jump") -> ctx.getString(R.string.cheat_desc_jump)
+                lower.contains("no clip") || lower.contains("noclip") || lower.contains("walk through") || lower.contains("fly") || lower.contains("flight") -> ctx.getString(R.string.cheat_desc_noclip)
+                lower.contains("speed") || lower.contains("fast move") || lower.contains("movement") || lower.contains("fast run") -> ctx.getString(R.string.cheat_desc_speed)
+                lower.contains("one hit") || lower.contains("1 hit") || lower.contains("instant kill") || lower.contains("one shot") -> ctx.getString(R.string.cheat_desc_one_hit)
+                lower.contains("attack") || lower.contains("damage") || lower.contains("dmg") || lower.contains("power") || lower.contains("strength") -> ctx.getString(R.string.cheat_desc_attack)
+                lower.contains("cooldown") || lower.contains("no cd") || lower.contains("instant skill") -> ctx.getString(R.string.cheat_desc_cooldown)
+                lower.contains("skill point") || lower.contains("sp") || lower.contains("ap") || lower.contains("talent") -> ctx.getString(R.string.cheat_desc_sp)
+                lower.contains("level") || lower.contains("lvl") || lower.contains("max level") || lower.contains("exp") || lower.contains("experience") -> ctx.getString(R.string.cheat_desc_level)
+                lower.contains("fog") || lower.contains("disable fog") || lower.contains("remove fog") || lower.contains("no fog") -> ctx.getString(R.string.cheat_desc_fog)
+                lower.contains("widescreen") || lower.contains("21:9") || lower.contains("ultrawide") -> ctx.getString(R.string.cheat_desc_widescreen)
+                lower.contains("fov") || lower.contains("camera") || lower.contains("zoom") -> ctx.getString(R.string.cheat_desc_fov)
+                lower.contains("drop rate") || lower.contains("100% drop") || lower.contains("max drop") || lower.contains("lucky") -> ctx.getString(R.string.cheat_desc_drop_rate)
+                lower.contains("unlock") || lower.contains("all characters") || lower.contains("costumes") || lower.contains("gallery") -> ctx.getString(R.string.cheat_desc_unlock)
+                lower.contains("timer") || lower.contains("freeze time") || lower.contains("inf time") -> ctx.getString(R.string.cheat_desc_timer)
+                lower.contains("master") || lower.contains("main code") -> ctx.getString(R.string.cheat_desc_master)
                 else -> {
                     val firstLine = code.lines().firstOrNull { it.isNotBlank() }?.trim() ?: ""
                     when {
-                        firstLine.startsWith("04") -> "Патч памяти: прямая запись 32-бит"
-                        firstLine.startsWith("08") -> "Патч памяти: прямая запись 64-бит"
-                        firstLine.startsWith("01") || firstLine.startsWith("02") -> "Патч регистров памяти"
-                        firstLine.startsWith("58") -> "Патч указателя / смещения памяти"
-                        else -> "Пользовательский чит-код Atmosphere"
+                        firstLine.startsWith("04") -> ctx.getString(R.string.cheat_desc_mem_32)
+                        firstLine.startsWith("08") -> ctx.getString(R.string.cheat_desc_mem_64)
+                        firstLine.startsWith("01") || firstLine.startsWith("02") -> ctx.getString(R.string.cheat_desc_mem_reg)
+                        firstLine.startsWith("58") -> ctx.getString(R.string.cheat_desc_mem_ptr)
+                        else -> ctx.getString(R.string.cheat_desc_custom)
                     }
                 }
             }
@@ -892,7 +892,7 @@ class CheatsDialogFragment : DialogFragment() {
                 val value = extractNumericValue(code)
                 if (value > 0) {
                     val prefix = if (baseDesc.isNotEmpty()) baseDesc else name
-                    return "$prefix (Кол-во: $value)"
+                    return ctx.getString(R.string.cheat_desc_qty_fmt, prefix, value)
                 }
             }
 

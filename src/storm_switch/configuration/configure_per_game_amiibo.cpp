@@ -323,38 +323,38 @@ void ConfigurePerGameAmiibo::ParseDatabaseJson(const QByteArray& json_data) {
         if (!entry.switch_games.isEmpty()) return;
         if (entry.game_series.contains(QStringLiteral("Zelda"), Qt::CaseInsensitive) ||
             entry.amiibo_series.contains(QStringLiteral("Zelda"), Qt::CaseInsensitive)) {
-            entry.switch_games.append(QStringLiteral("• The Legend of Zelda: Tears of the Kingdom: Эксклюзивная ткань параплана, оружие, ресурсы"));
-            entry.switch_games.append(QStringLiteral("• The Legend of Zelda: Breath of the Wild: Доспехи, оружие, Эпона, Волк Линк, сундуки"));
-            entry.switch_games.append(QStringLiteral("• The Legend of Zelda: Echoes of Wisdom: Уникальные костюмы, аксессуары и ресурсы"));
-            entry.switch_games.append(QStringLiteral("• Super Smash Bros. Ultimate: Обучаемый боец FP (Figure Player)"));
+            entry.switch_games.append(tr("• The Legend of Zelda: Tears of the Kingdom: Эксклюзивная ткань параплана, оружие, ресурсы"));
+            entry.switch_games.append(tr("• The Legend of Zelda: Breath of the Wild: Доспехи, оружие, Эпона, Волк Линк, сундуки"));
+            entry.switch_games.append(tr("• The Legend of Zelda: Echoes of Wisdom: Уникальные костюмы, аксессуары и ресурсы"));
+            entry.switch_games.append(tr("• Super Smash Bros. Ultimate: Обучаемый боец FP (Figure Player)"));
         } else if (entry.game_series.contains(QStringLiteral("Mario"), Qt::CaseInsensitive) ||
                    entry.amiibo_series.contains(QStringLiteral("Mario"), Qt::CaseInsensitive)) {
-            entry.switch_games.append(QStringLiteral("• Super Mario Odyssey: Уникальные костюмы для Марио и подсказки Лун энергии"));
-            entry.switch_games.append(QStringLiteral("• Super Mario 3D World + Bowser's Fury: Костюм Белого Тануки Неуязвимости, суперзвезды"));
-            entry.switch_games.append(QStringLiteral("• Super Smash Bros. Ultimate: Боец FP с прокачкой 1-50 ур."));
-            entry.switch_games.append(QStringLiteral("• Mario Kart 8 Deluxe: Гоночный костюм Mii"));
+            entry.switch_games.append(tr("• Super Mario Odyssey: Уникальные костюмы для Марио и подсказки Лун энергии"));
+            entry.switch_games.append(tr("• Super Mario 3D World + Bowser's Fury: Костюм Белого Тануки Неуязвимости, суперзвезды"));
+            entry.switch_games.append(tr("• Super Smash Bros. Ultimate: Боец FP с прокачкой 1-50 ур."));
+            entry.switch_games.append(tr("• Mario Kart 8 Deluxe: Гоночный костюм Mii"));
         } else if (entry.game_series.contains(QStringLiteral("Splatoon"), Qt::CaseInsensitive) ||
                    entry.amiibo_series.contains(QStringLiteral("Splatoon"), Qt::CaseInsensitive)) {
-            entry.switch_games.append(QStringLiteral("• Splatoon 3 / 2: Эксклюзивные наборы экипировки и фотосессии"));
+            entry.switch_games.append(tr("• Splatoon 3 / 2: Эксклюзивные наборы экипировки и фотосессии"));
         } else if (entry.game_series.contains(QStringLiteral("Metroid"), Qt::CaseInsensitive) ||
                    entry.amiibo_series.contains(QStringLiteral("Metroid"), Qt::CaseInsensitive)) {
-            entry.switch_games.append(QStringLiteral("• Metroid Dread: Дополнительный контейнер энергии (Energy Tank) и пополнение ракет"));
+            entry.switch_games.append(tr("• Metroid Dread: Дополнительный контейнер энергии (Energy Tank) и пополнение ракет"));
         } else if (entry.game_series.contains(QStringLiteral("Monster Hunter"), Qt::CaseInsensitive) ||
                    entry.amiibo_series.contains(QStringLiteral("Monster Hunter"), Qt::CaseInsensitive)) {
-            entry.switch_games.append(QStringLiteral("• Monster Hunter Rise: Многослойная броня и ежедневная лотерея"));
+            entry.switch_games.append(tr("• Monster Hunter Rise: Многослойная броня и ежедневная лотерея"));
         } else if (entry.game_series.contains(QStringLiteral("Animal Crossing"), Qt::CaseInsensitive) ||
                    entry.amiibo_series.contains(QStringLiteral("Animal Crossing"), Qt::CaseInsensitive)) {
-            entry.switch_games.append(QStringLiteral("• Animal Crossing: New Horizons: Плакаты, кемпинг жителя, фотосессия"));
+            entry.switch_games.append(tr("• Animal Crossing: New Horizons: Плакаты, кемпинг жителя, фотосессия"));
         } else if (entry.game_series.contains(QStringLiteral("Fire Emblem"), Qt::CaseInsensitive) ||
                    entry.amiibo_series.contains(QStringLiteral("Fire Emblem"), Qt::CaseInsensitive)) {
-            entry.switch_games.append(QStringLiteral("• Fire Emblem Engage: Музыкальные треки и билеты на наряды"));
+            entry.switch_games.append(tr("• Fire Emblem Engage: Музыкальные треки и билеты на наряды"));
         } else if (entry.game_series.contains(QStringLiteral("Xenoblade"), Qt::CaseInsensitive) ||
                    entry.amiibo_series.contains(QStringLiteral("Xenoblade"), Qt::CaseInsensitive)) {
-            entry.switch_games.append(QStringLiteral("• Xenoblade Chronicles 3: Облик Меча Монадо и полезные расходники"));
+            entry.switch_games.append(tr("• Xenoblade Chronicles 3: Облик Меча Монадо и полезные расходники"));
         } else {
-            entry.switch_games.append(QStringLiteral("• Super Smash Bros. Ultimate: Обучаемый боец FP или получение бонусов/духов"));
-            entry.switch_games.append(QStringLiteral("• Mario Kart 8 Deluxe: Гоночный костюм Mii"));
-            entry.switch_games.append(QStringLiteral("• Универсальная поддержка: Совместимо со всеми Switch играми с поддержкой Amiibo"));
+            entry.switch_games.append(tr("• Super Smash Bros. Ultimate: Обучаемый боец FP или получение бонусов/духов"));
+            entry.switch_games.append(tr("• Mario Kart 8 Deluxe: Гоночный костюм Mii"));
+            entry.switch_games.append(tr("• Универсальная поддержка: Совместимо со всеми Switch играми с поддержкой Amiibo"));
         }
     };
 

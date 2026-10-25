@@ -65,7 +65,7 @@
                         style="@style/SynthwaveText.Body"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Нейросетевой перевод и синтез речи в реальном времени"
+                        android:text="@string/translator_settings_subtitle"
                         android:textSize="11sp"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -122,7 +122,7 @@
                         style="@style/SynthwaveText.Header"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🌐 ДВИЖОК И ЯЗЫКИ ПЕРЕВОДА"
+                        android:text="@string/translator_sec_engine_langs"
                         android:textColor="?attr/colorPrimary"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -134,7 +134,7 @@
                     style="@style/SynthwaveText.Body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Сервис перевода:"
+                    android:text="@string/translator_lbl_service"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold" />
@@ -150,7 +150,7 @@
                     style="@style/SynthwaveText.Body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Язык игры (Оригинал):"
+                    android:text="@string/translator_lbl_source_lang"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold" />
@@ -166,7 +166,7 @@
                     style="@style/SynthwaveText.Body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Язык перевода:"
+                    android:text="@string/translator_lbl_target_lang"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold" />
@@ -184,7 +184,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:hint="API ключ (для DeepL / Custom AI)"
+                    android:hint="@string/translator_hint_api_key"
                     app:boxStrokeColor="?attr/colorPrimary"
                     app:hintTextColor="?attr/colorPrimary">
 
@@ -237,7 +237,7 @@
                         style="@style/SynthwaveText.Header"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🖼️ СТИЛЬ И ОТОБРАЖЕНИЕ СУБТИТРОВ"
+                        android:text="@string/translator_sec_style"
                         android:textColor="@color/synthwave_neon_cyan"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -249,7 +249,7 @@
                     style="@style/SynthwaveText.Body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Стиль наложения текста:"
+                    android:text="@string/translator_lbl_overlay_style"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold" />
@@ -299,7 +299,7 @@
                         style="@style/SynthwaveText.Header"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📐 ОБЛАСТИ СКАНИРОВАНИЯ ЭКРАНА (ROI)"
+                        android:text="@string/translator_sec_roi"
                         android:textColor="@color/synthwave_neon_green"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -311,7 +311,7 @@
                     style="@style/SynthwaveText.Body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Шаблон области сканирования:"
+                    android:text="@string/translator_lbl_roi_preset"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold" />
@@ -328,7 +328,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="10dp"
-                    android:text="✏️ Настроить зоны на экране (Мульти-выбор)"
+                    android:text="@string/translator_btn_custom_roi"
                     android:textSize="13sp" />
 
             </LinearLayout>
@@ -370,7 +370,7 @@
                         style="@style/SynthwaveText.Header"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🔊 СИНТЕЗ РЕЧИ (TTS)"
+                        android:text="@string/translator_sec_tts"
                         android:textColor="@color/synthwave_neon_pink"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -390,7 +390,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Автоматическая озвучка:"
+                        android:text="@string/translator_lbl_auto_tts"
                         android:textStyle="bold"
                         android:textSize="13sp" />
 
@@ -413,7 +413,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="🎭 Умные голоса персонажей:"
+                        android:text="@string/translator_lbl_smart_voices"
                         android:textStyle="bold"
                         android:textSize="13sp" />
 
@@ -430,7 +430,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Скорость озвучки: 1.0x"
+                    android:text="@string/translator_lbl_tts_speed_default"
                     android:textSize="12sp"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -450,7 +450,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_marginTop="4dp"
-                    android:text="▶ Проверить голос"
+                    android:text="@string/translator_btn_test_voice"
                     android:textSize="12sp" />
 
             </LinearLayout>
@@ -492,7 +492,7 @@
                         style="@style/SynthwaveText.Header"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🔘 ПЛАВАЮЩАЯ КНОПКА ПЕРЕВОДА"
+                        android:text="@string/translator_sec_floating_btn"
                         android:textColor="?attr/colorPrimary"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -511,7 +511,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Кнопка перевода поверх экрана:"
+                        android:text="@string/translator_lbl_floating_show"
                         android:textStyle="bold"
                         android:textSize="13sp" />
 
@@ -528,7 +528,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Прозрачность кнопки: 90%"
+                    android:text="@string/translator_lbl_floating_opacity_default"
                     android:textSize="12sp"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 

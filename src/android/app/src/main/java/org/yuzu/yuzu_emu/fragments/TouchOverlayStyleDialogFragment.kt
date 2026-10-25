@@ -164,14 +164,14 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
 
         private fun getStyleDescription(theme: OverlayTheme): String {
             return when (theme.renderStyle) {
-                OverlayRenderStyle.NEON_GLOW -> "Неоновое кибер-свечение (3D)"
-                OverlayRenderStyle.SWITCH_JOYCON -> "Оригинальный стиль Joy-Con (3D)"
-                OverlayRenderStyle.FROST_GLASS_3D -> "Матовое стекло Frost Glass (3D)"
-                OverlayRenderStyle.TITANIUM_MECHA -> "Титан и кибернетика (3D)"
-                OverlayRenderStyle.ARCADE_CANDY_3D -> "Объемные аркадные кнопки (3D)"
-                OverlayRenderStyle.FLAT_MINIMAL -> "Минималистичный контур (3D)"
-                OverlayRenderStyle.RETRO_CLASSIC -> "Ретро классика Nintendo (3D)"
-                OverlayRenderStyle.GOLDEN_ORNATE -> "Королевское золото (3D)"
+                OverlayRenderStyle.NEON_GLOW -> context.getString(R.string.overlay_style_neon_glow)
+                OverlayRenderStyle.SWITCH_JOYCON -> context.getString(R.string.overlay_style_switch_joycon)
+                OverlayRenderStyle.FROST_GLASS_3D -> context.getString(R.string.overlay_style_frost_glass)
+                OverlayRenderStyle.TITANIUM_MECHA -> context.getString(R.string.overlay_style_titanium_mecha)
+                OverlayRenderStyle.ARCADE_CANDY_3D -> context.getString(R.string.overlay_style_arcade_candy)
+                OverlayRenderStyle.FLAT_MINIMAL -> context.getString(R.string.overlay_style_flat_minimal)
+                OverlayRenderStyle.RETRO_CLASSIC -> context.getString(R.string.overlay_style_retro_classic)
+                OverlayRenderStyle.GOLDEN_ORNATE -> context.getString(R.string.overlay_style_golden_ornate)
             }
         }
     }

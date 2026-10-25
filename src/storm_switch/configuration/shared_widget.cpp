@@ -208,8 +208,8 @@ QWidget* Widget::CreateCombobox(std::function<std::string()>& serializer,
     const auto type = setting.EnumIndex();
 
     combobox = new QComboBox(this);
-    combobox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    combobox->setMinimumHeight(28);
+    combobox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    combobox->setMinimumHeight(32);
 
     if (combobox_enumerations.contains(type)) {
         const auto& enumeration = combobox_enumerations.at(type);
@@ -358,8 +358,8 @@ QWidget* Widget::CreateLineEdit(std::function<std::string()>& serializer,
     const QString text = QString::fromStdString(setting.ToString());
     line_edit = new QLineEdit(this);
     line_edit->setText(text);
-    line_edit->setMinimumHeight(28);
-    line_edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    line_edit->setMinimumHeight(32);
+    line_edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     serializer = [this]() { return line_edit->text().toStdString(); };
 
@@ -608,8 +608,8 @@ QWidget* Widget::CreateSpinBox(const QString& given_suffix,
     spinbox->setRange(min_val, max_val);
     spinbox->setValue(default_val);
     spinbox->setSuffix(suffix);
-    spinbox->setMinimumHeight(28);
-    spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    spinbox->setMinimumHeight(32);
+    spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     serializer = [this]() { return std::to_string(spinbox->value()); };
 
@@ -657,8 +657,8 @@ QWidget* Widget::CreateDoubleSpinBox(const QString& given_suffix,
     double_spinbox->setRange(min_val, max_val);
     double_spinbox->setValue(default_val);
     double_spinbox->setSuffix(suffix);
-    double_spinbox->setMinimumHeight(28);
-    double_spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    double_spinbox->setMinimumHeight(32);
+    double_spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     serializer = [this]() { return fmt::format("{:f}", double_spinbox->value()); };
 
@@ -758,8 +758,8 @@ QWidget* Widget::CreateDateTimeEdit(bool disabled, bool restrict,
     date_time_edit = new QDateTimeEdit(this);
     date_time_edit->setDateTime(default_val);
     date_time_edit->setMinimumDateTime(QDateTime::fromSecsSinceEpoch(0));
-    date_time_edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    date_time_edit->setMinimumHeight(28);
+    date_time_edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    date_time_edit->setMinimumHeight(32);
 
     serializer = [this]() { return std::to_string(date_time_edit->dateTime().toSecsSinceEpoch()); };
 
@@ -809,11 +809,11 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
     created = true;
     const auto type_id = setting.TypeId();
 
-    setMinimumHeight(32);
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    setMinimumHeight(38);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     QHBoxLayout* layout = new QHBoxLayout(this);
-    layout->setContentsMargins(0, 1, 0, 1);
+    layout->setContentsMargins(2, 3, 4, 3);
 
     if (other_setting == nullptr && setting.PairedSetting() != nullptr &&
         (setting.PairedSetting()->Specialization() & Settings::SpecializationTypeMask) ==
@@ -1142,8 +1142,7 @@ Widget::Widget(Settings::BasicSetting* setting_, const TranslationMap& translati
     : QWidget(parent_), parent{parent_}, translations{translations_},
       combobox_enumerations{combobox_translations_}, setting{*setting_}, apply_funcs{apply_funcs_},
       runtime_lock{runtime_lock_} {
-    setAttribute(Qt::WA_TranslucentBackground, true);
-    setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
+    setObjectName(QStringLiteral("StormSettingRow"));
     if (!Settings::IsConfiguringGlobal() && !setting.Switchable()) {
         LOG_DEBUG(Frontend, "\"{}\" is not switchable, skipping...", setting.GetLabel());
         return;

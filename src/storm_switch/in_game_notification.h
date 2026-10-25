@@ -4,13 +4,13 @@
 #pragma once
 
 #include <QColor>
-#include <QGraphicsOpacityEffect>
 #include <QPropertyAnimation>
 #include <QTimer>
 #include <QWidget>
 
 class InGameNotificationOverlay : public QWidget {
     Q_OBJECT
+    Q_PROPERTY(qreal panelOpacity READ panelOpacity WRITE setPanelOpacity)
 
 public:
     explicit InGameNotificationOverlay(QWidget* parent = nullptr);
@@ -18,8 +18,17 @@ public:
 
     void ShowNotification(const QString& title, const QString& message,
                           const QColor& accent = QColor(0, 229, 255),
-                          const QString& iconText = QStringLiteral("⚡"),
-                          int displayDurationMs = 3200);
+                          const QString& iconText = QStringLiteral("?"),
+                          int displayDurationMs = 3000);
+    void RepositionToParent();
+
+    qreal panelOpacity() const {
+        return m_panel_opacity;
+    }
+    void setPanelOpacity(qreal value) {
+        m_panel_opacity = value;
+        update();
+    }
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -29,7 +38,7 @@ private:
     QString m_message;
     QString m_icon;
     QColor m_accent_color{0, 229, 255};
+    qreal m_panel_opacity{0.0};
     QTimer m_hide_timer;
     QPropertyAnimation* m_fade_anim{nullptr};
-    QGraphicsOpacityEffect* m_opacity_effect{nullptr};
 };

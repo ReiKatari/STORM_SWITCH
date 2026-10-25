@@ -233,31 +233,32 @@ object AmiiboHelper {
         }
 
         if (switchGamesList.isEmpty()) {
+            val isRu = java.util.Locale.getDefault().language in setOf("ru", "uk", "be")
             if (gameSeries.contains("Zelda", ignoreCase = true) || amiiboSeries.contains("Zelda", ignoreCase = true)) {
-                switchGamesList.add("• The Legend of Zelda: Tears of the Kingdom: Эксклюзивная ткань параплана, оружие, ресурсы")
-                switchGamesList.add("• The Legend of Zelda: Breath of the Wild: Доспехи, оружие, призыв Эпоны / Волка Линка, сундуки")
-                switchGamesList.add("• The Legend of Zelda: Echoes of Wisdom: Уникальные костюмы, аксессуары и ресурсы")
-                switchGamesList.add("• Super Smash Bros. Ultimate: Обучаемый боец FP (Figure Player)")
-                switchGamesList.add("• Mario Kart 8 Deluxe: Гоночный костюм Mii")
+                switchGamesList.add(if (isRu) "• The Legend of Zelda: Tears of the Kingdom: Эксклюзивная ткань параплана, оружие, ресурсы" else "• The Legend of Zelda: Tears of the Kingdom: Exclusive Paraglider fabric, weapons, materials")
+                switchGamesList.add(if (isRu) "• The Legend of Zelda: Breath of the Wild: Доспехи, оружие, призыв Эпоны / Волка Линка, сундуки" else "• The Legend of Zelda: Breath of the Wild: Armor, weapons, summon Epona / Wolf Link, chests")
+                switchGamesList.add(if (isRu) "• The Legend of Zelda: Echoes of Wisdom: Уникальные костюмы, аксессуары и ресурсы" else "• The Legend of Zelda: Echoes of Wisdom: Unique outfits, accessories, and materials")
+                switchGamesList.add(if (isRu) "• Super Smash Bros. Ultimate: Обучаемый боец FP (Figure Player)" else "• Super Smash Bros. Ultimate: Trainable FP (Figure Player) fighter")
+                switchGamesList.add(if (isRu) "• Mario Kart 8 Deluxe: Гоночный костюм Mii" else "• Mario Kart 8 Deluxe: Mii Racing Suit")
             } else if (gameSeries.contains("Mario", ignoreCase = true) || amiiboSeries.contains("Mario", ignoreCase = true)) {
-                switchGamesList.add("• Super Mario Odyssey: Уникальные костюмы для Марио и подсказки Лун энергии")
-                switchGamesList.add("• Super Mario 3D World + Bowser's Fury: Костюм Белого Тануки Неуязвимости, бонусы")
-                switchGamesList.add("• Super Smash Bros. Ultimate: Боец FP с прокачкой 1-50 ур.")
-                switchGamesList.add("• Mario Kart 8 Deluxe: Специальный гоночный костюм Mii")
+                switchGamesList.add(if (isRu) "• Super Mario Odyssey: Уникальные костюмы для Марио и подсказки Лун энергии" else "• Super Mario Odyssey: Special Mario outfits and Power Moon hints")
+                switchGamesList.add(if (isRu) "• Super Mario 3D World + Bowser's Fury: Костюм Белого Тануки Неуязвимости, бонусы" else "• Super Mario 3D World + Bowser's Fury: White Tanooki Invincibility power-ups and bonuses")
+                switchGamesList.add(if (isRu) "• Super Smash Bros. Ultimate: Боец FP с прокачкой 1-50 ур." else "• Super Smash Bros. Ultimate: FP fighter with Lv. 1-50 progression")
+                switchGamesList.add(if (isRu) "• Mario Kart 8 Deluxe: Специальный гоночный костюм Mii" else "• Mario Kart 8 Deluxe: Special Mii Racing Suit")
             } else if (gameSeries.contains("Splatoon", ignoreCase = true) || amiiboSeries.contains("Splatoon", ignoreCase = true)) {
-                switchGamesList.add("• Splatoon 3 / 2: Эксклюзивные наборы экипировки и совместные фотосессии")
+                switchGamesList.add(if (isRu) "• Splatoon 3 / 2: Эксклюзивные наборы экипировки и совместные фотосессии" else "• Splatoon 3 / 2: Exclusive gear sets and photo shoots")
             } else if (gameSeries.contains("Metroid", ignoreCase = true) || amiiboSeries.contains("Metroid", ignoreCase = true)) {
-                switchGamesList.add("• Metroid Dread: Дополнительный контейнер энергии (Energy Tank) и ракеты")
+                switchGamesList.add(if (isRu) "• Metroid Dread: Дополнительный контейнер энергии (Energy Tank) и ракеты" else "• Metroid Dread: Extra Energy Tank and Missile+ Tank")
             } else if (gameSeries.contains("Animal Crossing", ignoreCase = true) || amiiboSeries.contains("Animal Crossing", ignoreCase = true)) {
-                switchGamesList.add("• Animal Crossing: New Horizons: Плакаты, визит жителя на кемпинг, фотостудия")
+                switchGamesList.add(if (isRu) "• Animal Crossing: New Horizons: Плакаты, визит жителя на кемпинг, фотостудия" else "• Animal Crossing: New Horizons: Posters, campsite visitor, Photopia studio")
             } else if (gameSeries.contains("Monster Hunter", ignoreCase = true) || amiiboSeries.contains("Monster Hunter", ignoreCase = true)) {
-                switchGamesList.add("• Monster Hunter Rise: Многослойная броня и ежедневная лотерея Кагари")
+                switchGamesList.add(if (isRu) "• Monster Hunter Rise: Многослойная броня и ежедневная лотерея Кагари" else "• Monster Hunter Rise: Layered Armor and daily Kagero lottery")
             } else if (gameSeries.contains("Xenoblade", ignoreCase = true) || amiiboSeries.contains("Xenoblade", ignoreCase = true)) {
-                switchGamesList.add("• Xenoblade Chronicles 3: Облик Меча Монадо и ресурсы")
+                switchGamesList.add(if (isRu) "• Xenoblade Chronicles 3: Облик Меча Монадо и ресурсы" else "• Xenoblade Chronicles 3: Monado weapon skin and collectibles")
             } else {
-                switchGamesList.add("• Super Smash Bros. Ultimate: Обучаемый боец FP или бонусы")
-                switchGamesList.add("• Mario Kart 8 Deluxe: Гоночный костюм Mii")
-                switchGamesList.add("• Универсальная поддержка: Совместимо со всеми Switch играми с поддержкой Amiibo")
+                switchGamesList.add(if (isRu) "• Super Smash Bros. Ultimate: Обучаемый боец FP или бонусы" else "• Super Smash Bros. Ultimate: Trainable FP fighter or Spirit bonuses")
+                switchGamesList.add(if (isRu) "• Mario Kart 8 Deluxe: Гоночный костюм Mii" else "• Mario Kart 8 Deluxe: Mii Racing Suit")
+                switchGamesList.add(if (isRu) "• Универсальная поддержка: Совместимо со всеми Switch играми с поддержкой Amiibo" else "• Universal Support: Compatible with all Amiibo-enabled Nintendo Switch games")
             }
         }
 
@@ -377,7 +378,24 @@ object AmiiboHelper {
         val fullFormatted: String get() = "[$icon $category] $title"
     }
 
+    private fun biReward(
+        isRu: Boolean,
+        catRu: String,
+        catEn: String,
+        icon: String,
+        titleRu: String,
+        titleEn: String,
+        descRu: String,
+        descEn: String
+    ): AmiiboRewardInfo = AmiiboRewardInfo(
+        category = if (isRu) catRu else catEn,
+        icon = icon,
+        title = if (isRu) titleRu else titleEn,
+        description = if (isRu) descRu else descEn
+    )
+
     fun getRewardForGame(entry: AmiiboEntry, gameTitle: String): AmiiboRewardInfo {
+        val isRu = java.util.Locale.getDefault().language in setOf("ru", "uk", "be")
         val n = entry.name.lowercase()
         val c = entry.character.lowercase()
         val gs = entry.gameSeries.lowercase()
@@ -387,209 +405,209 @@ object AmiiboHelper {
         // 1. Zelda: Tears of the Kingdom
         if (gn.contains("tears") || gn.contains("totk")) {
             if (n.contains("tears") || (c.contains("link") && n.contains("totk"))) {
-                return AmiiboRewardInfo("Ткань параплана и оружие", "🪂", "Новая ткань чемпионов и Меч рыцаря", "Эксклюзивная ткань для параплана «Новая туника чемпионов», крепкий Меч рыцаря, целебные травы и мясо")
+                return biReward(isRu, "Ткань параплана и оружие", "Paraglider Fabric & Weapons", "🪂", "Новая ткань чемпионов и Меч рыцаря", "New Champion's Fabric & Knight's Broadsword", "Эксклюзивная ткань для параплана «Новая туника чемпионов», крепкий Меч рыцаря, целебные травы и мясо", "Exclusive New Champion's Tunic paraglider fabric, sturdy Knight's Broadsword, herbs, and meat")
             }
             if (n.contains("ocarina") || n.contains("time")) {
-                return AmiiboRewardInfo("Оружие, броня и ткань", "🗡️", "Меч Большого Горона и Сет Времени", "Двуручный Меч Большого Горона, Шапка/Туника/Штаны Времени, Ткань маски Лони-Лони")
+                return biReward(isRu, "Оружие, броня и ткань", "Weapons, Armor & Fabric", "🗡️", "Меч Большого Горона и Сет Времени", "Biggoron's Sword & Armor of Time", "Двуручный Меч Большого Горона, Шапка/Туника/Штаны Времени, Ткань маски Лони-Лони", "Two-handed Biggoron's Sword, Cap/Tunic/Trousers of Time, Lon Lon Ranch Fabric")
             }
             if (n.contains("majora")) {
-                return AmiiboRewardInfo("Оружие, броня и ткань", "🗡️", "Двуручник и Сет Свирепого Божества", "Маска, Нагрудник и Поножи Свирепого Божества, Двуручник Свирепого Божества, Ткань маски Маджоры")
+                return biReward(isRu, "Оружие, броня и ткань", "Weapons, Armor & Fabric", "🗡️", "Двуручник и Сет Свирепого Божества", "Fierce Deity Sword & Set", "Маска, Нагрудник и Поножи Свирепого Божества, Двуручник Свирепого Божества, Ткань маски Маджоры", "Fierce Deity Mask/Armor/Boots, Fierce Deity Sword, Majora's Mask Fabric")
             }
             if (n.contains("twilight") || (c.contains("link") && aser.contains("smash"))) {
-                return AmiiboRewardInfo("Скакун, броня и ткань", "🐺", "Легендарная кобыла Эпона и Сет Сумерек", "Призыв легендарной лошади Эпоны (максимальные характеристики), Шапка/Туника/Штаны Сумерек, Сумеречная ткань")
+                return biReward(isRu, "Скакун, броня и ткань", "Mount, Armor & Fabric", "🐺", "Легендарная кобыла Эпона и Сет Сумерек", "Legendary Horse Epona & Twilight Set", "Призыв легендарной лошади Эпоны (максимальные характеристики), Шапка/Туника/Штаны Сумерек, Сумеречная ткань", "Summon legendary horse Epona (max stats), Cap/Tunic/Trousers of Twilight, Mirror of Twilight Fabric")
             }
             if (n.contains("skyward")) {
-                return AmiiboRewardInfo("Оружие, броня и ткань", "🗡️", "Белый меч Небес и Сет Неба", "Белый меч Богини, Шапка/Туника/Штаны Неба, ткань Меча Небес")
+                return biReward(isRu, "Оружие, броня и ткань", "Weapons, Armor & Fabric", "🗡️", "Белый меч Небес и Сет Неба", "White Sword of the Sky & Sky Set", "Белый меч Богини, Шапка/Туника/Штаны Неба, ткань Меча Небес", "White Sword of the Sky, Cap/Tunic/Trousers of the Sky, Sword-Spirit Fabric")
             }
             if (n.contains("awakening")) {
-                return AmiiboRewardInfo("Броня и ткань", "🛡️", "Сет Пробуждения и Ткань Яйца", "Мультяшная маска и туника Пробуждения, эксклюзивная ткань Яйца Ветрорыба, солдатские стрелы")
+                return biReward(isRu, "Броня и ткань", "Armor & Fabric", "🛡️", "Сет Пробуждения и Ткань Яйца", "Awakening Set & Egg Fabric", "Мультяшная маска и туника Пробуждения, эксклюзивная ткань Яйца Ветрорыба, солдатские стрелы", "Mask/Tunic/Trousers of Awakening, exclusive Egg Fabric, and arrows")
             }
             if (n.contains("archer")) {
-                return AmiiboRewardInfo("Оружие и ткань", "🏹", "Ткань капюшона лучника и Королевский лук", "Эксклюзивная ткань лучника, Королевский лук, сырая дичь и редкая рыба")
+                return biReward(isRu, "Оружие и ткань", "Weapons & Fabric", "🏹", "Ткань капюшона лучника и Королевский лук", "Tunic of Memories Fabric & Royal Bow", "Эксклюзивная ткань лучника, Королевский лук, сырая дичь и редкая рыба", "Exclusive archer fabric, Royal/Soldier's Bow, raw meat, and rare fish")
             }
             if (n.contains("rider")) {
-                return AmiiboRewardInfo("Ткань и снаряжение", "🪂", "Ткань капюшона всадника и Солдатский палаш", "Ткань всадника, оружие всадника, целебные грибы")
+                return biReward(isRu, "Ткань и снаряжение", "Fabric & Gear", "🪂", "Ткань капюшона всадника и Солдатский палаш", "Hylian Hood Fabric & Soldier's Broadsword", "Ткань всадника, оружие всадника, целебные грибы", "Hylian Hood fabric, weapons, and healing mushrooms")
             }
             if (c.contains("wolf link") || n.contains("wolf")) {
-                return AmiiboRewardInfo("Охотничьи ресурсы", "📦", "Охотничий провиант Линка", "Огромный запас свежего мяса, птицы и дичи для кулинарии")
+                return biReward(isRu, "Охотничьи ресурсы", "Hunting Supplies", "📦", "Охотничий провиант Линка", "Link's Hunting Provisions", "Огромный запас свежего мяса, птицы и дичи для кулинарии", "Large supply of fresh prime and gourmet meat for cooking")
             }
             if (c.contains("zelda")) {
-                return AmiiboRewardInfo("Ткань и оружие", "🪂", "Ткань принцессы Зельды и Королевский лук", "Эксклюзивная ткань принцессы Зельды, древний или королевский лук, драгоценные камни и травы")
+                return biReward(isRu, "Ткань и оружие", "Fabric & Weapons", "🪂", "Ткань принцессы Зельды и Королевский лук", "Princess Zelda Fabric & Royal Bow", "Эксклюзивная ткань принцессы Зельды, древний или королевский лук, драгоценные камни и травы", "Exclusive Princess Zelda fabric, bow, gems, and herbs")
             }
             if (c.contains("ganondorf") || n.contains("ganon")) {
-                return AmiiboRewardInfo("Оружие и ткань", "🗡️", "Меч и Ткань Демонического Короля", "Эксклюзивная ткань Демонического Короля, Меч Демонического Короля / Меч сумерек, запеченное мясо и самоцветы")
+                return biReward(isRu, "Оружие и ткань", "Weapons & Fabric", "🗡️", "Меч и Ткань Демонического Короля", "Demon King Fabric & Dusk Claymore", "Эксклюзивная ткань Демонического Короля, Меч Демонического Короля / Меч сумерек, запеченное мясо и самоцветы", "Exclusive Demon King fabric, Dusk Claymore / Gerudo weapons, meat, and gems")
             }
             if (c.contains("sheik")) {
-                return AmiiboRewardInfo("Броня и ткань", "🛡️", "Маска Шейха и Ткань клана Шеика", "Маска Шейха (бонус к скрытности), Ткань клана Шеика, ножи и щиты")
+                return biReward(isRu, "Броня и ткань", "Armor & Fabric", "🛡️", "Маска Шейха и Ткань клана Шеика", "Sheik's Mask & Sheikah Fabric", "Маска Шейха (бонус к скрытности), Ткань клана Шеика, ножи и щиты", "Sheik's Mask (Stealth Up), Sheikah Fabric, Eightfold Blades, and shields")
             }
             if (c.contains("guardian")) {
-                return AmiiboRewardInfo("Ткань и механизмы", "🪂", "Древняя ткань Шеика и Древние стрелы", "Древняя ткань стража, металлические ящики, древние механизмы и древние клинки")
+                return biReward(isRu, "Ткань и механизмы", "Fabric & Ancient Parts", "🪂", "Древняя ткань Шеика и Древние стрелы", "Ancient Sheikah Fabric & Ancient Blades", "Древняя ткань стража, металлические ящики, древние механизмы и древние клинки", "Ancient Sheikah Fabric, metal crates, and Ancient Blades")
             }
             if (c.contains("bokoblin")) {
-                return AmiiboRewardInfo("Ткань и оружие", "🪂", "Ткань Бокоблина и Боко-щиты", "Ткань Бокоблина, шипастый боко-щит, дубина и сырое мясо")
+                return biReward(isRu, "Ткань и оружие", "Fabric & Weapons", "🪂", "Ткань Бокоблина и Боко-щиты", "Bokoblin Fabric & Boko Shields", "Ткань Бокоблина, шипастый боко-щит, дубина и сырое мясо", "Bokoblin Fabric, Boko shields, clubs, and raw meat")
             }
             if (c.contains("daruk") || c.contains("mipha") || c.contains("revali") || c.contains("urbosa")) {
-                return AmiiboRewardInfo("Божественный шлем и ткань", "🛡️", "Шлем Божественного чудища и Ткань чемпиона", "Уникальный Божественный шлем со стихийной защитой и персональная ткань чемпиона")
+                return biReward(isRu, "Божественный шлем и ткань", "Divine Helm & Fabric", "🛡️", "Шлем Божественного чудища и Ткань чемпиона", "Vah Divine Beast Helm & Champion Fabric", "Уникальный Божественный шлем со стихийной защитой и персональная ткань чемпиона", "Unique Divine Beast Helm with elemental resistance and Champion's Fabric")
             }
             if (gs.contains("zelda") || aser.contains("zelda")) {
-                return AmiiboRewardInfo("Оружие и ткань", "🗡️", "Тематическая ткань параплана и оружие", "Эксклюзивная ткань параплана, сундук с высокоуровневым оружием и самоцветами")
+                return biReward(isRu, "Оружие и ткань", "Weapons & Fabric", "🗡️", "Тематическая ткань параплана и оружие", "Themed Paraglider Fabric & Weapons", "Эксклюзивная ткань параплана, сундук с высокоуровневым оружием и самоцветами", "Exclusive paraglider fabric, chest with high-tier weapons, and gems")
             }
-            return AmiiboRewardInfo("Универсальные ресурсы", "📦", "Припасы путешественника", "Сундук со случайным оружием, стрелы, целебные травы, яблоки, мясо и рыба")
+            return biReward(isRu, "Универсальные ресурсы", "Universal Supplies", "📦", "Припасы путешественника", "Traveler's Provisions", "Сундук со случайным оружием, стрелы, целебные травы, яблоки, мясо и рыба", "Chest with random weapons, arrows, herbs, apples, meat, and fish")
         }
 
         // 2. Zelda: Breath of the Wild
         if (gn.contains("breath") || gn.contains("botw")) {
             if (c.contains("wolf link") || n.contains("wolf")) {
-                return AmiiboRewardInfo("Компаньон", "🐺", "Призыв Волка Линка (Wolf Link)", "Волк Линк появляется в мире и сражается на вашей стороне с 20 сердцами здоровья!")
+                return biReward(isRu, "Компаньон", "Companion", "🐺", "Призыв Волка Линка (Wolf Link)", "Summon Wolf Link Companion", "Волк Линк появляется в мире и сражается на вашей стороне с 20 сердцами здоровья!", "Wolf Link spawns in the world and fights alongside you with 20 hearts!")
             }
             if (n.contains("twilight") || (c.contains("link") && aser.contains("smash"))) {
-                return AmiiboRewardInfo("Скакун и броня", "🐺", "Кобыла Эпона и Сет Сумерек", "Призыв легендарной лошади Эпоны с максимальными характеристиками и Набор Сумерек")
+                return biReward(isRu, "Скакун и броня", "Mount & Armor", "🐺", "Кобыла Эпона и Сет Сумерек", "Legendary Horse Epona & Twilight Set", "Призыв легендарной лошади Эпоны с максимальными характеристиками и Набор Сумерек", "Summon legendary horse Epona with max stats and Armor of Twilight")
             }
             if (n.contains("majora")) {
-                return AmiiboRewardInfo("Оружие и броня", "🗡️", "Двуручник и Сет Свирепого Божества", "Маска, Доспех и Поножи Свирепого Божества, Двуручник Свирепого Божества")
+                return biReward(isRu, "Оружие и броня", "Weapons & Armor", "🗡️", "Двуручник и Сет Свирепого Божества", "Fierce Deity Sword & Armor Set", "Маска, Доспех и Поножи Свирепого Божества, Двуручник Свирепого Божества", "Fierce Deity Mask, Armor, Boots, and Fierce Deity Sword")
             }
             if (n.contains("ocarina") || n.contains("time")) {
-                return AmiiboRewardInfo("Оружие и броня", "🗡️", "Меч Большого Горона и Сет Времени", "Шапка/Туника/Штаны Времени, Меч Большого Горона")
+                return biReward(isRu, "Оружие и броня", "Weapons & Armor", "🗡️", "Меч Большого Горона и Сет Времени", "Biggoron's Sword & Armor of Time", "Шапка/Туника/Штаны Времени, Меч Большого Горона", "Cap, Tunic, and Trousers of Time, plus Biggoron's Sword")
             }
             if (n.contains("archer")) {
-                return AmiiboRewardInfo("Оружие", "🏹", "Лук Путешественника и особые стрелы", "Древние, ледяные, огненные и электрические стрелы, редкое мясо")
+                return biReward(isRu, "Оружие", "Weapons", "🏹", "Лук Путешественника и особые стрелы", "Falcon/Royal Bow & Elemental Arrows", "Древние, ледяные, огненные и электрические стрелы, редкое мясо", "Ancient, Ice, Fire, and Shock Arrows, plus rare meat")
             }
             if (c.contains("zelda")) {
-                return AmiiboRewardInfo("Щит и самоцветы", "🛡️", "Щит Бригадира и Звездный осколок", "Щит Бригадира, редкие рубины, сапфиры, алмазы и целебные травы")
+                return biReward(isRu, "Щит и самоцветы", "Shield & Gems", "🛡️", "Щит Бригадира и Звездный осколок", "Hylian/Royal Shield & Star Fragment", "Щит Бригадира, редкие рубины, сапфиры, алмазы и целебные травы", "Royal Shield, Star Fragments, Rubies, Sapphires, Diamonds, and herbs")
             }
             if (c.contains("daruk") || c.contains("mipha") || c.contains("revali") || c.contains("urbosa")) {
-                return AmiiboRewardInfo("Броня", "🛡️", "Шлем Божественного чудища", "Шлемы Ва-Рудания, Ва-Рута, Ва-Медо или Ва-Наборис со стихийной защитой")
+                return biReward(isRu, "Броня", "Armor", "🛡️", "Шлем Божественного чудища", "Vah Divine Beast Helm", "Шлемы Ва-Рудания, Ва-Рута, Ва-Медо или Ва-Наборис со стихийной защитой", "Vah Rudania, Vah Ruta, Vah Medoh, or Vah Naboris Divine Helms")
             }
             if (gs.contains("zelda") || aser.contains("zelda")) {
-                return AmiiboRewardInfo("Оружие и сундук", "🗡️", "Уникальный сундук Хайрула", "Сундук с редким оружием, стрелами и драгоценными металлами")
+                return biReward(isRu, "Оружие и сундук", "Weapon & Chest", "🗡️", "Уникальный сундук Хайрула", "Unique Hyrule Treasure Chest", "Сундук с редким оружием, стрелами и драгоценными металлами", "Treasure chest with rare weapons, arrows, and precious gems")
             }
-            return AmiiboRewardInfo("Ресурсы", "📦", "Припасы и сырье", "Сундук с базовым оружием, мясо, грибы, травы и овощи")
+            return biReward(isRu, "Ресурсы", "Supplies", "📦", "Припасы и сырье", "Provisions & Materials", "Сундук с базовым оружием, мясо, грибы, травы и овощи", "Chest with weapons, meat, mushrooms, herbs, and vegetables")
         }
 
         // 3. Zelda: Echoes of Wisdom
         if (gn.contains("echoes of wisdom") || gn.contains("wisdom")) {
             if (c.contains("zelda") || n.contains("zelda")) {
-                return AmiiboRewardInfo("Костюм", "👗", "Особое платье принцессы Зельды", "Эксклюзивный наряд принцессы для путешествия по Хайрулу, Камни Силы и редкие смузи ингредиенты")
+                return biReward(isRu, "Костюм", "Outfit", "👗", "Особое платье принцессы Зельды", "Blue Attire & Smoothie Ingredients", "Эксклюзивный наряд принцессы для путешествия по Хайрулу, Камни Силы и редкие смузи ингредиенты", "Exclusive Blue Attire for Zelda, Might Crystals, and rare smoothie ingredients")
             }
             if (c.contains("link") || n.contains("link")) {
-                return AmiiboRewardInfo("Костюм", "👕", "Одеяния Героя", "Эксклюзивный зелёный наряд Героя Мечника, целебные травы и ценные кристаллы эхо")
+                return biReward(isRu, "Костюм", "Outfit", "👕", "Одеяния Героя", "Red Tunic & Smoothie Ingredients", "Эксклюзивный зелёный наряд Героя Мечника, целебные травы и ценные кристаллы эхо", "Exclusive Tunic variant, herbs, and rare smoothie ingredients")
             }
             if (c.contains("cat") || n.contains("cat") || n.contains("mario")) {
-                return AmiiboRewardInfo("Костюм", "🐱", "Костюм Чёрной кошки", "Уникальный наряд Чёрной кошки, позволяющий общаться с котиками Хайрула!")
+                return biReward(isRu, "Костюм", "Outfit", "🐱", "Костюм Чёрной кошки", "Black Cat Clothes", "Уникальный наряд Чёрной кошки, позволяющий общаться с котиками Хайрула!", "Unique Black Cat Clothes that let you talk to cats across Hyrule!")
             }
-            return AmiiboRewardInfo("Ресурсы", "📦", "Набор кристаллов и смузи", "Набор редких ингредиентов для приготовления смузи, яблоки, масло и Камни Силы")
+            return biReward(isRu, "Ресурсы", "Supplies", "📦", "Набор кристаллов и смузи", "Smoothie Ingredients Pack", "Набор редких ингредиентов для приготовления смузи, яблоки, масло и Камни Силы", "Pack of rare smoothie ingredients, Golden Eggs, Chilly/Warm Peppers, and Monster Stones")
         }
 
         // 4. Super Mario Odyssey
         if (gn.contains("odyssey") || gn.contains("mario odyssey")) {
             if (n.contains("wedding") && c.contains("mario")) {
-                return AmiiboRewardInfo("Костюм и усиление", "👕", "Свадебный смокинг Марио и Неуязвимость", "Свадебный цилиндр и смокинг; Неуязвимость Марио ко всем видам урона на 30 секунд!")
+                return biReward(isRu, "Костюм и усиление", "Outfit & Power-Up", "👕", "Свадебный смокинг Марио и Неуязвимость", "Mario's Wedding Tuxedo & Invincibility", "Свадебный цилиндр и смокинг; Неуязвимость Марио ко всем видам урона на 30 секунд!", "Mario's Wedding Top Hat & Tuxedo; grants temporary Invincibility!")
             }
             if (n.contains("wedding") && c.contains("bowser")) {
-                return AmiiboRewardInfo("Костюм и подсказки", "👕", "Свадебный смокинг Боузера и Локатор монет", "Свадебный цилиндр Боузера; Подсветка всех региональных фиолетовых монет на карте!")
+                return biReward(isRu, "Костюм и подсказки", "Outfit & Radar", "👕", "Свадебный смокинг Боузера и Локатор монет", "Bowser's Wedding Tuxedo & Coin Radar", "Свадебный цилиндр Боузера; Подсветка всех региональных фиолетовых монет на карте!", "Bowser's Wedding Outfit; reveals nearby Purple Regional Coins!")
             }
             if (n.contains("wedding") && c.contains("peach")) {
-                return AmiiboRewardInfo("Костюм и здоровье", "👗", "Свадебное свадебное платье Пич и Сердце жизни", "Свадебная фата и платье Пич; Полное восстановление здоровья и Сердце Жизни (+3 HP)")
+                return biReward(isRu, "Костюм и здоровье", "Outfit & Life-Up", "👗", "Свадебное платье Пич и Сердце жизни", "Wedding Dress & Life-Up Heart", "Свадебная фата и платье Пич; Полное восстановление здоровья и Сердце Жизни (+3 HP)", "Peach's Wedding Veil & Dress; grants a Life-Up Heart (6 HP)")
             }
             if (c.contains("mario")) {
-                return AmiiboRewardInfo("Костюм", "👕", "Классический костюм Марио", "Классическая кепка и комбинезон Марио, временная неуязвимость")
+                return biReward(isRu, "Костюм", "Outfit", "👕", "Классический костюм Марио", "Classic Mario Suit & Invincibility", "Классическая кепка и комбинезон Марио, временная неуязвимость", "Classic Mario Cap & Suit, plus temporary invincibility")
             }
             if (c.contains("luigi")) {
-                return AmiiboRewardInfo("Костюм", "👕", "Костюм Луиджи", "Кепка и комбинезон Луиджи для Марио")
+                return biReward(isRu, "Костюм", "Outfit", "👕", "Костюм Луиджи", "Luigi Cap & Suit", "Кепка и комбинезон Луиджи для Марио", "Luigi Cap and Suit for Mario")
             }
             if (c.contains("wario") || c.contains("waluigi")) {
-                return AmiiboRewardInfo("Костюм", "👕", "Костюм Варио / Валуиджи", "Костюмы Варио и Валуиджи со шляпами")
+                return biReward(isRu, "Костюм", "Outfit", "👕", "Костюм Варио / Валуиджи", "Wario / Waluigi Cap & Suit", "Костюмы Варио и Валуиджи со шляпами", "Wario and Waluigi Caps and Suits")
             }
-            return AmiiboRewardInfo("Подсказка дяди Амибо", "⭐", "Поиск Луны энергии", "Дядя Амибо отмечает на карте точное местоположение скрытой Луны энергии!")
+            return biReward(isRu, "Подсказка дяди Амибо", "Uncle amiibo Hint", "⭐", "Поиск Луны энергии", "Power Moon Location Hint", "Дядя Амибо отмечает на карте точное местоположение скрытой Луны энергии!", "Uncle amiibo marks the exact location of a hidden Power Moon on your map!")
         }
 
         // 5. Super Mario 3D World / Bowser's Fury
         if (gn.contains("3d world") || gn.contains("bowser's fury") || gn.contains("bowsers fury")) {
             if (n.contains("cat mario") || (c.contains("mario") && n.contains("cat"))) {
-                return AmiiboRewardInfo("Усилитель", "🌟", "Белый Кот Марио (Неуязвимость)", "Превращает Марио в Белого Кота Марио с постоянной неуязвимостью к врагам!")
+                return biReward(isRu, "Усилитель", "Power-Up", "🌟", "Белый Кот Марио (Неуязвимость)", "White Cat Mario (Invincibility Bell)", "Превращает Марио в Белого Кота Марио с постоянной неуязвимостью к врагам!", "Grants an Invincibility Bell that transforms Mario into White Cat Mario!")
             }
             if (n.contains("cat peach") || (c.contains("peach") && n.contains("cat"))) {
-                return AmiiboRewardInfo("Бонус", "🐱", "Случайный супер-усилитель", "Дарует случайный редкий бонус: Супер-Колокольчик, Бумеранг или Лист Тануки")
+                return biReward(isRu, "Бонус", "Power-Up", "🐱", "Случайный супер-усилитель", "Random Super Power-Up", "Дарует случайный редкий бонус: Супер-Колокольчик, Бумеранг или Лист Тануки", "Spawns a random rare power-up: Super Bell, Boomerang Flower, or Super Leaf")
             }
             if (c.contains("bowser")) {
-                return AmiiboRewardInfo("Событие", "🔥", "Мгновенное пробуждение Яростного Боузера", "Немедленно активирует Ярость Боузера и шторм на озере Кошачьих Лап")
+                return biReward(isRu, "Событие", "Event", "🔥", "Мгновенное пробуждение Яростного Боузера", "Summon Fury Bowser", "Немедленно активирует Ярость Боузера и шторм на озере Кошачьих Лап", "Immediately summons Fury Bowser in Lake Lapcat")
             }
             if (c.contains("bowser jr")) {
-                return AmiiboRewardInfo("Ударная волна", "💥", "Мощная взрывная волна Боузера-младшего", "Уничтожает всех ближайших врагов и открывает секретные блоки")
+                return biReward(isRu, "Ударная волна", "Shockwave", "💥", "Мощная взрывная волна Боузера-младшего", "Bowser Jr. Shockwave Blast", "Уничтожает всех ближайших врагов и открывает секретные блоки", "Unleashes a powerful shockwave that defeats nearby enemies and breaks blocks")
             }
-            return AmiiboRewardInfo("Бонус", "🍄", "Гриб 1-Up или Супер-Гриб", "Дарует дополнительную жизнь или увеличение персонажа")
+            return biReward(isRu, "Бонус", "Bonus", "🍄", "Гриб 1-Up или Супер-Гриб", "1-Up Mushroom or Super Star", "Дарует дополнительную жизнь или увеличение персонажа", "Grants a 1-Up Mushroom or Super Star")
         }
 
         // 6. Metroid Dread
         if (gn.contains("metroid") || gn.contains("dread")) {
             if (c.contains("samus") && (n.contains("dread") || aser.contains("metroid"))) {
-                return AmiiboRewardInfo("Контейнер энергии", "🔋", "Дополнительный бак энергии (+100 HP)", "Навсегда увеличивает максимальный запас здоровья Самус на один бак (+100 HP) и восстанавливает энергию раз в день")
+                return biReward(isRu, "Контейнер энергии", "Energy Tank", "🔋", "Дополнительный бак энергии (+100 HP)", "Extra Energy Tank (+100 HP)", "Навсегда увеличивает максимальный запас здоровья Самус на один бак (+100 HP) и восстанавливает энергию раз в день", "Permanently increases Samus's max health by one Energy Tank (+100 HP) and restores energy daily")
             }
             if (c.contains("emmi") || n.contains("e.m.m.i") || n.contains("emmi")) {
-                return AmiiboRewardInfo("Ракетный комплекс", "🚀", "Дополнительный контейнер ракет (+10)", "Навсегда увеличивает максимальный боезапас ракет Самус на +10 и восполняет ракеты раз в день")
+                return biReward(isRu, "Ракетный комплекс", "Missile+ Tank", "🚀", "Дополнительный контейнер ракет (+10)", "Extra Missile+ Tank (+10)", "Навсегда увеличивает максимальный боезапас ракет Самус на +10 и восполняет ракеты раз в день", "Permanently increases Samus's max missile capacity by +10 and replenishes missiles daily")
             }
-            return AmiiboRewardInfo("Пополнение", "⚡", "Восстановление ресурсов Самус", "Экстренное пополнение запаса здоровья или ракет во время миссии")
+            return biReward(isRu, "Пополнение", "Replenish", "⚡", "Восстановление ресурсов Самус", "Daily Energy & Missile Replenishment", "Экстренное пополнение запаса здоровья или ракет во время миссии", "Replenishes health and missiles once per day")
         }
 
         // 7. Splatoon 3 / Splatoon 2
         if (gn.contains("splatoon")) {
             if (aser.contains("splatoon") || gs.contains("splatoon")) {
-                return AmiiboRewardInfo("Экипировка", "👕", "Эксклюзивный комплект одежды и обуви", "Уникальный 3-предметный набор брендовой экипировки с эксклюзивными способностями и фотосессия")
+                return biReward(isRu, "Экипировка", "Exclusive Gear", "👕", "Эксклюзивный комплект одежды и обуви", "3-Piece Exclusive Gear Set", "Уникальный 3-предметный набор брендовой экипировки с эксклюзивными способностями и фотосессия", "Unlocks a 3-piece exclusive gear set (Headgear, Clothing, Shoes) and photo mode poses")
             }
-            return AmiiboRewardInfo("Бонус", "🎨", "Специальные сувениры и снимки", "Совместные снимки в фотобудке Инкополиса")
+            return biReward(isRu, "Бонус", "Bonus", "🎨", "Специальные сувениры и снимки", "Special Souvenirs & Photos", "Совместные снимки в фотобудке Инкополиса", "Take photos together in Splatsville / Inkopolis")
         }
 
         // 8. Monster Hunter Rise
         if (gn.contains("monster hunter") || gn.contains("rise") || gn.contains("sunbreak")) {
             if (gs.contains("monster hunter") || n.contains("magnamalo") || n.contains("palamute") || n.contains("palico") || n.contains("malzeno")) {
-                return AmiiboRewardInfo("Многослойная броня", "🛡️", "Особая броня Синра / Малзено", "Эксклюзивный комплект многослойной брони охотника, Палико или Паламута, а также участие в лотерее Кагари")
+                return biReward(isRu, "Многослойная броня", "Layered Armor", "🛡️", "Особая броня Синра / Малзено", "Sinister Seal / Formal Dragon Layered Armor", "Эксклюзивный комплект многослойной брони охотника, Палико или Паламута, а также участие в лотерее Кагари", "Unlocks exclusive Layered Armor for Hunter, Palamute, or Palico, plus daily lottery entry")
             }
-            return AmiiboRewardInfo("Лотерея", "🎲", "Ежедневный лотерейный билет Кагари", "Бесплатная лотерея у торговца Кагари с ценными зельями, ловушками и сферами доспехов")
+            return biReward(isRu, "Лотерея", "Lottery", "🎲", "Ежедневный лотерейный билет Кагари", "Daily Kagero Lottery Ticket", "Бесплатная лотерея у торговца Кагари с ценными зельями, ловушками и сферами доспехов", "Free daily lottery spin with Kagero the Merchant for potions, traps, and armor spheres")
         }
 
         // 9. Xenoblade Chronicles 3
         if (gn.contains("xenoblade")) {
             if (c.contains("shulk")) {
-                return AmiiboRewardInfo("Облик оружия", "⚔️", "Легендарный меч Монадо", "Разблокирует легендарный внешний облик клинка Меч Монадо для мечника Ноа!")
+                return biReward(isRu, "Облик оружия", "Weapon Skin", "⚔️", "Легендарный меч Монадо", "Legendary Monado Sword Skin", "Разблокирует легендарный внешний облик клинка Меч Монадо для мечника Ноа!", "Unlocks the legendary Monado blade attachment skin for Swordfighter!")
             }
             if (n.contains("noah") || n.contains("mio")) {
-                return AmiiboRewardInfo("Костюм", "👕", "Особый наряд для спутников", "Уникальная куртка Ноа или наряд Мио для всех членов отряда")
+                return biReward(isRu, "Костюм", "Outfit", "👕", "Особый наряд для спутников", "Special Leisure Time Outfits", "Уникальная куртка Ноа или наряд Мио для всех членов отряда", "Unlocks Noah's and Mio's special outfits for party members")
             }
-            return AmiiboRewardInfo("Предметы", "📦", "Коллекционные предметы и монеты Нопонов", "Набор редких коллекционных предметов и золотые/серебряные монеты Нопонов")
+            return biReward(isRu, "Предметы", "Collectibles", "📦", "Коллекционные предметы и монеты Нопонов", "Collectibles & Nopon Coins", "Набор редких коллекционных предметов и золотые/серебряные монеты Нопонов", "Pack of rare collectibles and Silver/Gold Nopon Coins")
         }
 
         // 10. Super Smash Bros. Ultimate
         if (gn.contains("smash") || gn.contains("ssbu")) {
-            return AmiiboRewardInfo("Боец FP", "🥊", "Figure Player: Обучаемый боец FP", "Создает уникального бойца FP (1-50 ур.), обучающегося вашему боевому стилю и тактике!")
+            return biReward(isRu, "Боец FP", "FP Fighter", "🥊", "Figure Player: Обучаемый боец FP", "Figure Player: Trainable FP Fighter", "Создает уникального бойца FP (1-50 ур.), обучающегося вашему боевому стилю и тактике!", "Creates a trainable Figure Player (Lv. 1-50) that learns from your playstyle, or grants a Spirit!")
         }
 
         // 11. Mario Kart 8 Deluxe
         if (gn.contains("mario kart") || gn.contains("mk8")) {
-            return AmiiboRewardInfo("Гоночный костюм", "🏎️", "Гоночный костюм Mii", "Разблокирует уникальный тематический комбинезон и гоночный шлем персонажа для гонщика Mii!")
+            return biReward(isRu, "Гоночный костюм", "Racing Suit", "🏎️", "Гоночный костюм Mii", "Mii Racing Suit", "Разблокирует уникальный тематический комбинезон и гоночный шлем персонажа для гонщика Mii!", "Unlocks a themed character racing suit and helmet for your Mii driver!")
         }
 
         // 12. Animal Crossing: New Horizons
         if (gn.contains("animal crossing") || gn.contains("horizons")) {
-            return AmiiboRewardInfo("Кемпинг и фото", "🏕️", "Визит на кемпинг и постер жителя", "Приглашает жителя на кемпинг острова, разблокирует памятный постер и фотосессию на острове Харви")
+            return biReward(isRu, "Кемпинг и фото", "Campsite & Photo", "🏕️", "Визит на кемпинг и постер жителя", "Campsite Visitor & Character Poster", "Приглашает жителя на кемпинг острова, разблокирует памятный постер и фотосессию на острове Харви", "Invite the character to your Campsite, Roost cafe, or Harv's Island Photopia and unlock their poster")
         }
 
         // 13. Fire Emblem
         if (gn.contains("fire emblem") || gn.contains("engage") || gn.contains("three houses")) {
-            return AmiiboRewardInfo("Музыка и костюм", "🎶", "Саундтрек персонажа и билеты беседки", "Разблокирует классический музыкальный трек персонажа, купоны нарядов и ценные печати призыва")
+            return biReward(isRu, "Музыка и костюм", "Music & Outfit", "🎶", "Саундтрек персонажа и билеты беседки", "Legacy Music Track & Fashion Tickets", "Разблокирует классический музыкальный трек персонажа, купоны нарядов и ценные печати призыва", "Unlocks a classic Fire Emblem music track, fashion tickets, and Relay Tickets at the Amiibo Gazebo")
         }
 
         // 14. Kirby
         if (gn.contains("kirby")) {
-            return AmiiboRewardInfo("Усилитель", "⭐", "Особая способность и здоровье", "Дарует мощную способность копирования, звездочки и восстанавливает шкалу здоровья Кирби")
+            return biReward(isRu, "Усилитель", "Boost", "⭐", "Особая способность и здоровье", "Healing Items & Star Coins", "Дарует мощную способность копирования, звездочки и восстанавливает шкалу здоровья Кирби", "Grants healing items, Star Coins, and Rare Stones")
         }
 
         // 15. Pokemon
         if (gn.contains("pokemon") || gn.contains("pokémon")) {
-            return AmiiboRewardInfo("Награда", "🎒", "Припасы тренера и ягоды", "Набор полезных ягод, покеболов и предметов для тренировки покемонов")
+            return biReward(isRu, "Награда", "Reward", "🎒", "Припасы тренера и ягоды", "Trainer Supplies & Berries", "Набор полезных ягод, покеболов и предметов для тренировки покемонов", "Bundle of useful Berries, Poké Balls, and training items")
         }
 
         // Universal Fallback
-        return AmiiboRewardInfo("Награда", "🎁", "Ежедневный подарочный набор", "Ежедневный набор полезных внутриигровых ресурсов, монет и расходных материалов")
+        return biReward(isRu, "Награда", "Reward", "🎁", "Ежедневный подарочный набор", "Daily In-Game Gift Pack", "Ежедневный набор полезных внутриигровых ресурсов, монет и расходных материалов", "Daily bundle of useful in-game materials, coins, and consumables")
     }
 
     fun getAmiibosForGame(allAmiibos: List<AmiiboEntry>, titleId: String, gameTitle: String): List<AmiiboEntry> {

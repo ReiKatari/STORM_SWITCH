@@ -25,9 +25,24 @@ AboutDialog::AboutDialog(QWidget* parent)
     if (!app_logo.isNull()) {
         ui->labelLogo->setPixmap(app_logo.pixmap(180, 180));
     }
+    setWindowTitle(tr("О STORM SWITCH"));
     ui->labelBuildInfo->setText(
         ui->labelBuildInfo->text().arg(QString::fromStdString(yuzu_build_version),
                                        QString::fromUtf8(Common::g_build_date).left(10)));
+    ui->labelAbout->setText(tr(
+        "<html><head/><body><p><span style=\"font-size:10.5pt; color:#e0e6ed;\">"
+        "STORM SWITCH — это передовой высокопроизводительный форк эмулятора Eden (Nintendo Switch), созданный для максимальной производительности, глубокой кастомизации и стабильности.<br/><br/>"
+        "STORM SWITCH распространяется под лицензией GPLv3.0+ и включает расширенные режимы графики, ускоренный запуск игр, многофункциональный подвал управления и полную поддержку DLC и обновлений.<br/><br/>"
+        "Данное программное обеспечение предназначено исключительно для запуска легально полученных копий игр."
+        "</span></p></body></html>"));
+    ui->labelLinks->setText(tr(
+        "<html><head/><body><p><a href=\"https://eden-emulator.github.io/\"><span style=\"text-decoration: underline; color:#00f2fe;\">Eden Project</span></a> | "
+        "<a href=\"https://git.eden-emu.dev\"><span style=\"text-decoration: underline; color:#00f2fe;\">Исходный код</span></a> | "
+        "<a href=\"https://git.eden-emu.dev/eden-emu/eden/src/branch/master/LICENSE.txt\"><span style=\"text-decoration: underline; color:#00f2fe;\">Лицензия (GPLv3)</span></a></p></body></html>"));
+    ui->labelLiability->setText(tr(
+        "<html><head/><body><p><span style=\"font-size:7.5pt; color:#7b8fa3;\">"
+        "&quot;Nintendo Switch&quot; является зарегистрированным товарным знаком Nintendo. STORM SWITCH не связан с Nintendo."
+        "</span></p></body></html>"));
 }
 
 AboutDialog::~AboutDialog() = default;

@@ -132,6 +132,16 @@ NvResult nvhost_ctrl::IocCtrlEventWait(IocCtrlEventWaitParams& params, bool is_a
     auto& host1x_syncpoint_manager = system.Host1x().GetSyncpointManager();
     const u32 target_value = params.fence.value;
 
+    // Fast-forward desynchronized guest syncpoint thresholds after SaveState restoration
+    const u32 current_host = host1x_syncpoint_manager.GetHostSyncpointValue(fence_id);
+    const u32 guest_max = syncpoint_manager.GetSyncpointFence(fence_id).value;
+    if (static_cast<s32>(target_value - current_host) > 16 || target_value > guest_max + 4) {
+        host1x_syncpoint_manager.FastForwardSyncpoint(fence_id, target_value);
+        syncpoint_manager.FastForwardSyncpoint(fence_id, target_value);
+        params.value.raw = target_value;
+        return NvResult::Success;
+    }
+
     auto lock = NvEventsLock();
 
     u32 slot = [&]() {

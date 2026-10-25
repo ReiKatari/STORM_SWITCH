@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.utils
+import org.yuzu.yuzu_emu.YuzuApplication
 
 import android.app.ActivityManager
 import android.content.Context

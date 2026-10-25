@@ -888,6 +888,11 @@ void PerformanceOverlay::RefreshSaveSlots() {
 }
 
 void PerformanceOverlay::OnSaveSlot(int slot) {
+    if (m_mainWindow) {
+        m_mainWindow->OnSaveStateSlot(slot);
+        RefreshSaveSlots();
+        return;
+    }
     if (!QtCommon::system || !QtCommon::system->IsPoweredOn()) return;
     const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
     if (title_id == 0) return;
@@ -906,6 +911,10 @@ void PerformanceOverlay::OnSaveSlot(int slot) {
 }
 
 void PerformanceOverlay::OnLoadSlot(int slot) {
+    if (m_mainWindow) {
+        m_mainWindow->OnLoadStateSlot(slot);
+        return;
+    }
     if (!QtCommon::system || !QtCommon::system->IsPoweredOn()) return;
     const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
     if (title_id == 0) return;

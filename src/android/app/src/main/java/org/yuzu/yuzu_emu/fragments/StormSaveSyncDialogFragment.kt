@@ -238,8 +238,8 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 remoteIp = ""
                 remotePort = 28443
                 remoteDeviceName = ""
-                binding.textConnectionState.text = "Статус: не подключено к удалённому устройству"
-                binding.btnConnect.text = "Подключить"
+                binding.textConnectionState.text = getString(R.string.storm_sync_state_disconnected)
+                binding.btnConnect.text = getString(R.string.storm_sync_btn_connect_short)
                 for ((_, it) in saveItems) {
                     it.hasRemote = false
                     it.remoteTimestamp = 0L
@@ -249,17 +249,17 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 }
                 updateComparisonList()
                 updateList()
-                Toast.makeText(requireContext(), "Отключено от удалённого устройства", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_disconnected), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             val input = binding.editRemoteKey.text.toString().trim()
             if (input.isEmpty()) {
-                Toast.makeText(requireContext(), "Введите ключ или IP:порт", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_enter_key), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             val parsed = parseConnectionKey(input)
             if (parsed == null) {
-                Toast.makeText(requireContext(), "Неверный формат ключа", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_invalid_key), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             connectToRemote(parsed.first, parsed.second)
@@ -267,12 +267,12 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
         binding.btnSearchDevices.setOnClickListener {
             broadcastDiscovery()
-            Toast.makeText(requireContext(), "Поиск устройств в сети Wi-Fi...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_searching_wifi), Toast.LENGTH_SHORT).show()
         }
 
         binding.btnSyncAll.setOnClickListener {
             if (!isConnected) {
-                Toast.makeText(requireContext(), "Сначала подключитесь к устройству", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_connect_first), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             syncAllSaves()
@@ -446,7 +446,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         }
         lastDiscoveredKeys = currentKeys
 
-        val list = mutableListOf("Обнаруженные устройства в сети (${discoveredDevices.size})")
+        val list = mutableListOf(getString(R.string.storm_sync_discovered_devices_fmt, discoveredDevices.size))
         val keys = mutableListOf("")
 
         for (k in currentKeys) {
@@ -553,15 +553,15 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                     val clientIp = queryParams["client_ip"]
                     if (!clientIp.isNullOrEmpty()) {
                         val clientPort = queryParams["client_port"]?.toIntOrNull() ?: 28443
-                        val rawClientName = queryParams["client_name"] ?: "Удалённое устройство"
+                        val rawClientName = queryParams["client_name"] ?: getString(R.string.storm_sync_remote_device_default)
                         val clientName = try { java.net.URLDecoder.decode(rawClientName, "UTF-8") } catch (_: Exception) { rawClientName }
                         remoteIp = clientIp
                         remotePort = clientPort
                         remoteDeviceName = clientName
                         isConnected = true
                         withContext(Dispatchers.Main) {
-                            binding.textConnectionState.text = "🟢 Подключено: $clientName [$clientIp:$clientPort]"
-                            binding.btnConnect.text = "Отключить"
+                            binding.textConnectionState.text = getString(R.string.storm_sync_state_connected_client_fmt, clientName, clientIp, clientPort)
+                            binding.btnConnect.text = getString(R.string.storm_sync_btn_disconnect)
                             scanLocalSaves()
                             fetchRemoteSaves()
                         }
@@ -678,14 +678,14 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
     private fun connectToRemote(ip: String, port: Int) {
         if ((ip == "127.0.0.1" || ip.equals("localhost", ignoreCase = true) || localIps.contains(ip) || ip == localIp) && port == localPort) {
-            binding.textConnectionState.text = "⚠️ Введён ключ этого же устройства"
-            Toast.makeText(requireContext(), "Вы указали ключ текущего устройства. Для синхронизации введите ключ другого устройства (ПК или другого смартфона).", Toast.LENGTH_LONG).show()
+            binding.textConnectionState.text = getString(R.string.storm_sync_state_self_key)
+            Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_self_key), Toast.LENGTH_LONG).show()
             return
         }
 
         remoteIp = ip
         remotePort = port
-        binding.textConnectionState.text = "Подключение к $ip:$port..."
+        binding.textConnectionState.text = getString(R.string.storm_sync_state_connecting_fmt, ip, port)
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -702,13 +702,13 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 if (resp.isSuccessful) {
                     val body = resp.body?.string() ?: "{}"
                     val obj = JSONObject(body)
-                    remoteDeviceName = obj.optString("device_name", "Удалённый узел")
-                    val platform = obj.optString("platform", "узел")
+                    remoteDeviceName = obj.optString("device_name", getString(R.string.storm_sync_remote_node_default))
+                    val platform = obj.optString("platform", getString(R.string.storm_sync_node_default))
                     isConnected = true
 
                     withContext(Dispatchers.Main) {
-                        binding.textConnectionState.text = "🟢 Подключено: $remoteDeviceName ($platform) [$ip:$port]"
-                        binding.btnConnect.text = "Отключить"
+                        binding.textConnectionState.text = getString(R.string.storm_sync_state_connected_remote_fmt, remoteDeviceName, platform, ip, port)
+                        binding.btnConnect.text = getString(R.string.storm_sync_btn_disconnect)
                         fetchRemoteSaves()
                     }
                     return@launch
@@ -717,9 +717,9 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
             withContext(Dispatchers.Main) {
                 isConnected = false
-                binding.btnConnect.text = "Подключить"
-                binding.textConnectionState.text = "❌ Ошибка подключения к $ip:$port"
-                Toast.makeText(requireContext(), "Не удалось подключиться к $ip:$port. Убедитесь, что на втором устройстве запущен STORM SAVE SYNC и порт $port открыт.", Toast.LENGTH_LONG).show()
+                binding.btnConnect.text = getString(R.string.storm_sync_btn_connect_short)
+                binding.textConnectionState.text = getString(R.string.storm_sync_state_conn_error_fmt, ip, port)
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_conn_error_fmt, ip, port), Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -934,16 +934,16 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         }
         adapter.submitList(filteredList)
         binding.textSavesHeader.text = if (query.isEmpty()) {
-            "Сохранения игр (${allSaves.size})"
+            getString(R.string.storm_sync_saves_count_fmt, allSaves.size)
         } else {
-            "Сохранения игр (${filteredList.size} из ${allSaves.size})"
+            getString(R.string.storm_sync_saves_filtered_fmt, filteredList.size, allSaves.size)
         }
         binding.textEmptySaves.isVisible = filteredList.isEmpty()
     }
 
     private fun handleSyncItem(item: AndroidSaveItem) {
         if (!isConnected) {
-            Toast.makeText(requireContext(), "Сначала подключитесь к удалённому устройству", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_connect_remote_first), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -958,7 +958,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 downloadSave(item.titleId)
             }
             AndroidSaveSyncStatus.SYNCHRONIZED -> {
-                Toast.makeText(requireContext(), "Сохранения полностью идентичны", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_identical), Toast.LENGTH_SHORT).show()
             }
             else -> {}
         }
@@ -970,14 +970,14 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             .setView(conflictBinding.root)
             .create()
 
-        conflictBinding.textConflictSubtitle.text = "Игра: ${item.titleName} [${item.titleId}]"
+        conflictBinding.textConflictSubtitle.text = getString(R.string.storm_sync_conflict_game_fmt, item.titleName, item.titleId)
 
-        conflictBinding.textLocalDate.text = "📅 Дата и время: ${item.localDateStr}"
-        conflictBinding.textLocalSize.text = "📦 Размер данных: ${formatSize(item.localSizeBytes)} • Файлов: ${item.localFileCount}"
+        conflictBinding.textLocalDate.text = getString(R.string.storm_sync_conflict_date_fmt, item.localDateStr)
+        conflictBinding.textLocalSize.text = getString(R.string.storm_sync_conflict_size_fmt, formatSize(item.localSizeBytes), item.localFileCount)
 
-        conflictBinding.textRemoteDeviceTitle.text = "Удалённое устройство (${if (remoteDeviceName.isNotEmpty()) remoteDeviceName else "ПК"})"
-        conflictBinding.textRemoteDate.text = "📅 Дата и время: ${item.remoteDateStr}"
-        conflictBinding.textRemoteSize.text = "📦 Размер данных: ${formatSize(item.remoteSizeBytes)} • Файлов: ${item.remoteFileCount}"
+        conflictBinding.textRemoteDeviceTitle.text = getString(R.string.storm_sync_remote_device_fmt, if (remoteDeviceName.isNotEmpty()) remoteDeviceName else getString(R.string.storm_sync_pc_short))
+        conflictBinding.textRemoteDate.text = getString(R.string.storm_sync_conflict_date_fmt, item.remoteDateStr)
+        conflictBinding.textRemoteSize.text = getString(R.string.storm_sync_conflict_size_fmt, formatSize(item.remoteSizeBytes), item.remoteFileCount)
 
         conflictBinding.btnReplaceCurrent.setOnClickListener {
             dialog.dismiss()
@@ -1056,10 +1056,10 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 binding.progressSync.isVisible = false
                 updateComparisonList()
                 updateList()
-                Toast.makeText(requireContext(), "Сохранение успешно загружено!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_download_ok), Toast.LENGTH_SHORT).show()
             } else {
                 binding.progressSync.isVisible = false
-                Toast.makeText(requireContext(), "Ошибка скачивания сохранения", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_download_err), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -1098,10 +1098,10 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 binding.progressSync.isVisible = false
                 updateComparisonList()
                 updateList()
-                Toast.makeText(requireContext(), "Сохранение успешно отправлено на удалённое устройство!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_upload_ok), Toast.LENGTH_SHORT).show()
             } else {
                 binding.progressSync.isVisible = false
-                Toast.makeText(requireContext(), "Ошибка отправки сохранения", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_upload_err), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -1137,13 +1137,13 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
     private fun syncAllSaves() {
         if (!isConnected) {
-            Toast.makeText(requireContext(), "Сначала подключитесь к устройству", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_connect_first), Toast.LENGTH_SHORT).show()
             return
         }
 
         val queue = saveItems.values.filter { it.status != AndroidSaveSyncStatus.SYNCHRONIZED }
         if (queue.isEmpty()) {
-            Toast.makeText(requireContext(), "Все сохранения уже полностью синхронизированы!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_all_synced_already), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -1155,7 +1155,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             val total = queue.size
             for (item in queue) {
                 processed++
-                Toast.makeText(requireContext(), "Синхронизация ($processed/$total): ${item.titleName}...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_syncing_progress_fmt, processed, total, item.titleName), Toast.LENGTH_SHORT).show()
 
                 when (item.status) {
                     AndroidSaveSyncStatus.LOCAL_ONLY -> {
@@ -1183,7 +1183,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             binding.progressSync.isVisible = false
             updateComparisonList()
             updateList()
-            Toast.makeText(requireContext(), "Синхронизация всех сохранений успешно завершена!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.storm_sync_toast_sync_all_done), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -1318,11 +1318,14 @@ class StormSaveSyncDialogFragment : DialogFragment() {
     }
 
     private fun formatSize(bytes: Long): String {
+        val uB = getString(R.string.unit_b)
+        val uKb = getString(R.string.unit_kb)
+        val uMb = getString(R.string.unit_mb)
         return when {
-            bytes <= 0L -> "0 Б"
-            bytes < 1024L -> "$bytes Б"
-            bytes < 1024L * 1024L -> String.format(Locale.US, "%.1f КБ", bytes / 1024.0)
-            else -> String.format(Locale.US, "%.2f МБ", bytes / (1024.0 * 1024.0))
+            bytes <= 0L -> "0 $uB"
+            bytes < 1024L -> "$bytes $uB"
+            bytes < 1024L * 1024L -> String.format(Locale.US, "%.1f %s", bytes / 1024.0, uKb)
+            else -> String.format(Locale.US, "%.2f %s", bytes / (1024.0 * 1024.0), uMb)
         }
     }
 
@@ -1500,47 +1503,48 @@ class StormSaveSyncDialogFragment : DialogFragment() {
                 }
             }
 
+            val ctx = b.root.context
             b.textLocalSaveInfo.text = if (item.hasLocal) {
-                "📱 На этом устройстве: ${item.localDateStr} (${formatSize(item.localSizeBytes)}, ${item.localFileCount} файл.)"
+                ctx.getString(R.string.storm_sync_item_local_info_fmt, item.localDateStr, formatSize(ctx, item.localSizeBytes), item.localFileCount)
             } else {
-                "📱 На этом устройстве: отсутствует"
+                ctx.getString(R.string.storm_sync_item_local_missing)
             }
 
             b.textRemoteSaveInfo.text = if (item.hasRemote) {
-                "💻 На удалённом: ${item.remoteDateStr} (${formatSize(item.remoteSizeBytes)}, ${item.remoteFileCount} файл.)"
+                ctx.getString(R.string.storm_sync_item_remote_info_fmt, item.remoteDateStr, formatSize(ctx, item.remoteSizeBytes), item.remoteFileCount)
             } else {
-                "💻 На удалённом: отсутствует"
+                ctx.getString(R.string.storm_sync_item_remote_missing)
             }
 
             when (item.status) {
                 AndroidSaveSyncStatus.SYNCHRONIZED -> {
-                    b.textSyncBadge.text = "🟢 Синхронизировано"
+                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_synced)
                     b.textSyncBadge.setTextColor(0xFF10B981.toInt())
-                    b.btnActionSync.text = "Синхронизировано"
+                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_synced)
                     b.btnActionSync.isEnabled = false
                 }
                 AndroidSaveSyncStatus.CONFLICT -> {
-                    b.textSyncBadge.text = "⚠️ Конфликт"
+                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_conflict)
                     b.textSyncBadge.setTextColor(0xFFF59E0B.toInt())
-                    b.btnActionSync.text = "Разрешить конфликт"
+                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_resolve_conflict)
                     b.btnActionSync.isEnabled = true
                 }
                 AndroidSaveSyncStatus.LOCAL_ONLY -> {
-                    b.textSyncBadge.text = "📤 Только локально"
+                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_local_only)
                     b.textSyncBadge.setTextColor(0xFF3B82F6.toInt())
-                    b.btnActionSync.text = "Отправить"
+                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_send)
                     b.btnActionSync.isEnabled = true
                 }
                 AndroidSaveSyncStatus.REMOTE_ONLY -> {
-                    b.textSyncBadge.text = "📥 Только на удалённом"
+                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_remote_only)
                     b.textSyncBadge.setTextColor(0xFF8B5CF6.toInt())
-                    b.btnActionSync.text = "Скачать"
+                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_download)
                     b.btnActionSync.isEnabled = true
                 }
                 else -> {
-                    b.textSyncBadge.text = "Неизвестно"
+                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_unknown)
                     b.textSyncBadge.setTextColor(0xFF94A3B8.toInt())
-                    b.btnActionSync.text = "Синхронизировать"
+                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_action_sync)
                     b.btnActionSync.isEnabled = true
                 }
             }
@@ -1550,12 +1554,15 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             }
         }
 
-        private fun formatSize(bytes: Long): String {
+        private fun formatSize(ctx: Context, bytes: Long): String {
+            val uB = ctx.getString(R.string.unit_b)
+            val uKb = ctx.getString(R.string.unit_kb)
+            val uMb = ctx.getString(R.string.unit_mb)
             return when {
-                bytes <= 0L -> "0 Б"
-                bytes < 1024L -> "$bytes Б"
-                bytes < 1024L * 1024L -> String.format(Locale.US, "%.1f КБ", bytes / 1024.0)
-                else -> String.format(Locale.US, "%.2f МБ", bytes / (1024.0 * 1024.0))
+                bytes <= 0L -> "0 $uB"
+                bytes < 1024L -> "$bytes $uB"
+                bytes < 1024L * 1024L -> String.format(Locale.US, "%.1f %s", bytes / 1024.0, uKb)
+                else -> String.format(Locale.US, "%.2f %s", bytes / (1024.0 * 1024.0), uMb)
             }
         }
     }

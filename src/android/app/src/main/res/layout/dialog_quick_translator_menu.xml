@@ -62,7 +62,7 @@
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Быстрое меню управления переводом"
+                        android:text="@string/translator_quick_subtitle"
                         android:textSize="11sp"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -130,7 +130,7 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Перевести экран сейчас"
+                            android:text="@string/translator_quick_now_title"
                             android:textColor="#F8FAFC"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -138,7 +138,7 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Мгновенный снимок и наложение текста"
+                            android:text="@string/translator_quick_now_desc"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="11sp" />
 
@@ -186,7 +186,7 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Авто-перевод при смене кадров"
+                            android:text="@string/translator_quick_auto_title"
                             android:textColor="#F8FAFC"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -195,7 +195,7 @@
                             android:id="@+id/textAutoTranslateStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Статус: Отключен (по нажатию)"
+                            android:text="@string/translator_quick_auto_off"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="11sp" />
 
@@ -260,7 +260,7 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Модель / Нейросеть"
+                            android:text="@string/translator_quick_model_title"
                             android:textColor="#F8FAFC"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -317,7 +317,7 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Области сканирования на экране"
+                            android:text="@string/translator_quick_roi_title"
                             android:textColor="#F8FAFC"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -325,7 +325,7 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Настроить зоны субтитров и диалогов"
+                            android:text="@string/translator_quick_roi_desc"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="11sp" />
 
@@ -373,7 +373,7 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Озвучка текста голосом (TTS)"
+                            android:text="@string/translator_quick_tts_title"
                             android:textColor="#F8FAFC"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -382,7 +382,7 @@
                             android:id="@+id/textTtsStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Озвучивать диалоги автоматически"
+                            android:text="@string/translator_quick_tts_desc"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="11sp" />
 
@@ -431,7 +431,7 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Плавающая кнопка перевода"
+                            android:text="@string/translator_quick_float_title"
                             android:textColor="#F8FAFC"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -440,7 +440,7 @@
                             android:id="@+id/textFloatingBtnStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Отображать плавающую кнопку перевода на экране"
+                            android:text="@string/translator_quick_float_desc"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="11sp" />
 
@@ -465,7 +465,7 @@
             style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="⚙️ Все параметры и API ключи..."
+            android:text="@string/translator_quick_all_settings"
             android:textColor="#FFFFFF"
             android:textSize="13sp"
             android:textStyle="bold"

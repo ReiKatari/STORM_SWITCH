@@ -113,7 +113,7 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
-                android:text="Синхронизировать"
+                android:text="@string/storm_sync_btn_action_sync"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="12sp"
                 app:backgroundTint="?attr/colorSurface"

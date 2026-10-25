@@ -58,10 +58,10 @@ class StormDownloadService : Service() {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "STORM GAMES WORLD Загрузки",
+                getString(R.string.storm_notif_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Уведомления о скачивании игр и обновлений"
+                description = getString(R.string.storm_notif_channel_desc)
                 setSound(null, null)
                 enableVibration(false)
             }
@@ -128,39 +128,39 @@ class StormDownloadService : Service() {
 
         when (progress.status) {
             StormDownloadStatus.CONNECTING -> {
-                builder.setContentText("Подключение к серверу загрузки...")
+                builder.setContentText(getString(R.string.storm_dl_connecting))
                     .setProgress(100, 0, true)
                     .setOngoing(true)
-                    .addAction(R.drawable.ic_clear, "Отмена", cancelPending)
+                    .addAction(R.drawable.ic_clear, getString(android.R.string.cancel), cancelPending)
                 startForeground(DOWNLOAD_NOTIFICATION_ID, builder.build())
             }
 
             StormDownloadStatus.DOWNLOADING -> {
                 val subText = if (progress.speedMbps > 0.05) {
-                    "${String.format(Locale.ROOT, "%.1f", progress.speedMbps)} МБ/с • Ост: ${progress.etaSeconds / 60} мин"
+                    getString(R.string.storm_dl_subtext_speed_eta_fmt, String.format(Locale.ROOT, "%.1f", progress.speedMbps), progress.etaSeconds / 60)
                 } else {
                     "${progress.progressPercent}%"
                 }
-                builder.setContentText(progress.statsText.ifEmpty { "Загрузка: ${progress.progressPercent}%" })
+                builder.setContentText(progress.statsText.ifEmpty { getString(R.string.storm_dl_progress_pct_fmt, progress.progressPercent) })
                     .setSubText(subText)
                     .setProgress(100, progress.progressPercent, false)
                     .setOngoing(true)
-                    .addAction(R.drawable.ic_pause, "Пауза", pauseResumePending)
-                    .addAction(R.drawable.ic_clear, "Отмена", cancelPending)
+                    .addAction(R.drawable.ic_pause, getString(R.string.storm_world_btn_pause), pauseResumePending)
+                    .addAction(R.drawable.ic_clear, getString(android.R.string.cancel), cancelPending)
                 startForeground(DOWNLOAD_NOTIFICATION_ID, builder.build())
             }
 
             StormDownloadStatus.PAUSED -> {
-                builder.setContentText("⏸ Загрузка приостановлена (${progress.progressPercent}%)")
+                builder.setContentText(getString(R.string.storm_dl_paused_pct_fmt, progress.progressPercent))
                     .setProgress(100, progress.progressPercent, false)
                     .setOngoing(true)
-                    .addAction(R.drawable.ic_play, "Продолжить", pauseResumePending)
-                    .addAction(R.drawable.ic_clear, "Отмена", cancelPending)
+                    .addAction(R.drawable.ic_play, getString(R.string.storm_world_btn_resume), pauseResumePending)
+                    .addAction(R.drawable.ic_clear, getString(android.R.string.cancel), cancelPending)
                 startForeground(DOWNLOAD_NOTIFICATION_ID, builder.build())
             }
 
             StormDownloadStatus.COMPLETED -> {
-                builder.setContentText("✅ Игра успешно скачана!")
+                builder.setContentText(getString(R.string.storm_dl_completed))
                     .setProgress(0, 0, false)
                     .setOngoing(false)
                     .setAutoCancel(true)
@@ -172,7 +172,7 @@ class StormDownloadService : Service() {
             }
 
             StormDownloadStatus.ERROR -> {
-                builder.setContentText("⚠️ ${progress.errorMessage.ifEmpty { "Ошибка загрузки" }}")
+                builder.setContentText("⚠️ ${progress.errorMessage.ifEmpty { getString(R.string.storm_dl_error_default) }}")
                     .setProgress(0, 0, false)
                     .setOngoing(false)
                     .setAutoCancel(true)
@@ -197,11 +197,11 @@ class StormDownloadService : Service() {
         val action = intent?.action
         when (action) {
             ACTION_START -> {
-                val gameTitle = intent.getStringExtra(EXTRA_GAME_TITLE) ?: "Игра"
+                val gameTitle = intent.getStringExtra(EXTRA_GAME_TITLE) ?: getString(R.string.storm_dl_game_fallback)
                 val builder = NotificationCompat.Builder(this, CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_install)
                     .setContentTitle("STORM GAMES WORLD: $gameTitle")
-                    .setContentText("Подключение к серверу загрузки...")
+                    .setContentText(getString(R.string.storm_dl_connecting))
                     .setProgress(100, 0, true)
                     .setOngoing(true)
                 startForeground(DOWNLOAD_NOTIFICATION_ID, builder.build())

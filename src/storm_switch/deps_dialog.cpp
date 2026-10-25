@@ -21,18 +21,22 @@ DepsDialog::DepsDialog(QWidget* parent) : QDialog(parent), ui{std::make_unique<U
         QString desc;
     };
 
+    setWindowTitle(tr("Зависимости и компоненты STORM SWITCH"));
+    ui->labelEden->setText(tr("<html><head/><body><p><span style=\"font-size:28pt;\">Зависимости STORM SWITCH</span></p></body></html>"));
+    ui->labelInfo->setText(tr("<html><head/><body><p>Проекты и библиотеки с открытым исходным кодом, используемые в STORM SWITCH</p></body></html>"));
+
     const std::vector<ProjectEntry> acknowledgements = {
-        {QStringLiteral("Eden Emulator Project и Camille LaVey"), QStringLiteral("https://git.eden-emu.dev/eden-emu/eden"), QStringLiteral("Базовый форк эмулятора Switch")},
-        {QStringLiteral("Yuzu Emulator Team"), QStringLiteral("https://yuzu-emu.org"), QStringLiteral("Архитектура ядра эмуляции Switch")},
-        {QStringLiteral("Ryujinx Team"), QStringLiteral("https://ryujinx.org"), QStringLiteral("Исследования FS и Horizon OS")},
-        {QStringLiteral("Sudachi и Citron Projects"), QStringLiteral("https://github.com/sudachi-emu"), QStringLiteral("Оптимизации производительности")},
-        {QStringLiteral("Tinfoil и Blawar"), QStringLiteral("https://tinfoil.io"), QStringLiteral("Формат NSZ/NCZ и база TitleDB")},
-        {QStringLiteral("Zstandard (zstd) / Yann Collet"), QStringLiteral("https://github.com/facebook/zstd"), QStringLiteral("Библиотека сжатия ZSTD (Meta)")},
-        {QStringLiteral("FFmpeg Project"), QStringLiteral("https://ffmpeg.org"), QStringLiteral("Декодер NVDEC видео и аудио")},
-        {QStringLiteral("Dynarmic (MerryMage)"), QStringLiteral("https://github.com/merryhime/dynarmic"), QStringLiteral("JIT-рекомпилятор ARMv8")},
-        {QStringLiteral("Mozilla Cubeb"), QStringLiteral("https://github.com/mozilla/cubeb"), QStringLiteral("Кросс-платформенный звук")},
-        {QStringLiteral("Qt Project и The Qt Company"), QStringLiteral("https://www.qt.io"), QStringLiteral("Графический интерфейс Qt6")},
-        {QStringLiteral("Vulkan SDK и LunarG"), QStringLiteral("https://vulkan.lunarg.com"), QStringLiteral("Графический API Vulkan")},
+        {tr("Eden Emulator Project и Camille LaVey"), QStringLiteral("https://git.eden-emu.dev/eden-emu/eden"), tr("Базовый форк эмулятора Switch")},
+        {QStringLiteral("Yuzu Emulator Team"), QStringLiteral("https://yuzu-emu.org"), tr("Архитектура ядра эмуляции Switch")},
+        {QStringLiteral("Ryujinx Team"), QStringLiteral("https://ryujinx.org"), tr("Исследования FS и Horizon OS")},
+        {tr("Sudachi и Citron Projects"), QStringLiteral("https://github.com/sudachi-emu"), tr("Оптимизации производительности")},
+        {tr("Tinfoil и Blawar"), QStringLiteral("https://tinfoil.io"), tr("Формат NSZ/NCZ и база TitleDB")},
+        {QStringLiteral("Zstandard (zstd) / Yann Collet"), QStringLiteral("https://github.com/facebook/zstd"), tr("Библиотека сжатия ZSTD (Meta)")},
+        {QStringLiteral("FFmpeg Project"), QStringLiteral("https://ffmpeg.org"), tr("Декодер NVDEC видео и аудио")},
+        {QStringLiteral("Dynarmic (MerryMage)"), QStringLiteral("https://github.com/merryhime/dynarmic"), tr("JIT-рекомпилятор ARMv8")},
+        {QStringLiteral("Mozilla Cubeb"), QStringLiteral("https://github.com/mozilla/cubeb"), tr("Кросс-платформенный звук")},
+        {tr("Qt Project и The Qt Company"), QStringLiteral("https://www.qt.io"), tr("Графический интерфейс Qt6")},
+        {tr("Vulkan SDK и LunarG"), QStringLiteral("https://vulkan.lunarg.com"), tr("Графический API Vulkan")},
     };
 
     const int total_rows = static_cast<int>(acknowledgements.size() + Common::dep_hashes.size());

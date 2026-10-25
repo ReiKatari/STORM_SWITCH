@@ -203,14 +203,27 @@ struct KnownCloudVariant {
 
 static QString LocalizeSizeString(QString size_str) {
     if (size_str.isEmpty()) return size_str;
-    static const QRegularExpression gb_rx(QStringLiteral(R"(\bGB\b)"), QRegularExpression::CaseInsensitiveOption);
-    static const QRegularExpression mb_rx(QStringLiteral(R"(\bMB\b)"), QRegularExpression::CaseInsensitiveOption);
-    static const QRegularExpression kb_rx(QStringLiteral(R"(\bKB\b)"), QRegularExpression::CaseInsensitiveOption);
-    static const QRegularExpression b_rx(QStringLiteral(R"(\bB\b)"), QRegularExpression::CaseInsensitiveOption);
-    size_str.replace(gb_rx, QStringLiteral("ГБ"));
-    size_str.replace(mb_rx, QStringLiteral("МБ"));
-    size_str.replace(kb_rx, QStringLiteral("КБ"));
-    size_str.replace(b_rx, QStringLiteral("Б"));
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    const bool is_ru = lang.rfind("ru", 0) == 0;
+    if (is_ru) {
+        static const QRegularExpression gb_rx(QStringLiteral(R"(\bGB\b)"), QRegularExpression::CaseInsensitiveOption);
+        static const QRegularExpression mb_rx(QStringLiteral(R"(\bMB\b)"), QRegularExpression::CaseInsensitiveOption);
+        static const QRegularExpression kb_rx(QStringLiteral(R"(\bKB\b)"), QRegularExpression::CaseInsensitiveOption);
+        static const QRegularExpression b_rx(QStringLiteral(R"(\bB\b)"), QRegularExpression::CaseInsensitiveOption);
+        size_str.replace(gb_rx, QStringLiteral("ГБ"));
+        size_str.replace(mb_rx, QStringLiteral("МБ"));
+        size_str.replace(kb_rx, QStringLiteral("КБ"));
+        size_str.replace(b_rx, QStringLiteral("Б"));
+    } else {
+        size_str.replace(QStringLiteral("ГБ"), QStringLiteral("GB"), Qt::CaseInsensitive);
+        size_str.replace(QStringLiteral("МБ"), QStringLiteral("MB"), Qt::CaseInsensitive);
+        size_str.replace(QStringLiteral("КБ"), QStringLiteral("KB"), Qt::CaseInsensitive);
+        size_str.replace(QStringLiteral(" Б"), QStringLiteral(" B"), Qt::CaseInsensitive);
+        size_str.replace(QLatin1Char(','), QLatin1Char('.'));
+    }
     return size_str;
 }
 
@@ -1824,10 +1837,10 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
         }
     }
 
-    description_browser->setHtml(QStringLiteral("<p style='color: #8899A6;'>%1<br><br><b>Платформа:</b> Nintendo Switch (CONSOLES)<br><b>Идентификатор:</b> %2<br><b>Размер пакета:</b> %3</p>")
+    description_browser->setHtml(tr("<p style='color: #8899A6;'>%1<br><br><b>Платформа:</b> Nintendo Switch (CONSOLES)<br><b>Идентификатор:</b> %2<br><b>Размер пакета:</b> %3</p>")
         .arg(tr("Информация о пакете и файлах получена с сервера stormgamesworld.ru."))
         .arg(game.serial_id)
-        .arg(game.size));
+        .arg(LocalizeSizeString(game.size)));
 }
 
 bool StormGamesWorldDialog::eventFilter(QObject* watched, QEvent* event) {

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
+import org.yuzu.yuzu_emu.R
 
 import android.app.Dialog
 import android.content.DialogInterface
@@ -95,9 +96,9 @@ class GameFixDialogFragment : DialogFragment() {
                 }
                 if (ctx != null) {
                     val msg = if (hadCustom) {
-                        if (isRu) "⚡ Авто-исправление: Рекомендуемые параметры применены с сохранением ваших настроек" else "⚡ Auto-Fix: Applied with your custom settings preserved"
+                        ctx.getString(R.string.game_fix_toast_autofix_custom)
                     } else {
-                        if (isRu) "⚡ Авто-исправление: Применен чистый эталонный профиль" else "⚡ Auto-Fix: Clean profile applied"
+                        ctx.getString(R.string.game_fix_toast_autofix_clean)
                     }
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
@@ -113,11 +114,7 @@ class GameFixDialogFragment : DialogFragment() {
                 GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM
                 GameFixDatabase.applyFixWithCustomOverrides(currentGame)
                 if (ctx != null) {
-                    val msg = if (isRu) {
-                        "⚡ Авто-исправление: Индивидуальные настройки сохранены"
-                    } else {
-                        "⚡ Auto-Fix: Custom settings preserved"
-                    }
+                    val msg = ctx.getString(R.string.game_fix_toast_custom_saved)
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
             } catch (_: Exception) {}
@@ -132,11 +129,7 @@ class GameFixDialogFragment : DialogFragment() {
                 GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.CUSTOM
                 GameFixDatabase.prepareCustomLaunch(currentGame)
                 if (ctx != null) {
-                    val msg = if (isRu) {
-                        "🎮 Персональные настройки: Запуск с вашим профилем"
-                    } else {
-                        "🎮 Custom Settings: Launching with user profile"
-                    }
+                    val msg = ctx.getString(R.string.game_fix_toast_launch_custom)
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
             } catch (_: Exception) {}
@@ -151,11 +144,7 @@ class GameFixDialogFragment : DialogFragment() {
                 GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.GLOBAL
                 GameFixDatabase.prepareGlobalLaunch(currentGame)
                 if (ctx != null) {
-                    val msg = if (isRu) {
-                        "🌐 Глобальные настройки: Запуск с общими настройками"
-                    } else {
-                        "🌐 Global Settings: Launching with global profile"
-                    }
+                    val msg = ctx.getString(R.string.game_fix_toast_launch_global)
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
             } catch (_: Exception) {}
