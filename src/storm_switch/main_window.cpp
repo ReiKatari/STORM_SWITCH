@@ -115,6 +115,7 @@
 #include <QStatusBar>
 #include <QSystemTrayIcon>
 #include <QTableWidget>
+#include <QListWidget>
 #include <QHeaderView>
 #include <QtConcurrentRun>
 
@@ -3327,8 +3328,39 @@ void MainWindow::SetupMenuIcons() {
                     OnLoadStateSlot(slot_num);
                 });
         }
+        save_state_slots_menu->addSeparator();
+        load_state_slots_menu->addSeparator();
+        save_state_slots_menu->addAction(
+            StormLang(QStringLiteral("🗂️ Менеджер быстрых сохранений..."),
+                      QStringLiteral("🗂️ Save State Manager..."),
+                      QStringLiteral("🗂️ Schnellspeicher-Manager..."),
+                      QStringLiteral("🗂️ Gestionnaire de sauvegardes rapides..."),
+                      QStringLiteral("🗂️ 快速保存管理器..."),
+                      QStringLiteral("🗂️ クイックセーブマネージャー...")),
+            this, &MainWindow::OnSaveStateManager);
+        load_state_slots_menu->addAction(
+            StormLang(QStringLiteral("🗂️ Менеджер быстрых сохранений..."),
+                      QStringLiteral("🗂️ Save State Manager..."),
+                      QStringLiteral("🗂️ Schnellspeicher-Manager..."),
+                      QStringLiteral("🗂️ Gestionnaire de sauvegardes rapides..."),
+                      QStringLiteral("🗂️ 快速保存管理器..."),
+                      QStringLiteral("🗂️ クイックセーブマネージャー...")),
+            this, &MainWindow::OnSaveStateManager);
+
         connect(save_state_slots_menu, &QMenu::aboutToShow, this, &MainWindow::RefreshSaveStateMenus);
         connect(load_state_slots_menu, &QMenu::aboutToShow, this, &MainWindow::RefreshSaveStateMenus);
+
+        save_state_manager_action = new QAction(StormLang(
+            QStringLiteral("Менеджер быстрых сохранений..."),
+            QStringLiteral("Save State Manager..."),
+            QStringLiteral("Schnellspeicher-Manager..."),
+            QStringLiteral("Gestionnaire de sauvegardes rapides..."),
+            QStringLiteral("快速保存管理器..."),
+            QStringLiteral("クイックセーブマネージャー...")
+        ), this);
+        save_state_manager_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+M")));
+        connect(save_state_manager_action, &QAction::triggered, this, &MainWindow::OnSaveStateManager);
+        ui->menu_File->insertAction(ui->action_Load_Amiibo, save_state_manager_action);
 
         ui->menu_File->insertSeparator(ui->action_Load_Amiibo);
         RefreshSaveStateMenus();
@@ -3342,6 +3374,7 @@ void MainWindow::SetupMenuIcons() {
     apply_action(quick_load_action, QStringLiteral("restart"), col_cyan);
     apply_menu(save_state_slots_menu, QStringLiteral("save"), col_teal);
     apply_menu(load_state_slots_menu, QStringLiteral("folder_open"), col_blue);
+    apply_action(save_state_manager_action, QStringLiteral("database"), col_amber);
     apply_action(ui->action_Load_Amiibo, QStringLiteral("amiibo"), col_amber);
     apply_action(ui->action_Amiibo_Online_Database, QStringLiteral("globe"), col_cyan);
     apply_menu(ui->menuOpen_Eden_Folders, QStringLiteral("folder"), col_yellow);
@@ -7151,7 +7184,7 @@ void MainWindow::StartSilentCheatsSync() {
             const QString url_str = QString(QStringLiteral("https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/cheats/%1.json"))
                                         .arg(tid_hex);
             QNetworkRequest request{QUrl(url_str)};
-            request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH_Emulator/13.1.2"));
+            request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH_Emulator/13.2.0"));
             request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
             auto* reply = nam->get(request);
@@ -7733,6 +7766,12 @@ void MainWindow::OnSaveStateSlot(int slot) {
             return;
         }
     }
+    if (render_window) {
+        auto preview_path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+        preview_path.replace_extension(".png");
+        render_window->CaptureScreenshot(
+            QString::fromStdString(Common::FS::PathToUTF8String(preview_path)));
+    }
     const QString msg = StormLang(
         QStringLiteral("⚡ Быстрое сохранение: Слот %1 сохранён (SESS v2)").arg(slot),
         QStringLiteral("⚡ Quick Save: Slot %1 saved (SESS v2)").arg(slot),
@@ -7807,9 +7846,1225 @@ void MainWindow::OnLoadStateSlot(int slot) {
         QStringLiteral("⚡ 快速读取：槽位 %1 已加载 (SESS v2)").arg(slot),
         QStringLiteral("⚡ クイックロード：スロット %1 をロードしました (SESS v2)").arg(slot));
     statusBar()->showMessage(msg, 4000);
+    if (render_window) {
+        auto preview_path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+        preview_path.replace_extension(".png");
+        if (!std::filesystem::exists(preview_path)) {
+            const QString qpreview = QString::fromStdString(Common::FS::PathToUTF8String(preview_path));
+            QTimer::singleShot(350, this, [this, qpreview]() {
+                if (render_window && emulation_running) {
+                    render_window->CaptureScreenshot(qpreview);
+                }
+            });
+        }
+    }
     if (in_game_notification) {
         in_game_notification->ShowNotification(QStringLiteral("SESS v2"), msg, QColor(0, 229, 255), QStringLiteral("💾"), 2500);
     }
+}
+
+void MainWindow::OnSaveStateManager() {
+    constexpr int kMaxSlots = 10;
+    const auto savestates_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::SaveDir) / "savestates";
+    std::error_code dir_ec;
+    std::filesystem::create_directories(savestates_dir, dir_ec);
+
+    // Collect all Title IDs that either are currently running, selected, or have .ses files on disk
+    std::vector<u64> title_ids;
+    auto add_tid = [&title_ids](u64 tid) {
+        if (tid != 0 && std::find(title_ids.begin(), title_ids.end(), tid) == title_ids.end()) {
+            title_ids.push_back(tid);
+        }
+    };
+
+    u64 active_tid = 0;
+    if (emulation_running && QtCommon::system && QtCommon::system->IsPoweredOn()) {
+        active_tid = QtCommon::system->GetApplicationProcessProgramID();
+        add_tid(active_tid);
+    }
+    if (m_current_addons_title_id != 0) {
+        add_tid(m_current_addons_title_id);
+    }
+
+    if (std::filesystem::exists(savestates_dir, dir_ec)) {
+        static const QRegularExpression ses_re(QStringLiteral(R"(^([0-9A-Fa-f]{16})_slot(\d+)\.ses$)"));
+        for (const auto& entry : std::filesystem::directory_iterator(savestates_dir, dir_ec)) {
+            if (!entry.is_regular_file()) continue;
+            const QString fname = QString::fromStdString(Common::FS::PathToUTF8String(entry.path().filename()));
+            const auto m = ses_re.match(fname);
+            if (m.hasMatch()) {
+                bool ok = false;
+                const u64 parsed_tid = m.captured(1).toULongLong(&ok, 16);
+                if (ok && parsed_tid != 0) {
+                    add_tid(parsed_tid);
+                }
+            }
+        }
+    }
+
+    // Also scan known games from GameFixDatabase or ContentProvider if list is still empty
+    if (title_ids.empty() && QtCommon::system) {
+        const auto& cp = QtCommon::system->GetContentProvider();
+        for (const auto& e : cp.ListEntriesFilter(FileSys::TitleType::Application, FileSys::ContentRecordType::Program)) {
+            if (e.title_id != 0) {
+                add_tid(e.title_id);
+                if (title_ids.size() >= 15) break;
+            }
+        }
+    }
+
+    auto resolve_game_title = [](u64 tid) -> QString {
+        if (tid == 0) {
+            return StormLang(QStringLiteral("Игра не выбрана"), QStringLiteral("No Game Selected"),
+                             QStringLiteral("Kein Spiel ausgewählt"), QStringLiteral("Aucun jeu sélectionné"),
+                             QStringLiteral("未选择游戏"), QStringLiteral("ゲーム未選択"));
+        }
+        if (const auto* prof = Core::GameFixDatabase::GetProfile(tid)) {
+            if (!prof->game_name.empty()) {
+                return QStringLiteral("%1 [%2]")
+                    .arg(QString::fromStdString(prof->game_name))
+                    .arg(tid, 16, 16, QLatin1Char('0')).toUpper();
+            }
+        }
+        if (QtCommon::system) {
+            const FileSys::PatchManager pm(tid, QtCommon::system->GetFileSystemController(),
+                                           QtCommon::system->GetContentProvider());
+            const auto control = pm.GetControlMetadata();
+            if (control.first != nullptr) {
+                const std::string name = control.first->GetApplicationName();
+                if (!name.empty()) {
+                    return QStringLiteral("%1 [%2]")
+                        .arg(QString::fromStdString(name))
+                        .arg(QStringLiteral("%1").arg(tid, 16, 16, QLatin1Char('0')).toUpper());
+                }
+            }
+        }
+        if (tid == 0x010020D01AD24000ULL) {
+            return QStringLiteral("Animal Well [010020D01AD24000]");
+        }
+        return QStringLiteral("Title ID: %1").arg(tid, 16, 16, QLatin1Char('0')).toUpper();
+    };
+
+    auto make_placeholder_preview = [&resolve_game_title](u64 tid, int slot_num, bool exists,
+                                                          const Core::SaveStateHeader& hdr,
+                                                          double size_mb, const QString& dt_str,
+                                                          const QString& note_str) -> QPixmap {
+        QPixmap px(640, 360);
+        px.fill(Qt::transparent);
+        QPainter p(&px);
+        p.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
+
+        QLinearGradient bg(0, 0, 640, 360);
+        if (exists) {
+            bg.setColorAt(0.0, QColor(14, 27, 46));
+            bg.setColorAt(0.5, QColor(18, 38, 64));
+            bg.setColorAt(1.0, QColor(10, 18, 32));
+        } else {
+            bg.setColorAt(0.0, QColor(15, 19, 28));
+            bg.setColorAt(1.0, QColor(10, 13, 20));
+        }
+        p.setBrush(bg);
+        p.setPen(Qt::NoPen);
+        p.drawRoundedRect(0, 0, 640, 360, 14, 14);
+
+        // Subtle tech grid
+        p.setPen(QPen(exists ? QColor(0, 229, 255, 18) : QColor(148, 163, 184, 10), 1));
+        for (int x = 32; x < 640; x += 32) p.drawLine(x, 0, x, 360);
+        for (int y = 32; y < 360; y += 32) p.drawLine(0, y, 640, y);
+
+        // Glowing center orb
+        if (exists) {
+            QRadialGradient glow(320, 165, 180);
+            glow.setColorAt(0.0, QColor(0, 229, 255, 55));
+            glow.setColorAt(0.6, QColor(56, 189, 248, 18));
+            glow.setColorAt(1.0, Qt::transparent);
+            p.setBrush(glow);
+            p.drawEllipse(140, 10, 360, 310);
+        }
+
+        // Top badge
+        p.setBrush(exists ? QColor(0, 229, 255, 35) : QColor(51, 65, 85, 80));
+        p.setPen(QPen(exists ? QColor(0, 229, 255, 140) : QColor(100, 116, 139, 100), 1.5));
+        p.drawRoundedRect(24, 22, 168, 34, 8, 8);
+
+        QFont f_badge(QStringLiteral("Segoe UI"), 10, QFont::Bold);
+        p.setFont(f_badge);
+        p.setPen(exists ? QColor(0, 229, 255) : QColor(148, 163, 184));
+        p.drawText(QRect(24, 22, 168, 34), Qt::AlignCenter,
+                   QStringLiteral("SLOT #%1 • SESS v2").arg(slot_num));
+
+        // Center icon & title
+        QFont f_icon(QStringLiteral("Segoe UI Emoji"), 36, QFont::Bold);
+        p.setFont(f_icon);
+        p.setPen(exists ? QColor(56, 189, 248) : QColor(71, 85, 105));
+        p.drawText(QRect(0, 82, 640, 64), Qt::AlignCenter,
+                   exists ? QStringLiteral("⚡") : QStringLiteral("📭"));
+
+        QFont f_title(QStringLiteral("Segoe UI"), 15, QFont::Bold);
+        p.setFont(f_title);
+        p.setPen(exists ? QColor(241, 245, 249) : QColor(100, 116, 139));
+        p.drawText(QRect(30, 156, 580, 32), Qt::AlignCenter,
+                   exists ? resolve_game_title(tid)
+                          : StormLang(QStringLiteral("Слот %1 пуст").arg(slot_num),
+                                      QStringLiteral("Slot %1 is Empty").arg(slot_num),
+                                      QStringLiteral("Slot %1 ist leer").arg(slot_num),
+                                      QStringLiteral("Emplacement %1 vide").arg(slot_num),
+                                      QStringLiteral("槽位 %1 为空").arg(slot_num),
+                                      QStringLiteral("スロット %1 は空です").arg(slot_num)));
+
+        QFont f_sub(QStringLiteral("Segoe UI"), 10, QFont::DemiBold);
+        p.setFont(f_sub);
+        p.setPen(exists ? QColor(52, 211, 153) : QColor(100, 116, 139));
+        if (exists) {
+            p.drawText(QRect(30, 194, 580, 26), Qt::AlignCenter,
+                       QStringLiteral("%1 MB  •  %2 4KB Pages  •  %3 Threads")
+                           .arg(QString::number(size_mb, 'f', 2))
+                           .arg(hdr.num_stored_pages)
+                           .arg(hdr.num_threads));
+            p.setPen(QColor(148, 163, 184));
+            p.drawText(QRect(30, 224, 580, 24), Qt::AlignCenter,
+                       QStringLiteral("🕒 %1").arg(dt_str));
+            if (!note_str.isEmpty()) {
+                p.setPen(QColor(251, 191, 36));
+                p.drawText(QRect(40, 254, 560, 24), Qt::AlignCenter,
+                           QStringLiteral("📝 %1").arg(note_str));
+            }
+            p.setPen(QColor(125, 211, 252, 190));
+            QFont f_hint(QStringLiteral("Segoe UI"), 9);
+            p.setFont(f_hint);
+            p.drawText(QRect(30, 316, 580, 24), Qt::AlignCenter,
+                       StormLang(QStringLiteral("Скриншот-превью создаётся автоматически при сохранении или загрузке слота в игре"),
+                                 QStringLiteral("Live gameplay preview is captured automatically on save/load"),
+                                 QStringLiteral("Live-Vorschau wird beim Speichern/Laden automatisch aufgenommen"),
+                                 QStringLiteral("L'aperçu en direct est capturé automatiquement lors de la sauvegarde/du chargement"),
+                                 QStringLiteral("保存或加载时自动捕获实时游戏预览图"),
+                                 QStringLiteral("セーブ・ロード時にゲーム画面のプレビューが自動保存されます")));
+        } else {
+            p.drawText(QRect(40, 200, 560, 28), Qt::AlignCenter,
+                       StormLang(QStringLiteral("Нажмите «Сохранить в слот» во время игры или скопируйте сюда другое сохранение"),
+                                 QStringLiteral("Click 'Save to Slot' during gameplay or copy another slot here"),
+                                 QStringLiteral("Klicken Sie im Spiel auf 'In Slot speichern' oder kopieren Sie einen Slot hierher"),
+                                 QStringLiteral("Cliquez sur « Sauvegarder » en jeu ou copiez un autre emplacement ici"),
+                                 QStringLiteral("在游戏过程中点击“保存到槽位”或将其他槽位复制到此处"),
+                                 QStringLiteral("ゲーム中に「スロットに保存」を押すか、他のスロットからコピーしてください")));
+        }
+        p.end();
+        return px;
+    };
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(StormLang(
+        QStringLiteral("🗂️ Менеджер быстрых сохранений (STORM SESS v2)"),
+        QStringLiteral("🗂️ Save State Manager (STORM SESS v2)"),
+        QStringLiteral("🗂️ Schnellspeicher-Manager (STORM SESS v2)"),
+        QStringLiteral("🗂️ Gestionnaire de sauvegardes rapides (STORM SESS v2)"),
+        QStringLiteral("🗂️ 快速保存管理器 (STORM SESS v2)"),
+        QStringLiteral("🗂️ クイックセーブマネージャー (STORM SESS v2)")));
+    dlg.setWindowFlags(dlg.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    dlg.setMinimumSize(1060, 680);
+    dlg.resize(1160, 740);
+
+    dlg.setStyleSheet(QStringLiteral(
+        "QDialog {"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0B0F19, stop:0.5 #111827, stop:1 #090D16);"
+        "  color: #F1F5F9;"
+        "  font-family: 'Segoe UI', sans-serif;"
+        "}"
+        "QLabel { color: #E2E8F0; background: transparent; }"
+        "QComboBox {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A);"
+        "  color: #F8FAFC; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: 8px;"
+        "  padding: 6px 12px; font-size: 10pt; font-weight: 600; min-height: 24px;"
+        "}"
+        "QComboBox:hover { border-color: #00E5FF; }"
+        "QComboBox QAbstractItemView {"
+        "  background-color: #0F172A; color: #F8FAFC; selection-background-color: #0284C7;"
+        "  border: 1px solid #38BDF8; border-radius: 6px; padding: 4px;"
+        "}"
+        "QListWidget {"
+        "  background-color: rgba(15, 23, 42, 0.78);"
+        "  border: 1px solid rgba(56, 189, 248, 0.28);"
+        "  border-radius: 12px; padding: 6px; outline: none;"
+        "}"
+        "QListWidget::item {"
+        "  background-color: rgba(30, 41, 59, 0.55);"
+        "  border: 1px solid rgba(148, 163, 184, 0.16);"
+        "  border-radius: 10px; margin: 4px 2px; padding: 6px; color: #F1F5F9;"
+        "}"
+        "QListWidget::item:hover {"
+        "  background-color: rgba(30, 58, 95, 0.65);"
+        "  border: 1px solid rgba(56, 189, 248, 0.55);"
+        "}"
+        "QListWidget::item:selected {"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(2, 132, 199, 0.42), stop:1 rgba(15, 23, 42, 0.85));"
+        "  border: 1.5px solid #00E5FF; color: #FFFFFF;"
+        "}"
+        "QLineEdit {"
+        "  background-color: rgba(15, 23, 42, 0.9); color: #F8FAFC;"
+        "  border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px;"
+        "  padding: 6px 10px; font-size: 9.5pt;"
+        "}"
+        "QLineEdit:focus { border: 1.5px solid #00E5FF; }"
+        "QPushButton {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A);"
+        "  color: #F1F5F9; border: 1px solid rgba(148, 163, 184, 0.32);"
+        "  border-bottom: 2px solid rgba(0, 0, 0, 0.65);"
+        "  border-radius: 8px; padding: 8px 14px; font-size: 9.5pt; font-weight: 600;"
+        "}"
+        "QPushButton:hover {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334155, stop:1 #1E293B);"
+        "  border-color: #38BDF8; color: #FFFFFF;"
+        "}"
+        "QPushButton:pressed { padding-top: 9px; padding-bottom: 7px; }"
+        "QPushButton:disabled { color: #475569; background: rgba(15, 23, 42, 0.4); border-color: rgba(71, 85, 105, 0.2); }"
+    ));
+
+    auto* root_layout = new QVBoxLayout(&dlg);
+    root_layout->setContentsMargins(18, 16, 18, 16);
+    root_layout->setSpacing(12);
+
+    // Top Header Banner
+    auto* header_frame = new QFrame(&dlg);
+    header_frame->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 229, 255, 0.14), stop:0.5 rgba(30, 41, 59, 0.65), stop:1 rgba(16, 185, 129, 0.12));"
+        "  border: 1px solid rgba(0, 229, 255, 0.35); border-radius: 12px;"
+        "}"));
+    auto* header_layout = new QHBoxLayout(header_frame);
+    header_layout->setContentsMargins(16, 12, 16, 12);
+    header_layout->setSpacing(14);
+
+    auto* title_col = new QVBoxLayout();
+    title_col->setSpacing(2);
+    auto* lbl_main_title = new QLabel(StormLang(
+        QStringLiteral("⚡ МЕНЕДЖЕР БЫСТРЫХ СОХРАНЕНИЙ SESS v2"),
+        QStringLiteral("⚡ STORM SESS v2 SAVE STATE MANAGER"),
+        QStringLiteral("⚡ STORM SESS v2 SCHNELLSPEICHER-MANAGER"),
+        QStringLiteral("⚡ GESTIONNAIRE DE SAUVEGARDES SESS v2"),
+        QStringLiteral("⚡ STORM SESS v2 快速保存管理器"),
+        QStringLiteral("⚡ STORM SESS v2 クイックセーブマネージャー")), header_frame);
+    lbl_main_title->setStyleSheet(QStringLiteral("font-size: 13pt; font-weight: 800; color: #00E5FF; border: none; background: transparent;"));
+    title_col->addWidget(lbl_main_title);
+
+    auto* lbl_subtitle = new QLabel(StormLang(
+        QStringLiteral("Мгновенные снимки состояния памяти и GPU (F5 — быстрое сохранение, F7 — быстрая загрузка, управление 10 слотами и превью)"),
+        QStringLiteral("Instant RAM & GPU snapshots (F5 — Quick Save, F7 — Quick Load, 10 slots with live preview & slot management)"),
+        QStringLiteral("Sofortige RAM- & GPU-Schnappschüsse (F5 — Schnellspeichern, F7 — Schnellladen, 10 Slots mit Vorschau)"),
+        QStringLiteral("Instantanés RAM & GPU (F5 — Sauvegarde rapide, F7 — Chargement rapide, 10 emplacements avec aperçu)"),
+        QStringLiteral("即时内存与 GPU 快照（F5 快速保存，F7 快速读取，10 个带预览图的管理槽位）"),
+        QStringLiteral("高速メモリ＆GPUスナップショット（F5 クイックセーブ、F7 クイックロード、プレビュー付き10スロット管理）")), header_frame);
+    lbl_subtitle->setStyleSheet(QStringLiteral("font-size: 9pt; color: #94A3B8; border: none; background: transparent;"));
+    title_col->addWidget(lbl_subtitle);
+    header_layout->addLayout(title_col, 1);
+
+    auto* game_combo = new QComboBox(header_frame);
+    game_combo->setMinimumWidth(340);
+    game_combo->setToolTip(StormLang(
+        QStringLiteral("Выберите игру для просмотра и управления её слотами быстрых сохранений"),
+        QStringLiteral("Select a game to inspect and manage its save state slots"),
+        QStringLiteral("Wählen Sie ein Spiel aus, um dessen Speicher-Slots zu verwalten"),
+        QStringLiteral("Sélectionnez un jeu pour gérer ses emplacements de sauvegarde"),
+        QStringLiteral("选择游戏以查看和管理其快速保存槽位"),
+        QStringLiteral("クイックセーブスロットを管理するゲームを選択します")));
+    for (u64 tid : title_ids) {
+        game_combo->addItem(resolve_game_title(tid), QVariant::fromValue<qulonglong>(tid));
+    }
+    if (game_combo->count() == 0) {
+        game_combo->addItem(resolve_game_title(0), QVariant::fromValue<qulonglong>(0));
+    }
+    header_layout->addWidget(game_combo);
+
+    auto* btn_open_folder = new QPushButton(StormLang(
+        QStringLiteral("📂 Папка"),
+        QStringLiteral("📂 Folder"),
+        QStringLiteral("📂 Ordner"),
+        QStringLiteral("📂 Dossier"),
+        QStringLiteral("📂 文件夹"),
+        QStringLiteral("📂 フォルダ")), header_frame);
+    btn_open_folder->setToolTip(StormLang(
+        QStringLiteral("Открыть директорию хранения файлов быстрых сохранений (.ses) в Проводнике"),
+        QStringLiteral("Open the save states directory (.ses) in File Explorer"),
+        QStringLiteral("Speicherstatus-Ordner (.ses) im Explorer öffnen"),
+        QStringLiteral("Ouvrir le dossier des sauvegardes rapides (.ses)"),
+        QStringLiteral("在资源管理器中打开快速保存目录 (.ses)"),
+        QStringLiteral("エクスプローラーでクイックセーブフォルダ (.ses) を開きます")));
+    connect(btn_open_folder, &QPushButton::clicked, &dlg, [savestates_dir]() {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(
+            QString::fromStdString(Common::FS::PathToUTF8String(savestates_dir))));
+    });
+    header_layout->addWidget(btn_open_folder);
+
+    root_layout->addWidget(header_frame);
+
+    // Split View: Left = Wide Slot List (Slots 1..10), Right = Large 16:9 Preview & Action Center
+    auto* body_layout = new QHBoxLayout();
+    body_layout->setSpacing(16);
+
+    // Left Column
+    auto* left_col = new QVBoxLayout();
+    left_col->setSpacing(8);
+
+    auto* lbl_slots_header = new QLabel(&dlg);
+    lbl_slots_header->setStyleSheet(QStringLiteral("font-size: 10pt; font-weight: 700; color: #38BDF8;"));
+    left_col->addWidget(lbl_slots_header);
+
+    auto* slot_list = new QListWidget(&dlg);
+    slot_list->setIconSize(QSize(136, 76));
+    slot_list->setSpacing(4);
+    slot_list->setMinimumWidth(520);
+    slot_list->setToolTip(StormLang(
+        QStringLiteral("Двойной щелчок по занятому слоту мгновенно загружает его в запущенную игру"),
+        QStringLiteral("Double-click an occupied slot to immediately load it into the running game"),
+        QStringLiteral("Doppelklicken Sie auf einen belegten Slot, um ihn sofort im laufenden Spiel zu laden"),
+        QStringLiteral("Double-cliquez sur un emplacement occupé pour le charger immédiatement en jeu"),
+        QStringLiteral("双击已占用的槽位可立即在运行中的游戏里加载该状态"),
+        QStringLiteral("使用中のスロットをダブルクリックすると、実行中のゲームに即座にロードします")));
+    left_col->addWidget(slot_list, 1);
+
+    body_layout->addLayout(left_col, 5);
+
+    // Right Column: Preview Card + Metadata + Note + Management Buttons
+    auto* right_frame = new QFrame(&dlg);
+    right_frame->setMinimumWidth(540);
+    right_frame->setStyleSheet(QStringLiteral(
+        "QFrame#RightInspector {"
+        "  background-color: rgba(15, 23, 42, 0.82);"
+        "  border: 1px solid rgba(56, 189, 248, 0.30);"
+        "  border-radius: 12px;"
+        "}"));
+    right_frame->setObjectName(QStringLiteral("RightInspector"));
+    auto* right_layout = new QVBoxLayout(right_frame);
+    right_layout->setContentsMargins(16, 14, 16, 14);
+    right_layout->setSpacing(10);
+
+    auto* lbl_preview_title = new QLabel(&dlg);
+    lbl_preview_title->setStyleSheet(QStringLiteral("font-size: 11.5pt; font-weight: 800; color: #F8FAFC;"));
+    right_layout->addWidget(lbl_preview_title);
+
+    auto* preview_box = new QLabel(&dlg);
+    preview_box->setFixedSize(508, 286);
+    preview_box->setAlignment(Qt::AlignCenter);
+    preview_box->setStyleSheet(QStringLiteral(
+        "QLabel {"
+        "  background-color: #070A10;"
+        "  border: 2px solid rgba(0, 229, 255, 0.45);"
+        "  border-radius: 12px;"
+        "}"));
+    right_layout->addWidget(preview_box, 0, Qt::AlignHCenter);
+
+    // Metadata Info Grid
+    auto* meta_frame = new QFrame(&dlg);
+    meta_frame->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "  background-color: rgba(30, 41, 59, 0.55);"
+        "  border: 1px solid rgba(148, 163, 184, 0.20);"
+        "  border-radius: 8px;"
+        "}"));
+    auto* meta_layout = new QGridLayout(meta_frame);
+    meta_layout->setContentsMargins(12, 8, 12, 8);
+    meta_layout->setHorizontalSpacing(16);
+    meta_layout->setVerticalSpacing(4);
+
+    auto* lbl_meta_status = new QLabel(&dlg);
+    auto* lbl_meta_size = new QLabel(&dlg);
+    auto* lbl_meta_date = new QLabel(&dlg);
+    auto* lbl_meta_pages = new QLabel(&dlg);
+    lbl_meta_status->setStyleSheet(QStringLiteral("font-size: 9.5pt; font-weight: 700; border: none;"));
+    lbl_meta_size->setStyleSheet(QStringLiteral("font-size: 9.5pt; color: #E2E8F0; border: none;"));
+    lbl_meta_date->setStyleSheet(QStringLiteral("font-size: 9.5pt; color: #CBD5E1; border: none;"));
+    lbl_meta_pages->setStyleSheet(QStringLiteral("font-size: 9.5pt; color: #94A3B8; border: none;"));
+    meta_layout->addWidget(lbl_meta_status, 0, 0);
+    meta_layout->addWidget(lbl_meta_size, 0, 1);
+    meta_layout->addWidget(lbl_meta_date, 1, 0);
+    meta_layout->addWidget(lbl_meta_pages, 1, 1);
+    right_layout->addWidget(meta_frame);
+
+    // Custom Note Row
+    auto* note_row = new QHBoxLayout();
+    note_row->setSpacing(8);
+    auto* edit_note = new QLineEdit(&dlg);
+    edit_note->setPlaceholderText(StormLang(
+        QStringLiteral("📝 Заметка к слоту (например: «Перед боссом», «Секретная комната»)..."),
+        QStringLiteral("📝 Slot note / label (e.g. 'Before Boss', 'Secret Room')..."),
+        QStringLiteral("📝 Slot-Notiz (z. B. 'Vor dem Boss', 'Geheimer Raum')..."),
+        QStringLiteral("📝 Note d'emplacement (ex. « Avant le boss », « Salle secrète »)..."),
+        QStringLiteral("📝 槽位备注（例如：“Boss 战前”、“隐藏房间”）..."),
+        QStringLiteral("📝 スロットメモ（例：「ボス戦前」「隠し部屋」）...")));
+    note_row->addWidget(edit_note, 1);
+
+    auto* btn_save_note = new QPushButton(StormLang(
+        QStringLiteral("💾 Заметка"),
+        QStringLiteral("💾 Save Note"),
+        QStringLiteral("💾 Notiz"),
+        QStringLiteral("💾 Note"),
+        QStringLiteral("💾 保存备注"),
+        QStringLiteral("💾 メモ保存")), &dlg);
+    btn_save_note->setToolTip(StormLang(
+        QStringLiteral("Сохранить текстовую заметку для выбранного слота"),
+        QStringLiteral("Save custom text note for the selected slot"),
+        QStringLiteral("Benutzerdefinierte Notiz für den ausgewählten Slot speichern"),
+        QStringLiteral("Enregistrer la note personnalisée pour l'emplacement sélectionné"),
+        QStringLiteral("为所选槽位保存自定义文本备注"),
+        QStringLiteral("選択したスロットのカスタムメモを保存します")));
+    note_row->addWidget(btn_save_note);
+    right_layout->addLayout(note_row);
+
+    // Primary Action Row (Load & Save)
+    auto* primary_row = new QHBoxLayout();
+    primary_row->setSpacing(10);
+
+    auto* btn_load_slot = new QPushButton(StormLang(
+        QStringLiteral("⚡ Загрузить выбранный слот"),
+        QStringLiteral("⚡ Load Selected Slot"),
+        QStringLiteral("⚡ Ausgewählten Slot laden"),
+        QStringLiteral("⚡ Charger l'emplacement"),
+        QStringLiteral("⚡ 加载所选槽位"),
+        QStringLiteral("⚡ 選択スロットをロード")), &dlg);
+    btn_load_slot->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0284C7, stop:1 #0369A1);"
+        "  color: #FFFFFF; border: 1px solid #38BDF8; font-size: 10pt; font-weight: 700; padding: 9px 16px;"
+        "}"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0EA5E9, stop:1 #0284C7); }"
+        "QPushButton:disabled { background: rgba(15, 23, 42, 0.5); color: #475569; border-color: rgba(71, 85, 105, 0.25); }"));
+    btn_load_slot->setToolTip(StormLang(
+        QStringLiteral("Мгновенно загрузить состояние из выбранного слота в запущенную игру"),
+        QStringLiteral("Immediately load the selected save state slot into the running game"),
+        QStringLiteral("Ausgewählten Slot sofort in das laufende Spiel laden"),
+        QStringLiteral("Charger immédiatement l'emplacement sélectionné dans le jeu en cours"),
+        QStringLiteral("立即将所选快速保存槽位加载到当前运行的游戏中"),
+        QStringLiteral("選択したスロットのステートを実行中のゲームに即座にロードします")));
+    primary_row->addWidget(btn_load_slot, 1);
+
+    auto* btn_save_slot = new QPushButton(StormLang(
+        QStringLiteral("💾 Сохранить игру в этот слот"),
+        QStringLiteral("💾 Save Current Game to Slot"),
+        QStringLiteral("💾 Spiel in diesen Slot speichern"),
+        QStringLiteral("💾 Sauvegarder le jeu ici"),
+        QStringLiteral("💾 将当前游戏保存到此槽位"),
+        QStringLiteral("💾 現在のゲームをこのスロットに保存")), &dlg);
+    btn_save_slot->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #059669, stop:1 #047857);"
+        "  color: #FFFFFF; border: 1px solid #34D399; font-size: 10pt; font-weight: 700; padding: 9px 16px;"
+        "}"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #10B981, stop:1 #059669); }"
+        "QPushButton:disabled { background: rgba(15, 23, 42, 0.5); color: #475569; border-color: rgba(71, 85, 105, 0.25); }"));
+    btn_save_slot->setToolTip(StormLang(
+        QStringLiteral("Создать мгновенное сохранение запущенной игры и сохранить скриншот-превью в выбранный слот"),
+        QStringLiteral("Save the currently running game state and live preview screenshot into the selected slot"),
+        QStringLiteral("Aktuelles Spiel samt Vorschaubild in den ausgewählten Slot speichern"),
+        QStringLiteral("Sauvegarder le jeu en cours avec capture d'aperçu dans l'emplacement sélectionné"),
+        QStringLiteral("将当前运行的游戏状态与实时截图保存到所选槽位"),
+        QStringLiteral("実行中のゲーム状態とプレビュー画像をこのスロットに保存します")));
+    primary_row->addWidget(btn_save_slot, 1);
+
+    right_layout->addLayout(primary_row);
+
+    // Management Grid (Copy to slot, Swap with slot, Export, Import, Delete slot, Delete all)
+    auto* mgmt_grid = new QGridLayout();
+    mgmt_grid->setHorizontalSpacing(10);
+    mgmt_grid->setVerticalSpacing(8);
+
+    auto* btn_copy_slot = new QPushButton(StormLang(
+        QStringLiteral("📋 Копировать в слот..."),
+        QStringLiteral("📋 Copy to Another Slot..."),
+        QStringLiteral("📋 In anderen Slot kopieren..."),
+        QStringLiteral("📋 Copier vers un emplacement..."),
+        QStringLiteral("📋 复制到其他槽位..."),
+        QStringLiteral("📋 別のスロットにコピー...")), &dlg);
+    btn_copy_slot->setToolTip(StormLang(
+        QStringLiteral("Скопировать это сохранение вместе с превью и заметкой в другой слот (1–10)"),
+        QStringLiteral("Copy this save state, preview image, and note to another slot (1–10)"),
+        QStringLiteral("Diesen Speicherstand samt Vorschau und Notiz in einen anderen Slot (1–10) kopieren"),
+        QStringLiteral("Copier cette sauvegarde, son aperçu et sa note vers un autre emplacement (1–10)"),
+        QStringLiteral("将此保存状态、预览图和备注复制到另一个槽位 (1–10)"),
+        QStringLiteral("このセーブステート・プレビュー・メモを別のスロット (1〜10) にコピーします")));
+
+    auto* btn_swap_slot = new QPushButton(StormLang(
+        QStringLiteral("🔀 Обменять / Переместить..."),
+        QStringLiteral("🔀 Swap / Move to Slot..."),
+        QStringLiteral("🔀 Mit Slot tauschen / verschieben..."),
+        QStringLiteral("🔀 Échanger / Déplacer..."),
+        QStringLiteral("🔀 交换 / 移动到槽位..."),
+        QStringLiteral("🔀 スロット入れ替え / 移動...")), &dlg);
+    btn_swap_slot->setToolTip(StormLang(
+        QStringLiteral("Поменять местами или переместить выбранный слот в другой слот (1–10)"),
+        QStringLiteral("Swap or move the selected slot with another slot (1–10)"),
+        QStringLiteral("Ausgewählten Slot mit einem anderen Slot (1–10) tauschen oder verschieben"),
+        QStringLiteral("Échanger ou déplacer l'emplacement sélectionné avec un autre (1–10)"),
+        QStringLiteral("将所选槽位与另一个槽位 (1–10) 交换或移动"),
+        QStringLiteral("選択したスロットを別のスロット (1〜10) と入れ替えまたは移動します")));
+
+    auto* btn_export_slot = new QPushButton(StormLang(
+        QStringLiteral("📤 Экспорт файла .ses..."),
+        QStringLiteral("📤 Export .ses File..."),
+        QStringLiteral("📤 .ses-Datei exportieren..."),
+        QStringLiteral("📤 Exporter le fichier .ses..."),
+        QStringLiteral("📤 导出 .ses 文件..."),
+        QStringLiteral("📤 .ses ファイルをエクスポート...")), &dlg);
+    btn_export_slot->setToolTip(StormLang(
+        QStringLiteral("Экспортировать файл сохранения (.ses) в любую внешнюю папку для резервной копии"),
+        QStringLiteral("Export the save state (.ses) file to an external folder for backup or sharing"),
+        QStringLiteral("Speicherstand (.ses) als Backup in einen beliebigen Ordner exportieren"),
+        QStringLiteral("Exporter le fichier de sauvegarde (.ses) vers un dossier externe"),
+        QStringLiteral("将快速保存文件 (.ses) 导出到外部文件夹进行备份"),
+        QStringLiteral("バックアップ用にセーブステート (.ses) を外部フォルダへエクスポートします")));
+
+    auto* btn_import_slot = new QPushButton(StormLang(
+        QStringLiteral("📥 Импорт файла .ses в слот..."),
+        QStringLiteral("📥 Import .ses into Slot..."),
+        QStringLiteral("📥 .ses in Slot importieren..."),
+        QStringLiteral("📥 Importer un .ses ici..."),
+        QStringLiteral("📥 导入 .ses 到此槽位..."),
+        QStringLiteral("📥 このスロットに .ses をインポート...")), &dlg);
+    btn_import_slot->setToolTip(StormLang(
+        QStringLiteral("Импортировать внешний файл .ses в выбранный слот"),
+        QStringLiteral("Import an external .ses save state file into the selected slot"),
+        QStringLiteral("Externe .ses-Datei in den ausgewählten Slot importieren"),
+        QStringLiteral("Importer un fichier .ses externe dans l'emplacement sélectionné"),
+        QStringLiteral("将外部 .ses 快速保存文件导入到当前选中的槽位"),
+        QStringLiteral("外部の .ses ファイルをこのスロットにインポートします")));
+
+    auto* btn_delete_slot = new QPushButton(StormLang(
+        QStringLiteral("🗑️ Удалить из слота"),
+        QStringLiteral("🗑️ Delete Slot"),
+        QStringLiteral("🗑️ Slot löschen"),
+        QStringLiteral("🗑️ Supprimer l'emplacement"),
+        QStringLiteral("🗑️ 删除此槽位"),
+        QStringLiteral("🗑️ このスロットを削除")), &dlg);
+    btn_delete_slot->setStyleSheet(QStringLiteral(
+        "QPushButton { color: #FCA5A5; border-color: rgba(239, 68, 68, 0.45); }"
+        "QPushButton:hover { background-color: rgba(185, 28, 28, 0.45); color: #FFFFFF; border-color: #EF4444; }"
+        "QPushButton:disabled { color: #475569; border-color: rgba(71, 85, 105, 0.2); }"));
+    btn_delete_slot->setToolTip(StormLang(
+        QStringLiteral("Удалить файл сохранения, превью и заметку из выбранного слота"),
+        QStringLiteral("Delete the save state file, preview screenshot, and note from the selected slot"),
+        QStringLiteral("Speicherstand, Vorschaubild und Notiz aus dem ausgewählten Slot löschen"),
+        QStringLiteral("Supprimer la sauvegarde, l'aperçu et la note de l'emplacement sélectionné"),
+        QStringLiteral("删除所选槽位中的快速保存文件、预览图和备注"),
+        QStringLiteral("選択したスロットのセーブデータ・プレビュー・メモを削除します")));
+
+    auto* btn_clear_all = new QPushButton(StormLang(
+        QStringLiteral("🧹 Очистить все слоты игры"),
+        QStringLiteral("🧹 Clear All Game Slots"),
+        QStringLiteral("🧹 Alle Slots des Spiels leeren"),
+        QStringLiteral("🧹 Vider tous les emplacements"),
+        QStringLiteral("🧹 清空该游戏所有槽位"),
+        QStringLiteral("🧹 このゲームの全スロットを消去")), &dlg);
+    btn_clear_all->setStyleSheet(QStringLiteral(
+        "QPushButton { color: #FCD34D; border-color: rgba(245, 158, 11, 0.45); }"
+        "QPushButton:hover { background-color: rgba(180, 83, 9, 0.40); color: #FFFFFF; border-color: #F59E0B; }"
+        "QPushButton:disabled { color: #475569; border-color: rgba(71, 85, 105, 0.2); }"));
+    btn_clear_all->setToolTip(StormLang(
+        QStringLiteral("Удалить все быстрые сохранения (слоты 1–10) для выбранной игры"),
+        QStringLiteral("Delete all save state slots (1–10) for the currently selected game"),
+        QStringLiteral("Alle Speicher-Slots (1–10) für das ausgewählte Spiel löschen"),
+        QStringLiteral("Supprimer tous les emplacements (1–10) pour le jeu sélectionné"),
+        QStringLiteral("删除当前所选游戏的所有快速保存槽位 (1–10)"),
+        QStringLiteral("選択されているゲームの全スロット (1〜10) を一括削除します")));
+
+    mgmt_grid->addWidget(btn_copy_slot, 0, 0);
+    mgmt_grid->addWidget(btn_swap_slot, 0, 1);
+    mgmt_grid->addWidget(btn_export_slot, 1, 0);
+    mgmt_grid->addWidget(btn_import_slot, 1, 1);
+    mgmt_grid->addWidget(btn_delete_slot, 2, 0);
+    mgmt_grid->addWidget(btn_clear_all, 2, 1);
+    right_layout->addLayout(mgmt_grid);
+
+    // Bottom status bar + Close button
+    auto* footer_row = new QHBoxLayout();
+    auto* lbl_status_feedback = new QLabel(&dlg);
+    lbl_status_feedback->setStyleSheet(QStringLiteral("font-size: 9.5pt; font-weight: 700; color: #34D399;"));
+    footer_row->addWidget(lbl_status_feedback, 1);
+
+    auto* btn_close = new QPushButton(StormLang(
+        QStringLiteral("Закрыть"),
+        QStringLiteral("Close"),
+        QStringLiteral("Schließen"),
+        QStringLiteral("Fermer"),
+        QStringLiteral("关闭"),
+        QStringLiteral("閉じる")), &dlg);
+    connect(btn_close, &QPushButton::clicked, &dlg, &QDialog::accept);
+    footer_row->addWidget(btn_close);
+    right_layout->addLayout(footer_row);
+
+    body_layout->addWidget(right_frame, 5);
+    root_layout->addLayout(body_layout, 1);
+
+    auto get_selected_tid = [game_combo]() -> u64 {
+        return static_cast<u64>(game_combo->currentData().toULongLong());
+    };
+
+    auto get_selected_slot = [slot_list]() -> int {
+        const int row = slot_list->currentRow();
+        return (row >= 0 && row < kMaxSlots) ? (row + 1) : 1;
+    };
+
+    auto read_slot_note = [](const std::filesystem::path& ses_path) -> QString {
+        auto note_path = ses_path;
+        note_path.replace_extension(".txt");
+        QFile f(QString::fromStdString(Common::FS::PathToUTF8String(note_path)));
+        if (f.exists() && f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            return QString::fromUtf8(f.readAll()).trimmed();
+        }
+        return {};
+    };
+
+    auto write_slot_note = [](const std::filesystem::path& ses_path, const QString& text) {
+        auto note_path = ses_path;
+        note_path.replace_extension(".txt");
+        QFile f(QString::fromStdString(Common::FS::PathToUTF8String(note_path)));
+        if (text.trimmed().isEmpty()) {
+            if (f.exists()) f.remove();
+            return;
+        }
+        if (f.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+            f.write(text.trimmed().toUtf8());
+        }
+    };
+
+    auto refresh_all = [&, kMaxSlots]() {
+        const u64 tid = get_selected_tid();
+        const int prev_row = std::clamp(slot_list->currentRow(), 0, kMaxSlots - 1);
+        slot_list->blockSignals(true);
+        slot_list->clear();
+
+        int occupied_count = 0;
+        double total_mb = 0.0;
+
+        for (int s = 1; s <= kMaxSlots; ++s) {
+            const auto ses_path = (tid != 0) ? Core::GetSaveStatePath(tid, static_cast<u32>(s))
+                                             : std::filesystem::path{};
+            Core::SaveStateHeader hdr{};
+            std::error_code ec;
+            const bool exists = (tid != 0) && std::filesystem::exists(ses_path, ec) &&
+                                Core::GetSaveStateInfo(ses_path, hdr);
+
+            double mb = 0.0;
+            QString dt_str;
+            QString note_str;
+            if (exists) {
+                ++occupied_count;
+                const auto fsize = std::filesystem::file_size(ses_path, ec);
+                mb = static_cast<double>(fsize) / (1024.0 * 1024.0);
+                total_mb += mb;
+                QFileInfo fi(QString::fromStdString(Common::FS::PathToUTF8String(ses_path)));
+                dt_str = (hdr.timestamp > 0)
+                             ? QDateTime::fromSecsSinceEpoch(static_cast<qint64>(hdr.timestamp))
+                                   .toString(QStringLiteral("dd.MM.yyyy HH:mm:ss"))
+                             : fi.lastModified().toString(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
+                note_str = read_slot_note(ses_path);
+            }
+
+            QPixmap thumb_px;
+            if (exists) {
+                auto png_path = ses_path;
+                png_path.replace_extension(".png");
+                if (std::filesystem::exists(png_path, ec)) {
+                    thumb_px.load(QString::fromStdString(Common::FS::PathToUTF8String(png_path)));
+                }
+            }
+            if (thumb_px.isNull()) {
+                thumb_px = make_placeholder_preview(tid, s, exists, hdr, mb, dt_str, note_str);
+            }
+
+            const QString slot_badge = (s == 1)
+                ? StormLang(QStringLiteral("Слот 1  [Быстрое сохранение F5 / F7]"),
+                            QStringLiteral("Slot 1  [Quick Save F5 / F7]"),
+                            QStringLiteral("Slot 1  [Schnellspeichern F5 / F7]"),
+                            QStringLiteral("Emplacement 1  [Sauvegarde rapide F5 / F7]"),
+                            QStringLiteral("槽位 1  [快速保存 F5 / F7]"),
+                            QStringLiteral("スロット 1  [クイックセーブ F5 / F7]"))
+                : StormLang(QStringLiteral("Слот %1").arg(s),
+                            QStringLiteral("Slot %1").arg(s),
+                            QStringLiteral("Slot %1").arg(s),
+                            QStringLiteral("Emplacement %1").arg(s),
+                            QStringLiteral("槽位 %1").arg(s),
+                            QStringLiteral("スロット %1").arg(s));
+
+            QString item_text = slot_badge + QStringLiteral("\n");
+            if (exists) {
+                item_text += QStringLiteral("✅ %1 МБ  •  🕒 %2  •  %3 стр. 4КБ")
+                                 .arg(QString::number(mb, 'f', 2), dt_str)
+                                 .arg(hdr.num_stored_pages);
+                if (!note_str.isEmpty()) {
+                    item_text += QStringLiteral("\n📝 ") + note_str;
+                }
+            } else {
+                item_text += StormLang(
+                    QStringLiteral("⚪ [Пусто — доступно для сохранения или копирования]"),
+                    QStringLiteral("⚪ [Empty — available for saving or copying]"),
+                    QStringLiteral("⚪ [Leer — verfügbar zum Speichern oder Kopieren]"),
+                    QStringLiteral("⚪ [Vide — disponible pour sauvegarder ou copier]"),
+                    QStringLiteral("⚪ [空 — 可用于保存或复制]"),
+                    QStringLiteral("⚪ [空 — 保存またはコピー可能]"));
+            }
+
+            auto* item = new QListWidgetItem(
+                QIcon(thumb_px.scaled(136, 76, Qt::KeepAspectRatio, Qt::SmoothTransformation)),
+                item_text);
+            item->setSizeHint(QSize(480, 88));
+            slot_list->addItem(item);
+        }
+
+        lbl_slots_header->setText(StormLang(
+            QStringLiteral("Слоты сохранений (занято: %1 из %2 • общий объём: %3 МБ):")
+                .arg(occupied_count).arg(kMaxSlots).arg(QString::number(total_mb, 'f', 2)),
+            QStringLiteral("Save State Slots (used: %1 of %2 • total size: %3 MB):")
+                .arg(occupied_count).arg(kMaxSlots).arg(QString::number(total_mb, 'f', 2)),
+            QStringLiteral("Speicher-Slots (belegt: %1 von %2 • Gesamtgröße: %3 MB):")
+                .arg(occupied_count).arg(kMaxSlots).arg(QString::number(total_mb, 'f', 2)),
+            QStringLiteral("Emplacements (utilisés : %1 sur %2 • taille totale : %3 Mo) :")
+                .arg(occupied_count).arg(kMaxSlots).arg(QString::number(total_mb, 'f', 2)),
+            QStringLiteral("保存槽位（已用：%1 / %2 • 总大小：%3 MB）：")
+                .arg(occupied_count).arg(kMaxSlots).arg(QString::number(total_mb, 'f', 2)),
+            QStringLiteral("セーブスロット（使用中: %1 / %2 • 合計サイズ: %3 MB）:")
+                .arg(occupied_count).arg(kMaxSlots).arg(QString::number(total_mb, 'f', 2))));
+
+        btn_clear_all->setEnabled(occupied_count > 0);
+        slot_list->setCurrentRow(prev_row);
+        slot_list->blockSignals(false);
+    };
+
+    auto update_inspector = [&]() {
+        const u64 tid = get_selected_tid();
+        const int s = get_selected_slot();
+        const auto ses_path = (tid != 0) ? Core::GetSaveStatePath(tid, static_cast<u32>(s))
+                                         : std::filesystem::path{};
+        Core::SaveStateHeader hdr{};
+        std::error_code ec;
+        const bool exists = (tid != 0) && std::filesystem::exists(ses_path, ec) &&
+                            Core::GetSaveStateInfo(ses_path, hdr);
+
+        double mb = 0.0;
+        QString dt_str = QStringLiteral("—");
+        QString note_str;
+        if (exists) {
+            const auto fsize = std::filesystem::file_size(ses_path, ec);
+            mb = static_cast<double>(fsize) / (1024.0 * 1024.0);
+            QFileInfo fi(QString::fromStdString(Common::FS::PathToUTF8String(ses_path)));
+            dt_str = (hdr.timestamp > 0)
+                         ? QDateTime::fromSecsSinceEpoch(static_cast<qint64>(hdr.timestamp))
+                               .toString(QStringLiteral("dd.MM.yyyy HH:mm:ss"))
+                         : fi.lastModified().toString(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
+            note_str = read_slot_note(ses_path);
+        }
+
+        lbl_preview_title->setText(StormLang(
+            QStringLiteral("🎯 Слот #%1 — %2").arg(s).arg(resolve_game_title(tid)),
+            QStringLiteral("🎯 Slot #%1 — %2").arg(s).arg(resolve_game_title(tid)),
+            QStringLiteral("🎯 Slot #%1 — %2").arg(s).arg(resolve_game_title(tid)),
+            QStringLiteral("🎯 Emplacement #%1 — %2").arg(s).arg(resolve_game_title(tid)),
+            QStringLiteral("🎯 槽位 #%1 — %2").arg(s).arg(resolve_game_title(tid)),
+            QStringLiteral("🎯 スロット #%1 — %2").arg(s).arg(resolve_game_title(tid))));
+
+        QPixmap large_px;
+        if (exists) {
+            auto png_path = ses_path;
+            png_path.replace_extension(".png");
+            if (std::filesystem::exists(png_path, ec)) {
+                large_px.load(QString::fromStdString(Common::FS::PathToUTF8String(png_path)));
+            }
+        }
+        if (large_px.isNull()) {
+            large_px = make_placeholder_preview(tid, s, exists, hdr, mb, dt_str, note_str);
+        }
+        preview_box->setPixmap(large_px.scaled(504, 282, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+        if (exists) {
+            lbl_meta_status->setText(StormLang(
+                QStringLiteral("🟢 Статус: Готов (SESS v%1)").arg(hdr.version),
+                QStringLiteral("🟢 Status: Ready (SESS v%1)").arg(hdr.version),
+                QStringLiteral("🟢 Status: Bereit (SESS v%1)").arg(hdr.version),
+                QStringLiteral("🟢 Statut : Prêt (SESS v%1)").arg(hdr.version),
+                QStringLiteral("🟢 状态：就绪 (SESS v%1)").arg(hdr.version),
+                QStringLiteral("🟢 状態: 準備完了 (SESS v%1)").arg(hdr.version)));
+            lbl_meta_status->setStyleSheet(QStringLiteral("font-size: 9.5pt; font-weight: 700; color: #34D399; border: none;"));
+            lbl_meta_size->setText(StormLang(
+                QStringLiteral("📦 Размер: %1 МБ").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("📦 Size: %1 MB").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("📦 Größe: %1 MB").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("📦 Taille : %1 Mo").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("📦 大小：%1 MB").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("📦 サイズ: %1 MB").arg(QString::number(mb, 'f', 2))));
+            lbl_meta_date->setText(StormLang(
+                QStringLiteral("🕒 Создан: %1").arg(dt_str),
+                QStringLiteral("🕒 Created: %1").arg(dt_str),
+                QStringLiteral("🕒 Erstellt: %1").arg(dt_str),
+                QStringLiteral("🕒 Créé : %1").arg(dt_str),
+                QStringLiteral("🕒 创建时间：%1").arg(dt_str),
+                QStringLiteral("🕒 作成日時: %1").arg(dt_str)));
+            lbl_meta_pages->setText(StormLang(
+                QStringLiteral("🧩 Страниц 4 КБ: %1 • Потоков: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("🧩 4KB Pages: %1 • Threads: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("🧩 4KB-Seiten: %1 • Threads: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("🧩 Pages 4 Ko : %1 • Threads : %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("🧩 4KB 页面：%1 • 线程：%2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("🧩 4KBページ: %1 • スレッド: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads)));
+        } else {
+            lbl_meta_status->setText(StormLang(
+                QStringLiteral("⚪ Статус: Слот пуст"),
+                QStringLiteral("⚪ Status: Slot is Empty"),
+                QStringLiteral("⚪ Status: Slot ist leer"),
+                QStringLiteral("⚪ Statut : Emplacement vide"),
+                QStringLiteral("⚪ 状态：槽位为空"),
+                QStringLiteral("⚪ 状態: 空きスロット")));
+            lbl_meta_status->setStyleSheet(QStringLiteral("font-size: 9.5pt; font-weight: 700; color: #94A3B8; border: none;"));
+            lbl_meta_size->setText(QStringLiteral("📦 —"));
+            lbl_meta_date->setText(QStringLiteral("🕒 —"));
+            lbl_meta_pages->setText(QStringLiteral("🧩 —"));
+        }
+
+        edit_note->setText(note_str);
+        edit_note->setEnabled(tid != 0);
+        btn_save_note->setEnabled(tid != 0);
+
+        const bool game_matches_running = emulation_running && QtCommon::system &&
+                                          QtCommon::system->IsPoweredOn() &&
+                                          (active_tid != 0 && active_tid == tid);
+        btn_load_slot->setEnabled(exists && game_matches_running);
+        btn_save_slot->setEnabled(game_matches_running);
+        btn_copy_slot->setEnabled(exists);
+        btn_swap_slot->setEnabled(exists);
+        btn_export_slot->setEnabled(exists);
+        btn_import_slot->setEnabled(tid != 0);
+        btn_delete_slot->setEnabled(exists);
+    };
+
+    connect(game_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), &dlg, [&]() {
+        refresh_all();
+        update_inspector();
+    });
+
+    connect(slot_list, &QListWidget::currentRowChanged, &dlg, [&](int) {
+        update_inspector();
+    });
+
+    connect(slot_list, &QListWidget::itemDoubleClicked, &dlg, [&](QListWidgetItem*) {
+        if (btn_load_slot->isEnabled()) {
+            btn_load_slot->click();
+        }
+    });
+
+    connect(btn_save_note, &QPushButton::clicked, &dlg, [&]() {
+        const u64 tid = get_selected_tid();
+        const int s = get_selected_slot();
+        if (tid == 0) return;
+        const auto ses_path = Core::GetSaveStatePath(tid, static_cast<u32>(s));
+        write_slot_note(ses_path, edit_note->text());
+        refresh_all();
+        update_inspector();
+        lbl_status_feedback->setText(StormLang(
+            QStringLiteral("✅ Заметка для Слота %1 сохранена").arg(s),
+            QStringLiteral("✅ Note saved for Slot %1").arg(s),
+            QStringLiteral("✅ Notiz für Slot %1 gespeichert").arg(s),
+            QStringLiteral("✅ Note enregistrée pour l'emplacement %1").arg(s),
+            QStringLiteral("✅ 槽位 %1 的备注已保存").arg(s),
+            QStringLiteral("✅ スロット %1 のメモを保存しました").arg(s)));
+    });
+
+    connect(btn_load_slot, &QPushButton::clicked, &dlg, [&]() {
+        const int s = get_selected_slot();
+        dlg.accept();
+        OnLoadStateSlot(s);
+    });
+
+    connect(btn_save_slot, &QPushButton::clicked, &dlg, [&]() {
+        const int s = get_selected_slot();
+        const u64 tid = get_selected_tid();
+        OnSaveStateSlot(s);
+        if (!edit_note->text().trimmed().isEmpty() && tid != 0) {
+            write_slot_note(Core::GetSaveStatePath(tid, static_cast<u32>(s)), edit_note->text());
+        }
+        Core::FlushPendingSaveStates();
+        QTimer::singleShot(180, &dlg, [&]() {
+            refresh_all();
+            update_inspector();
+            lbl_status_feedback->setText(StormLang(
+                QStringLiteral("⚡ Состояние игры сохранено в Слот %1!").arg(get_selected_slot()),
+                QStringLiteral("⚡ Game state saved to Slot %1!").arg(get_selected_slot()),
+                QStringLiteral("⚡ Spielstatus in Slot %1 gespeichert!").arg(get_selected_slot()),
+                QStringLiteral("⚡ État du jeu enregistré dans l'emplacement %1 !").arg(get_selected_slot()),
+                QStringLiteral("⚡ 游戏状态已保存到槽位 %1！").arg(get_selected_slot()),
+                QStringLiteral("⚡ スロット %1 にゲーム状態を保存しました！").arg(get_selected_slot())));
+        });
+    });
+
+    auto ask_target_slot = [&](int src_slot, const QString& title_text) -> int {
+        QStringList items;
+        const u64 tid = get_selected_tid();
+        for (int i = 1; i <= kMaxSlots; ++i) {
+            if (i == src_slot) continue;
+            const auto p = Core::GetSaveStatePath(tid, static_cast<u32>(i));
+            std::error_code ec;
+            const bool occ = std::filesystem::exists(p, ec);
+            items << (occ
+                ? StormLang(QStringLiteral("Слот %1 (Занят — перезаписать/обменять)").arg(i),
+                            QStringLiteral("Slot %1 (Occupied)").arg(i),
+                            QStringLiteral("Slot %1 (Belegt)").arg(i),
+                            QStringLiteral("Emplacement %1 (Occupé)").arg(i),
+                            QStringLiteral("槽位 %1（已占用）").arg(i),
+                            QStringLiteral("スロット %1（使用中）").arg(i))
+                : StormLang(QStringLiteral("Слот %1 (Пусто)").arg(i),
+                            QStringLiteral("Slot %1 (Empty)").arg(i),
+                            QStringLiteral("Slot %1 (Leer)").arg(i),
+                            QStringLiteral("Emplacement %1 (Vide)").arg(i),
+                            QStringLiteral("槽位 %1（空）").arg(i),
+                            QStringLiteral("スロット %1（空）").arg(i)));
+        }
+        bool ok = false;
+        const QString chosen = QInputDialog::getItem(
+            &dlg, title_text,
+            StormLang(QStringLiteral("Выберите целевой слот (из Слота %1):").arg(src_slot),
+                      QStringLiteral("Select target slot (from Slot %1):").arg(src_slot),
+                      QStringLiteral("Ziel-Slot auswählen (von Slot %1):").arg(src_slot),
+                      QStringLiteral("Sélectionnez l'emplacement cible (depuis %1) :").arg(src_slot),
+                      QStringLiteral("选择目标槽位（来自槽位 %1）：").arg(src_slot),
+                      QStringLiteral("対象スロットを選択（スロット %1 から）:").arg(src_slot)),
+            items, 0, false, &ok);
+        if (!ok || chosen.isEmpty()) return 0;
+        static const QRegularExpression num_re(QStringLiteral(R"((\d+))"));
+        const auto m = num_re.match(chosen);
+        return m.hasMatch() ? m.captured(1).toInt() : 0;
+    };
+
+    connect(btn_copy_slot, &QPushButton::clicked, &dlg, [&]() {
+        const u64 tid = get_selected_tid();
+        const int src = get_selected_slot();
+        if (tid == 0) return;
+        const int dst = ask_target_slot(src, StormLang(
+            QStringLiteral("Копирование слота"), QStringLiteral("Copy Slot"),
+            QStringLiteral("Slot kopieren"), QStringLiteral("Copier l'emplacement"),
+            QStringLiteral("复制槽位"), QStringLiteral("スロットのコピー")));
+        if (dst <= 0 || dst == src) return;
+
+        Core::FlushPendingSaveStates();
+        const auto src_ses = Core::GetSaveStatePath(tid, static_cast<u32>(src));
+        const auto dst_ses = Core::GetSaveStatePath(tid, static_cast<u32>(dst));
+        std::error_code ec;
+        std::filesystem::copy_file(src_ses, dst_ses, std::filesystem::copy_options::overwrite_existing, ec);
+
+        for (const char* ext : {".png", ".txt"}) {
+            auto sp = src_ses; sp.replace_extension(ext);
+            auto dp = dst_ses; dp.replace_extension(ext);
+            if (std::filesystem::exists(sp, ec)) {
+                std::filesystem::copy_file(sp, dp, std::filesystem::copy_options::overwrite_existing, ec);
+            } else if (std::filesystem::exists(dp, ec)) {
+                std::filesystem::remove(dp, ec);
+            }
+        }
+        slot_list->setCurrentRow(dst - 1);
+        refresh_all();
+        update_inspector();
+        RefreshSaveStateMenus();
+        lbl_status_feedback->setText(StormLang(
+            QStringLiteral("📋 Слот %1 успешно скопирован в Слот %2!").arg(src).arg(dst),
+            QStringLiteral("📋 Slot %1 copied to Slot %2!").arg(src).arg(dst),
+            QStringLiteral("📋 Slot %1 in Slot %2 kopiert!").arg(src).arg(dst),
+            QStringLiteral("📋 Emplacement %1 copié vers %2 !").arg(src).arg(dst),
+            QStringLiteral("📋 槽位 %1 已复制到槽位 %2！").arg(src).arg(dst),
+            QStringLiteral("📋 スロット %1 をスロット %2 にコピーしました！").arg(src).arg(dst)));
+    });
+
+    connect(btn_swap_slot, &QPushButton::clicked, &dlg, [&]() {
+        const u64 tid = get_selected_tid();
+        const int src = get_selected_slot();
+        if (tid == 0) return;
+        const int dst = ask_target_slot(src, StormLang(
+            QStringLiteral("Обмен / Перемещение слота"), QStringLiteral("Swap / Move Slot"),
+            QStringLiteral("Slot tauschen / verschieben"), QStringLiteral("Échanger / Déplacer"),
+            QStringLiteral("交换 / 移动槽位"), QStringLiteral("スロットの入れ替え・移動")));
+        if (dst <= 0 || dst == src) return;
+
+        Core::FlushPendingSaveStates();
+        const auto src_ses = Core::GetSaveStatePath(tid, static_cast<u32>(src));
+        const auto dst_ses = Core::GetSaveStatePath(tid, static_cast<u32>(dst));
+        std::error_code ec;
+
+        for (const char* ext : {".ses", ".png", ".txt"}) {
+            auto sp = src_ses; sp.replace_extension(ext);
+            auto dp = dst_ses; dp.replace_extension(ext);
+            auto tp = src_ses; tp.replace_extension(std::string(ext) + ".tmp_swap");
+            std::filesystem::remove(tp, ec);
+            const bool has_s = std::filesystem::exists(sp, ec);
+            const bool has_d = std::filesystem::exists(dp, ec);
+            if (has_s && has_d) {
+                std::filesystem::rename(sp, tp, ec);
+                std::filesystem::rename(dp, sp, ec);
+                std::filesystem::rename(tp, dp, ec);
+            } else if (has_s) {
+                std::filesystem::rename(sp, dp, ec);
+            } else if (has_d) {
+                std::filesystem::rename(dp, sp, ec);
+            }
+        }
+        slot_list->setCurrentRow(dst - 1);
+        refresh_all();
+        update_inspector();
+        RefreshSaveStateMenus();
+        lbl_status_feedback->setText(StormLang(
+            QStringLiteral("🔀 Слот %1 и Слот %2 успешно обменялись местами!").arg(src).arg(dst),
+            QStringLiteral("🔀 Slot %1 and Slot %2 swapped!").arg(src).arg(dst),
+            QStringLiteral("🔀 Slot %1 und Slot %2 getauscht!").arg(src).arg(dst),
+            QStringLiteral("🔀 Emplacements %1 et %2 échangés !").arg(src).arg(dst),
+            QStringLiteral("🔀 槽位 %1 与槽位 %2 已交换！").arg(src).arg(dst),
+            QStringLiteral("🔀 スロット %1 とスロット %2 を入れ替えました！").arg(src).arg(dst)));
+    });
+
+    connect(btn_export_slot, &QPushButton::clicked, &dlg, [&]() {
+        const u64 tid = get_selected_tid();
+        const int s = get_selected_slot();
+        if (tid == 0) return;
+        const auto src_ses = Core::GetSaveStatePath(tid, static_cast<u32>(s));
+        const QString default_name = QStringLiteral("%1_slot%2.ses")
+                                         .arg(tid, 16, 16, QLatin1Char('0')).toUpper().arg(s);
+        const QString target = QFileDialog::getSaveFileName(
+            &dlg,
+            StormLang(QStringLiteral("Экспорт быстрого сохранения SESS v2"),
+                      QStringLiteral("Export SESS v2 Save State"),
+                      QStringLiteral("SESS v2 Speicherstand exportieren"),
+                      QStringLiteral("Exporter la sauvegarde SESS v2"),
+                      QStringLiteral("导出 SESS v2 快速保存"),
+                      QStringLiteral("SESS v2 クイックセーブをエクスポート")),
+            default_name,
+            QStringLiteral("STORM Save State (*.ses)"));
+        if (target.isEmpty()) return;
+        Core::FlushPendingSaveStates();
+        std::error_code ec;
+        std::filesystem::copy_file(src_ses, Common::FS::ToU8String(target.toStdString()),
+                                   std::filesystem::copy_options::overwrite_existing, ec);
+        if (!ec) {
+            lbl_status_feedback->setText(StormLang(
+                QStringLiteral("📤 Слот %1 экспортирован!").arg(s),
+                QStringLiteral("📤 Slot %1 exported!").arg(s),
+                QStringLiteral("📤 Slot %1 exportiert!").arg(s),
+                QStringLiteral("📤 Emplacement %1 exporté !").arg(s),
+                QStringLiteral("📤 槽位 %1 已导出！").arg(s),
+                QStringLiteral("📤 スロット %1 をエクスポートしました！").arg(s)));
+        }
+    });
+
+    connect(btn_import_slot, &QPushButton::clicked, &dlg, [&]() {
+        const u64 tid = get_selected_tid();
+        const int s = get_selected_slot();
+        if (tid == 0) return;
+        const QString source = QFileDialog::getOpenFileName(
+            &dlg,
+            StormLang(QStringLiteral("Импорт быстрого сохранения SESS v2 в Слот %1").arg(s),
+                      QStringLiteral("Import SESS v2 Save State into Slot %1").arg(s),
+                      QStringLiteral("SESS v2 in Slot %1 importieren").arg(s),
+                      QStringLiteral("Importer une sauvegarde SESS v2 dans l'emplacement %1").arg(s),
+                      QStringLiteral("将 SESS v2 导入到槽位 %1").arg(s),
+                      QStringLiteral("スロット %1 に SESS v2 をインポート").arg(s)),
+            QString(),
+            QStringLiteral("STORM Save State (*.ses)"));
+        if (source.isEmpty()) return;
+        const std::filesystem::path src_p(Common::FS::ToU8String(source.toStdString()));
+        Core::SaveStateHeader hdr{};
+        if (!Core::GetSaveStateInfo(src_p, hdr)) {
+            QMessageBox::warning(&dlg, QStringLiteral("SESS v2"),
+                                 StormLang(QStringLiteral("Выбранный файл не является корректным сохранением SESS v2."),
+                                           QStringLiteral("The selected file is not a valid SESS v2 save state."),
+                                           QStringLiteral("Die ausgewählte Datei ist kein gültiger SESS v2-Speicherstand."),
+                                           QStringLiteral("Le fichier sélectionné n'est pas une sauvegarde SESS v2 valide."),
+                                           QStringLiteral("所选文件不是有效的 SESS v2 快速保存文件。"),
+                                           QStringLiteral("選択されたファイルは有効な SESS v2 セーブデータではありません。")));
+            return;
+        }
+        const auto dst_ses = Core::GetSaveStatePath(tid, static_cast<u32>(s));
+        std::error_code ec;
+        std::filesystem::copy_file(src_p, dst_ses, std::filesystem::copy_options::overwrite_existing, ec);
+        refresh_all();
+        update_inspector();
+        RefreshSaveStateMenus();
+        lbl_status_feedback->setText(StormLang(
+            QStringLiteral("📥 Файл успешно импортирован в Слот %1!").arg(s),
+            QStringLiteral("📥 File imported into Slot %1!").arg(s),
+            QStringLiteral("📥 Datei in Slot %1 importiert!").arg(s),
+            QStringLiteral("📥 Fichier importé dans l'emplacement %1 !").arg(s),
+            QStringLiteral("📥 文件已导入到槽位 %1！").arg(s),
+            QStringLiteral("📥 スロット %1 にインポートしました！").arg(s)));
+    });
+
+    connect(btn_delete_slot, &QPushButton::clicked, &dlg, [&]() {
+        const u64 tid = get_selected_tid();
+        const int s = get_selected_slot();
+        if (tid == 0) return;
+        const auto ans = QMessageBox::question(
+            &dlg,
+            StormLang(QStringLiteral("Удаление сохранения"), QStringLiteral("Delete Save State"),
+                      QStringLiteral("Speicherstand löschen"), QStringLiteral("Supprimer la sauvegarde"),
+                      QStringLiteral("删除快速保存"), QStringLiteral("セーブステートの削除")),
+            StormLang(QStringLiteral("Вы действительно хотите удалить быстрое сохранение из Слота %1?").arg(s),
+                      QStringLiteral("Are you sure you want to delete the save state in Slot %1?").arg(s),
+                      QStringLiteral("Möchten Sie den Speicherstand in Slot %1 wirklich löschen?").arg(s),
+                      QStringLiteral("Voulez-vous vraiment supprimer la sauvegarde de l'emplacement %1 ?").arg(s),
+                      QStringLiteral("确定要删除槽位 %1 中的快速保存吗？").arg(s),
+                      QStringLiteral("スロット %1 のクイックセーブを削除してもよろしいですか？").arg(s)));
+        if (ans != QMessageBox::Yes) return;
+
+        Core::FlushPendingSaveStates();
+        const auto ses_path = Core::GetSaveStatePath(tid, static_cast<u32>(s));
+        std::error_code ec;
+        for (const char* ext : {".ses", ".png", ".txt"}) {
+            auto p = ses_path; p.replace_extension(ext);
+            std::filesystem::remove(p, ec);
+        }
+        refresh_all();
+        update_inspector();
+        RefreshSaveStateMenus();
+        lbl_status_feedback->setText(StormLang(
+            QStringLiteral("🗑️ Слот %1 очищен").arg(s),
+            QStringLiteral("🗑️ Slot %1 deleted").arg(s),
+            QStringLiteral("🗑️ Slot %1 gelöscht").arg(s),
+            QStringLiteral("🗑️ Emplacement %1 supprimé").arg(s),
+            QStringLiteral("🗑️ 槽位 %1 已删除").arg(s),
+            QStringLiteral("🗑️ スロット %1 を削除しました").arg(s)));
+    });
+
+    connect(btn_clear_all, &QPushButton::clicked, &dlg, [&]() {
+        const u64 tid = get_selected_tid();
+        if (tid == 0) return;
+        const auto ans = QMessageBox::warning(
+            &dlg,
+            StormLang(QStringLiteral("Очистка всех слотов игры"), QStringLiteral("Clear All Game Slots"),
+                      QStringLiteral("Alle Slots leeren"), QStringLiteral("Vider tous les emplacements"),
+                      QStringLiteral("清空所有槽位"), QStringLiteral("全スロットの消去")),
+            StormLang(QStringLiteral("Удалить ВСЕ быстрые сохранения (слоты 1–10) для игры «%1»?").arg(resolve_game_title(tid)),
+                      QStringLiteral("Delete ALL save state slots (1–10) for '%1'?").arg(resolve_game_title(tid)),
+                      QStringLiteral("ALLE Speicher-Slots (1–10) für '%1' löschen?").arg(resolve_game_title(tid)),
+                      QStringLiteral("Supprimer TOUS les emplacements (1–10) pour « %1 » ?").arg(resolve_game_title(tid)),
+                      QStringLiteral("确定要删除“%1”的所有快速保存槽位 (1–10) 吗？").arg(resolve_game_title(tid)),
+                      QStringLiteral("「%1」の全セーブスロット (1〜10) を削除しますか？").arg(resolve_game_title(tid))),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ans != QMessageBox::Yes) return;
+
+        Core::FlushPendingSaveStates();
+        std::error_code ec;
+        for (int s = 1; s <= kMaxSlots; ++s) {
+            const auto ses_path = Core::GetSaveStatePath(tid, static_cast<u32>(s));
+            for (const char* ext : {".ses", ".png", ".txt"}) {
+                auto p = ses_path; p.replace_extension(ext);
+                std::filesystem::remove(p, ec);
+            }
+        }
+        refresh_all();
+        update_inspector();
+        RefreshSaveStateMenus();
+        lbl_status_feedback->setText(StormLang(
+            QStringLiteral("🧹 Все слоты выбранной игры очищены"),
+            QStringLiteral("🧹 All slots for the selected game cleared"),
+            QStringLiteral("🧹 Alle Slots für das Spiel wurden geleert"),
+            QStringLiteral("🧹 Tous les emplacements du jeu ont été vidés"),
+            QStringLiteral("🧹 所选游戏的所有槽位已清空"),
+            QStringLiteral("🧹 選択したゲームの全スロットを消去しました")));
+    });
+
+    refresh_all();
+    update_inspector();
+    dlg.exec();
+    RefreshSaveStateMenus();
 }
 
 void MainWindow::RefreshSaveStateMenus() {
@@ -12186,6 +13441,16 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
             QStringLiteral("Charger l'état depuis l'emplacement"),
             QStringLiteral("从槽位读取状态"),
             QStringLiteral("スロットからステートをロード")
+        ));
+    }
+    if (save_state_manager_action) {
+        save_state_manager_action->setText(StormLang(
+            QStringLiteral("Менеджер быстрых сохранений..."),
+            QStringLiteral("Save State Manager..."),
+            QStringLiteral("Schnellspeicher-Manager..."),
+            QStringLiteral("Gestionnaire de sauvegardes rapides..."),
+            QStringLiteral("快速保存管理器..."),
+            QStringLiteral("クイックセーブマネージャー...")
         ));
     }
     RefreshSaveStateMenus();

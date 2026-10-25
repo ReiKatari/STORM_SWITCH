@@ -188,10 +188,11 @@ Result IApplicationFunctions::GetDesiredLanguage(Out<u64> out_language_code) {
 }
 
 Result IApplicationFunctions::SetTerminateResult(Result terminate_result) {
-    LOG_INFO(Service_AM, "(STUBBED) called, result={:#x} ({:04}-{:04})",
-             terminate_result.GetInnerValue(),
-             static_cast<u32>(terminate_result.GetModule()) + 2000,
-             terminate_result.GetDescription());
+    LOG_CRITICAL(Service_AM, "SetTerminateResult: called, result={:#x} ({:04}-{:04})! Backtrace:",
+                 terminate_result.GetInnerValue(),
+                 static_cast<u32>(terminate_result.GetModule()) + 2000,
+                 terminate_result.GetDescription());
+    system.CurrentPhysicalCore().LogBacktrace(system.Kernel());
 
     std::scoped_lock lk{m_applet->lock};
     m_applet->terminate_result = terminate_result;

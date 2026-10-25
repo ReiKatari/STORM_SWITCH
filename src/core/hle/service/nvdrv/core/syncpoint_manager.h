@@ -90,6 +90,11 @@ public:
     void FlushSyncpoint(u32 id);
 
     /**
+     * @brief Fast-forwards counter_min and counter_max to at least target_value on savestate restore.
+     */
+    void FastForwardSyncpoint(u32 id, u32 target_value);
+
+    /**
      * @return A fence that will be signalled once this syncpoint hits its maximum value
      */
     NvFence GetSyncpointFence(u32 id);

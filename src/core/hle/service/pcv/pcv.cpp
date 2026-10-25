@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "common/settings.h"
 #include "core/hle/service/ipc_helpers.h"
 #include "core/hle/service/pcv/pcv.h"
 #include "core/hle/service/server_manager.h"
@@ -89,11 +90,41 @@ private:
     }
 
     void GetClockRate(HLERequestContext& ctx) {
-        LOG_DEBUG(Service_PCV, "(STUBBED) called");
+        u32 reported_rate = clock_rate;
+        if (device_code == DeviceCode::Cpu) {
+            switch (Settings::values.cpu_clock.GetValue()) {
+            case Settings::CpuClock::Boost:
+                reported_rate = 1785000000U;
+                break;
+            case Settings::CpuClock::Overclock:
+                reported_rate = 2040000000U;
+                break;
+            default:
+                if (reported_rate == 0) {
+                    reported_rate = 1020000000U;
+                }
+                break;
+            }
+        } else if (device_code == DeviceCode::Gpu) {
+            switch (Settings::values.gpu_clock.GetValue()) {
+            case Settings::GpuClock::Boost:
+                reported_rate = 921600000U;
+                break;
+            case Settings::GpuClock::Overclock:
+                reported_rate = 1228800000U;
+                break;
+            default:
+                if (reported_rate == 0) {
+                    reported_rate = 768000000U;
+                }
+                break;
+            }
+        }
+        LOG_DEBUG(Service_PCV, "(STUBBED) called, reported_rate={}", reported_rate);
 
         IPC::ResponseBuilder rb{ctx, 3};
         rb.Push(ResultSuccess);
-        rb.Push<u32>(clock_rate);
+        rb.Push<u32>(reported_rate);
     }
 
     DeviceCode device_code;

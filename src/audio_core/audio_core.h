@@ -30,6 +30,11 @@ public:
     void Shutdown();
 
     /**
+     * Resynchronize internal audio sessions and queues after savestate restore.
+     */
+    void ResynchronizeSaveState();
+
+    /**
      * Get a reference to the audio manager.
      *
      * @return Ref to the audio manager.

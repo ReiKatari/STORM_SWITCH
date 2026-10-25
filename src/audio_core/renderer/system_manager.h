@@ -52,6 +52,11 @@ public:
     void Stop();
 
     /**
+     * Resynchronize all managed audio render systems.
+     */
+    void Resynchronize();
+
+    /**
      * Add an audio render system to the manager.
      * The manager does not own the system, so do not free it without calling Remove.
      *

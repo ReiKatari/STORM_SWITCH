@@ -21,6 +21,12 @@ void Manager::Stop() {
     system_manager->Stop();
 }
 
+void Manager::Resynchronize() {
+    if (system_manager) {
+        system_manager->Resynchronize();
+    }
+}
+
 SystemManager& Manager::GetSystemManager() {
     return *system_manager;
 }

@@ -135,6 +135,24 @@ NvFence SyncpointManager::GetSyncpointFence(u32 id) {
     };
 }
 
+void SyncpointManager::FastForwardSyncpoint(u32 id, u32 target_value) {
+    if (id >= SyncpointCount || target_value == 0) {
+        return;
+    }
+    auto& syncpoint = syncpoints.at(id);
+    if (!syncpoint.reserved) {
+        return;
+    }
+    u32 cur_min = syncpoint.counter_min.load(std::memory_order_relaxed);
+    while (cur_min < target_value &&
+           !syncpoint.counter_min.compare_exchange_weak(cur_min, target_value)) {
+    }
+    u32 cur_max = syncpoint.counter_max.load(std::memory_order_relaxed);
+    while (cur_max < target_value &&
+           !syncpoint.counter_max.compare_exchange_weak(cur_max, target_value)) {
+    }
+}
+
 void SyncpointManager::FlushSyncpoint(u32 id) {
     if (id >= SyncpointCount) {
         return;

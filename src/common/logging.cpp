@@ -275,11 +275,6 @@ struct FileBackend final : public Backend {
 #endif
         bytes_written += file->WriteSpan(std::span<const char>{message.begin(), message.end()});
 
-        // Option to log each line rather than 4k buffers
-        if (Settings::values.log_flush_line.GetValue()) {
-            file->Flush();
-        }
-
         using namespace Common::Literals;
         // Prevent logs from exceeding a set maximum size in the event that log entries are spammed.
         const auto write_limit = Settings::values.extended_logging.GetValue() ? 1_GiB : 100_MiB;
@@ -311,7 +306,9 @@ struct DebuggerBackend final : public Backend {
     explicit DebuggerBackend() noexcept = default;
     ~DebuggerBackend() noexcept override = default;
     void Write(const Entry& entry) noexcept override {
-        ::OutputDebugStringW(UTF8ToUTF16W(FormatLogMessage(entry)).c_str());
+        if (::IsDebuggerPresent()) {
+            ::OutputDebugStringW(UTF8ToUTF16W(FormatLogMessage(entry)).c_str());
+        }
     }
     void Flush() noexcept override {}
 };

@@ -207,6 +207,12 @@ public:
     /// Download contents of host images to guest memory in a region
     void DownloadMemory(DAddr cpu_addr, size_t size);
 
+    /// Download all GPU-modified images to guest memory and collect persistent GPU surface ranges
+    void SnapshotGpuSurfaces(std::vector<std::pair<DAddr, std::size_t>>& out_ranges);
+
+    /// Invalidate cached images, descriptor tables, and render target bindings on savestate load
+    void InvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences);
+
     std::optional<VideoCore::RasterizerDownloadArea> GetFlushArea(DAddr cpu_addr, u64 size);
 
     /// Remove images in a region

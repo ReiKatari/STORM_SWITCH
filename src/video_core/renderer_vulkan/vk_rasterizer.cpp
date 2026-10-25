@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <array>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 
@@ -839,6 +840,59 @@ void Vulkan::RasterizerVulkan::DisableGraphicsUniformBuffer(size_t stage, u32 in
 
 void RasterizerVulkan::FlushAll() {}
 
+void RasterizerVulkan::FlushAndSnapshotForSaveState(
+    std::vector<std::pair<DAddr, std::size_t>>& out_surface_ranges) {
+    WaitIdleForLoadState();
+    {
+        std::scoped_lock lock{buffer_cache.mutex};
+        buffer_cache.DownloadAllGpuModified();
+    }
+    {
+        std::scoped_lock lock{texture_cache.mutex};
+        texture_cache.SnapshotGpuSurfaces(out_surface_ranges);
+    }
+    scheduler.Finish();
+}
+
+void RasterizerVulkan::WaitIdleForLoadState() {
+    draw_counter = 0;
+    scheduler.Finish();
+    std::mutex wait_mutex;
+    std::condition_variable wait_cv;
+    bool wait_done = false;
+    fence_manager.SyncOperation([&]() {
+        std::scoped_lock lk(wait_mutex);
+        wait_done = true;
+        wait_cv.notify_all();
+    });
+    fence_manager.SignalReference();
+    scheduler.Finish();
+    std::unique_lock lk(wait_mutex);
+    wait_cv.wait(lk, [&]() { return wait_done; });
+}
+
+void RasterizerVulkan::InvalidateForLoadState(
+    std::span<const std::pair<DAddr, std::size_t>> sequences) {
+    draw_counter = 0;
+    scheduler.Finish();
+    {
+        std::scoped_lock lock{texture_cache.mutex};
+        texture_cache.InvalidateForLoadState(sequences);
+    }
+    {
+        std::scoped_lock lock{buffer_cache.mutex};
+        buffer_cache.InvalidateForLoadState(sequences);
+    }
+    for (const auto& [addr, size] : sequences) {
+        if (addr == 0 || size == 0) {
+            continue;
+        }
+        query_cache.InvalidateRegion(addr, size);
+        pipeline_cache.InvalidateRegion(addr, size);
+    }
+    state_tracker.InvalidateCommandBufferState();
+}
+
 void RasterizerVulkan::FlushRegion(DAddr addr, u64 size, VideoCommon::CacheType which) {
     if (addr == 0 || size == 0) {
         return;
@@ -1016,12 +1070,6 @@ void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
 void RasterizerVulkan::WaitForIdle() {
     query_cache.NotifyWFI();
 
-    if (scheduler.IsRenderPassActive() && !scheduler.HasTransformFeedback() &&
-        !Settings::IsGPULevelHigh()) {
-        fence_manager.SignalOrdering();
-        return;
-    }
-
     // Everything but wait pixel operations. This intentionally includes FRAGMENT_SHADER_BIT because
     // fragment shaders can still write storage buffers.
     VkPipelineStageFlags flags =
@@ -1052,16 +1100,7 @@ void RasterizerVulkan::TiledCacheBarrier() {
 }
 
 void RasterizerVulkan::FlushCommands() {
-#ifdef __ANDROID__
-    static constexpr u32 MIN_DRAWS_TO_FLUSH = 128;
-#else
-    static constexpr u32 MIN_DRAWS_TO_FLUSH = 512;
-#endif
     if (draw_counter == 0) {
-        return;
-    }
-    if (draw_counter < MIN_DRAWS_TO_FLUSH && scheduler.IsRenderPassActive() &&
-        !Settings::IsGPULevelHigh()) {
         return;
     }
     draw_counter = 0;
@@ -1172,11 +1211,6 @@ void RasterizerVulkan::FlushWork() {
         return;
     }
     if (draw_counter < DRAWS_TO_DISPATCH) {
-        scheduler.DispatchWork();
-        return;
-    }
-    if (scheduler.IsRenderPassActive() && !Settings::IsGPULevelHigh() &&
-        draw_counter < DRAWS_TO_DISPATCH * 2) {
         scheduler.DispatchWork();
         return;
     }

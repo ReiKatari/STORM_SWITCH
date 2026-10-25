@@ -168,11 +168,12 @@ struct GPU::Impl {
             return gpu_tick / 512;
         }
         const auto clock = Settings::values.gpu_clock.GetValue();
-        if ((Settings::values.use_fast_gpu_time.GetValue() || Settings::values.storm_lowend_turbo.GetValue()) &&
-            clock == Settings::GpuClock::Normal) {
-            return gpu_tick / 256;
+        const u64 mult = GpuClockMultiplier(clock);
+        if (Settings::values.use_fast_gpu_time.GetValue() ||
+            Settings::values.storm_lowend_turbo.GetValue()) {
+            return gpu_tick / (256 * mult);
         }
-        return gpu_tick / GpuClockMultiplier(clock);
+        return gpu_tick / mult;
     }
 
     void RendererFrameEndNotify() {
@@ -244,6 +245,41 @@ struct GPU::Impl {
     /// Notify rasterizer that any caches of the specified region should be flushed and invalidated
     void FlushAndInvalidateRegion(DAddr addr, u64 size) {
         gpu_thread.FlushAndInvalidateRegion(addr, size, is_async);
+    }
+
+    std::vector<std::pair<DAddr, std::size_t>> SyncAndSnapshotForSaveState() {
+        std::vector<std::pair<DAddr, std::size_t>> ranges;
+        if (!renderer || !renderer->ReadRasterizer() || shutting_down.load(std::memory_order_relaxed)) {
+            return ranges;
+        }
+        const u64 fence = RequestSyncOperation([this, &ranges]() {
+            renderer->ReadRasterizer()->FlushAndSnapshotForSaveState(ranges);
+        });
+        gpu_thread.TickGPU(is_async);
+        WaitForSyncOperation(fence);
+        return ranges;
+    }
+
+    void WaitIdleForLoadState() {
+        if (!renderer || !renderer->ReadRasterizer() || shutting_down.load(std::memory_order_relaxed)) {
+            return;
+        }
+        const u64 fence = RequestSyncOperation([this]() {
+            renderer->ReadRasterizer()->WaitIdleForLoadState();
+        });
+        gpu_thread.TickGPU(is_async);
+        WaitForSyncOperation(fence);
+    }
+
+    void SyncAndInvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences) {
+        if (!renderer || !renderer->ReadRasterizer() || shutting_down.load(std::memory_order_relaxed)) {
+            return;
+        }
+        const u64 fence = RequestSyncOperation([this, sequences]() {
+            renderer->ReadRasterizer()->InvalidateForLoadState(sequences);
+        });
+        gpu_thread.TickGPU(is_async);
+        WaitForSyncOperation(fence);
     }
 
     void RequestComposite(std::vector<Tegra::FramebufferConfig>&& layers, std::vector<Service::Nvidia::NvFence>&& fences) {
@@ -554,6 +590,18 @@ bool GPU::OnCPUWrite(DAddr addr, u64 size) {
 
 void GPU::FlushAndInvalidateRegion(DAddr addr, u64 size) {
     impl->FlushAndInvalidateRegion(addr, size);
+}
+
+std::vector<std::pair<DAddr, std::size_t>> GPU::SyncAndSnapshotForSaveState() {
+    return impl->SyncAndSnapshotForSaveState();
+}
+
+void GPU::WaitIdleForLoadState() {
+    impl->WaitIdleForLoadState();
+}
+
+void GPU::SyncAndInvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences) {
+    impl->SyncAndInvalidateForLoadState(sequences);
 }
 
 } // namespace Tegra

@@ -107,6 +107,11 @@ public:
     Result Stop();
 
     /**
+     * Resynchronize this audio out system after savestate restore.
+     */
+    void Resynchronize();
+
+    /**
      * Finalize this system.
      */
     void Finalize();

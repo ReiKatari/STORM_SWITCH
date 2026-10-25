@@ -66,6 +66,12 @@ public:
         return syncpoints_host[syncpoint_id].load(std::memory_order_acquire) >= expected_value;
     }
 
+    static constexpr size_t GetSyncpointCount() noexcept {
+        return NUM_MAX_SYNCPOINTS;
+    }
+
+    void FastForwardSyncpoint(u32 syncpoint_id, u32 target_value);
+
 private:
     void Increment(std::atomic<u32>& syncpoint, std::condition_variable& wait_cv,
                    std::list<RegisteredAction>& action_storage);

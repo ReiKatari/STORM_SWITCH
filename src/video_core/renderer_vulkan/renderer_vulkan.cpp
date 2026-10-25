@@ -317,9 +317,17 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     rasterizer.TickFrame();
 
     const auto now = std::chrono::steady_clock::now();
-    if (Settings::values.eco_frame_pacing.GetValue() ||
-        Settings::values.eco_thermal_mode.GetValue()) {
-        const auto pacing_mode = Settings::values.frame_pacing_mode.GetValue();
+    const auto vsync_mode = Settings::values.vsync_mode.GetValue();
+    const bool hw_vsync_paces = (vsync_mode == Settings::VSyncMode::Fifo ||
+                                 vsync_mode == Settings::VSyncMode::FifoRelaxed);
+    const auto pacing_mode = Settings::values.frame_pacing_mode.GetValue();
+    const bool explicit_cap = Settings::values.eco_thermal_mode.GetValue() ||
+                              pacing_mode != Settings::FramePacingMode::Target_Auto ||
+                              (Settings::values.use_speed_limit.GetValue() &&
+                               Settings::values.speed_limit.GetValue() != 100);
+    if ((Settings::values.eco_frame_pacing.GetValue() ||
+         Settings::values.eco_thermal_mode.GetValue()) &&
+        (!hw_vsync_paces || explicit_cap)) {
         const bool is_unbounded = !Settings::values.use_speed_limit.GetValue() &&
                                   pacing_mode == Settings::FramePacingMode::Target_Auto &&
                                   !Settings::values.eco_thermal_mode.GetValue();

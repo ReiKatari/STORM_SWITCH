@@ -40,6 +40,11 @@ public:
     virtual void CloseStreams() = 0;
 
     /**
+     * Clear all queues in all streams managed by this sink.
+     */
+    virtual void ClearStreams() = 0;
+
+    /**
      * Create a new sink stream, kept within this sink, with a pointer returned for use.
      * Do not free the returned pointer. When done with the stream, call CloseStream on the sink.
      *

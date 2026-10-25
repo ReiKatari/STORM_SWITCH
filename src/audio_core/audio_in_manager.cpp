@@ -66,6 +66,15 @@ void Manager::Start() {
     sessions_started = true;
 }
 
+void Manager::Resynchronize() {
+    std::scoped_lock l{mutex};
+    for (auto& session : sessions) {
+        if (session) {
+            session->GetSystem().Resynchronize();
+        }
+    }
+}
+
 void Manager::BufferReleaseAndRegister() {
     std::scoped_lock l{mutex};
     for (auto& session : sessions) {

@@ -97,6 +97,11 @@ public:
     void BindGraphicsUniformBuffer(size_t stage, u32 index, GPUVAddr gpu_addr, u32 size) override;
     void DisableGraphicsUniformBuffer(size_t stage, u32 index) override;
     void FlushAll() override;
+    void FlushAndSnapshotForSaveState(
+        std::vector<std::pair<DAddr, std::size_t>>& out_surface_ranges) override;
+    void WaitIdleForLoadState() override;
+    void InvalidateForLoadState(
+        std::span<const std::pair<DAddr, std::size_t>> sequences) override;
     void FlushRegion(DAddr addr, u64 size,
                      VideoCommon::CacheType which = VideoCommon::CacheType::All) override;
     bool MustFlushRegion(DAddr addr, u64 size,

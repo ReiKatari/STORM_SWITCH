@@ -28,6 +28,12 @@ IAudioInManager::IAudioInManager(Core::System& system_)
 
 IAudioInManager::~IAudioInManager() = default;
 
+void IAudioInManager::Resynchronize() {
+    if (impl) {
+        impl->Resynchronize();
+    }
+}
+
 Result IAudioInManager::ListAudioIns(
     OutArray<AudioDeviceName, BufferAttr_HipcMapAlias> out_audio_ins, Out<u32> out_count) {
     LOG_DEBUG(Service_Audio, "called");

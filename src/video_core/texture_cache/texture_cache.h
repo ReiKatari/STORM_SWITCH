@@ -140,6 +140,7 @@ void TextureCache<P>::RunGarbageCollector() {
         --num_iterations;
         auto& image = slot_images[image_id];
         if (True(image.flags & ImageFlagBits::IsDecoding)) {
+            lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
         // Generational VRAM Recycling: Active (0) -> Standby (1) -> Eviction Candidate (2)
@@ -150,33 +151,24 @@ void TextureCache<P>::RunGarbageCollector() {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
-        if (True(image.flags & ImageFlagBits::GpuModified)) {
-            // Never evict 1x 2D GPU-modified ColorTexture render targets (such as Diablo II: Resurrected's
-            // persistent UI/font glyph atlases), preserving 100% of UI text across Act transitions while
-            // allowing 3D world textures and unused buffers from previous Acts to be garbage-collected.
-            const bool is_color_2d = image.info.type == ImageType::e2D &&
-                                     image.info.num_samples == 1 &&
-                                     GetFormatType(image.info.format) == SurfaceType::ColorTexture &&
-                                     image.info.size.width <= 2048 && image.info.size.height <= 2048;
-            if (is_color_2d) {
-                return false;
-            }
-        }
         const bool must_download = image.IsSafeDownload() && False(image.flags & ImageFlagBits::BadOverlap);
         if ((!aggressive_mode && True(image.flags & ImageFlagBits::CostlyLoad)) || (!high_priority_mode && must_download)) {
+            lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
         if (!must_download && True(image.flags & ImageFlagBits::GpuModified)) {
             if (!aggressive_mode) {
+                lru_cache.Touch(image.lru_index, frame_tick);
                 return false;
             }
         }
         if (must_download && !vram_gc) {
+            lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
         if (must_download) {
             if (sync_downloads >= 2) {
-                return false;
+                return true;
             }
             ++sync_downloads;
             auto map = runtime.DownloadStagingBuffer(image.unswizzled_size_bytes);
@@ -674,6 +666,102 @@ void TextureCache<P>::DownloadMemory(DAddr cpu_addr, size_t size) {
         SwizzleImage(*gpu_memory, image.gpu_addr, image.info, copies, map.mapped_span,
                      swizzle_data_buffer);
     }
+}
+
+template <class P>
+void TextureCache<P>::SnapshotGpuSurfaces(std::vector<std::pair<DAddr, std::size_t>>& out_ranges) {
+    Tegra::MemoryManager* mem = gpu_memory;
+    if (!mem && !active_channel_ids.empty()) {
+        mem = &channel_storage[active_channel_ids.front()].gpu_memory;
+    }
+    if (!mem) {
+        return;
+    }
+
+    std::vector<ImageId> to_download;
+    std::vector<std::pair<DAddr, std::size_t>> raw_ranges;
+
+    for (auto [image_id, image] : slot_images) {
+        if (!image_id || image_id == NULL_IMAGE_ID || image_id == CORRUPT_ID) {
+            continue;
+        }
+        if (False(image->flags & ImageFlagBits::Registered) ||
+            True(image->flags & ImageFlagBits::Sparse) ||
+            image->guest_size_bytes == 0 || image->cpu_addr == 0) {
+            continue;
+        }
+        if (image->IsSafeDownload()) {
+            to_download.push_back(image_id);
+        }
+        const bool is_persistent_rt =
+            True(image->flags & (ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified)) &&
+            image->info.num_samples == 1 &&
+            GetFormatType(image->info.format) == SurfaceType::ColorTexture;
+        const bool is_dynamic_color =
+            !IsPixelFormatBCn(image->info.format) &&
+            !IsPixelFormatASTC(image->info.format) &&
+            image->info.num_samples == 1 &&
+            GetFormatType(image->info.format) == SurfaceType::ColorTexture &&
+            image->guest_size_bytes <= 16_MiB;
+        if (is_persistent_rt || is_dynamic_color) {
+            raw_ranges.emplace_back(image->cpu_addr, image->guest_size_bytes);
+        }
+    }
+
+    std::ranges::sort(to_download, [this](ImageId lhs, ImageId rhs) {
+        return slot_images[lhs].modification_tick < slot_images[rhs].modification_tick;
+    });
+
+    for (const ImageId image_id : to_download) {
+        Image& image = slot_images[image_id];
+        // Keep GpuModified & EverGpuModified set so consecutive Quick Saves continue capturing it
+        auto map = runtime.DownloadStagingBuffer(image.unswizzled_size_bytes);
+        const auto copies = FixSmallVectorADL(FullDownloadCopies(image.info));
+        image.DownloadMemory(map, copies);
+        runtime.Finish();
+        SwizzleImage(*mem, image.gpu_addr, image.info, copies, map.mapped_span,
+                     swizzle_data_buffer);
+    }
+
+    if (raw_ranges.empty()) {
+        return;
+    }
+    std::ranges::sort(raw_ranges, [](const auto& a, const auto& b) {
+        return a.first < b.first;
+    });
+    for (const auto& [addr, sz] : raw_ranges) {
+        if (!out_ranges.empty() && addr <= out_ranges.back().first + out_ranges.back().second) {
+            const DAddr new_end = (std::max)(out_ranges.back().first + out_ranges.back().second, addr + sz);
+            out_ranges.back().second = static_cast<std::size_t>(new_end - out_ranges.back().first);
+        } else {
+            out_ranges.emplace_back(addr, sz);
+        }
+    }
+}
+
+template <class P>
+void TextureCache<P>::InvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences) {
+    for (const auto& [cpu_addr, size] : sequences) {
+        if (cpu_addr == 0 || size == 0) {
+            continue;
+        }
+        ForEachImageInRegion(cpu_addr, size, [this](ImageId image_id, Image& image) {
+            image.flags &= ~ImageFlagBits::GpuModified;
+            image.flags |= ImageFlagBits::CpuModified;
+            if (True(image.flags & ImageFlagBits::Tracked)) {
+                UntrackImage(image, image_id);
+            }
+        });
+    }
+    for (auto& ch : channel_storage) {
+        ch.graphics_image_table.Invalidate();
+        ch.graphics_sampler_table.Invalidate();
+        ch.compute_image_table.Invalidate();
+        ch.compute_sampler_table.Invalidate();
+        ch.maxwell3d.dirty.flags.set();
+    }
+    ++texture_bindings_serial;
+    ++render_targets_serial;
 }
 
 template <class P>
@@ -2486,7 +2574,7 @@ void TextureCache<P>::RemoveFramebuffers(std::span<const ImageViewId> removed_vi
 
 template <class P>
 void TextureCache<P>::MarkModification(ImageBase& image) noexcept {
-    image.flags |= ImageFlagBits::GpuModified;
+    image.flags |= ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified;
     image.modification_tick = ++modification_tick;
 }
 

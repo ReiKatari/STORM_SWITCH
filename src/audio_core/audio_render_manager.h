@@ -35,6 +35,11 @@ public:
     void Stop();
 
     /**
+     * Resynchronize the manager and its systems after savestate restore.
+     */
+    void Resynchronize();
+
+    /**
      * Get the system manager.
      *
      * @return The system manager.

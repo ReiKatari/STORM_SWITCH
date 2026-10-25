@@ -459,6 +459,7 @@ private slots:
     void OnQuickLoad();
     void OnSaveStateSlot(int slot);
     void OnLoadStateSlot(int slot);
+    void OnSaveStateManager();
     void RefreshSaveStateMenus();
 #ifdef __unix__
     void OnCheckGraphicsBackend();
@@ -766,6 +767,7 @@ private:
     QAction* reset_gamefix_action{nullptr};
     QAction* quick_save_action{nullptr};
     QAction* quick_load_action{nullptr};
+    QAction* save_state_manager_action{nullptr};
     QMenu* save_state_slots_menu{nullptr};
     QMenu* load_state_slots_menu{nullptr};
     std::array<QAction*, 5> save_slot_actions{};

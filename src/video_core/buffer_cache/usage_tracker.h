@@ -24,8 +24,11 @@ public:
     }
 
     void Track(u64 offset, u64 size) noexcept {
+        if (size == 0) {
+            return;
+        }
         const size_t page = offset >> PAGE_SHIFT;
-        const size_t page_end = (offset + size) >> PAGE_SHIFT;
+        const size_t page_end = (offset + size - 1) >> PAGE_SHIFT;
         if (page_end < page || page_end >= pages.size()) {
             return;
         }
@@ -42,13 +45,19 @@ public:
     }
 
     [[nodiscard]] bool IsUsed(u64 offset, u64 size) const noexcept {
+        if (size == 0) {
+            return false;
+        }
         const size_t page = offset >> PAGE_SHIFT;
-        const size_t page_end = (offset + size) >> PAGE_SHIFT;
+        const size_t page_end = (offset + size - 1) >> PAGE_SHIFT;
         if (page_end < page || page_end >= pages.size()) {
             return false;
         }
         if (IsPageUsed(page, offset, size)) {
             return true;
+        }
+        if (page == page_end) {
+            return false;
         }
         for (size_t i = page + 1; i < page_end; i++) {
             if (pages[i] != 0) {
@@ -62,20 +71,35 @@ public:
 
 private:
     void TrackPage(u64 page, u64 offset, u64 size) noexcept {
+        if (size == 0 || page >= pages.size()) {
+            return;
+        }
         const size_t offset_in_page = offset % PAGE_BYTES;
+        const size_t clamped_size = std::min<size_t>(size, PAGE_BYTES - offset_in_page);
+        if (clamped_size == 0) {
+            return;
+        }
         const size_t first_bit = offset_in_page >> BYTES_PER_BIT_SHIFT;
-        const size_t num_bits = std::min<size_t>(size, PAGE_BYTES) >> BYTES_PER_BIT_SHIFT;
-        const size_t mask = ~u64{0} >> (64 - num_bits);
-        pages[page] |= (~u64{0} & mask) << first_bit;
+        const size_t last_bit = (offset_in_page + clamped_size - 1) >> BYTES_PER_BIT_SHIFT;
+        const size_t num_bits = last_bit - first_bit + 1;
+        const u64 mask = num_bits >= 64 ? ~u64{0} : ((u64{1} << num_bits) - 1);
+        pages[page] |= mask << first_bit;
     }
 
     bool IsPageUsed(u64 page, u64 offset, u64 size) const noexcept {
+        if (size == 0 || page >= pages.size()) {
+            return false;
+        }
         const size_t offset_in_page = offset % PAGE_BYTES;
+        const size_t clamped_size = std::min<size_t>(size, PAGE_BYTES - offset_in_page);
+        if (clamped_size == 0) {
+            return false;
+        }
         const size_t first_bit = offset_in_page >> BYTES_PER_BIT_SHIFT;
-        const size_t num_bits = std::min<size_t>(size, PAGE_BYTES) >> BYTES_PER_BIT_SHIFT;
-        const size_t mask = ~u64{0} >> (64 - num_bits);
-        const size_t mask2 = (~u64{0} & mask) << first_bit;
-        return (pages[page] & mask2) != 0;
+        const size_t last_bit = (offset_in_page + clamped_size - 1) >> BYTES_PER_BIT_SHIFT;
+        const size_t num_bits = last_bit - first_bit + 1;
+        const u64 mask = num_bits >= 64 ? ~u64{0} : ((u64{1} << num_bits) - 1);
+        return (pages[page] & (mask << first_bit)) != 0;
     }
 
 private:

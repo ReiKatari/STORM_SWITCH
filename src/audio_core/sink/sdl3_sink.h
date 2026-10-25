@@ -54,6 +54,11 @@ public:
     void CloseStreams() override;
 
     /**
+     * Clear all queues in all streams managed by this sink.
+     */
+    void ClearStreams() override;
+
+    /**
      * Get the device volume. Set from calls to the IAudioDevice service.
      *
      * @return Volume of the device.

@@ -115,6 +115,8 @@ private:
     Common::Vec3<float> last_motion_change;
     Common::Vec2<int> wheel_position;
     bool button_pressed = false;
+    std::atomic<bool> stick_active_{false};
+    std::atomic<bool> motion_active_{false};
     std::chrono::steady_clock::time_point last_mouse_move_time{};
     std::mutex mouse_mutex;
     std::jthread update_thread;

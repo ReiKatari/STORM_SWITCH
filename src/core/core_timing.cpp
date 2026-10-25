@@ -29,21 +29,6 @@ namespace Core::Timing {
 
 constexpr s64 MAX_SLICE_LENGTH = 10000;
 
-constexpr u32 CPU_CLOCK_BASE_MHZ = 1020;
-constexpr u32 CPU_CLOCK_BOOST_MHZ = 1734;
-constexpr u32 CPU_CLOCK_OVERCLOCK_MHZ = 2040;
-
-constexpr u32 CpuClockTargetMhz(Settings::CpuClock clock) {
-    switch (clock) {
-    case Settings::CpuClock::Boost:
-        return CPU_CLOCK_BOOST_MHZ;
-    case Settings::CpuClock::Overclock:
-        return CPU_CLOCK_OVERCLOCK_MHZ;
-    default:
-        return CPU_CLOCK_BASE_MHZ;
-    }
-}
-
 std::shared_ptr<EventType> CreateEvent(std::string name, TimedCallback&& callback) {
     return std::make_shared<EventType>(std::move(callback), std::move(name));
 }
@@ -261,16 +246,16 @@ void CoreTiming::ResetTicks() {
 }
 
 u64 CoreTiming::GetClockTicks() const {
-    u64 fres = is_multicore ? Common::g_wall_clock.GetCNTPCT()
-                            : Common::WallClock::CPUTickToCNTPCT(cpu_ticks);
-    const u32 target_mhz = CpuClockTargetMhz(Settings::values.cpu_clock.GetValue());
-    if (target_mhz != CPU_CLOCK_BASE_MHZ && target_mhz > 0) [[unlikely]] {
-        fres = (fres / target_mhz) * CPU_CLOCK_BASE_MHZ + ((fres % target_mhz) * CPU_CLOCK_BASE_MHZ) / target_mhz;
-    }
+    // CNTPCT_EL0 is the architectural 19.2 MHz system crystal timer (CNTFRQ_EL0 = 19,200,000)
+    // and must NEVER be scaled by CPU core boost frequency, otherwise games waiting 320,000 ticks
+    // (16.667 ms) wait 28.33 ms (35 FPS / 30 FPS VSync lock) instead of 60 FPS!
+    const u64 fres = is_multicore ? Common::g_wall_clock.GetCNTPCT()
+                                  : Common::WallClock::CPUTickToCNTPCT(cpu_ticks);
     if (::Settings::values.sync_core_speed.GetValue()) {
-        auto const ticks = f64(fres);
-        auto const speed_limit = f64(Settings::SpeedLimit()) * 0.01;
-        return u64(ticks / speed_limit);
+        const u16 limit = Settings::SpeedLimit();
+        if (limit > 0 && limit != 100) {
+            return (fres / limit) * 100 + ((fres % limit) * 100) / limit;
+        }
     }
     return fres;
 }

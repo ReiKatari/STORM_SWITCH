@@ -31,6 +31,12 @@ IAudioOutManager::IAudioOutManager(Core::System& system_)
 
 IAudioOutManager::~IAudioOutManager() = default;
 
+void IAudioOutManager::Resynchronize() {
+    if (impl) {
+        impl->Resynchronize();
+    }
+}
+
 Result IAudioOutManager::ListAudioOuts(
     OutArray<AudioDeviceName, BufferAttr_HipcMapAlias> out_audio_outs, Out<u32> out_count) {
     R_RETURN(this->ListAudioOutsAuto(out_audio_outs, out_count));

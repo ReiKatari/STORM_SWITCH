@@ -648,8 +648,6 @@ void ApplyTopologicalCpuSetPinning(bool prefer_performance_cores) {
     const std::vector<ULONG>* chosen = nullptr;
     if (!p_core_sets.empty() && !e_core_sets.empty()) {
         chosen = prefer_performance_cores ? &p_core_sets : &e_core_sets;
-    } else if (!ccd0_sets.empty() && !ccd1_sets.empty()) {
-        chosen = prefer_performance_cores ? &ccd0_sets : &ccd1_sets;
     }
 
     if (chosen && !chosen->empty()) {
@@ -695,7 +693,7 @@ void SetCurrentThreadToEfficiencyCores() {
         ULONG Version;
         ULONG ControlMask;
         ULONG StateMask;
-    } power_state{1, 0x1, 0x1};
+    } power_state{1, 0x1, 0};
     SetThreadInformation(GetCurrentThread(), static_cast<THREAD_INFORMATION_CLASS>(1), &power_state,
                          sizeof(power_state));
     if (Settings::values.cpu_affinity_pinning.GetValue()) {

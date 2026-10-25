@@ -20,6 +20,8 @@ public:
     explicit IAudioRendererManager(Core::System& system_);
     ~IAudioRendererManager() override;
 
+    void Resynchronize();
+
 private:
     Result OpenAudioRenderer(Out<SharedPointer<IAudioRenderer>> out_audio_renderer,
                              AudioCore::AudioRendererParameterInternal parameter,

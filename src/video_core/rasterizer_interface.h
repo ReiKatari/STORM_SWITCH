@@ -86,6 +86,19 @@ public:
     /// Notify rasterizer that all caches should be flushed to Switch memory
     virtual void FlushAll() = 0;
 
+    /// Flush GPU work, download GPU-modified caches to guest DRAM, and return GPU surface ranges for save states
+    virtual void FlushAndSnapshotForSaveState(
+        [[maybe_unused]] std::vector<std::pair<DAddr, std::size_t>>& out_surface_ranges) {}
+
+    /// Drain all in-flight host GPU work before restoring guest DRAM on save state load
+    virtual void WaitIdleForLoadState() {}
+
+    /// Invalidate all GPU caches, descriptor tables, and pipeline states after save state load
+    virtual void InvalidateForLoadState(
+        std::span<const std::pair<DAddr, std::size_t>> sequences) {
+        InnerInvalidation(sequences);
+    }
+
     /// Notify rasterizer that any caches of the specified region should be flushed to Switch memory
     virtual void FlushRegion(DAddr addr, u64 size,
                              VideoCommon::CacheType which = VideoCommon::CacheType::All) = 0;

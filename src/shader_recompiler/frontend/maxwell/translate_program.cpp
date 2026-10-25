@@ -120,20 +120,6 @@ void AddNVNStorageBuffers(IR::Program& program) {
         throw InvalidArgument("Invalid stage {}", program.stage);
     }()};
     auto& descs{program.info.storage_buffers_descriptors};
-    bool has_untracked_nvn_slot{false};
-    for (u32 index = 0; index < num_buffers; ++index) {
-        if (!program.info.nvn_buffer_used[index]) {
-            continue;
-        }
-        const u32 offset{base + index * descriptor_size};
-        if (std::ranges::find(descs, offset, &StorageBufferDescriptor::cbuf_offset) == descs.end()) {
-            has_untracked_nvn_slot = true;
-            break;
-        }
-    }
-    if (!has_untracked_nvn_slot) {
-        program.info.nvn_buffer_used.set();
-    }
     for (u32 index = 0; index < num_buffers; ++index) {
         if (!program.info.nvn_buffer_used[index]) {
             continue;

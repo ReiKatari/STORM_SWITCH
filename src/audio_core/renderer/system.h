@@ -100,6 +100,11 @@ public:
     void Stop();
 
     /**
+     * Resynchronize the system session after savestate restore.
+     */
+    void Resynchronize();
+
+    /**
      * Update the system.
      *
      * @param input       - Inout buffer containing the update data.

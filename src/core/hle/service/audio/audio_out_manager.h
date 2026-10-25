@@ -23,6 +23,8 @@ public:
 
     Result SetAllAudioOutVolume(f32 volume);
 
+    void Resynchronize();
+
 private:
     Result ListAudioOuts(OutArray<AudioDeviceName, BufferAttr_HipcMapAlias> out_audio_outs,
                          Out<u32> out_count);

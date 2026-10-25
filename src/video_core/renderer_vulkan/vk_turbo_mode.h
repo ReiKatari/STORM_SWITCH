@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <mutex>
 
@@ -29,7 +30,7 @@ private:
 
     std::mutex m_submission_lock;
     std::condition_variable_any m_submission_cv;
-    std::chrono::time_point<std::chrono::steady_clock> m_submission_time{};
+    std::atomic<s64> m_last_submission_ns{0};
 
     std::jthread m_thread;
 };

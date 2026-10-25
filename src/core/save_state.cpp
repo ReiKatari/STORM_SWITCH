@@ -27,8 +27,13 @@
 #include "core/hle/kernel/k_thread.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/memory.h"
+#include "audio_core/audio_core.h"
+#include "core/hle/service/audio/audio_in_manager.h"
+#include "core/hle/service/audio/audio_out_manager.h"
+#include "core/hle/service/audio/audio_renderer_manager.h"
+#include "core/hle/service/sm/sm.h"
 #include "core/save_state.h"
-#include "video_core/gpu.h"
+#include "video_core/gpu.h" 
 
 namespace Core {
 
@@ -239,7 +244,8 @@ ProcessLayoutAnalysis AnalyzeProcessLayout(Kernel::KProcess& process, bool allow
             const u64 reg_size = info.GetSize();
             const u64 reg_end = reg_addr + reg_size;
 
-            // Skip rtld and nnSdk (.data / .bss)
+            // Skip rtld and nnSdk (.data / .bss) so HLE service handles, SDK mutexes, and
+            // thread/allocator structures inside sdk remain synchronized with the host kernel
             const bool in_rtld = (out.rtld_end > out.rtld_start) &&
                                  (reg_addr >= out.rtld_start && reg_end <= out.rtld_end);
             const bool in_sdk = (out.sdk_end > out.sdk_start) &&
@@ -391,45 +397,68 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
     SyncProtectionContext ctx{};
     ctx.sdk_start = layout.sdk_start;
     ctx.sdk_end = layout.sdk_end;
-
+    auto& page_table = process.GetPageTable();
     auto& thread_list = process.GetThreadList();
     bool is_first_user_thread = true;
 
     for (const auto& thread : thread_list) {
-        if (!thread.IsUserThread()) {
+        if (!thread.IsUserThread() || thread.IsDummyThread()) {
             continue;
         }
-        const bool is_main_thread = is_first_user_thread;
+        bool is_main_thread = is_first_user_thread;
         is_first_user_thread = false;
 
-        // 1. Protect TLS page and read nn::os::ThreadType* from [tls + 0x1F8]
+        // 1. Protect TLS area (0x200 bytes) and nn::os::ThreadType pointed by TLS + 0x1f8
         const u64 tls = GetInteger(thread.GetTlsAddress());
-        if (tls >= 0x1000) {
+        if (tls != 0) {
             ctx.AddRange(tls, tls + 0x200);
             if (const u8* tls_ptr = memory.GetPointerSilent(Common::ProcessAddress{tls})) {
                 u64 thread_type_ptr = 0;
                 std::memcpy(&thread_type_ptr, tls_ptr + 0x1F8, sizeof(u64));
                 if (thread_type_ptr >= 0x1000) {
+                    if (const u8* tt_ptr =
+                            memory.GetPointerSilent(Common::ProcessAddress{thread_type_ptr})) {
+                        // Check thread name at +0x180 to identify MainThread reliably
+                        const char* tname = reinterpret_cast<const char*>(tt_ptr + 0x180);
+                        if (std::strncmp(tname, "MainThread", 10) == 0) {
+                            is_main_thread = true;
+                        }
+                    }
+
                     ctx.AddRange(thread_type_ptr >= 0x200 ? thread_type_ptr - 0x200 : thread_type_ptr,
                                  thread_type_ptr + 0x400);
 
+                    // Read nn::os::ThreadType fields:
+                    // +0x40: thread_arg, +0x48: orig_stack, +0x50: alias_stack, +0x58: stack_sz, +0x1B0: handle
                     if (const u8* tt_ptr =
                             memory.GetPointerSilent(Common::ProcessAddress{thread_type_ptr})) {
+                        u64 thread_arg = 0;
                         u64 orig_stack = 0;
                         u64 alias_stack = 0;
                         u64 stack_sz = 0;
-                        u64 thread_arg = 0;
-                        u32 handle = 0;
+                        u32 handle_cand = 0;
+                        std::memcpy(&thread_arg, tt_ptr + 0x40, sizeof(u64));
                         std::memcpy(&orig_stack, tt_ptr + 0x48, sizeof(u64));
                         std::memcpy(&alias_stack, tt_ptr + 0x50, sizeof(u64));
                         std::memcpy(&stack_sz, tt_ptr + 0x58, sizeof(u64));
-                        std::memcpy(&thread_arg, tt_ptr + 0x60, sizeof(u64));
-                        std::memcpy(&handle, tt_ptr + 0x1B0, sizeof(u32));
+                        std::memcpy(&handle_cand, tt_ptr + 0x1B0, sizeof(u32));
 
-                        if ((handle & 0x3FFFFFFFu) >= 0x00010000u) {
-                            ctx.active_thread_handles.push_back(handle & 0x3FFFFFFFu);
+                        if ((handle_cand & 0x3FFFFFFFu) >= 0x00010000u &&
+                            (handle_cand & 0x3FFFFFFFu) <= 0x00FFFFFFu) {
+                            ctx.active_thread_handles.push_back(handle_cand & 0x3FFFFFFFu);
+                        } else {
+                            for (std::size_t off = 0x180; off <= 0x1F0; off += 4) {
+                                u32 w = 0;
+                                std::memcpy(&w, tt_ptr + off, sizeof(u32));
+                                const u32 h = w & 0x3FFFFFFFu;
+                                if ((h & 0x7FFFu) >= 0x0001u && (h & 0x7FFFu) <= 0x0400u &&
+                                    h >= 0x00018000u && h <= 0x00400000u) {
+                                    ctx.active_thread_handles.push_back(h);
+                                }
+                            }
                         }
-                        if (stack_sz >= 0x1000 && stack_sz <= 0x800000) {
+
+                        if (stack_sz > 0 && stack_sz <= 0x4000000) {
                             if (orig_stack >= 0x1000) {
                                 ctx.AddRange(orig_stack, orig_stack + stack_sz);
                             }
@@ -437,17 +466,19 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
                                 ctx.AddRange(alias_stack, alias_stack + stack_sz);
                             }
                         }
-                        if (thread_arg >= 0x1000) {
+
+                        if (!is_main_thread && thread_arg >= 0x80000000ULL &&
+                            memory.GetPointerSilent(Common::ProcessAddress{thread_arg}) != nullptr) {
                             ctx.AddRange(thread_arg >= 0x1000 ? thread_arg - 0x1000 : thread_arg,
                                          thread_arg + 0x10000);
                         }
 
-                        // If a background worker thread (e.g. AudioThread) has its ThreadType
-                        // embedded in .bss, protect its surrounding audio/service subsystem workbuffer
-                        if (!is_main_thread && layout.sdk_start > 0 &&
-                            thread_type_ptr < layout.sdk_start) {
-                            ctx.AddRange(thread_type_ptr >= 0x10000 ? thread_type_ptr - 0x10000
-                                                                    : thread_type_ptr,
+                        // Background worker threads (AudioThread, FileIO, etc.) whose ThreadType lives in
+                        // .bss or heap outside sdk: protect the contiguous subsystem arena and audio
+                        // workbuffer following ThreadType without touching main game state.
+                        if (!is_main_thread && layout.sdk_start > 0 && thread_type_ptr < layout.sdk_start) {
+                            ctx.AddRange(thread_type_ptr >= 0x200 ? thread_type_ptr - 0x200
+                                                                  : thread_type_ptr,
                                          thread_type_ptr + 0x140000);
                         }
                     }
@@ -455,78 +486,86 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
             }
         }
 
-        // 2. Protect C++ dynamic TLS block pointed to by TPIDR_EL0
-        const u64 tpidr = thread.GetTpidrEl0();
-        if (tpidr >= 0x1000) {
-            ctx.AddRange(tpidr >= 0x1000 ? tpidr - 0x1000 : tpidr, tpidr + 0x2000);
+        // 2. Protect TPIDR_EL0 thread control block
+        const auto& tctx = thread.GetContext();
+        if (tctx.tpidr >= 0x1000) {
+            ctx.AddRange(tctx.tpidr >= 0x1000 ? tctx.tpidr - 0x1000 : tctx.tpidr,
+                         tctx.tpidr + 0x2000);
         }
 
-        // 3. Protect active SP, FP, and UserStackTop
-        const auto& tctx = thread.GetContext();
-        if (tctx.sp >= 0x10000) {
-            ctx.AddRange(tctx.sp - 0x10000, tctx.sp + 0x20000);
+        // 3. Protect active call stack around SP, FP, and top of stack VMA
+        if (tctx.sp >= 0x1000) {
+            ctx.AddRange(tctx.sp >= 0x10000 ? tctx.sp - 0x10000 : tctx.sp, tctx.sp + 0x20000);
+            Kernel::KMemoryInfo s_info{};
+            Kernel::Svc::PageInfo s_pinfo{};
+            if (page_table.QueryInfo(&s_info, &s_pinfo, Common::ProcessAddress{tctx.sp}).IsSuccess()) {
+                const auto s_svc = s_info.GetSvcMemoryInfo();
+                if (s_svc.state != Kernel::Svc::MemoryState::Free) {
+                    const u64 stack_top = static_cast<u64>(s_info.GetAddress()) + s_info.GetSize();
+                    const u64 protect_from =
+                        (stack_top > tctx.sp && (stack_top - tctx.sp) <= 0x100000)
+                            ? (tctx.sp >= 0x8000 ? tctx.sp - 0x8000 : tctx.sp)
+                            : (stack_top >= 0x40000 ? stack_top - 0x40000 : stack_top);
+                    ctx.AddRange(protect_from, stack_top);
 
-            // Scan active call stack frames [sp, sp + 0x8000] for pointers to SDK/NVN controller
-            // objects in .bss / heap (pages that contain sdk pointers)
-            for (u64 stk_addr = tctx.sp & ~7ULL; stk_addr < tctx.sp + 0x8000; stk_addr += 8) {
-                const u8* stk_ptr = memory.GetPointerSilent(Common::ProcessAddress{stk_addr});
-                if (!stk_ptr) {
-                    break;
-                }
-                u64 val = 0;
-                std::memcpy(&val, stk_ptr, sizeof(u64));
-                if (val >= 0x0080000000ULL && val < 0x8000000000ULL) {
-                    const u64 target_page = val & ~u64(V2_CHUNK_SIZE - 1);
-                    if (const u8* tp = memory.GetPointerSilent(Common::ProcessAddress{target_page})) {
-                        for (u32 k = 0; k < V2_CHUNK_SIZE; k += 8) {
-                            u64 q = 0;
-                            std::memcpy(&q, tp + k, sizeof(u64));
-                            if (ctx.IsSdkPointer(q)) {
-                                ctx.AddRange(target_page >= 0x4000 ? target_page - 0x4000 : target_page,
-                                             target_page + 0x14000);
-                                break;
+                    // Scan active stack frames [sp, min(stack_top, sp + 0x8000)] for pointers to
+                    // NVN / nnSdk driver structures (e.g. NVNdevice, NVNqueue, NVNwindow, NVNsync)
+                    // so their live GPU syncpoint thresholds and IPC handles stay in sync with host GPU
+                    const u64 scan_end = std::min<u64>(stack_top, tctx.sp + 0x8000);
+                    for (u64 s_addr = tctx.sp & ~7ULL; s_addr < scan_end; s_addr += 8) {
+                        const u8* sp_ptr = memory.GetPointerSilent(Common::ProcessAddress{s_addr});
+                        if (!sp_ptr) {
+                            break;
+                        }
+                        u64 val = 0;
+                        std::memcpy(&val, sp_ptr, sizeof(u64));
+                        if (val >= 0x80000000ULL && (layout.sdk_start == 0 || val < layout.sdk_start)) {
+                            const u64 target_page = val & ~0xFFFULL;
+                            if (const u8* tp =
+                                    memory.GetPointerSilent(Common::ProcessAddress{target_page})) {
+                                bool has_sdk_ref = false;
+                                const auto* w64 = reinterpret_cast<const u64*>(tp);
+                                for (std::size_t k = 0; k < (V2_CHUNK_SIZE / sizeof(u64)); ++k) {
+                                    if (ctx.IsSdkPointer(w64[k])) {
+                                        has_sdk_ref = true;
+                                        break;
+                                    }
+                                }
+                                if (has_sdk_ref) {
+                                    ctx.AddRange(target_page >= 0x4000 ? target_page - 0x4000
+                                                                       : target_page,
+                                                 target_page + 0x14000);
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        if (tctx.fp >= 0x10000) {
-            ctx.AddRange(tctx.fp - 0x4000, tctx.fp + 0x10000);
+        if (tctx.r[29] >= 0x1000) {
+            const u64 fp = tctx.r[29];
+            ctx.AddRange(fp >= 0x4000 ? fp - 0x4000 : fp, fp + 0x10000);
         }
 
-        const u64 stack_top = GetInteger(thread.GetUserStackTop());
-        if (stack_top >= 0x40000) {
-            ctx.AddRange(stack_top - 0x40000, stack_top);
-        }
-
-        // 4. For background threads or threads currently inside nnSdk, protect workbuffers in X0..X28
-        const bool in_sdk_call = ctx.IsSdkPointer(tctx.pc) || ctx.IsSdkPointer(tctx.lr);
-        if (!is_main_thread || in_sdk_call) {
-            for (std::size_t r = 0; r < tctx.r.size(); ++r) {
-                const u64 rv = tctx.r[r];
-                if (rv >= 0x0080000000ULL && rv < 0x8000000000ULL) {
-                    if (memory.GetPointerSilent(Common::ProcessAddress{rv})) {
-                        if (!is_main_thread) {
-                            ctx.AddRange(rv >= 0x4000 ? rv - 0x4000 : rv, rv + 0x68000);
-                        } else {
-                            ctx.AddRange(rv >= 0x200 ? rv - 0x200 : rv, rv + 0x1000);
-                        }
-                    }
+        // 4. For background threads ONLY (e.g. AudioThread), protect structures pointed to by X0..X28
+        if (!is_main_thread) {
+            for (std::size_t reg_idx = 0; reg_idx < 29; ++reg_idx) {
+                const u64 rv = tctx.r[reg_idx];
+                if ((rv & 7ULL) == 0 && rv >= 0x80000000ULL &&
+                    memory.GetPointerSilent(Common::ProcessAddress{rv}) != nullptr) {
+                    ctx.AddRange(rv >= 0x4000 ? rv - 0x4000 : rv, rv + 0x68000);
                 }
             }
         }
 
-        // 5. Protect active kernel mutex / condvar / address arbiter words
+        // 5. Protect active kernel Mutex / CondVar wait keys
         const u64 addr_key = GetInteger(thread.GetAddressKey());
         if (addr_key >= 0x1000) {
-            const u64 aligned = addr_key & ~u64(63);
-            ctx.AddRange(aligned, aligned + 64);
+            ctx.AddRange(addr_key - 0x80, addr_key + 0x80);
         }
         const u64 cv_key = thread.GetConditionVariableKey();
         if (cv_key >= 0x1000) {
-            const u64 aligned = cv_key & ~u64(63);
-            ctx.AddRange(aligned, aligned + 64);
+            ctx.AddRange(cv_key - 0x80, cv_key + 0x80);
         }
     }
 
@@ -654,6 +693,9 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     // Ensure any previous background disk write is completed before starting a new snapshot
     FlushPendingSaveStates();
 
+    // Flush and snapshot all dynamic GPU surfaces and modified buffers to DRAM
+    [[maybe_unused]] const auto surface_ranges = system.GPU().SyncAndSnapshotForSaveState();
+
     // Align to a clean frame boundary wait before stalling CPU cores
     WaitForCleanFrameBoundary(*process);
 
@@ -664,7 +706,7 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     const u64 dram_size = Kernel::Board::Nintendo::Nx::KSystemControl::Init::GetIntendedMemorySize();
 
     // 1. Analyze process layout (skips rtld, nnSdk, GOT, and GPU/NVN driver fragments)
-    const auto layout = AnalyzeProcessLayout(*process);
+    auto layout = AnalyzeProcessLayout(*process);
     const auto& regions = layout.writable_regions;
     auto& memory = system.ApplicationMemory();
 
@@ -856,6 +898,9 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
     // Pause emulation for differential memory restoration (must hold returned lock!)
     auto stall_lock = system.StallApplication();
 
+    // Ensure GPU has finished any in-flight rendering/command buffers before memory changes
+    system.GPU().WaitIdleForLoadState();
+
     process = kernel.ApplicationProcess();
     if (!process) {
         system.UnstallApplication();
@@ -863,8 +908,8 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
     }
 
     auto& memory = system.ApplicationMemory();
-    const auto layout = AnalyzeProcessLayout(*process);
-    const auto sync_ctx = BuildSyncProtectionContext(*process, memory, layout);
+    auto layout = AnalyzeProcessLayout(*process);
+    [[maybe_unused]] const auto sync_ctx = BuildSyncProtectionContext(*process, memory, layout);
 
     if (header.flags & SaveStateFlag_WritableRegions) {
         if (decompressed.size() < sizeof(u32)) {
@@ -875,6 +920,50 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
         u32 region_count = 0;
         std::memcpy(&region_count, decompressed.data(), sizeof(u32));
         std::size_t cursor = sizeof(u32);
+
+        // Pre-scan saved regions to dynamically expand guest heap if restoring from cold title screen
+        const u64 heap_start = GetInteger(process->GetPageTable().GetHeapRegionStart());
+        u64 needed_heap_size = 0;
+        {
+            std::size_t scan_cursor = cursor;
+            for (u32 r = 0; r < region_count; ++r) {
+                if (scan_cursor + sizeof(PackedRegionHeader) > decompressed.size()) {
+                    break;
+                }
+                PackedRegionHeader rh{};
+                std::memcpy(&rh, decompressed.data() + scan_cursor, sizeof(PackedRegionHeader));
+                scan_cursor += sizeof(PackedRegionHeader);
+                const u32 bm_bytes = (rh.num_chunks + 7) / 8;
+                if (scan_cursor + bm_bytes > decompressed.size()) {
+                    break;
+                }
+                const u8* bm = decompressed.data() + scan_cursor;
+                scan_cursor += bm_bytes;
+                if (rh.address == heap_start && rh.size > needed_heap_size) {
+                    needed_heap_size = rh.size;
+                }
+                for (u32 c = 0; c < rh.num_chunks; ++c) {
+                    if ((bm[c / 8] & (1u << (c % 8))) != 0) {
+                        const std::size_t chunk_len = static_cast<std::size_t>(
+                            std::min<u64>(V2_CHUNK_SIZE, rh.size - static_cast<u64>(c) * V2_CHUNK_SIZE));
+                        scan_cursor += chunk_len;
+                    }
+                }
+            }
+        }
+
+        if (needed_heap_size > 0) {
+            Kernel::KProcessAddress out_addr{};
+            auto res = process->GetPageTable().SetHeapSize(std::addressof(out_addr), needed_heap_size);
+            if (res.IsSuccess()) {
+                LOG_INFO(Core, "SaveState: Expanded process heap to {} MB for savestate restore",
+                         needed_heap_size / (1024 * 1024));
+                layout = AnalyzeProcessLayout(*process);
+            } else {
+                LOG_WARNING(Core, "SaveState: Failed to expand heap to {} MB (res={:#x})",
+                            needed_heap_size / (1024 * 1024), res.GetInnerValue());
+            }
+        }
 
         std::array<u8, V2_CHUNK_SIZE> patched_page{};
         std::array<u8, V2_CHUNK_SIZE> zero_page{};
@@ -899,13 +988,21 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
             cursor += bitmask_bytes;
 
             // Check whether this saved region is in our allowed safe writable regions list
-            bool region_safe = false;
-            for (const auto& allowed : layout.writable_regions) {
-                if (reg_hdr.address >= allowed.address &&
-                    (reg_hdr.address + reg_hdr.size) <= (allowed.address + allowed.size)) {
-                    region_safe = true;
-                    break;
+            bool region_safe = (reg_hdr.address == heap_start);
+            if (!region_safe) {
+                for (const auto& allowed : layout.writable_regions) {
+                    if (reg_hdr.address >= allowed.address &&
+                        (reg_hdr.address + reg_hdr.size) <= (allowed.address + allowed.size)) {
+                        region_safe = true;
+                        break;
+                    }
                 }
+            }
+            if ((layout.rtld_end > layout.rtld_start && reg_hdr.address >= layout.rtld_start &&
+                 reg_hdr.address < layout.rtld_end) ||
+                (layout.sdk_end > layout.sdk_start && reg_hdr.address >= layout.sdk_start &&
+                 reg_hdr.address < layout.sdk_end)) {
+                region_safe = false;
             }
 
             const bool is_huge_heap = reg_hdr.size >= 256ULL * 1024 * 1024;
@@ -960,87 +1057,85 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                     }
                 }
 
-                // Count SDK pointers on this page; if it's an SDK/NVN service or dispatch table page
-                // (>= 4 pointers into nnSdk), preserve the live page completely.
-                u32 sdk_ptr_count = 0;
-                for (std::size_t k = 0; k + sizeof(u64) <= chunk_len; k += sizeof(u64)) {
-                    u64 lv = 0;
-                    u64 tv = 0;
-                    std::memcpy(&lv, live_ptr + k, sizeof(u64));
-                    std::memcpy(&tv, target_data + k, sizeof(u64));
-                    if (sync_ctx.IsSdkPointer(lv) || sync_ctx.IsSdkPointer(tv)) {
-                        sdk_ptr_count++;
+                const u64 page_end = page_addr + chunk_len;
+                bool has_overlap = false;
+                bool fully_protected = false;
+
+                for (const auto& pr : sync_ctx.ranges) {
+                    if (pr.end <= page_addr) {
+                        continue;
                     }
+                    if (pr.start >= page_end) {
+                        break;
+                    }
+                    if (pr.start <= page_addr && pr.end >= page_end) {
+                        fully_protected = true;
+                        break;
+                    }
+                    if (!has_overlap) {
+                        std::memcpy(patched_page.data(), target_data, chunk_len);
+                        has_overlap = true;
+                    }
+                    const u64 ov_start = std::max(page_addr, pr.start);
+                    const u64 ov_end = std::min(page_end, pr.end);
+                    const std::size_t off = static_cast<std::size_t>(ov_start - page_addr);
+                    const std::size_t len = static_cast<std::size_t>(ov_end - ov_start);
+                    std::memcpy(patched_page.data() + off, live_ptr + off, len);
                 }
-                if (sdk_ptr_count >= 4) {
+
+                if (fully_protected) {
                     continue;
                 }
 
-                const u64 page_end = page_addr + chunk_len;
-                const u8* data_to_write = target_data;
-                bool has_patch = false;
-
-                // 1. Preserve any explicit protected OS/thread/stack/workbuffer address ranges
-                for (const auto& pr : sync_ctx.ranges) {
-                    if (pr.start < page_end && pr.end > page_addr) {
-                        if (!has_patch) {
-                            std::memcpy(patched_page.data(), target_data, chunk_len);
-                            has_patch = true;
+                // Preserve 64-byte slots containing active kernel thread handles (e.g. locked nn::os::MutexType)
+                if (!sync_ctx.active_thread_handles.empty()) {
+                    const std::size_t words32 = chunk_len / sizeof(u32);
+                    const auto* live_w32 = reinterpret_cast<const u32*>(live_ptr);
+                    const auto* targ_w32 = reinterpret_cast<const u32*>(
+                        has_overlap ? patched_page.data() : target_data);
+                    for (std::size_t w = 0; w < words32; ++w) {
+                        const u32 lw32 = live_w32[w];
+                        const u32 tw32 = targ_w32[w];
+                        if (lw32 == tw32) {
+                            continue;
                         }
-                        const u64 ov_start = std::max(page_addr, pr.start) - page_addr;
-                        const u64 ov_end = std::min(page_end, pr.end) - page_addr;
-                        std::memcpy(patched_page.data() + ov_start,
-                                    live_ptr + ov_start,
-                                    static_cast<std::size_t>(ov_end - ov_start));
+                        if (sync_ctx.IsHandleActive(lw32) || sync_ctx.IsHandleActive(tw32)) {
+                            if (!has_overlap) {
+                                std::memcpy(patched_page.data(), target_data, chunk_len);
+                                has_overlap = true;
+                                targ_w32 = reinterpret_cast<const u32*>(patched_page.data());
+                            }
+                            const std::size_t byte_off = w * sizeof(u32);
+                            const std::size_t slot_start = (byte_off >= 32) ? ((byte_off - 32) & ~7ULL) : 0;
+                            const std::size_t slot_end = std::min<std::size_t>(chunk_len, (byte_off + 32 + 7) & ~7ULL);
+                            std::memcpy(patched_page.data() + slot_start, live_ptr + slot_start,
+                                        slot_end - slot_start);
+                        }
                     }
                 }
 
-                // 2. Preserve any 128-byte block containing an active kernel thread handle
-                // (InternalCriticalSection / MutexType) or SDK vtable pointer
-                for (std::size_t k = 0; k + sizeof(u32) <= chunk_len; k += sizeof(u32)) {
-                    u32 lw32 = 0;
-                    u32 tw32 = 0;
-                    std::memcpy(&lw32, live_ptr + k, sizeof(u32));
-                    std::memcpy(&tw32, target_data + k, sizeof(u32));
-                    bool preserve_slot = sync_ctx.IsHandleActive(lw32) || sync_ctx.IsHandleActive(tw32);
-
-                    if (!preserve_slot && (k & 7u) == 0 && (k + sizeof(u64)) <= chunk_len &&
-                        sdk_ptr_count > 0) {
-                        u64 lq = 0;
-                        u64 tq = 0;
-                        std::memcpy(&lq, live_ptr + k, sizeof(u64));
-                        std::memcpy(&tq, target_data + k, sizeof(u64));
-                        if (sync_ctx.IsSdkPointer(lq) || sync_ctx.IsSdkPointer(tq)) {
-                            preserve_slot = true;
-                        }
-                    }
-
-                    if (preserve_slot) {
-                        if (!has_patch) {
-                            std::memcpy(patched_page.data(), target_data, chunk_len);
-                            has_patch = true;
-                        }
-                        const std::size_t slot_start = (k >= 64) ? ((k & ~std::size_t(63)) - 64) : 0;
-                        const std::size_t slot_end = std::min<std::size_t>(chunk_len, (k & ~std::size_t(63)) + 128);
-                        std::memcpy(patched_page.data() + slot_start, live_ptr + slot_start,
-                                    slot_end - slot_start);
-                    }
+                const u8* final_src = has_overlap ? patched_page.data() : target_data;
+                if (has_overlap && std::memcmp(live_ptr, final_src, chunk_len) == 0) {
+                    continue;
                 }
 
-                if (has_patch) {
-                    data_to_write = patched_page.data();
-                    if (std::memcmp(live_ptr, data_to_write, chunk_len) == 0) {
-                        continue;
-                    }
-                }
-
-                memory.WriteBlockUnsafe(page_addr, data_to_write, chunk_len);
+                memory.WriteBlockUnsafe(page_addr, final_src, chunk_len);
                 diff_bytes_written += chunk_len;
             }
         }
 
         LOG_INFO(Core, "SaveState: Differential restore wrote {:.2f} MB of changed 4KB pages",
                  static_cast<double>(diff_bytes_written) / (1024.0 * 1024.0));
+
+        if (!layout.writable_regions.empty()) {
+            std::vector<std::pair<DAddr, std::size_t>> modified_gpu_ranges;
+            modified_gpu_ranges.reserve(layout.writable_regions.size());
+            for (const auto& reg : layout.writable_regions) {
+                modified_gpu_ranges.emplace_back(reg.address, reg.size);
+            }
+            system.GPU().SyncAndInvalidateForLoadState(modified_gpu_ranges);
+        }
+        system.GPU().InvalidateGPUCache();
     } else if (header.flags & SaveStateFlag_SparsePages) {
         // Legacy v1 Sparse Page Encoded (64KB full DRAM)
         auto& device_memory = system.DeviceMemory();
@@ -1087,6 +1182,19 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
         monitor.ClearExclusive(c);
     }
 
+    // Resynchronize AudioCore internal sessions and buffer queues on savestate restore
+    // to prevent audio desync and Service::Audio::ResultNotFound (0x2a2) in guest threads
+    system.AudioCore().ResynchronizeSaveState();
+    if (auto audren_u = system.ServiceManager().GetService<Service::Audio::IAudioRendererManager>("audren:u")) {
+        audren_u->Resynchronize();
+    }
+    if (auto audout_u = system.ServiceManager().GetService<Service::Audio::IAudioOutManager>("audout:u")) {
+        audout_u->Resynchronize();
+    }
+    if (auto audin_u = system.ServiceManager().GetService<Service::Audio::IAudioInManager>("audin:u")) {
+        audin_u->Resynchronize();
+    }
+
     system.UnstallApplication();
     stall_lock.unlock();
 
@@ -1094,6 +1202,7 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                              std::chrono::steady_clock::now() - t_start)
                              .count();
     LOG_INFO(Core, "SaveState: Instant Quick Load completed in {} ms", load_ms);
+
     return SaveStateResult::Success;
 }
 

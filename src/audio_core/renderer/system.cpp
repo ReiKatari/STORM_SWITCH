@@ -448,6 +448,13 @@ void System::Stop() {
     }
 }
 
+void System::Resynchronize() {
+    std::scoped_lock l{lock};
+    reset_command_buffers = true;
+    adsp_behind = false;
+    audio_renderer.ClearRemainCommandCount(session_id);
+}
+
 Result System::Update(std::span<const u8> input, std::span<u8> performance, std::span<u8> output) {
     std::scoped_lock l{lock};
 

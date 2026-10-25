@@ -79,6 +79,7 @@ public:
                           bool reset) noexcept;
     u32 GetRemainCommandCount(s32 session_id) const noexcept;
     void ClearRemainCommandCount(s32 session_id) noexcept;
+    void ClearAllRemainCommandCounts() noexcept;
     u64 GetRenderingStartTick(s32 session_id) const noexcept;
 
 private:

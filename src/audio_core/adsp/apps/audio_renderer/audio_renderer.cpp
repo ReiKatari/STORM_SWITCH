@@ -115,6 +115,18 @@ void AudioRenderer::ClearRemainCommandCount(s32 session_id) noexcept {
     command_buffers[session_id].remaining_command_count = 0;
 }
 
+void AudioRenderer::ClearAllRemainCommandCounts() noexcept {
+    for (auto& buffer : command_buffers) {
+        buffer.remaining_command_count = 0;
+        buffer.reset_buffer = true;
+    }
+    for (auto* stream : streams) {
+        if (stream) {
+            stream->ClearQueue();
+        }
+    }
+}
+
 u64 AudioRenderer::GetRenderingStartTick(s32 session_id) const noexcept {
     return (1000 * command_buffers[session_id].render_time_taken_us) + signalled_tick;
 }

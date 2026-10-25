@@ -7,6 +7,9 @@
 #pragma once
 
 #include <memory>
+#include <span>
+#include <utility>
+#include <vector>
 
 #include "common/bit_field.h"
 #include "common/common_types.h"
@@ -256,6 +259,15 @@ public:
 
     /// Notify rasterizer that any caches of the specified region should be flushed and invalidated
     void FlushAndInvalidateRegion(DAddr addr, u64 size);
+
+    /// Synchronously drain GPU thread, download GPU-modified caches, and collect GPU surface ranges
+    [[nodiscard]] std::vector<std::pair<DAddr, std::size_t>> SyncAndSnapshotForSaveState();
+
+    /// Synchronously drain GPU thread before modifying guest DRAM during save state load
+    void WaitIdleForLoadState();
+
+    /// Synchronously invalidate modified guest DRAM spans and GPU pipeline state on the GPU thread
+    void SyncAndInvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences);
 
 private:
     struct Impl;

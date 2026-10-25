@@ -20,6 +20,8 @@ public:
     explicit IAudioInManager(Core::System& system_);
     ~IAudioInManager() override;
 
+    void Resynchronize();
+
 private:
     Result ListAudioIns(OutArray<AudioDeviceName, BufferAttr_HipcMapAlias> out_audio_ins,
                         Out<u32> out_count);

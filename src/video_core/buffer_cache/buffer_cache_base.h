@@ -291,6 +291,12 @@ public:
     void PopAsyncFlushes();
     void PopAsyncBuffers();
 
+    /// Synchronously download all GPU-modified buffer ranges to guest memory for save states
+    void DownloadAllGpuModified();
+
+    /// Invalidate cached buffer regions and rebind state after loading a save state
+    void InvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences);
+
     bool DMACopy(GPUVAddr src_address, GPUVAddr dest_address, u64 amount);
 
     bool DMAClear(GPUVAddr src_address, u64 amount, u32 value);

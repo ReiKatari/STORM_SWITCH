@@ -325,9 +325,6 @@ struct InputSubsystem::Impl {
 
     void PumpEvents() const {
         update_engine->PumpEvents();
-        if (mouse) {
-            mouse->NotifyChanged();
-        }
 #ifdef HAVE_SDL3
         sdl->PumpEvents();
 #endif

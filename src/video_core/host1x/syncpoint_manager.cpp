@@ -74,6 +74,40 @@ void SyncpointManager::WaitHost(u32 syncpoint_id, u32 expected_value) {
     Wait(syncpoints_host[syncpoint_id], wait_host_cv, expected_value);
 }
 
+void SyncpointManager::FastForwardSyncpoint(u32 syncpoint_id, u32 target_value) {
+    if (syncpoint_id >= NUM_MAX_SYNCPOINTS || target_value == 0) {
+        return;
+    }
+    auto advance = [&](std::atomic<u32>& sp, std::condition_variable& wait_cv,
+                       std::list<RegisteredAction>& action_storage) {
+        u32 cur = sp.load(std::memory_order_acquire);
+        while (cur < target_value &&
+               !sp.compare_exchange_weak(cur, target_value, std::memory_order_acq_rel)) {
+        }
+        const u32 new_val = sp.load(std::memory_order_acquire);
+        std::vector<std::function<void()>> ready_actions;
+        {
+            std::scoped_lock lk(guard);
+            auto it = action_storage.begin();
+            while (it != action_storage.end()) {
+                if (it->expected_value > new_val) {
+                    break;
+                }
+                ready_actions.push_back(std::move(it->action));
+                it = action_storage.erase(it);
+            }
+            wait_cv.notify_all();
+        }
+        for (auto& act : ready_actions) {
+            if (act) {
+                act();
+            }
+        }
+    };
+    advance(syncpoints_guest[syncpoint_id], wait_guest_cv, guest_action_storage[syncpoint_id]);
+    advance(syncpoints_host[syncpoint_id], wait_host_cv, host_action_storage[syncpoint_id]);
+}
+
 void SyncpointManager::Increment(std::atomic<u32>& syncpoint, std::condition_variable& wait_cv,
                                  std::list<RegisteredAction>& action_storage) {
     auto new_value{syncpoint.fetch_add(1, std::memory_order_acq_rel) + 1};

@@ -130,6 +130,16 @@ Result System::Stop() {
     return ResultSuccess;
 }
 
+void System::Resynchronize() {
+    if (state == State::Started) {
+        u32 buffers_released{};
+        buffers.FlushBuffers(buffers_released);
+        if (session) {
+            session->ClearBuffers();
+        }
+    }
+}
+
 bool System::AppendBuffer(const AudioInBuffer& buffer, const u64 tag) {
     if (buffers.GetTotalBufferCount() == BufferCount) {
         return false;

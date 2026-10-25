@@ -35,6 +35,18 @@ void AudioCore::Shutdown() {
     audio_manager->Shutdown();
 }
 
+void AudioCore::ResynchronizeSaveState() {
+    if (output_sink) {
+        output_sink->ClearStreams();
+    }
+    if (input_sink) {
+        input_sink->ClearStreams();
+    }
+    if (adsp) {
+        adsp->AudioRenderer().ClearAllRemainCommandCounts();
+    }
+}
+
 AudioManager& AudioCore::GetAudioManager() {
     return *audio_manager;
 }

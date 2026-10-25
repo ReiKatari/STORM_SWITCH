@@ -51,6 +51,11 @@ public:
     void Start();
 
     /**
+     * Resynchronize all audio out sessions after savestate restore.
+     */
+    void Resynchronize();
+
+    /**
      * Callback function, called by the audio manager when the audio out event is signalled.
      */
     void BufferReleaseAndRegister();

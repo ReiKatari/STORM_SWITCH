@@ -84,7 +84,7 @@ Mouse::Mouse(std::string input_engine_) : InputEngine(std::move(input_engine_)) 
 }
 
 void Mouse::UpdateStickInput() {
-    if (!IsMousePanningEnabled()) {
+    if (!IsMousePanningEnabled() || !stick_active_.load(std::memory_order_relaxed)) {
         return;
     }
 
@@ -96,10 +96,11 @@ void Mouse::UpdateStickInput() {
         Settings::values.mouse_panning_deadzone_counterweight.GetValue() *
         default_deadzone_counterweight;
 
-    // Immediately snap right stick back to (0, 0) when physical mouse movement stops,
-    // eliminating continuous camera drift after stopping the mouse (Issue #23).
+    // Immediately snap right stick back to (0, 0) once when physical mouse movement stops,
+    // eliminating continuous camera drift after stopping the mouse (Issue #23) without idle HID spam.
     if (idle_ms >= 25) {
         last_mouse_change = {};
+        stick_active_.store(false, std::memory_order_relaxed);
         SetAxis(identifier, mouse_axis_x, 0.0f);
         SetAxis(identifier, mouse_axis_y, 0.0f);
         return;
@@ -108,6 +109,7 @@ void Mouse::UpdateStickInput() {
     const float length = last_mouse_change.Length();
     if (length <= deadzone_counterweight * 1.02f || length < 0.005f) {
         last_mouse_change = {};
+        stick_active_.store(false, std::memory_order_relaxed);
         SetAxis(identifier, mouse_axis_x, 0.0f);
         SetAxis(identifier, mouse_axis_y, 0.0f);
         return;
@@ -138,7 +140,17 @@ void Mouse::UpdateStickInput() {
 }
 
 void Mouse::UpdateMotionInput() {
+    if (!motion_active_.load(std::memory_order_relaxed)) {
+        return;
+    }
     std::scoped_lock lock{mouse_mutex};
+    if (last_motion_change.x == 0.0f && last_motion_change.y == 0.0f &&
+        last_motion_change.z == 0.0f) {
+        motion_active_.store(false, std::memory_order_relaxed);
+        const BasicMotion zero_motion{.delta_timestamp = update_time * 1000};
+        SetMotion(motion_identifier, 0, zero_motion);
+        return;
+    }
     const float sensitivity =
         IsMousePanningEnabled() ? default_motion_panning_sensitivity : default_motion_sensitivity;
 
@@ -191,6 +203,8 @@ void Mouse::Move(int x, int y, int center_x, int center_y) {
         last_motion_change += {-mouse_change.y * x_sensitivity, -mouse_change.x * y_sensitivity, 0};
         last_mouse_change.x += mouse_change.x * x_sensitivity;
         last_mouse_change.y += mouse_change.y * y_sensitivity;
+        stick_active_.store(true, std::memory_order_relaxed);
+        motion_active_.store(true, std::memory_order_relaxed);
 
         // Bind the mouse change to [0 <= deadzone_counterweight <= 1.0]
         const float length = last_mouse_change.Length();
@@ -216,6 +230,7 @@ void Mouse::Move(int x, int y, int center_x, int center_y) {
             static_cast<float>(-mouse_move.x) * y_sensitivity,
             last_motion_change.z,
         };
+        motion_active_.store(true, std::memory_order_relaxed);
     }
 }
 
@@ -273,6 +288,7 @@ void Mouse::MouseWheelChange(int x, int y) {
     wheel_position.x += x;
     wheel_position.y += y;
     last_motion_change.z += static_cast<f32>(y);
+    motion_active_.store(true, std::memory_order_relaxed);
     SetAxis(identifier, wheel_axis_x, static_cast<f32>(wheel_position.x));
     SetAxis(identifier, wheel_axis_y, static_cast<f32>(wheel_position.y));
 }

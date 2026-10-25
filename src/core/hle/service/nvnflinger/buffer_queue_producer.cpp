@@ -178,34 +178,55 @@ Status BufferQueueProducer::WaitForFreeSlotThenRelock(bool async, s32* found, St
         }
 
         // Producers are not allowed to dequeue more than one buffer if they did not set a buffer
-        // count
+        // count. If a savestate rollback occurred, reclaim stale dequeued slots instead of failing.
         if (!core->override_max_buffer_count && dequeued_count) {
-            LOG_ERROR(Service_Nvnflinger,
-                      "can't dequeue multiple buffers without setting the buffer count");
-            return Status::InvalidOperation;
+            LOG_WARNING(Service_Nvnflinger,
+                        "reclaiming {} stale dequeued buffers for single-buffer mode", dequeued_count);
+            for (s32 s{}; s < max_buffer_count; ++s) {
+                if (slots[s].buffer_state == BufferState::Dequeued) {
+                    slots[s].buffer_state = BufferState::Free;
+                }
+            }
+            dequeued_count = 0;
         }
 
         // See whether a buffer has been queued since the last SetBufferCount so we know whether to
         // perform the min undequeued buffers check below
         if (core->buffer_has_been_queued) {
             // Make sure the producer is not trying to dequeue more buffers than allowed
-            const s32 new_undequeued_count = max_buffer_count - (dequeued_count + 1);
+            s32 new_undequeued_count = max_buffer_count - (dequeued_count + 1);
             const s32 min_undequeued_count = core->GetMinUndequeuedBufferCountLocked(async);
             if (new_undequeued_count < min_undequeued_count) {
-                LOG_ERROR(Service_Nvnflinger,
-                          "min undequeued buffer count({}) exceeded (dequeued={} undequeued={})",
-                          min_undequeued_count, dequeued_count, new_undequeued_count);
-                return Status::InvalidOperation;
+                // Recover from savestate restore or producer/consumer desync by freeing oldest dequeued buffers
+                for (s32 s{}; s < max_buffer_count; ++s) {
+                    if (slots[s].buffer_state == BufferState::Dequeued) {
+                        slots[s].buffer_state = BufferState::Free;
+                        --dequeued_count;
+                        new_undequeued_count = max_buffer_count - (dequeued_count + 1);
+                        if (new_undequeued_count >= min_undequeued_count) {
+                            break;
+                        }
+                    }
+                }
+                if (new_undequeued_count < min_undequeued_count) {
+                    LOG_WARNING(Service_Nvnflinger,
+                              "recovering buffer queue desync: resetting all dequeued to free");
+                    for (s32 s{}; s < max_buffer_count; ++s) {
+                        if (slots[s].buffer_state == BufferState::Dequeued) {
+                            slots[s].buffer_state = BufferState::Free;
+                        }
+                    }
+                    dequeued_count = 0;
+                }
             }
         }
 
-        // If we disconnect and reconnect quickly, we can be in a state where our slots are empty
-        // but we have many buffers in the queue. This can cause us to run out of memory if we
-        // outrun the consumer. Wait here if it looks like we have too many buffers queued up.
-        const bool too_many_buffers = core->queue.size() > static_cast<size_t>(max_buffer_count);
-        if (too_many_buffers) {
-            LOG_ERROR(Service_Nvnflinger, "queue size is {}, waiting", core->queue.size());
+        // If queue size exceeds max_buffer_count after a savestate rollback, drain stale queue items
+        if (core->queue.size() > static_cast<size_t>(max_buffer_count)) {
+            LOG_WARNING(Service_Nvnflinger, "draining {} stale queue items", core->queue.size());
+            core->queue.clear();
         }
+        const bool too_many_buffers = false;
 
         // If no buffer is found, or if the queue has too many buffers outstanding, wait for a
         // buffer to be acquired or released, or for the max buffer count to change.
@@ -478,12 +499,26 @@ Status BufferQueueProducer::QueueBuffer(s32 slot, const QueueBufferInput& input,
             return Status::BadValue;
         }
         if (slots[slot].buffer_state != BufferState::Dequeued) {
-            LOG_ERROR(Service_Nvnflinger, "slot {} is not owned by producer", slot);
-            return Status::BadValue;
+            if (slots[slot].graphic_buffer != nullptr) {
+                for (s32 s = 0; s < max_buffer_count; ++s) {
+                    if (s != slot && slots[s].buffer_state == BufferState::Dequeued) {
+                        slots[s].buffer_state = BufferState::Free;
+                    }
+                }
+                slots[slot].buffer_state = BufferState::Dequeued;
+                slots[slot].request_buffer_called = true;
+            } else {
+                LOG_ERROR(Service_Nvnflinger, "slot {} is not owned by producer", slot);
+                return Status::BadValue;
+            }
         }
         if (!slots[slot].request_buffer_called) {
-            LOG_ERROR(Service_Nvnflinger, "slot {} was queued without request", slot);
-            return Status::BadValue;
+            if (slots[slot].graphic_buffer != nullptr) {
+                slots[slot].request_buffer_called = true;
+            } else {
+                LOG_ERROR(Service_Nvnflinger, "slot {} was queued without request", slot);
+                return Status::BadValue;
+            }
         }
 
         ++core->frame_counter;

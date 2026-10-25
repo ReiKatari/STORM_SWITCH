@@ -31,10 +31,8 @@ namespace Vulkan {
 using namespace Common::Literals;
 
 TurboMode::TurboMode(const vk::Instance& instance, const vk::InstanceDispatch& dld) {
-    {
-        std::scoped_lock lk{m_submission_lock};
-        m_submission_time = std::chrono::steady_clock::now();
-    }
+    m_last_submission_ns.store(
+        std::chrono::steady_clock::now().time_since_epoch().count(), std::memory_order_relaxed);
     m_thread = std::jthread([this, &instance, &dld](auto stop_token) {
         Run(stop_token, instance, dld);
     });
@@ -52,9 +50,8 @@ TurboMode::~TurboMode() {
 }
 
 void TurboMode::QueueSubmitted() {
-    std::scoped_lock lk{m_submission_lock};
-    m_submission_time = std::chrono::steady_clock::now();
-    m_submission_cv.notify_one();
+    m_last_submission_ns.store(
+        std::chrono::steady_clock::now().time_since_epoch().count(), std::memory_order_relaxed);
 }
 
 void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
@@ -153,9 +150,10 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
 
         while (!stop_token.stop_requested()) {
             {
-                std::unique_lock lk{m_submission_lock};
-                const auto now = std::chrono::steady_clock::now();
-                if (now - m_submission_time < std::chrono::milliseconds{25}) {
+                const auto now_ns = std::chrono::steady_clock::now().time_since_epoch().count();
+                const auto last_ns = m_last_submission_ns.load(std::memory_order_relaxed);
+                if (now_ns - last_ns < 25'000'000LL) {
+                    std::unique_lock lk{m_submission_lock};
                     m_submission_cv.wait_for(lk, stop_token, std::chrono::milliseconds{25}, [&] {
                         return stop_token.stop_requested();
                     });
@@ -209,10 +207,6 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
     auto read_max_thermal_celsius = []() -> int {
         static const char* const thermal_nodes[] = {
             "/sys/class/kgsl/kgsl-3d0/temp",
-            "/sys/class/thermal/thermal_zone0/temp",
-            "/sys/class/thermal/thermal_zone1/temp",
-            "/sys/class/thermal/thermal_zone2/temp",
-            "/sys/class/thermal/thermal_zone3/temp",
             "/sys/class/power_supply/battery/temp",
         };
         int max_c = 0;
@@ -226,11 +220,10 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
                     buf[n] = '\0';
                     int raw = std::atoi(buf);
                     int c = raw;
-                    if ( std::strstr(tpath, "battery") != nullptr ) {
-                        // Battery temp is typically tenths of a degree C (e.g. 420 = 42.0C); map >=43C to >=72C equivalent
+                    if (std::strstr(tpath, "battery") != nullptr) {
                         c = (raw > 1000) ? (raw / 1000) : (raw / 10);
-                        if (c >= 43) {
-                            max_c = std::max(max_c, 75);
+                        if (c >= 45) {
+                            max_c = std::max(max_c, 84);
                         }
                     } else {
                         if (raw > 1000) c = raw / 1000;
@@ -254,7 +247,7 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
 #if defined(__ANDROID__)
         if (!stop_token.stop_requested()) {
             const int temp_c = read_max_thermal_celsius();
-            if (turbo_currently_enabled && temp_c >= 72) {
+            if (turbo_currently_enabled && temp_c >= 82) {
 #if defined(ARCHITECTURE_arm64)
                 adrenotools_set_turbo(false);
 #endif

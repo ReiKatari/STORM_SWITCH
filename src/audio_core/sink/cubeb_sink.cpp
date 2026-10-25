@@ -349,6 +349,14 @@ void CubebSink::CloseStreams() {
     sink_streams.clear();
 }
 
+void CubebSink::ClearStreams() {
+    for (auto& stream : sink_streams) {
+        if (stream) {
+            stream->ClearQueue();
+        }
+    }
+}
+
 f32 CubebSink::GetDeviceVolume() const {
     if (sink_streams.empty()) {
         return 1.0f;

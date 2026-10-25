@@ -22,6 +22,8 @@ constexpr u32 SAVE_STATE_MAGIC = 0x53455353; // "SESS" (Storm Eden Save State)
 enum SaveStateFlags : u32 {
     SaveStateFlag_SparsePages      = (1u << 0), // v1 64KB full-DRAM sparse encoding
     SaveStateFlag_WritableRegions  = (1u << 1), // v2 Page-Table writable region 4KB sparse encoding
+    SaveStateFlag_HasSyncpoints    = (1u << 2), // v2 Host1x/NvCore 192 syncpoint snapshot
+    SaveStateFlag_HasGpuSurfaces   = (1u << 3), // v2 Persistent GPU render target & dynamic texture 4KB sparse pages
 };
 
 /// Header for save state files (.ses)

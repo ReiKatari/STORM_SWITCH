@@ -36,6 +36,12 @@ IAudioRendererManager::IAudioRendererManager(Core::System& system_)
 
 IAudioRendererManager::~IAudioRendererManager() = default;
 
+void IAudioRendererManager::Resynchronize() {
+    if (impl) {
+        impl->Resynchronize();
+    }
+}
+
 Result IAudioRendererManager::OpenAudioRenderer(
     Out<SharedPointer<IAudioRenderer>> out_audio_renderer,
     AudioCore::AudioRendererParameterInternal parameter,

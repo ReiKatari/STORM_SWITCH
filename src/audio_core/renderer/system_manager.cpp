@@ -52,6 +52,15 @@ void SystemManager::Stop() {
     }
 }
 
+void SystemManager::Resynchronize() {
+    std::scoped_lock l{mutex1};
+    for (auto* sys : systems) {
+        if (sys) {
+            sys->Resynchronize();
+        }
+    }
+}
+
 bool SystemManager::Add(System& system_) {
     std::scoped_lock l2{mutex2};
     if (systems.size() + 1 > MaxRendererSessions) {
