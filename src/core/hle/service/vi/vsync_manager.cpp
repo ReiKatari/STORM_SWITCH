@@ -13,6 +13,7 @@ VsyncManager::VsyncManager() = default;
 VsyncManager::~VsyncManager() = default;
 
 void VsyncManager::SignalVsync(Kernel::KernelCore& kernel) {
+    std::scoped_lock lk{*m_mutex};
     for (auto* event : m_vsync_events) {
         event->Signal(kernel);
     }

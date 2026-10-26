@@ -2006,4 +2006,6 @@
     <string name="log_viewer_filter_errors_label">Errors</string>
     <string name="log_viewer_filter_info_label">Info</string>
     <string name="log_viewer_filter_warnings_label">Warnings</string>
+    <string name="post_processing_shader">Post-processing shader (RetroArch)</string>
+    <string name="post_processing_shader_description">Aplikuje post-processing shadery RetroArch v reálném čase (CRT, LCD, kapesní konzole, upscalery, doostření, úprava barev).</string>
 </resources>

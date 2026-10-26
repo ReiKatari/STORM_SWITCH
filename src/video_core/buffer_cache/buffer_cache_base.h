@@ -294,6 +294,9 @@ public:
     /// Synchronously download all GPU-modified buffer ranges to guest memory for save states
     void DownloadAllGpuModified();
 
+    /// Collect active GPU buffer DAddr ranges for save states
+    void SnapshotGpuBuffers(std::vector<std::pair<DAddr, std::size_t>>& out_ranges);
+
     /// Invalidate cached buffer regions and rebind state after loading a save state
     void InvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences);
 

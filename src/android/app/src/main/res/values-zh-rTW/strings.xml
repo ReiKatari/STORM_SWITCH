@@ -2022,4 +2022,6 @@
     <string name="log_viewer_filter_errors_label">Errors</string>
     <string name="log_viewer_filter_info_label">Info</string>
     <string name="log_viewer_filter_warnings_label">Warnings</string>
+    <string name="post_processing_shader">後期處理著色器 (RetroArch)</string>
+    <string name="post_processing_shader_description">即時套用 RetroArch 後期處理著色器（CRT、LCD、掌機、放大濾鏡、銳利化、色彩分級）。</string>
 </resources>

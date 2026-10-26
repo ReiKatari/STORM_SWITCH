@@ -2059,4 +2059,6 @@
     <string name="log_viewer_filter_errors_label">Ошибки</string>
     <string name="log_viewer_filter_info_label">Инфо</string>
     <string name="log_viewer_filter_warnings_label">Предупр.</string>
+    <string name="post_processing_shader">Пост-обробка (Шейдери RetroArch)</string>
+    <string name="post_processing_shader_description">Застосовує шейдери пост-обробки RetroArch у реальному часі (ЕПТ, РК, портативки, апскейлери, різкість, кольорокорекція).</string>
 </resources>

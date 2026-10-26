@@ -32,6 +32,8 @@ ScreenRectVertex GetVertex(int index) {
 
 void main() {
     ScreenRectVertex vertex = GetVertex(gl_VertexIndex);
-    gl_Position = modelview_matrix * vec4(vertex.position, 0.0, 1.0);
+    mat4 proj = modelview_matrix;
+    proj[2] = vec4(0.0, 0.0, 1.0, 0.0);
+    gl_Position = proj * vec4(vertex.position, 0.0, 1.0);
     frag_tex_coord = vertex.tex_coord;
 }

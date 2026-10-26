@@ -4,6 +4,8 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <algorithm>
+#include <chrono>
 #include <variant>
 #include "video_core/present.h"
 #include "video_core/renderer_vulkan/present/anti_alias_pass.h"
@@ -267,6 +269,12 @@ u64 Layer::GetRawImageOffset(const Tegra::FramebufferConfig& framebuffer,
 
 void Layer::SetMatrixData(const Device& device, PresentPushConstants& data, const Layout::FramebufferLayout& layout) const {
     data.modelview_matrix = MakeOrthographicMatrix(f32(layout.width), static_cast<f32>(layout.height));
+    static const auto s_start_time = std::chrono::steady_clock::now();
+    const float elapsed_sec = std::chrono::duration<float>(std::chrono::steady_clock::now() - s_start_time).count();
+    data.modelview_matrix[8] = static_cast<f32>(Settings::values.post_processing_shader.GetValue());
+    data.modelview_matrix[9] = elapsed_sec;
+    data.modelview_matrix[10] = static_cast<f32>(std::max(1u, layout.screen.GetWidth()));
+    data.modelview_matrix[11] = static_cast<f32>(std::max(1u, layout.screen.GetHeight()));
 }
 
 void Layer::SetVertexData(const Device& device, PresentPushConstants& data, const Layout::FramebufferLayout& layout, const Common::Rectangle<f32>& crop) const {

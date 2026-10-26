@@ -83,6 +83,7 @@ private:
     VkFormat swapchain_view_format{};
 
     Settings::ScalingFilter scaling_filter{};
+    bool post_shader_active{false};
     std::unique_ptr<WindowAdaptPass> window_adapt{};
     std::list<Layer> layers{};
 

@@ -332,8 +332,13 @@ std::size_t RealVfsFile::GetSize() const {
 
 bool RealVfsFile::Resize(std::size_t new_size) {
     size.reset();
+    std::lock_guard<std::mutex> lk_io(io_mutex);
     auto lk = base.RefreshReference(path, perms, *reference);
-    return reference->file ? reference->file->SetSize(new_size) : false;
+    if (!reference->file) {
+        return false;
+    }
+    reference->file->Flush();
+    return reference->file->SetSize(new_size);
 }
 
 VirtualDir RealVfsFile::GetContainingDirectory() const {

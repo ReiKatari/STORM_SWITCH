@@ -663,6 +663,15 @@ abstract class SettingsItem(
                 )
             )
             put(
+                SingleChoiceSetting(
+                    IntSetting.RENDERER_POST_PROCESSING_SHADER,
+                    titleId = R.string.post_processing_shader,
+                    descriptionId = R.string.post_processing_shader_description,
+                    choicesId = R.array.postProcessingShaderNames,
+                    valuesId = R.array.postProcessingShaderValues
+                )
+            )
+            put(
                 SwitchSetting(
                     BooleanSetting.RENDERER_FRAME_GEN,
                     titleId = R.string.frame_gen,

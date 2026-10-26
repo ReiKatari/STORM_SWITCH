@@ -403,6 +403,16 @@ struct Values {
                                                   true,
                                                   true};
 
+    SwitchableSetting<int, true> post_processing_shader{linkage,
+                                                        0,
+                                                        0,
+                                                        74,
+                                                        "post_processing_shader",
+                                                        Category::Renderer,
+                                                        Specialization::Default,
+                                                        true,
+                                                        true};
+
     SwitchableSetting<bool> frame_gen{linkage, false, "frame_gen", Category::Renderer,
                                       Specialization::Default, true, true};
 

@@ -2036,4 +2036,6 @@
     <string name="log_viewer_filter_errors_label">Errors</string>
     <string name="log_viewer_filter_info_label">Info</string>
     <string name="log_viewer_filter_warnings_label">Warnings</string>
+    <string name="post_processing_shader">Shader post-processingu (RetroArch)</string>
+    <string name="post_processing_shader_description">Stosuje shadery post-processingu RetroArch w czasie rzeczywistym (CRT, LCD, konsole przenośne, upscalery, wyostrzanie, korekcja kolorów).</string>
 </resources>

@@ -2051,4 +2051,6 @@
     <string name="log_viewer_filter_errors_label">Errors</string>
     <string name="log_viewer_filter_info_label">Info</string>
     <string name="log_viewer_filter_warnings_label">Warnings</string>
+    <string name="post_processing_shader">شیدر پس‌پردازش (RetroArch)</string>
+    <string name="post_processing_shader_description">اعمال شیدرهای پس‌پردازش RetroArch در زمان واقعی (CRT، LCD، کنسول دستی، ارتقای تصویر، وضوح و اصلاح رنگ).</string>
 </resources>

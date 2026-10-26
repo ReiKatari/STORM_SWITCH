@@ -490,6 +490,7 @@ private:
     void UpdateDockedButton();
     void UpdateAPIText();
     void UpdateFilterText();
+    void UpdateShaderText();
     void UpdateAAText();
     void UpdateAspectText();
     void UpdateDmaText();
@@ -657,6 +658,7 @@ private:
     QPushButton* refresh_button = nullptr;
     QPushButton* dock_status_button = nullptr;
     QPushButton* filter_status_button = nullptr;
+    QPushButton* shader_status_button = nullptr;
     QPushButton* aa_status_button = nullptr;
     VolumeButton* volume_button = nullptr;
     QWidget* volume_popup = nullptr;

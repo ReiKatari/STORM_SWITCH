@@ -54,6 +54,7 @@
 #include "deps_dialog.h"
 #include "install_dialog.h"
 #include "storm_switch/storm_games_world_dialog.h"
+#include "storm_switch/configuration/retroarch_shader_catalog.h"
 #include "storm_switch/storm_save_sync_dialog.h"
 #include "storm_switch/log_viewer_dialog.h"
 #include "translator/floating_translate_button.h"
@@ -651,24 +652,6 @@ QString MainWindow::GetGameTitleByProgramId(u64 program_id) const {
     };
 
     return searchItem(root);
-}
-
-static QString StormLang(const QString& ru, const QString& en,
-                         const QString& de = QString(), const QString& fr = QString(),
-                         const QString& zh = QString(), const QString& ja = QString(),
-                         const QString& ar = QString(), const QString& es = QString()) {
-    std::string lang = UISettings::values.language.GetValue();
-    if (lang.empty()) {
-        lang = QLocale::system().name().toStdString();
-    }
-    if (lang.rfind("ru", 0) == 0) return ru;
-    if (lang.rfind("ar", 0) == 0 && !ar.isEmpty()) return ar;
-    if (lang.rfind("es", 0) == 0 && !es.isEmpty()) return es;
-    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
-    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
-    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
-    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
-    return en;
 }
 
 MainWindow::MainWindow(bool has_broken_vulkan)
@@ -1699,6 +1682,44 @@ void MainWindow::InitializeWidgets() {
     connect(filter_status_button, &QPushButton::clicked, show_filter_menu);
     filter_status_button->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(filter_status_button, &QPushButton::customContextMenuRequested, show_filter_menu);
+
+    // Setup Post-Processing Shader button (RetroArch 75-preset catalog)
+    StormShaders::SyncShaderFromQSettings();
+    shader_status_button = new QPushButton();
+    shader_status_button->setObjectName(QStringLiteral("TogglableStatusBarButton"));
+    shader_status_button->setFocusPolicy(Qt::NoFocus);
+    shader_status_button->setCheckable(true);
+    UpdateShaderText();
+    auto show_shader_menu = [this]() {
+        const int cur_shader = Settings::values.post_processing_shader.GetValue();
+        StormShaders::ShowSearchableShaderPopup(shader_status_button, cur_shader, [this](int chosen_idx) {
+            StormShaders::ApplyShaderByIndex(chosen_idx);
+            ApplyStatusBarSwitchableSettingNoBackup(
+                Settings::values.post_processing_shader, chosen_idx,
+                current_game_path, last_filename_booted);
+            UpdateShaderText();
+            UpdateFilterText();
+            ApplyDynamicSettingChange();
+            const auto& cat = StormShaders::GetRetroArchShaderCatalog();
+            if (chosen_idx >= 0 && chosen_idx < static_cast<int>(cat.size())) {
+                const QString sname = StormShaders::GetLocalizedName(cat[static_cast<std::size_t>(chosen_idx)]);
+                statusBar()->showMessage(StormLang(
+                    QStringLiteral("🎨 Активный шейдер постобработки: %1"),
+                    QStringLiteral("🎨 Active post-processing shader: %1"),
+                    QStringLiteral("🎨 Aktiver Post-Processing-Shader: %1"),
+                    QStringLiteral("🎨 Shader de post-traitement actif : %1"),
+                    QStringLiteral("🎨 当前后处理着色器：%1"),
+                    QStringLiteral("🎨 有効なポストプロセスシェーダー: %1"),
+                    QStringLiteral("🎨 مظلل المعالجة اللاحقة النشط: %1"),
+                    QStringLiteral("🎨 Sombreador de postprocesado activo: %1")
+                ).arg(sname), 4000);
+            }
+        });
+        shader_status_button->repaint();
+    };
+    connect(shader_status_button, &QPushButton::clicked, show_shader_menu);
+    shader_status_button->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(shader_status_button, &QPushButton::customContextMenuRequested, show_shader_menu);
 
     // Setup Dock button
     dock_status_button = new QPushButton();
@@ -2907,7 +2928,7 @@ void MainWindow::InitializeWidgets() {
     statusBar()->insertPermanentWidget(3, createGroup(
         3, StormLang(QStringLiteral("ГРАФИКА"), QStringLiteral("GRAPHICS"), QStringLiteral("GRAFIK"), QStringLiteral("GRAPHISMES"), QStringLiteral("图形"), QStringLiteral("グラフィックス")),
         QStringLiteral("#ffca28"),
-        {aa_status_button, filter_status_button, aspect_ratio_button, res_scale_button, vram_mode_button, anisotropy_button, disk_cache_button}));
+        {aa_status_button, filter_status_button, shader_status_button, aspect_ratio_button, res_scale_button, vram_mode_button, anisotropy_button, disk_cache_button}));
 
     // --- Group 4: ASTC (Pink accent) ---
     statusBar()->insertPermanentWidget(4, createGroup(
@@ -4412,6 +4433,224 @@ void MainWindow::OnOpenLogViewer() {
     dialog.exec();
 }
 
+namespace {
+
+QString TranslateFixBoolValue(const std::string& v) {
+    const bool on = (v == "true" || v == "1");
+    return on
+        ? StormLang(QStringLiteral("Включено"), QStringLiteral("Enabled"),
+                    QStringLiteral("Aktiviert"), QStringLiteral("Activé"),
+                    QStringLiteral("已启用"), QStringLiteral("有効"),
+                    QStringLiteral("مفعل"), QStringLiteral("Activado"))
+        : StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"),
+                    QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"),
+                    QStringLiteral("已禁用"), QStringLiteral("無効"),
+                    QStringLiteral("معطل"), QStringLiteral("Desactivado"));
+}
+
+QString FormatLocalizedIniParam(const std::string& k, const std::string& v) {
+    auto bval = [&]() { return TranslateFixBoolValue(v); };
+
+    if (k == "Renderer\\gpu_accuracy" || k == "gpu_accuracy") {
+        QString lvl = (v == "0")
+            ? StormLang(QStringLiteral("Обычная (Быстро)"), QStringLiteral("Normal (Fast)"), QStringLiteral("Normal (Schnell)"), QStringLiteral("Normale (Rapide)"), QStringLiteral("普通 (快速)"), QStringLiteral("通常 (高速)"), QStringLiteral("عادي (سريع)"), QStringLiteral("Normal (Rápido)"))
+            : (v == "1")
+            ? StormLang(QStringLiteral("Высокая"), QStringLiteral("High"), QStringLiteral("Hoch"), QStringLiteral("Élevée"), QStringLiteral("高"), QStringLiteral("高"), QStringLiteral("عالي"), QStringLiteral("Alta"))
+            : StormLang(QStringLiteral("Экстремальная"), QStringLiteral("Extreme"), QStringLiteral("Extrem"), QStringLiteral("Extrême"), QStringLiteral("极高"), QStringLiteral("最高"), QStringLiteral("قصوى"), QStringLiteral("Extrema"));
+        return StormLang(QStringLiteral("Точность ГП: %1"), QStringLiteral("GPU Accuracy: %1"), QStringLiteral("GPU-Genauigkeit: %1"), QStringLiteral("Précision GPU : %1"), QStringLiteral("GPU 精度: %1"), QStringLiteral("GPU 精度: %1"), QStringLiteral("دقة GPU: %1"), QStringLiteral("Precisión GPU: %1")).arg(lvl);
+    }
+    if (k == "Renderer\\drs_resolution_lock" || k == "drs_resolution_lock") {
+        return StormLang(QStringLiteral("Блокировка динам. разрешения (DRS): %1"), QStringLiteral("Dynamic Resolution Lock (DRS): %1"), QStringLiteral("Dynamische Auflösungssperre (DRS): %1"), QStringLiteral("Verrouillage résolution dyn. (DRS) : %1"), QStringLiteral("动态分辨率锁定 (DRS): %1"), QStringLiteral("動的解像度ロック (DRS): %1"), QStringLiteral("قفل الدقة الديناميكية (DRS): %1"), QStringLiteral("Bloqueo de resolución dinámica (DRS): %1")).arg(bval());
+    }
+    if (k == "Renderer\\rescale_hack" || k == "rescale_hack") {
+        return StormLang(QStringLiteral("Патч масштабирования рендера: %1"), QStringLiteral("Render Rescale Patch: %1"), QStringLiteral("Render-Skalierungs-Patch: %1"), QStringLiteral("Patch de mise à l'échelle : %1"), QStringLiteral("渲染重缩放补丁: %1"), QStringLiteral("レンダースケールパッチ: %1"), QStringLiteral("تصحيح تحجيم العرض: %1"), QStringLiteral("Parche de reescalado: %1")).arg(bval());
+    }
+    if (k == "Renderer\\dynamic_performance_scaler" || k == "dynamic_performance_scaler") {
+        return StormLang(QStringLiteral("Динамический скейлер FPS: %1"), QStringLiteral("Dynamic FPS Performance Scaler: %1"), QStringLiteral("Dynamischer FPS-Skalierer: %1"), QStringLiteral("Ajusteur dynamique de FPS : %1"), QStringLiteral("动态帧率缩放器: %1"), QStringLiteral("動的FPSスケーラー: %1"), QStringLiteral("موازن الأداء الديناميكي: %1"), QStringLiteral("Escalador dinámico de FPS: %1")).arg(bval());
+    }
+    if (k == "Renderer\\barrier_feedback_loops" || k == "barrier_feedback_loops") {
+        return StormLang(QStringLiteral("Барьеры циклов обратной связи: %1"), QStringLiteral("Feedback Loop Barriers: %1"), QStringLiteral("Feedback-Loop-Barrieren: %1"), QStringLiteral("Barrières de boucle de rétroaction : %1"), QStringLiteral("反馈循环屏障: %1"), QStringLiteral("フィードバックループバリア: %1"), QStringLiteral("حواجز حلقات التغذية الراجعة: %1"), QStringLiteral("Barreras de bucle de retorno: %1")).arg(bval());
+    }
+    if (k == "Renderer\\use_reactive_flushing" || k == "use_reactive_flushing") {
+        return StormLang(QStringLiteral("Реактивная очистка буферов: %1"), QStringLiteral("Reactive Buffer Flushing: %1"), QStringLiteral("Reaktives Puffer-Flushing: %1"), QStringLiteral("Vidage réactif des tampons : %1"), QStringLiteral("响应式缓冲刷新: %1"), QStringLiteral("リアクティブフラッシング: %1"), QStringLiteral("تفريغ الذاكرة التفاعلي: %1"), QStringLiteral("Vaciado reactivo de búferes: %1")).arg(bval());
+    }
+    if (k == "Renderer\\astc_recompression" || k == "astc_recompression") {
+        QString mode = (v == "0")
+            ? StormLang(QStringLiteral("Без сжатия"), QStringLiteral("Uncompressed"), QStringLiteral("Unkomprimiert"), QStringLiteral("Non compressé"), QStringLiteral("未压缩"), QStringLiteral("非圧縮"), QStringLiteral("غير مضغوط"), QStringLiteral("Sin comprimir"))
+            : (v == "1") ? QStringLiteral("BC1") : QStringLiteral("BC3");
+        return StormLang(QStringLiteral("Пересжатие ASTC: %1"), QStringLiteral("ASTC Recompression: %1"), QStringLiteral("ASTC-Rekompression: %1"), QStringLiteral("Recompression ASTC : %1"), QStringLiteral("ASTC 重压缩: %1"), QStringLiteral("ASTC 再圧縮: %1"), QStringLiteral("إعادة ضغط ASTC: %1"), QStringLiteral("Recompresión ASTC: %1")).arg(mode);
+    }
+    if (k == "Renderer\\use_asynchronous_shaders" || k == "use_asynchronous_shaders") {
+        return StormLang(QStringLiteral("Асинхронная компиляция шейдеров: %1"), QStringLiteral("Asynchronous Shader Building: %1"), QStringLiteral("Asynchrone Shader-Kompilierung: %1"), QStringLiteral("Compilation asynchrone des shaders : %1"), QStringLiteral("异步着色器编译: %1"), QStringLiteral("非同期シェーダー構築: %1"), QStringLiteral("بناء المظللات غير المتزامن: %1"), QStringLiteral("Compilación asíncrona de shaders: %1")).arg(bval());
+    }
+    if (k == "Renderer\\enable_gpu_buffer_readback" || k == "enable_gpu_buffer_readback") {
+        return StormLang(QStringLiteral("Обратное чтение буферов ГП: %1"), QStringLiteral("GPU Buffer Readback: %1"), QStringLiteral("GPU-Puffer-Readback: %1"), QStringLiteral("Lecture inverse des tampons GPU : %1"), QStringLiteral("GPU 缓冲回读: %1"), QStringLiteral("GPU バッファリードバック: %1"), QStringLiteral("قراءة مخازن GPU: %1"), QStringLiteral("Lectura inversa de búfer GPU: %1")).arg(bval());
+    }
+    if (k == "Renderer\\early_release_fences" || k == "early_release_fences") {
+        return StormLang(QStringLiteral("Раннее освобождение барьеров ГП: %1"), QStringLiteral("Early Fence Release: %1"), QStringLiteral("Frühe Fence-Freigabe: %1"), QStringLiteral("Libération anticipée des barrières : %1"), QStringLiteral("提前释放同步栅栏: %1"), QStringLiteral("フェンス早期解放: %1"), QStringLiteral("تحرير الحواجز المبكر: %1"), QStringLiteral("Liberación temprana de vallas: %1")).arg(bval());
+    }
+    if (k == "Renderer\\sync_memory_operations" || k == "sync_memory_operations") {
+        return StormLang(QStringLiteral("Синхронизация операций памяти: %1"), QStringLiteral("Sync Memory Operations: %1"), QStringLiteral("Speicheroperationen synchronisieren: %1"), QStringLiteral("Synchroniser les opérations mémoire : %1"), QStringLiteral("同步内存操作: %1"), QStringLiteral("メモリ操作の同期: %1"), QStringLiteral("مزامنة عمليات الذاكرة: %1"), QStringLiteral("Sincronizar operaciones de memoria: %1")).arg(bval());
+    }
+    if (k == "Renderer\\use_fast_gpu_time" || k == "use_fast_gpu_time") {
+        return StormLang(QStringLiteral("Быстрый таймер ГП: %1"), QStringLiteral("Fast GPU Time: %1"), QStringLiteral("Schnelle GPU-Zeit: %1"), QStringLiteral("Temps GPU rapide : %1"), QStringLiteral("快速 GPU 时钟: %1"), QStringLiteral("高速 GPU 時間: %1"), QStringLiteral("توقيت GPU السريع: %1"), QStringLiteral("Tiempo de GPU rápido: %1")).arg(bval());
+    }
+    if (k == "Renderer\\nvdec_emulation" || k == "nvdec_emulation") {
+        QString mode = (v == "0") ? TranslateFixBoolValue("false")
+            : (v == "1") ? StormLang(QStringLiteral("ЦП (CPU)"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"))
+            : (v == "2") ? StormLang(QStringLiteral("ГП (GPU)"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"))
+            : StormLang(QStringLiteral("Гибридный"), QStringLiteral("Hybrid"), QStringLiteral("Hybrid"), QStringLiteral("Hybride"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"), QStringLiteral("هجين"), QStringLiteral("Híbrido"));
+        return StormLang(QStringLiteral("Видеодекодер NVDEC: %1"), QStringLiteral("NVDEC Video Decoding: %1"), QStringLiteral("NVDEC-Videodekodierung: %1"), QStringLiteral("Décodage vidéo NVDEC : %1"), QStringLiteral("NVDEC 视频解码: %1"), QStringLiteral("NVDEC 映像デコード: %1"), QStringLiteral("فك تشفير الفيديو NVDEC: %1"), QStringLiteral("Decodificación NVDEC: %1")).arg(mode);
+    }
+    if (k == "Renderer\\async_presentation" || k == "async_presentation") {
+        return StormLang(QStringLiteral("Асинхронная презентация: %1"), QStringLiteral("Asynchronous Presentation: %1"), QStringLiteral("Asynchrone Präsentation: %1"), QStringLiteral("Présentation asynchrone : %1"), QStringLiteral("异步画面呈现: %1"), QStringLiteral("非同期プレゼンテーション: %1"), QStringLiteral("العرض غير المتزامن: %1"), QStringLiteral("Presentación asíncrona: %1")).arg(bval());
+    }
+    if (k == "Renderer\\accelerate_astc" || k == "accelerate_astc") {
+        QString mode = (v == "0") ? StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"))
+            : (v == "1") ? StormLang(QStringLiteral("ГП"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"))
+            : (v == "2") ? StormLang(QStringLiteral("ЦП асинхронно"), QStringLiteral("CPU Async"), QStringLiteral("CPU Asynchron"), QStringLiteral("CPU Asynchrone"), QStringLiteral("CPU 异步"), QStringLiteral("CPU 非同期"), QStringLiteral("CPU غير متزامن"), QStringLiteral("CPU Asíncrono"))
+            : StormLang(QStringLiteral("Гибридный"), QStringLiteral("Hybrid"), QStringLiteral("Hybrid"), QStringLiteral("Hybride"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"), QStringLiteral("هجين"), QStringLiteral("Híbrido"));
+        return StormLang(QStringLiteral("Декодирование ASTC: %1"), QStringLiteral("ASTC Decoding: %1"), QStringLiteral("ASTC-Dekodierung: %1"), QStringLiteral("Décodage ASTC : %1"), QStringLiteral("ASTC 纹理加速: %1"), QStringLiteral("ASTC デコード: %1"), QStringLiteral("فك تشفير ASTC: %1"), QStringLiteral("Decodificación ASTC: %1")).arg(mode);
+    }
+    if (k == "Renderer\\gpu_fence_behavior" || k == "gpu_fence_behavior") {
+        QString mode = (v == "1") ? StormLang(QStringLiteral("Мгновенно"), QStringLiteral("Immediate"), QStringLiteral("Sofort"), QStringLiteral("Immédiat"), QStringLiteral("立即"), QStringLiteral("即時"), QStringLiteral("فوري"), QStringLiteral("Inmediato"))
+            : (v == "2") ? StormLang(QStringLiteral("Сбалансированно"), QStringLiteral("Balanced"), QStringLiteral("Ausgewogen"), QStringLiteral("Équilibré"), QStringLiteral("平衡"), QStringLiteral("バランス"), QStringLiteral("متوازن"), QStringLiteral("Equilibrado"))
+            : (v == "3") ? StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Präzise"), QStringLiteral("Précis"), QStringLiteral("精确"), QStringLiteral("正確"), QStringLiteral("دقيق"), QStringLiteral("Preciso"))
+            : (v == "4") ? StormLang(QStringLiteral("Строго"), QStringLiteral("Strict"), QStringLiteral("Strikt"), QStringLiteral("Strict"), QStringLiteral("严格"), QStringLiteral("厳格"), QStringLiteral("صارم"), QStringLiteral("Estricto"))
+            : StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"), QStringLiteral("افتراضي"), QStringLiteral("Predeterminado"));
+        return StormLang(QStringLiteral("Барьеры ГП (Fence): %1"), QStringLiteral("GPU Fence Behavior: %1"), QStringLiteral("GPU-Fence-Verhalten: %1"), QStringLiteral("Comportement GPU Fence : %1"), QStringLiteral("GPU 栅栏行为: %1"), QStringLiteral("GPU フェンス動作: %1"), QStringLiteral("سلوك حواجز GPU: %1"), QStringLiteral("Barreras GPU (Fence): %1")).arg(mode);
+    }
+    if (k == "Renderer\\dyna_state" || k == "dyna_state") {
+        QString mode = (v == "0") ? TranslateFixBoolValue("false") : QStringLiteral("EDS %1").arg(QString::fromStdString(v));
+        return StormLang(QStringLiteral("Динамическое состояние Vulkan: %1"), QStringLiteral("Vulkan Dynamic State: %1"), QStringLiteral("Dynamischer Vulkan-Status: %1"), QStringLiteral("État dynamique Vulkan : %1"), QStringLiteral("Vulkan 动态状态: %1"), QStringLiteral("Vulkan 動的ステート: %1"), QStringLiteral("الحالة الديناميكية لـ Vulkan: %1"), QStringLiteral("Estado dinámico Vulkan: %1")).arg(mode);
+    }
+    if (k == "Renderer\\vram_usage_mode" || k == "vram_usage_mode") {
+        QString mode = (v == "0") ? StormLang(QStringLiteral("Консервативный"), QStringLiteral("Conservative"), QStringLiteral("Konservativ"), QStringLiteral("Conservateur"), QStringLiteral("保守"), QStringLiteral("控えめ"), QStringLiteral("محافظ"), QStringLiteral("Conservador"))
+            : (v == "2") ? StormLang(QStringLiteral("Агрессивный"), QStringLiteral("Aggressive"), QStringLiteral("Aggressiv"), QStringLiteral("Agressif"), QStringLiteral("激进"), QStringLiteral("積極的"), QStringLiteral("مكثف"), QStringLiteral("Agresivo"))
+            : StormLang(QStringLiteral("Обычный"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("正常"), QStringLiteral("通常"), QStringLiteral("عادي"), QStringLiteral("Normal"));
+        return StormLang(QStringLiteral("Режим видеопамяти (VRAM): %1"), QStringLiteral("VRAM Usage Mode: %1"), QStringLiteral("VRAM-Nutzungsmodus: %1"), QStringLiteral("Mode d'utilisation VRAM : %1"), QStringLiteral("显存使用模式: %1"), QStringLiteral("VRAM 使用モード: %1"), QStringLiteral("وضع استهلاك VRAM: %1"), QStringLiteral("Modo de uso de VRAM: %1")).arg(mode);
+    }
+    if (k == "Renderer\\fix_bloom_effects" || k == "fix_bloom_effects") {
+        return StormLang(QStringLiteral("Защита свечения (Fix Bloom): %1"), QStringLiteral("Fix Bloom Effects: %1"), QStringLiteral("Bloom-Effekte korrigieren: %1"), QStringLiteral("Corriger les effets de Bloom : %1"), QStringLiteral("修复泛光特效 (Bloom): %1"), QStringLiteral("ブルーム効果修正: %1"), QStringLiteral("إصلاح توهج Bloom: %1"), QStringLiteral("Corregir efectos Bloom: %1")).arg(bval());
+    }
+    if (k == "Renderer\\eco_frame_pacing" || k == "eco_frame_pacing") {
+        return StormLang(QStringLiteral("Эко-синхронизация кадров: %1"), QStringLiteral("Eco Frame Pacing: %1"), QStringLiteral("Eco-Frame-Pacing: %1"), QStringLiteral("Rythme d'images éco : %1"), QStringLiteral("节能帧率平滑: %1"), QStringLiteral("エコフレームペーシング: %1"), QStringLiteral("تنظيم الإطارات الاقتصادي: %1"), QStringLiteral("Ritmo de fotogramas Eco: %1")).arg(bval());
+    }
+    if (k == "Renderer\\emulate_bgr565" || k == "emulate_bgr565") {
+        return StormLang(QStringLiteral("Эмуляция формата BGR565: %1"), QStringLiteral("Emulate BGR565 Format: %1"), QStringLiteral("BGR565-Format emulieren: %1"), QStringLiteral("Émuler le format BGR565 : %1"), QStringLiteral("模拟 BGR565 格式: %1"), QStringLiteral("BGR565 形式エミュレート: %1"), QStringLiteral("محاكاة تنسيق BGR565: %1"), QStringLiteral("Emular formato BGR565: %1")).arg(bval());
+    }
+    if (k == "Renderer\\use_video_framerate" || k == "use_video_framerate") {
+        return StormLang(QStringLiteral("Частота кадров видеороликов: %1"), QStringLiteral("Use Video Framerate: %1"), QStringLiteral("Video-Bildrate verwenden: %1"), QStringLiteral("Utiliser la fréquence vidéo : %1"), QStringLiteral("使用视频原生帧率: %1"), QStringLiteral("動画フレームレート使用: %1"), QStringLiteral("استخدام معدل إطارات الفيديو: %1"), QStringLiteral("Usar tasa de fotogramas de vídeo: %1")).arg(bval());
+    }
+    if (k == "Renderer\\use_vulkan_driver_pipeline_cache" || k == "use_vulkan_driver_pipeline_cache") {
+        return StormLang(QStringLiteral("Кэш конвейеров драйвера Vulkan: %1"), QStringLiteral("Vulkan Driver Pipeline Cache: %1"), QStringLiteral("Vulkan-Treiber-Pipeline-Cache: %1"), QStringLiteral("Cache pipeline pilote Vulkan : %1"), QStringLiteral("Vulkan 驱动管线缓存: %1"), QStringLiteral("Vulkan ドライバパイプラインキャッシュ: %1"), QStringLiteral("ذاكرة خطوط أنابيب Vulkan: %1"), QStringLiteral("Caché de tuberías Vulkan: %1")).arg(bval());
+    }
+    if (k == "Renderer\\use_disk_shader_cache" || k == "use_disk_shader_cache") {
+        return StormLang(QStringLiteral("Дисковый кэш шейдеров: %1"), QStringLiteral("Disk Shader Cache: %1"), QStringLiteral("Festplatten-Shader-Cache: %1"), QStringLiteral("Cache de shaders sur disque : %1"), QStringLiteral("磁盘着色器缓存: %1"), QStringLiteral("ディスクシェーダーキャッシュ: %1"), QStringLiteral("ذاكرة المظللات على القرص: %1"), QStringLiteral("Caché de shaders en disco: %1")).arg(bval());
+    }
+    if (k == "Renderer\\enable_compute_pipelines" || k == "enable_compute_pipelines") {
+        return StormLang(QStringLiteral("Вычислительные конвейеры Vulkan: %1"), QStringLiteral("Vulkan Compute Pipelines: %1"), QStringLiteral("Vulkan-Compute-Pipelines: %1"), QStringLiteral("Pipelines de calcul Vulkan : %1"), QStringLiteral("Vulkan 计算管线: %1"), QStringLiteral("Vulkan コンピュートパイプライン: %1"), QStringLiteral("خطوط الحوسبة Vulkan: %1"), QStringLiteral("Tuberías de cómputo Vulkan: %1")).arg(bval());
+    }
+    if (k == "Renderer\\dma_accuracy" || k == "dma_accuracy") {
+        QString mode = (v == "1") ? StormLang(QStringLiteral("Обычная"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normale"), QStringLiteral("正常"), QStringLiteral("通常"), QStringLiteral("عادي"), QStringLiteral("Normal"))
+            : (v == "2") ? StormLang(QStringLiteral("Небезопасно"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisé"), QStringLiteral("不安全"), QStringLiteral("非安全"), QStringLiteral("غير آمن"), QStringLiteral("Inseguro"))
+            : (v == "3") ? StormLang(QStringLiteral("Безопасно"), QStringLiteral("Safe"), QStringLiteral("Sicher"), QStringLiteral("Sécurisé"), QStringLiteral("安全"), QStringLiteral("安全"), QStringLiteral("آمن"), QStringLiteral("Seguro"))
+            : StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"), QStringLiteral("افتراضي"), QStringLiteral("Predeterminado"));
+        return StormLang(QStringLiteral("Точность DMA: %1"), QStringLiteral("DMA Accuracy: %1"), QStringLiteral("DMA-Genauigkeit: %1"), QStringLiteral("Précision DMA : %1"), QStringLiteral("DMA 精度: %1"), QStringLiteral("DMA 精度: %1"), QStringLiteral("دقة DMA: %1"), QStringLiteral("Precisión DMA: %1")).arg(mode);
+    }
+    if (k == "Renderer\\vram_garbage_collection" || k == "vram_garbage_collection") {
+        return StormLang(QStringLiteral("Очистка видеопамяти (VRAM GC): %1"), QStringLiteral("VRAM Garbage Collection: %1"), QStringLiteral("VRAM-Speicherbereinigung: %1"), QStringLiteral("Nettoyage mémoire VRAM : %1"), QStringLiteral("显存垃圾回收 (VRAM GC): %1"), QStringLiteral("VRAM ガベージコレクション: %1"), QStringLiteral("تنظيف ذاكرة VRAM: %1"), QStringLiteral("Limpieza de VRAM (GC): %1")).arg(bval());
+    }
+    if (k == "Renderer\\force_max_clock" || k == "force_max_clock") {
+        return StormLang(QStringLiteral("Максимальная частота ГП (Turbo): %1"), QStringLiteral("Force Max GPU Clock (Turbo): %1"), QStringLiteral("Maximaler GPU-Takt (Turbo): %1"), QStringLiteral("Fréquence GPU max (Turbo) : %1"), QStringLiteral("强制最高 GPU 频率 (Turbo): %1"), QStringLiteral("最大 GPU クロック強制 (Turbo): %1"), QStringLiteral("أقصى تردد لـ GPU (تربو): %1"), QStringLiteral("Frecuencia máxima de GPU (Turbo): %1")).arg(bval());
+    }
+    if (k == "Renderer\\enable_frame_skipping" || k == "enable_frame_skipping") {
+        return StormLang(QStringLiteral("Пропуск кадров: %1"), QStringLiteral("Frame Skipping: %1"), QStringLiteral("Frame-Skipping: %1"), QStringLiteral("Saut d'images : %1"), QStringLiteral("跳帧优化: %1"), QStringLiteral("フレームスキップ: %1"), QStringLiteral("تخطي الإطارات: %1"), QStringLiteral("Salto de fotogramas: %1")).arg(bval());
+    }
+    if (k == "Renderer\\vertex_input_dynamic_state" || k == "vertex_input_dynamic_state") {
+        return StormLang(QStringLiteral("Динамический ввод вершин: %1"), QStringLiteral("Vertex Input Dynamic State: %1"), QStringLiteral("Dynamischer Vertex-Input: %1"), QStringLiteral("État dynamique d'entrée sommet : %1"), QStringLiteral("顶点输入动态状态: %1"), QStringLiteral("頂点入力動的ステート: %1"), QStringLiteral("حالة إدخال الرؤوس الديناميكية: %1"), QStringLiteral("Estado dinámico de vértices: %1")).arg(bval());
+    }
+    if (k.find("airplane_mode") != std::string::npos) {
+        return StormLang(QStringLiteral("Режим полёта (Офлайн-сеть): %1"), QStringLiteral("Airplane Mode (Offline LAN): %1"), QStringLiteral("Flugmodus (Offline): %1"), QStringLiteral("Mode avion (Hors-ligne) : %1"), QStringLiteral("飞行模式 (离线防卡死): %1"), QStringLiteral("機内モード (オフライン): %1"), QStringLiteral("وضع الطيران (دون اتصال): %1"), QStringLiteral("Modo avión (Sin conexión): %1")).arg(bval());
+    }
+    if (k.find("memory_layout_mode") != std::string::npos) {
+        QString gb = (v == "0") ? QStringLiteral("4 GB") : (v == "1") ? QStringLiteral("6 GB") : (v == "2") ? QStringLiteral("8 GB") : QStringLiteral("12 GB");
+        return StormLang(QStringLiteral("Объём памяти консоли: %1"), QStringLiteral("Console RAM Layout: %1"), QStringLiteral("Konsolen-RAM-Layout: %1"), QStringLiteral("Mémoire RAM console : %1"), QStringLiteral("主机内存布局: %1"), QStringLiteral("本体メモリ構成: %1"), QStringLiteral("حجم ذاكرة النظام: %1"), QStringLiteral("Memoria RAM de consola: %1")).arg(gb);
+    }
+    if (k.find("cpu_accuracy") != std::string::npos) {
+        QString mode = (v == "0") ? StormLang(QStringLiteral("Авто"), QStringLiteral("Auto"), QStringLiteral("Auto"), QStringLiteral("Auto"), QStringLiteral("自动"), QStringLiteral("自動"), QStringLiteral("تلقائي"), QStringLiteral("Auto"))
+            : (v == "1") ? StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Genau"), QStringLiteral("Précis"), QStringLiteral("精确"), QStringLiteral("正確"), QStringLiteral("دقيق"), QStringLiteral("Preciso"))
+            : (v == "2") ? StormLang(QStringLiteral("Небезопасно"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisé"), QStringLiteral("不安全"), QStringLiteral("非安全"), QStringLiteral("غير آمن"), QStringLiteral("Inseguro"))
+            : StormLang(QStringLiteral("Параноидально"), QStringLiteral("Paranoid"), QStringLiteral("Paranoid"), QStringLiteral("Paranoïaque"), QStringLiteral("极严"), QStringLiteral("高精度"), QStringLiteral("شديد الدقة"), QStringLiteral("Paranoico"));
+        return StormLang(QStringLiteral("Точность ЦП: %1"), QStringLiteral("CPU Accuracy: %1"), QStringLiteral("CPU-Genauigkeit: %1"), QStringLiteral("Précision CPU : %1"), QStringLiteral("CPU 精度: %1"), QStringLiteral("CPU 精度: %1"), QStringLiteral("دقة CPU: %1"), QStringLiteral("Precisión CPU: %1")).arg(mode);
+    }
+    if (k.find("cpu_backend") != std::string::npos) {
+        QString mode = (v == "1") ? QStringLiteral("NCE (Native)") : QStringLiteral("Dynarmic JIT");
+        return StormLang(QStringLiteral("Движок ЦП: %1"), QStringLiteral("CPU Backend: %1"), QStringLiteral("CPU-Backend: %1"), QStringLiteral("Moteur CPU : %1"), QStringLiteral("CPU 后端: %1"), QStringLiteral("CPU バックエンド: %1"), QStringLiteral("محرك CPU: %1"), QStringLiteral("Motor CPU: %1")).arg(mode);
+    }
+    if (k.find("cpuopt_fastmem_exclusives") != std::string::npos) {
+        return StormLang(QStringLiteral("Fastmem для эксклюзивных атомиков: %1"), QStringLiteral("Fastmem Exclusives: %1"), QStringLiteral("Fastmem-Exclusives: %1"), QStringLiteral("Fastmem exclusifs : %1"), QStringLiteral("独占原子操作 Fastmem: %1"), QStringLiteral("排他アクセス Fastmem: %1"), QStringLiteral("ذاكرة سريعة للعمليات الحصرية: %1"), QStringLiteral("Fastmem exclusivos: %1")).arg(bval());
+    }
+    if (k.find("cpuopt_fastmem") != std::string::npos) {
+        return StormLang(QStringLiteral("Быстрая память ЦП (Fastmem): %1"), QStringLiteral("CPU Fastmem: %1"), QStringLiteral("CPU-Fastmem: %1"), QStringLiteral("Fastmem CPU : %1"), QStringLiteral("CPU 快速内存 (Fastmem): %1"), QStringLiteral("CPU Fastmem: %1"), QStringLiteral("الذاكرة السريعة لـ CPU: %1"), QStringLiteral("Memoria rápida CPU (Fastmem): %1")).arg(bval());
+    }
+    if (k.find("cpuopt_ignore_memory_aborts") != std::string::npos) {
+        return StormLang(QStringLiteral("Игнорировать сбои страниц памяти: %1"), QStringLiteral("Ignore Memory Aborts: %1"), QStringLiteral("Speicherabbrüche ignorieren: %1"), QStringLiteral("Ignorer les erreurs mémoire : %1"), QStringLiteral("忽略内存访问异常: %1"), QStringLiteral("メモリ中断を無視: %1"), QStringLiteral("تجاهل أخطاء الذاكرة: %1"), QStringLiteral("Ignorar abortos de memoria: %1")).arg(bval());
+    }
+    if (k.find("cpuopt_recompile_exclusives") != std::string::npos) {
+        return StormLang(QStringLiteral("Рекомпиляция атомарных инструкций: %1"), QStringLiteral("Recompile Exclusives: %1"), QStringLiteral("Exclusives rekompilieren: %1"), QStringLiteral("Recompiler les exclusifs : %1"), QStringLiteral("重编译独占指令: %1"), QStringLiteral("排他命令の再コンパイル: %1"), QStringLiteral("إعادة ترجمة التعليمات الحصرية: %1"), QStringLiteral("Recompilar exclusivos: %1")).arg(bval());
+    }
+    if (k.find("cpuopt_unsafe_unfuse_fma") != std::string::npos) {
+        return StormLang(QStringLiteral("Разделение инструкций FMA: %1"), QStringLiteral("Unfuse FMA Instructions: %1"), QStringLiteral("FMA-Instruktionen trennen: %1"), QStringLiteral("Séparer les instructions FMA : %1"), QStringLiteral("拆分 FMA 浮点指令: %1"), QStringLiteral("FMA 命令の分離: %1"), QStringLiteral("فصل تعليمات FMA: %1"), QStringLiteral("Separar instrucciones FMA: %1")).arg(bval());
+    }
+    if (k.find("cpuopt_unsafe_host_mmu") != std::string::npos) {
+        return StormLang(QStringLiteral("Аппаратный MMU хоста: %1"), QStringLiteral("Host MMU Acceleration: %1"), QStringLiteral("Host-MMU-Beschleunigung: %1"), QStringLiteral("Accélération MMU hôte : %1"), QStringLiteral("主机硬件 MMU 加速: %1"), QStringLiteral("ホスト MMU 高速化: %1"), QStringLiteral("تسريع MMU المضيف: %1"), QStringLiteral("Aceleración MMU del host: %1")).arg(bval());
+    }
+    if (k.find("cpuopt_unsafe_reduce_fp_error") != std::string::npos) {
+        return StormLang(QStringLiteral("Точность чисел с плавающей точкой: %1"), QStringLiteral("Reduce Floating-Point Error: %1"), QStringLiteral("Gleitkommafehler reduzieren: %1"), QStringLiteral("Réduire l'erreur flottante : %1"), QStringLiteral("降低浮点运算误差: %1"), QStringLiteral("浮動小数点誤差の低減: %1"), QStringLiteral("تقليل خطأ الفاصلة العائمة: %1"), QStringLiteral("Reducir error de coma flotante: %1")).arg(bval());
+    }
+    if (k.find("cpuopt_unsafe_ignore_standard_fpcr") != std::string::npos) {
+        return StormLang(QStringLiteral("Ускорение регистра FPCR: %1"), QStringLiteral("Fast FPCR Register Mode: %1"), QStringLiteral("Schneller FPCR-Modus: %1"), QStringLiteral("Mode registre FPCR rapide : %1"), QStringLiteral("快速 FPCR 寄存器模式: %1"), QStringLiteral("高速 FPCR レジスタ: %1"), QStringLiteral("تسريع سجل FPCR: %1"), QStringLiteral("Modo rápido FPCR: %1")).arg(bval());
+    }
+    if (k.find("use_storm_tier2_compiler") != std::string::npos) {
+        return StormLang(QStringLiteral("Компилятор STORM Tier-2: %1"), QStringLiteral("STORM Tier-2 Compiler: %1"), QStringLiteral("STORM Tier-2-Compiler: %1"), QStringLiteral("Compilateur STORM Tier-2 : %1"), QStringLiteral("STORM Tier-2 编译器: %1"), QStringLiteral("STORM Tier-2 コンパイラ: %1"), QStringLiteral("مترجم STORM Tier-2: %1"), QStringLiteral("Compilador STORM Tier-2: %1")).arg(bval());
+    }
+    if (k.find("sync_core_speed") != std::string::npos) {
+        return StormLang(QStringLiteral("Синхронизация частоты ядер: %1"), QStringLiteral("Sync Core Speed: %1"), QStringLiteral("Kerngeschwindigkeit synchronisieren: %1"), QStringLiteral("Synchroniser la vitesse des cœurs : %1"), QStringLiteral("同步核心速度: %1"), QStringLiteral("コア速度の同期: %1"), QStringLiteral("مزامنة سرعة النواة: %1"), QStringLiteral("Sincronizar velocidad de núcleos: %1")).arg(bval());
+    }
+    if (k.find("disable_macro_hle") != std::string::npos) {
+        return StormLang(QStringLiteral("Отключить макро-HLE ГП: %1"), QStringLiteral("Disable GPU Macro HLE: %1"), QStringLiteral("GPU-Makro-HLE deaktivieren: %1"), QStringLiteral("Désactiver Macro HLE GPU : %1"), QStringLiteral("禁用 GPU 宏 HLE: %1"), QStringLiteral("GPU マクロ HLE 無効化: %1"), QStringLiteral("تعطيل ماكرو GPU HLE: %1"), QStringLiteral("Desactivar Macro HLE de GPU: %1")).arg(bval());
+    }
+    if (k.find("disable_macro_jit") != std::string::npos) {
+        return StormLang(QStringLiteral("Отключить макро-JIT ГП: %1"), QStringLiteral("Disable GPU Macro JIT: %1"), QStringLiteral("GPU-Makro-JIT deaktivieren: %1"), QStringLiteral("Désactiver Macro JIT GPU : %1"), QStringLiteral("禁用 GPU 宏 JIT: %1"), QStringLiteral("GPU マクロ JIT 無効化: %1"), QStringLiteral("تعطيل ماكرو GPU JIT: %1"), QStringLiteral("Desactivar Macro JIT de GPU: %1")).arg(bval());
+    }
+    if (k.find("disable_web_applet") != std::string::npos) {
+        return StormLang(QStringLiteral("Блокировка встроенного веб-апплета: %1"), QStringLiteral("Disable Web Applet: %1"), QStringLiteral("Web-Applet deaktivieren: %1"), QStringLiteral("Désactiver l'applet Web : %1"), QStringLiteral("禁用内置网页小程序: %1"), QStringLiteral("Web アプレット無効化: %1"), QStringLiteral("تعطيل تطبيق الويب المصغر: %1"), QStringLiteral("Desactivar applet web: %1")).arg(bval());
+    }
+    if (k.find("use_auto_stub") != std::string::npos) {
+        return StormLang(QStringLiteral("Авто-заглушки сервисов HLE: %1"), QStringLiteral("HLE Service Auto-Stub: %1"), QStringLiteral("HLE-Service Auto-Stub: %1"), QStringLiteral("Auto-Stub des services HLE : %1"), QStringLiteral("HLE 服务自动桩: %1"), QStringLiteral("HLE サービス自動スタブ: %1"), QStringLiteral("محاكاة خدمات HLE التلقائية: %1"), QStringLiteral("Auto-Stub de servicios HLE: %1")).arg(bval());
+    }
+
+    // Fallback: strip section prefix and localize boolean value
+    std::string clean_k = k;
+    const auto slash = clean_k.find('\\');
+    if (slash != std::string::npos) {
+        clean_k = clean_k.substr(slash + 1);
+    }
+    for (char& ch : clean_k) {
+        if (ch == '_') ch = ' ';
+    }
+    if (!clean_k.empty()) {
+        clean_k[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(clean_k[0])));
+    }
+    const QString disp_v = (v == "true" || v == "false" || v == "1" || v == "0")
+        ? bval()
+        : QString::fromStdString(v);
+    return QStringLiteral("%1: %2").arg(QString::fromStdString(clean_k), disp_v);
+}
+
+} // anonymous namespace
+
 MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show) {
     if (title_id == 0) {
         static const QRegularExpression tid_regex(QStringLiteral(R"(([0-9a-fA-F]{16}))"));
@@ -4473,45 +4712,58 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     clean_game_name.remove(QRegularExpression(QStringLiteral(R"(\s*\[[^\]]*\])")));
     clean_game_name = clean_game_name.trimmed();
     if (clean_game_name.isEmpty()) {
-        clean_game_name = tr("Игра");
+        clean_game_name = StormLang(QStringLiteral("Игра"), QStringLiteral("Game"), QStringLiteral("Spiel"), QStringLiteral("Jeu"), QStringLiteral("游戏"), QStringLiteral("ゲーム"), QStringLiteral("لعبة"), QStringLiteral("Juego"));
     }
 
     QDialog fixDialog(this);
-    fixDialog.setWindowTitle(tr("🛡️ Авто-исправление: %1").arg(clean_game_name));
+    fixDialog.setWindowTitle(StormLang(
+        QStringLiteral("🛡️ Авто-исправление: %1"),
+        QStringLiteral("🛡️ Auto-Fix Profile: %1"),
+        QStringLiteral("🛡️ Auto-Fix-Profil: %1"),
+        QStringLiteral("🛡️ Profil d'auto-correction : %1"),
+        QStringLiteral("🛡️ 自动修复配置: %1"),
+        QStringLiteral("🛡️ 自動修正プロファイル: %1"),
+        QStringLiteral("🛡️ الإصلاح التلقائي: %1"),
+        QStringLiteral("🛡️ Auto-corrección: %1")).arg(clean_game_name));
     fixDialog.setWindowFlags(fixDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    fixDialog.setMinimumWidth(600);
-    fixDialog.setMaximumWidth(660);
-    fixDialog.resize(620, 460);
+    fixDialog.setMinimumSize(820, 490);
+    fixDialog.setMaximumWidth(960);
+    fixDialog.resize(860, 520);
 
     fixDialog.setStyleSheet(QStringLiteral(
         "QDialog {"
-        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #151923, stop:1 #0B0E14);"
-        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #111622, stop:0.6 #0C101A, stop:1 #080B12);"
+        "    border: 1.5px solid rgba(0, 210, 255, 0.40);"
         "    border-radius: 12px;"
         "}"
         "QLabel { color: #E2E8F0; font-family: 'Segoe UI', sans-serif; }"
     ));
 
-    auto* dlg_layout = new QVBoxLayout(&fixDialog);
-    dlg_layout->setContentsMargins(14, 12, 14, 12);
-    dlg_layout->setSpacing(8);
+    // 2-COLUMN MASTER LAYOUT: Left = Info + Scroll + Checkbox, Right = Action Panel with Buttons
+    auto* main_hlayout = new QHBoxLayout(&fixDialog);
+    main_hlayout->setContentsMargins(16, 14, 16, 14);
+    main_hlayout->setSpacing(14);
 
-    // 1. Header Card with Game Title
+    auto* left_col = new QVBoxLayout();
+    left_col->setContentsMargins(0, 0, 0, 0);
+    left_col->setSpacing(10);
+
+    // 1. Header Card with Game Title (Left Column Top)
     auto* headerCard = new QFrame(&fixDialog);
     headerCard->setStyleSheet(QStringLiteral(
         "QFrame {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 210, 255, 0.12), stop:1 rgba(2, 132, 199, 0.04));"
-        "    border: 1px solid rgba(0, 210, 255, 0.28);"
-        "    border-radius: 8px;"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 210, 255, 0.16), stop:1 rgba(15, 23, 42, 0.65));"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
+        "    border-radius: 10px;"
         "}"
     ));
     auto* headerLayout = new QHBoxLayout(headerCard);
-    headerLayout->setContentsMargins(12, 8, 12, 8);
-    headerLayout->setSpacing(10);
+    headerLayout->setContentsMargins(14, 10, 14, 10);
+    headerLayout->setSpacing(12);
 
     auto* gameIconLabel = new QLabel(headerCard);
     gameIconLabel->setText(QStringLiteral("🛡️"));
-    gameIconLabel->setStyleSheet(QStringLiteral("font-size: 20px; background: transparent; border: none;"));
+    gameIconLabel->setStyleSheet(QStringLiteral("font-size: 24px; background: transparent; border: none;"));
     headerLayout->addWidget(gameIconLabel);
 
     auto* titleContainer = new QVBoxLayout();
@@ -4519,53 +4771,66 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     titleContainer->setSpacing(2);
 
     auto* gameTitleLabel = new QLabel(clean_game_name, headerCard);
-    gameTitleLabel->setStyleSheet(QStringLiteral("font-size: 14px; font-weight: bold; color: #FFFFFF; background: transparent; border: none;"));
+    gameTitleLabel->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: 800; color: #FFFFFF; background: transparent; border: none;"));
     titleContainer->addWidget(gameTitleLabel);
 
     if (title_id != 0) {
-        auto* tidLabel = new QLabel(QStringLiteral("Title ID: %1").arg(QString::asprintf("%016llX", static_cast<unsigned long long>(title_id))), headerCard);
-        tidLabel->setStyleSheet(QStringLiteral("font-size: 11px; color: #94A3B8; background: transparent; border: none; font-family: monospace;"));
+        const QString tid_str = QString::asprintf("%016llX", static_cast<unsigned long long>(title_id));
+        auto* tidLabel = new QLabel(StormLang(
+            QStringLiteral("ID игры: %1"),
+            QStringLiteral("Title ID: %1"),
+            QStringLiteral("Titel-ID: %1"),
+            QStringLiteral("ID du titre : %1"),
+            QStringLiteral("游戏 ID: %1"),
+            QStringLiteral("タイトル ID: %1"),
+            QStringLiteral("معرّف اللعبة: %1"),
+            QStringLiteral("ID del título: %1")).arg(tid_str), headerCard);
+        tidLabel->setStyleSheet(QStringLiteral("font-size: 11.5px; color: #38BDF8; font-weight: 600; background: transparent; border: none; font-family: 'Consolas', monospace;"));
         titleContainer->addWidget(tidLabel);
     }
     headerLayout->addLayout(titleContainer, 1);
-    dlg_layout->addWidget(headerCard);
+    left_col->addWidget(headerCard);
 
-    // Scroll Area for Issue Card and Fix Card
+    // 2. Scroll Area for Issue Card, Fix Card, and Localized Parameters (Left Column Middle)
     auto* scrollArea = new QScrollArea(&fixDialog);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollArea->setStyleSheet(QStringLiteral(
         "QScrollArea { background: transparent; border: none; }"
+        "QScrollArea::corner { background: transparent; border: none; }"
         "QScrollBar:vertical {"
-        "    background: rgba(15, 23, 42, 0.6);"
+        "    background: rgba(15, 23, 42, 0.65);"
         "    width: 8px;"
-        "    margin: 0px;"
+        "    margin: 2px 0px 2px 0px;"
         "    border-radius: 4px;"
         "}"
         "QScrollBar::handle:vertical {"
-        "    background: rgba(0, 210, 255, 0.4);"
-        "    min-height: 24px;"
+        "    background: rgba(0, 210, 255, 0.50);"
+        "    min-height: 28px;"
         "    border-radius: 4px;"
         "}"
         "QScrollBar::handle:vertical:hover {"
-        "    background: #00D2FF;"
+        "    background: #00E5FF;"
         "}"
-        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
-        "    height: 0px;"
-        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; background: none; }"
+        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }"
     ));
 
     auto* scrollWidget = new QWidget();
     scrollWidget->setStyleSheet(QStringLiteral("background: transparent;"));
     auto* scrollLayout = new QVBoxLayout(scrollWidget);
-    scrollLayout->setContentsMargins(0, 0, 6, 0);
-    scrollLayout->setSpacing(8);
+    scrollLayout->setContentsMargins(0, 0, 8, 0);
+    scrollLayout->setSpacing(10);
 
-    // 2. Issues Card
-    const bool is_russian = UISettings::values.language.GetValue().starts_with("ru") || UISettings::values.language.GetValue().empty();
+    std::string ui_lang = UISettings::values.language.GetValue();
+    if (ui_lang.empty()) {
+        ui_lang = QLocale::system().name().toStdString();
+    }
+    const bool is_russian = ui_lang.rfind("ru", 0) == 0 || ui_lang.rfind("uk", 0) == 0 || ui_lang.rfind("be", 0) == 0;
     QString issues_raw = QString::fromStdString(is_russian ? profile->issues_ru : profile->issues_en);
     if (issues_raw.isEmpty()) {
-        issues_raw = QString::fromStdString(profile->issues_ru);
+        issues_raw = QString::fromStdString(profile->issues_en.empty() ? profile->issues_ru : profile->issues_en);
     }
     QString issues_formatted = issues_raw;
     issues_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
@@ -4573,30 +4838,38 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     auto* issueCard = new QFrame(scrollWidget);
     issueCard->setStyleSheet(QStringLiteral(
         "QFrame {"
-        "    background: rgba(239, 68, 68, 0.08);"
-        "    border: 1px solid rgba(239, 68, 68, 0.35);"
-        "    border-radius: 8px;"
+        "    background: rgba(239, 68, 68, 0.09);"
+        "    border: 1px solid rgba(239, 68, 68, 0.38);"
+        "    border-radius: 9px;"
         "}"
     ));
     auto* issueLayout = new QVBoxLayout(issueCard);
-    issueLayout->setContentsMargins(12, 8, 12, 8);
-    issueLayout->setSpacing(4);
+    issueLayout->setContentsMargins(12, 9, 12, 9);
+    issueLayout->setSpacing(5);
 
-    auto* issueHeader = new QLabel(tr("⚠️ <b>Обнаружены известные проблемы в игре:</b>"), issueCard);
+    auto* issueHeader = new QLabel(StormLang(
+        QStringLiteral("⚠️ <b>Обнаружены известные проблемы в игре:</b>"),
+        QStringLiteral("⚠️ <b>Known Game Issues Detected:</b>"),
+        QStringLiteral("⚠️ <b>Bekannte Spielprobleme erkannt:</b>"),
+        QStringLiteral("⚠️ <b>Problèmes connus détectés dans le jeu :</b>"),
+        QStringLiteral("⚠️ <b>检测到已知游戏问题：</b>"),
+        QStringLiteral("⚠️ <b>既知のゲーム問題が検出されました:</b>"),
+        QStringLiteral("⚠️ <b>تم اكتشاف مشاكل معروفة في اللعبة:</b>"),
+        QStringLiteral("⚠️ <b>Problemas conocidos detectados en el juego:</b>")), issueCard);
     issueHeader->setStyleSheet(QStringLiteral("color: #F87171; font-size: 12.5px; background: transparent; border: none;"));
     issueLayout->addWidget(issueHeader);
 
     auto* issueText = new QLabel(issues_formatted, issueCard);
     issueText->setTextFormat(Qt::RichText);
     issueText->setWordWrap(true);
-    issueText->setStyleSheet(QStringLiteral("color: #FCA5A5; font-size: 11.5px; line-height: 1.35; background: transparent; border: none;"));
+    issueText->setStyleSheet(QStringLiteral("color: #FCA5A5; font-size: 11.5px; line-height: 1.38; background: transparent; border: none;"));
     issueLayout->addWidget(issueText);
     scrollLayout->addWidget(issueCard);
 
     // 3. Recommended Fixes Card
     QString fixes_raw = QString::fromStdString(is_russian ? profile->fixes_ru : profile->fixes_en);
     if (fixes_raw.isEmpty()) {
-        fixes_raw = QString::fromStdString(profile->fixes_ru);
+        fixes_raw = QString::fromStdString(profile->fixes_en.empty() ? profile->fixes_ru : profile->fixes_en);
     }
     QString fixes_formatted = fixes_raw;
     if (!fixes_formatted.contains(QStringLiteral("<b>"))) {
@@ -4608,74 +4881,99 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     auto* fixCard = new QFrame(scrollWidget);
     fixCard->setStyleSheet(QStringLiteral(
         "QFrame {"
-        "    background: rgba(0, 210, 255, 0.06);"
-        "    border: 1px solid rgba(0, 210, 255, 0.35);"
-        "    border-radius: 8px;"
+        "    background: rgba(0, 210, 255, 0.07);"
+        "    border: 1px solid rgba(0, 210, 255, 0.36);"
+        "    border-radius: 9px;"
         "}"
     ));
     auto* fixLayout = new QVBoxLayout(fixCard);
-    fixLayout->setContentsMargins(12, 8, 12, 8);
-    fixLayout->setSpacing(4);
+    fixLayout->setContentsMargins(12, 9, 12, 9);
+    fixLayout->setSpacing(6);
 
-    auto* fixHeader = new QLabel(tr("🛡️ <b>Параметры авто-исправления (совместимость и стабильность):</b>"), fixCard);
-    fixHeader->setStyleSheet(QStringLiteral("color: #00D2FF; font-size: 12.5px; background: transparent; border: none;"));
+    auto* fixHeader = new QLabel(StormLang(
+        QStringLiteral("🛡️ <b>Параметры авто-исправления (совместимость и стабильность):</b>"),
+        QStringLiteral("🛡️ <b>Auto-Fix Parameters (Compatibility & Stability):</b>"),
+        QStringLiteral("🛡️ <b>Auto-Fix-Parameter (Kompatibilität & Stabilität):</b>"),
+        QStringLiteral("🛡️ <b>Paramètres d'auto-correction (Compatibilité et stabilité) :</b>"),
+        QStringLiteral("🛡️ <b>自动修复参数（兼容性与稳定性）：</b>"),
+        QStringLiteral("🛡️ <b>自動修正パラメータ（互換性と安定性）:</b>"),
+        QStringLiteral("🛡️ <b>معلمات الإصلاح التلقائي (التوافق والاستقرار):</b>"),
+        QStringLiteral("🛡️ <b>Parámetros de auto-corrección (Compatibilidad y estabilidad):</b>")), fixCard);
+    fixHeader->setStyleSheet(QStringLiteral("color: #00E5FF; font-size: 12.5px; background: transparent; border: none;"));
     fixLayout->addWidget(fixHeader);
 
     auto* fixText = new QLabel(fixes_formatted, fixCard);
     fixText->setTextFormat(Qt::RichText);
     fixText->setWordWrap(true);
-    fixText->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.4; background: transparent; border: none;"));
+    fixText->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.42; background: transparent; border: none;"));
     fixLayout->addWidget(fixText);
 
-    // Interactive per-parameter checkboxes
+    // Interactive per-parameter checkboxes (100% localized human-readable names & values)
     std::vector<std::pair<std::string, QCheckBox*>> param_checkboxes;
     if (!profile->ini_settings.empty()) {
         auto* paramsContainer = new QFrame(fixCard);
         paramsContainer->setStyleSheet(QStringLiteral(
             "QFrame {"
-            "    background: rgba(15, 23, 42, 0.55);"
-            "    border: 1px solid rgba(0, 210, 255, 0.22);"
-            "    border-radius: 6px;"
+            "    background: rgba(15, 23, 42, 0.65);"
+            "    border: 1px solid rgba(56, 189, 248, 0.25);"
+            "    border-radius: 7px;"
             "    margin-top: 4px;"
             "}"
         ));
         auto* paramsLayout = new QVBoxLayout(paramsContainer);
-        paramsLayout->setContentsMargins(8, 6, 8, 6);
-        paramsLayout->setSpacing(4);
+        paramsLayout->setContentsMargins(10, 8, 10, 8);
+        paramsLayout->setSpacing(6);
 
-        auto* paramsTitle = new QLabel(tr("⚙️ <b>Выбор применяемых параметров (можно отключить отдельные пункты):</b>"), paramsContainer);
-        paramsTitle->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11px; background: transparent; border: none;"));
+        auto* paramsTitle = new QLabel(StormLang(
+            QStringLiteral("⚙️ <b>Выбор применяемых параметров (можно отключить отдельные пункты):</b>"),
+            QStringLiteral("⚙️ <b>Select Applied Parameters (individual items can be toggled):</b>"),
+            QStringLiteral("⚙️ <b>Anzuwendende Parameter auswählen (einzelne Punkte abwählbar):</b>"),
+            QStringLiteral("⚙️ <b>Sélection des paramètres appliqués (ajustables individuellement) :</b>"),
+            QStringLiteral("⚙️ <b>选择要应用的参数（可单独取消勾选）：</b>"),
+            QStringLiteral("⚙️ <b>適用するパラメータの選択（個別に切り替え可能）:</b>"),
+            QStringLiteral("⚙️ <b>تحديد المعلمات المطبقة (يمكن تعطيل عناصر فردية):</b>"),
+            QStringLiteral("⚙️ <b>Selección de parámetros aplicados (se pueden desmarcar):</b>")), paramsContainer);
+        paramsTitle->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11.5px; background: transparent; border: none;"));
         paramsLayout->addWidget(paramsTitle);
 
         auto* paramsGrid = new QGridLayout();
         paramsGrid->setContentsMargins(0, 2, 0, 0);
-        paramsGrid->setHorizontalSpacing(12);
-        paramsGrid->setVerticalSpacing(4);
+        paramsGrid->setHorizontalSpacing(14);
+        paramsGrid->setVerticalSpacing(5);
 
         int idx = 0;
         for (const auto& [k, v] : profile->ini_settings) {
-            if (k == "aspect_ratio" || k == "resolution_setup" || k == "use_docked_mode" ||
-                k == "anti_aliasing" || k == "scaling_filter" || k == "fsr_sharpening_slider" ||
-                k == "max_anisotropy" || k == "frame_pacing_mode" || k == "backend") {
+            if (k == "aspect_ratio" || k == "Renderer\\aspect_ratio" ||
+                k == "resolution_setup" || k == "Renderer\\resolution_setup" ||
+                k == "use_docked_mode" || k == "System\\use_docked_mode" ||
+                k == "anti_aliasing" || k == "Renderer\\anti_aliasing" ||
+                k == "scaling_filter" || k == "Renderer\\scaling_filter" ||
+                k == "fsr_sharpening_slider" || k == "Renderer\\fsr_sharpening_slider" ||
+                k == "max_anisotropy" || k == "Renderer\\max_anisotropy" ||
+                k == "frame_pacing_mode" || k == "Renderer\\frame_pacing_mode" ||
+                k == "backend" || k == "Renderer\\backend") {
                 continue;
             }
-            auto* cb = new QCheckBox(QStringLiteral("%1 = %2").arg(QString::fromStdString(k), QString::fromStdString(v)), paramsContainer);
+            const QString localized_param = FormatLocalizedIniParam(k, v);
+            auto* cb = new QCheckBox(localized_param, paramsContainer);
+            cb->setToolTip(QStringLiteral("%1 = %2").arg(QString::fromStdString(k), QString::fromStdString(v)));
             cb->setChecked(true);
             cb->setStyleSheet(QStringLiteral(
                 "QCheckBox {"
-                "    color: #CBD5E1;"
-                "    font-size: 11px;"
-                "    font-family: 'Consolas', 'Segoe UI', monospace;"
-                "    spacing: 6px;"
+                "    color: #E2E8F0;"
+                "    font-size: 11.5px;"
+                "    font-family: 'Segoe UI', sans-serif;"
+                "    spacing: 7px;"
                 "    background: transparent;"
                 "    border: none;"
                 "}"
+                "QCheckBox:hover { color: #38BDF8; }"
                 "QCheckBox::indicator {"
-                "    width: 13px;"
-                "    height: 13px;"
+                "    width: 14px;"
+                "    height: 14px;"
                 "    border-radius: 3px;"
-                "    border: 1px solid rgba(0, 210, 255, 0.45);"
-                "    background: rgba(15, 23, 42, 0.8);"
+                "    border: 1px solid rgba(0, 210, 255, 0.55);"
+                "    background: rgba(15, 23, 42, 0.85);"
                 "}"
                 "QCheckBox::indicator:checked {"
                 "    background: #00D2FF;"
@@ -4695,112 +4993,202 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     }
 
     scrollLayout->addWidget(fixCard);
-
     scrollLayout->addStretch(1);
 
     scrollArea->setWidget(scrollWidget);
-    dlg_layout->addWidget(scrollArea, 1);
+    left_col->addWidget(scrollArea, 1);
 
-    // 4. Prompt text
-    auto* promptLabel = new QLabel(force_show ?
-        tr("Применить параметры авто-исправления к профилю игры?") :
-        tr("Применить параметры авто-исправления для этой игры перед запуском?"), &fixDialog);
-    promptLabel->setAlignment(Qt::AlignCenter);
-    promptLabel->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 12px; color: #F8FAFC; margin-top: 2px; background: transparent; border: none;"));
-    dlg_layout->addWidget(promptLabel);
+    // 4. Bottom of Left Column: Prompt + "Do not show again" Checkbox
+    auto* leftFooterCard = new QFrame(&fixDialog);
+    leftFooterCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: rgba(15, 23, 42, 0.72);"
+        "    border: 1px solid rgba(148, 163, 184, 0.22);"
+        "    border-radius: 8px;"
+        "}"
+    ));
+    auto* leftFooterLayout = new QHBoxLayout(leftFooterCard);
+    leftFooterLayout->setContentsMargins(12, 8, 12, 8);
+    leftFooterLayout->setSpacing(12);
 
-    // 5. Stylized Checkbox (Rule 4: solid square with neon fill, no old checkmark)
-    auto* cb_layout = new QHBoxLayout();
-    cb_layout->setAlignment(Qt::AlignCenter);
-    auto* dont_ask_cb = new QCheckBox(tr("Больше не показывать для этой игры"), &fixDialog);
+    auto* dont_ask_cb = new QCheckBox(StormLang(
+        QStringLiteral("Больше не показывать для этой игры"),
+        QStringLiteral("Do not show again for this game"),
+        QStringLiteral("Für dieses Spiel nicht mehr anzeigen"),
+        QStringLiteral("Ne plus afficher pour ce jeu"),
+        QStringLiteral("不再对此游戏显示"),
+        QStringLiteral("このゲームでは今後表示しない"),
+        QStringLiteral("عدم الإظهار مرة أخرى لهذه اللعبة"),
+        QStringLiteral("No volver a mostrar para este juego")), leftFooterCard);
     dont_ask_cb->setChecked(false);
+    dont_ask_cb->setCursor(Qt::PointingHandCursor);
     dont_ask_cb->setStyleSheet(QStringLiteral(
         "QCheckBox {"
-        "    color: #94A3B8;"
-        "    font-size: 11.5px;"
+        "    color: #CBD5E1;"
+        "    font-size: 12px;"
+        "    font-weight: 600;"
         "    spacing: 8px;"
         "    background: transparent;"
         "    border: none;"
         "}"
+        "QCheckBox:hover { color: #FFFFFF; }"
         "QCheckBox::indicator {"
-        "    width: 15px;"
-        "    height: 15px;"
+        "    width: 16px;"
+        "    height: 16px;"
         "    border-radius: 4px;"
-        "    border: 1px solid rgba(0, 210, 255, 0.45);"
-        "    background: rgba(15, 23, 42, 0.7);"
+        "    border: 1px solid rgba(0, 210, 255, 0.55);"
+        "    background: rgba(15, 23, 42, 0.85);"
         "}"
         "QCheckBox::indicator:hover {"
-        "    border: 1px solid #00D2FF;"
-        "    background: rgba(0, 210, 255, 0.15);"
+        "    border: 1px solid #00E5FF;"
+        "    background: rgba(0, 210, 255, 0.18);"
         "}"
         "QCheckBox::indicator:checked {"
         "    background: #00D2FF;"
         "    border: 1px solid #00F0FF;"
         "}"
     ));
-    cb_layout->addWidget(dont_ask_cb);
-    dlg_layout->addLayout(cb_layout);
+    leftFooterLayout->addWidget(dont_ask_cb, 0, Qt::AlignLeft | Qt::AlignVCenter);
+    leftFooterLayout->addStretch(1);
+    left_col->addWidget(leftFooterCard);
 
-    // 6. Action buttons (Elevated 3D buttons)
-    auto* btn_layout = new QHBoxLayout();
-    btn_layout->setContentsMargins(0, 2, 0, 0);
-    btn_layout->setSpacing(10);
-    btn_layout->setAlignment(Qt::AlignCenter);
+    main_hlayout->addLayout(left_col, 1);
 
-    auto* applyBtn = new QPushButton(force_show ? tr("🛡️ Применить для этой игры") : tr("🛡️ Применить и запустить"), &fixDialog);
+    // =========================================================================
+    // RIGHT COLUMN: Styled Vertical Action Panel with Choice Buttons
+    // =========================================================================
+    auto* rightCard = new QFrame(&fixDialog);
+    rightCard->setFixedWidth(250);
+    rightCard->setStyleSheet(QStringLiteral(
+        "QFrame {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(19, 28, 46, 0.92), stop:1 rgba(11, 15, 25, 0.96));"
+        "    border: 1px solid rgba(0, 210, 255, 0.32);"
+        "    border-radius: 10px;"
+        "}"
+    ));
+    auto* right_col = new QVBoxLayout(rightCard);
+    right_col->setContentsMargins(14, 14, 14, 14);
+    right_col->setSpacing(10);
+
+    auto* actionHeader = new QLabel(StormLang(
+        QStringLiteral("⚡ ВЫБОР ДЕЙСТВИЯ"),
+        QStringLiteral("⚡ SELECT ACTION"),
+        QStringLiteral("⚡ AKTION WÄHLEN"),
+        QStringLiteral("⚡ CHOISIR L'ACTION"),
+        QStringLiteral("⚡ 选择操作"),
+        QStringLiteral("⚡ アクション選択"),
+        QStringLiteral("⚡ اختر الإجراء"),
+        QStringLiteral("⚡ SELECCIONAR ACCIÓN")), rightCard);
+    actionHeader->setAlignment(Qt::AlignCenter);
+    actionHeader->setStyleSheet(QStringLiteral(
+        "color: #00E5FF; font-size: 12px; font-weight: 800; letter-spacing: 0.8px;"
+        "background: rgba(0, 210, 255, 0.10); border: 1px solid rgba(0, 210, 255, 0.25);"
+        "border-radius: 6px; padding: 6px 8px;"
+    ));
+    right_col->addWidget(actionHeader);
+
+    auto* promptLabel = new QLabel(force_show
+        ? StormLang(
+            QStringLiteral("Применить параметры авто-исправления к профилю игры?"),
+            QStringLiteral("Apply auto-fix parameters to this game's profile?"),
+            QStringLiteral("Auto-Fix-Parameter auf dieses Spielprofil anwenden?"),
+            QStringLiteral("Appliquer les paramètres d'auto-correction au profil du jeu ?"),
+            QStringLiteral("将自动修复参数应用到此游戏配置？"),
+            QStringLiteral("自動修正パラメータをこのゲームプロファイルに適用しますか？"),
+            QStringLiteral("هل تريد تطبيق معلمات الإصلاح التلقائي على ملف اللعبة؟"),
+            QStringLiteral("¿Aplicar parámetros de auto-corrección al perfil del juego?"))
+        : StormLang(
+            QStringLiteral("Применить рекомендуемые исправления перед запуском игры?"),
+            QStringLiteral("Apply recommended fixes before launching the game?"),
+            QStringLiteral("Empfohlene Korrekturen vor dem Spielstart anwenden?"),
+            QStringLiteral("Appliquer les corrections recommandées avant de lancer le jeu ?"),
+            QStringLiteral("在启动游戏前应用推荐的修复参数？"),
+            QStringLiteral("ゲーム起動前に推奨される修正を適用しますか？"),
+            QStringLiteral("هل تريد تطبيق الإصلاحات الموصى بها قبل تشغيل اللعبة؟"),
+            QStringLiteral("¿Aplicar las correcciones recomendadas antes de iniciar el juego?")), rightCard);
+    promptLabel->setWordWrap(true);
+    promptLabel->setAlignment(Qt::AlignCenter);
+    promptLabel->setStyleSheet(QStringLiteral("font-size: 11.5px; color: #CBD5E1; background: transparent; border: none; padding: 2px 2px;"));
+    right_col->addWidget(promptLabel);
+
+    right_col->addSpacing(4);
+
+    auto* applyBtn = new QPushButton(force_show
+        ? StormLang(QStringLiteral("🛡️ Применить для игры"), QStringLiteral("🛡️ Apply to Game"), QStringLiteral("🛡️ Auf Spiel anwenden"), QStringLiteral("🛡️ Appliquer au jeu"), QStringLiteral("🛡️ 应用到游戏"), QStringLiteral("🛡️ ゲームに適用"), QStringLiteral("🛡️ تطبيق على اللعبة"), QStringLiteral("🛡️ Aplicar al juego"))
+        : StormLang(QStringLiteral("🛡️ Применить и запустить"), QStringLiteral("🛡️ Apply & Launch"), QStringLiteral("🛡️ Anwenden & Starten"), QStringLiteral("🛡️ Appliquer et lancer"), QStringLiteral("🛡️ 应用并启动"), QStringLiteral("🛡️ 適用して起動"), QStringLiteral("🛡️ تطبيق وتشغيل"), QStringLiteral("🛡️ Aplicar e iniciar")), rightCard);
     applyBtn->setObjectName(QStringLiteral("PrimaryDialogButton"));
+    applyBtn->setCursor(Qt::PointingHandCursor);
+    applyBtn->setMinimumHeight(44);
     applyBtn->setStyleSheet(QStringLiteral(
         "QPushButton {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0284C7);"
-        "    color: #050B14;"
-        "    font-weight: bold;"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00E5FF, stop:1 #0284C7);"
+        "    color: #040914;"
+        "    font-weight: 800;"
         "    font-size: 12.5px;"
-        "    padding: 7px 16px;"
-        "    border-radius: 6px;"
-        "    border: 1px solid #00F0FF;"
+        "    padding: 8px 12px;"
+        "    border-radius: 7px;"
+        "    border: 1px solid #67E8F9;"
         "}"
         "QPushButton:hover {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38BDF8, stop:1 #00D2FF);"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #67E8F9, stop:1 #00E5FF);"
+        "    color: #000000;"
         "}"
         "QPushButton:pressed {"
-        "    background: #0284C7;"
+        "    background: #0369A1;"
+        "    color: #FFFFFF;"
         "}"
     ));
 
-    auto* skipBtn = new QPushButton(force_show ? tr("Закрыть") : tr("Запустить без изменений"), &fixDialog);
+    auto* skipBtn = new QPushButton(force_show
+        ? StormLang(QStringLiteral("Закрыть"), QStringLiteral("Close"), QStringLiteral("Schließen"), QStringLiteral("Fermer"), QStringLiteral("关闭"), QStringLiteral("閉じる"), QStringLiteral("إغلاق"), QStringLiteral("Cerrar"))
+        : StormLang(QStringLiteral("Запустить без изменений"), QStringLiteral("Launch Without Changes"), QStringLiteral("Ohne Änderungen starten"), QStringLiteral("Lancer sans modification"), QStringLiteral("不作更改直接启动"), QStringLiteral("変更せずに起動"), QStringLiteral("تشغيل بدون تغييرات"), QStringLiteral("Iniciar sin cambios")), rightCard);
+    skipBtn->setCursor(Qt::PointingHandCursor);
+    skipBtn->setMinimumHeight(40);
     skipBtn->setStyleSheet(QStringLiteral(
         "QPushButton {"
-        "    background: rgba(30, 41, 59, 0.75);"
-        "    color: #CBD5E1;"
-        "    font-size: 12.5px;"
-        "    padding: 7px 14px;"
-        "    border-radius: 6px;"
-        "    border: 1px solid rgba(148, 163, 184, 0.25);"
+        "    background: rgba(30, 41, 59, 0.85);"
+        "    color: #E2E8F0;"
+        "    font-weight: 600;"
+        "    font-size: 12px;"
+        "    padding: 8px 12px;"
+        "    border-radius: 7px;"
+        "    border: 1px solid rgba(148, 163, 184, 0.35);"
         "}"
         "QPushButton:hover {"
-        "    background: rgba(51, 65, 85, 0.9);"
-        "    border: 1px solid rgba(148, 163, 184, 0.45);"
+        "    background: rgba(51, 65, 85, 0.95);"
+        "    border: 1px solid #38BDF8;"
         "    color: #FFFFFF;"
         "}"
         "QPushButton:pressed {"
-        "    background: rgba(15, 23, 42, 0.9);"
+        "    background: rgba(15, 23, 42, 0.95);"
         "}"
     ));
 
     QPushButton* cancelBtn = nullptr;
     if (!force_show) {
-        cancelBtn = new QPushButton(tr("Отменить"), &fixDialog);
+        cancelBtn = new QPushButton(StormLang(
+            QStringLiteral("Отменить"),
+            QStringLiteral("Cancel"),
+            QStringLiteral("Abbrechen"),
+            QStringLiteral("Annuler"),
+            QStringLiteral("取消"),
+            QStringLiteral("キャンセル"),
+            QStringLiteral("إلغاء"),
+            QStringLiteral("Cancelar")), rightCard);
+        cancelBtn->setCursor(Qt::PointingHandCursor);
+        cancelBtn->setMinimumHeight(40);
         cancelBtn->setStyleSheet(QStringLiteral(
             "QPushButton {"
-            "    background: rgba(46, 16, 20, 0.75);"
+            "    background: rgba(46, 16, 20, 0.80);"
             "    color: #FCA5A5;"
-            "    font-size: 12.5px;"
-            "    padding: 7px 14px;"
-            "    border-radius: 6px;"
-            "    border: 1px solid rgba(239, 68, 68, 0.35);"
+            "    font-weight: 600;"
+            "    font-size: 12px;"
+            "    padding: 8px 12px;"
+            "    border-radius: 7px;"
+            "    border: 1px solid rgba(239, 68, 68, 0.40);"
             "}"
             "QPushButton:hover {"
-            "    background: rgba(239, 68, 68, 0.85);"
+            "    background: rgba(239, 68, 68, 0.88);"
             "    border: 1px solid #FF5252;"
             "    color: #FFFFFF;"
             "}"
@@ -4810,12 +5198,32 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         ));
     }
 
-    btn_layout->addWidget(applyBtn);
-    btn_layout->addWidget(skipBtn);
+    right_col->addWidget(applyBtn);
+    right_col->addWidget(skipBtn);
     if (cancelBtn) {
-        btn_layout->addWidget(cancelBtn);
+        right_col->addWidget(cancelBtn);
     }
-    dlg_layout->addLayout(btn_layout);
+
+    right_col->addStretch(1);
+
+    auto* infoBadge = new QLabel(StormLang(
+        QStringLiteral("💡 Выбранные исправления применяются только к текущей игре и не затрагивают глобальные настройки."),
+        QStringLiteral("💡 Selected fixes apply only to this game and do not alter your global settings."),
+        QStringLiteral("💡 Ausgewählte Korrekturen gelten nur für dieses Spiel und ändern keine globalen Einstellungen."),
+        QStringLiteral("💡 Les corrections sélectionnées s'appliquent uniquement à ce jeu sans modifier vos paramètres globaux."),
+        QStringLiteral("💡 所选修复仅应用于当前游戏，不会修改您的全局设置。"),
+        QStringLiteral("💡 選択した修正はこのゲームのみに適用され、全体設定には影響しません。"),
+        QStringLiteral("💡 تُطبّق الإصلاحات المحددة على هذه اللعبة فقط ولا تغير الإعدادات العامة."),
+        QStringLiteral("💡 Las correcciones seleccionadas solo se aplican a este juego y no alteran la configuración global.")), rightCard);
+    infoBadge->setWordWrap(true);
+    infoBadge->setAlignment(Qt::AlignCenter);
+    infoBadge->setStyleSheet(QStringLiteral(
+        "color: #94A3B8; font-size: 10.5px; background: rgba(15, 23, 42, 0.65);"
+        "border: 1px solid rgba(148, 163, 184, 0.16); border-radius: 6px; padding: 7px;"
+    ));
+    right_col->addWidget(infoBadge);
+
+    main_hlayout->addWidget(rightCard);
 
     GameFixDialogResult action = GameFixDialogResult::Cancel;
 
@@ -4832,11 +5240,6 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
             action = GameFixDialogResult::Cancel;
             fixDialog.reject();
         });
-    }
-
-    fixDialog.adjustSize();
-    if (fixDialog.height() > 580) {
-        fixDialog.resize(fixDialog.width(), 580);
     }
 
     fixDialog.exec();
@@ -9784,6 +10187,37 @@ void MainWindow::UpdateAPIText() {
     ).arg(api_text));
 }
 
+void MainWindow::UpdateShaderText() {
+    if (!shader_status_button) return;
+    const int idx = Settings::values.post_processing_shader.GetValue();
+    const QString short_name = StormShaders::GetLocalizedShortName(idx);
+    shader_status_button->setChecked(idx > 0);
+    shader_status_button->setText(StormLang(
+        QStringLiteral("ШЕЙДЕР:\n%1"),
+        QStringLiteral("SHADER:\n%1"),
+        QStringLiteral("SHADER:\n%1"),
+        QStringLiteral("SHADER:\n%1"),
+        QStringLiteral("着色器:\n%1"),
+        QStringLiteral("シェーダー:\n%1"),
+        QStringLiteral("المظلل:\n%1"),
+        QStringLiteral("SHADER:\n%1")
+    ).arg(short_name));
+
+    const auto& cat = StormShaders::GetRetroArchShaderCatalog();
+    const int safe_idx = std::clamp(idx, 0, static_cast<int>(cat.size()) - 1);
+    const QString full_name = StormShaders::GetLocalizedName(cat[static_cast<std::size_t>(safe_idx)]);
+    shader_status_button->setToolTip(StormLang(
+        QStringLiteral("Шейдер постобработки (RetroArch): %1\nНажмите для быстрого поиска и динамического переключения на лету"),
+        QStringLiteral("Post-Processing Shader (RetroArch): %1\nClick for fast search and real-time switching"),
+        QStringLiteral("Post-Processing-Shader (RetroArch): %1\nKlicken für Schnellsuche und Echtzeit-Wechsel"),
+        QStringLiteral("Shader de post-traitement (RetroArch) : %1\nCliquer pour rechercher et changer en temps réel"),
+        QStringLiteral("后处理着色器 (RetroArch)：%1\n点击快速搜索并实时动态切换"),
+        QStringLiteral("ポストプロセスシェーダー (RetroArch): %1\nクリックして高速検索とリアルタイム切り替え"),
+        QStringLiteral("مظلل المعالجة اللاحقة (RetroArch): %1\nانقر للبحث السريع والتبديل الفوري"),
+        QStringLiteral("Sombreador de postprocesado (RetroArch): %1\nHaz clic para buscar y cambiar en tiempo real")
+    ).arg(full_name));
+}
+
 void MainWindow::UpdateFilterText() {
     if (!filter_status_button) return;
     const auto filter = Settings::values.scaling_filter.GetValue();
@@ -10689,6 +11123,7 @@ void MainWindow::SaveFooterSettings() {
         {QStringLiteral("nvdec"), nvdec_status_button},
         {QStringLiteral("aa"), aa_status_button},
         {QStringLiteral("filter"), filter_status_button},
+        {QStringLiteral("shader"), shader_status_button},
         {QStringLiteral("aspect"), aspect_ratio_button},
         {QStringLiteral("res_scale"), res_scale_button},
         {QStringLiteral("vram"), vram_mode_button},
@@ -10733,6 +11168,7 @@ void MainWindow::LoadFooterSettings() {
         {QStringLiteral("nvdec"), nvdec_status_button},
         {QStringLiteral("aa"), aa_status_button},
         {QStringLiteral("filter"), filter_status_button},
+        {QStringLiteral("shader"), shader_status_button},
         {QStringLiteral("aspect"), aspect_ratio_button},
         {QStringLiteral("res_scale"), res_scale_button},
         {QStringLiteral("vram"), vram_mode_button},
@@ -11436,6 +11872,19 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             act->setCheckable(true);
             act->setChecked(pair.first == cur_filter);
         }
+
+        context_menu.addAction(StormLang(
+            QStringLiteral("🎨 Шейдеры постобработки (RetroArch)..."),
+            QStringLiteral("🎨 Post-Processing Shaders (RetroArch)..."),
+            QStringLiteral("🎨 Post-Processing-Shader (RetroArch)..."),
+            QStringLiteral("🎨 Shaders de post-traitement (RetroArch)..."),
+            QStringLiteral("🎨 后处理着色器 (RetroArch)..."),
+            QStringLiteral("🎨 ポストプロセスシェーダー (RetroArch)...")
+        ), [this] {
+            if (shader_status_button) {
+                shader_status_button->click();
+            }
+        });
 
         auto* disk_act = context_menu.addAction(StormLang(
             QStringLiteral("💽 Кэш шейдеров на диске"),

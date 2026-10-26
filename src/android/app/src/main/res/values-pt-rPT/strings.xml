@@ -2000,4 +2000,6 @@ uma tentativa de mapeamento automático</string>
     <string name="log_viewer_filter_errors_label">Errors</string>
     <string name="log_viewer_filter_info_label">Info</string>
     <string name="log_viewer_filter_warnings_label">Warnings</string>
+    <string name="post_processing_shader">Shader de pós-processamento (RetroArch)</string>
+    <string name="post_processing_shader_description">Aplica shaders de pós-processamento RetroArch em tempo real (CRT, LCD, portáteis, upscalers, nitidez, correção de cor).</string>
 </resources>

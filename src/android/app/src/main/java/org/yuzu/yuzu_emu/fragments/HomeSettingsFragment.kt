@@ -193,6 +193,25 @@ class HomeSettingsFragment : Fragment() {
                     driverViewModel.selectedDriverTitle
                 )
             )
+            LosslessScalingHelper.refreshStatus()
+            add(
+                HomeSetting(
+                    R.string.lossless_scaling,
+                    R.string.lossless_scaling_description,
+                    R.drawable.ic_frames,
+                    {
+                        val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
+                            SettingsSubscreen.LOSSLESS_MANAGER,
+                            null
+                        )
+                        binding.root.findNavController().navigate(action)
+                    },
+                    { true },
+                    0,
+                    0,
+                    LosslessScalingHelper.statusText
+                )
+            )
             if (GpuDriverHelper.isAdrenoGpu()) {
                 add(
                     HomeSetting(

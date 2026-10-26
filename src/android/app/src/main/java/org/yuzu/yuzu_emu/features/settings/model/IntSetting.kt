@@ -33,6 +33,7 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     RENDERER_VSYNC("use_vsync"),
     RENDERER_SCALING_FILTER("scaling_filter"),
     RENDERER_ANTI_ALIASING("anti_aliasing"),
+    RENDERER_POST_PROCESSING_SHADER("post_processing_shader"),
     RENDERER_SCREEN_LAYOUT("screen_layout"),
     RENDERER_ASPECT_RATIO("aspect_ratio"),
 

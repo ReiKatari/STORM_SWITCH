@@ -79,23 +79,24 @@ class SettingsFragmentPresenter(
 
     private fun addFrameGenSettings(sl: ArrayList<SettingsItem>) {
         sl.apply {
-            if (!LosslessScalingHelper.isSupportedByGpu()) {
-                add(
-                    RunnableSetting(
-                        titleId = R.string.frame_gen_unsupported,
-                        descriptionId = R.string.frame_gen_unsupported_description,
-                        isRunnable = false
-                    ) {}
-                )
-            } else if (!LosslessScalingHelper.isInstalled()) {
-                add(
-                    RunnableSetting(
-                        titleId = R.string.lossless_scaling_missing,
-                        descriptionId = R.string.lossless_scaling_missing_description,
-                        isRunnable = false
-                    ) {}
-                )
-            }
+            LosslessScalingHelper.refreshStatus()
+            val isDllInstalled = LosslessScalingHelper.isInstalled()
+            add(
+                RunnableSetting(
+                    titleId = if (isDllInstalled) R.string.lossless_scaling_install else R.string.lossless_scaling_missing,
+                    descriptionId = if (isDllInstalled) R.string.lossless_scaling_replace_description else R.string.lossless_scaling_missing_description,
+                    isRunnable = !NativeLibrary.isRunning(),
+                    iconId = R.drawable.ic_install
+                ) {
+                    val intent = android.content.Intent(context, SettingsSubscreenActivity::class.java).apply {
+                        putExtras(SettingsSubscreenActivityArgs(SettingsSubscreen.LOSSLESS_MANAGER, null).toBundle())
+                        if (activity == null) {
+                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                    }
+                    (activity ?: context).startActivity(intent)
+                }
+            )
 
             add(BooleanSetting.RENDERER_FRAME_GEN.key)
             add(IntSetting.RENDERER_FRAME_GEN_TARGET_RATE.key)
@@ -347,6 +348,7 @@ class SettingsFragmentPresenter(
                 add(IntSetting.FSR_SHARPENING_SLIDER.key)
             }
             add(IntSetting.RENDERER_ANTI_ALIASING.key)
+            add(IntSetting.RENDERER_POST_PROCESSING_SHADER.key)
             add(IntSetting.RENDERER_NVDEC_EMULATION.key)
             add(
                 SubmenuSetting(

@@ -195,19 +195,76 @@ void BufferCache<P>::DownloadAllGpuModified() {
 }
 
 template <class P>
+void BufferCache<P>::SnapshotGpuBuffers(std::vector<std::pair<DAddr, std::size_t>>& out_ranges) {
+    for (auto [buffer_id, buffer] : slot_buffers) {
+        if (!buffer_id || buffer_id == NULL_BUFFER_ID || buffer->SizeBytes() == 0) {
+            continue;
+        }
+        if (buffer->CpuAddr() != 0 && buffer->SizeBytes() <= 16_MiB) {
+            out_ranges.emplace_back(buffer->CpuAddr(), buffer->SizeBytes());
+        }
+    }
+}
+
+template <class P>
 void BufferCache<P>::InvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences) {
+    gpu_modified_ranges.Clear();
+    uncommitted_gpu_modified_ranges.Clear();
+    for (auto& interval_set : committed_gpu_modified_ranges) {
+        interval_set.Clear();
+    }
+    for (auto [buffer_id, buffer] : slot_buffers) {
+        if (!buffer_id || buffer_id == NULL_BUFFER_ID || buffer->SizeBytes() == 0) {
+            continue;
+        }
+        const DAddr addr = buffer->CpuAddr();
+        const u64 size = buffer->SizeBytes();
+        if (addr == 0) {
+            continue;
+        }
+        ClearDownload(addr, size);
+        WriteMemory(addr, size);
+    }
     for (const auto& [addr, size] : sequences) {
         if (addr == 0 || size == 0) {
             continue;
         }
         ClearDownload(addr, size);
-        gpu_modified_ranges.Subtract(addr, size);
         WriteMemory(addr, size);
     }
     for (auto& ch : channel_storage) {
         ch.dirty_uniform_buffers.fill(~u32{0});
         ch.fast_bound_uniform_buffers.fill(0);
         ch.uniform_buffer_binding_sizes.fill({});
+        ch.has_deleted_buffers = true;
+        for (auto& stage_ubos : ch.uniform_buffers) {
+            for (auto& binding : stage_ubos) {
+                binding.buffer_id = NULL_BUFFER_ID;
+            }
+        }
+        for (auto& stage_ssbos : ch.storage_buffers) {
+            for (auto& binding : stage_ssbos) {
+                binding.buffer_id = NULL_BUFFER_ID;
+            }
+        }
+        for (auto& stage_tbos : ch.texture_buffers) {
+            for (auto& binding : stage_tbos) {
+                binding.buffer_id = NULL_BUFFER_ID;
+            }
+        }
+        for (auto& binding : ch.compute_uniform_buffers) {
+            binding.buffer_id = NULL_BUFFER_ID;
+        }
+        for (auto& binding : ch.compute_storage_buffers) {
+            binding.buffer_id = NULL_BUFFER_ID;
+        }
+        for (auto& binding : ch.compute_texture_buffers) {
+            binding.buffer_id = NULL_BUFFER_ID;
+        }
+        ch.index_buffer.buffer_id = NULL_BUFFER_ID;
+        for (auto& binding : ch.vertex_buffers) {
+            binding.buffer_id = NULL_BUFFER_ID;
+        }
     }
     enabled_vertex_buffers_mask = 0;
     v_buffer.fill({});

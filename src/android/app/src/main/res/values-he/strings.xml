@@ -1994,4 +1994,6 @@
     <string name="log_viewer_filter_errors_label">Errors</string>
     <string name="log_viewer_filter_info_label">Info</string>
     <string name="log_viewer_filter_warnings_label">Warnings</string>
+    <string name="post_processing_shader">שיידר עיבוד-אחר (RetroArch)</string>
+    <string name="post_processing_shader_description">החלת שיידרים של RetroArch בזמן אמת (CRT, LCD, קונסולות ניידות, השבחת תמונה, חידוד ודירוג צבעים).</string>
 </resources>

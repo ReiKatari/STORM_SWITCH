@@ -41,6 +41,12 @@ void BlitScreen::WaitIdle(const Device& device) {
 void BlitScreen::SetWindowAdaptPass(const Device& device) {
     layers.clear();
     scaling_filter = filters.get_scaling_filter();
+    post_shader_active = Settings::values.post_processing_shader.GetValue() > 0;
+
+    if (post_shader_active) {
+        window_adapt = MakeBilinear(device, swapchain_view_format);
+        return;
+    }
 
     switch (scaling_filter) {
     case Settings::ScalingFilter::NearestNeighbor:
@@ -113,7 +119,8 @@ void BlitScreen::DrawToFrame(const Device& device, RasterizerVulkan& rasterizer,
     bool resource_update_required = false;
     bool presentation_recreate_required = false;
 
-    if (!window_adapt || scaling_filter != active_scaling) {
+    const bool want_post_shader = Settings::values.post_processing_shader.GetValue() > 0;
+    if (!window_adapt || scaling_filter != active_scaling || post_shader_active != want_post_shader) {
         resource_update_required = true;
     }
 

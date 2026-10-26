@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "common/alignment.h"
+#include "common/cityhash.h"
 #include "common/common_funcs.h"
 #include "common/common_types.h"
 #include "common/logging.h"
@@ -153,24 +154,24 @@ static constexpr u32 PageAlignSize(u32 size) {
 }
 
 static bool LoadNroImpl(Core::System& system, Kernel::KProcess& process,
-                        const std::vector<u8>& data) {
+                        const std::vector<u8>& data, u64 program_id) {
     if (data.size() < sizeof(NroHeader)) {
         return {};
     }
 
-    // Read NSO header
+    // Read NRO header
     NroHeader nro_header{};
     std::memcpy(&nro_header, data.data(), sizeof(NroHeader));
     if (nro_header.magic != Common::MakeMagic('N', 'R', 'O', '0')) {
         return {};
     }
-
-    // Build program image
-    std::vector<u8> program_image(PageAlignSize(nro_header.file_size));
-    std::memcpy(program_image.data(), data.data(), program_image.size());
-    if (program_image.size() != PageAlignSize(nro_header.file_size)) {
+    if (nro_header.file_size < sizeof(NroHeader) || data.size() < nro_header.file_size) {
         return {};
     }
+
+    // Build program image (copy only nro_header.file_size bytes to avoid reading past data or into ASET)
+    std::vector<u8> program_image(PageAlignSize(nro_header.file_size), 0);
+    std::memcpy(program_image.data(), data.data(), nro_header.file_size);
 
     Kernel::CodeSet codeset;
     for (std::size_t i = 0; i < nro_header.segments.size(); ++i) {
@@ -182,17 +183,26 @@ static bool LoadNroImpl(Core::System& system, Kernel::KProcess& process,
     // Default .bss to NRO header bss size if MOD0 section doesn't exist
     u32 bss_size{PageAlignSize(nro_header.bss_size)};
 
-    // Read MOD header
+    // Read MOD header with bounds check
     ModHeader mod_header{};
-    std::memcpy(&mod_header, program_image.data() + nro_header.module_header_offset,
-                sizeof(ModHeader));
+    if (static_cast<std::size_t>(nro_header.module_header_offset) + sizeof(ModHeader) <=
+        program_image.size()) {
+        std::memcpy(&mod_header, program_image.data() + nro_header.module_header_offset,
+                    sizeof(ModHeader));
+    }
 
-    const bool has_mod_header{mod_header.magic == Common::MakeMagic('M', 'O', 'D', '0')};
+    const bool has_mod_header{mod_header.magic == Common::MakeMagic('M', 'O', 'D', '0') &&
+                              mod_header.bss_end_offset >= mod_header.bss_start_offset};
     if (has_mod_header) {
         // Resize program image to include .bss section and page align each section
         bss_size = PageAlignSize(mod_header.bss_end_offset - mod_header.bss_start_offset);
     }
 
+    const u32 aligned_file_size = PageAlignSize(nro_header.file_size);
+    const u32 data_segment_addr = static_cast<u32>(GetInteger(codeset.DataSegment().addr));
+    if (aligned_file_size > data_segment_addr) {
+        codeset.DataSegment().size = aligned_file_size - data_segment_addr;
+    }
     codeset.DataSegment().size += bss_size;
     program_image.resize(static_cast<u32>(program_image.size()) + bss_size);
     struct ConfigEntry {
@@ -248,9 +258,6 @@ static bool LoadNroImpl(Core::System& system, Kernel::KProcess& process,
 #ifdef HAS_NCE
     const auto& code = codeset.CodeSegment();
 
-    // NROs always have a 39-bit address space.
-    Settings::SetNceEnabled(true);
-
     // Create NCE patcher
     Core::NCE::Patcher patch{};
 
@@ -285,9 +292,13 @@ static bool LoadNroImpl(Core::System& system, Kernel::KProcess& process,
     std::uintptr_t aslr_offset = ((::Settings::values.rng_seed_enabled.GetValue()
         ? ::Settings::values.rng_seed.GetValue() : Common::Random::Random64(0)) << 12) & 0xfff000;
 
-    // Setup the process code layout
+    // Setup the process code layout with the resolved (or synthesized) homebrew ProgramId
+    constexpr u32 default_thread_info_capability = 0x30043F7;
+    FileSys::ProgramMetadata meta;
+    meta.LoadManual(true, FileSys::ProgramAddressSpaceType::Is39Bit, 0x2c, 0, 0x100000,
+                    program_id, 0xFFFFFFFFFFFFFFFFULL, 0, {default_thread_info_capability});
     if (process
-            .LoadFromMetadata(system.Kernel(), FileSys::ProgramMetadata::GetDefault(), image_size, fastmem_base, aslr_offset)
+            .LoadFromMetadata(system.Kernel(), meta, image_size, fastmem_base, aslr_offset)
             .IsError()) {
         return false;
     }
@@ -336,7 +347,9 @@ static bool LoadNroImpl(Core::System& system, Kernel::KProcess& process,
 
 bool AppLoader_NRO::LoadNro(Core::System& system, Kernel::KProcess& process,
                             const FileSys::VfsFile& nro_file) {
-    return LoadNroImpl(system, process, nro_file.ReadAllBytes());
+    u64 program_id{};
+    ReadProgramId(program_id);
+    return LoadNroImpl(system, process, nro_file.ReadAllBytes(), program_id);
 }
 
 AppLoader_NRO::LoadResult AppLoader_NRO::Load(Kernel::KProcess& process, Core::System& system) {
@@ -376,11 +389,26 @@ ResultStatus AppLoader_NRO::ReadIcon(std::vector<u8>& buffer) {
 }
 
 ResultStatus AppLoader_NRO::ReadProgramId(u64& out_program_id) {
-    if (nacp == nullptr) {
-        return ResultStatus::ErrorNoControl;
+    if (nacp != nullptr && nacp->GetTitleId() != 0) {
+        out_program_id = nacp->GetTitleId();
+        return ResultStatus::Success;
     }
 
-    out_program_id = nacp->GetTitleId();
+    u64 hash = 0;
+    if (file != nullptr) {
+        NroHeader nro_header{};
+        if (file->ReadObject(&nro_header) == sizeof(NroHeader)) {
+            hash = Common::CityHash64(reinterpret_cast<const char*>(&nro_header), sizeof(NroHeader));
+        }
+        if (hash == 0) {
+            const std::string fname = file->GetName();
+            hash = Common::CityHash64(fname.data(), fname.size());
+        }
+    }
+    out_program_id = 0x0100000000000000ULL | (hash & 0x0000FFFFFFFFE000ULL);
+    if (out_program_id == 0x0100000000000000ULL) {
+        out_program_id = 0x0100000000002000ULL;
+    }
     return ResultStatus::Success;
 }
 
@@ -394,12 +422,25 @@ ResultStatus AppLoader_NRO::ReadRomFS(FileSys::VirtualFile& dir) {
 }
 
 ResultStatus AppLoader_NRO::ReadTitle(std::string& title) {
-    if (nacp == nullptr) {
-        return ResultStatus::ErrorNoControl;
+    if (nacp != nullptr) {
+        title = nacp->GetApplicationName();
+        if (!title.empty()) {
+            return ResultStatus::Success;
+        }
     }
-
-    title = nacp->GetApplicationName();
-    return ResultStatus::Success;
+    if (file != nullptr) {
+        title = file->GetName();
+        if (title.size() > 4) {
+            const std::string ext = title.substr(title.size() - 4);
+            if (ext == ".nro" || ext == ".NRO") {
+                title.resize(title.size() - 4);
+            }
+        }
+        if (!title.empty()) {
+            return ResultStatus::Success;
+        }
+    }
+    return ResultStatus::ErrorNoControl;
 }
 
 ResultStatus AppLoader_NRO::ReadControlData(FileSys::NACP& control) {
