@@ -28,10 +28,10 @@ object LosslessScalingHelper {
     fun isSupportedByGpu(): Boolean = true
 
     fun refreshStatus(): Boolean {
-        val result = NativeLibrary.validateLosslessDll() == RESULT_OK
+        val result = try { NativeLibrary.validateLosslessDll() == RESULT_OK } catch (_: Throwable) { false }
         installed = result
         if (!result) {
-            BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
+            try { BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false) } catch (_: Throwable) {}
         }
 
         val context = YuzuApplication.appContext

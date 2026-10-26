@@ -658,7 +658,6 @@ private:
     QPushButton* refresh_button = nullptr;
     QPushButton* dock_status_button = nullptr;
     QPushButton* filter_status_button = nullptr;
-    QPushButton* shader_status_button = nullptr;
     QPushButton* aa_status_button = nullptr;
     VolumeButton* volume_button = nullptr;
     QWidget* volume_popup = nullptr;
@@ -788,6 +787,7 @@ private:
     QAction* m_tray_about_action{nullptr};
     QAction* m_tray_exit_action{nullptr};
     bool m_is_quitting_from_tray{false};
+    QPushButton* shader_status_button = nullptr;
 
 protected:
     void dropEvent(QDropEvent* event) override;

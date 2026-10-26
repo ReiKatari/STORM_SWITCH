@@ -403,16 +403,6 @@ struct Values {
                                                   true,
                                                   true};
 
-    SwitchableSetting<int, true> post_processing_shader{linkage,
-                                                        0,
-                                                        0,
-                                                        74,
-                                                        "post_processing_shader",
-                                                        Category::Renderer,
-                                                        Specialization::Default,
-                                                        true,
-                                                        true};
-
     SwitchableSetting<bool> frame_gen{linkage, false, "frame_gen", Category::Renderer,
                                       Specialization::Default, true, true};
 
@@ -1065,6 +1055,17 @@ struct Values {
                                                      Specialization::Default,
                                                      true,
                                                      true};
+
+    // RetroArch Post-Processing Shader Preset (0 = Off, 1..74 = Active Shader)
+    SwitchableSetting<int, true> post_processing_shader{linkage,
+                                                        0,
+                                                        0,
+                                                        74,
+                                                        "post_processing_shader",
+                                                        Category::Renderer,
+                                                        Specialization::Default,
+                                                        true,
+                                                        true};
 };
 
 extern Values values;
