@@ -142,20 +142,20 @@ void PerformanceOverlay::SetupUI() {
 
     // Global OSD Stylesheet matching STORM SOFT Cyber 3D Theme
     setStyleSheet(QStringLiteral(
-        "QWidget { color: #E2E8F0; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
+        "QWidget { color: #FFFFFF; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
         "QTabWidget::pane { border: 1px solid #1E293B; background: rgba(15, 23, 42, 235); border-radius: 8px; }"
-        "QTabBar::tab { background: #0F172A; color: #94A3B8; padding: 7px 14px; border: 1px solid #1E293B; "
+        "QTabBar::tab { background: #0F172A; color: #FFFFFF; padding: 7px 14px; border: 1px solid #1E293B; "
         "border-top-left-radius: 6px; border-top-right-radius: 6px; margin-right: 2px; font-weight: bold; }"
         "QTabBar::tab:selected { background: #1E293B; color: #00D2FF; border-bottom: 2px solid #00D2FF; }"
         "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A); "
-        "border: 1px solid #334155; border-radius: 6px; color: #F1F5F9; padding: 6px 12px; font-weight: 500; }"
+        "border: 1px solid #334155; border-radius: 6px; color: #FFFFFF; padding: 6px 12px; font-weight: 500; }"
         "QPushButton:hover { border: 1px solid #00D2FF; color: #00D2FF; background: #1E293B; }"
         "QPushButton:pressed { background: #0284C7; color: #FFFFFF; }"
-        "QPushButton:disabled { background: #0F172A; border: 1px solid #1E293B; color: #475569; }"
+        "QPushButton:disabled { background: #0F172A; border: 1px solid #1E293B; color: #FFFFFF; }"
         "QListWidget { background: rgba(10, 14, 22, 220); border: 1px solid #1E293B; border-radius: 6px; padding: 4px; }"
         "QListWidget::item { padding: 5px; border-radius: 4px; margin-bottom: 2px; }"
         "QListWidget::item:hover { background: #1E293B; color: #00D2FF; }"
-        "QComboBox { background: #0F172A; border: 1px solid #334155; border-radius: 6px; padding: 5px 10px; color: #F8FAFC; }"
+        "QComboBox { background: #0F172A; border: 1px solid #334155; border-radius: 6px; padding: 5px 10px; color: #FFFFFF; }"
         "QComboBox::drop-down { border: none; width: 20px; }"
         "QCheckBox { spacing: 8px; }"
         "QCheckBox::indicator { width: 16px; height: 16px; border: 1px solid #475569; border-radius: 4px; background: #0F172A; }"
@@ -226,7 +226,7 @@ void PerformanceOverlay::SetupUI() {
     exp_header->addWidget(exp_title);
 
     m_game_title_lbl = new QLabel(m_expanded_widget);
-    m_game_title_lbl->setStyleSheet(QStringLiteral("font-size: 11px; color: #94A3B8;"));
+    m_game_title_lbl->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF;"));
     exp_header->addWidget(m_game_title_lbl);
     exp_header->addStretch(1);
 
@@ -296,9 +296,9 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     m_lbl_ft_min = new QLabel(tr("Min: 0.0"), tab);
     m_lbl_ft_max = new QLabel(tr("Max: 0.0"), tab);
     m_lbl_ft_avg = new QLabel(tr("Avg: 0.0"), tab);
-    m_lbl_ft_min->setStyleSheet(QStringLiteral("color: #94A3B8;"));
-    m_lbl_ft_max->setStyleSheet(QStringLiteral("color: #94A3B8;"));
-    m_lbl_ft_avg->setStyleSheet(QStringLiteral("color: #94A3B8;"));
+    m_lbl_ft_min->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
+    m_lbl_ft_max->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
+    m_lbl_ft_avg->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
     ft_box->addWidget(m_lbl_ft_min);
     ft_box->addWidget(m_lbl_ft_max);
     ft_box->addWidget(m_lbl_ft_avg);
@@ -320,9 +320,9 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     m_lbl_fps_max = new QLabel(tr("Max: 0"), tab);
     m_lbl_fps_avg = new QLabel(tr("Avg: 0"), tab);
     m_lbl_fps_1low = new QLabel(tr("1% Low: 0"), tab);
-    m_lbl_fps_min->setStyleSheet(QStringLiteral("color: #94A3B8;"));
-    m_lbl_fps_max->setStyleSheet(QStringLiteral("color: #94A3B8;"));
-    m_lbl_fps_avg->setStyleSheet(QStringLiteral("color: #94A3B8;"));
+    m_lbl_fps_min->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
+    m_lbl_fps_max->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
+    m_lbl_fps_avg->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
     m_lbl_fps_1low->setStyleSheet(QStringLiteral("font-weight: bold; color: #F59E0B;"));
     fps_box->addWidget(m_lbl_fps_min);
     fps_box->addWidget(m_lbl_fps_max);
@@ -338,7 +338,7 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     info_box->addWidget(m_lbl_dps);
 
     m_lbl_res = new QLabel(tr("Масштаб: 1.0x"), tab);
-    m_lbl_res->setStyleSheet(QStringLiteral("color: #CBD5E1;"));
+    m_lbl_res->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
     info_box->addWidget(m_lbl_res);
 
     m_lbl_lsfg = new QLabel(tr("LSFG: Выкл"), tab);
@@ -389,7 +389,7 @@ void PerformanceOverlay::SetupSaveStatesTab(QWidget* tab) {
     layout->setSpacing(8);
 
     auto* info_lbl = new QLabel(tr("💡 Быстрые сохранения работают мгновенно без выхода из игры (F5 - сохранить, F7 - загрузить):"), tab);
-    info_lbl->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11px;"));
+    info_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 11px;"));
     layout->addWidget(info_lbl);
 
     for (int i = 0; i < 5; ++i) {
@@ -452,7 +452,7 @@ void PerformanceOverlay::SetupAmiiboTab(QWidget* tab) {
     layout->addLayout(btn_row);
 
     m_amiibo_status = new QLabel(tr("Amiibo не подключен"), tab);
-    m_amiibo_status->setStyleSheet(QStringLiteral("font-size: 12px; color: #94A3B8;"));
+    m_amiibo_status->setStyleSheet(QStringLiteral("font-size: 12px; color: #FFFFFF;"));
     layout->addWidget(m_amiibo_status);
     layout->addStretch(1);
 }
@@ -803,7 +803,7 @@ void PerformanceOverlay::RefreshCheats() {
 
     if (m_cheats.empty()) {
         m_cheat_status->setText(tr("Для данной игры читы не найдены в load/ или SDMC."));
-        m_cheat_status->setStyleSheet(QStringLiteral("color: #94A3B8;"));
+        m_cheat_status->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
     } else {
         m_cheat_status->setText(tr("Активно читов: %1 из %2 (Применяются на лету)").arg(active_count).arg(m_cheats.size()));
         m_cheat_status->setStyleSheet(QStringLiteral("font-weight: bold; color: #34D399;"));
@@ -881,7 +881,7 @@ void PerformanceOverlay::RefreshSaveSlots() {
             ui_slot.btn_load->setEnabled(true);
         } else {
             ui_slot.label->setText(tr("Слот %1: [Пусто]").arg(slot));
-            ui_slot.label->setStyleSheet(QStringLiteral("color: #64748B;"));
+            ui_slot.label->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
             ui_slot.btn_load->setEnabled(false);
         }
     }
@@ -949,7 +949,7 @@ void PerformanceOverlay::RefreshAmiiboList() {
         m_amiibo_status->setStyleSheet(QStringLiteral("font-weight: bold; color: #34D399;"));
     } else {
         m_amiibo_status->setText(tr("⚪ Amiibo не подключен"));
-        m_amiibo_status->setStyleSheet(QStringLiteral("color: #94A3B8;"));
+        m_amiibo_status->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
     }
 }
 

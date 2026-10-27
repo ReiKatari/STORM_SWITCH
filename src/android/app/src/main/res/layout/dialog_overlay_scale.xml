@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/emulation_control_scale"
-                android:textColor="#E2E8F0"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
@@ -80,7 +80,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/emulation_control_opacity"
-                android:textColor="#E2E8F0"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 

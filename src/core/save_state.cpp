@@ -297,18 +297,9 @@ ProcessLayoutAnalysis AnalyzeProcessLayout(Kernel::KProcess& process, bool allow
             }
             out.writable_regions.push_back(WritableRegion{c.address, c.size});
         } else {
-            // When the game has a massive self-contained .bss / CodeData arena (>= 128 MB) and
-            // Uncached GPU carvings inside the Normal heap, the Normal heap is used exclusively
-            // by nnSdk / NVN graphics driver allocators and must not be rolled back out of sync
-            // with the Uncached GPU state.
-            if (total_code_data_size >= 128ULL * 1024 * 1024 && has_uncached_carvings) {
-                continue;
-            }
-            // If the game has a large main Normal heap (>= 64 MB), exclude small carved-out
-            // SDK/NVN/TLS/stack startup fragments (< 32 MB) that sit between Uncached GPU blocks.
-            if (max_normal_heap_size >= 64ULL * 1024 * 1024 && c.size < 32ULL * 1024 * 1024) {
-                continue;
-            }
+            (void)total_code_data_size;
+            (void)has_uncached_carvings;
+            (void)max_normal_heap_size;
             out.writable_regions.push_back(WritableRegion{c.address, c.size});
         }
     }
@@ -511,18 +502,19 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
                             }
                         }
 
-                        if (!is_main_thread && thread_arg >= 0x80000000ULL &&
+                        if (!is_main_thread && layout.sdk_start > 0 &&
+                            thread_arg >= layout.sdk_start && thread_arg < layout.sdk_end &&
                             memory.GetPointerSilent(Common::ProcessAddress{thread_arg}) != nullptr) {
                             ctx.AddRange(thread_arg >= 0x1000 ? thread_arg - 0x1000 : thread_arg,
-                                         thread_arg + 0x10000);
+                                         thread_arg + 0x4000);
                         }
 
-                        // Background worker threads (AudioThread, FileIO, etc.) whose ThreadType lives in
-                        // .bss or heap outside sdk: protect the ThreadType + adjacent worker/audio state.
+                        // Protect only the nn::os::ThreadType structure itself (512 bytes), never +0x140000
+                        // in .bss where games like Animal Well store their room tilemap & entity arrays!
                         if (!is_main_thread && layout.sdk_start > 0 && thread_type_ptr < layout.sdk_start) {
-                            ctx.AddRange(thread_type_ptr >= 0x200 ? thread_type_ptr - 0x200
-                                                                  : thread_type_ptr,
-                                         thread_type_ptr + 0x140000);
+                            ctx.AddRange(thread_type_ptr >= 0x80 ? thread_type_ptr - 0x80
+                                                                 : thread_type_ptr,
+                                         thread_type_ptr + 0x240);
                         }
                     }
                 }
@@ -561,20 +553,22 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
                         }
                         u64 val = 0;
                         std::memcpy(&val, sp_ptr, sizeof(u64));
-                        if (val >= 0x80000000ULL && (layout.sdk_start == 0 || val < layout.sdk_start)) {
+                        if (val >= 0x80000000ULL && !(layout.sdk_end > layout.sdk_start && val >= layout.sdk_start && val < layout.sdk_end)) {
                             const u64 target_page = val & ~0xFFFULL;
-                            bool near_any_ttp = false;
-                            for (const u64 ttp : all_thread_type_ptrs) {
-                                if ((target_page >= (ttp & ~0xFFFULL) &&
-                                     target_page - (ttp & ~0xFFFULL) <= 0x8000) ||
-                                    ((ttp & ~0xFFFULL) > target_page &&
-                                     (ttp & ~0xFFFULL) - target_page <= 0x8000)) {
-                                    near_any_ttp = true;
-                                    break;
+                            if (is_main_thread) {
+                                bool near_any_ttp = false;
+                                for (const u64 ttp : all_thread_type_ptrs) {
+                                    if ((target_page >= (ttp & ~0xFFFULL) &&
+                                         target_page - (ttp & ~0xFFFULL) <= 0x8000) ||
+                                        ((ttp & ~0xFFFULL) > target_page &&
+                                         (ttp & ~0xFFFULL) - target_page <= 0x8000)) {
+                                        near_any_ttp = true;
+                                        break;
+                                    }
                                 }
-                            }
-                            if (near_any_ttp) {
-                                continue;
+                                if (near_any_ttp) {
+                                    continue;
+                                }
                             }
                             if (const u8* tp =
                                     memory.GetPointerSilent(Common::ProcessAddress{target_page})) {
@@ -587,26 +581,32 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
                                     }
                                 }
                                 if (has_sdk_ref) {
-                                    bool has_main_code_ref = false;
-                                    u64 min_sdk_off = V2_CHUNK_SIZE;
-                                    u64 max_sdk_off = 0;
-                                    for (std::size_t k = 0; k < (V2_CHUNK_SIZE / sizeof(u64)); ++k) {
-                                        const u64 w = w64[k];
-                                        if (ctx.IsSdkPointer(w)) {
-                                            const u64 off = k * sizeof(u64);
-                                            if (off < min_sdk_off) min_sdk_off = off;
-                                            if (off > max_sdk_off) max_sdk_off = off;
-                                        } else if (layout.main_code_end > layout.main_code_start &&
-                                                   w >= layout.main_code_start && w < layout.main_code_end) {
-                                            has_main_code_ref = true;
-                                        }
-                                    }
-                                    if (has_main_code_ref && min_sdk_off < V2_CHUNK_SIZE) {
-                                        const u64 prot_start = target_page + (min_sdk_off >= 0x10 ? (min_sdk_off - 0x10) & ~0x7ULL : 0);
-                                        const u64 prot_end = std::min<u64>(target_page + V2_CHUNK_SIZE, target_page + max_sdk_off + 0x18ULL);
-                                        ctx.AddRange(prot_start, prot_end);
+                                    if (!is_main_thread) {
+                                        // Background thread (e.g. AudioThread): protect the 12KB nn::audio::AudioRendererConfig
+                                        // workbuffer header pages [target_page, target_page + 0x3000] without touching
+                                        // the game's room/level/entity memory at +0x3000 and beyond!
+                                        ctx.AddRange(target_page, target_page + 0x3000);
                                     } else {
-                                        ctx.AddRange(target_page, target_page + 0x6000);
+                                        bool has_main_code_ref = false;
+                                        u64 min_sdk_off = V2_CHUNK_SIZE;
+                                        u64 max_sdk_off = 0;
+                                        for (std::size_t k = 0; k < (V2_CHUNK_SIZE / sizeof(u64)); ++k) {
+                                            const u64 w = w64[k];
+                                            if (ctx.IsSdkPointer(w)) {
+                                                const u64 off = k * sizeof(u64);
+                                                if (off < min_sdk_off) min_sdk_off = off;
+                                                if (off > max_sdk_off) max_sdk_off = off;
+                                            } else if (layout.main_code_end > layout.main_code_start &&
+                                                       w >= layout.main_code_start && w < layout.main_code_end) {
+                                                has_main_code_ref = true;
+                                            }
+                                        }
+                                        (void)has_main_code_ref;
+                                        if (min_sdk_off < V2_CHUNK_SIZE) {
+                                            const u64 prot_start = target_page + (min_sdk_off >= 0x10 ? (min_sdk_off - 0x10) & ~0x7ULL : 0);
+                                            const u64 prot_end = std::min<u64>(target_page + V2_CHUNK_SIZE, target_page + max_sdk_off + 0x20ULL);
+                                            ctx.AddRange(prot_start, prot_end);
+                                        }
                                     }
                                 }
                             }
@@ -620,13 +620,39 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
             ctx.AddRange(fp >= 0x2000 ? fp - 0x2000 : fp, fp + 0x4000);
         }
 
-        // 4. For background threads ONLY (e.g. AudioThread), protect structures pointed to by X0..X28
+        // 4. For background threads ONLY (e.g. AudioThread), inspect pages around registers X0..X28.
+        // Only protect a page if it is inside nnSdk or actually contains an nnSdk pointer/vtable
+        // (such as Animal Well's 12KB nn::audio workbuffer header at 0x82852000..0x82855000).
+        // NEVER blindly protect +0x68000 around registers in .bss/heap, as that blocks restoration
+        // of the game's level tilemap, collision grid, and room entities!
         if (!is_main_thread) {
             for (std::size_t reg_idx = 0; reg_idx < 29; ++reg_idx) {
                 const u64 rv = tctx.r[reg_idx];
-                if ((rv & 7ULL) == 0 && rv >= 0x80000000ULL &&
-                    memory.GetPointerSilent(Common::ProcessAddress{rv}) != nullptr) {
-                    ctx.AddRange(rv >= 0x4000 ? rv - 0x4000 : rv, rv + 0x68000);
+                if ((rv & 7ULL) == 0 && rv >= 0x80000000ULL && rv < 0x8000000000ULL) {
+                    if (layout.sdk_start != 0 && rv >= layout.sdk_start && rv < layout.sdk_end) {
+                        ctx.AddRange(rv >= 0x100 ? rv - 0x100 : rv, rv + 0x4000);
+                    } else if (!(layout.sdk_end > layout.sdk_start && rv >= layout.sdk_start && rv < layout.sdk_end)) {
+                        const u64 base_page = rv & ~0xFFFULL;
+                        for (int delta = -2; delta <= 0; ++delta) {
+                            const u64 cand_page = base_page + static_cast<s64>(delta) * 0x1000;
+                            if (cand_page < 0x80000000ULL) {
+                                continue;
+                            }
+                            if (const u8* cp = memory.GetPointerSilent(Common::ProcessAddress{cand_page})) {
+                                const auto* w64 = reinterpret_cast<const u64*>(cp);
+                                bool page_has_sdk = false;
+                                for (std::size_t k = 0; k < (V2_CHUNK_SIZE / sizeof(u64)); ++k) {
+                                    if (ctx.IsSdkPointer(w64[k])) {
+                                        page_has_sdk = true;
+                                        break;
+                                    }
+                                }
+                                if (page_has_sdk) {
+                                    ctx.AddRange(cand_page, base_page + 0x1000);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -773,18 +799,23 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     // Pause emulation briefly while capturing RAM snapshot (must hold returned lock!)
     auto stall_lock = system.StallApplication();
 
+    // Flush GPU modified buffers and persistent render target / dynamic textures to guest RAM
+    const auto gpu_surface_ranges = system.GPU().SyncAndSnapshotForSaveState();
+
     auto snapshot = std::make_shared<CachedSaveState>();
     const u64 dram_size = Kernel::Board::Nintendo::Nx::KSystemControl::Init::GetIntendedMemorySize();
 
-    // 1. Analyze process layout (skips rtld, nnSdk, GOT, and GPU/NVN driver fragments)
+    // 1. Analyze process layout (skips rtld, nnSdk, GOT, and Uncached carvings)
     auto layout = AnalyzeProcessLayout(*process);
     const auto& regions = layout.writable_regions;
     auto& memory = system.ApplicationMemory();
+    auto& device_memory = system.DeviceMemory();
 
     auto& payload = snapshot->uncompressed_payload;
     payload.reserve(450ULL * 1024 * 1024);
 
-    const u32 region_count = static_cast<u32>(regions.size());
+    static constexpr u64 kPhysicalRegionBit = (1ULL << 63);
+    const u32 region_count = static_cast<u32>(regions.size() + gpu_surface_ranges.size());
     payload.resize(sizeof(u32));
     std::memcpy(payload.data(), &region_count, sizeof(u32));
 
@@ -833,6 +864,41 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
         total_stored_chunks += stored_chunks;
     }
 
+    // 1b. Save GPU persistent Render Target & dynamic texture physical DAddr ranges
+    for (const auto& [phys_addr, phys_size] : gpu_surface_ranges) {
+        const u32 num_chunks = static_cast<u32>((phys_size + V2_CHUNK_SIZE - 1) / V2_CHUNK_SIZE);
+        const u32 bitmask_bytes = (num_chunks + 7) / 8;
+
+        const std::size_t header_offset = payload.size();
+        payload.resize(header_offset + sizeof(PackedRegionHeader) + bitmask_bytes, 0);
+
+        u32 stored_chunks = 0;
+        for (u32 c = 0; c < num_chunks; ++c) {
+            const u64 chunk_off = static_cast<u64>(c) * V2_CHUNK_SIZE;
+            const std::size_t chunk_len =
+                static_cast<std::size_t>(std::min<u64>(V2_CHUNK_SIZE, phys_size - chunk_off));
+            const DAddr page_daddr = phys_addr + chunk_off;
+            const u8* chunk_ptr = device_memory.GetPointer<u8>(page_daddr);
+
+            if (chunk_ptr && !IsChunkZero4KB(chunk_ptr, chunk_len)) {
+                payload[header_offset + sizeof(PackedRegionHeader) + (c / 8)] |=
+                    static_cast<u8>(1u << (c % 8));
+                payload.insert(payload.end(), chunk_ptr, chunk_ptr + chunk_len);
+                stored_chunks++;
+            }
+        }
+
+        PackedRegionHeader reg_hdr{};
+        reg_hdr.address = phys_addr | kPhysicalRegionBit;
+        reg_hdr.size = phys_size;
+        reg_hdr.num_chunks = num_chunks;
+        reg_hdr.stored_chunks = stored_chunks;
+        std::memcpy(payload.data() + header_offset, &reg_hdr, sizeof(PackedRegionHeader));
+
+        total_chunks += num_chunks;
+        total_stored_chunks += stored_chunks;
+    }
+
     // 2. Collect thread metadata
     auto& thread_list = process->GetThreadList();
     for (auto& thread : thread_list) {
@@ -854,7 +920,7 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     snapshot->header.dram_compressed_size = payload.size();
     snapshot->header.num_threads = static_cast<u32>(snapshot->threads.size());
     snapshot->header.compression_level = 1;
-    snapshot->header.flags = SaveStateFlag_WritableRegions;
+    snapshot->header.flags = SaveStateFlag_WritableRegions | (gpu_surface_ranges.empty() ? 0u : SaveStateFlag_HasGpuSurfaces);
     snapshot->header.sparse_page_size = V2_CHUNK_SIZE;
     snapshot->header.num_sparse_pages = region_count;
     snapshot->header.num_stored_pages = total_stored_chunks;
@@ -1025,6 +1091,7 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
         std::array<u8, V2_CHUNK_SIZE> patched_page{};
         std::array<u8, V2_CHUNK_SIZE> zero_page{};
         u64 diff_bytes_written = 0;
+        std::vector<std::pair<DAddr, std::size_t>> modified_phys_ranges;
 
         for (u32 r = 0; r < region_count; ++r) {
             if (cursor + sizeof(PackedRegionHeader) > decompressed.size()) {
@@ -1044,8 +1111,37 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
             const u8* bitmask = decompressed.data() + cursor;
             cursor += bitmask_bytes;
 
+            static constexpr u64 kPhysicalRegionBit = (1ULL << 63);
+            const bool is_phys_gpu_region = (reg_hdr.address & kPhysicalRegionBit) != 0;
+            if (is_phys_gpu_region) {
+                const DAddr base_daddr = reg_hdr.address & ~kPhysicalRegionBit;
+                auto& device_memory = system.DeviceMemory();
+                for (u32 c = 0; c < reg_hdr.num_chunks; ++c) {
+                    const DAddr page_daddr = base_daddr + static_cast<u64>(c) * V2_CHUNK_SIZE;
+                    const std::size_t chunk_len = static_cast<std::size_t>(
+                        std::min<u64>(V2_CHUNK_SIZE, reg_hdr.size - static_cast<u64>(c) * V2_CHUNK_SIZE));
+                    const bool is_stored = (bitmask[c / 8] & (1u << (c % 8))) != 0;
+                    const u8* target_data = zero_page.data();
+                    if (is_stored) {
+                        if (cursor + chunk_len > decompressed.size()) {
+                            break;
+                        }
+                        target_data = decompressed.data() + cursor;
+                        cursor += chunk_len;
+                    }
+                    if (u8* dptr = device_memory.GetPointer<u8>(page_daddr)) {
+                        if (std::memcmp(dptr, target_data, chunk_len) != 0) {
+                            std::memcpy(dptr, target_data, chunk_len);
+                            diff_bytes_written += chunk_len;
+                        }
+                    }
+                }
+                modified_phys_ranges.emplace_back(base_daddr, reg_hdr.size);
+                continue;
+            }
+
             // Check whether this saved region is in our allowed safe writable regions list
-            bool region_safe = (reg_hdr.address == heap_start);
+            bool region_safe = (heap_start != 0 && reg_hdr.address >= heap_start);
             if (!region_safe) {
                 for (const auto& allowed : layout.writable_regions) {
                     if (reg_hdr.address >= allowed.address &&
@@ -1142,6 +1238,33 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                     continue;
                 }
 
+                // For pages inside the Normal/Alias heap, if the page contains any nnSdk/rtld/ThreadType
+                // pointer (indicating an NVN driver / nn::os / nn::audio / HLE allocator page), preserve the
+                // page so driver state stays synchronized; otherwise restore 100% of game entity heap pages!
+                const bool is_normal_heap_page = (heap_start != 0 && page_addr >= heap_start);
+                if (is_normal_heap_page) {
+                    const std::size_t words64 = chunk_len / sizeof(u64);
+                    const auto* live_w64 = reinterpret_cast<const u64*>(live_ptr);
+                    const auto* targ_w64 = reinterpret_cast<const u64*>(
+                        has_overlap ? patched_page.data() : target_data);
+                    bool is_driver_or_sdk_heap_page = false;
+                    for (std::size_t w = 0; w < words64; ++w) {
+                        const u64 lw = live_w64[w];
+                        const u64 tw = targ_w64[w];
+                        if (sync_ctx.IsSdkPointer(lw) || sync_ctx.IsSdkPointer(tw) ||
+                            sync_ctx.IsThreadTypePointer(lw) || sync_ctx.IsThreadTypePointer(tw) ||
+                            (layout.rtld_end > layout.rtld_start &&
+                             ((lw >= layout.rtld_start && lw < layout.rtld_end) ||
+                              (tw >= layout.rtld_start && tw < layout.rtld_end)))) {
+                            is_driver_or_sdk_heap_page = true;
+                            break;
+                        }
+                    }
+                    if (is_driver_or_sdk_heap_page) {
+                        continue;
+                    }
+                }
+
                 // Preserve 8-byte SDK pointers inside small .data/.got sections
                 if (reg_hdr.size <= 0x10000) {
                     const std::size_t words64 = chunk_len / sizeof(u64);
@@ -1212,15 +1335,26 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
 
                 memory.WriteBlockUnsafe(page_addr, final_src, chunk_len);
                 diff_bytes_written += chunk_len;
+                Common::PhysicalAddress page_phys{};
+                if (process->GetPageTable().GetPhysicalAddress(&page_phys, Common::ProcessAddress{page_addr}) &&
+                    GetInteger(page_phys) != 0) {
+                    const u64 paddr = GetInteger(page_phys);
+                    if (!modified_phys_ranges.empty() &&
+                        modified_phys_ranges.back().first + modified_phys_ranges.back().second == paddr) {
+                        modified_phys_ranges.back().second += chunk_len;
+                    } else {
+                        modified_phys_ranges.emplace_back(paddr, chunk_len);
+                    }
+                }
             }
         }
 
         LOG_INFO(Core, "SaveState: Differential restore wrote {:.2f} MB of changed 4KB pages",
                  static_cast<double>(diff_bytes_written) / (1024.0 * 1024.0));
 
-        if (!layout.writable_regions.empty()) {
-            std::vector<std::pair<DAddr, std::size_t>> modified_gpu_ranges;
-            modified_gpu_ranges.reserve(layout.writable_regions.size() * 2);
+        if (!layout.writable_regions.empty() || !modified_phys_ranges.empty()) {
+            std::vector<std::pair<DAddr, std::size_t>> modified_gpu_ranges = std::move(modified_phys_ranges);
+            modified_gpu_ranges.reserve(modified_gpu_ranges.size() + layout.writable_regions.size() * 2);
             auto& pt = process->GetPageTable();
             for (const auto& reg : layout.writable_regions) {
                 modified_gpu_ranges.emplace_back(reg.address, reg.size);

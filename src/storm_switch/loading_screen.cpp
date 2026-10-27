@@ -197,7 +197,7 @@ static void UpdateStepStyles(LoadingDashboardWidgets& dash, int active_step) {
             dash.step_frames[i]->setStyleSheet(QStringLiteral(
                 "QFrame { background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 7px; }"));
             dash.step_labels[i]->setStyleSheet(QStringLiteral(
-                "QLabel { color: #64748B; font-size: 11px; font-weight: 600; background: transparent; border: none; }"));
+                "QLabel { color: #FFFFFF; font-size: 11px; font-weight: 600; background: transparent; border: none; }"));
             dash.step_labels[i]->setText(names[i]);
         }
     }
@@ -474,13 +474,13 @@ LoadingScreen::LoadingScreen(QWidget* parent)
     hero_right->addLayout(title_row);
 
     ui->game_meta->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->game_meta->setStyleSheet(QStringLiteral("color: #CBD5E1; font-size: 10.5pt; background: transparent; border: none;"));
+    ui->game_meta->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 10.5pt; background: transparent; border: none;"));
     hero_right->addWidget(ui->game_meta);
 
     auto* badges_row = new QHBoxLayout();
     badges_row->setSpacing(10);
     dash.meta_pills_label = new QLabel(hero_frame);
-    dash.meta_pills_label->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 10pt; background: transparent; border: none;"));
+    dash.meta_pills_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 10pt; background: transparent; border: none;"));
     badges_row->addWidget(dash.meta_pills_label);
 
     dash.copy_tid_btn = new QPushButton(hero_frame);
@@ -538,9 +538,9 @@ LoadingScreen::LoadingScreen(QWidget* parent)
         cl->setSpacing(2);
 
         auto* t_lbl = new QLabel(card);
-        t_lbl->setStyleSheet(QStringLiteral("color: #64748B; font-size: 9.5px; font-weight: 800; letter-spacing: 0.4px; background: transparent; border: none;"));
+        t_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 9.5px; font-weight: 800; letter-spacing: 0.4px; background: transparent; border: none;"));
         auto* v_lbl = new QLabel(card);
-        v_lbl->setStyleSheet(QStringLiteral("color: #F1F5F9; font-size: 11.5px; font-weight: 700; background: transparent; border: none;"));
+        v_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 11.5px; font-weight: 700; background: transparent; border: none;"));
 
         cl->addWidget(t_lbl);
         cl->addWidget(v_lbl);
@@ -591,14 +591,14 @@ LoadingScreen::LoadingScreen(QWidget* parent)
     dash.tip_text_label = new QLabel(tip_frame);
     dash.tip_text_label->setWordWrap(true);
     dash.tip_text_label->setTextFormat(Qt::RichText);
-    dash.tip_text_label->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; background: transparent; border: none;"));
+    dash.tip_text_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 11.5px; background: transparent; border: none;"));
     tip_layout->addWidget(dash.tip_text_label, 1);
 
     dash.prev_tip_btn = new QPushButton(QStringLiteral("◀"), tip_frame);
     dash.prev_tip_btn->setCursor(Qt::PointingHandCursor);
     dash.prev_tip_btn->setFixedSize(28, 26);
     dash.prev_tip_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: rgba(30, 41, 59, 0.85); color: #CBD5E1; border: 1px solid rgba(148, 163, 184, 0.30); border-radius: 5px; font-size: 10px; font-weight: 700; }"
+        "QPushButton { background: rgba(30, 41, 59, 0.85); color: #FFFFFF; border: 1px solid rgba(148, 163, 184, 0.30); border-radius: 5px; font-size: 10px; font-weight: 700; }"
         "QPushButton:hover { background: rgba(0, 210, 255, 0.25); color: #FFFFFF; border: 1px solid #38BDF8; }"));
 
     dash.next_tip_btn = new QPushButton(tip_frame);
@@ -731,15 +731,15 @@ void LoadingScreen::SetGameInfo(const QString& name, const QString& version, con
     QStringList game_info;
     if (!version.isEmpty()) {
         const QString ver_lbl = StormLang(QStringLiteral("Версия:"), QStringLiteral("Version:"), QStringLiteral("Version:"), QStringLiteral("Version :"), QStringLiteral("版本:"), QStringLiteral("バージョン:"), QStringLiteral("الإصدار:"), QStringLiteral("Versión:"), QStringLiteral("Versione:"), QStringLiteral("Versão:"), QStringLiteral("버전:"));
-        game_info << QStringLiteral("<span style='color:#94a3b8;'>🏷️ %1</span> <span style='color:#f8fafc; font-weight:700;'>%2</span>").arg(ver_lbl, version);
+        game_info << QStringLiteral("<span style='color:#FFFFFF;'>🏷️ %1</span> <span style='color:#FFFFFF; font-weight:700;'>%2</span>").arg(ver_lbl, version);
     }
     if (!dev.isEmpty()) {
         const QString dev_lbl = StormLang(QStringLiteral("Разработчик:"), QStringLiteral("Developer:"), QStringLiteral("Entwickler:"), QStringLiteral("Développeur :"), QStringLiteral("开发商:"), QStringLiteral("開発元:"), QStringLiteral("المطور:"), QStringLiteral("Desarrollador:"), QStringLiteral("Sviluppatore:"), QStringLiteral("Desenvolvedor:"), QStringLiteral("개발사:"));
-        game_info << QStringLiteral("<span style='color:#94a3b8;'>🏢 %1</span> <span style='color:#e2e8f0; font-weight:600;'>%2</span>").arg(dev_lbl, dev);
+        game_info << QStringLiteral("<span style='color:#FFFFFF;'>🏢 %1</span> <span style='color:#FFFFFF; font-weight:600;'>%2</span>").arg(dev_lbl, dev);
     }
     if (!format.isEmpty()) {
         const QString fmt_lbl = StormLang(QStringLiteral("Контейнер:"), QStringLiteral("Container:"), QStringLiteral("Format:"), QStringLiteral("Format :"), QStringLiteral("封装格式:"), QStringLiteral("フォーマット:"), QStringLiteral("الصيغة:"), QStringLiteral("Formato:"), QStringLiteral("Formato:"), QStringLiteral("Formato:"), QStringLiteral("포맷:"));
-        game_info << QStringLiteral("<span style='color:#94a3b8;'>📦 %1</span> <span style='color:#38bdf8; font-weight:700;'>%2</span>").arg(fmt_lbl, format.toUpper());
+        game_info << QStringLiteral("<span style='color:#FFFFFF;'>📦 %1</span> <span style='color:#38bdf8; font-weight:700;'>%2</span>").arg(fmt_lbl, format.toUpper());
     }
 
     ui->game_meta->setText(game_info.join(QStringLiteral("&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;")));

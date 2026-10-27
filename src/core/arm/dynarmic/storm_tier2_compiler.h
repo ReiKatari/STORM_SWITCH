@@ -129,9 +129,7 @@ public:
         }
         u64 rewritten = 0;
         u64 superblock_opts = 0;
-        const bool wfe_to_yield =
-            Settings::values.storm_lowend_turbo.GetValue() ||
-            Settings::values.cpu_accuracy.GetValue() == Settings::CpuAccuracy::Unsafe;
+        const bool wfe_to_yield = false; // Always preserve WFE so Dynarmic WaitForEvent hook exits cleanly
 
         for (size_t i = 0; i < page.size(); ++i) {
             u32 inst = page[i];

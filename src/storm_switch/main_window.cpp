@@ -1572,7 +1572,7 @@ void MainWindow::InitializeWidgets() {
     const QStringList ticks = {QStringLiteral("0%"), QStringLiteral("50%"), QStringLiteral("100%"), QStringLiteral("150%"), QStringLiteral("200%")};
     for (const QString& tick : ticks) {
         auto* lbl = new QLabel(tick, volume_popup);
-        lbl->setStyleSheet(QStringLiteral("color: #7b8fa3; font-size: 7.5pt; border: none; background: transparent;"));
+        lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 7.5pt; border: none; background: transparent;"));
         lbl->setAlignment(Qt::AlignCenter);
         scale_layout->addWidget(lbl);
     }
@@ -4850,7 +4850,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         "    border: 1.5px solid rgba(0, 210, 255, 0.40);"
         "    border-radius: 12px;"
         "}"
-        "QLabel { color: #E2E8F0; font-family: 'Segoe UI', sans-serif; }"
+        "QLabel { color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }"
     ));
 
     // 2-COLUMN MASTER LAYOUT: Left = Info + Scroll + Checkbox, Right = Action Panel with Buttons
@@ -5062,7 +5062,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     auto* fixText = new QLabel(fixes_formatted, fixCard);
     fixText->setTextFormat(Qt::RichText);
     fixText->setWordWrap(true);
-    fixText->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.42; background: transparent; border: none;"));
+    fixText->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 11.5px; line-height: 1.42; background: transparent; border: none;"));
     fixLayout->addWidget(fixText);
 
     // Interactive per-parameter checkboxes (100% localized human-readable names & values, deduplicated, bold function names)
@@ -5126,7 +5126,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
             QStringLiteral("✕ Desmarcar todo")), paramsContainer);
         deselectAllBtn->setCursor(Qt::PointingHandCursor);
         deselectAllBtn->setStyleSheet(QStringLiteral(
-            "QPushButton { background: rgba(51, 65, 85, 0.55); color: #CBD5E1; border: 1px solid rgba(148, 163, 184, 0.30); border-radius: 5px; padding: 3px 10px; font-size: 11px; font-weight: 600; }"
+            "QPushButton { background: rgba(51, 65, 85, 0.55); color: #FFFFFF; border: 1px solid rgba(148, 163, 184, 0.30); border-radius: 5px; padding: 3px 10px; font-size: 11px; font-weight: 600; }"
             "QPushButton:hover { background: rgba(71, 85, 105, 0.80); color: #FFFFFF; }"));
 
         paramsHeaderRow->addWidget(selectAllBtn);
@@ -5279,7 +5279,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     dont_ask_cb->setCursor(Qt::PointingHandCursor);
     dont_ask_cb->setStyleSheet(QStringLiteral(
         "QCheckBox {"
-        "    color: #CBD5E1;"
+        "    color: #FFFFFF;"
         "    font-size: 12px;"
         "    font-weight: 600;"
         "    spacing: 8px;"
@@ -5363,7 +5363,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
             QStringLiteral("¿Aplicar las correcciones recomendadas antes de iniciar el juego?")), rightCard);
     promptLabel->setWordWrap(true);
     promptLabel->setAlignment(Qt::AlignCenter);
-    promptLabel->setStyleSheet(QStringLiteral("font-size: 11.5px; color: #CBD5E1; background: transparent; border: none; padding: 2px 2px;"));
+    promptLabel->setStyleSheet(QStringLiteral("font-size: 11.5px; color: #FFFFFF; background: transparent; border: none; padding: 2px 2px;"));
     right_col->addWidget(promptLabel);
 
     right_col->addSpacing(4);
@@ -5402,7 +5402,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     skipBtn->setStyleSheet(QStringLiteral(
         "QPushButton {"
         "    background: rgba(30, 41, 59, 0.85);"
-        "    color: #E2E8F0;"
+        "    color: #FFFFFF;"
         "    font-weight: 600;"
         "    font-size: 12px;"
         "    padding: 8px 12px;"
@@ -5473,7 +5473,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     infoBadge->setWordWrap(true);
     infoBadge->setAlignment(Qt::AlignCenter);
     infoBadge->setStyleSheet(QStringLiteral(
-        "color: #94A3B8; font-size: 10.5px; background: rgba(15, 23, 42, 0.65);"
+        "color: #FFFFFF; font-size: 10.5px; background: rgba(15, 23, 42, 0.65);"
         "border: 1px solid rgba(148, 163, 184, 0.16); border-radius: 6px; padding: 7px;"
     ));
     right_col->addWidget(infoBadge);
@@ -8599,7 +8599,7 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
                 dlg.setStyleSheet(QStringLiteral(
                     "QDialog { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', sans-serif; }"
                     "QLabel { color: #ffffff; }"
-                    "QTextEdit { background-color: #121826; color: #e2e8f0; border: 1px solid #1e283d; border-radius: 8px; padding: 10px; font-size: 9pt; }"
+                    "QTextEdit { background-color: #121826; color: #FFFFFF; border: 1px solid #1e283d; border-radius: 8px; padding: 10px; font-size: 9pt; }"
                     "QPushButton { background-color: #161e30; color: #ffffff; border: 1px solid #23314a; border-radius: 6px; padding: 8px 18px; font-weight: bold; font-size: 9pt; }"
                     "QPushButton:hover { background-color: #00e5ff; color: #000000; border-color: #00e5ff; }"
                     "QPushButton#DownloadBtn { background-color: #00e5ff; color: #000000; border: 1px solid #00e5ff; }"
@@ -8612,7 +8612,7 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
 
                 auto* title = new QLabel(tr("<h2 style='margin:0; color:#00e5ff;'>⚡ Доступна новая версия: %1</h2>")
                                              .arg(release_name.isEmpty() ? tag_name : release_name), &dlg);
-                auto* sub_info = new QLabel(tr("<span style='color:#94a3b8;'>Текущая версия: <b>%1</b> &nbsp;|&nbsp; Новая версия: <b>%2</b></span>")
+                auto* sub_info = new QLabel(tr("<span style='color:#FFFFFF;'>Текущая версия: <b>%1</b> &nbsp;|&nbsp; Новая версия: <b>%2</b></span>")
                                                 .arg(current_ver, clean_tag), &dlg);
 
                 auto* notes_box = new QTextEdit(&dlg);
@@ -8846,15 +8846,7 @@ void MainWindow::OnSaveStateSlot(int slot) {
         auto preview_path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
         preview_path.replace_extension(".png");
         const QString qpreview = QString::fromStdString(Common::FS::PathToUTF8String(preview_path));
-        if (QScreen* scr = render_window->screen() ? render_window->screen() : QGuiApplication::primaryScreen()) {
-            const QPixmap grabbed = scr->grabWindow(render_window->winId());
-            if (!grabbed.isNull() && grabbed.width() > 32 && grabbed.height() > 32) {
-                QImage thumb = grabbed.scaled(480, 270, Qt::KeepAspectRatio, Qt::FastTransformation).toImage();
-                std::thread([thumb = std::move(thumb), qpreview]() {
-                    thumb.save(qpreview, "PNG");
-                }).detach();
-            }
-        }
+        render_window->CaptureScreenshot(qpreview);
     }
     RefreshSaveStateMenus();
 }
@@ -8978,24 +8970,29 @@ void MainWindow::OnLoadStateSlot(int slot) {
         preview_path.replace_extension(".png");
         if (!std::filesystem::exists(preview_path)) {
             const QString qpreview = QString::fromStdString(Common::FS::PathToUTF8String(preview_path));
-            QTimer::singleShot(700, this, [this, qpreview]() {
+            QTimer::singleShot(450, this, [this, qpreview]() {
                 if (render_window && emulation_running) {
-                    if (QScreen* scr = render_window->screen() ? render_window->screen()
-                                                               : QGuiApplication::primaryScreen()) {
-                        const QPixmap grabbed = scr->grabWindow(render_window->winId());
-                        if (!grabbed.isNull() && grabbed.width() > 32 && grabbed.height() > 32) {
-                            QImage thumb = grabbed.scaled(480, 270, Qt::KeepAspectRatio, Qt::FastTransformation).toImage();
-                            std::thread([thumb = std::move(thumb), qpreview]() {
-                                thumb.save(qpreview, "PNG");
-                            }).detach();
-                        }
-                    }
+                    render_window->CaptureScreenshot(qpreview);
                 }
             });
         }
     }
     if (in_game_notification) {
         in_game_notification->ShowNotification(notif_title, notif_sub, QColor(52, 211, 153), QStringLiteral("⚡"), 2800);
+    }
+    if (render_window) {
+        auto preview_path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+        preview_path.replace_extension(".png");
+        const QString qpreview = QString::fromStdString(Common::FS::PathToUTF8String(preview_path));
+        QPixmap test_px;
+        const bool missing_or_tiny = !QFile::exists(qpreview) || QFileInfo(qpreview).size() < 2000 || !test_px.load(qpreview);
+        if (missing_or_tiny) {
+            QTimer::singleShot(350, this, [this, qpreview]() {
+                if (emulation_running && render_window && QtCommon::system && QtCommon::system->IsPoweredOn()) {
+                    render_window->CaptureScreenshot(qpreview);
+                }
+            });
+        }
     }
 }
 
@@ -9047,22 +9044,53 @@ void MainWindow::OnSaveStateManager() {
         }
     }
 
-    // If a game is currently running and any of its occupied slots lacks a .png preview, capture it now
-    if (active_tid != 0 && render_window) {
+    auto is_blank_or_solid_preview = [](const QPixmap& px) -> bool {
+        if (px.isNull() || px.width() < 16 || px.height() < 16) {
+            return true;
+        }
+        const QImage img = px.scaled(64, 36, Qt::IgnoreAspectRatio, Qt::FastTransformation)
+                             .toImage()
+                             .convertToFormat(QImage::Format_RGB32);
+        if (img.isNull()) {
+            return true;
+        }
+        const QRgb first = img.pixel(4, 4);
+        const int r0 = qRed(first), g0 = qGreen(first), b0 = qBlue(first);
+        int max_diff = 0;
+        int bright_pixels = 0;
+        for (int y = 2; y < img.height() - 2; y += 3) {
+            for (int x = 2; x < img.width() - 2; x += 4) {
+                const QRgb c = img.pixel(x, y);
+                const int r = qRed(c), g = qGreen(c), b = qBlue(c);
+                max_diff = std::max({max_diff, std::abs(r - r0), std::abs(g - g0), std::abs(b - b0)});
+                if (r > 18 || g > 18 || b > 22) {
+                    ++bright_pixels;
+                }
+            }
+        }
+        return (max_diff < 8) || (bright_pixels == 0);
+    };
+
+    // If a game is currently running and any of its occupied slots lacks a valid .png preview, capture it now
+    if (active_tid != 0 && render_window && emulation_running) {
         for (int s = 1; s <= kMaxSlots; ++s) {
             const auto ses_p = Core::GetSaveStatePath(active_tid, static_cast<u32>(s));
             auto png_p = ses_p;
             png_p.replace_extension(".png");
             std::error_code ec;
-            if (std::filesystem::exists(ses_p, ec) && !std::filesystem::exists(png_p, ec)) {
+            if (std::filesystem::exists(ses_p, ec)) {
                 const QString qpreview = QString::fromStdString(Common::FS::PathToUTF8String(png_p));
-                if (QScreen* scr = render_window->screen()) {
-                    const QPixmap grabbed = scr->grabWindow(render_window->winId());
-                    if (!grabbed.isNull()) {
-                        grabbed.save(qpreview, "PNG");
+                bool need_capture = !std::filesystem::exists(png_p, ec);
+                if (!need_capture) {
+                    QPixmap test_px;
+                    if (!test_px.load(qpreview) || is_blank_or_solid_preview(test_px)) {
+                        QFile::remove(qpreview);
+                        need_capture = true;
                     }
                 }
-                render_window->CaptureScreenshot(qpreview);
+                if (need_capture) {
+                    render_window->CaptureScreenshot(qpreview);
+                }
             }
         }
     }
@@ -9096,10 +9124,32 @@ void MainWindow::OnSaveStateManager() {
         return QStringLiteral("Title ID: %1 [%1]").arg(hex_id);
     };
 
-    auto make_placeholder_preview = [&resolve_game_title](u64 tid, int slot_num, bool exists,
-                                                          const Core::SaveStateHeader& hdr,
-                                                          double size_mb, const QString& dt_str,
-                                                          const QString& note_str) -> QPixmap {
+    auto resolve_game_icon = [](u64 tid) -> QPixmap {
+        if (tid == 0) {
+            return {};
+        }
+        if (QtCommon::system) {
+            const FileSys::PatchManager pm(tid, QtCommon::system->GetFileSystemController(),
+                                           QtCommon::system->GetContentProvider());
+            const auto control = pm.GetControlMetadata();
+            if (control.second != nullptr) {
+                const auto bytes = control.second->ReadAllBytes();
+                if (!bytes.empty()) {
+                    QPixmap icon_px;
+                    if (icon_px.loadFromData(bytes.data(), static_cast<uint>(bytes.size()))) {
+                        return icon_px;
+                    }
+                }
+            }
+        }
+        return {};
+    };
+
+    auto make_placeholder_preview = [&resolve_game_title, &resolve_game_icon](
+                                        u64 tid, int slot_num, bool exists,
+                                        const Core::SaveStateHeader& hdr,
+                                        double size_mb, const QString& dt_str,
+                                        const QString& note_str) -> QPixmap {
         QPixmap px(640, 360);
         px.fill(Qt::transparent);
         QPainter p(&px);
@@ -9141,11 +9191,17 @@ void MainWindow::OnSaveStateManager() {
         p.drawText(QRect(24, 22, 168, 34), Qt::AlignCenter,
                    QStringLiteral("SLOT #%1 - SESS v2").arg(slot_num));
 
-        QFont f_icon(QStringLiteral("Segoe UI Emoji"), 36, QFont::Bold);
-        p.setFont(f_icon);
-        p.setPen(exists ? QColor(56, 189, 248) : QColor(71, 85, 105));
-        p.drawText(QRect(0, 78, 640, 60), Qt::AlignCenter,
-                   exists ? QStringLiteral("⚡") : QStringLiteral("📭"));
+        const QPixmap game_icon = exists ? resolve_game_icon(tid) : QPixmap{};
+        if (!game_icon.isNull()) {
+            const QPixmap scaled_icon = game_icon.scaled(84, 84, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            p.drawPixmap((640 - scaled_icon.width()) / 2, 54, scaled_icon);
+        } else {
+            QFont f_icon(QStringLiteral("Segoe UI Emoji"), 36, QFont::Bold);
+            p.setFont(f_icon);
+            p.setPen(exists ? QColor(56, 189, 248) : QColor(71, 85, 105));
+            p.drawText(QRect(0, 78, 640, 60), Qt::AlignCenter,
+                       exists ? QStringLiteral("⚡") : QStringLiteral("📭"));
+        }
 
         QFont f_title(QStringLiteral("Segoe UI"), 14, QFont::Bold);
         p.setFont(f_title);
@@ -9214,18 +9270,18 @@ void MainWindow::OnSaveStateManager() {
     dlg.setStyleSheet(QStringLiteral(
         "QDialog {"
         "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0B0F19, stop:0.5 #111827, stop:1 #090D16);"
-        "  color: #F1F5F9;"
+        "  color: #FFFFFF;"
         "  font-family: 'Segoe UI', sans-serif;"
         "}"
-        "QLabel { color: #E2E8F0; background: transparent; }"
+        "QLabel { color: #FFFFFF; background: transparent; }"
         "QComboBox {"
         "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A);"
-        "  color: #F8FAFC; border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 8px;"
+        "  color: #FFFFFF; border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 8px;"
         "  padding: 5px 12px; font-size: 9.5pt; font-weight: 600; min-height: 24px;"
         "}"
         "QComboBox:hover { border-color: #00E5FF; }"
         "QComboBox QAbstractItemView {"
-        "  background-color: #0F172A; color: #F8FAFC; selection-background-color: #0284C7;"
+        "  background-color: #0F172A; color: #FFFFFF; selection-background-color: #0284C7;"
         "  border: 1.5px solid #38BDF8; border-radius: 6px; padding: 4px;"
         "}"
         "QListWidget {"
@@ -9236,7 +9292,7 @@ void MainWindow::OnSaveStateManager() {
         "QListWidget::item {"
         "  background-color: rgba(30, 41, 59, 0.55);"
         "  border: 1px solid rgba(148, 163, 184, 0.16);"
-        "  border-radius: 10px; margin: 4px 2px; padding: 6px; color: #F1F5F9;"
+        "  border-radius: 10px; margin: 4px 2px; padding: 6px; color: #FFFFFF;"
         "}"
         "QListWidget::item:hover {"
         "  background-color: rgba(30, 58, 95, 0.65);"
@@ -9247,14 +9303,14 @@ void MainWindow::OnSaveStateManager() {
         "  border: 1.5px solid #00E5FF; color: #FFFFFF;"
         "}"
         "QLineEdit, QPlainTextEdit {"
-        "  background-color: rgba(15, 23, 42, 0.92); color: #F8FAFC;"
+        "  background-color: rgba(15, 23, 42, 0.92); color: #FFFFFF;"
         "  border: 1.5px solid rgba(56, 189, 248, 0.38); border-radius: 8px;"
         "  padding: 5px 10px; font-size: 9.5pt;"
         "}"
         "QLineEdit:focus, QPlainTextEdit:focus { border: 1.5px solid #00E5FF; background-color: #131D31; }"
         "QPushButton {"
         "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A);"
-        "  color: #F1F5F9; border: 1px solid rgba(148, 163, 184, 0.32);"
+        "  color: #FFFFFF; border: 1px solid rgba(148, 163, 184, 0.32);"
         "  border-bottom: 2px solid rgba(0, 0, 0, 0.65);"
         "  border-radius: 8px; padding: 8px 14px; font-size: 9.5pt; font-weight: 600;"
         "}"
@@ -9263,7 +9319,7 @@ void MainWindow::OnSaveStateManager() {
         "  border-color: #38BDF8; color: #FFFFFF;"
         "}"
         "QPushButton:pressed { padding-top: 9px; padding-bottom: 7px; }"
-        "QPushButton:disabled { color: #475569; background: rgba(15, 23, 42, 0.4); border-color: rgba(71, 85, 105, 0.2); }"
+        "QPushButton:disabled { color: #FFFFFF; background: rgba(15, 23, 42, 0.4); border-color: rgba(71, 85, 105, 0.2); }"
     ));
 
     auto* root_layout = new QVBoxLayout(&dlg);
@@ -9301,7 +9357,7 @@ void MainWindow::OnSaveStateManager() {
         QStringLiteral("Instantanés d'état RAM & GPU :\n• F5 - Sauvegarde rapide dans l'emplacement 1\n• F7 - Chargement rapide depuis l'emplacement 1\n• Gestion de 10 emplacements, notes et aperçus"),
         QStringLiteral("即时内存与 GPU 状态快照：\n• F5 - 快速保存到槽位 1\n• F7 - 从槽位 1 快速读取\n• 管理 10 个槽位、自定义备注与实时预览图"),
         QStringLiteral("高速メモリ＆GPU状態スナップショット:\n• F5 - スロット 1 にクイックセーブ\n• F7 - スロット 1 からクイックロード\n• 10スロット・メモ・ライブプレビュー管理")), header_frame);
-    lbl_subtitle->setStyleSheet(QStringLiteral("font-size: 9pt; color: #CBD5E1; border: none; background: transparent; line-height: 1.25;"));
+    lbl_subtitle->setStyleSheet(QStringLiteral("font-size: 9pt; color: #FFFFFF; border: none; background: transparent; line-height: 1.25;"));
     title_col->addWidget(lbl_subtitle);
     header_layout->addLayout(title_col, 0);
 
@@ -9343,6 +9399,32 @@ void MainWindow::OnSaveStateManager() {
             QString::fromStdString(Common::FS::PathToUTF8String(savestates_dir))));
     });
     search_and_folder_row->addWidget(btn_open_folder, 0);
+
+    auto* btn_refresh_preview = new QPushButton(StormLang11(
+        QStringLiteral("📷 Превью"),
+        QStringLiteral("📷 Preview"),
+        QStringLiteral("📷 Vorschau"),
+        QStringLiteral("📷 Aperçu"),
+        QStringLiteral("📷 Vista previa"),
+        QStringLiteral("📷 Anteprima"),
+        QStringLiteral("📷 Prévia"),
+        QStringLiteral("📷 刷新预览"),
+        QStringLiteral("📷 プレビュー"),
+        QStringLiteral("📷 미리보기"),
+        QStringLiteral("📷 معاينة")), header_frame);
+    btn_refresh_preview->setToolTip(StormLang11(
+        QStringLiteral("Захватить текущий игровой кадр с экрана и обновить превью выбранного слота"),
+        QStringLiteral("Capture the current live game frame and refresh the selected slot's preview image"),
+        QStringLiteral("Aktuelles Spielbild erfassen und Vorschau des ausgewählten Slots aktualisieren"),
+        QStringLiteral("Capturer l'image actuelle du jeu et actualiser l'aperçu de l'emplacement sélectionné"),
+        QStringLiteral("Capturar el fotograma actual del juego y actualizar la vista previa de la ranura"),
+        QStringLiteral("Cattura il fotogramma di gioco attuale e aggiorna l'anteprima dello slot"),
+        QStringLiteral("Capturar o quadro atual do jogo e atualizar a prévia do espaço selecionado"),
+        QStringLiteral("捕获当前实时游戏画面并刷新所选槽位的预览图"),
+        QStringLiteral("現在のゲーム画面をキャプチャして選択スロットのプレビューを更新します"),
+        QStringLiteral("현재 실행 중인 게임 화면을 캡처하여 선택한 슬롯의 미리보기를 갱신합니다"),
+        QStringLiteral("التقاط إطار اللعبة الحالي وتحديث صورة المعاينة للفتحة المحددة")));
+    search_and_folder_row->addWidget(btn_refresh_preview, 0);
     selector_col->addLayout(search_and_folder_row);
 
     auto* game_combo = new QComboBox(header_frame);
@@ -9453,7 +9535,7 @@ void MainWindow::OnSaveStateManager() {
 
     auto* lbl_preview_title = new QLabel(&dlg);
     lbl_preview_title->setWordWrap(true);
-    lbl_preview_title->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: 800; color: #F8FAFC;"));
+    lbl_preview_title->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: 800; color: #FFFFFF;"));
     right_layout->addWidget(lbl_preview_title);
 
     auto* preview_box = new QLabel(&dlg);
@@ -9485,9 +9567,9 @@ void MainWindow::OnSaveStateManager() {
     auto* lbl_meta_date = new QLabel(&dlg);
     auto* lbl_meta_pages = new QLabel(&dlg);
     lbl_meta_status->setStyleSheet(QStringLiteral("font-size: 9.5pt; font-weight: 700; border: none;"));
-    lbl_meta_size->setStyleSheet(QStringLiteral("font-size: 9.5pt; color: #E2E8F0; border: none;"));
-    lbl_meta_date->setStyleSheet(QStringLiteral("font-size: 9.5pt; color: #CBD5E1; border: none;"));
-    lbl_meta_pages->setStyleSheet(QStringLiteral("font-size: 9.5pt; color: #94A3B8; border: none;"));
+    lbl_meta_size->setStyleSheet(QStringLiteral("font-size: 9.5pt; color: #FFFFFF; border: none;"));
+    lbl_meta_date->setStyleSheet(QStringLiteral("font-size: 9.5pt; color: #FFFFFF; border: none;"));
+    lbl_meta_pages->setStyleSheet(QStringLiteral("font-size: 9.5pt; color: #FFFFFF; border: none;"));
     meta_layout->addWidget(lbl_meta_status, 0, 0);
     meta_layout->addWidget(lbl_meta_size, 0, 1);
     meta_layout->addWidget(lbl_meta_date, 1, 0);
@@ -9545,7 +9627,7 @@ void MainWindow::OnSaveStateManager() {
         "  color: #FFFFFF; border: 1px solid #38BDF8; font-size: 10pt; font-weight: 700; padding: 9px 16px;"
         "}"
         "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0EA5E9, stop:1 #0284C7); }"
-        "QPushButton:disabled { background: rgba(15, 23, 42, 0.5); color: #475569; border-color: rgba(71, 85, 105, 0.25); }"));
+        "QPushButton:disabled { background: rgba(15, 23, 42, 0.5); color: #FFFFFF; border-color: rgba(71, 85, 105, 0.25); }"));
     btn_load_slot->setToolTip(StormLang(
         QStringLiteral("Мгновенно загрузить состояние из выбранного слота в запущенную игру"),
         QStringLiteral("Immediately load the selected save state slot into the running game"),
@@ -9568,7 +9650,7 @@ void MainWindow::OnSaveStateManager() {
         "  color: #FFFFFF; border: 1px solid #34D399; font-size: 10pt; font-weight: 700; padding: 9px 16px;"
         "}"
         "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #10B981, stop:1 #059669); }"
-        "QPushButton:disabled { background: rgba(15, 23, 42, 0.5); color: #475569; border-color: rgba(71, 85, 105, 0.25); }"));
+        "QPushButton:disabled { background: rgba(15, 23, 42, 0.5); color: #FFFFFF; border-color: rgba(71, 85, 105, 0.25); }"));
     btn_save_slot->setToolTip(StormLang(
         QStringLiteral("Создать мгновенное сохранение запущенной игры и сохранить скриншот-превью в выбранный слот"),
         QStringLiteral("Save the currently running game state and live preview screenshot into the selected slot"),
@@ -9655,7 +9737,7 @@ void MainWindow::OnSaveStateManager() {
     btn_delete_slot->setStyleSheet(QStringLiteral(
         "QPushButton { color: #FCA5A5; border-color: rgba(239, 68, 68, 0.45); }"
         "QPushButton:hover { background-color: rgba(185, 28, 28, 0.45); color: #FFFFFF; border-color: #EF4444; }"
-        "QPushButton:disabled { color: #475569; border-color: rgba(71, 85, 105, 0.2); }"));
+        "QPushButton:disabled { color: #FFFFFF; border-color: rgba(71, 85, 105, 0.2); }"));
     btn_delete_slot->setToolTip(StormLang(
         QStringLiteral("Удалить файл сохранения, превью и заметку из выбранного слота"),
         QStringLiteral("Delete the save state file, preview screenshot, and note from the selected slot"),
@@ -9674,7 +9756,7 @@ void MainWindow::OnSaveStateManager() {
     btn_clear_all->setStyleSheet(QStringLiteral(
         "QPushButton { color: #FCD34D; border-color: rgba(245, 158, 11, 0.45); }"
         "QPushButton:hover { background-color: rgba(180, 83, 9, 0.40); color: #FFFFFF; border-color: #F59E0B; }"
-        "QPushButton:disabled { color: #475569; border-color: rgba(71, 85, 105, 0.2); }"));
+        "QPushButton:disabled { color: #FFFFFF; border-color: rgba(71, 85, 105, 0.2); }"));
     btn_clear_all->setToolTip(StormLang(
         QStringLiteral("Удалить все быстрые сохранения (слоты 1-10) для выбранной игры"),
         QStringLiteral("Delete all save state slots (1-10) for the currently selected game"),
@@ -9797,7 +9879,12 @@ void MainWindow::OnSaveStateManager() {
                 auto png_path = ses_path;
                 png_path.replace_extension(".png");
                 if (std::filesystem::exists(png_path, ec)) {
-                    thumb_px.load(QString::fromStdString(Common::FS::PathToUTF8String(png_path)));
+                    const QString qpng = QString::fromStdString(Common::FS::PathToUTF8String(png_path));
+                    thumb_px.load(qpng);
+                    if (is_blank_or_solid_preview(thumb_px)) {
+                        QFile::remove(qpng);
+                        thumb_px = QPixmap{};
+                    }
                 }
             }
             if (thumb_px.isNull()) {
@@ -9836,9 +9923,13 @@ void MainWindow::OnSaveStateManager() {
                     QStringLiteral("⚪ [空 - 保存またはコピー可能]"));
             }
 
-            auto* item = new QListWidgetItem(
-                QIcon(thumb_px.scaled(136, 76, Qt::KeepAspectRatio, Qt::SmoothTransformation)),
-                item_text);
+            const QPixmap scaled_thumb =
+                thumb_px.scaled(136, 76, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            QIcon slot_icon;
+            slot_icon.addPixmap(scaled_thumb, QIcon::Normal);
+            slot_icon.addPixmap(scaled_thumb, QIcon::Selected);
+            slot_icon.addPixmap(scaled_thumb, QIcon::Active);
+            auto* item = new QListWidgetItem(slot_icon, item_text);
             item->setSizeHint(QSize(500, !note_str.isEmpty() ? 104 : 88));
             slot_list->addItem(item);
         }
@@ -9899,7 +9990,12 @@ void MainWindow::OnSaveStateManager() {
             auto png_path = ses_path;
             png_path.replace_extension(".png");
             if (std::filesystem::exists(png_path, ec)) {
-                large_px.load(QString::fromStdString(Common::FS::PathToUTF8String(png_path)));
+                const QString qpng = QString::fromStdString(Common::FS::PathToUTF8String(png_path));
+                large_px.load(qpng);
+                if (is_blank_or_solid_preview(large_px)) {
+                    QFile::remove(qpng);
+                    large_px = QPixmap{};
+                }
             }
         }
         if (large_px.isNull()) {
@@ -9945,7 +10041,7 @@ void MainWindow::OnSaveStateManager() {
                 QStringLiteral("⚪ Statut : Emplacement vide"),
                 QStringLiteral("⚪ 状态：槽位为空"),
                 QStringLiteral("⚪ 状態: 空きスロット")));
-            lbl_meta_status->setStyleSheet(QStringLiteral("font-size: 9.5pt; font-weight: 700; color: #94A3B8; border: none;"));
+            lbl_meta_status->setStyleSheet(QStringLiteral("font-size: 9.5pt; font-weight: 700; color: #FFFFFF; border: none;"));
             lbl_meta_size->setText(QStringLiteral("📦 -"));
             lbl_meta_date->setText(QStringLiteral("🕒 -"));
             lbl_meta_pages->setText(QStringLiteral("🧩 -"));
@@ -10032,6 +10128,45 @@ void MainWindow::OnSaveStateManager() {
                 QStringLiteral("⚡ 游戏状态与预览图已保存到槽位 %1！").arg(get_selected_slot()),
                 QStringLiteral("⚡ スロット %1 にゲーム状態とプレビューを保存しました！").arg(get_selected_slot())));
         });
+    });
+
+    connect(btn_refresh_preview, &QPushButton::clicked, &dlg, [&]() {
+        const u64 tid = get_selected_tid();
+        const int s = get_selected_slot();
+        if (tid == 0 || !emulation_running || !render_window || !QtCommon::system || !QtCommon::system->IsPoweredOn()) {
+            lbl_status_feedback->setText(StormLang11(
+                QStringLiteral("⚠️ Запустите игру, чтобы захватить живой скриншот-превью"),
+                QStringLiteral("⚠️ Launch the game first to capture a live preview screenshot"),
+                QStringLiteral("⚠️ Starten Sie zuerst das Spiel, um ein Live-Vorschaubild aufzunehmen"),
+                QStringLiteral("⚠️ Lancez d'abord le jeu pour capturer un aperçu en direct"),
+                QStringLiteral("⚠️ Inicie el juego primero para capturar una vista previa en vivo"),
+                QStringLiteral("⚠️ Avvia prima il gioco per catturare un'anteprima dal vivo"),
+                QStringLiteral("⚠️ Inicie o jogo primeiro para capturar uma prévia ao vivo"),
+                QStringLiteral("⚠️ 请先运行游戏以捕获实时预览截图"),
+                QStringLiteral("⚠️ ライブプレビューを撮影するには先にゲームを起動してください"),
+                QStringLiteral("⚠️ 실시간 미리보기를 캡처하려면 먼저 게임을 실행하세요"),
+                QStringLiteral("⚠️ يرجى تشغيل اللعبة أولاً لالتقاط معاينة حية")));
+            return;
+        }
+        auto png_p = Core::GetSaveStatePath(tid, static_cast<u32>(s));
+        png_p.replace_extension(".png");
+        const QString qpreview = QString::fromStdString(Common::FS::PathToUTF8String(png_p));
+        QFile::remove(qpreview);
+        render_window->CaptureScreenshot(qpreview);
+        refresh_all();
+        update_inspector();
+        lbl_status_feedback->setText(StormLang11(
+            QStringLiteral("📷 Превью Слота %1 успешно обновлено из кадра игры!").arg(s),
+            QStringLiteral("📷 Slot %1 preview refreshed from live game frame!").arg(s),
+            QStringLiteral("📷 Vorschau für Slot %1 aus aktuellem Spielbild aktualisiert!").arg(s),
+            QStringLiteral("📷 Aperçu de l'emplacement %1 actualisé !").arg(s),
+            QStringLiteral("📷 ¡Vista previa de la ranura %1 actualizada!").arg(s),
+            QStringLiteral("📷 Anteprima dello Slot %1 aggiornata!").arg(s),
+            QStringLiteral("📷 Prévia do Espaço %1 atualizada!").arg(s),
+            QStringLiteral("📷 槽位 %1 的预览图已从实时画面更新！").arg(s),
+            QStringLiteral("📷 スロット %1 のプレビューを更新しました！").arg(s),
+            QStringLiteral("📷 슬롯 %1 미리보기가 갱신되었습니다!").arg(s),
+            QStringLiteral("📷 تم تحديث معاينة الفتحة %1 بنجاح!").arg(s)));
     });
 
     auto ask_target_slot = [&](int src_slot, const QString& title_text) -> int {
@@ -14134,7 +14269,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
     auto* title_label = new QLabel(tr("<h2 style='margin:0; color:#00e5ff;'>🎮 %1</h2>").arg(full_display_name), header_card);
     auto* badges_label = new QLabel(tr(
-        "<span style='background:#1b2438; color:#94a3b8; padding:4px 9px; border-radius:5px; font-weight:bold;'>ID: %1</span> &nbsp; "
+        "<span style='background:#1b2438; color:#FFFFFF; padding:4px 9px; border-radius:5px; font-weight:bold;'>ID: %1</span> &nbsp; "
         "<span style='background:#143324; color:#00e676; padding:4px 9px; border-radius:5px; font-weight:bold;'>📦 Дополнений в файле: %2</span> &nbsp; "
         "<span style='background:#142738; color:#00e5ff; padding:4px 9px; border-radius:5px; font-weight:bold;'>🗃️ Всего в базе Tinfoil: %3</span> &nbsp; "
         "<span style='background:#2d2915; color:#ffca28; padding:4px 9px; border-radius:5px; font-weight:bold;'>🆙 Версия игры: %4</span> &nbsp; "
@@ -14488,14 +14623,24 @@ void MainWindow::filterBarSetChecked(bool state) {
 
 static void AdjustLinkColor() {
     QPalette new_pal(qApp->palette());
+    const bool is_dark = UISettings::IsDarkTheme();
+    const QColor text_col = is_dark ? QColor(255, 255, 255, 255) : QColor(0, 0, 0, 255);
 
-    if (UISettings::IsDarkTheme())
+    if (is_dark)
         new_pal.setColor(QPalette::Link, QColor(0, 190, 255, 255));
     else
         new_pal.setColor(QPalette::Link, QColor(0, 140, 200, 255));
 
-    if (qApp->palette().color(QPalette::Link) != new_pal.color(QPalette::Link))
-        qApp->setPalette(new_pal);
+    for (const auto grp : {QPalette::Active, QPalette::Inactive, QPalette::Disabled}) {
+        new_pal.setColor(grp, QPalette::WindowText, text_col);
+        new_pal.setColor(grp, QPalette::Text, text_col);
+        new_pal.setColor(grp, QPalette::ButtonText, text_col);
+        new_pal.setColor(grp, QPalette::BrightText, text_col);
+        new_pal.setColor(grp, QPalette::PlaceholderText, text_col);
+        new_pal.setColor(grp, QPalette::ToolTipText, text_col);
+    }
+
+    qApp->setPalette(new_pal);
 }
 
 void MainWindow::UpdateUITheme() {

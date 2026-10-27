@@ -53,14 +53,14 @@ NandManagerDialog::NandManagerDialog(QWidget* parent, Core::System& system_)
     setMinimumSize(680, 460);
 
     setStyleSheet(QStringLiteral(
-        "QDialog { background-color: #0B0F19; color: #E2E8F0; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
+        "QDialog { background-color: #0B0F19; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
         "QTableWidget { background-color: #0A0E17; border: 1px solid #1E293B; border-radius: 6px; gridline-color: #1E293B; selection-background-color: #1E293B; selection-color: #00D2FF; }"
-        "QHeaderView::section { background-color: #0F172A; color: #94A3B8; padding: 6px; font-weight: bold; border: 1px solid #1E293B; }"
+        "QHeaderView::section { background-color: #0F172A; color: #FFFFFF; padding: 6px; font-weight: bold; border: 1px solid #1E293B; }"
         "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A); "
-        "border: 1px solid #334155; border-radius: 6px; color: #F1F5F9; padding: 7px 16px; font-weight: 500; }"
+        "border: 1px solid #334155; border-radius: 6px; color: #FFFFFF; padding: 7px 16px; font-weight: 500; }"
         "QPushButton:hover { border: 1px solid #00D2FF; color: #00D2FF; background: #1E293B; }"
         "QPushButton:pressed { background: #0284C7; color: #FFFFFF; }"
-        "QPushButton:disabled { background: #0A0E17; border: 1px solid #1E293B; color: #475569; }"
+        "QPushButton:disabled { background: #0A0E17; border: 1px solid #1E293B; color: #FFFFFF; }"
     ));
 
     auto* main_layout = new QVBoxLayout(this);
@@ -147,7 +147,7 @@ NandManagerDialog::NandManagerDialog(QWidget* parent, Core::System& system_)
 
     // Details label
     lbl_details = new QLabel(this);
-    lbl_details->setStyleSheet(QStringLiteral("font-size: 11px; color: #94A3B8;"));
+    lbl_details->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF;"));
     main_layout->addWidget(lbl_details);
 
     // Bottom close button

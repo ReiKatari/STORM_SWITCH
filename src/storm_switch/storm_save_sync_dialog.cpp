@@ -77,14 +77,14 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
         "    font-weight: bold;"
         "}"
         "QLabel#CardDetail {"
-        "    color: #E2E8F0;"
+        "    color: #FFFFFF;"
         "    font-size: 12px;"
         "}"
         "QPushButton {"
         "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26);"
         "    border: 1px solid #2A3B52;"
         "    border-radius: 6px;"
-        "    color: #E0E8F0;"
+        "    color: #FFFFFF;"
         "    padding: 8px 16px;"
         "    font-weight: bold;"
         "    font-size: 12px;"
@@ -121,7 +121,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
            "Сравните данные создания и выберите действие.")
             .arg(item.title_name.isEmpty() ? item.title_id : item.title_name, item.title_id),
         this);
-    desc_lbl->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 12px;"));
+    desc_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px;"));
     desc_lbl->setWordWrap(true);
     main_layout->addWidget(desc_lbl);
 
@@ -676,7 +676,7 @@ void StormSaveSyncDialog::SetupUI() {
     conn_layout->setSpacing(10);
 
     auto* enter_lbl = new QLabel(tr("Подключение к удалённому устройству:"), conn_frame);
-    enter_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: #E2E8F0;"));
+    enter_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: #FFFFFF;"));
     conn_layout->addWidget(enter_lbl);
 
     m_remote_key_edit = new QLineEdit(conn_frame);
@@ -706,7 +706,7 @@ void StormSaveSyncDialog::SetupUI() {
     m_connection_status_label = new QLabel(
         tr("Статус: не подключено к удалённому устройству. Введите ключ или выберите устройство из списка."),
         this);
-    m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #94A3B8; padding-left: 4px;"));
+    m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF; padding-left: 4px;"));
     main_layout->addWidget(m_connection_status_label);
 
     // Search Bar
@@ -775,7 +775,7 @@ void StormSaveSyncDialog::SetupUI() {
     bottom_layout->setSpacing(10);
 
     m_status_label = new QLabel(tr("Готово"), this);
-    m_status_label->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11px;"));
+    m_status_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 11px;"));
     bottom_layout->addWidget(m_status_label);
     bottom_layout->addStretch();
 
@@ -820,7 +820,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "    letter-spacing: 1px;"
         "}"
         "QLabel#AppSubtitle {"
-        "    color: #94A3B8;"
+        "    color: #FFFFFF;"
         "    font-size: 12px;"
         "}"
         "QFrame#ConnFrame {"
@@ -858,7 +858,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "QPushButton {"
         "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26);"
         "    border: 1px solid #2A3B52;"
-        "    color: #E0E8F0;"
+        "    color: #FFFFFF;"
         "    padding: 6px 14px;"
         "    border-radius: 6px;"
         "    font-weight: bold;"
@@ -877,7 +877,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "    background-color: #070A10;"
         "    border: 1px solid #1E2838;"
         "    border-radius: 8px;"
-        "    color: #E0E8F0;"
+        "    color: #FFFFFF;"
         "    alternate-background-color: #0E131E;"
         "    selection-background-color: rgba(0, 210, 255, 0.25);"
         "    selection-color: #FFFFFF;"
@@ -1300,7 +1300,7 @@ void StormSaveSyncDialog::OnConnectClicked() {
         m_remote_device_name.clear();
         m_connection_status_label->setText(
             tr("Статус: не подключено к удалённому устройству. Введите ключ или выберите устройство из списка."));
-        m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #94A3B8; padding-left: 4px;"));
+        m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF; padding-left: 4px;"));
         m_connect_btn->setText(tr("Подключить"));
         for (auto& it : m_items) {
             it.has_remote = false;
@@ -1649,7 +1649,7 @@ void StormSaveSyncDialog::PopulateTable() {
             btn_text = tr("Синхронизировать");
             btn_style = QStringLiteral(
                 "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); "
-                "border: 1px solid #2A3B52; color: #E0E8F0; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
+                "border: 1px solid #2A3B52; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
                 "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border-color: #00D2FF; color: #FFFFFF; }");
             break;
         }
@@ -2086,7 +2086,7 @@ void StormSaveSyncDialog::OnTimeMachineClicked() {
         tr("Автоматические снимки сохранений создаются при каждом запуске и выходе из игры (хранится до 5 последних копий на игру). Вы также можете создать снимок вручную или откатить сохранение к любой точке."),
         &dlg);
     info_lbl->setWordWrap(true);
-    info_lbl->setStyleSheet(QStringLiteral("color: #CBD5E1; font-size: 12px;"));
+    info_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px;"));
     vbox->addWidget(info_lbl);
 
     auto* table = new QTableWidget(&dlg);

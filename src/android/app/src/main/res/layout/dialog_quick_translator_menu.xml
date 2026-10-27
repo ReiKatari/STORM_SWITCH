@@ -131,7 +131,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/translator_quick_now_title"
-                            android:textColor="#F8FAFC"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -187,7 +187,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/translator_quick_auto_title"
-                            android:textColor="#F8FAFC"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -261,7 +261,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/translator_quick_model_title"
-                            android:textColor="#F8FAFC"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -318,7 +318,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/translator_quick_roi_title"
-                            android:textColor="#F8FAFC"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -374,7 +374,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/translator_quick_tts_title"
-                            android:textColor="#F8FAFC"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -432,7 +432,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/translator_quick_float_title"
-                            android:textColor="#F8FAFC"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 

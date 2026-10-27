@@ -33,6 +33,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_night_on_surface</item>
         <item name="colorOutline">@color/storm_night_outline</item>
         <item name="android:textColorPrimary">@color/storm_night_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_night_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_night_on_surface</item>
+        <item name="android:textColorHint">@color/storm_night_on_surface</item>
 
         <item name="colorError">@color/eden_error</item>
         <item name="colorErrorContainer">@color/eden_error</item>
@@ -71,6 +74,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_dark_on_surface</item>
         <item name="colorOutline">@color/storm_dark_outline</item>
         <item name="android:textColorPrimary">@color/storm_dark_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_dark_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_dark_on_surface</item>
+        <item name="android:textColorHint">@color/storm_dark_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -92,6 +98,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_night_on_surface</item>
         <item name="colorOutline">@color/storm_night_outline</item>
         <item name="android:textColorPrimary">@color/storm_night_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_night_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_night_on_surface</item>
+        <item name="android:textColorHint">@color/storm_night_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -117,6 +126,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_day_on_surface</item>
         <item name="colorOutline">@color/storm_day_outline</item>
         <item name="android:textColorPrimary">@color/storm_day_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_day_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_day_on_surface</item>
+        <item name="android:textColorHint">@color/storm_day_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
         <item name="elevationOverlayEnabled">false</item>
     </style>
@@ -139,6 +151,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_midnight_on_surface</item>
         <item name="colorOutline">@color/storm_midnight_outline</item>
         <item name="android:textColorPrimary">@color/storm_midnight_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_midnight_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_midnight_on_surface</item>
+        <item name="android:textColorHint">@color/storm_midnight_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -160,6 +175,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_matrix_on_surface</item>
         <item name="colorOutline">@color/storm_matrix_outline</item>
         <item name="android:textColorPrimary">@color/storm_matrix_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_matrix_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_matrix_on_surface</item>
+        <item name="android:textColorHint">@color/storm_matrix_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -181,6 +199,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_cyberpunk_on_surface</item>
         <item name="colorOutline">@color/storm_cyberpunk_outline</item>
         <item name="android:textColorPrimary">@color/storm_cyberpunk_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_cyberpunk_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_cyberpunk_on_surface</item>
+        <item name="android:textColorHint">@color/storm_cyberpunk_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -202,6 +223,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_fantasy_on_surface</item>
         <item name="colorOutline">@color/storm_fantasy_outline</item>
         <item name="android:textColorPrimary">@color/storm_fantasy_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_fantasy_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_fantasy_on_surface</item>
+        <item name="android:textColorHint">@color/storm_fantasy_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -223,6 +247,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_warhammer_40k_on_surface</item>
         <item name="colorOutline">@color/storm_warhammer_40k_outline</item>
         <item name="android:textColorPrimary">@color/storm_warhammer_40k_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_warhammer_40k_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_warhammer_40k_on_surface</item>
+        <item name="android:textColorHint">@color/storm_warhammer_40k_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -244,6 +271,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_gothic_on_surface</item>
         <item name="colorOutline">@color/storm_gothic_outline</item>
         <item name="android:textColorPrimary">@color/storm_gothic_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_gothic_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_gothic_on_surface</item>
+        <item name="android:textColorHint">@color/storm_gothic_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -265,6 +295,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_neon_on_surface</item>
         <item name="colorOutline">@color/storm_neon_outline</item>
         <item name="android:textColorPrimary">@color/storm_neon_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_neon_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_neon_on_surface</item>
+        <item name="android:textColorHint">@color/storm_neon_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -286,6 +319,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_crimson_on_surface</item>
         <item name="colorOutline">@color/storm_crimson_outline</item>
         <item name="android:textColorPrimary">@color/storm_crimson_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_crimson_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_crimson_on_surface</item>
+        <item name="android:textColorHint">@color/storm_crimson_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -307,6 +343,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_emerald_on_surface</item>
         <item name="colorOutline">@color/storm_emerald_outline</item>
         <item name="android:textColorPrimary">@color/storm_emerald_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_emerald_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_emerald_on_surface</item>
+        <item name="android:textColorHint">@color/storm_emerald_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -328,6 +367,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_glacier_on_surface</item>
         <item name="colorOutline">@color/storm_glacier_outline</item>
         <item name="android:textColorPrimary">@color/storm_glacier_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_glacier_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_glacier_on_surface</item>
+        <item name="android:textColorHint">@color/storm_glacier_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 
@@ -349,6 +391,9 @@
         <item name="colorOnSurfaceVariant">@color/storm_amethyst_on_surface</item>
         <item name="colorOutline">@color/storm_amethyst_outline</item>
         <item name="android:textColorPrimary">@color/storm_amethyst_on_surface</item>
+        <item name="android:textColorSecondary">@color/storm_amethyst_on_surface</item>
+        <item name="android:textColorTertiary">@color/storm_amethyst_on_surface</item>
+        <item name="android:textColorHint">@color/storm_amethyst_on_surface</item>
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
     </style>
 

@@ -59,7 +59,6 @@
                 android:layout_marginTop="3dp"
                 android:textAlignment="viewStart"
                 android:textSize="13sp"
-                android:alpha="0.75"
                 tools:text="@string/app_disclaimer" />
 
             <com.google.android.material.textview.MaterialTextView

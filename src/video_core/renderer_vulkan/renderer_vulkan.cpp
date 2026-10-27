@@ -385,10 +385,16 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
 }
 
 void RendererVulkan::RefreshPresent() {
-    if (last_framebuffers.empty() || !render_window.IsShown()) {
+    if (last_framebuffers.empty()) {
         return;
     }
     const auto framebuffers_copy = last_framebuffers;
+    if (renderer_settings.screenshot_requested) {
+        RenderScreenshot(framebuffers_copy);
+    }
+    if (!render_window.IsShown()) {
+        return;
+    }
     Composite(framebuffers_copy);
 }
 
@@ -418,6 +424,8 @@ vk::Buffer RendererVulkan::RenderToBuffer(std::span<const Tegra::FramebufferConf
                                           VkDeviceSize buffer_size) {
     auto frame = [&]() {
         Frame f{};
+        f.width = layout.width;
+        f.height = layout.height;
         f.image =
             CreateWrappedImage(memory_allocator, VkExtent2D{layout.width, layout.height}, format);
         f.image_view = CreateWrappedImageView(device, f.image, format);

@@ -123,9 +123,9 @@ public:
                 "    border-radius: 8px;"
                 "}"));
             m_title_label->setStyleSheet(QStringLiteral(
-                "font-family: 'Segoe UI'; font-size: 14px; font-weight: 500; color: #cbd5e1; background: transparent;"));
+                "font-family: 'Segoe UI'; font-size: 14px; font-weight: 500; color: #FFFFFF; background: transparent;"));
             m_sub_label->setStyleSheet(QStringLiteral(
-                "font-family: 'Segoe UI'; font-size: 11px; color: #64748b; background: transparent;"));
+                "font-family: 'Segoe UI'; font-size: 11px; color: #FFFFFF; background: transparent;"));
             m_selected_badge->setVisible(false);
         }
     }
@@ -170,7 +170,7 @@ void OnlineToolsDialog::SetupUI() {
     setStyleSheet(QStringLiteral(
         "QDialog {"
         "    background-color: #0e1117;"
-        "    color: #e2e8f0;"
+        "    color: #FFFFFF;"
         "    font-family: 'Segoe UI';"
         "}"
         "QListWidget {"
@@ -203,7 +203,7 @@ void OnlineToolsDialog::SetupUI() {
         "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #222b3d, stop:1 #161c28);"
         "    border: 1px solid #334155;"
         "    border-radius: 6px;"
-        "    color: #f1f5f9;"
+        "    color: #FFFFFF;"
         "    padding: 7px 18px;"
         "    font-size: 13px;"
         "    font-weight: 500;"
@@ -229,7 +229,7 @@ void OnlineToolsDialog::SetupUI() {
         "}"
         "QPushButton#HeroButton:disabled {"
         "    background: #1e293b;"
-        "    color: #64748b;"
+        "    color: #FFFFFF;"
         "}"));
 
     auto* main_layout = new QVBoxLayout(this);
@@ -267,7 +267,7 @@ void OnlineToolsDialog::SetupUI() {
             : tr("Выберите версию ключей (prod.keys и title.keys) для загрузки и распаковки в каталог keys с мгновенной активацией."),
         header_frame);
     m_header_desc->setWordWrap(true);
-    m_header_desc->setStyleSheet(QStringLiteral("font-size: 11px; color: #94a3b8;"));
+    m_header_desc->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF;"));
     header_text_layout->addWidget(m_header_desc);
 
     header_layout->addLayout(header_text_layout, 1);
@@ -285,7 +285,7 @@ void OnlineToolsDialog::SetupUI() {
     progress_layout->setSpacing(6);
 
     m_status_label = new QLabel(tr("Готово к установке. Выберите версию из списка выше."), this);
-    m_status_label->setStyleSheet(QStringLiteral("font-size: 12px; color: #cbd5e1;"));
+    m_status_label->setStyleSheet(QStringLiteral("font-size: 12px; color: #FFFFFF;"));
     progress_layout->addWidget(m_status_label);
 
     m_progress_bar = new QProgressBar(this);

@@ -478,7 +478,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         hint_3d->setWordWrap(true);
         hint_3d->setAlignment(Qt::AlignCenter);
         hint_3d->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        hint_3d->setStyleSheet(QStringLiteral("background: transparent; color: #888888; font-size: 11px; padding: 2px 6px;"));
+        hint_3d->setStyleSheet(QStringLiteral("background: transparent; color: #FFFFFF; font-size: 11px; padding: 2px 6px;"));
 
         const QString compact_btn_style = QStringLiteral("padding: 3px 8px; font-size: 11px;");
 

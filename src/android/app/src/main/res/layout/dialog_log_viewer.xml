@@ -181,7 +181,7 @@
                     android:layout_height="wrap_content"
                     android:checked="true"
                     android:text="@string/log_viewer_chip_all"
-                    android:textColor="#E2E8F0"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="11sp" />
 
                 <com.google.android.material.chip.Chip

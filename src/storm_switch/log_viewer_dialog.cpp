@@ -230,7 +230,7 @@ void LogViewerDialog::SetupUI() {
 
 void LogViewerDialog::ApplyStormStyles() {
     setStyleSheet(QStringLiteral(
-        "QDialog { background-color: #0A0E17; color: #E0E8F0; font-family: 'Segoe UI', sans-serif; }"
+        "QDialog { background-color: #0A0E17; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }"
         "QRadioButton { color: #B0C4DE; font-size: 12px; font-weight: bold; spacing: 6px; }"
         "QRadioButton:hover { color: #00F0FF; }"
         "QRadioButton:checked { color: #00F0FF; }"
@@ -238,8 +238,8 @@ void LogViewerDialog::ApplyStormStyles() {
         "QRadioButton::indicator:checked { border-color: #00D2FF; background: #00D2FF; }"
         "QLineEdit { background: rgba(255, 255, 255, 0.05); border: 1px solid #20354E; border-radius: 6px; padding: 6px 12px; color: #FFFFFF; font-size: 12px; }"
         "QLineEdit:focus { border: 1px solid #00D2FF; background: rgba(0, 210, 255, 0.08); }"
-        "QPlainTextEdit { background-color: #050811; border: 1px solid #1A2638; border-radius: 8px; color: #E0E8F0; padding: 8px; }"
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); border: 1px solid #2A3B52; color: #E0E8F0; padding: 7px 16px; border-radius: 6px; font-weight: bold; font-size: 12px; }"
+        "QPlainTextEdit { background-color: #050811; border: 1px solid #1A2638; border-radius: 8px; color: #FFFFFF; padding: 8px; }"
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); border: 1px solid #2A3B52; color: #FFFFFF; padding: 7px 16px; border-radius: 6px; font-weight: bold; font-size: 12px; }"
         "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border-color: #00D2FF; color: #FFFFFF; }"
         "QPushButton:pressed { background: #00D2FF; color: #000000; border-color: #38BDF8; }"
         "QScrollBar:vertical { background: #0A0E17; width: 12px; margin: 0; }"

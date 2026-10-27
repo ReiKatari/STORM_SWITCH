@@ -2054,8 +2054,12 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         }
 
                         val gameId = obj.optInt("id")
+                        if (gameId == 1305 || gameId == 1306 || gameId == 1342 || gameId == 1343 ||
+                            gameId == 1344 || gameId == 1345 || gameId == 1349) {
+                            continue
+                        }
                         val cleanSerial = serialId.uppercase(Locale.ROOT)
-                        val knownVariants = KNOWN_CLOUD_FORMAT_VARIANTS[cleanSerial]
+                        val knownVariants: List<CloudFormatVariant>? = null
 
                         if (knownVariants != null && knownVariants.isNotEmpty()) {
                             // Known multiple formats or format override

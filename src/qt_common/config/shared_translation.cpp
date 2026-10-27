@@ -381,6 +381,42 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
          "エントリー向けマルチコア CPU や低スペック GPU での滑らかさを最大化します。",
          "Maximiza la fluidez en procesadores multinúcleo básicos y GPUs de gama baja."},
 
+        {"Post-Processing Shader:",
+         "Шейдер постобработки:",
+         "مظلل المعالجة اللاحقة:",
+         "Post-Processing-Shader:",
+         "Shader de post-traitement :",
+         "后期处理着色器：",
+         "ポストプロセスシェーダー:",
+         "Shader de posprocesamiento:"},
+
+        {"Applies a RetroArch post-processing shader effect (CRT, scanlines, sharpening, color grading, bloom) to the final rendered image.",
+         "Применяет экранный шейдер постобработки RetroArch (ЭЛТ-монитор, сканлайны, повышение чёткости, цветокоррекция, свечение) к итоговому изображению.",
+         "تطبيق تأثير مظلل المعالجة اللاحقة RetroArch على الصورة النهائية.",
+         "Wendet einen RetroArch-Post-Processing-Shader (CRT, Scanlines, Schärfung, Farbkorrektur) auf das fertige Bild an.",
+         "Applique un shader de post-traitement RetroArch (CRT, scanlines, netteté, étalonnage) à l'image finale.",
+         "对最终渲染画面应用 RetroArch 后期处理着色器效果（CRT、扫描线、锐化、调色、泛光）。",
+         "最終描画映像に RetroArch ポストプロセスシェーダー効果（CRT、スキャンライン、シャープ化、色補正）を適用します。",
+         "Aplica un shader de posprocesamiento RetroArch (CRT, líneas de escaneo, nitidez, etalonaje) a la imagen final."},
+
+        {"Use Optimized Vertex Buffers",
+         "Оптимизированные вершинные буферы",
+         "استخدام مخازن الرؤوس المحسنة",
+         "Optimierte Vertex-Puffer verwenden",
+         "Utiliser des tampons de sommets optimisés",
+         "使用优化的顶点缓冲区",
+         "最適化された頂点バッファを使用",
+         "Usar búferes de vértices optimizados"},
+
+        {"Optimizes vertex buffer memory allocations and uploads in Vulkan to reduce CPU overhead and improve geometry throughput.",
+         "Оптимизирует выделение памяти и загрузку вершинных буферов в Vulkan для снижения нагрузки на ЦП и ускорения обработки геометрии.",
+         "تحسين تخصيص وتحميل مخازن الرؤوس في Vulkan لتقليل حمل المعالج وتسريع الهندسة.",
+         "Optimiert die Speicherzuweisung und das Hochladen von Vertex-Puffern in Vulkan, um die CPU-Last zu senken.",
+         "Optimise l'allocation et le transfert des tampons de sommets sous Vulkan pour réduire la charge CPU.",
+         "优化 Vulkan 中的顶点缓冲区内存分配与上传，降低 CPU 开销并提升几何吞吐量。",
+         "Vulkan における頂点バッファのメモリ割り当てとアップロードを最適化し、CPU 負荷を軽減します。",
+         "Optimiza la asignación y carga de búferes de vértices en Vulkan para reducir la carga de la CPU."},
+
         {"Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.",
          "Снижает температуру ЦП и ГПУ на 10-15°C во время интервалов ожидания кадров без падения целевого фреймрейта.",
          "تقليل حرارة المعالج والرسوميات بمقدار 10-15 درجة أثناء فترات انتظار الإطارات دون انخفاض معدل الإطارات.",
@@ -863,6 +899,12 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
               "quality and performance consistency in some games."));
     INSERT(Settings, fix_bloom_effects, tr("Fix bloom effects"), tr("Removes bloom in Burnout."));
 
+    INSERT(Settings, post_processing_shader, tr("Post-Processing Shader:"),
+           tr("Applies a RetroArch post-processing shader effect (CRT, scanlines, sharpening, color grading, bloom) to the final rendered image."));
+#ifdef __ANDROID__
+    INSERT(Settings, use_optimized_vertex_buffers, tr("Use Optimized Vertex Buffers"),
+           tr("Optimizes vertex buffer memory allocations and uploads in Vulkan to reduce CPU overhead and improve geometry throughput."));
+#endif
     INSERT(Settings, rescale_hack, tr("Enable Legacy Rescale Pass"),
            tr("May fix rescale issues in some games by relying on behavior from the previous "
               "implementation.\n"

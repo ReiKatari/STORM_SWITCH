@@ -820,43 +820,87 @@ void GRenderWindow::ReleaseRenderTarget() {
 }
 
 void GRenderWindow::CaptureScreenshot(const QString& screenshot_path) {
-    auto& renderer = QtCommon::system->Renderer();
-
-    if (renderer.IsScreenshotPending()) {
-        LOG_WARNING(Render,
-                    "A screenshot is already requested or in progress, ignoring the request");
+    if (!QtCommon::system || !QtCommon::system->IsPoweredOn()) {
         return;
     }
+    auto& renderer = QtCommon::system->Renderer();
 
-    const Layout::FramebufferLayout layout{[]() {
+    const bool is_savestate =
+        screenshot_path.contains(QStringLiteral("savestates"), Qt::CaseInsensitive);
+
+    if (renderer.IsScreenshotPending()) {
+        if (is_savestate) {
+            QtCommon::system->GPU().RefreshPresent();
+        } else {
+            LOG_WARNING(Render,
+                        "A screenshot is already requested or in progress, ignoring the request");
+            return;
+        }
+    }
+
+    const Layout::FramebufferLayout layout{[is_savestate]() {
+        if (is_savestate) {
+            return Layout::DefaultFrameLayout(640, 360);
+        }
         u32 height = UISettings::values.screenshot_height.GetValue();
         if (height == 0) {
             height = Settings::IsDockedMode() ? Layout::ScreenDocked::Height
                                               : Layout::ScreenUndocked::Height;
-            height *= Settings::values.resolution_info.up_factor;
+            const float up_f = std::max(1.0f, Settings::values.resolution_info.up_factor);
+            height = static_cast<u32>(static_cast<float>(height) * up_f);
         }
         const u32 width =
             UISettings::CalculateWidth(height, Settings::values.aspect_ratio.GetValue());
-        return Layout::DefaultFrameLayout(width, height);
+        return Layout::DefaultFrameLayout(std::max(width, 640u), std::max(height, 360u));
     }()};
 
-    screenshot_image = QImage(QSize(layout.width, layout.height), QImage::Format_RGB32);
+    struct ScreenshotSync {
+        std::mutex mtx;
+        std::condition_variable cv;
+        bool done{false};
+    };
+    auto sync_state = std::make_shared<ScreenshotSync>();
+    auto shared_img = std::make_shared<QImage>(QSize(layout.width, layout.height), QImage::Format_RGB32);
+    screenshot_image = *shared_img;
+
     renderer.RequestScreenshot(
-        screenshot_image.bits(),
-        [=, this](bool invert_y) {
-            const std::string std_screenshot_path = screenshot_path.toStdString();
+        shared_img->bits(),
+        [shared_img, screenshot_path, is_savestate, sync_state](bool invert_y) {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
-            if (screenshot_image.flipped(invert_y ? Qt::Vertical : (Qt::Orientations)0)
-                    .save(screenshot_path)) {
+            QImage img = shared_img->flipped(invert_y ? Qt::Vertical : (Qt::Orientations)0);
 #else
-            if (screenshot_image.mirrored(false, invert_y).save(screenshot_path)) {
+            QImage img = shared_img->mirrored(false, invert_y);
 #endif
-                LOG_INFO(Frontend, "Screenshot saved to \"{}\"", std_screenshot_path);
+            if (is_savestate) {
+                const std::string std_screenshot_path = screenshot_path.toStdString();
+                if (img.save(screenshot_path, "PNG")) {
+                    LOG_INFO(Frontend, "Savestate preview saved to \"{}\"", std_screenshot_path);
+                } else {
+                    LOG_ERROR(Frontend, "Failed to save savestate preview to \"{}\"", std_screenshot_path);
+                }
+                {
+                    std::scoped_lock lk{sync_state->mtx};
+                    sync_state->done = true;
+                }
+                sync_state->cv.notify_all();
             } else {
-                LOG_ERROR(Frontend, "Failed to save screenshot to \"{}\"", std_screenshot_path);
+                std::thread([img = std::move(img), screenshot_path]() {
+                    const std::string std_screenshot_path = screenshot_path.toStdString();
+                    if (img.save(screenshot_path)) {
+                        LOG_INFO(Frontend, "Screenshot saved to \"{}\"", std_screenshot_path);
+                    } else {
+                        LOG_ERROR(Frontend, "Failed to save screenshot to \"{}\"", std_screenshot_path);
+                    }
+                }).detach();
             }
         },
         layout);
+
+    if (is_savestate) {
+        QtCommon::system->GPU().RefreshPresent();
+        std::unique_lock lk{sync_state->mtx};
+        sync_state->cv.wait_for(lk, std::chrono::milliseconds(250), [&] { return sync_state->done; });
+    }
 }
 
 void GRenderWindow::CaptureFrame(std::function<void(const QImage&)> callback) {

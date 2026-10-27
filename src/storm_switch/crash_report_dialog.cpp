@@ -25,10 +25,10 @@ CrashReportDialog::CrashReportDialog(QWidget* parent, const CrashReportInfo& inf
     setMinimumSize(680, 480);
 
     setStyleSheet(QStringLiteral(
-        "QDialog { background-color: #0B0F19; color: #E2E8F0; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
+        "QDialog { background-color: #0B0F19; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
         "QTextEdit { background-color: #0A0E17; border: 1px solid #1E293B; border-radius: 6px; color: #38BDF8; font-family: 'Consolas', 'Courier New', monospace; font-size: 11px; padding: 8px; }"
         "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A); "
-        "border: 1px solid #334155; border-radius: 6px; color: #F1F5F9; padding: 7px 16px; font-weight: 500; }"
+        "border: 1px solid #334155; border-radius: 6px; color: #FFFFFF; padding: 7px 16px; font-weight: 500; }"
         "QPushButton:hover { border: 1px solid #00D2FF; color: #00D2FF; background: #1E293B; }"
         "QPushButton:pressed { background: #0284C7; color: #FFFFFF; }"
     ));
@@ -58,7 +58,7 @@ void CrashReportDialog::SetupUI(const CrashReportInfo& info) {
         ? QStringLiteral("Title ID: 0x%1").arg(info.title_id, 16, 16, QLatin1Char('0')).toUpper()
         : QStringLiteral("%1 (0x%2)").arg(info.game_name).arg(info.title_id, 16, 16, QLatin1Char('0')).toUpper();
     auto* game_lbl = new QLabel(game_desc, this);
-    game_lbl->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 12px;"));
+    game_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px;"));
     title_box->addWidget(game_lbl);
 
     header_layout->addLayout(title_box, 1);
@@ -87,7 +87,7 @@ void CrashReportDialog::SetupUI(const CrashReportInfo& info) {
 
     // Registers and Callstack
     auto* reg_header = new QLabel(tr("Дамп регистров CPU ARM64 и стек вызовов:"), this);
-    reg_header->setStyleSheet(QStringLiteral("font-weight: bold; color: #CBD5E1;"));
+    reg_header->setStyleSheet(QStringLiteral("font-weight: bold; color: #FFFFFF;"));
     main_layout->addWidget(reg_header);
 
     m_register_view = new QTextEdit(this);

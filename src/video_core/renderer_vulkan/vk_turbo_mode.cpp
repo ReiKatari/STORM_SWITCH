@@ -113,8 +113,8 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
     LOG_INFO(Render_Vulkan, "STORM Turbo Mode enabled: Mobile GPU turbo active (CPU thermal protection preserved)");
 #endif
 
-#ifndef __ANDROID__
-    // Desktop / Handheld PC (ROG Ally AMD RDNA3, Steam Deck, Legion Go):
+#if defined(__linux__) && !defined(__ANDROID__)
+    // Linux Handheld PC (ROG Ally AMD RDNA3, Steam Deck, Legion Go):
     // Keep a lightweight Vulkan auxiliary command queue alive to prevent aggressive RDNA3/Arc
     // power-saving downclocks (800 MHz drop) between CPU-limited frames.
     try {

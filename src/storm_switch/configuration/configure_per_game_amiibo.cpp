@@ -101,7 +101,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
     left_layout->setSpacing(4);
 
     auto* list_hint = new QLabel(tr("Отметьте галочками нужные Amiibo для автоматической загрузки и привязки к игре:"), this);
-    list_hint->setStyleSheet(QStringLiteral("color: #a0aec0; font-size: 9pt;"));
+    list_hint->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 9pt;"));
     left_layout->addWidget(list_hint);
 
     m_amiibo_list = new QListWidget(this);
@@ -141,7 +141,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
     details_layout->addWidget(m_type_label);
 
     m_status_badge = new QLabel(tr("Статус: Ожидание"), this);
-    m_status_badge->setStyleSheet(QStringLiteral("color: #a0aec0; font-weight: bold; padding: 2px 6px; background-color: #1a2336; border-radius: 3px;"));
+    m_status_badge->setStyleSheet(QStringLiteral("color: #FFFFFF; font-weight: bold; padding: 2px 6px; background-color: #1a2336; border-radius: 3px;"));
     details_layout->addWidget(m_status_badge);
 
     // Elevated 3D Reward Card
@@ -176,7 +176,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
     card_layout->addWidget(m_reward_name_label);
 
     m_reward_desc_label = new QLabel(m_reward_card);
-    m_reward_desc_label->setStyleSheet(QStringLiteral("color: #cbd5e1; font-size: 8.5pt; line-height: 1.3;"));
+    m_reward_desc_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 8.5pt; line-height: 1.3;"));
     m_reward_desc_label->setWordWrap(true);
     card_layout->addWidget(m_reward_desc_label);
 

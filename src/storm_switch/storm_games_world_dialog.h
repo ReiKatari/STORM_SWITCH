@@ -73,6 +73,7 @@ private slots:
     void OnSearchFilterChanged(const QString bitand query);
     void OnBrowseDownloadFolder();
     void OnStartDownload();
+    void OnPauseResumeDownload();
     void OnCancelDownload();
     void OnDownloadDataReady();
     void OnDownloadProgress(qint64 received, qint64 total);
@@ -141,12 +142,18 @@ private:
     // Download state
     std::unique_ptr<QFile> output_file;
     QString current_download_path;
+    QString current_part_path;
     QByteArray download_write_buffer;
     QElapsedTimer download_timer;
+    qint64 resume_offset_bytes{0};
+    qint64 expected_total_bytes{0};
     qint64 last_received_bytes{0};
     qint64 last_speed_time{0};
     double current_speed_mbps{0.0};
+    int download_retry_count{0};
     bool is_downloading{false};
+    bool is_paused{false};
+    bool headers_inspected{false};
 
     // UI Widgets
     QLineEdit* search_edit{nullptr};
@@ -177,6 +184,7 @@ private:
     QProgressBar* progress_bar{nullptr};
     QLabel* download_status_label{nullptr};
     QPushButton* download_btn{nullptr};
+    QPushButton* pause_btn{nullptr};
     QPushButton* cancel_btn{nullptr};
     QPushButton* open_folder_btn{nullptr};
 };

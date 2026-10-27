@@ -84,7 +84,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
                 android:textSize="10sp"
-                android:alpha="0.5"
                 android:maxLines="1"
                 android:ellipsize="end"
                 tools:text="01010000002F0002" />

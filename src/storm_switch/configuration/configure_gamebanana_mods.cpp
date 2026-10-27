@@ -122,7 +122,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     // 1. Header Banner
     game_header_label = new QLabel(this);
     game_header_label->setStyleSheet(QStringLiteral(
-        "background-color: #1e293b; color: #f8fafc; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px;"));
+        "background-color: #1e293b; color: #FFFFFF; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px;"));
     main_layout->addWidget(game_header_label);
 
     // 2. View Switcher Bar (Online Catalog vs Installed Mods)
@@ -141,7 +141,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     tab_installed_btn->setCheckable(true);
     tab_installed_btn->setChecked(false);
     tab_installed_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background-color: #1e293b; color: #f8fafc; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+        "QPushButton { background-color: #1e293b; color: #FFFFFF; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
         "QPushButton:hover { background-color: #334155; }"
     ));
 
@@ -227,7 +227,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     auto* details_header_label = new QLabel(tr("📄 Описание и установка мода"), this);
     details_header_label->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 10pt; color: #38bdf8;"));
     auto* close_details_btn = new QPushButton(tr("✖ Скрыть описание"), this);
-    close_details_btn->setStyleSheet(QStringLiteral("padding: 4px 12px; font-weight: bold; background-color: #334155; color: #f8fafc; border-radius: 4px;"));
+    close_details_btn->setStyleSheet(QStringLiteral("padding: 4px 12px; font-weight: bold; background-color: #334155; color: #FFFFFF; border-radius: 4px;"));
     connect(close_details_btn, &QPushButton::clicked, [this]() {
         if (details_widget) {
             details_widget->setVisible(false);
@@ -916,7 +916,7 @@ void ConfigureGameBananaMods::OnSwitchView(int view_index) {
             "QPushButton:hover { background-color: #38bdf8; }"
         ));
         tab_installed_btn->setStyleSheet(QStringLiteral(
-            "QPushButton { background-color: #1e293b; color: #f8fafc; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+            "QPushButton { background-color: #1e293b; color: #FFFFFF; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
             "QPushButton:hover { background-color: #334155; }"
         ));
         view_stack->setCurrentIndex(0);
@@ -928,7 +928,7 @@ void ConfigureGameBananaMods::OnSwitchView(int view_index) {
             "QPushButton:hover { background-color: #38bdf8; }"
         ));
         tab_online_btn->setStyleSheet(QStringLiteral(
-            "QPushButton { background-color: #1e293b; color: #f8fafc; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+            "QPushButton { background-color: #1e293b; color: #FFFFFF; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
             "QPushButton:hover { background-color: #334155; }"
         ));
         view_stack->setCurrentIndex(1);

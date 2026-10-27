@@ -206,6 +206,17 @@ void BufferCache<P>::InvalidateForLoadState(std::span<const std::pair<DAddr, std
         gpu_modified_ranges.Subtract(addr, safe_size);
         WriteMemory(addr, safe_size);
     }
+    for (const auto& [slot_id, buffer] : slot_buffers) {
+        if (buffer && buffer->SizeBytes() > 0 && buffer->CpuAddr() != 0 &&
+            buffer->CpuAddr() < kMaxTrackableDAddr) {
+            const DAddr cpu_addr = buffer->CpuAddr();
+            const std::size_t safe_size =
+                static_cast<std::size_t>(std::min<u64>(buffer->SizeBytes(), kMaxTrackableDAddr - cpu_addr));
+            ClearDownload(cpu_addr, safe_size);
+            gpu_modified_ranges.Subtract(cpu_addr, safe_size);
+            WriteMemory(cpu_addr, safe_size);
+        }
+    }
     for (auto& ch : channel_storage) {
         ch.dirty_uniform_buffers.fill(~u32{0});
         ch.fast_bound_uniform_buffers.fill(0);

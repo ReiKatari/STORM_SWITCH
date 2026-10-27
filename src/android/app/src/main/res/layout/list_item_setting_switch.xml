@@ -55,7 +55,6 @@
                     android:layout_marginTop="3dp"
                     android:textAlignment="viewStart"
                     android:textSize="13sp"
-                    android:alpha="0.75"
                     tools:text="@string/frame_limit_enable_description" />
 
             </LinearLayout>

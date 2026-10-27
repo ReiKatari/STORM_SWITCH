@@ -55,7 +55,6 @@
                 android:textAlignment="viewStart"
                 android:textSize="14sp"
                 android:layout_marginTop="5dp"
-                android:alpha="0.8"
                 tools:text="@string/install_prod_keys_description" />
 
             <com.google.android.material.textview.MaterialTextView

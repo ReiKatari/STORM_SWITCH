@@ -104,7 +104,7 @@ object StormDownloadManager {
         OkHttpClient.Builder()
             .dispatcher(dispatcher)
             .connectionPool(pool)
-            .protocols(listOf(Protocol.HTTP_2, Protocol.HTTP_1_1))
+            .protocols(listOf(Protocol.HTTP_1_1))
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)

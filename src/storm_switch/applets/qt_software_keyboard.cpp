@@ -56,7 +56,7 @@ QtSoftwareKeyboardDialog::QtSoftwareKeyboardDialog(
         "  background: rgba(15, 23, 42, 0.95);"
         "  border: 2px solid rgba(0, 210, 255, 0.6);"
         "  border-radius: 8px;"
-        "  color: #f8fafc;"
+        "  color: #FFFFFF;"
         "  padding: 8px 16px;"
         "  min-height: 52px;"
         "  font-weight: bold;"
@@ -71,7 +71,7 @@ QtSoftwareKeyboardDialog::QtSoftwareKeyboardDialog(
         "  background: rgba(15, 23, 42, 0.95);"
         "  border: 2px solid rgba(0, 210, 255, 0.6);"
         "  border-radius: 8px;"
-        "  color: #f8fafc;"
+        "  color: #FFFFFF;"
         "  padding: 8px 16px;"
         "  font-weight: bold;"
         "}"
@@ -80,7 +80,7 @@ QtSoftwareKeyboardDialog::QtSoftwareKeyboardDialog(
         "  border: 1px solid rgba(255, 255, 255, 0.15);"
         "  border-bottom: 2px solid rgba(0, 0, 0, 0.5);"
         "  border-radius: 6px;"
-        "  color: #f1f5f9;"
+        "  color: #FFFFFF;"
         "  font-weight: bold;"
         "  padding: 4px;"
         "}"
@@ -102,7 +102,7 @@ QtSoftwareKeyboardDialog::QtSoftwareKeyboardDialog(
         "QPushButton#button_ok:hover, QPushButton#button_ok_shift:hover, QPushButton#button_ok_num:hover {"
         "  background: #38bdf8;"
         "}"
-        "QLabel { color: #94a3b8; font-weight: 600; }"
+        "QLabel { color: #FFFFFF; font-weight: 600; }"
     ));
 
     keyboard_buttons = {{
@@ -655,7 +655,7 @@ void QtSoftwareKeyboardDialog::RescaleKeyboardElements(float width, float height
         "  background: rgba(15, 23, 42, 0.95);"
         "  border: 2px solid rgba(0, 210, 255, 0.6);"
         "  border-radius: 8px;"
-        "  color: #f8fafc;"
+        "  color: #FFFFFF;"
         "  padding: 6px 16px;"
         "  min-height: %1px;"
         "  font-size: %2px;"
@@ -672,7 +672,7 @@ void QtSoftwareKeyboardDialog::RescaleKeyboardElements(float width, float height
         "  border: 1px solid rgba(255, 255, 255, 0.15);"
         "  border-bottom: 2px solid rgba(0, 0, 0, 0.5);"
         "  border-radius: 6px;"
-        "  color: #f1f5f9;"
+        "  color: #FFFFFF;"
         "  font-size: %3px;"
         "  font-weight: bold;"
         "  padding: 2px;"
@@ -702,7 +702,7 @@ void QtSoftwareKeyboardDialog::RescaleKeyboardElements(float width, float height
         "QPushButton#button_ok:hover, QPushButton#button_ok_shift:hover, QPushButton#button_ok_num:hover {"
         "  background: #38bdf8;"
         "}"
-        "QLabel { color: #94a3b8; font-weight: 600; font-size: %5px; }"
+        "QLabel { color: #FFFFFF; font-weight: 600; font-size: %5px; }"
     ).arg(static_cast<int>(52 * scale_factor))
      .arg(editor_font_size)
      .arg(char_button_font_size)

@@ -469,27 +469,27 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     setMinimumSize(680, 460);
 
     setStyleSheet(QStringLiteral(
-        "QDialog { background: #0B0F19; color: #F8FAFC; font-family: 'Segoe UI', sans-serif; }"
+        "QDialog { background: #0B0F19; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }"
         "QTabWidget::pane { border: 1px solid #1E293B; background: #0D1424; border-radius: 8px; }"
-        "QTabBar::tab { background: #121826; color: #94A3B8; border: 1px solid #1E293B; border-bottom: none; "
+        "QTabBar::tab { background: #121826; color: #FFFFFF; border: 1px solid #1E293B; border-bottom: none; "
         "               padding: 10px 20px; border-top-left-radius: 8px; border-top-right-radius: 8px; font-weight: 600; font-size: 13px; }"
         "QTabBar::tab:selected { background: #0D1424; color: #00E5FF; border: 1px solid #00E5FF; border-bottom: 2px solid #0D1424; }"
         "QGroupBox { color: #00E5FF; font-weight: bold; border: 1px solid #1E293B; border-radius: 8px; margin-top: 10px; padding-top: 14px; }"
         "QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 5px; }"
-        "QLabel { color: #CBD5E1; font-size: 13px; font-weight: 500; }"
-        "QLineEdit, QTextEdit, QSpinBox { background: #151D30; color: #F8FAFC; border: 1px solid #27354F; border-radius: 6px; padding: 6px 10px; font-size: 13px; }"
+        "QLabel { color: #FFFFFF; font-size: 13px; font-weight: 500; }"
+        "QLineEdit, QTextEdit, QSpinBox { background: #151D30; color: #FFFFFF; border: 1px solid #27354F; border-radius: 6px; padding: 6px 10px; font-size: 13px; }"
         "QLineEdit:focus, QTextEdit:focus, QSpinBox:focus { border: 1px solid #00E5FF; }"
-        "QComboBox { background: #151D30; color: #F8FAFC; border: 1px solid #27354F; border-radius: 6px; padding: 6px 12px; font-size: 13px; }"
-        "QComboBox QAbstractItemView { background: #151D30; color: #F8FAFC; selection-background-color: #2563EB; }"
+        "QComboBox { background: #151D30; color: #FFFFFF; border: 1px solid #27354F; border-radius: 6px; padding: 6px 12px; font-size: 13px; }"
+        "QComboBox QAbstractItemView { background: #151D30; color: #FFFFFF; selection-background-color: #2563EB; }"
         "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2563EB, stop:1 #00D4FF); color: #FFFFFF; border: none; border-radius: 6px; font-weight: 600; padding: 8px 16px; font-size: 13px; }"
         "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1D4ED8, stop:1 #00B4D8); }"
         "QPushButton#actionBtn { background: #059669; }"
         "QPushButton#actionBtn:hover { background: #047857; }"
         "QPushButton#dangerBtn { background: #7F1D1D; border: 1px solid #DC2626; color: #FCA5A5; }"
         "QPushButton#dangerBtn:hover { background: #DC2626; color: #FFFFFF; }"
-        "QPushButton#subtleBtn { background: #1E293B; border: 1px solid #334155; color: #CBD5E1; }"
+        "QPushButton#subtleBtn { background: #1E293B; border: 1px solid #334155; color: #FFFFFF; }"
         "QPushButton#subtleBtn:hover { background: #2563EB; color: #FFFFFF; border-color: #00E5FF; }"
-        "QCheckBox { color: #F8FAFC; font-size: 13px; font-weight: 500; spacing: 8px; }"
+        "QCheckBox { color: #FFFFFF; font-size: 13px; font-weight: 500; spacing: 8px; }"
         "QSlider::groove:horizontal { height: 6px; background: #1E293B; border-radius: 3px; }"
         "QSlider::sub-page:horizontal { background: #00E5FF; border-radius: 3px; }"
         "QSlider::handle:horizontal { background: #FFFFFF; width: 16px; margin: -5px 0; border-radius: 8px; }"
@@ -747,7 +747,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
                                        "• [F9] — Мгновенный перевод экрана / скрыть перевод\n"
                                        "• [F5] — Быстрое сохранение игры (< 20 мс)\n"
                                        "• [F6] — Быстрая загрузка игры"), tab_hud);
-    hotkey_info->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 12px; background: #121826; padding: 12px; border-radius: 6px; border: 1px solid #1E293B;"));
+    hotkey_info->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px; background: #121826; padding: 12px; border-radius: 6px; border: 1px solid #1E293B;"));
     t3_layout->addWidget(hotkey_info);
     t3_layout->addStretch(1);
 
@@ -801,7 +801,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
 
     auto* tts_info = new QLabel(tr("✨ Студийная система озвучки автоматически распознаёт плашку имени говорящего, закрепляет индивидуальный тембр за каждым персонажем игры (сохраняется в voice_cast_<TitleID>.json) и передаёт эмоциональную интонацию реплики (!, ?, ..., шёпот, угроза)."), tab_tts);
     tts_info->setWordWrap(true);
-    tts_info->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 12px; background: #121826; padding: 10px; border-radius: 6px;"));
+    tts_info->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px; background: #121826; padding: 10px; border-radius: 6px;"));
     t4_layout->addWidget(tts_info);
     t4_layout->addStretch(1);
 

@@ -53,7 +53,7 @@ void AmiiboBrowserDialog::SetupUi() {
     setStyleSheet(QStringLiteral(
         "QDialog {"
         "  background-color: #0b0e14;"
-        "  color: #e2e8f0;"
+        "  color: #FFFFFF;"
         "}"
         "QGroupBox {"
         "  font-weight: bold;"
@@ -125,7 +125,7 @@ void AmiiboBrowserDialog::SetupUi() {
         "  background-color: #161d2d;"
         "  border: 1px solid rgba(255, 255, 255, 0.10);"
         "  border-radius: 4px;"
-        "  color: #cbd5e1;"
+        "  color: #FFFFFF;"
         "  font-size: 8.5pt;"
         "}"
         "QProgressBar {"
@@ -256,7 +256,7 @@ void AmiiboBrowserDialog::SetupUi() {
     details_layout->addWidget(m_id_label);
 
     m_status_badge = new QLabel(tr("Статус: Ожидание"), this);
-    m_status_badge->setStyleSheet(QStringLiteral("color: #a0aec0; font-weight: bold; padding: 2px 6px; background-color: #1a2336; border-radius: 3px;"));
+    m_status_badge->setStyleSheet(QStringLiteral("color: #FFFFFF; font-weight: bold; padding: 2px 6px; background-color: #1a2336; border-radius: 3px;"));
     details_layout->addWidget(m_status_badge);
 
     // Target game selector
@@ -355,7 +355,7 @@ void AmiiboBrowserDialog::SetupUi() {
     card_layout->addWidget(m_reward_name_label);
 
     m_reward_desc_label = new QLabel(m_reward_card);
-    m_reward_desc_label->setStyleSheet(QStringLiteral("color: #cbd5e1; font-size: 8.5pt; line-height: 1.3;"));
+    m_reward_desc_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 8.5pt; line-height: 1.3;"));
     m_reward_desc_label->setWordWrap(true);
     card_layout->addWidget(m_reward_desc_label);
 

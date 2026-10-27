@@ -5,8 +5,8 @@
     <!-- Synthwave / Eden Theme Base -->
     <color name="synthwave_background">#0C101A</color>
     <color name="synthwave_surface">#161B26</color>
-    <color name="synthwave_text_primary">#F1F5F9</color>
-    <color name="synthwave_text_secondary">#94A3B8</color>
+    <color name="synthwave_text_primary">#FFFFFF</color>
+    <color name="synthwave_text_secondary">#FFFFFF</color>
     <color name="synthwave_neon_cyan">#00F0FF</color>
     <color name="synthwave_neon_pink">#FF2A85</color>
     <color name="synthwave_neon_red">#F43F5E</color>
@@ -19,7 +19,7 @@
     <color name="storm_dark_background">#0F172A</color>
     <color name="storm_dark_surface">#1E293B</color>
     <color name="storm_dark_surface_variant">#25334D</color>
-    <color name="storm_dark_on_surface">#F8FAFC</color>
+    <color name="storm_dark_on_surface">#FFFFFF</color>
     <color name="storm_dark_outline">#334155</color>
 
     <!-- STORM NIGHT -->
@@ -29,7 +29,7 @@
     <color name="storm_night_background">#0A0E17</color>
     <color name="storm_night_surface">#111827</color>
     <color name="storm_night_surface_variant">#1F2937</color>
-    <color name="storm_night_on_surface">#F1F5F9</color>
+    <color name="storm_night_on_surface">#FFFFFF</color>
     <color name="storm_night_outline">#374151</color>
 
     <!-- STORM DAY -->
@@ -39,7 +39,7 @@
     <color name="storm_day_background">#F8FAFC</color>
     <color name="storm_day_surface">#FFFFFF</color>
     <color name="storm_day_surface_variant">#F1F5F9</color>
-    <color name="storm_day_on_surface">#0F172A</color>
+    <color name="storm_day_on_surface">#000000</color>
     <color name="storm_day_outline">#CBD5E1</color>
 
     <!-- STORM MIDNIGHT (Deep Velvet Violet & Electric Purple) -->
@@ -49,7 +49,7 @@
     <color name="storm_midnight_background">#0B0914</color>
     <color name="storm_midnight_surface">#161128</color>
     <color name="storm_midnight_surface_variant">#241B42</color>
-    <color name="storm_midnight_on_surface">#F1F5F9</color>
+    <color name="storm_midnight_on_surface">#FFFFFF</color>
     <color name="storm_midnight_outline">#4A3875</color>
 
     <!-- STORM MATRIX (Dark Emerald & Matrix Green) -->
@@ -59,7 +59,7 @@
     <color name="storm_matrix_background">#05100B</color>
     <color name="storm_matrix_surface">#0B1F16</color>
     <color name="storm_matrix_surface_variant">#123324</color>
-    <color name="storm_matrix_on_surface">#F0FDF4</color>
+    <color name="storm_matrix_on_surface">#FFFFFF</color>
     <color name="storm_matrix_outline">#166534</color>
 
     <!-- STORM CYBERPUNK (Night City Yellow & Cyan/Neon) -->
@@ -69,7 +69,7 @@
     <color name="storm_cyberpunk_background">#08090D</color>
     <color name="storm_cyberpunk_surface">#12151E</color>
     <color name="storm_cyberpunk_surface_variant">#1C2130</color>
-    <color name="storm_cyberpunk_on_surface">#E0E6ED</color>
+    <color name="storm_cyberpunk_on_surface">#FFFFFF</color>
     <color name="storm_cyberpunk_outline">#FEE715</color>
 
     <!-- STORM FANTASY (Royal Gold & Deep Night) -->
@@ -79,7 +79,7 @@
     <color name="storm_fantasy_background">#120E08</color>
     <color name="storm_fantasy_surface">#201A10</color>
     <color name="storm_fantasy_surface_variant">#332817</color>
-    <color name="storm_fantasy_on_surface">#FEF3C7</color>
+    <color name="storm_fantasy_on_surface">#FFFFFF</color>
     <color name="storm_fantasy_outline">#B45309</color>
 
     <!-- STORM WARHAMMER 40K (Imperial Gothic Gold & Titanium) -->
@@ -89,7 +89,7 @@
     <color name="storm_warhammer_40k_background">#111215</color>
     <color name="storm_warhammer_40k_surface">#1D1E24</color>
     <color name="storm_warhammer_40k_surface_variant">#2C2E38</color>
-    <color name="storm_warhammer_40k_on_surface">#F3F4F6</color>
+    <color name="storm_warhammer_40k_on_surface">#FFFFFF</color>
     <color name="storm_warhammer_40k_outline">#85702A</color>
 
     <!-- STORM GOTHIC (Ruby Blood Red & Deep Graphite) -->
@@ -99,7 +99,7 @@
     <color name="storm_gothic_background">#09090B</color>
     <color name="storm_gothic_surface">#18181B</color>
     <color name="storm_gothic_surface_variant">#27272A</color>
-    <color name="storm_gothic_on_surface">#F4F4F5</color>
+    <color name="storm_gothic_on_surface">#FFFFFF</color>
     <color name="storm_gothic_outline">#3F3F46</color>
 
     <!-- STORM NEON (Electric Lime & Teal) -->
@@ -109,7 +109,7 @@
     <color name="storm_neon_background">#050D0A</color>
     <color name="storm_neon_surface">#0B1A14</color>
     <color name="storm_neon_surface_variant">#132C22</color>
-    <color name="storm_neon_on_surface">#F0FDF4</color>
+    <color name="storm_neon_on_surface">#FFFFFF</color>
     <color name="storm_neon_outline">#15803D</color>
 
     <!-- STORM CRIMSON (Fiery Sunset Crimson) -->
@@ -119,7 +119,7 @@
     <color name="storm_crimson_background">#0C0A09</color>
     <color name="storm_crimson_surface">#1C1917</color>
     <color name="storm_crimson_surface_variant">#292524</color>
-    <color name="storm_crimson_on_surface">#FAFAF9</color>
+    <color name="storm_crimson_on_surface">#FFFFFF</color>
     <color name="storm_crimson_outline">#44403C</color>
 
     <!-- STORM EMERALD (Deep Emerald Forest) -->
@@ -129,7 +129,7 @@
     <color name="storm_emerald_background">#061A14</color>
     <color name="storm_emerald_surface">#0B2E23</color>
     <color name="storm_emerald_surface_variant">#0F3F31</color>
-    <color name="storm_emerald_on_surface">#ECFDF5</color>
+    <color name="storm_emerald_on_surface">#FFFFFF</color>
     <color name="storm_emerald_outline">#047857</color>
 
     <!-- STORM GLACIER (Arctic Glacier Ice) -->
@@ -139,7 +139,7 @@
     <color name="storm_glacier_background">#081A24</color>
     <color name="storm_glacier_surface">#0C2838</color>
     <color name="storm_glacier_surface_variant">#12384E</color>
-    <color name="storm_glacier_on_surface">#F0F9FF</color>
+    <color name="storm_glacier_on_surface">#FFFFFF</color>
     <color name="storm_glacier_outline">#0284C7</color>
 
     <!-- STORM AMETHYST (Royal Amethyst Fuchsia) -->
@@ -149,6 +149,6 @@
     <color name="storm_amethyst_background">#15081C</color>
     <color name="storm_amethyst_surface">#250E32</color>
     <color name="storm_amethyst_surface_variant">#39164C</color>
-    <color name="storm_amethyst_on_surface">#FDF4FF</color>
+    <color name="storm_amethyst_on_surface">#FFFFFF</color>
     <color name="storm_amethyst_outline">#A21CAF</color>
 </resources>

@@ -319,7 +319,7 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         btn->setStyleSheet(QStringLiteral(
             "QPushButton {"
             "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1E293B, stop:1 #0F172A);"
-            "    color: #F8FAFC;"
+            "    color: #FFFFFF;"
             "    font-weight: 600;"
             "    font-size: 11.5px;"
             "    padding: 5px 10px;"
@@ -468,6 +468,9 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     };
 
     for (const auto setting : Settings::values.linkage.by_category[Settings::Category::Renderer]) {
+        if (setting->Id() == Settings::values.post_processing_shader.Id()) {
+            continue;
+        }
         ConfigurationShared::Widget* widget = [&]() {
             if (setting->Id() == Settings::values.fsr_sharpening_slider.Id()) {
                 // FSR needs a reversed slider and a 0.5 multiplier

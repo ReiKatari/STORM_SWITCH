@@ -301,7 +301,6 @@
                     android:layout_weight="1"
                     android:gravity="start|center_vertical"
                     android:textSize="11sp"
-                    android:alpha="0.8"
                     android:singleLine="true"
                     android:ellipsize="end"
                     android:textColor="?attr/colorOnSurface"
@@ -444,7 +443,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:textSize="11sp"
-                    android:alpha="0.8"
                     android:textColor="?attr/colorOnSurface"
                     tools:text="Установлено: 12 Amiibo" />
 

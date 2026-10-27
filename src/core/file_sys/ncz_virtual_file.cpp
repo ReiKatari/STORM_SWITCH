@@ -651,18 +651,20 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                     std::memset(data + bytes_read + read, 0, copy_size - read);
                 }
             } else {
-                constexpr std::size_t CACHE_SLOTS = 64;
-                std::size_t slot = block_index % CACHE_SLOTS;
+                constexpr std::size_t MAX_CACHED_BLOCKS = 64;
                 bool hit = false;
                 {
                     std::unique_lock<std::mutex> cache_lock(cache_mutex);
-                    if (slot < block_cache.size() && block_cache[slot].index == block_index && !block_cache[slot].data.empty()) {
-                        const auto& cached_entry = block_cache[slot];
-                        std::size_t available = (cached_entry.data.size() > block_offset) ? (cached_entry.data.size() - block_offset) : 0;
-                        copy_size = std::min<std::size_t>(copy_size, available);
-                        if (copy_size > 0) {
-                            std::memcpy(data + bytes_read, cached_entry.data.data() + block_offset, copy_size);
-                            hit = true;
+                    for (auto it = block_cache.begin(); it != block_cache.end(); ++it) {
+                        if (it->index == block_index && !it->data.empty()) {
+                            block_cache.splice(block_cache.begin(), block_cache, it);
+                            std::size_t available = (it->data.size() > block_offset) ? (it->data.size() - block_offset) : 0;
+                            copy_size = std::min<std::size_t>(copy_size, available);
+                            if (copy_size > 0) {
+                                std::memcpy(data + bytes_read, it->data.data() + block_offset, copy_size);
+                                hit = true;
+                            }
+                            break;
                         }
                     }
                 }
@@ -679,7 +681,15 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                         break;
                     }
 
-                    std::vector<u8> decomp(expected_decompressed_size);
+                    std::vector<u8> decomp;
+                    {
+                        std::unique_lock<std::mutex> cache_lock(cache_mutex);
+                        if (block_cache.size() >= MAX_CACHED_BLOCKS) {
+                            decomp = std::move(block_cache.back().data);
+                            block_cache.pop_back();
+                        }
+                    }
+                    decomp.resize(expected_decompressed_size);
                     if (!DecompressZstdBlock(tls_compressed.data(), block.compressed_size, decomp.data(), expected_decompressed_size)) {
                         LOG_ERROR(Service_FS, "ZSTD decompression failed at block {} (size: {}, expected: {})", block_index, block.compressed_size, expected_decompressed_size);
                         std::memset(data + bytes_read, 0, copy_size);
@@ -697,10 +707,7 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
 
                     {
                         std::unique_lock<std::mutex> cache_lock(cache_mutex);
-                        if (block_cache.size() < CACHE_SLOTS) {
-                            block_cache.resize(CACHE_SLOTS, {SIZE_MAX, {}});
-                        }
-                        block_cache[slot] = {block_index, std::move(decomp)};
+                        block_cache.push_front(BlockCacheEntry{block_index, std::move(decomp)});
                         last_accessed_block = block_index;
                     }
                 }

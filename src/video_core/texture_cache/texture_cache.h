@@ -755,6 +755,30 @@ void TextureCache<P>::InvalidateForLoadState(std::span<const std::pair<DAddr, st
             }
         });
     }
+    for (auto [image_id, image] : slot_images) {
+        if (!image_id || image_id == NULL_IMAGE_ID || image_id == CORRUPT_ID) {
+            continue;
+        }
+        if (False(image->flags & ImageFlagBits::Registered) ||
+            True(image->flags & ImageFlagBits::Sparse) ||
+            image->guest_size_bytes == 0 || image->cpu_addr == 0) {
+            continue;
+        }
+        bool overlaps_restored = false;
+        for (const auto& [addr, sz] : sequences) {
+            if (image->Overlaps(addr, sz)) {
+                overlaps_restored = true;
+                break;
+            }
+        }
+        if (overlaps_restored) {
+            image->flags &= ~ImageFlagBits::GpuModified;
+            image->flags |= ImageFlagBits::CpuModified;
+            if (True(image->flags & ImageFlagBits::Tracked)) {
+                UntrackImage(*image, image_id);
+            }
+        }
+    }
     for (auto& ch : channel_storage) {
         ch.graphics_image_table.Invalidate();
         ch.graphics_sampler_table.Invalidate();

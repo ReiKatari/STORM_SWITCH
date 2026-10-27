@@ -130,7 +130,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
     select_all_button = new QPushButton(tr("Включить все"), this);
     deselect_all_button = new QPushButton(tr("Отключить все"), this);
     status_label = new QLabel(this);
-    status_label->setStyleSheet(QStringLiteral("color: #a0aec0; font-size: 9pt;"));
+    status_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 9pt;"));
 
     bottom_layout->addWidget(select_all_button);
     bottom_layout->addWidget(deselect_all_button);

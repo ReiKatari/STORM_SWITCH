@@ -218,7 +218,6 @@
             android:layout_marginBottom="16dp"
             android:src="@drawable/ic_refresh"
             android:contentDescription="@string/refresh"
-            android:alpha="0.5"
             app:tint="?attr/colorOnSurface" />
 
         <TextView

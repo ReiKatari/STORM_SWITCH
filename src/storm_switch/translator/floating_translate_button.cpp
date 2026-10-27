@@ -180,7 +180,7 @@ void FloatingTranslateButton::leaveEvent(QEvent* /*event*/) {
 void FloatingTranslateButton::contextMenuEvent(QContextMenuEvent* event) {
     QMenu menu(this);
     menu.setStyleSheet(QStringLiteral(
-        "QMenu { background: #0D1424; color: #F8FAFC; border: 1px solid #00E5FF; border-radius: 8px; padding: 6px; }"
+        "QMenu { background: #0D1424; color: #FFFFFF; border: 1px solid #00E5FF; border-radius: 8px; padding: 6px; }"
         "QMenu::item { padding: 8px 24px; border-radius: 4px; font-weight: 500; font-size: 13px; }"
         "QMenu::item:selected { background: #2563EB; color: #FFFFFF; }"
         "QMenu::separator { height: 1px; background: #1E293B; margin: 4px 8px; }"

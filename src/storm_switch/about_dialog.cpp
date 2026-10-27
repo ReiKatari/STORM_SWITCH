@@ -40,7 +40,7 @@ AboutDialog::AboutDialog(QWidget* parent)
         "<a href=\"https://git.eden-emu.dev\"><span style=\"text-decoration: underline; color:#00f2fe;\">Исходный код</span></a> | "
         "<a href=\"https://git.eden-emu.dev/eden-emu/eden/src/branch/master/LICENSE.txt\"><span style=\"text-decoration: underline; color:#00f2fe;\">Лицензия (GPLv3)</span></a></p></body></html>"));
     ui->labelLiability->setText(tr(
-        "<html><head/><body><p><span style=\"font-size:7.5pt; color:#7b8fa3;\">"
+        "<html><head/><body><p><span style=\"font-size:7.5pt; color:#FFFFFF;\">"
         "&quot;Nintendo Switch&quot; является зарегистрированным товарным знаком Nintendo. STORM SWITCH не связан с Nintendo."
         "</span></p></body></html>"));
 }

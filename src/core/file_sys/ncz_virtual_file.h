@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <mutex>
+#include <list>
 #include <vector>
 #include <filesystem>
 #include <future>
@@ -114,7 +115,7 @@ public:
         std::size_t index;
         std::vector<u8> data;
     };
-    mutable std::vector<BlockCacheEntry> block_cache;
+    mutable std::list<BlockCacheEntry> block_cache;
     
     mutable std::mutex cache_mutex;
     mutable std::mutex solid_mutex;
