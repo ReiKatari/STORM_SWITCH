@@ -987,6 +987,8 @@ abstract class SettingsItem(
                     ByteSetting.AUDIO_VOLUME,
                     titleId = R.string.audio_volume,
                     descriptionId = R.string.audio_volume_description,
+                    min = 0,
+                    max = 200,
                     units = "%"
                 )
             )

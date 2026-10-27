@@ -537,7 +537,7 @@
     <string name="gpu_log_vulkan_calls">Journaliser les appels API Vulkan</string>
     <string name="gpu_log_memory_tracking">Monitorer la mémoire GPU</string>
     <string name="gpu_log_memory_tracking_description">Monitorer les allocations et désallocations de la mémoire GPU</string>
-    <string name="gpu_log_driver_debug">Informations de débogage du pilote</string>
+    <string name="gpu_log_driver_debug">Journal de débogage du pilote GPU</string>
     <string name="gpu_log_ring_buffer_size_description">Nombre d\'appels Vulkans récents à monitorer (par défaut : 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">64 à 4096 entrées</string>
 
@@ -1401,15 +1401,15 @@
     <string name="pipeline_worker_cores_description">Gérer le nombre de cœurs utilisés pour la compilation des pipelines Vulkan.</string>
     <string name="fast_gpu_time_description">Fait croire au jeu que le GPU termine plus vite ses tâches pour éviter la baisse de résolution.</string>
     <string name="sample_shading_fraction_description">Permet d\'exécuter le fragment shader par échantillon pour une meilleure qualité visuelle.</string>
-    <string name="patch_old_qcom_drivers">Correction de textures BCn</string>
-    <string name="patch_old_qcom_drivers_description">Remplacement de la détection automatique du format de texture BCn sur les GPU Adreno.</string>
+    <string name="patch_old_qcom_drivers">Patcher les anciens pilotes Qualcomm (BCn)</string>
+    <string name="patch_old_qcom_drivers_description">Active le patch de textures BCn pour les anciens pilotes Adreno.</string>
     <string name="gpu_log_shader_dumps">Exporter les shaders SPIR-V</string>
     <string name="gpu_log_shader_dumps_description">Enregistre les fichiers binaires SPIR-V (.spv) dans le dossier de débogage.</string>
     <string name="dump_guest_shaders">Exporter les shaders invités (Maxwell)</string>
     <string name="dump_guest_shaders_description">Enregistre le bytecode des shaders Maxwell (*.ash) dans le dossier de débogage.</string>
     <string name="dump_macros">Exporter les macros Maxwell</string>
     <string name="dump_macros_description">Enregistre les programmes macro Maxwell (*.macro) dans le dossier de débogage.</string>
-    <string name="gpu_log_driver_debug_description">Capturer les informations de débogage spécifiques au pilote (Turnip, etc.).</string>
+    <string name="gpu_log_driver_debug_description">Enregistre les diagnostics détaillés du chargement des pilotes Vulkan.</string>
     <string name="gpu_log_ring_buffer_size">Taille du tampon circulaire</string>
     <string name="in_use_label">%1$s (En cours d\'utilisation)</string>
     <string name="apply_driver_now">Appliquer le pilote</string>
@@ -1471,8 +1471,8 @@
     <string name="gamebanana_installed_stats">Total : %1$d | Activés : %2$d | Désactivés : %3$d</string>
     <string name="gamebanana_delete_mod_confirm">Voulez-vous vraiment supprimer le mod « %1$s » ?</string>
     <string name="gamebanana_mod_deleted">Mod « %1$s » supprimé</string>
-    <string name="driver_incompatible_adreno8xx">Le pilote Turnip a6xx/a7xx est incompatible avec Adreno 8xx (Snapdragon 8 Elite). Pilote système activé.</string>
-    <string name="apply_driver_title">Appliquer le pilote GPU</string>
+    <string name="driver_incompatible_adreno8xx">Ce pilote est incompatible avec les GPU Adreno 8xx (Gen 8) et provoquera un plantage.</string>
+    <string name="apply_driver_title">Appliquer le pilote GPU ?</string>
     <string name="apply_driver_message">Comment souhaitez-vous appliquer le pilote GPU installé ?</string>
     <string name="apply_driver_globally">Globalement pour tous</string>
     <string name="apply_driver_keep_custom">Sans affecter les paramètres personnalisés</string>
@@ -2131,4 +2131,7 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="post_shader_72">Sepia Vintage (Teinte sépia chaude pour photographie ancienne)</string>
     <string name="post_shader_73">Night Vision Goggles (Lunettes de vision nocturne tactiques à phosphore vert)</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow (Lueur d\'ambiance néon pour hautes lumières)</string>
+    <string name="apply_driver_msg">Le pilote a été installé avec succès. Voulez-vous l\'activer maintenant ?</string>
+    <string name="apply_driver_positive">Appliquer</string>
+    <string name="apply_driver_negative">Plus tard</string>
 </resources>

@@ -206,7 +206,8 @@ void BufferCache<P>::InvalidateForLoadState(std::span<const std::pair<DAddr, std
         gpu_modified_ranges.Subtract(addr, safe_size);
         WriteMemory(addr, safe_size);
     }
-    for (const auto& [slot_id, buffer] : slot_buffers) {
+    for (auto [slot_id, buffer] : slot_buffers) {
+        (void)slot_id;
         if (buffer && buffer->SizeBytes() > 0 && buffer->CpuAddr() != 0 &&
             buffer->CpuAddr() < kMaxTrackableDAddr) {
             const DAddr cpu_addr = buffer->CpuAddr();

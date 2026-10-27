@@ -553,8 +553,8 @@
     <string name="renderer_api">API</string>
     <string name="renderer_debug">Depuración de gráficos</string>
     <string name="renderer_debug_description">Configura la API gráfica a un modo de depuración lento.</string>
-    <string name="patch_old_qcom_drivers">Parcheado de textura BCn</string>
-    <string name="patch_old_qcom_drivers_description">Anular la detección automática del formato de textura BCn en las GPU Adreno. Normalmente se detectan automáticamente según la versión de Android (activado en la API 28+). </string>
+    <string name="patch_old_qcom_drivers">Parchear controladores Qualcomm antiguos (BCn)</string>
+    <string name="patch_old_qcom_drivers_description">Activa el parche de texturas BCn para controladores Adreno antiguos.</string>
     <string name="fastmem">Fastmem</string>
 
     <string name="log">Registro</string>
@@ -575,8 +575,8 @@
     <string name="dump_macros_description">Guardar archivos de programa macro Maxwell (*.macro) a la carpeta de volcado. Inspeccionar con envydis.</string>
     <string name="gpu_log_memory_tracking">Rastrear memoria de la GPU</string>
     <string name="gpu_log_memory_tracking_description">Monitorizar las asignaciones y desasignaciones de memoria de la GPU</string>
-    <string name="gpu_log_driver_debug">Información de depuración del controlador</string>
-    <string name="gpu_log_driver_debug_description">Capturar la información de depuración específica del controlador (Turnip breadcrumbs, etc.)</string>
+    <string name="gpu_log_driver_debug">Registro de depuración del controlador GPU</string>
+    <string name="gpu_log_driver_debug_description">Guarda información detallada de carga de controladores Vulkan y AdrenoTools.</string>
     <string name="gpu_log_ring_buffer_size">Tamaño del búfer circular</string>
     <string name="gpu_log_ring_buffer_size_description">Número de llamadas recientes de Vulkan para rastrear (por defecto: 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">64 a 4096 entradas</string>
@@ -1563,8 +1563,8 @@
     <string name="anisotropic_filtering_default">Default</string>
     <string name="anisotropic_filtering_automatic">Automatic</string>
     <string name="oboe">Oboe</string>
-    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx driver is incompatible with Adreno 8xx (Snapdragon 8 Elite). Switched to System Driver.</string>
-    <string name="apply_driver_title">Apply GPU driver</string>
+    <string name="driver_incompatible_adreno8xx">Este controlador no es compatible con GPUs Adreno 8xx (Gen 8) y provocará cierres.</string>
+    <string name="apply_driver_title">¿Aplicar controlador GPU?</string>
     <string name="apply_driver_message">How would you like to apply the installed GPU driver?</string>
     <string name="apply_driver_globally">Globally for all</string>
     <string name="apply_driver_keep_custom">Without affecting custom settings</string>
@@ -2135,4 +2135,7 @@ Inicia un juego o conéctate a otro dispositivo.</string>
     <string name="post_shader_72">Sepia Vintage (Tonos cálidos de fotografía antigua — Sepia)</string>
     <string name="post_shader_73">Night Vision Goggles (Gafas de visión nocturna tácticas con fósforo verde)</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow (Brillo atmosférico de neón en zonas iluminadas)</string>
+    <string name="apply_driver_msg">El controlador se instaló correctamente. ¿Deseas activarlo ahora?</string>
+    <string name="apply_driver_positive">Aplicar</string>
+    <string name="apply_driver_negative">Más tarde</string>
 </resources>

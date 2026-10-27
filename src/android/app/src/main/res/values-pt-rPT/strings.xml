@@ -1043,8 +1043,8 @@ uma tentativa de mapeamento automático</string>
     <string name="sample_shading_fraction">Sample Shading</string>
     <string name="sample_shading_fraction_description">Allows the fragment shader to execute per sample in a multi-sampled fragment instead once per fragment. Improves graphics quality at the cost of some performance.</string>
     <string name="clocks">Clocks</string>
-    <string name="patch_old_qcom_drivers">BCn Texture Patching</string>
-    <string name="patch_old_qcom_drivers_description">Override automatic BCn texture format detection on Adreno GPUs. Normally auto-detected based on Android version (enabled on API 28+).</string>
+    <string name="patch_old_qcom_drivers">Corrigir controladores Qualcomm antigos (BCn)</string>
+    <string name="patch_old_qcom_drivers_description">Ativa a correção de texturas BCn para controladores Adreno antigos.</string>
     <string name="gpu_logging_header">GPU Logging</string>
     <string name="gpu_log_level">Log Level</string>
     <string name="gpu_log_level_description">Detail level for GPU logs (higher = more detail, more overhead)</string>
@@ -1063,8 +1063,8 @@ uma tentativa de mapeamento automático</string>
     <string name="dump_macros_description">Save Maxwell macro program files (*.macro) to dump folder. Inspect with envydis.</string>
     <string name="gpu_log_memory_tracking">Track GPU Memory</string>
     <string name="gpu_log_memory_tracking_description">Monitor GPU memory allocations and deallocations</string>
-    <string name="gpu_log_driver_debug">Driver Debug Info</string>
-    <string name="gpu_log_driver_debug_description">Capture driver-specific debug information (Turnip breadcrumbs, etc.)</string>
+    <string name="gpu_log_driver_debug">Registo de depuração do controlador GPU</string>
+    <string name="gpu_log_driver_debug_description">Regista diagnósticos detalhados do carregamento do controlador Vulkan.</string>
     <string name="gpu_log_ring_buffer_size">Ring Buffer Size</string>
     <string name="gpu_log_ring_buffer_size_description">Number of recent Vulkan calls to track (default: 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">64 to 4096 entries</string>
@@ -1493,8 +1493,8 @@ uma tentativa de mapeamento automático</string>
     <string name="anisotropic_filtering_default">Default</string>
     <string name="anisotropic_filtering_automatic">Automatic</string>
     <string name="oboe">Oboe</string>
-    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx driver is incompatible with Adreno 8xx (Snapdragon 8 Elite). Switched to System Driver.</string>
-    <string name="apply_driver_title">Apply GPU driver</string>
+    <string name="driver_incompatible_adreno8xx">Este controlador é incompatível com GPUs Adreno 8xx (Gen 8) e causará falhas.</string>
+    <string name="apply_driver_title">Aplicar controlador de GPU?</string>
     <string name="apply_driver_message">How would you like to apply the installed GPU driver?</string>
     <string name="apply_driver_globally">Globally for all</string>
     <string name="apply_driver_keep_custom">Without affecting custom settings</string>
@@ -2002,4 +2002,7 @@ uma tentativa de mapeamento automático</string>
     <string name="log_viewer_filter_warnings_label">Warnings</string>
     <string name="post_processing_shader">Shader de pós-processamento (RetroArch)</string>
     <string name="post_processing_shader_description">Aplica shaders de pós-processamento RetroArch em tempo real (CRT, LCD, portáteis, upscalers, nitidez, correção de cor).</string>
+    <string name="apply_driver_msg">O controlador foi instalado com sucesso. Deseja ativá-lo agora?</string>
+    <string name="apply_driver_positive">Aplicar</string>
+    <string name="apply_driver_negative">Mais tarde</string>
 </resources>

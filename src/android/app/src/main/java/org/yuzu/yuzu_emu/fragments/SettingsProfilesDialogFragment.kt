@@ -13,6 +13,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import android.content.res.Configuration
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -61,7 +66,11 @@ class SettingsProfilesDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        dialog.window?.let { window ->
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
         return dialog
     }
 
@@ -76,6 +85,14 @@ class SettingsProfilesDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+        binding.root.requestApplyInsets()
 
         binding.btnCloseProfiles.setOnClickListener { dismiss() }
 
@@ -186,6 +203,32 @@ class SettingsProfilesDialogFragment : DialogFragment() {
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        dialog?.window?.let { window ->
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
     }
 
     override fun onDestroyView() {

@@ -72,6 +72,15 @@ class AutoOptimizationDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(
+                androidx.core.view.WindowInsetsCompat.Type.systemBars() or
+                androidx.core.view.WindowInsetsCompat.Type.displayCutout()
+            )
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+        binding.root.requestApplyInsets()
 
         binding.btnCloseWizard.setOnClickListener {
             dismiss()
@@ -93,16 +102,28 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         }
     }
 
-    override fun onStart() {
+        override fun onStart() {
         super.onStart()
         dialog?.window?.let { window ->
-            val dm = resources.displayMetrics
-            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else ViewGroup.LayoutParams.MATCH_PARENT
-            val height = ViewGroup.LayoutParams.MATCH_PARENT
-            window.setLayout(width, height)
-            window.setGravity(Gravity.CENTER)
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        dialog?.window?.let { window ->
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
             ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
     }

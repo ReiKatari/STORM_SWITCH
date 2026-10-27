@@ -154,11 +154,32 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         return binding.root
     }
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        dialog.window?.let { window ->
+            window.setBackgroundDrawableResource(android.R.color.transparent)
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
+        return dialog
+    }
+
     override fun onStart() {
         super.onStart()
         dialog?.window?.let { window ->
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             window.setBackgroundDrawableResource(android.R.color.transparent)
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        dialog?.window?.let { window ->
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            window.setBackgroundDrawableResource(android.R.color.transparent)
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
             ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
     }

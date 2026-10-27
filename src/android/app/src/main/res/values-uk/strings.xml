@@ -552,8 +552,8 @@
     <string name="renderer_api">API</string>
     <string name="renderer_debug">Налагодження графіки</string>
     <string name="renderer_debug_description">Уповільнює графічний API для налагодження.</string>
-    <string name="patch_old_qcom_drivers">Виправлення BCn-текстур</string>
-    <string name="patch_old_qcom_drivers_description">Перехоплення автоматичного виявлення текстур у форматі BCn для ГП Adreno. Зазвичай автовиявлення залежить від версії Android (увімкнено на API 28+).</string>
+    <string name="patch_old_qcom_drivers">Патчити старі драйвери Qualcomm (BCn)</string>
+    <string name="patch_old_qcom_drivers_description">Вмикає патч текстур BCn для старих драйверів Adreno.</string>
     <string name="fastmem">Швидка пам\'ять</string>
 
     <string name="log">Журналювання</string>
@@ -568,8 +568,8 @@
     <string name="gpu_log_vulkan_calls_description">Відстежувати всі виклики API Vulkan у кільцевому буфері</string>
     <string name="gpu_log_memory_tracking">Відстежувати пам’ять ГП</string>
     <string name="gpu_log_memory_tracking_description">Відстежувати використання і звільнення пам’яті ГП</string>
-    <string name="gpu_log_driver_debug">Зневаджувальна інформація драйверів</string>
-    <string name="gpu_log_driver_debug_description">Збирати зневаджувальну інформацію щодо драйверів (breadcrumbs Turnip тощо)</string>
+    <string name="gpu_log_driver_debug">Журнал налагодження GPU-драйвера</string>
+    <string name="gpu_log_driver_debug_description">Записує детальну діагностику завантаження драйверів Vulkan.</string>
     <string name="gpu_log_ring_buffer_size">Розмір кільцевого буфера</string>
     <string name="gpu_log_ring_buffer_size_description">Кількість останніх викликів Vulkan для відстеження (стандартно: 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">Від 64 до 4096 записів</string>
@@ -1551,8 +1551,8 @@
     <string name="anisotropic_filtering_default">Default</string>
     <string name="anisotropic_filtering_automatic">Automatic</string>
     <string name="oboe">Oboe</string>
-    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx driver is incompatible with Adreno 8xx (Snapdragon 8 Elite). Switched to System Driver.</string>
-    <string name="apply_driver_title">Apply GPU driver</string>
+    <string name="driver_incompatible_adreno8xx">Цей драйвер несумісний з GPU Adreno 8xx (Gen 8) і призведе до збою.</string>
+    <string name="apply_driver_title">Застосувати GPU-драйвер?</string>
     <string name="apply_driver_message">How would you like to apply the installed GPU driver?</string>
     <string name="apply_driver_globally">Globally for all</string>
     <string name="apply_driver_keep_custom">Without affecting custom settings</string>
@@ -2061,4 +2061,7 @@
     <string name="log_viewer_filter_warnings_label">Предупр.</string>
     <string name="post_processing_shader">Пост-обробка (Шейдери RetroArch)</string>
     <string name="post_processing_shader_description">Застосовує шейдери пост-обробки RetroArch у реальному часі (ЕПТ, РК, портативки, апскейлери, різкість, кольорокорекція).</string>
+    <string name="apply_driver_msg">Драйвер успішно встановлено. Бажаєте активувати його зараз?</string>
+    <string name="apply_driver_positive">Застосувати</string>
+    <string name="apply_driver_negative">Пізніше</string>
 </resources>

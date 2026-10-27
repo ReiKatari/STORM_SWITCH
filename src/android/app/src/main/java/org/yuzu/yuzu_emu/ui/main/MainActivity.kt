@@ -284,9 +284,68 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         return false
     }
 
+    private fun fetchLatestReleaseFallback(): NativeLibrary.UpdateResult? {
+        return try {
+            val client = okhttp3.OkHttpClient.Builder()
+                .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                .followRedirects(true)
+                .followSslRedirects(true)
+                .build()
+            val req = okhttp3.Request.Builder()
+                .url("https://api.github.com/repos/ReiKatari/STORM_SWITCH/releases/latest")
+                .header("User-Agent", "STORM-SWITCH-Updater")
+                .header("Accept", "application/vnd.github.v3+json")
+                .build()
+            client.newCall(req).execute().use { resp ->
+                if (resp.isSuccessful) {
+                    val bodyStr = resp.body?.string() ?: ""
+                    val json = org.json.JSONObject(bodyStr)
+                    val tag = json.optString("tag_name", "").trim()
+                    if (tag.isNotEmpty()) {
+                        val title = json.optString("name", "STORM SWITCH $tag")
+                        val htmlUrl = json.optString("html_url", "https://github.com/ReiKatari/STORM_SWITCH/releases/tag/$tag")
+                        val assetsArr = json.optJSONArray("assets")
+                        val assetList = mutableListOf<String>()
+                        if (assetsArr != null) {
+                            for (i in 0 until assetsArr.length()) {
+                                val u = assetsArr.getJSONObject(i).optString("browser_download_url", "")
+                                if (u.isNotEmpty()) assetList.add(u)
+                            }
+                        }
+                        return NativeLibrary.UpdateResult(tag = tag, title = title, body = json.optString("body", ""), url = htmlUrl, assets = assetList)
+                    }
+                }
+            }
+            // Fallback via HTML redirect (never rate-limited)
+            val webReq = okhttp3.Request.Builder()
+                .url("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
+                .header("User-Agent", "Mozilla/5.0")
+                .build()
+            client.newCall(webReq).execute().use { resp ->
+                val finalUrl = resp.request.url.toString()
+                val match = Regex("/releases/tag/(v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)*)").find(finalUrl)
+                if (match != null) {
+                    val rawTag = match.groupValues[1]
+                    val cleanVer = rawTag.removePrefix("v").removePrefix("V")
+                    val baseDl = "https://github.com/ReiKatari/STORM_SWITCH/releases/download/$rawTag"
+                    val assets = mutableListOf(
+                        "$baseDl/STORM_SWITCH_$cleanVer.apk",
+                        "$baseDl/STORM_SWITCH_${cleanVer}_LEGACY.apk",
+                        "$baseDl/STORM_SWITCH_${cleanVer}_SDK27.apk"
+                    )
+                    return NativeLibrary.UpdateResult(tag = rawTag, title = "STORM SWITCH $cleanVer", body = "", url = finalUrl, assets = assets)
+                }
+            }
+            null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     private fun checkForUpdates() {
         Thread {
-            val latestVersion = NativeLibrary.checkForUpdate()
+            val latestVersion = NativeLibrary.checkForUpdate() ?: fetchLatestReleaseFallback()
             if (latestVersion != null) {
                 val currentVersion = org.yuzu.yuzu_emu.BuildConfig.VERSION_NAME.trim()
                 val releaseTag = latestVersion.tag.trim()
@@ -333,16 +392,22 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
     private fun downloadAndInstallUpdate(release: NativeLibrary.UpdateResult) {
         CoroutineScope(Dispatchers.IO).launch {
             val packageId = applicationContext.packageName
-            val isLegacy = org.yuzu.yuzu_emu.BuildConfig.FLAVOR.equals("legacy", ignoreCase = true)
-            val asset = if (isLegacy) {
-                release.assets.firstOrNull { it.contains("LEGACY", ignoreCase = true) && it.endsWith(".apk", ignoreCase = true) }
-                    ?: release.assets.firstOrNull { it.endsWith(".apk", ignoreCase = true) }
-                    ?: release.assets[0]
-            } else {
-                release.assets.firstOrNull { !it.contains("LEGACY", ignoreCase = true) && it.endsWith(".apk", ignoreCase = true) }
-                    ?: release.assets.firstOrNull { it.endsWith(".apk", ignoreCase = true) }
-                    ?: release.assets[0]
-            }
+            val flavor = org.yuzu.yuzu_emu.BuildConfig.FLAVOR.lowercase()
+            val asset = when {
+                flavor.contains("legacy") -> {
+                    release.assets.firstOrNull { it.contains("LEGACY", ignoreCase = true) && it.endsWith(".apk", ignoreCase = true) }
+                }
+                flavor.contains("sdk27") -> {
+                    release.assets.firstOrNull { it.contains("SDK27", ignoreCase = true) && it.endsWith(".apk", ignoreCase = true) }
+                }
+                else -> {
+                    release.assets.firstOrNull {
+                        !it.contains("LEGACY", ignoreCase = true) &&
+                            !it.contains("SDK27", ignoreCase = true) &&
+                            it.endsWith(".apk", ignoreCase = true)
+                    }
+                }
+            } ?: release.assets.firstOrNull { it.endsWith(".apk", ignoreCase = true) } ?: release.assets[0]
             val artifact = asset.split("/").last().removeSuffix(".apk")
             val apkFile = File(cacheDir, "update-$artifact.apk")
 

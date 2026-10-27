@@ -38,9 +38,9 @@ if not exist "%BUILD_DIR%\build.ninja" (
         -DCMAKE_BUILD_TYPE=Release ^
         -DCMAKE_CXX_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
         -DCMAKE_C_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
-        -DGIT_TAG="14.2.0" ^
-        -DGIT_RELEASE="14.2.0" ^
-        -DBUILD_VERSION="14.2.0" ^
+        -DGIT_TAG="14.3.0" ^
+        -DGIT_RELEASE="14.3.0" ^
+        -DBUILD_VERSION="14.3.0" ^
         -DENABLE_QT=ON ^
         -DENABLE_QT_TRANSLATION=ON ^
         -DYUZU_USE_BUNDLED_QT=ON ^
@@ -57,8 +57,8 @@ if not exist "%BUILD_DIR%\build.ninja" (
         exit /b 1
     )
 ) else (
-    echo [1/3] Updating SCM revision for 14.2.0...
-    "%CMAKE%" -DGIT_TAG="14.2.0" -DGIT_RELEASE="14.2.0" -DBUILD_VERSION="14.2.0" -DSRC_DIR="%SRC_DIR%" -P "%SRC_DIR%\CMakeModules\GenerateSCMRev.cmake" 2>nul
+    echo [1/3] Updating SCM revision for 14.3.0...
+    "%CMAKE%" -DGIT_TAG="14.3.0" -DGIT_RELEASE="14.3.0" -DBUILD_VERSION="14.3.0" -DSRC_DIR="%SRC_DIR%" -P "%SRC_DIR%\CMakeModules\GenerateSCMRev.cmake" 2>nul
 )
 
 echo [2/3] Compiling STORM SWITCH with Ninja (low CPU load: -j 4)...

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.updater
@@ -11,12 +11,23 @@ import okhttp3.Response
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 class APKDownloader(private val url: String, private val outputFile: File) {
 
     fun download(onProgress: (Int) -> Unit, onComplete: (Boolean) -> Unit) {
-        val client = OkHttpClient()
-        val request = Request.Builder().url(url).build()
+        val client = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .header("User-Agent", "STORM-SWITCH-Updater")
+            .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -31,20 +42,24 @@ class APKDownloader(private val url: String, private val outputFile: File) {
                         try {
                             val inputStream = body.byteStream()
                             val outputStream = FileOutputStream(outputFile)
-                            val buffer = ByteArray(4096)
+                            val buffer = ByteArray(16384)
                             var bytesRead: Int
                             var totalBytesRead: Long = 0
 
                             while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                                 outputStream.write(buffer, 0, bytesRead)
                                 totalBytesRead += bytesRead
-                                val progress = (totalBytesRead * 100 / contentLength).toInt()
+                                val progress = if (contentLength > 0) {
+                                    ((totalBytesRead * 100) / contentLength).toInt().coerceIn(0, 100)
+                                } else {
+                                    ((totalBytesRead / (350 * 1024)).toInt()).coerceIn(0, 99)
+                                }
                                 onProgress(progress)
                             }
                             outputStream.flush()
                             outputStream.close()
                             inputStream.close()
-                            onComplete(true)
+                            onComplete(outputFile.exists() && outputFile.length() > 1024 * 1024)
                         } catch (e: IOException) {
                             e.printStackTrace()
                             onComplete(false)

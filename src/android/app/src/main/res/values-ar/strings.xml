@@ -561,8 +561,8 @@
     <string name="renderer_api">واجهة برمجة التطبيقات</string>
     <string name="renderer_debug">تصحيح الأخطاء الرسومية</string>
     <string name="renderer_debug_description">يضبط واجهة برمجة التطبيقات الرسومية على وضع تصحيح الأخطاء البطيء.</string>
-    <string name="patch_old_qcom_drivers">تصحيح نسيج BCn</string>
-    <string name="patch_old_qcom_drivers_description">تجاوز الكشف التلقائي عن تنسيق نسيج BCn على وحدات معالجة الرسومات Adreno. عادةً ما يتم الكشف التلقائي بناءً على إصدار Android (ممكّن على API 28+).</string>
+    <string name="patch_old_qcom_drivers">ترقيع تعريفات Qualcomm القديمة (BCn)</string>
+    <string name="patch_old_qcom_drivers_description">تفعيل ضغط текстур BCn لتعريفات Adreno القديمة.</string>
     <string name="fastmem">Fastmem</string>
 
     <string name="log">السجلات</string>
@@ -583,8 +583,8 @@
     <string name="dump_macros_description">احفظ ملفات برامج ماكرو ماكسويل (*.macro) في مجلد «dump». افحصها باستخدام برنامج «envydis».</string>
     <string name="gpu_log_memory_tracking">تتبع ذاكرة وحدة معالجة الرسومات</string>
     <string name="gpu_log_memory_tracking_description">مراقبة تخصيصات ذاكرة وحدة معالجة الرسومات وإلغاء تخصيصها</string>
-    <string name="gpu_log_driver_debug">معلومات تصحيح أخطاء برنامج التشغيل</string>
-    <string name="gpu_log_driver_debug_description">التقاط معلومات تصحيح الأخطاء الخاصة ببرنامج التشغيل (مسارات Turnip، وما إلى ذلك).</string>
+    <string name="gpu_log_driver_debug">سجل تصحيح تعريف GPU</string>
+    <string name="gpu_log_driver_debug_description">تسجيل معلومات تفصيلية لتحميل تعريفات Vulkan وAdrenoTools.</string>
     <string name="gpu_log_ring_buffer_size">حجم المخزن المؤقت الحلقي</string>
     <string name="gpu_log_ring_buffer_size_description">عدد استدعاءات Vulkan الأخيرة المراد تتبعها (الافتراضي: 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">من 64 إلى 4096 مدخلاً</string>
@@ -1568,8 +1568,8 @@
     <string name="anisotropic_filtering_default">Default</string>
     <string name="anisotropic_filtering_automatic">Automatic</string>
     <string name="oboe">Oboe</string>
-    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx driver is incompatible with Adreno 8xx (Snapdragon 8 Elite). Switched to System Driver.</string>
-    <string name="apply_driver_title">Apply GPU driver</string>
+    <string name="driver_incompatible_adreno8xx">هذا التعريف غير متوافق مع معالجات Adreno 8xx (Gen 8) وسيؤدي إلى تعطل المحاكي.</string>
+    <string name="apply_driver_title">تطبيق تعريف GPU؟</string>
     <string name="apply_driver_message">How would you like to apply the installed GPU driver?</string>
     <string name="apply_driver_globally">Globally for all</string>
     <string name="apply_driver_keep_custom">Without affecting custom settings</string>
@@ -2139,4 +2139,7 @@
     <string name="post_shader_72">Sepia Vintage (تلوين الصور الأثرية الدافئة — سيبيا)</string>
     <string name="post_shader_73">Night Vision Goggles (نظارات رؤية ليلية تكتيكية بالفوسفور الأخضر)</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow (توهج نيون جوي للأضواء الساطعة)</string>
+    <string name="apply_driver_msg">تم تثبيت التعريف بنجاح. هل تريد تفعيله الآن؟</string>
+    <string name="apply_driver_positive">تفعيل</string>
+    <string name="apply_driver_negative">لاحقاً</string>
 </resources>

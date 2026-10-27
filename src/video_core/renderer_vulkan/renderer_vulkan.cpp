@@ -261,25 +261,7 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     const bool extent_mismatch =
         current_extent.width != current_layout.width || current_extent.height != current_layout.height;
 
-    const auto frame_start = std::chrono::steady_clock::now();
-    static u32 s_skip_counter = 0;
-    static double s_ema_ft = 16.67;
-    if (!extent_mismatch &&
-        Settings::values.enable_frame_skipping.GetValue() &&
-        Settings::values.frame_pacing_mode.GetValue() == Settings::FramePacingMode::Target_Auto &&
-        !Settings::values.frame_gen.GetValue() &&
-        s_last_composite_time.time_since_epoch().count() != 0) {
-        const double delta_ms =
-            std::chrono::duration<double, std::milli>(frame_start - s_last_composite_time).count();
-        s_ema_ft = s_ema_ft * 0.85 + delta_ms * 0.15;
-        if (s_ema_ft > 55.0 && delta_ms > 55.0 && (++s_skip_counter % 6 == 0)) {
-            scheduler.DispatchWork();
-            gpu.RendererFrameEndNotify();
-            rasterizer.TickFrame();
-            s_last_composite_time = frame_start;
-            return;
-        }
-    }
+    // Frame composition proceeds directly without skipping to preserve smooth VSync pacing
 
     RenderScreenshot(framebuffers);
     Frame* frame = present_manager.GetRenderFrame();
@@ -316,55 +298,21 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     gpu.RendererFrameEndNotify();
     rasterizer.TickFrame();
 
-    const auto now = std::chrono::steady_clock::now();
-    const auto vsync_mode = Settings::values.vsync_mode.GetValue();
-    const bool hw_vsync_paces = (vsync_mode == Settings::VSyncMode::Fifo ||
-                                 vsync_mode == Settings::VSyncMode::FifoRelaxed);
-    const auto pacing_mode = Settings::values.frame_pacing_mode.GetValue();
-    const bool explicit_cap = Settings::values.eco_thermal_mode.GetValue() ||
-                              pacing_mode != Settings::FramePacingMode::Target_Auto ||
-                              (Settings::values.use_speed_limit.GetValue() &&
-                               Settings::values.speed_limit.GetValue() != 100);
-    if ((Settings::values.eco_frame_pacing.GetValue() ||
-         Settings::values.eco_thermal_mode.GetValue()) &&
-        (!hw_vsync_paces || explicit_cap)) {
-        const bool is_unbounded = !Settings::values.use_speed_limit.GetValue() &&
-                                  pacing_mode == Settings::FramePacingMode::Target_Auto &&
-                                  !Settings::values.eco_thermal_mode.GetValue();
-        if (!is_unbounded) {
-            double target_fps = Settings::values.eco_thermal_mode.GetValue() ? 30.0 : 60.0;
-            switch (pacing_mode) {
-            case Settings::FramePacingMode::Target_30:
-                target_fps = Settings::values.auto_60fps_unlock.GetValue() ? 60.0 : 30.0;
-                break;
-            case Settings::FramePacingMode::Target_60:
-                target_fps = 60.0;
-                break;
-            case Settings::FramePacingMode::Target_90:
-                target_fps = 90.0;
-                break;
-            case Settings::FramePacingMode::Target_120:
-                target_fps = 120.0;
-                break;
-            default:
-                break;
-            }
-            if (Settings::values.use_speed_limit.GetValue()) {
-                const u16 spd = Settings::values.speed_limit.GetValue();
-                if (spd > 0 && spd != 100) {
-                    target_fps = target_fps * (static_cast<double>(spd) / 100.0);
-                }
-            }
-            const double target_frame_ms = 1000.0 / std::clamp(target_fps, 15.0, 480.0);
-            if (s_last_composite_time.time_since_epoch().count() != 0) {
-                const double elapsed_ms =
-                    std::chrono::duration<double, std::milli>(now - s_last_composite_time).count();
-                if (elapsed_ms > 0.3 && elapsed_ms + 0.6 < target_frame_ms) {
-                    const double remain_ms = (target_frame_ms - elapsed_ms) * 0.45;
-                    if (remain_ms >= 0.4 && remain_ms <= 12.0) {
-                        std::this_thread::sleep_for(
-                            std::chrono::microseconds(static_cast<int64_t>(remain_ms * 1000.0)));
-                    }
+    // Never sleep on the main GPUThread during normal VSync / CoreTiming Conductor pacing,
+    // as sleeping inside Composite() blocks GPU command execution and syncpoint signaling,
+    // causing guest games to miss every second VBlank (dropping 60 FPS -> 30 FPS).
+    if (Settings::values.eco_thermal_mode.GetValue() &&
+        Settings::values.vsync_mode.GetValue() == Settings::VSyncMode::Immediate &&
+        !Settings::values.use_speed_limit.GetValue()) {
+        const auto now = std::chrono::steady_clock::now();
+        if (s_last_composite_time.time_since_epoch().count() != 0) {
+            const double elapsed_ms =
+                std::chrono::duration<double, std::milli>(now - s_last_composite_time).count();
+            if (elapsed_ms > 0.3 && elapsed_ms < 16.0) {
+                const double remain_ms = (16.67 - elapsed_ms) * 0.35;
+                if (remain_ms >= 0.5 && remain_ms <= 6.0) {
+                    std::this_thread::sleep_for(
+                        std::chrono::microseconds(static_cast<int64_t>(remain_ms * 1000.0)));
                 }
             }
         }

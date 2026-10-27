@@ -513,8 +513,8 @@ Wird der Handheld-Modus verwendet, verringert es die Auflösung und erhöht die 
     <string name="renderer_api">API</string>
     <string name="renderer_debug">Grafik-Debugging</string>
     <string name="renderer_debug_description">Aktiviert den langsamen Grafik-Debug-Modus.</string>
-    <string name="patch_old_qcom_drivers">BCn Texture Patching</string>
-    <string name="patch_old_qcom_drivers_description">Override automatic BCn texture format detection on Adreno GPUs. Normally auto-detected based on Android version (enabled on API 28+).\nAutomatische BCn Texturformat-Erkennung auf Adreno-GPUs überschreiben. Wird normalerweise automatisch anhand der Android-Version erkannt (aktiviert auf API 28+).</string>
+    <string name="patch_old_qcom_drivers">Alte Qualcomm-Treiber patchen (BCn)</string>
+    <string name="patch_old_qcom_drivers_description">Aktiviert den BCn-Textur-Patch für ältere Adreno-Treiber.</string>
     <string name="fastmem">Fastmem</string>
 
     <string name="log">Protokollierung</string>
@@ -1372,8 +1372,8 @@ Wirklich fortfahren?</string>
     <string name="dump_macros_description">Maxwell-Makroprogramme (*.macro) im Debug-Ordner speichern.</string>
     <string name="gpu_log_memory_tracking">GPU-Speicher überwachen</string>
     <string name="gpu_log_memory_tracking_description">GPU-Speicherzuweisungen und -freigaben überwachen.</string>
-    <string name="gpu_log_driver_debug">Treiber-Debuginformationen</string>
-    <string name="gpu_log_driver_debug_description">Treiberspezifische Debuginformationen erfassen.</string>
+    <string name="gpu_log_driver_debug">GPU-Treiber-Debug-Protokoll</string>
+    <string name="gpu_log_driver_debug_description">Zeichnet detaillierte Diagnoseprotokolle beim Laden von GPU-Treibern auf.</string>
     <string name="gpu_log_ring_buffer_size">Ringpuffergröße</string>
     <string name="gpu_log_ring_buffer_size_description">Anzahl der zu verfolgenden Vulkan-Aufrufe (Standard: 512).</string>
     <string name="gpu_log_ring_buffer_size_hint">64 bis 4096 Einträge</string>
@@ -1465,8 +1465,8 @@ Wirklich fortfahren?</string>
     <string name="gamebanana_installed_stats">Gesamt: %1$d | Aktiviert: %2$d | Deaktiviert: %3$d</string>
     <string name="gamebanana_delete_mod_confirm">Möchten Sie den Mod "%1$s" wirklich löschen?</string>
     <string name="gamebanana_mod_deleted">Mod "%1$s" gelöscht</string>
-    <string name="driver_incompatible_adreno8xx">Der Turnip a6xx/a7xx-Treiber ist inkompatibel mit Adreno 8xx (Snapdragon 8 Elite). Systemtreiber aktiviert.</string>
-    <string name="apply_driver_title">GPU-Treiber anwenden</string>
+    <string name="driver_incompatible_adreno8xx">Dieser Treiber ist nicht mit Adreno 8xx (Gen 8) GPUs kompatibel und führt zum Absturz.</string>
+    <string name="apply_driver_title">GPU-Treiber aktivieren?</string>
     <string name="apply_driver_message">Wie möchten Sie den installierten GPU-Treiber anwenden?</string>
     <string name="apply_driver_globally">Global für alle</string>
     <string name="apply_driver_keep_custom">Ohne benutzerdefinierte Einstellungen zu beeinflussen</string>
@@ -2126,4 +2126,7 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="post_shader_72">Sepia Vintage (Warme Tönung antiker Fotografien — Sepia)</string>
     <string name="post_shader_73">Night Vision Goggles (Taktisches Nachtsichtgerät mit grünem Phosphor)</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow (Atmosphärisches Neon-Leuchten für Glanzlichter)</string>
+    <string name="apply_driver_msg">Der Treiber wurde erfolgreich installiert. Möchten Sie ihn jetzt aktivieren?</string>
+    <string name="apply_driver_positive">Aktivieren</string>
+    <string name="apply_driver_negative">Später</string>
 </resources>

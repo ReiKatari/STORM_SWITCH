@@ -4,14 +4,19 @@
 package org.yuzu.yuzu_emu.fragments
 
 import android.app.Dialog
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.preference.PreferenceManager
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.DialogAutoCorrectionBinding
 import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
@@ -19,6 +24,7 @@ import org.yuzu.yuzu_emu.features.settings.model.IntSetting
 import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.utils.GameIconUtils
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 
 class AutoCorrectionDialogFragment : DialogFragment() {
 
@@ -42,9 +48,41 @@ class AutoCorrectionDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        _binding = DialogAutoCorrectionBinding.inflate(layoutInflater)
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        dialog.window?.let { window ->
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
+        return dialog
+    }
 
-        val currentGame = game ?: arguments?.getParcelable(ARG_GAME) ?: return super.onCreateDialog(savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = DialogAutoCorrectionBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+        binding.root.requestApplyInsets()
+
+        val currentGame = game ?: arguments?.getParcelable(ARG_GAME) ?: run {
+            dismissAllowingStateLoss()
+            return
+        }
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
         val prefKey = "auto_corrected_thermal_${currentGame.programId}"
         val isAutoCorrected = prefs.getBoolean(prefKey, false)
@@ -139,30 +177,31 @@ class AutoCorrectionDialogFragment : DialogFragment() {
         binding.btnCloseAutoCorrection.setOnClickListener {
             dismissAllowingStateLoss()
         }
-
-        val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setView(binding.root)
-            .create()
-
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        return dialog
     }
 
     override fun onStart() {
         super.onStart()
         dialog?.window?.let { window ->
-            val dm = resources.displayMetrics
-            val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) (dm.widthPixels * 0.95).toInt() else (dm.widthPixels * 0.94).toInt()
-            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-            window.setLayout(width, height)
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            window.setGravity(android.view.Gravity.CENTER)
-            val lp = window.attributes
-            lp.width = width
-            lp.height = height
-            lp.gravity = android.view.Gravity.CENTER
-            window.attributes = lp
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        dialog?.window?.let { window ->
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
     }
 

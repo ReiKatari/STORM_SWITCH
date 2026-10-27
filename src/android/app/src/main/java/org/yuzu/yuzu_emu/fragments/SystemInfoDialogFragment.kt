@@ -64,6 +64,7 @@ class SystemInfoDialogFragment : DialogFragment() {
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT
             )
             window.setBackgroundDrawableResource(android.R.color.transparent)
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
             org.yuzu.yuzu_emu.utils.ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
     }
@@ -76,6 +77,7 @@ class SystemInfoDialogFragment : DialogFragment() {
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT
             )
             window.setBackgroundDrawableResource(android.R.color.transparent)
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
             org.yuzu.yuzu_emu.utils.ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
     }

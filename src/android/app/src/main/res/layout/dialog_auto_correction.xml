@@ -1,28 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="22dp"
-    app:cardElevation="0dp"
-    app:strokeColor="?attr/colorPrimary"
-    app:strokeWidth="1.5dp">
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxHeight="600dp"
+        android:layout_height="match_parent"
         android:fillViewport="true"
-        android:scrollbars="none">
+        android:scrollbars="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="14dp">
 
             <!-- Header: Game Icon, Title, Status Badge -->
             <LinearLayout
@@ -30,15 +27,16 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="14dp">
 
-                <com.google.android.material.imageview.ShapeableImageView
+                <ImageView
                     android:id="@+id/image_auto_correction_icon"
-                    android:layout_width="54dp"
-                    android:layout_height="54dp"
-                    android:scaleType="centerCrop"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
-                    android:layout_marginEnd="14dp" />
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:scaleType="fitCenter"
+                    android:background="@android:color/transparent"
+                    android:layout_marginEnd="12dp"
+                    tools:src="@drawable/ic_controller" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -51,7 +49,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="The Legend of Zelda"
-                        android:textSize="17.5sp"
+                        android:textSize="17sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"
                         android:maxLines="2"
@@ -72,7 +70,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/auto_correction_status_active"
-                            android:textSize="11.5sp"
+                            android:textSize="11sp"
                             android:textColor="?attr/colorPrimary"
                             android:fontFamily="sans-serif-medium" />
 
@@ -82,13 +80,14 @@
 
             </LinearLayout>
 
+            <!-- 2-Column or Stacked Cards: Issues & Recommended -->
             <!-- Card 1: Known Issues & Bugs -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_auto_correction_issues"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="14dp"
+                android:layout_marginBottom="10dp"
+                app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:strokeColor="#EF4444"
@@ -98,27 +97,27 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="14dp">
+                    android:padding="12dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="6dp">
 
                         <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:src="@drawable/ic_info_outline"
                             app:tint="#EF4444"
-                            android:layout_marginEnd="8dp" />
+                            android:layout_marginEnd="6dp" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/auto_correction_issues_title"
-                            android:textSize="13.5sp"
+                            android:textSize="12.5sp"
                             android:textStyle="bold"
                             android:textColor="#EF4444" />
 
@@ -128,8 +127,8 @@
                         android:id="@+id/text_auto_correction_issues"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="12.5sp"
-                        android:lineSpacingExtra="4dp"
+                        android:textSize="11.5sp"
+                        android:lineSpacingExtra="2dp"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
                 </LinearLayout>
@@ -141,7 +140,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
-                app:cardCornerRadius="14dp"
+                app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorPrimary"
@@ -151,27 +150,27 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="14dp">
+                    android:padding="12dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="6dp">
 
                         <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:src="@drawable/ic_check"
                             app:tint="?attr/colorPrimary"
-                            android:layout_marginEnd="8dp" />
+                            android:layout_marginEnd="6dp" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/auto_correction_recommendations_title"
-                            android:textSize="13.5sp"
+                            android:textSize="12.5sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorPrimary" />
 
@@ -181,8 +180,8 @@
                         android:id="@+id/text_auto_correction_recommended"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="12.5sp"
-                        android:lineSpacingExtra="4dp"
+                        android:textSize="11.5sp"
+                        android:lineSpacingExtra="3dp"
                         android:textColor="?attr/colorOnSurface" />
 
                 </LinearLayout>
@@ -199,42 +198,42 @@
                     android:id="@+id/btn_apply_auto_correction"
                     style="@style/Widget.Material3.Button"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="46dp"
                     android:text="@string/auto_correction_apply"
                     android:textColor="?attr/colorOnPrimary"
-                    android:textSize="13.5sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
                     app:backgroundTint="?attr/colorPrimary"
-                    app:cornerRadius="12dp"
+                    app:cornerRadius="10dp"
                     app:icon="@drawable/ic_build"
                     app:iconTint="?attr/colorOnPrimary"
-                    app:iconSize="18dp"
+                    app:iconSize="16dp"
                     android:layout_marginBottom="8dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_reset_auto_correction"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
+                    android:layout_height="44dp"
                     android:text="@string/auto_correction_reset"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp"
-                    app:cornerRadius="12dp"
-                    android:layout_marginBottom="8dp" />
+                    android:textSize="12.5sp"
+                    app:cornerRadius="10dp"
+                    android:layout_marginBottom="6dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_close_auto_correction"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="40dp"
                     android:text="@string/close"
-                    android:textSize="13sp"
-                    app:cornerRadius="12dp" />
+                    android:textSize="12.5sp"
+                    app:cornerRadius="10dp" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
-</com.google.android.material.card.MaterialCardView>
+</LinearLayout>

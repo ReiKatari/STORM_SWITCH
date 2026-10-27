@@ -230,7 +230,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         val currentValue = when (setting) {
             is AbstractShortSetting -> setting.getShort(needsGlobal = false).toInt()
             is AbstractIntSetting -> setting.getInt(needsGlobal = false)
-            is AbstractByteSetting -> setting.getByte(needsGlobal = false).toInt()
+            is AbstractByteSetting -> setting.getByte(needsGlobal = false).toUByte().toInt()
             else -> 0
         }
         slider.value = currentValue.toFloat().coerceIn(minValue.toFloat(), maxValue.toFloat())

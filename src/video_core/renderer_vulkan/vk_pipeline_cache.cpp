@@ -339,7 +339,7 @@ size_t GetTotalPipelineWorkers() {
     }
     if (Settings::values.smart_shader_throttle.GetValue()) {
         const size_t base_workers = hardware_threads > 4 ? (hardware_threads - 2) : max_core_threads;
-        return std::clamp<size_t>(base_workers / 2, 1ULL, 3ULL);
+        return std::clamp<size_t>(base_workers, 4ULL, 12ULL);
     }
     if (Settings::values.eco_thermal_mode.GetValue()) {
         // Reserve at least 2 cores for guest CPU and GPU threads to prevent thermal spikes and micro-stutter
@@ -688,12 +688,18 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
     if (device.IsKhrPipelineExecutablePropertiesEnabled()) {
         state->statistics = std::make_unique<PipelineStatistics>(device);
     }
-    const std::size_t preload_thread_count =
+    const std::size_t hw_threads = std::max<std::size_t>(std::thread::hardware_concurrency(), 2ULL);
+    std::size_t preload_thread_count =
         device.HasBrokenParallelShaderCompiling()
             ? 1ULL
-            : std::clamp<std::size_t>(
-                  std::max<std::size_t>(std::thread::hardware_concurrency(), 2ULL) - 1ULL, 2ULL,
-                  16ULL);
+            : std::clamp<std::size_t>(hw_threads - 1ULL, 2ULL, 16ULL);
+#ifdef __ANDROID__
+    if (Settings::values.eco_thermal_mode.GetValue()) {
+        preload_thread_count = std::min<std::size_t>(preload_thread_count, 2ULL);
+    } else if (Settings::values.smart_shader_throttle.GetValue()) {
+        preload_thread_count = std::min<std::size_t>(preload_thread_count, 4ULL);
+    }
+#endif
     Common::ThreadWorker preload_workers(preload_thread_count, "VkPipelinePreload");
 
     const auto load_compute{[&](std::ifstream& file, FileEnvironment env) {

@@ -279,6 +279,11 @@ struct FileBackend final : public Backend {
         // Prevent logs from exceeding a set maximum size in the event that log entries are spammed.
         const auto write_limit = Settings::values.extended_logging.GetValue() ? 1_GiB : 100_MiB;
         const bool write_limit_exceeded = bytes_written > write_limit;
+#ifdef __ANDROID__
+        if (write_limit_exceeded)
+            enabled = false;
+        file->Flush();
+#else
         if (entry.log_level >= Level::Error || write_limit_exceeded) {
             // Stop writing after the write limit is exceeded.
             // Don't close the file so we can print a stacktrace if necessary
@@ -286,6 +291,7 @@ struct FileBackend final : public Backend {
                 enabled = false;
             file->Flush();
         }
+#endif
     }
 
     void Flush() noexcept override {

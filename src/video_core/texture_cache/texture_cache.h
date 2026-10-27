@@ -207,13 +207,9 @@ void TextureCache<P>::TickFrame() {
     }
     const bool vram_gc = Settings::values.vram_garbage_collection.GetValue();
     const bool budget_gov = Settings::values.vram_budget_governor.GetValue();
-    u64 gc_threshold = critical_memory;
-    if (budget_gov) {
-        gc_threshold = static_cast<u64>(expected_memory * 85 / 100);
-    } else if (vram_gc) {
-        gc_threshold = static_cast<u64>(expected_memory);
-    }
-    if (total_used_memory > gc_threshold) {
+    if (total_used_memory > critical_memory) {
+        RunGarbageCollector();
+    } else if ((budget_gov || vram_gc) && total_used_memory > expected_memory && (frame_tick % 60 == 0)) {
         RunGarbageCollector();
     }
     sentenced_images.Tick();

@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/eden_dialog_background"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     android:padding="16dp">
 
     <ImageView
@@ -58,7 +58,6 @@
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
         android:clipToPadding="false"
-        app:layout_constraintHeight_max="360dp"
         app:layout_constraintBottom_toTopOf="@id/layout_profile_bottom_buttons"
         app:layout_constraintTop_toBottomOf="@id/text_profiles_subtitle" />
 

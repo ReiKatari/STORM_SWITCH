@@ -134,9 +134,7 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
             changed = true;
             s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[current_level_index]),
                                     std::memory_order_relaxed);
-            if (!Settings::values.smart_shader_throttle.GetValue()) {
-                Settings::values.smart_shader_throttle.SetValue(true);
-            }
+            // Do not mutate global smart_shader_throttle setting from scaler
 
             LOG_DEBUG(Core,
                       "DynamicPerformanceScaler: Under load (avg {:.2f} ms > budget {:.2f} ms), "

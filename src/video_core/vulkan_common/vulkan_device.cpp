@@ -614,13 +614,10 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         const auto patch_status = adrenotools_get_bcn_type(major, minor, vendor);
         const int api_level = android_get_device_api_level();
 
-        bool should_patch_bcn = api_level >= 28;
-        const bool bcn_debug_override = Settings::values.patch_old_qcom_drivers.GetValue();
-        if (bcn_debug_override != should_patch_bcn) {
-            LOG_WARNING(Render_Vulkan,
-                "BCn patch debug override active: {} (auto-detected: {})",
-                bcn_debug_override, should_patch_bcn);
-            should_patch_bcn = bcn_debug_override;
+        // Never binary-patch Adreno 8xx (Gen 8 / SM8850 / Android 15-16+) drivers in memory
+        bool should_patch_bcn = (api_level >= 28) && (major < 800);
+        if (Settings::values.patch_old_qcom_drivers.GetValue() && major < 800) {
+            should_patch_bcn = true;
         }
 
         if (patch_status == ADRENOTOOLS_BCN_PATCH) {

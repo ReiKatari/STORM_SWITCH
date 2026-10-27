@@ -418,7 +418,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             }
         }
         try {
-            val programIdHex = game!!.programIdHex
+            val currentGame = game ?: return
+            val programIdHex = currentGame.programIdHex
             val gameTitle = game?.title ?: ""
 
             if (GpuDriverHelper.isAdrenoGpu()) {
@@ -439,7 +440,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         // is set to false immediately and emulation waits until the per-game driver is extracted!
         driverViewModel.onLaunchGame(if (shouldUseCustom) game else null)
 
-        emulationState = EmulationState(game!!.path) {
+        val safeGame = game ?: return
+        emulationState = EmulationState(safeGame.path) {
             return@EmulationState driverViewModel.isInteractionAllowed.value &&
                 !isStoppingForRomSwap
         }
@@ -1490,7 +1492,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 container,
                 org.yuzu.yuzu_emu.features.settings.model.ByteSetting.AUDIO_VOLUME,
                 minValue = 0,
-                maxValue = 100,
+                maxValue = 200,
                 units = "%"
             )
 
@@ -2921,9 +2923,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 Log.warning("[EmulationFragment] Failed to update surface frame rate: ${e.message}")
             }
         }
+        if (!this::emulationState.isInitialized) {
+            return
+        }
         lifecycleScope.launch {
             driverViewModel.isInteractionAllowed.first { it }
-            if (holder.surface.isValid) {
+            if (holder.surface.isValid && this@EmulationFragment::emulationState.isInitialized) {
                 emulationState.newSurface(holder.surface)
             }
         }

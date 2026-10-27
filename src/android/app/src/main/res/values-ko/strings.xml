@@ -1060,8 +1060,8 @@
     <string name="sample_shading_fraction">Sample Shading</string>
     <string name="sample_shading_fraction_description">Allows the fragment shader to execute per sample in a multi-sampled fragment instead once per fragment. Improves graphics quality at the cost of some performance.</string>
     <string name="clocks">Clocks</string>
-    <string name="patch_old_qcom_drivers">BCn Texture Patching</string>
-    <string name="patch_old_qcom_drivers_description">Override automatic BCn texture format detection on Adreno GPUs. Normally auto-detected based on Android version (enabled on API 28+).</string>
+    <string name="patch_old_qcom_drivers">구형 Qualcomm 드라이버 패치 (BCn)</string>
+    <string name="patch_old_qcom_drivers_description">구형 Adreno 드라이버에서 BCn 텍스처 패치를 활성화합니다.</string>
     <string name="gpu_logging_header">GPU Logging</string>
     <string name="gpu_log_level">Log Level</string>
     <string name="gpu_log_level_description">Detail level for GPU logs (higher = more detail, more overhead)</string>
@@ -1080,8 +1080,8 @@
     <string name="dump_macros_description">Save Maxwell macro program files (*.macro) to dump folder. Inspect with envydis.</string>
     <string name="gpu_log_memory_tracking">Track GPU Memory</string>
     <string name="gpu_log_memory_tracking_description">Monitor GPU memory allocations and deallocations</string>
-    <string name="gpu_log_driver_debug">Driver Debug Info</string>
-    <string name="gpu_log_driver_debug_description">Capture driver-specific debug information (Turnip breadcrumbs, etc.)</string>
+    <string name="gpu_log_driver_debug">GPU 드라이버 디버그 로그</string>
+    <string name="gpu_log_driver_debug_description">Vulkan 드라이버 로드에 대한 상세 진단 로그를 기록합니다.</string>
     <string name="gpu_log_ring_buffer_size">Ring Buffer Size</string>
     <string name="gpu_log_ring_buffer_size_description">Number of recent Vulkan calls to track (default: 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">64 to 4096 entries</string>
@@ -1487,8 +1487,8 @@
     <string name="anisotropic_filtering_default">Default</string>
     <string name="anisotropic_filtering_automatic">Automatic</string>
     <string name="oboe">Oboe</string>
-    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx driver is incompatible with Adreno 8xx (Snapdragon 8 Elite). Switched to System Driver.</string>
-    <string name="apply_driver_title">Apply GPU driver</string>
+    <string name="driver_incompatible_adreno8xx">이 드라이버는 Adreno 8xx (Gen 8) GPU와 호환되지 않으며 충돌을 일으킵니다.</string>
+    <string name="apply_driver_title">GPU 드라이버를 적용하시겠습니까?</string>
     <string name="apply_driver_message">How would you like to apply the installed GPU driver?</string>
     <string name="apply_driver_globally">Globally for all</string>
     <string name="apply_driver_keep_custom">Without affecting custom settings</string>
@@ -1996,4 +1996,7 @@
     <string name="log_viewer_filter_warnings_label">Warnings</string>
     <string name="post_processing_shader">후처리 셰이더 (RetroArch)</string>
     <string name="post_processing_shader_description">실시간 RetroArch 후처리 셰이더(CRT, LCD, 휴대기, 업스케일러, 선명화, 색보정)를 적용합니다.</string>
+    <string name="apply_driver_msg">드라이버가 성공적으로 설치되었습니다. 지금 활성화하시겠습니까?</string>
+    <string name="apply_driver_positive">적용</string>
+    <string name="apply_driver_negative">나중에</string>
 </resources>

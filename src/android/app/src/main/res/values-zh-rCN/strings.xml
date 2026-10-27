@@ -554,8 +554,8 @@
     <string name="renderer_api">API</string>
     <string name="renderer_debug">图形调试</string>
     <string name="renderer_debug_description">将图形 API 设置为较慢的调试模式。</string>
-    <string name="patch_old_qcom_drivers">BCn 纹理补丁</string>
-    <string name="patch_old_qcom_drivers_description">在 Adreno GPU 上覆盖自动 BCn 纹理格式检测。通常根据 Android 版本自动检测（在 API 28 及以上启用）。</string>
+    <string name="patch_old_qcom_drivers">修补旧版高通驱动 (BCn)</string>
+    <string name="patch_old_qcom_drivers_description">为旧版 Adreno 驱动启用 BCn 纹理补丁。</string>
     <string name="fastmem">快速内存 (Fastmem)</string>
 
     <string name="log">日志记录</string>
@@ -581,8 +581,8 @@
     <string name="dump_macros_description">将 Maxwell 宏程序文件（*.macro）保存到 dump 文件夹。使用 envydis 进行检查。</string>
     <string name="gpu_log_memory_tracking">追踪 GPU 内存</string>
     <string name="gpu_log_memory_tracking_description">监控 GPU 内存的分配和释放</string>
-    <string name="gpu_log_driver_debug">驱动调试信息</string>
-    <string name="gpu_log_driver_debug_description">捕获驱动级调试信息  (Turnip breadcrumbs, 等)</string>
+    <string name="gpu_log_driver_debug">GPU 驱动调试日志</string>
+    <string name="gpu_log_driver_debug_description">记录 Vulkan 和 AdrenoTools 驱动加载的详细诊断日志。</string>
     <string name="gpu_log_ring_buffer_size">环形缓存大小</string>
     <string name="gpu_log_ring_buffer_size_description">要跟踪的最近 Vulkan 调用次数(默认值: 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">64 到 4096 条</string>
@@ -1475,8 +1475,8 @@
     <string name="gamebanana_installed_stats">总计：%1$d | 已启用：%2$d | 已禁用：%3$d</string>
     <string name="gamebanana_delete_mod_confirm">您确定要删除模组“%1$s”吗？</string>
     <string name="gamebanana_mod_deleted">模组“%1$s”已删除</string>
-    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx 驱动与 Adreno 8xx (Snapdragon 8 Elite) 不兼容。已切换至系统驱动。</string>
-    <string name="apply_driver_title">应用 GPU 驱动</string>
+    <string name="driver_incompatible_adreno8xx">此驱动与 Adreno 8xx (Gen 8) GPU 不兼容，会导致崩溃。</string>
+    <string name="apply_driver_title">应用 GPU 驱动？</string>
     <string name="apply_driver_message">您想如何应用已安装的 GPU 驱动？</string>
     <string name="apply_driver_globally">全局应用于所有</string>
     <string name="apply_driver_keep_custom">不影响自定义设置</string>
@@ -2135,4 +2135,7 @@
     <string name="post_shader_72">Sepia Vintage（温暖复古老照片色调 — 怀旧棕褐）</string>
     <string name="post_shader_73">Night Vision Goggles（绿色荧光战术夜视仪）</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow（霓虹氛围高光漫反射光晕）</string>
+    <string name="apply_driver_msg">驱动已成功安装，是否立即启用？</string>
+    <string name="apply_driver_positive">应用</string>
+    <string name="apply_driver_negative">稍后</string>
 </resources>

@@ -2,18 +2,27 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
-import org.yuzu.yuzu_emu.R
 
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.DialogGameFixBinding
 import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.model.GameFixDatabase
 import org.yuzu.yuzu_emu.utils.GameIconUtils
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.util.Locale
 
 class GameFixDialogFragment : DialogFragment() {
@@ -54,30 +63,71 @@ class GameFixDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        _binding = DialogGameFixBinding.inflate(layoutInflater)
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        dialog.window?.let { window ->
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
+        return dialog
+    }
 
-        val currentGame = game ?: return super.onCreateDialog(savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = DialogGameFixBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+        binding.root.requestApplyInsets()
+
+        val currentGame = game ?: run {
+            dismissAllowingStateLoss()
+            return
+        }
+
         val profile = GameFixDatabase.getFix(currentGame)
+        val hexId = GameFixDatabase.getProgramIdHex(currentGame)
+
+        binding.textGameFixTitle.text = currentGame.title
+        val idString = "ID: $hexId"
+        binding.textGameFixId.text = idString
+        binding.textGameFixTitleId.text = idString
+        binding.textGameFixStatusBadge.text = "🛡️ AUTO-FIX"
+
+        GameIconUtils.loadGameIcon(currentGame, binding.imageGameFixIcon)
 
         if (profile != null) {
-            binding.textGameFixTitle.text = currentGame.title
-            val hexId = GameFixDatabase.getProgramIdHex(currentGame)
-            binding.textGameFixTitleId.text = "ID: $hexId"
-            GameIconUtils.loadGameIcon(currentGame, binding.imageGameFixIcon)
-
             val isRu = Locale.getDefault().language == "ru"
             val issues = if (isRu) profile.issuesRu else profile.issuesEn
             val fixes = GameFixDatabase.getFormattedFixes(profile, isRu)
-            binding.textGameFixIssues.text = sanitizeText(issues)
-            binding.textGameFixRecommended.text = androidx.core.text.HtmlCompat.fromHtml(
+            val issuesClean = sanitizeText(issues)
+            val fixesHtml = androidx.core.text.HtmlCompat.fromHtml(
                 sanitizeText(fixes).replace("\n", "<br>"),
                 androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
             )
+            binding.textGameFixIssues.text = issuesClean
+            binding.textGameFixRecommendations.text = fixesHtml
+            binding.textGameFixRecommended.text = fixesHtml
         }
 
-        val isRu = Locale.getDefault().language == "ru"
-        val hasUserCustom = GameFixDatabase.isUserCustomConfig(currentGame)
+        context?.let { ctx ->
+            binding.checkboxDontAskAgain.isChecked = GameFixDatabase.isDontAskAgain(ctx, currentGame)
+        }
 
+        val hasUserCustom = GameFixDatabase.isUserCustomConfig(currentGame)
         if (hasUserCustom) {
             binding.cardLaunchCustom.strokeWidth = (2.2f * resources.displayMetrics.density).toInt()
             binding.cardLaunchCustom.strokeColor = android.graphics.Color.parseColor("#00E5FF")
@@ -87,7 +137,7 @@ class GameFixDialogFragment : DialogFragment() {
             val ctx = context
             val hadCustom = GameFixDatabase.isUserCustomConfig(currentGame)
             val mode = if (hadCustom) GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM else GameFixDatabase.LaunchMode.AUTO_FIX
-            try {
+            handleLaunch(mode) {
                 GameFixDatabase.selectedLaunchMode = mode
                 if (hadCustom) {
                     GameFixDatabase.applyFixWithCustomOverrides(currentGame)
@@ -102,74 +152,108 @@ class GameFixDialogFragment : DialogFragment() {
                     }
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
-            } catch (_: Exception) {}
-            val cb = onLaunchCallback
-            dismissAllowingStateLoss()
-            cb?.invoke(mode)
+            }
         }
 
         binding.cardLaunchAutoFixCustom.setOnClickListener {
             val ctx = context
-            try {
+            handleLaunch(GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM) {
                 GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM
                 GameFixDatabase.applyFixWithCustomOverrides(currentGame)
                 if (ctx != null) {
                     val msg = ctx.getString(R.string.game_fix_toast_custom_saved)
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
-            } catch (_: Exception) {}
-            val cb = onLaunchCallback
-            dismissAllowingStateLoss()
-            cb?.invoke(GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM)
+            }
         }
 
         binding.cardLaunchCustom.setOnClickListener {
             val ctx = context
-            try {
+            handleLaunch(GameFixDatabase.LaunchMode.CUSTOM) {
                 GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.CUSTOM
                 GameFixDatabase.prepareCustomLaunch(currentGame)
                 if (ctx != null) {
                     val msg = ctx.getString(R.string.game_fix_toast_launch_custom)
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
-            } catch (_: Exception) {}
-            val cb = onLaunchCallback
-            dismissAllowingStateLoss()
-            cb?.invoke(GameFixDatabase.LaunchMode.CUSTOM)
+            }
         }
 
         binding.cardLaunchGlobal.setOnClickListener {
             val ctx = context
-            try {
+            handleLaunch(GameFixDatabase.LaunchMode.GLOBAL) {
                 GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.GLOBAL
                 GameFixDatabase.prepareGlobalLaunch(currentGame)
                 if (ctx != null) {
                     val msg = ctx.getString(R.string.game_fix_toast_launch_global)
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
-            } catch (_: Exception) {}
-            val cb = onLaunchCallback
-            dismissAllowingStateLoss()
-            cb?.invoke(GameFixDatabase.LaunchMode.GLOBAL)
+            }
         }
 
-        binding.btnCancelLaunch.setOnClickListener {
+        val cancelAction = {
+            val currentG = game
+            val ctx = context
+            if (currentG != null && ctx != null && binding.checkboxDontAskAgain.isChecked) {
+                GameFixDatabase.setDontAskAgain(ctx, currentG, true)
+            }
             GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.CANCEL
             val cb = onLaunchCallback
             dismissAllowingStateLoss()
             cb?.invoke(GameFixDatabase.LaunchMode.CANCEL)
         }
 
-        val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setView(binding.root)
-            .create()
+        binding.buttonCancel.setOnClickListener { cancelAction() }
+        binding.btnCancelLaunch.setOnClickListener { cancelAction() }
+    }
 
-        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
-        return dialog
+    private fun handleLaunch(mode: GameFixDatabase.LaunchMode, action: () -> Unit) {
+        val currentGame = game
+        val ctx = context
+        if (currentGame != null && ctx != null && binding.checkboxDontAskAgain.isChecked) {
+            GameFixDatabase.setDontAskAgain(ctx, currentGame, true)
+        }
+        try {
+            action()
+        } catch (_: Exception) {}
+        val cb = onLaunchCallback
+        dismissAllowingStateLoss()
+        cb?.invoke(mode)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        dialog?.window?.let { window ->
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
     }
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
+        val currentG = game
+        val ctx = context
+        if (currentG != null && ctx != null && _binding != null && binding.checkboxDontAskAgain.isChecked) {
+            GameFixDatabase.setDontAskAgain(ctx, currentG, true)
+        }
         GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.CANCEL
         onLaunchCallback?.invoke(GameFixDatabase.LaunchMode.CANCEL)
     }

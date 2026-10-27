@@ -1,3 +1,6 @@
+#include <QProcess>
+#include <QJsonArray>
+#include <QOperatingSystemVersion>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -701,7 +704,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Initialize core emulation settings to Zero-Regression Baseline on fresh install, preserving existing user settings on upgrade
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "14.0.1";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "14.3.0";
     if (UISettings::values.config_version.GetValue().empty() && !had_existing_config_file) {
         LOG_INFO(Frontend, "Fresh configuration detected. Initializing core emulation settings to Zero-Regression Baseline (version '{}')...",
                  CURRENT_BUILD_VERSION);
@@ -739,28 +742,6 @@ MainWindow::MainWindow(bool has_broken_vulkan)
         UISettings::values.config_version.SetValue(std::string(CURRENT_BUILD_VERSION));
         config->SaveAllValues();
     } else if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
-        LOG_INFO(Frontend, "Upgrading configuration version '{}' -> '{}': sanitizing global settings polluted by previous Auto-Fix sessions...",
-                 UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
-        Settings::RestoreGlobalState(false);
-        Settings::values.gpu_accuracy.SetValue(Settings::values.gpu_accuracy.GetDefault());
-        Settings::values.cpu_accuracy.SetValue(Settings::values.cpu_accuracy.GetDefault());
-        Settings::values.dma_accuracy.SetValue(Settings::values.dma_accuracy.GetDefault());
-        Settings::values.gpu_fence_behavior.SetValue(Settings::values.gpu_fence_behavior.GetDefault());
-        Settings::values.vram_usage_mode.SetValue(Settings::values.vram_usage_mode.GetDefault());
-        Settings::values.nvdec_emulation.SetValue(Settings::values.nvdec_emulation.GetDefault());
-        Settings::values.accelerate_astc.SetValue(Settings::values.accelerate_astc.GetDefault());
-        Settings::values.astc_recompression.SetValue(Settings::values.astc_recompression.GetDefault());
-        Settings::values.drs_resolution_lock.SetValue(Settings::values.drs_resolution_lock.GetDefault());
-        Settings::values.sync_memory_operations.SetValue(Settings::values.sync_memory_operations.GetDefault());
-        Settings::values.renderer_force_max_clock.SetValue(Settings::values.renderer_force_max_clock.GetDefault());
-        Settings::values.early_release_fences.SetValue(Settings::values.early_release_fences.GetDefault());
-        Settings::values.use_fast_gpu_time.SetValue(Settings::values.use_fast_gpu_time.GetDefault());
-        Settings::values.use_asynchronous_shaders.SetValue(Settings::values.use_asynchronous_shaders.GetDefault());
-        Settings::values.use_reactive_flushing.SetValue(Settings::values.use_reactive_flushing.GetDefault());
-        Settings::values.use_vulkan_driver_pipeline_cache.SetValue(Settings::values.use_vulkan_driver_pipeline_cache.GetDefault());
-        Settings::values.barrier_feedback_loops.SetValue(Settings::values.barrier_feedback_loops.GetDefault());
-        Settings::values.enable_compute_pipelines.SetValue(Settings::values.enable_compute_pipelines.GetDefault());
-        Settings::values.memory_layout_mode.SetValue(Settings::values.memory_layout_mode.GetDefault());
         UISettings::values.config_version.SetValue(std::string(CURRENT_BUILD_VERSION));
         config->SaveAllValues();
     }
@@ -4341,6 +4322,7 @@ struct ExtraStormSessionBackup {
     bool cpuopt_unsafe_host_mmu{true};
     bool cpuopt_unsafe_reduce_fp_error{true};
     bool cpuopt_unsafe_ignore_standard_fpcr{true};
+    std::vector<std::pair<Settings::BasicSetting*, std::string>> all_global_settings;
 } s_extra_session_backup;
 } // namespace
 
@@ -4425,6 +4407,15 @@ void MainWindow::StormSessionBackup::Capture() {
     s_extra_session_backup.cpuopt_unsafe_host_mmu = Settings::values.cpuopt_unsafe_host_mmu.GetValue();
     s_extra_session_backup.cpuopt_unsafe_reduce_fp_error = Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue();
     s_extra_session_backup.cpuopt_unsafe_ignore_standard_fpcr = Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue();
+    s_extra_session_backup.all_global_settings.clear();
+    for (const auto& [category, settings_list] : Settings::values.linkage.by_category) {
+        (void)category;
+        for (auto* setting : settings_list) {
+            if (setting != nullptr) {
+                s_extra_session_backup.all_global_settings.emplace_back(setting, setting->ToStringGlobal());
+            }
+        }
+    }
     is_active = true;
 }
 
@@ -4507,6 +4498,15 @@ void MainWindow::StormSessionBackup::Restore() {
     Settings::values.cpuopt_unsafe_host_mmu.SetValue(s_extra_session_backup.cpuopt_unsafe_host_mmu);
     Settings::values.cpuopt_unsafe_reduce_fp_error.SetValue(s_extra_session_backup.cpuopt_unsafe_reduce_fp_error);
     Settings::values.cpuopt_unsafe_ignore_standard_fpcr.SetValue(s_extra_session_backup.cpuopt_unsafe_ignore_standard_fpcr);
+    for (const auto& [setting, saved_global_val] : s_extra_session_backup.all_global_settings) {
+        if (setting != nullptr) {
+            setting->SetGlobal(true);
+            #ifdef LoadString
+#undef LoadString
+#endif
+            setting->LoadString(saved_global_val);
+        }
+    }
 
     Settings::UpdateGPUAccuracy();
     Settings::UpdateRescalingInfo();
@@ -7506,6 +7506,7 @@ void MainWindow::OnConfigure() {
     Settings::SetConfiguringGlobal(true);
 
     auto reapply_running_session_overrides = [this, had_active_session_backup, had_active_autofix]() {
+        Settings::SetConfiguringGlobal(false);
         if (!had_active_session_backup && !emulation_running) {
             return;
         }
@@ -7556,6 +7557,10 @@ void MainWindow::OnConfigure() {
         // This is here to avoid applying changes if the user hit Apply, made some changes, then hit
         // Cancel
         configure_dialog.ApplyConfiguration();
+        config->SaveAllValues();
+        reapply_running_session_overrides();
+        UpdateStatusButtons();
+    } else if (UISettings::values.configuration_applied) {
         config->SaveAllValues();
         reapply_running_session_overrides();
         UpdateStatusButtons();
@@ -7621,7 +7626,9 @@ void MainWindow::OnConfigure() {
 
     UISettings::values.configuration_applied = false;
 
-    config->SaveAllValues();
+    if (!emulation_running && !m_session_backup.is_active) {
+        config->SaveAllValues();
+    }
     UpdateStatusButtons();
 
     if ((UISettings::values.hide_mouse || Settings::values.mouse_panning) && emulation_running) {
@@ -8549,7 +8556,8 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
         nam->deleteLater();
 
         auto handle_version_check = [this, manual_check](const QString& tag_name, const QString& release_name,
-                                                          const QString& release_body, const QString& html_url) {
+                                                          const QString& release_body, const QString& html_url,
+                                                          const QString& direct_zip_url) {
             QString clean_tag = tag_name.trimmed();
             if (clean_tag.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
                 clean_tag = clean_tag.mid(1);
@@ -8593,9 +8601,17 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
             }
 
             if (is_newer) {
+                QString zip_url = direct_zip_url;
+                if (zip_url.isEmpty()) {
+                    const bool is_win11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 22000);
+                    const QString suffix = is_win11 ? QStringLiteral("Windows11.zip") : QStringLiteral("Windows10.zip");
+                    zip_url = QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/download/%1/STORM_SWITCH_%2_%3")
+                                  .arg(tag_name.trimmed(), clean_tag, suffix);
+                }
+
                 QDialog dlg(this);
                 dlg.setWindowTitle(tr("Доступно обновление STORM SWITCH"));
-                dlg.resize(650, 460);
+                dlg.resize(660, 470);
                 dlg.setStyleSheet(QStringLiteral(
                     "QDialog { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', sans-serif; }"
                     "QLabel { color: #ffffff; }"
@@ -8620,13 +8636,19 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
                 notes_box->setPlainText(release_body.isEmpty() ? tr("Информация об изменениях не указана.") : release_body);
 
                 auto* btn_layout = new QHBoxLayout();
-                auto* download_btn = new QPushButton(tr("🚀 Скачать обновление"), &dlg);
+                auto* download_btn = new QPushButton(tr("🚀 Обновить автоматически"), &dlg);
                 download_btn->setObjectName(QStringLiteral("DownloadBtn"));
+                auto* web_btn = new QPushButton(tr("🌐 Открыть GitHub"), &dlg);
                 auto* close_btn = new QPushButton(tr("Позже"), &dlg);
 
-                connect(download_btn, &QPushButton::clicked, [&dlg, html_url]() {
+                bool start_auto_update = false;
+                connect(download_btn, &QPushButton::clicked, [&dlg, &start_auto_update]() {
+                    start_auto_update = true;
+                    dlg.accept();
+                });
+                connect(web_btn, &QPushButton::clicked, [&dlg, html_url]() {
                     const QString target_url = html_url.isEmpty()
-                        ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases")
+                        ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
                         : html_url;
                     QDesktopServices::openUrl(QUrl(target_url));
                     dlg.accept();
@@ -8635,6 +8657,7 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
 
                 btn_layout->addStretch();
                 btn_layout->addWidget(close_btn);
+                btn_layout->addWidget(web_btn);
                 btn_layout->addWidget(download_btn);
 
                 layout->addWidget(title);
@@ -8643,6 +8666,126 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
                 layout->addLayout(btn_layout);
 
                 dlg.exec();
+
+                if (start_auto_update) {
+                    QProgressDialog progress(tr("Скачивание обновления STORM SWITCH %1...").arg(clean_tag),
+                                             tr("Отмена (ESC)"), 0, 100, this);
+                    progress.setWindowTitle(tr("Автообновление STORM SWITCH"));
+                    progress.setWindowModality(Qt::WindowModal);
+                    progress.setMinimumDuration(0);
+                    progress.setValue(0);
+                    progress.show();
+
+                    const QString temp_dir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) +
+                                             QStringLiteral("/storm_switch_update_") + clean_tag;
+                    QDir(temp_dir).removeRecursively();
+                    QDir().mkpath(temp_dir);
+                    const QString zip_path = temp_dir + QStringLiteral("/update.zip");
+
+                    QNetworkAccessManager dl_nam;
+                    QNetworkRequest dl_req{QUrl(zip_url)};
+                    dl_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
+                    dl_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+
+                    QNetworkReply* dl_reply = dl_nam.get(dl_req);
+                    QEventLoop loop;
+                    QFile out_file(zip_path);
+                    out_file.open(QIODevice::WriteOnly);
+
+                    connect(dl_reply, &QNetworkReply::readyRead, [&]() {
+                        out_file.write(dl_reply->readAll());
+                    });
+                    connect(dl_reply, &QNetworkReply::downloadProgress, [&](qint64 rec, qint64 tot) {
+                        if (tot > 0) {
+                            progress.setValue(static_cast<int>((rec * 100) / tot));
+                        }
+                    });
+                    connect(&progress, &QProgressDialog::canceled, dl_reply, &QNetworkReply::abort);
+                    connect(dl_reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+                    loop.exec();
+
+                    out_file.write(dl_reply->readAll());
+                    out_file.flush();
+                    out_file.close();
+
+                    if (progress.wasCanceled()) {
+                        dl_reply->deleteLater();
+                        return;
+                    }
+                    if (dl_reply->error() != QNetworkReply::NoError || QFileInfo(zip_path).size() < 1024 * 1024) {
+                        dl_reply->deleteLater();
+                        const QString target_url = html_url.isEmpty()
+                            ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
+                            : html_url;
+                        QDesktopServices::openUrl(QUrl(target_url));
+                        return;
+                    }
+                    dl_reply->deleteLater();
+
+                    progress.setLabelText(tr("Распаковка и проверка цифровой подписи PE (MZ)..."));
+                    progress.setValue(95);
+                    QCoreApplication::processEvents();
+
+                    const QString extract_dir = temp_dir + QStringLiteral("/extracted");
+                    QDir().mkpath(extract_dir);
+                    QProcess tar_proc;
+                    tar_proc.start(QStringLiteral("tar.exe"), {QStringLiteral("-xf"), zip_path, QStringLiteral("-C"), extract_dir});
+                    if (!tar_proc.waitForFinished(60000) || tar_proc.exitCode() != 0) {
+                        QProcess ps_proc;
+                        ps_proc.start(QStringLiteral("powershell.exe"),
+                                      {QStringLiteral("-NoProfile"), QStringLiteral("-Command"),
+                                       QStringLiteral("Expand-Archive -LiteralPath '%1' -DestinationPath '%2' -Force").arg(zip_path, extract_dir)});
+                        ps_proc.waitForFinished(90000);
+                    }
+
+                    QString staging_root = extract_dir;
+                    if (!QFileInfo::exists(staging_root + QStringLiteral("/STORM_SWITCH.exe"))) {
+                        const auto subdirs = QDir(extract_dir).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+                        for (const auto& sd : subdirs) {
+                            if (QFileInfo::exists(sd.absoluteFilePath() + QStringLiteral("/STORM_SWITCH.exe"))) {
+                                staging_root = sd.absoluteFilePath();
+                                break;
+                            }
+                        }
+                    }
+
+                    QFile pe_check(staging_root + QStringLiteral("/STORM_SWITCH.exe"));
+                    bool valid_pe = false;
+                    if (pe_check.open(QIODevice::ReadOnly)) {
+                        const QByteArray magic = pe_check.read(2);
+                        valid_pe = (magic.size() == 2 && magic[0] == 'M' && magic[1] == 'Z');
+                        pe_check.close();
+                    }
+
+                    if (!valid_pe) {
+                        QMessageBox::warning(this, tr("Ошибка обновления"),
+                                             tr("Не удалось проверить целостность скачанного архива (PE MZ). Открываю страницу релиза на GitHub."));
+                        QDesktopServices::openUrl(QUrl(html_url.isEmpty()
+                            ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
+                            : html_url));
+                        return;
+                    }
+
+                    const QString app_dir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+                    const QString app_exe = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
+                    const QString native_stage = QDir::toNativeSeparators(staging_root);
+                    const QString bat_path = QDir::toNativeSeparators(temp_dir + QStringLiteral("/apply_update.bat"));
+
+                    QFile bat_file(bat_path);
+                    if (bat_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                        QTextStream ts(&bat_file);
+                        ts << "@echo off\n";
+                        ts << "chcp 65001 >nul\n";
+                        ts << "timeout /t 2 /nobreak >nul\n";
+                        ts << "xcopy /E /Y /I \"" << native_stage << "\\*\" \"" << app_dir << "\\\" >nul 2>&1\n";
+                        ts << "start \"\" \"" << app_exe << "\"\n";
+                        ts << "rmdir /S /Q \"" << QDir::toNativeSeparators(temp_dir) << "\" >nul 2>&1\n";
+                        bat_file.close();
+                    }
+
+                    QProcess::startDetached(QStringLiteral("cmd.exe"), {QStringLiteral("/c"), bat_path});
+                    QCoreApplication::quit();
+                }
             } else if (manual_check) {
                 QMessageBox::information(this, tr("STORM SWITCH — Обновления"),
                                          tr("У вас установлена последняя актуальная версия STORM SWITCH (%1).\nОбновлений не найдено.").arg(current_ver));
@@ -8650,8 +8793,6 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
         };
 
         if (reply->error() != QNetworkReply::NoError) {
-            // Fallback: GitHub API may return HTTP 403 rate limit for unauthenticated IP.
-            // Query the web releases/latest redirect which is never rate limited.
             auto* fallback_nam = new QNetworkAccessManager(this);
             QNetworkRequest fallback_req(QUrl(QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")));
             fallback_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"));
@@ -8670,42 +8811,64 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
                     target_url = fallback_reply->url().toString();
                 }
 
-                static const QRegularExpression tag_regex(QStringLiteral(R"(/releases/tag/v?([0-9]+\.[0-9]+(?:\.[0-9]+)*))"));
+                static const QRegularExpression tag_regex(QStringLiteral(R"(/releases/tag/(v?[0-9]+\.[0-9]+(?:\.[0-9]+)*))"));
                 const auto match = tag_regex.match(target_url);
                 if (match.hasMatch()) {
-                    const QString latest_ver = match.captured(1);
-                    handle_version_check(latest_ver, tr("Релиз %1").arg(latest_ver),
-                                         tr("Перейдите по ссылке для загрузки обновлений."),
-                                         QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest"));
+                    const QString raw_tag = match.captured(1);
+                    QString clean_ver = raw_tag;
+                    if (clean_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                        clean_ver = clean_ver.mid(1);
+                    }
+                    const bool is_win11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 22000);
+                    const QString suffix = is_win11 ? QStringLiteral("Windows11.zip") : QStringLiteral("Windows10.zip");
+                    const QString zip_url = QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/download/%1/STORM_SWITCH_%2_%3")
+                                                .arg(raw_tag, clean_ver, suffix);
+                    handle_version_check(clean_ver, tr("STORM SWITCH %1").arg(clean_ver),
+                                         tr("Доступна новая версия STORM SWITCH %1.\nНажмите «🚀 Обновить автоматически» для автоматической загрузки и установки.").arg(clean_ver),
+                                         QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest"),
+                                         zip_url);
                     return;
                 }
 
                 if (manual_check) {
-                    QMessageBox::information(this, tr("STORM SWITCH — Обновления"),
-                                             tr("У вас установлена последняя актуальная версия STORM SWITCH (%1).").arg(QString::fromStdString(Common::g_build_version)));
+                    QMessageBox::warning(this, tr("Ошибка проверки обновлений"),
+                                         tr("Не удалось связаться с сервером GitHub:\n%1").arg(fallback_reply->errorString()));
                 }
             });
             return;
         }
 
-        const auto doc = QJsonDocument::fromJson(reply->readAll());
+        const QByteArray data = reply->readAll();
+        const QJsonDocument doc = QJsonDocument::fromJson(data);
         if (!doc.isObject()) {
-            if (manual_check) {
-                QMessageBox::warning(this, tr("Проверка обновлений"), tr("Получен некорректный ответ от сервера обновлений."));
-            }
             return;
         }
 
-        const auto obj = doc.object();
-        const QString tag_name = obj[QStringLiteral("tag_name")].toString().trimmed();
-        const QString release_name = obj[QStringLiteral("name")].toString().trimmed();
-        const QString release_body = obj[QStringLiteral("body")].toString();
-        const QString html_url = obj[QStringLiteral("html_url")].toString().trimmed();
+        const QJsonObject obj = doc.object();
+        const QString tag_name = obj.value(QStringLiteral("tag_name")).toString();
+        const QString release_name = obj.value(QStringLiteral("name")).toString();
+        const QString release_body = obj.value(QStringLiteral("body")).toString();
+        const QString html_url = obj.value(QStringLiteral("html_url")).toString();
 
-        handle_version_check(tag_name, release_name, release_body, html_url);
+        QString selected_zip_url;
+        const bool is_win11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 22000);
+        const QString preferred_token = is_win11 ? QStringLiteral("Windows11.zip") : QStringLiteral("Windows10.zip");
+        const QJsonArray assets_arr = obj.value(QStringLiteral("assets")).toArray();
+        for (const auto& item : assets_arr) {
+            const QJsonObject aobj = item.toObject();
+            const QString dl_url = aobj.value(QStringLiteral("browser_download_url")).toString();
+            if (dl_url.endsWith(preferred_token, Qt::CaseInsensitive)) {
+                selected_zip_url = dl_url;
+                break;
+            }
+            if (selected_zip_url.isEmpty() && dl_url.endsWith(QStringLiteral(".zip"), Qt::CaseInsensitive)) {
+                selected_zip_url = dl_url;
+            }
+        }
+
+        handle_version_check(tag_name, release_name, release_body, html_url, selected_zip_url);
     });
 }
-
 void MainWindow::OnAbout() {
     AboutDialog aboutDialog(this);
     aboutDialog.exec();

@@ -651,7 +651,7 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                     std::memset(data + bytes_read + read, 0, copy_size - read);
                 }
             } else {
-                constexpr std::size_t MAX_CACHED_BLOCKS = 64;
+                constexpr std::size_t MAX_CACHED_BLOCKS = 512;
                 bool hit = false;
                 {
                     std::unique_lock<std::mutex> cache_lock(cache_mutex);

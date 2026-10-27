@@ -188,7 +188,21 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
                 continue;
             }
 
+            if (header_reader.GetEncryptionType() == NcaFsHeader::EncryptionType::AesCtrEx) {
+                is_update = true;
+            }
+
             if (header_reader.GetFsType() == NcaFsHeader::FsType::RomFs) {
+                if (rights_id != RightsId{} && !is_update && filesystems[i] != nullptr &&
+                    filesystems[i]->GetSize() >= sizeof(u64)) {
+                    u64 romfs_header_size = 0;
+                    if (filesystems[i]->ReadObject(&romfs_header_size, 0) == sizeof(u64)) {
+                        if (romfs_header_size != 0x50 && romfs_header_size != 0x28) {
+                            // Decrypted RomFS header size is invalid; TitleKey is incorrect
+                            continue;
+                        }
+                    }
+                }
                 files.push_back(filesystems[i]);
                 romfs = files.back();
             }
@@ -206,12 +220,19 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
                             exefs = dirs.back();
                         }
                     }
+                } else if (rights_id != RightsId{}) {
+                    // Encrypted PartitionFS (e.g. ExeFS) failed PFS0 magic validation with this TitleKey
+                    files.clear();
+                    dirs.clear();
+                    romfs = nullptr;
+                    exefs = nullptr;
+                    logo = nullptr;
+                    return false;
                 }
             }
-
-            if (header_reader.GetEncryptionType() == NcaFsHeader::EncryptionType::AesCtrEx) {
-                is_update = true;
-            }
+        }
+        if (GetType() == NCAContentType::Program && exefs == nullptr && !is_update) {
+            return false;
         }
         return !files.empty() || !dirs.empty() || is_update;
     };
@@ -219,7 +240,7 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
     if (rights_id != RightsId{}) {
         bool success = TryOpenFilesystems(decrypted_titlekey);
         if (!success && decrypted_titlekey != raw_titlekey) {
-            LOG_INFO(Loader, "NCA: Decrypted TitleKey failed, falling back to raw pre-decrypted TitleKey");
+            LOG_DEBUG(Loader, "NCA: Decrypted TitleKey failed, falling back to raw pre-decrypted TitleKey");
             success = TryOpenFilesystems(raw_titlekey);
         }
     } else {

@@ -1204,11 +1204,11 @@
     <string name="dump_guest_shaders_description">Maxwellシェーダーバイトコードファイル(*.ash)をダンプフォルダに保存します。</string>
     <string name="dump_macros">Maxwellマクロを出力</string>
     <string name="dump_macros_description">Maxwellマクロプログラムファイル(*.macro)をダンプフォルダに保存します。</string>
-    <string name="gpu_log_driver_debug_description">ドライバ固有のデバッグ情報を取得します(Turnipなど)。</string>
+    <string name="gpu_log_driver_debug_description">Vulkanドライバー読み込みの詳細な診断ログを記録します。</string>
     <string name="gpu_log_ring_buffer_size">リングバッファサイズ</string>
     <string name="gpu_log_memory_tracking">GPUメモリを監視</string>
     <string name="gpu_log_memory_tracking_description">GPUメモリの割り当てと解放を監視します。</string>
-    <string name="gpu_log_driver_debug">ドライバデバッグ情報</string>
+    <string name="gpu_log_driver_debug">GPUドライバーデバッグログ</string>
     <string name="gpu_log_ring_buffer_size_description">追跡するVulkan呼び出しの数(デフォルト: 512)。</string>
     <string name="gpu_log_ring_buffer_size_hint">64〜4096エントリ</string>
     <string name="quick_settings">クイック設定</string>
@@ -1238,8 +1238,8 @@
     <string name="pipeline_worker_cores_description">Vulkanパイプラインのコンパイルに使用するコア数を管理します。</string>
     <string name="fast_gpu_time_description">GPU処理が実際より早く完了したと認識させ、解像度低下を防ぎます。</string>
     <string name="sample_shading_fraction_description">サンプルごとのフラグメントシェーダー実行を許可し画質を向上させます。</string>
-    <string name="patch_old_qcom_drivers">BCnテクスチャパッチ</string>
-    <string name="patch_old_qcom_drivers_description">Adreno GPUでのBCnテクスチャ形式の自動検出を上書きします。</string>
+    <string name="patch_old_qcom_drivers">古いQualcommドライバーにパッチを適用 (BCn)</string>
+    <string name="patch_old_qcom_drivers_description">古いAdrenoドライバー向けにBCnテクスチャパッチを有効化します。</string>
     <string name="license_fidelityfx_fsr">FidelityFX FSR</string>
     <string name="license_fidelityfx_fsr_link">https://github.com/GPUOpen-Effects/FidelityFX-FSR</string>
     <string name="license_fidelityfx_fsr_copyright">Copyright (c) 2021 Advanced Micro Devices, Inc.</string>
@@ -1297,8 +1297,8 @@
     <string name="gamebanana_installed_stats">合計: %1$d | 有効: %2$d | 無効: %3$d</string>
     <string name="gamebanana_delete_mod_confirm">Mod「%1$s」を削除してもよろしいですか？</string>
     <string name="gamebanana_mod_deleted">Mod「%1$s」を削除しました</string>
-    <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx ドライバは Adreno 8xx (Snapdragon 8 Elite) と互換性がありません。システムドライバに切り替えました。</string>
-    <string name="apply_driver_title">GPU ドライバーの適用</string>
+    <string name="driver_incompatible_adreno8xx">このドライバーは Adreno 8xx (Gen 8) GPU と互換性がなく、クラッシュの原因となります。</string>
+    <string name="apply_driver_title">GPUドライバーを適用しますか？</string>
     <string name="apply_driver_message">インストールした GPU ドライバーをどのように適用しますか？</string>
     <string name="apply_driver_globally">すべてにグローバル適用</string>
     <string name="apply_driver_keep_custom">カスタム設定を変更しない</string>
@@ -2190,4 +2190,7 @@
     <string name="post_shader_72">Sepia Vintage（温かみのあるアンティーク写真調 — セピア）</string>
     <string name="post_shader_73">Night Vision Goggles（緑色蛍光タクティカル暗視ゴーグル）</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow（ネオン風アトモスフェリック・ハイライトグロー）</string>
+    <string name="apply_driver_msg">ドライバーが正常にインストールされました。今すぐ有効にしますか？</string>
+    <string name="apply_driver_positive">適用</string>
+    <string name="apply_driver_negative">後で</string>
 </resources>

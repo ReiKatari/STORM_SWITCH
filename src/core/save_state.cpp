@@ -509,12 +509,39 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
                                          thread_arg + 0x4000);
                         }
 
-                        // Protect only the nn::os::ThreadType structure itself (512 bytes), never +0x140000
-                        // in .bss where games like Animal Well store their room tilemap & entity arrays!
+                        // For background threads (e.g. AudioThread), protect the 32 KB thread control &
+                        // voice/mutex block [ttp_page, ttp_page + 0x8000] (e.g. 0x82852000..0x8285a000),
+                        // stopping before 0x8285a000 where room tilemap & entity arrays begin, AND follow
+                        // any nn::audio workbuffer pointer table inside ttp_page (e.g. 0x82929000..0x82989000).
                         if (!is_main_thread && layout.sdk_start > 0 && thread_type_ptr < layout.sdk_start) {
-                            ctx.AddRange(thread_type_ptr >= 0x80 ? thread_type_ptr - 0x80
-                                                                 : thread_type_ptr,
-                                         thread_type_ptr + 0x240);
+                            const u64 ttp_page = thread_type_ptr & ~0xFFFULL;
+                            ctx.AddRange(ttp_page, ttp_page + 0x8000);
+                            if (const u8* tp_page_ptr = memory.GetPointerSilent(Common::ProcessAddress{ttp_page})) {
+                                const auto* w64 = reinterpret_cast<const u64*>(tp_page_ptr);
+                                for (std::size_t k = 0; k < (V2_CHUNK_SIZE / sizeof(u64)); ++k) {
+                                    if (ctx.IsSdkPointer(w64[k])) {
+                                        std::vector<u64> wb_ptrs;
+                                        const std::size_t lim = std::min<std::size_t>(V2_CHUNK_SIZE / sizeof(u64), k + 24);
+                                        for (std::size_t m = k + 1; m < lim; ++m) {
+                                            const u64 p = w64[m];
+                                            if (p >= 0x80000000ULL && p < 0x8000000000ULL && !ctx.IsSdkPointer(p) &&
+                                                !(layout.main_code_end > layout.main_code_start &&
+                                                  p >= layout.main_code_start && p < layout.main_code_end) &&
+                                                (p < ttp_page || p >= ttp_page + 0x8000)) {
+                                                wb_ptrs.push_back(p);
+                                            }
+                                        }
+                                        if (wb_ptrs.size() >= 4) {
+                                            std::sort(wb_ptrs.begin(), wb_ptrs.end());
+                                            const u64 c_min = wb_ptrs.front();
+                                            const u64 c_max = wb_ptrs.back();
+                                            if (c_max >= c_min && (c_max - c_min) <= 0x100000ULL) {
+                                                ctx.AddRange(c_min & ~0xFFFULL, (c_max + 0x1FFFULL) & ~0xFFFULL);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -626,13 +653,18 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
         // NEVER blindly protect +0x68000 around registers in .bss/heap, as that blocks restoration
         // of the game's level tilemap, collision grid, and room entities!
         if (!is_main_thread) {
+            const bool in_sdk_call = (layout.sdk_end > layout.sdk_start &&
+                                      tctx.pc >= layout.sdk_start && tctx.pc < layout.sdk_end);
             for (std::size_t reg_idx = 0; reg_idx < 29; ++reg_idx) {
                 const u64 rv = tctx.r[reg_idx];
                 if ((rv & 7ULL) == 0 && rv >= 0x80000000ULL && rv < 0x8000000000ULL) {
                     if (layout.sdk_start != 0 && rv >= layout.sdk_start && rv < layout.sdk_end) {
                         ctx.AddRange(rv >= 0x100 ? rv - 0x100 : rv, rv + 0x4000);
-                    } else if (!(layout.sdk_end > layout.sdk_start && rv >= layout.sdk_start && rv < layout.sdk_end)) {
+                    } else {
                         const u64 base_page = rv & ~0xFFFULL;
+                        if (in_sdk_call) {
+                            ctx.AddRange(base_page, base_page + 0x4000);
+                        }
                         for (int delta = -2; delta <= 0; ++delta) {
                             const u64 cand_page = base_page + static_cast<s64>(delta) * 0x1000;
                             if (cand_page < 0x80000000ULL) {
@@ -640,15 +672,15 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
                             }
                             if (const u8* cp = memory.GetPointerSilent(Common::ProcessAddress{cand_page})) {
                                 const auto* w64 = reinterpret_cast<const u64*>(cp);
-                                bool page_has_sdk = false;
+                                bool has_sdk_ptr = false;
                                 for (std::size_t k = 0; k < (V2_CHUNK_SIZE / sizeof(u64)); ++k) {
                                     if (ctx.IsSdkPointer(w64[k])) {
-                                        page_has_sdk = true;
+                                        has_sdk_ptr = true;
                                         break;
                                     }
                                 }
-                                if (page_has_sdk) {
-                                    ctx.AddRange(cand_page, base_page + 0x1000);
+                                if (has_sdk_ptr) {
+                                    ctx.AddRange(cand_page, base_page + 0x2000);
                                 }
                             }
                         }
@@ -799,8 +831,8 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     // Pause emulation briefly while capturing RAM snapshot (must hold returned lock!)
     auto stall_lock = system.StallApplication();
 
-    // Flush GPU modified buffers and persistent render target / dynamic textures to guest RAM
-    const auto gpu_surface_ranges = system.GPU().SyncAndSnapshotForSaveState();
+    // Do not snapshot raw Uncached GPU physical surfaces (prevents corrupting live NVN swapchain/command rings)
+    const std::vector<std::pair<DAddr, std::size_t>> gpu_surface_ranges{};
 
     auto snapshot = std::make_shared<CachedSaveState>();
     const u64 dram_size = Kernel::Board::Nintendo::Nx::KSystemControl::Init::GetIntendedMemorySize();
@@ -1114,34 +1146,22 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
             static constexpr u64 kPhysicalRegionBit = (1ULL << 63);
             const bool is_phys_gpu_region = (reg_hdr.address & kPhysicalRegionBit) != 0;
             if (is_phys_gpu_region) {
-                const DAddr base_daddr = reg_hdr.address & ~kPhysicalRegionBit;
-                auto& device_memory = system.DeviceMemory();
                 for (u32 c = 0; c < reg_hdr.num_chunks; ++c) {
-                    const DAddr page_daddr = base_daddr + static_cast<u64>(c) * V2_CHUNK_SIZE;
                     const std::size_t chunk_len = static_cast<std::size_t>(
                         std::min<u64>(V2_CHUNK_SIZE, reg_hdr.size - static_cast<u64>(c) * V2_CHUNK_SIZE));
                     const bool is_stored = (bitmask[c / 8] & (1u << (c % 8))) != 0;
-                    const u8* target_data = zero_page.data();
                     if (is_stored) {
                         if (cursor + chunk_len > decompressed.size()) {
                             break;
                         }
-                        target_data = decompressed.data() + cursor;
                         cursor += chunk_len;
                     }
-                    if (u8* dptr = device_memory.GetPointer<u8>(page_daddr)) {
-                        if (std::memcmp(dptr, target_data, chunk_len) != 0) {
-                            std::memcpy(dptr, target_data, chunk_len);
-                            diff_bytes_written += chunk_len;
-                        }
-                    }
                 }
-                modified_phys_ranges.emplace_back(base_daddr, reg_hdr.size);
                 continue;
             }
 
             // Check whether this saved region is in our allowed safe writable regions list
-            bool region_safe = (heap_start != 0 && reg_hdr.address >= heap_start);
+            bool region_safe = false;
             if (!region_safe) {
                 for (const auto& allowed : layout.writable_regions) {
                     if (reg_hdr.address >= allowed.address &&
