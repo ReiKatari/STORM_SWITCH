@@ -846,7 +846,6 @@ void RasterizerVulkan::FlushAndSnapshotForSaveState(
     {
         std::scoped_lock lock{buffer_cache.mutex};
         buffer_cache.DownloadAllGpuModified();
-        buffer_cache.SnapshotGpuBuffers(out_surface_ranges);
     }
     {
         std::scoped_lock lock{texture_cache.mutex};
@@ -889,7 +888,6 @@ void RasterizerVulkan::InvalidateForLoadState(
             continue;
         }
         query_cache.InvalidateRegion(addr, size);
-        pipeline_cache.InvalidateRegion(addr, size);
     }
     if (maxwell3d) {
         maxwell3d->dirty.flags.set();

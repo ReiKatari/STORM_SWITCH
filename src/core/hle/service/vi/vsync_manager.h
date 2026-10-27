@@ -34,17 +34,19 @@ public:
 
     void SignalVsync(Kernel::KernelCore& kernel);
     void LinkVsyncEvent(Event* event) {
-        std::scoped_lock lk{*m_mutex};
+        std::scoped_lock lk{GetVsyncMutex()};
         m_vsync_events.insert(event);
     }
     void UnlinkVsyncEvent(Event* event) {
-        std::scoped_lock lk{*m_mutex};
+        std::scoped_lock lk{GetVsyncMutex()};
         m_vsync_events.erase(event);
     }
 
 private:
-    // Heap-allocated so the manager stays movable inside unordered_dense::map.
-    std::unique_ptr<std::mutex> m_mutex = std::make_unique<std::mutex>();
+    static std::mutex& GetVsyncMutex() {
+        static std::mutex s_mutex;
+        return s_mutex;
+    }
     std::set<Event*> m_vsync_events;
 };
 

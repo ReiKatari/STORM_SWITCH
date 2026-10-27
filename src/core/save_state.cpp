@@ -15,6 +15,7 @@
 #include "common/alignment.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
+#include "common/thread.h"
 #include "common/zstd_compression.h"
 #include "core/arm/arm_interface.h"
 #include "core/arm/exclusive_monitor.h"
@@ -33,8 +34,7 @@
 #include "core/hle/service/audio/audio_renderer_manager.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/save_state.h"
-#include "video_core/gpu.h"
-#include "video_core/host1x/host1x.h"
+#include "video_core/gpu.h" 
 
 namespace Core {
 
@@ -213,8 +213,8 @@ ProcessLayoutAnalysis AnalyzeProcessLayout(Kernel::KProcess& process, bool allow
     };
     std::vector<CandidateRegion> candidates;
     u64 max_normal_heap_size = 0;
-    [[maybe_unused]] u64 total_code_data_size = 0;
-    [[maybe_unused]] bool has_uncached_carvings = false;
+    u64 total_code_data_size = 0;
+    bool has_uncached_carvings = false;
 
     auto address = start;
     while (address < end) {
@@ -297,9 +297,16 @@ ProcessLayoutAnalysis AnalyzeProcessLayout(Kernel::KProcess& process, bool allow
             }
             out.writable_regions.push_back(WritableRegion{c.address, c.size});
         } else {
-            // Exclude only tiny 4KB-64KB guard/TLS fragments when a main heap exists;
-            // SyncProtectionContext protects TLS, ThreadType, stacks, and SDK mutexes.
-            if (max_normal_heap_size >= 64ULL * 1024 * 1024 && c.size < 64ULL * 1024) {
+            // When the game has a massive self-contained .bss / CodeData arena (>= 128 MB) and
+            // Uncached GPU carvings inside the Normal heap, the Normal heap is used exclusively
+            // by nnSdk / NVN graphics driver allocators and must not be rolled back out of sync
+            // with the Uncached GPU state.
+            if (total_code_data_size >= 128ULL * 1024 * 1024 && has_uncached_carvings) {
+                continue;
+            }
+            // If the game has a large main Normal heap (>= 64 MB), exclude small carved-out
+            // SDK/NVN/TLS/stack startup fragments (< 32 MB) that sit between Uncached GPU blocks.
+            if (max_normal_heap_size >= 64ULL * 1024 * 1024 && c.size < 32ULL * 1024 * 1024) {
                 continue;
             }
             out.writable_regions.push_back(WritableRegion{c.address, c.size});
@@ -770,8 +777,8 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     // Ensure any previous background disk write is completed before starting a new snapshot
     FlushPendingSaveStates();
 
-    // Flush and snapshot all dynamic GPU surfaces and modified buffers to DRAM
-    [[maybe_unused]] const auto surface_ranges = system.GPU().SyncAndSnapshotForSaveState();
+    // Note: Do not stall GPU or download VRAM surfaces during Quick Save;
+    // writable_regions in DRAM are captured directly in ~20ms.
 
     // Align to a clean frame boundary wait before stalling CPU cores
     WaitForCleanFrameBoundary(*process);
@@ -839,111 +846,6 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
         total_stored_chunks += stored_chunks;
     }
 
-    // 1b. Save GPU surface & buffer DAddr ranges (Uncached / DeviceShared memory not in writable_regions)
-    bool has_gpu_surfaces = false;
-    if (!surface_ranges.empty()) {
-        std::vector<std::pair<uintptr_t, uintptr_t>> saved_host_pages;
-        saved_host_pages.reserve(regions.size() * 4);
-        for (const auto& reg : regions) {
-            for (u64 off = 0; off < reg.size; off += V2_CHUNK_SIZE) {
-                if (const u8* p = memory.GetPointerSilent(Common::ProcessAddress{reg.address + off})) {
-                    const uintptr_t ps = reinterpret_cast<uintptr_t>(p);
-                    const uintptr_t pe = ps + V2_CHUNK_SIZE;
-                    if (!saved_host_pages.empty() && ps == saved_host_pages.back().second) {
-                        saved_host_pages.back().second = pe;
-                    } else {
-                        saved_host_pages.emplace_back(ps, pe);
-                    }
-                }
-            }
-        }
-        std::sort(saved_host_pages.begin(), saved_host_pages.end());
-        std::vector<std::pair<uintptr_t, uintptr_t>> merged_host;
-        for (const auto& iv : saved_host_pages) {
-            if (!merged_host.empty() && iv.first <= merged_host.back().second) {
-                merged_host.back().second = (std::max)(merged_host.back().second, iv.second);
-            } else {
-                merged_host.push_back(iv);
-            }
-        }
-        auto is_host_page_already_saved = [&merged_host](const u8* ptr) -> bool {
-            const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-            auto it = std::upper_bound(
-                merged_host.begin(), merged_host.end(), addr,
-                [](uintptr_t val, const std::pair<uintptr_t, uintptr_t>& elem) {
-                    return val < elem.first;
-                });
-            if (it == merged_host.begin()) {
-                return false;
-            }
-            --it;
-            return addr >= it->first && addr < it->second;
-        };
-
-        // Merge overlapping DAddr ranges
-        std::vector<std::pair<DAddr, std::size_t>> sorted_daddr = surface_ranges;
-        std::sort(sorted_daddr.begin(), sorted_daddr.end(),
-                  [](const auto& a, const auto& b) { return a.first < b.first; });
-        std::vector<std::pair<DAddr, std::size_t>> merged_daddr;
-        for (const auto& [daddr, dsize] : sorted_daddr) {
-            if (daddr == 0 || dsize == 0) {
-                continue;
-            }
-            const DAddr aligned_start = Common::AlignDown(daddr, V2_CHUNK_SIZE);
-            const DAddr aligned_end = Common::AlignUp(daddr + dsize, V2_CHUNK_SIZE);
-            const std::size_t aligned_sz = static_cast<std::size_t>(aligned_end - aligned_start);
-            if (!merged_daddr.empty() &&
-                aligned_start <= merged_daddr.back().first + merged_daddr.back().second) {
-                const DAddr new_end = (std::max)(
-                    merged_daddr.back().first + merged_daddr.back().second, aligned_end);
-                merged_daddr.back().second = static_cast<std::size_t>(new_end - merged_daddr.back().first);
-            } else {
-                merged_daddr.emplace_back(aligned_start, aligned_sz);
-            }
-        }
-
-        auto& host1x_mm = system.Host1x().MemoryManager();
-        const std::size_t gpu_count_offset = payload.size();
-        const u32 gpu_region_count = static_cast<u32>(merged_daddr.size());
-        payload.resize(gpu_count_offset + sizeof(u32));
-        std::memcpy(payload.data() + gpu_count_offset, &gpu_region_count, sizeof(u32));
-        has_gpu_surfaces = true;
-
-        for (const auto& [daddr, dsize] : merged_daddr) {
-            const u32 num_chunks = static_cast<u32>((dsize + V2_CHUNK_SIZE - 1) / V2_CHUNK_SIZE);
-            const u32 bitmask_bytes = (num_chunks + 7) / 8;
-            const std::size_t header_offset = payload.size();
-            payload.resize(header_offset + sizeof(PackedRegionHeader) + bitmask_bytes, 0);
-
-            u32 stored_chunks = 0;
-            for (u32 c = 0; c < num_chunks; ++c) {
-                const u64 chunk_off = static_cast<u64>(c) * V2_CHUNK_SIZE;
-                const std::size_t chunk_len =
-                    static_cast<std::size_t>(std::min<u64>(V2_CHUNK_SIZE, dsize - chunk_off));
-                const DAddr page_daddr = daddr + chunk_off;
-                const u8* chunk_ptr = host1x_mm.GetPointer<u8>(page_daddr);
-                if (!chunk_ptr || is_host_page_already_saved(chunk_ptr)) {
-                    continue;
-                }
-                if (!IsChunkZero4KB(chunk_ptr, chunk_len)) {
-                    payload[header_offset + sizeof(PackedRegionHeader) + (c / 8)] |=
-                        static_cast<u8>(1u << (c % 8));
-                    payload.insert(payload.end(), chunk_ptr, chunk_ptr + chunk_len);
-                    stored_chunks++;
-                }
-            }
-
-            PackedRegionHeader reg_hdr{};
-            reg_hdr.address = daddr;
-            reg_hdr.size = dsize;
-            reg_hdr.num_chunks = num_chunks;
-            reg_hdr.stored_chunks = stored_chunks;
-            std::memcpy(payload.data() + header_offset, &reg_hdr, sizeof(PackedRegionHeader));
-            total_chunks += num_chunks;
-            total_stored_chunks += stored_chunks;
-        }
-    }
-
     // 2. Collect thread metadata
     auto& thread_list = process->GetThreadList();
     for (auto& thread : thread_list) {
@@ -965,8 +867,7 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     snapshot->header.dram_compressed_size = payload.size();
     snapshot->header.num_threads = static_cast<u32>(snapshot->threads.size());
     snapshot->header.compression_level = 1;
-    snapshot->header.flags = SaveStateFlag_WritableRegions |
-                             (has_gpu_surfaces ? SaveStateFlag_HasGpuSurfaces : 0u);
+    snapshot->header.flags = SaveStateFlag_WritableRegions;
     snapshot->header.sparse_page_size = V2_CHUNK_SIZE;
     snapshot->header.num_sparse_pages = region_count;
     snapshot->header.num_stored_pages = total_stored_chunks;
@@ -996,6 +897,7 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     {
         std::scoped_lock lk{g_flush_mutex};
         g_flush_threads.emplace_back([snapshot, path]() {
+            Common::SetCurrentThreadPriority(Common::ThreadPriority::Low);
             WriteSnapshotToDisk(snapshot, path);
         });
     }
@@ -1137,6 +1039,10 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
         std::array<u8, V2_CHUNK_SIZE> patched_page{};
         std::array<u8, V2_CHUNK_SIZE> zero_page{};
         u64 diff_bytes_written = 0;
+        const u8* const dram_base_ptr = system.DeviceMemory().buffer.BackingBasePointer();
+        const std::size_t dram_backing_size = static_cast<std::size_t>(header.dram_size);
+        std::vector<std::pair<DAddr, std::size_t>> exact_modified_daddrs;
+        exact_modified_daddrs.reserve(2048);
 
         for (u32 r = 0; r < region_count; ++r) {
             if (cursor + sizeof(PackedRegionHeader) > decompressed.size()) {
@@ -1324,68 +1230,36 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
 
                 memory.WriteBlockUnsafe(page_addr, final_src, chunk_len);
                 diff_bytes_written += chunk_len;
-            }
-        }
-
-        std::vector<std::pair<DAddr, std::size_t>> modified_gpu_ranges;
-        if ((header.flags & SaveStateFlag_HasGpuSurfaces) != 0 &&
-            cursor + sizeof(u32) <= decompressed.size()) {
-            u32 gpu_region_count = 0;
-            std::memcpy(&gpu_region_count, decompressed.data() + cursor, sizeof(u32));
-            cursor += sizeof(u32);
-            auto& host1x_mm = system.Host1x().MemoryManager();
-            u64 gpu_bytes_written = 0;
-
-            for (u32 gr = 0; gr < gpu_region_count; ++gr) {
-                if (cursor + sizeof(PackedRegionHeader) > decompressed.size()) {
-                    break;
-                }
-                PackedRegionHeader reg_hdr{};
-                std::memcpy(&reg_hdr, decompressed.data() + cursor, sizeof(PackedRegionHeader));
-                cursor += sizeof(PackedRegionHeader);
-
-                const u32 bitmask_bytes = (reg_hdr.num_chunks + 7) / 8;
-                if (cursor + bitmask_bytes > decompressed.size()) {
-                    break;
-                }
-                const u8* bitmask = decompressed.data() + cursor;
-                cursor += bitmask_bytes;
-
-                modified_gpu_ranges.emplace_back(reg_hdr.address, reg_hdr.size);
-
-                for (u32 c = 0; c < reg_hdr.num_chunks; ++c) {
-                    const DAddr page_daddr = reg_hdr.address + static_cast<u64>(c) * V2_CHUNK_SIZE;
-                    const std::size_t chunk_len = static_cast<std::size_t>(
-                        std::min<u64>(V2_CHUNK_SIZE, reg_hdr.size - static_cast<u64>(c) * V2_CHUNK_SIZE));
-                    const bool is_stored = (bitmask[c / 8] & (1u << (c % 8))) != 0;
-                    if (!is_stored) {
-                        continue;
+                if (dram_base_ptr && live_ptr >= dram_base_ptr &&
+                    static_cast<std::size_t>(live_ptr - dram_base_ptr) + chunk_len <= dram_backing_size) {
+                    const DAddr page_daddr = 0x80000000ULL + static_cast<u64>(live_ptr - dram_base_ptr);
+                    if (!exact_modified_daddrs.empty() &&
+                        exact_modified_daddrs.back().first + exact_modified_daddrs.back().second == page_daddr) {
+                        exact_modified_daddrs.back().second += chunk_len;
+                    } else {
+                        exact_modified_daddrs.emplace_back(page_daddr, chunk_len);
                     }
-                    if (cursor + chunk_len > decompressed.size()) {
-                        break;
-                    }
-                    const u8* target_data = decompressed.data() + cursor;
-                    cursor += chunk_len;
-
-                    u8* live_ptr = host1x_mm.GetPointer<u8>(page_daddr);
-                    if (!live_ptr) {
-                        continue;
-                    }
-                    if (std::memcmp(live_ptr, target_data, chunk_len) == 0) {
-                        continue;
-                    }
-                    std::memcpy(live_ptr, target_data, chunk_len);
-                    gpu_bytes_written += chunk_len;
                 }
             }
-            LOG_INFO(Core, "SaveState: Restored {:.2f} MB of GPU surface/buffer DAddr pages",
-                     static_cast<double>(gpu_bytes_written) / (1024.0 * 1024.0));
         }
 
         LOG_INFO(Core, "SaveState: Differential restore wrote {:.2f} MB of changed 4KB pages",
                  static_cast<double>(diff_bytes_written) / (1024.0 * 1024.0));
 
-        system.GPU().SyncAndInvalidateForLoadState(modified_gpu_ranges);
+        if (!layout.writable_regions.empty() || !exact_modified_daddrs.empty()) {
+            std::vector<std::pair<DAddr, std::size_t>> modified_gpu_ranges = std::move(exact_modified_daddrs);
+            modified_gpu_ranges.reserve(modified_gpu_ranges.size() + layout.writable_regions.size() * 2);
+            auto& pt = process->GetPageTable();
+            for (const auto& reg : layout.writable_regions) {
+                modified_gpu_ranges.emplace_back(reg.address, reg.size);
+                Common::PhysicalAddress phys_start{};
+                if (pt.GetPhysicalAddress(&phys_start, Common::ProcessAddress{reg.address}) &&
+                    GetInteger(phys_start) != 0) {
+                    modified_gpu_ranges.emplace_back(GetInteger(phys_start), reg.size);
+                }
+            }
+            system.GPU().SyncAndInvalidateForLoadState(modified_gpu_ranges);
+        }
         system.GPU().InvalidateGPUCache();
     } else if (header.flags & SaveStateFlag_SparsePages) {
         // Legacy v1 Sparse Page Encoded (64KB full DRAM)

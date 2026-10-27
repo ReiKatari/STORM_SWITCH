@@ -110,6 +110,12 @@ static std::string RelevantDefault(const Settings::BasicSetting& setting) {
     return Settings::IsConfiguringGlobal() ? setting.DefaultToString() : setting.ToStringGlobal();
 }
 
+static std::string RelevantCurrentValue(const Settings::BasicSetting& setting) {
+    return (Settings::IsConfiguringGlobal() && setting.Switchable())
+               ? setting.ToStringGlobal()
+               : RelevantCurrentValue(setting);
+}
+
 static QString DefaultSuffix(QWidget* parent, Settings::BasicSetting& setting) {
     const auto tr = [parent](const char* text, const char* context) {
         return parent->tr(text, context);
@@ -164,7 +170,7 @@ QWidget* Widget::CreateCheckBox(Settings::BasicSetting* bool_setting, const QStr
     checkbox->setMinimumHeight(26);
     checkbox->setAttribute(Qt::WA_TranslucentBackground, true);
     checkbox->setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
-    checkbox->setCheckState(bool_setting->ToString() == "true" ? Qt::CheckState::Checked
+    checkbox->setCheckState(RelevantCurrentValue(*bool_setting) == "true" ? Qt::CheckState::Checked
                                                                : Qt::CheckState::Unchecked);
     checkbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
@@ -183,7 +189,7 @@ QWidget* Widget::CreateCheckBox(Settings::BasicSetting* bool_setting, const QStr
 
     reload_func = [this, bool_setting]() {
         const bool blocked = checkbox->blockSignals(true);
-        checkbox->setCheckState(bool_setting->ToString() == "true" ? Qt::Checked : Qt::Unchecked);
+        checkbox->setCheckState(RelevantCurrentValue(*bool_setting) == "true" ? Qt::Checked : Qt::Unchecked);
         checkbox->blockSignals(blocked);
     };
 
@@ -231,7 +237,7 @@ QWidget* Widget::CreateCombobox(std::function<std::string()>& serializer,
         return combobox->count() > 0 ? 0 : -1;
     };
 
-    const u32 setting_value = std::strtoul(setting.ToString().c_str(), nullptr, 0);
+    const u32 setting_value = std::strtoul(RelevantCurrentValue(setting).c_str(), nullptr, 0);
     combobox->setCurrentIndex(find_index(setting_value));
 
     serializer = [this]() {
@@ -252,7 +258,7 @@ QWidget* Widget::CreateCombobox(std::function<std::string()>& serializer,
     };
 
     reload_func = [this, find_index]() {
-        const u32 current_setting_value = std::strtoul(setting.ToString().c_str(), nullptr, 0);
+        const u32 current_setting_value = std::strtoul(RelevantCurrentValue(setting).c_str(), nullptr, 0);
         const bool blocked = combobox->blockSignals(true);
         combobox->setCurrentIndex(find_index(current_setting_value));
         combobox->blockSignals(blocked);
@@ -316,7 +322,7 @@ QWidget* Widget::CreateRadioGroup(std::function<std::string()>& serializer,
         }
     };
 
-    const u32 setting_value = std::strtoul(setting.ToString().c_str(), nullptr, 0);
+    const u32 setting_value = std::strtoul(RelevantCurrentValue(setting).c_str(), nullptr, 0);
     set_index(setting_value);
 
     serializer = [get_selected]() {
@@ -330,7 +336,7 @@ QWidget* Widget::CreateRadioGroup(std::function<std::string()>& serializer,
     };
 
     reload_func = [this, set_index]() {
-        const u32 val = std::strtoul(setting.ToString().c_str(), nullptr, 0);
+        const u32 val = std::strtoul(RelevantCurrentValue(setting).c_str(), nullptr, 0);
         set_index(val);
     };
 
@@ -355,7 +361,7 @@ QWidget* Widget::CreateRadioGroup(std::function<std::string()>& serializer,
 QWidget* Widget::CreateLineEdit(std::function<std::string()>& serializer,
                                 std::function<void()>& restore_func,
                                 const std::function<void()>& touch, bool managed) {
-    const QString text = QString::fromStdString(setting.ToString());
+    const QString text = QString::fromStdString(RelevantCurrentValue(setting));
     line_edit = new QLineEdit(this);
     line_edit->setText(text);
     line_edit->setMinimumHeight(32);
@@ -373,7 +379,7 @@ QWidget* Widget::CreateLineEdit(std::function<std::string()>& serializer,
 
     reload_func = [this]() {
         const bool blocked = line_edit->blockSignals(true);
-        line_edit->setText(QString::fromStdString(setting.ToString()));
+        line_edit->setText(QString::fromStdString(RelevantCurrentValue(setting)));
         line_edit->blockSignals(blocked);
     };
 
@@ -405,11 +411,11 @@ static void CreateIntSlider(Settings::BasicSetting& setting, bool reversed, floa
     };
 
     slider->connect(slider, &QAbstractSlider::valueChanged, update_feedback);
-    update_feedback(std::strtol(setting.ToString().c_str(), nullptr, 0));
+    update_feedback(std::strtol(RelevantCurrentValue(setting).c_str(), nullptr, 0));
 
     slider->setMinimum(std::strtol(setting.MinVal().c_str(), nullptr, 0));
     slider->setMaximum(max_val);
-    slider->setValue(std::strtol(setting.ToString().c_str(), nullptr, 0));
+    slider->setValue(std::strtol(RelevantCurrentValue(setting).c_str(), nullptr, 0));
 
     serializer = [slider]() { return std::to_string(slider->value()); };
     restore_func = [slider, &setting]() {
@@ -417,7 +423,7 @@ static void CreateIntSlider(Settings::BasicSetting& setting, bool reversed, floa
     };
     reload_func = [slider, &setting]() {
         const bool blocked = slider->blockSignals(true);
-        slider->setValue(std::strtol(setting.ToString().c_str(), nullptr, 0));
+        slider->setValue(std::strtol(RelevantCurrentValue(setting).c_str(), nullptr, 0));
         slider->blockSignals(blocked);
     };
 
@@ -446,11 +452,11 @@ static void CreateFloatSlider(Settings::BasicSetting& setting, bool reversed, fl
     };
 
     slider->connect(slider, &QAbstractSlider::valueChanged, update_feedback);
-    update_feedback(std::strtof(setting.ToString().c_str(), nullptr));
+    update_feedback(std::strtof(RelevantCurrentValue(setting).c_str(), nullptr));
 
     slider->setMinimum(min_val * use_multiplier);
     slider->setMaximum(max_val * use_multiplier);
-    slider->setValue(std::strtof(setting.ToString().c_str(), nullptr) * use_multiplier);
+    slider->setValue(std::strtof(RelevantCurrentValue(setting).c_str(), nullptr) * use_multiplier);
 
     serializer = [slider, use_multiplier]() {
         return std::to_string(slider->value() / use_multiplier);
@@ -460,7 +466,7 @@ static void CreateFloatSlider(Settings::BasicSetting& setting, bool reversed, fl
     };
     reload_func = [slider, &setting, use_multiplier]() {
         const bool blocked = slider->blockSignals(true);
-        slider->setValue(std::strtof(setting.ToString().c_str(), nullptr) * use_multiplier);
+        slider->setValue(std::strtof(RelevantCurrentValue(setting).c_str(), nullptr) * use_multiplier);
         slider->blockSignals(blocked);
     };
 
@@ -600,7 +606,7 @@ QWidget* Widget::CreateSpinBox(const QString& given_suffix,
                                const std::function<void()>& touch) {
     const auto min_val = std::strtol(setting.MinVal().c_str(), nullptr, 0);
     const auto max_val = std::strtol(setting.MaxVal().c_str(), nullptr, 0);
-    const auto default_val = std::strtol(setting.ToString().c_str(), nullptr, 0);
+    const auto default_val = std::strtol(RelevantCurrentValue(setting).c_str(), nullptr, 0);
 
     QString suffix = given_suffix == default_suffix ? DefaultSuffix(this, setting) : given_suffix;
 
@@ -620,7 +626,7 @@ QWidget* Widget::CreateSpinBox(const QString& given_suffix,
 
     reload_func = [this]() {
         const bool blocked = spinbox->blockSignals(true);
-        spinbox->setValue(std::strtol(setting.ToString().c_str(), nullptr, 0));
+        spinbox->setValue(std::strtol(RelevantCurrentValue(setting).c_str(), nullptr, 0));
         spinbox->blockSignals(blocked);
     };
 
@@ -649,7 +655,7 @@ QWidget* Widget::CreateDoubleSpinBox(const QString& given_suffix,
                                      const std::function<void()>& touch) {
     const auto min_val = std::strtod(setting.MinVal().c_str(), nullptr);
     const auto max_val = std::strtod(setting.MaxVal().c_str(), nullptr);
-    const auto default_val = std::strtod(setting.ToString().c_str(), nullptr);
+    const auto default_val = std::strtod(RelevantCurrentValue(setting).c_str(), nullptr);
 
     QString suffix = given_suffix == default_suffix ? DefaultSuffix(this, setting) : given_suffix;
 
@@ -669,7 +675,7 @@ QWidget* Widget::CreateDoubleSpinBox(const QString& given_suffix,
 
     reload_func = [this]() {
         const bool blocked = double_spinbox->blockSignals(true);
-        double_spinbox->setValue(std::strtod(setting.ToString().c_str(), nullptr));
+        double_spinbox->setValue(std::strtod(RelevantCurrentValue(setting).c_str(), nullptr));
         double_spinbox->blockSignals(blocked);
     };
 
@@ -711,7 +717,7 @@ QWidget* Widget::CreateHexEdit(std::function<std::string()>& serializer,
     QRegularExpressionValidator* regex = new QRegularExpressionValidator(
         QRegularExpression{QStringLiteral("^[0-9a-fA-F]{0,8}$")}, line_edit);
 
-    const QString default_val = to_hex(setting.ToString());
+    const QString default_val = to_hex(RelevantCurrentValue(setting));
 
     line_edit->setText(default_val);
     line_edit->setMaxLength(8);
@@ -727,7 +733,7 @@ QWidget* Widget::CreateHexEdit(std::function<std::string()>& serializer,
 
     reload_func = [this, to_hex]() {
         const bool blocked = line_edit->blockSignals(true);
-        line_edit->setText(to_hex(setting.ToString()));
+        line_edit->setText(to_hex(RelevantCurrentValue(setting)));
         line_edit->blockSignals(blocked);
     };
 
@@ -752,7 +758,7 @@ QWidget* Widget::CreateDateTimeEdit(bool disabled, bool restrict,
                                     const std::function<void()>& touch) {
     const long long current_time = QDateTime::currentSecsSinceEpoch();
     const s64 the_time =
-        disabled ? current_time : std::strtoll(setting.ToString().c_str(), nullptr, 0);
+        disabled ? current_time : std::strtoll(RelevantCurrentValue(setting).c_str(), nullptr, 0);
     const auto default_val = QDateTime::fromSecsSinceEpoch(the_time);
 
     date_time_edit = new QDateTimeEdit(this);
@@ -776,7 +782,7 @@ QWidget* Widget::CreateDateTimeEdit(bool disabled, bool restrict,
 
     reload_func = [this, disabled]() {
         const long long cur_time = QDateTime::currentSecsSinceEpoch();
-        const s64 t = disabled ? cur_time : std::strtoll(setting.ToString().c_str(), nullptr, 0);
+        const s64 t = disabled ? cur_time : std::strtoll(RelevantCurrentValue(setting).c_str(), nullptr, 0);
         const bool blocked = date_time_edit->blockSignals(true);
         date_time_edit->setDateTime(QDateTime::fromSecsSinceEpoch(t));
         date_time_edit->blockSignals(blocked);

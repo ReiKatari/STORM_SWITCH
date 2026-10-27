@@ -22,18 +22,23 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 )
 
 # Determine version priority:
-# 1. GIT_RELEASE (read fresh from GIT-RELEASE file by GetSCMRev)
-# 2. BUILD_VERSION (if passed via -DBUILD_VERSION=...)
-# 3. GIT_TAG (read from GIT-TAG file)
-# 4. Fallback default 14.0.0
-if (DEFINED GIT_RELEASE AND NOT GIT_RELEASE STREQUAL "")
+# 1. Always read fresh from GIT-RELEASE file on disk if available
+# 2. GIT_RELEASE / BUILD_VERSION / GIT_TAG CMake variables
+# 3. Fallback default 14.0.1
+if (EXISTS "${CMAKE_SOURCE_DIR}/GIT-RELEASE")
+    file(STRINGS "${CMAKE_SOURCE_DIR}/GIT-RELEASE" _storm_git_rel LIMIT_COUNT 1)
+    string(STRIP "${_storm_git_rel}" BUILD_VERSION)
+elseif (DEFINED SRC_DIR AND EXISTS "${SRC_DIR}/GIT-RELEASE")
+    file(STRINGS "${SRC_DIR}/GIT-RELEASE" _storm_git_rel LIMIT_COUNT 1)
+    string(STRIP "${_storm_git_rel}" BUILD_VERSION)
+elseif (DEFINED GIT_RELEASE AND NOT GIT_RELEASE STREQUAL "")
     string(STRIP "${GIT_RELEASE}" BUILD_VERSION)
 elseif (DEFINED BUILD_VERSION AND NOT BUILD_VERSION STREQUAL "")
     string(STRIP "${BUILD_VERSION}" BUILD_VERSION)
 elseif (DEFINED GIT_TAG AND NOT GIT_TAG STREQUAL "")
     string(STRIP "${GIT_TAG}" BUILD_VERSION)
 else()
-    set(BUILD_VERSION "14.0.0")
+    set(BUILD_VERSION "14.0.1")
 endif()
 
 set(GIT_TAG "${BUILD_VERSION}")

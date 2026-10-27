@@ -1,3 +1,4 @@
+[System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::BelowNormal
 Stop-Process -Name 'storm_eden', 'storm_eden-cli', 'storm_eden-room', 'STORM_SWITCH', 'STORM_SWITCH-cli', 'STORM_SWITCH-room' -Force -ErrorAction SilentlyContinue
 Start-Sleep -Milliseconds 500
 
@@ -16,7 +17,7 @@ if (-not $sha1) {
     if ($cert) { $sha1 = $cert.Thumbprint }
 }
 
-$version = '14.0.0'
+$version = '14.0.1'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -94,7 +95,7 @@ $zipPathWin11 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows11.zip"
 if (Test-Path $zipPathWin11) { Remove-Item $zipPathWin11 -Force }
 Push-Location $stageWin11
 if (Test-Path $sevenZip) {
-    & $sevenZip a -tzip $zipPathWin11 * -mx=9
+    & $sevenZip a -tzip $zipPathWin11 * -mx=7 -mmt=4
 } else {
     & tar.exe -a -c -f $zipPathWin11 *
 }
@@ -102,20 +103,9 @@ Pop-Location
 Unblock-File $zipPathWin11 -ErrorAction SilentlyContinue
 Remove-Item $stageWin11 -Recurse -Force
 
-Write-Host "Preparing Windows 10 staging (with VC CRT)..."
-$stageWin10 = Join-Path $baseDir "Temp_Package_Win10"
-Prepare-Staging $stageWin10 $true
-
+Write-Host "Creating Windows 10 package (identical universal CRT bundle)..."
 $zipPathWin10 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows10.zip"
-if (Test-Path $zipPathWin10) { Remove-Item $zipPathWin10 -Force }
-Push-Location $stageWin10
-if (Test-Path $sevenZip) {
-    & $sevenZip a -tzip $zipPathWin10 * -mx=9
-} else {
-    & tar.exe -a -c -f $zipPathWin10 *
-}
-Pop-Location
+Copy-Item $zipPathWin11 $zipPathWin10 -Force
 Unblock-File $zipPathWin10 -ErrorAction SilentlyContinue
-Remove-Item $stageWin10 -Recurse -Force
 
 Write-Host "All Windows $version executables signed and packaged successfully into $filesDir!"

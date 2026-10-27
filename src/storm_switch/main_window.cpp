@@ -517,6 +517,35 @@ QString GetTranslatedGameIconSize(size_t index) {
     return QCoreApplication::translate("MainWindow", default_game_icon_sizes[index].second);
 }
 
+bool HasUserPerGameSettings(const std::filesystem::path& ini_path) {
+    std::error_code ec;
+    if (!std::filesystem::exists(ini_path, ec)) {
+        return false;
+    }
+    std::ifstream f(ini_path);
+    if (!f.is_open()) {
+        return false;
+    }
+    std::string line;
+    bool in_storm_section = false;
+    while (std::getline(f, line)) {
+        while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\t')) {
+            line.pop_back();
+        }
+        if (line.empty() || line[0] == '#' || line[0] == ';') {
+            continue;
+        }
+        if (line.front() == '[' && line.back() == ']') {
+            in_storm_section = (line == "[StormSwitch]" || line == "[StormEden]");
+            continue;
+        }
+        if (!in_storm_section && line.find('=') != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool GetActivePerGameConfigName(const QString& current_game_path,
                                 const QString& last_filename_booted,
                                 std::string& out_config_name) {
@@ -535,13 +564,13 @@ bool GetActivePerGameConfigName(const QString& current_game_path,
         const auto file_path_hash =
             Common::CityHash64(utf8_str.constData(), static_cast<std::size_t>(utf8_str.size()));
         const auto specific_config = fmt::format("{:016X}_{:016X}", title_id, file_path_hash);
-        if (std::filesystem::exists(custom_path / (specific_config + ".ini"))) {
+        if (HasUserPerGameSettings(custom_path / (specific_config + ".ini"))) {
             out_config_name = specific_config;
             return true;
         }
     }
     const auto legacy_config = fmt::format("{:016X}", title_id);
-    if (std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
+    if (HasUserPerGameSettings(custom_path / (legacy_config + ".ini"))) {
         out_config_name = legacy_config;
         return true;
     }
@@ -672,7 +701,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Initialize core emulation settings to Zero-Regression Baseline on fresh install, preserving existing user settings on upgrade
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "12.7.2";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "14.0.1";
     if (UISettings::values.config_version.GetValue().empty() && !had_existing_config_file) {
         LOG_INFO(Frontend, "Fresh configuration detected. Initializing core emulation settings to Zero-Regression Baseline (version '{}')...",
                  CURRENT_BUILD_VERSION);
@@ -710,6 +739,28 @@ MainWindow::MainWindow(bool has_broken_vulkan)
         UISettings::values.config_version.SetValue(std::string(CURRENT_BUILD_VERSION));
         config->SaveAllValues();
     } else if (UISettings::values.config_version.GetValue() != CURRENT_BUILD_VERSION) {
+        LOG_INFO(Frontend, "Upgrading configuration version '{}' -> '{}': sanitizing global settings polluted by previous Auto-Fix sessions...",
+                 UISettings::values.config_version.GetValue(), CURRENT_BUILD_VERSION);
+        Settings::RestoreGlobalState(false);
+        Settings::values.gpu_accuracy.SetValue(Settings::values.gpu_accuracy.GetDefault());
+        Settings::values.cpu_accuracy.SetValue(Settings::values.cpu_accuracy.GetDefault());
+        Settings::values.dma_accuracy.SetValue(Settings::values.dma_accuracy.GetDefault());
+        Settings::values.gpu_fence_behavior.SetValue(Settings::values.gpu_fence_behavior.GetDefault());
+        Settings::values.vram_usage_mode.SetValue(Settings::values.vram_usage_mode.GetDefault());
+        Settings::values.nvdec_emulation.SetValue(Settings::values.nvdec_emulation.GetDefault());
+        Settings::values.accelerate_astc.SetValue(Settings::values.accelerate_astc.GetDefault());
+        Settings::values.astc_recompression.SetValue(Settings::values.astc_recompression.GetDefault());
+        Settings::values.drs_resolution_lock.SetValue(Settings::values.drs_resolution_lock.GetDefault());
+        Settings::values.sync_memory_operations.SetValue(Settings::values.sync_memory_operations.GetDefault());
+        Settings::values.renderer_force_max_clock.SetValue(Settings::values.renderer_force_max_clock.GetDefault());
+        Settings::values.early_release_fences.SetValue(Settings::values.early_release_fences.GetDefault());
+        Settings::values.use_fast_gpu_time.SetValue(Settings::values.use_fast_gpu_time.GetDefault());
+        Settings::values.use_asynchronous_shaders.SetValue(Settings::values.use_asynchronous_shaders.GetDefault());
+        Settings::values.use_reactive_flushing.SetValue(Settings::values.use_reactive_flushing.GetDefault());
+        Settings::values.use_vulkan_driver_pipeline_cache.SetValue(Settings::values.use_vulkan_driver_pipeline_cache.GetDefault());
+        Settings::values.barrier_feedback_loops.SetValue(Settings::values.barrier_feedback_loops.GetDefault());
+        Settings::values.enable_compute_pipelines.SetValue(Settings::values.enable_compute_pipelines.GetDefault());
+        Settings::values.memory_layout_mode.SetValue(Settings::values.memory_layout_mode.GetDefault());
         UISettings::values.config_version.SetValue(std::string(CURRENT_BUILD_VERSION));
         config->SaveAllValues();
     }
@@ -4260,9 +4311,28 @@ bool MainWindow::SelectAndSetCurrentUser(
     return true;
 }
 
+namespace {
+struct ExtraStormSessionBackup {
+    std::pair<int, bool> post_processing_shader{0, true};
+    std::pair<bool, bool> enable_hdr10{false, true};
+    std::pair<bool, bool> auto_aspect_ratio_patch{false, true};
+    std::pair<bool, bool> auto_60fps_unlock{false, true};
+    std::pair<bool, bool> use_storm_tier2_compiler{true, true};
+    std::pair<Settings::RendererBackend, bool> renderer_backend{Settings::RendererBackend::Vulkan, true};
+    bool cpuopt_unsafe_unfuse_fma{true};
+    bool cpuopt_unsafe_host_mmu{true};
+    bool cpuopt_unsafe_reduce_fp_error{true};
+    bool cpuopt_unsafe_ignore_standard_fpcr{true};
+} s_extra_session_backup;
+} // namespace
+
 void MainWindow::StormSessionBackup::Capture() {
+    if (is_active) {
+        // Never overwrite an already-active pre-game backup with mid-session Auto-Fix values
+        return;
+    }
     auto capture_switchable = [](const auto& setting) {
-        return std::make_pair(setting.GetValue(true), setting.UsingGlobal());
+        return std::make_pair(setting.GetValue(true), true);
     };
     resolution_setup = capture_switchable(Settings::values.resolution_setup);
     gpu_accuracy = capture_switchable(Settings::values.gpu_accuracy);
@@ -4327,13 +4397,23 @@ void MainWindow::StormSessionBackup::Capture() {
     disable_macro_jit = Settings::values.disable_macro_jit.GetValue();
     use_auto_stub = Settings::values.use_auto_stub.GetValue();
     disable_web_applet = Settings::values.disable_web_applet.GetValue();
+    s_extra_session_backup.post_processing_shader = capture_switchable(Settings::values.post_processing_shader);
+    s_extra_session_backup.enable_hdr10 = capture_switchable(Settings::values.enable_hdr10);
+    s_extra_session_backup.auto_aspect_ratio_patch = capture_switchable(Settings::values.auto_aspect_ratio_patch);
+    s_extra_session_backup.auto_60fps_unlock = capture_switchable(Settings::values.auto_60fps_unlock);
+    s_extra_session_backup.use_storm_tier2_compiler = capture_switchable(Settings::values.use_storm_tier2_compiler);
+    s_extra_session_backup.renderer_backend = capture_switchable(Settings::values.renderer_backend);
+    s_extra_session_backup.cpuopt_unsafe_unfuse_fma = Settings::values.cpuopt_unsafe_unfuse_fma.GetValue();
+    s_extra_session_backup.cpuopt_unsafe_host_mmu = Settings::values.cpuopt_unsafe_host_mmu.GetValue();
+    s_extra_session_backup.cpuopt_unsafe_reduce_fp_error = Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue();
+    s_extra_session_backup.cpuopt_unsafe_ignore_standard_fpcr = Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue();
     is_active = true;
 }
 
 void MainWindow::StormSessionBackup::Restore() {
     if (!is_active) return;
     auto restore_switchable = [](auto& setting, const auto& pair) {
-        setting.SetGlobal(pair.second);
+        setting.SetGlobal(true);
         setting.SetValue(pair.first);
     };
     restore_switchable(Settings::values.resolution_setup, resolution_setup);
@@ -4396,9 +4476,19 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.sync_core_speed, sync_core_speed);
     restore_switchable(Settings::values.language_index, language_index);
     restore_switchable(Settings::values.region_index, region_index);
+    restore_switchable(Settings::values.post_processing_shader, s_extra_session_backup.post_processing_shader);
+    restore_switchable(Settings::values.enable_hdr10, s_extra_session_backup.enable_hdr10);
+    restore_switchable(Settings::values.auto_aspect_ratio_patch, s_extra_session_backup.auto_aspect_ratio_patch);
+    restore_switchable(Settings::values.auto_60fps_unlock, s_extra_session_backup.auto_60fps_unlock);
+    restore_switchable(Settings::values.use_storm_tier2_compiler, s_extra_session_backup.use_storm_tier2_compiler);
+    restore_switchable(Settings::values.renderer_backend, s_extra_session_backup.renderer_backend);
     Settings::values.disable_macro_jit.SetValue(disable_macro_jit);
     Settings::values.use_auto_stub.SetValue(use_auto_stub);
     Settings::values.disable_web_applet.SetValue(disable_web_applet);
+    Settings::values.cpuopt_unsafe_unfuse_fma.SetValue(s_extra_session_backup.cpuopt_unsafe_unfuse_fma);
+    Settings::values.cpuopt_unsafe_host_mmu.SetValue(s_extra_session_backup.cpuopt_unsafe_host_mmu);
+    Settings::values.cpuopt_unsafe_reduce_fp_error.SetValue(s_extra_session_backup.cpuopt_unsafe_reduce_fp_error);
+    Settings::values.cpuopt_unsafe_ignore_standard_fpcr.SetValue(s_extra_session_backup.cpuopt_unsafe_ignore_standard_fpcr);
 
     Settings::UpdateGPUAccuracy();
     Settings::UpdateRescalingInfo();
@@ -4726,9 +4816,15 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         QStringLiteral("🛡️ الإصلاح التلقائي: %1"),
         QStringLiteral("🛡️ Auto-corrección: %1")).arg(clean_game_name));
     fixDialog.setWindowFlags(fixDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    fixDialog.setMinimumSize(820, 490);
-    fixDialog.setMaximumWidth(960);
-    fixDialog.resize(860, 520);
+    QScreen* fix_scr = this->screen() ? this->screen() : QGuiApplication::primaryScreen();
+    const QRect fix_avail = fix_scr ? fix_scr->availableGeometry() : QRect(0, 0, 1920, 1080);
+    const int fix_min_w = std::min(1060, std::max(780, fix_avail.width() - 48));
+    const int fix_min_h = std::min(580, std::max(460, fix_avail.height() - 60));
+    const int fix_target_w = std::clamp(static_cast<int>(fix_avail.width() * 0.76), fix_min_w, std::max(fix_min_w, std::min(1580, fix_avail.width() - 36)));
+    const int fix_target_h = std::clamp(static_cast<int>(fix_avail.height() * 0.78), fix_min_h, std::max(fix_min_h, std::min(920, fix_avail.height() - 48)));
+    fixDialog.setMinimumSize(fix_min_w, fix_min_h);
+    fixDialog.setMaximumSize(std::max(fix_target_w, fix_avail.width() - 24), std::max(fix_target_h, fix_avail.height() - 24));
+    fixDialog.resize(fix_target_w, fix_target_h);
 
     fixDialog.setStyleSheet(QStringLiteral(
         "QDialog {"
@@ -4924,6 +5020,10 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         paramsLayout->setContentsMargins(10, 8, 10, 8);
         paramsLayout->setSpacing(6);
 
+        auto* paramsHeaderRow = new QHBoxLayout();
+        paramsHeaderRow->setContentsMargins(0, 0, 0, 2);
+        paramsHeaderRow->setSpacing(8);
+
         auto* paramsTitle = new QLabel(StormLang(
             QStringLiteral("⚙️ <b>Выбор применяемых параметров (можно отключить отдельные пункты):</b>"),
             QStringLiteral("⚙️ <b>Select Applied Parameters (individual items can be toggled):</b>"),
@@ -4933,13 +5033,47 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
             QStringLiteral("⚙️ <b>適用するパラメータの選択（個別に切り替え可能）:</b>"),
             QStringLiteral("⚙️ <b>تحديد المعلمات المطبقة (يمكن تعطيل عناصر فردية):</b>"),
             QStringLiteral("⚙️ <b>Selección de parámetros aplicados (se pueden desmarcar):</b>")), paramsContainer);
-        paramsTitle->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11.5px; background: transparent; border: none;"));
-        paramsLayout->addWidget(paramsTitle);
+        paramsTitle->setStyleSheet(QStringLiteral("color: #38BDF8; font-size: 12px; background: transparent; border: none;"));
+        paramsHeaderRow->addWidget(paramsTitle, 1);
+
+        auto* selectAllBtn = new QPushButton(StormLang(
+            QStringLiteral("✓ Выбрать все"),
+            QStringLiteral("✓ Select All"),
+            QStringLiteral("✓ Alle auswählen"),
+            QStringLiteral("✓ Tout sélectionner"),
+            QStringLiteral("✓ 全选"),
+            QStringLiteral("✓ すべて選択"),
+            QStringLiteral("✓ تحديد الكل"),
+            QStringLiteral("✓ Seleccionar todo")), paramsContainer);
+        selectAllBtn->setCursor(Qt::PointingHandCursor);
+        selectAllBtn->setStyleSheet(QStringLiteral(
+            "QPushButton { background: rgba(0, 210, 255, 0.14); color: #67E8F9; border: 1px solid rgba(0, 210, 255, 0.35); border-radius: 5px; padding: 3px 10px; font-size: 11px; font-weight: 700; }"
+            "QPushButton:hover { background: rgba(0, 210, 255, 0.28); color: #FFFFFF; }"));
+
+        auto* deselectAllBtn = new QPushButton(StormLang(
+            QStringLiteral("✕ Снять все"),
+            QStringLiteral("✕ Deselect All"),
+            QStringLiteral("✕ Alle abwählen"),
+            QStringLiteral("✕ Tout désélectionner"),
+            QStringLiteral("✕ 取消全选"),
+            QStringLiteral("✕ すべて解除"),
+            QStringLiteral("✕ إلغاء تحديد الكل"),
+            QStringLiteral("✕ Desmarcar todo")), paramsContainer);
+        deselectAllBtn->setCursor(Qt::PointingHandCursor);
+        deselectAllBtn->setStyleSheet(QStringLiteral(
+            "QPushButton { background: rgba(51, 65, 85, 0.55); color: #CBD5E1; border: 1px solid rgba(148, 163, 184, 0.30); border-radius: 5px; padding: 3px 10px; font-size: 11px; font-weight: 600; }"
+            "QPushButton:hover { background: rgba(71, 85, 105, 0.80); color: #FFFFFF; }"));
+
+        paramsHeaderRow->addWidget(selectAllBtn);
+        paramsHeaderRow->addWidget(deselectAllBtn);
+        paramsLayout->addLayout(paramsHeaderRow);
 
         auto* paramsGrid = new QGridLayout();
-        paramsGrid->setContentsMargins(0, 2, 0, 0);
-        paramsGrid->setHorizontalSpacing(14);
-        paramsGrid->setVerticalSpacing(5);
+        paramsGrid->setContentsMargins(2, 4, 2, 2);
+        paramsGrid->setHorizontalSpacing(22);
+        paramsGrid->setVerticalSpacing(7);
+        paramsGrid->setColumnStretch(0, 1);
+        paramsGrid->setColumnStretch(1, 1);
 
         int idx = 0;
         for (const auto& [k, v] : profile->ini_settings) {
@@ -4984,6 +5118,16 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
             param_checkboxes.emplace_back(k, cb);
             ++idx;
         }
+        connect(selectAllBtn, &QPushButton::clicked, paramsContainer, [param_checkboxes]() {
+            for (const auto& [k, box] : param_checkboxes) {
+                if (box) box->setChecked(true);
+            }
+        });
+        connect(deselectAllBtn, &QPushButton::clicked, paramsContainer, [param_checkboxes]() {
+            for (const auto& [k, box] : param_checkboxes) {
+                if (box) box->setChecked(false);
+            }
+        });
         paramsLayout->addLayout(paramsGrid);
         if (!param_checkboxes.empty()) {
             fixLayout->addWidget(paramsContainer);
@@ -5058,7 +5202,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     // RIGHT COLUMN: Styled Vertical Action Panel with Choice Buttons
     // =========================================================================
     auto* rightCard = new QFrame(&fixDialog);
-    rightCard->setFixedWidth(250);
+    rightCard->setFixedWidth(std::clamp(static_cast<int>(fix_target_w * 0.23), 265, 310));
     rightCard->setStyleSheet(QStringLiteral(
         "QFrame {"
         "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(19, 28, 46, 0.92), stop:1 rgba(11, 15, 25, 0.96));"
@@ -5249,8 +5393,10 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     }
 
     const bool new_dont_ask = dont_ask_cb->isChecked();
-    Core::GameFixDatabase::SetDontAskAgain(title_id, target_ini, new_dont_ask);
-    Core::GameFixDatabase::SetDontAskAgain(title_id, (custom_path / (legacy_config + ".ini")).string(), new_dont_ask);
+    if (new_dont_ask != dont_ask) {
+        Core::GameFixDatabase::SetDontAskAgain(title_id, target_ini, new_dont_ask);
+        Core::GameFixDatabase::SetDontAskAgain(title_id, (custom_path / (legacy_config + ".ini")).string(), new_dont_ask);
+    }
 
     if (action == GameFixDialogResult::ApplyAndLaunch) {
         std::vector<std::string> excluded_keys;
@@ -5262,9 +5408,23 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         Core::GameFixDatabase::SetExcludedKeys(excluded_keys);
         Core::GameFixDatabase::SetFixesEnabled(true);
         if (force_show) {
-            Core::GameFixDatabase::ApplyProfileDirectly(title_id, game_path.toStdString());
-            QMessageBox::information(this, tr("🛡️ Авто-исправление"),
-                tr("Параметры авто-исправления успешно применены для текущей сессии игры: %1").arg(clean_game_name));
+            if (emulation_running) {
+                if (!m_session_backup.is_active) {
+                    m_session_backup.Capture();
+                }
+                Core::GameFixDatabase::ApplyProfileDirectly(title_id, game_path.toStdString());
+                if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+                    QtCommon::system->ApplySettings();
+                }
+                UpdateStatusButtons();
+                QMessageBox::information(this, tr("🛡️ Авто-исправление"),
+                    tr("Параметры авто-исправления успешно применены для текущей сессии игры: %1").arg(clean_game_name));
+            } else if (!game_path.isEmpty()) {
+                // If no game is currently running, launch the game cleanly so session backup captures & restores global settings
+                QTimer::singleShot(0, this, [this, game_path]() {
+                    BootGame(game_path, ApplicationAppletParameters());
+                });
+            }
         }
         return GameFixDialogResult::ApplyAndLaunch;
     }
@@ -5359,8 +5519,8 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         // Load per game settings FIRST if custom configuration file exists so user per-game
         // overrides have UsingGlobal() == false before Auto-Fix runs!
         std::string config_to_load = specific_config;
-        bool has_custom_ini = std::filesystem::exists(custom_path / (specific_config + ".ini"));
-        if (!has_custom_ini && std::filesystem::exists(custom_path / (legacy_config + ".ini"))) {
+        bool has_custom_ini = HasUserPerGameSettings(custom_path / (specific_config + ".ini"));
+        if (!has_custom_ini && HasUserPerGameSettings(custom_path / (legacy_config + ".ini"))) {
             config_to_load = legacy_config;
             has_custom_ini = true;
         }
@@ -7123,10 +7283,36 @@ void MainWindow::OnConfigure() {
     const bool old_force_x11 = UISettings::values.gui_force_x11.GetValue();
 #endif
 
-    Settings::SetConfiguringGlobal(true);
-    if (!emulation_running) {
+    const bool had_active_session_backup = m_session_backup.is_active;
+    const bool had_active_autofix = Core::GameFixDatabase::AreFixesEnabled();
+    if (had_active_session_backup) {
+        Settings::RestoreGlobalState(false);
+        m_session_backup.Restore();
+    } else if (!emulation_running) {
         Settings::RestoreGlobalState(false);
     }
+    Settings::SetConfiguringGlobal(true);
+
+    auto reapply_running_session_overrides = [this, had_active_session_backup, had_active_autofix]() {
+        if (!had_active_session_backup && !emulation_running) {
+            return;
+        }
+        m_session_backup.is_active = false;
+        m_session_backup.Capture();
+        std::string per_game_cfg;
+        if (GetActivePerGameConfigName(current_game_path, last_filename_booted, per_game_cfg)) {
+            QtConfig per_game_config(per_game_cfg, Config::ConfigType::PerGameConfig);
+        }
+        if (had_active_autofix && m_current_addons_title_id != 0) {
+            Core::GameFixDatabase::SetFixesEnabled(true);
+            Core::GameFixDatabase::ApplyProfileDirectly(m_current_addons_title_id, m_current_addons_game_path);
+        }
+        if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+            QtCommon::system->ApplySettings();
+        }
+        UpdateStatusButtons();
+    };
+
     ConfigureDialog configure_dialog(this, hotkey_registry, input_subsystem.get(),
                                      vk_device_records, *QtCommon::system,
                                      !multiplayer_state->IsHostingPublicRoom());
@@ -7138,13 +7324,10 @@ void MainWindow::OnConfigure() {
             &MainWindow::OnGameListRefresh);
     connect(&configure_dialog, &ConfigureDialog::ConfigurationApplied, this,
             [this]() {
-                UpdateStatusButtons();
-                if (m_session_backup.is_active) {
-                    m_session_backup.Capture();
-                }
                 if (config) {
                     config->SaveAllValues();
                 }
+                UpdateStatusButtons();
             });
 
     const auto result = configure_dialog.exec();
@@ -7154,16 +7337,15 @@ void MainWindow::OnConfigure() {
             UISettings::values.theme = old_theme;
             UpdateUITheme();
         }
+        reapply_running_session_overrides();
         return;
     } else if (result == QDialog::Accepted) {
         // Only apply new changes if user hit Okay
         // This is here to avoid applying changes if the user hit Apply, made some changes, then hit
         // Cancel
         configure_dialog.ApplyConfiguration();
-        if (m_session_backup.is_active) {
-            m_session_backup.Capture();
-        }
         config->SaveAllValues();
+        reapply_running_session_overrides();
         UpdateStatusButtons();
     } else if (UISettings::values.reset_to_defaults) {
         LOG_INFO(Frontend, "Resetting all settings to defaults");
@@ -8171,18 +8353,6 @@ void MainWindow::OnSaveStateSlot(int slot) {
             perf_overlay->RefreshSaveSlots();
         }
     }
-    if (render_window) {
-        auto preview_path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
-        preview_path.replace_extension(".png");
-        const QString qpreview = QString::fromStdString(Common::FS::PathToUTF8String(preview_path));
-        if (QScreen* scr = render_window->screen()) {
-            const QPixmap grabbed = scr->grabWindow(render_window->winId());
-            if (!grabbed.isNull()) {
-                grabbed.save(qpreview, "PNG");
-            }
-        }
-        render_window->CaptureScreenshot(qpreview);
-    }
     const QString msg = StormLang(
         QStringLiteral("⚡ Быстрое сохранение: Слот %1 сохранён (SESS v2)").arg(slot),
         QStringLiteral("⚡ Quick Save: Slot %1 saved (SESS v2)").arg(slot),
@@ -8206,7 +8376,21 @@ void MainWindow::OnSaveStateSlot(int slot) {
             QStringLiteral("Instantan\u00e9 m\u00e9moire SESS v2 enregistr\u00e9 avec succ\u00e8s"),
             QStringLiteral("SESS v2 \u5185\u5b58\u5feb\u7167\u5df2\u6210\u529f\u4fdd\u5b58"),
             QStringLiteral("SESS v2 \u30e1\u30e2\u30ea\u30b9\u30ca\u30c3\u30d7\u30b7\u30e7\u30c3\u30c8\u3092\u4fdd\u5b58\u3057\u307e\u3057\u305f"));
-        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(0, 229, 255), QStringLiteral("\U0001f4be"), 2800);
+        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(0, 229, 255), QStringLiteral("\U0001f4be"), 3200);
+    }
+    if (render_window) {
+        auto preview_path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+        preview_path.replace_extension(".png");
+        const QString qpreview = QString::fromStdString(Common::FS::PathToUTF8String(preview_path));
+        if (QScreen* scr = render_window->screen() ? render_window->screen() : QGuiApplication::primaryScreen()) {
+            const QPixmap grabbed = scr->grabWindow(render_window->winId());
+            if (!grabbed.isNull() && grabbed.width() > 32 && grabbed.height() > 32) {
+                QImage thumb = grabbed.scaled(480, 270, Qt::KeepAspectRatio, Qt::FastTransformation).toImage();
+                std::thread([thumb = std::move(thumb), qpreview]() {
+                    thumb.save(qpreview, "PNG");
+                }).detach();
+            }
+        }
     }
     RefreshSaveStateMenus();
 }
@@ -8285,11 +8469,12 @@ void MainWindow::OnLoadStateSlot(int slot) {
                                                                : QGuiApplication::primaryScreen()) {
                         const QPixmap grabbed = scr->grabWindow(render_window->winId());
                         if (!grabbed.isNull() && grabbed.width() > 32 && grabbed.height() > 32) {
-                            grabbed.scaled(640, 360, Qt::KeepAspectRatio, Qt::SmoothTransformation)
-                                .save(qpreview, "PNG");
+                            QImage thumb = grabbed.scaled(480, 270, Qt::KeepAspectRatio, Qt::FastTransformation).toImage();
+                            std::thread([thumb = std::move(thumb), qpreview]() {
+                                thumb.save(qpreview, "PNG");
+                            }).detach();
                         }
                     }
-                    render_window->CaptureScreenshot(qpreview);
                 }
             });
         }
@@ -10094,11 +10279,39 @@ void MainWindow::ApplyDynamicSettingChange() {
     std::string per_game_config_name;
     const bool has_per_game_file =
         GetActivePerGameConfigName(current_game_path, last_filename_booted, per_game_config_name);
-    if (has_per_game_file) {
+    if (has_per_game_file && !Core::GameFixDatabase::AreFixesEnabled()) {
         QtConfig per_game_config(per_game_config_name, Config::ConfigType::PerGameConfig, false);
         per_game_config.SaveAllValues();
     } else if (config) {
-        config->SaveAllValues();
+        if (m_session_backup.is_active) {
+            const bool cur_macro_jit = Settings::values.disable_macro_jit.GetValue();
+            const bool cur_auto_stub = Settings::values.use_auto_stub.GetValue();
+            const bool cur_web_applet = Settings::values.disable_web_applet.GetValue();
+            const bool cur_fma = Settings::values.cpuopt_unsafe_unfuse_fma.GetValue();
+            const bool cur_mmu = Settings::values.cpuopt_unsafe_host_mmu.GetValue();
+            const bool cur_fp = Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue();
+            const bool cur_fpcr = Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue();
+
+            Settings::values.disable_macro_jit.SetValue(m_session_backup.disable_macro_jit);
+            Settings::values.use_auto_stub.SetValue(m_session_backup.use_auto_stub);
+            Settings::values.disable_web_applet.SetValue(m_session_backup.disable_web_applet);
+            Settings::values.cpuopt_unsafe_unfuse_fma.SetValue(s_extra_session_backup.cpuopt_unsafe_unfuse_fma);
+            Settings::values.cpuopt_unsafe_host_mmu.SetValue(s_extra_session_backup.cpuopt_unsafe_host_mmu);
+            Settings::values.cpuopt_unsafe_reduce_fp_error.SetValue(s_extra_session_backup.cpuopt_unsafe_reduce_fp_error);
+            Settings::values.cpuopt_unsafe_ignore_standard_fpcr.SetValue(s_extra_session_backup.cpuopt_unsafe_ignore_standard_fpcr);
+
+            config->SaveAllValues();
+
+            Settings::values.disable_macro_jit.SetValue(cur_macro_jit);
+            Settings::values.use_auto_stub.SetValue(cur_auto_stub);
+            Settings::values.disable_web_applet.SetValue(cur_web_applet);
+            Settings::values.cpuopt_unsafe_unfuse_fma.SetValue(cur_fma);
+            Settings::values.cpuopt_unsafe_host_mmu.SetValue(cur_mmu);
+            Settings::values.cpuopt_unsafe_reduce_fp_error.SetValue(cur_fp);
+            Settings::values.cpuopt_unsafe_ignore_standard_fpcr.SetValue(cur_fpcr);
+        } else {
+            config->SaveAllValues();
+        }
     }
     UpdateStatusButtons();
     ConfigurationShared::ReloadAllActiveWidgets();
@@ -12767,9 +12980,6 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     SaveFooterSettings();
     UISettings::SaveWindowState();
     hotkey_registry.SaveHotkeys();
-    if (config) {
-        config->SaveAllValues();
-    }
 
     // Unload controllers early
     controller_dialog->UnloadController();
@@ -12781,6 +12991,7 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 
     Core::FlushPendingSaveStates();
     RestoreSessionSettings();
+    Settings::RestoreGlobalState(false);
     if (config) {
         config->SaveAllValues();
     }

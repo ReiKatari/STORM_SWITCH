@@ -2,12 +2,15 @@
 setlocal enabledelayedexpansion
 
 echo ===================================================
-echo STORM SWITCH - Automated Build and Packaging Script
+echo STORM SWITCH - Low-Load Automated Build Script
 echo ===================================================
+
+powershell -NoProfile -Command "try { [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal' } catch {}" 2>nul
 
 taskkill /F /IM STORM_SWITCH.exe /IM STORM_SWITCH-cli.exe /IM STORM_SWITCH-room.exe 2>nul
 
 set "VSLANG=1033"
+set "CMAKE_BUILD_PARALLEL_LEVEL=4"
 call "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" amd64
 if errorlevel 1 (
     echo [ERROR] Failed to set up Visual Studio environment.
@@ -29,33 +32,37 @@ set "NINJA=C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\IDE\Comm
 if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 cd /d "%BUILD_DIR%"
 
-echo [1/3] Running CMake configuration...
-"%CMAKE%" -G "Ninja" -DCMAKE_MAKE_PROGRAM="%NINJA%" ^
-    -DCMAKE_BUILD_TYPE=Release ^
-    -DCMAKE_CXX_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
-    -DCMAKE_C_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
-    -DGIT_TAG="14.0.0" ^
-    -DGIT_RELEASE="14.0.0" ^
-    -DBUILD_VERSION="14.0.0" ^
-    -DENABLE_QT=ON ^
-    -DENABLE_QT_TRANSLATION=ON ^
-    -DYUZU_USE_BUNDLED_QT=ON ^
-    -DQt6_DIR="%Qt6_DIR%" ^
-    -DCPM_SOURCE_CACHE="%CPM_SOURCE_CACHE%" ^
-    -DYUZU_CMD=ON ^
-    -DYUZU_ROOM=ON ^
-    -DYUZU_ROOM_STANDALONE=ON ^
-    -DENABLE_WEB_SERVICE=ON ^
-    -DBUILD_TESTING=OFF ^
-    "%SRC_DIR%"
-
-if errorlevel 1 (
-    echo [ERROR] CMake configuration failed.
-    exit /b 1
+if not exist "%BUILD_DIR%\build.ninja" (
+    echo [1/3] Running CMake configuration...
+    "%CMAKE%" -G "Ninja" -DCMAKE_MAKE_PROGRAM="%NINJA%" ^
+        -DCMAKE_BUILD_TYPE=Release ^
+        -DCMAKE_CXX_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
+        -DCMAKE_C_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
+        -DGIT_TAG="14.0.1" ^
+        -DGIT_RELEASE="14.0.1" ^
+        -DBUILD_VERSION="14.0.1" ^
+        -DENABLE_QT=ON ^
+        -DENABLE_QT_TRANSLATION=ON ^
+        -DYUZU_USE_BUNDLED_QT=ON ^
+        -DQt6_DIR="%Qt6_DIR%" ^
+        -DCPM_SOURCE_CACHE="%CPM_SOURCE_CACHE%" ^
+        -DYUZU_CMD=ON ^
+        -DYUZU_ROOM=ON ^
+        -DYUZU_ROOM_STANDALONE=ON ^
+        -DENABLE_WEB_SERVICE=ON ^
+        -DBUILD_TESTING=OFF ^
+        "%SRC_DIR%"
+    if errorlevel 1 (
+        echo [ERROR] CMake configuration failed.
+        exit /b 1
+    )
+) else (
+    echo [1/3] Updating SCM revision for 14.0.1...
+    "%CMAKE%" -DGIT_TAG="14.0.1" -DGIT_RELEASE="14.0.1" -DBUILD_VERSION="14.0.1" -DSRC_DIR="%SRC_DIR%" -P "%SRC_DIR%\CMakeModules\GenerateSCMRev.cmake" 2>nul
 )
 
-echo [2/3] Compiling STORM SWITCH with Ninja...
-"%CMAKE%" --build . --config Release
+echo [2/3] Compiling STORM SWITCH with Ninja (low CPU load: -j 4)...
+"%NINJA%" -j 4
 if errorlevel 1 (
     echo [ERROR] Compilation failed.
     exit /b 1

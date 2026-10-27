@@ -92,9 +92,9 @@ android {
                         "-DYUZU_USE_BUNDLED_FFMPEG=ON",
                         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
                         "-DENABLE_UPDATE_CHECKER=ON",
-                        "-DBUILD_VERSION=${getGitVersion()}",
-                        "-DGIT_TAG=${getGitVersion()}",
-                        "-DGIT_RELEASE=${getGitVersion()}",
+                        "-DBUILD_VERSION=14.0.0",
+                        "-DGIT_TAG=14.0.0",
+                        "-DGIT_RELEASE=14.0.0",
                         "-DBUILD_TESTING=OFF",
                         "-DYUZU_TESTS=OFF",
                         "-DDYNARMIC_TESTS=OFF",
@@ -437,7 +437,7 @@ fun getGitVersion(): String {
             return ver
         }
     }
-    return "14.0.0"
+    return "14.0.1"
 }
 
 

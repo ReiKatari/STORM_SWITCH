@@ -690,13 +690,20 @@ void TextureCache<P>::SnapshotGpuSurfaces(std::vector<std::pair<DAddr, std::size
             image->guest_size_bytes == 0 || image->cpu_addr == 0) {
             continue;
         }
-        if (image->IsSafeDownload() &&
-            GetFormatType(image->info.format) == SurfaceType::ColorTexture &&
-            !IsPixelFormatBCn(image->info.format) &&
-            !IsPixelFormatASTC(image->info.format)) {
+        if (image->IsSafeDownload()) {
             to_download.push_back(image_id);
         }
-        if (image->guest_size_bytes <= 16_MiB) {
+        const bool is_persistent_rt =
+            True(image->flags & (ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified)) &&
+            image->info.num_samples == 1 &&
+            GetFormatType(image->info.format) == SurfaceType::ColorTexture;
+        const bool is_dynamic_color =
+            !IsPixelFormatBCn(image->info.format) &&
+            !IsPixelFormatASTC(image->info.format) &&
+            image->info.num_samples == 1 &&
+            GetFormatType(image->info.format) == SurfaceType::ColorTexture &&
+            image->guest_size_bytes <= 16_MiB;
+        if (is_persistent_rt || is_dynamic_color) {
             raw_ranges.emplace_back(image->cpu_addr, image->guest_size_bytes);
         }
     }
@@ -734,19 +741,6 @@ void TextureCache<P>::SnapshotGpuSurfaces(std::vector<std::pair<DAddr, std::size
 
 template <class P>
 void TextureCache<P>::InvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences) {
-    for (auto [image_id, image] : slot_images) {
-        if (!image_id || image_id == NULL_IMAGE_ID || image_id == CORRUPT_ID) {
-            continue;
-        }
-        if (False(image->flags & ImageFlagBits::Registered) || image->cpu_addr == 0) {
-            continue;
-        }
-        image->flags &= ~ImageFlagBits::GpuModified;
-        image->flags |= ImageFlagBits::CpuModified;
-        if (True(image->flags & ImageFlagBits::Tracked)) {
-            UntrackImage(*image, image_id);
-        }
-    }
     for (const auto& [cpu_addr, size] : sequences) {
         if (cpu_addr == 0 || size == 0) {
             continue;
@@ -758,6 +752,21 @@ void TextureCache<P>::InvalidateForLoadState(std::span<const std::pair<DAddr, st
                 UntrackImage(image, image_id);
             }
         });
+    }
+    for (auto [image_id, image] : slot_images) {
+        if (!image_id || image_id == NULL_IMAGE_ID || image_id == CORRUPT_ID) {
+            continue;
+        }
+        if (False(image->flags & ImageFlagBits::Registered) || image->cpu_addr == 0) {
+            continue;
+        }
+        if (!IsPixelFormatBCn(image->info.format) && !IsPixelFormatASTC(image->info.format) &&
+            False(image->flags & ImageFlagBits::GpuModified) && image->guest_size_bytes <= 4_MiB) {
+            image->flags |= ImageFlagBits::CpuModified;
+            if (True(image->flags & ImageFlagBits::Tracked)) {
+                UntrackImage(*image, image_id);
+            }
+        }
     }
     for (auto& ch : channel_storage) {
         ch.graphics_image_table.Invalidate();

@@ -1,4 +1,5 @@
-$version = "14.0.0"
+[System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::BelowNormal
+$version = "14.0.1"
 $baseDir = Split-Path -Parent $PSScriptRoot
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
@@ -100,7 +101,7 @@ $zipWin10 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows10.zip"
 if (Test-Path $zipWin10) { Remove-Item $zipWin10 -Force }
 Write-Host "Creating $zipWin10..."
 Push-Location $stageWin10
-& $sevenZip a -tzip -mx=9 "$zipWin10" *
+& $sevenZip a -tzip -mx=7 -mmt=4 "$zipWin10" *
 Pop-Location
 
 # Zip Windows 11
@@ -108,7 +109,7 @@ $zipWin11 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows11.zip"
 if (Test-Path $zipWin11) { Remove-Item $zipWin11 -Force }
 Write-Host "Creating $zipWin11..."
 Push-Location $stageWin11
-& $sevenZip a -tzip -mx=9 "$zipWin11" *
+& $sevenZip a -tzip -mx=7 -mmt=4 "$zipWin11" *
 Pop-Location
 
 Remove-Item $stagingRoot -Recurse -Force -ErrorAction SilentlyContinue

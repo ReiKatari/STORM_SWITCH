@@ -6931,8 +6931,20 @@ void GameFixDatabase::SetDontAskAgain(u64 title_id, const std::string& config_fi
         }
     }
 
-    sections["StormSwitch"]["storm_fix_dont_ask"] = dont_ask ? "true" : "false";
+    if (dont_ask) {
+        sections["StormSwitch"]["storm_fix_dont_ask"] = "true";
+    } else if (sections.count("StormSwitch")) {
+        sections["StormSwitch"].erase("storm_fix_dont_ask");
+        if (sections["StormSwitch"].empty()) {
+            sections.erase("StormSwitch");
+        }
+    }
     sections.erase("StormEden");
+    if (sections.empty()) {
+        std::error_code ec;
+        std::filesystem::remove(path, ec);
+        return;
+    }
 
     std::ofstream out(path, std::ios::trunc);
     if (!out.is_open()) return;
@@ -7005,28 +7017,35 @@ void GameFixDatabase::SanitizeSettingsForHostHardware() {
         return;
     }
 
+    auto apply_session_only = [](auto& setting, auto val) {
+        if (setting.UsingGlobal()) {
+            setting.SetGlobal(false);
+        }
+        setting.SetValue(val);
+    };
+
     const auto mem_mode = Settings::values.memory_layout_mode.GetValue();
     if (!HasAtLeast5GbHostRam()) {
         if (mem_mode != Settings::MemoryLayout::Memory_4Gb) {
-            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+            apply_session_only(Settings::values.memory_layout_mode, Settings::MemoryLayout::Memory_4Gb);
             LOG_INFO(Frontend, "Hardware Auto-Correction: Clamped memory_layout_mode to 4GB on <=4GB RAM device ({} MB)",
                      ram_bytes / (1024ULL * 1024ULL));
         }
         if (Settings::values.vram_usage_mode.GetValue() != Settings::VramUsageMode::Conservative) {
-            Settings::values.vram_usage_mode.SetValue(Settings::VramUsageMode::Conservative);
+            apply_session_only(Settings::values.vram_usage_mode, Settings::VramUsageMode::Conservative);
         }
         if (Settings::values.astc_recompression.GetValue() == Settings::AstcRecompression::Uncompressed) {
-            Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Bc3);
+            apply_session_only(Settings::values.astc_recompression, Settings::AstcRecompression::Bc3);
             LOG_INFO(Frontend, "Hardware Auto-Correction: Enabled BC3 ASTC recompression on <=4GB RAM device to prevent OOM");
         }
     } else if (!HasAtLeast7GbHostRam()) {
         if (mem_mode == Settings::MemoryLayout::Memory_8Gb) {
-            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
+            apply_session_only(Settings::values.memory_layout_mode, Settings::MemoryLayout::Memory_6Gb);
             LOG_INFO(Frontend, "Hardware Auto-Correction: Clamped memory_layout_mode 8GB -> 6GB on <7GB RAM device ({} MB)",
                      ram_bytes / (1024ULL * 1024ULL));
         }
         if (Settings::values.vram_usage_mode.GetValue() == Settings::VramUsageMode::Aggressive) {
-            Settings::values.vram_usage_mode.SetValue(Settings::VramUsageMode::Conservative);
+            apply_session_only(Settings::values.vram_usage_mode, Settings::VramUsageMode::Conservative);
         }
     }
 }

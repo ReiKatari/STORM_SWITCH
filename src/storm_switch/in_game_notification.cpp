@@ -62,18 +62,27 @@ void InGameNotificationOverlay::ShowNotification(const QString& title, const QSt
     m_fade_anim->stop();
     m_fade_anim->disconnect(this);
 
-    if (m_panel_opacity < 0.15) {
-        m_panel_opacity = 0.15;
-    }
+    m_panel_opacity = 1.0;
 
     show();
     raise();
+    repaint();
 
-    m_fade_anim->setStartValue(m_panel_opacity);
-    m_fade_anim->setEndValue(1.0);
-    m_fade_anim->start();
+    QTimer::singleShot(50, this, [this]() {
+        if (isVisible()) {
+            RepositionToParent();
+            raise();
+            update();
+        }
+    });
+    QTimer::singleShot(180, this, [this]() {
+        if (isVisible()) {
+            RepositionToParent();
+            raise();
+            update();
+        }
+    });
 
-    update();
     m_hide_timer.start(displayDurationMs);
 }
 
