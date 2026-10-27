@@ -243,31 +243,120 @@ std::optional<std::string> MakeRequest(const std::string& url, const std::string
     }
 }
 
-std::vector<Release> GetReleases() {
-    const auto body = GetReleasesBody();
+static std::vector<Release> ParseStormGamesWorldReleases(const std::string& body_str) {
+    std::vector<Release> out;
+    try {
+        const auto json = nlohmann::json::parse(body_str);
+        if (!json.contains("repositories") || !json["repositories"].is_array() || json["repositories"].empty())
+            return out;
+        const auto& repo = json["repositories"][0];
+        if (!repo.contains("releases") || !repo["releases"].is_array())
+            return out;
+        for (const auto& rj : repo["releases"]) {
+            if (!rj.is_object())
+                continue;
+            Release rel{};
+            rel.tag = rj.value("version", std::string{});
+            if (!rel.tag.empty() && (rel.tag[0] == 'v' || rel.tag[0] == 'V'))
+                rel.tag = rel.tag.substr(1);
+            if (rel.tag.empty())
+                continue;
+            rel.title = rj.value("title", "STORM SWITCH " + rel.tag);
+            rel.id = std::hash<std::string>{}(rel.title);
+            rel.published = ParseIsoTimestamp(rj.value("publishedAt", std::string{}));
+            rel.prerelease = (rj.value("channel", std::string{"stable"}) != "stable");
+            rel.body = rj.value("notes", rel.title);
+            boost::replace_all(rel.body, "\r", "");
+            rel.host = "https://stormgamesworld.ru";
+            rel.html_url = "https://stormgamesworld.ru/programs?repo=STORM_SWITCH";
+            rel.base_download_url = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH";
+            if (rj.contains("assets") && rj["assets"].is_array()) {
+                for (const auto& aj : rj["assets"]) {
+                    const auto name = aj.value("name", std::string{});
+                    if (!name.empty()) {
+                        rel.assets.emplace_back("https://stormgamesworld.ru/uploads/programs/STORM_SWITCH/" + name);
+                    }
+                }
+            }
+            out.emplace_back(std::move(rel));
+        }
+    } catch (...) {
+    }
+    return out;
+}
 
-    if (!body) {
-        LOG_DEBUG(Common, "Failed to get stable releases");
-        return {};
+static bool IsVerNewer(const std::string& remote_v, const std::string& local_v) {
+    auto parse_parts = [](const std::string& s) {
+        std::vector<int> parts;
+        std::string cur;
+        for (char c : s) {
+            if (c >= '0' && c <= '9') {
+                cur.push_back(c);
+            } else if (!cur.empty()) {
+                parts.push_back(std::atoi(cur.c_str()));
+                cur.clear();
+            }
+        }
+        if (!cur.empty())
+            parts.push_back(std::atoi(cur.c_str()));
+        return parts;
+    };
+    const auto r = parse_parts(remote_v);
+    const auto l = parse_parts(local_v);
+    const size_t n = std::max(r.size(), l.size());
+    for (size_t i = 0; i < n; ++i) {
+        const int rv = i < r.size() ? r[i] : 0;
+        const int lv = i < l.size() ? l[i] : 0;
+        if (rv != lv)
+            return rv > lv;
+    }
+    return false;
+}
+
+std::vector<Release> GetReleases() {
+    std::vector<Release> gh_releases;
+    const auto body = GetReleasesBody();
+    if (body) {
+        const std::string_view body_str = body.value();
+        const auto url = fmt::format("https://{}", Common::g_build_auto_update_stable_api);
+        gh_releases = Release::ListFromJson(body_str, url, Common::g_build_auto_update_stable_repo);
     }
 
-    const std::string_view body_str = body.value();
-    const auto url = fmt::format("https://{}", Common::g_build_auto_update_stable_api);
-    return Release::ListFromJson(body_str, url, Common::g_build_auto_update_stable_repo);
+    const auto sgw_body = MakeRequest("https://stormgamesworld.ru", "/api/programs?repo=STORM_SWITCH");
+    if (sgw_body) {
+        auto sgw_releases = ParseStormGamesWorldReleases(sgw_body.value());
+        if (!sgw_releases.empty()) {
+            if (gh_releases.empty() || IsVerNewer(sgw_releases.front().tag, gh_releases.front().tag)) {
+                return sgw_releases;
+            }
+        }
+    }
+
+    return gh_releases;
 }
 
 std::optional<Release> GetLatestRelease() {
-    const auto releases_path =  Common::g_build_auto_update_api_path;
+    std::optional<Release> gh_rel;
+    const auto releases_path = Common::g_build_auto_update_api_path;
     const auto url = fmt::format("https://{}", Common::g_build_auto_update_api);
 
     const auto body = MakeRequest(url, releases_path);
-    if (!body) {
-        LOG_DEBUG(Common, "Failed to get latest release");
-        return std::nullopt;
+    if (body) {
+        const std::string_view body_str = body.value();
+        gh_rel = Release::FromJson(body_str, url, Common::g_build_auto_update_repo);
     }
 
-    const std::string_view body_str = body.value();
-    return Release::FromJson(body_str, url, Common::g_build_auto_update_repo);
+    const auto sgw_body = MakeRequest("https://stormgamesworld.ru", "/api/programs?repo=STORM_SWITCH");
+    if (sgw_body) {
+        auto sgw_releases = ParseStormGamesWorldReleases(sgw_body.value());
+        if (!sgw_releases.empty()) {
+            if (!gh_rel.has_value() || IsVerNewer(sgw_releases.front().tag, gh_rel->tag)) {
+                return sgw_releases.front();
+            }
+        }
+    }
+
+    return gh_rel;
 }
 
 std::optional<std::string> GetReleasesBody() {

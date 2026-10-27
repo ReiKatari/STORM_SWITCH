@@ -8830,10 +8830,54 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
                     return;
                 }
 
-                if (manual_check) {
-                    QMessageBox::warning(this, tr("Ошибка проверки обновлений"),
-                                         tr("Не удалось связаться с сервером GitHub:\n%1").arg(fallback_reply->errorString()));
-                }
+                // Secondary mirror fallback: https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH
+                auto* sgw_nam = new QNetworkAccessManager(this);
+                QNetworkRequest sgw_req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")));
+                sgw_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
+                sgw_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+                auto* sgw_reply = sgw_nam->get(sgw_req);
+                connect(sgw_reply, &QNetworkReply::finished, this, [this, sgw_reply, sgw_nam, manual_check, handle_version_check]() {
+                    sgw_reply->deleteLater();
+                    sgw_nam->deleteLater();
+                    if (sgw_reply->error() == QNetworkReply::NoError) {
+                        const QJsonDocument sgw_doc = QJsonDocument::fromJson(sgw_reply->readAll());
+                        if (sgw_doc.isObject()) {
+                            const QJsonArray rels = sgw_doc.object().value(QStringLiteral("releases")).toArray();
+                            if (!rels.isEmpty()) {
+                                const QJsonObject rel0 = rels.first().toObject();
+                                QString s_ver = rel0.value(QStringLiteral("version")).toString().trimmed();
+                                if (s_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                                    s_ver = s_ver.mid(1);
+                                }
+                                if (!s_ver.isEmpty()) {
+                                    const bool is_win11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 22000);
+                                    const QString suffix = is_win11 ? QStringLiteral("Windows11.zip") : QStringLiteral("Windows10.zip");
+                                    QString sgw_zip_url = QStringLiteral("https://stormgamesworld.ru/uploads/programs/STORM_SWITCH/STORM_SWITCH_%1_%2").arg(s_ver, suffix);
+                                    const QJsonArray s_assets = rel0.value(QStringLiteral("assets")).toArray();
+                                    for (const auto& a_it : s_assets) {
+                                        const QJsonObject a_obj = a_it.toObject();
+                                        const QString a_name = a_obj.value(QStringLiteral("name")).toString();
+                                        const QString a_dl = a_obj.value(QStringLiteral("downloadUrl")).toString();
+                                        if (a_name.endsWith(suffix, Qt::CaseInsensitive) && !a_dl.isEmpty()) {
+                                            sgw_zip_url = a_dl;
+                                            break;
+                                        }
+                                    }
+                                    const QString s_title = rel0.value(QStringLiteral("title")).toString(QStringLiteral("STORM SWITCH %1").arg(s_ver));
+                                    const QString s_notes = rel0.value(QStringLiteral("notes")).toString();
+                                    handle_version_check(s_ver, s_title, s_notes,
+                                                         QStringLiteral("https://stormgamesworld.ru/programs?repo=STORM_SWITCH"),
+                                                         sgw_zip_url);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    if (manual_check) {
+                        QMessageBox::warning(this, tr("?????? ???????? ??????????"),
+                                             tr("?? ??????? ????????? ? ????????? ?????????? (GitHub ? stormgamesworld.ru):\n%1").arg(sgw_reply->errorString()));
+                    }
+                });
             });
             return;
         }
@@ -8866,7 +8910,60 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
             }
         }
 
-        handle_version_check(tag_name, release_name, release_body, html_url, selected_zip_url);
+        // Also query stormgamesworld.ru mirror so if a newer release is published on stormgamesworld.ru, it is detected too
+        auto* sgw_nam = new QNetworkAccessManager(this);
+        QNetworkRequest sgw_req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")));
+        sgw_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
+        sgw_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+        auto* sgw_reply = sgw_nam->get(sgw_req);
+        connect(sgw_reply, &QNetworkReply::finished, this, [sgw_reply, sgw_nam, handle_version_check, tag_name, release_name, release_body, html_url, selected_zip_url, preferred_token]() {
+            sgw_reply->deleteLater();
+            sgw_nam->deleteLater();
+            QString final_tag = tag_name;
+            QString final_name = release_name;
+            QString final_body = release_body;
+            QString final_html = html_url;
+            QString final_zip = selected_zip_url;
+
+            if (sgw_reply->error() == QNetworkReply::NoError) {
+                const QJsonDocument sgw_doc = QJsonDocument::fromJson(sgw_reply->readAll());
+                if (sgw_doc.isObject()) {
+                    const QJsonArray rels = sgw_doc.object().value(QStringLiteral("releases")).toArray();
+                    if (!rels.isEmpty()) {
+                        const QJsonObject rel0 = rels.first().toObject();
+                        QString s_ver = rel0.value(QStringLiteral("version")).toString().trimmed();
+                        if (s_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                            s_ver = s_ver.mid(1);
+                        }
+                        QString g_ver = final_tag.trimmed();
+                        if (g_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                            g_ver = g_ver.mid(1);
+                        }
+                        auto to_parts = [](const QString& v) {
+                            std::vector<int> p;
+                            for (const auto& s : v.split(QLatin1Char('.'), Qt::SkipEmptyParts)) p.push_back(s.toInt());
+                            return p;
+                        };
+                        const auto sp = to_parts(s_ver);
+                        const auto gp = to_parts(g_ver);
+                        bool sgw_newer = false;
+                        for (size_t i = 0; i < std::max(sp.size(), gp.size()); ++i) {
+                            const int sv = i < sp.size() ? sp[i] : 0;
+                            const int gv = i < gp.size() ? gp[i] : 0;
+                            if (sv != gv) { sgw_newer = (sv > gv); break; }
+                        }
+                        if (sgw_newer || final_tag.isEmpty()) {
+                            final_tag = s_ver;
+                            final_name = rel0.value(QStringLiteral("title")).toString(QStringLiteral("STORM SWITCH %1").arg(s_ver));
+                            final_body = rel0.value(QStringLiteral("notes")).toString();
+                            final_html = QStringLiteral("https://stormgamesworld.ru/programs?repo=STORM_SWITCH");
+                            final_zip = QStringLiteral("https://stormgamesworld.ru/uploads/programs/STORM_SWITCH/STORM_SWITCH_%1_%2").arg(s_ver, preferred_token);
+                        }
+                    }
+                }
+            }
+            handle_version_check(final_tag, final_name, final_body, final_html, final_zip);
+        });
     });
 }
 void MainWindow::OnAbout() {

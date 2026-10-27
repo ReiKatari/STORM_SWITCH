@@ -317,26 +317,69 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
                     }
                 }
             }
-            // Fallback via HTML redirect (never rate-limited)
-            val webReq = okhttp3.Request.Builder()
-                .url("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
-                .header("User-Agent", "Mozilla/5.0")
-                .build()
-            client.newCall(webReq).execute().use { resp ->
-                val finalUrl = resp.request.url.toString()
-                val match = Regex("/releases/tag/(v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)*)").find(finalUrl)
-                if (match != null) {
-                    val rawTag = match.groupValues[1]
-                    val cleanVer = rawTag.removePrefix("v").removePrefix("V")
-                    val baseDl = "https://github.com/ReiKatari/STORM_SWITCH/releases/download/$rawTag"
-                    val assets = mutableListOf(
-                        "$baseDl/STORM_SWITCH_$cleanVer.apk",
-                        "$baseDl/STORM_SWITCH_${cleanVer}_LEGACY.apk",
-                        "$baseDl/STORM_SWITCH_${cleanVer}_SDK27.apk"
-                    )
-                    return NativeLibrary.UpdateResult(tag = rawTag, title = "STORM SWITCH $cleanVer", body = "", url = finalUrl, assets = assets)
+            // Fallback 1: GitHub HTML redirect (never rate-limited)
+            try {
+                val webReq = okhttp3.Request.Builder()
+                    .url("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
+                    .header("User-Agent", "Mozilla/5.0")
+                    .build()
+                client.newCall(webReq).execute().use { resp ->
+                    val finalUrl = resp.request.url.toString()
+                    val match = Regex("/releases/tag/(v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)*)").find(finalUrl)
+                    if (match != null) {
+                        val rawTag = match.groupValues[1]
+                        val cleanVer = rawTag.removePrefix("v").removePrefix("V")
+                        val baseDl = "https://github.com/ReiKatari/STORM_SWITCH/releases/download/$rawTag"
+                        val sgwDl = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH"
+                        val assets = mutableListOf(
+                            "$baseDl/STORM_SWITCH_$cleanVer.apk",
+                            "$baseDl/STORM_SWITCH_${cleanVer}_LEGACY.apk",
+                            "$baseDl/STORM_SWITCH_${cleanVer}_SDK27.apk",
+                            "$sgwDl/STORM_SWITCH_$cleanVer.apk",
+                            "$sgwDl/STORM_SWITCH_${cleanVer}_LEGACY.apk",
+                            "$sgwDl/STORM_SWITCH_${cleanVer}_SDK27.apk"
+                        )
+                        return NativeLibrary.UpdateResult(tag = rawTag, title = "STORM SWITCH $cleanVer", body = "", url = finalUrl, assets = assets)
+                    }
                 }
-            }
+            } catch (_: Exception) {}
+
+            // Fallback 2: Official STORM GAMES WORLD Mirror (https://stormgamesworld.ru/programs?repo=STORM_SWITCH)
+            try {
+                val sgwReq = okhttp3.Request.Builder()
+                    .url("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")
+                    .header("User-Agent", "STORM-SWITCH-Android")
+                    .header("Accept", "application/json")
+                    .build()
+                client.newCall(sgwReq).execute().use { resp ->
+                    if (resp.isSuccessful) {
+                        val bodyStr = resp.body?.string() ?: ""
+                        val root = org.json.JSONObject(bodyStr)
+                        val rels = root.optJSONArray("releases")
+                        if (rels != null && rels.length() > 0) {
+                            val rel0 = rels.getJSONObject(0)
+                            val ver = rel0.optString("version", "").trim().removePrefix("v").removePrefix("V")
+                            if (ver.isNotEmpty()) {
+                                val title = rel0.optString("title", "STORM SWITCH $ver")
+                                val notes = rel0.optString("notes", "")
+                                val sgwDl = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH"
+                                val assets = mutableListOf(
+                                    "$sgwDl/STORM_SWITCH_$ver.apk",
+                                    "$sgwDl/STORM_SWITCH_${ver}_LEGACY.apk",
+                                    "$sgwDl/STORM_SWITCH_${ver}_SDK27.apk"
+                                )
+                                return NativeLibrary.UpdateResult(
+                                    tag = ver,
+                                    title = title,
+                                    body = notes,
+                                    url = "https://stormgamesworld.ru/programs?repo=STORM_SWITCH",
+                                    assets = assets
+                                )
+                            }
+                        }
+                    }
+                }
+            } catch (_: Exception) {}
             null
         } catch (_: Exception) {
             null
