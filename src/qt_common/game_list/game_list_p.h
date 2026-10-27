@@ -9,6 +9,7 @@
 #include <array>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include <QBuffer>
@@ -45,6 +46,11 @@ Q_DECLARE_METATYPE(GameListItemType);
 
 static QPixmap GetDefaultIcon(u32 size) {
     if (size == 0) size = 32;
+    static std::unordered_map<u32, QPixmap> s_default_icon_cache;
+    auto it = s_default_icon_cache.find(size);
+    if (it != s_default_icon_cache.end()) {
+        return it->second;
+    }
     QPixmap icon(size, size);
     icon.fill(Qt::transparent);
     QPainter p(&icon);
@@ -72,12 +78,20 @@ static QPixmap GetDefaultIcon(u32 size) {
     p.setBrush(Qt::NoBrush);
     p.drawEllipse(size / 4, size / 2, size / 5, size / 5);
     p.drawEllipse(size * 7 / 12, size * 7 / 12, size / 5, size / 5);
+    p.end();
 
+    s_default_icon_cache.emplace(size, icon);
     return icon;
 }
 
 static QPixmap ThemeIcon(const char* name) {
     const int size = std::max(20, static_cast<int>(UISettings::values.folder_icon_size.GetValue()));
+    const std::string key = std::string(name ? name : "") + ":" + std::to_string(size);
+    static std::unordered_map<std::string, QPixmap> s_theme_icon_cache;
+    auto it = s_theme_icon_cache.find(key);
+    if (it != s_theme_icon_cache.end()) {
+        return it->second;
+    }
 
     QPixmap pix(size, size);
     pix.fill(Qt::transparent);
@@ -117,12 +131,17 @@ static QPixmap ThemeIcon(const char* name) {
     } else {
         QIcon icon = QIcon::fromTheme(QLatin1String(name));
         if (!icon.isNull()) {
-            return icon.pixmap(size, size);
+            p.end();
+            QPixmap res = icon.pixmap(size, size);
+            s_theme_icon_cache.emplace(key, res);
+            return res;
         }
         p.setPen(QPen(QColor(0, 240, 255), 1.5));
         p.setBrush(QColor(0, 240, 255));
         p.drawRoundedRect(2, 2, size - 4, size - 4, 3, 3);
     }
+    p.end();
+    s_theme_icon_cache.emplace(key, pix);
     return pix;
 }
 
@@ -171,7 +190,7 @@ public:
         QString version_num = base_version.trimmed().isEmpty() ? QStringLiteral("1.0.0") : base_version.trimmed();
         int addon_count = 0;
         const QStringList lines = patch_versions.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
-        const QRegularExpression update_regex{QStringLiteral(R"(Update\s*\(v?([0-9a-zA-Z\.\-]+)\))"), QRegularExpression::CaseInsensitiveOption};
+        static const QRegularExpression update_regex{QStringLiteral(R"(Update\s*\(v?([0-9a-zA-Z\.\-]+)\))"), QRegularExpression::CaseInsensitiveOption};
 
         for (const QString& line : lines) {
             const auto match = update_regex.match(line);
@@ -227,22 +246,46 @@ public:
                                         : QObject::tr("Нет");
 
         const u32 size = UISettings::values.game_icon_size.GetValue();
+        static std::unordered_map<u64, QPixmap> s_game_icon_cache;
+        static std::unordered_map<u64, QString> s_tooltip_b64_cache;
 
+        const u64 icon_cache_key = (program_id << 12) ^ static_cast<u64>(size);
         QPixmap picture;
-        if (!picture.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()))) {
-            picture = GetDefaultIcon(size);
+        auto icon_it = (program_id != 0) ? s_game_icon_cache.find(icon_cache_key) : s_game_icon_cache.end();
+        if (icon_it != s_game_icon_cache.end()) {
+            picture = icon_it->second;
+        } else {
+            if (!picture.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()))) {
+                picture = GetDefaultIcon(size);
+            } else {
+                picture = picture.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            }
+            if (program_id != 0) {
+                s_game_icon_cache.emplace(icon_cache_key, picture);
+            }
         }
-
-        QPixmap tip_pix = picture.scaled(96, 96, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-        picture = picture.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
         setData(picture, Qt::DecorationRole);
 
-        QByteArray bArray;
-        QBuffer buffer(&bArray);
-        buffer.open(QIODevice::WriteOnly);
-        tip_pix.save(&buffer, "PNG");
-        const QString icon_base64 = QString::fromLatin1(bArray.toBase64());
+        QString icon_base64;
+        auto b64_it = (program_id != 0) ? s_tooltip_b64_cache.find(program_id) : s_tooltip_b64_cache.end();
+        if (b64_it != s_tooltip_b64_cache.end()) {
+            icon_base64 = b64_it->second;
+        } else if (!picture_data.empty()) {
+            const QByteArray raw = QByteArray::fromRawData(
+                reinterpret_cast<const char*>(picture_data.data()),
+                static_cast<qsizetype>(picture_data.size()));
+            icon_base64 = QString::fromLatin1(raw.toBase64());
+            if (program_id != 0) {
+                s_tooltip_b64_cache.emplace(program_id, icon_base64);
+            }
+        } else {
+            QByteArray bArray;
+            QBuffer buffer(&bArray);
+            buffer.open(QIODevice::WriteOnly);
+            picture.save(&buffer, "PNG", 90);
+            icon_base64 = QString::fromLatin1(bArray.toBase64());
+        }
 
         const QString formatted_title_id =
             QString::fromStdString(fmt::format("{:016X}", program_id));

@@ -511,20 +511,18 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
                             }
                         }
 
-                        if (!is_main_thread && layout.sdk_start > 0 &&
-                            thread_arg >= layout.sdk_start && thread_arg < layout.sdk_end &&
+                        if (!is_main_thread && thread_arg >= 0x80000000ULL &&
                             memory.GetPointerSilent(Common::ProcessAddress{thread_arg}) != nullptr) {
                             ctx.AddRange(thread_arg >= 0x1000 ? thread_arg - 0x1000 : thread_arg,
-                                         thread_arg + 0x4000);
+                                         thread_arg + 0x10000);
                         }
 
                         // Background worker threads (AudioThread, FileIO, etc.) whose ThreadType lives in
-                        // .bss or heap outside sdk: protect only the ThreadType + adjacent mutex header
-                        // without blocking the game's .bss globals following it.
+                        // .bss or heap outside sdk: protect the ThreadType + adjacent worker/audio state.
                         if (!is_main_thread && layout.sdk_start > 0 && thread_type_ptr < layout.sdk_start) {
-                            ctx.AddRange(thread_type_ptr >= 0x80 ? thread_type_ptr - 0x80
-                                                                 : thread_type_ptr,
-                                         thread_type_ptr + 0x240);
+                            ctx.AddRange(thread_type_ptr >= 0x200 ? thread_type_ptr - 0x200
+                                                                  : thread_type_ptr,
+                                         thread_type_ptr + 0x140000);
                         }
                     }
                 }
@@ -622,22 +620,13 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
             ctx.AddRange(fp >= 0x2000 ? fp - 0x2000 : fp, fp + 0x4000);
         }
 
-        // 4. For background threads ONLY, protect only structures within 0x1000 of ThreadType
-        // or inside sdk (.data/.bss), without blocking the game's global state structs in .bss/heap!
+        // 4. For background threads ONLY (e.g. AudioThread), protect structures pointed to by X0..X28
         if (!is_main_thread) {
-            for (std::size_t reg_idx = 19; reg_idx < 29; ++reg_idx) {
+            for (std::size_t reg_idx = 0; reg_idx < 29; ++reg_idx) {
                 const u64 rv = tctx.r[reg_idx];
                 if ((rv & 7ULL) == 0 && rv >= 0x80000000ULL &&
                     memory.GetPointerSilent(Common::ProcessAddress{rv}) != nullptr) {
-                    const bool near_thread_type =
-                        (thread_type_ptr > 0) &&
-                        ((rv >= thread_type_ptr && rv - thread_type_ptr <= 0x1000) ||
-                         (thread_type_ptr > rv && thread_type_ptr - rv <= 0x1000));
-                    if (near_thread_type) {
-                        ctx.AddRange(rv >= 0x80 ? rv - 0x80 : rv, rv + 0x280);
-                    } else if (layout.sdk_start > 0 && rv >= layout.sdk_start && rv < layout.sdk_end) {
-                        ctx.AddRange(rv >= 0x100 ? rv - 0x100 : rv, rv + 0x4000);
-                    }
+                    ctx.AddRange(rv >= 0x4000 ? rv - 0x4000 : rv, rv + 0x68000);
                 }
             }
         }
@@ -692,6 +681,7 @@ bool IsChunkZero4KB(const u8* ptr, std::size_t len) {
 
 SaveStateResult WriteSnapshotToDisk(const std::shared_ptr<CachedSaveState>& snapshot,
                                     const std::filesystem::path& path) {
+    Common::SetCurrentThreadPriority(Common::ThreadPriority::Low);
     auto compressed = Common::Compression::CompressDataZSTD(
         snapshot->uncompressed_payload.data(), snapshot->uncompressed_payload.size(), 1);
     if (compressed.empty() && !snapshot->uncompressed_payload.empty()) {
@@ -776,9 +766,6 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
 
     // Ensure any previous background disk write is completed before starting a new snapshot
     FlushPendingSaveStates();
-
-    // Note: Do not stall GPU or download VRAM surfaces during Quick Save;
-    // writable_regions in DRAM are captured directly in ~20ms.
 
     // Align to a clean frame boundary wait before stalling CPU cores
     WaitForCleanFrameBoundary(*process);
@@ -897,7 +884,6 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     {
         std::scoped_lock lk{g_flush_mutex};
         g_flush_threads.emplace_back([snapshot, path]() {
-            Common::SetCurrentThreadPriority(Common::ThreadPriority::Low);
             WriteSnapshotToDisk(snapshot, path);
         });
     }
@@ -1039,10 +1025,6 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
         std::array<u8, V2_CHUNK_SIZE> patched_page{};
         std::array<u8, V2_CHUNK_SIZE> zero_page{};
         u64 diff_bytes_written = 0;
-        const u8* const dram_base_ptr = system.DeviceMemory().buffer.BackingBasePointer();
-        const std::size_t dram_backing_size = static_cast<std::size_t>(header.dram_size);
-        std::vector<std::pair<DAddr, std::size_t>> exact_modified_daddrs;
-        exact_modified_daddrs.reserve(2048);
 
         for (u32 r = 0; r < region_count; ++r) {
             if (cursor + sizeof(PackedRegionHeader) > decompressed.size()) {
@@ -1230,25 +1212,15 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
 
                 memory.WriteBlockUnsafe(page_addr, final_src, chunk_len);
                 diff_bytes_written += chunk_len;
-                if (dram_base_ptr && live_ptr >= dram_base_ptr &&
-                    static_cast<std::size_t>(live_ptr - dram_base_ptr) + chunk_len <= dram_backing_size) {
-                    const DAddr page_daddr = 0x80000000ULL + static_cast<u64>(live_ptr - dram_base_ptr);
-                    if (!exact_modified_daddrs.empty() &&
-                        exact_modified_daddrs.back().first + exact_modified_daddrs.back().second == page_daddr) {
-                        exact_modified_daddrs.back().second += chunk_len;
-                    } else {
-                        exact_modified_daddrs.emplace_back(page_daddr, chunk_len);
-                    }
-                }
             }
         }
 
         LOG_INFO(Core, "SaveState: Differential restore wrote {:.2f} MB of changed 4KB pages",
                  static_cast<double>(diff_bytes_written) / (1024.0 * 1024.0));
 
-        if (!layout.writable_regions.empty() || !exact_modified_daddrs.empty()) {
-            std::vector<std::pair<DAddr, std::size_t>> modified_gpu_ranges = std::move(exact_modified_daddrs);
-            modified_gpu_ranges.reserve(modified_gpu_ranges.size() + layout.writable_regions.size() * 2);
+        if (!layout.writable_regions.empty()) {
+            std::vector<std::pair<DAddr, std::size_t>> modified_gpu_ranges;
+            modified_gpu_ranges.reserve(layout.writable_regions.size() * 2);
             auto& pt = process->GetPageTable();
             for (const auto& reg : layout.writable_regions) {
                 modified_gpu_ranges.emplace_back(reg.address, reg.size);

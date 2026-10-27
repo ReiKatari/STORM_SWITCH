@@ -59,7 +59,7 @@ void TurboMode::QueueSubmitted() {
 void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
                     const vk::InstanceDispatch& dld) {
 #ifdef _WIN32
-    SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+    SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 
     PROCESS_POWER_THROTTLING_STATE throttling{};
     throttling.Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION;
@@ -125,94 +125,13 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
-            .size = 4096,
-            .usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            .size = 64,
+            .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = 0,
             .pQueueFamilyIndices = nullptr,
         };
         vk::Buffer dummy_buffer = alloc.CreateBuffer(buffer_ci, MemoryUsage::DeviceLocal);
-
-        const VkDescriptorSetLayoutBinding binding{
-            .binding = 0,
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .descriptorCount = 1,
-            .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
-            .pImmutableSamplers = nullptr,
-        };
-        vk::DescriptorSetLayout desc_layout = turbo_device.GetLogical().CreateDescriptorSetLayout({
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .bindingCount = 1,
-            .pBindings = &binding,
-        });
-        const VkDescriptorPoolSize pool_size{
-            .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .descriptorCount = 1,
-        };
-        vk::DescriptorPool desc_pool = turbo_device.GetLogical().CreateDescriptorPool({
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .maxSets = 1,
-            .poolSizeCount = 1,
-            .pPoolSizes = &pool_size,
-        });
-        const VkDescriptorSetLayout raw_desc_layout = *desc_layout;
-        auto desc_sets = desc_pool.Allocate({
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-            .pNext = nullptr,
-            .descriptorPool = *desc_pool,
-            .descriptorSetCount = 1,
-            .pSetLayouts = &raw_desc_layout,
-        });
-        const VkDescriptorBufferInfo buf_info{
-            .buffer = *dummy_buffer,
-            .offset = 0,
-            .range = 4096,
-        };
-        const VkWriteDescriptorSet write_desc{
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .pNext = nullptr,
-            .dstSet = desc_sets[0],
-            .dstBinding = 0,
-            .dstArrayElement = 0,
-            .descriptorCount = 1,
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .pImageInfo = nullptr,
-            .pBufferInfo = &buf_info,
-            .pTexelBufferView = nullptr,
-        };
-        turbo_device.GetLogical().UpdateDescriptorSets(std::span{&write_desc, 1}, {});
-
-        vk::PipelineLayout pipe_layout = turbo_device.GetLogical().CreatePipelineLayout({
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .setLayoutCount = 1,
-            .pSetLayouts = &raw_desc_layout,
-            .pushConstantRangeCount = 0,
-            .pPushConstantRanges = nullptr,
-        });
-        vk::ShaderModule comp_shader = BuildShader(turbo_device, VULKAN_TURBO_MODE_COMP_SPV);
-        vk::Pipeline comp_pipeline = turbo_device.GetLogical().CreateComputePipeline({
-            .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .stage = {
-                .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-                .pNext = nullptr,
-                .flags = 0,
-                .stage = VK_SHADER_STAGE_COMPUTE_BIT,
-                .module = *comp_shader,
-                .pName = "main",
-                .pSpecializationInfo = nullptr,
-            },
-            .layout = *pipe_layout,
-            .basePipelineHandle = VK_NULL_HANDLE,
-            .basePipelineIndex = -1,
-        });
 
         const VkCommandPoolCreateInfo pool_ci{
             .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -232,37 +151,38 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
         vk::Fence fence = turbo_device.GetLogical().CreateFence(fence_ci);
 
         while (!stop_token.stop_requested()) {
-            cmd_buf.Begin({
-                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-                .pNext = nullptr,
-                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-                .pInheritanceInfo = nullptr,
-            });
-            cmd_buf.BindPipeline(VK_PIPELINE_BIND_POINT_COMPUTE, *comp_pipeline);
-            const VkDescriptorSet raw_set = desc_sets[0];
-            cmd_buf.BindDescriptorSets(VK_PIPELINE_BIND_POINT_COMPUTE, *pipe_layout, 0,
-                                       std::span{&raw_set, 1}, {});
-            cmd_buf.Dispatch(32, 4, 1);
-            cmd_buf.End();
+            const auto now_ns = std::chrono::steady_clock::now().time_since_epoch().count();
+            const auto last_ns = m_last_submission_ns.load(std::memory_order_relaxed);
+            if (now_ns - last_ns >= 45'000'000LL) {
+                cmd_buf.Begin({
+                    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                    .pNext = nullptr,
+                    .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+                    .pInheritanceInfo = nullptr,
+                });
+                cmd_buf.FillBuffer(*dummy_buffer, 0, 64, 0);
+                cmd_buf.End();
 
-            const VkCommandBuffer raw_cmd = *cmd_buf;
-            const VkSubmitInfo submit_info{
-                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                .pNext = nullptr,
-                .waitSemaphoreCount = 0,
-                .pWaitSemaphores = nullptr,
-                .pWaitDstStageMask = nullptr,
-                .commandBufferCount = 1,
-                .pCommandBuffers = &raw_cmd,
-                .signalSemaphoreCount = 0,
-                .pSignalSemaphores = nullptr,
-            };
-            turbo_device.GetGraphicsQueue().Submit(submit_info, *fence);
-            fence.Wait();
-            fence.Reset();
+                const VkCommandBuffer raw_cmd = *cmd_buf;
+                const VkSubmitInfo submit_info{
+                    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                    .pNext = nullptr,
+                    .waitSemaphoreCount = 0,
+                    .pWaitSemaphores = nullptr,
+                    .pWaitDstStageMask = nullptr,
+                    .commandBufferCount = 1,
+                    .pCommandBuffers = &raw_cmd,
+                    .signalSemaphoreCount = 0,
+                    .pSignalSemaphores = nullptr,
+                };
+                turbo_device.GetGraphicsQueue().Submit(submit_info, *fence);
+                fence.Wait();
+                fence.Reset();
+                m_last_submission_ns.store(now_ns, std::memory_order_relaxed);
+            }
 
             std::unique_lock lk{m_submission_lock};
-            m_submission_cv.wait_for(lk, stop_token, std::chrono::milliseconds{4}, [&] {
+            m_submission_cv.wait_for(lk, stop_token, std::chrono::milliseconds{45}, [&] {
                 return stop_token.stop_requested();
             });
         }

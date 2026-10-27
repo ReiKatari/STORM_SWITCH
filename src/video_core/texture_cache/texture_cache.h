@@ -741,32 +741,19 @@ void TextureCache<P>::SnapshotGpuSurfaces(std::vector<std::pair<DAddr, std::size
 
 template <class P>
 void TextureCache<P>::InvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences) {
+    static constexpr DAddr kMaxTrackableDAddr = 1ULL << 34;
     for (const auto& [cpu_addr, size] : sequences) {
-        if (cpu_addr == 0 || size == 0) {
+        if (cpu_addr == 0 || size == 0 || cpu_addr >= kMaxTrackableDAddr) {
             continue;
         }
-        ForEachImageInRegion(cpu_addr, size, [this](ImageId image_id, Image& image) {
+        const std::size_t safe_size = static_cast<std::size_t>(std::min<u64>(size, kMaxTrackableDAddr - cpu_addr));
+        ForEachImageInRegion(cpu_addr, safe_size, [this](ImageId image_id, Image& image) {
             image.flags &= ~ImageFlagBits::GpuModified;
             image.flags |= ImageFlagBits::CpuModified;
             if (True(image.flags & ImageFlagBits::Tracked)) {
                 UntrackImage(image, image_id);
             }
         });
-    }
-    for (auto [image_id, image] : slot_images) {
-        if (!image_id || image_id == NULL_IMAGE_ID || image_id == CORRUPT_ID) {
-            continue;
-        }
-        if (False(image->flags & ImageFlagBits::Registered) || image->cpu_addr == 0) {
-            continue;
-        }
-        if (!IsPixelFormatBCn(image->info.format) && !IsPixelFormatASTC(image->info.format) &&
-            False(image->flags & ImageFlagBits::GpuModified) && image->guest_size_bytes <= 4_MiB) {
-            image->flags |= ImageFlagBits::CpuModified;
-            if (True(image->flags & ImageFlagBits::Tracked)) {
-                UntrackImage(*image, image_id);
-            }
-        }
     }
     for (auto& ch : channel_storage) {
         ch.graphics_image_table.Invalidate();

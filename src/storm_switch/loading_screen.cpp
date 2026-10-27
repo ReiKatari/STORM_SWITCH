@@ -419,8 +419,8 @@ LoadingScreen::LoadingScreen(QWidget* parent)
     setMinimumSize(Layout::MinimumSize::Width, Layout::MinimumSize::Height);
 
     // Upgrade center_card into a sleek wide Aurora glassmorphic dashboard
-    ui->center_card->setMinimumSize(880, 0);
-    ui->center_card->setMaximumSize(1180, 16777215);
+    ui->center_card->setMinimumSize(1080, 0);
+    ui->center_card->setMaximumSize(1440, 16777215);
     ui->center_card->setStyleSheet(QStringLiteral(
         "QFrame#center_card {"
         "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(13, 18, 30, 0.97), stop:0.55 rgba(9, 13, 22, 0.98), stop:1 rgba(6, 9, 16, 0.98));"
@@ -428,7 +428,7 @@ LoadingScreen::LoadingScreen(QWidget* parent)
         "  border-radius: 18px;"
         "  padding: 20px;"
         "}"
-        "QLabel { background-color: transparent; background: transparent; }"));
+        "QLabel { background-color: transparent; background: transparent; border: none; }"));
 
     ui->card_layout->setSpacing(14);
     ui->card_layout->setContentsMargins(24, 20, 24, 20);
@@ -439,16 +439,18 @@ LoadingScreen::LoadingScreen(QWidget* parent)
     ui->card_layout->removeWidget(ui->game_meta);
 
     auto* hero_frame = new QFrame(ui->center_card);
+    hero_frame->setObjectName(QStringLiteral("hero_frame"));
+    hero_frame->setMinimumHeight(182);
     hero_frame->setStyleSheet(QStringLiteral(
-        "QFrame { background: rgba(15, 23, 42, 0.62); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 14px; }"));
+        "QFrame#hero_frame { background: rgba(15, 23, 42, 0.62); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 14px; }"));
     auto* hero_layout = new QHBoxLayout(hero_frame);
-    hero_layout->setContentsMargins(18, 14, 18, 14);
+    hero_layout->setContentsMargins(18, 16, 18, 16);
     hero_layout->setSpacing(20);
 
-    ui->game_icon->setMinimumSize(136, 136);
-    ui->game_icon->setMaximumSize(136, 136);
+    ui->game_icon->setMinimumSize(148, 148);
+    ui->game_icon->setMaximumSize(148, 148);
     ui->game_icon->setStyleSheet(QStringLiteral(
-        "QLabel#game_icon { background: rgba(8, 12, 22, 0.90); border: 1.5px solid rgba(0, 229, 255, 0.42); border-radius: 14px; padding: 3px; }"));
+        "QLabel#game_icon { background: transparent; border: none; padding: 0px; }"));
     hero_layout->addWidget(ui->game_icon, 0, Qt::AlignVCenter);
 
     auto* hero_right = new QVBoxLayout();
@@ -457,6 +459,9 @@ LoadingScreen::LoadingScreen(QWidget* parent)
 
     auto* title_row = new QHBoxLayout();
     title_row->setSpacing(12);
+    ui->game_title->setMinimumHeight(96);
+    ui->game_title->setMaximumHeight(124);
+    ui->game_title->setWordWrap(true);
     ui->game_title->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     title_row->addWidget(ui->game_title, 1);
 
@@ -699,17 +704,27 @@ LoadingScreen::~LoadingScreen() {
 void LoadingScreen::SetGameInfo(const QString& name, const QString& version, const QString& dev,
                                 u64 title_id, const QPixmap& icon, const QString& format) {
     if (!icon.isNull()) {
-        ui->game_icon->setPixmap(icon.scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        ui->game_icon->setPixmap(icon.scaled(148, 148, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
+    ui->game_title->setMinimumHeight(96);
+    ui->game_title->setMaximumHeight(124);
     ui->game_title->setWordWrap(true);
     ui->game_title->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     const QString display_name = name.isEmpty()
         ? StormLang(QStringLiteral("Запуск игры..."), QStringLiteral("Launching Game..."), QStringLiteral("Spiel wird gestartet..."), QStringLiteral("Lancement du jeu..."), QStringLiteral("正在启动游戏..."), QStringLiteral("ゲームを起動中..."), QStringLiteral("جاري تشغيل اللعبة..."), QStringLiteral("Iniciando juego..."), QStringLiteral("Avvio gioco..."), QStringLiteral("Iniciando jogo..."), QStringLiteral("게임 실행 중..."))
         : name;
-    if (display_name.length() > 42) {
-        ui->game_title->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 15pt; font-weight: 800; background: transparent;"));
+    if (display_name.length() > 62) {
+        ui->game_title->setStyleSheet(QStringLiteral(
+            "color: #FFFFFF; font-size: 14pt; font-weight: 800; padding: 0px; "
+            "background: transparent; border: none;"));
+    } else if (display_name.length() > 36) {
+        ui->game_title->setStyleSheet(QStringLiteral(
+            "color: #FFFFFF; font-size: 15.5pt; font-weight: 800; padding: 0px; "
+            "background: transparent; border: none;"));
     } else {
-        ui->game_title->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 18pt; font-weight: 800; background: transparent;"));
+        ui->game_title->setStyleSheet(QStringLiteral(
+            "color: #FFFFFF; font-size: 17.5pt; font-weight: 800; padding: 0px; "
+            "background: transparent; border: none;"));
     }
     ui->game_title->setText(display_name);
 

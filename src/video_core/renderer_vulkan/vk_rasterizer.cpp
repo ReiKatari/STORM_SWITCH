@@ -888,9 +888,7 @@ void RasterizerVulkan::InvalidateForLoadState(
             continue;
         }
         query_cache.InvalidateRegion(addr, size);
-    }
-    if (maxwell3d) {
-        maxwell3d->dirty.flags.set();
+        pipeline_cache.InvalidateRegion(addr, size);
     }
     state_tracker.InvalidateCommandBufferState();
 }

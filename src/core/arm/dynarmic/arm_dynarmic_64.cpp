@@ -124,6 +124,87 @@ void DynarmicCallbacks64::InstructionCacheOperationRaised(Dynarmic::A64::Instruc
 }
 
 void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception exception) {
+    const auto is_valid_return_target = [&](u64 target) -> bool {
+        if (target == 0 || (target & 3) != 0 || target == pc) {
+            return false;
+        }
+        if (target >= (pc > 0x40 ? pc - 0x40 : 0) && target <= pc + 0x40) {
+            return false;
+        }
+        if (!m_memory.IsValidVirtualAddressRange(target, sizeof(u32))) {
+            return false;
+        }
+        const u32 target_inst = m_memory.Read32(target);
+        if ((target_inst & 0xFFFF0000U) == 0U || (target_inst & 0xFFE0001FU) == 0xD4200000U) {
+            return false;
+        }
+        return true;
+    };
+
+    const auto try_unwind_to_caller = [&](u64 current_lr, u64 avoid_lr) -> bool {
+        // 1. Walk the AArch64 Frame Pointer (X29) chain
+        u64 fp = m_parent.m_jit->GetRegister(29);
+        const u64 sp = m_parent.m_jit->GetSP();
+        for (int depth = 0; depth < 12; ++depth) {
+            if (fp == 0 || (fp & 7) != 0 || !m_memory.IsValidVirtualAddressRange(fp, 16)) {
+                break;
+            }
+            const u64 next_fp = m_memory.Read64(fp);
+            const u64 saved_lr = m_memory.Read64(fp + 8);
+            if (saved_lr != current_lr && saved_lr != avoid_lr && is_valid_return_target(saved_lr)) {
+                LOG_WARNING(Core_ARM, "Unwinding guest fault at PC={:#010x} via FP chain (depth={}) -> LR={:#010x}",
+                            pc, depth + 1, saved_lr);
+                m_parent.m_jit->SetRegister(29, next_fp);
+                m_parent.m_jit->SetRegister(30, saved_lr);
+                if (fp >= sp && (fp - sp) <= 0x20000) {
+                    m_parent.m_jit->SetSP(fp + 16);
+                }
+                m_parent.m_jit->SetRegister(0, 0);
+                m_parent.m_jit->SetRegister(1, 0);
+                m_parent.m_jit->SetPC(saved_lr);
+                m_parent.m_jit->HaltExecution(BreakLoop);
+                return true;
+            }
+            if (next_fp <= fp || (next_fp - fp) > 0x100000) {
+                break;
+            }
+            fp = next_fp;
+        }
+
+        // 2. Fallback for -fomit-frame-pointer: scan active stack [sp + 8, sp + 0x800] for a saved
+        // return address immediately preceded by a BL (0x94000000) or BLR (0xD63F0000) call instruction
+        if (sp >= 0x1000 && (sp & 7) == 0) {
+            for (u64 s_off = 8; s_off <= 0x800; s_off += 8) {
+                const u64 slot_addr = sp + s_off;
+                if (!m_memory.IsValidVirtualAddressRange(slot_addr, 8)) {
+                    break;
+                }
+                const u64 cand_lr = m_memory.Read64(slot_addr);
+                if (cand_lr == current_lr || cand_lr == avoid_lr || cand_lr < 0x1004 || !is_valid_return_target(cand_lr)) {
+                    continue;
+                }
+                if (!m_memory.IsValidVirtualAddressRange(cand_lr - 4, sizeof(u32))) {
+                    continue;
+                }
+                const u32 call_inst = m_memory.Read32(cand_lr - 4);
+                const bool is_bl = (call_inst & 0xFC000000U) == 0x94000000U;
+                const bool is_blr = (call_inst & 0xFFFFFC1FU) == 0xD63F0000U;
+                if (is_bl || is_blr) {
+                    LOG_WARNING(Core_ARM, "Unwinding guest fault at PC={:#010x} via stack call-site scan (+{:#x}) -> LR={:#010x}",
+                                pc, s_off, cand_lr);
+                    m_parent.m_jit->SetSP((slot_addr + 8) & ~0xFULL);
+                    m_parent.m_jit->SetRegister(30, cand_lr);
+                    m_parent.m_jit->SetRegister(0, 0);
+                    m_parent.m_jit->SetRegister(1, 0);
+                    m_parent.m_jit->SetPC(cand_lr);
+                    m_parent.m_jit->HaltExecution(BreakLoop);
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
     switch (exception) {
     case Dynarmic::A64::Exception::WaitForInterrupt:
     case Dynarmic::A64::Exception::WaitForEvent:
@@ -138,20 +219,29 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
 #endif
         return;
     case Dynarmic::A64::Exception::NoExecuteFault:
-        if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
+        if (!m_debugger_enabled) {
+            thread_local u64 tls_last_noexec_lr = 0;
+            thread_local u32 tls_noexec_repeat_count = 0;
             const u64 lr = m_parent.m_jit->GetRegister(30);
-            if (lr != 0 && (lr & 3) == 0 && lr != pc && m_memory.IsValidVirtualAddressRange(lr, sizeof(u32))) {
-                LOG_WARNING(Core_ARM, "Ignoring execution fault at unmapped address {:#016x}, returning to LR {:#016x} per cpuopt_ignore_memory_aborts", pc, lr);
+            if (is_valid_return_target(lr) && (lr != tls_last_noexec_lr || tls_noexec_repeat_count == 0)) {
+                if (lr == tls_last_noexec_lr) {
+                    ++tls_noexec_repeat_count;
+                } else {
+                    tls_last_noexec_lr = lr;
+                    tls_noexec_repeat_count = 1;
+                }
+                LOG_WARNING(Core_ARM, "Recovering from execution fault at {:#016x}, returning to LR {:#016x}", pc, lr);
                 m_parent.m_jit->SetRegister(0, 0);
                 m_parent.m_jit->SetRegister(1, 0);
                 m_parent.m_jit->SetPC(lr);
                 m_parent.m_jit->HaltExecution(BreakLoop);
                 return;
             }
-            LOG_CRITICAL(Core_ARM, "Cannot execute instruction at unmapped address {:#016x} (LR {:#016x})", pc, lr);
-            m_parent.LogBacktrace(m_process);
-            ReturnException(pc, PrefetchAbort);
-            return;
+            if (try_unwind_to_caller(lr, tls_last_noexec_lr)) {
+                tls_last_noexec_lr = m_parent.m_jit->GetPC();
+                tls_noexec_repeat_count = 1;
+                return;
+            }
         }
         LOG_CRITICAL(Core_ARM, "Cannot execute instruction at unmapped address {:#016x}", pc);
         m_parent.LogBacktrace(m_process);
@@ -161,75 +251,30 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
         if (m_debugger_enabled) {
             ReturnException(pc, InstructionBreakpoint);
         } else {
-            if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
-                const auto is_valid_return_target = [&](u64 target) -> bool {
-                    if (target == 0 || (target & 3) != 0 || target == pc) {
-                        return false;
-                    }
-                    // Avoid jumping right back into the same abort stub around PC
-                    if (target >= (pc > 0x40 ? pc - 0x40 : 0) && target <= pc + 0x40) {
-                        return false;
-                    }
-                    if (!m_memory.IsValidVirtualAddressRange(target, sizeof(u32))) {
-                        return false;
-                    }
-                    const u32 target_inst = m_memory.Read32(target);
-                    // Reject UDF (#0x0000xxxx) and BRK (#0xD420xxxx) trap instructions
-                    if ((target_inst & 0xFFFF0000U) == 0U || (target_inst & 0xFFE0001FU) == 0xD4200000U) {
-                        return false;
-                    }
-                    return true;
-                };
+            // 1. Try direct LR return if LR points outside the abort stub
+            const u64 lr = m_parent.m_jit->GetRegister(30);
+            if (is_valid_return_target(lr)) {
+                LOG_WARNING(Core_ARM, "Recovering from guest trap at PC={:#010x} via LR={:#010x}", pc, lr);
+                m_parent.m_jit->SetRegister(0, 0);
+                m_parent.m_jit->SetRegister(1, 0);
+                m_parent.m_jit->SetPC(lr);
+                m_parent.m_jit->HaltExecution(BreakLoop);
+                return;
+            }
 
-                // 1. Try direct LR return if LR points outside the abort stub
-                const u64 lr = m_parent.m_jit->GetRegister(30);
-                if (is_valid_return_target(lr)) {
-                    LOG_WARNING(Core_ARM, "Recovering from guest trap at PC={:#010x} via LR={:#010x}", pc, lr);
-                    m_parent.m_jit->SetRegister(0, 0);
-                    m_parent.m_jit->SetRegister(1, 0);
-                    m_parent.m_jit->SetPC(lr);
-                    m_parent.m_jit->HaltExecution(BreakLoop);
-                    return;
-                }
+            // 2. Walk the AArch64 Frame Pointer (X29) / stack call-site chain out of AbortImpl
+            if (try_unwind_to_caller(lr, 0)) {
+                return;
+            }
 
-                // 2. Walk the AArch64 Frame Pointer (X29) chain out of AbortImpl / nn::diag::detail::Abort
-                u64 fp = m_parent.m_jit->GetRegister(29);
-                for (int depth = 0; depth < 6; ++depth) {
-                    if (fp == 0 || (fp & 7) != 0 || !m_memory.IsValidVirtualAddressRange(fp, 16)) {
-                        break;
-                    }
-                    const u64 next_fp = m_memory.Read64(fp);
-                    const u64 saved_lr = m_memory.Read64(fp + 8);
-                    if (is_valid_return_target(saved_lr)) {
-                        LOG_WARNING(Core_ARM, "Recovering from guest abort at PC={:#010x} via FP unwind (depth={}) -> LR={:#010x}",
-                                    pc, depth + 1, saved_lr);
-                        m_parent.m_jit->SetRegister(29, next_fp);
-                        m_parent.m_jit->SetRegister(30, saved_lr);
-                        const u64 sp = m_parent.m_jit->GetSP();
-                        if (fp >= sp && (fp - sp) <= 0x10000) {
-                            m_parent.m_jit->SetSP(fp + 16);
-                        }
-                        m_parent.m_jit->SetRegister(0, 0);
-                        m_parent.m_jit->SetRegister(1, 0);
-                        m_parent.m_jit->SetPC(saved_lr);
-                        m_parent.m_jit->HaltExecution(BreakLoop);
-                        return;
-                    }
-                    if (next_fp <= fp || (next_fp - fp) > 0x100000) {
-                        break;
-                    }
-                    fp = next_fp;
-                }
-
-                // 3. Fallback: advance PC past the offending UDF/BRK/trap instruction so execution does not hang
-                if (m_memory.IsValidVirtualAddressRange(pc + 4, sizeof(u32))) {
-                    LOG_WARNING(Core_ARM, "Skipping guest trap instruction at PC={:#010x} -> {:#010x}", pc, pc + 4);
-                    m_parent.m_jit->SetRegister(0, 0);
-                    m_parent.m_jit->SetRegister(1, 0);
-                    m_parent.m_jit->SetPC(pc + 4);
-                    m_parent.m_jit->HaltExecution(BreakLoop);
-                    return;
-                }
+            // 3. Fallback: advance PC past the offending UDF/BRK/trap instruction so execution does not hang
+            if (m_memory.IsValidVirtualAddressRange(pc + 4, sizeof(u32))) {
+                LOG_WARNING(Core_ARM, "Skipping guest trap instruction at PC={:#010x} -> {:#010x}", pc, pc + 4);
+                m_parent.m_jit->SetRegister(0, 0);
+                m_parent.m_jit->SetRegister(1, 0);
+                m_parent.m_jit->SetPC(pc + 4);
+                m_parent.m_jit->HaltExecution(BreakLoop);
+                return;
             }
             static std::atomic<u32> s_exception_log_count{0};
             if (s_exception_log_count.fetch_add(1, std::memory_order_relaxed) < 8) {
@@ -273,9 +318,11 @@ bool DynarmicCallbacks64::CheckMemoryAccess(u64 addr, u64 size, Kernel::DebugWat
     }
 
     if (!m_memory.IsValidVirtualAddressRange(addr, size)) {
-        LOG_CRITICAL(Core_ARM, "Stopping execution due to unmapped memory access at {:#x}",
-                        addr);
-        m_parent.m_jit->HaltExecution(PrefetchAbort);
+        if (m_debugger_enabled) {
+            LOG_CRITICAL(Core_ARM, "Stopping execution due to unmapped memory access at {:#x}",
+                            addr);
+            m_parent.m_jit->HaltExecution(PrefetchAbort);
+        }
         return false;
     }
 

@@ -1754,16 +1754,34 @@ void MainWindow::InitializeWidgets() {
             const auto& cat = StormShaders::GetRetroArchShaderCatalog();
             if (chosen_idx >= 0 && chosen_idx < static_cast<int>(cat.size())) {
                 const QString sname = StormShaders::GetLocalizedName(cat[static_cast<std::size_t>(chosen_idx)]);
-                statusBar()->showMessage(StormLang(
-                    QStringLiteral("🎨 Активный шейдер постобработки: %1"),
-                    QStringLiteral("🎨 Active post-processing shader: %1"),
-                    QStringLiteral("🎨 Aktiver Post-Processing-Shader: %1"),
-                    QStringLiteral("🎨 Shader de post-traitement actif : %1"),
-                    QStringLiteral("🎨 当前后处理着色器：%1"),
-                    QStringLiteral("🎨 有効なポストプロセスシェーダー: %1"),
-                    QStringLiteral("🎨 مظلل المعالجة اللاحقة النشط: %1"),
-                    QStringLiteral("🎨 Sombreador de postprocesado activo: %1")
-                ).arg(sname), 4000);
+                const QString sh_title = StormLang11(
+                    QStringLiteral("🎨 ШЕЙДЕР ПОСТОБРАБОТКИ"),
+                    QStringLiteral("🎨 POST-PROCESSING SHADER"),
+                    QStringLiteral("🎨 POST-PROCESSING-SHADER"),
+                    QStringLiteral("🎨 SHADER DE POST-TRAITEMENT"),
+                    QStringLiteral("🎨 SOMBREADOR DE POSTPROCESADO"),
+                    QStringLiteral("🎨 SHADER POST-ELABORAZIONE"),
+                    QStringLiteral("🎨 SHADER DE PÓS-PROCESSAMENTO"),
+                    QStringLiteral("🎨 后处理着色器"),
+                    QStringLiteral("🎨 ポストプロセスシェーダー"),
+                    QStringLiteral("🎨 후처리 셰이더"),
+                    QStringLiteral("🎨 مظلل المعالجة اللاحقة"));
+                const QString sh_msg = StormLang11(
+                    QStringLiteral("Активный профиль шейдера: %1"),
+                    QStringLiteral("Active shader profile: %1"),
+                    QStringLiteral("Aktives Shader-Profil: %1"),
+                    QStringLiteral("Profil de shader actif : %1"),
+                    QStringLiteral("Perfil de sombreador activo: %1"),
+                    QStringLiteral("Profilo shader attivo: %1"),
+                    QStringLiteral("Perfil de shader ativo: %1"),
+                    QStringLiteral("当前启用着色器配置：%1"),
+                    QStringLiteral("有効なシェーダープロファイル: %1"),
+                    QStringLiteral("활성 셰이더 프로필: %1"),
+                    QStringLiteral("ملف المظلل النشط: %1")).arg(sname);
+                statusBar()->showMessage(sh_title + QStringLiteral(" — ") + sh_msg, 4000);
+                if (in_game_notification) {
+                    in_game_notification->ShowNotification(sh_title, sh_msg, QColor(168, 85, 247), QStringLiteral("🎨"), 2800);
+                }
             }
         });
         shader_status_button->repaint();
@@ -4858,8 +4876,51 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     headerLayout->setSpacing(12);
 
     auto* gameIconLabel = new QLabel(headerCard);
-    gameIconLabel->setText(QStringLiteral("🛡️"));
-    gameIconLabel->setStyleSheet(QStringLiteral("font-size: 24px; background: transparent; border: none;"));
+    gameIconLabel->setFixedSize(56, 56);
+    gameIconLabel->setAlignment(Qt::AlignCenter);
+    QPixmap fix_game_icon;
+    if (title_id != 0) {
+        const auto cached_icon_path = Common::FS::PathToUTF8String(
+            Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" /
+            fmt::format("{:016X}.jpeg", title_id));
+        if (Common::FS::Exists(cached_icon_path)) {
+            fix_game_icon.load(QString::fromStdString(cached_icon_path));
+        }
+    }
+    if (fix_game_icon.isNull() && !game_path.isEmpty() && QtCommon::system && QtCommon::vfs) {
+        const auto v_file = Core::GetGameFileFromPath(QtCommon::vfs, utf8_str.constData());
+        if (v_file) {
+            if (auto loader = Loader::GetLoader(*QtCommon::system, v_file)) {
+                std::vector<u8> icon_bytes;
+                if (loader->ReadIcon(icon_bytes) == Loader::ResultStatus::Success && !icon_bytes.empty()) {
+                    fix_game_icon.loadFromData(icon_bytes.data(), static_cast<u32>(icon_bytes.size()));
+                }
+            }
+        }
+    }
+    if (fix_game_icon.isNull() && title_id != 0 && QtCommon::system) {
+        const FileSys::PatchManager pm(title_id, QtCommon::system->GetFileSystemController(),
+                                       QtCommon::system->GetContentProvider());
+        const auto metadata = pm.GetControlMetadata();
+        if (metadata.second != nullptr) {
+            const auto bytes = metadata.second->ReadAllBytes();
+            if (!bytes.empty()) {
+                fix_game_icon.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
+            }
+        }
+    }
+    if (!fix_game_icon.isNull()) {
+        gameIconLabel->setPixmap(fix_game_icon.scaled(56, 56, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        gameIconLabel->setStyleSheet(QStringLiteral(
+            "QLabel { background: transparent; border: none; padding: 0px; }"));
+    } else if (!this->windowIcon().isNull()) {
+        gameIconLabel->setPixmap(this->windowIcon().pixmap(52, 52));
+        gameIconLabel->setStyleSheet(QStringLiteral(
+            "QLabel { background: transparent; border: none; padding: 0px; }"));
+    } else {
+        gameIconLabel->setText(QStringLiteral("🎮"));
+        gameIconLabel->setStyleSheet(QStringLiteral("font-size: 26px; background: transparent; border: none;"));
+    }
     headerLayout->addWidget(gameIconLabel);
 
     auto* titleContainer = new QVBoxLayout();
@@ -4969,8 +5030,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     }
     QString fixes_formatted = fixes_raw;
     if (!fixes_formatted.contains(QStringLiteral("<b>"))) {
-        fixes_formatted.replace(QRegularExpression(QStringLiteral(R"((•|\-)\s*([^:\n<]+):)")), QStringLiteral("• <b>\\2:</b>"));
-        fixes_formatted.replace(QRegularExpression(QStringLiteral(R"(^(🎮|⚙️|🌐|⚡|🛠️)\s*([^:\n<]+):)"), QRegularExpression::MultilineOption), QStringLiteral("\\1 <b>\\2:</b>"));
+        fixes_formatted.replace(QRegularExpression(QStringLiteral(R"((•|\-|✓|✔)\s*([^:\n<]+):)")), QStringLiteral("\\1 <b style='color:#FFFFFF;'>\\2:</b>"));
+        fixes_formatted.replace(QRegularExpression(QStringLiteral(R"(^(🎮|⚙️|🌐|⚡|🛠️)\s*([^:\n<]+):)"), QRegularExpression::MultilineOption), QStringLiteral("\\1 <b style='color:#FFFFFF;'>\\2:</b>"));
     }
     fixes_formatted.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
 
@@ -5004,8 +5065,12 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     fixText->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 11.5px; line-height: 1.42; background: transparent; border: none;"));
     fixLayout->addWidget(fixText);
 
-    // Interactive per-parameter checkboxes (100% localized human-readable names & values)
-    std::vector<std::pair<std::string, QCheckBox*>> param_checkboxes;
+    // Interactive per-parameter checkboxes (100% localized human-readable names & values, deduplicated, bold function names)
+    struct ParamCheckboxGroup {
+        std::vector<std::string> keys;
+        QCheckBox* checkbox{};
+    };
+    std::vector<ParamCheckboxGroup> param_checkboxes;
     if (!profile->ini_settings.empty()) {
         auto* paramsContainer = new QFrame(fixCard);
         paramsContainer->setStyleSheet(QStringLiteral(
@@ -5075,6 +5140,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         paramsGrid->setColumnStretch(0, 1);
         paramsGrid->setColumnStretch(1, 1);
 
+        std::unordered_map<std::string, std::size_t> seen_base_keys;
         int idx = 0;
         for (const auto& [k, v] : profile->ini_settings) {
             if (k == "aspect_ratio" || k == "Renderer\\aspect_ratio" ||
@@ -5088,20 +5154,31 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
                 k == "backend" || k == "Renderer\\backend") {
                 continue;
             }
+            const auto slash_pos = k.find('\\');
+            const std::string base_key = (slash_pos != std::string::npos) ? k.substr(slash_pos + 1) : k;
+            auto seen_it = seen_base_keys.find(base_key);
+            if (seen_it != seen_base_keys.end()) {
+                param_checkboxes[seen_it->second].keys.push_back(k);
+                continue;
+            }
+
             const QString localized_param = FormatLocalizedIniParam(k, v);
-            auto* cb = new QCheckBox(localized_param, paramsContainer);
+            auto* rowWidget = new QWidget(paramsContainer);
+            rowWidget->setStyleSheet(QStringLiteral("background: transparent; border: none;"));
+            auto* rowLayout = new QHBoxLayout(rowWidget);
+            rowLayout->setContentsMargins(0, 0, 0, 0);
+            rowLayout->setSpacing(7);
+
+            auto* cb = new QCheckBox(rowWidget);
             cb->setToolTip(QStringLiteral("%1 = %2").arg(QString::fromStdString(k), QString::fromStdString(v)));
             cb->setChecked(true);
+            cb->setCursor(Qt::PointingHandCursor);
             cb->setStyleSheet(QStringLiteral(
                 "QCheckBox {"
-                "    color: #E2E8F0;"
-                "    font-size: 11.5px;"
-                "    font-family: 'Segoe UI', sans-serif;"
-                "    spacing: 7px;"
+                "    spacing: 0px;"
                 "    background: transparent;"
                 "    border: none;"
                 "}"
-                "QCheckBox:hover { color: #38BDF8; }"
                 "QCheckBox::indicator {"
                 "    width: 14px;"
                 "    height: 14px;"
@@ -5114,18 +5191,52 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
                 "    border: 1px solid #00F0FF;"
                 "}"
             ));
-            paramsGrid->addWidget(cb, idx / 2, idx % 2);
-            param_checkboxes.emplace_back(k, cb);
+
+            QString rich_label_html = localized_param.toHtmlEscaped();
+            int colon_idx = rich_label_html.indexOf(QLatin1Char(':'));
+            if (colon_idx < 0) {
+                colon_idx = rich_label_html.indexOf(QChar(0xFF1A)); // fullwidth colon ：
+            }
+            if (colon_idx > 0) {
+                const QString fn_name = rich_label_html.left(colon_idx + 1);
+                const QString fn_val = rich_label_html.mid(colon_idx + 1).trimmed();
+                rich_label_html = QStringLiteral("<b style='color:#FFFFFF; font-weight:800;'>%1</b> <span style='color:#7DD3FC; font-weight:600;'>%2</span>")
+                                      .arg(fn_name, fn_val);
+            } else {
+                rich_label_html = QStringLiteral("<b style='color:#FFFFFF; font-weight:800;'>%1</b>").arg(rich_label_html);
+            }
+
+            auto* lblBtn = new QPushButton(rowWidget);
+            lblBtn->setCursor(Qt::PointingHandCursor);
+            lblBtn->setFlat(true);
+            lblBtn->setToolTip(cb->toolTip());
+            lblBtn->setStyleSheet(QStringLiteral("QPushButton { background: transparent; border: none; padding: 0px; text-align: left; }"));
+            auto* btnInnerLayout = new QHBoxLayout(lblBtn);
+            btnInnerLayout->setContentsMargins(0, 0, 0, 0);
+            auto* richLbl = new QLabel(rich_label_html, lblBtn);
+            richLbl->setTextFormat(Qt::RichText);
+            richLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+            richLbl->setStyleSheet(QStringLiteral("font-size: 11.5px; font-family: 'Segoe UI', sans-serif; background: transparent; border: none;"));
+            btnInnerLayout->addWidget(richLbl);
+            lblBtn->setMinimumHeight(20);
+            connect(lblBtn, &QPushButton::clicked, cb, &QCheckBox::toggle);
+
+            rowLayout->addWidget(cb, 0, Qt::AlignVCenter);
+            rowLayout->addWidget(lblBtn, 1, Qt::AlignVCenter);
+
+            paramsGrid->addWidget(rowWidget, idx / 2, idx % 2);
+            seen_base_keys[base_key] = param_checkboxes.size();
+            param_checkboxes.push_back(ParamCheckboxGroup{{k}, cb});
             ++idx;
         }
         connect(selectAllBtn, &QPushButton::clicked, paramsContainer, [param_checkboxes]() {
-            for (const auto& [k, box] : param_checkboxes) {
-                if (box) box->setChecked(true);
+            for (const auto& grp : param_checkboxes) {
+                if (grp.checkbox) grp.checkbox->setChecked(true);
             }
         });
         connect(deselectAllBtn, &QPushButton::clicked, paramsContainer, [param_checkboxes]() {
-            for (const auto& [k, box] : param_checkboxes) {
-                if (box) box->setChecked(false);
+            for (const auto& grp : param_checkboxes) {
+                if (grp.checkbox) grp.checkbox->setChecked(false);
             }
         });
         paramsLayout->addLayout(paramsGrid);
@@ -5400,9 +5511,11 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
     if (action == GameFixDialogResult::ApplyAndLaunch) {
         std::vector<std::string> excluded_keys;
-        for (const auto& [key, cb] : param_checkboxes) {
-            if (cb && !cb->isChecked()) {
-                excluded_keys.push_back(key);
+        for (const auto& grp : param_checkboxes) {
+            if (grp.checkbox && !grp.checkbox->isChecked()) {
+                for (const auto& key : grp.keys) {
+                    excluded_keys.push_back(key);
+                }
             }
         }
         Core::GameFixDatabase::SetExcludedKeys(excluded_keys);
@@ -5417,8 +5530,34 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
                     QtCommon::system->ApplySettings();
                 }
                 UpdateStatusButtons();
-                QMessageBox::information(this, tr("🛡️ Авто-исправление"),
-                    tr("Параметры авто-исправления успешно применены для текущей сессии игры: %1").arg(clean_game_name));
+                const QString af_title = StormLang11(
+                    QStringLiteral("🛡️ АВТО-ИСПРАВЛЕНИЕ ПРИМЕНЕНО"),
+                    QStringLiteral("🛡️ AUTO-FIX PROFILE APPLIED"),
+                    QStringLiteral("🛡️ AUTO-FIX-PROFIL ANGEWENDET"),
+                    QStringLiteral("🛡️ PROFIL D'AUTO-CORRECTION APPLIQUÉ"),
+                    QStringLiteral("🛡️ PERFIL DE AUTOCORRECCIÓN APLICADO"),
+                    QStringLiteral("🛡️ PROFILO AUTO-CORREZIONE APPLICATO"),
+                    QStringLiteral("🛡️ PERFIL DE CORREÇÃO AUTOMÁTICA APLICADO"),
+                    QStringLiteral("🛡️ 自动修复配置已应用"),
+                    QStringLiteral("🛡️ 自動修復プロファイル適用完了"),
+                    QStringLiteral("🛡️ 자동 수정 프로필 적용됨"),
+                    QStringLiteral("🛡️ تم تطبيق ملف الإصلاح التلقائي"));
+                const QString af_msg = StormLang11(
+                    QStringLiteral("Оптимальные параметры применены для сессии: %1"),
+                    QStringLiteral("Optimal settings applied for current session: %1"),
+                    QStringLiteral("Optimale Einstellungen für Sitzung angewendet: %1"),
+                    QStringLiteral("Paramètres optimaux appliqués pour la session : %1"),
+                    QStringLiteral("Ajustes óptimos aplicados para la sesión: %1"),
+                    QStringLiteral("Impostazioni ottimali applicate per la sessione: %1"),
+                    QStringLiteral("Definições ideais aplicadas para a sessão: %1"),
+                    QStringLiteral("已为当前游戏会话应用最佳设置：%1"),
+                    QStringLiteral("現在のセッションに最適設定を適用しました: %1"),
+                    QStringLiteral("현재 게임 세션에 최적 설정 적용됨: %1"),
+                    QStringLiteral("تم تطبيق الإعدادات المثلى للجلسة الحالية: %1")).arg(clean_game_name);
+                statusBar()->showMessage(af_title + QStringLiteral(" — ") + af_msg, 5000);
+                if (in_game_notification) {
+                    in_game_notification->ShowNotification(af_title, af_msg, QColor(16, 185, 129), QStringLiteral("🛡️"), 3200);
+                }
             } else if (!game_path.isEmpty()) {
                 // If no game is currently running, launch the game cleanly so session backup captures & restores global settings
                 QTimer::singleShot(0, this, [this, game_path]() {
@@ -5433,13 +5572,47 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 }
 
 void MainWindow::OnResetGameFixSuppression() {
-    int count = Core::GameFixDatabase::ResetAllDontAskAgain();
-    if (count > 0) {
-        QMessageBox::information(this, tr("Авто-исправления STORM SWITCH"),
-            tr("Сброшено скрытых диалогов авто-исправлений: %1.\nПри следующем запуске оптимизированных игр диалог будет предложен снова.").arg(count));
-    } else {
-        QMessageBox::information(this, tr("Авто-исправления STORM SWITCH"),
-            tr("Нет скрытых диалогов авто-исправлений. Все диалоги уже активны."));
+    const int count = Core::GameFixDatabase::ResetAllDontAskAgain();
+    const QString rst_title = StormLang11(
+        QStringLiteral("🛡️ АВТО-ИСПРАВЛЕНИЯ STORM SWITCH"),
+        QStringLiteral("🛡️ STORM SWITCH AUTO-FIXES"),
+        QStringLiteral("🛡️ STORM SWITCH AUTO-FIXES"),
+        QStringLiteral("🛡️ AUTO-CORRECTIONS STORM SWITCH"),
+        QStringLiteral("🛡️ AUTOCORRECCIONES STORM SWITCH"),
+        QStringLiteral("🛡️ AUTO-CORREZIONI STORM SWITCH"),
+        QStringLiteral("🛡️ CORREÇÕES AUTOMÁTICAS STORM SWITCH"),
+        QStringLiteral("🛡️ STORM SWITCH 自动修复"),
+        QStringLiteral("🛡️ STORM SWITCH 自動修復"),
+        QStringLiteral("🛡️ STORM SWITCH 자동 수정"),
+        QStringLiteral("🛡️ الإصلاحات التلقائية لـ STORM SWITCH"));
+    const QString rst_msg = (count > 0)
+        ? StormLang11(
+              QStringLiteral("Сброшено скрытых профилей: %1. Диалоги снова активны."),
+              QStringLiteral("Reset %1 hidden profile(s). Auto-fix dialogs are active again."),
+              QStringLiteral("%1 ausgeblendete Profile zurückgesetzt. Dialoge wieder aktiv."),
+              QStringLiteral("%1 profil(s) masqué(s) réinitialisé(s). Dialogues actifs."),
+              QStringLiteral("Se restablecieron %1 perfiles ocultos. Diálogos activos."),
+              QStringLiteral("Ripristinati %1 profili nascosti. Finestre di nuovo attive."),
+              QStringLiteral("%1 perfis ocultos repostos. Diálogos novamente ativos."),
+              QStringLiteral("已重置 %1 个隐藏配置，自动修复对话框已重新激活。"),
+              QStringLiteral("%1 件の非表示プロファイルをリセットしました。"),
+              QStringLiteral("숨겨진 프로필 %1개 초기화 완료. 대화상자가 다시 표시됩니다."),
+              QStringLiteral("تمت إعادة تعيين %1 من الملفات المخفية. النوافذ نشطة الآن.")).arg(count)
+        : StormLang11(
+              QStringLiteral("Нет скрытых диалогов авто-исправлений. Все профили активны."),
+              QStringLiteral("No hidden auto-fix dialogs found. All profiles are active."),
+              QStringLiteral("Keine ausgeblendeten Auto-Fix-Dialoge. Alle Profile sind aktiv."),
+              QStringLiteral("Aucun dialogue masqué. Tous les profils sont déjà actifs."),
+              QStringLiteral("No hay diálogos ocultos. Todos los perfiles están activos."),
+              QStringLiteral("Nessuna finestra nascosta. Tutti i profili sono già attivi."),
+              QStringLiteral("Sem diálogos ocultos. Todos os perfis já estão ativos."),
+              QStringLiteral("没有隐藏的自动修复对话框，所有配置均处于激活状态。"),
+              QStringLiteral("非表示の自動修復ダイアログはありません。すべて有効です。"),
+              QStringLiteral("숨겨진 자동 수정 대화상자가 없습니다. 모든 프로필이 활성 상태입니다."),
+              QStringLiteral("لا توجد نوافذ إصلاح تلقائي مخفية. جميع الملفات نشطة."));
+    statusBar()->showMessage(rst_title + QStringLiteral(" — ") + rst_msg, 5000);
+    if (in_game_notification) {
+        in_game_notification->ShowNotification(rst_title, rst_msg, QColor(0, 229, 255), QStringLiteral("🛡️"), 3200);
     }
 }
 
@@ -5565,12 +5738,51 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
         if (Core::GameFixDatabase::AreFixesEnabled()) {
             Core::GameFixDatabase::ApplyProfileDirectly(title_id, filename.toStdString());
             QtCommon::system->ApplySettings();
-            statusBar()->showMessage(tr("🛡️ Авто-исправление: Применено"), 8000);
+            const QString boot_af_title = StormLang11(
+                QStringLiteral("🛡️ АВТО-ИСПРАВЛЕНИЕ АКТИВНО"),
+                QStringLiteral("🛡️ AUTO-FIX PROFILE ACTIVE"),
+                QStringLiteral("🛡️ AUTO-FIX-PROFIL AKTIV"),
+                QStringLiteral("🛡️ PROFIL D'AUTO-CORRECTION ACTIF"),
+                QStringLiteral("🛡️ PERFIL DE AUTOCORRECCIÓN ACTIVO"),
+                QStringLiteral("🛡️ PROFILO AUTO-CORREZIONE ATTIVO"),
+                QStringLiteral("🛡️ PERFIL DE CORREÇÃO AUTOMÁTICA ATIVO"),
+                QStringLiteral("🛡️ 自动修复配置已启用"),
+                QStringLiteral("🛡️ 自動修復プロファイル有効"),
+                QStringLiteral("🛡️ 자동 수정 프로필 활성"),
+                QStringLiteral("🛡️ ملف الإصلاح التلقائي نشط"));
+            const QString boot_af_sub = StormLang11(
+                QStringLiteral("Оптимизации игры применены (глобальные настройки защищены)"),
+                QStringLiteral("Game optimizations applied (global settings protected)"),
+                QStringLiteral("Spieloptimierungen angewendet (globale Einstellungen geschützt)"),
+                QStringLiteral("Optimisations appliquées (paramètres globaux protégés)"),
+                QStringLiteral("Optimizaciones aplicadas (ajustes globales protegidos)"),
+                QStringLiteral("Ottimizzazioni applicate (impostazioni globali protette)"),
+                QStringLiteral("Otimizações aplicadas (definições globais protegidas)"),
+                QStringLiteral("游戏专属优化已应用（全局设置受保护）"),
+                QStringLiteral("ゲーム最適化を適用しました（全体設定は保護されます）"),
+                QStringLiteral("게임 최적화 적용됨 (전역 설정 보호됨)"),
+                QStringLiteral("تم تطبيق تحسينات اللعبة (الإعدادات العامة محمية)"));
+            statusBar()->showMessage(boot_af_title + QStringLiteral(" — ") + boot_af_sub, 8000);
+            if (in_game_notification) {
+                in_game_notification->ShowNotification(boot_af_title, boot_af_sub, QColor(16, 185, 129), QStringLiteral("🛡️"), 3000);
+            }
         } else {
             Core::GameFixDatabase::SanitizeSettingsForHostHardware();
             QtCommon::system->ApplySettings();
             if (Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, filename.toStdString()) != nullptr) {
-                statusBar()->showMessage(tr("⚠️ Авто-исправление: Не применено"), 8000);
+                const QString skip_af = StormLang11(
+                    QStringLiteral("⚠️ Авто-исправление: Пропущено (запуск со стандартными настройками)"),
+                    QStringLiteral("⚠️ Auto-Fix: Skipped (launched with standard settings)"),
+                    QStringLiteral("⚠️ Auto-Fix: Übersprungen (Standardeinstellungen)"),
+                    QStringLiteral("⚠️ Auto-correction : Ignorée (paramètres standards)"),
+                    QStringLiteral("⚠️ Autocorrección: Omitida (ajustes estándar)"),
+                    QStringLiteral("⚠️ Auto-correzione: Ignorata (impostazioni standard)"),
+                    QStringLiteral("⚠️ Correção automática: Ignorada (definições padrão)"),
+                    QStringLiteral("⚠️ 自动修复：已跳过（使用标准设置启动）"),
+                    QStringLiteral("⚠️ 自動修復: スキップ（標準設定で起動）"),
+                    QStringLiteral("⚠️ 자동 수정: 건너뜀 (표준 설정으로 실행)"),
+                    QStringLiteral("⚠️ الإصلاح التلقائي: تم التخطي (إعدادات قياسية)"));
+                statusBar()->showMessage(skip_af, 8000);
             }
         }
         UpdateStatusButtons();
@@ -7529,6 +7741,48 @@ void MainWindow::OnToggleDockedMode() {
     UpdateDockedButton();
     UpdateResScaleText();
     OnDockedModeChanged(is_docked, !is_docked, *QtCommon::system);
+    const bool now_docked = (new_mode == Settings::ConsoleMode::Docked);
+    const QString dock_title = StormLang11(
+        QStringLiteral("🖥️ РЕЖИМ КОНСОЛИ"),
+        QStringLiteral("🖥️ CONSOLE MODE"),
+        QStringLiteral("🖥️ KONSOLENMODUS"),
+        QStringLiteral("🖥️ MODE CONSOLE"),
+        QStringLiteral("🖥️ MODO DE CONSOLA"),
+        QStringLiteral("🖥️ MODALITÀ CONSOLE"),
+        QStringLiteral("🖥️ MODO DA CONSOLA"),
+        QStringLiteral("🖥️ 主机模式"),
+        QStringLiteral("🖥️ 本体モード"),
+        QStringLiteral("🖥️ 콘솔 모드"),
+        QStringLiteral("🖥️ وضع المنصة"));
+    const QString dock_sub = now_docked
+        ? StormLang11(
+              QStringLiteral("Активирован стационарный режим (Docked — полная частота GPU)"),
+              QStringLiteral("Docked Mode enabled (Full GPU clock & resolution)"),
+              QStringLiteral("TV-Modus (Docked) aktiviert (Voller GPU-Takt)"),
+              QStringLiteral("Mode station d'accueil (Docked) activé"),
+              QStringLiteral("Modo acoplado (Docked) activado"),
+              QStringLiteral("Modalità Docked attivata (Massima frequenza GPU)"),
+              QStringLiteral("Modo Docked ativado (Frequência máxima da GPU)"),
+              QStringLiteral("已切换至底座模式 (Docked — 完整 GPU 频率与分辨率)"),
+              QStringLiteral("TVモード (Docked) を有効化しました"),
+              QStringLiteral("독 모드 (Docked) 활성화됨"),
+              QStringLiteral("تم تفعيل وضع القاعدة (Docked — السرعة الكاملة)"))
+        : StormLang11(
+              QStringLiteral("Активирован портативный режим (Handheld — энергосбережение)"),
+              QStringLiteral("Handheld Mode enabled (Portable profile)"),
+              QStringLiteral("Handheld-Modus aktiviert (Portables Profil)"),
+              QStringLiteral("Mode portable (Handheld) activé"),
+              QStringLiteral("Modo portátil (Handheld) activado"),
+              QStringLiteral("Modalità portatile (Handheld) attivata"),
+              QStringLiteral("Modo portátil (Handheld) ativado"),
+              QStringLiteral("已切换至掌机模式 (Handheld — 便携配置)"),
+              QStringLiteral("携帯モード (Handheld) を有効化しました"),
+              QStringLiteral("휴대용 모드 (Handheld) 활성화됨"),
+              QStringLiteral("تم تفعيل الوضع المحمول (Handheld)"));
+    statusBar()->showMessage(dock_title + QStringLiteral(" — ") + dock_sub, 3500);
+    if (in_game_notification) {
+        in_game_notification->ShowNotification(dock_title, dock_sub, QColor(56, 189, 248), now_docked ? QStringLiteral("🖥️") : QStringLiteral("📱"), 2400);
+    }
 }
 
 void MainWindow::OnToggleGpuAccuracy() {
@@ -7547,6 +7801,48 @@ void MainWindow::OnToggleGpuAccuracy() {
                                     current_game_path);
     ApplyDynamicSettingChange();
     UpdateGPUAccuracyButton();
+    const bool is_high = (new_acc == Settings::GpuAccuracy::High);
+    const QString gpu_title = StormLang11(
+        QStringLiteral("⚙️ ТОЧНОСТЬ GPU"),
+        QStringLiteral("⚙️ GPU ACCURACY"),
+        QStringLiteral("⚙️ GPU-GENAUIGKEIT"),
+        QStringLiteral("⚙️ PRÉCISION GPU"),
+        QStringLiteral("⚙️ PRECISIÓN DE GPU"),
+        QStringLiteral("⚙️ PRECISIONE GPU"),
+        QStringLiteral("⚙️ PRECISÃO DA GPU"),
+        QStringLiteral("⚙️ GPU 精度"),
+        QStringLiteral("⚙️ GPU 精度"),
+        QStringLiteral("⚙️ GPU 정밀도"),
+        QStringLiteral("⚙️ دقة معالج الرسوميات"));
+    const QString gpu_sub = is_high
+        ? StormLang11(
+              QStringLiteral("Высокая точность (High — точный рендеринг эффектов и буферов)"),
+              QStringLiteral("High Accuracy (Accurate rendering of effects & buffers)"),
+              QStringLiteral("Hohe Genauigkeit (Präzises Rendering von Effekten)"),
+              QStringLiteral("Précision élevée (Rendu fidèle des effets et tampons)"),
+              QStringLiteral("Precisión alta (Renderizado preciso de efectos)"),
+              QStringLiteral("Precisione elevata (Rendering accurato degli effetti)"),
+              QStringLiteral("Precisão elevada (Renderização precisa de efeitos)"),
+              QStringLiteral("高精度模式（精确渲染特效与缓冲区）"),
+              QStringLiteral("高精度モード（エフェクトとバッファを正確に描画）"),
+              QStringLiteral("높은 정밀도 (이펙트 및 버퍼 정밀 렌더링)"),
+              QStringLiteral("دقة عالية (عرض دقيق للمؤثرات والذاكرة)"))
+        : StormLang11(
+              QStringLiteral("Обычная точность (Low/Normal — максимальный FPS)"),
+              QStringLiteral("Normal Accuracy (Maximum FPS performance)"),
+              QStringLiteral("Normale Genauigkeit (Maximale FPS-Leistung)"),
+              QStringLiteral("Précision normale (Performances FPS maximales)"),
+              QStringLiteral("Precisión normal (Máximo rendimiento de FPS)"),
+              QStringLiteral("Precisione normale (Massime prestazioni FPS)"),
+              QStringLiteral("Precisão normal (Desempenho máximo de FPS)"),
+              QStringLiteral("标准精度模式（最大化帧率性能）"),
+              QStringLiteral("標準精度モード（最大FPSパフォーマンス）"),
+              QStringLiteral("표준 정밀도 (최대 FPS 성능)"),
+              QStringLiteral("دقة قياسية (أقصى أداء للإطارات)"));
+    statusBar()->showMessage(gpu_title + QStringLiteral(" — ") + gpu_sub, 3500);
+    if (in_game_notification) {
+        in_game_notification->ShowNotification(gpu_title, gpu_sub, is_high ? QColor(245, 158, 11) : QColor(16, 185, 129), QStringLiteral("⚙️"), 2400);
+    }
 }
 
 void MainWindow::OnHealGraphicsArtifacts() {
@@ -7564,21 +7860,82 @@ void MainWindow::OnHealGraphicsArtifacts() {
     Settings::values.sync_memory_operations.SetValue(true);
     ApplyDynamicSettingChange();
     UpdateStatusButtons();
-    statusBar()->showMessage(StormLang(
-        QStringLiteral("Автолечение графики применено: GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
-        QStringLiteral("Graphics Auto-Heal applied: GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
-        QStringLiteral("Grafik-Auto-Heilung angewendet: GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
-        QStringLiteral("Auto-réparation graphique appliquée : GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
-        QStringLiteral("图形自动修复已应用：GPU 高精度 + 安全 DMA + 精确屏障 + 响应式刷新"),
-        QStringLiteral("グラフィックス自動修復を適用しました: GPU High + Safe DMA + Accurate Barriers + Reactive Flushing")
-    ), 5000);
+    const QString heal_title = StormLang11(
+        QStringLiteral("✨ АВТОЛЕЧЕНИЕ ГРАФИКИ"),
+        QStringLiteral("✨ GRAPHICS AUTO-HEAL"),
+        QStringLiteral("✨ GRAFIK-AUTO-HEILUNG"),
+        QStringLiteral("✨ AUTO-RÉPARATION GRAPHIQUE"),
+        QStringLiteral("✨ AUTORREPARACIÓN GRÁFICA"),
+        QStringLiteral("✨ AUTO-RIPARAZIONE GRAFICA"),
+        QStringLiteral("✨ AUTORREPARAÇÃO GRÁFICA"),
+        QStringLiteral("✨ 图形自动修复"),
+        QStringLiteral("✨ グラフィックス自動修復"),
+        QStringLiteral("✨ 그래픽 자동 복구"),
+        QStringLiteral("✨ الإصلاح التلقائي للرسوميات"));
+    const QString heal_msg = StormLang11(
+        QStringLiteral("Включены GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
+        QStringLiteral("Enabled GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
+        QStringLiteral("GPU High + Safe DMA + Accurate Barriers + Reactive Flushing aktiviert"),
+        QStringLiteral("GPU High + Safe DMA + Accurate Barriers + Reactive Flushing activés"),
+        QStringLiteral("Activado GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
+        QStringLiteral("Attivati GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
+        QStringLiteral("Ativado GPU High + Safe DMA + Accurate Barriers + Reactive Flushing"),
+        QStringLiteral("已启用：GPU 高精度 + 安全 DMA + 精确屏障 + 响应式刷新"),
+        QStringLiteral("GPU High + Safe DMA + 正確なバリア + 反応型フラッシュを適用"),
+        QStringLiteral("GPU 높음 + 안전 DMA + 정밀 배리어 + 반응형 플러싱 활성화됨"),
+        QStringLiteral("تم تفعيل الدقة العالية وحواجز المزامنة الدقيقة"));
+    statusBar()->showMessage(heal_title + QStringLiteral(" — ") + heal_msg, 5000);
+    if (in_game_notification) {
+        in_game_notification->ShowNotification(heal_title, heal_msg, QColor(52, 211, 153), QStringLiteral("✨"), 3200);
+    }
 }
 
 void MainWindow::OnMute() {
-    Settings::values.audio_muted.SetValue(!Settings::values.audio_muted.GetValue());
+    const bool muted = !Settings::values.audio_muted.GetValue();
+    Settings::values.audio_muted.SetValue(muted);
     ApplyDynamicSettingChange();
     UpdateVolumeUI();
     UpdateMuteButton();
+    const QString aud_title = StormLang11(
+        QStringLiteral("🔊 АУДИОСИСТЕМА"),
+        QStringLiteral("🔊 AUDIO SYSTEM"),
+        QStringLiteral("🔊 AUDIOSYSTEM"),
+        QStringLiteral("🔊 SYSTÈME AUDIO"),
+        QStringLiteral("🔊 SISTEMA DE AUDIO"),
+        QStringLiteral("🔊 SISTEMA AUDIO"),
+        QStringLiteral("🔊 SISTEMA DE ÁUDIO"),
+        QStringLiteral("🔊 音频系统"),
+        QStringLiteral("🔊 オーディオシステム"),
+        QStringLiteral("🔊 오디오 시스템"),
+        QStringLiteral("🔊 النظام الصوتي"));
+    const QString aud_sub = muted
+        ? StormLang11(
+              QStringLiteral("Звук эмулятора отключён (Mute)"),
+              QStringLiteral("Emulator audio muted"),
+              QStringLiteral("Emulator-Ton stummgeschaltet"),
+              QStringLiteral("Son de l'émulateur coupé"),
+              QStringLiteral("Audio del emulador silenciado"),
+              QStringLiteral("Audio dell'emulatore disattivato"),
+              QStringLiteral("Áudio do emulador silenciado"),
+              QStringLiteral("模拟器已静音"),
+              QStringLiteral("エミュレーターの音声をミュートしました"),
+              QStringLiteral("에뮬레이터 음소거됨"),
+              QStringLiteral("تم كتم صوت المحاكي"))
+        : StormLang11(
+              QStringLiteral("Звук включён — Громкость: %1%"),
+              QStringLiteral("Audio unmuted — Volume: %1%"),
+              QStringLiteral("Ton eingeschaltet — Lautstärke: %1%"),
+              QStringLiteral("Son activé — Volume : %1 %"),
+              QStringLiteral("Audio activado — Volumen: %1%"),
+              QStringLiteral("Audio attivato — Volume: %1%"),
+              QStringLiteral("Áudio ativado — Volume: %1%"),
+              QStringLiteral("已取消静音 — 当前音量：%1%"),
+              QStringLiteral("ミュート解除 — 音量: %1%"),
+              QStringLiteral("음소거 해제 — 볼륨: %1%"),
+              QStringLiteral("تم إلغاء كتم الصوت — مستوى الصوت: %1%")).arg(Settings::values.volume.GetValue());
+    if (in_game_notification) {
+        in_game_notification->ShowNotification(aud_title, aud_sub, muted ? QColor(239, 68, 68) : QColor(0, 229, 255), muted ? QStringLiteral("🔇") : QStringLiteral("🔊"), 2000);
+    }
 }
 
 void MainWindow::OnDecreaseVolume() {
@@ -7591,10 +7948,38 @@ void MainWindow::OnDecreaseVolume() {
     if (current_volume <= 6) {
         step = 1;
     }
-    Settings::values.volume.SetValue((std::max)(current_volume - step, 0));
+    const int new_vol = (std::max)(current_volume - step, 0);
+    Settings::values.volume.SetValue(new_vol);
     ApplyDynamicSettingChange();
     UpdateVolumeUI();
     UpdateMuteButton();
+    if (in_game_notification) {
+        const QString v_title = StormLang11(
+            QStringLiteral("🔉 ГРОМКОСТЬ ЗВУКА"),
+            QStringLiteral("🔉 AUDIO VOLUME"),
+            QStringLiteral("🔉 LAUTSTÄRKE"),
+            QStringLiteral("🔉 VOLUME AUDIO"),
+            QStringLiteral("🔉 VOLUMEN DE AUDIO"),
+            QStringLiteral("🔉 VOLUME AUDIO"),
+            QStringLiteral("🔉 VOLUME DE ÁUDIO"),
+            QStringLiteral("🔉 音量调节"),
+            QStringLiteral("🔉 音量調整"),
+            QStringLiteral("🔉 볼륨 조절"),
+            QStringLiteral("🔉 مستوى الصوت"));
+        const QString v_sub = StormLang11(
+            QStringLiteral("Текущий уровень громкости: %1%"),
+            QStringLiteral("Current volume level: %1%"),
+            QStringLiteral("Aktuelle Lautstärke: %1%"),
+            QStringLiteral("Niveau de volume actuel : %1 %"),
+            QStringLiteral("Nivel de volumen actual: %1%"),
+            QStringLiteral("Livello volume attuale: %1%"),
+            QStringLiteral("Nível de volume atual: %1%"),
+            QStringLiteral("当前音量水平：%1%"),
+            QStringLiteral("現在の音量レベル: %1%"),
+            QStringLiteral("현재 볼륨 수준: %1%"),
+            QStringLiteral("مستوى الصوت الحالي: %1%")).arg(new_vol);
+        in_game_notification->ShowNotification(v_title, v_sub, QColor(0, 229, 255), QStringLiteral("🔉"), 1800);
+    }
 }
 
 void MainWindow::OnIncreaseVolume() {
@@ -7607,10 +7992,38 @@ void MainWindow::OnIncreaseVolume() {
     if (current_volume < 6) {
         step = 1;
     }
-    Settings::values.volume.SetValue(current_volume + step);
+    const int new_vol = (std::min)(current_volume + step, 200);
+    Settings::values.volume.SetValue(new_vol);
     ApplyDynamicSettingChange();
     UpdateVolumeUI();
     UpdateMuteButton();
+    if (in_game_notification) {
+        const QString v_title = StormLang11(
+            QStringLiteral("🔊 ГРОМКОСТЬ ЗВУКА"),
+            QStringLiteral("🔊 AUDIO VOLUME"),
+            QStringLiteral("🔊 LAUTSTÄRKE"),
+            QStringLiteral("🔊 VOLUME AUDIO"),
+            QStringLiteral("🔊 VOLUMEN DE AUDIO"),
+            QStringLiteral("🔊 VOLUME AUDIO"),
+            QStringLiteral("🔊 VOLUME DE ÁUDIO"),
+            QStringLiteral("🔊 音量调节"),
+            QStringLiteral("🔊 音量調整"),
+            QStringLiteral("🔊 볼륨 조절"),
+            QStringLiteral("🔊 مستوى الصوت"));
+        const QString v_sub = StormLang11(
+            QStringLiteral("Текущий уровень громкости: %1%"),
+            QStringLiteral("Current volume level: %1%"),
+            QStringLiteral("Aktuelle Lautstärke: %1%"),
+            QStringLiteral("Niveau de volume actuel : %1 %"),
+            QStringLiteral("Nivel de volumen actual: %1%"),
+            QStringLiteral("Livello volume attuale: %1%"),
+            QStringLiteral("Nível de volume atual: %1%"),
+            QStringLiteral("当前音量水平：%1%"),
+            QStringLiteral("現在の音量レベル: %1%"),
+            QStringLiteral("현재 볼륨 수준: %1%"),
+            QStringLiteral("مستوى الصوت الحالي: %1%")).arg(new_vol);
+        in_game_notification->ShowNotification(v_title, v_sub, QColor(0, 229, 255), QStringLiteral("🔊"), 1800);
+    }
 }
 
 void MainWindow::OnToggleAdaptingFilter() {
@@ -7624,6 +8037,33 @@ void MainWindow::OnToggleAdaptingFilter() {
     filter_status_button->setChecked(true);
     ApplyDynamicSettingChange();
     UpdateFilterText();
+    if (in_game_notification && filter_status_button) {
+        const QString f_title = StormLang11(
+            QStringLiteral("🔍 ФИЛЬТР МАСШТАБИРОВАНИЯ"),
+            QStringLiteral("🔍 SCALING FILTER"),
+            QStringLiteral("🔍 SKALIERUNGSFILTER"),
+            QStringLiteral("🔍 FILTRE DE MISE À L'ÉCHELLE"),
+            QStringLiteral("🔍 FILTRO DE ESCALADO"),
+            QStringLiteral("🔍 FILTRO DI SCALATURA"),
+            QStringLiteral("🔍 FILTRO DE ESCALA"),
+            QStringLiteral("🔍 缩放过滤器"),
+            QStringLiteral("🔍 スケーリングフィルター"),
+            QStringLiteral("🔍 스케일링 필터"),
+            QStringLiteral("🔍 مرشح تحجيم الصورة"));
+        const QString f_sub = StormLang11(
+            QStringLiteral("Активный фильтр изображения: %1"),
+            QStringLiteral("Active scaling filter: %1"),
+            QStringLiteral("Aktiver Skalierungsfilter: %1"),
+            QStringLiteral("Filtre actif : %1"),
+            QStringLiteral("Filtro de escalado activo: %1"),
+            QStringLiteral("Filtro di scalatura attivo: %1"),
+            QStringLiteral("Filtro de escala ativo: %1"),
+            QStringLiteral("当前缩放过滤器：%1"),
+            QStringLiteral("有効なスケーリングフィルター: %1"),
+            QStringLiteral("활성 스케일링 필터: %1"),
+            QStringLiteral("مرشح التحجيم النشط: %1")).arg(filter_status_button->text());
+        in_game_notification->ShowNotification(f_title, f_sub, QColor(56, 189, 248), QStringLiteral("🔍"), 2400);
+    }
 }
 
 void MainWindow::OnToggleGraphicsAPI() {
@@ -8340,43 +8780,67 @@ void MainWindow::OnSaveStateSlot(int slot) {
         const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
         const auto res = Core::CreateSaveState(*QtCommon::system, path);
         if (res != Core::SaveStateResult::Success) {
-            statusBar()->showMessage(StormLang(
-                QStringLiteral("Ошибка быстрого сохранения в Слот %1").arg(slot),
-                QStringLiteral("Failed to save state to Slot %1").arg(slot),
-                QStringLiteral("Fehler beim Speichern in Slot %1").arg(slot),
-                QStringLiteral("Échec de la sauvegarde dans l'emplacement %1").arg(slot),
-                QStringLiteral("保存到槽位 %1 失败").arg(slot),
-                QStringLiteral("スロット %1 へのセーブに失敗しました").arg(slot)), 4000);
+            const QString err_title = StormLang11(
+                QStringLiteral("❌ ОШИБКА БЫСТРОГО СОХРАНЕНИЯ"),
+                QStringLiteral("❌ QUICK SAVE FAILED"),
+                QStringLiteral("❌ FEHLER BEIM SCHNELLSPEICHERN"),
+                QStringLiteral("❌ ÉCHEC DE LA SAUVEGARDE RAPIDE"),
+                QStringLiteral("❌ ERROR DE GUARDADO RÁPIDO"),
+                QStringLiteral("❌ ERRORE SALVATAGGIO RAPIDO"),
+                QStringLiteral("❌ FALHA AO GUARDAR RAPIDAMENTE"),
+                QStringLiteral("❌ 快速保存失败"),
+                QStringLiteral("❌ クイックセーブ失敗"),
+                QStringLiteral("❌ 빠른 저장 실패"),
+                QStringLiteral("❌ فشل الحفظ السريع"));
+            const QString err_msg = StormLang11(
+                QStringLiteral("Не удалось сохранить состояние в Слот %1"),
+                QStringLiteral("Failed to save game state to Slot %1"),
+                QStringLiteral("Fehler beim Speichern in Slot %1"),
+                QStringLiteral("Échec de la sauvegarde dans l'emplacement %1"),
+                QStringLiteral("Error al guardar el estado en la ranura %1"),
+                QStringLiteral("Impossibile salvare lo stato nello Slot %1"),
+                QStringLiteral("Falha ao guardar o estado no Espaço %1"),
+                QStringLiteral("保存到槽位 %1 失败"),
+                QStringLiteral("スロット %1 へのセーブに失敗しました"),
+                QStringLiteral("슬롯 %1에 상태를 저장하지 못했습니다"),
+                QStringLiteral("فشل حفظ الحالة في الفتحة %1")).arg(slot);
+            statusBar()->showMessage(err_msg, 4000);
+            if (in_game_notification) {
+                in_game_notification->ShowNotification(err_title, err_msg, QColor(239, 68, 68), QStringLiteral("❌"), 3000);
+            }
             return;
         }
         if (perf_overlay) {
             perf_overlay->RefreshSaveSlots();
         }
     }
-    const QString msg = StormLang(
-        QStringLiteral("⚡ Быстрое сохранение: Слот %1 сохранён (SESS v2)").arg(slot),
-        QStringLiteral("⚡ Quick Save: Slot %1 saved (SESS v2)").arg(slot),
-        QStringLiteral("⚡ Schnellspeichern: Slot %1 gespeichert (SESS v2)").arg(slot),
-        QStringLiteral("⚡ Sauvegarde rapide : Emplacement %1 enregistré (SESS v2)").arg(slot),
-        QStringLiteral("⚡ 快速保存：槽位 %1 已保存 (SESS v2)").arg(slot),
-        QStringLiteral("⚡ クイックセーブ：スロット %1 に保存しました (SESS v2)").arg(slot));
-    statusBar()->showMessage(msg, 4000);
+    const QString notif_title = StormLang11(
+        QStringLiteral("💾 БЫСТРОЕ СОХРАНЕНИЕ — СЛОТ %1"),
+        QStringLiteral("💾 QUICK SAVE COMPLETE — SLOT %1"),
+        QStringLiteral("💾 SCHNELLSPEICHERN — SLOT %1"),
+        QStringLiteral("💾 SAUVEGARDE RAPIDE — EMPLACEMENT %1"),
+        QStringLiteral("💾 GUARDADO RÁPIDO — RANURA %1"),
+        QStringLiteral("💾 SALVATAGGIO RAPIDO — SLOT %1"),
+        QStringLiteral("💾 GRAVAÇÃO RÁPIDA — ESPAÇO %1"),
+        QStringLiteral("💾 快速保存成功 — 槽位 %1"),
+        QStringLiteral("💾 クイックセーブ完了 — スロット %1"),
+        QStringLiteral("💾 빠른 저장 완료 — 슬롯 %1"),
+        QStringLiteral("💾 اكتمل الحفظ السريع — الفتحة %1")).arg(slot);
+    const QString notif_sub = StormLang11(
+        QStringLiteral("Мгновенный снимок памяти SESS v2 успешно сохранён"),
+        QStringLiteral("Instant memory snapshot SESS v2 saved successfully"),
+        QStringLiteral("Sofortiger Speicher-Snapshot SESS v2 erfolgreich gespeichert"),
+        QStringLiteral("Instantané mémoire SESS v2 enregistré avec succès"),
+        QStringLiteral("Instantánea de memoria SESS v2 guardada con éxito"),
+        QStringLiteral("Istantanea di memoria SESS v2 salvata con successo"),
+        QStringLiteral("Instantâneo de memória SESS v2 guardado com sucesso"),
+        QStringLiteral("SESS v2 内存快照已成功保存"),
+        QStringLiteral("SESS v2 メモリスナップショットを保存しました"),
+        QStringLiteral("SESS v2 메모리 스냅샷이 성공적으로 저장되었습니다"),
+        QStringLiteral("تم حفظ لقطة الذاكرة الفورية SESS v2 بنجاح"));
+    statusBar()->showMessage(notif_title + QStringLiteral(" — ") + notif_sub, 4000);
     if (in_game_notification) {
-        const QString notif_title = StormLang(
-            QStringLiteral("\u26a1 \u0411\u042b\u0421\u0422\u0420\u041e\u0415 \u0421\u041e\u0425\u0420\u0410\u041d\u0415\u041d\u0418\u0415 - \u0421\u041b\u041e\u0422 %1").arg(slot),
-            QStringLiteral("\u26a1 QUICK SAVE COMPLETE - SLOT %1").arg(slot),
-            QStringLiteral("\u26a1 SCHNELLSPEICHERN - SLOT %1").arg(slot),
-            QStringLiteral("\u26a1 SAUVEGARDE RAPIDE - EMPLACEMENT %1").arg(slot),
-            QStringLiteral("\u26a1 \u5feb\u901f\u4fdd\u5b58\u6210\u529f - \u69fd\u4f4d %1").arg(slot),
-            QStringLiteral("\u26a1 \u30af\u30a4\u30c3\u30af\u30bb\u30fc\u30d6\u5b8c\u4e86 - \u30b9\u30ed\u30c3\u30c8 %1").arg(slot));
-        const QString notif_sub = StormLang(
-            QStringLiteral("\u041c\u0433\u043d\u043e\u0432\u0435\u043d\u043d\u044b\u0439 \u0441\u043d\u0438\u043c\u043e\u043a \u043f\u0430\u043c\u044f\u0442\u0438 SESS v2 \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0445\u0440\u0430\u043d\u0451\u043d"),
-            QStringLiteral("Instant memory snapshot SESS v2 saved successfully"),
-            QStringLiteral("Sofortiger Speicher-Snapshot SESS v2 erfolgreich gespeichert"),
-            QStringLiteral("Instantan\u00e9 m\u00e9moire SESS v2 enregistr\u00e9 avec succ\u00e8s"),
-            QStringLiteral("SESS v2 \u5185\u5b58\u5feb\u7167\u5df2\u6210\u529f\u4fdd\u5b58"),
-            QStringLiteral("SESS v2 \u30e1\u30e2\u30ea\u30b9\u30ca\u30c3\u30d7\u30b7\u30e7\u30c3\u30c8\u3092\u4fdd\u5b58\u3057\u307e\u3057\u305f"));
-        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(0, 229, 255), QStringLiteral("\U0001f4be"), 3200);
+        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(0, 229, 255), QStringLiteral("💾"), 3000);
     }
     if (render_window) {
         auto preview_path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
@@ -8419,45 +8883,96 @@ void MainWindow::OnLoadStateSlot(int slot) {
     }
     const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
     if (!std::filesystem::exists(path)) {
-        const QString empty_msg = StormLang(
-            QStringLiteral("⚠️ Слот %1 пуст - сначала сделайте быстрое сохранение (F5)").arg(slot),
-            QStringLiteral("⚠️ Slot %1 is empty - create a Quick Save (F5) first").arg(slot),
-            QStringLiteral("⚠️ Slot %1 ist leer - bitte zuerst speichern (F5)").arg(slot),
-            QStringLiteral("⚠️ L'emplacement %1 est vide - sauvegardez d'abord (F5)").arg(slot),
-            QStringLiteral("⚠️ 槽位 %1 为空 - 请先快速保存 (F5)").arg(slot),
-            QStringLiteral("⚠️ スロット %1 は空です - 先にクイックセーブ (F5) してください").arg(slot));
-        statusBar()->showMessage(empty_msg, 4000);
+        const QString empty_title = StormLang11(
+            QStringLiteral("⚠️ СЛОТ %1 ПУСТ"),
+            QStringLiteral("⚠️ SLOT %1 IS EMPTY"),
+            QStringLiteral("⚠️ SLOT %1 IST LEER"),
+            QStringLiteral("⚠️ EMPLACEMENT %1 VIDE"),
+            QStringLiteral("⚠️ RANURA %1 VACÍA"),
+            QStringLiteral("⚠️ SLOT %1 VUOTO"),
+            QStringLiteral("⚠️ ESPAÇO %1 VAZIO"),
+            QStringLiteral("⚠️ 槽位 %1 为空"),
+            QStringLiteral("⚠️ スロット %1 は空です"),
+            QStringLiteral("⚠️ 슬롯 %1 비어 있음"),
+            QStringLiteral("⚠️ الفتحة %1 فارغة")).arg(slot);
+        const QString empty_msg = StormLang11(
+            QStringLiteral("Сначала создайте быстрое сохранение клавишей F5"),
+            QStringLiteral("Create a Quick Save first by pressing F5"),
+            QStringLiteral("Bitte zuerst mit F5 eine Schnell-Speicherung erstellen"),
+            QStringLiteral("Créez d'abord une sauvegarde rapide avec F5"),
+            QStringLiteral("Cree primero un guardado rápido pulsando F5"),
+            QStringLiteral("Crea prima un salvataggio rapido premendo F5"),
+            QStringLiteral("Crie primeiro uma gravação rápida premindo F5"),
+            QStringLiteral("请先按 F5 创建快速保存"),
+            QStringLiteral("先に F5 キーでクイックセーブを作成してください"),
+            QStringLiteral("먼저 F5 키를 눌러 빠른 저장을 생성하세요"),
+            QStringLiteral("يرجى إنشاء حفظ سريع أولاً بالضغط على F5"));
+        statusBar()->showMessage(empty_title + QStringLiteral(" — ") + empty_msg, 4000);
         if (in_game_notification) {
-            in_game_notification->ShowNotification(QStringLiteral("SESS v2"), empty_msg, QColor(255, 193, 7), QStringLiteral("⚠️"), 3000);
+            in_game_notification->ShowNotification(empty_title, empty_msg, QColor(245, 158, 11), QStringLiteral("⚠️"), 3000);
         }
         return;
     }
     const auto res = Core::LoadSaveState(*QtCommon::system, path);
     if (res != Core::SaveStateResult::Success) {
-        const QString err_msg = StormLang(
-            QStringLiteral("\u041e\u0448\u0438\u0431\u043a\u0430 \u0431\u044b\u0441\u0442\u0440\u043e\u0439 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0438\u0437 \u0421\u043b\u043e\u0442\u0430 %1").arg(slot),
-            QStringLiteral("Failed to load state from Slot %1").arg(slot),
-            QStringLiteral("Fehler beim Laden aus Slot %1").arg(slot),
-            QStringLiteral("\u00c9chec du chargement depuis l'emplacement %1").arg(slot),
-            QStringLiteral("\u4ece\u69fd\u4f4d %1 \u8bfb\u53d6\u5931\u8d25").arg(slot),
-            QStringLiteral("\u30b9\u30ed\u30c3\u30c8 %1 \u304b\u3089\u306e\u30ed\u30fc\u30c9\u306b\u5931\u6557\u3057\u307e\u3057\u305f").arg(slot));
+        const QString err_title = StormLang11(
+            QStringLiteral("❌ ОШИБКА БЫСТРОЙ ЗАГРУЗКИ"),
+            QStringLiteral("❌ QUICK LOAD FAILED"),
+            QStringLiteral("❌ FEHLER BEIM SCHNELLLADEN"),
+            QStringLiteral("❌ ÉCHEC DU CHARGEMENT RAPIDE"),
+            QStringLiteral("❌ ERROR DE CARGA RÁPIDA"),
+            QStringLiteral("❌ ERRORE CARICAMENTO RAPIDO"),
+            QStringLiteral("❌ FALHA NO CARREGAMENTO RÁPIDO"),
+            QStringLiteral("❌ 快速读取失败"),
+            QStringLiteral("❌ クイックロード失敗"),
+            QStringLiteral("❌ 빠른 불러오기 실패"),
+            QStringLiteral("❌ فشل التحميل السريع"));
+        const QString err_msg = StormLang11(
+            QStringLiteral("Не удалось загрузить состояние из Слота %1"),
+            QStringLiteral("Failed to load state from Slot %1"),
+            QStringLiteral("Fehler beim Laden aus Slot %1"),
+            QStringLiteral("Échec du chargement depuis l'emplacement %1"),
+            QStringLiteral("Error al cargar el estado desde la ranura %1"),
+            QStringLiteral("Impossibile caricare lo stato dallo Slot %1"),
+            QStringLiteral("Falha ao carregar o estado do Espaço %1"),
+            QStringLiteral("从槽位 %1 读取失败"),
+            QStringLiteral("スロット %1 からのロードに失敗しました"),
+            QStringLiteral("슬롯 %1에서 상태를 불러오지 못했습니다"),
+            QStringLiteral("فشل تحميل الحالة من الفتحة %1")).arg(slot);
         statusBar()->showMessage(err_msg, 4000);
         if (in_game_notification) {
-            in_game_notification->ShowNotification(QStringLiteral("SESS v2"), err_msg, QColor(239, 68, 68), QStringLiteral("\u274c"), 3000);
+            in_game_notification->ShowNotification(err_title, err_msg, QColor(239, 68, 68), QStringLiteral("❌"), 3000);
         }
         return;
     }
     if (perf_overlay) {
         perf_overlay->RefreshSaveSlots();
     }
-    const QString msg = StormLang(
-        QStringLiteral("\u26a1 \u0411\u044b\u0441\u0442\u0440\u0430\u044f \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0430: \u0421\u043b\u043e\u0442 %1 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d (SESS v2)").arg(slot),
-        QStringLiteral("\u26a1 Quick Load: Slot %1 loaded (SESS v2)").arg(slot),
-        QStringLiteral("\u26a1 Schnellladen: Slot %1 geladen (SESS v2)").arg(slot),
-        QStringLiteral("\u26a1 Chargement rapide : Emplacement %1 charg\u00e9 (SESS v2)").arg(slot),
-        QStringLiteral("\u26a1 \u5feb\u901f\u8bfb\u53d6\uff1a\u69fd\u4f4d %1 \u5df2\u52a0\u8f7d (SESS v2)").arg(slot),
-        QStringLiteral("\u26a1 \u30af\u30a4\u30c3\u30af\u30ed\u30fc\u30c9\uff1a\u30b9\u30ed\u30c3\u30c8 %1 \u3092\u30ed\u30fc\u30c9\u3057\u307e\u3057\u305f (SESS v2)").arg(slot));
-    statusBar()->showMessage(msg, 4000);
+    const QString notif_title = StormLang11(
+        QStringLiteral("⚡ БЫСТРАЯ ЗАГРУЗКА — СЛОТ %1"),
+        QStringLiteral("⚡ QUICK LOAD COMPLETE — SLOT %1"),
+        QStringLiteral("⚡ SCHNELLLADEN — SLOT %1"),
+        QStringLiteral("⚡ CHARGEMENT RAPIDE — EMPLACEMENT %1"),
+        QStringLiteral("⚡ CARGA RÁPIDA — RANURA %1"),
+        QStringLiteral("⚡ CARICAMENTO RAPIDO — SLOT %1"),
+        QStringLiteral("⚡ CARREGAMENTO RÁPIDO — ESPAÇO %1"),
+        QStringLiteral("⚡ 快速读取成功 — 槽位 %1"),
+        QStringLiteral("⚡ クイックロード完了 — スロット %1"),
+        QStringLiteral("⚡ 빠른 불러오기 완료 — 슬롯 %1"),
+        QStringLiteral("⚡ اكتمل التحميل السريع — الفتحة %1")).arg(slot);
+    const QString notif_sub = StormLang11(
+        QStringLiteral("Состояние игры SESS v2 мгновенно восстановлено"),
+        QStringLiteral("Game state SESS v2 restored instantaneously"),
+        QStringLiteral("Spielstatus SESS v2 sofort wiederhergestellt"),
+        QStringLiteral("État du jeu SESS v2 restauré instantanément"),
+        QStringLiteral("Estado del juego SESS v2 restaurado al instante"),
+        QStringLiteral("Stato del gioco SESS v2 ripristinato istantaneamente"),
+        QStringLiteral("Estado do jogo SESS v2 restaurado instantaneamente"),
+        QStringLiteral("SESS v2 游戏状态已瞬间恢复"),
+        QStringLiteral("SESS v2 ゲーム状態を瞬時に復元しました"),
+        QStringLiteral("SESS v2 게임 상태가 즉시 복원되었습니다"),
+        QStringLiteral("تمت استعادة حالة اللعبة SESS v2 فوراً"));
+    statusBar()->showMessage(notif_title + QStringLiteral(" — ") + notif_sub, 4000);
     if (render_window) {
         auto preview_path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
         preview_path.replace_extension(".png");
@@ -8480,21 +8995,7 @@ void MainWindow::OnLoadStateSlot(int slot) {
         }
     }
     if (in_game_notification) {
-        const QString notif_title = StormLang(
-            QStringLiteral("\u26a1 \u0411\u042b\u0421\u0422\u0420\u0410\u042f \u0417\u0410\u0413\u0420\u0423\u0417\u041a\u0410 - \u0421\u041b\u041e\u0422 %1").arg(slot),
-            QStringLiteral("\u26a1 QUICK LOAD COMPLETE - SLOT %1").arg(slot),
-            QStringLiteral("\u26a1 SCHNELLLADEN - SLOT %1").arg(slot),
-            QStringLiteral("\u26a1 CHARGEMENT RAPIDE - EMPLACEMENT %1").arg(slot),
-            QStringLiteral("\u26a1 \u5feb\u901f\u8bfb\u53d6\u6210\u529f - \u69fd\u4f4d %1").arg(slot),
-            QStringLiteral("\u26a1 \u30af\u30a4\u30c3\u30af\u30ed\u30fc\u30c9\u5b8c\u4e86 - \u30b9\u30ed\u30c3\u30c8 %1").arg(slot));
-        const QString notif_sub = StormLang(
-            QStringLiteral("\u0421\u043e\u0441\u0442\u043e\u044f\u043d\u0438\u0435 \u0438\u0433\u0440\u044b SESS v2 \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0432\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u043e"),
-            QStringLiteral("Game state SESS v2 restored successfully"),
-            QStringLiteral("Spielstatus SESS v2 erfolgreich wiederhergestellt"),
-            QStringLiteral("\u00c9tat du jeu SESS v2 restaur\u00e9 avec succ\u00e8s"),
-            QStringLiteral("SESS v2 \u6e38\u620f\u72b6\u6001\u5df2\u6210\u529f\u6062\u590d"),
-            QStringLiteral("SESS v2 \u30b2\u30fc\u30e0\u72b6\u614b\u3092\u5fa9\u5143\u3057\u307e\u3057\u305f"));
-        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(52, 211, 153), QStringLiteral("\u26a1"), 2800);
+        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(52, 211, 153), QStringLiteral("⚡"), 2800);
     }
 }
 
@@ -9993,6 +10494,23 @@ void MainWindow::OnCaptureScreenshot() {
     }
 #endif
     render_window->CaptureScreenshot(filename);
+    const QString sc_title = StormLang11(
+        QStringLiteral("📸 СКРИНШОТ СОХРАНЁН"),
+        QStringLiteral("📸 SCREENSHOT CAPTURED"),
+        QStringLiteral("📸 SCREENSHOT GESPEICHERT"),
+        QStringLiteral("📸 CAPTURE D'ÉCRAN ENREGISTRÉE"),
+        QStringLiteral("📸 CAPTURA DE PANTALLA GUARDADA"),
+        QStringLiteral("📸 SCREENSHOT SALVATO"),
+        QStringLiteral("📸 CAPTURA DE ECRÃ GUARDADA"),
+        QStringLiteral("📸 屏幕截图已保存"),
+        QStringLiteral("📸 スクリーンショット保存完了"),
+        QStringLiteral("📸 스크린샷 저장됨"),
+        QStringLiteral("📸 تم حفظ لقطة الشاشة"));
+    const QString sc_sub = QFileInfo(filename).fileName();
+    statusBar()->showMessage(sc_title + QStringLiteral(": ") + sc_sub, 4000);
+    if (in_game_notification) {
+        in_game_notification->ShowNotification(sc_title, sc_sub, QColor(56, 189, 248), QStringLiteral("📸"), 2800);
+    }
 }
 
 #ifdef ENABLE_UPDATE_CHECKER
@@ -10246,21 +10764,32 @@ void MainWindow::UpdateStatusBar() {
         if (display_fps >= 45.0) {
             s_zero_fps_ticks = 0;
             ++s_autotest_ticks;
-            if (s_autotest_ticks == 3) {
-                LOG_INFO(Frontend, "AutoTest: [Step 1/3] Saving State A (SHARED MEMORY) to Slot 2 at {:.1f} FPS...", display_fps);
-                OnSaveStateSlot(2);
-            } else if (s_autotest_ticks == 22) {
-                LOG_INFO(Frontend, "AutoTest: [Step 2/3] In Initial Menu - Loading State A from Slot 2 at {:.1f} FPS...", display_fps);
-                OnLoadStateSlot(2);
-            } else if (s_autotest_ticks == 28) {
-                LOG_INFO(Frontend, "AutoTest: ALL SAVESTATE TESTS PASSED! Stable {:.1f} FPS after multiple Quick Loads.", display_fps);
-                Core::FlushPendingSaveStates();
-                std::exit(0);
+            if (is_cold_load_test) {
+                if (s_autotest_ticks == 4) {
+                    LOG_INFO(Frontend, "AutoTest: [Cold Load] Loading Slot 1 at {:.1f} FPS...", display_fps);
+                    OnLoadStateSlot(1);
+                } else if (s_autotest_ticks == 10) {
+                    LOG_INFO(Frontend, "AutoTest: ALL SAVESTATE TESTS PASSED! Stable {:.1f} FPS after Cold Quick Load.", display_fps);
+                    Core::FlushPendingSaveStates();
+                    std::_Exit(0);
+                }
+            } else {
+                if (s_autotest_ticks == 3) {
+                    LOG_INFO(Frontend, "AutoTest: [Step 1/3] Saving State A (SHARED MEMORY) to Slot 2 at {:.1f} FPS...", display_fps);
+                    OnSaveStateSlot(2);
+                } else if (s_autotest_ticks == 22) {
+                    LOG_INFO(Frontend, "AutoTest: [Step 2/3] In Initial Menu - Loading State A from Slot 2 at {:.1f} FPS...", display_fps);
+                    OnLoadStateSlot(2);
+                } else if (s_autotest_ticks == 28) {
+                    LOG_INFO(Frontend, "AutoTest: ALL SAVESTATE TESTS PASSED! Stable {:.1f} FPS after multiple Quick Loads.", display_fps);
+                    Core::FlushPendingSaveStates();
+                    std::_Exit(0);
+                }
             }
-        } else if (s_autotest_ticks >= 8 && display_fps < 5.0) {
+        } else if (s_autotest_ticks >= (is_cold_load_test ? 4u : 8u) && display_fps < 5.0) {
             if (++s_zero_fps_ticks >= 6) {
                 LOG_ERROR(Frontend, "AutoTest: FAILED! FPS dropped to {:.1f} after Quick Save/Load!", display_fps);
-                std::exit(2);
+                std::_Exit(2);
             }
         }
     }

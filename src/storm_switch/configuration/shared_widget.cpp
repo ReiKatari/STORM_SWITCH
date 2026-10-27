@@ -113,7 +113,7 @@ static std::string RelevantDefault(const Settings::BasicSetting& setting) {
 static std::string RelevantCurrentValue(const Settings::BasicSetting& setting) {
     return (Settings::IsConfiguringGlobal() && setting.Switchable())
                ? setting.ToStringGlobal()
-               : RelevantCurrentValue(setting);
+               : setting.ToString();
 }
 
 static QString DefaultSuffix(QWidget* parent, Settings::BasicSetting& setting) {

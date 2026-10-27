@@ -131,7 +131,9 @@ public:
 
     void FlushCachedWrites() noexcept {
         for (auto id : cached_pages) {
-            top_tier[id]->FlushCachedWrites();
+            if (id < NUM_HIGH_PAGES && top_tier[id]) {
+                top_tier[id]->FlushCachedWrites();
+            }
         }
         cached_pages.clear();
     }
@@ -164,10 +166,17 @@ private:
     bool IteratePages(VAddr cpu_address, size_t size, Func&& func) {
         using FuncReturn = typename std::invoke_result<Func, Manager*, u64, size_t>::type;
         static constexpr bool BOOL_BREAK = std::is_same_v<FuncReturn, bool>;
+        static constexpr u64 MAX_CPU_ADDR = 1ULL << MAX_CPU_PAGE_BITS;
+        if (cpu_address >= MAX_CPU_ADDR || size == 0) {
+            return false;
+        }
+        if (size > MAX_CPU_ADDR - cpu_address) {
+            size = static_cast<size_t>(MAX_CPU_ADDR - cpu_address);
+        }
         std::size_t remaining_size{size};
         std::size_t page_index{cpu_address >> HIGHER_PAGE_BITS};
         u64 page_offset{cpu_address & HIGHER_PAGE_MASK};
-        while (remaining_size > 0) {
+        while (remaining_size > 0 && page_index < NUM_HIGH_PAGES) {
             const std::size_t copy_amount{
                 std::min<std::size_t>(HIGHER_PAGE_SIZE - page_offset, remaining_size)};
             auto* manager{top_tier[page_index]};
@@ -199,12 +208,19 @@ private:
 
     template <bool create_region_on_fail, typename Func>
     std::pair<u64, u64> IteratePairs(VAddr cpu_address, size_t size, Func&& func) {
+        static constexpr u64 MAX_CPU_ADDR = 1ULL << MAX_CPU_PAGE_BITS;
+        if (cpu_address >= MAX_CPU_ADDR || size == 0) {
+            return {0ULL, 0ULL};
+        }
+        if (size > MAX_CPU_ADDR - cpu_address) {
+            size = static_cast<size_t>(MAX_CPU_ADDR - cpu_address);
+        }
         std::size_t remaining_size{size};
         std::size_t page_index{cpu_address >> HIGHER_PAGE_BITS};
         u64 page_offset{cpu_address & HIGHER_PAGE_MASK};
         u64 begin = (std::numeric_limits<u64>::max)();
         u64 end = 0;
-        while (remaining_size > 0) {
+        while (remaining_size > 0 && page_index < NUM_HIGH_PAGES) {
             const std::size_t copy_amount{
                 std::min<std::size_t>(HIGHER_PAGE_SIZE - page_offset, remaining_size)};
             auto* manager{top_tier[page_index]};
@@ -235,6 +251,9 @@ private:
     }
 
     void CreateRegion(std::size_t page_index) {
+        if (page_index >= NUM_HIGH_PAGES) {
+            return;
+        }
         const VAddr base_cpu_addr = page_index << HIGHER_PAGE_BITS;
         top_tier[page_index] = GetNewManager(base_cpu_addr);
     }

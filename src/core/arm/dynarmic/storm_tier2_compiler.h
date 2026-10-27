@@ -127,16 +127,48 @@ public:
         if (!Settings::values.use_storm_tier2_compiler.GetValue() || page.empty()) {
             return;
         }
+        u64 rewritten = 0;
+        u64 superblock_opts = 0;
+        const bool wfe_to_yield =
+            Settings::values.storm_lowend_turbo.GetValue() ||
+            Settings::values.cpu_accuracy.GetValue() == Settings::CpuAccuracy::Unsafe;
+
         for (size_t i = 0; i < page.size(); ++i) {
-            u32& inst = page[i];
-            if ((inst & 0xFFC00000U) == 0xD5000000U || IsRedundantSelfMov64(inst)) [[unlikely]] {
-                inst = OptimizeInstruction64(inst, true);
+            u32 inst = page[i];
+            if ((inst & 0xFFC00000U) == 0xD5000000U) [[unlikely]] {
+                if ((inst & 0xFFFFFFE0U) == 0xD53BE040U) {
+                    page[i] = 0xD53BE020U | (inst & 0x1FU);
+                    ++rewritten;
+                } else if (inst == A64_SEV || inst == A64_SEVL) {
+                    page[i] = A64_NOP;
+                    ++rewritten;
+                } else if (wfe_to_yield &&
+                           (inst == A64_WFE || (inst & A64_WFET_MASK) == A64_WFET_VAL)) {
+                    page[i] = A64_YIELD;
+                    ++rewritten;
+                } else if ((inst & 0xFFFFF01FU) == 0xD503201FU &&
+                           inst != A64_NOP && inst != A64_YIELD &&
+                           inst != A64_WFE && inst != A64_WFI) {
+                    page[i] = A64_NOP;
+                    ++rewritten;
+                }
+                inst = page[i];
+            } else if (IsRedundantSelfMov64(inst)) [[unlikely]] {
+                page[i] = A64_NOP;
+                inst = A64_NOP;
+                ++superblock_opts;
             }
             // Superblock 2-instruction peephole: collapse back-to-back YIELD hints into YIELD + NOP
             if (i > 0 && inst == A64_YIELD && page[i - 1] == A64_YIELD) [[unlikely]] {
-                inst = A64_NOP;
-                s_superblock_opt_count.fetch_add(1, std::memory_order_relaxed);
+                page[i] = A64_NOP;
+                ++superblock_opts;
             }
+        }
+        if (rewritten > 0) {
+            s_rewritten_inst_count.fetch_add(rewritten, std::memory_order_relaxed);
+        }
+        if (superblock_opts > 0) {
+            s_superblock_opt_count.fetch_add(superblock_opts, std::memory_order_relaxed);
         }
     }
 
@@ -164,6 +196,12 @@ public:
             if (Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue()) {
                 config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreStandardFPCRValue;
             }
+            if (Settings::values.cpuopt_unsafe_unfuse_fma.GetValue()) {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
+            }
+            if (Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue()) {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_ReducedErrorFP;
+            }
         }
     }
 
@@ -190,6 +228,12 @@ public:
             config.optimizations |= Dynarmic::OptimizationFlag::MiscIROpt;
             if (Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue()) {
                 config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreStandardFPCRValue;
+            }
+            if (Settings::values.cpuopt_unsafe_unfuse_fma.GetValue()) {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
+            }
+            if (Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue()) {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_ReducedErrorFP;
             }
         }
     }

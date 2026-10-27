@@ -196,27 +196,20 @@ void BufferCache<P>::DownloadAllGpuModified() {
 
 template <class P>
 void BufferCache<P>::InvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences) {
+    static constexpr DAddr kMaxTrackableDAddr = 1ULL << 34;
     for (const auto& [addr, size] : sequences) {
-        if (addr == 0 || size == 0) {
+        if (addr == 0 || size == 0 || addr >= kMaxTrackableDAddr) {
             continue;
         }
-        ClearDownload(addr, size);
-        gpu_modified_ranges.Subtract(addr, size);
-        WriteMemory(addr, size);
-    }
-    for (auto [buffer_id, buffer] : slot_buffers) {
-        if (!buffer_id || buffer_id == NULL_BUFFER_ID || buffer->SizeBytes() == 0 || buffer->CpuAddr() == 0) {
-            continue;
-        }
-        if (buffer->SizeBytes() <= 4_MiB && !IsRegionGpuModified(buffer->CpuAddr(), buffer->SizeBytes())) {
-            WriteMemory(buffer->CpuAddr(), buffer->SizeBytes());
-        }
+        const std::size_t safe_size = static_cast<std::size_t>(std::min<u64>(size, kMaxTrackableDAddr - addr));
+        ClearDownload(addr, safe_size);
+        gpu_modified_ranges.Subtract(addr, safe_size);
+        WriteMemory(addr, safe_size);
     }
     for (auto& ch : channel_storage) {
         ch.dirty_uniform_buffers.fill(~u32{0});
         ch.fast_bound_uniform_buffers.fill(0);
         ch.uniform_buffer_binding_sizes.fill({});
-        ch.has_deleted_buffers = true;
     }
     enabled_vertex_buffers_mask = 0;
     v_buffer.fill({});

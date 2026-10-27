@@ -33,3 +33,27 @@ inline QString StormLang(const QString& ru, const QString& en,
     }
     return en;
 }
+
+inline QString StormLang11(const QString& ru, const QString& en,
+                           const QString& de, const QString& fr,
+                           const QString& es, const QString& it,
+                           const QString& pt, const QString& zh,
+                           const QString& ja, const QString& ko,
+                           const QString& ar) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("en", 0) == 0) return en;
+    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
+    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
+    if (lang.rfind("es", 0) == 0 && !es.isEmpty()) return es;
+    if (lang.rfind("it", 0) == 0 && !it.isEmpty()) return it;
+    if (lang.rfind("pt", 0) == 0 && !pt.isEmpty()) return pt;
+    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
+    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
+    if (lang.rfind("ko", 0) == 0 && !ko.isEmpty()) return ko;
+    if (lang.rfind("ar", 0) == 0 && !ar.isEmpty()) return ar;
+    return en;
+}
