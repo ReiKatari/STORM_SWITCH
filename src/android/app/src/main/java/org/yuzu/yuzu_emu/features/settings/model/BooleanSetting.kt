@@ -58,6 +58,7 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     OVERLAY_SNAP_TO_GRID("overlay_snap_to_grid"),
     TOUCHSCREEN("touchscreen"),
     AIRPLANE_MODE("airplane_mode"),
+    SHOW_QUICK_SAVE_LOAD_OVERLAY("show_quick_save_load_overlay"),
 
     SHOW_SOC_OVERLAY("show_soc_overlay"),
     SHOW_BUILD_ID("show_build_id"),

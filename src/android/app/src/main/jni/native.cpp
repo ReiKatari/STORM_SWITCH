@@ -2535,4 +2535,165 @@ JNIEXPORT jboolean JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_areGameFixesEna
     return Core::GameFixDatabase::AreFixesEnabled();
 }
 
+JNIEXPORT jint JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_saveStateSlot(
+        JNIEnv* env,
+        [[maybe_unused]] jobject obj,
+        jint slot,
+        jstring screenshotPath) {
+    if (!EmulationSession::GetInstance().IsRunning()) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorSystemNotRunning);
+    }
+    auto& system = EmulationSession::GetInstance().System();
+    if (!system.IsPoweredOn()) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorSystemNotRunning);
+    }
+    const u64 title_id = system.GetApplicationProcessProgramID();
+    if (title_id == 0) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorSystemNotRunning);
+    }
+    const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+    const auto res = Core::CreateSaveState(system, path);
+    if (res == Core::SaveStateResult::Success) {
+        if (screenshotPath != nullptr) {
+            const char* s_str = env->GetStringUTFChars(screenshotPath, nullptr);
+            if (s_str && strlen(s_str) > 0) {
+                std::error_code ec;
+                auto preview_path = path;
+                preview_path.replace_extension(".png");
+                if (std::filesystem::exists(s_str, ec) && std::filesystem::absolute(s_str) != std::filesystem::absolute(preview_path)) {
+                    std::filesystem::copy_file(s_str, preview_path,
+                                              std::filesystem::copy_options::overwrite_existing, ec);
+                }
+            }
+            if (s_str) {
+                env->ReleaseStringUTFChars(screenshotPath, s_str);
+            }
+        }
+    }
+    return static_cast<jint>(res);
+}
+
+JNIEXPORT jint JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_loadStateSlot(
+        JNIEnv* env,
+        [[maybe_unused]] jobject obj,
+        jint slot) {
+    if (!EmulationSession::GetInstance().IsRunning()) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorSystemNotRunning);
+    }
+    auto& system = EmulationSession::GetInstance().System();
+    if (!system.IsPoweredOn()) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorSystemNotRunning);
+    }
+    const u64 title_id = system.GetApplicationProcessProgramID();
+    if (title_id == 0) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorSystemNotRunning);
+    }
+    const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+    std::error_code ec;
+    if (!std::filesystem::exists(path, ec)) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorFileRead);
+    }
+    const auto res = Core::LoadSaveState(system, path);
+    return static_cast<jint>(res);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_deleteSaveStateSlot(
+        JNIEnv* env,
+        [[maybe_unused]] jobject obj,
+        jint slot) {
+    u64 title_id = 0;
+    if (EmulationSession::GetInstance().IsRunning()) {
+        title_id = EmulationSession::GetInstance().System().GetApplicationProcessProgramID();
+    }
+    if (title_id == 0) {
+        return JNI_FALSE;
+    }
+    const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+    auto preview_path = path;
+    preview_path.replace_extension(".png");
+    std::filesystem::remove(preview_path, ec);
+    return JNI_TRUE;
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_getSaveStateSlotInfo(
+        JNIEnv* env,
+        [[maybe_unused]] jobject obj,
+        jint slot) {
+    jclass string_cls = env->FindClass("java/lang/String");
+    jobjectArray result = env->NewObjectArray(5, string_cls, nullptr);
+
+    u64 title_id = 0;
+    if (EmulationSession::GetInstance().IsRunning()) {
+        title_id = EmulationSession::GetInstance().System().GetApplicationProcessProgramID();
+    }
+    if (title_id == 0) {
+        env->SetObjectArrayElement(result, 0, env->NewStringUTF("0"));
+        env->SetObjectArrayElement(result, 1, env->NewStringUTF(""));
+        env->SetObjectArrayElement(result, 2, env->NewStringUTF(""));
+        env->SetObjectArrayElement(result, 3, env->NewStringUTF(""));
+        env->SetObjectArrayElement(result, 4, env->NewStringUTF(""));
+        return result;
+    }
+
+    const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
+    auto preview_path = path;
+    preview_path.replace_extension(".png");
+
+    std::string path_str = Common::FS::PathToUTF8String(path);
+    std::string preview_str = Common::FS::PathToUTF8String(preview_path);
+
+    std::error_code ec;
+    if (!std::filesystem::exists(path, ec)) {
+        env->SetObjectArrayElement(result, 0, env->NewStringUTF("0"));
+        env->SetObjectArrayElement(result, 1, env->NewStringUTF(""));
+        env->SetObjectArrayElement(result, 2, env->NewStringUTF(""));
+        env->SetObjectArrayElement(result, 3, env->NewStringUTF(path_str.c_str()));
+        env->SetObjectArrayElement(result, 4, env->NewStringUTF(preview_str.c_str()));
+        return result;
+    }
+
+    Core::SaveStateHeader header;
+    std::string time_str = "";
+    if (Core::GetSaveStateInfo(path, header) && header.timestamp > 0) {
+        std::time_t t = static_cast<std::time_t>(header.timestamp);
+        std::tm tm{};
+#ifdef _WIN32
+        localtime_s(&tm, &t);
+#else
+        localtime_r(&t, &tm);
+#endif
+        char buf[64];
+        std::strftime(buf, sizeof(buf), "%d.%m.%Y %H:%M", &tm);
+        time_str = buf;
+    } else {
+        auto ftime = std::filesystem::last_write_time(path, ec);
+        auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+            ftime - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now());
+        std::time_t t = std::chrono::system_clock::to_time_t(sctp);
+        std::tm tm{};
+#ifdef _WIN32
+        localtime_s(&tm, &t);
+#else
+        localtime_r(&t, &tm);
+#endif
+        char buf[64];
+        std::strftime(buf, sizeof(buf), "%d.%m.%Y %H:%M", &tm);
+        time_str = buf;
+    }
+
+    auto sz = std::filesystem::file_size(path, ec);
+    double mb = static_cast<double>(sz) / (1024.0 * 1024.0);
+    char sz_buf[32];
+    std::snprintf(sz_buf, sizeof(sz_buf), "%.1f МБ", mb);
+
+    env->SetObjectArrayElement(result, 0, env->NewStringUTF("1"));
+    env->SetObjectArrayElement(result, 1, env->NewStringUTF(time_str.c_str()));
+    env->SetObjectArrayElement(result, 2, env->NewStringUTF(sz_buf));
+    env->SetObjectArrayElement(result, 3, env->NewStringUTF(path_str.c_str()));
+    env->SetObjectArrayElement(result, 4, env->NewStringUTF(preview_str.c_str()));
+    return result;
+}
+
 } // extern "C"

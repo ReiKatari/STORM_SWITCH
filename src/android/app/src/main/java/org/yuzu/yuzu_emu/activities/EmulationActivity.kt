@@ -87,6 +87,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
     private var thermalJob: Job? = null
     private var thermalListener: Any? = null
     private var isThermalThrottled = false
+    private var isSelectPressed = false
 
     private var touchDownTime: Long = 0
     private val maxTapDuration = 500L
@@ -600,6 +601,24 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             notifyControllerInput()
         }
 
+        if (event.keyCode == KeyEvent.KEYCODE_BUTTON_SELECT) {
+            isSelectPressed = (event.action == KeyEvent.ACTION_DOWN)
+        }
+
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
+            val emulationFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull { it is EmulationFragment } as? EmulationFragment
+
+            if (event.keyCode == KeyEvent.KEYCODE_F5 || (isSelectPressed && event.keyCode == KeyEvent.KEYCODE_BUTTON_R1)) {
+                emulationFragment?.quickSaveSlot(1)
+                return true
+            }
+            if (event.keyCode == KeyEvent.KEYCODE_F7 || (isSelectPressed && event.keyCode == KeyEvent.KEYCODE_BUTTON_L1)) {
+                emulationFragment?.quickLoadSlot(1)
+                return true
+            }
+        }
+
         if (event.action == KeyEvent.ACTION_DOWN && checkAndTriggerHotkey(event)) {
             return true
         }
@@ -655,6 +674,12 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             }
             org.yuzu.yuzu_emu.features.input.model.NativeHotkey.Screenshot -> {
                 emulationFragment?.captureScreenshotToGallery()
+            }
+            org.yuzu.yuzu_emu.features.input.model.NativeHotkey.QuickSave -> {
+                emulationFragment?.quickSaveSlot(1)
+            }
+            org.yuzu.yuzu_emu.features.input.model.NativeHotkey.QuickLoad -> {
+                emulationFragment?.quickLoadSlot(1)
             }
         }
     }

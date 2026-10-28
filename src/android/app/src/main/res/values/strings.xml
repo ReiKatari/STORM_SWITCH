@@ -2824,5 +2824,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="post_shader_72">Sepia Vintage (Warm Antique Photograph Toning)</string>
     <string name="post_shader_73">Night Vision Goggles (Green Phosphor Tactical NVG)</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow (Neon Atmospheric Highlight Bloom)</string>
+
+    <!-- Save State System (SESS v2) -->
+    <string name="menu_quick_save">Quick Save (Slot 1)</string>
+    <string name="menu_quick_load">Quick Load (Slot 1)</string>
+    <string name="menu_save_state_manager">Save State Manager (Slots 1–5)</string>
+    <string name="menu_toggle_quick_save_load_overlay">On-Screen Quick Save/Load Buttons (F5/F7)</string>
+    <string name="save_state_manager_title">SAVE STATE MANAGER (SESS v2)</string>
+    <string name="save_state_slot_fmt">Slot %1$d</string>
+    <string name="save_state_empty">[Empty Slot]</string>
+    <string name="save_state_no_preview">No Preview</string>
+    <string name="save_state_save">💾 Save</string>
+    <string name="save_state_load">📂 Load</string>
+    <string name="save_state_delete">Delete</string>
+    <string name="save_state_saved_toast">💾 Quick Save (Slot %1$d) created successfully!</string>
+    <string name="save_state_loaded_toast">📂 Quick Save (Slot %1$d) loaded successfully!</string>
+    <string name="save_state_deleted_toast">🗑️ Save state for Slot %1$d deleted</string>
+    <string name="save_state_save_failed">❌ Failed to save state to Slot %1$d</string>
+    <string name="save_state_load_failed">⚠️ Slot %1$d is empty or corrupted</string>
+    <string name="save_state_confirm_delete">Are you sure you want to delete save state for Slot %1$d?</string>
 </resources>
 

@@ -5,6 +5,21 @@
 
     <group android:id="@+id/group_gameplay">
         <item
+            android:id="@+id/menu_quick_save"
+            android:icon="@drawable/ic_save"
+            android:title="@string/menu_quick_save" />
+
+        <item
+            android:id="@+id/menu_quick_load"
+            android:icon="@drawable/ic_folder_open"
+            android:title="@string/menu_quick_load" />
+
+        <item
+            android:id="@+id/menu_save_state_manager"
+            android:icon="@drawable/ic_save"
+            android:title="@string/menu_save_state_manager" />
+
+        <item
             android:id="@+id/menu_pause_emulation"
             android:icon="@drawable/ic_pause"
             android:title="@string/emulation_pause" />
@@ -18,7 +33,6 @@
             android:id="@+id/menu_toggle_translate_button"
             android:icon="@drawable/ic_translate_floating"
             android:title="@string/translator_enable_floating_button" />
-
 
         <item
             android:id="@+id/menu_load_amiibo"
@@ -70,6 +84,12 @@
     </group>
 
     <group android:id="@+id/group_controls">
+        <item
+            android:id="@+id/menu_toggle_quick_save_load_overlay"
+            android:checkable="true"
+            android:icon="@drawable/ic_overlay"
+            android:title="@string/menu_toggle_quick_save_load_overlay" />
+
         <item
             android:id="@+id/menu_quick_overlay"
             android:icon="@drawable/ic_controller"

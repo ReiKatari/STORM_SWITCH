@@ -286,6 +286,55 @@
                 android:src="@drawable/ic_build"
                 android:visibility="gone" />
 
+            <!-- Floating Quick Save (F5) / Quick Load (F7) Buttons (Hidden by default, enabled via settings) -->
+            <LinearLayout
+                android:id="@+id/layout_floating_save_load"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="70dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_floating_pill"
+                android:elevation="8dp"
+                android:orientation="horizontal"
+                android:padding="4dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/btn_floating_quick_save"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_pill_button"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:gravity="center"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:text="💾 F5"
+                    android:textColor="#00F0FF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="1dp" />
+
+                <TextView
+                    android:id="@+id/btn_floating_quick_load"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_pill_button"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:gravity="center"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:text="📂 F7"
+                    android:textColor="#38BDF8"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
         </FrameLayout>
 
         <FrameLayout

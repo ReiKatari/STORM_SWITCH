@@ -762,4 +762,9 @@ object NativeLibrary {
     external fun setThermalThrottle(throttle: Boolean)
     external fun setGameFixesEnabled(enabled: Boolean)
     external fun areGameFixesEnabled(): Boolean
+
+    external fun saveStateSlot(slot: Int, screenshotPath: String): Int
+    external fun loadStateSlot(slot: Int): Int
+    external fun deleteSaveStateSlot(slot: Int): Boolean
+    external fun getSaveStateSlotInfo(slot: Int): Array<String>
 }

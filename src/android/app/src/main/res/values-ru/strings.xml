@@ -2269,4 +2269,23 @@
     <string name="post_shader_72">Sepia Vintage (Тёплая старинная фотография — Сепия)</string>
     <string name="post_shader_73">Night Vision Goggles (Прибор ночного видения ПНВ с зелёным люминофором)</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow (Неоновое атмосферное свечение ярких объектов)</string>
+
+    <!-- Save State System (SESS v2) -->
+    <string name="menu_quick_save">Быстрое сохранение (Слот 1)</string>
+    <string name="menu_quick_load">Быстрая загрузка (Слот 1)</string>
+    <string name="menu_save_state_manager">Менеджер быстрых сохранений (Слоты 1–5)</string>
+    <string name="menu_toggle_quick_save_load_overlay">Экранные кнопки Быстрого сохр./загр. (F5/F7)</string>
+    <string name="save_state_manager_title">МЕНЕДЖЕР БЫСТРЫХ СОХРАНЕНИЙ (SESS v2)</string>
+    <string name="save_state_slot_fmt">Слот %1$d</string>
+    <string name="save_state_empty">[Слот пуст]</string>
+    <string name="save_state_no_preview">Нет превью</string>
+    <string name="save_state_save">💾 Сохранить</string>
+    <string name="save_state_load">📂 Загрузить</string>
+    <string name="save_state_delete">Удалить</string>
+    <string name="save_state_saved_toast">💾 Быстрое сохранение (Слот %1$d) успешно создано!</string>
+    <string name="save_state_loaded_toast">📂 Быстрое сохранение (Слот %1$d) успешно загружено!</string>
+    <string name="save_state_deleted_toast">🗑️ Быстрое сохранение для Слота %1$d удалено</string>
+    <string name="save_state_save_failed">❌ Не удалось сохранить состояние в Слот %1$d</string>
+    <string name="save_state_load_failed">⚠️ В Слоте %1$d сохранение отсутствует или повреждено</string>
+    <string name="save_state_confirm_delete">Вы уверены, что хотите удалить быстрое сохранение для Слота %1$d?</string>
 </resources>

@@ -13,5 +13,7 @@ enum class NativeHotkey(
     TranslateScreen("hotkey_translate_screen", R.string.translator_translate_screen),
     PauseEmulation("hotkey_pause_emulation", R.string.emulation_pause),
     ToggleFastForward("hotkey_toggle_fast_forward", R.string.turbo_speed_limit),
-    Screenshot("hotkey_screenshot", R.string.gamepad_screenshot);
+    Screenshot("hotkey_screenshot", R.string.gamepad_screenshot),
+    QuickSave("hotkey_quick_save", R.string.menu_quick_save),
+    QuickLoad("hotkey_quick_load", R.string.menu_quick_load);
 }

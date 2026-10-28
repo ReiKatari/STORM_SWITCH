@@ -812,6 +812,47 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         binding.inGameMenu.menu.findItem(R.id.menu_toggle_quick_settings)?.isChecked = isQuickSettingsEnabled
         binding.inGameMenu.menu.findItem(R.id.menu_quick_settings)?.isVisible = isQuickSettingsEnabled
 
+        val showSaveLoadOverlay = BooleanSetting.SHOW_QUICK_SAVE_LOAD_OVERLAY.getBoolean()
+        binding.inGameMenu.menu.findItem(R.id.menu_toggle_quick_save_load_overlay)?.isChecked = showSaveLoadOverlay
+        binding.layoutFloatingSaveLoad.visibility = if (showSaveLoadOverlay) View.VISIBLE else View.GONE
+        binding.btnFloatingQuickSave.setOnClickListener { quickSaveSlot(1) }
+        binding.btnFloatingQuickLoad.setOnClickListener { quickLoadSlot(1) }
+
+        var pillDX = 0f
+        var pillDY = 0f
+        var pillStartX = 0f
+        var pillStartY = 0f
+        var pillIsDragging = false
+        val pillTouchSlop = android.view.ViewConfiguration.get(requireContext()).scaledTouchSlop
+
+        binding.layoutFloatingSaveLoad.setOnTouchListener { v, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    pillDX = v.x - event.rawX
+                    pillDY = v.y - event.rawY
+                    pillStartX = event.rawX
+                    pillStartY = event.rawY
+                    pillIsDragging = false
+                    false
+                }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    val dist = kotlin.math.hypot((event.rawX - pillStartX).toDouble(), (event.rawY - pillStartY).toDouble()).toFloat()
+                    if (dist > pillTouchSlop) {
+                        pillIsDragging = true
+                        val parent = v.parent as? View
+                        val maxX = (parent?.width ?: 1000) - v.width
+                        val maxY = (parent?.height ?: 1000) - v.height
+                        v.x = (event.rawX + pillDX).coerceIn(0f, maxX.toFloat().coerceAtLeast(0f))
+                        v.y = (event.rawY + pillDY).coerceIn(0f, maxY.toFloat().coerceAtLeast(0f))
+                        true
+                    } else {
+                        false
+                    }
+                }
+                else -> false
+            }
+        }
+
         gameTranslatorManager = org.yuzu.yuzu_emu.translator.GameTranslatorManager(
             requireContext(),
             viewLifecycleOwner.lifecycleScope
@@ -880,6 +921,34 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
         binding.inGameMenu.setNavigationItemSelectedListener {
             when (it.itemId) {
+                R.id.menu_quick_save -> {
+                    binding.drawerLayout.close()
+                    quickSaveSlot(1)
+                    true
+                }
+
+                R.id.menu_quick_load -> {
+                    binding.drawerLayout.close()
+                    quickLoadSlot(1)
+                    true
+                }
+
+                R.id.menu_save_state_manager -> {
+                    binding.drawerLayout.close()
+                    val currentGame = game ?: args.game
+                    SaveStateManagerDialogFragment.newInstance(currentGame)
+                        .show(childFragmentManager, SaveStateManagerDialogFragment.TAG)
+                    true
+                }
+
+                R.id.menu_toggle_quick_save_load_overlay -> {
+                    val newState = !BooleanSetting.SHOW_QUICK_SAVE_LOAD_OVERLAY.getBoolean()
+                    BooleanSetting.SHOW_QUICK_SAVE_LOAD_OVERLAY.setBoolean(newState)
+                    NativeConfig.saveGlobalConfig()
+                    it.isChecked = newState
+                    binding.layoutFloatingSaveLoad.visibility = if (newState) View.VISIBLE else View.GONE
+                    true
+                }
                 R.id.menu_pause_emulation -> {
                     if (emulationState.isPaused) {
                         resumeEmulationFromUi()
@@ -1579,7 +1648,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     private fun isSharpnessScalingFilterSelected(): Boolean {
         val selectedFilter = IntSetting.RENDERER_SCALING_FILTER.getInt()
-        return selectedFilter in resolveSharpnessScalingFilterValues()
+        return selectedFilter == 6 || selectedFilter in resolveSharpnessScalingFilterValues()
     }
 
     private fun resolveSharpnessScalingFilterValues(): Set<Int> {
@@ -2025,6 +2094,86 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     withContext(Dispatchers.Main) {
                         showEdenSnackbar(getString(R.string.emulation_screenshot_err_fmt, e.localizedMessage ?: ""), false)
                     }
+                }
+            }
+        }
+    }
+
+    fun captureSaveStateScreenshot(targetPath: String): Boolean {
+        if (targetPath.isEmpty()) return false
+        return try {
+            val frameData = NativeLibrary.getAppletCaptureBuffer()
+            val width = NativeLibrary.getAppletCaptureWidth()
+            val height = NativeLibrary.getAppletCaptureHeight()
+            if (frameData.isNotEmpty() && width > 0 && height > 0) {
+                val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
+                bitmap.copyPixelsFromBuffer(java.nio.ByteBuffer.wrap(frameData))
+                val targetFile = java.io.File(targetPath)
+                targetFile.parentFile?.mkdirs()
+                java.io.FileOutputStream(targetFile).use { out ->
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, out)
+                }
+                bitmap.recycle()
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("EmulationFragment", "Failed to capture save state screenshot: ${e.message}", e)
+            false
+        }
+    }
+
+    fun quickSaveSlot(slot: Int = 1) {
+        if (!NativeLibrary.isRunning()) return
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val info = NativeLibrary.getSaveStateSlotInfo(slot)
+                val previewPath = info.getOrNull(4) ?: ""
+                if (previewPath.isNotEmpty()) {
+                    withContext(Dispatchers.Main) {
+                        captureSaveStateScreenshot(previewPath)
+                    }
+                }
+                val res = NativeLibrary.saveStateSlot(slot, previewPath)
+                withContext(Dispatchers.Main) {
+                    if (res == 0) {
+                        showEdenSnackbar(getString(R.string.save_state_saved_toast, slot), true)
+                    } else {
+                        showEdenSnackbar(getString(R.string.save_state_save_failed, slot), false)
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showEdenSnackbar(getString(R.string.save_state_save_failed, slot), false)
+                }
+            }
+        }
+    }
+
+    fun quickLoadSlot(slot: Int = 1) {
+        if (!NativeLibrary.isRunning()) return
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val info = NativeLibrary.getSaveStateSlotInfo(slot)
+                val exists = info.getOrNull(0) == "1"
+                if (!exists) {
+                    withContext(Dispatchers.Main) {
+                        showEdenSnackbar(getString(R.string.save_state_empty), false)
+                    }
+                    return@launch
+                }
+                val res = NativeLibrary.loadStateSlot(slot)
+                withContext(Dispatchers.Main) {
+                    if (res == 0) {
+                        showEdenSnackbar(getString(R.string.save_state_loaded_toast, slot), true)
+                    } else {
+                        showEdenSnackbar(getString(R.string.save_state_load_failed, slot), false)
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showEdenSnackbar(getString(R.string.save_state_load_failed, slot), false)
                 }
             }
         }

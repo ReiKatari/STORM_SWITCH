@@ -120,7 +120,7 @@ class SettingsFragmentPresenter(
 
     private fun isSharpnessScalingFilterSelected(): Boolean {
         val selectedFilter = IntSetting.RENDERER_SCALING_FILTER.getInt()
-        return selectedFilter in resolveSharpnessScalingFilterValues()
+        return selectedFilter == 6 || selectedFilter in resolveSharpnessScalingFilterValues()
     }
 
     private fun resolveSharpnessScalingFilterValues(): Set<Int> {

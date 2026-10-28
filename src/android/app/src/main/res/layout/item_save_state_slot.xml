@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="#161F36"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp"
+    app:strokeColor="#2A3A5E"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:gravity="center_vertical">
+
+        <!-- 16:9 Thumbnail Preview -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="128dp"
+            android:layout_height="72dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#4000D2FF"
+            app:strokeWidth="1dp">
+
+            <ImageView
+                android:id="@+id/preview_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="#0B1325"
+                tools:src="@drawable/default_icon" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Slot Details -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/slot_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#00F0FF"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                tools:text="Слот 1" />
+
+            <TextView
+                android:id="@+id/slot_metadata"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                tools:text="28.10.2026 23:45 • 39.5 МБ" />
+
+            <!-- Action Buttons Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_save"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="10dp"
+                    android:text="@string/save_state_save"
+                    android:textColor="#00F0FF"
+                    android:textSize="11sp"
+                    app:backgroundTint="#2000D2FF"
+                    app:cornerRadius="8dp"
+                    app:strokeColor="#6000D2FF"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_load"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="6dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="10dp"
+                    android:text="@string/save_state_load"
+                    android:textColor="#38BDF8"
+                    android:textSize="11sp"
+                    app:backgroundTint="#201E293B"
+                    app:cornerRadius="8dp"
+                    app:strokeColor="#4038BDF8"
+                    app:strokeWidth="1dp" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <ImageButton
+                    android:id="@+id/btn_delete"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/save_state_delete"
+                    android:src="@drawable/ic_delete"
+                    app:tint="#F87171" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -704,7 +704,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Initialize core emulation settings to Zero-Regression Baseline on fresh install, preserving existing user settings on upgrade
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "15.0.1";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "15.0.2";
     if (UISettings::values.config_version.GetValue().empty() && !had_existing_config_file) {
         LOG_INFO(Frontend, "Fresh configuration detected. Initializing core emulation settings to Zero-Regression Baseline (version '{}')...",
                  CURRENT_BUILD_VERSION);
