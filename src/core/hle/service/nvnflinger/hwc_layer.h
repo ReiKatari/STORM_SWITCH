@@ -11,6 +11,8 @@
 
 namespace Service::Nvnflinger {
 
+inline constexpr u32 DefaultLayerStackMask = 1;
+
 // hwc_layer_t::blending values
 enum class LayerBlending : u32 {
     // No blending
@@ -35,6 +37,7 @@ struct HwcLayer {
     android::BufferTransformFlags transform;
     Common::Rectangle<int> crop_rect;
     android::Fence acquire_fence;
+    u32 layer_stack_mask{DefaultLayerStackMask};
 };
 
 } // namespace Service::Nvnflinger

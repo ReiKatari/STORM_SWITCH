@@ -59,8 +59,27 @@ class GamesViewModel : ViewModel() {
         // Ensure keys are loaded so that ROM metadata can be decrypted.
         NativeLibrary.reloadKeys()
 
+        // Frame 0 instant game list population from persistent cache without blocking on DocumentFile.exists()
+        try {
+            val storedGames = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
+                .getStringSet(GameHelper.KEY_GAMES, emptySet())
+            if (!storedGames.isNullOrEmpty()) {
+                val deserializedGames = ArrayList<Game>(storedGames.size)
+                for (it in storedGames) {
+                    try {
+                        deserializedGames.add(Json.decodeFromString(it))
+                    } catch (_: Exception) {}
+                }
+                if (deserializedGames.isNotEmpty()) {
+                    setGames(deserializedGames)
+                }
+            }
+        } catch (e: Exception) {
+            org.yuzu.yuzu_emu.utils.Log.error("[GamesViewModel] Error pre-loading cached games: ${e.message}")
+        }
+
         getGameDirsAndExternalContent()
-        reloadGames(directoriesChanged = false, firstStartup = true)
+        reloadGames(directoriesChanged = false, firstStartup = false)
     }
 
     fun setGames(games: List<Game>) {
@@ -106,40 +125,6 @@ class GamesViewModel : ViewModel() {
             withContext(Dispatchers.IO) {
                 try {
                     getGameDirsAndExternalContent()
-                    if (firstStartup) {
-                        // Retrieve list of cached games
-                        val storedGames =
-                            PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
-                                .getStringSet(GameHelper.KEY_GAMES, emptySet())
-                        if (storedGames!!.isNotEmpty()) {
-                            val deserializedGames = mutableSetOf<Game>()
-                            storedGames.forEach {
-                                val game: Game
-                                try {
-                                    game = Json.decodeFromString(it)
-                                } catch (e: Exception) {
-                                    // We don't care about any errors related to parsing the game cache
-                                    return@forEach
-                                }
-
-                                val uri = Uri.parse(game.path)
-                                val gameExists = if (uri.scheme == "content") {
-                                    DocumentFile.fromSingleUri(
-                                        YuzuApplication.appContext,
-                                        uri
-                                    )?.exists() == true
-                                } else {
-                                    val localPath = if (uri.scheme == "file") uri.path ?: "" else game.path
-                                    File(localPath).exists() || File(Uri.decode(localPath)).exists()
-                                }
-                                if (gameExists) {
-                                    deserializedGames.add(game)
-                                }
-                            }
-                            setGames(deserializedGames.toList())
-                        }
-                    }
-
                     setGames(GameHelper.getGames())
                     _shouldScrollAfterReload.value = true
                     setShouldSwapData(true)

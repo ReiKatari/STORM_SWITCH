@@ -98,7 +98,8 @@ IApplicationFunctions::IApplicationFunctions(Core::System& system_, std::shared_
         {250, D<&IApplicationFunctions::Unknown220>, "Unknown250"}, // [23.0.0+]
         {300, nullptr, "CreateMovieWriter"}, // [19.0.0+]
         {310, D<&IApplicationFunctions::Unknown310>, "Unknown310"}, // [20.0.0+]
-        {320, D<&IApplicationFunctions::Unknown310>, "Unknown320"}, // [20.0.0+]
+        {320, D<&IApplicationFunctions::GetScreenShotAndContinuousRecordingInitiallyEnabled>,
+         "GetScreenShotAndContinuousRecordingInitiallyEnabled"},
         {330, D<&IApplicationFunctions::Unknown330>, "Unknown330"}, // [20.0.0+]
         {340, D<&IApplicationFunctions::Unknown330>, "Unknown340"}, // [22.0.0+]
         {350, D<&IApplicationFunctions::Unknown310>, "Unknown350"}, // [23.0.0+]
@@ -582,6 +583,17 @@ Result IApplicationFunctions::Unknown220() {
 
 Result IApplicationFunctions::Unknown310() {
     LOG_DEBUG(Service_AM, "(STUBBED) called");
+    R_SUCCEED();
+}
+
+Result IApplicationFunctions::GetScreenShotAndContinuousRecordingInitiallyEnabled(
+    Out<bool> out_screenshot_enabled, Out<bool> out_recording_enabled) {
+    std::scoped_lock lk{m_applet->lock};
+    *out_screenshot_enabled = m_applet->screenshot_permission != ScreenshotPermission::Disable;
+    *out_recording_enabled = m_applet->game_play_recording_supported &&
+                             m_applet->game_play_recording_state == GamePlayRecordingState::Enabled;
+    LOG_DEBUG(Service_AM, "called, screenshot={}, recording={}", *out_screenshot_enabled,
+              *out_recording_enabled);
     R_SUCCEED();
 }
 

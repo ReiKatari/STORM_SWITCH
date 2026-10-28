@@ -604,4 +604,33 @@ void GPU::SyncAndInvalidateForLoadState(std::span<const std::pair<DAddr, std::si
     impl->SyncAndInvalidateForLoadState(sequences);
 }
 
+GPU::EngineSnapshot GPU::SnapshotEngines() {
+    EngineSnapshot snapshot;
+    if (impl->current_channel && impl->current_channel->payload) {
+        const auto& m3d = impl->current_channel->payload->maxwell_3d;
+        snapshot.maxwell3d_state.resize(sizeof(m3d.regs));
+        std::memcpy(snapshot.maxwell3d_state.data(), &m3d.regs, sizeof(m3d.regs));
+
+        const auto& kc = impl->current_channel->payload->kepler_compute;
+        snapshot.kepler_compute_state.resize(sizeof(kc.regs));
+        std::memcpy(snapshot.kepler_compute_state.data(), &kc.regs, sizeof(kc.regs));
+    }
+    return snapshot;
+}
+
+void GPU::RestoreEngines(const EngineSnapshot& snapshot) {
+    if (impl->current_channel && impl->current_channel->payload) {
+        if (!snapshot.maxwell3d_state.empty()) {
+            auto& m3d = impl->current_channel->payload->maxwell_3d;
+            const size_t sz = std::min(sizeof(m3d.regs), snapshot.maxwell3d_state.size());
+            std::memcpy(&m3d.regs, snapshot.maxwell3d_state.data(), sz);
+        }
+        if (!snapshot.kepler_compute_state.empty()) {
+            auto& kc = impl->current_channel->payload->kepler_compute;
+            const size_t sz = std::min(sizeof(kc.regs), snapshot.kepler_compute_state.size());
+            std::memcpy(&kc.regs, snapshot.kepler_compute_state.data(), sz);
+        }
+    }
+}
+
 } // namespace Tegra

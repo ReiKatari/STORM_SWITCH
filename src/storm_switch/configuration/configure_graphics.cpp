@@ -141,18 +141,27 @@ ConfigureGraphics::ConfigureGraphics(
         UpdateBackgroundColorButton(new_bg_color);
     });
 
-    const auto& update_screenshot_info = [this, &builder]() {
-        const auto& combobox_enumerations = builder.ComboboxTranslations().at(
+    const auto update_screenshot_info = [this]() {
+        if (!aspect_ratio_combobox || !resolution_combobox || !update_aspect_ratio) {
+            return;
+        }
+        const auto it_aspect = combobox_translations.find(
             Settings::EnumMetadata<Settings::AspectRatio>::Index());
-        const auto ratio_index = aspect_ratio_combobox->currentIndex();
-        const auto ratio =
-            static_cast<Settings::AspectRatio>(combobox_enumerations[ratio_index].first);
-
-        const auto& combobox_enumerations_resolution = builder.ComboboxTranslations().at(
+        const auto it_res = combobox_translations.find(
             Settings::EnumMetadata<Settings::ResolutionSetup>::Index());
+        if (it_aspect == combobox_translations.end() || it_res == combobox_translations.end()) {
+            return;
+        }
+        const auto ratio_index = aspect_ratio_combobox->currentIndex();
         const auto res_index = resolution_combobox->currentIndex();
-        const auto setup = static_cast<Settings::ResolutionSetup>(
-            combobox_enumerations_resolution[res_index].first);
+        if (ratio_index < 0 || static_cast<size_t>(ratio_index) >= it_aspect->second.size() ||
+            res_index < 0 || static_cast<size_t>(res_index) >= it_res->second.size()) {
+            return;
+        }
+        const auto ratio =
+            static_cast<Settings::AspectRatio>(it_aspect->second[ratio_index].first);
+        const auto setup =
+            static_cast<Settings::ResolutionSetup>(it_res->second[res_index].first);
 
         update_aspect_ratio(ratio, setup);
     };
@@ -260,7 +269,30 @@ void ConfigureGraphics::UpdateDeviceSelection(int device) {
 
 ConfigureGraphics::~ConfigureGraphics() = default;
 
+void ConfigureGraphics::UpdateFsrSliderState() {
+    if (!scaling_filter_combobox || !fsr_sharpening_widget) {
+        return;
+    }
+    bool is_fsr = false;
+    const int current = scaling_filter_combobox->currentIndex();
+    if (current >= 0) {
+        const QVariant item_data = scaling_filter_combobox->itemData(current);
+        if (item_data.isValid()) {
+            const auto filter = static_cast<Settings::ScalingFilter>(item_data.toUInt());
+            is_fsr = (filter == Settings::ScalingFilter::Fsr);
+        } else {
+            const auto it = combobox_translations.find(Settings::EnumMetadata<Settings::ScalingFilter>::Index());
+            if (it != combobox_translations.end() && static_cast<size_t>(current) < it->second.size()) {
+                const auto filter = static_cast<Settings::ScalingFilter>(it->second[current].first);
+                is_fsr = (filter == Settings::ScalingFilter::Fsr);
+            }
+        }
+    }
+    fsr_sharpening_widget->setEnabled(is_fsr);
+}
+
 void ConfigureGraphics::SetConfiguration() {
+    UpdateFsrSliderState();
     if (api_combobox) {
         const auto backend = Settings::values.renderer_backend.GetValue();
         const int index = FindIndex(Settings::EnumMetadata<Settings::RendererBackend>::Index(), static_cast<int>(backend));
@@ -562,6 +594,12 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
             // Keep track of the resolution combobox to update other UI tabs that need it
             resolution_combobox = widget->combobox;
             hold_graphics.emplace(setting->Id(), widget);
+        } else if (setting->Id() == Settings::values.scaling_filter.Id()) {
+            scaling_filter_combobox = widget->combobox;
+            hold_graphics.emplace(setting->Id(), widget);
+        } else if (setting->Id() == Settings::values.fsr_sharpening_slider.Id()) {
+            fsr_sharpening_widget = widget;
+            hold_graphics.emplace(setting->Id(), widget);
         } else if (is_frame_gen_setting(setting->Id())) {
             hold_frame_gen.emplace(setting->Id(), widget);
         } else {
@@ -575,6 +613,12 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
             graphics_layout.addWidget(widget);
         }
     }
+
+    if (scaling_filter_combobox) {
+        connect(scaling_filter_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+                [this](int) { UpdateFsrSliderState(); });
+    }
+    UpdateFsrSliderState();
 
     // Add RetroArch Shaders Selector Row with grouped categories & fast search at top of dropdown
     {
@@ -827,6 +871,8 @@ void ConfigureGraphics::ApplyConfiguration() {
             static_cast<size_t>(api_combobox->currentIndex()) < it->second.size()) {
             backend = Settings::RendererBackend(it->second[api_combobox->currentIndex()].first);
         }
+        Settings::values.renderer_backend.SetGlobal(Settings::IsConfiguringGlobal());
+        Settings::values.renderer_backend.SetValue(backend);
         switch (backend) {
         case Settings::RendererBackend::Vulkan:
             Settings::values.vulkan_device.SetGlobal(Settings::IsConfiguringGlobal());
@@ -994,6 +1040,7 @@ void ConfigureGraphics::RetranslateUI() {
     }
     PopulateVSyncModeSelection(false);
     UpdateResolutionItems();
+    UpdateFsrSliderState();
 }
 
 void ConfigureGraphics::UpdateResolutionItems() {

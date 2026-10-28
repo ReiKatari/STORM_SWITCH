@@ -1,5 +1,5 @@
 [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::BelowNormal
-$version = "14.4.0"
+$version = "15.0.1"
 $baseDir = Split-Path -Parent $PSScriptRoot
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
@@ -55,7 +55,7 @@ $stagingRoot = Join-Path $env:TEMP "STORM_SWITCH_Release_Staging"
 if (Test-Path $stagingRoot) { Remove-Item $stagingRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $stagingRoot -Force | Out-Null
 
-$commonFiles = @("STORM_SWITCH.exe", "STORM_SWITCH-cli.exe", "STORM_SWITCH-room.exe", "7z.exe", "7z.dll")
+$commonFiles = @("STORM_SWITCH.exe", "STORM_SWITCH-cli.exe", "STORM_SWITCH-room.exe")
 $crtDlls = @(
     "concrt140.dll",
     "msvcp140.dll",
@@ -101,7 +101,7 @@ $zipWin10 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows10.zip"
 if (Test-Path $zipWin10) { Remove-Item $zipWin10 -Force }
 Write-Host "Creating $zipWin10..."
 Push-Location $stageWin10
-& $sevenZip a -tzip -mx=7 -mmt=4 "$zipWin10" *
+if (Test-Path $sevenZip) { & $sevenZip a -tzip -mx=7 -mmt=4 "$zipWin10" * } else { & tar.exe -a -c -f "$zipWin10" * }
 Pop-Location
 
 # Zip Windows 11
@@ -109,7 +109,7 @@ $zipWin11 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows11.zip"
 if (Test-Path $zipWin11) { Remove-Item $zipWin11 -Force }
 Write-Host "Creating $zipWin11..."
 Push-Location $stageWin11
-& $sevenZip a -tzip -mx=7 -mmt=4 "$zipWin11" *
+if (Test-Path $sevenZip) { & $sevenZip a -tzip -mx=7 -mmt=4 "$zipWin11" * } else { & tar.exe -a -c -f "$zipWin11" * }
 Pop-Location
 
 Remove-Item $stagingRoot -Recurse -Force -ErrorAction SilentlyContinue

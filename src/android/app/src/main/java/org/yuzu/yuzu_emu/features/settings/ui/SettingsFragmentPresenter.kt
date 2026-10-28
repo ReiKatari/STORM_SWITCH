@@ -119,8 +119,7 @@ class SettingsFragmentPresenter(
     }
 
     private fun isSharpnessScalingFilterSelected(): Boolean {
-        val needsGlobal = getNeedsGlobalForKey(IntSetting.RENDERER_SCALING_FILTER.key)
-        val selectedFilter = IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal)
+        val selectedFilter = IntSetting.RENDERER_SCALING_FILTER.getInt()
         return selectedFilter in resolveSharpnessScalingFilterValues()
     }
 
@@ -129,8 +128,6 @@ class SettingsFragmentPresenter(
         val values = context.resources.getIntArray(R.array.rendererScalingFilterValues)
         val sharpnessFilterNames = setOf(
             context.getString(R.string.scaling_filter_fsr),
-            context.getString(R.string.scaling_filter_sgsr),
-            context.getString(R.string.scaling_filter_sgsr_edge),
         )
         return names.asSequence()
             .mapIndexedNotNull { index, name ->
@@ -396,6 +393,7 @@ class SettingsFragmentPresenter(
             add(BooleanSetting.FIX_BLOOM_EFFECTS.key)
             add(BooleanSetting.EMULATE_BGR565.key)
             add(BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.key)
+            add(BooleanSetting.ENABLE_FAST_GPU_TIME.key)
             add(IntSetting.ANDROID_PIPELINE_WORKERS.key)
             add(BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.key)
             add(BooleanSetting.RENDERER_ASYNC_PRESENTATION.key)

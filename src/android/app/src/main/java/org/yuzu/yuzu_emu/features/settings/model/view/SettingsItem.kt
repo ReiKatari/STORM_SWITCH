@@ -207,7 +207,7 @@ abstract class SettingsItem(
                     titleId = R.string.frame_limit_slider,
                     descriptionId = R.string.frame_limit_slider_description,
                     min = 1,
-                    max = 400,
+                    max = 1000,
                     units = "%"
                 )
             )
@@ -217,7 +217,7 @@ abstract class SettingsItem(
                     titleId = R.string.turbo_speed_limit,
                     descriptionId = R.string.turbo_speed_limit_description,
                     min = 1,
-                    max = 400,
+                    max = 1000,
                     units = "%"
                 )
             )
@@ -812,6 +812,13 @@ abstract class SettingsItem(
                     BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS,
                     titleId = R.string.renderer_asynchronous_shaders,
                     descriptionId = R.string.renderer_asynchronous_shaders_description
+                )
+            )
+            put(
+                SwitchSetting(
+                    BooleanSetting.ENABLE_FAST_GPU_TIME,
+                    titleId = R.string.enable_fast_gpu_time,
+                    descriptionId = R.string.enable_fast_gpu_time_description
                 )
             )
             put(

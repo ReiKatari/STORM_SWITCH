@@ -1162,8 +1162,12 @@
     <string name="renderer_none">None</string>
 
     <!-- Renderer Accuracy -->
-    <string name="renderer_accuracy_low">Fast</string>
-    <string name="renderer_accuracy_high">Accurate</string>
+    <string name="renderer_accuracy_low">Low</string>
+    <string name="renderer_accuracy_normal">Normal</string>
+    <string name="renderer_accuracy_high">High</string>
+    <string name="renderer_accuracy_extreme">Extreme</string>
+    <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
+    <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
 
     <!-- DMA Accuracy -->
     <string name="dma_accuracy_default">Default</string>
@@ -1248,6 +1252,8 @@
     <string name="scaling_filter_mmpx" translatable="false">MMPX</string>
     <string name="scaling_filter_sgsr" translatable="false">Snapdragon GSR</string>
     <string name="scaling_filter_sgsr_edge" translatable="false">Snapdragon GSR EdgeDir</string>
+    <string name="scaling_filter_cas" translatable="false">AMD FidelityFX CAS</string>
+    <string name="scaling_filter_omniscale" translatable="false">OmniScale HQ</string>
 
     <!-- Anti-Aliasing -->
     <string name="anti_aliasing_none">None</string>

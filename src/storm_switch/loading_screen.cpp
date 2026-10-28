@@ -70,7 +70,6 @@ struct LoadingDashboardWidgets {
     QLabel* timer_badge = nullptr;
     QLabel* tip_title_badge = nullptr;
     QLabel* tip_text_label = nullptr;
-    QPushButton* prev_tip_btn = nullptr;
     QPushButton* next_tip_btn = nullptr;
     QTimer* live_tick_timer = nullptr;
 
@@ -594,12 +593,6 @@ LoadingScreen::LoadingScreen(QWidget* parent)
     dash.tip_text_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 11.5px; background: transparent; border: none;"));
     tip_layout->addWidget(dash.tip_text_label, 1);
 
-    dash.prev_tip_btn = new QPushButton(QStringLiteral("◀"), tip_frame);
-    dash.prev_tip_btn->setCursor(Qt::PointingHandCursor);
-    dash.prev_tip_btn->setFixedSize(28, 26);
-    dash.prev_tip_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: rgba(30, 41, 59, 0.85); color: #FFFFFF; border: 1px solid rgba(148, 163, 184, 0.30); border-radius: 5px; font-size: 10px; font-weight: 700; }"
-        "QPushButton:hover { background: rgba(0, 210, 255, 0.25); color: #FFFFFF; border: 1px solid #38BDF8; }"));
 
     dash.next_tip_btn = new QPushButton(tip_frame);
     dash.next_tip_btn->setCursor(Qt::PointingHandCursor);
@@ -608,12 +601,6 @@ LoadingScreen::LoadingScreen(QWidget* parent)
         "QPushButton { background: rgba(0, 210, 255, 0.15); color: #67E8F9; border: 1px solid rgba(0, 210, 255, 0.38); border-radius: 5px; padding: 3px 10px; font-size: 11px; font-weight: 700; }"
         "QPushButton:hover { background: rgba(0, 210, 255, 0.30); color: #FFFFFF; border: 1px solid #00E5FF; }"));
 
-    connect(dash.prev_tip_btn, &QPushButton::clicked, this, [this]() {
-        auto it = s_dash_map.find(this);
-        if (it == s_dash_map.end()) return;
-        it->second.current_tip_index = (it->second.current_tip_index + GetTipCount() - 1) % GetTipCount();
-        RefreshDashboardTexts(it->second);
-    });
     connect(dash.next_tip_btn, &QPushButton::clicked, this, [this]() {
         auto it = s_dash_map.find(this);
         if (it == s_dash_map.end()) return;
@@ -621,7 +608,6 @@ LoadingScreen::LoadingScreen(QWidget* parent)
         RefreshDashboardTexts(it->second);
     });
 
-    tip_layout->addWidget(dash.prev_tip_btn, 0, Qt::AlignVCenter);
     tip_layout->addWidget(dash.next_tip_btn, 0, Qt::AlignVCenter);
 
     // Insert widgets into card_layout in clean vertical order:

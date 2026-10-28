@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1120</width>
-    <height>700</height>
+    <width>1280</width>
+    <height>840</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>680</width>
-    <height>480</height>
+    <width>1240</width>
+    <height>620</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -25,10 +25,22 @@
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>290</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>320</width>
+         <height>16777215</height>
+        </size>
        </property>
        <property name="title">
         <string/>
@@ -59,14 +71,14 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>160</width>
-             <height>160</height>
+             <width>144</width>
+             <height>144</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>180</width>
-             <height>180</height>
+             <width>144</width>
+             <height>144</height>
             </size>
            </property>
            <property name="frameShape">
@@ -114,16 +126,22 @@
              <property name="acceptRichText">
               <bool>false</bool>
              </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>60</height>
+               <height>46</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>68</height>
+               <height>52</height>
               </size>
              </property>
             </widget>
@@ -315,26 +333,39 @@
               <bool>false</bool>
              </property>
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
-               <verstretch>1</verstretch>
+               <verstretch>0</verstretch>
               </sizepolicy>
              </property>
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>60</height>
+               <height>58</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>80</height>
+               <height>66</height>
               </size>
              </property>
             </widget>
            </item>
           </layout>
+         </item>
+         <item>
+          <spacer name="leftPanelBottomSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
       </widget>
@@ -353,7 +384,7 @@
           <number>-1</number>
          </property>
          <property name="usesScrollButtons">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="documentMode">
           <bool>false</bool>

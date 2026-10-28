@@ -1057,8 +1057,12 @@
     <string name="renderer_none">Никакой</string>
 
     <!-- Renderer Accuracy -->
-    <string name="renderer_accuracy_low">Быстрый</string>
-    <string name="renderer_accuracy_high">Точный</string>
+    <string name="renderer_accuracy_low">Низкий</string>
+    <string name="renderer_accuracy_normal">Нормальный</string>
+    <string name="renderer_accuracy_high">Высокий</string>
+    <string name="renderer_accuracy_extreme">Экстремальный</string>
+    <string name="enable_fast_gpu_time">Быстрое время ГПУ</string>
+    <string name="enable_fast_gpu_time_description">Ускоряет запросы таймера ГПУ для повышения производительности в играх с интенсивной синхронизацией ЦПУ-ГПУ, но может вызывать артефакты в некоторых проектах.</string>
 
     <!-- DMA Accuracy -->
     <string name="dma_accuracy_default">По умолчанию</string>
@@ -1559,16 +1563,18 @@
     <string name="scaling_filter_bicubic">Бикубическая</string>
     <string name="scaling_filter_spline1">Сплайн</string>
     <string name="scaling_filter_gaussian">Гауссово размытие</string>
-    <string name="scaling_filter_lanczos">Ланцош</string>
+    <string name="scaling_filter_lanczos">Lanczos 3 (Анти-звон)</string>
     <string name="scaling_filter_scale_force">ScaleForce</string>
     <string name="scaling_filter_fsr">AMD FidelityFX FSR</string>
-    <string name="scaling_filter_area">Область</string>
+    <string name="scaling_filter_area">Суперсэмплинг Area</string>
     <string name="scaling_filter_zero_tangent">Нулевая касательная</string>
     <string name="scaling_filter_bspline">B-сплайн</string>
     <string name="scaling_filter_mitchell">Митчелл</string>
     <string name="scaling_filter_mmpx">MMPX</string>
     <string name="scaling_filter_sgsr">Qualcomm SGSR</string>
     <string name="scaling_filter_sgsr_edge">Qualcomm SGSR Edge</string>
+    <string name="scaling_filter_cas">AMD FidelityFX CAS (Чёткость)</string>
+    <string name="scaling_filter_omniscale">OmniScale HQ (Пиксель-арт)</string>
     <string name="anti_aliasing_fxaa">FXAA</string>
     <string name="anti_aliasing_smaa">SMAA</string>
     <string name="ratio_default">По умолчанию (16:9)</string>

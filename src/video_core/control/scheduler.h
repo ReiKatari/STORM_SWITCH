@@ -24,11 +24,18 @@ class Scheduler {
 public:
     void Push(GPU& gpu, s32 channel, CommandList&& entries);
 
+    void ResumePending(GPU& gpu);
+    [[nodiscard]] bool HasPendingNativeChannels() const {
+        std::scoped_lock lock{scheduling_guard};
+        return !pending_native_channels.empty();
+    }
+
     void DeclareChannel(std::shared_ptr<ChannelState> new_channel);
 
 private:
     ankerl::unordered_dense::map<s32, std::shared_ptr<ChannelState>> channels;
-    std::mutex scheduling_guard;
+    mutable std::mutex scheduling_guard;
+    std::vector<std::shared_ptr<ChannelState>> pending_native_channels;
 };
 
 } // namespace Control

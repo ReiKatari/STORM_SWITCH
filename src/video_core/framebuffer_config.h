@@ -7,6 +7,7 @@
 #include "common/math_util.h"
 #include "core/hle/service/nvnflinger/buffer_transform_flags.h"
 #include "core/hle/service/nvnflinger/pixel_format.h"
+#include "core/hle/service/nvnflinger/hwc_layer.h"
 #include "core/hle/service/nvnflinger/ui/fence.h"
 
 namespace Tegra {
@@ -30,6 +31,8 @@ struct FramebufferConfig {
     Service::android::BufferTransformFlags transform_flags{};
     Common::Rectangle<int> crop_rect{};
     BlendMode blending{};
+    bool native_tiling{};
+    u32 layer_stack_mask{Service::Nvnflinger::DefaultLayerStackMask};
 };
 
 Common::Rectangle<f32> NormalizeCrop(const FramebufferConfig& framebuffer, u32 texture_width,

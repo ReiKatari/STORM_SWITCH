@@ -515,6 +515,11 @@ void ArmNce::UnlockThread(Kernel::KThread* thread) {
 }
 
 HaltReason ArmNce::RunThread(Kernel::KThread* thread) {
+    auto* thread_params = &thread->GetNativeExecutionParameters();
+    // Lemon-Project v1.3.0 fix: ensure tpidr_el0 & tpidrro_el0 are synced before early return
+    thread_params->tpidr_el0 = m_guest_ctx.tpidr_el0;
+    thread_params->tpidrro_el0 = m_guest_ctx.tpidrro_el0;
+
     // Check if we're already interrupted.
     // If we are, we can just return immediately.
     HaltReason hr = static_cast<HaltReason>(m_guest_ctx.esr_el1.exchange(0));
@@ -523,7 +528,6 @@ HaltReason ArmNce::RunThread(Kernel::KThread* thread) {
     }
 
     // Pre-fetch thread context data to improve cache locality
-    auto* thread_params = &thread->GetNativeExecutionParameters();
     auto* process = thread->GetOwnerProcess();
 
     // Move non-critical operations outside the locked section

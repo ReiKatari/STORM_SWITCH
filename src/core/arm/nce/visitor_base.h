@@ -513,7 +513,7 @@ public:
     virtual bool CASH(bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) {
         return false;
     }
-    virtual bool CAS(bool sz, bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) {
+    virtual bool CAS(Imm<2> sz, bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) {
         return false;
     }
 
@@ -686,16 +686,16 @@ public:
     virtual bool LDAPRH(Reg Rn, Reg Rt) {
         return false;
     }
-    virtual bool LDADD(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    virtual bool LDADD(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
         return false;
     }
-    virtual bool LDCLR(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    virtual bool LDCLR(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
         return false;
     }
     virtual bool LDEOR(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
         return false;
     }
-    virtual bool LDSET(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    virtual bool LDSET(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
         return false;
     }
     virtual bool LDSMAX(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
@@ -710,10 +710,10 @@ public:
     virtual bool LDUMIN(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
         return false;
     }
-    virtual bool SWP(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    virtual bool SWP(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
         return false;
     }
-    virtual bool LDAPR(Reg Rn, Reg Rt) {
+    virtual bool LDAPR(Imm<2> size, Reg Rn, Reg Rt) {
         return false;
     }
 

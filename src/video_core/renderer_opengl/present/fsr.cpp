@@ -66,8 +66,9 @@ GLuint FSR::Draw(ProgramManager& program_manager, GLuint texture, u32 input_imag
                      easu_con.data() + 12, viewport_width, viewport_height, input_width,
                      input_height, output_width, output_height, viewport_x, viewport_y);
 
-    const float sharpening =
+    const float raw_sharpening =
         static_cast<float>(Settings::values.fsr_sharpening_slider.GetValue()) / 100.0f;
+    const float sharpening = std::clamp(raw_sharpening, 0.0f, 1.0f);
 
     FsrRcasCon(rcas_con.data(), sharpening);
 

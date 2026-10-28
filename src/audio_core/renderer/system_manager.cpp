@@ -32,6 +32,15 @@ void SystemManager::InitializeUnsafe() {
             Common::SetCurrentThreadToEfficiencyCores();
             while (active && !stop_token.stop_requested()) {
                 {
+                    std::unique_lock lk{hold_mutex};
+                    hold_cv.wait(lk, [this, &stop_token] {
+                        return !held || !active || stop_token.stop_requested();
+                    });
+                }
+                if (!active || stop_token.stop_requested()) {
+                    break;
+                }
+                {
                     std::scoped_lock l{mutex1};
                     for (auto system : systems)
                         system->SendCommandToDsp();
@@ -46,10 +55,28 @@ void SystemManager::InitializeUnsafe() {
 void SystemManager::Stop() {
     if (active) {
         active = false;
+        {
+            std::scoped_lock lk{hold_mutex};
+            held = false;
+        }
+        hold_cv.notify_all();
         thread.request_stop();
         thread.join();
         audio_renderer.Stop();
     }
+}
+
+void SystemManager::Hold() {
+    std::scoped_lock lk{hold_mutex};
+    held = true;
+}
+
+void SystemManager::Release() {
+    {
+        std::scoped_lock lk{hold_mutex};
+        held = false;
+    }
+    hold_cv.notify_all();
 }
 
 void SystemManager::Resynchronize() {

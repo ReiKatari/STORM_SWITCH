@@ -17,6 +17,8 @@
 #include "video_core/host_shaders/present_mitchell_frag.h"
 #include "video_core/host_shaders/present_bspline_frag.h"
 #include "video_core/host_shaders/present_zero_tangent_frag.h"
+#include "video_core/host_shaders/present_cas_frag.h"
+#include "video_core/host_shaders/present_omniscale_frag.h"
 #include "video_core/host_shaders/present_mmpx_frag.h"
 #include "video_core/renderer_opengl/present/filters.h"
 #include "video_core/renderer_opengl/present/util.h"
@@ -82,6 +84,16 @@ std::unique_ptr<WindowAdaptPass> MakeArea(const Device& device) {
 std::unique_ptr<WindowAdaptPass> MakeMmpx(const Device& device) {
     return std::make_unique<WindowAdaptPass>(device, CreateNearestNeighborSampler(),
                                              HostShaders::PRESENT_MMPX_FRAG);
+}
+
+std::unique_ptr<WindowAdaptPass> MakeCas(const Device& device) {
+    return std::make_unique<WindowAdaptPass>(device, CreateBilinearSampler(),
+                                             HostShaders::PRESENT_CAS_FRAG);
+}
+
+std::unique_ptr<WindowAdaptPass> MakeOmniScale(const Device& device) {
+    return std::make_unique<WindowAdaptPass>(device, CreateBilinearSampler(),
+                                             HostShaders::PRESENT_OMNISCALE_FRAG);
 }
 
 } // namespace OpenGL

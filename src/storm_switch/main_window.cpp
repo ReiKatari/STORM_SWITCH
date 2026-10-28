@@ -704,7 +704,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Initialize core emulation settings to Zero-Regression Baseline on fresh install, preserving existing user settings on upgrade
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "14.3.0";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "15.0.1";
     if (UISettings::values.config_version.GetValue().empty() && !had_existing_config_file) {
         LOG_INFO(Frontend, "Fresh configuration detected. Initializing core emulation settings to Zero-Regression Baseline (version '{}')...",
                  CURRENT_BUILD_VERSION);
@@ -1695,6 +1695,8 @@ void MainWindow::InitializeWidgets() {
             {Settings::ScalingFilter::Mmpx, QStringLiteral("MMPX")},
             {Settings::ScalingFilter::Sgsr, QStringLiteral("SGSR")},
             {Settings::ScalingFilter::SgsrEdge, QStringLiteral("SGSR EdgeDir")},
+            {Settings::ScalingFilter::Cas, StormLang(QStringLiteral("AMD FidelityFX CAS (Контрастно-адаптивный)"), QStringLiteral("AMD FidelityFX CAS (Contrast Adaptive)"))},
+            {Settings::ScalingFilter::OmniScale, StormLang(QStringLiteral("OmniScale HQ (Идеальный пиксель-арт и 2D/3D)"), QStringLiteral("OmniScale HQ (Pixel-Art & 2D/3D)"))},
         };
         for (const auto& opt : filter_options) {
             auto* act = context_menu.addAction(opt.second, [this, opt] {
@@ -7506,10 +7508,11 @@ void MainWindow::OnConfigure() {
     Settings::SetConfiguringGlobal(true);
 
     auto reapply_running_session_overrides = [this, had_active_session_backup, had_active_autofix]() {
-        Settings::SetConfiguringGlobal(false);
         if (!had_active_session_backup && !emulation_running) {
+            Settings::SetConfiguringGlobal(true);
             return;
         }
+        Settings::SetConfiguringGlobal(false);
         m_session_backup.is_active = false;
         m_session_backup.Capture();
         std::string per_game_cfg;
@@ -7796,9 +7799,16 @@ void MainWindow::OnToggleGpuAccuracy() {
     auto new_acc = Settings::values.gpu_accuracy.GetValue();
     switch (new_acc) {
     case Settings::GpuAccuracy::Low:
+        new_acc = Settings::GpuAccuracy::Normal;
+        break;
+    case Settings::GpuAccuracy::Normal:
         new_acc = Settings::GpuAccuracy::High;
         break;
     case Settings::GpuAccuracy::High:
+        new_acc = Settings::GpuAccuracy::Extreme;
+        break;
+    case Settings::GpuAccuracy::Extreme:
+    default:
         new_acc = Settings::GpuAccuracy::Low;
         break;
     }
@@ -11405,6 +11415,12 @@ void MainWindow::UpdateFilterText() {
     case Settings::ScalingFilter::SgsrEdge:
         filter_text = QStringLiteral("SGSR EdgeDir");
         break;
+    case Settings::ScalingFilter::Cas:
+        filter_text = QStringLiteral("CAS");
+        break;
+    case Settings::ScalingFilter::OmniScale:
+        filter_text = QStringLiteral("OmniScale");
+        break;
     default:
         filter_text = QStringLiteral("FSR");
         break;
@@ -12997,6 +13013,8 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             {Settings::ScalingFilter::Spline1, QStringLiteral("Spline-1")},
             {Settings::ScalingFilter::Sgsr, QStringLiteral("SGSR")},
             {Settings::ScalingFilter::SgsrEdge, QStringLiteral("SGSR EdgeDir")},
+            {Settings::ScalingFilter::Cas, StormLang(QStringLiteral("AMD FidelityFX CAS (Контрастно-адаптивный)"), QStringLiteral("AMD FidelityFX CAS (Contrast Adaptive)"))},
+            {Settings::ScalingFilter::OmniScale, StormLang(QStringLiteral("OmniScale HQ (Идеальный пиксель-арт и 2D/3D)"), QStringLiteral("OmniScale HQ (Pixel-Art & 2D/3D)"))},
         };
         for (const auto& pair : filter_options) {
             auto* act = filter_menu->addAction(pair.second, [this, pair] {

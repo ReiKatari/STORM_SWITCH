@@ -300,8 +300,21 @@ void UpdateGPUAccuracy() {
     values.current_gpu_accuracy = values.gpu_accuracy.GetValue();
 }
 
+bool IsGPULevelLow() {
+    return values.current_gpu_accuracy == GpuAccuracy::Low;
+}
+
+bool IsGPULevelNormal() {
+    return values.current_gpu_accuracy == GpuAccuracy::Normal;
+}
+
 bool IsGPULevelHigh() {
-    return values.current_gpu_accuracy == GpuAccuracy::High;
+    return values.current_gpu_accuracy == GpuAccuracy::High ||
+           values.current_gpu_accuracy == GpuAccuracy::Extreme;
+}
+
+bool IsGPULevelExtreme() {
+    return values.current_gpu_accuracy == GpuAccuracy::Extreme;
 }
 
 bool IsDMALevelDefault() {

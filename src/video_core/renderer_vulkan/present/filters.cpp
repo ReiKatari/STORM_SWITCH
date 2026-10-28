@@ -19,6 +19,8 @@
 #include "video_core/host_shaders/present_mitchell_frag_spv.h"
 #include "video_core/host_shaders/present_bspline_frag_spv.h"
 #include "video_core/host_shaders/present_zero_tangent_frag_spv.h"
+#include "video_core/host_shaders/present_cas_frag_spv.h"
+#include "video_core/host_shaders/present_omniscale_frag_spv.h"
 #include "video_core/host_shaders/present_mmpx_frag_spv.h"
 #include "video_core/host_shaders/vulkan_present_frag_spv.h"
 #include "video_core/host_shaders/vulkan_present_scaleforce_fp16_frag_spv.h"
@@ -96,6 +98,16 @@ std::unique_ptr<WindowAdaptPass> MakeArea(const Device& device, VkFormat frame_f
 std::unique_ptr<WindowAdaptPass> MakeMmpx(const Device& device, VkFormat frame_format) {
     return std::make_unique<WindowAdaptPass>(device, frame_format, CreateNearestNeighborSampler(device),
                                              BuildShader(device, PRESENT_MMPX_FRAG_SPV));
+}
+
+std::unique_ptr<WindowAdaptPass> MakeCas(const Device& device, VkFormat frame_format) {
+    return std::make_unique<WindowAdaptPass>(device, frame_format, CreateBilinearSampler(device),
+        BuildShader(device, PRESENT_CAS_FRAG_SPV));
+}
+
+std::unique_ptr<WindowAdaptPass> MakeOmniScale(const Device& device, VkFormat frame_format) {
+    return std::make_unique<WindowAdaptPass>(device, frame_format, CreateBilinearSampler(device),
+        BuildShader(device, PRESENT_OMNISCALE_FRAG_SPV));
 }
 
 } // namespace Vulkan

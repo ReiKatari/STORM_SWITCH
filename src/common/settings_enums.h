@@ -15,6 +15,16 @@
 #include <vector>
 #include "common/common_types.h"
 
+namespace Common {
+constexpr u32 HashEnumName(std::string_view str) {
+    u32 hash = 2166136261u;
+    for (char c : str) {
+        hash = (hash ^ static_cast<u8>(c)) * 16777619u;
+    }
+    return hash;
+}
+} // namespace Common
+
 namespace Settings {
 
 template <typename T>
@@ -72,6 +82,8 @@ struct EnumMetadata {
 #define PAIR_1(N, X, ...) {#X, N::X} __VA_OPT__(, PAIR_2(N, __VA_ARGS__))
 #define PAIR(N, X, ...) {#X, N::X} __VA_OPT__(, PAIR_1(N, __VA_ARGS__))
 
+
+
 #define PP_HEAD(A, ...) A
 
 #define ENUM(NAME, ...) \
@@ -80,7 +92,7 @@ struct EnumMetadata {
         return {PAIR(NAME, __VA_ARGS__)}; \
     } \
     template<> inline u32 EnumMetadata<NAME>::Index() { \
-        return __COUNTER__; \
+        return ::Common::HashEnumName(#NAME); \
     } \
     template<> inline NAME EnumMetadata<NAME>::GetFirst() { \
         return NAME::PP_HEAD(__VA_ARGS__); \
@@ -135,7 +147,7 @@ ENUM(FramePacingMode, Target_Auto, Target_30, Target_60, Target_90, Target_120);
 ENUM(VSyncMode, Immediate, Mailbox, Fifo, FifoRelaxed);
 ENUM(VramUsageMode, Conservative, Normal, Aggressive);
 ENUM(RendererBackend, OpenGL_GLSL, Vulkan, Null, OpenGL_GLASM, OpenGL_SPIRV);
-ENUM(GpuAccuracy, Low, High);
+ENUM(GpuAccuracy, Low, Normal, High, Extreme);
 ENUM(DmaAccuracy, Default, Normal, Unsafe, Safe);
 ENUM(GpuFenceBehavior, Default, Immediate, Balanced, Accurate, Strict);
 ENUM(CpuBackend, Dynarmic, Nce);
@@ -146,7 +158,7 @@ ENUM(ConfirmStop, Ask_Always, Ask_Based_On_Game, Ask_Never);
 ENUM(FullscreenMode, Borderless, Exclusive);
 ENUM(NvdecEmulation, Off, Cpu, Gpu, Hybrid);
 ENUM(ResolutionSetup, Res1_4X, Res1_2X, Res3_4X, Res1X, Res5_4X, Res3_2X, Res2X, Res3X, Res4X, Res5X, Res6X, Res7X, Res8X);
-ENUM(ScalingFilter, NearestNeighbor, Bilinear, Bicubic, Gaussian, Lanczos, ScaleForce, Fsr, Area, ZeroTangent, BSpline, Mitchell, Spline1, Mmpx, Sgsr, SgsrEdge);
+ENUM(ScalingFilter, NearestNeighbor, Bilinear, Bicubic, Gaussian, Lanczos, ScaleForce, Fsr, Area, ZeroTangent, BSpline, Mitchell, Spline1, Mmpx, Sgsr, SgsrEdge, Cas, OmniScale);
 ENUM(AntiAliasing, None, Fxaa, Smaa);
 ENUM(AspectRatio, R16_9, R4_3, R21_9, R16_10, Stretch, R32_9, R1_1, R3_2, R5_4, R18_9, R19_5_9, R20_9, R21_10, R24_10, R32_10, R48_9, Auto_Window);
 ENUM(ConsoleMode, Handheld, Docked);

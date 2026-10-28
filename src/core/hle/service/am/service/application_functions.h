@@ -93,6 +93,8 @@ private:
     Result GetUnknownEvent210(OutCopyHandle<Kernel::KReadableEvent> out_event);
     Result Unknown220();
     Result Unknown310();
+    Result GetScreenShotAndContinuousRecordingInitiallyEnabled(
+        Out<bool> out_screenshot_enabled, Out<bool> out_recording_enabled);
     Result Unknown330(Out<u8> out);
     Result PrepareForJit();
 

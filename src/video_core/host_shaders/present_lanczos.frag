@@ -1,50 +1,60 @@
-// SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
-// SPDX-License-Identifier: GPL-3.0-or-later
-
-// https://en.wikipedia.org/wiki/Lanczos_resampling
-
+// Lanczos 3 Anti-Ringing EWA Resampling
 #version 460 core
 
 layout (location = 0) in vec2 frag_tex_coord;
 layout (location = 0) out vec4 color;
 layout (binding = 0) uniform sampler2D color_texture;
 
-#define PI 3.1415926535897932384626433
-float sinc(float x) {
-    return x == 0.0f ? 1.0f : sin(PI * x) / (PI * x);
-}
-float lanczos(vec2 v, float a) {
-    float d = length(v);
-    return sinc(d) / sinc(d / a);
-}
-vec4 textureLanczos(sampler2D textureSampler, vec2 p) {
-    vec3 c_sum = vec3(0.0f);
-    float w_sum = 0.0f;
-    vec2 res = vec2(textureSize(textureSampler, 0));
-    vec2 cc = floor(p * res) / res;
-    // kernel size = (2r + 1)^2
-    const int r = 3; //radius (1 = 3 steps)
-#define LANCZOS_LOOP_STEP(x, y) \
-    { \
-        vec2 kp = 0.5f * (vec2(x, y) / res); /* 0.5 = half-pixel level resampling */ \
-        vec2 uv = cc + kp; \
-        float w = lanczos(kp, float(r)); \
-        c_sum += w * texture(textureSampler, p + kp).rgb; \
-        w_sum += w; \
-    }
+#define PI 3.1415926535897932384626433832795
 
-    for (int y = -r; y <= r; ++y) {
-        LANCZOS_LOOP_STEP(-3, y);
-        LANCZOS_LOOP_STEP(-2, y);
-        LANCZOS_LOOP_STEP(-1, y);
-        LANCZOS_LOOP_STEP(-0, y);
-        LANCZOS_LOOP_STEP(+1, y);
-        LANCZOS_LOOP_STEP(+2, y);
-        LANCZOS_LOOP_STEP(+3, y);
-    }
-    return vec4(c_sum / w_sum, 1.0f);
+float sinc(float x) {
+    if (abs(x) < 1e-4) return 1.0;
+    float pix = PI * x;
+    return sin(pix) / pix;
+}
+
+float lanczos3(float x) {
+    float ax = abs(x);
+    if (ax >= 3.0) return 0.0;
+    return sinc(x) * sinc(x / 3.0);
 }
 
 void main() {
-    color = textureLanczos(color_texture, frag_tex_coord);
+    vec2 size = vec2(textureSize(color_texture, 0));
+    vec2 pos = frag_tex_coord * size - 0.5;
+    vec2 base = floor(pos);
+    vec2 f = pos - base;
+
+    float wx[6];
+    float wy[6];
+    for (int i = 0; i < 6; ++i) {
+        wx[i] = lanczos3(float(i - 2) - f.x);
+        wy[i] = lanczos3(float(i - 2) - f.y);
+    }
+
+    vec3 sum = vec3(0.0);
+    float total_w = 0.0;
+    vec3 min_color = vec3(1e6);
+    vec3 max_color = vec3(-1e6);
+
+    for (int y = 0; y < 6; ++y) {
+        float yw = wy[y];
+        float py = (base.y + float(y - 2) + 0.5) / size.y;
+        for (int x = 0; x < 6; ++x) {
+            float w = wx[x] * yw;
+            float px = (base.x + float(x - 2) + 0.5) / size.x;
+            vec3 s = texture(color_texture, vec2(px, py)).rgb;
+            sum += s * w;
+            total_w += w;
+
+            if ((x == 2 || x == 3) && (y == 2 || y == 3)) {
+                min_color = min(min_color, s);
+                max_color = max(max_color, s);
+            }
+        }
+    }
+
+    vec3 lanczos_color = (total_w > 1e-5) ? (sum / total_w) : texture(color_texture, frag_tex_coord).rgb;
+    vec3 clamped_color = clamp(lanczos_color, min_color, max_color);
+    color = vec4(clamped_color, 1.0);
 }

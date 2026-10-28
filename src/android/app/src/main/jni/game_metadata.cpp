@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <mutex>
+#include <ankerl/unordered_dense.h>
 #include <regex>
 #include <set>
 #include "common/android/android_common.h"
@@ -16,6 +17,18 @@
 #include "core/loader/loader.h"
 #include "core/loader/nro.h"
 #include "native.h"
+#include <fstream>
+#include "common/fs/fs.h"
+#include "common/fs/path_util.h"
+
+namespace Common::FS {
+#ifndef YuzuPath
+using YuzuPath = EdenPath;
+#endif
+inline const std::filesystem::path& GetYuzuPath(EdenPath p) {
+    return GetEdenPath(p);
+}
+} // namespace Common::FS
 
 struct RomMetadata {
     std::string title;
@@ -28,11 +41,184 @@ struct RomMetadata {
     std::vector<u8> icon;
     bool isHomebrew{false};
     bool is_base_game{false};
+    u64 file_size{0};
 };
+
 static std::recursive_mutex s_metadata_mutex;
 static ankerl::unordered_dense::map<std::string, RomMetadata> m_rom_metadata_cache;
 static ankerl::unordered_dense::map<u64, int> m_aoc_count_cache;
 static bool m_aoc_cache_valid = false;
+static bool s_disk_cache_loaded = false;
+static bool s_disk_cache_dirty = false;
+
+static std::filesystem::path GetDiskCachePath() {
+    return Common::FS::GetYuzuPath(Common::FS::YuzuPath::CacheDir) / "android_rom_metadata_v2.cache";
+}
+
+static void LoadDiskCache() {
+    if (s_disk_cache_loaded) {
+        return;
+    }
+    s_disk_cache_loaded = true;
+
+    try {
+        const auto cache_path = GetDiskCachePath();
+        std::ifstream file(cache_path, std::ios::binary);
+        if (!file.is_open()) {
+            return;
+        }
+
+        u32 magic = 0;
+        file.read(reinterpret_cast<char*>(&magic), sizeof(magic));
+        if (magic != 0x53574D44) { // 'SWMD'
+            return;
+        }
+
+        u32 ver = 0;
+        file.read(reinterpret_cast<char*>(&ver), sizeof(ver));
+        if (ver != 2) {
+            return;
+        }
+
+        u32 count = 0;
+        file.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+        for (u32 i = 0; i < count && file.good(); ++i) {
+            u32 path_len = 0;
+            file.read(reinterpret_cast<char*>(&path_len), sizeof(path_len));
+            if (!file.good() || path_len > 65536) {
+                break;
+            }
+            std::string entry_path(path_len, '\0');
+            file.read(entry_path.data(), path_len);
+
+            RomMetadata meta;
+            file.read(reinterpret_cast<char*>(&meta.file_size), sizeof(meta.file_size));
+
+            u32 title_len = 0;
+            file.read(reinterpret_cast<char*>(&title_len), sizeof(title_len));
+            meta.title.resize(title_len);
+            if (title_len > 0) {
+                file.read(meta.title.data(), title_len);
+            }
+
+            file.read(reinterpret_cast<char*>(&meta.programId), sizeof(meta.programId));
+            file.read(reinterpret_cast<char*>(&meta.raw_program_id), sizeof(meta.raw_program_id));
+
+            u32 dev_len = 0;
+            file.read(reinterpret_cast<char*>(&dev_len), sizeof(dev_len));
+            meta.developer.resize(dev_len);
+            if (dev_len > 0) {
+                file.read(meta.developer.data(), dev_len);
+            }
+
+            u32 ver_len = 0;
+            file.read(reinterpret_cast<char*>(&ver_len), sizeof(ver_len));
+            meta.version.resize(ver_len);
+            if (ver_len > 0) {
+                file.read(meta.version.data(), ver_len);
+            }
+
+            u32 iver_len = 0;
+            file.read(reinterpret_cast<char*>(&iver_len), sizeof(iver_len));
+            meta.internal_version.resize(iver_len);
+            if (iver_len > 0) {
+                file.read(meta.internal_version.data(), iver_len);
+            }
+
+            file.read(reinterpret_cast<char*>(&meta.addon_count), sizeof(meta.addon_count));
+
+            u8 is_hb = 0, is_bg = 0;
+            file.read(reinterpret_cast<char*>(&is_hb), sizeof(is_hb));
+            file.read(reinterpret_cast<char*>(&is_bg), sizeof(is_bg));
+            meta.isHomebrew = (is_hb != 0);
+            meta.is_base_game = (is_bg != 0);
+
+            u32 icon_len = 0;
+            file.read(reinterpret_cast<char*>(&icon_len), sizeof(icon_len));
+            if (icon_len > 0 && icon_len <= 10 * 1024 * 1024) {
+                meta.icon.resize(icon_len);
+                file.read(reinterpret_cast<char*>(meta.icon.data()), icon_len);
+            }
+
+            if (file.good()) {
+                m_rom_metadata_cache[entry_path] = std::move(meta);
+            }
+        }
+    } catch (...) {}
+}
+
+static void SaveDiskCache() {
+    if (!s_disk_cache_dirty) {
+        return;
+    }
+    try {
+        const auto cache_path = GetDiskCachePath();
+        void(Common::FS::CreateParentDirs(cache_path));
+        std::ofstream file(cache_path, std::ios::binary | std::ios::trunc);
+        if (!file.is_open()) {
+            return;
+        }
+
+        u32 magic = 0x53574D44; // 'SWMD'
+        u32 ver = 2;
+        u32 count = static_cast<u32>(m_rom_metadata_cache.size());
+
+        file.write(reinterpret_cast<const char*>(&magic), sizeof(magic));
+        file.write(reinterpret_cast<const char*>(&ver), sizeof(ver));
+        file.write(reinterpret_cast<const char*>(&count), sizeof(count));
+
+        for (const auto& [entry_path, meta] : m_rom_metadata_cache) {
+            u32 path_len = static_cast<u32>(entry_path.size());
+            file.write(reinterpret_cast<const char*>(&path_len), sizeof(path_len));
+            file.write(entry_path.data(), path_len);
+
+            file.write(reinterpret_cast<const char*>(&meta.file_size), sizeof(meta.file_size));
+
+            u32 title_len = static_cast<u32>(meta.title.size());
+            file.write(reinterpret_cast<const char*>(&title_len), sizeof(title_len));
+            if (title_len > 0) {
+                file.write(meta.title.data(), title_len);
+            }
+
+            file.write(reinterpret_cast<const char*>(&meta.programId), sizeof(meta.programId));
+            file.write(reinterpret_cast<const char*>(&meta.raw_program_id), sizeof(meta.raw_program_id));
+
+            u32 dev_len = static_cast<u32>(meta.developer.size());
+            file.write(reinterpret_cast<const char*>(&dev_len), sizeof(dev_len));
+            if (dev_len > 0) {
+                file.write(meta.developer.data(), dev_len);
+            }
+
+            u32 ver_len = static_cast<u32>(meta.version.size());
+            file.write(reinterpret_cast<const char*>(&ver_len), sizeof(ver_len));
+            if (ver_len > 0) {
+                file.write(meta.version.data(), ver_len);
+            }
+
+            u32 iver_len = static_cast<u32>(meta.internal_version.size());
+            file.write(reinterpret_cast<const char*>(&iver_len), sizeof(iver_len));
+            if (iver_len > 0) {
+                file.write(meta.internal_version.data(), iver_len);
+            }
+
+            file.write(reinterpret_cast<const char*>(&meta.addon_count), sizeof(meta.addon_count));
+
+            u8 is_hb = meta.isHomebrew ? 1 : 0;
+            u8 is_bg = meta.is_base_game ? 1 : 0;
+            file.write(reinterpret_cast<const char*>(&is_hb), sizeof(is_hb));
+            file.write(reinterpret_cast<const char*>(&is_bg), sizeof(is_bg));
+
+            u32 icon_len = static_cast<u32>(meta.icon.size());
+            file.write(reinterpret_cast<const char*>(&icon_len), sizeof(icon_len));
+            if (icon_len > 0) {
+                file.write(reinterpret_cast<const char*>(meta.icon.data()), icon_len);
+            }
+        }
+        s_disk_cache_dirty = false;
+    } catch (...) {}
+}
+
 
 static bool IsBaseVersion(std::string_view ver) {
     while (!ver.empty() && (ver.front() == 'v' || ver.front() == 'V' || std::isspace(static_cast<unsigned char>(ver.front())))) {
@@ -326,19 +512,28 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
             }
             entry.is_base_game = bootable;
         }
+        entry.file_size = file ? file->GetSize() : 0;
         m_rom_metadata_cache[path] = entry;
+        s_disk_cache_dirty = true;
+        SaveDiskCache();
         return entry;
     }
     return {};
 }
 
-static RomMetadata GetRomMetadata(const std::string& path, bool reload = false) {
+static RomMetadata GetRomMetadata(const std::string& raw_path, bool reload = false) {
     std::scoped_lock lock{s_metadata_mutex};
-    if (reload)
-        return CacheRomMetadata(path);
-    if (auto it = m_rom_metadata_cache.find(path); it != m_rom_metadata_cache.end())
-        return it->second;
-    return CacheRomMetadata(path);
+    LoadDiskCache();
+    std::string path = raw_path;
+    if (path.starts_with("file://")) {
+        path = path.substr(7);
+    }
+    if (!reload) {
+        if (auto it = m_rom_metadata_cache.find(path); it != m_rom_metadata_cache.end()) {
+            return it->second;
+        }
+    }
+    return CacheRomMetadata(raw_path);
 }
 
 extern "C" {

@@ -23,6 +23,7 @@
 namespace IPC {
 
 constexpr Result ResultSessionClosed{ErrorModule::HIPC, 301};
+constexpr Result ResultNotSupported{ErrorModule::HIPC, 115};
 
 struct ResponseBuilder {
     /// Flags used for customizing the behavior of ResponseBuilder

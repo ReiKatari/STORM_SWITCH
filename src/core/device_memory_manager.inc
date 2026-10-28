@@ -21,6 +21,7 @@
 #include "common/scope_exit.h"
 #include "common/settings.h"
 #include "core/device_memory.h"
+#include "core/hle/kernel/board/nintendo/nx/k_system_control.h"
 #include "core/device_memory_manager.h"
 #include "core/memory.h"
 

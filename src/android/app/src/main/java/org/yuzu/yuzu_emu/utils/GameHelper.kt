@@ -22,6 +22,12 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
+import java.util.Collections
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
 
 object GameHelper {
@@ -38,13 +44,15 @@ object GameHelper {
         preferences = PreferenceManager.getDefaultSharedPreferences(context)
 
         val gameDirs = mutableListOf<GameDir>()
+        val seenDirUris = HashSet<String>()
         val oldGamesDir = preferences.getString(KEY_OLD_GAME_PATH, "") ?: ""
         if (oldGamesDir.isNotEmpty()) {
             gameDirs.add(GameDir(oldGamesDir, true))
+            seenDirUris.add(oldGamesDir)
             preferences.edit() { remove(KEY_OLD_GAME_PATH) }
         }
         NativeConfig.getGameDirs().forEach { dir ->
-            if (dir.uriString.isNotBlank() && gameDirs.none { it.uriString == dir.uriString }) {
+            if (dir.uriString.isNotBlank() && seenDirUris.add(dir.uriString)) {
                 gameDirs.add(dir)
             }
         }
@@ -53,7 +61,7 @@ object GameHelper {
         val backupDirs = preferences.getStringSet("game_directories_backup", emptySet()) ?: emptySet()
         if (gameDirs.isEmpty() && backupDirs.isNotEmpty()) {
             backupDirs.forEach { uriStr ->
-                if (uriStr.isNotBlank() && gameDirs.none { it.uriString == uriStr }) {
+                if (uriStr.isNotBlank() && seenDirUris.add(uriStr)) {
                     gameDirs.add(GameDir(uriStr, true))
                 }
             }
@@ -107,7 +115,7 @@ object GameHelper {
             NativeLibrary.clearFilesystemProvider()
         }
 
-        val mountedContainerUris = mutableSetOf<String>()
+        val mountedContainerUris = ConcurrentHashMap.newKeySet<String>()
         mountExternalContentDirectories(mountedContainerUris)
 
         val discoveredUpdateVersionsByPid = mutableMapOf<String, Pair<String, String>>()
@@ -176,16 +184,21 @@ object GameHelper {
         }.filter { it.key.isNotEmpty() && it.value.size == 1 }
          .mapValues { it.value.first() }
 
-        // Pass 2: Discover bootable base games (excluding standalone updates and DLCs)
-        dirFilesCache.forEach { (topFiles, scanDepth) ->
-            scanAndAddGamesRecursive(
-                games,
-                topFiles,
-                scanDepth,
-                mountedContainerUris,
-                cachedMapByPath,
-                cachedMapByName
-            )
+        // Pass 2: Discover bootable base games in parallel bounded coroutines on Dispatchers.IO
+        val threadSafeGames = Collections.synchronizedList(games)
+        runBlocking(Dispatchers.IO) {
+            dirFilesCache.map { (topFiles, scanDepth) ->
+                async {
+                    scanAndAddGamesRecursive(
+                        threadSafeGames,
+                        topFiles,
+                        scanDepth,
+                        mountedContainerUris,
+                        cachedMapByPath,
+                        cachedMapByName
+                    )
+                }
+            }.awaitAll()
         }
 
         val finalGames = deduplicateGames(games)
@@ -223,12 +236,38 @@ object GameHelper {
             }
         }
 
-        // Preserve higher addon counts and versions from cached metadata across any same-ProgramID entry
+        // Preserve higher addon counts and versions from cached metadata across any same-ProgramID entry (O(1) lookup)
         if (cachedGameList.isNotEmpty()) {
+            val cachedByBasePid = HashMap<String, Game>(cachedGameList.size)
+            for (cached in cachedGameList) {
+                val pid = getBaseProgramIdHex(cached.programIdHex)
+                if (pid != "0") {
+                    val prev = cachedByBasePid[pid]
+                    if (prev == null) {
+                        cachedByBasePid[pid] = cached
+                    } else {
+                        if (cached.addonCount > prev.addonCount) {
+                            prev.addonCount = cached.addonCount
+                        }
+                        if (compareVersionStrings(cached.version, cached.internalVersion, prev.version, prev.internalVersion) > 0) {
+                            if (!isBaseVersion(cached.version)) {
+                                prev.version = cached.version
+                            }
+                            val cIv = cached.internalVersion.toLongOrNull() ?: 0L
+                            val pIv = prev.internalVersion.toLongOrNull() ?: 0L
+                            if (cIv > pIv) {
+                                prev.internalVersion = cached.internalVersion
+                            }
+                        }
+                    }
+                }
+            }
+
             finalGames.forEach { game ->
                 val basePid = getBaseProgramIdHex(game.programIdHex)
-                cachedGameList.forEach { cached ->
-                    if (getBaseProgramIdHex(cached.programIdHex) == basePid && basePid != "0") {
+                if (basePid != "0") {
+                    val cached = cachedByBasePid[basePid]
+                    if (cached != null) {
                         if (cached.addonCount > game.addonCount) {
                             game.addonCount = cached.addonCount
                         }

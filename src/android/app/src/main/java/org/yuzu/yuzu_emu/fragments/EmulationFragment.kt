@@ -1350,7 +1350,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 container,
                 ShortSetting.RENDERER_SPEED_LIMIT,
                 minValue = 0,
-                maxValue = 400,
+                maxValue = 1000,
                 units = "%",
             )
 
@@ -1423,6 +1423,14 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             )
 
             quickSettings.addIntSetting(
+                R.string.post_processing_shader,
+                container,
+                IntSetting.RENDERER_POST_PROCESSING_SHADER,
+                R.array.postProcessingShaderNames,
+                R.array.postProcessingShaderValues
+            )
+
+            quickSettings.addIntSetting(
                 R.string.renderer_accuracy,
                 container,
                 IntSetting.RENDERER_ACCURACY,
@@ -1458,6 +1466,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 R.string.renderer_asynchronous_shaders,
                 container,
                 BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS
+            )
+
+            quickSettings.addBooleanSetting(
+                R.string.enable_fast_gpu_time,
+                container,
+                BooleanSetting.ENABLE_FAST_GPU_TIME
             )
 
             quickSettings.addBooleanSetting(
@@ -1564,7 +1578,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     }
 
     private fun isSharpnessScalingFilterSelected(): Boolean {
-        val selectedFilter = IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal = false)
+        val selectedFilter = IntSetting.RENDERER_SCALING_FILTER.getInt()
         return selectedFilter in resolveSharpnessScalingFilterValues()
     }
 
@@ -1573,8 +1587,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         val values = resources.getIntArray(R.array.rendererScalingFilterValues)
         val sharpnessFilterNames = setOf(
             getString(R.string.scaling_filter_fsr),
-            getString(R.string.scaling_filter_sgsr),
-            getString(R.string.scaling_filter_sgsr_edge),
         )
         return names.asSequence()
             .mapIndexedNotNull { index, name ->

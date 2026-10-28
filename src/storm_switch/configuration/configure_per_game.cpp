@@ -174,32 +174,45 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         sa->setMinimumSize(200, 160);
     }
 
+    ui->tabWidget->tabBar()->setUsesScrollButtons(false);
+    ui->tabWidget->tabBar()->setExpanding(false);
+    ui->groupBox->setMinimumWidth(290);
+    ui->groupBox->setMaximumWidth(320);
+    ui->icon_view->setFixedSize(144, 144);
+    ui->verticalLayout->setSpacing(8);
+    ui->name_layout->setSpacing(3);
+    ui->gridLayout_2->setVerticalSpacing(6);
+    ui->gridLayout_2->setHorizontalSpacing(8);
+    ui->filename_layout->setSpacing(3);
+
     QScreen* scr = (parentWidget() && parentWidget()->screen()) ? parentWidget()->screen()
                    : (screen() ? screen() : QGuiApplication::primaryScreen());
     if (scr) {
         const QRect avail = scr->availableGeometry();
         const int max_w = std::max(680, avail.width() - 48);
         const int max_h = std::max(420, avail.height() - 56);
-        setMinimumSize(std::min(720, max_w), std::min(440, max_h));
+        setMinimumSize(std::min(1240, max_w), std::min(620, max_h));
         setMaximumSize(max_w, max_h);
 
-        int target_h = std::min(680, max_h);
+        int target_w = std::clamp(1280, std::min(1240, max_w), max_w);
+        int target_h = std::min(840, max_h);
         if (QWidget* main_win = parentWidget() ? parentWidget()->window() : nullptr) {
             if (main_win->isVisible() && !main_win->isMinimized()) {
+                target_w = std::clamp(std::max(1280, main_win->width() - 36), std::min(1240, max_w), max_w);
                 if (avail.height() <= 920) {
                     target_h = std::clamp(std::min(main_win->height() - 16, avail.height() - 68),
-                                          std::min(460, max_h), max_h);
+                                          std::min(620, max_h), max_h);
                 } else {
-                    target_h = std::clamp(main_win->height(), std::min(540, max_h), max_h);
+                    target_h = std::clamp(std::max(820, main_win->height()), std::min(680, max_h), max_h);
                 }
             }
         } else if (avail.height() <= 920) {
-            target_h = std::clamp(avail.height() - 68, std::min(460, max_h), max_h);
+            target_h = std::clamp(avail.height() - 68, std::min(620, max_h), max_h);
         }
-        resize(std::min(1200, max_w), target_h);
+        resize(target_w, target_h);
     } else {
-        setMinimumSize(720, 440);
-        resize(1160, 680);
+        setMinimumSize(1240, 620);
+        resize(1280, 840);
     }
 
     ui->display_name->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -323,7 +336,8 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "    border-bottom: none;"
         "    border-top-left-radius: 6px;"
         "    border-top-right-radius: 6px;"
-        "    padding: 8px 14px;"
+        "    padding: 6px 11px;"
+        "    font-size: 12px;"
         "    font-weight: 600;"
         "    margin-right: 2px;"
         "}"
@@ -336,6 +350,46 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "    background: #0F172A;"
         "    border-top: 2px solid #00D2FF;"
         "    border-bottom: 1px solid #0F172A;"
+        "}"
+        "QGroupBox#groupBox {"
+        "    font-weight: bold;"
+        "    color: #00F0FF;"
+        "    border: 1px solid rgba(0, 210, 255, 0.25);"
+        "    border-radius: 8px;"
+        "    margin-top: 0px;"
+        "    padding: 10px 10px 10px 10px;"
+        "    background: rgba(15, 23, 42, 0.65);"
+        "}"
+        "QGraphicsView#icon_view {"
+        "    background: #0B1325;"
+        "    border: 1px solid rgba(0, 210, 255, 0.4);"
+        "    border-radius: 10px;"
+        "}"
+        "QTextEdit#display_name, QTextEdit#display_filename {"
+        "    background-color: #121826;"
+        "    border: 1.5px solid #334155;"
+        "    border-radius: 6px;"
+        "    padding: 4px 8px;"
+        "    color: #FFFFFF;"
+        "    font-size: 12px;"
+        "}"
+        "QLineEdit#display_developer, QLineEdit#display_version, QLineEdit#display_format, QLineEdit#display_size {"
+        "    background-color: #121826;"
+        "    border: 1.5px solid #334155;"
+        "    border-radius: 6px;"
+        "    padding: 3px 8px;"
+        "    color: #FFFFFF;"
+        "    font-size: 11.5px;"
+        "}"
+        "QLineEdit#display_title_id {"
+        "    background-color: #121826;"
+        "    border: 1.5px solid #334155;"
+        "    border-radius: 6px;"
+        "    padding: 3px 8px;"
+        "    color: #00F0FF;"
+        "    font-family: 'Consolas', 'Courier New', monospace;"
+        "    font-size: 11.5px;"
+        "    font-weight: 600;"
         "}"
         "QGroupBox {"
         "    font-weight: bold;"
@@ -558,7 +612,15 @@ void ConfigurePerGame::RetranslateUI() {
             QStringLiteral("🔍 بحث سريع في إعدادات اللعبة (مثل: 21:9، 60 FPS، LSFG، Vulkan، الذاكرة)..."),
             QStringLiteral("🔍 Búsqueda rápida de ajustes del juego (ej.: 21:9, 60 FPS, LSFG, Vulkan, memoria)...")));
     }
-    if (ui->tabWidget and ui->tabWidget->count() >= 13) {
+    ui->label->setText(StormLang(QStringLiteral("Название"), QStringLiteral("Title")));
+    ui->label_2->setText(StormLang(QStringLiteral("Разработчик:"), QStringLiteral("Developer:")));
+    ui->label_3->setText(StormLang(QStringLiteral("Версия:"), QStringLiteral("Version:")));
+    ui->label_4->setText(StormLang(QStringLiteral("ID приложения:"), QStringLiteral("Program ID:")));
+    ui->label_5->setText(StormLang(QStringLiteral("Формат:"), QStringLiteral("Format:")));
+    ui->label_6->setText(StormLang(QStringLiteral("Размер:"), QStringLiteral("Size:")));
+    ui->label_7->setText(StormLang(QStringLiteral("Имя файла"), QStringLiteral("File Name")));
+
+    if (ui->tabWidget && ui->tabWidget->count() >= 13) {
         ui->tabWidget->setTabText(0, tr("Add-Ons"));
         ui->tabWidget->setTabText(1, StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"), QStringLiteral("تعديلات GameBanana"), QStringLiteral("Mods de GameBanana")));
         ui->tabWidget->setTabText(2, tr("Amiibo"));
@@ -566,12 +628,12 @@ void ConfigurePerGame::RetranslateUI() {
         ui->tabWidget->setTabText(4, tr("System"));
         ui->tabWidget->setTabText(5, tr("CPU"));
         ui->tabWidget->setTabText(6, tr("Graphics"));
-        ui->tabWidget->setTabText(7, tr("Adv. Graphics"));
-        ui->tabWidget->setTabText(8, tr("Ext. Graphics"));
+        ui->tabWidget->setTabText(7, StormLang(QStringLiteral("Расш. графика"), QStringLiteral("Adv. Graphics"), QStringLiteral("Erw. Grafik"), QStringLiteral("Graphismes avancés"), QStringLiteral("高级图形"), QStringLiteral("拡張描画")));
+        ui->tabWidget->setTabText(8, StormLang(QStringLiteral("Доп. графика"), QStringLiteral("Ext. Graphics"), QStringLiteral("Zus. Grafik"), QStringLiteral("Graphismes étendus"), QStringLiteral("扩展图形"), QStringLiteral("追加描画")));
         ui->tabWidget->setTabText(9, tr("Audio"));
-        ui->tabWidget->setTabText(10, tr("Input Profiles"));
-        ui->tabWidget->setTabText(11, tr("Network"));
-        ui->tabWidget->setTabText(12, tr("Applets"));
+        ui->tabWidget->setTabText(10, StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作"), QStringLiteral("التحكم"), QStringLiteral("Controles")));
+        ui->tabWidget->setTabText(11, StormLang(QStringLiteral("Сеть"), QStringLiteral("Network"), QStringLiteral("Netzwerk"), QStringLiteral("Réseau"), QStringLiteral("网络"), QStringLiteral("ネットワーク"), QStringLiteral("الشبكة"), QStringLiteral("Red")));
+        ui->tabWidget->setTabText(12, StormLang(QStringLiteral("Апплеты"), QStringLiteral("Applets"), QStringLiteral("Applets"), QStringLiteral("Applets"), QStringLiteral("小程序"), QStringLiteral("アプレット"), QStringLiteral("البريمجات"), QStringLiteral("Applets")));
     }
 
     for (auto* gb : findChildren<QGroupBox*>()) {
@@ -771,7 +833,9 @@ void ConfigurePerGame::LoadConfiguration() {
         const auto bytes = control.second->ReadAllBytes();
         map.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
 
-        const int icon_dim = (std::max)({ui->icon_view->width(), ui->icon_view->height(), 160});
+        const int icon_dim = 144;
+        scene->setSceneRect(0, 0, icon_dim, icon_dim);
+        ui->icon_view->setSceneRect(0, 0, icon_dim, icon_dim);
         scene->addPixmap(map.scaled(icon_dim, icon_dim,
                                     Qt::KeepAspectRatio, Qt::SmoothTransformation));
     } else {
@@ -782,7 +846,9 @@ void ConfigurePerGame::LoadConfiguration() {
             QPixmap map;
             map.loadFromData(bytes.data(), static_cast<u32>(bytes.size()));
 
-            const int icon_dim = (std::max)({ui->icon_view->width(), ui->icon_view->height(), 160});
+            const int icon_dim = 144;
+            scene->setSceneRect(0, 0, icon_dim, icon_dim);
+            ui->icon_view->setSceneRect(0, 0, icon_dim, icon_dim);
             scene->addPixmap(map.scaled(icon_dim, icon_dim,
                                         Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }

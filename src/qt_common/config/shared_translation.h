@@ -58,7 +58,9 @@ static const std::map<Settings::ConsoleMode, QString> use_docked_mode_texts_map 
 
 static const std::map<Settings::GpuAccuracy, QString> gpu_accuracy_texts_map = {
     {Settings::GpuAccuracy::Low, QStringLiteral("Быстрый")},
+    {Settings::GpuAccuracy::Normal, QStringLiteral("Нормальная")},
     {Settings::GpuAccuracy::High, QStringLiteral("Высокая точность")},
+    {Settings::GpuAccuracy::Extreme, QStringLiteral("Экстремальная")},
 };
 
 static const std::map<Settings::RendererBackend, QString> renderer_backend_texts_map = {

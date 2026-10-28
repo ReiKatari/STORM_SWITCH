@@ -8,6 +8,7 @@
 
 #include <list>
 #include <memory>
+#include <condition_variable>
 #include <mutex>
 #include <optional>
 #include <thread>
@@ -52,6 +53,16 @@ public:
     void Stop();
 
     /**
+     * Hold audio rendering during state/pause transitions.
+     */
+    void Hold();
+
+    /**
+     * Release audio rendering after state/pause transitions.
+     */
+    void Release();
+
+    /**
      * Resynchronize all managed audio render systems.
      */
     void Resynchronize();
@@ -84,6 +95,10 @@ private:
     std::mutex mutex1{};
     /// Mutex for adding/removing systems
     std::mutex mutex2{};
+    /// Hold synchronization for state/pause transitions
+    std::mutex hold_mutex{};
+    std::condition_variable hold_cv{};
+    bool held{false};
     /// Is the system manager thread active?
     std::atomic<bool> active{};
     /// Reference to the ADSP's AudioRenderer for communication

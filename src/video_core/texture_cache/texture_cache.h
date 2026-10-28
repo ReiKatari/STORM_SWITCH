@@ -2863,4 +2863,19 @@ void TextureCache<P>::OnGPUASRegister([[maybe_unused]] size_t map_id) {
     gpu_page_table_storage.emplace_back();
 }
 
+
+template <class P>
+void TextureCache<P>::DiscardGpuModifiedImages() {
+    std::scoped_lock lock{mutex};
+    for (auto [image_id, image] : slot_images) {
+        if (!image_id || image_id == NULL_IMAGE_ID || image_id == CORRUPT_ID) {
+            continue;
+        }
+        if (True(image->flags & ImageFlagBits::GpuModified)) {
+            image->flags &= ~ImageFlagBits::GpuModified;
+            image->flags |= ImageFlagBits::CpuModified;
+        }
+    }
+}
+
 } // namespace VideoCommon

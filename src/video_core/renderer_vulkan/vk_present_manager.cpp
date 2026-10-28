@@ -376,6 +376,10 @@ void PresentManager::SetImageCount() {
         image_count =
             std::clamp<size_t>((generations + 1) * queued_composites, swapchain.GetImageCount(),
                                MAX_FRAMES_IN_FLIGHT);
+        // Clamp images-in-flight safely on Mali and tile-based mobile GPUs
+        if (device.GetDriverID() == VK_DRIVER_ID_ARM_PROPRIETARY || device.IsTiler()) {
+            image_count = std::min(image_count, size_t{6});
+        }
     } else {
         const size_t min_count = use_present_thread ? 4ULL : swapchain.GetImageCount();
         const size_t target_count = use_present_thread ? (swapchain.GetImageCount() + 1) : swapchain.GetImageCount();

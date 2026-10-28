@@ -103,12 +103,16 @@
 
     <string-array name="rendererAccuracyNames">
         <item>@string/renderer_accuracy_low</item>
+        <item>@string/renderer_accuracy_normal</item>
         <item>@string/renderer_accuracy_high</item>
+        <item>@string/renderer_accuracy_extreme</item>
     </string-array>
 
     <integer-array name="rendererAccuracyValues">
         <item>0</item>
         <item>1</item>
+        <item>2</item>
+        <item>3</item>
     </integer-array>
 
     <!-- VRAM USAGE MODE CHOICES -->
@@ -352,6 +356,8 @@
         <item>@string/scaling_filter_mmpx</item>
         <item>@string/scaling_filter_sgsr</item>
         <item>@string/scaling_filter_sgsr_edge</item>
+        <item>@string/scaling_filter_cas</item>
+        <item>@string/scaling_filter_omniscale</item>
     </string-array>
 
     <integer-array name="rendererScalingFilterValues">
@@ -370,6 +376,8 @@
         <item>12</item>
         <item>13</item>
         <item>14</item>
+        <item>15</item>
+        <item>16</item>
     </integer-array>
 
     <string-array name="rendererAntiAliasingNames">

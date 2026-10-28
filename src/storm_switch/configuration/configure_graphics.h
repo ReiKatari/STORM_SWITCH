@@ -111,4 +111,7 @@ private:
     QWidget* api_widget;
     QComboBox* aspect_ratio_combobox;
     QComboBox* resolution_combobox;
+    void UpdateFsrSliderState();
+    QComboBox* scaling_filter_combobox{nullptr};
+    QWidget* fsr_sharpening_widget{nullptr};
 };

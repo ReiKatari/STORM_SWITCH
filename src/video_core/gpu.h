@@ -260,6 +260,13 @@ public:
     /// Notify rasterizer that any caches of the specified region should be flushed and invalidated
     void FlushAndInvalidateRegion(DAddr addr, u64 size);
 
+    struct EngineSnapshot {
+        std::vector<u8> maxwell3d_state;
+        std::vector<u8> kepler_compute_state;
+    };
+    [[nodiscard]] EngineSnapshot SnapshotEngines();
+    void RestoreEngines(const EngineSnapshot& snapshot);
+
     /// Synchronously drain GPU thread, download GPU-modified caches, and collect GPU surface ranges
     [[nodiscard]] std::vector<std::pair<DAddr, std::size_t>> SyncAndSnapshotForSaveState();
 

@@ -10,6 +10,7 @@
 #include <ankerl/unordered_dense.h>
 #include <boost/icl/separate_interval_set.hpp>
 #include <windows.h>
+#include <winioctl.h>
 #include "common/dynamic_library.h"
 
 #else // ^^^ Windows ^^^ vvv POSIX vvv
@@ -57,6 +58,7 @@
 #include "common/alignment.h"
 #include "common/assert.h"
 #include "common/free_region_manager.h"
+#include <filesystem>
 #include "common/host_memory.h"
 #include "common/logging.h"
 
@@ -145,7 +147,33 @@ public:
         }
 
         // Allocate backing file map
-        backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_COMMIT, backing_size, nullptr, nullptr, 0);
+        const bool prefer_swap = backing_size >= (8ULL << 30);
+        if (!prefer_swap) {
+            backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_COMMIT, backing_size, nullptr, nullptr, 0);
+        }
+        if (!backing_handle) {
+            // Will Faust userspace file-backed sparse swap for >= 8GB/12GB mode or when commit limit is reached
+            const auto swap_path = std::filesystem::temp_directory_path() / ("storm_switch_swap_" + std::to_string(GetCurrentProcessId()) + ".swp");
+            swap_file_handle = CreateFileW(swap_path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                                           FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                                           nullptr, CREATE_ALWAYS,
+                                           FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE | FILE_FLAG_RANDOM_ACCESS,
+                                           nullptr);
+            if (swap_file_handle != INVALID_HANDLE_VALUE) {
+                DWORD bytes_returned = 0;
+                DeviceIoControl(swap_file_handle, FSCTL_SET_SPARSE, nullptr, 0, nullptr, 0, &bytes_returned, nullptr);
+                LARGE_INTEGER size_li;
+                size_li.QuadPart = static_cast<LONGLONG>(backing_size);
+                if (SetFilePointerEx(swap_file_handle, size_li, nullptr, FILE_BEGIN) && SetEndOfFile(swap_file_handle)) {
+                    backing_handle = pfn_CreateFileMapping2(swap_file_handle, nullptr, FILE_MAP_WRITE | FILE_MAP_READ,
+                                                            PAGE_READWRITE, SEC_COMMIT, backing_size, nullptr, nullptr, 0);
+                    if (!backing_handle) {
+                        backing_handle = CreateFileMappingW(swap_file_handle, nullptr, PAGE_READWRITE,
+                                                            size_li.HighPart, size_li.LowPart, nullptr);
+                    }
+                }
+            }
+        }
         if (!backing_handle) {
             LOG_CRITICAL(HW_Memory, "Failed to allocate {} MiB of backing memory", backing_size >> 20);
             return false;
@@ -269,6 +297,10 @@ private:
             }
             backing_handle = nullptr;
         }
+        if (swap_file_handle != INVALID_HANDLE_VALUE) {
+            CloseHandle(swap_file_handle);
+            swap_file_handle = INVALID_HANDLE_VALUE;
+        }
     }
 
     /// Unmap one placeholder in the given range (partial unmaps are supported)
@@ -388,6 +420,7 @@ private:
 
     HANDLE process{};        ///< Current process handle
     HANDLE backing_handle{}; ///< File based backing memory
+    HANDLE swap_file_handle{INVALID_HANDLE_VALUE};
 
     DynamicLibrary kernelbase_dll;
     PFN_CreateFileMapping2 pfn_CreateFileMapping2{};
@@ -516,25 +549,52 @@ public:
         long page_size = sysconf(_SC_PAGESIZE);
         ASSERT_MSG(page_size == 0x1000, "page size {:#x} is incompatible with 4K paging", page_size);
         // Backing memory initialization
+        bool use_swap = backing_size >= (6ULL << 30);
+        if (!use_swap) {
 #if defined(__sun__) || defined(__HAIKU__) || defined(__NetBSD__) || defined(__DragonFly__)
-        fd = shm_open_anon(O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0600);
+            fd = shm_open_anon(O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0600);
 #elif defined(__OpenBSD__)
-        fd = shm_open_anon(O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0600);
+            fd = shm_open_anon(O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0600);
 #elif defined(__FreeBSD__)
-        fd = shm_open(SHM_ANON, O_RDWR, 0600);
+            fd = shm_open(SHM_ANON, O_RDWR, 0600);
 #elif defined(__APPLE__) || defined(__managarm__)
-        // macOS doesn't have memfd_create, use anonymous temporary file
-        char template_path[] = "/tmp/eden_mem_XXXXXX";
-        fd = mkstemp(template_path);
-        if (fd >= 0) {
-            unlink(template_path);
-        }
+            // macOS doesn't have memfd_create, use anonymous temporary file
+            char template_path[] = "/tmp/eden_mem_XXXXXX";
+            fd = mkstemp(template_path);
+            if (fd >= 0) {
+                unlink(template_path);
+            }
 #else
-        fd = memfd_create("HostMemory", 0);
+            fd = memfd_create("HostMemory", 0);
 #endif
+            if (fd <= 0) {
+                LOG_WARNING(Common_Memory, "memfd_create: {}", strerror(errno));
+                use_swap = true;
+            }
+        }
+        if (use_swap) {
+            const char* candidate_dirs[] = {
+                "/data/data/org.yuzu.yuzu_emu/cache",
+                getenv("TMPDIR"),
+                "/data/local/tmp",
+                "/tmp"
+            };
+            for (const char* dir : candidate_dirs) {
+                if (!dir || !*dir) continue;
+                std::string swap_path = std::string(dir) + "/storm_switch_swap_" + std::to_string(getpid()) + ".swp";
+                fd = open(swap_path.c_str(), O_CREAT | O_RDWR | O_CLOEXEC, 0600);
+                if (fd >= 0) {
+                    unlink(swap_path.c_str());
+                    if (ftruncate(fd, backing_size) == 0) {
+                        break;
+                    }
+                    close(fd);
+                    fd = -1;
+                }
+            }
+        }
         bool use_anon = false;
         if (fd <= 0) {
-            LOG_WARNING(Common_Memory, "memfd_create: {}", strerror(errno));
             use_anon = true;
         }
         if (!use_anon) {
@@ -777,6 +837,15 @@ void HostMemory::EnableDirectMappedAddress() {
     if (impl) {
         impl->EnableDirectMappedAddress();
         virtual_size += reinterpret_cast<uintptr_t>(virtual_base);
+    }
+#endif
+}
+
+void HostMemory::HintColdPages(size_t virtual_offset, size_t length) {
+#if defined(__linux__) || defined(__ANDROID__)
+    if (virtual_base && length > 0) {
+        constexpr int MADV_PAGEOUT_VAL = 21; // MADV_PAGEOUT
+        madvise(virtual_base + virtual_offset, length, MADV_PAGEOUT_VAL);
     }
 #endif
 }

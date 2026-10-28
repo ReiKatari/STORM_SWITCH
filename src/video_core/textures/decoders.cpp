@@ -19,6 +19,11 @@
 
 namespace Tegra::Texture {
 namespace {
+constexpr u32 NativeGobOffset(u32 offset, bool native_tiling) {
+    if (!native_tiling) return offset;
+    const u32 difference = ((offset >> 5) ^ (offset >> 6)) & 1;
+    return offset ^ (difference << 5) ^ (difference << 6);
+}
 template <u32 mask>
 constexpr u32 pdep(u32 value) {
     u32 result = 0;
@@ -39,7 +44,7 @@ void incrpdep(u32& value) {
 
 template <bool TO_LINEAR, u32 BYTES_PER_PIXEL>
 void SwizzleImpl(std::span<u8> output, std::span<const u8> input, u32 width, u32 height, u32 depth,
-                 u32 block_height, u32 block_depth, u32 stride) {
+                 u32 block_height, u32 block_depth, u32 stride, bool native_tiling) {
     // The origin of the transformation can be configured here, leave it as zero as the current API
     // doesn't expose it.
     static constexpr u32 origin_x = 0;
@@ -78,7 +83,7 @@ void SwizzleImpl(std::span<u8> output, std::span<const u8> input, u32 width, u32
                 const u32 offset_x = (x >> GOB_SIZE_X_SHIFT) << x_shift;
 
                 const u32 base_swizzled_offset = offset_z + offset_y + offset_x;
-                const u32 swizzled_offset = base_swizzled_offset + (swizzled_x | swizzled_y);
+                const u32 swizzled_offset = NativeGobOffset(base_swizzled_offset + (swizzled_x | swizzled_y), native_tiling);
 
                 const u32 unswizzled_offset =
                     slice * pitch * height + line * pitch + column * BYTES_PER_PIXEL;
@@ -95,14 +100,13 @@ void SwizzleImpl(std::span<u8> output, std::span<const u8> input, u32 width, u32
 template <bool TO_LINEAR, u32 BYTES_PER_PIXEL>
 void SwizzleSubrectImpl(std::span<u8> output, std::span<const u8> input, u32 width, u32 height,
                         u32 depth, u32 origin_x, u32 origin_y, u32 extent_x, u32 num_lines,
-                        u32 block_height, u32 block_depth, u32 pitch_linear) {
+                        u32 block_height, u32 block_depth, u32 pitch_linear, bool native_tiling) {
     if (width == 0 || height == 0 || depth == 0 || extent_x == 0 || num_lines == 0) {
         return;
     }
     if (origin_x >= width || origin_y >= height) {
         return;
     }
-
     // The origin of the transformation can be configured here, leave it as zero as the current API
     // doesn't expose it.
     static constexpr u32 origin_z = 0;
@@ -145,7 +149,7 @@ void SwizzleSubrectImpl(std::span<u8> output, std::span<const u8> input, u32 wid
                 const u32 offset_x = (x >> GOB_SIZE_X_SHIFT) << x_shift;
 
                 const u32 base_swizzled_offset = offset_z + offset_y + offset_x;
-                const u32 swizzled_offset = base_swizzled_offset + (swizzled_x | swizzled_y);
+                const u32 swizzled_offset = NativeGobOffset(base_swizzled_offset + (swizzled_x | swizzled_y), native_tiling);
 
                 const u32 unswizzled_offset =
                     slice * pitch * height + line * pitch + column * BYTES_PER_PIXEL;
@@ -167,12 +171,12 @@ void SwizzleSubrectImpl(std::span<u8> output, std::span<const u8> input, u32 wid
 
 template <bool TO_LINEAR>
 void Swizzle(std::span<u8> output, std::span<const u8> input, u32 bytes_per_pixel, u32 width,
-             u32 height, u32 depth, u32 block_height, u32 block_depth, u32 stride_alignment) {
+             u32 height, u32 depth, u32 block_height, u32 block_depth, u32 stride_alignment, bool native_tiling) {
     switch (bytes_per_pixel) {
 #define BPP_CASE(x)                                                                                \
     case x:                                                                                        \
         return SwizzleImpl<TO_LINEAR, x>(output, input, width, height, depth, block_height,        \
-                                         block_depth, stride_alignment);
+                                         block_depth, stride_alignment, native_tiling);
         BPP_CASE(1)
         BPP_CASE(2)
         BPP_CASE(3)
@@ -192,35 +196,35 @@ void Swizzle(std::span<u8> output, std::span<const u8> input, u32 bytes_per_pixe
 
 void UnswizzleTexture(std::span<u8> output, std::span<const u8> input, u32 bytes_per_pixel,
                       u32 width, u32 height, u32 depth, u32 block_height, u32 block_depth,
-                      u32 stride_alignment) {
+                      u32 stride_alignment, bool native_tiling) {
     const u32 stride = Common::AlignUpLog2(width, stride_alignment) * bytes_per_pixel;
     const u32 new_bpp = (std::min)(4U, static_cast<u32>(std::countr_zero(width * bytes_per_pixel)));
     width = (width * bytes_per_pixel) >> new_bpp;
     bytes_per_pixel = 1U << new_bpp;
     Swizzle<false>(output, input, bytes_per_pixel, width, height, depth, block_height, block_depth,
-                   stride);
+                   stride, native_tiling);
 }
 
 void SwizzleTexture(std::span<u8> output, std::span<const u8> input, u32 bytes_per_pixel, u32 width,
                     u32 height, u32 depth, u32 block_height, u32 block_depth,
-                    u32 stride_alignment) {
+                    u32 stride_alignment, bool native_tiling) {
     const u32 stride = Common::AlignUpLog2(width, stride_alignment) * bytes_per_pixel;
     const u32 new_bpp = (std::min)(4U, static_cast<u32>(std::countr_zero(width * bytes_per_pixel)));
     width = (width * bytes_per_pixel) >> new_bpp;
     bytes_per_pixel = 1U << new_bpp;
     Swizzle<true>(output, input, bytes_per_pixel, width, height, depth, block_height, block_depth,
-                  stride);
+                  stride, native_tiling);
 }
 
 void SwizzleSubrect(std::span<u8> output, std::span<const u8> input, u32 bytes_per_pixel, u32 width,
                     u32 height, u32 depth, u32 origin_x, u32 origin_y, u32 extent_x, u32 extent_y,
-                    u32 block_height, u32 block_depth, u32 pitch_linear) {
+                    u32 block_height, u32 block_depth, u32 pitch_linear, bool native_tiling) {
     switch (bytes_per_pixel) {
 #define BPP_CASE(x)                                                                                \
     case x:                                                                                        \
         return SwizzleSubrectImpl<true, x>(output, input, width, height, depth, origin_x,          \
                                            origin_y, extent_x, extent_y, block_height,             \
-                                           block_depth, pitch_linear);
+                                           block_depth, pitch_linear, native_tiling);
         BPP_CASE(1)
         BPP_CASE(2)
         BPP_CASE(3)
@@ -238,13 +242,13 @@ void SwizzleSubrect(std::span<u8> output, std::span<const u8> input, u32 bytes_p
 
 void UnswizzleSubrect(std::span<u8> output, std::span<const u8> input, u32 bytes_per_pixel,
                       u32 width, u32 height, u32 depth, u32 origin_x, u32 origin_y, u32 extent_x,
-                      u32 extent_y, u32 block_height, u32 block_depth, u32 pitch_linear) {
+                      u32 extent_y, u32 block_height, u32 block_depth, u32 pitch_linear, bool native_tiling) {
     switch (bytes_per_pixel) {
 #define BPP_CASE(x)                                                                                \
     case x:                                                                                        \
         return SwizzleSubrectImpl<false, x>(output, input, width, height, depth, origin_x,         \
                                             origin_y, extent_x, extent_y, block_height,            \
-                                            block_depth, pitch_linear);
+                                            block_depth, pitch_linear, native_tiling);
         BPP_CASE(1)
         BPP_CASE(2)
         BPP_CASE(3)

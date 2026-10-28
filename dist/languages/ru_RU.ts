@@ -1507,8 +1507,24 @@ When a program attempts to open the controller applet, it is immediately closed.
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="494" />
+      <source>Lanczos 3 (Anti-Ringing EWA)</source>
+      <translation>Lanczos 3 (Высокая чёткость без ореолов)</translation>
+    </message>
+    <message>
       <source>Lanczos</source>
-      <translation>Ланцош</translation>
+      <translation>Lanczos 3 (Высокая чёткость без ореолов)</translation>
+    </message>
+    <message>
+      <source>Area (Pixel Area Super-Sampling)</source>
+      <translation>Area (Суперсэмплинг площади пикселя)</translation>
+    </message>
+    <message>
+      <source>AMD FidelityFX CAS (Contrast Adaptive)</source>
+      <translation>AMD FidelityFX CAS (Контрастно-адаптивный)</translation>
+    </message>
+    <message>
+      <source>OmniScale HQ (Pixel-Art &amp; 2D/3D)</source>
+      <translation>OmniScale HQ (Идеальный пиксель-арт и 2D/3D)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="495" />

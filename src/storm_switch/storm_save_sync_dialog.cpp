@@ -722,6 +722,82 @@ void StormSaveSyncDialog::SetupUI() {
     connect(m_search_edit, &QLineEdit::textChanged, this, &StormSaveSyncDialog::OnSearchFilterChanged);
     search_layout->addWidget(m_search_edit, 1);
 
+    auto* portal_cloud_btn = new QPushButton(tr("☁️ Облачный слот портала"), this);
+    portal_cloud_btn->setToolTip(tr("Двусторонняя синхронизация в 1 клик с облачным слотом портала STORM GAMES WORLD (/api/emulator/save-sync)"));
+    portal_cloud_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background-color: #0284C7; color: #FFFFFF; border: 1px solid #38BDF8; border-radius: 6px; padding: 6px 12px; font-weight: bold; }"
+        "QPushButton:hover { background-color: #0369A1; }"
+    ));
+    connect(portal_cloud_btn, &QPushButton::clicked, this, [this]() {
+        QString tid = m_target_program_id != 0 ? QStringLiteral("%1").arg(m_target_program_id, 16, 16, QLatin1Char('0')).toUpper() : QString{};
+        if (m_saves_table && m_saves_table->currentRow() >= 0) {
+            if (auto* cell = m_saves_table->item(m_saves_table->currentRow(), 1)) {
+                tid = cell->text().trimmed();
+            }
+        }
+        if (tid.isEmpty() && !m_items.isEmpty()) {
+            tid = m_items.first().title_id;
+        }
+        const QString portal_host = m_remote_key_edit && m_remote_key_edit->text().startsWith(QStringLiteral("http"))
+            ? m_remote_key_edit->text().trimmed()
+            : QStringLiteral("http://192.168.1.154:3000");
+        const QUrl sync_url(QStringLiteral("%1/api/emulator/save-sync").arg(portal_host));
+
+        const auto save_dir = GetLocalSaveDirForTitle(tid);
+        std::error_code ec;
+        if (std::filesystem::exists(save_dir, ec)) {
+            const QString temp_zip = QDir::tempPath() + QStringLiteral("/storm_portal_sync_%1.zip").arg(tid);
+            QFile::remove(temp_zip);
+            if (QtCommon::Compress::compressDir(temp_zip, QString::fromStdString(save_dir.string()))) {
+                QFile f(temp_zip);
+                if (f.open(QIODevice::ReadOnly)) {
+                    const QByteArray b64 = f.readAll().toBase64();
+                    f.close();
+                    QFile::remove(temp_zip);
+
+                    QJsonObject payload;
+                    payload[QStringLiteral("gameId")] = tid;
+                    payload[QStringLiteral("gameTitle")] = ResolveGameTitle(tid);
+                    payload[QStringLiteral("platform")] = QStringLiteral("Nintendo Switch");
+                    payload[QStringLiteral("versionTag")] = QStringLiteral("[STORM SWITCH]");
+                    payload[QStringLiteral("slot")] = 1;
+                    payload[QStringLiteral("kind")] = QStringLiteral("srm");
+                    payload[QStringLiteral("dataBase64")] = QString::fromLatin1(b64);
+                    payload[QStringLiteral("deviceLabel")] = QStringLiteral("STORM SWITCH Desktop");
+                    payload[QStringLiteral("clientApp")] = QStringLiteral("STORM SWITCH");
+
+                    QNetworkRequest req(sync_url);
+                    req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+                    auto* reply = m_network_mgr->post(req, QJsonDocument(payload).toJson(QJsonDocument::Compact));
+                    connect(reply, &QNetworkReply::finished, this, [this, reply, tid]() {
+                        reply->deleteLater();
+                        if (reply->error() == QNetworkReply::NoError) {
+                            const auto doc = QJsonDocument::fromJson(reply->readAll());
+                            const QString token = doc.object().value(QStringLiteral("syncToken")).toString();
+                            m_status_label->setText(tr("☁️ Облачный слот портала синхронизирован! Код: %1").arg(token));
+                        } else {
+                            m_status_label->setText(tr("⚠️ Ошибка связи со шлюзом /api/emulator/save-sync"));
+                        }
+                    });
+                    return;
+                }
+            }
+        }
+        // Pull from portal if no local save is selected
+        const QUrl pull_url(QStringLiteral("%1/api/emulator/save-sync?gameId=%2&format=raw").arg(portal_host, tid));
+        QNetworkRequest pull_req(pull_url);
+        auto* pull_reply = m_network_mgr->get(pull_req);
+        connect(pull_reply, &QNetworkReply::finished, this, [this, pull_reply]() {
+            pull_reply->deleteLater();
+            if (pull_reply->error() == QNetworkReply::NoError) {
+                m_status_label->setText(tr("📥 Сохранение получено из Облачного слота портала!"));
+                ScanLocalSaves();
+                PopulateTable();
+            }
+        });
+    });
+    search_layout->addWidget(portal_cloud_btn);
+
     auto* open_saves_btn = new QPushButton(tr("📂 Папка сохранений"), this);
     open_saves_btn->setToolTip(tr("Открыть локальную папку сохранений NAND в Проводнике"));
     connect(open_saves_btn, &QPushButton::clicked, this, [this]() {

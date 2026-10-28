@@ -127,11 +127,14 @@ void ConfigureCpu::Setup(const ConfigurationShared::Builder& builder) {
 }
 
 void ConfigureCpu::UpdateGroup() {
-    const u32 accuracy = accuracy_combobox->currentIndex();
-    const u32 backend = backend_combobox->currentIndex();
+    if (!accuracy_combobox || !backend_combobox) {
+        return;
+    }
+    const int accuracy = accuracy_combobox->currentIndex();
+    const int backend = backend_combobox->currentIndex();
     // TODO(crueter): see if this works on NCE
-    ui->unsafe_group->setVisible(accuracy == (u32)Settings::CpuAccuracy::Unsafe &&
-                                 backend == (u32)Settings::CpuBackend::Dynarmic);
+    ui->unsafe_group->setVisible(accuracy == static_cast<int>(Settings::CpuAccuracy::Unsafe) &&
+                                 backend == static_cast<int>(Settings::CpuBackend::Dynarmic));
 }
 
 void ConfigureCpu::ApplyConfiguration() {

@@ -248,7 +248,8 @@ void FrameGen::Process(const Device& device, Frame* frame, VkFormat format,
 
         const bool warm = plan.warm && count + 1 >= LSFG_REQUIRED_FRAMES;
         warm_streak = warm ? warm_streak + 1 : 0;
-        generated = warm && warm_streak >= LSFG_RECURRENCE_FRAMES && plan.generations > 0;
+        // Warm-up guard: require at least 2 presented frames before activating frame generation
+        generated = warm && warm_streak >= 2 && plan.generations > 0;
 
         scheduler.RequestOutsideRenderPassOperationContext();
         scheduler.Record([this, source = *frame->image, extent, count,

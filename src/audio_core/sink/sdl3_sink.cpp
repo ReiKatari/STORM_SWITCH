@@ -59,10 +59,21 @@ namespace {
             model.find("y700") != std::string::npos;
         SDL_SetHint(SDL_HINT_AUDIO_DRIVER, prefer_opensles ? "opensles,aaudio" : "aaudio,opensles");
 #endif
+#ifdef __ANDROID__
+        if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+            LOG_WARNING(Audio_Sink, "SDL_InitSubSystem audio failed, retrying with opensles: {}", SDL_GetError());
+            SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "opensles");
+            if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+                LOG_CRITICAL(Audio_Sink, "SDL_InitSubSystem audio retry failed: {}", SDL_GetError());
+                return false;
+            }
+        }
+#else
         if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
             LOG_CRITICAL(Audio_Sink, "SDL_InitSubSystem audio failed: {}", SDL_GetError());
             return false;
         }
+#endif
         LOG_INFO(Audio_Sink, "SDL audio initialized using driver: {}",
                  SDL_GetCurrentAudioDriver() ? SDL_GetCurrentAudioDriver() : "unknown");
     }
@@ -144,6 +155,17 @@ public:
                                                &SDLSinkStream::DataCallback, this);
         }
 
+#ifdef __ANDROID__
+        if (stream == nullptr) {
+            LOG_WARNING(Audio_Sink, "Error opening SDL audio device stream, retrying with opensles: {}", SDL_GetError());
+            SDL_QuitSubSystem(SDL_INIT_AUDIO);
+            SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "opensles");
+            if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+                stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec,
+                                                   &SDLSinkStream::DataCallback, this);
+            }
+        }
+#endif
         if (stream == nullptr) {
             LOG_CRITICAL(Audio_Sink, "Error opening SDL audio device: {}", SDL_GetError());
             return;

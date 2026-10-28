@@ -12,6 +12,8 @@
 #include <cstring>
 #include <set>
 #include <sstream>
+#include <fstream>
+#include <filesystem>
 
 #include "common/fs/file.h"
 #include "common/fs/fs.h"
@@ -98,6 +100,42 @@ VirtualDir FindSubdirectoryCaseless(const VirtualDir dir, std::string_view name)
 
     return nullptr;
 #endif
+}
+
+[[maybe_unused]] static std::unordered_map<std::string, bool> ReadCheatToggles(const std::filesystem::path& path) {
+    std::unordered_map<std::string, bool> toggles;
+    std::error_code ec;
+    if (!std::filesystem::exists(path, ec)) {
+        return toggles;
+    }
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        return toggles;
+    }
+    std::string line;
+    std::string current_cheat_name;
+    while (std::getline(file, line)) {
+        while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\t')) {
+            line.pop_back();
+        }
+        if (line.empty()) continue;
+        if (line.front() == '[' && line.back() == ']') {
+            std::string tag = line.substr(1, line.size() - 2);
+            std::string tag_lower = Common::ToLower(tag);
+            if (tag_lower == "enabled" || tag_lower == "on" || tag_lower == "true" || tag_lower == "1") {
+                if (!current_cheat_name.empty()) {
+                    toggles[current_cheat_name] = true;
+                }
+            } else if (tag_lower == "disabled" || tag_lower == "off" || tag_lower == "false" || tag_lower == "0") {
+                if (!current_cheat_name.empty()) {
+                    toggles[current_cheat_name] = false;
+                }
+            } else {
+                current_cheat_name = tag;
+            }
+        }
+    }
+    return toggles;
 }
 
 std::optional<std::vector<Core::Memory::CheatEntry>> ReadCheatFileFromFolder(

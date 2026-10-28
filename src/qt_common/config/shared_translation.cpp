@@ -1109,7 +1109,9 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
     translations->insert({Settings::EnumMetadata<Settings::GpuAccuracy>::Index(),
                           {
                               PAIR(GpuAccuracy, Low, tr("Fast")),
+                              PAIR(GpuAccuracy, Normal, tr("Normal")),
                               PAIR(GpuAccuracy, High, tr("Accurate")),
+                              PAIR(GpuAccuracy, Extreme, tr("Extreme")),
                           }});
     translations->insert({Settings::EnumMetadata<Settings::DmaAccuracy>::Index(),
                           {
@@ -1175,10 +1177,10 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                               PAIR(ScalingFilter, Bilinear, tr("Bilinear")),
                               PAIR(ScalingFilter, Bicubic, tr("Bicubic")),
                               PAIR(ScalingFilter, Gaussian, tr("Gaussian")),
-                              PAIR(ScalingFilter, Lanczos, tr("Lanczos")),
+                              PAIR(ScalingFilter, Lanczos, tr("Lanczos 3 (Anti-Ringing EWA)")),
                               PAIR(ScalingFilter, ScaleForce, tr("ScaleForce")),
                               PAIR(ScalingFilter, Fsr, tr("AMD FidelityFX Super Resolution")),
-                              PAIR(ScalingFilter, Area, tr("Area")),
+                              PAIR(ScalingFilter, Area, tr("Area (Pixel Area Super-Sampling)")),
                               PAIR(ScalingFilter, ZeroTangent, tr("Zero-Tangent")),
                               PAIR(ScalingFilter, BSpline, tr("B-Spline")),
                               PAIR(ScalingFilter, Mitchell, tr("Mitchell")),
@@ -1186,6 +1188,8 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                               PAIR(ScalingFilter, Mmpx, tr("MMPX")),
                               PAIR(ScalingFilter, Sgsr, tr("Snapdragon Game Super Resolution")),
                               PAIR(ScalingFilter, SgsrEdge, tr("Snapdragon Game Super Resolution EdgeDir")),
+                              PAIR(ScalingFilter, Cas, tr("AMD FidelityFX CAS (Contrast Adaptive)")),
+                              PAIR(ScalingFilter, OmniScale, tr("OmniScale HQ (Pixel-Art & 2D/3D)")),
                           }});
     translations->insert({Settings::EnumMetadata<Settings::AntiAliasing>::Index(),
                           {

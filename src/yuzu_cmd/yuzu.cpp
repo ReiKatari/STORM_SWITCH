@@ -180,6 +180,7 @@ static void OnStatusMessageReceived(const Network::StatusMessageEntry& msg) {
 
 struct SdlState {
     Core::System system{};
+    InputCommon::InputSubsystem input_subsystem{};
     std::unique_ptr<EmuWindow_SDL3> emu_window;
 };
 
@@ -374,8 +375,6 @@ extern "C" SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 
     state->system.Initialize();
 
-    InputCommon::InputSubsystem input_subsystem{};
-
     // Apply the command line arguments
     state->system.ApplySettings();
 
@@ -384,14 +383,14 @@ extern "C" SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     case Settings::RendererBackend::OpenGL_GLSL:
     case Settings::RendererBackend::OpenGL_GLASM:
     case Settings::RendererBackend::OpenGL_SPIRV:
-        state->emu_window = std::make_unique<EmuWindow_SDL3_GL>(&input_subsystem, state->system, fullscreen);
+        state->emu_window = std::make_unique<EmuWindow_SDL3_GL>(&state->input_subsystem, state->system, fullscreen);
         break;
 #endif
     case Settings::RendererBackend::Vulkan:
-        state->emu_window = std::make_unique<EmuWindow_SDL3_VK>(&input_subsystem, state->system, fullscreen);
+        state->emu_window = std::make_unique<EmuWindow_SDL3_VK>(&state->input_subsystem, state->system, fullscreen);
         break;
     case Settings::RendererBackend::Null:
-        state->emu_window = std::make_unique<EmuWindow_SDL3_Null>(&input_subsystem, state->system, fullscreen);
+        state->emu_window = std::make_unique<EmuWindow_SDL3_Null>(&state->input_subsystem, state->system, fullscreen);
         break;
     default:
         LOG_CRITICAL(Frontend, "Invalid renderer backend");
@@ -464,6 +463,7 @@ extern "C" SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 
     // don't do anything, SDL3 already exists for us :D
     state->system.RegisterExitCallback([] {});
+
     void(state->system.Run());
     if (state->system.DebuggerEnabled())
         state->system.InitializeDebugger();
@@ -476,10 +476,13 @@ extern "C" SDL_AppResult SDL_AppIterate(void *appstate) {
 extern "C" SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
     SdlState *state = (SdlState *)appstate;
     state->emu_window->OnEvent(*event);
-    return SDL_APP_SUCCESS;
+    return SDL_APP_CONTINUE;
 }
 extern "C" void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     SdlState *state = (SdlState *)appstate;
+    if (!state) {
+        return;
+    }
     state->system.DetachDebugger();
     void(state->system.Pause());
     state->system.ShutdownMainProcess();

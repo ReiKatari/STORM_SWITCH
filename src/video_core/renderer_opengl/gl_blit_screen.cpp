@@ -114,6 +114,12 @@ void BlitScreen::CreateWindowAdapt() {
     case Settings::ScalingFilter::Mmpx:
         window_adapt = MakeMmpx(device);
         break;
+    case Settings::ScalingFilter::Cas:
+        window_adapt = MakeCas(device);
+        break;
+    case Settings::ScalingFilter::OmniScale:
+        window_adapt = MakeOmniScale(device);
+        break;
     case Settings::ScalingFilter::Fsr:
     case Settings::ScalingFilter::Sgsr:
     case Settings::ScalingFilter::SgsrEdge:

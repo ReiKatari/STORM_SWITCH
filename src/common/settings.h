@@ -1082,7 +1082,10 @@ constexpr u32 MAX_FRAME_GEN_MULTIPLIER = 4;
 bool getDebugKnobAt(u8 i);
 
 void UpdateGPUAccuracy();
+bool IsGPULevelLow();
+bool IsGPULevelNormal();
 bool IsGPULevelHigh();
+bool IsGPULevelExtreme();
 
 bool IsDMALevelDefault();
 bool IsDMALevelNormal();

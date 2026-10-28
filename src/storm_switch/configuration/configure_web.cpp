@@ -43,6 +43,8 @@ ConfigureWeb::ConfigureWeb(QWidget* parent)
     ui->edit_username->setValidator(username_validator);
     ui->edit_token->setValidator(token_validator);
 
+    connect(ui->edit_username, &QLineEdit::textChanged, this, &ConfigureWeb::VerifyLogin);
+    connect(ui->edit_token, &QLineEdit::textChanged, this, &ConfigureWeb::VerifyLogin);
     connect(ui->button_generate, &QPushButton::clicked, this, &ConfigureWeb::GenerateToken);
 
 #ifndef USE_DISCORD_PRESENCE
@@ -69,9 +71,6 @@ void ConfigureWeb::RetranslateUI() {
 }
 
 void ConfigureWeb::SetConfiguration() {
-    connect(ui->edit_username, &QLineEdit::textChanged, this, &ConfigureWeb::VerifyLogin);
-    connect(ui->edit_token, &QLineEdit::textChanged, this, &ConfigureWeb::VerifyLogin);
-
     ui->edit_username->setText(QString::fromStdString(Settings::values.eden_username.GetValue()));
     ui->edit_token->setText(QString::fromStdString(Settings::values.eden_token.GetValue()));
 
@@ -104,30 +103,37 @@ void ConfigureWeb::ApplyConfiguration() {
 static QPixmap CreateStatusBadge(bool ok) {
     QPixmap pix(20, 20);
     pix.fill(Qt::transparent);
-    QPainter p(&pix);
-    p.setRenderHint(QPainter::Antialiasing);
+    {
+        QPainter p(&pix);
+        p.setRenderHint(QPainter::Antialiasing);
 
-    if (ok) {
-        p.setPen(QPen(QColor(16, 185, 129), 1.5));
-        p.setBrush(QColor(16, 185, 129, 220));
-        p.drawEllipse(2, 2, 16, 16);
+        if (ok) {
+            p.setPen(QPen(QColor(16, 185, 129), 1.5));
+            p.setBrush(QColor(16, 185, 129, 220));
+            p.drawEllipse(2, 2, 16, 16);
 
-        p.setPen(QPen(Qt::white, 2.0));
-        p.drawLine(5, 10, 8, 14);
-        p.drawLine(8, 14, 15, 6);
-    } else {
-        p.setPen(QPen(QColor(239, 68, 68), 1.5));
-        p.setBrush(QColor(239, 68, 68, 220));
-        p.drawEllipse(2, 2, 16, 16);
+            p.setPen(QPen(Qt::white, 2.0));
+            p.drawLine(5, 10, 8, 14);
+            p.drawLine(8, 14, 15, 6);
+        } else {
+            p.setPen(QPen(QColor(239, 68, 68), 1.5));
+            p.setBrush(QColor(239, 68, 68, 220));
+            p.drawEllipse(2, 2, 16, 16);
 
-        p.setPen(QPen(Qt::white, 2.0));
-        p.drawLine(6, 6, 14, 14);
-        p.drawLine(14, 6, 6, 14);
+            p.setPen(QPen(Qt::white, 2.0));
+            p.drawLine(6, 6, 14, 14);
+            p.drawLine(14, 6, 6, 14);
+        }
+        p.end();
     }
     return pix;
 }
 
 void ConfigureWeb::VerifyLogin() {
+    if (!ui || !ui->edit_username || !ui->edit_token ||
+        !ui->label_username_verified || !ui->label_token_verified) {
+        return;
+    }
     const bool username_good = ui->edit_username->hasAcceptableInput();
     const bool token_good = ui->edit_token->hasAcceptableInput();
 
