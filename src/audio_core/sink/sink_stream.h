@@ -186,7 +186,7 @@ public:
     /**
      * Empty out the buffer queue.
      */
-    void ClearQueue();
+    virtual void ClearQueue();
 
     /**
      * Callback for AudioIn.

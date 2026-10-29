@@ -130,12 +130,10 @@ Result System::Stop() {
 }
 
 void System::Resynchronize() {
-    if (state == State::Started) {
-        u32 buffers_released{};
-        buffers.FlushBuffers(buffers_released);
-        if (session) {
-            session->ClearBuffers();
-        }
+    u32 buffers_released{};
+    buffers.FlushBuffers(buffers_released);
+    if (session) {
+        session->ClearBuffers();
     }
 }
 

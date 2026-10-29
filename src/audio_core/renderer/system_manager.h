@@ -98,7 +98,9 @@ private:
     /// Hold synchronization for state/pause transitions
     std::mutex hold_mutex{};
     std::condition_variable hold_cv{};
+    std::condition_variable hold_ack_cv{};
     bool held{false};
+    bool thread_is_sleeping{false};
     /// Is the system manager thread active?
     std::atomic<bool> active{};
     /// Reference to the ADSP's AudioRenderer for communication

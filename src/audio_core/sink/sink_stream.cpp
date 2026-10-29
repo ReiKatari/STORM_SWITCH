@@ -109,6 +109,18 @@ void SinkStream::ClearQueue() {
     queued_buffers = 0;
     playing_buffer = {};
     playing_buffer.consumed = true;
+    last_frame.fill(0);
+    drift_ratio = 1.0;
+    drift_integral = 0.0;
+    drift_ema_queue_level = static_cast<f64>(target_queue_size);
+    release_cv.notify_all();
+
+    {
+        std::scoped_lock s_lk{sample_count_lock};
+        min_played_sample_count = 0;
+        max_played_sample_count = 0;
+        last_sample_count_update_time = system.CoreTiming().GetGlobalTimeNs();
+    }
 }
 
 void SinkStream::ProcessAudioIn(std::span<const s16> input_buffer, std::size_t num_frames) {

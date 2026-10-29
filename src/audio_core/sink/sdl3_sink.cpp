@@ -230,6 +230,13 @@ public:
         static_cast<void>(SDL_PauseAudioStreamDevice(stream));
     }
 
+    void ClearQueue() override {
+        SinkStream::ClearQueue();
+        if (stream != nullptr) {
+            SDL_ClearAudioStream(stream);
+        }
+    }
+
 private:
     /**
      * Main callback from SDL. Either expects samples from us (audio render/audio out), or will

@@ -54,23 +54,7 @@
 #include "storm_switch/configuration/configure_web.h"
 #include "storm_switch/configuration/shared_widget.h"
 
-static QString StormLang(const QString& ru, const QString& en,
-                         const QString& de = QString(), const QString& fr = QString(),
-                         const QString& zh = QString(), const QString& ja = QString(),
-                         const QString& ar = QString(), const QString& es = QString()) {
-    std::string lang = UISettings::values.language.GetValue();
-    if (lang.empty()) {
-        lang = QLocale::system().name().toStdString();
-    }
-    if (lang.rfind("ru", 0) == 0) return ru;
-    if (lang.rfind("ar", 0) == 0 && !ar.isEmpty()) return ar;
-    if (lang.rfind("es", 0) == 0 && !es.isEmpty()) return es;
-    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
-    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
-    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
-    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
-    return en;
-}
+#include "storm_switch/common/storm_lang.h"
 
 static QString GetLocalizedTabText(const QString& accessible_name) {
     if (accessible_name == QStringLiteral("General"))
@@ -306,6 +290,13 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     m_restore_defaults_btn->setGraphicsEffect(shadow);
     connect(m_restore_defaults_btn, &QPushButton::clicked, this, &ConfigureDialog::OnRestoreDefaultsClicked);
 
+    if (auto* cancel_btn = ui->buttonBox->button(QDialogButtonBox::Cancel)) {
+        cancel_btn->setProperty("isCancelButton", true);
+        cancel_btn->setText(StormCancelText());
+        cancel_btn->setStyleSheet(StormCancelButtonStyle());
+        cancel_btn->setCursor(Qt::PointingHandCursor);
+    }
+
     setStyleSheet(QStringLiteral(
         "QDialog#ConfigureDialog {"
         "    background-color: #0B0F19;"
@@ -525,7 +516,7 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "QPushButton:pressed {"
         "    background: #005580;"
         "}"
-    ));
+    ) + StormCancelButtonQssRule());
 
     ui->tabWidget->setMinimumSize(320, 200);
     ui->tabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

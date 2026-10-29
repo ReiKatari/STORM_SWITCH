@@ -17,7 +17,7 @@ if (-not $sha1) {
     if ($cert) { $sha1 = $cert.Thumbprint }
 }
 
-$version = '15.0.2'
+$version = '15.0.3'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -34,12 +34,12 @@ Copy-Item "$PSScriptRoot\build_ninja\bin\STORM_SWITCH*.exe" "$assemblingDir\" -F
 Remove-Item "$assemblingDir\*.pdb" -Force -ErrorAction SilentlyContinue
 
 Write-Host "Signing Assembling executables with unified STORM SERTIFICATE..."
-& $signtool sign /sha1 $sha1 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "$assemblingDir\STORM_SWITCH.exe"
+& $signtool sign /sha1 $sha1 /fd SHA256 /d "STORM SWITCH" /tr http://timestamp.digicert.com /td SHA256 "$assemblingDir\STORM_SWITCH.exe"
 if (Test-Path "$assemblingDir\STORM_SWITCH-cli.exe") {
-    & $signtool sign /sha1 $sha1 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "$assemblingDir\STORM_SWITCH-cli.exe"
+    & $signtool sign /sha1 $sha1 /fd SHA256 /d "STORM SWITCH" /tr http://timestamp.digicert.com /td SHA256 "$assemblingDir\STORM_SWITCH-cli.exe"
 }
 if (Test-Path "$assemblingDir\STORM_SWITCH-room.exe") {
-    & $signtool sign /sha1 $sha1 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "$assemblingDir\STORM_SWITCH-room.exe"
+    & $signtool sign /sha1 $sha1 /fd SHA256 /d "STORM SWITCH" /tr http://timestamp.digicert.com /td SHA256 "$assemblingDir\STORM_SWITCH-room.exe"
 }
 
 $sevenZip = "$assemblingDir\7z.exe"

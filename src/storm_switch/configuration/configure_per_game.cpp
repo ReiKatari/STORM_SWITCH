@@ -66,23 +66,7 @@
 #include "storm_switch/configuration/configure_system.h"
 #include "storm_switch/util/util.h"
 
-static QString StormLang(const QString bitand ru, const QString bitand en,
-                         const QString bitand de = QString(), const QString bitand fr = QString(),
-                         const QString bitand zh = QString(), const QString bitand ja = QString(),
-                         const QString bitand ar = QString(), const QString bitand es = QString()) {
-    std::string lang = UISettings::values.language.GetValue();
-    if (lang.empty()) {
-        lang = QLocale::system().name().toStdString();
-    }
-    if (lang.rfind("ru", 0) == 0) return ru;
-    if (lang.rfind("ar", 0) == 0 and !ar.isEmpty()) return ar;
-    if (lang.rfind("es", 0) == 0 and !es.isEmpty()) return es;
-    if (lang.rfind("de", 0) == 0 and !de.isEmpty()) return de;
-    if (lang.rfind("fr", 0) == 0 and !fr.isEmpty()) return fr;
-    if (lang.rfind("zh", 0) == 0 and !zh.isEmpty()) return zh;
-    if (lang.rfind("ja", 0) == 0 and !ja.isEmpty()) return ja;
-    return en;
-}
+#include "storm_switch/common/storm_lang.h"
 ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::string& file_name,
                                    std::vector<VkDeviceInfo::Record>& vk_device_records,
                                    Core::System& system_)
@@ -319,6 +303,13 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         });
     }
 
+    if (auto* cancel_btn = ui->buttonBox->button(QDialogButtonBox::Cancel)) {
+        cancel_btn->setProperty("isCancelButton", true);
+        cancel_btn->setText(StormCancelText());
+        cancel_btn->setStyleSheet(StormCancelButtonStyle());
+        cancel_btn->setCursor(Qt::PointingHandCursor);
+    }
+
     setStyleSheet(QStringLiteral(
         "QDialog#ConfigurePerGame {"
         "    background-color: #0B0F19;"
@@ -553,7 +544,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "QPushButton:pressed {"
         "    background: #005580;"
         "}"
-    ));
+    ) + StormCancelButtonQssRule());
 
     RetranslateUI();
     LoadConfiguration();

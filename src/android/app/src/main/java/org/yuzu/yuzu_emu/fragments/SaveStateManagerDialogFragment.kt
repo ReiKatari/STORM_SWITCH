@@ -159,7 +159,7 @@ class SaveStateManagerDialogFragment : DialogFragment() {
         }
 
         slotBinding.btnDelete.setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext())
+            val confirmDialog = MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.save_state_slot_fmt, slot))
                 .setMessage(getString(R.string.save_state_confirm_delete, slot))
                 .setPositiveButton(R.string.delete) { _, _ ->
@@ -167,8 +167,11 @@ class SaveStateManagerDialogFragment : DialogFragment() {
                     Toast.makeText(requireContext(), getString(R.string.save_state_deleted_toast, slot), Toast.LENGTH_SHORT).show()
                     refreshAllSlots()
                 }
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show()
+            confirmDialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE)?.let { negBtn ->
+                org.yuzu.yuzu_emu.utils.ThemeHelper.styleCancelButton(negBtn)
+            }
         }
     }
 

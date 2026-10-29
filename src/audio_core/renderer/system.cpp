@@ -453,6 +453,49 @@ void System::Resynchronize() {
     reset_command_buffers = true;
     adsp_behind = false;
     audio_renderer.ClearRemainCommandCount(session_id);
+
+    // Reset all voices so stale voices from future do not linger or overlap
+    const auto voice_count = voice_context.GetCount();
+    for (u32 i = 0; i < voice_count; ++i) {
+        auto& voice_info = voice_context.GetInfo(i);
+        voice_info.Initialize();
+        voice_info.in_use = false;
+        voice_info.was_playing = false;
+        voice_info.current_play_state = VoiceInfo::ServerPlayState::Stopped;
+        voice_info.last_play_state = VoiceInfo::ServerPlayState::Stopped;
+        voice_info.is_new = true;
+        for (auto& wb : voice_info.wavebuffers) {
+            wb.Initialize();
+        }
+        voice_context.GetDspSharedState(i) = {};
+        voice_context.GetState(i) = {};
+        auto& channel_res = voice_context.GetChannelResource(i);
+        channel_res.mix_volumes.fill(0.0f);
+        channel_res.prev_mix_volumes.fill(0.0f);
+        channel_res.in_use = false;
+    }
+    voice_context.SetActiveCount(0);
+
+    // Clear effect states to eliminate lingering reverb/delay tails from previous session
+    const auto effect_count = effect_context.GetCount();
+    for (u32 e = 0; e < effect_count; ++e) {
+        effect_context.GetResultState(e) = {};
+        effect_context.GetDspSharedResultState(e) = {};
+    }
+
+    // Clear mix and depop sample buffers
+    if (!samples_workbuffer.empty()) {
+        std::memset(samples_workbuffer.data(), 0, samples_workbuffer.size_bytes());
+    }
+    if (!depop_buffer.empty()) {
+        std::memset(depop_buffer.data(), 0, depop_buffer.size_bytes());
+    }
+
+    total_ticks_elapsed = 0;
+    ticks_spent_updating = 0;
+    num_command_lists_generated = 0;
+    num_times_updated = 0;
+    frames_elapsed = 0;
 }
 
 Result System::Update(std::span<const u8> input, std::span<u8> performance, std::span<u8> output) {

@@ -188,7 +188,7 @@
     <string name="multiplayer_nickname_invalid">Username invalid, ensure it is set properly in System -&gt; Network</string>
     <string name="multiplayer_token_error">Must be 48 characters, and lowercase a-z only</string>
     <string name="multiplayer_port_error">Must be between 1 and 65535</string>
-    <string name="cancel">Cancel</string>
+    <string name="cancel">ยกเลิก</string>
     <string name="ok">Ok</string>
     <string name="refresh">Refresh</string>
     <string name="room_list">Room List</string>

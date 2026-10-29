@@ -57,3 +57,72 @@ inline QString StormLang11(const QString& ru, const QString& en,
     if (lang.rfind("ar", 0) == 0 && !ar.isEmpty()) return ar;
     return en;
 }
+
+inline QString StormCancelText() {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0 || lang.rfind("be", 0) == 0) return QStringLiteral("Отмена");
+    if (lang.rfind("uk", 0) == 0) return QStringLiteral("Скасувати");
+    if (lang.rfind("de", 0) == 0) return QStringLiteral("Abbrechen");
+    if (lang.rfind("fr", 0) == 0) return QStringLiteral("Annuler");
+    if (lang.rfind("es", 0) == 0) return QStringLiteral("Cancelar");
+    if (lang.rfind("it", 0) == 0) return QStringLiteral("Annulla");
+    if (lang.rfind("pt", 0) == 0) return QStringLiteral("Cancelar");
+    if (lang.rfind("zh", 0) == 0) return QStringLiteral("取消");
+    if (lang.rfind("ja", 0) == 0) return QStringLiteral("キャンセル");
+    if (lang.rfind("ko", 0) == 0) return QStringLiteral("취소");
+    if (lang.rfind("pl", 0) == 0) return QStringLiteral("Anuluj");
+    if (lang.rfind("ar", 0) == 0) return QStringLiteral("إلغاء");
+    return QStringLiteral("Cancel");
+}
+
+inline QString StormCancelButtonStyle() {
+    return QStringLiteral(
+        "QPushButton, QPushButton[isCancelButton=\"true\"], QDialogButtonBox QPushButton[isCancelButton=\"true\"] {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #EF4444, stop:1 #DC2626) !important;"
+        "    color: #FFFFFF !important;"
+        "    font-weight: 700 !important;"
+        "    font-size: 12px !important;"
+        "    padding: 6px 18px !important;"
+        "    border-radius: 7px !important;"
+        "    border: 1px solid #F87171 !important;"
+        "    min-height: 24px !important;"
+        "}"
+        "QPushButton:hover, QPushButton[isCancelButton=\"true\"]:hover, QDialogButtonBox QPushButton[isCancelButton=\"true\"]:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #F87171, stop:1 #EF4444) !important;"
+        "    border: 1px solid #FCA5A5 !important;"
+        "    color: #FFFFFF !important;"
+        "}"
+        "QPushButton:pressed, QPushButton[isCancelButton=\"true\"]:pressed, QDialogButtonBox QPushButton[isCancelButton=\"true\"]:pressed {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B91C1C, stop:1 #7F1D1D) !important;"
+        "    border: 1px solid #991B1B !important;"
+        "    color: #FFFFFF !important;"
+        "}"
+    );
+}
+inline QString StormCancelButtonQssRule() {
+    return QStringLiteral(
+        "\nQPushButton[isCancelButton=\"true\"], QDialogButtonBox QPushButton[isCancelButton=\"true\"] {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #EF4444, stop:1 #DC2626) !important;"
+        "    color: #FFFFFF !important;"
+        "    font-weight: 700 !important;"
+        "    font-size: 12px !important;"
+        "    padding: 6px 18px !important;"
+        "    border-radius: 7px !important;"
+        "    border: 1px solid #F87171 !important;"
+        "    min-height: 24px !important;"
+        "}"
+        "\nQPushButton[isCancelButton=\"true\"]:hover, QDialogButtonBox QPushButton[isCancelButton=\"true\"]:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #F87171, stop:1 #EF4444) !important;"
+        "    border: 1px solid #FCA5A5 !important;"
+        "    color: #FFFFFF !important;"
+        "}"
+        "\nQPushButton[isCancelButton=\"true\"]:pressed, QDialogButtonBox QPushButton[isCancelButton=\"true\"]:pressed {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B91C1C, stop:1 #7F1D1D) !important;"
+        "    border: 1px solid #991B1B !important;"
+        "    color: #FFFFFF !important;"
+        "}\n"
+    );
+}

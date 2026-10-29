@@ -190,6 +190,18 @@ object ThemeHelper {
         }
         preferences.registerOnSharedPreferenceChangeListener(listener)
     }
+
+    fun styleCancelButton(button: android.widget.Button?) {
+        if (button == null) return
+        val context = button.context
+        val density = context.resources.displayMetrics.density
+        button.setBackgroundResource(R.drawable.bg_cancel_button)
+        button.setTextColor(Color.WHITE)
+        button.setTypeface(button.typeface, android.graphics.Typeface.BOLD)
+        val padH = (16f * density).toInt()
+        val padV = (8f * density).toInt()
+        button.setPadding(padH, padV, padH, padV)
+    }
 }
 
 enum class Theme(val int: Int) {

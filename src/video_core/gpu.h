@@ -276,6 +276,9 @@ public:
     /// Synchronously invalidate modified guest DRAM spans and GPU pipeline state on the GPU thread
     void SyncAndInvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences);
 
+    /// Discards GPU-modified image state for snapshot/restore and invalidation
+    void DiscardGpuModifiedImages();
+
 private:
     struct Impl;
     mutable std::unique_ptr<Impl> impl;

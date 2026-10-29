@@ -258,6 +258,9 @@ static inline void ApplyDarkToTopLevel(QWidget* w, bool on) {
 
 #include <QFontMetrics>
 #include <QGroupBox>
+#include <QDialogButtonBox>
+#include <QPushButton>
+#include "storm_switch/common/storm_lang.h"
 
 static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
     auto* dlg = qobject_cast<QDialog*>(w);
@@ -269,9 +272,9 @@ static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
         return;
     }
 
-    // 1. Ensure unified STORM square checkbox/groupbox/radio indicator and QGroupBox::title styling
+    // 1. Ensure unified STORM square checkbox/groupbox/radio indicator and QGroupBox::title styling + Cancel button styling
     const QString cur_qss = dlg->styleSheet();
-    if (!cur_qss.isEmpty() && !cur_qss.contains(QStringLiteral("QCheckBox::indicator"))) {
+    if (!cur_qss.isEmpty() && !cur_qss.contains(QStringLiteral("isCancelButton"))) {
         dlg->setStyleSheet(cur_qss + QStringLiteral(
             "\nQGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; top: 0px; left: 12px; padding: 0 6px; }"
             "\nQCheckBox::indicator, QGroupBox::indicator, QRadioButton::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {"
@@ -281,7 +284,50 @@ static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
             "\nQCheckBox::indicator:checked, QGroupBox::indicator:checked, QRadioButton::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
             " background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00F0FF, stop:1 #0088CC); border: 1px solid #00F0FF; image: none; }"
             "\nQCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QRadioButton::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
-            " background: #121826; border: 1px solid #475569; image: none; }"));
+            " background: #121826; border: 1px solid #475569; image: none; }") + StormCancelButtonQssRule());
+    }
+
+    // 2. Localize and style all Cancel buttons across all dialogs, message boxes, and progress dialogs
+    auto style_cancel_btn = [](QPushButton* btn) {
+        if (!btn) return;
+        btn->setProperty("isCancelButton", true);
+        btn->setText(StormCancelText());
+        btn->setStyleSheet(StormCancelButtonStyle());
+        btn->setCursor(Qt::PointingHandCursor);
+    };
+
+    auto is_cancel_text = [](const QString& txt) {
+        const QString clean = txt.trimmed().remove(QLatin1Char('&')).toLower();
+        return clean == QStringLiteral("cancel") ||
+               clean == QStringLiteral("отмена") ||
+               clean == QStringLiteral("отменить") ||
+               clean == QStringLiteral("abbrechen") ||
+               clean == QStringLiteral("annuler") ||
+               clean == QStringLiteral("cancelar") ||
+               clean == QStringLiteral("annulla") ||
+               clean == QStringLiteral("取消") ||
+               clean == QStringLiteral("キャンセル") ||
+               clean == QStringLiteral("취소") ||
+               clean == QStringLiteral("anuluj") ||
+               clean == QStringLiteral("скасувати") ||
+               clean == QStringLiteral("إلغاء");
+    };
+
+    for (auto* box : dlg->findChildren<QDialogButtonBox*>()) {
+        if (auto* btn = box->button(QDialogButtonBox::Cancel)) {
+            style_cancel_btn(btn);
+        }
+        for (auto* btn : box->findChildren<QPushButton*>()) {
+            if (box->buttonRole(btn) == QDialogButtonBox::RejectRole || is_cancel_text(btn->text())) {
+                style_cancel_btn(btn);
+            }
+        }
+    }
+
+    for (auto* btn : dlg->findChildren<QPushButton*>()) {
+        if (is_cancel_text(btn->text()) || btn->objectName().contains(QStringLiteral("cancel"), Qt::CaseInsensitive)) {
+            style_cancel_btn(btn);
+        }
     }
 
     QScreen* scr = dlg->screen();
@@ -407,6 +453,22 @@ struct TitlebarFilter final : QObject {
                 in_filter = true;
                 ApplyDarkToTopLevel(w, dark);
                 EnsureModalDialogScalableAndStyled(w);
+                if (auto* box = qobject_cast<QDialogButtonBox*>(w)) {
+                    if (auto* btn = box->button(QDialogButtonBox::Cancel)) {
+                        btn->setProperty("isCancelButton", true);
+                        btn->setText(StormCancelText());
+                        btn->setStyleSheet(StormCancelButtonStyle());
+                    }
+                }
+                if (auto* btn = qobject_cast<QPushButton*>(w)) {
+                    const QString clean = btn->text().trimmed().remove(QLatin1Char('&')).toLower();
+                    if (clean == QStringLiteral("cancel") || clean == QStringLiteral("отмена") ||
+                        btn->objectName().contains(QStringLiteral("cancel"), Qt::CaseInsensitive)) {
+                        btn->setProperty("isCancelButton", true);
+                        btn->setText(StormCancelText());
+                        btn->setStyleSheet(StormCancelButtonStyle());
+                    }
+                }
                 in_filter = false;
                 break;
             case QEvent::WindowStateChange:
@@ -704,7 +766,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Initialize core emulation settings to Zero-Regression Baseline on fresh install, preserving existing user settings on upgrade
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "15.0.2";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "15.0.3";
     if (UISettings::values.config_version.GetValue().empty() && !had_existing_config_file) {
         LOG_INFO(Frontend, "Fresh configuration detected. Initializing core emulation settings to Zero-Regression Baseline (version '{}')...",
                  CURRENT_BUILD_VERSION);
@@ -4853,19 +4915,21 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         "    border-radius: 12px;"
         "}"
         "QLabel { color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }"
-    ));
+    ) + StormCancelButtonQssRule());
 
     // 2-COLUMN MASTER LAYOUT: Left = Info + Scroll + Checkbox, Right = Action Panel with Buttons
     auto* main_hlayout = new QHBoxLayout(&fixDialog);
     main_hlayout->setContentsMargins(16, 14, 16, 14);
     main_hlayout->setSpacing(14);
 
-    auto* left_col = new QVBoxLayout();
+    auto* left_panel = new QWidget(&fixDialog);
+    left_panel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    auto* left_col = new QVBoxLayout(left_panel);
     left_col->setContentsMargins(0, 0, 0, 0);
     left_col->setSpacing(10);
 
     // 1. Header Card with Game Title (Left Column Top)
-    auto* headerCard = new QFrame(&fixDialog);
+    auto* headerCard = new QFrame(left_panel);
     headerCard->setStyleSheet(QStringLiteral(
         "QFrame {"
         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 210, 255, 0.16), stop:1 rgba(15, 23, 42, 0.65));"
@@ -4951,10 +5015,12 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     left_col->addWidget(headerCard);
 
     // 2. Scroll Area for Issue Card, Fix Card, and Localized Parameters (Left Column Middle)
-    auto* scrollArea = new QScrollArea(&fixDialog);
+    auto* scrollArea = new QScrollArea(left_panel);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     scrollArea->setStyleSheet(QStringLiteral(
         "QScrollArea { background: transparent; border: none; }"
         "QScrollArea::corner { background: transparent; border: none; }"
@@ -4978,6 +5044,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
     auto* scrollWidget = new QWidget();
     scrollWidget->setStyleSheet(QStringLiteral("background: transparent;"));
+    scrollWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     auto* scrollLayout = new QVBoxLayout(scrollWidget);
     scrollLayout->setContentsMargins(0, 0, 8, 0);
     scrollLayout->setSpacing(10);
@@ -5256,7 +5323,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     left_col->addWidget(scrollArea, 1);
 
     // 4. Bottom of Left Column: Prompt + "Do not show again" Checkbox
-    auto* leftFooterCard = new QFrame(&fixDialog);
+    auto* leftFooterCard = new QFrame(left_panel);
     leftFooterCard->setStyleSheet(QStringLiteral(
         "QFrame {"
         "    background: rgba(15, 23, 42, 0.72);"
@@ -5309,17 +5376,18 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     leftFooterLayout->addStretch(1);
     left_col->addWidget(leftFooterCard);
 
-    main_hlayout->addLayout(left_col, 1);
+    main_hlayout->addWidget(left_panel, 1);
 
     // =========================================================================
-    // RIGHT COLUMN: Styled Vertical Action Panel with Choice Buttons
+    // RIGHT COLUMN: Styled Vertical Action Panel with Choice Buttons (Rigidly Fixed, Never Moves)
     // =========================================================================
     auto* rightCard = new QFrame(&fixDialog);
     rightCard->setFixedWidth(std::clamp(static_cast<int>(fix_target_w * 0.23), 265, 310));
+    rightCard->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     rightCard->setStyleSheet(QStringLiteral(
         "QFrame {"
-        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(19, 28, 46, 0.92), stop:1 rgba(11, 15, 25, 0.96));"
-        "    border: 1px solid rgba(0, 210, 255, 0.32);"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(19, 28, 46, 0.95), stop:1 rgba(11, 15, 25, 0.98));"
+        "    border: 1px solid rgba(0, 210, 255, 0.35);"
         "    border-radius: 10px;"
         "}"
     ));
@@ -5396,70 +5464,51 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         "}"
     ));
 
-    auto* skipBtn = new QPushButton(force_show
-        ? StormLang(QStringLiteral("Закрыть"), QStringLiteral("Close"), QStringLiteral("Schließen"), QStringLiteral("Fermer"), QStringLiteral("关闭"), QStringLiteral("閉じる"), QStringLiteral("إغلاق"), QStringLiteral("Cerrar"))
-        : StormLang(QStringLiteral("Запустить без изменений"), QStringLiteral("Launch Without Changes"), QStringLiteral("Ohne Änderungen starten"), QStringLiteral("Lancer sans modification"), QStringLiteral("不作更改直接启动"), QStringLiteral("変更せずに起動"), QStringLiteral("تشغيل بدون تغييرات"), QStringLiteral("Iniciar sin cambios")), rightCard);
-    skipBtn->setCursor(Qt::PointingHandCursor);
-    skipBtn->setMinimumHeight(40);
-    skipBtn->setStyleSheet(QStringLiteral(
-        "QPushButton {"
-        "    background: rgba(30, 41, 59, 0.85);"
-        "    color: #FFFFFF;"
-        "    font-weight: 600;"
-        "    font-size: 12px;"
-        "    padding: 8px 12px;"
-        "    border-radius: 7px;"
-        "    border: 1px solid rgba(148, 163, 184, 0.35);"
-        "}"
-        "QPushButton:hover {"
-        "    background: rgba(51, 65, 85, 0.95);"
-        "    border: 1px solid #38BDF8;"
-        "    color: #FFFFFF;"
-        "}"
-        "QPushButton:pressed {"
-        "    background: rgba(15, 23, 42, 0.95);"
-        "}"
-    ));
-
-    QPushButton* cancelBtn = nullptr;
+    QPushButton* skipBtn = nullptr;
     if (!force_show) {
-        cancelBtn = new QPushButton(StormLang(
-            QStringLiteral("Отменить"),
-            QStringLiteral("Cancel"),
-            QStringLiteral("Abbrechen"),
-            QStringLiteral("Annuler"),
-            QStringLiteral("取消"),
-            QStringLiteral("キャンセル"),
-            QStringLiteral("إلغاء"),
-            QStringLiteral("Cancelar")), rightCard);
-        cancelBtn->setCursor(Qt::PointingHandCursor);
-        cancelBtn->setMinimumHeight(40);
-        cancelBtn->setStyleSheet(QStringLiteral(
+        skipBtn = new QPushButton(StormLang(
+            QStringLiteral("Запустить без изменений"),
+            QStringLiteral("Launch Without Changes"),
+            QStringLiteral("Ohne Änderungen starten"),
+            QStringLiteral("Lancer sans modification"),
+            QStringLiteral("不作更改直接启动"),
+            QStringLiteral("変更せずに起動"),
+            QStringLiteral("تشغيل بدون تغييرات"),
+            QStringLiteral("Iniciar sin cambios")), rightCard);
+        skipBtn->setCursor(Qt::PointingHandCursor);
+        skipBtn->setMinimumHeight(40);
+        skipBtn->setStyleSheet(QStringLiteral(
             "QPushButton {"
-            "    background: rgba(46, 16, 20, 0.80);"
-            "    color: #FCA5A5;"
+            "    background: rgba(30, 41, 59, 0.85);"
+            "    color: #FFFFFF;"
             "    font-weight: 600;"
             "    font-size: 12px;"
             "    padding: 8px 12px;"
             "    border-radius: 7px;"
-            "    border: 1px solid rgba(239, 68, 68, 0.40);"
+            "    border: 1px solid rgba(148, 163, 184, 0.35);"
             "}"
             "QPushButton:hover {"
-            "    background: rgba(239, 68, 68, 0.88);"
-            "    border: 1px solid #FF5252;"
+            "    background: rgba(51, 65, 85, 0.95);"
+            "    border: 1px solid #38BDF8;"
             "    color: #FFFFFF;"
             "}"
             "QPushButton:pressed {"
-            "    background: #991B1B;"
+            "    background: rgba(15, 23, 42, 0.95);"
             "}"
         ));
     }
 
+    auto* cancelBtn = new QPushButton(StormCancelText(), rightCard);
+    cancelBtn->setProperty("isCancelButton", true);
+    cancelBtn->setCursor(Qt::PointingHandCursor);
+    cancelBtn->setMinimumHeight(40);
+    cancelBtn->setStyleSheet(StormCancelButtonStyle());
+
     right_col->addWidget(applyBtn);
-    right_col->addWidget(skipBtn);
-    if (cancelBtn) {
-        right_col->addWidget(cancelBtn);
+    if (skipBtn) {
+        right_col->addWidget(skipBtn);
     }
+    right_col->addWidget(cancelBtn);
 
     right_col->addStretch(1);
 
@@ -5480,7 +5529,21 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     ));
     right_col->addWidget(infoBadge);
 
-    main_hlayout->addWidget(rightCard);
+    // Forward mouse wheel from the rigidly pinned right card to the left scrollArea so scrolling anywhere works seamlessly
+    struct AutoFixWheelRedirect : public QObject {
+        QScrollArea* sa;
+        explicit AutoFixWheelRedirect(QScrollArea* target, QObject* parent = nullptr) : QObject(parent), sa(target) {}
+        bool eventFilter(QObject* obj, QEvent* ev) override {
+            if (ev->type() == QEvent::Wheel && sa) {
+                QCoreApplication::sendEvent(sa->viewport(), ev);
+                return true;
+            }
+            return QObject::eventFilter(obj, ev);
+        }
+    };
+    rightCard->installEventFilter(new AutoFixWheelRedirect(scrollArea, &fixDialog));
+
+    main_hlayout->addWidget(rightCard, 0);
 
     GameFixDialogResult action = GameFixDialogResult::Cancel;
 
@@ -5488,16 +5551,16 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
         action = GameFixDialogResult::ApplyAndLaunch;
         fixDialog.accept();
     });
-    connect(skipBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
-        action = GameFixDialogResult::LaunchWithoutChanges;
-        fixDialog.accept();
-    });
-    if (cancelBtn) {
-        connect(cancelBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
-            action = GameFixDialogResult::Cancel;
-            fixDialog.reject();
+    if (skipBtn) {
+        connect(skipBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
+            action = GameFixDialogResult::LaunchWithoutChanges;
+            fixDialog.accept();
         });
     }
+    connect(cancelBtn, &QPushButton::clicked, &fixDialog, [&fixDialog, &action] {
+        action = GameFixDialogResult::Cancel;
+        fixDialog.reject();
+    });
 
     fixDialog.exec();
 
@@ -14951,7 +15014,7 @@ void MainWindow::UpdateUITheme() {
     QFile f(theme_uri);
     if (f.open(QFile::ReadOnly | QFile::Text)) {
         QTextStream ts(&f);
-        const QString stylesheet = ts.readAll();
+        const QString stylesheet = ts.readAll() + StormCancelButtonQssRule();
         qApp->setStyleSheet(stylesheet);
         setStyleSheet(stylesheet);
     } else {

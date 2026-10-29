@@ -20,6 +20,8 @@ public:
     explicit IAudioRendererManager(Core::System& system_);
     ~IAudioRendererManager() override;
 
+    void Hold();
+    void Release();
     void Resynchronize();
 
 private:

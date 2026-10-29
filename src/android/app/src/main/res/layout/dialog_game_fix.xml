@@ -538,13 +538,16 @@
                     <!-- Cancel Button -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_cancel"
-                        style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="match_parent"
                         android:layout_height="42dp"
                         android:text="@string/cancel"
-                        android:textColor="?attr/colorError"
+                        android:textColor="#FFFFFF"
                         android:textSize="13sp"
                         android:textStyle="bold"
+                        android:background="@drawable/bg_cancel_button"
+                        app:backgroundTint="@null"
+                        app:strokeColor="#F87171"
+                        app:strokeWidth="1dp"
                         app:cornerRadius="10dp" />
 
                     <com.google.android.material.button.MaterialButton

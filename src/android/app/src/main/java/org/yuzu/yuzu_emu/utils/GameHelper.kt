@@ -204,18 +204,22 @@ object GameHelper {
         val finalGames = deduplicateGames(games)
 
         // Upgrade and sanitize versions and addon counts for all deduplicated games
+        // Avoid heavy JNI metadata queries for already cached games for 0 ms instant reloads
         finalGames.forEach { game ->
-            upgradeGameVersionIfNeeded(game)
-            val freshAddons = runCatching { GameMetadata.getAddonCount(game.path) }.getOrDefault(0)
-            if (freshAddons > game.addonCount) {
-                game.addonCount = freshAddons
-            }
-            val freshVer = runCatching { GameMetadata.getVersion(game.path, true) }.getOrDefault("")
-            val freshIntVer = runCatching { GameMetadata.getInternalVersion(game.path) }.getOrDefault("")
-            if (compareVersionStrings(freshVer, freshIntVer, game.version, game.internalVersion) > 0) {
-                if (!isBaseVersion(freshVer)) game.version = freshVer
-                if ((freshIntVer.toLongOrNull() ?: 0L) > (game.internalVersion.toLongOrNull() ?: 0L)) {
-                    game.internalVersion = freshIntVer
+            val wasCached = cachedMapByPath.containsKey(game.path)
+            if (!wasCached) {
+                upgradeGameVersionIfNeeded(game)
+                val freshAddons = runCatching { GameMetadata.getAddonCount(game.path) }.getOrDefault(0)
+                if (freshAddons > game.addonCount) {
+                    game.addonCount = freshAddons
+                }
+                val freshVer = runCatching { GameMetadata.getVersion(game.path, true) }.getOrDefault("")
+                val freshIntVer = runCatching { GameMetadata.getInternalVersion(game.path) }.getOrDefault("")
+                if (compareVersionStrings(freshVer, freshIntVer, game.version, game.internalVersion) > 0) {
+                    if (!isBaseVersion(freshVer)) game.version = freshVer
+                    if ((freshIntVer.toLongOrNull() ?: 0L) > (game.internalVersion.toLongOrNull() ?: 0L)) {
+                        game.internalVersion = freshIntVer
+                    }
                 }
             }
             val basePid = getBaseProgramIdHex(game.programIdHex)
@@ -439,8 +443,15 @@ object GameHelper {
         return uniqueByTitleAndFormat.values.filterNot { g ->
             val ext = g.extension.lowercase(Locale.ROOT)
             val isCart = ext == "xci" || ext == "xcz"
-            !isCart && (isUpdateOrDlcPath(g.path) || isUpdateOrDlcPath(g.title)) &&
-                !runCatching { GameMetadata.isBaseGame(g.path) }.getOrDefault(false)
+            if (isCart) return@filterNot false
+            if (isUpdateOrDlcPath(g.path) || isUpdateOrDlcPath(g.title)) {
+                val basePid = getBaseProgramIdHex(g.programIdHex)
+                if (basePid.equals(g.programIdHex, ignoreCase = true) && g.programIdHex != "0") {
+                    return@filterNot false
+                }
+                return@filterNot !runCatching { GameMetadata.isBaseGame(g.path) }.getOrDefault(false)
+            }
+            false
         }
     }
 
@@ -548,7 +559,8 @@ object GameHelper {
                         }
                         val isCartridge = extension == "xci" || extension == "xcz"
                         if (cached != null) {
-                            if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename) && GameMetadata.isBaseGame(filePath))) {
+                            // Instant cache hit: already verified base game, no redundant JNI isBaseGame call
+                            if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename))) {
                                 games.add(cached)
                             }
                         } else {

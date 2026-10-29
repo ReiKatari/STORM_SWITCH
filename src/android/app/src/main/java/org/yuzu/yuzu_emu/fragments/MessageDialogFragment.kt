@@ -109,6 +109,9 @@ class MessageDialogFragment : DialogFragment() {
             setStroke((resources.displayMetrics.density * 1.5f).toInt(), primaryColor)
         }
         dialog?.window?.setBackgroundDrawable(bg)
+        (dialog as? androidx.appcompat.app.AlertDialog)?.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE)?.let { negBtn ->
+            org.yuzu.yuzu_emu.utils.ThemeHelper.styleCancelButton(negBtn)
+        }
     }
 
     private fun openLink(link: String) {

@@ -82,7 +82,7 @@ class GamesViewModel : ViewModel() {
         reloadGames(directoriesChanged = false, firstStartup = false)
     }
 
-    fun setGames(games: List<Game>) {
+    fun setGames(games: List<Game>): Boolean {
         val deduplicated = GameHelper.deduplicateGames(games)
         val sortedList = deduplicated.sortedWith(
             compareBy(
@@ -91,7 +91,11 @@ class GamesViewModel : ViewModel() {
             )
         )
 
-        _games.value = sortedList
+        if (_games.value != sortedList) {
+            _games.value = sortedList
+            return true
+        }
+        return false
     }
 
     fun setShouldSwapData(shouldSwap: Boolean) {
@@ -119,15 +123,25 @@ class GamesViewModel : ViewModel() {
             return
         }
         reloading.set(true)
-        _isReloading.value = true
+        val hasExistingGames = _games.value.isNotEmpty()
+        if (!hasExistingGames) {
+            _isReloading.value = true
+        }
 
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
                     getGameDirsAndExternalContent()
-                    setGames(GameHelper.getGames())
-                    _shouldScrollAfterReload.value = true
-                    setShouldSwapData(true)
+                    val newGames = GameHelper.getGames()
+                    val changed = if (newGames.isNotEmpty() || !hasExistingGames) {
+                        setGames(newGames)
+                    } else {
+                        false
+                    }
+                    if (changed || !hasExistingGames) {
+                        _shouldScrollAfterReload.value = true
+                        setShouldSwapData(true)
+                    }
                 } catch (e: Throwable) {
                     org.yuzu.yuzu_emu.utils.Log.error("[GamesViewModel] Error reloading games: ${e.message}")
                 } finally {

@@ -112,13 +112,23 @@ u32 AudioRenderer::GetRemainCommandCount(s32 session_id) const noexcept {
 }
 
 void AudioRenderer::ClearRemainCommandCount(s32 session_id) noexcept {
-    command_buffers[session_id].remaining_command_count = 0;
+    if (session_id >= 0 && static_cast<size_t>(session_id) < command_buffers.size()) {
+        command_buffers[session_id].remaining_command_count = 0;
+        command_buffers[session_id].reset_buffer = true;
+        command_buffers[session_id].buffer = 0;
+        command_buffers[session_id].size = 0;
+        if (streams[session_id]) {
+            streams[session_id]->ClearQueue();
+        }
+    }
 }
 
 void AudioRenderer::ClearAllRemainCommandCounts() noexcept {
     for (auto& buffer : command_buffers) {
         buffer.remaining_command_count = 0;
         buffer.reset_buffer = true;
+        buffer.buffer = 0;
+        buffer.size = 0;
     }
     for (auto* stream : streams) {
         if (stream) {

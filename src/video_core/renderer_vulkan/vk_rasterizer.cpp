@@ -946,6 +946,11 @@ void RasterizerVulkan::InvalidateForLoadState(
     state_tracker.InvalidateCommandBufferState();
 }
 
+void RasterizerVulkan::DiscardGpuModifiedImages() {
+    std::scoped_lock lock{texture_cache.mutex};
+    texture_cache.DiscardGpuModifiedImages();
+}
+
 void RasterizerVulkan::FlushRegion(DAddr addr, u64 size, VideoCommon::CacheType which) {
     if (addr == 0 || size == 0) {
         return;

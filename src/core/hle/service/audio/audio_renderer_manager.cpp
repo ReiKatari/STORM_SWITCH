@@ -36,6 +36,18 @@ IAudioRendererManager::IAudioRendererManager(Core::System& system_)
 
 IAudioRendererManager::~IAudioRendererManager() = default;
 
+void IAudioRendererManager::Hold() {
+    if (impl) {
+        impl->Hold();
+    }
+}
+
+void IAudioRendererManager::Release() {
+    if (impl) {
+        impl->Release();
+    }
+}
+
 void IAudioRendererManager::Resynchronize() {
     if (impl) {
         impl->Resynchronize();

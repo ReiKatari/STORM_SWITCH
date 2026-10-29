@@ -35,6 +35,16 @@ public:
     void Stop();
 
     /**
+     * Hold audio rendering during state/pause transitions.
+     */
+    void Hold();
+
+    /**
+     * Release audio rendering after state/pause transitions.
+     */
+    void Release();
+
+    /**
      * Resynchronize the manager and its systems after savestate restore.
      */
     void Resynchronize();

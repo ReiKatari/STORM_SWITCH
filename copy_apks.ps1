@@ -1,5 +1,5 @@
 $baseDir = Split-Path -Parent $PSScriptRoot
-$version = '15.0.2'
+$version = '15.0.3'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -18,17 +18,23 @@ if (-not (Test-Path $assemblingDir)) { New-Item -ItemType Directory -Path $assem
 
 if (Test-Path $mainline) {
     Copy-Item $mainline "$filesDir\STORM_SWITCH_$version.apk" -Force
+    Copy-Item $mainline "$filesDir\STORM_SWITCH_${version}_Android.apk" -Force
     Copy-Item $mainline "$assemblingDir\STORM_SWITCH_$version.apk" -Force
+    Copy-Item $mainline "$assemblingDir\STORM_SWITCH_${version}_Android.apk" -Force
 }
 
 if (Test-Path $legacy) {
     Copy-Item $legacy "$filesDir\STORM_SWITCH_${version}_LEGACY.apk" -Force
+    Copy-Item $legacy "$filesDir\STORM_SWITCH_${version}_Android_Legacy.apk" -Force
     Copy-Item $legacy "$assemblingDir\STORM_SWITCH_${version}_LEGACY.apk" -Force
+    Copy-Item $legacy "$assemblingDir\STORM_SWITCH_${version}_Android_Legacy.apk" -Force
 }
 
 if (Test-Path $sdk27) {
     Copy-Item $sdk27 "$filesDir\STORM_SWITCH_${version}_SDK27.apk" -Force
+    Copy-Item $sdk27 "$filesDir\STORM_SWITCH_${version}_Android_SDK27.apk" -Force
     Copy-Item $sdk27 "$assemblingDir\STORM_SWITCH_${version}_SDK27.apk" -Force
+    Copy-Item $sdk27 "$assemblingDir\STORM_SWITCH_${version}_Android_SDK27.apk" -Force
 }
 
 Get-ChildItem -Path $filesDir | Unblock-File -ErrorAction SilentlyContinue
