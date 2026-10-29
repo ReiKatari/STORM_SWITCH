@@ -401,15 +401,10 @@ object StormHardwareCalibrator {
                 changed = true
             }
 
-            // 4. Parallel Pipeline Workers Clamp for RAM & Big.LITTLE Core Topology
-            val maxSafeWorkers = when {
-                profile.totalRamGb < 6.0 || profile.tier == HardwareTier.BUDGET || profile.isAdreno6xx -> 2
-                profile.isMali || profile.isExynosOrXclipse || profile.isTensor -> 2
-                profile.isAdreno830 && profile.totalRamGb >= 11.0 -> 4
-                else -> (profile.cpuCores - 2).coerceIn(2, 4)
-            }
-            if (IntSetting.ANDROID_PIPELINE_WORKERS.getInt() > maxSafeWorkers) {
-                IntSetting.ANDROID_PIPELINE_WORKERS.setInt(maxSafeWorkers)
+            // 4. Parallel Pipeline Workers Clamp - respect user choice, clamp only to valid bounds (1..8)
+            val currentWorkers = IntSetting.ANDROID_PIPELINE_WORKERS.getInt()
+            if (currentWorkers !in 1..8) {
+                IntSetting.ANDROID_PIPELINE_WORKERS.setInt(currentWorkers.coerceIn(1, 8))
                 changed = true
             }
 

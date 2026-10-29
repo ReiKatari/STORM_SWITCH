@@ -49,14 +49,26 @@ namespace {
         const std::string manufacturer = get_prop_lower("ro.product.manufacturer");
         const std::string brand = get_prop_lower("ro.product.brand");
         const std::string model = get_prop_lower("ro.product.model");
-        const bool prefer_opensles =
-            !zui.empty() || !zuk.empty() ||
-            manufacturer.find("lenovo") != std::string::npos ||
-            brand.find("lenovo") != std::string::npos ||
-            model.find("tb321") != std::string::npos ||
-            model.find("tb320") != std::string::npos ||
-            model.find("tb-9707") != std::string::npos ||
-            model.find("y700") != std::string::npos;
+        const std::string platform = get_prop_lower("ro.board.platform");
+        const std::string hardware = get_prop_lower("ro.hardware");
+
+        const auto matches_any = [](const std::string& str, std::initializer_list<const char*> tokens) {
+            for (const auto* tok : tokens) {
+                if (str.find(tok) != std::string::npos) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        const bool has_mtk_or_mali =
+            matches_any(manufacturer, {"mediatek", "mt", "dimensity", "helio", "mali", "infinix", "tecno", "transsion", "lenovo"}) ||
+            matches_any(brand, {"mediatek", "mt", "dimensity", "helio", "mali", "infinix", "tecno", "transsion", "lenovo"}) ||
+            matches_any(platform, {"mediatek", "mt", "dimensity", "helio", "mali"}) ||
+            matches_any(hardware, {"mediatek", "mt", "dimensity", "helio", "mali"}) ||
+            matches_any(model, {"tb321", "tb320", "tb-9707", "y700"});
+
+        const bool prefer_opensles = !zui.empty() || !zuk.empty() || has_mtk_or_mali;
         SDL_SetHint(SDL_HINT_AUDIO_DRIVER, prefer_opensles ? "opensles,aaudio" : "aaudio,opensles");
 #endif
 #ifdef __ANDROID__

@@ -39,6 +39,8 @@ protected:
     void ReadMultiplayerValues() override;
 
     void SaveQtValues();
+    void WriteToIni() const override;
+    mutable bool m_suppress_write_to_ini{false};
     void SaveQtPlayerValues(std::size_t player_index);
     void SaveQtControlValues();
     void SaveHidbusValues() override;

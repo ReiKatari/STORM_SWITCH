@@ -101,6 +101,13 @@ class GameFixDialogFragment : DialogFragment() {
         val profile = GameFixDatabase.getFix(currentGame)
         val hexId = GameFixDatabase.getProgramIdHex(currentGame)
 
+        binding.checkboxDontAskAgain.isChecked = GameFixDatabase.isDontAskAgain(requireContext(), currentGame)
+        binding.checkboxDontAskAgain.setOnCheckedChangeListener { _, isChecked ->
+            context?.let { ctx ->
+                GameFixDatabase.setDontAskAgain(ctx, currentGame, isChecked)
+            }
+        }
+
         binding.textGameFixTitle.text = currentGame.title
         val idString = "ID: $hexId"
         binding.textGameFixId.text = idString
@@ -212,6 +219,12 @@ class GameFixDialogFragment : DialogFragment() {
         val ctx = context
         if (currentGame != null && ctx != null && binding.checkboxDontAskAgain.isChecked) {
             GameFixDatabase.setDontAskAgain(ctx, currentGame, true)
+            val prefMode = when (mode) {
+                GameFixDatabase.LaunchMode.GLOBAL -> "standard"
+                GameFixDatabase.LaunchMode.CUSTOM -> "custom"
+                else -> "autofix"
+            }
+            GameFixDatabase.setPreferredLaunchMode(ctx, currentGame, prefMode)
         }
         try {
             action()

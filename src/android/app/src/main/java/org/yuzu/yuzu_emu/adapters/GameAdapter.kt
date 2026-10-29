@@ -389,15 +389,43 @@ class GameAdapter(private val activity: AppCompatActivity) :
                 }
             }
 
-            val checkGameFixAndLaunch: () -> Unit = {
-                val dialog = GameFixDialogFragment.newInstance(game) { mode ->
-                    when (mode) {
-                        GameFixDatabase.LaunchMode.GLOBAL -> launch(false)
-                        GameFixDatabase.LaunchMode.CANCEL -> { /* User cancelled launch */ }
-                        else -> launch(true)
-                    }
+            val launchWithAutoFix: (Game) -> Unit = { g ->
+                val hadCustom = GameFixDatabase.isUserCustomConfig(g)
+                if (hadCustom) {
+                    GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM
+                    GameFixDatabase.applyFixWithCustomOverrides(g)
+                } else {
+                    GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.AUTO_FIX
+                    GameFixDatabase.applyCleanFix(g)
                 }
-                dialog.show(activity.supportFragmentManager, GameFixDialogFragment.TAG)
+                launch(true)
+            }
+
+            val launchWithStandard: (Game) -> Unit = { g ->
+                GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.GLOBAL
+                GameFixDatabase.prepareGlobalLaunch(g)
+                launch(false)
+            }
+
+            val checkGameFixAndLaunch: () -> Unit = {
+                val gameId = game.programId
+                if (GameFixDatabase.isDontAskAgain(activity, gameId)) {
+                    val prefMode = GameFixDatabase.getPreferredLaunchMode(activity, gameId)
+                    if (prefMode == "standard") {
+                        launchWithStandard(game)
+                    } else {
+                        launchWithAutoFix(game)
+                    }
+                } else {
+                    val dialog = GameFixDialogFragment.newInstance(game) { mode ->
+                        when (mode) {
+                            GameFixDatabase.LaunchMode.GLOBAL -> launch(false)
+                            GameFixDatabase.LaunchMode.CANCEL -> { /* User cancelled launch */ }
+                            else -> launch(true)
+                        }
+                    }
+                    dialog.show(activity.supportFragmentManager, GameFixDialogFragment.TAG)
+                }
             }
 
             if (NativeLibrary.gameRequiresFirmware(game.programId) && !NativeLibrary.isFirmwareAvailable()) {

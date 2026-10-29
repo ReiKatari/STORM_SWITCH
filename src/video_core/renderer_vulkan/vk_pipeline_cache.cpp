@@ -323,7 +323,7 @@ size_t GetTotalPipelineWorkers() {
         return 2ULL; // Cap pipeline worker threads to 2 under thermal throttle to cool CPU
     }
     const int configured = AndroidSettings::values.pipeline_worker_count.GetValue();
-    const int clamped = std::clamp(configured, 2, 8);
+    const int clamped = std::clamp(configured, 1, 8);
     const size_t desired = static_cast<size_t>(clamped);
     if (desired == 0) {
         return 1ULL;
@@ -694,10 +694,21 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
             ? 1ULL
             : std::clamp<std::size_t>(hw_threads - 1ULL, 2ULL, 16ULL);
 #ifdef __ANDROID__
+    const int configured_workers = AndroidSettings::values.pipeline_worker_count.GetValue();
+    if (configured_workers > 0) {
+        preload_thread_count = std::clamp<std::size_t>(static_cast<std::size_t>(configured_workers), 1ULL, hw_threads);
+    }
     if (Settings::values.eco_thermal_mode.GetValue()) {
         preload_thread_count = std::min<std::size_t>(preload_thread_count, 2ULL);
     } else if (Settings::values.smart_shader_throttle.GetValue()) {
         preload_thread_count = std::min<std::size_t>(preload_thread_count, 4ULL);
+    }
+#else
+    if (!device.HasBrokenParallelShaderCompiling()) {
+        preload_thread_count = std::max<std::size_t>(4ULL, std::min<std::size_t>(hw_threads / 2ULL, 16ULL));
+        if (hw_threads > 4) {
+            preload_thread_count = std::clamp<std::size_t>(hw_threads - 2ULL, 4ULL, 16ULL);
+        }
     }
 #endif
     Common::ThreadWorker preload_workers(preload_thread_count, "VkPipelinePreload");

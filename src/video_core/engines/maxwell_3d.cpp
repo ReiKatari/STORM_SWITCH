@@ -237,7 +237,7 @@ void Maxwell3D::ProcessMacro(Core::System& system, u32 method, const u32* base_s
 }
 
 void Maxwell3D::RefreshParametersImpl() {
-    if (!Settings::IsGPULevelHigh()) {
+    if (!Settings::IsGPULevelHigh() && !Settings::values.use_reactive_flushing.GetValue()) {
         return;
     }
     size_t total_params = 0;

@@ -28,6 +28,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <processthreadsapi.h>
 #include <dbghelp.h>
 #include <QScreen>
 #include "common/logging.h"
@@ -157,6 +158,20 @@ static Qt::HighDpiScaleFactorRoundingPolicy GetHighDpiRoundingPolicy() {
 
 int main(int argc, char* argv[]) {
 #ifdef _WIN32
+    // Issue #22: Disable Windows 11 EcoQoS (Power Throttling) for optimal APU/GPU boost on handhelds (ROG Ally)
+#ifndef PROCESS_POWER_THROTTLING_CURRENT_VERSION
+#define PROCESS_POWER_THROTTLING_CURRENT_VERSION 1
+#endif
+#ifndef PROCESS_POWER_THROTTLING_EXECUTION_SPEED
+#define PROCESS_POWER_THROTTLING_EXECUTION_SPEED 0x1
+#endif
+    PROCESS_POWER_THROTTLING_STATE power_throttling{};
+    power_throttling.Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION;
+    power_throttling.ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED;
+    power_throttling.StateMask = 0;
+    SetProcessInformation(GetCurrentProcess(), ProcessPowerThrottling, &power_throttling,
+                          sizeof(power_throttling));
+
     char exe_path[MAX_PATH];
     if (GetModuleFileNameA(nullptr, exe_path, sizeof(exe_path)) > 0) {
         char* last_slash = strrchr(exe_path, '\\');

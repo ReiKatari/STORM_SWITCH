@@ -1459,6 +1459,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 R.array.rendererAspectRatioValues
             )
 
+            var fsrSliderView: View? = null
             quickSettings.addIntSetting(
                 R.string.renderer_scaling_filter,
                 container,
@@ -1469,19 +1470,21 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 if (IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal = false) == 6) {
                     IntSetting.FSR_SHARPENING_SLIDER.setInt(85)
                 }
-                addQuickSettings()
+                fsrSliderView?.visibility = if (isSharpnessScalingFilterSelected()) View.VISIBLE else View.GONE
+                try {
+                    NativeLibrary.applySettings()
+                } catch (_: Throwable) {}
             }
 
-            if (isSharpnessFilterSelected) {
-                quickSettings.addSliderSetting(
-                    R.string.fsr_sharpness,
-                    container,
-                    IntSetting.FSR_SHARPENING_SLIDER,
-                    minValue = 0,
-                    maxValue = 100,
-                    units = "%"
-                )
-            }
+            fsrSliderView = quickSettings.addSliderSetting(
+                R.string.fsr_sharpness,
+                container,
+                IntSetting.FSR_SHARPENING_SLIDER,
+                minValue = 0,
+                maxValue = 100,
+                units = "%"
+            )
+            fsrSliderView.visibility = if (isSharpnessFilterSelected) View.VISIBLE else View.GONE
 
             quickSettings.addIntSetting(
                 R.string.renderer_anti_aliasing,

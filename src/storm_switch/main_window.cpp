@@ -38,6 +38,8 @@
 #include "common/fs/ryujinx_compat.h"
 #include "main_window.h"
 #include "network/network.h"
+#include <thread>
+#include "audio_core/sink/sink_details.h"
 #include "qt_common/discord/discord.h"
 #include "qt_common/titledb.h"
 #include "qt_common/game_list/game_list_p.h"
@@ -1085,6 +1087,11 @@ MainWindow::MainWindow(bool has_broken_vulkan)
                 LibraryAppletParameters(0x010000000000100Dull, Service::AM::AppletId::QLaunch));
         }
     }
+
+    std::thread([] {
+        AudioCore::Sink::GetDeviceListForSink(Settings::AudioEngine::Auto, false);
+        AudioCore::Sink::GetDeviceListForSink(Settings::AudioEngine::Auto, true);
+    }).detach();
 }
 
 MainWindow::~MainWindow() {
@@ -5785,7 +5792,6 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
             Settings::values.players.SetGlobal(true);
         }
 
-        QtCommon::system->HIDCore().ReloadInputDevices();
         QtCommon::system->ApplySettings();
 
         if (Core::GameFixDatabase::AreFixesEnabled()) {
@@ -7615,7 +7621,7 @@ void MainWindow::OnConfigure() {
         reapply_running_session_overrides();
         UpdateStatusButtons();
     } else if (UISettings::values.configuration_applied) {
-        config->SaveAllValues();
+        // Configuration was already saved during ConfigurationApplied
         reapply_running_session_overrides();
         UpdateStatusButtons();
     } else if (UISettings::values.reset_to_defaults) {
@@ -13664,7 +13670,7 @@ void MainWindow::OnCheckFirmwareDecryption() {
         }
     }
 
-    SetFirmwareVersion();
+    QTimer::singleShot(150, this, &MainWindow::SetFirmwareVersion);
     UpdateMenuState();
 }
 

@@ -859,20 +859,23 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "1",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\dma_accuracy" to "0",
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\barrier_feedback_loops" to "false",
-                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\dyna_state" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\vram_garbage_collection" to "true",
                 "Renderer\\vram_budget_governor" to "true",
                 "Renderer\\early_release_fences" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_asynchronous_gpu_emulation" to "true"
             )
         ),
         GameFixProfile(
@@ -887,20 +890,23 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "1",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\dma_accuracy" to "0",
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\barrier_feedback_loops" to "false",
-                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\dyna_state" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\vram_garbage_collection" to "true",
                 "Renderer\\vram_budget_governor" to "true",
                 "Renderer\\early_release_fences" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_asynchronous_gpu_emulation" to "true"
             )
         ),
         GameFixProfile(
@@ -915,20 +921,23 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "1",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\dma_accuracy" to "0",
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\barrier_feedback_loops" to "false",
-                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\dyna_state" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\vram_garbage_collection" to "true",
                 "Renderer\\vram_budget_governor" to "true",
                 "Renderer\\early_release_fences" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_asynchronous_gpu_emulation" to "true"
             )
         ),
         GameFixProfile(
@@ -6583,6 +6592,29 @@ object GameFixDatabase {
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             prefs.edit().putBoolean("storm_fix_dont_ask_$hex", value).apply()
         }
+    }
+
+    fun getPreferredLaunchMode(context: Context, programIdStr: String): String {
+        val hex = getProgramIdHex(programIdStr)
+        if (hex.isEmpty()) return "autofix"
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        return prefs.getString("storm_fix_launch_mode_$hex", "autofix") ?: "autofix"
+    }
+
+    fun getPreferredLaunchMode(context: Context, game: Game): String {
+        return getPreferredLaunchMode(context, game.programId)
+    }
+
+    fun setPreferredLaunchMode(context: Context, programIdStr: String, mode: String) {
+        val hex = getProgramIdHex(programIdStr)
+        if (hex.isNotEmpty()) {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+            prefs.edit().putString("storm_fix_launch_mode_$hex", mode).apply()
+        }
+    }
+
+    fun setPreferredLaunchMode(context: Context, game: Game, mode: String) {
+        setPreferredLaunchMode(context, game.programId, mode)
     }
 
     const val TEMPORARY_FIX_HEADER = "# STORM_AUTO_GAME_FIX_TEMPORARY"

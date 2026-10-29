@@ -629,10 +629,10 @@ inline QString GetLocalizedName(const RetroArchShaderEntry& entry) {
 inline QString GetLocalizedShortName(int index) {
     const auto& cat = GetRetroArchShaderCatalog();
     if (index <= 0 || index >= static_cast<int>(cat.size())) {
-        return StormLang(QStringLiteral("Нет"), QStringLiteral("None"),
-                         QStringLiteral("Aus"), QStringLiteral("Aucun"),
-                         QStringLiteral("无"), QStringLiteral("なし"),
-                         QStringLiteral("لا شيء"), QStringLiteral("Ninguno"));
+        return StormLang(QStringLiteral("ВЫКЛ"), QStringLiteral("OFF"),
+                         QStringLiteral("AUS"), QStringLiteral("DÉSACT."),
+                         QStringLiteral("关闭"), QStringLiteral("オフ"),
+                         QStringLiteral("معطل"), QStringLiteral("DESACT."));
     }
     return QString::fromUtf8(cat[static_cast<std::size_t>(index)].short_name);
 }
@@ -648,10 +648,10 @@ inline int ResolveShaderIndex(const QString& id) {
 }
 
 inline void SyncShaderFromQSettings() {
+    const auto& cat = GetRetroArchShaderCatalog();
+    const int idx = std::clamp(Settings::values.post_processing_shader.GetValue(), 0, static_cast<int>(cat.size()) - 1);
     QSettings qs;
-    const QString saved = qs.value(QStringLiteral("StormSwitch/RetroArchShader"), QStringLiteral("none")).toString();
-    const int idx = ResolveShaderIndex(saved);
-    Settings::values.post_processing_shader.SetValue(idx);
+    qs.setValue(QStringLiteral("StormSwitch/RetroArchShader"), QString::fromUtf8(cat[static_cast<std::size_t>(idx)].id));
 }
 
 inline void ApplyShaderByIndex(int index) {
@@ -661,10 +661,6 @@ inline void ApplyShaderByIndex(int index) {
     Settings::values.post_processing_shader.SetValue(clamped);
     QSettings qs;
     qs.setValue(QStringLiteral("StormSwitch/RetroArchShader"), QString::fromUtf8(entry.id));
-    if (clamped > 0) {
-        Settings::values.scaling_filter.SetValue(entry.mapped_filter);
-        Settings::values.fsr_sharpening_slider.SetValue(entry.fsr_sharpness);
-    }
 }
 
 inline void ShowSearchableShaderPopup(QWidget* anchor, int current_index, const std::function<void(int)>& on_selected) {

@@ -5,8 +5,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <chrono>
+#include <map>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "audio_core/sink/sink_details.h"
@@ -111,8 +115,8 @@ const SinkDetails& GetOutputSinkDetails(Settings::AudioEngine sink_id) {
         iter = std::begin(sink_details);
 #endif
         // END REINTRODUCED SECTION FROM 3833 - DIABLO 3 FIX
-        LOG_INFO(Service_Audio, "Auto-selecting the {} backend",
-                 Settings::CanonicalizeEnum(iter->id));
+        LOG_DEBUG(Service_Audio, "Auto-selecting the {} backend",
+                  Settings::CanonicalizeEnum(iter->id));
     /* BEGIN REMOVED - REVERTING BACK TO 3833, this didn't exist at all. - DIABLO 3 FIX
     } else {
         if (iter != std::end(sink_details) && !iter->is_suitable()) {
@@ -140,8 +144,38 @@ std::vector<Settings::AudioEngine> GetSinkIDs() {
     return sink_ids;
 }
 
+namespace {
+struct DeviceCacheEntry {
+    std::vector<std::string> devices;
+    std::chrono::steady_clock::time_point timestamp;
+};
+
+static std::mutex s_device_cache_mutex;
+static std::map<std::pair<Settings::AudioEngine, bool>, DeviceCacheEntry> s_device_cache;
+} // anonymous namespace
+
 std::vector<std::string> GetDeviceListForSink(Settings::AudioEngine sink_id, bool capture) {
-    return GetOutputSinkDetails(sink_id).list_devices(capture);
+    const auto now = std::chrono::steady_clock::now();
+    const auto key = std::make_pair(sink_id, capture);
+    {
+        std::lock_guard lock(s_device_cache_mutex);
+        const auto it = s_device_cache.find(key);
+        if (it != s_device_cache.end()) {
+            const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second.timestamp).count();
+            if (elapsed < 60) {
+                return it->second.devices;
+            }
+        }
+    }
+
+    auto devices = GetOutputSinkDetails(sink_id).list_devices(capture);
+
+    {
+        std::lock_guard lock(s_device_cache_mutex);
+        s_device_cache[key] = {devices, now};
+    }
+
+    return devices;
 }
 
 std::unique_ptr<Sink> CreateSinkFromID(Settings::AudioEngine sink_id, std::string_view device_id) {

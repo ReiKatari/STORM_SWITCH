@@ -72,9 +72,19 @@ void QtConfig::ReloadAllValues() {
     SaveQtValues();
 }
 
+void QtConfig::WriteToIni() const {
+    if (m_suppress_write_to_ini) {
+        return;
+    }
+    Config::WriteToIni();
+}
+
 void QtConfig::SaveAllValues() {
+    m_suppress_write_to_ini = true;
     SaveValues();
     SaveQtValues();
+    m_suppress_write_to_ini = false;
+    Config::WriteToIni();
 }
 
 void QtConfig::ReadQtValues() {

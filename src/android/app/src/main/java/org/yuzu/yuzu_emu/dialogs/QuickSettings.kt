@@ -77,7 +77,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         namesArrayId: Int,
         valuesArrayId: Int,
         onValueChanged: ((Int) -> Unit)? = null
-    ) {
+    ): View {
         val inflater = LayoutInflater.from(emulationFragment.requireContext())
         val itemView = inflater.inflate(R.layout.item_quick_settings_menu, container, false)
         val headerView = itemView.findViewById<ViewGroup>(R.id.setting_header)
@@ -136,6 +136,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         }
 
         container.addView(itemView)
+        return itemView
     }
 
     fun addBooleanSetting(
@@ -143,7 +144,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         container: ViewGroup,
         setting: BooleanSetting,
         onValueChanged: ((Boolean) -> Unit)? = null
-    ) {
+    ): View {
         val inflater = LayoutInflater.from(emulationFragment.requireContext())
         val itemView = inflater.inflate(R.layout.item_quick_settings_menu, container, false)
 
@@ -166,6 +167,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
             switchView.toggle()
         }
         container.addView(itemView)
+        return itemView
     }
 
     fun addCustomToggle(
@@ -212,7 +214,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         maxValue: Int = 100,
         units: String = "",
         onValueChanged: ((Int) -> Unit)? = null
-    ) {
+    ): View {
         val inflater = LayoutInflater.from(emulationFragment.requireContext())
         val itemView = inflater.inflate(R.layout.item_quick_settings_menu, container, false)
 
@@ -276,6 +278,7 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         }
 
         container.addView(itemView)
+        return itemView
     }
 
     fun addDivider(container: ViewGroup) {

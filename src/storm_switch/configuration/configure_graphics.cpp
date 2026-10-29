@@ -302,6 +302,13 @@ void ConfigureGraphics::SetConfiguration() {
             api_combobox->blockSignals(blocked);
         }
     }
+    auto* shader_combo = findChild<QComboBox*>(QStringLiteral("retroarchShaderCombo"));
+    if (shader_combo && shader_combo->count() > 0) {
+        const int saved_idx = std::clamp(Settings::values.post_processing_shader.GetValue(), 0, shader_combo->count() - 1);
+        const bool blocked = shader_combo->blockSignals(true);
+        shader_combo->setCurrentIndex(saved_idx);
+        shader_combo->blockSignals(blocked);
+    }
     UpdateAPILayout();
     PopulateVSyncModeSelection(true);
 }
@@ -642,19 +649,11 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
                 QString::fromUtf8(entry.id));
         }
 
-        int saved_idx = Settings::values.post_processing_shader.GetValue();
-        if (saved_idx <= 0) {
-            QSettings qs;
-            const QString saved_shader = qs.value(QStringLiteral("StormSwitch/RetroArchShader"), QStringLiteral("none")).toString();
-            saved_idx = StormShaders::ResolveShaderIndex(saved_shader);
-        }
-        if (saved_idx >= 0 && saved_idx < shader_combo->count()) {
-            shader_combo->setCurrentIndex(saved_idx);
-        }
+        const int saved_idx = std::clamp(Settings::values.post_processing_shader.GetValue(), 0, shader_combo->count() - 1);
+        shader_combo->setCurrentIndex(saved_idx);
 
         connect(shader_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [](int idx) {
             if (idx < 0) return;
-            StormShaders::ApplyShaderByIndex(idx);
             ConfigurationShared::NotifyGlobalSettingChanged();
         });
 

@@ -17,6 +17,7 @@
 #include "video_core/dma_pusher.h"
 #include "video_core/gpu.h"
 #include "video_core/gpu_thread.h"
+#include "video_core/rasterizer_interface.h"
 #include "video_core/host1x/host1x.h"
 #include "video_core/renderer_base.h"
 
@@ -93,7 +94,8 @@ void ThreadManager::InvalidateRegion(DAddr addr, u64 size) {
 }
 
 void ThreadManager::FlushAndInvalidateRegion(DAddr addr, u64 size, bool is_async) {
-    if (Settings::IsGPULevelHigh()) {
+    if ((Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) &&
+        rasterizer && rasterizer->MustFlushRegion(addr, size)) {
         PushCommand(FlushRegionCommand(addr, size), true, is_async);
     }
     rasterizer->OnCacheInvalidation(addr, size);

@@ -55,7 +55,7 @@ protected:
     void Initialize(std::optional<std::string> config_path);
     void Initialize(std::optional<std::string> config_path, bool reload);
 
-    void WriteToIni() const;
+    virtual void WriteToIni() const;
 
     void SetUpIni();
     [[nodiscard]] bool IsCustomConfig() const;
