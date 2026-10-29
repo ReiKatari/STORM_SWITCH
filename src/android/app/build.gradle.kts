@@ -92,9 +92,9 @@ android {
                         "-DYUZU_USE_BUNDLED_FFMPEG=ON",
                         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
                         "-DENABLE_UPDATE_CHECKER=ON",
-                        "-DBUILD_VERSION=15.1.0",
-                        "-DGIT_TAG=15.1.0",
-                        "-DGIT_RELEASE=15.1.0",
+                        "-DBUILD_VERSION=15.2.0",
+                        "-DGIT_TAG=15.2.0",
+                        "-DGIT_RELEASE=15.2.0",
                         "-DBUILD_TESTING=OFF",
                         "-DYUZU_TESTS=OFF",
                         "-DDYNARMIC_TESTS=OFF",
@@ -437,7 +437,7 @@ fun getGitVersion(): String {
             return ver
         }
     }
-    return "15.1.0"
+    return "15.2.0"
 }
 
 
