@@ -66,6 +66,17 @@ class SaveStateManagerDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(
+                androidx.core.view.WindowInsetsCompat.Type.systemBars() or
+                androidx.core.view.WindowInsetsCompat.Type.displayCutout()
+            )
+            val density = resources.displayMetrics.density
+            val topInset = maxOf(systemBars.top, (24 * density).toInt())
+            v.setPadding(systemBars.left, topInset, systemBars.right, systemBars.bottom)
+            insets
+        }
+        binding.root.requestApplyInsets()
         val currentGame = game ?: arguments?.getParcelable(ARG_GAME)
         val gameTitle = currentGame?.title ?: "STORM SWITCH"
         binding.textGameTitle.text = "$gameTitle • SESS v2"
@@ -141,6 +152,7 @@ class SaveStateManagerDialogFragment : DialogFragment() {
 
             val res = NativeLibrary.saveStateSlot(slot, previewPath)
             if (res == 0) {
+                androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext()).edit().putInt("last_active_save_slot", slot).apply()
                 Toast.makeText(requireContext(), getString(R.string.save_state_saved_toast, slot), Toast.LENGTH_SHORT).show()
                 refreshAllSlots()
             } else {

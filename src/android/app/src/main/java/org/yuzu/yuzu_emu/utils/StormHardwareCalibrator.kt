@@ -35,7 +35,8 @@ object StormHardwareCalibrator {
         DEFAULT,
         FAST,
         NORMAL,
-        ACCURATE
+        ACCURATE,
+        BATTERY
     }
 
     data class DeviceHardwareProfile(
@@ -470,7 +471,9 @@ object StormHardwareCalibrator {
             StormPreset.FAST -> applyDeviceFastPreset(profile)
             StormPreset.NORMAL -> applyDeviceNormalPreset(profile)
             StormPreset.ACCURATE -> applyDeviceAccuratePreset(profile)
+            StormPreset.BATTERY -> applyDeviceBatteryPreset(profile)
         }
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
 
         sanitizeSettingsForHardware(context)
 
@@ -575,7 +578,7 @@ object StormHardwareCalibrator {
         BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
         BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
         BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
         BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(profile.totalRamGb < 6.5)
     }
@@ -632,7 +635,7 @@ object StormHardwareCalibrator {
         BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
         BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
         BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
         BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(profile.totalRamGb < 6.5)
     }
@@ -689,9 +692,59 @@ object StormHardwareCalibrator {
         BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
         BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
         BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
         BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(profile.totalRamGb < 6.5)
+    }
+
+    private fun applyDeviceBatteryPreset(profile: DeviceHardwareProfile) {
+        val isTurnip = GpuDriverHelper.isTurnipDriverActive()
+        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && isTurnip
+
+        IntSetting.RENDERER_BACKEND.setInt(1)
+        val res = if (profile.totalRamGb < 6.5) 2 else 3
+        IntSetting.RENDERER_RESOLUTION.setInt(res)
+        IntSetting.RENDERER_ACCURACY.setInt(0)
+        IntSetting.DMA_ACCURACY.setInt(1)
+        IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(0)
+        IntSetting.GPU_FENCE_BEHAVIOR.setInt(1)
+        IntSetting.RENDERER_ANTI_ALIASING.setInt(0)
+        IntSetting.RENDERER_SCALING_FILTER.setInt(6)
+        IntSetting.FSR_SHARPENING_SLIDER.setInt(80)
+        IntSetting.RENDERER_ASTC_DECODE_METHOD.setInt(1)
+        IntSetting.ASTC_RECOMPRESSION.setInt(if (profile.totalRamGb < 5.5) 2 else 0)
+        IntSetting.RENDERER_NVDEC_EMULATION.setInt(2)
+        IntSetting.MAX_ANISOTROPY.setInt(0)
+        IntSetting.CPU_BACKEND.setInt(1)
+        IntSetting.CPU_ACCURACY.setInt(1)
+        IntSetting.MEMORY_LAYOUT.setInt(0)
+        BooleanSetting.USE_DOCKED_MODE.setBoolean(false)
+        IntSetting.RENDERER_DYNA_STATE.setInt(if (canUseEds1) 1 else 0)
+        val workers = if (profile.cpuCores >= 8) 3 else 2
+        IntSetting.ANDROID_PIPELINE_WORKERS.setInt(workers)
+
+        BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
+        BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
+        BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(true)
+        IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.setInt(1)
+        BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(true)
+        BooleanSetting.RENDERER_USE_DISK_SHADER_CACHE.setBoolean(true)
+        BooleanSetting.FASTMEM.setBoolean(true)
+        BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(false)
+        BooleanSetting.SYNC_MEMORY_OPERATIONS.setBoolean(false)
+        BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.setBoolean(true)
+        BooleanSetting.SKIP_CPU_INNER_INVALIDATION.setBoolean(false)
+        BooleanSetting.RENDERER_FORCE_MAX_CLOCK.setBoolean(false)
+        BooleanSetting.ENABLE_BUFFER_HISTORY.setBoolean(false)
+        BooleanSetting.ENABLE_GPU_BUFFER_READBACK.setBoolean(false)
+        BooleanSetting.RENDERER_VERTEX_INPUT_DYNAMIC_STATE.setBoolean(canUseEds1)
+
+        BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
+        BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
+        BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
+        BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
+        BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
     }
 
     /**
@@ -743,7 +796,7 @@ object StormHardwareCalibrator {
         BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
         BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
         BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
-        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
+        BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
         BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(profile.totalRamGb < 6.5)
     }

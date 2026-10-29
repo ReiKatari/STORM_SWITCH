@@ -759,6 +759,8 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
               "Options lower than 1X can cause artifacts."));
     INSERT(Settings, scaling_filter, tr("Window Adapting Filter:"),
            tr("Selects the scaling filter used when adapting the rendered image to the window size.\nBilinear and Bicubic are standard filters.\nAMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling."));
+        INSERT(Settings, fsr2_quality_mode, tr("FSR 2.0 Quality Mode:"),
+           tr("Selects the quality preset for AMD FSR 2.0 Temporal Upscaling."));
     INSERT(Settings, fsr_sharpening_slider, tr("FSR Sharpness:"),
            tr("Determines how sharpened the image will look using FSR's or SGSR's dynamic contrast."));
     INSERT(Settings, anti_aliasing, tr("Anti-Aliasing Method:"),
@@ -1171,6 +1173,13 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
              PAIR(ResolutionSetup, Res7X, tr("7X (5040p/7560p)")),
              PAIR(ResolutionSetup, Res8X, tr("8X (5760p/8640p)")),
          }});
+        translations->insert({Settings::EnumMetadata<Settings::Fsr2QualityMode>::Index(),
+                          {
+                              PAIR(Fsr2QualityMode, Quality, tr("Качество (Quality — 1.5x)")),
+                              PAIR(Fsr2QualityMode, Balanced, tr("Баланс (Balanced — 1.7x)")),
+                              PAIR(Fsr2QualityMode, Performance, tr("Производительность (Performance — 2.0x)")),
+                              PAIR(Fsr2QualityMode, UltraPerformance, tr("Ультра-производительность (Ultra Performance — 3.0x)")),
+                          }});
     translations->insert({Settings::EnumMetadata<Settings::ScalingFilter>::Index(),
                           {
                               PAIR(ScalingFilter, NearestNeighbor, tr("Nearest Neighbor")),
@@ -1179,7 +1188,7 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                               PAIR(ScalingFilter, Gaussian, tr("Gaussian")),
                               PAIR(ScalingFilter, Lanczos, tr("Lanczos 3 (Anti-Ringing EWA)")),
                               PAIR(ScalingFilter, ScaleForce, tr("ScaleForce")),
-                              PAIR(ScalingFilter, Fsr, tr("AMD FidelityFX Super Resolution")),
+                              PAIR(ScalingFilter, Fsr, tr("AMD FSR 2.0 (Temporal Upscaling)")),
                               PAIR(ScalingFilter, Area, tr("Area (Pixel Area Super-Sampling)")),
                               PAIR(ScalingFilter, ZeroTangent, tr("Zero-Tangent")),
                               PAIR(ScalingFilter, BSpline, tr("B-Spline")),

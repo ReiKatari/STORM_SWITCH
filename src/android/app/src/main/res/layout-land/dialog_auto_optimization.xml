@@ -1,37 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:cardCornerRadius="0dp"
-    app:cardElevation="0dp"
-    app:cardBackgroundColor="?attr/colorSurface"
-    app:strokeColor="?attr/colorPrimary"
-    app:strokeWidth="0dp">
+    android:background="@color/storm_bg_deep"
+    android:clipToPadding="false"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:baselineAligned="false"
-        android:padding="12dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- LEFT COLUMN: Title + Hardware Info + Reset Defaults Button -->
-        <androidx.core.widget.NestedScrollView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginEnd="6dp"
-            android:fillViewport="true"
-            android:scrollbars="vertical">
+        <!-- Top Header Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <FrameLayout
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_storm_pulse_circle"
+                android:layout_marginEnd="12dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_storm_lightning" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/text_wizard_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="АВТО-НАСТРОЙКА STORM FLUID"
+                    android:textColor="#F0F6FC"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.04" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Интеллектуальное профилирование оборудования"
+                    android:textColor="#8B949E"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/btn_close"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="8dp"
+                android:background="@drawable/bg_storm_circle_button"
+                android:src="@drawable/ic_clear"
+                app:tint="#8B949E" />
+
+            <ImageView
+                android:id="@+id/btn_close_wizard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- Hardware Telemetry Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#121622"
+            app:strokeColor="#2A324B"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="14dp">
 
-                <!-- Dialog Header -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -39,471 +101,491 @@
                     android:gravity="center_vertical"
                     android:layout_marginBottom="8dp">
 
-                    <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:src="@drawable/ic_tune"
-                        app:tint="?attr/colorPrimary"
-                        android:layout_marginEnd="8dp" />
-
-                    <LinearLayout
+                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:text="ТЕЛЕМЕТРИЯ ОБОРУДОВАНИЯ"
+                        android:textColor="#00F2FE"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_wizard_title"
-                            style="@style/SynthwaveText.Header"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/auto_optimization_wizard_title"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            style="@style/SynthwaveText.Body"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/auto_optimization_wizard_description"
-                            android:textSize="11sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
-
-                    </LinearLayout>
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/btn_close_wizard"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:gravity="center"
-                        android:text="✕"
-                        android:textSize="16sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless" />
-
+                    <TextView
+                        android:id="@+id/text_hw_tier"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_storm_badge_capsule"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FLAGSHIP"
+                        android:textColor="#00F2FE"
+                        android:textSize="10.5sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- Hardware Detection Card -->
-                <com.google.android.material.card.MaterialCardView
-                    style="@style/EdenCard"
+                <TextView
+                    android:id="@+id/text_hw_soc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    app:cardCornerRadius="10dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                    app:strokeColor="?attr/colorPrimary"
-                    app:strokeWidth="1dp">
+                    android:textColor="#F0F6FC"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="SoC: Snapdragon 8 Elite • 8 ядер (Смартфон)" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="10dp">
-
-                        <com.google.android.material.textview.MaterialTextView
-                            style="@style/SynthwaveText.Body"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/auto_opt_detected_hw"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary"
-                            android:layout_marginBottom="4dp" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_hw_soc"
-                            style="@style/SynthwaveText.Body"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="10.5sp"
-                            android:textColor="?attr/colorOnSurface"
-                            tools:text="SoC: Snapdragon 8 Gen 2" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_hw_gpu"
-                            style="@style/SynthwaveText.Body"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="10.5sp"
-                            android:textColor="?attr/colorOnSurface"
-                            tools:text="GPU: Adreno 740 (Turnip)" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_hw_ram"
-                            style="@style/SynthwaveText.Body"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="10.5sp"
-                            android:textColor="?attr/colorOnSurface"
-                            tools:text="RAM: 12 GB (High Tier)" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_hw_tier"
-                            style="@style/SynthwaveText.Body"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="10.5sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary"
-                            android:layout_marginTop="2dp"
-                            tools:text="Рекомендация: Нормальный режим" />
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_reset_defaults"
-                    style="@style/Widget.Material3.Button.TonalButton"
+                <TextView
+                    android:id="@+id/text_hw_gpu"
                     android:layout_width="match_parent"
-                    android:layout_height="38dp"
-                    android:text="@string/auto_optimization_reset_defaults"
-                    android:textSize="11sp"
-                    app:cornerRadius="8dp" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#94A3B8"
+                    android:textSize="12.5sp"
+                    tools:text="GPU: Adreno 830" />
+
+                <TextView
+                    android:id="@+id/text_hw_ram"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#94A3B8"
+                    android:textSize="12.5sp"
+                    tools:text="ОЗУ: 16.0 ГБ (Доступно: 11.2 ГБ)" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#1E293B"
+                    android:layout_marginVertical="10dp" />
+
+                <TextView
+                    android:id="@+id/tv_hardware_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="✓ Dynamic State • NCE • Reactive Flushing • CPU Affinity Pinning • Fast GPU Time"
+                    android:textColor="#38BDF8"
+                    android:textSize="11sp" />
 
             </LinearLayout>
 
-        </androidx.core.widget.NestedScrollView>
+        </com.google.android.material.card.MaterialCardView>
 
-        <!-- RIGHT COLUMN: 2x2 Grid of 4 Modes + Bottom Buttons -->
-        <androidx.core.widget.NestedScrollView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1.25"
-            android:layout_marginStart="6dp"
-            android:fillViewport="true"
-            android:scrollbars="vertical">
+        <!-- Presets Section Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ПРОФИЛИ В 1 КЛИК"
+            android:textColor="#8B949E"
+            android:textSize="11.5sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="10dp" />
+
+        <!-- 1. Max FPS Preset -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_preset_max_fps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#161B28"
+            app:strokeColor="#2A324B"
+            app:strokeWidth="1.5dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="match_parent"
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/radio_mode_fast"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/auto_optimization_wizard_title"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    android:layout_marginBottom="6dp" />
+                    android:clickable="false"
+                    android:focusable="false"
+                    app:buttonTint="#00F2FE" />
 
-                <!-- 2x2 Grid for Modes -->
-                <!-- Row 1: Fast | Normal -->
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:baselineAligned="false"
-                    android:layout_marginBottom="6dp">
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:orientation="vertical">
 
-                    <!-- Mode 1: Fast -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_mode_fast"
-                        style="@style/EdenCard"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="10dp"
-                        app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                        app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1.2dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:padding="8dp">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="МАКСИМУМ FPS (Киберспорт / 60 FPS)"
+                            android:textColor="#F0F6FC"
+                            android:textSize="13.5sp"
+                            android:textStyle="bold" />
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="2dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="60 FPS"
+                            android:textColor="#FF9100"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:background="#2E1B00"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp" />
+                    </LinearLayout>
 
-                                <RadioButton
-                                    android:id="@+id/radio_mode_fast"
-                                    android:button="@null"
-                                    android:clickable="false"
-                                    android:layout_width="16dp"
-                                    android:layout_height="16dp"
-                                    android:background="@drawable/badge_pill_background"
-                                    android:layout_marginEnd="6dp" />
-
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:text="@string/auto_optimization_mode_fast"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:textColor="?attr/colorOnSurface"
-                                    android:maxLines="1"
-                                    android:ellipsize="end" />
-
-                            </LinearLayout>
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/auto_optimization_mode_fast_desc"
-                                android:textSize="9.5sp"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:maxLines="2"
-                                android:ellipsize="end" />
-
-                        </LinearLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Mode 2: Normal -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_mode_normal"
-                        style="@style/EdenCard"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="10dp"
-                        app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                        app:strokeColor="?attr/colorPrimary"
-                        app:strokeWidth="1.2dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:padding="8dp">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="2dp">
-
-                                <RadioButton
-                                    android:id="@+id/radio_mode_normal"
-                                    android:button="@null"
-                                    android:clickable="false"
-                                    android:layout_width="16dp"
-                                    android:layout_height="16dp"
-                                    android:background="@drawable/badge_pill_background"
-                                    android:layout_marginEnd="6dp" />
-
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:text="@string/auto_optimization_mode_normal"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:textColor="?attr/colorPrimary"
-                                    android:maxLines="1"
-                                    android:ellipsize="end" />
-
-                            </LinearLayout>
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/auto_optimization_mode_normal_desc"
-                                android:textSize="9.5sp"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:maxLines="2"
-                                android:ellipsize="end" />
-
-                        </LinearLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
-
-                <!-- Row 2: Accurate | Default -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:baselineAligned="false"
-                    android:layout_marginBottom="8dp">
-
-                    <!-- Mode 3: Accurate -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_mode_accurate"
-                        style="@style/EdenCard"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="10dp"
-                        app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                        app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1.2dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:padding="8dp">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="2dp">
-
-                                <RadioButton
-                                    android:id="@+id/radio_mode_accurate"
-                                    android:button="@null"
-                                    android:clickable="false"
-                                    android:layout_width="16dp"
-                                    android:layout_height="16dp"
-                                    android:background="@drawable/badge_pill_background"
-                                    android:layout_marginEnd="6dp" />
-
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:text="@string/auto_optimization_mode_accurate"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:textColor="?attr/colorOnSurface"
-                                    android:maxLines="1"
-                                    android:ellipsize="end" />
-
-                            </LinearLayout>
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/auto_optimization_mode_accurate_desc"
-                                android:textSize="9.5sp"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:maxLines="2"
-                                android:ellipsize="end" />
-
-                        </LinearLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Mode 4: Default -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_mode_default"
-                        style="@style/EdenCard"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="10dp"
-                        app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                        app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1.2dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:padding="8dp">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="2dp">
-
-                                <RadioButton
-                                    android:id="@+id/radio_mode_default"
-                                    android:button="@null"
-                                    android:clickable="false"
-                                    android:layout_width="16dp"
-                                    android:layout_height="16dp"
-                                    android:background="@drawable/badge_pill_background"
-                                    android:layout_marginEnd="6dp" />
-
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:text="@string/auto_optimization_mode_default"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:textColor="?attr/colorOnSurface"
-                                    android:maxLines="1"
-                                    android:ellipsize="end" />
-
-                            </LinearLayout>
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/auto_optimization_mode_default_desc"
-                                android:textSize="9.5sp"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:maxLines="2"
-                                android:ellipsize="end" />
-
-                        </LinearLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
-
-                <!-- Actions Row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="end|center_vertical"
-                    android:layout_marginTop="4dp">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_cancel_wizard"
-                        android:layout_width="wrap_content"
-                        android:layout_height="38dp"
-                        android:text="@string/cancel"
-                        android:textColor="#FFFFFF"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/bg_cancel_button"
-                        app:backgroundTint="@null"
-                        app:strokeColor="#F87171"
-                        app:strokeWidth="1dp"
-                        app:cornerRadius="10dp"
-                        android:layout_marginEnd="6dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_apply_wizard"
-                        style="@style/Widget.Material3.Button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="38dp"
-                        android:text="@string/auto_optimization_apply"
-                        android:textSize="12sp"
-                        app:backgroundTint="?attr/colorPrimary"
-                        android:textColor="?attr/colorOnPrimary" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Упор на минимальную задержку кадра, быстрый таймер ГПУ, NCE и агрессивную разгрузку потоков."
+                        android:textColor="#8B949E"
+                        android:textSize="11sp" />
 
                 </LinearLayout>
 
             </LinearLayout>
 
-        </androidx.core.widget.NestedScrollView>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 2. Balanced Preset (RECOMMENDED) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_preset_balanced"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#161B28"
+            app:strokeColor="#00F2FE"
+            app:strokeWidth="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp">
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/radio_mode_normal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:focusable="false"
+                    app:buttonTint="#00F2FE" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="БАЛАНС (РЕКОМЕНДУЕТСЯ)"
+                            android:textColor="#F0F6FC"
+                            android:textSize="13.5sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="РЕКОМЕНДУЕТСЯ"
+                            android:textColor="#00F2FE"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:background="#0F2942"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Идеальный баланс чёткости изображения, стабильных 30/60 FPS и защиты глифов/текстур."
+                        android:textColor="#8B949E"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 3. Ultra Quality Preset -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_preset_quality"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#161B28"
+            app:strokeColor="#2A324B"
+            app:strokeWidth="1.5dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp">
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/radio_mode_accurate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:focusable="false"
+                    app:buttonTint="#00F2FE" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="УЛЬТРА КАЧЕСТВО (2K / FSR / Чёткость)"
+                            android:textColor="#F0F6FC"
+                            android:textSize="13.5sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2K / FSR"
+                            android:textColor="#E040FB"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:background="#2E0B38"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Повышенное разрешение, сглаживание, максимальная фильтрация и точность шейдеров."
+                        android:textColor="#8B949E"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 4. Eco / Battery Preset -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_preset_battery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#161B28"
+            app:strokeColor="#2A324B"
+            app:strokeWidth="1.5dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp">
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/radio_mode_default"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:focusable="false"
+                    app:buttonTint="#00F2FE" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="ЭКО / ПОРТАТИВ (Без нагрева)"
+                            android:textColor="#F0F6FC"
+                            android:textSize="13.5sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ХОЛОД"
+                            android:textColor="#00E676"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:background="#052E16"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Снижение тепловыделения и расхода заряда батареи для долгих поездок."
+                        android:textColor="#8B949E"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Hidden compat views for older references if any -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_mode_fast"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_mode_normal"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_mode_accurate"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_mode_default"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <!-- Bottom Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="4dp">
+
+            <!-- Reset Defaults -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_reset_defaults"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:text="@string/auto_optimization_reset_defaults"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:backgroundTint="#241B42"
+                app:strokeColor="#7C4DFF"
+                app:strokeWidth="1dp"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_clear"
+                app:iconTint="#FFFFFF"
+                app:iconSize="16dp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Row: Cancel and Apply -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_cancel"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:text="@string/cancel"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12.5sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_cancel_button"
+                    app:backgroundTint="@null"
+                    app:strokeColor="#F87171"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="12dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_cancel_wizard"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_apply_wizard"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:text="@string/auto_optimization_apply"
+                    android:textColor="#0A0D14"
+                    android:textSize="12.5sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="#00F2FE"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_settings"
+                    app:iconTint="#0A0D14"
+                    app:iconSize="16dp"
+                    android:layout_marginStart="6dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</com.google.android.material.card.MaterialCardView>
+</androidx.core.widget.NestedScrollView>

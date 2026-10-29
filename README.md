@@ -1,4 +1,4 @@
-<h1 align="center">STORM SWITCH</h1>
+# STORM SWITCH
 
 ## **О проекте**
 STORM SWITCH — форк эмулятора гибридной игровой консоли Nintendo Switch для платформ Android и Windows PC. Проект ориентирован на максимальную производительность, оптимизацию JIT/NCE компилятора, стабильность видеодрайверов Vulkan, поддержку сжатых форматов (NSZ/NCZ/XCZ на лету), расширенную базу авто-исправлений GameFix Database и готический пользовательский интерфейс с глубокой кастомизацией оверлеев и телеметрии.
@@ -34,18 +34,3 @@ STORM SWITCH является высокопроизводительным фо�
 2. Для Android: скачайте и установите подходящий APK-файл: `STORM_SWITCH.apk` (Android 10+ / Snapdragon / Dimensity / Exynos), `STORM_SWITCH_LEGACY.apk` (Adreno 6xx/7xx с кастомными драйверами Turnip) или `STORM_SWITCH_SDK27.apk` (Android 8.1+ / старые устройства).
 3. Для Windows: скачайте и распакуйте портативный архив для вашей версии ОС: `STORM_SWITCH_Windows11.zip` (Windows 11 x64) или `STORM_SWITCH_Windows10.zip` (Windows 10 x64), после чего запустите `STORM_SWITCH.exe`.
 4. Установите системные ключи (`prod.keys`) и актуальную прошивку Nintendo Switch (Firmware) через меню настроек эмулятора.
-
-## **Благодарности**
-- **Команда Yuzu (Bunnei, Lioncache, Subv, BreadFish64, Blinkhawk, Morph, byte[])** — за фундаментальный проект и создание архитектуры эмуляции Nintendo Switch.
-- **Команда Eden Emulator** — за развитие открытой кодовой базы и продвинутые оптимизации компилятора.
-- **Ghael-V и команда Lemon-Project** — за исследования потоковой декомпрессии форматов NSZ и XCZ, алгоритмы барьеров синхронизации Vulkan и наработки по оптимизации быстрых сохранений.
-- **Команда Citron Emulator (BignBooty, EmuGamer)** — за инновации в Android-версии и управление шейдерами.
-- **Команда Ryujinx (gdkchan, Ac_K, Mary, riperiperi)** — за фундаментальные исследования операционной системы Horizon OS и сервисов Switch.
-- **merryhime и команда Dynarmic** — за непревзойденный ARM64 JIT-компилятор.
-- **Команда Skyline и Strato (Mark, Billy, Lynx, bylaws)** — за новаторские исследования NCE (Native Code Execution) под Android ARM64.
-- **Rob Clark, Danylo Piliaiev, Connor Abbott и разработчики Mesa / Turnip / Freedreno** — за мобильные Vulkan-драйверы с открытым исходным кодом под графические процессоры Adreno.
-- **SciresM, TuxSH, fincs, mtheall и сообщество Atmosphere** — за разработку открытой операционной системы и homebrew-инструментов.
-- **Yann Collet и команда Zstandard (Meta)** — за эталонный алгоритм потокового сжатия данных Zstd.
-- **The Qt Company** — за графический фреймворк Qt6.
-- **Команда Khronos Group** — за спецификации API Vulkan и инструмент трансляции шейдеров SPIRV-Cross.
-- **Команда FFmpeg** — за высокопроизводительные мультимедийные декодеры аудио и видео.

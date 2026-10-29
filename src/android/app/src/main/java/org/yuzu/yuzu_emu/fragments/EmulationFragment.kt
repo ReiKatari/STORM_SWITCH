@@ -2141,6 +2141,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 val res = NativeLibrary.saveStateSlot(slot, previewPath)
                 withContext(Dispatchers.Main) {
                     if (res == 0) {
+                        androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+                            .edit().putInt("last_active_save_slot", slot).apply()
                         showEdenSnackbar(getString(R.string.save_state_saved_toast, slot), true)
                     } else {
                         showEdenSnackbar(getString(R.string.save_state_save_failed, slot), false)
@@ -2157,26 +2159,68 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     fun quickLoadSlot(slot: Int = 1) {
         if (!NativeLibrary.isRunning()) return
         lifecycleScope.launch(Dispatchers.IO) {
+            var targetSlot = slot
             try {
-                val info = NativeLibrary.getSaveStateSlotInfo(slot)
-                val exists = info.getOrNull(0) == "1"
+                var info = NativeLibrary.getSaveStateSlotInfo(targetSlot)
+                var exists = info.getOrNull(0) == "1"
+
+                if (!exists) {
+                    // Try last saved slot from preferences first
+                    val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    val lastSlot = prefs.getInt("last_active_save_slot", -1)
+                    if (lastSlot in 1..10) {
+                        val lastInfo = NativeLibrary.getSaveStateSlotInfo(lastSlot)
+                        if (lastInfo.getOrNull(0) == "1") {
+                            targetSlot = lastSlot
+                            info = lastInfo
+                            exists = true
+                        }
+                    }
+                }
+
+                if (!exists) {
+                    // Automatically search for the freshest non-empty slot (1..10)
+                    var freshestSlot = -1
+                    var freshestTime = -1L
+                    for (s in 1..10) {
+                        try {
+                            val sInfo = NativeLibrary.getSaveStateSlotInfo(s)
+                            if (sInfo.getOrNull(0) == "1") {
+                                val filePath = sInfo.getOrNull(3) ?: ""
+                                val mtime = if (filePath.isNotEmpty()) java.io.File(filePath).lastModified() else 0L
+                                if (mtime > freshestTime) {
+                                    freshestTime = mtime
+                                    freshestSlot = s
+                                } else if (freshestSlot == -1) {
+                                    freshestSlot = s
+                                }
+                            }
+                        } catch (_: Exception) {}
+                    }
+                    if (freshestSlot != -1) {
+                        targetSlot = freshestSlot
+                        info = NativeLibrary.getSaveStateSlotInfo(targetSlot)
+                        exists = true
+                    }
+                }
+
                 if (!exists) {
                     withContext(Dispatchers.Main) {
                         showEdenSnackbar(getString(R.string.save_state_empty), false)
                     }
                     return@launch
                 }
-                val res = NativeLibrary.loadStateSlot(slot)
+                val res = NativeLibrary.loadStateSlot(targetSlot)
                 withContext(Dispatchers.Main) {
                     if (res == 0) {
-                        showEdenSnackbar(getString(R.string.save_state_loaded_toast, slot), true)
+                        showEdenSnackbar(getString(R.string.save_state_loaded_toast, targetSlot), true)
                     } else {
-                        showEdenSnackbar(getString(R.string.save_state_load_failed, slot), false)
+                        showEdenSnackbar(getString(R.string.save_state_load_failed, targetSlot), false)
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    showEdenSnackbar(getString(R.string.save_state_load_failed, slot), false)
+                    showEdenSnackbar(getString(R.string.save_state_load_failed, targetSlot), false)
                 }
             }
         }

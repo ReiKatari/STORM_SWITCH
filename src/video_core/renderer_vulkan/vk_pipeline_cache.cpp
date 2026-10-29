@@ -705,10 +705,7 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
     }
 #else
     if (!device.HasBrokenParallelShaderCompiling()) {
-        preload_thread_count = std::max<std::size_t>(4ULL, std::min<std::size_t>(hw_threads / 2ULL, 16ULL));
-        if (hw_threads > 4) {
-            preload_thread_count = std::clamp<std::size_t>(hw_threads - 2ULL, 4ULL, 16ULL);
-        }
+        preload_thread_count = std::clamp<std::size_t>(static_cast<std::size_t>(std::thread::hardware_concurrency()), 4ULL, 16ULL);
     }
 #endif
     Common::ThreadWorker preload_workers(preload_thread_count, "VkPipelinePreload");
@@ -895,6 +892,19 @@ GraphicsPipeline* PipelineCache::BuiltPipeline(GraphicsPipeline* pipeline) const
     // can't be built async
     const auto& draw_state = maxwell3d->draw_manager.draw_state;
     if (draw_state.index_buffer.count <= 6 || draw_state.vertex_buffer.count <= 6) {
+        return pipeline;
+    }
+    // 2D UI & Font Atlas pass: do not skip draw calls when rendering into a 2D color target without depth
+    const auto& key = pipeline->Key();
+    const bool has_tess_or_geom = key.unique_hashes[2] != 0 || key.unique_hashes[3] != 0 || key.unique_hashes[4] != 0;
+    size_t num_color_targets = 0;
+    for (size_t i = 0; i < Maxwell::NumRenderTargets; ++i) {
+        if (key.state.color_formats[i] != 0) {
+            num_color_targets++;
+        }
+    }
+    const bool is_2d_ui_or_font = !has_tess_or_geom && key.state.depth_enabled == 0 && num_color_targets <= 1;
+    if (is_2d_ui_or_font) {
         return pipeline;
     }
     return nullptr;

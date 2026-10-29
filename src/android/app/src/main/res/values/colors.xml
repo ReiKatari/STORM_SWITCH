@@ -151,4 +151,15 @@
     <color name="storm_amethyst_surface_variant">#39164C</color>
     <color name="storm_amethyst_on_surface">#FFFFFF</color>
     <color name="storm_amethyst_outline">#A21CAF</color>
+    <!-- STORM AURORA FLUID Core Palette -->
+    <color name="storm_bg_deep">#0A0D14</color>
+    <color name="storm_card_dark">#121622</color>
+    <color name="storm_card_inner">#161B28</color>
+    <color name="storm_border_subtle">#2A324B</color>
+    <color name="storm_neon_cyan">#00F2FE</color>
+    <color name="storm_neon_green">#00E676</color>
+    <color name="storm_neon_orange">#FF9100</color>
+    <color name="storm_neon_purple">#E040FB</color>
+    <color name="storm_text_primary">#F0F6FC</color>
+    <color name="storm_text_secondary">#8B949E</color>
 </resources>

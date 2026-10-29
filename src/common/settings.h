@@ -387,6 +387,9 @@ struct Values {
                                                            Specialization::Percentage,
                                                        true,
                                                        true};
+    SwitchableSetting<Fsr2QualityMode, true> fsr2_quality_mode{
+        linkage, Fsr2QualityMode::Quality, "fsr2_quality_mode", Category::Renderer,
+        Specialization::Default, true, true};
     SwitchableSetting<AspectRatio, true> aspect_ratio{linkage,
                                                       AspectRatio::R16_9,
                                                       "aspect_ratio",

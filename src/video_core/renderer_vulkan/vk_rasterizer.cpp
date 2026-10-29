@@ -1115,7 +1115,8 @@ void RasterizerVulkan::ReleaseFences(bool force) {
 
 void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
                                                 VideoCommon::CacheType which) {
-    if (Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) {
+    if (Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue() ||
+        True(which & VideoCommon::CacheType::TextureCache)) {
         FlushRegion(addr, size, which);
     }
     InvalidateRegion(addr, size, which);

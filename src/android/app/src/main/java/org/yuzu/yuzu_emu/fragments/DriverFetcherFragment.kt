@@ -94,17 +94,25 @@ class DriverFetcherFragment : Fragment() {
         DriverRepo("GameHub Adreno 8xx", "crueter/GameHub-8Elite-Drivers", 6),
         DriverRepo("Amaral Adreno Tools", "rickamaral94/Amaral-Adreno-Tools", 7, true, SortMode.PublishTime),
         DriverRepo("WinNative Drivers", "WinNative-Emu/Drivers", 8, true, SortMode.PublishTime),
+        DriverRepo("AK-Turnip (Mesa Unified)", "aydar-kamaltdinov/mesa-unified", 9, true, SortMode.PublishTime),
+        DriverRepo("StevenMX Turnip CI", "StevenMXZ/freedreno_turnip-CI", 10, true, SortMode.PublishTime),
+        DriverRepo("The412Banner Nightly Turnip", "The412Banner/Banners-Turnip", 11, true, SortMode.PublishTime),
+        DriverRepo("Vauzi-17 Adreno 710 / 720 / 722 Turnip", "Vauzi-17/710", 12, true, SortMode.PublishTime),
     )
 
     private val driverMap = listOf(
         IntRange(Integer.MIN_VALUE, 9) to "Unsupported",
-        IntRange(10, 99) to "STORM DRIVER / KIMCHI Turnip", // Special case for Adreno Axx
+        IntRange(10, 99) to "STORM DRIVER 7.0.0 / KIMCHI Turnip", // Special case for Adreno Axx
         IntRange(100, 599) to "Unsupported",
-        IntRange(600, 639) to "Mr. Purple EOL-24.3.4",
-        IntRange(640, 699) to "STORM DRIVER / KIMCHI",
-        IntRange(700, 799) to "STORM DRIVER / Balemuni Apex",
-        IntRange(800, 899) to "STORM DRIVER / Balemuni Apex v2",
-        IntRange(900, Int.MAX_VALUE) to "STORM DRIVER / Turnip Latest"
+        IntRange(600, 639) to "STORM DRIVER 7.0.0 / Mr. Purple EOL / AK-Turnip",
+        IntRange(640, 699) to "STORM DRIVER 7.0.0 / KIMCHI Turnip / AK-Turnip",
+        IntRange(710, 725) to "STORM DRIVER 7.0.0 / Vauzi-17 (A710/A720) / AK-Turnip",
+        IntRange(726, 750) to "STORM DRIVER 7.0.0 / Amaral 26.2.0 / Balemuni Apex",
+        IntRange(751, 799) to "STORM DRIVER 7.0.0 / Amaral Turnip / AK-Turnip",
+        IntRange(800, 829) to "STORM DRIVER 7.0.0 / Amaral A8xx / AK-Turnip",
+        IntRange(830, 840) to "STORM DRIVER 7.0.0 / Amaral 26.2.0 (8Elite) / AK-Turnip",
+        IntRange(841, 899) to "STORM DRIVER 7.0.0 / Amaral A8xx / Whitebelyash",
+        IntRange(900, Int.MAX_VALUE) to "STORM DRIVER 7.0.0 / Mesa Unified"
     )
 
     private lateinit var driverGroupAdapter: DriverGroupAdapter
@@ -278,10 +286,17 @@ class DriverFetcherFragment : Fragment() {
         val barInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
         val cutoutInsets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
 
+        val topInsets = maxOf(barInsets.top, cutoutInsets.top)
         val leftInsets = barInsets.left + cutoutInsets.left
         val rightInsets = barInsets.right + cutoutInsets.right
 
+        binding.appbarDrivers.updatePadding(top = topInsets)
         binding.toolbarDrivers.updateMargins(left = leftInsets, right = rightInsets)
+        val density = resources.displayMetrics.density
+        binding.cardDriverInfo.updateMargins(
+            left = leftInsets + (12 * density).toInt(),
+            right = rightInsets + (12 * density).toInt()
+        )
         binding.listDrivers.updateMargins(left = leftInsets, right = rightInsets)
 
         binding.listDrivers.updatePadding(

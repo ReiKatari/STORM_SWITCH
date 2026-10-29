@@ -40,7 +40,9 @@ class SystemInfoDialogFragment : DialogFragment() {
                 androidx.core.view.WindowInsetsCompat.Type.systemBars() or
                 androidx.core.view.WindowInsetsCompat.Type.displayCutout()
             )
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            val density = resources.displayMetrics.density
+            val topInset = maxOf(systemBars.top, (24 * density).toInt())
+            v.setPadding(systemBars.left, topInset, systemBars.right, systemBars.bottom)
             insets
         }
         binding.root.requestApplyInsets()

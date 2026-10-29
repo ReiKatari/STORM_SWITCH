@@ -143,6 +143,17 @@ void TextureCache<P>::RunGarbageCollector() {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
+        // Protect 2D Color Render Targets / dynamic font atlases from GC eviction
+        const bool is_color_2d = image.info.type == ImageType::e2D &&
+                                 image.info.num_samples == 1 &&
+                                 image.info.size.width <= 2048 &&
+                                 image.info.size.height <= 2048 &&
+                                 image.info.format < PixelFormat::MaxColorFormat;
+        if (is_color_2d && True(image.flags & ImageFlagBits::GpuModified)) {
+            lru_cache.Touch(image.lru_index, frame_tick);
+            return false;
+        }
+
         // Generational VRAM Recycling: Active (0) -> Standby (1) -> Eviction Candidate (2)
         // In normal load, transition images through a hysteresis Standby grace period
         // before destroying them, preventing expensive asset reloading hitches.
@@ -305,26 +316,24 @@ void TextureCache<P>::CheckFeedbackLoop(std::span<const ImageViewInOut> views) {
                 continue;
             }
 
-            {
-                bool is_continue = false;
-                for (size_t i = 0; i < 8; ++i)
-                    is_continue |= (rt_active_mask & (1u << i)) && view.id == render_targets.color_buffer_ids[i];
-                if (is_continue)
-                    continue;
+            for (size_t i = 0; i < 8; ++i) {
+                if ((rt_active_mask & (1u << i)) && view.id == render_targets.color_buffer_ids[i]) {
+                    return true;
+                }
             }
 
-            if (depth_active && view.id == render_targets.depth_buffer_id)
-                continue;
+            if (depth_active && view.id == render_targets.depth_buffer_id) {
+                return true;
+            }
 
             const ImageId view_image_id = slot_image_views[view.id].image_id;
-            {
-                bool is_continue = false;
-                for (size_t i = 0; i < 8; ++i)
-                    is_continue |= (rt_active_mask & (1u << i)) && view_image_id == rt_image_id[i];
-                if (is_continue)
-                    continue;
+            for (size_t i = 0; i < 8; ++i) {
+                if ((rt_active_mask & (1u << i)) && view_image_id == rt_image_id[i] && rt_image_id[i] != ImageId{}) {
+                    return true;
+                }
             }
-            if (depth_active && view_image_id == rt_depth_image_id) {
+
+            if (depth_active && view_image_id == rt_depth_image_id && rt_depth_image_id != ImageId{}) {
                 return true;
             }
         }

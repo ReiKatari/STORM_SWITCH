@@ -467,7 +467,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "    border-bottom-right-radius: 5px;"
         "    background-color: rgba(30, 41, 59, 0.55);"
         "}"
-        "QComboBox QAbstractItemView {"
+        "QComboBoxPrivateContainer, QComboBox QListView, QComboBox QAbstractItemView {"
         "    background-color: #0F172A;"
         "    border: 1px solid #334155;"
         "    border-radius: 6px;"
@@ -862,4 +862,12 @@ void ConfigurePerGame::LoadConfiguration() {
     ui->display_size->setText(valueText);
     ui->display_size->setCursorPosition(0);
     ui->display_size->home(false);
+}
+
+void ConfigurePerGame::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Escape) {
+        reject();
+        return;
+    }
+    QDialog::keyPressEvent(event);
 }

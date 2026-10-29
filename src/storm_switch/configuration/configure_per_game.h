@@ -71,6 +71,7 @@ public:
 
 private:
     void changeEvent(QEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
     void showEvent(QShowEvent* event) override;
     void RetranslateUI();
 

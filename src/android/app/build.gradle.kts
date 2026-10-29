@@ -73,8 +73,8 @@ android {
         applicationId = "dev.storm_switch"
         minSdk = 24
         targetSdk = 36
-        versionName = getGitVersion()
-        versionCode = autoVersion
+        versionName = "16.0.0"
+        versionCode = 16000
 
         externalNativeBuild {
             cmake {
@@ -92,9 +92,9 @@ android {
                         "-DYUZU_USE_BUNDLED_FFMPEG=ON",
                         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
                         "-DENABLE_UPDATE_CHECKER=ON",
-                        "-DBUILD_VERSION=15.3.0",
-                        "-DGIT_TAG=15.3.0",
-                        "-DGIT_RELEASE=15.3.0",
+                        "-DBUILD_VERSION=16.0.0",
+                        "-DGIT_TAG=16.0.0",
+                        "-DGIT_RELEASE=16.0.0",
                         "-DBUILD_TESTING=OFF",
                         "-DYUZU_TESTS=OFF",
                         "-DDYNARMIC_TESTS=OFF",
@@ -437,7 +437,7 @@ fun getGitVersion(): String {
             return ver
         }
     }
-    return "15.3.0"
+    return "16.0.0"
 }
 
 

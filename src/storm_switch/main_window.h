@@ -588,6 +588,7 @@ private:
         std::pair<Settings::AntiAliasing, bool> anti_aliasing;
         std::pair<Settings::ScalingFilter, bool> scaling_filter;
         std::pair<int, bool> fsr_sharpening_slider;
+        std::pair<Settings::Fsr2QualityMode, bool> fsr2_quality_mode;
         std::pair<Settings::NvdecEmulation, bool> nvdec_emulation;
         std::pair<Settings::DmaAccuracy, bool> dma_accuracy;
         std::pair<Settings::CpuAccuracy, bool> cpu_accuracy;
@@ -779,14 +780,21 @@ private:
     void* m_restore_event{nullptr};
     QTimer* m_restore_timer{nullptr};
 
+    void SetupTrayIcon() {
+        InitializeSystemTray();
+    }
     void InitializeSystemTray();
     void UpdateSystemTrayStrings();
     class QSystemTrayIcon* m_tray_icon{nullptr};
     QMenu* m_tray_menu{nullptr};
+    QAction* m_tray_header_action{nullptr};
     QAction* m_tray_restore_action{nullptr};
+    QAction* m_tray_pause_action{nullptr};
+    QAction* m_tray_settings_action{nullptr};
     QAction* m_tray_about_action{nullptr};
     QAction* m_tray_exit_action{nullptr};
     bool m_is_quitting_from_tray{false};
+    bool is_exiting_from_tray{false};
     QPushButton* shader_status_button = nullptr;
 
 protected:

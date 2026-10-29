@@ -114,4 +114,5 @@ private:
     void UpdateFsrSliderState();
     QComboBox* scaling_filter_combobox{nullptr};
     QWidget* fsr_sharpening_widget{nullptr};
+    QWidget* fsr2_quality_widget{nullptr};
 };

@@ -103,6 +103,17 @@ class AmiiboDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(
+                androidx.core.view.WindowInsetsCompat.Type.systemBars() or
+                androidx.core.view.WindowInsetsCompat.Type.displayCutout()
+            )
+            val density = resources.displayMetrics.density
+            val topInset = maxOf(systemBars.top, (24 * density).toInt())
+            v.setPadding(systemBars.left, topInset, systemBars.right, systemBars.bottom)
+            insets
+        }
+        binding.root.requestApplyInsets()
         setupUI()
         loadDatabase(false)
     }
@@ -111,6 +122,7 @@ class AmiiboDialogFragment : DialogFragment() {
         super.onStart()
         dialog?.window?.let { window ->
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
             window.setBackgroundDrawableResource(android.R.color.transparent)
             window.setGravity(android.view.Gravity.CENTER)
             ThemeHelper.applySystemBarsTheme(window, requireContext())

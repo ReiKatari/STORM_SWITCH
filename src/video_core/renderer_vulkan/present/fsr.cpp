@@ -15,6 +15,7 @@
 #include "video_core/host_shaders/vulkan_fidelityfx_fsr_rcas_fp32_frag_spv.h"
 #include "video_core/host_shaders/vulkan_fidelityfx_fsr_vert_spv.h"
 #include "video_core/renderer_vulkan/present/fsr.h"
+#include "video_core/renderer_vulkan/present/fsr2.h"
 #include "video_core/renderer_vulkan/present/util.h"
 #include "video_core/renderer_vulkan/vk_scheduler.h"
 #include "video_core/renderer_vulkan/vk_shader_util.h"
@@ -175,8 +176,9 @@ VkImageView FSR::Draw(const Device& device, Scheduler& scheduler, size_t image_i
                      input_image_height, output_image_width, output_image_height, viewport_x,
                      viewport_y);
 
+    const auto fsr2_config = FSR2::GetQualityConfig(Settings::values.fsr2_quality_mode.GetValue());
     const float raw_sharpening =
-        static_cast<float>(Settings::values.fsr_sharpening_slider.GetValue()) / 100.0f;
+        (static_cast<float>(Settings::values.fsr_sharpening_slider.GetValue()) / 100.0f) + fsr2_config.sharpness_bias;
     const float sharpening = std::clamp(raw_sharpening, 0.0f, 1.0f);
     FsrRcasCon(rcas_con.data(), sharpening);
 

@@ -613,11 +613,24 @@ bool GraphicsPipeline::ConfigureDraw(const RescalingPushConstant& rescaling,
 
     scheduler.RequestRenderpass(current_fb);
     if (!is_built.load(std::memory_order::relaxed)) {
-        // Wait for the pipeline to be built
-        scheduler.Record([this](vk::CommandBuffer) {
+        const bool has_tess_or_geom = key.unique_hashes[2] != 0 || key.unique_hashes[3] != 0 || key.unique_hashes[4] != 0;
+        size_t num_color_targets = 0;
+        for (size_t i = 0; i < Tegra::Engines::Maxwell3D::Regs::NumRenderTargets; ++i) {
+            if (key.state.color_formats[i] != 0) {
+                num_color_targets++;
+            }
+        }
+        const bool is_2d_ui_or_font = !has_tess_or_geom && key.state.depth_enabled == 0 && num_color_targets <= 1;
+        if (is_2d_ui_or_font) {
             std::unique_lock lock{build_mutex};
             build_condvar.wait(lock, [this] { return is_built.load(std::memory_order::relaxed); });
-        });
+        } else {
+            // Wait for the pipeline to be built
+            scheduler.Record([this](vk::CommandBuffer) {
+                std::unique_lock lock{build_mutex};
+                build_condvar.wait(lock, [this] { return is_built.load(std::memory_order::relaxed); });
+            });
+        }
     }
     const bool is_rescaling{current_fb->IsRescaled()};
     const bool update_rescaling{scheduler.UpdateRescaling(is_rescaling)};

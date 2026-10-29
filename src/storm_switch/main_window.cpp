@@ -1755,7 +1755,7 @@ void MainWindow::InitializeWidgets() {
             {Settings::ScalingFilter::Gaussian, StormLang(QStringLiteral("Гаусс"), QStringLiteral("Gaussian"), QStringLiteral("Gauß"), QStringLiteral("Gauss"), QStringLiteral("高斯"), QStringLiteral("ガウス"))},
             {Settings::ScalingFilter::Lanczos, StormLang(QStringLiteral("Ланцош"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("兰索斯"), QStringLiteral("ランツォシュ"))},
             {Settings::ScalingFilter::ScaleForce, QStringLiteral("ScaleForce")},
-            {Settings::ScalingFilter::Fsr, QStringLiteral("FSR")},
+            {Settings::ScalingFilter::Fsr, StormLang(QStringLiteral("AMD FSR 2.0 (Temporal Upscaling)"), QStringLiteral("AMD FSR 2.0 (Temporal Upscaling)"))},
             {Settings::ScalingFilter::Area, QStringLiteral("Area")},
             {Settings::ScalingFilter::ZeroTangent, QStringLiteral("Zero-Tangent")},
             {Settings::ScalingFilter::BSpline, QStringLiteral("B-Spline")},
@@ -1778,6 +1778,32 @@ void MainWindow::InitializeWidgets() {
             });
             act->setCheckable(true);
             act->setChecked(opt.first == cur_filter);
+        }
+        if (cur_filter == Settings::ScalingFilter::Fsr) {
+            context_menu.addSeparator();
+            auto* mode_header = context_menu.addAction(StormLang(
+                QStringLiteral("⚡ Режим качества AMD FSR 2.0:"),
+                QStringLiteral("⚡ AMD FSR 2.0 Quality Mode:")));
+            mode_header->setEnabled(false);
+
+            const auto cur_mode = Settings::values.fsr2_quality_mode.GetValue();
+            const std::vector<std::pair<Settings::Fsr2QualityMode, QString>> quality_options = {
+                {Settings::Fsr2QualityMode::Quality, StormLang(QStringLiteral("Качество (Quality — 1.5x)"), QStringLiteral("Quality (1.5x)"))},
+                {Settings::Fsr2QualityMode::Balanced, StormLang(QStringLiteral("Баланс (Balanced — 1.7x)"), QStringLiteral("Balanced (1.7x)"))},
+                {Settings::Fsr2QualityMode::Performance, StormLang(QStringLiteral("Производительность (Performance — 2.0x)"), QStringLiteral("Performance (2.0x)"))},
+                {Settings::Fsr2QualityMode::UltraPerformance, StormLang(QStringLiteral("Ультра-производительность (Ultra Performance — 3.0x)"), QStringLiteral("Ultra Performance (3.0x)"))},
+            };
+            for (const auto& q_opt : quality_options) {
+                auto* q_act = context_menu.addAction(QStringLiteral("   ") + q_opt.second, [this, q_opt] {
+                    ApplyStatusBarSwitchableSetting(Settings::values.fsr2_quality_mode, q_opt.first,
+                                                    m_session_backup.is_active,
+                                                    m_session_backup.fsr2_quality_mode, current_game_path,
+                                                    last_filename_booted);
+                    ApplyDynamicSettingChange();
+                });
+                q_act->setCheckable(true);
+                q_act->setChecked(q_opt.first == cur_mode);
+            }
         }
         ShowMenuAtWidget(context_menu, filter_status_button);
         filter_status_button->repaint();
@@ -4419,6 +4445,7 @@ void MainWindow::StormSessionBackup::Capture() {
     anti_aliasing = capture_switchable(Settings::values.anti_aliasing);
     scaling_filter = capture_switchable(Settings::values.scaling_filter);
     fsr_sharpening_slider = capture_switchable(Settings::values.fsr_sharpening_slider);
+    fsr2_quality_mode = capture_switchable(Settings::values.fsr2_quality_mode);
     nvdec_emulation = capture_switchable(Settings::values.nvdec_emulation);
     dma_accuracy = capture_switchable(Settings::values.dma_accuracy);
     cpu_accuracy = capture_switchable(Settings::values.cpu_accuracy);
@@ -4510,6 +4537,7 @@ void MainWindow::StormSessionBackup::Restore() {
     restore_switchable(Settings::values.anti_aliasing, anti_aliasing);
     restore_switchable(Settings::values.scaling_filter, scaling_filter);
     restore_switchable(Settings::values.fsr_sharpening_slider, fsr_sharpening_slider);
+    restore_switchable(Settings::values.fsr2_quality_mode, fsr2_quality_mode);
     restore_switchable(Settings::values.nvdec_emulation, nvdec_emulation);
     restore_switchable(Settings::values.dma_accuracy, dma_accuracy);
     restore_switchable(Settings::values.cpu_accuracy, cpu_accuracy);
@@ -5225,6 +5253,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
                 k == "anti_aliasing" || k == "Renderer\\anti_aliasing" ||
                 k == "scaling_filter" || k == "Renderer\\scaling_filter" ||
                 k == "fsr_sharpening_slider" || k == "Renderer\\fsr_sharpening_slider" ||
+                k == "fsr2_quality_mode" || k == "Renderer\\fsr2_quality_mode" ||
                 k == "max_anisotropy" || k == "Renderer\\max_anisotropy" ||
                 k == "frame_pacing_mode" || k == "Renderer\\frame_pacing_mode" ||
                 k == "backend" || k == "Renderer\\backend") {
@@ -7253,6 +7282,7 @@ void MainWindow::OnExecuteProgram(std::size_t program_index) {
 }
 
 void MainWindow::OnExit() {
+    is_exiting_from_tray = true;
     m_is_quitting_from_tray = true;
     if (m_tray_icon) {
         m_tray_icon->hide();
@@ -11028,6 +11058,9 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
 
     if (filename.empty()) {
         setWindowTitle(QString::fromStdString(window_title));
+        if (m_tray_header_action) {
+            m_tray_header_action->setText(QStringLiteral("STORM SWITCH 16.0.0 — Готов к работе"));
+        }
     } else {
         const std::string upper_gpu = QString::fromStdString(std::string{gpu_vendor}).toUpper().toStdString();
         const auto run_title = [filename, display_version, internal_version, upper_gpu]() {
@@ -11048,6 +11081,10 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
                                upper_gpu.empty() ? "GPU" : upper_gpu);
         }();
         setWindowTitle(QString::fromStdString(run_title));
+        if (m_tray_header_action) {
+            m_tray_header_action->setText(QStringLiteral("STORM SWITCH 16.0.0 — В игре: %1").arg(
+                QString::fromUtf8(filename.data(), static_cast<int>(filename.size()))));
+        }
     }
 }
 
@@ -11446,7 +11483,7 @@ void MainWindow::UpdateFilterText() {
         filter_text = QStringLiteral("ScaleForce");
         break;
     case Settings::ScalingFilter::Fsr:
-        filter_text = QStringLiteral("FSR");
+        filter_text = QStringLiteral("FSR 2.0");
         break;
     case Settings::ScalingFilter::Area:
         filter_text = QStringLiteral("Area");
@@ -13061,7 +13098,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             {Settings::ScalingFilter::Gaussian, StormLang(QStringLiteral("Гаусс"), QStringLiteral("Gaussian"), QStringLiteral("Gauß"), QStringLiteral("Gauss"), QStringLiteral("高斯"), QStringLiteral("ガウス"))},
             {Settings::ScalingFilter::Lanczos, StormLang(QStringLiteral("Ланцош"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("兰索斯"), QStringLiteral("ランツォシュ"))},
             {Settings::ScalingFilter::ScaleForce, QStringLiteral("ScaleForce")},
-            {Settings::ScalingFilter::Fsr, QStringLiteral("FSR")},
+            {Settings::ScalingFilter::Fsr, StormLang(QStringLiteral("AMD FSR 2.0 (Temporal Upscaling)"), QStringLiteral("AMD FSR 2.0 (Temporal Upscaling)"))},
             {Settings::ScalingFilter::Area, QStringLiteral("Area")},
             {Settings::ScalingFilter::Mmpx, QStringLiteral("MMPX")},
             {Settings::ScalingFilter::ZeroTangent, QStringLiteral("Zero-Tangent")},
@@ -13083,6 +13120,31 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
             });
             act->setCheckable(true);
             act->setChecked(pair.first == cur_filter);
+        }
+        if (cur_filter == Settings::ScalingFilter::Fsr) {
+            filter_menu->addSeparator();
+            auto* mode_header = filter_menu->addAction(StormLang(
+                QStringLiteral("⚡ Режим качества AMD FSR 2.0:"),
+                QStringLiteral("⚡ AMD FSR 2.0 Quality Mode:")));
+            mode_header->setEnabled(false);
+
+            const auto cur_mode = Settings::values.fsr2_quality_mode.GetValue();
+            const std::vector<std::pair<Settings::Fsr2QualityMode, QString>> quality_options = {
+                {Settings::Fsr2QualityMode::Quality, StormLang(QStringLiteral("Качество (Quality — 1.5x)"), QStringLiteral("Quality (1.5x)"))},
+                {Settings::Fsr2QualityMode::Balanced, StormLang(QStringLiteral("Баланс (Balanced — 1.7x)"), QStringLiteral("Balanced (1.7x)"))},
+                {Settings::Fsr2QualityMode::Performance, StormLang(QStringLiteral("Производительность (Performance — 2.0x)"), QStringLiteral("Performance (2.0x)"))},
+                {Settings::Fsr2QualityMode::UltraPerformance, StormLang(QStringLiteral("Ультра-производительность (Ultra Performance — 3.0x)"), QStringLiteral("Ultra Performance (3.0x)"))},
+            };
+            for (const auto& q_opt : quality_options) {
+                auto* q_act = filter_menu->addAction(QStringLiteral("   ") + q_opt.second, [this, q_opt] {
+                    ApplyStatusBarSwitchableSetting(Settings::values.fsr2_quality_mode, q_opt.first,
+                                                    m_session_backup, m_session_backup.fsr2_quality_mode,
+                                                    current_game_path);
+                    ApplyDynamicSettingChange();
+                });
+                q_act->setCheckable(true);
+                q_act->setChecked(q_opt.first == cur_mode);
+            }
         }
 
         context_menu.addAction(StormLang(
@@ -13440,36 +13502,37 @@ void MainWindow::InitializeSystemTray() {
     }
 
     m_tray_icon = new QSystemTrayIcon(windowIcon(), this);
-    m_tray_icon->setToolTip(QStringLiteral("STORM SWITCH"));
+    m_tray_icon->setToolTip(QStringLiteral("STORM SWITCH 16.0.0"));
 
     m_tray_menu = new QMenu(this);
     m_tray_menu->setObjectName(QStringLiteral("StormSystemTrayMenu"));
-    // STORM Ecosystem Tray Menu Standard:
-    // Pure text (NO icons, NO emojis), Segoe UI 9pt, bold first item, #141026 background, #8B5CF6 border, #2E2652 hover, #FFFFFF text
-    QFont menu_font(QStringLiteral("Segoe UI"), 9);
-    m_tray_menu->setFont(menu_font);
+    m_tray_menu->setFont(QFont(QStringLiteral("Segoe UI"), 9));
     m_tray_menu->setStyleSheet(QStringLiteral(
         "QMenu#StormSystemTrayMenu {"
-        "  background-color: #141026;"
-        "  color: #FFFFFF;"
-        "  border: 1px solid #8B5CF6;"
+        "  background-color: #121622;"
+        "  color: #E6EDF3;"
+        "  border: 1px solid #2A324B;"
         "  padding: 4px 0px;"
         "  font-family: 'Segoe UI';"
         "  font-size: 9pt;"
         "}"
         "QMenu#StormSystemTrayMenu::item {"
         "  background-color: transparent;"
-        "  color: #FFFFFF;"
+        "  color: #E6EDF3;"
         "  padding: 6px 20px 6px 14px;"
         "  margin: 0px;"
         "}"
+        "QMenu#StormSystemTrayMenu::item:disabled {"
+        "  color: #8B949E;"
+        "  font-weight: 600;"
+        "}"
         "QMenu#StormSystemTrayMenu::item:selected {"
-        "  background-color: #2E2652;"
+        "  background-color: #1F2639;"
         "  color: #FFFFFF;"
         "}"
         "QMenu#StormSystemTrayMenu::separator {"
         "  height: 1px;"
-        "  background: #2E2652;"
+        "  background: #2A324B;"
         "  margin: 4px 8px;"
         "}"
         "QMenu#StormSystemTrayMenu::icon {"
@@ -13479,20 +13542,29 @@ void MainWindow::InitializeSystemTray() {
         "}"
     ));
 
-    m_tray_restore_action = m_tray_menu->addAction(QStringLiteral("Развернуть STORM SWITCH"));
-    QFont bold_font = menu_font;
-    bold_font.setBold(true);
-    m_tray_restore_action->setFont(bold_font);
-    m_tray_restore_action->setIconVisibleInMenu(false);
-
-    m_tray_about_action = m_tray_menu->addAction(QStringLiteral("О программе"));
-    m_tray_about_action->setFont(menu_font);
-    m_tray_about_action->setIconVisibleInMenu(false);
+    // First item: unclickable info header
+    m_tray_header_action = m_tray_menu->addAction(QStringLiteral("STORM SWITCH 16.0.0 — Готов к работе"));
+    m_tray_header_action->setEnabled(false);
+    m_tray_header_action->setIconVisibleInMenu(false);
 
     m_tray_menu->addSeparator();
 
+    // 1. Restore
+    m_tray_restore_action = m_tray_menu->addAction(QStringLiteral("Развернуть STORM SWITCH"));
+    m_tray_restore_action->setIconVisibleInMenu(false);
+
+    // 2. Pause / Resume
+    m_tray_pause_action = m_tray_menu->addAction(QStringLiteral("Пауза / Продолжить эмуляцию"));
+    m_tray_pause_action->setIconVisibleInMenu(false);
+
+    // 3. Settings...
+    m_tray_settings_action = m_tray_menu->addAction(QStringLiteral("Настройки..."));
+    m_tray_settings_action->setIconVisibleInMenu(false);
+
+    m_tray_menu->addSeparator();
+
+    // 4. Exit
     m_tray_exit_action = m_tray_menu->addAction(QStringLiteral("Выход"));
-    m_tray_exit_action->setFont(menu_font);
     m_tray_exit_action->setIconVisibleInMenu(false);
 
     connect(m_tray_restore_action, &QAction::triggered, this, [this]() {
@@ -13501,14 +13573,19 @@ void MainWindow::InitializeSystemTray() {
         activateWindow();
     });
 
-    connect(m_tray_about_action, &QAction::triggered, this, [this]() {
+    connect(m_tray_pause_action, &QAction::triggered, this, [this]() {
+        OnPauseContinueGame();
+    });
+
+    connect(m_tray_settings_action, &QAction::triggered, this, [this]() {
         showNormal();
         raise();
         activateWindow();
-        OnAbout();
+        OnConfigure();
     });
 
     connect(m_tray_exit_action, &QAction::triggered, this, [this]() {
+        is_exiting_from_tray = true;
         m_is_quitting_from_tray = true;
         if (m_tray_icon) {
             m_tray_icon->hide();
@@ -13568,6 +13645,30 @@ void MainWindow::UpdateSystemTrayStrings() {
             QStringLiteral("STORM SWITCH を表示"),
             QStringLiteral("استعادة STORM SWITCH"),
             QStringLiteral("Restaurar STORM SWITCH")
+        ));
+    }
+    if (m_tray_pause_action) {
+        m_tray_pause_action->setText(StormLang(
+            QStringLiteral("Пауза / Продолжить эмуляцию"),
+            QStringLiteral("Pause / Resume Emulation"),
+            QStringLiteral("Pause / Emulation fortsetzen"),
+            QStringLiteral("Pause / Reprendre l'émulation"),
+            QStringLiteral("暂停 / 继续模拟"),
+            QStringLiteral("一時停止 / エミュレーション再開"),
+            QStringLiteral("إيقاف مؤقت / متابعة المحاكاة"),
+            QStringLiteral("Pausar / Continuar emulación")
+        ));
+    }
+    if (m_tray_settings_action) {
+        m_tray_settings_action->setText(StormLang(
+            QStringLiteral("Настройки..."),
+            QStringLiteral("Settings..."),
+            QStringLiteral("Einstellungen..."),
+            QStringLiteral("Paramètres..."),
+            QStringLiteral("设置..."),
+            QStringLiteral("設定..."),
+            QStringLiteral("الإعدادات..."),
+            QStringLiteral("Ajustes...")
         ));
     }
     if (m_tray_about_action) {
@@ -13953,7 +14054,14 @@ bool MainWindow::ConfirmClose() {
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
+    if (!is_exiting_from_tray && !m_is_quitting_from_tray && m_tray_icon && m_tray_icon->isVisible()) {
+        hide();
+        event->ignore();
+        return;
+    }
+
     if (!ConfirmClose()) {
+        is_exiting_from_tray = false;
         m_is_quitting_from_tray = false;
         event->ignore();
         return;

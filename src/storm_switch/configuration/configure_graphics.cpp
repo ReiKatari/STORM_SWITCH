@@ -289,6 +289,10 @@ void ConfigureGraphics::UpdateFsrSliderState() {
         }
     }
     fsr_sharpening_widget->setEnabled(is_fsr);
+    if (fsr2_quality_widget) {
+        fsr2_quality_widget->setVisible(is_fsr);
+        fsr2_quality_widget->setEnabled(is_fsr);
+    }
 }
 
 void ConfigureGraphics::SetConfiguration() {
@@ -603,6 +607,9 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
             hold_graphics.emplace(setting->Id(), widget);
         } else if (setting->Id() == Settings::values.scaling_filter.Id()) {
             scaling_filter_combobox = widget->combobox;
+            hold_graphics.emplace(setting->Id(), widget);
+        } else if (setting->Id() == Settings::values.fsr2_quality_mode.Id()) {
+            fsr2_quality_widget = widget;
             hold_graphics.emplace(setting->Id(), widget);
         } else if (setting->Id() == Settings::values.fsr_sharpening_slider.Id()) {
             fsr_sharpening_widget = widget;

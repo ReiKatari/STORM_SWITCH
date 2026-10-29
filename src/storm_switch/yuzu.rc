@@ -1,18 +1,14 @@
-// SPDX-FileCopyrightText: 2018 yuzu Emulator Project
-// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2026 STORM TEAM
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "winresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
 //
 
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-// QT requires that the default application icon is named IDI_ICON1
-
 IDI_ICON1               ICON                    "../../dist/eden.ico"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -20,3 +16,41 @@ IDI_ICON1               ICON                    "../../dist/eden.ico"
 //
 
 0                       RT_MANIFEST             "../../dist/yuzu.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     16,0,0,0
+PRODUCTVERSION  16,0,0,0
+FILEFLAGSMASK   0x3fL
+#ifdef _DEBUG
+FILEFLAGS       0x1L
+#else
+FILEFLAGS       0x0L
+#endif
+FILEOS          0x40004L
+FILETYPE        0x1L
+FILESUBTYPE     0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName",      "STORM TEAM\0"
+            VALUE "FileDescription",  "STORM SWITCH\0"
+            VALUE "FileVersion",      "16.0.0.0\0"
+            VALUE "InternalName",     "storm_switch\0"
+            VALUE "LegalCopyright",   "STORM TEAM\0"
+            VALUE "OriginalFilename", "storm_switch.exe\0"
+            VALUE "ProductName",      "STORM SWITCH\0"
+            VALUE "ProductVersion",   "16.0.0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

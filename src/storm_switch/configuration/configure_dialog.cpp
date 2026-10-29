@@ -135,6 +135,7 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
       web_tab{std::make_unique<ConfigureWeb>(this)},
       vk_records{vk_device_records} {
     Settings::SetConfiguringGlobal(true);
+    setUpdatesEnabled(false);
 
     ui->setupUi(this);
 
@@ -439,7 +440,7 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "    border-bottom-right-radius: 5px;"
         "    background-color: rgba(30, 41, 59, 0.55);"
         "}"
-        "QComboBox QAbstractItemView {"
+        "QComboBoxPrivateContainer, QComboBox QListView, QComboBox QAbstractItemView {"
         "    background-color: #0F172A;"
         "    border: 1px solid #334155;"
         "    border-radius: 6px;"
@@ -541,6 +542,7 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     });
 
     RetranslateUI();
+    setUpdatesEnabled(true);
 
     setSizeGripEnabled(true);
     QScreen* scr = (parentWidget() && parentWidget()->screen()) ? parentWidget()->screen()
@@ -1268,3 +1270,11 @@ void ConfigureDialog::OnSearchTextChanged(const QString& text) {
     }
 }
 
+
+void ConfigureDialog::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Escape) {
+        reject();
+        return;
+    }
+    QDialog::keyPressEvent(event);
+}
