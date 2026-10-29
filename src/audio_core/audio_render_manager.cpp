@@ -21,18 +21,6 @@ void Manager::Stop() {
     system_manager->Stop();
 }
 
-void Manager::Hold() {
-    if (system_manager) {
-        system_manager->Hold();
-    }
-}
-
-void Manager::Release() {
-    if (system_manager) {
-        system_manager->Release();
-    }
-}
-
 void Manager::Resynchronize() {
     if (system_manager) {
         system_manager->Resynchronize();

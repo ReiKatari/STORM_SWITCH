@@ -282,17 +282,6 @@ struct GPU::Impl {
         WaitForSyncOperation(fence);
     }
 
-    void DiscardGpuModifiedImages() {
-        if (!renderer || !renderer->ReadRasterizer() || shutting_down.load(std::memory_order_relaxed)) {
-            return;
-        }
-        const u64 fence = RequestSyncOperation([this]() {
-            renderer->ReadRasterizer()->DiscardGpuModifiedImages();
-        });
-        gpu_thread.TickGPU(is_async);
-        WaitForSyncOperation(fence);
-    }
-
     void RequestComposite(std::vector<Tegra::FramebufferConfig>&& layers, std::vector<Service::Nvidia::NvFence>&& fences) {
         const size_t num_fences{fences.size()};
         size_t current_request_counter{};
@@ -613,10 +602,6 @@ void GPU::WaitIdleForLoadState() {
 
 void GPU::SyncAndInvalidateForLoadState(std::span<const std::pair<DAddr, std::size_t>> sequences) {
     impl->SyncAndInvalidateForLoadState(sequences);
-}
-
-void GPU::DiscardGpuModifiedImages() {
-    impl->DiscardGpuModifiedImages();
 }
 
 GPU::EngineSnapshot GPU::SnapshotEngines() {

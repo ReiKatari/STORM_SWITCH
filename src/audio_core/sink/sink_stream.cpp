@@ -117,9 +117,8 @@ void SinkStream::ClearQueue() {
 
     {
         std::scoped_lock s_lk{sample_count_lock};
-        min_played_sample_count = 0;
-        max_played_sample_count = 0;
         last_sample_count_update_time = system.CoreTiming().GetGlobalTimeNs();
+        min_played_sample_count = max_played_sample_count;
     }
 }
 

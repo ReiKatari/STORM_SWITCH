@@ -102,7 +102,6 @@ public:
     void WaitIdleForLoadState() override;
     void InvalidateForLoadState(
         std::span<const std::pair<DAddr, std::size_t>> sequences) override;
-    void DiscardGpuModifiedImages() override;
     void FlushRegion(DAddr addr, u64 size,
                      VideoCommon::CacheType which = VideoCommon::CacheType::All) override;
     bool MustFlushRegion(DAddr addr, u64 size,

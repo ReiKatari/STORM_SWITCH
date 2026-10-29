@@ -130,10 +130,16 @@ Result System::Stop() {
 }
 
 void System::Resynchronize() {
-    u32 buffers_released{};
-    buffers.FlushBuffers(buffers_released);
-    if (session) {
-        session->ClearBuffers();
+    if (state == State::Started) {
+        u32 buffers_released{};
+        buffers.FlushBuffers(buffers_released);
+        if (session) {
+            session->ClearBuffers();
+            buffers.SyncNextTimestamp(session->GetPlayedSampleCount());
+        }
+        if (buffers_released > 0 && buffer_event) {
+            buffer_event->Signal(system.Kernel());
+        }
     }
 }
 

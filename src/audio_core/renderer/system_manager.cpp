@@ -16,12 +16,9 @@
 namespace AudioCore::Renderer {
 
 SystemManager::SystemManager(Core::System& core_)
-    : core{core_}, audio_renderer{core.AudioCore().ADSP().AudioRenderer()} {
-    core.AudioCore().RegisterSystemManager(this);
-}
+    : core{core_}, audio_renderer{core.AudioCore().ADSP().AudioRenderer()} {}
 
 SystemManager::~SystemManager() {
-    core.AudioCore().UnregisterSystemManager(this);
     Stop();
 }
 
@@ -36,12 +33,9 @@ void SystemManager::InitializeUnsafe() {
             while (active && !stop_token.stop_requested()) {
                 {
                     std::unique_lock lk{hold_mutex};
-                    thread_is_sleeping = true;
-                    hold_ack_cv.notify_all();
                     hold_cv.wait(lk, [this, &stop_token] {
                         return !held || !active || stop_token.stop_requested();
                     });
-                    thread_is_sleeping = false;
                 }
                 if (!active || stop_token.stop_requested()) {
                     break;
@@ -64,10 +58,8 @@ void SystemManager::Stop() {
         {
             std::scoped_lock lk{hold_mutex};
             held = false;
-            thread_is_sleeping = false;
         }
         hold_cv.notify_all();
-        hold_ack_cv.notify_all();
         thread.request_stop();
         thread.join();
         audio_renderer.Stop();
@@ -75,11 +67,8 @@ void SystemManager::Stop() {
 }
 
 void SystemManager::Hold() {
-    std::unique_lock lk{hold_mutex};
+    std::scoped_lock lk{hold_mutex};
     held = true;
-    if (active) {
-        hold_ack_cv.wait(lk, [this] { return thread_is_sleeping || !active; });
-    }
 }
 
 void SystemManager::Release() {

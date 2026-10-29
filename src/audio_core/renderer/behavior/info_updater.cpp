@@ -175,6 +175,13 @@ Result InfoUpdater::UpdateVoices(VoiceContext& voice_context,
         std::array<VoiceState*, MaxChannels> voice_states{};
 
         if (!in_param.in_use) {
+            if (in_param.id < voice_count) {
+                auto& unused_voice{voice_context.GetInfo(in_param.id)};
+                if (unused_voice.current_play_state != VoiceInfo::ServerPlayState::Stopped ||
+                    unused_voice.was_playing) {
+                    unused_voice.Initialize();
+                }
+            }
             continue;
         }
 

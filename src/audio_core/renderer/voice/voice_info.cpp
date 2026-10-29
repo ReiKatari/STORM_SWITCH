@@ -166,12 +166,25 @@ void VoiceInfo::UpdateWaveBuffer(std::span<BehaviorInfo::ErrorInfo> error_info,
                                  const WaveBufferInternal& wave_buffer_internal,
                                  const SampleFormat sample_format_, const bool valid,
                                  const PoolMapper& pool_mapper, const BehaviorInfo& behavior) {
-    if (!valid && wave_buffer.sent_to_DSP && wave_buffer.buffer_address.GetCpuAddr() != 0) {
-        pool_mapper.ForceUnmapPointer(wave_buffer.buffer_address);
-        wave_buffer.buffer_address.Setup(0, 0);
+    if (wave_buffer_internal.address == 0 && wave_buffer_internal.size == 0) {
+        if (wave_buffer.buffer_address.GetCpuAddr() != 0) {
+            pool_mapper.ForceUnmapPointer(wave_buffer.buffer_address);
+            wave_buffer.Initialize();
+        }
+        if (!ShouldUpdateWaveBuffer(wave_buffer_internal)) {
+            return;
+        }
     }
 
-    if (!ShouldUpdateWaveBuffer(wave_buffer_internal)) {
+    const bool address_or_range_changed =
+        wave_buffer_internal.address != 0 &&
+        (wave_buffer.buffer_address.GetCpuAddr() != wave_buffer_internal.address ||
+         wave_buffer.buffer_address.GetSize() != wave_buffer_internal.size ||
+         wave_buffer.start_offset != static_cast<u32>(wave_buffer_internal.start_offset) ||
+         wave_buffer.end_offset != static_cast<u32>(wave_buffer_internal.end_offset) ||
+         wave_buffer.loop != wave_buffer_internal.loop);
+
+    if (!ShouldUpdateWaveBuffer(wave_buffer_internal) && !address_or_range_changed) {
         return;
     }
 

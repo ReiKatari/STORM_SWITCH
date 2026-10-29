@@ -1,5 +1,5 @@
 [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::BelowNormal
-$version = "15.0.3"
+$version = "15.1.0"
 $baseDir = Split-Path -Parent $PSScriptRoot
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()

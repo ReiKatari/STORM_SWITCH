@@ -5,9 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "audio_core/audio_core.h"
-#include "audio_core/renderer/system_manager.h"
 #include "audio_core/sink/sink_details.h"
-#include <algorithm>
 #include "common/settings.h"
 #include "core/core.h"
 
@@ -46,34 +44,6 @@ void AudioCore::ResynchronizeSaveState() {
     }
     if (adsp) {
         adsp->AudioRenderer().ClearAllRemainCommandCounts();
-    }
-}
-
-void AudioCore::RegisterSystemManager(Renderer::SystemManager* manager) {
-    std::scoped_lock lk{system_manager_mutex};
-    system_managers.push_back(manager);
-}
-
-void AudioCore::UnregisterSystemManager(Renderer::SystemManager* manager) {
-    std::scoped_lock lk{system_manager_mutex};
-    std::erase(system_managers, manager);
-}
-
-void AudioCore::HoldAudioRenderer() {
-    std::scoped_lock lk{system_manager_mutex};
-    for (auto* sm : system_managers) {
-        if (sm) {
-            sm->Hold();
-        }
-    }
-}
-
-void AudioCore::ReleaseAudioRenderer() {
-    std::scoped_lock lk{system_manager_mutex};
-    for (auto* sm : system_managers) {
-        if (sm) {
-            sm->Release();
-        }
     }
 }
 

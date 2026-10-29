@@ -931,6 +931,7 @@ void RasterizerVulkan::InvalidateForLoadState(
     {
         std::scoped_lock lock{texture_cache.mutex};
         texture_cache.InvalidateForLoadState(sequences);
+        texture_cache.DiscardGpuModifiedImages();
     }
     {
         std::scoped_lock lock{buffer_cache.mutex};
@@ -944,11 +945,6 @@ void RasterizerVulkan::InvalidateForLoadState(
         pipeline_cache.InvalidateRegion(addr, size);
     }
     state_tracker.InvalidateCommandBufferState();
-}
-
-void RasterizerVulkan::DiscardGpuModifiedImages() {
-    std::scoped_lock lock{texture_cache.mutex};
-    texture_cache.DiscardGpuModifiedImages();
 }
 
 void RasterizerVulkan::FlushRegion(DAddr addr, u64 size, VideoCommon::CacheType which) {

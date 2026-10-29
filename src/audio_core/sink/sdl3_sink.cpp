@@ -230,7 +230,7 @@ public:
         static_cast<void>(SDL_PauseAudioStreamDevice(stream));
     }
 
-    void ClearQueue() override {
+    void ClearQueueAndSDL() {
         SinkStream::ClearQueue();
         if (stream != nullptr) {
             SDL_ClearAudioStream(stream);
@@ -341,7 +341,7 @@ void SDLSink::CloseStreams() {
 void SDLSink::ClearStreams() {
     for (auto& stream : sink_streams) {
         if (stream) {
-            stream->ClearQueue();
+            static_cast<SDLSinkStream*>(stream.get())->ClearQueueAndSDL();
         }
     }
 }

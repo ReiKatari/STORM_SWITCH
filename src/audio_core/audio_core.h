@@ -1,5 +1,3 @@
-#include <mutex>
-#include <vector>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -20,10 +18,6 @@ class System;
 
 namespace AudioCore {
 
-namespace Renderer {
-class SystemManager;
-}
-
 /// @brief Main audio class, stored inside the core, and holding the audio manager, all sinks, and the ADSP.
 class AudioCore {
 public:
@@ -39,26 +33,6 @@ public:
      * Resynchronize internal audio sessions and queues after savestate restore.
      */
     void ResynchronizeSaveState();
-
-    /**
-     * Register a SystemManager with the AudioCore.
-     */
-    void RegisterSystemManager(Renderer::SystemManager* manager);
-
-    /**
-     * Unregister a SystemManager from the AudioCore.
-     */
-    void UnregisterSystemManager(Renderer::SystemManager* manager);
-
-    /**
-     * Hold audio renderer execution during savestate capture or restore.
-     */
-    void HoldAudioRenderer();
-
-    /**
-     * Release audio renderer execution after savestate capture or restore.
-     */
-    void ReleaseAudioRenderer();
 
     /**
      * Get a reference to the audio manager.
@@ -97,9 +71,6 @@ private:
     std::unique_ptr<Sink::Sink> input_sink;
     /// The ADSP in the sysmodule
     std::optional<ADSP::ADSP> adsp;
-    /// Registered system managers
-    std::mutex system_manager_mutex{};
-    std::vector<Renderer::SystemManager*> system_managers{};
 };
 
 } // namespace AudioCore

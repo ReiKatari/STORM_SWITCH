@@ -10,7 +10,6 @@
 #include <mutex>
 #include <thread>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "common/alignment.h"
@@ -517,32 +516,6 @@ SyncProtectionContext BuildSyncProtectionContext(Kernel::KProcess& process,
                         if (!is_main_thread && layout.sdk_start > 0 && thread_type_ptr < layout.sdk_start) {
                             const u64 ttp_page = thread_type_ptr & ~0xFFFULL;
                             ctx.AddRange(ttp_page, ttp_page + 0x8000);
-                            if (const u8* tp_page_ptr = memory.GetPointerSilent(Common::ProcessAddress{ttp_page})) {
-                                const auto* w64 = reinterpret_cast<const u64*>(tp_page_ptr);
-                                for (std::size_t k = 0; k < (V2_CHUNK_SIZE / sizeof(u64)); ++k) {
-                                    if (ctx.IsSdkPointer(w64[k])) {
-                                        std::vector<u64> wb_ptrs;
-                                        const std::size_t lim = std::min<std::size_t>(V2_CHUNK_SIZE / sizeof(u64), k + 24);
-                                        for (std::size_t m = k + 1; m < lim; ++m) {
-                                            const u64 p = w64[m];
-                                            if (p >= 0x80000000ULL && p < 0x8000000000ULL && !ctx.IsSdkPointer(p) &&
-                                                !(layout.main_code_end > layout.main_code_start &&
-                                                  p >= layout.main_code_start && p < layout.main_code_end) &&
-                                                (p < ttp_page || p >= ttp_page + 0x8000)) {
-                                                wb_ptrs.push_back(p);
-                                            }
-                                        }
-                                        if (wb_ptrs.size() >= 4) {
-                                            std::sort(wb_ptrs.begin(), wb_ptrs.end());
-                                            const u64 c_min = wb_ptrs.front();
-                                            const u64 c_max = wb_ptrs.back();
-                                            if (c_max >= c_min && (c_max - c_min) <= 0x100000ULL) {
-                                                ctx.AddRange(c_min & ~0xFFFULL, (c_max + 0x1FFFULL) & ~0xFFFULL);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                 }
@@ -829,12 +802,6 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     // Align to a clean frame boundary wait before stalling CPU cores
     WaitForCleanFrameBoundary(*process);
 
-    // Pause audio renderer so SystemManager does not generate commands during memory capture
-    system.AudioCore().HoldAudioRenderer();
-    if (auto audren_u = system.ServiceManager().GetService<Service::Audio::IAudioRendererManager>("audren:u")) {
-        audren_u->Hold();
-    }
-
     // Pause emulation briefly while capturing RAM snapshot (must hold returned lock!)
     auto stall_lock = system.StallApplication();
 
@@ -968,11 +935,6 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
                                      .count();
 
     // Resume emulation immediately! ZSTD compression and disk I/O happen asynchronously.
-    system.AudioCore().ReleaseAudioRenderer();
-    if (auto audren_u = system.ServiceManager().GetService<Service::Audio::IAudioRendererManager>("audren:u")) {
-        audren_u->Release();
-    }
-
     system.UnstallApplication();
     stall_lock.unlock();
 
@@ -1068,18 +1030,8 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
     // Ensure GPU has finished any in-flight rendering/command buffers before memory changes
     system.GPU().WaitIdleForLoadState();
 
-    // Freeze audio renderer so SystemManager does not generate commands during memory restoration
-    system.AudioCore().HoldAudioRenderer();
-    if (auto audren_u = system.ServiceManager().GetService<Service::Audio::IAudioRendererManager>("audren:u")) {
-        audren_u->Hold();
-    }
-
     process = kernel.ApplicationProcess();
     if (!process) {
-        system.AudioCore().ReleaseAudioRenderer();
-        if (auto audren_u = system.ServiceManager().GetService<Service::Audio::IAudioRendererManager>("audren:u")) {
-            audren_u->Release();
-        }
         system.UnstallApplication();
         return SaveStateResult::ErrorSystemNotRunning;
     }
@@ -1090,10 +1042,6 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
 
     if (header.flags & SaveStateFlag_WritableRegions) {
         if (decompressed.size() < sizeof(u32)) {
-            system.AudioCore().ReleaseAudioRenderer();
-            if (auto audren_u = system.ServiceManager().GetService<Service::Audio::IAudioRendererManager>("audren:u")) {
-                audren_u->Release();
-            }
             system.UnstallApplication();
             return SaveStateResult::ErrorCorruptedFile;
         }
@@ -1150,8 +1098,6 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
         std::array<u8, V2_CHUNK_SIZE> zero_page{};
         u64 diff_bytes_written = 0;
         std::vector<std::pair<DAddr, std::size_t>> modified_phys_ranges;
-        std::unordered_set<u64> restored_pages;
-        restored_pages.reserve(131072);
 
         for (u32 r = 0; r < region_count; ++r) {
             if (cursor + sizeof(PackedRegionHeader) > decompressed.size()) {
@@ -1237,7 +1183,6 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                 if (!region_safe) {
                     continue;
                 }
-                restored_pages.insert(page_addr);
 
                 (void)is_huge_heap;
                 (void)consecutive_unstored;
@@ -1287,31 +1232,30 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                     continue;
                 }
 
-                // For pages inside the Normal/Alias heap, preserve ONLY the specific 8-byte pointer slots
-                // (SDK function pointers, RTLD symbols, ThreadType) so driver/OS state stays synchronized,
-                // while restoring 100% of game entity heap memory!
+                // For pages inside the Normal/Alias heap, if the page contains any nnSdk/rtld/ThreadType
+                // pointer (indicating an NVN driver / nn::os / nn::audio / HLE allocator page), preserve the
+                // page so driver state stays synchronized; otherwise restore 100% of game entity heap pages!
                 const bool is_normal_heap_page = (heap_start != 0 && page_addr >= heap_start);
                 if (is_normal_heap_page) {
                     const std::size_t words64 = chunk_len / sizeof(u64);
                     const auto* live_w64 = reinterpret_cast<const u64*>(live_ptr);
                     const auto* targ_w64 = reinterpret_cast<const u64*>(
                         has_overlap ? patched_page.data() : target_data);
+                    bool is_driver_or_sdk_heap_page = false;
                     for (std::size_t w = 0; w < words64; ++w) {
                         const u64 lw = live_w64[w];
                         const u64 tw = targ_w64[w];
-                        if (lw != tw && (sync_ctx.IsSdkPointer(lw) || sync_ctx.IsSdkPointer(tw) ||
+                        if (sync_ctx.IsSdkPointer(lw) || sync_ctx.IsSdkPointer(tw) ||
                             sync_ctx.IsThreadTypePointer(lw) || sync_ctx.IsThreadTypePointer(tw) ||
                             (layout.rtld_end > layout.rtld_start &&
                              ((lw >= layout.rtld_start && lw < layout.rtld_end) ||
-                              (tw >= layout.rtld_start && tw < layout.rtld_end))))) {
-                            if (!has_overlap) {
-                                std::memcpy(patched_page.data(), target_data, chunk_len);
-                                has_overlap = true;
-                                targ_w64 = reinterpret_cast<const u64*>(patched_page.data());
-                            }
-                            std::memcpy(patched_page.data() + w * sizeof(u64),
-                                        live_ptr + w * sizeof(u64), sizeof(u64));
+                              (tw >= layout.rtld_start && tw < layout.rtld_end)))) {
+                            is_driver_or_sdk_heap_page = true;
+                            break;
                         }
+                    }
+                    if (is_driver_or_sdk_heap_page) {
+                        continue;
                     }
                 }
 
@@ -1349,8 +1293,8 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                         }
                         if (sync_ctx.IsHandleActive(lw32) || sync_ctx.IsHandleActive(tw32)) {
                             const std::size_t byte_off = w * sizeof(u32);
-                            const std::size_t slot_start = byte_off & ~0xFULL;
-                            const std::size_t slot_end = std::min<std::size_t>(chunk_len, slot_start + 16);
+                            const std::size_t slot_start = (byte_off >= 32) ? ((byte_off - 32) & ~7ULL) : 0;
+                            const std::size_t slot_end = std::min<std::size_t>(chunk_len, (byte_off + 32 + 7) & ~7ULL);
                             bool has_owner_thread_or_sdk = false;
                             for (std::size_t s_off = slot_start; s_off + sizeof(u64) <= slot_end; s_off += sizeof(u64)) {
                                 u64 l_val64 = 0;
@@ -1399,60 +1343,6 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
             }
         }
 
-        // Zero out any pages in writable regions that were NOT in restored_pages (meaning they were
-        // completely zero or allocated after the savestate was created).
-        for (const auto& reg : layout.writable_regions) {
-            if ((layout.rtld_end > layout.rtld_start && reg.address >= layout.rtld_start &&
-                 reg.address < layout.rtld_end) ||
-                (layout.sdk_end > layout.sdk_start && reg.address >= layout.sdk_start &&
-                 reg.address < layout.sdk_end)) {
-                continue;
-            }
-
-            const u32 num_reg_chunks = static_cast<u32>((reg.size + V2_CHUNK_SIZE - 1) / V2_CHUNK_SIZE);
-            for (u32 c = 0; c < num_reg_chunks; ++c) {
-                const u64 page_addr = reg.address + static_cast<u64>(c) * V2_CHUNK_SIZE;
-                if (restored_pages.contains(page_addr)) {
-                    continue;
-                }
-                const std::size_t chunk_len = static_cast<std::size_t>(
-                    std::min<u64>(V2_CHUNK_SIZE, reg.size - static_cast<u64>(c) * V2_CHUNK_SIZE));
-
-                u8* live_ptr = memory.GetPointerSilent(Common::ProcessAddress{page_addr});
-                if (!live_ptr || IsChunkZero4KB(live_ptr, chunk_len)) {
-                    continue;
-                }
-
-                // Page was non-zero in live memory but absent from snapshot: zero it out, preserving only SDK/ThreadType pointers
-                std::array<u8, V2_CHUNK_SIZE> zero_clean{};
-                bool has_ptrs = false;
-                const auto* live_w64 = reinterpret_cast<const u64*>(live_ptr);
-                for (std::size_t w = 0; w < chunk_len / sizeof(u64); ++w) {
-                    const u64 lw = live_w64[w];
-                    if (sync_ctx.IsSdkPointer(lw) || sync_ctx.IsThreadTypePointer(lw) ||
-                        (layout.rtld_end > layout.rtld_start && lw >= layout.rtld_start && lw < layout.rtld_end)) {
-                        has_ptrs = true;
-                        std::memcpy(zero_clean.data() + w * sizeof(u64), &lw, sizeof(u64));
-                    }
-                }
-
-                memory.WriteBlockUnsafe(page_addr, has_ptrs ? zero_clean.data() : zero_page.data(), chunk_len);
-                diff_bytes_written += chunk_len;
-
-                Common::PhysicalAddress page_phys{};
-                if (process->GetPageTable().GetPhysicalAddress(&page_phys, Common::ProcessAddress{page_addr}) &&
-                    GetInteger(page_phys) != 0) {
-                    const u64 paddr = GetInteger(page_phys);
-                    if (!modified_phys_ranges.empty() &&
-                        modified_phys_ranges.back().first + modified_phys_ranges.back().second == paddr) {
-                        modified_phys_ranges.back().second += chunk_len;
-                    } else {
-                        modified_phys_ranges.emplace_back(paddr, chunk_len);
-                    }
-                }
-            }
-        }
-
         LOG_INFO(Core, "SaveState: Differential restore wrote {:.2f} MB of changed 4KB pages",
                  static_cast<double>(diff_bytes_written) / (1024.0 * 1024.0));
 
@@ -1470,7 +1360,6 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
             }
             system.GPU().SyncAndInvalidateForLoadState(modified_gpu_ranges);
         }
-        system.GPU().DiscardGpuModifiedImages();
         system.GPU().InvalidateGPUCache();
     } else if (header.flags & SaveStateFlag_SparsePages) {
         // Legacy v1 Sparse Page Encoded (64KB full DRAM)
@@ -1499,7 +1388,6 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
                 page_data += page_size;
             }
         }
-        system.GPU().DiscardGpuModifiedImages();
         system.GPU().InvalidateGPUCache();
     } else {
         // Legacy v1 Uncompressed
@@ -1510,7 +1398,6 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
             return SaveStateResult::ErrorDecompress;
         }
         std::memcpy(dram_ptr, decompressed.data(), header.dram_size);
-        system.GPU().DiscardGpuModifiedImages();
         system.GPU().InvalidateGPUCache();
     }
 

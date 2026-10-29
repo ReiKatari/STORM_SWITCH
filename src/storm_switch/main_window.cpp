@@ -766,7 +766,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     this->config = std::make_unique<QtConfig>();
 
     // Initialize core emulation settings to Zero-Regression Baseline on fresh install, preserving existing user settings on upgrade
-    static constexpr std::string_view CURRENT_BUILD_VERSION = "15.0.3";
+    static constexpr std::string_view CURRENT_BUILD_VERSION = "15.1.0";
     if (UISettings::values.config_version.GetValue().empty() && !had_existing_config_file) {
         LOG_INFO(Frontend, "Fresh configuration detected. Initializing core emulation settings to Zero-Regression Baseline (version '{}')...",
                  CURRENT_BUILD_VERSION);
@@ -5529,19 +5529,7 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
     ));
     right_col->addWidget(infoBadge);
 
-    // Forward mouse wheel from the rigidly pinned right card to the left scrollArea so scrolling anywhere works seamlessly
-    struct AutoFixWheelRedirect : public QObject {
-        QScrollArea* sa;
-        explicit AutoFixWheelRedirect(QScrollArea* target, QObject* parent = nullptr) : QObject(parent), sa(target) {}
-        bool eventFilter(QObject* obj, QEvent* ev) override {
-            if (ev->type() == QEvent::Wheel && sa) {
-                QCoreApplication::sendEvent(sa->viewport(), ev);
-                return true;
-            }
-            return QObject::eventFilter(obj, ev);
-        }
-    };
-    rightCard->installEventFilter(new AutoFixWheelRedirect(scrollArea, &fixDialog));
+    // Right card remains fixed and independent; no wheel forwarding to keep panel behavior isolated
 
     main_hlayout->addWidget(rightCard, 0);
 

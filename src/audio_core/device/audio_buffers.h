@@ -306,6 +306,15 @@ public:
         return buffers[index].end_timestamp;
     }
 
+    void SyncNextTimestamp(u64 current_played_sample_count) {
+        std::scoped_lock l{lock};
+        auto index{appended_index - 1};
+        if (index < 0) {
+            index += append_limit;
+        }
+        buffers[index].end_timestamp = current_played_sample_count;
+    }
+
 private:
     /// Buffer lock
     mutable std::recursive_mutex lock{};
