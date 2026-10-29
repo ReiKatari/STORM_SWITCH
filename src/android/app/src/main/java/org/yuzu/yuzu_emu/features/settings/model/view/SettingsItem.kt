@@ -406,7 +406,7 @@ abstract class SettingsItem(
                     titleId = R.string.renderer_resolution,
                     choicesId = R.array.rendererResolutionNames,
                     valuesId = R.array.rendererResolutionValues,
-                    warnChoices = (5..7).toList(),
+                    warnChoices = (6..8).toList(),
                     warningMessage = R.string.warning_resolution
                 )
             )
@@ -634,6 +634,15 @@ abstract class SettingsItem(
                     titleId = R.string.renderer_scaling_filter,
                     choicesId = R.array.rendererScalingFilterNames,
                     valuesId = R.array.rendererScalingFilterValues
+                )
+            )
+            put(
+                SingleChoiceSetting(
+                    IntSetting.RENDERER_FSR2_QUALITY_MODE,
+                    titleId = R.string.fsr2_quality_mode,
+                    descriptionId = R.string.fsr2_quality_mode_description,
+                    choicesId = R.array.fsr2QualityModeNames,
+                    valuesId = R.array.fsr2QualityModeValues
                 )
             )
             put(

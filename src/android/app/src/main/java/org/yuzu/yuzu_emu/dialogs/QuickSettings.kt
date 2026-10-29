@@ -13,6 +13,9 @@ import android.widget.Toast
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.materialswitch.MaterialSwitch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.YuzuApplication
@@ -39,14 +42,16 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
 
     private fun saveSettings() {
         val currentGame = emulationFragment.game
-        if (currentGame != null) {
-            NativeConfig.savePerGameConfig()
-            org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
+        CoroutineScope(Dispatchers.IO).launch {
+            if (currentGame != null) {
+                NativeConfig.savePerGameConfig()
+                org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
+            }
+            NativeConfig.saveGlobalConfig()
+            try {
+                NativeLibrary.applySettings()
+            } catch (_: Throwable) {}
         }
-        NativeConfig.saveGlobalConfig()
-        try {
-            NativeLibrary.applySettings()
-        } catch (_: Throwable) {}
     }
 
     fun addPerGameConfigStatusIndicator(container: ViewGroup) {

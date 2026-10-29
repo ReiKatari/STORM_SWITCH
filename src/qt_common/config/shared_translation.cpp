@@ -56,7 +56,8 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
         {"Slow Speed", "Замедленная скорость", "السرعة البطيئة", "Verlangsamte Geschwindigkeit", "Vitesse lente", "减速速度", "低速", "Velocidad lenta"},
         {"Synchronize Core Speed", "Синхронизировать скорость ядра", "مزامنة سرعة النواة", "Kerngeschwindigkeit synchronisieren", "Synchroniser la vitesse du cœur", "同步核心速度", "コア速度を同期", "Sincronizar velocidad del núcleo"},
         {"Multicore CPU Emulation", "Многоядерная эмуляция ЦП", "محاكاة المعالج متعدد النواة", "Mehrkern-CPU-Emulation", "Émulation CPU multicœur", "多核 CPU 模拟", "マルチコア CPU エミュレーション", "Emulación de CPU multinúcleo"},
-        {"Memory Layout", "Схема памяти", "مخطط الذاكرة", "Speicher-Layout", "Disposition de la mémoire", "内存布局", "メモリレイアウト", "Distribución de memoria"},
+        {"Memory Layout", "Схема памяти (DRAM)", "مخطط الذاكرة (DRAM)", "Speicher-Layout (DRAM)", "Disposition de la mémoire (DRAM)", "内存布局 (DRAM)", "メモリレイアウト (DRAM)", "Distribución de memoria (DRAM)"},
+        {"Memory Layout (DRAM)", "Схема памяти (DRAM)", "مخطط الذاكرة (DRAM)", "Speicher-Layout (DRAM)", "Disposition de la mémoire (DRAM)", "内存布局 (DRAM)", "メモリレイアウト (DRAM)", "Distribución de memoria (DRAM)"},
         {"Custom RTC Date:", "Пользовательское время RTC:", "تاريخ RTC مخصص:", "Benutzerdefinierte RTC-Zeit:", "Date RTC personnalisée :", "自定义 RTC 时间:", "カスタム RTC 日時:", "Fecha RTC personalizada:"},
         {"Custom RTC Offset:", "Смещение RTC:", "إزاحة RTC:", "RTC-Offset:", "Décalage RTC :", "RTC 偏移量:", "RTC オフセット:", "Compensación RTC:"},
         {"Custom RTC Offset", "Смещение RTC", "إزاحة RTC", "RTC-Offset", "Décalage RTC", "RTC 偏移量", "RTC オフセット", "Compensación RTC"},
@@ -677,8 +678,8 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
     INSERT(Settings, use_multi_core, tr("Multicore CPU Emulation"),
            tr("This option increases CPU emulation thread use from 1 to the maximum of 4.\n"
               "This is mainly a debug option and shouldn't be disabled."));
-    INSERT(Settings, memory_layout_mode, tr("Memory Layout"),
-           tr("Increases the amount of emulated RAM.\nDoesn't affect performance/stability but may "
+    INSERT(Settings, memory_layout_mode, tr("Memory Layout (DRAM)"),
+           tr("Increases the amount of emulated DRAM.\nDoesn't affect performance/stability but may "
               "allow HD texture "
               "mods to load."));
     INSERT(Settings, use_speed_limit, tr("Limit Speed Percent"), QString());

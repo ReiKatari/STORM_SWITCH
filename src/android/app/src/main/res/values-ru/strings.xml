@@ -487,8 +487,8 @@
     <string name="custom_cpu_ticks">Пользовательские такты ЦП</string>
     <string name="custom_cpu_ticks_description">Установите пользовательское значение тактов ЦП. Более высокие значения могут увеличить производительность, но также могут вызвать зависание игры. Рекомендуется диапазон 77–21000.</string>
     <string name="cpu_ticks">Такты</string>
-    <string name="memory_layout">Распределение памяти</string>
-    <string name="memory_layout_description">(ЭКСПЕРИМЕНТАЛЬНО) Изменяет эмулируемое распределение памяти. Эта настройка не увеличивает производительность, но может помочь в играх, использующих высокие разрешения через моды. Не используйте на телефонах с 8 ГБ ОЗУ или меньше.</string>
+    <string name="memory_layout">Объём DRAM (Разметка памяти консоли)</string>
+    <string name="memory_layout_description">(ЭКСПЕРИМЕНТАЛЬНО) Объём DRAM оперативной памяти консоли: 4 / 6 / 8 / 12 ГБ. Увеличение DRAM помогает в требовательных играх, при использовании модов и текстурных пакетов высокого разрешения. Работает на бэкенде Dynarmic (JIT) и требует достаточного объёма физической памяти смартфона.</string>
 
     <string name="generate">Создать</string>
 
@@ -1565,7 +1565,7 @@
     <string name="scaling_filter_gaussian">Гауссово размытие</string>
     <string name="scaling_filter_lanczos">Lanczos 3 (Анти-звон)</string>
     <string name="scaling_filter_scale_force">ScaleForce</string>
-    <string name="scaling_filter_fsr">AMD FidelityFX FSR</string>
+    <string name="scaling_filter_fsr">AMD FSR 2.0 (Адаптивный апскейлинг)</string>
     <string name="scaling_filter_area">Суперсэмплинг Area</string>
     <string name="scaling_filter_zero_tangent">Нулевая касательная</string>
     <string name="scaling_filter_bspline">B-сплайн</string>
@@ -2288,4 +2288,31 @@
     <string name="save_state_save_failed">❌ Не удалось сохранить состояние в Слот %1$d</string>
     <string name="save_state_load_failed">⚠️ В Слоте %1$d сохранение отсутствует или повреждено</string>
     <string name="save_state_confirm_delete">Вы уверены, что хотите удалить быстрое сохранение для Слота %1$d?</string>
+    <string name="update">Обновить</string>
+    <string name="fsr2_quality_mode">Режим качества FSR 2.0</string>
+    <string name="fsr2_quality_mode_description">Выбирает профиль качества для пространственно-временного масштабирования AMD FSR 2.0</string>
+    <string name="fsr2_quality_quality">Качество (Quality — 1.5x)</string>
+    <string name="fsr2_quality_balanced">Баланс (Balanced — 1.7x)</string>
+    <string name="fsr2_quality_performance">Производительность (Performance — 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Ультра-производительность (Ultra Performance — 3.0x)</string>
+    <string name="mali_driver_info">Графические процессоры Mali/Immortalis/Xclipse работают на системном драйвере Vulkan от производителя. Экспериментальный драйвер Mesa PanVK ещё находится в разработке. Установка пользовательских .zip драйверов открыта для экспериментальных сборок, а пакеты Adreno Turnip отфильтрованы во избежание сбоев.</string>
+    <string name="mali_turnip_incompatible_warning">Предупреждение: драйверы Adreno Turnip разработаны исключительно для Qualcomm Adreno. Установка на видеочип Mali/Immortalis приведёт к сбою Vulkan. Продолжить установку?</string>
+    <string name="resolution_quarter_docked">0.25X (270p)</string>
+    <string name="resolution_half_docked">0.5X (540p)</string>
+    <string name="resolution_three_quarter_docked">0.75X (810p)</string>
+    <string name="resolution_one_docked">1.0X (1080p)</string>
+    <string name="resolution_five_quarter_docked">1.25X (1350p)</string>
+    <string name="resolution_three_half_docked">1.5X (1620p)</string>
+    <string name="resolution_two_docked">2.0X (2160p / 4K) (Медленно)</string>
+    <string name="resolution_three_docked">3.0X (3240p / 6K) (Медленно)</string>
+    <string name="resolution_four_docked">4.0X (4320p / 8K) (Медленно)</string>
+    <string name="resolution_quarter_handheld">0.25X (180p)</string>
+    <string name="resolution_half_handheld">0.5X (360p)</string>
+    <string name="resolution_three_quarter_handheld">0.75X (540p)</string>
+    <string name="resolution_one_handheld">1.0X (720p)</string>
+    <string name="resolution_five_quarter_handheld">1.25X (900p)</string>
+    <string name="resolution_three_half_handheld">1.5X (1080p)</string>
+    <string name="resolution_two_handheld">2.0X (1440p / 2K) (Медленно)</string>
+    <string name="resolution_three_handheld">3.0X (2160p / 4K) (Медленно)</string>
+    <string name="resolution_four_handheld">4.0X (2880p) (Медленно)</string>
 </resources>

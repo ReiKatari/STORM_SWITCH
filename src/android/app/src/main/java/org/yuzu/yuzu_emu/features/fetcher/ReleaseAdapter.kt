@@ -233,180 +233,205 @@ class ReleaseAdapter(
                             return@setOnClickListener
                         }
 
-                        val dialogBinding =
-                            DialogProgressBinding.inflate(LayoutInflater.from(context))
-                        dialogBinding.progressBar.isIndeterminate = true
-                        dialogBinding.title.text = context.getString(R.string.installing_driver)
-                        dialogBinding.status.text = context.getString(R.string.downloading)
+                        val triggerDownload = {
+                            val dialogBinding =
+                                DialogProgressBinding.inflate(LayoutInflater.from(context))
+                            dialogBinding.progressBar.isIndeterminate = true
+                            dialogBinding.title.text = context.getString(R.string.installing_driver)
+                            dialogBinding.status.text = context.getString(R.string.downloading)
 
-                        val progressDialog = MaterialAlertDialogBuilder(context)
-                            .setView(dialogBinding.root)
-                            .setCancelable(false)
-                            .create()
+                            val progressDialog = MaterialAlertDialogBuilder(context)
+                                .setView(dialogBinding.root)
+                                .setCancelable(false)
+                                .create()
 
-                        progressDialog.show()
+                            progressDialog.show()
 
-                        CoroutineScope(Dispatchers.Main).launch {
-                            try {
-                                val cacheDir = context.externalCacheDir ?: context.cacheDir
-                                cacheDir.mkdirs()
-                                val file = File(cacheDir, artifact.name)
+                            CoroutineScope(Dispatchers.Main).launch {
+                                try {
+                                    val cacheDir = context.externalCacheDir ?: context.cacheDir
+                                    cacheDir.mkdirs()
+                                    val file = File(cacheDir, artifact.name)
 
-                                val originalUrl = artifact.url.toString()
-                                val downloadMirrors = mutableListOf<String>()
-                                downloadMirrors.add(originalUrl)
-                                if (originalUrl.startsWith("https://github.com/")) {
-                                    downloadMirrors.add("https://gh.con.sh/$originalUrl")
-                                    downloadMirrors.add("https://gh.llkk.cc/$originalUrl")
-                                    downloadMirrors.add("https://ghfast.top/$originalUrl")
-                                }
+                                    val originalUrl = artifact.url.toString()
+                                    val downloadMirrors = mutableListOf<String>()
+                                    downloadMirrors.add(originalUrl)
+                                    if (originalUrl.startsWith("https://github.com/")) {
+                                        downloadMirrors.add("https://gh.con.sh/$originalUrl")
+                                        downloadMirrors.add("https://gh.llkk.cc/$originalUrl")
+                                        downloadMirrors.add("https://ghfast.top/$originalUrl")
+                                    }
 
-                                var downloadSuccess = false
-                                var lastException: Exception? = null
+                                    var downloadSuccess = false
+                                    var lastException: Exception? = null
 
-                                val downloadClient = OkHttpClient.Builder()
-                                    .dns(SmartDns)
-                                    .connectTimeout(12, java.util.concurrent.TimeUnit.SECONDS)
-                                    .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
-                                    .followRedirects(true)
-                                    .followSslRedirects(true)
-                                    .retryOnConnectionFailure(true)
-                                    .build()
+                                    val downloadClient = OkHttpClient.Builder()
+                                        .dns(SmartDns)
+                                        .connectTimeout(12, java.util.concurrent.TimeUnit.SECONDS)
+                                        .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+                                        .followRedirects(true)
+                                        .followSslRedirects(true)
+                                        .retryOnConnectionFailure(true)
+                                        .build()
 
-                                withContext(Dispatchers.IO) {
-                                    for ((index, dlUrl) in downloadMirrors.withIndex()) {
-                                        try {
-                                            withContext(Dispatchers.Main) {
-                                                dialogBinding.status.text = if (index > 0) {
-                                                    context.getString(R.string.release_dl_mirror_fmt, index)
-                                                } else {
-                                                    context.getString(R.string.downloading)
-                                                }
-                                            }
-
-                                            val req = Request.Builder()
-                                                .url(dlUrl)
-                                                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 StormSwitch/4.8.8")
-                                                .header("Accept", "application/octet-stream, */*")
-                                                .build()
-
-                                            downloadClient.newCall(req).execute().use { response ->
-                                                if (!response.isSuccessful) {
-                                                    throw IOException("HTTP ${response.code}")
+                                    withContext(Dispatchers.IO) {
+                                        for ((index, dlUrl) in downloadMirrors.withIndex()) {
+                                            try {
+                                                withContext(Dispatchers.Main) {
+                                                    dialogBinding.status.text = if (index > 0) {
+                                                        context.getString(R.string.release_dl_mirror_fmt, index)
+                                                    } else {
+                                                        context.getString(R.string.downloading)
+                                                    }
                                                 }
 
-                                                val contentType = response.header("Content-Type") ?: ""
-                                                if (contentType.contains("text/html", ignoreCase = true)) {
-                                                    throw IOException(context.getString(R.string.online_tools_err_html))
-                                                }
+                                                val req = Request.Builder()
+                                                    .url(dlUrl)
+                                                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 StormSwitch/4.8.8")
+                                                    .header("Accept", "application/octet-stream, */*")
+                                                    .build()
 
-                                                val body = response.body ?: throw IOException(context.getString(R.string.empty_response_body))
-                                                val contentLength = body.contentLength()
-                                                var totalBytesRead = 0L
+                                                downloadClient.newCall(req).execute().use { response ->
+                                                    if (!response.isSuccessful) {
+                                                        throw IOException("HTTP ${response.code}")
+                                                    }
 
-                                                body.byteStream().use { input ->
-                                                    FileOutputStream(file).use { output ->
-                                                        val buffer = ByteArray(64 * 1024)
-                                                        var bytesRead: Int
-                                                        var lastUpdate = System.currentTimeMillis()
+                                                    val contentType = response.header("Content-Type") ?: ""
+                                                    if (contentType.contains("text/html", ignoreCase = true)) {
+                                                        throw IOException(context.getString(R.string.online_tools_err_html))
+                                                    }
 
-                                                        while (input.read(buffer).also { bytesRead = it } != -1) {
-                                                            output.write(buffer, 0, bytesRead)
-                                                            totalBytesRead += bytesRead
-                                                            val now = System.currentTimeMillis()
-                                                            if (now - lastUpdate > 250) {
-                                                                lastUpdate = now
-                                                                withContext(Dispatchers.Main) {
-                                                                    val mbRead = String.format("%.1f", totalBytesRead / (1024.0 * 1024.0))
-                                                                    if (contentLength > 0) {
-                                                                        val mbTotal = String.format("%.1f", contentLength / (1024.0 * 1024.0))
-                                                                        dialogBinding.status.text = context.getString(R.string.release_dl_progress_mb_fmt, mbRead, mbTotal)
-                                                                    } else {
-                                                                        dialogBinding.status.text = context.getString(R.string.release_dl_done_mb_fmt, mbRead)
+                                                    val body = response.body ?: throw IOException(context.getString(R.string.empty_response_body))
+                                                    val contentLength = body.contentLength()
+                                                    var totalBytesRead = 0L
+
+                                                    body.byteStream().use { input ->
+                                                        FileOutputStream(file).use { output ->
+                                                            val buffer = ByteArray(64 * 1024)
+                                                            var bytesRead: Int
+                                                            var lastUpdate = System.currentTimeMillis()
+
+                                                            while (input.read(buffer).also { bytesRead = it } != -1) {
+                                                                output.write(buffer, 0, bytesRead)
+                                                                totalBytesRead += bytesRead
+                                                                val now = System.currentTimeMillis()
+                                                                if (now - lastUpdate > 250) {
+                                                                    lastUpdate = now
+                                                                    withContext(Dispatchers.Main) {
+                                                                        val mbRead = String.format("%.1f", totalBytesRead / (1024.0 * 1024.0))
+                                                                        if (contentLength > 0) {
+                                                                            val mbTotal = String.format("%.1f", contentLength / (1024.0 * 1024.0))
+                                                                            dialogBinding.status.text = context.getString(R.string.release_dl_progress_mb_fmt, mbRead, mbTotal)
+                                                                        } else {
+                                                                            dialogBinding.status.text = context.getString(R.string.release_dl_done_mb_fmt, mbRead)
+                                                                        }
                                                                     }
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 }
-                                            }
 
-                                            if (file.exists() && file.length() > 1024L) {
-                                                downloadSuccess = true
-                                                break
-                                            } else {
+                                                if (file.exists() && file.length() > 1024L) {
+                                                    downloadSuccess = true
+                                                    break
+                                                } else {
+                                                    file.delete()
+                                                }
+                                            } catch (e: Exception) {
+                                                lastException = e
                                                 file.delete()
                                             }
-                                        } catch (e: Exception) {
-                                            lastException = e
-                                            file.delete()
                                         }
                                     }
-                                }
 
-                                if (!downloadSuccess) {
-                                    throw lastException ?: IOException(context.getString(R.string.driver_empty))
-                                }
+                                    if (!downloadSuccess) {
+                                        throw lastException ?: IOException(context.getString(R.string.driver_empty))
+                                    }
 
-                                dialogBinding.status.text = context.getString(R.string.installing)
+                                    dialogBinding.status.text = context.getString(R.string.installing)
 
-                                val driverData = GpuDriverHelper.getMetadataFromZip(file)
-                                val driverPath =
-                                    "${GpuDriverHelper.driverStoragePath}${FileUtil.getFilename(
-                                        file.toUri()
-                                    )}"
+                                    val driverData = GpuDriverHelper.getMetadataFromZip(file)
+                                    val driverPath =
+                                        "${GpuDriverHelper.driverStoragePath}${FileUtil.getFilename(
+                                            file.toUri()
+                                        )}"
 
-                                if (GpuDriverHelper.copyDriverToInternalStorage(file.toUri())) {
-                                    driverViewModel.addDriverOnly(Pair(driverPath, driverData))
+                                    if (GpuDriverHelper.copyDriverToInternalStorage(file.toUri())) {
+                                        driverViewModel.addDriverOnly(Pair(driverPath, driverData))
+                                        progressDialog.dismiss()
+
+                                        MaterialAlertDialogBuilder(context)
+                                            .setTitle(R.string.apply_driver_title)
+                                            .setMessage(R.string.apply_driver_message)
+                                            .setPositiveButton(R.string.apply_driver_globally) { _, _ ->
+                                                org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
+                                                val driverFile = File(driverPath)
+                                                if (driverFile.exists()) {
+                                                    GpuDriverHelper.installCustomDriver(driverFile)
+                                                }
+                                                GpuDriverHelper.applyDriverGloballyToAllCustomConfigs()
+                                                driverViewModel.wipeAllShaders()
+                                                driverViewModel.reloadDriverData()
+                                                notifyDataSetChanged()
+                                            }
+                                            .setNeutralButton(R.string.apply_driver_keep_custom) { _, _ ->
+                                                org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
+                                                val driverFile = File(driverPath)
+                                                if (driverFile.exists()) {
+                                                    GpuDriverHelper.installCustomDriver(driverFile)
+                                                }
+                                                driverViewModel.wipeAllShaders()
+                                                driverViewModel.reloadDriverData()
+                                                notifyDataSetChanged()
+                                            }
+                                            .setNegativeButton(R.string.close) { _, _ ->
+                                                notifyDataSetChanged()
+                                            }
+                                            .show()
+                                    } else {
+                                        throw IOException(
+                                            context.getString(
+                                                R.string.failed_install_driver,
+                                                artifact.name
+                                            )
+                                        )
+                                    }
+                                } catch (e: Exception) {
                                     progressDialog.dismiss()
 
                                     MaterialAlertDialogBuilder(context)
-                                        .setTitle(R.string.apply_driver_title)
-                                        .setMessage(R.string.apply_driver_message)
-                                        .setPositiveButton(R.string.apply_driver_globally) { _, _ ->
-                                            org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
-                                            val driverFile = File(driverPath)
-                                            if (driverFile.exists()) {
-                                                GpuDriverHelper.installCustomDriver(driverFile)
-                                            }
-                                            GpuDriverHelper.applyDriverGloballyToAllCustomConfigs()
-                                            driverViewModel.wipeAllShaders()
-                                            driverViewModel.reloadDriverData()
-                                            notifyDataSetChanged()
-                                        }
-                                        .setNeutralButton(R.string.apply_driver_keep_custom) { _, _ ->
-                                            org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
-                                            val driverFile = File(driverPath)
-                                            if (driverFile.exists()) {
-                                                GpuDriverHelper.installCustomDriver(driverFile)
-                                            }
-                                            driverViewModel.wipeAllShaders()
-                                            driverViewModel.reloadDriverData()
-                                            notifyDataSetChanged()
-                                        }
-                                        .setNegativeButton(R.string.close) { _, _ ->
-                                            notifyDataSetChanged()
+                                        .setTitle(context.getString(R.string.driver_failed_title))
+                                        .setMessage(e.message)
+                                        .setPositiveButton(R.string.ok) { dialog, _ ->
+                                            dialog.cancel()
                                         }
                                         .show()
-                                } else {
-                                    throw IOException(
-                                        context.getString(
-                                            R.string.failed_install_driver,
-                                            artifact.name
-                                        )
-                                    )
                                 }
-                            } catch (e: Exception) {
-                                progressDialog.dismiss()
-
-                                MaterialAlertDialogBuilder(context)
-                                    .setTitle(context.getString(R.string.driver_failed_title))
-                                    .setMessage(e.message)
-                                    .setPositiveButton(R.string.ok) { dialog, _ ->
-                                        dialog.cancel()
-                                    }
-                                    .show()
                             }
+                        }
+
+                        val gpuModelStr = org.yuzu.yuzu_emu.utils.GpuDriverHelper.hookLibPath?.let {
+                            org.yuzu.yuzu_emu.utils.GpuDriverHelper.getGpuModel(hookLibPath = it)
+                        } ?: ""
+                        val isMaliGpu = gpuModelStr.contains("mali", ignoreCase = true) ||
+                            gpuModelStr.contains("immortalis", ignoreCase = true) ||
+                            gpuModelStr.contains("xclipse", ignoreCase = true)
+                        val isTurnipPkg = artifact.name.contains("turnip", ignoreCase = true) ||
+                            artifact.name.contains("freedreno", ignoreCase = true) ||
+                            artifact.name.contains("adreno", ignoreCase = true)
+
+                        if (isMaliGpu && isTurnipPkg) {
+                            com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+                                .setTitle(R.string.warning)
+                                .setMessage(R.string.mali_turnip_incompatible_warning)
+                                .setPositiveButton(android.R.string.ok) { _, _ ->
+                                    triggerDownload()
+                                }
+                                .setNegativeButton(android.R.string.cancel, null)
+                                .show()
+                        } else {
+                            triggerDownload()
                         }
                     }
                 }

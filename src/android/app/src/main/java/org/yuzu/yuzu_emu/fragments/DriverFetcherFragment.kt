@@ -52,8 +52,19 @@ class DriverFetcherFragment : Fragment() {
     private val adrenoModel: Int
         get() = parseAdrenoModel()
 
+    private val isMaliOrNonAdrenoGpu: Boolean
+        get() {
+            val model = (gpuModel ?: "").lowercase()
+            return model.contains("mali") || model.contains("immortalis") || model.contains("xclipse")
+        }
+
     private val recommendedDriver: String
-        get() = driverMap.firstOrNull { adrenoModel in it.first }?.second ?: "Unsupported"
+        get() {
+            if (isMaliOrNonAdrenoGpu) {
+                return getString(R.string.system_gpu_driver)
+            }
+            return driverMap.firstOrNull { adrenoModel in it.first }?.second ?: "Unsupported"
+        }
 
     private val activeDriverInfo: String
         get() {
@@ -164,6 +175,9 @@ class DriverFetcherFragment : Fragment() {
         binding.badgeRecommendedDriver.text = recommendedDriver
         binding.badgeGpuModel.text = gpuModel ?: "Qualcomm Adreno"
         binding.badgeActiveDriver.text = activeDriverInfo
+        if (isMaliOrNonAdrenoGpu) {
+            binding.textMaliDriverInfo.visibility = View.VISIBLE
+        }
 
         return binding.root
     }

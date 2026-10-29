@@ -266,32 +266,38 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         return parts
     }
 
+    private fun compareVersions(v1: String, v2: String): Int {
+        val p1 = parseVersionParts(v1)
+        val p2 = parseVersionParts(v2)
+        val maxLen = maxOf(p1.size, p2.size)
+        for (i in 0 until maxLen) {
+            val a = if (i < p1.size) p1[i] else 0
+            val b = if (i < p2.size) p2[i] else 0
+            if (a != b) return a.compareTo(b)
+        }
+        return 0
+    }
+
     private fun isRemoteVersionNewer(remoteTag: String, currentVer: String): Boolean {
         val cleanRemote = remoteTag.trim().removePrefix("v").removePrefix("V").trim()
         val cleanLocal = currentVer.trim().removePrefix("v").removePrefix("V").trim()
         if (cleanRemote.isEmpty() || cleanRemote.equals(cleanLocal, ignoreCase = true)) {
             return false
         }
-        val remoteParts = parseVersionParts(cleanRemote)
-        val localParts = parseVersionParts(cleanLocal)
-        val maxLen = maxOf(remoteParts.size, localParts.size)
-        for (i in 0 until maxLen) {
-            val r = if (i < remoteParts.size) remoteParts[i] else 0
-            val l = if (i < localParts.size) localParts[i] else 0
-            if (r > l) return true
-            if (r < l) return false
-        }
-        return false
+        return compareVersions(cleanRemote, cleanLocal) > 0
     }
 
-    private fun fetchLatestReleaseFallback(): NativeLibrary.UpdateResult? {
-        return try {
-            val client = okhttp3.OkHttpClient.Builder()
-                .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
-                .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
-                .followRedirects(true)
-                .followSslRedirects(true)
-                .build()
+    private fun fetchAllRemoteReleases(): List<NativeLibrary.UpdateResult> {
+        val candidates = mutableListOf<NativeLibrary.UpdateResult>()
+        val client = okhttp3.OkHttpClient.Builder()
+            .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .build()
+
+        // Mirror 1: GitHub REST API
+        try {
             val req = okhttp3.Request.Builder()
                 .url("https://api.github.com/repos/ReiKatari/STORM_SWITCH/releases/latest")
                 .header("User-Agent", "STORM-SWITCH-Updater")
@@ -313,11 +319,14 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
                                 if (u.isNotEmpty()) assetList.add(u)
                             }
                         }
-                        return NativeLibrary.UpdateResult(tag = tag, title = title, body = json.optString("body", ""), url = htmlUrl, assets = assetList)
+                        candidates.add(NativeLibrary.UpdateResult(tag = tag, title = title, body = json.optString("body", ""), url = htmlUrl, assets = assetList))
                     }
                 }
             }
-            // Fallback 1: GitHub HTML redirect (never rate-limited)
+        } catch (_: Exception) {}
+
+        // Fallback GitHub HTML redirect if API failed or rate-limited
+        if (candidates.isEmpty()) {
             try {
                 val webReq = okhttp3.Request.Builder()
                     .url("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
@@ -339,75 +348,98 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
                             "$sgwDl/STORM_SWITCH_${cleanVer}_LEGACY.apk",
                             "$sgwDl/STORM_SWITCH_${cleanVer}_SDK27.apk"
                         )
-                        return NativeLibrary.UpdateResult(tag = rawTag, title = "STORM SWITCH $cleanVer", body = "", url = finalUrl, assets = assets)
+                        candidates.add(NativeLibrary.UpdateResult(tag = rawTag, title = "STORM SWITCH $cleanVer", body = "", url = finalUrl, assets = assets))
                     }
                 }
             } catch (_: Exception) {}
+        }
 
-            // Fallback 2: Official STORM GAMES WORLD Mirror (https://stormgamesworld.ru/programs?repo=STORM_SWITCH)
-            try {
-                val sgwReq = okhttp3.Request.Builder()
-                    .url("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")
-                    .header("User-Agent", "STORM-SWITCH-Android")
-                    .header("Accept", "application/json")
-                    .build()
-                client.newCall(sgwReq).execute().use { resp ->
-                    if (resp.isSuccessful) {
-                        val bodyStr = resp.body?.string() ?: ""
-                        val root = org.json.JSONObject(bodyStr)
-                        val rels = root.optJSONArray("releases")
-                        if (rels != null && rels.length() > 0) {
-                            val rel0 = rels.getJSONObject(0)
-                            val ver = rel0.optString("version", "").trim().removePrefix("v").removePrefix("V")
+        // Mirror 2: Official STORM GAMES WORLD Mirror (https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH)
+        try {
+            val sgwReq = okhttp3.Request.Builder()
+                .url("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")
+                .header("User-Agent", "STORM-SWITCH-Android")
+                .header("Accept", "application/json")
+                .build()
+            client.newCall(sgwReq).execute().use { resp ->
+                if (resp.isSuccessful) {
+                    val bodyStr = resp.body?.string() ?: ""
+                    val root = org.json.JSONObject(bodyStr)
+                    val rels = root.optJSONArray("releases")
+                    if (rels != null && rels.length() > 0) {
+                        for (idx in 0 until minOf(5, rels.length())) {
+                            val rel = rels.getJSONObject(idx)
+                            val ver = rel.optString("version", "").trim().removePrefix("v").removePrefix("V")
                             if (ver.isNotEmpty()) {
-                                val title = rel0.optString("title", "STORM SWITCH $ver")
-                                val notes = rel0.optString("notes", "")
-                                val sgwDl = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH"
-                                val assets = mutableListOf(
-                                    "$sgwDl/STORM_SWITCH_$ver.apk",
-                                    "$sgwDl/STORM_SWITCH_${ver}_LEGACY.apk",
-                                    "$sgwDl/STORM_SWITCH_${ver}_SDK27.apk"
+                                val title = rel.optString("title", "STORM SWITCH $ver")
+                                val notes = rel.optString("notes", rel.optString("body", ""))
+                                val assets = mutableListOf<String>()
+                                val assetsArr = rel.optJSONArray("assets")
+                                if (assetsArr != null && assetsArr.length() > 0) {
+                                    for (j in 0 until assetsArr.length()) {
+                                        val aObj = assetsArr.getJSONObject(j)
+                                        val dlUrl = aObj.optString("downloadUrl", "")
+                                        if (dlUrl.isNotEmpty()) assets.add(dlUrl)
+                                    }
+                                }
+                                if (assets.isEmpty()) {
+                                    val sgwDl = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH"
+                                    assets.addAll(listOf(
+                                        "$sgwDl/STORM_SWITCH_$ver.apk",
+                                        "$sgwDl/STORM_SWITCH_${ver}_LEGACY.apk",
+                                        "$sgwDl/STORM_SWITCH_${ver}_SDK27.apk"
+                                    ))
+                                }
+                                candidates.add(
+                                    NativeLibrary.UpdateResult(
+                                        tag = ver,
+                                        title = title,
+                                        body = notes,
+                                        url = "https://stormgamesworld.ru/programs?repo=STORM_SWITCH",
+                                        assets = assets
+                                    )
                                 )
-                                return NativeLibrary.UpdateResult(
-                                    tag = ver,
-                                    title = title,
-                                    body = notes,
-                                    url = "https://stormgamesworld.ru/programs?repo=STORM_SWITCH",
-                                    assets = assets
-                                )
+                                break
                             }
                         }
                     }
                 }
-            } catch (_: Exception) {}
-            null
-        } catch (_: Exception) {
-            null
-        }
+            }
+        } catch (_: Exception) {}
+
+        // Also check NativeLibrary
+        try {
+            val nativeResult = NativeLibrary.checkForUpdate()
+            if (nativeResult != null && nativeResult.tag.isNotBlank()) {
+                candidates.add(nativeResult)
+            }
+        } catch (_: Exception) {}
+
+        return candidates
     }
 
     private fun checkForUpdates() {
         Thread {
-            val latestVersion = NativeLibrary.checkForUpdate() ?: fetchLatestReleaseFallback()
-            if (latestVersion != null) {
-                val currentVersion = org.yuzu.yuzu_emu.BuildConfig.VERSION_NAME.trim()
-                val releaseTag = latestVersion.tag.trim()
-                if (!isRemoteVersionNewer(releaseTag, currentVersion)) {
-                    return@Thread
-                }
-                runOnUiThread {
-                    showUpdateDialog(latestVersion)
-                }
+            val candidates = fetchAllRemoteReleases()
+            if (candidates.isEmpty()) return@Thread
+
+            val currentVersion = org.yuzu.yuzu_emu.BuildConfig.VERSION_NAME.trim()
+            val bestRelease = candidates.maxWithOrNull { a, b -> compareVersions(a.tag, b.tag) } ?: return@Thread
+
+            if (!isRemoteVersionNewer(bestRelease.tag, currentVersion)) {
+                return@Thread
+            }
+            runOnUiThread {
+                showUpdateDialog(bestRelease)
             }
         }.start()
     }
 
-    // TODO(crueter): body, "View on Forgejo" button
     private fun showUpdateDialog(release: NativeLibrary.UpdateResult) {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.update_available)
             .setMessage(getString(R.string.update_available_description, release.title))
-            .setPositiveButton(android.R.string.ok) { _, _ ->
+            .setPositiveButton(R.string.update) { _, _ ->
                 val assets = release.assets
 
                 if (assets.isEmpty()) {
@@ -469,6 +501,28 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
                     runOnUiThread {
                         dismissDownloadProgressDialog()
                         if (success) {
+                            val isApkValid = try {
+                                if (apkFile.exists() && apkFile.length() > 1024 * 1024) {
+                                    val magic = ByteArray(4)
+                                    val readBytes = apkFile.inputStream().use { it.read(magic) }
+                                    readBytes == 4 && magic[0] == 0x50.toByte() && magic[1] == 0x4B.toByte() && magic[2] == 0x03.toByte() && magic[3] == 0x04.toByte()
+                                } else {
+                                    false
+                                }
+                            } catch (_: Exception) {
+                                false
+                            }
+
+                            if (!isApkValid) {
+                                try { apkFile.delete() } catch (_: Exception) {}
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    getString(R.string.update_download_failed) + " (Invalid APK package)",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                return@runOnUiThread
+                            }
+
                             val installer = APKInstaller(this@MainActivity)
                             installer.install(
                                 apkFile,

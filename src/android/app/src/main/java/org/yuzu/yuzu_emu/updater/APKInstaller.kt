@@ -19,6 +19,10 @@ class APKInstaller(private val context: Context) {
 
     fun install(apkFile: File, onComplete: () -> Unit, onFailure: (Exception) -> Unit) {
         try {
+            if (!apkFile.exists() || apkFile.length() <= 1024 * 1024) {
+                onFailure(IllegalStateException("Invalid APK file: size is less than 1MB"))
+                return
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                 !context.packageManager.canRequestPackageInstalls()
             ) {

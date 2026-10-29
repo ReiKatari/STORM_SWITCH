@@ -73,8 +73,8 @@ android {
         applicationId = "dev.storm_switch"
         minSdk = 24
         targetSdk = 36
-        versionName = "16.0.0"
-        versionCode = 16000
+        versionName = getGitVersion()
+        versionCode = autoVersion
 
         externalNativeBuild {
             cmake {

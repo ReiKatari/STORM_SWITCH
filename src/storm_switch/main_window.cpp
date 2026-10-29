@@ -1,3 +1,5 @@
+#include <QDirIterator>
+#include <QSessionManager>
 #include <QProcess>
 #include <QJsonArray>
 #include <QOperatingSystemVersion>
@@ -975,6 +977,11 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     UpdateUITheme();
     UpdateStatusButtons();
     InitializeSystemTray();
+
+    connect(qGuiApp, &QGuiApplication::commitDataRequest, this, [this](QSessionManager&) {
+        is_exiting_from_tray = true;
+        m_is_quitting_from_tray = true;
+    });
 
     // Ensure all explicit StormLang translations are applied immediately at startup
     OnLanguageChanged(QString::fromStdString(UISettings::values.language.GetValue()));
@@ -8642,427 +8649,438 @@ void MainWindow::OnInstallKeysOnline() {
 }
 
 void MainWindow::OnCheckUpdates(bool manual_check) {
-    auto* nam = new QNetworkAccessManager(this);
-    QNetworkRequest request(QUrl(QStringLiteral("https://api.github.com/repos/ReiKatari/STORM_SWITCH/releases/latest")));
-    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
-    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    struct ReleaseInfo {
+        QString tag_name;
+        QString clean_tag;
+        QString release_name;
+        QString release_body;
+        QString html_url;
+        QString direct_zip_url;
+        std::tuple<int, int, int> version{0, 0, 0};
+        bool valid{false};
+    };
 
-    auto* reply = nam->get(request);
-    connect(reply, &QNetworkReply::finished, this, [this, reply, nam, manual_check]() {
-        reply->deleteLater();
-        nam->deleteLater();
+    struct CheckContext {
+        bool gh_done{false};
+        bool sgw_done{false};
+        bool handled{false};
+        ReleaseInfo gh_rel{};
+        ReleaseInfo sgw_rel{};
+        QString gh_error{};
+        QString sgw_error{};
+    };
 
-        auto handle_version_check = [this, manual_check](const QString& tag_name, const QString& release_name,
-                                                          const QString& release_body, const QString& html_url,
-                                                          const QString& direct_zip_url) {
-            QString clean_tag = tag_name.trimmed();
-            if (clean_tag.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
-                clean_tag = clean_tag.mid(1);
+    auto parse_version_3 = [](const QString& ver_str) -> std::tuple<int, int, int> {
+        QString clean = ver_str.trimmed();
+        if (clean.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+            clean = clean.mid(1).trimmed();
+        }
+        const auto list = clean.split(QLatin1Char('.'), Qt::SkipEmptyParts);
+        int maj = list.size() > 0 ? list[0].toInt() : 0;
+        int min = list.size() > 1 ? list[1].toInt() : 0;
+        int bld = list.size() > 2 ? list[2].toInt() : 0;
+        return {maj, min, bld};
+    };
+
+    const bool is_win11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 22000);
+    const QString preferred_token = is_win11 ? QStringLiteral("Windows11.zip") : QStringLiteral("Windows10.zip");
+
+    auto ctx = std::make_shared<CheckContext>();
+
+    auto evaluate_releases = [this, ctx, manual_check, parse_version_3, preferred_token]() {
+        if (!ctx->gh_done || !ctx->sgw_done || ctx->handled) {
+            return;
+        }
+        ctx->handled = true;
+
+        ReleaseInfo best{};
+        if (ctx->sgw_rel.valid && ctx->gh_rel.valid) {
+            if (ctx->sgw_rel.version > ctx->gh_rel.version) {
+                best = ctx->sgw_rel;
+            } else {
+                best = ctx->gh_rel;
             }
+        } else if (ctx->sgw_rel.valid) {
+            best = ctx->sgw_rel;
+        } else if (ctx->gh_rel.valid) {
+            best = ctx->gh_rel;
+        }
 
-            QString current_ver = QString::fromStdString(Common::g_build_version).trimmed();
-            if (current_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
-                current_ver = current_ver.mid(1);
-            }
+        const QString current_ver_str = QString::fromStdString(Common::g_build_version).trimmed();
+        const auto current_tuple = parse_version_3(current_ver_str);
 
-            if (clean_tag.compare(current_ver, Qt::CaseInsensitive) == 0) {
-                if (manual_check) {
-                    QMessageBox::information(this, tr("STORM SWITCH — Обновления"),
-                                             tr("У вас установлена последняя актуальная версия STORM SWITCH (%1).\nОбновлений не найдено.").arg(current_ver));
+        if (!best.valid) {
+            if (manual_check) {
+                QString err = ctx->gh_error;
+                if (!ctx->sgw_error.isEmpty()) {
+                    if (!err.isEmpty()) err += QStringLiteral(" | ");
+                    err += ctx->sgw_error;
                 }
+                QMessageBox::warning(this, tr("Ошибка проверки обновлений"),
+                                     tr("Не удалось проверить обновления на GitHub и stormgamesworld.ru: %1").arg(err));
+            }
+            return;
+        }
+
+        const bool is_newer = (best.version > current_tuple);
+        if (!is_newer) {
+            if (manual_check) {
+                QString clean_cur = current_ver_str;
+                if (clean_cur.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                    clean_cur = clean_cur.mid(1);
+                }
+                QMessageBox::information(this, tr("STORM SWITCH — Обновления"),
+                                         tr("У вас установлена последняя актуальная версия STORM SWITCH (%1).\nОбновлений не найдено.").arg(clean_cur));
+            }
+            return;
+        }
+
+        // Trigger update dialog
+        QString zip_url = best.direct_zip_url;
+        if (zip_url.isEmpty()) {
+            zip_url = QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/download/%1/STORM_SWITCH_%2_%3")
+                          .arg(best.tag_name, best.clean_tag, preferred_token);
+        }
+
+        QDialog dlg(this);
+        dlg.setWindowTitle(tr("Доступно обновление STORM SWITCH"));
+        dlg.resize(660, 470);
+        dlg.setStyleSheet(QStringLiteral(
+            "QDialog { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', sans-serif; }"
+            "QLabel { color: #ffffff; }"
+            "QTextEdit { background-color: #121826; color: #FFFFFF; border: 1px solid #1e283d; border-radius: 8px; padding: 10px; font-size: 9pt; }"
+            "QPushButton { background-color: #161e30; color: #ffffff; border: 1px solid #23314a; border-radius: 6px; padding: 8px 18px; font-weight: bold; font-size: 9pt; }"
+            "QPushButton:hover { background-color: #00e5ff; color: #000000; border-color: #00e5ff; }"
+            "QPushButton#DownloadBtn { background-color: #00e5ff; color: #000000; border: 1px solid #00e5ff; }"
+            "QPushButton#DownloadBtn:hover { background-color: #33ebff; }"
+        ));
+
+        auto* layout = new QVBoxLayout(&dlg);
+        layout->setContentsMargins(20, 20, 20, 20);
+        layout->setSpacing(14);
+
+        auto* title = new QLabel(tr("<h2 style='margin:0; color:#00e5ff;'>⚡ Доступна новая версия: %1</h2>")
+                                     .arg(best.release_name.isEmpty() ? best.tag_name : best.release_name), &dlg);
+        auto* sub_info = new QLabel(tr("<span style='color:#FFFFFF;'>Текущая версия: <b>%1</b> &nbsp;|&nbsp; Новая версия: <b>%2</b></span>")
+                                        .arg(current_ver_str, best.clean_tag), &dlg);
+
+        auto* notes_box = new QTextEdit(&dlg);
+        notes_box->setReadOnly(true);
+        notes_box->setPlainText(best.release_body.isEmpty() ? tr("Информация об изменениях не указана.") : best.release_body);
+
+        auto* btn_layout = new QHBoxLayout();
+        auto* download_btn = new QPushButton(StormLang(QStringLiteral("Обновить"), QStringLiteral("Update")), &dlg);
+        download_btn->setObjectName(QStringLiteral("DownloadBtn"));
+        auto* web_btn = new QPushButton(tr("🌐 Открыть сайт"), &dlg);
+        auto* close_btn = new QPushButton(StormLang(QStringLiteral("Позже"), QStringLiteral("Later")), &dlg);
+
+        bool start_auto_update = false;
+        connect(download_btn, &QPushButton::clicked, [&dlg, &start_auto_update]() {
+            start_auto_update = true;
+            dlg.accept();
+        });
+        connect(web_btn, &QPushButton::clicked, [&dlg, &best]() {
+            const QString target_url = best.html_url.isEmpty()
+                ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
+                : best.html_url;
+            QDesktopServices::openUrl(QUrl(target_url));
+            dlg.accept();
+        });
+        connect(close_btn, &QPushButton::clicked, &dlg, &QDialog::reject);
+
+        btn_layout->addStretch();
+        btn_layout->addWidget(close_btn);
+        btn_layout->addWidget(web_btn);
+        btn_layout->addWidget(download_btn);
+
+        layout->addWidget(title);
+        layout->addWidget(sub_info);
+        layout->addWidget(notes_box);
+        layout->addLayout(btn_layout);
+
+        dlg.exec();
+
+        if (start_auto_update) {
+            QProgressDialog progress(tr("Скачивание обновления STORM SWITCH %1...").arg(best.clean_tag),
+                                     tr("Отмена (ESC)"), 0, 100, this);
+            progress.setWindowTitle(tr("Автообновление STORM SWITCH"));
+            progress.setWindowModality(Qt::WindowModal);
+            progress.setMinimumDuration(0);
+            progress.setValue(0);
+            progress.show();
+
+            const QString temp_dir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) +
+                                     QStringLiteral("/storm_switch_update_") + best.clean_tag;
+            QDir(temp_dir).removeRecursively();
+            QDir().mkpath(temp_dir);
+            const QString zip_path = temp_dir + QStringLiteral("/update.zip");
+
+            QNetworkAccessManager dl_nam;
+            QNetworkRequest dl_req{QUrl(zip_url)};
+            dl_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
+            dl_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+
+            QNetworkReply* dl_reply = dl_nam.get(dl_req);
+            QEventLoop loop;
+            QFile out_file(zip_path);
+            if (!out_file.open(QIODevice::WriteOnly)) {
+                dl_reply->abort();
+                dl_reply->deleteLater();
                 return;
             }
 
-            auto parse_version = [](const QString& ver_str) -> std::vector<int> {
-                std::vector<int> parts;
-                const auto list = ver_str.split(QLatin1Char('.'), Qt::SkipEmptyParts);
-                for (const auto& s : list) {
-                    parts.push_back(s.toInt());
+            connect(dl_reply, &QNetworkReply::readyRead, [&]() {
+                out_file.write(dl_reply->readAll());
+            });
+            connect(dl_reply, &QNetworkReply::downloadProgress, [&](qint64 rec, qint64 tot) {
+                if (tot > 0) {
+                    progress.setValue(static_cast<int>((rec * 100) / tot));
                 }
-                return parts;
-            };
+            });
+            connect(&progress, &QProgressDialog::canceled, dl_reply, &QNetworkReply::abort);
+            connect(dl_reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+            loop.exec();
 
-            const auto remote_parts = parse_version(clean_tag);
-            const auto local_parts = parse_version(current_ver);
+            out_file.write(dl_reply->readAll());
+            out_file.flush();
+            out_file.close();
 
-            bool is_newer = false;
-            for (size_t i = 0; i < std::max(remote_parts.size(), local_parts.size()); ++i) {
-                const int r = i < remote_parts.size() ? remote_parts[i] : 0;
-                const int l = i < local_parts.size() ? local_parts[i] : 0;
-                if (r > l) {
-                    is_newer = true;
-                    break;
-                } else if (r < l) {
-                    break;
+            if (progress.wasCanceled()) {
+                dl_reply->deleteLater();
+                return;
+            }
+
+            QFile downloaded_file(zip_path);
+            bool valid_magic = false;
+            if (downloaded_file.open(QIODevice::ReadOnly)) {
+                const QByteArray magic = downloaded_file.read(4);
+                if (magic.size() >= 2 && magic[0] == 'M' && magic[1] == 'Z') {
+                    valid_magic = true;
+                } else if (magic.size() >= 4 && magic[0] == 'P' && magic[1] == 'K' && magic[2] == 0x03 && magic[3] == 0x04) {
+                    valid_magic = true;
+                }
+                downloaded_file.close();
+            }
+
+            if (dl_reply->error() != QNetworkReply::NoError || !valid_magic || QFileInfo(zip_path).size() < 1024) {
+                dl_reply->deleteLater();
+                QMessageBox::warning(this, tr("Ошибка обновления"),
+                                     tr("Не удалось проверить скачанный файл (неверный заголовок или размер). Открываю страницу релиза."));
+                const QString target_url = best.html_url.isEmpty()
+                    ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
+                    : best.html_url;
+                QDesktopServices::openUrl(QUrl(target_url));
+                return;
+            }
+            dl_reply->deleteLater();
+
+            progress.setLabelText(tr("Распаковка и проверка цифровой подписи PE (MZ)..."));
+            progress.setValue(95);
+            QCoreApplication::processEvents();
+
+            const QString extract_dir = temp_dir + QStringLiteral("/extracted");
+            QDir().mkpath(extract_dir);
+            QProcess tar_proc;
+            tar_proc.start(QStringLiteral("tar.exe"), {QStringLiteral("-xf"), zip_path, QStringLiteral("-C"), extract_dir});
+            if (!tar_proc.waitForFinished(60000) || tar_proc.exitCode() != 0) {
+                QProcess ps_proc;
+                ps_proc.start(QStringLiteral("powershell.exe"),
+                              {QStringLiteral("-NoProfile"), QStringLiteral("-Command"),
+                               QStringLiteral("Expand-Archive -LiteralPath '%1' -DestinationPath '%2' -Force").arg(zip_path, extract_dir)});
+                ps_proc.waitForFinished(90000);
+            }
+
+            QString staging_root = extract_dir;
+            if (!QFileInfo::exists(staging_root + QStringLiteral("/STORM_SWITCH.exe"))) {
+                QDirIterator it(extract_dir, QStringList() << QStringLiteral("STORM_SWITCH.exe"), QDir::Files, QDirIterator::Subdirectories);
+                if (it.hasNext()) {
+                    staging_root = QFileInfo(it.next()).absolutePath();
                 }
             }
 
-            if (is_newer) {
-                QString zip_url = direct_zip_url;
-                if (zip_url.isEmpty()) {
-                    const bool is_win11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 22000);
-                    const QString suffix = is_win11 ? QStringLiteral("Windows11.zip") : QStringLiteral("Windows10.zip");
-                    zip_url = QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/download/%1/STORM_SWITCH_%2_%3")
-                                  .arg(tag_name.trimmed(), clean_tag, suffix);
+            QFile pe_check(staging_root + QStringLiteral("/STORM_SWITCH.exe"));
+            bool valid_pe = false;
+            if (pe_check.open(QIODevice::ReadOnly)) {
+                const QByteArray magic = pe_check.read(2);
+                valid_pe = (magic.size() == 2 && magic[0] == 'M' && magic[1] == 'Z');
+                pe_check.close();
+            }
+
+            if (!valid_pe) {
+                QMessageBox::warning(this, tr("Ошибка обновления"),
+                                     tr("Не удалось проверить целостность скачанного архива (PE MZ). Открываю страницу релиза."));
+                QDesktopServices::openUrl(QUrl(best.html_url.isEmpty()
+                    ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
+                    : best.html_url));
+                return;
+            }
+
+            const qint64 app_pid = QCoreApplication::applicationPid();
+            const QString app_dir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+            const QString app_exe = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
+            const QString native_stage = QDir::toNativeSeparators(staging_root);
+            const QString native_temp_dir = QDir::toNativeSeparators(temp_dir);
+            const QString bat_path = QDir::toNativeSeparators(temp_dir + QStringLiteral("/apply_update.bat"));
+
+            QFile bat_file(bat_path);
+            if (bat_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                QTextStream ts(&bat_file);
+                ts << "@echo off\n";
+                ts << "chcp 65001 >nul\n";
+                ts << "timeout /t 2 /nobreak >nul\n";
+                ts << "taskkill /F /PID " << app_pid << " >nul 2>&1\n";
+                ts << "set RETRY_COUNT=0\n";
+                ts << ":RETRY_COPY\n";
+                ts << "xcopy /E /Y /I /R \"" << native_stage << "\\*\" \"" << app_dir << "\\\" >nul 2>&1\n";
+                ts << "if errorlevel 1 (\n";
+                ts << "    set /A RETRY_COUNT+=1\n";
+                ts << "    if %RETRY_COUNT% LEQ 10 (\n";
+                ts << "        timeout /t 1 /nobreak >nul\n";
+                ts << "        goto RETRY_COPY\n";
+                ts << "    )\n";
+                ts << ")\n";
+                ts << "start \"\" \"" << app_exe << "\"\n";
+                ts << "rmdir /S /Q \"" << native_temp_dir << "\" >nul 2>&1\n";
+                ts << "exit\n";
+                bat_file.close();
+            }
+
+            QProcess::startDetached(QStringLiteral("cmd.exe"), {QStringLiteral("/c"), bat_path});
+            is_exiting_from_tray = true;
+            m_is_quitting_from_tray = true;
+            if (m_tray_icon) {
+                m_tray_icon->hide();
+            }
+            QCoreApplication::quit();
+        }
+    };
+
+    // 1. Query GitHub API
+    auto* gh_nam = new QNetworkAccessManager(this);
+    QNetworkRequest gh_req(QUrl(QStringLiteral("https://api.github.com/repos/ReiKatari/STORM_SWITCH/releases/latest")));
+    gh_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
+    gh_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    gh_req.setTransferTimeout(8000);
+
+    auto* gh_reply = gh_nam->get(gh_req);
+    connect(gh_reply, &QNetworkReply::finished, this, [gh_reply, gh_nam, ctx, parse_version_3, preferred_token, evaluate_releases]() {
+        gh_reply->deleteLater();
+        gh_nam->deleteLater();
+        ctx->gh_done = true;
+
+        if (gh_reply->error() == QNetworkReply::NoError) {
+            const QByteArray data = gh_reply->readAll();
+            const QJsonDocument doc = QJsonDocument::fromJson(data);
+            if (doc.isObject()) {
+                const QJsonObject obj = doc.object();
+                const QString tag_name = obj.value(QStringLiteral("tag_name")).toString().trimmed();
+                QString clean_tag = tag_name;
+                if (clean_tag.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                    clean_tag = clean_tag.mid(1).trimmed();
+                }
+                if (!clean_tag.isEmpty()) {
+                    ctx->gh_rel.tag_name = tag_name;
+                    ctx->gh_rel.clean_tag = clean_tag;
+                    ctx->gh_rel.release_name = obj.value(QStringLiteral("name")).toString();
+                    ctx->gh_rel.release_body = obj.value(QStringLiteral("body")).toString();
+                    ctx->gh_rel.html_url = obj.value(QStringLiteral("html_url")).toString();
+                    ctx->gh_rel.version = parse_version_3(clean_tag);
+                    ctx->gh_rel.valid = true;
+
+                    const QJsonArray assets_arr = obj.value(QStringLiteral("assets")).toArray();
+                    for (const auto& item : assets_arr) {
+                        const QJsonObject aobj = item.toObject();
+                        const QString dl_url = aobj.value(QStringLiteral("browser_download_url")).toString();
+                        if (dl_url.endsWith(preferred_token, Qt::CaseInsensitive)) {
+                            ctx->gh_rel.direct_zip_url = dl_url;
+                            break;
+                        }
+                        if (ctx->gh_rel.direct_zip_url.isEmpty() && dl_url.endsWith(QStringLiteral(".zip"), Qt::CaseInsensitive)) {
+                            ctx->gh_rel.direct_zip_url = dl_url;
+                        }
+                    }
+                }
+            }
+        } else {
+            ctx->gh_error = gh_reply->errorString();
+        }
+        evaluate_releases();
+    });
+
+    // 2. Query stormgamesworld.ru API in parallel
+    auto* sgw_nam = new QNetworkAccessManager(this);
+    QNetworkRequest sgw_req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")));
+    sgw_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
+    sgw_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    sgw_req.setTransferTimeout(8000);
+
+    auto* sgw_reply = sgw_nam->get(sgw_req);
+    connect(sgw_reply, &QNetworkReply::finished, this, [sgw_reply, sgw_nam, ctx, parse_version_3, preferred_token, evaluate_releases]() {
+        sgw_reply->deleteLater();
+        sgw_nam->deleteLater();
+        ctx->sgw_done = true;
+
+        if (sgw_reply->error() == QNetworkReply::NoError) {
+            const QByteArray data = sgw_reply->readAll();
+            const QJsonDocument sgw_doc = QJsonDocument::fromJson(data);
+            if (sgw_doc.isObject()) {
+                QJsonArray rels;
+                const auto root_obj = sgw_doc.object();
+                if (root_obj.value(QStringLiteral("releases")).isArray()) {
+                    rels = root_obj.value(QStringLiteral("releases")).toArray();
+                } else if (root_obj.value(QStringLiteral("repositories")).isArray()) {
+                    const auto repos = root_obj.value(QStringLiteral("repositories")).toArray();
+                    if (!repos.isEmpty() && repos[0].isObject()) {
+                        rels = repos[0].toObject().value(QStringLiteral("releases")).toArray();
+                    }
                 }
 
-                QDialog dlg(this);
-                dlg.setWindowTitle(tr("Доступно обновление STORM SWITCH"));
-                dlg.resize(660, 470);
-                dlg.setStyleSheet(QStringLiteral(
-                    "QDialog { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', sans-serif; }"
-                    "QLabel { color: #ffffff; }"
-                    "QTextEdit { background-color: #121826; color: #FFFFFF; border: 1px solid #1e283d; border-radius: 8px; padding: 10px; font-size: 9pt; }"
-                    "QPushButton { background-color: #161e30; color: #ffffff; border: 1px solid #23314a; border-radius: 6px; padding: 8px 18px; font-weight: bold; font-size: 9pt; }"
-                    "QPushButton:hover { background-color: #00e5ff; color: #000000; border-color: #00e5ff; }"
-                    "QPushButton#DownloadBtn { background-color: #00e5ff; color: #000000; border: 1px solid #00e5ff; }"
-                    "QPushButton#DownloadBtn:hover { background-color: #33ebff; }"
-                ));
-
-                auto* layout = new QVBoxLayout(&dlg);
-                layout->setContentsMargins(20, 20, 20, 20);
-                layout->setSpacing(14);
-
-                auto* title = new QLabel(tr("<h2 style='margin:0; color:#00e5ff;'>⚡ Доступна новая версия: %1</h2>")
-                                             .arg(release_name.isEmpty() ? tag_name : release_name), &dlg);
-                auto* sub_info = new QLabel(tr("<span style='color:#FFFFFF;'>Текущая версия: <b>%1</b> &nbsp;|&nbsp; Новая версия: <b>%2</b></span>")
-                                                .arg(current_ver, clean_tag), &dlg);
-
-                auto* notes_box = new QTextEdit(&dlg);
-                notes_box->setReadOnly(true);
-                notes_box->setPlainText(release_body.isEmpty() ? tr("Информация об изменениях не указана.") : release_body);
-
-                auto* btn_layout = new QHBoxLayout();
-                auto* download_btn = new QPushButton(tr("🚀 Обновить автоматически"), &dlg);
-                download_btn->setObjectName(QStringLiteral("DownloadBtn"));
-                auto* web_btn = new QPushButton(tr("🌐 Открыть GitHub"), &dlg);
-                auto* close_btn = new QPushButton(tr("Позже"), &dlg);
-
-                bool start_auto_update = false;
-                connect(download_btn, &QPushButton::clicked, [&dlg, &start_auto_update]() {
-                    start_auto_update = true;
-                    dlg.accept();
-                });
-                connect(web_btn, &QPushButton::clicked, [&dlg, html_url]() {
-                    const QString target_url = html_url.isEmpty()
-                        ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
-                        : html_url;
-                    QDesktopServices::openUrl(QUrl(target_url));
-                    dlg.accept();
-                });
-                connect(close_btn, &QPushButton::clicked, &dlg, &QDialog::reject);
-
-                btn_layout->addStretch();
-                btn_layout->addWidget(close_btn);
-                btn_layout->addWidget(web_btn);
-                btn_layout->addWidget(download_btn);
-
-                layout->addWidget(title);
-                layout->addWidget(sub_info);
-                layout->addWidget(notes_box);
-                layout->addLayout(btn_layout);
-
-                dlg.exec();
-
-                if (start_auto_update) {
-                    QProgressDialog progress(tr("Скачивание обновления STORM SWITCH %1...").arg(clean_tag),
-                                             tr("Отмена (ESC)"), 0, 100, this);
-                    progress.setWindowTitle(tr("Автообновление STORM SWITCH"));
-                    progress.setWindowModality(Qt::WindowModal);
-                    progress.setMinimumDuration(0);
-                    progress.setValue(0);
-                    progress.show();
-
-                    const QString temp_dir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) +
-                                             QStringLiteral("/storm_switch_update_") + clean_tag;
-                    QDir(temp_dir).removeRecursively();
-                    QDir().mkpath(temp_dir);
-                    const QString zip_path = temp_dir + QStringLiteral("/update.zip");
-
-                    QNetworkAccessManager dl_nam;
-                    QNetworkRequest dl_req{QUrl(zip_url)};
-                    dl_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
-                    dl_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-
-                    QNetworkReply* dl_reply = dl_nam.get(dl_req);
-                    QEventLoop loop;
-                    QFile out_file(zip_path);
-                    out_file.open(QIODevice::WriteOnly);
-
-                    connect(dl_reply, &QNetworkReply::readyRead, [&]() {
-                        out_file.write(dl_reply->readAll());
-                    });
-                    connect(dl_reply, &QNetworkReply::downloadProgress, [&](qint64 rec, qint64 tot) {
-                        if (tot > 0) {
-                            progress.setValue(static_cast<int>((rec * 100) / tot));
-                        }
-                    });
-                    connect(&progress, &QProgressDialog::canceled, dl_reply, &QNetworkReply::abort);
-                    connect(dl_reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-                    loop.exec();
-
-                    out_file.write(dl_reply->readAll());
-                    out_file.flush();
-                    out_file.close();
-
-                    if (progress.wasCanceled()) {
-                        dl_reply->deleteLater();
-                        return;
+                ReleaseInfo best_sgw{};
+                for (const auto& r_val : rels) {
+                    if (!r_val.isObject()) continue;
+                    const QJsonObject r_obj = r_val.toObject();
+                    const QString s_tag = r_obj.value(QStringLiteral("version")).toString().trimmed();
+                    QString clean_s = s_tag;
+                    if (clean_s.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                        clean_s = clean_s.mid(1).trimmed();
                     }
-                    if (dl_reply->error() != QNetworkReply::NoError || QFileInfo(zip_path).size() < 1024 * 1024) {
-                        dl_reply->deleteLater();
-                        const QString target_url = html_url.isEmpty()
-                            ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
-                            : html_url;
-                        QDesktopServices::openUrl(QUrl(target_url));
-                        return;
-                    }
-                    dl_reply->deleteLater();
+                    if (clean_s.isEmpty()) continue;
+                    const auto s_tuple = parse_version_3(clean_s);
+                    if (!best_sgw.valid || s_tuple > best_sgw.version) {
+                        best_sgw.tag_name = s_tag;
+                        best_sgw.clean_tag = clean_s;
+                        best_sgw.release_name = r_obj.value(QStringLiteral("title")).toString(QStringLiteral("STORM SWITCH %1").arg(clean_s));
+                        best_sgw.release_body = r_obj.value(QStringLiteral("notes")).toString();
+                        best_sgw.html_url = QStringLiteral("https://stormgamesworld.ru/programs?repo=STORM_SWITCH");
+                        best_sgw.version = s_tuple;
+                        best_sgw.valid = true;
 
-                    progress.setLabelText(tr("Распаковка и проверка цифровой подписи PE (MZ)..."));
-                    progress.setValue(95);
-                    QCoreApplication::processEvents();
-
-                    const QString extract_dir = temp_dir + QStringLiteral("/extracted");
-                    QDir().mkpath(extract_dir);
-                    QProcess tar_proc;
-                    tar_proc.start(QStringLiteral("tar.exe"), {QStringLiteral("-xf"), zip_path, QStringLiteral("-C"), extract_dir});
-                    if (!tar_proc.waitForFinished(60000) || tar_proc.exitCode() != 0) {
-                        QProcess ps_proc;
-                        ps_proc.start(QStringLiteral("powershell.exe"),
-                                      {QStringLiteral("-NoProfile"), QStringLiteral("-Command"),
-                                       QStringLiteral("Expand-Archive -LiteralPath '%1' -DestinationPath '%2' -Force").arg(zip_path, extract_dir)});
-                        ps_proc.waitForFinished(90000);
-                    }
-
-                    QString staging_root = extract_dir;
-                    if (!QFileInfo::exists(staging_root + QStringLiteral("/STORM_SWITCH.exe"))) {
-                        const auto subdirs = QDir(extract_dir).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-                        for (const auto& sd : subdirs) {
-                            if (QFileInfo::exists(sd.absoluteFilePath() + QStringLiteral("/STORM_SWITCH.exe"))) {
-                                staging_root = sd.absoluteFilePath();
+                        const QJsonArray s_assets = r_obj.value(QStringLiteral("assets")).toArray();
+                        for (const auto& a_it : s_assets) {
+                            const QJsonObject a_obj = a_it.toObject();
+                            const QString a_name = a_obj.value(QStringLiteral("name")).toString();
+                            const QString a_dl = a_obj.value(QStringLiteral("downloadUrl")).toString();
+                            if (a_name.endsWith(preferred_token, Qt::CaseInsensitive) && !a_dl.isEmpty()) {
+                                best_sgw.direct_zip_url = a_dl;
                                 break;
                             }
                         }
-                    }
-
-                    QFile pe_check(staging_root + QStringLiteral("/STORM_SWITCH.exe"));
-                    bool valid_pe = false;
-                    if (pe_check.open(QIODevice::ReadOnly)) {
-                        const QByteArray magic = pe_check.read(2);
-                        valid_pe = (magic.size() == 2 && magic[0] == 'M' && magic[1] == 'Z');
-                        pe_check.close();
-                    }
-
-                    if (!valid_pe) {
-                        QMessageBox::warning(this, tr("Ошибка обновления"),
-                                             tr("Не удалось проверить целостность скачанного архива (PE MZ). Открываю страницу релиза на GitHub."));
-                        QDesktopServices::openUrl(QUrl(html_url.isEmpty()
-                            ? QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
-                            : html_url));
-                        return;
-                    }
-
-                    const QString app_dir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
-                    const QString app_exe = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
-                    const QString native_stage = QDir::toNativeSeparators(staging_root);
-                    const QString bat_path = QDir::toNativeSeparators(temp_dir + QStringLiteral("/apply_update.bat"));
-
-                    QFile bat_file(bat_path);
-                    if (bat_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                        QTextStream ts(&bat_file);
-                        ts << "@echo off\n";
-                        ts << "chcp 65001 >nul\n";
-                        ts << "timeout /t 2 /nobreak >nul\n";
-                        ts << "xcopy /E /Y /I \"" << native_stage << "\\*\" \"" << app_dir << "\\\" >nul 2>&1\n";
-                        ts << "start \"\" \"" << app_exe << "\"\n";
-                        ts << "rmdir /S /Q \"" << QDir::toNativeSeparators(temp_dir) << "\" >nul 2>&1\n";
-                        bat_file.close();
-                    }
-
-                    QProcess::startDetached(QStringLiteral("cmd.exe"), {QStringLiteral("/c"), bat_path});
-                    QCoreApplication::quit();
-                }
-            } else if (manual_check) {
-                QMessageBox::information(this, tr("STORM SWITCH — Обновления"),
-                                         tr("У вас установлена последняя актуальная версия STORM SWITCH (%1).\nОбновлений не найдено.").arg(current_ver));
-            }
-        };
-
-        if (reply->error() != QNetworkReply::NoError) {
-            auto* fallback_nam = new QNetworkAccessManager(this);
-            QNetworkRequest fallback_req(QUrl(QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")));
-            fallback_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"));
-            fallback_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::ManualRedirectPolicy);
-
-            auto* fallback_reply = fallback_nam->get(fallback_req);
-            connect(fallback_reply, &QNetworkReply::finished, this, [this, fallback_reply, fallback_nam, manual_check, handle_version_check]() {
-                fallback_reply->deleteLater();
-                fallback_nam->deleteLater();
-
-                QString target_url;
-                const auto redirect_var = fallback_reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
-                if (redirect_var.isValid() && !redirect_var.toUrl().isEmpty()) {
-                    target_url = redirect_var.toUrl().toString();
-                } else {
-                    target_url = fallback_reply->url().toString();
-                }
-
-                static const QRegularExpression tag_regex(QStringLiteral(R"(/releases/tag/(v?[0-9]+\.[0-9]+(?:\.[0-9]+)*))"));
-                const auto match = tag_regex.match(target_url);
-                if (match.hasMatch()) {
-                    const QString raw_tag = match.captured(1);
-                    QString clean_ver = raw_tag;
-                    if (clean_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
-                        clean_ver = clean_ver.mid(1);
-                    }
-                    const bool is_win11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 22000);
-                    const QString suffix = is_win11 ? QStringLiteral("Windows11.zip") : QStringLiteral("Windows10.zip");
-                    const QString zip_url = QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/download/%1/STORM_SWITCH_%2_%3")
-                                                .arg(raw_tag, clean_ver, suffix);
-                    handle_version_check(clean_ver, tr("STORM SWITCH %1").arg(clean_ver),
-                                         tr("Доступна новая версия STORM SWITCH %1.\nНажмите «🚀 Обновить автоматически» для автоматической загрузки и установки.").arg(clean_ver),
-                                         QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH/releases/latest"),
-                                         zip_url);
-                    return;
-                }
-
-                // Secondary mirror fallback: https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH
-                auto* sgw_nam = new QNetworkAccessManager(this);
-                QNetworkRequest sgw_req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")));
-                sgw_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
-                sgw_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-                auto* sgw_reply = sgw_nam->get(sgw_req);
-                connect(sgw_reply, &QNetworkReply::finished, this, [this, sgw_reply, sgw_nam, manual_check, handle_version_check]() {
-                    sgw_reply->deleteLater();
-                    sgw_nam->deleteLater();
-                    if (sgw_reply->error() == QNetworkReply::NoError) {
-                        const QJsonDocument sgw_doc = QJsonDocument::fromJson(sgw_reply->readAll());
-                        if (sgw_doc.isObject()) {
-                            const QJsonArray rels = sgw_doc.object().value(QStringLiteral("releases")).toArray();
-                            if (!rels.isEmpty()) {
-                                const QJsonObject rel0 = rels.first().toObject();
-                                QString s_ver = rel0.value(QStringLiteral("version")).toString().trimmed();
-                                if (s_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
-                                    s_ver = s_ver.mid(1);
-                                }
-                                if (!s_ver.isEmpty()) {
-                                    const bool is_win11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 22000);
-                                    const QString suffix = is_win11 ? QStringLiteral("Windows11.zip") : QStringLiteral("Windows10.zip");
-                                    QString sgw_zip_url = QStringLiteral("https://stormgamesworld.ru/uploads/programs/STORM_SWITCH/STORM_SWITCH_%1_%2").arg(s_ver, suffix);
-                                    const QJsonArray s_assets = rel0.value(QStringLiteral("assets")).toArray();
-                                    for (const auto& a_it : s_assets) {
-                                        const QJsonObject a_obj = a_it.toObject();
-                                        const QString a_name = a_obj.value(QStringLiteral("name")).toString();
-                                        const QString a_dl = a_obj.value(QStringLiteral("downloadUrl")).toString();
-                                        if (a_name.endsWith(suffix, Qt::CaseInsensitive) && !a_dl.isEmpty()) {
-                                            sgw_zip_url = a_dl;
-                                            break;
-                                        }
-                                    }
-                                    const QString s_title = rel0.value(QStringLiteral("title")).toString(QStringLiteral("STORM SWITCH %1").arg(s_ver));
-                                    const QString s_notes = rel0.value(QStringLiteral("notes")).toString();
-                                    handle_version_check(s_ver, s_title, s_notes,
-                                                         QStringLiteral("https://stormgamesworld.ru/programs?repo=STORM_SWITCH"),
-                                                         sgw_zip_url);
-                                    return;
-                                }
-                            }
+                        if (best_sgw.direct_zip_url.isEmpty()) {
+                            best_sgw.direct_zip_url = QStringLiteral("https://stormgamesworld.ru/uploads/programs/STORM_SWITCH/STORM_SWITCH_%1_%2").arg(clean_s, preferred_token);
                         }
                     }
-                    if (manual_check) {
-                        QMessageBox::warning(this, tr("?????? ???????? ??????????"),
-                                             tr("?? ??????? ????????? ? ????????? ?????????? (GitHub ? stormgamesworld.ru):\n%1").arg(sgw_reply->errorString()));
-                    }
-                });
-            });
-            return;
+                }
+                if (best_sgw.valid) {
+                    ctx->sgw_rel = best_sgw;
+                }
+            }
+        } else {
+            ctx->sgw_error = sgw_reply->errorString();
         }
-
-        const QByteArray data = reply->readAll();
-        const QJsonDocument doc = QJsonDocument::fromJson(data);
-        if (!doc.isObject()) {
-            return;
-        }
-
-        const QJsonObject obj = doc.object();
-        const QString tag_name = obj.value(QStringLiteral("tag_name")).toString();
-        const QString release_name = obj.value(QStringLiteral("name")).toString();
-        const QString release_body = obj.value(QStringLiteral("body")).toString();
-        const QString html_url = obj.value(QStringLiteral("html_url")).toString();
-
-        QString selected_zip_url;
-        const bool is_win11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 22000);
-        const QString preferred_token = is_win11 ? QStringLiteral("Windows11.zip") : QStringLiteral("Windows10.zip");
-        const QJsonArray assets_arr = obj.value(QStringLiteral("assets")).toArray();
-        for (const auto& item : assets_arr) {
-            const QJsonObject aobj = item.toObject();
-            const QString dl_url = aobj.value(QStringLiteral("browser_download_url")).toString();
-            if (dl_url.endsWith(preferred_token, Qt::CaseInsensitive)) {
-                selected_zip_url = dl_url;
-                break;
-            }
-            if (selected_zip_url.isEmpty() && dl_url.endsWith(QStringLiteral(".zip"), Qt::CaseInsensitive)) {
-                selected_zip_url = dl_url;
-            }
-        }
-
-        // Also query stormgamesworld.ru mirror so if a newer release is published on stormgamesworld.ru, it is detected too
-        auto* sgw_nam = new QNetworkAccessManager(this);
-        QNetworkRequest sgw_req(QUrl(QStringLiteral("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")));
-        sgw_req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH-Updater"));
-        sgw_req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-        auto* sgw_reply = sgw_nam->get(sgw_req);
-        connect(sgw_reply, &QNetworkReply::finished, this, [sgw_reply, sgw_nam, handle_version_check, tag_name, release_name, release_body, html_url, selected_zip_url, preferred_token]() {
-            sgw_reply->deleteLater();
-            sgw_nam->deleteLater();
-            QString final_tag = tag_name;
-            QString final_name = release_name;
-            QString final_body = release_body;
-            QString final_html = html_url;
-            QString final_zip = selected_zip_url;
-
-            if (sgw_reply->error() == QNetworkReply::NoError) {
-                const QJsonDocument sgw_doc = QJsonDocument::fromJson(sgw_reply->readAll());
-                if (sgw_doc.isObject()) {
-                    const QJsonArray rels = sgw_doc.object().value(QStringLiteral("releases")).toArray();
-                    if (!rels.isEmpty()) {
-                        const QJsonObject rel0 = rels.first().toObject();
-                        QString s_ver = rel0.value(QStringLiteral("version")).toString().trimmed();
-                        if (s_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
-                            s_ver = s_ver.mid(1);
-                        }
-                        QString g_ver = final_tag.trimmed();
-                        if (g_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
-                            g_ver = g_ver.mid(1);
-                        }
-                        auto to_parts = [](const QString& v) {
-                            std::vector<int> p;
-                            for (const auto& s : v.split(QLatin1Char('.'), Qt::SkipEmptyParts)) p.push_back(s.toInt());
-                            return p;
-                        };
-                        const auto sp = to_parts(s_ver);
-                        const auto gp = to_parts(g_ver);
-                        bool sgw_newer = false;
-                        for (size_t i = 0; i < std::max(sp.size(), gp.size()); ++i) {
-                            const int sv = i < sp.size() ? sp[i] : 0;
-                            const int gv = i < gp.size() ? gp[i] : 0;
-                            if (sv != gv) { sgw_newer = (sv > gv); break; }
-                        }
-                        if (sgw_newer || final_tag.isEmpty()) {
-                            final_tag = s_ver;
-                            final_name = rel0.value(QStringLiteral("title")).toString(QStringLiteral("STORM SWITCH %1").arg(s_ver));
-                            final_body = rel0.value(QStringLiteral("notes")).toString();
-                            final_html = QStringLiteral("https://stormgamesworld.ru/programs?repo=STORM_SWITCH");
-                            final_zip = QStringLiteral("https://stormgamesworld.ru/uploads/programs/STORM_SWITCH/STORM_SWITCH_%1_%2").arg(s_ver, preferred_token);
-                        }
-                    }
-                }
-            }
-            handle_version_check(final_tag, final_name, final_body, final_html, final_zip);
-        });
+        evaluate_releases();
     });
 }
+
 void MainWindow::OnAbout() {
     AboutDialog aboutDialog(this);
     aboutDialog.exec();
@@ -14054,13 +14072,13 @@ bool MainWindow::ConfirmClose() {
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
-    if (!is_exiting_from_tray && !m_is_quitting_from_tray && m_tray_icon && m_tray_icon->isVisible()) {
+    if (!is_exiting_from_tray && !m_is_quitting_from_tray && !(qGuiApp && qGuiApp->isSavingSession()) && m_tray_icon && m_tray_icon->isVisible()) {
         hide();
         event->ignore();
         return;
     }
 
-    if (!ConfirmClose()) {
+    if (!(qGuiApp && qGuiApp->isSavingSession()) && !ConfirmClose()) {
         is_exiting_from_tray = false;
         m_is_quitting_from_tray = false;
         event->ignore();

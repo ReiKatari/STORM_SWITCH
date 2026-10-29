@@ -104,6 +104,7 @@ class SettingsFragment : Fragment() {
         binding.listSettings.apply {
             adapter = settingsAdapter
             layoutManager = LinearLayoutManager(requireContext())
+            itemAnimator = null
         }
 
         binding.toolbarSettings.setNavigationOnClickListener {

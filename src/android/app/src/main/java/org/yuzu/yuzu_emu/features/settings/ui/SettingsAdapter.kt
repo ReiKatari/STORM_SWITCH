@@ -136,7 +136,12 @@ class SettingsAdapter(
             NativeLibrary.applySettings()
         }
         notifyItemChanged(position)
-        settingsViewModel.setShouldReloadSettingsList(true)
+        val key = item.setting.key
+        if (key == org.yuzu.yuzu_emu.features.settings.model.BooleanSetting.USE_CUSTOM_CPU_TICKS.key ||
+            key == org.yuzu.yuzu_emu.features.settings.model.BooleanSetting.RENDERER_FRAME_GEN.key ||
+            key == org.yuzu.yuzu_emu.features.settings.model.BooleanSetting.USE_DOCKED_MODE.key) {
+            settingsViewModel.setShouldReloadSettingsList(true)
+        }
     }
 
     fun onSingleChoiceClick(item: SingleChoiceSetting, position: Int) {

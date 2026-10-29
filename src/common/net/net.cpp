@@ -243,16 +243,51 @@ std::optional<std::string> MakeRequest(const std::string& url, const std::string
     }
 }
 
+static bool IsVerNewer(const std::string& remote_v, const std::string& local_v) {
+    auto parse_parts = [](const std::string& s) {
+        std::vector<int> parts;
+        std::string cur;
+        for (char c : s) {
+            if (c >= '0' && c <= '9') {
+                cur.push_back(c);
+            } else if (!cur.empty()) {
+                parts.push_back(std::atoi(cur.c_str()));
+                cur.clear();
+            }
+        }
+        if (!cur.empty())
+            parts.push_back(std::atoi(cur.c_str()));
+        return parts;
+    };
+    const auto r = parse_parts(remote_v);
+    const auto l = parse_parts(local_v);
+    const size_t n = std::max(r.size(), l.size());
+    for (size_t i = 0; i < n; ++i) {
+        const int rv = i < r.size() ? r[i] : 0;
+        const int lv = i < l.size() ? l[i] : 0;
+        if (rv != lv)
+            return rv > lv;
+    }
+    return false;
+}
+
 static std::vector<Release> ParseStormGamesWorldReleases(const std::string& body_str) {
     std::vector<Release> out;
     try {
         const auto json = nlohmann::json::parse(body_str);
-        if (!json.contains("repositories") || !json["repositories"].is_array() || json["repositories"].empty())
+        const nlohmann::json* releases_ptr = nullptr;
+        if (json.contains("releases") && json["releases"].is_array()) {
+            releases_ptr = &json["releases"];
+        } else if (json.contains("repositories") && json["repositories"].is_array() && !json["repositories"].empty()) {
+            const auto& repo = json["repositories"][0];
+            if (repo.contains("releases") && repo["releases"].is_array()) {
+                releases_ptr = &repo["releases"];
+            }
+        }
+        if (!releases_ptr)
             return out;
-        const auto& repo = json["repositories"][0];
-        if (!repo.contains("releases") || !repo["releases"].is_array())
-            return out;
-        for (const auto& rj : repo["releases"]) {
+
+        for (const auto& rj : *releases_ptr) {
             if (!rj.is_object())
                 continue;
             Release rel{};
@@ -280,37 +315,12 @@ static std::vector<Release> ParseStormGamesWorldReleases(const std::string& body
             }
             out.emplace_back(std::move(rel));
         }
+        std::sort(out.begin(), out.end(), [](const Release& a, const Release& b) {
+            return IsVerNewer(a.tag, b.tag);
+        });
     } catch (...) {
     }
     return out;
-}
-
-static bool IsVerNewer(const std::string& remote_v, const std::string& local_v) {
-    auto parse_parts = [](const std::string& s) {
-        std::vector<int> parts;
-        std::string cur;
-        for (char c : s) {
-            if (c >= '0' && c <= '9') {
-                cur.push_back(c);
-            } else if (!cur.empty()) {
-                parts.push_back(std::atoi(cur.c_str()));
-                cur.clear();
-            }
-        }
-        if (!cur.empty())
-            parts.push_back(std::atoi(cur.c_str()));
-        return parts;
-    };
-    const auto r = parse_parts(remote_v);
-    const auto l = parse_parts(local_v);
-    const size_t n = std::max(r.size(), l.size());
-    for (size_t i = 0; i < n; ++i) {
-        const int rv = i < r.size() ? r[i] : 0;
-        const int lv = i < l.size() ? l[i] : 0;
-        if (rv != lv)
-            return rv > lv;
-    }
-    return false;
 }
 
 std::vector<Release> GetReleases() {

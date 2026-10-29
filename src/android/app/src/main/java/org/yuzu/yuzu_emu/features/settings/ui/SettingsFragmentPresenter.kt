@@ -118,6 +118,10 @@ class SettingsFragmentPresenter(
         }
     }
 
+    private fun isFsrScalingFilterSelected(): Boolean {
+        return IntSetting.RENDERER_SCALING_FILTER.getInt() == 6
+    }
+
     private fun isSharpnessScalingFilterSelected(): Boolean {
         val selectedFilter = IntSetting.RENDERER_SCALING_FILTER.getInt()
         return selectedFilter == 6 || selectedFilter in resolveSharpnessScalingFilterValues()
@@ -343,6 +347,9 @@ class SettingsFragmentPresenter(
             add(IntSetting.RENDERER_SCALING_FILTER.key)
             if (isSharpnessScalingFilterSelected()) {
                 add(IntSetting.FSR_SHARPENING_SLIDER.key)
+            }
+            if (isFsrScalingFilterSelected()) {
+                add(IntSetting.RENDERER_FSR2_QUALITY_MODE.key)
             }
             add(IntSetting.RENDERER_ANTI_ALIASING.key)
             add(IntSetting.RENDERER_POST_PROCESSING_SHADER.key)

@@ -548,8 +548,8 @@
     <string name="custom_cpu_ticks">Custom CPU Ticks</string>
     <string name="custom_cpu_ticks_description">Set a custom value of CPU ticks. Higher values can increase performance, but may also cause the game to freeze. A range of 77–21000 is recommended.</string>
     <string name="cpu_ticks">Ticks</string>
-    <string name="memory_layout">Memory Layout</string>
-    <string name="memory_layout_description">(EXPERIMENTAL) Change the emulated memory layout. This setting will not increase performance, but may help with games utilizing high resolutions via mods. Do not use on phones with 8GB of RAM or less. Only works on the Dynarmic (JIT) backend.</string>
+    <string name="memory_layout">DRAM Size (Console Memory Layout)</string>
+    <string name="memory_layout_description">(EXPERIMENTAL) Emulated Switch DRAM memory size: 4 / 6 / 8 / 12 GB. Increasing DRAM helps with demanding games, high-resolution texture packs, and mods. Only works on Dynarmic (JIT) and requires sufficient device RAM.</string>
 
     <string name="generate">Generate</string>
 
@@ -1244,7 +1244,7 @@
     <string name="scaling_filter_gaussian" translatable="false">Gaussian</string>
     <string name="scaling_filter_lanczos" translatable="false">Lanczos</string>
     <string name="scaling_filter_scale_force" translatable="false">ScaleForce</string>
-    <string name="scaling_filter_fsr" translatable="false">AMD FidelityFX Super Resolution</string>
+    <string name="scaling_filter_fsr" translatable="false">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="scaling_filter_area" translatable="false">Area</string>
     <string name="scaling_filter_zero_tangent" translatable="false">Zero-Tangent</string>
     <string name="scaling_filter_bspline" translatable="false">B-Spline</string>
@@ -2843,5 +2843,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="save_state_save_failed">❌ Failed to save state to Slot %1$d</string>
     <string name="save_state_load_failed">⚠️ Slot %1$d is empty or corrupted</string>
     <string name="save_state_confirm_delete">Are you sure you want to delete save state for Slot %1$d?</string>
+    <string name="update">Update</string>
+    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
+    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_quality">Quality (1.5x)</string>
+    <string name="fsr2_quality_balanced">Balanced (1.7x)</string>
+    <string name="fsr2_quality_performance">Performance (2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Ultra Performance (3.0x)</string>
+    <string name="mali_driver_info">Mali/Immortalis/Xclipse GPUs use the manufacturer system Vulkan driver. Upstream Mesa PanVK is experimental and does not yet support full Switch Vulkan extensions. Custom .zip driver installation remains available for experimental builds, while Adreno Turnip drivers are filtered to prevent crashes.</string>
+    <string name="mali_turnip_incompatible_warning">Warning: Adreno Turnip drivers are designed specifically for Qualcomm Adreno GPUs. Installing this driver on a Mali or non-Adreno GPU may cause graphics instability or app crashes. Do you want to continue?</string>
 </resources>
 

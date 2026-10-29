@@ -998,4 +998,17 @@
         <item>73</item>
         <item>74</item>
     </integer-array>
+    <string-array name="fsr2QualityModeNames">
+        <item>@string/fsr2_quality_quality</item>
+        <item>@string/fsr2_quality_balanced</item>
+        <item>@string/fsr2_quality_performance</item>
+        <item>@string/fsr2_quality_ultra_performance</item>
+    </string-array>
+
+    <integer-array name="fsr2QualityModeValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </integer-array>
 </resources>

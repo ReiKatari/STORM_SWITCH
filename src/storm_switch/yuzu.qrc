@@ -7,4 +7,7 @@ SPDX-License-Identifier: GPL-2.0-or-later
     <qresource prefix="/img">
         <file alias="eden.ico">../../dist/eden.ico</file>
     </qresource>
+    <qresource prefix="/icons">
+        <file alias="down_arrow.svg">../../dist/down_arrow.svg</file>
+    </qresource>
 </RCC>

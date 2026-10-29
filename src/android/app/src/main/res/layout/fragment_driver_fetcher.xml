@@ -138,6 +138,18 @@
                     android:textAlignment="viewStart" />
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/text_mali_driver_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/item_release_latest_badge_background"
+                android:padding="8dp"
+                android:text="@string/mali_driver_info"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
