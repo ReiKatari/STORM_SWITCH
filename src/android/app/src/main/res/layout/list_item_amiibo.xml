@@ -73,7 +73,7 @@
                 android:layout_marginTop="2dp"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="11sp"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 tools:text="Zelda • Figure" />
 
@@ -84,7 +84,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
                 android:textSize="10sp"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 tools:text="01010000002F0002" />
 

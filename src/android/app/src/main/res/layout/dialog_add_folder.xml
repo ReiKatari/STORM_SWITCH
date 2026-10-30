@@ -17,7 +17,7 @@
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="marquee_forever"
         android:requiresFadingEdge="horizontal"
-        android:singleLine="true"
+        android:maxLines="3"
         android:textAlignment="viewStart"
         tools:text="folder/folder/folder/folder" />
 

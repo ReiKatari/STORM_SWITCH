@@ -272,7 +272,7 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
                                swapchain.GetImageViewFormat());
 
 #ifdef HAS_LSFG
-    if (Settings::values.frame_gen.GetValue()) {
+    if (Settings::values.frame_gen.GetValue() || Settings::values.enable_frame_interpolation.GetValue()) {
         void(frame_gen.WantedGenerations(present_manager.MaxExtraFrames()));
 
         frame_gen.Process(device, frame, swapchain.GetImageFormat(), GuestExtent(framebuffers));

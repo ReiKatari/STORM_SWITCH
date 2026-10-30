@@ -46,6 +46,7 @@
 #include "qt_common/titledb.h"
 #include "qt_common/config/uisettings.h"
 #include "qt_common/qt_common.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 static QString SanitizeFileName(QString name) {
     static const QString forbidden = QStringLiteral("<>:\"/\\|?*");
@@ -573,6 +574,8 @@ void StormGamesWorldDialog::CancelAllNetworkRequests() {
     if (output_file && output_file->isOpen()) {
         output_file->close();
     }
+    StormUI::StructureEngine::ModernizeForm(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 }
 
 StormGamesWorldDialog::~StormGamesWorldDialog() {

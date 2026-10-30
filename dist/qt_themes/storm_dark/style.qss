@@ -87,57 +87,72 @@ QScrollArea, QScrollArea > QWidget > QWidget {
 }
 
 /* Push Buttons - Elevated 3D Volumetric */
-QPushButton {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #152033);
+/* 3D Faceted Convex Buttons (Law 3 & STORM Standard) */
+QPushButton, QDialogButtonBox QPushButton, QToolButton {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:0.48 #1e293b, stop:0.52 #182232, stop:1 #0f172a);
     color: #FFFFFF;
-    border: 1px solid #334155;
-    border-bottom: 2px solid rgba(0, 210, 255, 0.4);
-    border-radius: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.34);
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+    border-right: 1px solid rgba(255, 255, 255, 0.16);
+    border-bottom: 3px solid rgba(0, 0, 0, 0.58);
+    border-radius: 8px;
     padding: 6px 16px;
     font-weight: 600;
+    min-height: 22px;
 }
 
-QPushButton:hover {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25334D, stop:1 #1A263D);
-    border-color: #00D2FF;
-    border-bottom: 2px solid #00D2FF;
+QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:0.48 #26364d, stop:0.52 #1e2b3e, stop:1 #131c2c);
+    border-top: 1px solid rgba(255, 255, 255, 0.55);
+    border-left: 1px solid rgba(0, 210, 255, 0.45);
+    border-right: 1px solid rgba(0, 210, 255, 0.45);
+    border-bottom: 3px solid rgba(0, 0, 0, 0.70);
     color: #00D2FF;
 }
 
-QPushButton:pressed {
-    background-color: #00D2FF;
-    border: 1px solid #00D2FF;
-    border-bottom: 1px solid #00D2FF;
-    color: #0F172A;
+QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0d1522, stop:0.5 #131d2e, stop:1 #1a283e);
+    border-top: 2px solid rgba(0, 0, 0, 0.55);
+    border-left: 1px solid rgba(0, 0, 0, 0.35);
+    border-right: 1px solid rgba(0, 0, 0, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    padding-top: 8px;
+    padding-bottom: 4px;
+    color: #FFFFFF;
+}
+
+QPushButton:disabled, QDialogButtonBox QPushButton:disabled, QToolButton:disabled {
+    background-color: #090e17;
+    color: rgba(255, 255, 255, 0.35);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 1px solid rgba(255, 255, 255, 0.04);
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.40);
+}
+
+QPushButton:default, QDialogButtonBox QPushButton:default {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #38bdf8, stop:0.48 #0ea5e9, stop:0.52 #0284c7, stop:1 #0369a1);
+    color: #FFFFFF;
+    border-top: 1px solid rgba(255, 255, 255, 0.55);
+    border-left: 1px solid rgba(255, 255, 255, 0.28);
+    border-right: 1px solid rgba(255, 255, 255, 0.28);
+    border-bottom: 3px solid #0c4a6e;
+    border-radius: 8px;
     font-weight: 700;
 }
 
-QPushButton:disabled {
-    background-color: #0B1120;
-    color: #FFFFFF;
-    border: 1px solid #1E293B;
-    border-bottom: 1px solid #1E293B;
+QPushButton:default:hover, QDialogButtonBox QPushButton:default:hover {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7dd3fc, stop:0.48 #38bdf8, stop:0.52 #0ea5e9, stop:1 #0284c7);
+    border-top: 1px solid rgba(255, 255, 255, 0.75);
+    border-bottom: 3px solid #082f49;
 }
 
-/* Tool Buttons */
-QToolButton {
-    background-color: #1E293B;
-    border: 1px solid #334155;
-    border-radius: 6px;
-    padding: 5px 12px;
-    color: #FFFFFF;
-    font-weight: 600;
-}
-
-QToolButton:hover {
-    background-color: #25334D;
-    border-color: #00D2FF;
-    color: #00D2FF;
-}
-
-QToolButton:pressed {
-    background-color: #00D2FF;
-    color: #0F172A;
+QPushButton:default:pressed, QDialogButtonBox QPushButton:default:pressed {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #075985, stop:0.5 #0284c7, stop:1 #0ea5e9);
+    border-top: 2px solid rgba(0, 0, 0, 0.50);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.20);
+    padding-top: 8px;
+    padding-bottom: 4px;
 }
 
 QToolButton:disabled {
@@ -652,4 +667,120 @@ QSlider::handle:vertical:hover {
 QSlider::handle:vertical:pressed {
     background: #00D2FF;
     border: 2px solid #FFFFFF;
+}
+
+
+/* STORM STRUCTURED UI RULES - STORM_DARK */
+
+/* Structured Recessed Search Capsule (Law 17 & 23) */
+QLineEdit#SettingsSearchEdit,
+QLineEdit[stormSearchBox="true"] {
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(0, 240, 255, 0.30);
+    border-radius: 8px;
+    padding: 6px 14px;
+    color: #ffffff;
+    font-size: 12.5px;
+    min-height: 32px;
+}
+QLineEdit#SettingsSearchEdit:focus,
+QLineEdit[stormSearchBox="true"]:focus {
+    border: 1px solid #00F0FF;
+    background-color: rgba(255, 255, 255, 0.09);
+}
+
+/* Volumetric Sculpted Section Cards (QGroupBox) */
+QGroupBox[stormCard="true"],
+QGroupBox#groupBox[stormHeroCard="true"],
+QGroupBox#BentoGameHeaderCard {
+    background-color: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(0, 240, 255, 0.30);
+    border-radius: 10px;
+    margin-top: 14px;
+    padding: 24px 14px 14px 14px;
+}
+QGroupBox[stormCard="true"]::title,
+QGroupBox#groupBox[stormHeroCard="true"]::title,
+QGroupBox#BentoGameHeaderCard::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 14px;
+    padding: 2px 10px;
+    color: #00F0FF;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #0F172A;
+    border: 1px solid rgba(0, 240, 255, 0.30);
+    border-radius: 4px;
+}
+
+/* Recessed 3D Inputs, SpinBoxes & Dropdowns (Law 17/23) */
+QLineEdit[stormCapsule="true"],
+QSpinBox[stormCapsule="true"],
+QDoubleSpinBox[stormCapsule="true"],
+QComboBox[stormCapsule="true"] {
+    min-height: 32px;
+    border-radius: 6px;
+    padding: 4px 10px;
+}
+
+/* Per-Game Override Row Accent Highlight */
+QWidget[stormOverrideRow="true"],
+ConfigurationShared--Widget[stormOverrideRow="true"] {
+    border-left: 3px solid #00F0FF;
+    background-color: rgba(0, 240, 255, 0.07);
+    border-radius: 4px;
+}
+
+/* 3D Faceted Reset Custom Settings Button */
+QPushButton#ResetPerGameHeroButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef4444, stop:0.48 #dc2626, stop:0.52 #b91c1c, stop:1 #991b1b);
+    color: #FFFFFF;
+    border-top: 1px solid rgba(255, 255, 255, 0.45);
+    border-left: 1px solid rgba(255, 255, 255, 0.20);
+    border-right: 1px solid rgba(255, 255, 255, 0.20);
+    border-bottom: 3px solid #7f1d1d;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: bold;
+    font-size: 11.5px;
+    min-height: 30px;
+}
+QPushButton#ResetPerGameHeroButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f87171, stop:0.48 #ef4444, stop:0.52 #dc2626, stop:1 #b91c1c);
+    border-top: 1px solid rgba(255, 255, 255, 0.65);
+    border-bottom: 3px solid #7f1d1d;
+}
+QPushButton#ResetPerGameHeroButton:pressed {
+    background: #991b1b;
+    border-top: 2px solid rgba(0, 0, 0, 0.60);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 8px;
+    padding-bottom: 4px;
+}
+
+/* Recessed 3D Status Bar Telemetry Capsules (Law 20) */
+QWidget[stormStatusCapsule="true"],
+QWidget#StatusBarGroup {
+    border-radius: 6px;
+    margin: 1px 2px;
+    padding: 1px 3px;
+}
+QWidget[stormStatusCapsule="true"]:hover,
+QWidget#StatusBarGroup:hover {
+    border-color: #00F0FF;
+}
+
+/* Visible 1px Vertical Column Dividers in All Tables (Law 12) */
+QTableView[stormTable="true"]::item,
+QTreeView[stormTable="true"]::item,
+QTableWidget[stormTable="true"]::item,
+QTreeWidget[stormTable="true"]::item {
+    border-right: 1px solid rgba(255, 255, 255, 0.10);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    padding: 6px 10px;
+}
+QHeaderView::section {
+    border-right: 1px solid rgba(255, 255, 255, 0.10);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
 }

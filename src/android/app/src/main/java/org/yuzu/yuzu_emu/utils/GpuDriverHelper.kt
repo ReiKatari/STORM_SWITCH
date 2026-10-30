@@ -228,7 +228,7 @@ object GpuDriverHelper {
                 NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", fallbackConf.absolutePath)
                 NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
             }
-            
+
             // 4GB Monolithic Shader Cache for Mesa Turnip and PanVK
             NativeFreedrenoConfig.setFreedrenoEnv("MESA_SHADER_CACHE_MAX_SIZE", "4294967296")
             NativeFreedrenoConfig.setFreedrenoEnv("MESA_DISK_CACHE_SINGLE_FILE", "1")
@@ -290,6 +290,30 @@ object GpuDriverHelper {
             NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_DIR", generatedConfigFile.parentFile.absolutePath)
             NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", generatedConfigFile.absolutePath)
             NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
+
+            val profileType = PerGameDrircGenerator.detectProfileType(programIdHex, gameTitle)
+            if (profileType == PerGameDrircGenerator.GameProfileType.DIABLO) {
+                NativeFreedrenoConfig.setFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE", "1")
+                val existingTuDebug = if (NativeFreedrenoConfig.isFreedrenoEnvSet("TU_DEBUG")) NativeFreedrenoConfig.getFreedrenoEnv("TU_DEBUG") else ""
+                val flags = existingTuDebug.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet()
+                flags.add("nolrz")
+                flags.add("noubwc")
+                NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", flags.joinToString(","))
+                Log.info("[GpuDriverHelper] Applied D2R Freedreno env vars: MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE=1, TU_DEBUG=${flags.joinToString(",")}")
+            } else {
+                if (NativeFreedrenoConfig.isFreedrenoEnvSet("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")) {
+                    NativeFreedrenoConfig.clearFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")
+                }
+                if (NativeFreedrenoConfig.isFreedrenoEnvSet("TU_DEBUG")) {
+                    val current = NativeFreedrenoConfig.getFreedrenoEnv("TU_DEBUG")
+                    val flags = current.split(",").map { it.trim() }.filter { it.isNotEmpty() && it != "nolrz" && it != "noubwc" }
+                    if (flags.isEmpty()) {
+                        NativeFreedrenoConfig.clearFreedrenoEnv("TU_DEBUG")
+                    } else {
+                        NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", flags.joinToString(","))
+                    }
+                }
+            }
 
             Log.info("[GpuDriverHelper] Successfully applied per-game driver config for $gameTitle ($programIdHex) -> ${generatedConfigFile.absolutePath}")
         } catch (t: Throwable) {

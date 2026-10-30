@@ -370,7 +370,7 @@ void PresentManager::SetImageCount() {
     // We cannot have more than 7 images in flight at any given time.
     // FRAMES_IN_FLIGHT is 8, and the cache TICKS_TO_DESTROY is 8.
     // Mali drivers will give us 6.
-    if (Settings::values.frame_gen.GetValue()) {
+    if (Settings::values.frame_gen.GetValue() || Settings::values.enable_frame_interpolation.GetValue()) {
         const size_t generations = Settings::FrameGenMaxGenerations();
         const size_t queued_composites = Settings::values.frame_gen_queue_target.GetValue() + 1;
         image_count =
@@ -393,6 +393,35 @@ void PresentManager::SetImageCount() {
 }
 
 void PresentManager::CopyToSwapchain(Frame* frame) {
+    if (Settings::values.enable_frame_skipping.GetValue()) {
+        static u32 skip_counter = 0;
+        if ((++skip_counter % 2) != 0) {
+            const vk::CommandBuffer cmdbuf{frame->cmdbuf};
+            cmdbuf.Begin({
+                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+            });
+            cmdbuf.End();
+            const VkSemaphore wait_sem = *frame->render_ready;
+            static constexpr VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            const VkSubmitInfo submit_info{
+                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                .waitSemaphoreCount = 1U,
+                .pWaitSemaphores = &wait_sem,
+                .pWaitDstStageMask = &wait_stage,
+                .commandBufferCount = 1U,
+                .pCommandBuffers = cmdbuf.address(),
+            };
+            {
+                std::scoped_lock submit_lock{scheduler.submit_mutex};
+                if (device.GetGraphicsQueue().Submit(submit_info, *frame->present_done) == VK_SUCCESS) {
+                    frame->is_submitted = true;
+                    return;
+                }
+            }
+        }
+    }
+
     bool requires_recreation = false;
 
     while (true) {

@@ -334,6 +334,10 @@ size_t GetTotalPipelineWorkers() {
     }
     return workers;
 #else
+    const u32 user_threads = Settings::values.pipeline_worker_threads.GetValue();
+    if (user_threads > 0) {
+        return std::clamp<size_t>(user_threads, 1ULL, std::max<size_t>(1ULL, hardware_threads));
+    }
     if (Settings::values.storm_lowend_turbo.GetValue()) {
         return 1ULL;
     }
@@ -524,7 +528,7 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
         .max_descriptor_set_storage_images = device.GetMaxDescriptorSetStorageImages(),
         .max_descriptor_set_input_attachements = device.GetMaxDescriptorSetInputAttachments(),
         .support_float64 = device.IsFloat64Supported(),
-        .support_float16 = device.IsFloat16Supported(),
+        .support_float16 = device.IsFloat16Supported() && !device.IsMali(),
         .support_int64 = device.IsShaderInt64Supported(),
         .needs_demote_reorder = driver_id == VK_DRIVER_ID_AMD_PROPRIETARY ||
                                 driver_id == VK_DRIVER_ID_AMD_OPEN_SOURCE ||

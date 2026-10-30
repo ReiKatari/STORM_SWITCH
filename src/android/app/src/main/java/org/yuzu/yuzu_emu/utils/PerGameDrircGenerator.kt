@@ -537,6 +537,8 @@ object PerGameDrircGenerator {
             }
             GameProfileType.DIABLO -> {
                 optionsBuilder.append("\n            <!-- DIABLO II & III RULES (Normalized Depth, Full Glyph Swizzle, Fast Clears, Maximum Smoothness) -->\n")
+                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")

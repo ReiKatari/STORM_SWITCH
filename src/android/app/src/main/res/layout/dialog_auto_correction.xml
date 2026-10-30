@@ -52,7 +52,7 @@
                         android:textSize="17sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"
-                        android:maxLines="2"
+                        android:maxLines="3"
                         android:ellipsize="end" />
 
                     <LinearLayout

@@ -40,6 +40,7 @@ import org.yuzu.yuzu_emu.features.settings.model.Settings
 import org.yuzu.yuzu_emu.features.settings.ui.SettingsSubscreen
 import org.yuzu.yuzu_emu.model.DriverViewModel
 import org.yuzu.yuzu_emu.model.HomeSetting
+import org.yuzu.yuzu_emu.model.HomeSettingListItem
 import org.yuzu.yuzu_emu.model.HomeViewModel
 import org.yuzu.yuzu_emu.ui.main.MainActivity
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
@@ -81,318 +82,340 @@ class HomeSettingsFragment : Fragment() {
         }
         binding.toolbarHomeSettings.title = getString(R.string.preferences_settings)
 
-        val optionsList: MutableList<HomeSetting> = mutableListOf<HomeSetting>().apply {
-            add(
-                HomeSetting(
-                    R.string.settings_profiles_title,
-                    R.string.settings_profiles_description,
-                    R.drawable.ic_folder_open,
-                    {
-                        SettingsProfilesDialogFragment.newInstance()
-                            .show(parentFragmentManager, SettingsProfilesDialogFragment.TAG)
-                    }
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.auto_optimization_wizard_title,
-                    R.string.auto_optimization_wizard_description,
-                    R.drawable.ic_settings,
-                    {
-                        AutoOptimizationDialogFragment.newInstance()
-                            .show(parentFragmentManager, AutoOptimizationDialogFragment.TAG)
-                    }
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.storm_games_world,
-                    R.string.storm_games_world_description,
-                    R.drawable.ic_website,
-                    {
-                        try {
-                            val dialog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.newInstance()
-                            dialog.show(parentFragmentManager, org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.TAG)
-                        } catch (e: Exception) {
-                            Toast.makeText(requireContext(), R.string.storm_games_world, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.advanced_settings,
-                    R.string.settings_description,
-                    R.drawable.ic_settings,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsActivity(
-                            null,
-                            Settings.MenuTag.SECTION_ROOT
-                        )
-                        binding.root.findNavController().navigate(action)
-                    }
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.app_settings,
-                    R.string.app_settings_description,
-                    R.drawable.ic_palette,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsActivity(
-                            null,
-                            Settings.MenuTag.SECTION_APP_SETTINGS
-                        )
-                        binding.root.findNavController().navigate(action)
-                    }
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.preferences_controls,
-                    R.string.preferences_controls_description,
-                    R.drawable.ic_controller,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsActivity(
-                            null,
-                            Settings.MenuTag.SECTION_INPUT
-                        )
-                        binding.root.findNavController().navigate(action)
-                    }
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.profile_manager,
-                    R.string.profile_manager_description,
-                    R.drawable.ic_account_circle,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
-                            SettingsSubscreen.PROFILE_MANAGER,
-                            null
-                        )
-                        binding.root.findNavController().navigate(action)
-                    }
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.gpu_driver_manager,
-                    R.string.install_gpu_driver_description,
-                    R.drawable.ic_build,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
-                            SettingsSubscreen.DRIVER_MANAGER,
-                            null
-                        )
-                        binding.root.findNavController().navigate(action)
-                    },
-                    { true },
-                    R.string.custom_driver_not_supported,
-                    R.string.custom_driver_not_supported_description,
-                    driverViewModel.selectedDriverTitle
-                )
-            )
-            LosslessScalingHelper.refreshStatus()
-            add(
-                HomeSetting(
-                    R.string.lossless_scaling,
-                    R.string.lossless_scaling_description,
-                    R.drawable.ic_frames,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
-                            SettingsSubscreen.LOSSLESS_MANAGER,
-                            null
-                        )
-                        binding.root.findNavController().navigate(action)
-                    },
-                    { true },
-                    0,
-                    0,
-                    LosslessScalingHelper.statusText
-                )
-            )
-            if (GpuDriverHelper.isAdrenoGpu()) {
-                add(
-                    HomeSetting(
-                        R.string.freedreno_settings_title,
-                        R.string.gpu_driver_settings,
-                        R.drawable.ic_graphics,
-                        {
-                            val action =
-                                HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
-                                    SettingsSubscreen.FREEDRENO_SETTINGS,
-                                    null
-                                )
-                            binding.root.findNavController().navigate(action)
-                        }
-                    )
-                )
-            }
-            add(
-                HomeSetting(
-                    R.string.multiplayer,
-                    R.string.multiplayer_description,
-                    R.drawable.ic_two_users,
-                    {
-                        mainActivity.displayMultiplayerDialog()
-                    }
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.amiibo_database_title,
-                    R.string.amiibo_database_description,
-                    R.drawable.ic_amiibo,
-                    {
-                        AmiiboDialogFragment.newInstance(isEmulating = false)
-                            .show(parentFragmentManager, AmiiboDialogFragment.TAG)
-                    }
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.applets,
-                    R.string.applets_description,
-                    R.drawable.ic_applet,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
-                            SettingsSubscreen.APPLET_LAUNCHER,
-                            null
-                        )
-                        binding.root.findNavController().navigate(action)
-                    },
-                    { NativeLibrary.isFirmwareAvailable() },
-                    R.string.applets_error_firmware,
-                    R.string.applets_error_description
-                )
-            )
-            add(
-                HomeSetting(
-                    R.string.manage_yuzu_data,
-                    R.string.manage_yuzu_data_description,
-                    R.drawable.ic_install,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
-                            SettingsSubscreen.INSTALLABLE,
-                            null
-                        )
-                        binding.root.findNavController().navigate(action)
-                    }
-                )
-            )
+        val itemsList = mutableListOf<HomeSettingListItem>()
 
-            add(
+        // 1. Быстрая настройка и профили (Quick Setup & Profiles)
+        itemsList.add(HomeSettingListItem.CategoryHeader(1, R.string.home_cat_quick_setup, R.drawable.ic_folder_open))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.settings_profiles_title,
+                R.string.settings_profiles_description,
+                R.drawable.ic_folder_open,
+                {
+                    SettingsProfilesDialogFragment.newInstance()
+                        .show(parentFragmentManager, SettingsProfilesDialogFragment.TAG)
+                }
+            )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.auto_optimization_wizard_title,
+                R.string.auto_optimization_wizard_description,
+                R.drawable.ic_settings,
+                {
+                    AutoOptimizationDialogFragment.newInstance()
+                        .show(parentFragmentManager, AutoOptimizationDialogFragment.TAG)
+                }
+            )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.storm_games_world,
+                R.string.storm_games_world_description,
+                R.drawable.ic_website,
+                {
+                    try {
+                        val dialog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.newInstance()
+                        dialog.show(parentFragmentManager, org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.TAG)
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), R.string.storm_games_world, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+        ))
+
+        // 2. Производительность, графика и драйверы (Performance, Graphics & Drivers)
+        itemsList.add(HomeSettingListItem.CategoryHeader(2, R.string.home_cat_performance_graphics, R.drawable.ic_graphics))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.advanced_settings,
+                R.string.settings_description,
+                R.drawable.ic_settings,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsActivity(
+                        null,
+                        Settings.MenuTag.SECTION_ROOT
+                    )
+                    binding.root.findNavController().navigate(action)
+                }
+            )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.gpu_driver_manager,
+                R.string.install_gpu_driver_description,
+                R.drawable.ic_build,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
+                        SettingsSubscreen.DRIVER_MANAGER,
+                        null
+                    )
+                    binding.root.findNavController().navigate(action)
+                },
+                { true },
+                R.string.custom_driver_not_supported,
+                R.string.custom_driver_not_supported_description,
+                driverViewModel.selectedDriverTitle
+            )
+        ))
+        LosslessScalingHelper.refreshStatus()
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.lossless_scaling,
+                R.string.lossless_scaling_description,
+                R.drawable.ic_frames,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
+                        SettingsSubscreen.LOSSLESS_MANAGER,
+                        null
+                    )
+                    binding.root.findNavController().navigate(action)
+                },
+                { true },
+                0,
+                0,
+                LosslessScalingHelper.statusText
+            )
+        ))
+        if (GpuDriverHelper.isAdrenoGpu()) {
+            itemsList.add(HomeSettingListItem.OptionItem(
                 HomeSetting(
-                    R.string.manage_game_folders,
-                    R.string.select_games_folder_description,
-                    R.drawable.ic_add,
+                    R.string.freedreno_settings_title,
+                    R.string.gpu_driver_settings,
+                    R.drawable.ic_graphics,
                     {
                         val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
-                            SettingsSubscreen.GAME_FOLDERS,
+                            SettingsSubscreen.FREEDRENO_SETTINGS,
                             null
                         )
                         binding.root.findNavController().navigate(action)
                     }
                 )
+            ))
+        }
+
+        // 3. Система, управление и звук (System, Input & Audio)
+        itemsList.add(HomeSettingListItem.CategoryHeader(3, R.string.home_cat_system_input, R.drawable.ic_controller))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.preferences_controls,
+                R.string.preferences_controls_description,
+                R.drawable.ic_controller,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsActivity(
+                        null,
+                        Settings.MenuTag.SECTION_INPUT
+                    )
+                    binding.root.findNavController().navigate(action)
+                }
             )
-            add(
-                HomeSetting(
-                    R.string.verify_installed_content,
-                    R.string.verify_installed_content_description,
-                    R.drawable.ic_check_circle,
-                    {
-                        ProgressDialogFragment.newInstance(
-                            requireActivity(),
-                            titleId = R.string.verifying,
-                            cancellable = true
-                        ) { progressCallback, _ ->
-                            val result = NativeLibrary.verifyInstalledContents(progressCallback)
-                            return@newInstance if (progressCallback.invoke(100, 100)) {
-                                // Invoke the progress callback to check if the process was cancelled
-                                MessageDialogFragment.newInstance(
-                                    titleId = R.string.verify_no_result,
-                                    descriptionId = R.string.verify_no_result_description
-                                )
-                            } else if (result.isEmpty()) {
-                                MessageDialogFragment.newInstance(
-                                    titleId = R.string.verify_success,
-                                    descriptionId = R.string.operation_completed_successfully
-                                )
-                            } else {
-                                val failedNames = result.joinToString("\n")
-                                val errorMessage = YuzuApplication.appContext.getString(
-                                    R.string.verification_failed_for,
-                                    failedNames
-                                )
-                                MessageDialogFragment.newInstance(
-                                    titleId = R.string.verify_failure,
-                                    descriptionString = errorMessage
-                                )
-                            }
-                        }.show(parentFragmentManager, ProgressDialogFragment.TAG)
-                    }
-                )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.profile_manager,
+                R.string.profile_manager_description,
+                R.drawable.ic_account_circle,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
+                        SettingsSubscreen.PROFILE_MANAGER,
+                        null
+                    )
+                    binding.root.findNavController().navigate(action)
+                }
             )
-            add(
-                HomeSetting(
-                    R.string.share_log,
-                    R.string.share_log_description,
-                    R.drawable.ic_log,
-                    { shareLog() }
-                )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.multiplayer,
+                R.string.multiplayer_description,
+                R.drawable.ic_two_users,
+                {
+                    mainActivity.displayMultiplayerDialog()
+                }
             )
-            add(
-                HomeSetting(
-                    R.string.share_gpu_log,
-                    R.string.share_gpu_log_description,
-                    R.drawable.ic_log,
-                    { shareGpuLog() }
-                )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.applets,
+                R.string.applets_description,
+                R.drawable.ic_applet,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
+                        SettingsSubscreen.APPLET_LAUNCHER,
+                        null
+                    )
+                    binding.root.findNavController().navigate(action)
+                },
+                { NativeLibrary.isFirmwareAvailable() },
+                R.string.applets_error_firmware,
+                R.string.applets_error_description
             )
-            add(
-                HomeSetting(
-                    R.string.open_user_folder,
-                    R.string.open_user_folder_description,
-                    R.drawable.ic_folder_open,
-                    { openFileManager() }
-                )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.amiibo_database_title,
+                R.string.amiibo_database_description,
+                R.drawable.ic_amiibo,
+                {
+                    AmiiboDialogFragment.newInstance(isEmulating = false)
+                        .show(parentFragmentManager, AmiiboDialogFragment.TAG)
+                }
             )
-            add(
-                HomeSetting(
-                    R.string.system_information,
-                    R.string.system_information_description,
-                    R.drawable.ic_system,
-                    {
-                        SystemInfoDialogFragment.newInstance()
-                            .show(parentFragmentManager, SystemInfoDialogFragment.TAG)
-                    }
-                )
+        ))
+
+        // 4. Каталог, папки и хранилище (Catalog, Folders & Storage)
+        itemsList.add(HomeSettingListItem.CategoryHeader(4, R.string.home_cat_catalog_storage, R.drawable.ic_folder))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.manage_game_folders,
+                R.string.select_games_folder_description,
+                R.drawable.ic_add,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
+                        SettingsSubscreen.GAME_FOLDERS,
+                        null
+                    )
+                    binding.root.findNavController().navigate(action)
+                }
             )
-            add(
-                HomeSetting(
-                    R.string.about,
-                    R.string.about_description,
-                    R.drawable.ic_info_outline,
-                    {
-                        val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
-                            SettingsSubscreen.ABOUT,
-                            null
-                        )
-                        binding.root.findNavController().navigate(action)
-                    }
-                )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.open_user_folder,
+                R.string.open_user_folder_description,
+                R.drawable.ic_folder_open,
+                { openFileManager() }
             )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.verify_installed_content,
+                R.string.verify_installed_content_description,
+                R.drawable.ic_check_circle,
+                {
+                    ProgressDialogFragment.newInstance(
+                        requireActivity(),
+                        titleId = R.string.verifying,
+                        cancellable = true
+                    ) { progressCallback, _ ->
+                        val result = NativeLibrary.verifyInstalledContents(progressCallback)
+                        return@newInstance if (progressCallback.invoke(100, 100)) {
+                            MessageDialogFragment.newInstance(
+                                titleId = R.string.verify_no_result,
+                                descriptionId = R.string.verify_no_result_description
+                            )
+                        } else if (result.isEmpty()) {
+                            MessageDialogFragment.newInstance(
+                                titleId = R.string.verify_success,
+                                descriptionId = R.string.operation_completed_successfully
+                            )
+                        } else {
+                            val failedNames = result.joinToString("\n")
+                            val errorMessage = YuzuApplication.appContext.getString(
+                                R.string.verification_failed_for,
+                                failedNames
+                            )
+                            MessageDialogFragment.newInstance(
+                                titleId = R.string.verify_failure,
+                                descriptionString = errorMessage
+                            )
+                        }
+                    }.show(parentFragmentManager, ProgressDialogFragment.TAG)
+                }
+            )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.manage_yuzu_data,
+                R.string.manage_yuzu_data_description,
+                R.drawable.ic_install,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
+                        SettingsSubscreen.INSTALLABLE,
+                        null
+                    )
+                    binding.root.findNavController().navigate(action)
+                }
+            )
+        ))
+
+        // 5. Данные, диагностика и информация (Diagnostics, Logs & About)
+        itemsList.add(HomeSettingListItem.CategoryHeader(5, R.string.home_cat_diagnostics_about, R.drawable.ic_system))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.system_information,
+                R.string.system_information_description,
+                R.drawable.ic_system,
+                {
+                    SystemInfoDialogFragment.newInstance()
+                        .show(parentFragmentManager, SystemInfoDialogFragment.TAG)
+                }
+            )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.share_log,
+                R.string.share_log_description,
+                R.drawable.ic_log,
+                { shareLog() }
+            )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.share_gpu_log,
+                R.string.share_gpu_log_description,
+                R.drawable.ic_log,
+                { shareGpuLog() }
+            )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.app_settings,
+                R.string.app_settings_description,
+                R.drawable.ic_palette,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsActivity(
+                        null,
+                        Settings.MenuTag.SECTION_APP_SETTINGS
+                    )
+                    binding.root.findNavController().navigate(action)
+                }
+            )
+        ))
+        itemsList.add(HomeSettingListItem.OptionItem(
+            HomeSetting(
+                R.string.about,
+                R.string.about_description,
+                R.drawable.ic_info_outline,
+                {
+                    val action = HomeNavigationDirections.actionGlobalSettingsSubscreenActivity(
+                        SettingsSubscreen.ABOUT,
+                        null
+                    )
+                    binding.root.findNavController().navigate(action)
+                }
+            )
+        ))
+
+        val homeAdapter = HomeSettingAdapter(
+            requireActivity() as AppCompatActivity,
+            viewLifecycleOwner,
+            itemsList
+        )
+        val gridLayoutManager = GridLayoutManager(requireContext(), resources.getInteger(R.integer.grid_columns))
+        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return if (homeAdapter.getItemViewType(position) == HomeSettingAdapter.VIEW_TYPE_HEADER) {
+                    gridLayoutManager.spanCount
+                } else {
+                    1
+                }
+            }
         }
 
         binding.homeSettingsList.apply {
-            layoutManager =
-                GridLayoutManager(requireContext(), resources.getInteger(R.integer.grid_columns))
-            adapter = HomeSettingAdapter(
-                requireActivity() as AppCompatActivity,
-                viewLifecycleOwner,
-                optionsList
-            )
+            layoutManager = gridLayoutManager
+            adapter = homeAdapter
             val spacing = resources.getDimensionPixelSize(R.dimen.spacing_small)
             addItemDecoration(SpacingItemDecoration(spacing))
         }

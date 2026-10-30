@@ -438,7 +438,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         // CRITICAL: Trigger per-game GPU driver installation BEFORE completeViewSetup() registers
         // SurfaceHolder callbacks and collects driverViewModel.isInteractionAllowed, so _isDriverReady
         // is set to false immediately and emulation waits until the per-game driver is extracted!
-        driverViewModel.onLaunchGame(if (shouldUseCustom) game else null)
+        driverViewModel.onLaunchGame(game)
 
         val safeGame = game ?: return
         emulationState = EmulationState(safeGame.path) {

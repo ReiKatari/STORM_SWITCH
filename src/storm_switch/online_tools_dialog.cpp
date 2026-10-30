@@ -34,6 +34,7 @@
 #include "qt_common/abstract/frontend.h"
 #include "qt_common/qt_common.h"
 #include "qt_common/util/content.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 namespace {
 
@@ -147,6 +148,8 @@ OnlineToolsDialog::OnlineToolsDialog(QWidget* parent, Core::System& system, Onli
     PopulateFallbackCatalog();
     UpdateListView();
     RefreshCatalog();
+    StormUI::StructureEngine::ModernizeForm(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 }
 
 OnlineToolsDialog::~OnlineToolsDialog() {
@@ -622,9 +625,9 @@ void OnlineToolsDialog::OnDownloadProgress(qint64 bytesReceived, qint64 bytesTot
             const double remaining_mb = (total_expected - total_current) / (1024.0 * 1024.0);
             const int eta_sec = static_cast<int>(remaining_mb / m_current_speed_mbps);
             if (eta_sec < 60) {
-                eta_str = tr(" • ~%1 сек.").arg(eta_sec);
+                eta_str = tr(" • ~%1 сек").arg(eta_sec);
             } else {
-                eta_str = tr(" • ~%1 мин. %2 сек.").arg(eta_sec / 60).arg(eta_sec % 60);
+                eta_str = tr(" • ~%1 мин %2 сек").arg(eta_sec / 60).arg(eta_sec % 60);
             }
         }
 

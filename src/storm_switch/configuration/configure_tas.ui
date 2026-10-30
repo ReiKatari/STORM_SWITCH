@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>ConfigureTas</class>
  <widget class="QDialog" name="ConfigureTas">
@@ -19,7 +19,7 @@
           <property name="openExternalLinks">
            <bool>true</bool>
           </property>
-         </widget>
+         <property name="wordWrap"><bool>true</bool></property></widget>
         </item>
         <item row="1" column="0" colspan="4">
          <widget class="QLabel" name="label_2">
@@ -103,7 +103,7 @@
           <property name="text">
            <string>Path</string>
           </property>
-         </widget>
+         <property name="wordWrap"><bool>true</bool></property></widget>
         </item>
         <item row="0" column="3">
          <widget class="QToolButton" name="tas_path_button">
@@ -113,7 +113,7 @@
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QLineEdit" name="tas_path_edit"/>
+         <widget class="QLineEdit" name="tas_path_edit" />
         </item>
        </layout>
       </widget>
@@ -151,7 +151,7 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources />
  <connections>
   <connection>
    <sender>buttonBox</sender>

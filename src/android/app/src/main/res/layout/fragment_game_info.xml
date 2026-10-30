@@ -93,7 +93,7 @@
                             android:textStyle="bold"
                             android:textSize="16sp"
                             android:textColor="?attr/colorOnSurface"
-                            android:maxLines="2"
+                            android:maxLines="3"
                             android:ellipsize="end"
                             tools:text="The Legend of Zelda: Tears of the Kingdom" />
 
@@ -105,7 +105,7 @@
                             android:layout_marginTop="3dp"
                             android:textSize="12sp"
                             android:textColor="?attr/colorPrimary"
-                            android:maxLines="1"
+                            android:maxLines="2"
                             android:ellipsize="end"
                             tools:text="Nintendo" />
 

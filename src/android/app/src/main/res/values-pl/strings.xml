@@ -2038,4 +2038,23 @@
     <string name="log_viewer_filter_warnings_label">Warnings</string>
     <string name="post_processing_shader">Shader post-processingu (RetroArch)</string>
     <string name="post_processing_shader_description">Stosuje shadery post-processingu RetroArch w czasie rzeczywistym (CRT, LCD, konsole przenośne, upscalery, wyostrzanie, korekcja kolorów).</string>
+
+    <string name="auto_opt_dialog_title">AUTOMATIC CONFIGURATION</string>
+    <string name="profile_btn_save_current">Save Current Profile</string>
+    <string name="profile_active_badge">ACTIVE</string>
+    <string name="profile_total_count">Total profiles: %1$d</string>
+    <string name="auto_opt_btn_apply">Apply Optimization</string>
+    <string name="auto_opt_btn_reset">Reset to Defaults</string>
+    <string name="auto_opt_hw_soc_label">Processor / SoC</string>
+    <string name="auto_opt_hw_gpu_label">Graphics (GPU)</string>
+    <string name="auto_opt_hw_ram_label">Memory (RAM)</string>
+    <string name="auto_opt_hw_tier_label">Performance Tier</string>
+
+    <string name="home_cat_quick_setup">Quick Setup &amp; Profiles</string>
+    <string name="home_cat_performance_graphics">Performance, Graphics &amp; Drivers</string>
+    <string name="home_cat_system_input">System, Input &amp; Audio</string>
+    <string name="home_cat_catalog_storage">Catalog, Folders &amp; Storage</string>
+    <string name="home_cat_diagnostics_about">Diagnostics, Logs &amp; About</string>
+    <string name="per_game_custom_badge">CUSTOM</string>
+    <string name="vulkan_legacy_driver_warning">System Vulkan %1$s detected on %2$s. Many Switch titles require Vulkan 1.3 features. It is recommended to install a Mesa Turnip driver in Settings -> GPU Driver Manager.</string>
 </resources>

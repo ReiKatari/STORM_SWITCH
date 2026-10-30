@@ -3,15 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/EdenCard"
+    android:id="@+id/setting_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="5dp"
+    android:layout_marginVertical="4dp"
     android:clickable="true"
     android:focusable="true"
     app:cardCornerRadius="16dp"
     app:cardBackgroundColor="?attr/colorSurfaceVariant"
-    app:cardElevation="0dp"
+    app:cardElevation="2dp"
     app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1dp">
 
@@ -31,21 +32,62 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="12dp"
                 android:layout_gravity="center_vertical"
                 android:orientation="vertical"
                 android:layout_weight="1">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/text_setting_name"
-                    style="@style/SynthwaveText.Body"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAlignment="viewStart"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    app:lineHeight="20dp"
-                    tools:text="@string/frame_limit_enable" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/text_setting_name"
+                        style="@style/SynthwaveText.Body"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textAlignment="viewStart"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface"
+                        tools:text="@string/frame_limit_enable" />
+
+                    <!-- Glowing Per-Game Override Badge -->
+                    <LinearLayout
+                        android:id="@+id/badge_override"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:background="@drawable/bg_storm_badge_capsule"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <ImageView
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            android:src="@drawable/ic_settings"
+                            app:tint="?attr/colorPrimary" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="@string/per_game_custom_badge"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="10.5sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.04" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_setting_description"
@@ -54,7 +96,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:textAlignment="viewStart"
-                    android:textSize="13sp"
+                    android:textSize="12.5sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     tools:text="@string/frame_limit_enable_description" />
 
             </LinearLayout>
@@ -71,9 +114,16 @@
             android:id="@+id/button_clear"
             style="@style/EdenButton.Outlined"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_height="32dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:textSize="11.5sp"
+            android:paddingHorizontal="10dp"
+            android:layout_marginTop="8dp"
             android:text="@string/use_global_setting"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_undo"
+            app:iconSize="14dp"
             android:visibility="gone"
             tools:visibility="visible" />
 

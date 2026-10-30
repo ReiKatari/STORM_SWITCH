@@ -14,6 +14,7 @@
 #include "storm_switch/configuration/configuration_shared.h"
 #include "storm_switch/configuration/configure_graphics_advanced.h"
 #include "storm_switch/configuration/shared_widget.h"
+#include "storm_switch/common/storm_lang.h"
 
 ConfigureGraphicsAdvanced::ConfigureGraphicsAdvanced(
     const Core::System& system_, std::shared_ptr<std::vector<ConfigurationShared::Tab*>> group_,
@@ -49,6 +50,12 @@ void ConfigureGraphicsAdvanced::Setup(const ConfigurationShared::Builder& builde
         if (!widget->Valid()) {
             widget->deleteLater();
             continue;
+        }
+
+        if (setting->Id() == Settings::values.early_release_fences.Id()) {
+            widget->setToolTip(StormLang(
+                QStringLiteral("Раннее освобождение барьеров GPU (в Ryujinx: Fast Draw Synchronization).\nДосрочно снимает блокировку кадра для снижения задержки ввода. Отключите при мерцании геометрии."),
+                QStringLiteral("Early Release Fences (Ryujinx equivalent: Fast Draw Synchronization).\nReleases command fences early to reduce input latency and frame pacing jitter. Disable if vertex/geometry flickering occurs.")));
         }
 
         const auto id = setting->Id();

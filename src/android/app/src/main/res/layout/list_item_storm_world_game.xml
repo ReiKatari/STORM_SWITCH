@@ -87,8 +87,7 @@
                     android:textColor="#00D2FF"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:singleLine="true"
-                    android:maxLines="1"
+                    android:maxLines="2"
                     android:ellipsize="end"
                     tools:text="1.0.10" />
 
@@ -103,8 +102,7 @@
                     android:textColor="#C084FC"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:singleLine="true"
-                    android:maxLines="1"
+                    android:maxLines="2"
                     android:ellipsize="end"
                     tools:text="655360" />
 
@@ -119,8 +117,7 @@
                     android:textColor="#FBBF24"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:singleLine="true"
-                    android:maxLines="1"
+                    android:maxLines="2"
                     android:ellipsize="end"
                     tools:text="37,63 MB" />
             </LinearLayout>
@@ -143,8 +140,7 @@
                     android:textColor="#38BDF8"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:singleLine="true"
-                    android:maxLines="1"
+                    android:maxLines="3"
                     android:ellipsize="end"
                     tools:text="RUS" />
 
@@ -161,8 +157,7 @@
                     android:textColor="#10B981"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:singleLine="true"
-                    android:maxLines="1"
+                    android:maxLines="3"
                     android:ellipsize="end"
                     android:visibility="gone"
                     tools:visibility="visible"
@@ -179,8 +174,7 @@
                     android:textColor="#C084FC"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:singleLine="true"
-                    android:maxLines="1"
+                    android:maxLines="2"
                     android:ellipsize="end"
                     android:visibility="gone"
                     tools:visibility="visible"

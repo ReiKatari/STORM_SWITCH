@@ -3141,25 +3141,36 @@ void MainWindow::InitializeWidgets() {
 
     emu_speed_label = new QLabel();
 
-    emu_speed_label->setToolTip(
-
-        tr("Current emulation speed. Values higher or lower than 100% "
-
-           "indicate emulation is running faster or slower than a Switch."));
+    emu_speed_label->setToolTip(StormLang(
+        QStringLiteral("Текущая скорость эмуляции. Значения выше или ниже 100% означают ускорение или замедление работы относительно Switch."),
+        QStringLiteral("Current emulation speed. Values higher or lower than 100% indicate emulation is running faster or slower than a Switch."),
+        QStringLiteral("Aktuelle Emulationsgeschwindigkeit. Werte über oder unter 100 % bedeuten schnellere oder langsamere Ausführung."),
+        QStringLiteral("Vitesse d'émulation actuelle. Les valeurs supérieures ou inférieures à 100 % indiquent une vitesse plus ou moins rapide qu'une Switch."),
+        QStringLiteral("当前模拟速度。高于或低于 100% 表示模拟速度快于或慢于真实 Switch。"),
+        QStringLiteral("現在のエミュレーション速度。100%より上または下の場合は実機より速いまたは遅いことを示します。")));
+    emu_speed_label->setProperty("stormStatusCapsule", true);
 
     game_fps_label = new QLabel();
 
-    game_fps_label->setToolTip(tr("How many frames per second the game is currently displaying. "
-
-                                  "This will vary from game to game and scene to scene."));
+    game_fps_label->setToolTip(StormLang(
+        QStringLiteral("Частота кадров в секунду (FPS), отображаемая игрой в данный момент."),
+        QStringLiteral("How many frames per second the game is currently displaying."),
+        QStringLiteral("Aktuelle Bildwiederholrate (FPS) des Spiels."),
+        QStringLiteral("Nombre d'images par seconde (FPS) actuellement affichées par le jeu."),
+        QStringLiteral("游戏当前显示的每秒帧数 (FPS)。"),
+        QStringLiteral("ゲームが現在表示している1秒あたりのフレーム数（FPS）。")));
+    game_fps_label->setProperty("stormStatusCapsule", true);
 
     emu_frametime_label = new QLabel();
 
-    emu_frametime_label->setToolTip(
-
-        tr("Time taken to emulate a Switch frame, not counting framelimiting or v-sync. For "
-
-           "full-speed emulation this should be at most 16.67 ms."));
+    emu_frametime_label->setToolTip(StormLang(
+        QStringLiteral("Время формирования кадра эмуляции (Frame Time) в миллисекундах. Для плавных 60 FPS время должно составлять не более 16.67 мс."),
+        QStringLiteral("Time taken to emulate a Switch frame in milliseconds. For 60 FPS full-speed emulation this should be at most 16.67 ms."),
+        QStringLiteral("Frame-Zeit in Millisekunden. Für flüssige 60 FPS sollte dies maximal 16,67 ms betragen."),
+        QStringLiteral("Temps d'émulation d'une image en millisecondes. Pour 60 FPS, cela doit être au maximum de 16,67 ms."),
+        QStringLiteral("模拟一帧所需的时间（毫秒）。要达到流畅的 60 FPS，该数值应不高于 16.67 毫秒。"),
+        QStringLiteral("Switchフレームの処理時間（ミリ秒）。滑らかな60 FPSでは最大16.67ミリ秒である必要があります。")));
+    emu_frametime_label->setProperty("stormStatusCapsule", true);
 
 
 
@@ -5988,6 +5999,7 @@ void MainWindow::InitializeWidgets() {
         auto* container = new QWidget();
 
         container->setObjectName(QStringLiteral("StatusBarGroup"));
+        container->setProperty("stormStatusCapsule", true);
 
         container->setStyleSheet(QStringLiteral(
 
@@ -22913,6 +22925,13 @@ void MainWindow::UpdateGPUAccuracyButton() {
     ).arg(text.toUpper()));
 
     gpu_accuracy_button->setChecked(gpu_accuracy != Settings::GpuAccuracy::Low);
+    gpu_accuracy_button->setToolTip(StormLang(
+        QStringLiteral("Точность вычислений GPU (в Ryujinx: GPU Buffer Reads).\n«Быстрый/Нормальный» — расслабленная синхронизация буферов для максимального FPS.\n«Высокая» — попиксельная точность FP32 и строгие барьеры обратной связи буферов, исправляет темные текстуры и графические артефакты."),
+        QStringLiteral("GPU Calculation Accuracy (Ryujinx equivalent: GPU Buffer Reads).\n'Normal/Fast' uses relaxed buffer sync for higher FPS.\n'High' enforces strict FP32 precision and memory feedback barriers, fixing missing lighting and black textures."),
+        QStringLiteral("GPU-Berechnungsgenauigkeit (in Ryujinx: GPU Buffer Reads).\n'Schnell' für maximale FPS.\n'Hoch' erzwingt strikte FP32-Präzision und Barrieren."),
+        QStringLiteral("Précision de calcul du GPU (équivalent Ryujinx : GPU Buffer Reads).\n'Rapide' pour FPS maximal.\n'Élevée' applique la précision stricte FP32."),
+        QStringLiteral("GPU 计算精度（在 Ryujinx 中为 GPU Buffer Reads）。\n“快速”使用宽松缓冲区同步以获得最高帧率。\n“高精度”强制使用严格的 FP32 精度和内存屏障。"),
+        QStringLiteral("GPU計算精度（RyujinxにおけるGPU Buffer Reads）。\n「高速」はバッファ同期を緩和して最高FPSを実現。\n「高精度」は厳密なFP32精度とメモリバリアを強制。")));
 
 }
 
@@ -22953,6 +22972,15 @@ void MainWindow::UpdateDockedButton() {
 
 
 void MainWindow::UpdateAPIText() {
+    if (renderer_status_button) {
+        renderer_status_button->setToolTip(StormLang(
+            QStringLiteral("Графический API и конвейер (в Ryujinx: Multi-Thread Rendering / Async GPU).\nVulkan обеспечивает минимальные задержки драйвера и многопоточную подачу команд."),
+            QStringLiteral("Graphics API & Pipeline (Ryujinx equivalent: Multi-Thread Rendering / Async GPU).\nVulkan provides low driver overhead and multi-threaded command dispatch."),
+            QStringLiteral("Grafik-API und Pipeline (in Ryujinx: Multi-Thread Rendering).\nVulkan bietet geringen Treiber-Overhead."),
+            QStringLiteral("API graphique et pipeline (équivalent Ryujinx : Multi-Thread Rendering).\nVulkan offre un faible temps de traitement pilote."),
+            QStringLiteral("图形 API 与管线（在 Ryujinx 中为 Multi-Thread Rendering）。\nVulkan 提供低驱动开销和多线程命令提交。"),
+            QStringLiteral("グラフィックスAPIとパイプライン（RyujinxにおけるMulti-Thread Rendering）。\nVulkanは低オーバーヘッドとマルチスレッド描画を提供。")));
+    }
 
     if (!renderer_status_button) return;
 
@@ -23639,20 +23667,12 @@ void MainWindow::UpdateGpuFenceText() {
     ).arg(val_text));
 
     gpu_fence_button->setToolTip(StormLang(
-
-        QStringLiteral("Поведение барьеров GPU — синхронизация команд рендеринга"),
-
-        QStringLiteral("GPU fence behavior — render command synchronization"),
-
-        QStringLiteral("GPU-Fence-Verhalten — Renderbefehl-Synchronisation"),
-
-        QStringLiteral("Comportement des barrières GPU — synchronisation des commandes de rendu"),
-
-        QStringLiteral("GPU 栅栏行为 — 渲染命令同步"),
-
-        QStringLiteral("GPU バリア動作 — レンダリングコマンド同期")
-
-    ));
+        QStringLiteral("Барьеры команд GPU (в Ryujinx: Fast Draw Synchronization).\nСинхронизация команд рендеринга и частоты кадров. «Немедленно/Баланс» снимает задержки ввода; при мерцании полигонов выберите «Точно» или «Строго»."),
+        QStringLiteral("GPU Command Barriers (Ryujinx equivalent: Fast Draw Synchronization).\nSynchronizes render commands and frame pacing. 'Immediate/Balanced' cuts input latency; use 'Accurate/Strict' if geometry flickers."),
+        QStringLiteral("GPU-Befehlsbarrieren (in Ryujinx: Fast Draw Synchronization).\nSynchronisiert Renderbefehle und Bildfrequenz. Reduziert Eingabelatenz."),
+        QStringLiteral("Barrières de commandes GPU (équivalent Ryujinx : Fast Draw Synchronization).\nSynchronise les commandes de rendu et réduit la latence d'entrée."),
+        QStringLiteral("GPU 命令栅栏（在 Ryujinx 中为 Fast Draw Synchronization）。\n同步渲染命令与帧同步。降低输入延迟。"),
+        QStringLiteral("GPU コマンドバリア（RyujinxにおけるFast Draw Synchronization）。\n描画コマンドとフレームペーシングを同期し入力遅延を低減。")));
 
 }
 

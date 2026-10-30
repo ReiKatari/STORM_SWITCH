@@ -1,13 +1,15 @@
-// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 STORM TEAM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
 
 import android.app.Dialog
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,19 +18,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import android.content.res.Configuration
-import org.yuzu.yuzu_emu.utils.ThemeHelper
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.yuzu.yuzu_emu.R
-import org.yuzu.yuzu_emu.databinding.DialogGameFixBinding
 import org.yuzu.yuzu_emu.databinding.DialogSaveProfileBinding
 import org.yuzu.yuzu_emu.databinding.DialogSettingsProfilesBinding
 import org.yuzu.yuzu_emu.databinding.ItemSettingsProfileBinding
 import org.yuzu.yuzu_emu.features.settings.utils.SettingsProfile
 import org.yuzu.yuzu_emu.features.settings.utils.SettingsProfileManager
+import org.yuzu.yuzu_emu.ui.StormButton3dHelper
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 
 class SettingsProfilesDialogFragment : DialogFragment() {
 
@@ -104,6 +105,10 @@ class SettingsProfilesDialogFragment : DialogFragment() {
             importProfileLauncher.launch(arrayOf("*/*"))
         }
 
+        // Apply 3D Faceted Tactile Button System
+        StormButton3dHelper.applyPrimary(binding.btnSaveCurrentProfile)
+        StormButton3dHelper.applySecondary(binding.btnImportProfile)
+
         binding.listProfiles.layoutManager = LinearLayoutManager(requireContext())
         adapter = ProfilesAdapter(
             profiles = profilesList,
@@ -134,6 +139,7 @@ class SettingsProfilesDialogFragment : DialogFragment() {
     private fun refreshProfiles() {
         profilesList.clear()
         profilesList.addAll(SettingsProfileManager.getCustomProfiles())
+        _binding?.textProfilesCounter?.text = profilesList.size.toString()
         adapter?.notifyDataSetChanged()
     }
 
@@ -147,6 +153,9 @@ class SettingsProfilesDialogFragment : DialogFragment() {
             .create()
 
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        StormButton3dHelper.applySecondary(dialogBinding.btnCancelSaveProfile)
+        StormButton3dHelper.applyPrimary(dialogBinding.btnConfirmSaveProfile)
 
         dialogBinding.btnCancelSaveProfile.setOnClickListener { dialog.dismiss() }
         dialogBinding.btnConfirmSaveProfile.setOnClickListener {
@@ -178,6 +187,9 @@ class SettingsProfilesDialogFragment : DialogFragment() {
 
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
+        StormButton3dHelper.applySecondary(dialogBinding.btnCancelSaveProfile)
+        StormButton3dHelper.applyPrimary(dialogBinding.btnConfirmSaveProfile)
+
         dialogBinding.btnCancelSaveProfile.setOnClickListener { dialog.dismiss() }
         dialogBinding.btnConfirmSaveProfile.setOnClickListener {
             val newName = dialogBinding.editProfileName.text?.toString()?.trim().orEmpty()
@@ -193,7 +205,7 @@ class SettingsProfilesDialogFragment : DialogFragment() {
     }
 
     private fun showDeleteProfileDialog(profile: SettingsProfile) {
-        MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+        val alert = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setTitle(R.string.profile_delete_title)
             .setMessage(getString(R.string.profile_delete_confirmation, profile.name))
             .setPositiveButton(R.string.delete) { _, _ ->
@@ -202,19 +214,35 @@ class SettingsProfilesDialogFragment : DialogFragment() {
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)
-            .show()
+            .create()
+
+        alert.setOnShowListener {
+            StormButton3dHelper.fixAlertDialogButtons(alert)
+        }
+        alert.show()
     }
 
     override fun onStart() {
         super.onStart()
-        dialog?.window?.let { window ->
-            window.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        dialog?.let { d ->
+            d.window?.let { window ->
+                window.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                ThemeHelper.applySystemBarsTheme(window, requireContext())
+            }
+            // Mandatory ESC Modal Dismissal
+            d.setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                    dismiss()
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 
@@ -263,6 +291,12 @@ class SettingsProfilesDialogFragment : DialogFragment() {
                 holder.binding.imageProfileIcon.setImageResource(R.drawable.ic_folder_open)
                 holder.binding.layoutCustomActions.visibility = View.VISIBLE
             }
+
+            // Apply 3D Faceted Tactile Buttons to item action buttons
+            StormButton3dHelper.applyPrimary(holder.binding.btnProfileApply)
+            StormButton3dHelper.applyTonal(holder.binding.btnProfileShare)
+            StormButton3dHelper.applySecondary(holder.binding.btnProfileRename)
+            StormButton3dHelper.applyDanger(holder.binding.btnProfileDelete)
 
             holder.binding.btnProfileApply.setOnClickListener { onApply(profile) }
             holder.binding.btnProfileShare.setOnClickListener { onShare(profile) }

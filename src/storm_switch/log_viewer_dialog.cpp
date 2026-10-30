@@ -27,6 +27,7 @@
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 class LogSyntaxHighlighter : public QSyntaxHighlighter {
 public:
@@ -92,6 +93,8 @@ LogViewerDialog::LogViewerDialog(QWidget* parent)
     SetupUI();
     ApplyStormStyles();
     LoadLogFile();
+    StormUI::StructureEngine::ModernizeForm(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 }
 
 LogViewerDialog::~LogViewerDialog() = default;

@@ -317,6 +317,36 @@ class SettingsFragmentPresenter(
 
     @SuppressLint("NotifyDataSetChanged")
 
+
+    fun filterSettings(query: String) {
+        if (query.trim().isEmpty()) {
+            adapter.submitList(settingsList)
+            return
+        }
+        val cleanQuery = query.trim().lowercase()
+        val filtered = ArrayList<SettingsItem>()
+        var currentHeader: HeaderSetting? = null
+        var headerHasMatches = false
+
+        for (item in settingsList) {
+            if (item is HeaderSetting) {
+                currentHeader = item
+                headerHasMatches = false
+                continue
+            }
+            val matchTitle = item.title.contains(cleanQuery, ignoreCase = true)
+            val matchDesc = item.description.contains(cleanQuery, ignoreCase = true)
+            if (matchTitle || matchDesc) {
+                if (currentHeader != null && !headerHasMatches) {
+                    filtered.add(currentHeader)
+                    headerHasMatches = true
+                }
+                filtered.add(item)
+            }
+        }
+        adapter.submitList(filtered)
+    }
+
     fun loadSettingsList(notifyDataSetChanged: Boolean = false) {
 
         val sl = ArrayList<SettingsItem>()

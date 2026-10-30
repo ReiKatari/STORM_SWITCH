@@ -4,15 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/storm_bg_deep"
+    android:background="#A607050F"
     android:clipToPadding="false"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="18dp">
 
+    <!-- Flagship Sculpted Dark Glassmorphic Container -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/storm_dialog_card_bg"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="18dp">
 
         <!-- Top Header Bar -->
         <LinearLayout
@@ -25,14 +29,15 @@
             <FrameLayout
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:background="@drawable/bg_storm_pulse_circle"
+                android:background="@drawable/storm_tile_3d_recessed"
                 android:layout_marginEnd="12dp">
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_storm_lightning" />
+                    android:src="@drawable/ic_storm_lightning"
+                    app:tint="#38BDF8" />
             </FrameLayout>
 
             <LinearLayout
@@ -46,28 +51,30 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/auto_opt_dialog_title"
-                    android:textColor="#F0F6FC"
+                    android:textColor="#FFFFFF"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.04" />
+                    android:letterSpacing="0.02" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="@string/auto_opt_dialog_subtitle"
-                    android:textColor="#8B949E"
+                    android:textColor="#94A3B8"
                     android:textSize="12sp" />
             </LinearLayout>
 
+            <!-- Faceted 3D Close Button -->
             <ImageView
                 android:id="@+id/btn_close"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:padding="8dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:padding="9dp"
                 android:background="@drawable/bg_storm_circle_button"
                 android:src="@drawable/ic_clear"
-                app:tint="#8B949E" />
+                app:tint="#CBD5E1"
+                android:contentDescription="@string/close" />
 
             <ImageView
                 android:id="@+id/btn_close_wizard"
@@ -77,36 +84,37 @@
 
         </LinearLayout>
 
-        <!-- Hardware Telemetry Card -->
+        <!-- Hardware Telemetry Bento Grid Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#121622"
-            app:strokeColor="#2A324B"
-            app:strokeWidth="1dp">
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#1A1530"
+            app:strokeColor="#358B5CF6"
+            app:strokeWidth="1.2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
+                <!-- Header Row: Telemetry Title & Tier Badge -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="8dp">
+                    android:layout_marginBottom="12dp">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/auto_opt_telemetry_title"
-                        android:textColor="#00F2FE"
+                        android:textColor="#38BDF8"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.05" />
@@ -117,89 +125,188 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_storm_badge_capsule"
                         android:paddingHorizontal="10dp"
-                        android:paddingVertical="3dp"
-                        android:text="FLAGSHIP"
-                        android:textColor="#00F2FE"
-                        android:textSize="10.5sp"
+                        android:paddingVertical="4dp"
+                        android:text="ELITE TIER"
+                        android:textColor="#34D399"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
+
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/text_hw_soc"
+                <!-- Bento 2x2 Tiles (Zero Clipped Text, Full Multi-line Wrapping) -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#F0F6FC"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    tools:text="SoC: Snapdragon 8 Elite • 8 cores (Smartphone)" />
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
 
-                <TextView
-                    android:id="@+id/text_hw_gpu"
+                    <!-- Tile 1: SoC / Processor -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/storm_tile_3d_recessed"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/auto_opt_hw_soc_label"
+                            android:textColor="#C084FC"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/text_hw_soc"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="Snapdragon 8 Gen 2 (8 Cores)"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="3" />
+
+                    </LinearLayout>
+
+                    <!-- Tile 2: GPU / Driver -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/storm_tile_3d_recessed"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/auto_opt_hw_gpu_label"
+                            android:textColor="#38BDF8"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/text_hw_gpu"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="Adreno 740 / Turnip"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="3" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:textColor="#94A3B8"
-                    android:textSize="12.5sp"
-                    tools:text="GPU: Adreno 830" />
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/text_hw_ram"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:textColor="#94A3B8"
-                    android:textSize="12.5sp"
-                    tools:text="RAM: 16.0 GB (Available: 11.2 GB)" />
+                    <!-- Tile 3: RAM -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/storm_tile_3d_recessed"
+                        android:orientation="vertical"
+                        android:padding="10dp">
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#1E293B"
-                    android:layout_marginVertical="10dp" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/auto_opt_hw_ram_label"
+                            android:textColor="#34D399"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tv_hardware_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="✓ Dynamic State • NCE • Reactive Flushing • CPU Affinity Pinning • Fast GPU Time"
-                    android:textColor="#38BDF8"
-                    android:textSize="11sp" />
+                        <TextView
+                            android:id="@+id/text_hw_ram"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="12.0 GB (Avail: 8.5 GB)"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="2" />
+
+                    </LinearLayout>
+
+                    <!-- Tile 4: Active Features / Engine Status -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/storm_tile_3d_recessed"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/auto_opt_hw_tier_label"
+                            android:textColor="#F59E0B"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_hardware_info"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="✓ NCE • Affinity • Fast GPU"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp"
+                            android:maxLines="3" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
 
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Presets Section Title -->
+        <!-- Section Title: Profiles -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:text="@string/auto_opt_profiles_title"
-            android:textColor="#8B949E"
-            android:textSize="11.5sp"
+            android:textColor="#C084FC"
+            android:textSize="12sp"
             android:textStyle="bold"
-            android:letterSpacing="0.05"
-            android:layout_marginBottom="10dp" />
+            android:letterSpacing="0.04" />
 
-        <!-- 1. Max FPS Preset -->
+        <!-- Preset 1: Maximum FPS (60 FPS) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_preset_max_fps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#161B28"
-            app:strokeColor="#2A324B"
-            app:strokeWidth="1.5dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="#1A1530"
+            app:strokeColor="#358B5CF6"
+            app:strokeWidth="1.2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="12dp">
+                android:padding="14dp">
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/radio_mode_fast"
@@ -207,40 +314,41 @@
                     android:layout_height="wrap_content"
                     android:clickable="false"
                     android:focusable="false"
-                    app:buttonTint="#00F2FE" />
+                    app:buttonTint="#38BDF8"
+                    android:layout_marginEnd="10dp" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="4dp"
                     android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/auto_opt_profile_fast_title"
-                            android:textColor="#F0F6FC"
-                            android:textSize="13.5sp"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:background="@drawable/bg_storm_badge_capsule"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
                             android:text="@string/auto_opt_badge_60fps"
-                            android:textColor="#FF9100"
+                            android:textColor="#38BDF8"
                             android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:background="#2E1B00"
-                            android:paddingHorizontal="6dp"
-                            android:paddingVertical="2dp" />
+                            android:textStyle="bold" />
+
                     </LinearLayout>
 
                     <TextView
@@ -248,8 +356,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_fast_desc"
-                        android:textColor="#8B949E"
-                        android:textSize="11sp" />
+                        android:textColor="#94A3B8"
+                        android:textSize="12sp"
+                        android:maxLines="4" />
 
                 </LinearLayout>
 
@@ -257,26 +366,26 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 2. Balanced Preset (RECOMMENDED) -->
+        <!-- Preset 2: Balanced (Recommended) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_preset_balanced"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#161B28"
-            app:strokeColor="#00F2FE"
-            app:strokeWidth="2dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="#1A1530"
+            app:strokeColor="#8B5CF6"
+            app:strokeWidth="2.5dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="12dp">
+                android:padding="14dp">
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/radio_mode_normal"
@@ -284,40 +393,41 @@
                     android:layout_height="wrap_content"
                     android:clickable="false"
                     android:focusable="false"
-                    app:buttonTint="#00F2FE" />
+                    app:buttonTint="#8B5CF6"
+                    android:layout_marginEnd="10dp" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="4dp"
                     android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/auto_opt_profile_balance_title"
-                            android:textColor="#F0F6FC"
-                            android:textSize="13.5sp"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:background="@drawable/bg_storm_badge_capsule"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
                             android:text="@string/auto_opt_badge_recommended"
-                            android:textColor="#00F2FE"
+                            android:textColor="#C084FC"
                             android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:background="#0F2942"
-                            android:paddingHorizontal="6dp"
-                            android:paddingVertical="2dp" />
+                            android:textStyle="bold" />
+
                     </LinearLayout>
 
                     <TextView
@@ -325,8 +435,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_balance_desc"
-                        android:textColor="#8B949E"
-                        android:textSize="11sp" />
+                        android:textColor="#94A3B8"
+                        android:textSize="12sp"
+                        android:maxLines="4" />
 
                 </LinearLayout>
 
@@ -334,26 +445,26 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 3. Ultra Quality Preset -->
+        <!-- Preset 3: Ultra Quality (2K / FSR) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_preset_quality"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#161B28"
-            app:strokeColor="#2A324B"
-            app:strokeWidth="1.5dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="#1A1530"
+            app:strokeColor="#358B5CF6"
+            app:strokeWidth="1.2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="12dp">
+                android:padding="14dp">
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/radio_mode_accurate"
@@ -361,40 +472,41 @@
                     android:layout_height="wrap_content"
                     android:clickable="false"
                     android:focusable="false"
-                    app:buttonTint="#00F2FE" />
+                    app:buttonTint="#F59E0B"
+                    android:layout_marginEnd="10dp" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="4dp"
                     android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/auto_opt_profile_ultra_title"
-                            android:textColor="#F0F6FC"
-                            android:textSize="13.5sp"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:background="@drawable/bg_storm_badge_capsule"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
                             android:text="@string/auto_opt_badge_2k_fsr"
-                            android:textColor="#E040FB"
+                            android:textColor="#F59E0B"
                             android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:background="#2E0B38"
-                            android:paddingHorizontal="6dp"
-                            android:paddingVertical="2dp" />
+                            android:textStyle="bold" />
+
                     </LinearLayout>
 
                     <TextView
@@ -402,8 +514,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_ultra_desc"
-                        android:textColor="#8B949E"
-                        android:textSize="11sp" />
+                        android:textColor="#94A3B8"
+                        android:textSize="12sp"
+                        android:maxLines="4" />
 
                 </LinearLayout>
 
@@ -411,7 +524,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 4. Eco / Battery Preset -->
+        <!-- Preset 4: Eco / Battery -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_preset_battery"
             android:layout_width="match_parent"
@@ -419,18 +532,18 @@
             android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#161B28"
-            app:strokeColor="#2A324B"
-            app:strokeWidth="1.5dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="#1A1530"
+            app:strokeColor="#358B5CF6"
+            app:strokeWidth="1.2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="12dp">
+                android:padding="14dp">
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/radio_mode_default"
@@ -438,40 +551,41 @@
                     android:layout_height="wrap_content"
                     android:clickable="false"
                     android:focusable="false"
-                    app:buttonTint="#00F2FE" />
+                    app:buttonTint="#34D399"
+                    android:layout_marginEnd="10dp" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="4dp"
                     android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/auto_opt_profile_eco_title"
-                            android:textColor="#F0F6FC"
-                            android:textSize="13.5sp"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:background="@drawable/bg_storm_badge_capsule"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
                             android:text="@string/auto_opt_badge_cool"
-                            android:textColor="#00E676"
+                            android:textColor="#34D399"
                             android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:background="#052E16"
-                            android:paddingHorizontal="6dp"
-                            android:paddingVertical="2dp" />
+                            android:textStyle="bold" />
+
                     </LinearLayout>
 
                     <TextView
@@ -479,8 +593,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_eco_desc"
-                        android:textColor="#8B949E"
-                        android:textSize="11sp" />
+                        android:textColor="#94A3B8"
+                        android:textSize="12sp"
+                        android:maxLines="4" />
 
                 </LinearLayout>
 
@@ -488,101 +603,54 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Hidden compat views for older references if any -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_mode_fast"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_mode_normal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_mode_accurate"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_mode_default"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
+        <!-- Primary Action Button: 3D Faceted Convex -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_apply_wizard"
+            style="@style/StormButton.3D.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginBottom="10dp"
+            android:text="@string/auto_opt_btn_apply"
+            android:textSize="14sp"
+            app:icon="@drawable/ic_check"
+            app:iconTint="#FFFFFF"
+            app:iconSize="18dp" />
 
-        <!-- Bottom Action Buttons -->
+        <!-- Secondary Action Buttons Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
+            android:orientation="horizontal"
+            android:gravity="center">
 
-            <!-- Reset Defaults -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_reset_defaults"
-                style="@style/Widget.Material3.Button"
-                android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:text="@string/auto_optimization_reset_defaults"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:backgroundTint="#241B42"
-                app:strokeColor="#7C4DFF"
-                app:strokeWidth="1dp"
-                app:cornerRadius="12dp"
-                app:icon="@drawable/ic_clear"
-                app:iconTint="#FFFFFF"
-                app:iconSize="16dp"
-                android:layout_marginBottom="8dp" />
-
-            <!-- Row: Cancel and Apply -->
-            <LinearLayout
-                android:layout_width="match_parent"
+                style="@style/StormButton.3D.Secondary"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:minHeight="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="@string/auto_opt_btn_reset"
+                android:textSize="12sp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_cancel"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:text="@string/cancel"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12.5sp"
-                    android:textStyle="bold"
-                    android:background="@drawable/bg_cancel_button"
-                    app:backgroundTint="@null"
-                    app:strokeColor="#F87171"
-                    app:strokeWidth="1dp"
-                    app:cornerRadius="12dp"
-                    android:layout_marginEnd="6dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cancel"
+                style="@style/StormButton.3D.Secondary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="46dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="@android:string/cancel"
+                android:textSize="12sp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_cancel_wizard"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:visibility="gone" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_apply_wizard"
-                    style="@style/Widget.Material3.Button"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:text="@string/auto_optimization_apply"
-                    android:textColor="#0A0D14"
-                    android:textSize="12.5sp"
-                    android:textStyle="bold"
-                    app:backgroundTint="#00F2FE"
-                    app:cornerRadius="12dp"
-                    app:icon="@drawable/ic_settings"
-                    app:iconTint="#0A0D14"
-                    app:iconSize="16dp"
-                    android:layout_marginStart="6dp" />
-
-            </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cancel_wizard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
         </LinearLayout>
 

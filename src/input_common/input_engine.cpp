@@ -109,14 +109,26 @@ void InputEngine::SetColor(const PadIdentifier& identifier, Common::Input::BodyC
 }
 
 void InputEngine::SetMotion(const PadIdentifier& identifier, int motion, const BasicMotion& value) {
+    BasicMotion sanitized = value;
+    if (std::isnan(sanitized.gyro_x) || std::isinf(sanitized.gyro_x)) sanitized.gyro_x = 0.0f;
+    if (std::isnan(sanitized.gyro_y) || std::isinf(sanitized.gyro_y)) sanitized.gyro_y = 0.0f;
+    if (std::isnan(sanitized.gyro_z) || std::isinf(sanitized.gyro_z)) sanitized.gyro_z = 0.0f;
+    if (std::isnan(sanitized.accel_x) || std::isinf(sanitized.accel_x)) sanitized.accel_x = 0.0f;
+    if (std::isnan(sanitized.accel_y) || std::isinf(sanitized.accel_y)) sanitized.accel_y = 0.0f;
+    if (std::isnan(sanitized.accel_z) || std::isinf(sanitized.accel_z)) sanitized.accel_z = 0.0f;
+
     {
         std::scoped_lock lock{mutex};
-        ControllerData& controller = controller_list.at(identifier);
+        auto it = controller_list.find(identifier);
+        if (it == controller_list.end()) {
+            return;
+        }
+        ControllerData& controller = it->second;
         if (!configuring) {
-            controller.motions.insert_or_assign(motion, value);
+            controller.motions.insert_or_assign(motion, sanitized);
         }
     }
-    TriggerOnMotionChange(identifier, motion, value);
+    TriggerOnMotionChange(identifier, motion, sanitized);
 }
 
 void InputEngine::SetCamera(const PadIdentifier& identifier,

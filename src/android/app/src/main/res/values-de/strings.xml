@@ -156,7 +156,7 @@
     <string name="multiplayer_joining">Beitritt läuft…</string>
     <string name="multiplayer_creating">Erstellung läuft…</string>
     <string name="multiplayer_room_name">Raumname</string>
-    <string name="multiplayer_max_players_value">Max. Spieler: %d</string>
+    <string name="multiplayer_max_players_value">Maximale Spieler: %d</string>
     <string name="multiplayer_chat">Chat</string>
     <string name="multiplayer_more_options">Weitere Optionen</string>
     <string name="chat">Chat</string>
@@ -1337,7 +1337,7 @@ Wirklich fortfahren?</string>
     <string name="show_device_load_overlay_description">Echtzeitanzeige von CPU-, GPU- und RAM-Auslastung sowie 5-stufigem Temperaturindikator.</string>
     <string name="settings_profiles_title">Einstellungsprofile</string>
     <string name="settings_profiles_description">Erstellen, Speichern, schnelles Laden, Umbenennen und Exportieren von Profilen.</string>
-    <string name="profile_preset_fast_title">⚡ Schnell (Max. FPS und niedrige Temperatur)</string>
+    <string name="profile_preset_fast_title">⚡ Schnell (Maximale FPS und niedrige Temperatur)</string>
     <string name="profile_preset_fast_desc">0.75X Auflösung, schneller JIT, asynchrone Shader, 6 GB DRAM, kühler SoC.</string>
     <string name="profile_preset_balanced_title">⚖️ Ausgewogen (Empfohlen)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, schneller JIT, asynchrone Shader, 6 GB DRAM.</string>
@@ -2132,7 +2132,7 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
 
     <string name="theme_storm_elemental">STORM ELEMENTAL (Elementares Feuer)</string>
     <string name="theme_storm_flagship">STORM (Flaggschiff)</string>
-    <string name="auto_opt_dialog_title">STORM FLUID AUTO-KONFIGURATION</string>
+    <string name="auto_opt_dialog_title">AUTOMATISCHE KONFIGURATION</string>
     <string name="auto_opt_dialog_subtitle">Intelligente Hardware-Profilierung</string>
     <string name="auto_opt_telemetry_title">HARDWARE-TELEMETRIE</string>
     <string name="auto_opt_profiles_title">1-KLICK-PROFILE</string>
@@ -2182,4 +2182,22 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="storm_check_updates_now_desc">Auf GitHub und STORM GAMES WORLD nach einer neueren Version suchen und direkt installieren</string>
     <string name="storm_checking_updates">Suche nach Updates…</string>
     <string name="storm_up_to_date_fmt">Sie verwenden bereits die neueste Version (%1$s)</string>
+
+    <string name="profile_btn_save_current">Aktuelles Profil speichern</string>
+    <string name="profile_active_badge">AKTIV</string>
+    <string name="profile_total_count">Profile insgesamt: %1$d</string>
+    <string name="auto_opt_btn_apply">Optimierung anwenden</string>
+    <string name="auto_opt_btn_reset">Auf Standard zurücksetzen</string>
+    <string name="auto_opt_hw_soc_label">Prozessor / SoC</string>
+    <string name="auto_opt_hw_gpu_label">Grafikchip (GPU)</string>
+    <string name="auto_opt_hw_ram_label">Arbeitsspeicher (RAM)</string>
+    <string name="auto_opt_hw_tier_label">Leistungsklasse</string>
+
+    <string name="home_cat_quick_setup">Schnelleinrichtung &amp; Profile</string>
+    <string name="home_cat_performance_graphics">Leistung, Grafik &amp; Treiber</string>
+    <string name="home_cat_system_input">System, Steuerung &amp; Audio</string>
+    <string name="home_cat_catalog_storage">Katalog, Ordner &amp; Speicher</string>
+    <string name="home_cat_diagnostics_about">Diagnose, Protokolle &amp; Info</string>
+    <string name="per_game_custom_badge">EIGEN</string>
+    <string name="vulkan_legacy_driver_warning">System-Vulkan %1$s auf %2$s erkannt. Viele Switch-Titel erfordern Vulkan 1.3-Funktionen. Es wird empfohlen, einen Mesa Turnip-Treiber in Einstellungen -> GPU-Treiber-Manager zu installieren.</string>
 </resources>

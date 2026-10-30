@@ -17,7 +17,7 @@ if (-not $sha1) {
     if ($cert) { $sha1 = $cert.Thumbprint }
 }
 
-$version = '16.0.1'
+$version = '16.0.2'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -113,7 +113,7 @@ $payloadZip = Join-Path $installerDir "Payload\Payload.zip"
 if (Test-Path $installerDir) {
     Write-Host "Updating installer Payload.zip and publishing StormInstaller.csproj..."
     Copy-Item $zipPathWin11 $payloadZip -Force
-    & dotnet publish "$installerDir\StormInstaller.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o "$filesDir"
+    & dotnet publish "$installerDir\StormInstaller.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:BuildInParallel=false -maxcpucount:2 -o "$filesDir"
     Remove-Item "$filesDir\*.pdb" -Force -ErrorAction SilentlyContinue
 }
 

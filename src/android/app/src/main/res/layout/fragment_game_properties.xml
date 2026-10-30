@@ -13,6 +13,7 @@
         android:scrollbars="vertical"
         android:fadeScrollbars="false"
         android:clipToPadding="false"
+        android:paddingBottom="96dp"
         android:defaultFocusHighlightEnabled="false">
 
         <LinearLayout
@@ -22,102 +23,140 @@
             android:orientation="vertical"
             android:gravity="center_horizontal">
 
+            <!-- Top Action Bar -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:orientation="horizontal">
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_back"
-                    style="?attr/materialIconButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@android:color/transparent"
+                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:insetLeft="0dp"
+                    android:insetRight="0dp"
+                    android:background="@drawable/storm_btn_3d_tonal"
+                    app:backgroundTint="@null"
+                    android:stateListAnimator="@animator/storm_btn_press_animator"
                     app:icon="@drawable/ic_back"
-                    app:iconSize="24dp"
-                    app:iconTint="?attr/colorOnSurface"
-                    app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp"
+                    app:iconSize="22dp"
+                    app:iconTint="?attr/colorPrimary"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_shortcut"
-                    style="?attr/materialIconButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@android:color/transparent"
+                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:insetLeft="0dp"
+                    android:insetRight="0dp"
+                    android:background="@drawable/storm_btn_3d_tonal"
+                    app:backgroundTint="@null"
+                    android:stateListAnimator="@animator/storm_btn_press_animator"
                     app:icon="@drawable/ic_shortcut"
-                    app:iconSize="24dp"
-                    app:iconTint="?attr/colorOnSurface"
-                    app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp"
+                    app:iconSize="22dp"
+                    app:iconTint="?attr/colorPrimary"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <com.google.android.material.card.MaterialCardView
-                style="@style/EdenCard"
-                android:layout_width="wrap_content"
+            <!-- Hero Section: Cover + Title + Playtime -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="12dp">
 
-                <ImageView
-                    android:id="@+id/image_game_screen"
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
-                    android:scaleType="centerCrop"
-                    tools:src="@drawable/default_icon" />
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/EdenCard"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_marginTop="4dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="3dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                    app:strokeColor="?attr/colorPrimary"
+                    app:strokeWidth="1.2dp">
 
-            </com.google.android.material.card.MaterialCardView>
+                    <ImageView
+                        android:id="@+id/image_game_screen"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        tools:src="@drawable/default_icon" />
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/title"
-                style="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="2dp"
-                android:layout_marginHorizontal="20dp"
-                android:maxLines="2"
-                android:ellipsize="end"
-                android:requiresFadingEdge="horizontal"
-                android:textAlignment="center"
-                tools:text="Super Mario Odyssey" />
+                </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/playtime"
-                style="?attr/textAppearanceBodyMedium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:textAlignment="center"
-                tools:text="Game Playtime" />
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/title"
+                    style="@style/TextAppearance.Material3.TitleMedium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginHorizontal="20dp"
+                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textAlignment="center"
+                    tools:text="Diablo II: Resurrected" />
 
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/playtime"
+                    style="@style/SynthwaveText.Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="8dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="4dp"
+                    android:background="@drawable/bg_storm_badge_capsule"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold"
+                    android:textSize="12sp"
+                    android:textAlignment="center"
+                    tools:text="Время в игре: 14 ч 25 мин" />
 
+            </LinearLayout>
+
+            <!-- Properties Bento Actions -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list_properties"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:defaultFocusHighlightEnabled="false" />
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/card_simple_outlined" />
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
+    <!-- Start Button -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/button_start"
+        style="@style/Widget.Material3.ExtendedFloatingActionButton.Primary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="20dp"
         android:text="@string/start"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:stateListAnimator="@animator/storm_btn_press_animator"
         app:icon="@drawable/ic_play"
+        app:iconTint="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

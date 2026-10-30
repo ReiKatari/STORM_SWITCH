@@ -209,7 +209,8 @@ void FrameGen::Process(const Device& device, Frame* frame, VkFormat format,
                        VkExtent2D guest_extent) {
     generated = false;
 
-    if (unavailable || !Settings::values.frame_gen.GetValue()) {
+    const bool fg_active = Settings::values.frame_gen.GetValue() || Settings::values.enable_frame_interpolation.GetValue();
+    if (unavailable || !fg_active) {
         if (chain) {
             scheduler.Finish();
             chain.reset();

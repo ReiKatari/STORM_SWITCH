@@ -11,6 +11,7 @@
 #include "dep_hashes.h"
 #include "ui_deps_dialog.h"
 #include "storm_switch/deps_dialog.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 DepsDialog::DepsDialog(QWidget* parent) : QDialog(parent), ui{std::make_unique<Ui::DepsDialog>()} {
     ui->setupUi(this);
@@ -77,6 +78,8 @@ DepsDialog::DepsDialog(QWidget* parent) : QDialog(parent), ui{std::make_unique<U
     }
 
     ui->tableDeps->setItemDelegateForColumn(0, new LinkItemDelegate(this));
+    StormUI::StructureEngine::ModernizeForm(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 }
 
 DepsDialog::~DepsDialog() = default;

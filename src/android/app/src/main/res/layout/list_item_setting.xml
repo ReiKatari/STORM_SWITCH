@@ -3,84 +3,140 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/EdenCard"
+    android:id="@+id/setting_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="5dp"
+    android:layout_marginVertical="4dp"
     android:clickable="true"
     android:focusable="true"
     app:cardCornerRadius="16dp"
     app:cardBackgroundColor="?attr/colorSurfaceVariant"
-    app:cardElevation="0dp"
+    app:cardElevation="2dp"
     app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:minHeight="68dp"
+        android:orientation="vertical"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp"
-        android:orientation="horizontal">
+        android:paddingVertical="12dp">
 
-        <ImageView
-            android:id="@+id/icon"
-            android:layout_width="26dp"
-            android:layout_height="26dp"
-            android:layout_marginEnd="16dp"
-            android:layout_gravity="center_vertical"
-            android:visibility="gone"
-            app:tint="?attr/colorPrimary"
-            tools:visibility="visible" />
-
+        <!-- Top Row: Icon + Setting Title + Per-Game Override Glowing Badge -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/icon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginEnd="10dp"
+                android:visibility="gone"
+                app:tint="?attr/colorPrimary"
+                tools:src="@drawable/ic_settings" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_setting_name"
                 style="@style/SynthwaveText.Body"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:textAlignment="viewStart"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                app:lineHeight="20dp"
-                tools:text="Setting Name" />
+                android:textColor="?attr/colorOnSurface"
+                tools:text="Разрешение рендеринга" />
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/text_setting_description"
-                style="@style/SynthwaveText.Body"
-                android:layout_width="match_parent"
+            <!-- Glowing Per-Game Override Badge -->
+            <LinearLayout
+                android:id="@+id/badge_override"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:textAlignment="viewStart"
-                android:textSize="13sp"
-                tools:text="@string/app_disclaimer" />
+                android:layout_marginStart="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_storm_badge_capsule"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/ic_settings"
+                    app:tint="?attr/colorPrimary" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/per_game_custom_badge"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.04" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Middle Row: Description -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/text_setting_description"
+            style="@style/SynthwaveText.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textAlignment="viewStart"
+            android:textSize="12.5sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            tools:text="Масштабирование внутреннего буфера кадров консоли" />
+
+        <!-- Bottom Row: Value Capsule Pill + Reset Action -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_setting_value"
                 style="@style/SynthwaveText.Secondary"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textAlignment="viewStart"
                 android:textColor="?attr/colorPrimary"
                 android:textStyle="bold"
-                android:textSize="13sp"
+                android:textSize="12sp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:background="@drawable/bg_storm_badge_capsule"
                 tools:text="1x (720p/1080p)" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_clear"
                 style="@style/EdenButton.Outlined"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:visibility="gone"
+                android:layout_height="32dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:textSize="11.5sp"
+                android:paddingHorizontal="10dp"
                 android:text="@string/use_global_setting"
+                app:cornerRadius="8dp"
+                app:icon="@drawable/ic_undo"
+                app:iconSize="14dp"
+                android:visibility="gone"
                 tools:visibility="visible" />
 
         </LinearLayout>

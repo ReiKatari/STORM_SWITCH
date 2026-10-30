@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>ConfigureTouchFromButton</class>
  <widget class="QDialog" name="ConfigureTouchFromButton">
@@ -24,7 +24,7 @@
        <property name="textFormat">
         <enum>Qt::PlainText</enum>
        </property>
-      </widget>
+      <property name="wordWrap"><bool>true</bool></property></widget>
      </item>
      <item>
       <widget class="QComboBox" name="mapping">
@@ -95,7 +95,7 @@ Drag points to change position, or double-click table cells to edit values.</str
        <property name="textFormat">
         <enum>Qt::PlainText</enum>
        </property>
-      </widget>
+      <property name="wordWrap"><bool>true</bool></property></widget>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -188,7 +188,7 @@ Drag points to change position, or double-click table cells to edit values.</str
        <property name="textFormat">
         <enum>Qt::PlainText</enum>
        </property>
-      </widget>
+      <property name="wordWrap"><bool>true</bool></property></widget>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
@@ -209,7 +209,7 @@ Drag points to change position, or double-click table cells to edit values.</str
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources />
  <connections>
   <connection>
    <sender>buttonBox</sender>

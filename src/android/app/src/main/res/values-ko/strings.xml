@@ -2002,7 +2002,7 @@
 
     <string name="theme_storm_elemental">STORM ELEMENTAL (원소의 불꽃)</string>
     <string name="theme_storm_flagship">STORM (플래그십)</string>
-    <string name="auto_opt_dialog_title">STORM FLUID 자동 최적화</string>
+    <string name="auto_opt_dialog_title">하드웨어 자동 최적화</string>
     <string name="auto_opt_dialog_subtitle">지능형 하드웨어 프로파일링</string>
     <string name="auto_opt_telemetry_title">하드웨어 원격 측정</string>
     <string name="auto_opt_profiles_title">원클릭 프로필</string>
@@ -2052,4 +2052,22 @@
     <string name="storm_check_updates_now_desc">GitHub 및 STORM GAMES WORLD에서 최신 버전을 확인하고 덮어쓰기 설치합니다</string>
     <string name="storm_checking_updates">업데이트 확인 중…</string>
     <string name="storm_up_to_date_fmt">최신 버전이 설치되어 있습니다 (%1$s)</string>
+
+    <string name="profile_btn_save_current">현재 프로필 저장</string>
+    <string name="profile_active_badge">활성</string>
+    <string name="profile_total_count">총 프로필: %1$d</string>
+    <string name="auto_opt_btn_apply">최적화 적용</string>
+    <string name="auto_opt_btn_reset">기본값으로 복원</string>
+    <string name="auto_opt_hw_soc_label">프로세서 / SoC</string>
+    <string name="auto_opt_hw_gpu_label">그래픽 (GPU)</string>
+    <string name="auto_opt_hw_ram_label">메모리 (RAM)</string>
+    <string name="auto_opt_hw_tier_label">성능 등급</string>
+
+    <string name="home_cat_quick_setup">빠른 설정 및 프로필</string>
+    <string name="home_cat_performance_graphics">성능, 그래픽 및 드라이버</string>
+    <string name="home_cat_system_input">시스템, 컨트롤 및 오디오</string>
+    <string name="home_cat_catalog_storage">카탈로그, 폴더 및 저장소</string>
+    <string name="home_cat_diagnostics_about">진단, 로그 및 정보</string>
+    <string name="per_game_custom_badge">사용자 지정</string>
+    <string name="vulkan_legacy_driver_warning">%2$s에서 시스템 Vulkan %1$s이(가) 감지되었습니다. 많은 Switch 게임에는 Vulkan 1.3 기능이 필요합니다. 설정 -> GPU 드라이버 관리자에서 Mesa Turnip 드라이버를 설치하는 것이 좋습니다.</string>
 </resources>

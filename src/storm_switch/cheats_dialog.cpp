@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include "storm_switch/cheats_dialog.h"
 #include "storm_switch/configuration/configure_per_game_cheats.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 CheatsDialog::CheatsDialog(QWidget* parent, Core::System& system, u64 title_id, const QString& file_name)
     : QDialog(parent) {
@@ -15,7 +16,7 @@ CheatsDialog::CheatsDialog(QWidget* parent, Core::System& system, u64 title_id, 
     setStyleSheet(QStringLiteral(
         "QDialog { background-color: #0b0e14; color: #FFFFFF; }"
         "QLabel { color: #FFFFFF; font-size: 12px; }"
-        "QPushButton { background-color: #1a2232; color: #FFFFFF; border: 1px solid #2e3c56; border-radius: 6px; padding: 6px 14px; font-weight: bold; }"
+        "QPushButton, QDialogButtonBox QPushButton, QToolButton { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:0.48 #1e293b, stop:0.52 #182232, stop:1 #0f172a); border-top: 1px solid rgba(255, 255, 255, 0.34); border-left: 1px solid rgba(255, 255, 255, 0.16); border-right: 1px solid rgba(255, 255, 255, 0.16); border-bottom: 3px solid rgba(0, 0, 0, 0.58); border-radius: 8px; padding: 6px 16px; color: #FFFFFF; font-weight: 600; min-height: 22px; }" "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:0.48 #26364d, stop:0.52 #1e2b3e, stop:1 #131c2c); border-top: 1px solid rgba(255, 255, 255, 0.55); border-left: 1px solid rgba(0, 210, 255, 0.45); border-right: 1px solid rgba(0, 210, 255, 0.45); border-bottom: 3px solid rgba(0, 0, 0, 0.70); color: #00D2FF; }" "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0d1522, stop:0.5 #131d2e, stop:1 #1a283e); border-top: 2px solid rgba(0, 0, 0, 0.55); border-bottom: 1px solid rgba(255, 255, 255, 0.14); padding-top: 8px; padding-bottom: 4px; color: #FFFFFF; }"
         "QPushButton:hover { background-color: #243048; border-color: #00d2ff; color: #ffffff; }"
     ));
 
@@ -38,6 +39,8 @@ CheatsDialog::CheatsDialog(QWidget* parent, Core::System& system, u64 title_id, 
         }
         accept();
     });
+    StormUI::StructureEngine::ModernizeForm(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 }
 
 CheatsDialog::~CheatsDialog() = default;

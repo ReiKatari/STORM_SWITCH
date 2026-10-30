@@ -51,8 +51,7 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:ellipsize="end"
-                    android:singleLine="true"
-                    android:maxLines="1" />
+                    android:maxLines="3" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_build_id_badge"
@@ -85,7 +84,7 @@
                 android:text="@string/cheat_item_desc_placeholder"
                 android:textSize="10sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:maxLines="1"
+                android:maxLines="3"
                 android:ellipsize="end"
                 android:visibility="gone"
                 tools:visibility="visible" />

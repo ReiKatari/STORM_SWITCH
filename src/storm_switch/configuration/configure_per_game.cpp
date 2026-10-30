@@ -1,3 +1,9 @@
+#include <QApplication>
+#include <QClipboard>
+#include <QPainter>
+#include <QPainterPath>
+#include "frontend_common/play_time_manager.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -130,6 +136,57 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         ui->verticalLayout_3->insertWidget(0, m_search_edit);
     }
     connect(m_search_edit, &QLineEdit::textChanged, this, &ConfigurePerGame::OnSearchTextChanged);
+    m_search_edit->setProperty("stormSearchBox", true);
+    ui->groupBox->setProperty("stormHeroCard", true);
+
+    m_reset_hero_btn = new QPushButton(ui->groupBox);
+    m_reset_hero_btn->setObjectName(QStringLiteral("ResetPerGameHeroButton"));
+    m_reset_hero_btn->setText(StormLang(
+        QStringLiteral("↺ Сбросить настройки игры"),
+        QStringLiteral("↺ Reset Per-Game Overrides"),
+        QStringLiteral("↺ Spieleinstellungen zurücksetzen"),
+        QStringLiteral("↺ Réinitialiser les paramètres du jeu"),
+        QStringLiteral("↺ 重置此游戏设置"),
+        QStringLiteral("↺ ゲーム設定をリセット"),
+        QStringLiteral("↺ استعادة إعدادات اللعبة"),
+        QStringLiteral("↺ Restablecer ajustes del juego")));
+    m_reset_hero_btn->setCursor(Qt::PointingHandCursor);
+    m_reset_hero_btn->setToolTip(StormLang(
+        QStringLiteral("Сбросить все индивидуальные настройки этой игры и вернуть глобальные настройки эмулятора"),
+        QStringLiteral("Reset all custom settings for this game and revert to global emulator settings")));
+
+    connect(m_reset_hero_btn, &QPushButton::clicked, this, [this, specific_config, legacy_config, custom_path]() {
+        QMessageBox ask_box(this);
+        ask_box.setWindowTitle(StormLang(QStringLiteral("Сброс настроек игры"), QStringLiteral("Reset Per-Game Settings")));
+        ask_box.setText(StormLang(
+            QStringLiteral("<b>Вы уверены, что хотите сбросить все индивидуальные настройки этой игры?</b><br><br>Игра будет использовать стандартные глобальные настройки эмулятора."),
+            QStringLiteral("<b>Are you sure you want to reset all custom settings for this game?</b><br><br>The game will revert to global emulator settings.")));
+        ask_box.setIcon(QMessageBox::Question);
+        auto* ok_btn = ask_box.addButton(StormLang(QStringLiteral("Сбросить"), QStringLiteral("Reset")), QMessageBox::AcceptRole);
+        ask_box.addButton(StormLang(QStringLiteral("Отмена"), QStringLiteral("Cancel")), QMessageBox::RejectRole);
+        ask_box.exec();
+        if (ask_box.clickedButton() == ok_btn) {
+            std::error_code ec;
+            std::filesystem::remove(custom_path / (specific_config + ".ini"), ec);
+            std::filesystem::remove(custom_path / (legacy_config + ".ini"), ec);
+            Settings::RestoreGlobalState(false);
+            game_config = std::make_unique<QtConfig>(specific_config, Config::ConfigType::PerGameConfig);
+            for (const auto tab : *tab_group) {
+                tab->SetConfiguration();
+            }
+            ConfigurationShared::ReloadAllActiveWidgets();
+            RefreshOverrideBadges();
+            QMessageBox::information(this,
+                StormLang(QStringLiteral("Настройки сброшены"), QStringLiteral("Settings Reset")),
+                StormLang(QStringLiteral("Все индивидуальные настройки игры успешно сброшены к глобальным."),
+                          QStringLiteral("All per-game custom overrides have been reset to global defaults.")));
+        }
+    });
+
+    if (ui->verticalLayout) {
+        ui->verticalLayout->addWidget(m_reset_hero_btn);
+    }
+
 
         ui->tabWidget->addTab(addons_tab.get(), tr("Add-Ons"));
     ui->tabWidget->addTab(gamebanana_tab.get(), StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"), QStringLiteral("تعديلات GameBanana"), QStringLiteral("Mods de GameBanana")));
@@ -310,6 +367,21 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         cancel_btn->setStyleSheet(StormCancelButtonStyle());
         cancel_btn->setCursor(Qt::PointingHandCursor);
     }
+
+    for (auto* t : {static_cast<QWidget*>(addons_tab.get()), static_cast<QWidget*>(gamebanana_tab.get()),
+                    static_cast<QWidget*>(amiibo_tab.get()), static_cast<QWidget*>(cheats_tab.get()),
+                    static_cast<QWidget*>(system_tab.get()), static_cast<QWidget*>(cpu_tab.get()),
+                    static_cast<QWidget*>(graphics_tab.get()), static_cast<QWidget*>(graphics_advanced_tab.get()),
+                    static_cast<QWidget*>(graphics_extensions_tab.get()), static_cast<QWidget*>(audio_tab.get()),
+                    static_cast<QWidget*>(input_tab.get()), static_cast<QWidget*>(network_tab.get()),
+                    static_cast<QWidget*>(applets_tab.get())}) {
+        if (t) {
+            StormUI::StructureEngine::ModernizeForm(t);
+        }
+    }
+    StormUI::StructureEngine::ModernizeForm(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
+
 
     setStyleSheet(QStringLiteral(
         "QDialog#ConfigurePerGame {"
@@ -561,22 +633,57 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "    border: 1px solid #475569;"
         "    image: none;"
         "}"
-        "QPushButton {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1E293B, stop:1 #334155);"
+        "QPushButton, QDialogButtonBox QPushButton, QToolButton {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:0.48 #1e293b, stop:0.52 #182232, stop:1 #0f172a);"
         "    color: #FFFFFF;"
-        "    font-weight: 600;"
-        "    font-size: 12px;"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.34);"
+        "    border-left: 1px solid rgba(255, 255, 255, 0.16);"
+        "    border-right: 1px solid rgba(255, 255, 255, 0.16);"
+        "    border-bottom: 3px solid rgba(0, 0, 0, 0.58);"
+        "    border-radius: 8px;"
         "    padding: 6px 16px;"
-        "    border-radius: 6px;"
-        "    border: 1px solid #475569;"
+        "    font-weight: 600;"
+        "    min-height: 22px;"
         "}"
-        "QPushButton:hover {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0099CC, stop:1 #006699);"
+        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:0.48 #26364d, stop:0.52 #1e2b3e, stop:1 #131c2c);"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.55);"
+        "    border-left: 1px solid rgba(0, 210, 255, 0.45);"
+        "    border-right: 1px solid rgba(0, 210, 255, 0.45);"
+        "    border-bottom: 3px solid rgba(0, 0, 0, 0.70);"
+        "    color: #00D2FF;"
+        "}"
+        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0d1522, stop:0.5 #131d2e, stop:1 #1a283e);"
+        "    border-top: 2px solid rgba(0, 0, 0, 0.55);"
+        "    border-left: 1px solid rgba(0, 0, 0, 0.35);"
+        "    border-right: 1px solid rgba(0, 0, 0, 0.35);"
+        "    border-bottom: 1px solid rgba(255, 255, 255, 0.14);"
+        "    padding-top: 8px;"
+        "    padding-bottom: 4px;"
         "    color: #FFFFFF;"
-        "    border: 1px solid #00D2FF;"
         "}"
-        "QPushButton:pressed {"
-        "    background: #005580;"
+        "QPushButton:default, QDialogButtonBox QPushButton:default {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #38bdf8, stop:0.48 #0ea5e9, stop:0.52 #0284c7, stop:1 #0369a1);"
+        "    color: #FFFFFF;"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.55);"
+        "    border-left: 1px solid rgba(255, 255, 255, 0.28);"
+        "    border-right: 1px solid rgba(255, 255, 255, 0.28);"
+        "    border-bottom: 3px solid #0c4a6e;"
+        "    border-radius: 8px;"
+        "    font-weight: 700;"
+        "}"
+        "QPushButton:default:hover, QDialogButtonBox QPushButton:default:hover {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7dd3fc, stop:0.48 #38bdf8, stop:0.52 #0ea5e9, stop:1 #0284c7);"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.75);"
+        "    border-bottom: 3px solid #082f49;"
+        "}"
+        "QPushButton:default:pressed, QDialogButtonBox QPushButton:default:pressed {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #075985, stop:0.5 #0284c7, stop:1 #0ea5e9);"
+        "    border-top: 2px solid rgba(0, 0, 0, 0.50);"
+        "    border-bottom: 1px solid rgba(255, 255, 255, 0.20);"
+        "    padding-top: 8px;"
+        "    padding-bottom: 4px;"
         "}"
     ) + StormCancelButtonQssRule());
 
@@ -653,8 +760,8 @@ void ConfigurePerGame::RetranslateUI() {
         ui->tabWidget->setTabText(4, tr("System"));
         ui->tabWidget->setTabText(5, tr("CPU"));
         ui->tabWidget->setTabText(6, tr("Graphics"));
-        ui->tabWidget->setTabText(7, StormLang(QStringLiteral("Расш. графика"), QStringLiteral("Adv. Graphics"), QStringLiteral("Erw. Grafik"), QStringLiteral("Graphismes avancés"), QStringLiteral("高级图形"), QStringLiteral("拡張描画")));
-        ui->tabWidget->setTabText(8, StormLang(QStringLiteral("Доп. графика"), QStringLiteral("Ext. Graphics"), QStringLiteral("Zus. Grafik"), QStringLiteral("Graphismes étendus"), QStringLiteral("扩展图形"), QStringLiteral("追加描画")));
+        ui->tabWidget->setTabText(7, StormLang(QStringLiteral("Расширенная графика"), QStringLiteral("Advanced Graphics"), QStringLiteral("Erweiterte Grafik"), QStringLiteral("Graphismes avancés"), QStringLiteral("高级图形"), QStringLiteral("拡張描画")));
+        ui->tabWidget->setTabText(8, StormLang(QStringLiteral("Дополнительная графика"), QStringLiteral("Extended Graphics"), QStringLiteral("Zusätzliche Grafik"), QStringLiteral("Graphismes étendus"), QStringLiteral("扩展图形"), QStringLiteral("追加描画")));
         ui->tabWidget->setTabText(9, tr("Audio"));
         ui->tabWidget->setTabText(10, StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作"), QStringLiteral("التحكم"), QStringLiteral("Controles")));
         ui->tabWidget->setTabText(11, StormLang(QStringLiteral("Сеть"), QStringLiteral("Network"), QStringLiteral("Netzwerk"), QStringLiteral("Réseau"), QStringLiteral("网络"), QStringLiteral("ネットワーク"), QStringLiteral("الشبكة"), QStringLiteral("Red")));
@@ -691,10 +798,27 @@ void ConfigurePerGame::OnSearchTextChanged(const QString& text) {
         applets_tab.get()
     };
 
-    auto widget_matches = [&](QWidget* w) -> bool {
-        if (!has_query) {
-            return true;
+    if (m_original_tab_titles.empty() && ui->tabWidget) {
+        for (int i = 0; i < ui->tabWidget->count(); ++i) {
+            m_original_tab_titles.push_back(ui->tabWidget->tabText(i));
         }
+    }
+
+    if (!has_query) {
+        RefreshOverrideBadges();
+        for (QWidget* tab : all_tabs) {
+            if (!tab) continue;
+            for (auto* w : tab->findChildren<QWidget*>()) {
+                w->setVisible(true);
+            }
+        }
+        if (graphics_tab) {
+            graphics_tab->SetConfiguration();
+        }
+        return;
+    }
+
+    auto widget_matches = [&](QWidget* w) -> bool {
         if (w->toolTip().contains(query, Qt::CaseInsensitive)) {
             return true;
         }
@@ -721,29 +845,44 @@ void ConfigurePerGame::OnSearchTextChanged(const QString& text) {
     };
 
     QWidget* first_matching_tab = nullptr;
-    for (QWidget* tab : all_tabs) {
+    for (size_t t = 0; t < all_tabs.size(); ++t) {
+        QWidget* tab = all_tabs[t];
         if (!tab) continue;
-        bool tab_has_match = false;
+        int tab_matches = 0;
         const auto shared_widgets = tab->findChildren<ConfigurationShared::Widget*>();
         if (!shared_widgets.isEmpty()) {
             for (auto* sw : shared_widgets) {
                 const bool match = widget_matches(sw);
                 sw->setVisible(match);
                 if (match) {
-                    tab_has_match = true;
+                    tab_matches++;
                 }
             }
-        } else if (widget_matches(tab)) {
-            tab_has_match = true;
+        } else {
+            const auto group_boxes = tab->findChildren<QGroupBox*>();
+            for (auto* gb : group_boxes) {
+                const bool match = widget_matches(gb);
+                gb->setVisible(match);
+                if (match) {
+                    tab_matches++;
+                }
+            }
         }
-        if (tab_has_match && !first_matching_tab) {
-            first_matching_tab = tab;
+
+        const QString orig_title = (t < m_original_tab_titles.size())
+                                       ? m_original_tab_titles[t]
+                                       : ui->tabWidget->tabText(static_cast<int>(t));
+        if (tab_matches > 0) {
+            ui->tabWidget->setTabText(static_cast<int>(t), QStringLiteral("%1 (%2)").arg(orig_title).arg(tab_matches));
+            if (!first_matching_tab) {
+                first_matching_tab = tab;
+            }
+        } else {
+            ui->tabWidget->setTabText(static_cast<int>(t), orig_title);
         }
     }
 
-    if (!has_query && graphics_tab) {
-        graphics_tab->SetConfiguration();
-    } else if (has_query && first_matching_tab) {
+    if (first_matching_tab) {
         const int idx = ui->tabWidget->indexOf(first_matching_tab);
         if (idx >= 0 && ui->tabWidget->currentIndex() != idx) {
             ui->tabWidget->setCurrentIndex(idx);
@@ -861,8 +1000,18 @@ void ConfigurePerGame::LoadConfiguration() {
         const int icon_dim = 144;
         scene->setSceneRect(0, 0, icon_dim, icon_dim);
         ui->icon_view->setSceneRect(0, 0, icon_dim, icon_dim);
-        scene->addPixmap(map.scaled(icon_dim, icon_dim,
-                                    Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        QPixmap rounded(icon_dim, icon_dim);
+        rounded.fill(Qt::transparent);
+        {
+            QPainter painter(&rounded);
+            painter.setRenderHint(QPainter::Antialiasing);
+            painter.setRenderHint(QPainter::SmoothPixmapTransform);
+            QPainterPath rpath;
+            rpath.addRoundedRect(0, 0, icon_dim, icon_dim, 14, 14);
+            painter.setClipPath(rpath);
+            painter.drawPixmap(0, 0, map.scaled(icon_dim, icon_dim, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+        }
+        scene->addPixmap(rounded);
     } else {
         std::vector<u8> bytes;
         if (loader->ReadIcon(bytes) == Loader::ResultStatus::Success) {
@@ -896,6 +1045,18 @@ void ConfigurePerGame::LoadConfiguration() {
     ui->display_size->setText(valueText);
     ui->display_size->setCursorPosition(0);
     ui->display_size->home(false);
+
+    PlayTime::PlayTimeManager ptm;
+    const u64 pt_sec = ptm.GetPlayTime(title_id);
+    const QString play_time_str = QString::fromStdString(PlayTime::PlayTimeManager::GetReadablePlayTime(pt_sec));
+    if (!play_time_str.isEmpty() && ui->display_size) {
+        ui->display_size->setToolTip(StormLang(
+            QStringLiteral("Размер: %1 • Общее время в игре: %2").arg(valueText, play_time_str),
+            QStringLiteral("Size: %1 • Total Playtime: %2").arg(valueText, play_time_str)
+        ));
+    }
+
+    RefreshOverrideBadges();
 }
 
 void ConfigurePerGame::keyPressEvent(QKeyEvent* event) {
@@ -904,4 +1065,45 @@ void ConfigurePerGame::keyPressEvent(QKeyEvent* event) {
         return;
     }
     QDialog::keyPressEvent(event);
+}
+
+void ConfigurePerGame::RefreshOverrideBadges() {
+    if (m_original_tab_titles.empty() && ui->tabWidget) {
+        for (int i = 0; i < ui->tabWidget->count(); ++i) {
+            m_original_tab_titles.push_back(ui->tabWidget->tabText(i));
+        }
+    }
+
+    if (!ui->tabWidget) return;
+
+    for (int t = 0; t < ui->tabWidget->count(); ++t) {
+        QWidget* tab = ui->tabWidget->widget(t);
+        if (!tab) continue;
+        int overrides = 0;
+        const auto widgets = tab->findChildren<ConfigurationShared::Widget*>();
+        for (auto* sw : widgets) {
+            bool is_custom = (sw->restore_button && sw->restore_button->isVisible());
+            if (is_custom) {
+                overrides++;
+                sw->setProperty("stormOverrideRow", true);
+                sw->setStyleSheet(QStringLiteral("ConfigurationShared--Widget {"
+                                                 "    border-left: 3px solid #00F0FF;"
+                                                 "    background-color: rgba(0, 240, 255, 0.06);"
+                                                 "    border-radius: 4px;"
+                                                 "}"));
+            } else {
+                sw->setProperty("stormOverrideRow", false);
+                sw->setStyleSheet(QString());
+            }
+        }
+
+        const QString orig_title = (t < static_cast<int>(m_original_tab_titles.size()))
+                                       ? m_original_tab_titles[t]
+                                       : ui->tabWidget->tabText(t);
+        if (overrides > 0) {
+            ui->tabWidget->setTabText(t, QStringLiteral("%1 [⚡ %2]").arg(orig_title).arg(overrides));
+        } else {
+            ui->tabWidget->setTabText(t, orig_title);
+        }
+    }
 }

@@ -30,6 +30,7 @@ import org.yuzu.yuzu_emu.databinding.CardGameCarouselBinding
 import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.model.GamesViewModel
 import org.yuzu.yuzu_emu.utils.GameIconUtils
+import org.yuzu.yuzu_emu.utils.GpuDriverHelper
 import org.yuzu.yuzu_emu.utils.ViewUtils.marquee
 import org.yuzu.yuzu_emu.viewholder.AbstractViewHolder
 import android.os.Build
@@ -408,13 +409,36 @@ class GameAdapter(private val activity: AppCompatActivity) :
             }
 
             val checkGameFixAndLaunch: () -> Unit = {
-                val gameId = game.programId
-                if (GameFixDatabase.isDontAskAgain(activity, gameId)) {
-                    val prefMode = GameFixDatabase.getPreferredLaunchMode(activity, gameId)
-                    if (prefMode == "standard") {
-                        launchWithStandard(game)
-                    } else {
-                        launchWithAutoFix(game)
+                // Stock Vulkan < 1.3 check on Adreno 6xx/7xx with recommendation to use Turnip
+                try {
+                    if (GpuDriverHelper.isAdrenoGpu() && !GpuDriverHelper.isTurnipDriverActive()) {
+                        val vulkanVer = NativeLibrary.getVulkanApiVersion()
+                        if (vulkanVer.startsWith("1.1.") || vulkanVer.startsWith("1.0.") || vulkanVer.startsWith("1.2.")) {
+                            val warnedKey = "warned_vulkan_legacy_" + vulkanVer
+                            val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(activity)
+                            if (!prefs.getBoolean(warnedKey, false)) {
+                                prefs.edit().putBoolean(warnedKey, true).apply()
+                                val gpuModel = try { NativeLibrary.getGpuModel() } catch (_: Throwable) { "Adreno" }
+                                android.widget.Toast.makeText(
+                                    activity,
+                                    activity.getString(R.string.vulkan_legacy_driver_warning, vulkanVer, gpuModel),
+                                    android.widget.Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+                } catch (_: Throwable) {}
+
+                if (GameFixDatabase.isDontAskAgain(activity, game)) {
+                    val prefMode = GameFixDatabase.getPreferredLaunchMode(activity, game)
+                    when (prefMode) {
+                        "standard", "global" -> launchWithStandard(game)
+                        "custom" -> {
+                            GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.CUSTOM
+                            GameFixDatabase.prepareCustomLaunch(game)
+                            launch(true)
+                        }
+                        else -> launchWithAutoFix(game)
                     }
                 } else {
                     val dialog = GameFixDialogFragment.newInstance(game) { mode ->

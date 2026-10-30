@@ -6,12 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="5dp"
+    android:layout_marginVertical="4dp"
     android:clickable="true"
     android:focusable="true"
     app:cardCornerRadius="16dp"
     app:cardBackgroundColor="?attr/colorSurfaceVariant"
-    app:cardElevation="0dp"
+    app:cardElevation="2dp"
     app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1dp">
 
@@ -24,17 +24,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_gravity="center"
-            android:paddingVertical="16dp"
-            android:paddingHorizontal="20dp">
+            android:gravity="center_vertical"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="16dp">
 
-            <ImageView
-                android:id="@+id/icon"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_marginEnd="16dp"
+            <!-- 3D Circular Icon Plaque -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginEnd="14dp"
                 android:layout_gravity="center_vertical"
-                app:tint="?attr/colorPrimary" />
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp">
+
+                <ImageView
+                    android:id="@+id/icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    app:tint="?attr/colorPrimary" />
+
+            </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -59,22 +72,24 @@
                     style="@style/SynthwaveText.Body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp"
+                    android:textSize="12.5sp"
                     android:textAlignment="viewStart"
                     tools:text="@string/applets_description" />
 
                 <com.google.android.material.textview.MaterialTextView
-                    style="@style/TextAppearance.Material3.LabelMedium"
+                    style="@style/SynthwaveText.Secondary"
                     android:id="@+id/details"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAlignment="viewStart"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
-                    android:requiresFadingEdge="horizontal"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="4dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="2dp"
+                    android:background="@drawable/bg_storm_badge_capsule"
                     android:visibility="gone"
                     tools:visibility="visible"
                     tools:text="/tree/primary:Games" />
@@ -96,8 +111,8 @@
             android:layout_height="wrap_content"
             android:gravity="end|center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="24dp"
-            android:paddingVertical="8dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="6dp"
             android:visibility="gone"
             tools:visibility="visible" />
 

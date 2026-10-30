@@ -226,7 +226,7 @@ void SinkStream::ProcessAudioOutAndRender(std::span<s16> output_buffer, std::siz
         }
 
         const size_t frames_available = std::min<u64>(playing_buffer.frames - playing_buffer.frames_played, num_frames - frames_written);
-        
+
         const size_t frames_to_consume = static_cast<size_t>(std::ceil(static_cast<f64>(frames_available) * drift_ratio));
         const size_t actual_consume = std::min(frames_to_consume, static_cast<size_t>(playing_buffer.frames - playing_buffer.frames_played));
 
@@ -275,7 +275,9 @@ void SinkStream::ProcessAudioOutAndRender(std::span<s16> output_buffer, std::siz
             playing_buffer.consumed = true;
     }
 
-    std::memcpy(last_frame.data(), &output_buffer[(frames_written - 1) * frame_size], frame_size_bytes);
+    if (frames_written > 0) {
+        std::memcpy(last_frame.data(), &output_buffer[(frames_written - 1) * frame_size], frame_size_bytes);
+    }
 
     {
         std::scoped_lock lk{sample_count_lock};

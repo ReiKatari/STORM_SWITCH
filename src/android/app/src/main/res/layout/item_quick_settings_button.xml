@@ -12,9 +12,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/settings_profiles_title"
-        android:textSize="13sp"
+        android:textSize="13.5sp"
+        android:textStyle="bold"
+        android:stateListAnimator="@animator/storm_btn_press_animator"
+        android:background="@drawable/storm_btn_3d_tonal"
+        app:backgroundTint="@null"
         app:icon="@drawable/ic_folder_open"
         app:iconSize="18dp"
-        app:cornerRadius="12dp" />
+        app:iconTint="?attr/colorPrimary" />
 
 </LinearLayout>

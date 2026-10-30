@@ -393,6 +393,7 @@ static u64 current_program_id = 0;
 
 void SetCurrentProgramID(u64 program_id) {
     current_program_id = program_id;
+    values.current_program_id.SetValue(program_id);
 }
 
 u64 GetCurrentProgramID() {

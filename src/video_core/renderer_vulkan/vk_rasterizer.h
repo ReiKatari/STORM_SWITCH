@@ -11,6 +11,7 @@
 #include <boost/container/static_vector.hpp>
 
 #include "common/common_types.h"
+#include "common/settings.h"
 #include "video_core/control/channel_state_cache.h"
 #include "video_core/engines/maxwell_dma.h"
 #include "video_core/host1x/gpu_device_memory_manager.h"
@@ -146,6 +147,25 @@ public:
     std::optional<FramebufferTextureInfo> AccelerateDisplay(const Tegra::FramebufferConfig& config,
                                                             VAddr framebuffer_addr,
                                                             u32 pixel_stride);
+
+    [[nodiscard]] bool IsDiablo2Resurrected() const noexcept {
+        const u64 base_tid = current_title_id & ~0x1FFFULL;
+        if (base_tid == 0x0100726014352000ULL ||
+            base_tid == 0x01002A801458A000ULL ||
+            base_tid == 0x0100916014D8C000ULL) {
+            return true;
+        }
+        const u64 current_pid = Settings::GetCurrentProgramID() & ~0x1FFFULL;
+        if (current_pid == 0x0100726014352000ULL ||
+            current_pid == 0x01002A801458A000ULL ||
+            current_pid == 0x0100916014D8C000ULL) {
+            return true;
+        }
+        const u64 val_pid = Settings::values.current_program_id.GetValue() & ~0x1FFFULL;
+        return (val_pid == 0x0100726014352000ULL ||
+                val_pid == 0x01002A801458A000ULL ||
+                val_pid == 0x0100916014D8C000ULL);
+    }
 
 private:
     static constexpr const u64 NEEDS_D24[] = {

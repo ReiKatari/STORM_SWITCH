@@ -50,7 +50,8 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_lobby_browser"
                 style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="175dp"
+                android:layout_width="wrap_content"
+                android:minWidth="175dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:minHeight="56dp"

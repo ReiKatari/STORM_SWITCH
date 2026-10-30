@@ -5,12 +5,12 @@ echo ===================================================
 echo STORM SWITCH - Low-Load Automated Build Script
 echo ===================================================
 
-powershell -NoProfile -Command "try { [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal' } catch {}" 2>nul
+powershell -NoProfile -Command "try { $ppid = (Get-CimInstance Win32_Process -Filter \"ProcessId=$PID\").ParentProcessId; (Get-Process -Id $ppid).PriorityClass = 'BelowNormal' } catch {}" 2>nul
 
 taskkill /F /IM STORM_SWITCH.exe /IM STORM_SWITCH-cli.exe /IM STORM_SWITCH-room.exe 2>nul
 
 set "VSLANG=1033"
-set "CMAKE_BUILD_PARALLEL_LEVEL=12"
+set "CMAKE_BUILD_PARALLEL_LEVEL=4"
 call "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" amd64
 if errorlevel 1 (
     echo [ERROR] Failed to set up Visual Studio environment.
@@ -38,9 +38,9 @@ if not exist "%BUILD_DIR%\build.ninja" (
         -DCMAKE_BUILD_TYPE=Release ^
         -DCMAKE_CXX_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
         -DCMAKE_C_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
-        -DGIT_TAG="16.0.1" ^
-        -DGIT_RELEASE="16.0.1" ^
-        -DBUILD_VERSION="16.0.1" ^
+        -DGIT_TAG="16.0.2" ^
+        -DGIT_RELEASE="16.0.2" ^
+        -DBUILD_VERSION="16.0.2" ^
         -DENABLE_QT=ON ^
         -DENABLE_QT_TRANSLATION=ON ^
         -DYUZU_USE_BUNDLED_QT=ON ^
@@ -57,12 +57,12 @@ if not exist "%BUILD_DIR%\build.ninja" (
         exit /b 1
     )
 ) else (
-    echo [1/3] Updating SCM revision for 16.0.1...
-    "%CMAKE%" -DGIT_TAG="16.0.1" -DGIT_RELEASE="16.0.1" -DBUILD_VERSION="16.0.1" -DSRC_DIR="%SRC_DIR%" -P "%SRC_DIR%\CMakeModules\GenerateSCMRev.cmake" 2>nul
+    echo [1/3] Updating SCM revision for 16.0.2...
+    "%CMAKE%" -DGIT_TAG="16.0.2" -DGIT_RELEASE="16.0.2" -DBUILD_VERSION="16.0.2" -DSRC_DIR="%SRC_DIR%" -P "%SRC_DIR%\CMakeModules\GenerateSCMRev.cmake" 2>nul
 )
 
-echo [2/3] Compiling STORM SWITCH with Ninja (-j 12)...
-"%NINJA%" -j 12
+echo [2/3] Compiling STORM SWITCH with Low-Load Ninja (-j 4, BelowNormal)...
+"%NINJA%" -j 4
 if errorlevel 1 (
     echo [ERROR] Compilation failed.
     exit /b 1

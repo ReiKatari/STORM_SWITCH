@@ -157,7 +157,7 @@
     <string name="multiplayer_joining">Uniéndose…</string>
     <string name="multiplayer_creating">Creando…</string>
     <string name="multiplayer_room_name">Nombre de la sala</string>
-    <string name="multiplayer_max_players_value">Jugadores máx: %d</string>
+    <string name="multiplayer_max_players_value">Máximo de jugadores: %d</string>
     <string name="multiplayer_chat">Chat</string>
     <string name="multiplayer_more_options">Más opciones</string>
     <string name="chat">Chat</string>
@@ -2141,7 +2141,7 @@ Inicia un juego o conéctate a otro dispositivo.</string>
 
     <string name="theme_storm_elemental">STORM ELEMENTAL (Fuego elemental)</string>
     <string name="theme_storm_flagship">STORM (Insignia)</string>
-    <string name="auto_opt_dialog_title">CONFIGURACIÓN AUTO STORM FLUID</string>
+    <string name="auto_opt_dialog_title">CONFIGURACIÓN AUTOMÁTICA</string>
     <string name="auto_opt_dialog_subtitle">Perfilado inteligente de hardware</string>
     <string name="auto_opt_telemetry_title">TELEMETRÍA DE HARDWARE</string>
     <string name="auto_opt_profiles_title">PERFILES EN 1 CLIC</string>
@@ -2191,4 +2191,22 @@ Inicia un juego o conéctate a otro dispositivo.</string>
     <string name="storm_check_updates_now_desc">Comprobar si hay una nueva versión en GitHub y STORM GAMES WORLD e instalarla encima</string>
     <string name="storm_checking_updates">Buscando actualizaciones…</string>
     <string name="storm_up_to_date_fmt">Ya tienes instalada la versión más reciente (%1$s)</string>
+
+    <string name="profile_btn_save_current">Guardar perfil actual</string>
+    <string name="profile_active_badge">ACTIVO</string>
+    <string name="profile_total_count">Perfiles totales: %1$d</string>
+    <string name="auto_opt_btn_apply">Aplicar optimización</string>
+    <string name="auto_opt_btn_reset">Restablecer valores predeterminados</string>
+    <string name="auto_opt_hw_soc_label">Procesador / SoC</string>
+    <string name="auto_opt_hw_gpu_label">Gráficos (GPU)</string>
+    <string name="auto_opt_hw_ram_label">Memoria (RAM)</string>
+    <string name="auto_opt_hw_tier_label">Nivel de rendimiento</string>
+
+    <string name="home_cat_quick_setup">Configuración rápida y perfiles</string>
+    <string name="home_cat_performance_graphics">Rendimiento, gráficos y controladores</string>
+    <string name="home_cat_system_input">Sistema, controles y audio</string>
+    <string name="home_cat_catalog_storage">Catálogo, carpetas y almacenamiento</string>
+    <string name="home_cat_diagnostics_about">Diagnóstico, registros e información</string>
+    <string name="per_game_custom_badge">PROPIA</string>
+    <string name="vulkan_legacy_driver_warning">Se detectó Vulkan del sistema %1$s en %2$s. Muchos títulos de Switch requieren Vulkan 1.3. Se recomienda instalar un controlador Mesa Turnip en Parámetros -> Administrador de controladores GPU.</string>
 </resources>

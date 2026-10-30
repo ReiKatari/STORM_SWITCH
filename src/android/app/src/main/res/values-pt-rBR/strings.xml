@@ -2031,7 +2031,7 @@
 
     <string name="theme_storm_elemental">STORM ELEMENTAL (Fogo elemental)</string>
     <string name="theme_storm_flagship">STORM (Principal)</string>
-    <string name="auto_opt_dialog_title">CONFIGURAÇÃO AUTOMÁTICA STORM FLUID</string>
+    <string name="auto_opt_dialog_title">CONFIGURAÇÃO AUTOMÁTICA</string>
     <string name="auto_opt_dialog_subtitle">Perfilamento Inteligente de Hardware</string>
     <string name="auto_opt_telemetry_title">TELEMETRIA DE HARDWARE</string>
     <string name="auto_opt_profiles_title">PERFIS EM 1 CLIQUE</string>
@@ -2081,4 +2081,22 @@
     <string name="storm_check_updates_now_desc">Verificar nova versão no GitHub e STORM GAMES WORLD e instalar por cima da atual</string>
     <string name="storm_checking_updates">Verificando atualizações…</string>
     <string name="storm_up_to_date_fmt">Você já está com a versão mais recente instalada (%1$s)</string>
+
+    <string name="profile_btn_save_current">Salvar perfil atual</string>
+    <string name="profile_active_badge">ATIVO</string>
+    <string name="profile_total_count">Total de perfis: %1$d</string>
+    <string name="auto_opt_btn_apply">Aplicar otimização</string>
+    <string name="auto_opt_btn_reset">Restaurar padrões</string>
+    <string name="auto_opt_hw_soc_label">Processador / SoC</string>
+    <string name="auto_opt_hw_gpu_label">Gráficos (GPU)</string>
+    <string name="auto_opt_hw_ram_label">Memória (RAM)</string>
+    <string name="auto_opt_hw_tier_label">Classe de desempenho</string>
+
+    <string name="home_cat_quick_setup">Configuração rápida e perfis</string>
+    <string name="home_cat_performance_graphics">Desempenho, gráficos e drivers</string>
+    <string name="home_cat_system_input">Sistema, controles e áudio</string>
+    <string name="home_cat_catalog_storage">Catálogo, pastas e armazenamento</string>
+    <string name="home_cat_diagnostics_about">Diagnóstico, registros e sobre</string>
+    <string name="per_game_custom_badge">PRÓPRIA</string>
+    <string name="vulkan_legacy_driver_warning">Vulkan do sistema %1$s detectado em %2$s. Muitos jogos do Switch exigem Vulkan 1.3. Recomenda-se instalar um driver Mesa Turnip em Configurações -> Gerenciador de drivers de GPU.</string>
 </resources>

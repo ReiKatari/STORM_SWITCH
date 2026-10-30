@@ -157,7 +157,7 @@
     <string name="multiplayer_joining">Приєднуюсь…</string>
     <string name="multiplayer_creating">Створюю…</string>
     <string name="multiplayer_room_name">Назва кімнати</string>
-    <string name="multiplayer_max_players_value">Макс. гравців: %d</string>
+    <string name="multiplayer_max_players_value">Максимум гравців: %d</string>
     <string name="multiplayer_chat">Чат</string>
     <string name="multiplayer_more_options">Додаткові налаштування</string>
     <string name="chat">Чат</string>
@@ -1165,7 +1165,7 @@
     <string name="auto_optimization_mode_accurate">💎 Точний</string>
     <string name="auto_optimization_mode_accurate_desc">Максимальна якість графіки, 1.5X/1X роздільна здатність, безпечний DMA, SMAA, Анізотропія 16x.</string>
     <string name="dma_accuracy_high">Високо</string>
-    <string name="vram_usage_mode_aggressive">Агресивний (Макс. продуктивність)</string>
+    <string name="vram_usage_mode_aggressive">Агресивний (Максимальна продуктивність)</string>
     <string name="auto_optimization_mode_fast_desc">Максимум FPS, мінімум нагріву та економія батареї. 0.75X роздільна здатність, економний VRAM, NCE.</string>
     <string name="auto_optimization_mode_fast">⚡ Швидкий</string>
     <string name="cheat_status_active">⚡ Активний у грі</string>
@@ -2056,12 +2056,31 @@
     <string name="translator_engine_opt_mymemory">MyMemory (Архив переводов)</string>
     <string name="translator_engine_opt_custom_ai">OpenAI / DeepSeek / Gemini (Умный ИИ с контекстом)</string>
     <string name="log_viewer_filter_all_label">Все</string>
-    <string name="log_viewer_filter_errors_label">Ошибки</string>
-    <string name="log_viewer_filter_info_label">Инфо</string>
-    <string name="log_viewer_filter_warnings_label">Предупр.</string>
+    <string name="log_viewer_filter_errors_label">Помилки</string>
+    <string name="log_viewer_filter_info_label">Інформація</string>
+    <string name="log_viewer_filter_warnings_label">Попередження</string>
     <string name="post_processing_shader">Пост-обробка (Шейдери RetroArch)</string>
     <string name="post_processing_shader_description">Застосовує шейдери пост-обробки RetroArch у реальному часі (ЕПТ, РК, портативки, апскейлери, різкість, кольорокорекція).</string>
     <string name="apply_driver_msg">Драйвер успішно встановлено. Бажаєте активувати його зараз?</string>
     <string name="apply_driver_positive">Застосувати</string>
     <string name="apply_driver_negative">Пізніше</string>
+
+    <string name="auto_opt_dialog_title">AUTOMATIC CONFIGURATION</string>
+    <string name="profile_btn_save_current">Save Current Profile</string>
+    <string name="profile_active_badge">ACTIVE</string>
+    <string name="profile_total_count">Total profiles: %1$d</string>
+    <string name="auto_opt_btn_apply">Apply Optimization</string>
+    <string name="auto_opt_btn_reset">Reset to Defaults</string>
+    <string name="auto_opt_hw_soc_label">Processor / SoC</string>
+    <string name="auto_opt_hw_gpu_label">Graphics (GPU)</string>
+    <string name="auto_opt_hw_ram_label">Memory (RAM)</string>
+    <string name="auto_opt_hw_tier_label">Performance Tier</string>
+
+    <string name="home_cat_quick_setup">Quick Setup &amp; Profiles</string>
+    <string name="home_cat_performance_graphics">Performance, Graphics &amp; Drivers</string>
+    <string name="home_cat_system_input">System, Input &amp; Audio</string>
+    <string name="home_cat_catalog_storage">Catalog, Folders &amp; Storage</string>
+    <string name="home_cat_diagnostics_about">Diagnostics, Logs &amp; About</string>
+    <string name="per_game_custom_badge">CUSTOM</string>
+    <string name="vulkan_legacy_driver_warning">System Vulkan %1$s detected on %2$s. Many Switch titles require Vulkan 1.3 features. It is recommended to install a Mesa Turnip driver in Settings -> GPU Driver Manager.</string>
 </resources>

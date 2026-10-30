@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Outer faceted border -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="22dp" />
+            <gradient
+                android:angle="135"
+                android:startColor="#808B5CF6"
+                android:centerColor="#40A78BFA"
+                android:endColor="#606D28D9"
+                android:type="linear" />
+        </shape>
+    </item>
+    <!-- Deep dark sculpted glassmorphic interior -->
+    <item
+        android:left="1.5dp"
+        android:top="1.5dp"
+        android:right="1.5dp"
+        android:bottom="1.5dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="21dp" />
+            <gradient
+                android:angle="270"
+                android:startColor="#141026"
+                android:centerColor="#100D20"
+                android:endColor="#0D0A1A"
+                android:type="linear" />
+        </shape>
+    </item>
+    <!-- Subtle top specular edge highlight -->
+    <item
+        android:left="6dp"
+        android:top="2dp"
+        android:right="6dp"
+        android:bottom="6dp">
+        <shape android:shape="rectangle">
+            <corners
+                android:topLeftRadius="19dp"
+                android:topRightRadius="19dp"
+                android:bottomLeftRadius="8dp"
+                android:bottomRightRadius="8dp" />
+            <gradient
+                android:angle="270"
+                android:startColor="#22FFFFFF"
+                android:endColor="#00FFFFFF"
+                android:type="linear" />
+        </shape>
+    </item>
+</layer-list>

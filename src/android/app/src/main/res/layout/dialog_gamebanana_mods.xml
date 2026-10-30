@@ -54,7 +54,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="11sp"
                     android:textColor="?attr/colorPrimary"
-                    android:singleLine="true"
+                    android:maxLines="3"
                     android:ellipsize="end"
                     tools:text="The Legend of Zelda: Tears of the Kingdom" />
 
@@ -274,7 +274,7 @@
                     android:layout_weight="1"
                     android:gravity="start|center_vertical"
                     android:textSize="11sp"
-                    android:singleLine="true"
+                    android:maxLines="2"
                     android:ellipsize="end"
                     android:textColor="?attr/colorOnSurface"
                     tools:text="Страница 1" />
@@ -394,7 +394,7 @@
                     android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    android:singleLine="true"
+                    android:maxLines="2"
                     android:ellipsize="end" />
 
                 <com.google.android.material.button.MaterialButton

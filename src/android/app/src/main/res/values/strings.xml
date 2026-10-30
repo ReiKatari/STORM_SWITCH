@@ -184,7 +184,7 @@
     <string name="multiplayer_joining">Joining…</string>
     <string name="multiplayer_creating">Creating…</string>
     <string name="multiplayer_room_name">Room Name</string>
-    <string name="multiplayer_max_players_value">Max Players: %d</string>
+    <string name="multiplayer_max_players_value">Maximum Players: %d</string>
     <string name="multiplayer_chat">Chat</string>
     <string name="multiplayer_more_options">More Options</string>
     <string name="chat">Chat</string>
@@ -2857,7 +2857,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="mali_turnip_incompatible_warning">Warning: Adreno Turnip drivers are designed specifically for Qualcomm Adreno GPUs. Installing this driver on a Mali or non-Adreno GPU may cause graphics instability or app crashes. Do you want to continue?</string>
 
     <!-- Auto-Optimization Dialog Strings -->
-    <string name="auto_opt_dialog_title">STORM FLUID AUTO-CONFIG</string>
+    <string name="auto_opt_dialog_title">AUTOMATIC CONFIGURATION</string>
     <string name="auto_opt_dialog_subtitle">Intelligent Hardware Profiling</string>
     <string name="auto_opt_telemetry_title">HARDWARE TELEMETRY</string>
     <string name="auto_opt_profiles_title">1-CLICK PROFILES</string>
@@ -2883,4 +2883,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
     <string name="storm_checking_updates">Checking for updates…</string>
     <string name="storm_up_to_date_fmt">You have the latest version installed (%1$s)</string>
+
+    <string name="profile_btn_save_current">Save Current Profile</string>
+    <string name="profile_active_badge">ACTIVE</string>
+    <string name="profile_total_count">Total profiles: %1$d</string>
+    <string name="auto_opt_btn_apply">Apply Optimization</string>
+    <string name="auto_opt_btn_reset">Reset to Defaults</string>
+    <string name="auto_opt_hw_soc_label">Processor / SoC</string>
+    <string name="auto_opt_hw_gpu_label">Graphics (GPU)</string>
+    <string name="auto_opt_hw_ram_label">Memory (RAM)</string>
+    <string name="auto_opt_hw_tier_label">Performance Tier</string>
+
+    <string name="home_cat_quick_setup">Quick Setup &amp; Profiles</string>
+    <string name="home_cat_performance_graphics">Performance, Graphics &amp; Drivers</string>
+    <string name="home_cat_system_input">System, Input &amp; Audio</string>
+    <string name="home_cat_catalog_storage">Catalog, Folders &amp; Storage</string>
+    <string name="home_cat_diagnostics_about">Diagnostics, Logs &amp; About</string>
+    <string name="per_game_custom_badge">CUSTOM</string>
+    <string name="vulkan_legacy_driver_warning">System Vulkan %1$s detected on %2$s. Many Switch titles require Vulkan 1.3 features. It is recommended to install a Mesa Turnip driver in Settings -> GPU Driver Manager.</string>
 </resources>

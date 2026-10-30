@@ -77,6 +77,7 @@ private:
 
     void HandleApplyButtonClicked();
     void OnSearchTextChanged(const QString& text);
+    void RefreshOverrideBadges();
 
     void LoadConfiguration();
 
@@ -86,6 +87,8 @@ private:
 
     QGraphicsScene* scene;
     QLineEdit* m_search_edit{nullptr};
+    QPushButton* m_reset_hero_btn{nullptr};
+    std::vector<QString> m_original_tab_titles;
 
     std::unique_ptr<QtConfig> game_config;
 

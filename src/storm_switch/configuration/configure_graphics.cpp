@@ -393,7 +393,7 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
     make_preset_btn(
         QStringLiteral("presetBtnMaxFps"),
-        StormLang(QStringLiteral("⚡ Макс. FPS"), QStringLiteral("⚡ Max FPS"),
+        StormLang(QStringLiteral("⚡ Максимум FPS"), QStringLiteral("⚡ Maximum FPS"),
                   QStringLiteral("⚡ Max. FPS"), QStringLiteral("⚡ FPS Max"),
                   QStringLiteral("⚡ 最高帧率"), QStringLiteral("⚡ 最大 FPS"),
                   QStringLiteral("⚡ أقصى إطارات"), QStringLiteral("⚡ Máx. FPS")),
@@ -531,6 +531,16 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         if (!widget->Valid()) {
             widget->deleteLater();
             continue;
+        }
+
+        if (setting->Id() == Settings::values.gpu_accuracy.Id()) {
+            widget->setToolTip(StormLang(
+                QStringLiteral("Точность вычислений GPU (в Ryujinx: GPU Buffer Reads).\n«Нормальный/Быстрый» — расслабленная синхронизация буферов для максимального FPS.\n«Высокий» — попиксельная точность FP32 и строгие барьеры обратной связи буферов, исправляет темные текстуры и графические артефакты."),
+                QStringLiteral("GPU Calculation Accuracy (Ryujinx equivalent: GPU Buffer Reads).\n'Normal/Fast' uses relaxed buffer synchronization for higher framerates.\n'High' enforces strict FP32 precision and memory feedback barriers, fixing missing lighting and black textures.")));
+        } else if (setting->Id() == Settings::values.use_asynchronous_gpu_emulation.Id()) {
+            widget->setToolTip(StormLang(
+                QStringLiteral("Асинхронная эмуляция GPU (в Ryujinx: Multi-Thread Rendering).\nВыносит команды рендеринга видеоядра в отдельный поток процессора, кардинально повышая производительность на многоядерных ЦП."),
+                QStringLiteral("Asynchronous GPU Emulation (Ryujinx equivalent: Multi-Thread Rendering).\nOffloads GPU command processing to a dedicated CPU thread, dramatically improving framerate on multi-core processors.")));
         }
 
         if (setting->Id() == Settings::values.renderer_backend.Id()) {
@@ -814,11 +824,11 @@ const QString ConfigureGraphics::TranslateVSyncMode(VkPresentModeKHR mode,
     switch (mode) {
     case VK_PRESENT_MODE_IMMEDIATE_KHR:
         return is_ogl
-                   ? StormLang(QStringLiteral("Выкл."), QStringLiteral("Off"),
+                   ? StormLang(QStringLiteral("Выключено"), QStringLiteral("Off"),
                                QStringLiteral("Aus"), QStringLiteral("Désactivé"),
                                QStringLiteral("关闭"), QStringLiteral("オフ"),
                                QStringLiteral("إيقاف"), QStringLiteral("Desactivado"))
-                   : StormLang(QStringLiteral("Immediate (VSync Выкл.)"), QStringLiteral("Immediate (VSync Off)"),
+                   : StormLang(QStringLiteral("Immediate (VSync Выключено)"), QStringLiteral("Immediate (VSync Off)"),
                                QStringLiteral("Immediate (VSync Aus)"), QStringLiteral("Immediate (VSync Désactivé)"),
                                QStringLiteral("Immediate (垂直同步关闭)"), QStringLiteral("Immediate (VSync オフ)"),
                                QStringLiteral("Immediate (إيقاف VSync)"), QStringLiteral("Immediate (VSync Desactivado)"));
@@ -829,11 +839,11 @@ const QString ConfigureGraphics::TranslateVSyncMode(VkPresentModeKHR mode,
                          QStringLiteral("Mailbox (موصى به)"), QStringLiteral("Mailbox (Recomendado)"));
     case VK_PRESENT_MODE_FIFO_KHR:
         return is_ogl
-                   ? StormLang(QStringLiteral("Вкл."), QStringLiteral("On"),
+                   ? StormLang(QStringLiteral("Включено"), QStringLiteral("On"),
                                QStringLiteral("Ein"), QStringLiteral("Activé"),
                                QStringLiteral("开启"), QStringLiteral("オン"),
                                QStringLiteral("تشغيل"), QStringLiteral("Activado"))
-                   : StormLang(QStringLiteral("FIFO (VSync Вкл.)"), QStringLiteral("FIFO (VSync On)"),
+                   : StormLang(QStringLiteral("FIFO (VSync Включено)"), QStringLiteral("FIFO (VSync On)"),
                                QStringLiteral("FIFO (VSync Ein)"), QStringLiteral("FIFO (VSync Activé)"),
                                QStringLiteral("FIFO (垂直同步开启)"), QStringLiteral("FIFO (VSync オン)"),
                                QStringLiteral("FIFO (تشغيل VSync)"), QStringLiteral("FIFO (VSync Activado)"));
@@ -945,7 +955,7 @@ void ConfigureGraphics::RetranslateUI() {
             QStringLiteral("🚀 <b>Perfiles de gráficos y rendimiento en 1 clic:</b>")));
     }
     if (auto* btn = findChild<QPushButton*>(QStringLiteral("presetBtnMaxFps"))) {
-        btn->setText(StormLang(QStringLiteral("⚡ Макс. FPS"), QStringLiteral("⚡ Max FPS"),
+        btn->setText(StormLang(QStringLiteral("⚡ Максимум FPS"), QStringLiteral("⚡ Maximum FPS"),
                                QStringLiteral("⚡ Max. FPS"), QStringLiteral("⚡ FPS Max"),
                                QStringLiteral("⚡ 最高帧率"), QStringLiteral("⚡ 最大 FPS"),
                                QStringLiteral("⚡ أقصى إطارات"), QStringLiteral("⚡ Máx. FPS")));

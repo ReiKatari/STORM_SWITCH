@@ -459,7 +459,6 @@
                         android:textColor="#FFFFFF"
                         android:textSize="10sp"
                         android:textStyle="bold"
-                        android:maxLines="1"
                         android:ellipsize="end"
                         tools:text="Страница 1 из 7 (161)" />
                 </LinearLayout>
@@ -539,7 +538,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:ellipsize="end"
-                                android:maxLines="2"
+                                android:maxLines="3"
                                 android:textColor="#F1F5F9"
                                 android:textSize="14sp"
                                 android:textStyle="bold"
@@ -563,8 +562,7 @@
                                     android:textColor="#00D2FF"
                                     android:textSize="9sp"
                                     android:textStyle="bold"
-                                    android:singleLine="true"
-                                    android:maxLines="1"
+                                    android:maxLines="2"
                                     android:ellipsize="end"
                                     tools:text="1.0.10" />
 
@@ -579,8 +577,7 @@
                                     android:textColor="#C084FC"
                                     android:textSize="9sp"
                                     android:textStyle="bold"
-                                    android:singleLine="true"
-                                    android:maxLines="1"
+                                    android:maxLines="2"
                                     android:ellipsize="end"
                                     tools:text="655360" />
 
@@ -595,8 +592,7 @@
                                     android:textColor="#FBBF24"
                                     android:textSize="9sp"
                                     android:textStyle="bold"
-                                    android:singleLine="true"
-                                    android:maxLines="1"
+                                    android:maxLines="2"
                                     android:ellipsize="end"
                                     tools:text="37,63 MB" />
                             </LinearLayout>
@@ -619,8 +615,7 @@
                                     android:textColor="#38BDF8"
                                     android:textSize="9sp"
                                     android:textStyle="bold"
-                                    android:singleLine="true"
-                                    android:maxLines="1"
+                                    android:maxLines="3"
                                     android:ellipsize="end"
                                     tools:text="RUS" />
 
@@ -637,8 +632,7 @@
                                     android:textColor="#10B981"
                                     android:textSize="9sp"
                                     android:textStyle="bold"
-                                    android:singleLine="true"
-                                    android:maxLines="1"
+                                    android:maxLines="3"
                                     android:ellipsize="end"
                                     android:visibility="gone"
                                     tools:visibility="visible"
@@ -655,8 +649,7 @@
                                     android:textColor="#C084FC"
                                     android:textSize="9sp"
                                     android:textStyle="bold"
-                                    android:singleLine="true"
-                                    android:maxLines="1"
+                                    android:maxLines="3"
                                     android:ellipsize="end"
                                     android:visibility="gone"
                                     tools:visibility="visible"
@@ -689,7 +682,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:ellipsize="end"
-                        android:maxLines="4"
+                        android:maxLines="6"
                         android:textColor="#FFFFFF"
                         android:textSize="11sp"
                         tools:text="Описание игры..." />
@@ -700,7 +693,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:ellipsize="start"
-                        android:maxLines="1"
+                        android:maxLines="2"
                         android:textColor="#38BDF8"
                         android:textSize="10sp"
                         tools:text="📁 Папка: /storage/emulated/0/Switch" />

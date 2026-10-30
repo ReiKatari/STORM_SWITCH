@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
@@ -9,6 +9,7 @@
 #include "common/scm_rev.h"
 #include "ui_aboutdialog.h"
 #include "storm_switch/about_dialog.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 AboutDialog::AboutDialog(QWidget* parent)
     : QDialog(parent), ui{std::make_unique<Ui::AboutDialog>()} {
@@ -43,6 +44,8 @@ AboutDialog::AboutDialog(QWidget* parent)
         "<html><head/><body><p><span style=\"font-size:7.5pt; color:#FFFFFF;\">"
         "&quot;Nintendo Switch&quot; является зарегистрированным товарным знаком Nintendo. STORM SWITCH не связан с Nintendo."
         "</span></p></body></html>"));
+    StormUI::StructureEngine::ModernizeForm(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 }
 
 AboutDialog::~AboutDialog() = default;

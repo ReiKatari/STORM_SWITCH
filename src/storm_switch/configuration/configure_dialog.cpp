@@ -1,3 +1,4 @@
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -165,10 +166,11 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
 
     SetConfiguration();
     PopulateSelectionList();
-    ui->selectorList->setFixedWidth(175);
+    ui->selectorList->setMinimumWidth(220);
 
     m_search_edit = new QLineEdit(this);
     m_search_edit->setObjectName(QStringLiteral("SettingsSearchEdit"));
+    m_search_edit->setProperty("stormSearchBox", true);
     m_search_edit->setClearButtonEnabled(true);
     m_search_edit->setPlaceholderText(StormLang(
         QStringLiteral("🔍 Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
@@ -267,28 +269,35 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     m_restore_defaults_btn->setCursor(Qt::PointingHandCursor);
     m_restore_defaults_btn->setStyleSheet(QStringLiteral(
         "QPushButton#RestoreDefaultsButton {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1E293B, stop:1 #334155);"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:0.48 #1e293b, stop:0.52 #182232, stop:1 #0f172a);"
         "    color: #FFFFFF;"
         "    font-weight: 600;"
         "    font-size: 12px;"
         "    padding: 6px 16px;"
-        "    border-radius: 6px;"
-        "    border: 1px solid #64748B;"
+        "    border-radius: 8px;"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.34);"
+        "    border-left: 1px solid rgba(255, 255, 255, 0.16);"
+        "    border-right: 1px solid rgba(255, 255, 255, 0.16);"
+        "    border-bottom: 3px solid rgba(0, 0, 0, 0.58);"
+        "    min-height: 24px;"
         "}"
         "QPushButton#RestoreDefaultsButton:hover {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #EF4444, stop:1 #DC2626);"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f87171, stop:0.48 #ef4444, stop:0.52 #dc2626, stop:1 #b91c1c);"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.55);"
+        "    border-left: 1px solid rgba(255, 255, 255, 0.30);"
+        "    border-right: 1px solid rgba(255, 255, 255, 0.30);"
+        "    border-bottom: 3px solid #7f1d1d;"
         "    color: #FFFFFF;"
-        "    border: 1px solid #F87171;"
         "}"
         "QPushButton#RestoreDefaultsButton:pressed {"
-        "    background: #B91C1C;"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #991b1b, stop:0.5 #b91c1c, stop:1 #ef4444);"
+        "    border-top: 2px solid rgba(0, 0, 0, 0.55);"
+        "    border-bottom: 1px solid rgba(255, 255, 255, 0.20);"
+        "    padding-top: 8px;"
+        "    padding-bottom: 4px;"
+        "    color: #FFFFFF;"
         "}"
     ));
-    auto* shadow = new QGraphicsDropShadowEffect(m_restore_defaults_btn);
-    shadow->setBlurRadius(8);
-    shadow->setOffset(0, 2);
-    shadow->setColor(QColor(0, 0, 0, 160));
-    m_restore_defaults_btn->setGraphicsEffect(shadow);
     connect(m_restore_defaults_btn, &QPushButton::clicked, this, &ConfigureDialog::OnRestoreDefaultsClicked);
 
     if (auto* cancel_btn = ui->buttonBox->button(QDialogButtonBox::Cancel)) {
@@ -533,22 +542,57 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "    border: 1px solid #475569;"
         "    image: none;"
         "}"
-        "QPushButton {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1E293B, stop:1 #334155);"
+        "QPushButton, QDialogButtonBox QPushButton, QToolButton {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:0.48 #1e293b, stop:0.52 #182232, stop:1 #0f172a);"
         "    color: #FFFFFF;"
-        "    font-weight: 600;"
-        "    font-size: 12px;"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.34);"
+        "    border-left: 1px solid rgba(255, 255, 255, 0.16);"
+        "    border-right: 1px solid rgba(255, 255, 255, 0.16);"
+        "    border-bottom: 3px solid rgba(0, 0, 0, 0.58);"
+        "    border-radius: 8px;"
         "    padding: 6px 16px;"
-        "    border-radius: 6px;"
-        "    border: 1px solid #475569;"
+        "    font-weight: 600;"
+        "    min-height: 22px;"
         "}"
-        "QPushButton:hover {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0099CC, stop:1 #006699);"
+        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:0.48 #26364d, stop:0.52 #1e2b3e, stop:1 #131c2c);"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.55);"
+        "    border-left: 1px solid rgba(0, 210, 255, 0.45);"
+        "    border-right: 1px solid rgba(0, 210, 255, 0.45);"
+        "    border-bottom: 3px solid rgba(0, 0, 0, 0.70);"
+        "    color: #00D2FF;"
+        "}"
+        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0d1522, stop:0.5 #131d2e, stop:1 #1a283e);"
+        "    border-top: 2px solid rgba(0, 0, 0, 0.55);"
+        "    border-left: 1px solid rgba(0, 0, 0, 0.35);"
+        "    border-right: 1px solid rgba(0, 0, 0, 0.35);"
+        "    border-bottom: 1px solid rgba(255, 255, 255, 0.14);"
+        "    padding-top: 8px;"
+        "    padding-bottom: 4px;"
         "    color: #FFFFFF;"
-        "    border: 1px solid #00D2FF;"
         "}"
-        "QPushButton:pressed {"
-        "    background: #005580;"
+        "QPushButton:default, QDialogButtonBox QPushButton:default {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #38bdf8, stop:0.48 #0ea5e9, stop:0.52 #0284c7, stop:1 #0369a1);"
+        "    color: #FFFFFF;"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.55);"
+        "    border-left: 1px solid rgba(255, 255, 255, 0.28);"
+        "    border-right: 1px solid rgba(255, 255, 255, 0.28);"
+        "    border-bottom: 3px solid #0c4a6e;"
+        "    border-radius: 8px;"
+        "    font-weight: 700;"
+        "}"
+        "QPushButton:default:hover, QDialogButtonBox QPushButton:default:hover {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7dd3fc, stop:0.48 #38bdf8, stop:0.52 #0ea5e9, stop:1 #0284c7);"
+        "    border-top: 1px solid rgba(255, 255, 255, 0.75);"
+        "    border-bottom: 3px solid #082f49;"
+        "}"
+        "QPushButton:default:pressed, QDialogButtonBox QPushButton:default:pressed {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #075985, stop:0.5 #0284c7, stop:1 #0ea5e9);"
+        "    border-top: 2px solid rgba(0, 0, 0, 0.50);"
+        "    border-bottom: 1px solid rgba(255, 255, 255, 0.20);"
+        "    padding-top: 8px;"
+        "    padding-bottom: 4px;"
         "}"
     ) + StormCancelButtonQssRule());
 
@@ -606,6 +650,21 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     } else {
         resize(1280, 610);
     }
+
+    for (auto* t : {static_cast<QWidget*>(applets_tab.get()), static_cast<QWidget*>(audio_tab.get()),
+                    static_cast<QWidget*>(cpu_tab.get()), static_cast<QWidget*>(debug_tab_tab.get()),
+                    static_cast<QWidget*>(filesystem_tab.get()), static_cast<QWidget*>(general_tab.get()),
+                    static_cast<QWidget*>(graphics_advanced_tab.get()), static_cast<QWidget*>(graphics_extensions_tab.get()),
+                    static_cast<QWidget*>(ui_tab.get()), static_cast<QWidget*>(graphics_tab.get()),
+                    static_cast<QWidget*>(hotkeys_tab.get()), static_cast<QWidget*>(input_tab.get()),
+                    static_cast<QWidget*>(network_tab.get()), static_cast<QWidget*>(profile_tab.get()),
+                    static_cast<QWidget*>(system_tab.get()), static_cast<QWidget*>(web_tab.get())}) {
+        if (t) {
+            StormUI::StructureEngine::ModernizeForm(t);
+        }
+    }
+    StormUI::StructureEngine::ModernizeForm(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 }
 
 ConfigureDialog::~ConfigureDialog() {
@@ -849,12 +908,20 @@ void ConfigureDialog::PopulateSelectionList() {
 
     [[maybe_unused]] const QSignalBlocker blocker(ui->selectorList);
     ui->selectorList->clear();
+    const QFontMetrics fm(list_font);
+    int max_item_w = 220;
     for (const auto& entry : items) {
         auto* const item = new QListWidgetItem(entry.first);
         item->setFont(list_font);
         item->setData(Qt::UserRole, QVariant::fromValue(entry.second));
+        item->setData(Qt::UserRole + 10, entry.first);
+        max_item_w = std::max(max_item_w, fm.horizontalAdvance(entry.first) + 48);
 
         ui->selectorList->addItem(item);
+    }
+    ui->selectorList->setFixedWidth(max_item_w);
+    if (m_search_results_list) {
+        m_search_results_list->setFixedWidth(max_item_w);
     }
 }
 
@@ -1249,12 +1316,46 @@ void ConfigureDialog::OnSearchTextChanged(const QString& text) {
     }
 
     if (!has_query) {
+        for (int r = 0; r < ui->selectorList->count(); ++r) {
+            auto* cat_item = ui->selectorList->item(r);
+            const QString orig = cat_item->data(Qt::UserRole + 10).toString();
+            if (!orig.isEmpty()) {
+                cat_item->setText(orig);
+            }
+        }
         m_search_results_list->clear();
         m_search_results_list->setVisible(false);
         if (graphics_tab) {
             graphics_tab->SetConfiguration();
         }
         return;
+    }
+
+    std::vector<int> cat_match_counts(ui->selectorList->count(), 0);
+    int first_matching_row = -1;
+    for (const auto& c : candidates) {
+        if (c.cat_row >= 0 && c.cat_row < static_cast<int>(cat_match_counts.size())) {
+            cat_match_counts[c.cat_row]++;
+            if (first_matching_row == -1) {
+                first_matching_row = c.cat_row;
+            }
+        }
+    }
+    for (int r = 0; r < ui->selectorList->count(); ++r) {
+        auto* item = ui->selectorList->item(r);
+        const QString orig_name = item->data(Qt::UserRole + 10).isValid()
+            ? item->data(Qt::UserRole + 10).toString()
+            : item->text();
+        const int cnt = cat_match_counts[r];
+        if (cnt > 0) {
+            item->setText(QStringLiteral("%1 (%2)").arg(orig_name).arg(cnt));
+        } else {
+            item->setText(orig_name);
+        }
+    }
+    const int current_row = ui->selectorList->currentRow();
+    if (first_matching_row >= 0 && (current_row < 0 || cat_match_counts[current_row] == 0)) {
+        ui->selectorList->setCurrentRow(first_matching_row);
     }
 
     std::stable_sort(candidates.begin(), candidates.end(), [](const SearchCandidate& a, const SearchCandidate& b) {

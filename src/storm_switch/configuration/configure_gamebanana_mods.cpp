@@ -378,7 +378,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     });
     installed_top_bar->addWidget(inst_search);
 
-    auto* enable_all_mods_btn = new QPushButton(tr("✅ Вкл. все"), this);
+    auto* enable_all_mods_btn = new QPushButton(tr("✅ Включить все"), this);
     connect(enable_all_mods_btn, &QPushButton::clicked, this, [this]() {
         if (!installed_tree) return;
         for (int i = 0; i < installed_tree->topLevelItemCount(); ++i) {
@@ -389,7 +389,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     });
     installed_top_bar->addWidget(enable_all_mods_btn);
 
-    auto* disable_all_mods_btn = new QPushButton(tr("⚪ Выкл. все"), this);
+    auto* disable_all_mods_btn = new QPushButton(tr("⚪ Выключить все"), this);
     connect(disable_all_mods_btn, &QPushButton::clicked, this, [this]() {
         if (!installed_tree) return;
         for (int i = 0; i < installed_tree->topLevelItemCount(); ++i) {
@@ -765,7 +765,7 @@ void ConfigureGameBananaMods::LoadModDetails(int mod_id) {
 
             const double size_mb = static_cast<double>(file_info.size) / (1024.0 * 1024.0);
             const qint64 file_dl = fobj.value(QStringLiteral("_nDownloadCount")).toVariant().toLongLong();
-            QString item_label = tr("%1 (%2 MB, 📥 %3 скач.)").arg(file_info.name, QString::number(size_mb, 'f', 1), FormatNumber(file_dl));
+            QString item_label = tr("%1 (%2 MB, 📥 %3 скачиваний)").arg(file_info.name, QString::number(size_mb, 'f', 1), FormatNumber(file_dl));
             if (!file_info.description.isEmpty()) {
                 item_label += QStringLiteral(" — %1").arg(file_info.description);
             }

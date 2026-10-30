@@ -114,10 +114,26 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     ENABLE_FAST_GPU_TIME("use_fast_gpu_time"),
     ENABLE_FRAME_SKIPPING("enable_frame_skipping");
 
-    override fun getBoolean(needsGlobal: Boolean): Boolean =
-        NativeConfig.getBoolean(key, needsGlobal)
+    override fun getBoolean(needsGlobal: Boolean): Boolean {
+        if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY) {
+            return try {
+                androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
+                    .getBoolean(key, true)
+            } catch (_: Throwable) {
+                true
+            }
+        }
+        return NativeConfig.getBoolean(key, needsGlobal)
+    }
 
     override fun setBoolean(value: Boolean) {
+        if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY) {
+            try {
+                androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
+                    .edit().putBoolean(key, value).apply()
+            } catch (_: Throwable) {}
+            return
+        }
         if (NativeConfig.isPerGameConfigLoaded()) {
             global = false
         } else {
@@ -126,7 +142,13 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
         NativeConfig.setBoolean(key, value)
     }
 
-    override val defaultValue: Boolean by lazy { NativeConfig.getDefaultToString(key).toBoolean() }
+    override val defaultValue: Boolean by lazy {
+        if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY) {
+            true
+        } else {
+            NativeConfig.getDefaultToString(key).toBoolean()
+        }
+    }
 
     override fun getValueAsString(needsGlobal: Boolean): String = getBoolean(needsGlobal).toString()
 

@@ -318,7 +318,7 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     case Settings::ScalingFilter::SgsrEdge: filter_str = QStringLiteral("SGSR Edge"); break;
     default: break;
     }
-    QString aa_str = StormLang(QStringLiteral("Выкл."), QStringLiteral("Off"), QStringLiteral("Aus"), QStringLiteral("Désactivé"), QStringLiteral("关闭"), QStringLiteral("オフ"), QStringLiteral("إيقاف"), QStringLiteral("Desact."), QStringLiteral("Disatt."), QStringLiteral("Desat."), QStringLiteral("끄기"));
+    QString aa_str = StormLang(QStringLiteral("Отключено"), QStringLiteral("Off"), QStringLiteral("Aus"), QStringLiteral("Désactivé"), QStringLiteral("关闭"), QStringLiteral("オフ"), QStringLiteral("إيقاف"), QStringLiteral("Desact."), QStringLiteral("Disatt."), QStringLiteral("Desat."), QStringLiteral("끄기"));
     if (Settings::values.anti_aliasing.GetValue() == Settings::AntiAliasing::Fxaa) aa_str = QStringLiteral("FXAA");
     else if (Settings::values.anti_aliasing.GetValue() == Settings::AntiAliasing::Smaa) aa_str = QStringLiteral("SMAA");
     if (dash.card_titles[2]) dash.card_titles[2]->setText(StormLang(QStringLiteral("✨ ФИЛЬТР И СГЛАЖИВАНИЕ"), QStringLiteral("✨ FILTER & AA"), QStringLiteral("✨ FILTER & GLÄTTUNG"), QStringLiteral("✨ FILTRE & AA"), QStringLiteral("✨ 缩放滤镜与抗锯齿"), QStringLiteral("✨ フィルター＆AA"), QStringLiteral("✨ المرشح والتنعيم"), QStringLiteral("✨ FILTRO Y AA"), QStringLiteral("✨ FILTRO E AA"), QStringLiteral("✨ FILTRO E AA"), QStringLiteral("✨ 필터 및 안티앨리어싱")));
@@ -329,7 +329,7 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
                                       static_cast<int>(StormShaders::GetRetroArchShaderCatalog().size()) - 1);
     QString shader_name = QString::fromUtf8(StormShaders::GetRetroArchShaderCatalog()[shader_idx].short_name);
     if (dash.card_titles[3]) dash.card_titles[3]->setText(StormLang(QStringLiteral("🎨 ШЕЙДЕР RETROARCH"), QStringLiteral("🎨 RETROARCH SHADER"), QStringLiteral("🎨 RETROARCH-SHADER"), QStringLiteral("🎨 SHADER RETROARCH"), QStringLiteral("🎨 RetroArch 着色器"), QStringLiteral("🎨 RetroArch シェーダー"), QStringLiteral("🎨 مظلل RETROARCH"), QStringLiteral("🎨 SHADER RETROARCH"), QStringLiteral("🎨 SHADER RETROARCH"), QStringLiteral("🎨 SHADER RETROARCH"), QStringLiteral("🎨 RetroArch 셰이더")));
-    if (dash.card_values[3]) dash.card_values[3]->setText(shader_idx == 0 ? StormLang(QStringLiteral("Выкл. (Оригинал)"), QStringLiteral("Off (Original)"), QStringLiteral("Aus (Original)"), QStringLiteral("Désactivé (Original)"), QStringLiteral("关闭 (原始画面)"), QStringLiteral("オフ (オリジナル)"), QStringLiteral("إيقاف (الأصلي)"), QStringLiteral("Desact. (Original)"), QStringLiteral("Disatt. (Originale)"), QStringLiteral("Desat. (Original)"), QStringLiteral("꺼짐 (원본)")) : shader_name);
+    if (dash.card_values[3]) dash.card_values[3]->setText(shader_idx == 0 ? StormLang(QStringLiteral("Отключено (Оригинал)"), QStringLiteral("Off (Original)"), QStringLiteral("Aus (Original)"), QStringLiteral("Désactivé (Original)"), QStringLiteral("关闭 (原始画面)"), QStringLiteral("オフ (オリジナル)"), QStringLiteral("إيقاف (الأصلي)"), QStringLiteral("Desact. (Original)"), QStringLiteral("Disatt. (Originale)"), QStringLiteral("Desat. (Original)"), QStringLiteral("꺼짐 (원본)")) : shader_name);
 
     // 5. CPU & Memory Layout
     const auto mem_mode = Settings::values.memory_layout_mode.GetValue();
@@ -344,7 +344,7 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     // 6. VSync & Frame Pacing
     QString vsync_str = QStringLiteral("Mailbox");
     switch (Settings::values.vsync_mode.GetValue()) {
-    case Settings::VSyncMode::Immediate: vsync_str = StormLang(QStringLiteral("Выкл. (Immediate)"), QStringLiteral("Off (Immediate)"), QStringLiteral("Aus (Immediate)"), QStringLiteral("Désactivé"), QStringLiteral("关闭 (立即)"), QStringLiteral("オフ (即時)"), QStringLiteral("إيقاف"), QStringLiteral("Desactivado"), QStringLiteral("Disattivato"), QStringLiteral("Desativado"), QStringLiteral("끄기")); break;
+    case Settings::VSyncMode::Immediate: vsync_str = StormLang(QStringLiteral("Выключено (Immediate)"), QStringLiteral("Off (Immediate)"), QStringLiteral("Aus (Immediate)"), QStringLiteral("Désactivé"), QStringLiteral("关闭 (立即)"), QStringLiteral("オフ (即時)"), QStringLiteral("إيقاف"), QStringLiteral("Desactivado"), QStringLiteral("Disattivato"), QStringLiteral("Desativado"), QStringLiteral("끄기")); break;
     case Settings::VSyncMode::Mailbox: vsync_str = QStringLiteral("Mailbox"); break;
     case Settings::VSyncMode::Fifo: vsync_str = QStringLiteral("FIFO (VSync)"); break;
     case Settings::VSyncMode::FifoRelaxed: vsync_str = QStringLiteral("FIFO Relaxed"); break;
@@ -352,7 +352,7 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     }
     const QString speed_str = Settings::values.use_speed_limit.GetValue()
         ? QStringLiteral("%1%").arg(Settings::values.speed_limit.GetValue())
-        : StormLang(QStringLiteral("Макс. FPS"), QStringLiteral("Unlocked"), QStringLiteral("Entsperrt"), QStringLiteral("Débloqué"), QStringLiteral("不限帧率"), QStringLiteral("無制限"), QStringLiteral("غير محدود"), QStringLiteral("Desbloqueado"), QStringLiteral("Sbloccato"), QStringLiteral("Desbloqueado"), QStringLiteral("제한 없음"));
+        : StormLang(QStringLiteral("Максимум FPS"), QStringLiteral("Unlocked"), QStringLiteral("Entsperrt"), QStringLiteral("Débloqué"), QStringLiteral("不限帧率"), QStringLiteral("無制限"), QStringLiteral("غير محدود"), QStringLiteral("Desbloqueado"), QStringLiteral("Sbloccato"), QStringLiteral("Desbloqueado"), QStringLiteral("제한 없음"));
     if (dash.card_titles[5]) dash.card_titles[5]->setText(StormLang(QStringLiteral("⚡ СИНХРОНИЗАЦИЯ КАДРОВ"), QStringLiteral("⚡ FRAME PACING"), QStringLiteral("⚡ BILDSYNCHRONISATION"), QStringLiteral("⚡ SYNCHRO D'IMAGES"), QStringLiteral("⚡ 垂直同步与帧率"), QStringLiteral("⚡ フレーム同期"), QStringLiteral("⚡ مزامنة الإطارات"), QStringLiteral("⚡ SINCRONIZACIÓN"), QStringLiteral("⚡ SINCRONIZZAZIONE"), QStringLiteral("⚡ SINCRONIZAÇÃO"), QStringLiteral("⚡ 프레임 동기화")));
     if (dash.card_values[5]) dash.card_values[5]->setText(QStringLiteral("%1 · %2").arg(vsync_str, speed_str));
 

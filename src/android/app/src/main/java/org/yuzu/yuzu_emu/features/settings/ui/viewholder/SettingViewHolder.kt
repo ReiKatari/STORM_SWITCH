@@ -42,6 +42,7 @@ abstract class SettingViewHolder(itemView: View, protected val adapter: Settings
         binding.textSettingDescription.alpha = opacity
         binding.textSettingValue.alpha = opacity
         binding.buttonClear.isEnabled = isEditable
+        binding.badgeOverride.visibility = if (isEditable && binding.buttonClear.visibility == View.VISIBLE) View.VISIBLE else View.GONE
     }
 
     fun setStyle(isEditable: Boolean, binding: ListItemSettingSwitchBinding) {
@@ -50,5 +51,6 @@ abstract class SettingViewHolder(itemView: View, protected val adapter: Settings
         binding.textSettingName.alpha = opacity
         binding.textSettingDescription.alpha = opacity
         binding.buttonClear.isEnabled = isEditable
+        binding.badgeOverride.visibility = if (isEditable && binding.buttonClear.visibility == View.VISIBLE) View.VISIBLE else View.GONE
     }
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 STORM TEAM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
@@ -9,6 +9,8 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.DialogAutoOptimizationBinding
-import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
+import org.yuzu.yuzu_emu.ui.StormButton3dHelper
 import org.yuzu.yuzu_emu.utils.StormHardwareCalibrator
 import org.yuzu.yuzu_emu.utils.ThemeHelper
 
@@ -96,6 +98,11 @@ class AutoOptimizationDialogFragment : DialogFragment() {
             restoreDefaults()
         }
 
+        // Apply 3D Faceted Tactile Buttons
+        StormButton3dHelper.applyPrimary(binding.btnApplyWizard)
+        StormButton3dHelper.applySecondary(binding.btnResetDefaults)
+        StormButton3dHelper.applySecondary(binding.btnCancel)
+
         setupModeSelectors()
         detectAndDisplayHardwareInfo()
 
@@ -106,14 +113,25 @@ class AutoOptimizationDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        dialog?.window?.let { window ->
-            window.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        dialog?.let { d ->
+            d.window?.let { window ->
+                window.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                ThemeHelper.applySystemBarsTheme(window, requireContext())
+            }
+            // Mandatory ESC Modal Dismissal
+            d.setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                    dismiss()
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 
@@ -130,31 +148,27 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         }
     }
 
-    override fun onDismiss(dialog: android.content.DialogInterface) {
-        super.onDismiss(dialog)
-        activity?.let { ThemeHelper.applySystemBarsTheme(it.window, it) }
-    }
-
     private fun detectAndDisplayHardwareInfo() {
-        val cached = cachedProfile
-        if (cached != null) {
-            bindProfileToUI(cached)
-        }
-
-        val appContext = requireContext().applicationContext
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val profile = StormHardwareCalibrator.detectHardware(appContext)
-            cachedProfile = profile
+            val profile = cachedProfile ?: StormHardwareCalibrator.detectHardware(requireContext().applicationContext).also {
+                cachedProfile = it
+            }
+
             withContext(Dispatchers.Main) {
                 if (_binding != null) {
-                    bindProfileToUI(profile)
+                    renderHardwareInfo(profile)
                 }
             }
         }
     }
 
-    private fun bindProfileToUI(profile: StormHardwareCalibrator.DeviceHardwareProfile) {
-        val formFactor = if (profile.isTablet) getString(R.string.auto_opt_form_tablet) else getString(R.string.auto_opt_form_phone)
+    private fun renderHardwareInfo(profile: StormHardwareCalibrator.DeviceHardwareProfile) {
+        val formFactor = if (profile.isTablet) {
+            getString(R.string.auto_opt_form_tablet)
+        } else {
+            getString(R.string.auto_opt_form_phone)
+        }
+
         binding.textHwSoc.text = getString(R.string.auto_opt_soc_fmt, profile.socName, profile.cpuCores, formFactor)
         binding.textHwGpu.text = getString(R.string.auto_opt_gpu_fmt, profile.gpuName)
         binding.textHwRam.text = getString(R.string.auto_opt_ram_fmt, profile.totalRamGb, profile.availRamGb)
@@ -193,20 +207,28 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         binding.radioModeAccurate.isChecked = (mode == MODE_ACCURATE)
         binding.radioModeDefault.isChecked = (mode == MODE_BATTERY || mode == MODE_DEFAULT)
 
-        val selectedColor = Color.parseColor("#00F2FE")
-        val defaultBorderColor = Color.parseColor("#2A324B")
+        val density = resources.displayMetrics.density
+        val selectedBorderPx = (2.5f * density).toInt()
+        val defaultBorderPx = (1.2f * density).toInt()
+
+        val selectedColor = Color.parseColor("#8B5CF6")
+        val defaultBorderColor = Color.parseColor("#358B5CF6")
 
         binding.cardPresetMaxFps.strokeColor = if (mode == MODE_FAST) selectedColor else defaultBorderColor
-        binding.cardPresetMaxFps.strokeWidth = if (mode == MODE_FAST) 6 else 3
+        binding.cardPresetMaxFps.strokeWidth = if (mode == MODE_FAST) selectedBorderPx else defaultBorderPx
 
         binding.cardPresetBalanced.strokeColor = if (mode == MODE_NORMAL) selectedColor else defaultBorderColor
-        binding.cardPresetBalanced.strokeWidth = if (mode == MODE_NORMAL) 6 else 3
+        binding.cardPresetBalanced.strokeWidth = if (mode == MODE_NORMAL) selectedBorderPx else defaultBorderPx
 
         binding.cardPresetQuality.strokeColor = if (mode == MODE_ACCURATE) selectedColor else defaultBorderColor
-        binding.cardPresetQuality.strokeWidth = if (mode == MODE_ACCURATE) 6 else 3
+        binding.cardPresetQuality.strokeWidth = if (mode == MODE_ACCURATE) selectedBorderPx else defaultBorderPx
 
         binding.cardPresetBattery.strokeColor = if (mode == MODE_BATTERY || mode == MODE_DEFAULT) selectedColor else defaultBorderColor
-        binding.cardPresetBattery.strokeWidth = if (mode == MODE_BATTERY || mode == MODE_DEFAULT) 6 else 3
+        binding.cardPresetBattery.strokeWidth = if (mode == MODE_BATTERY || mode == MODE_DEFAULT) selectedBorderPx else defaultBorderPx
+
+        try {
+            binding.root.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        } catch (_: Exception) {}
     }
 
     private fun restoreDefaults() {

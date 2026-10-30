@@ -155,7 +155,7 @@
     <string name="multiplayer_joining">Connexion…</string>
     <string name="multiplayer_creating">Création…</string>
     <string name="multiplayer_room_name">Nom du salon</string>
-    <string name="multiplayer_max_players_value">Joueurs max : %d</string>
+    <string name="multiplayer_max_players_value">Joueurs maximum : %d</string>
     <string name="multiplayer_chat">Chat</string>
     <string name="multiplayer_more_options">Plus d\'options</string>
     <string name="chat">Chat</string>
@@ -1112,7 +1112,7 @@
     <string name="add_folders">Ajouter un dossier</string>
     <string name="percent">%1$d%%</string>
 
-    <string name="vram_usage_mode_aggressive">Agressif (Performance max)</string>
+    <string name="vram_usage_mode_aggressive">Agressif (Performance maximale)</string>
     <string name="auto_optimization_mode_fast_desc">FPS maximal, chauffe minimale et économie de batterie. Résolution 0.75X, VRAM conservatrice, barrières GPU rapides, NCE.</string>
     <string name="cheat_status_disabled">⚪ Désactivé</string>
     <string name="search_amiibo_hint">Rechercher par nom, personnage ou ID...</string>
@@ -1371,7 +1371,7 @@
     <string name="show_device_load_overlay_description">Affiche l\'utilisation CPU, GPU, RAM et la température en temps réel.</string>
     <string name="settings_profiles_title">Profils de configuration</string>
     <string name="settings_profiles_description">Créez, enregistrez, chargez, renommez et partagez vos profils de réglages.</string>
-    <string name="profile_preset_fast_title">⚡ Rapide (FPS max et basse température)</string>
+    <string name="profile_preset_fast_title">⚡ Rapide (FPS maximal et basse température)</string>
     <string name="profile_preset_fast_desc">Résolution 0.75X, JIT rapide, shaders asynchrones, 6 Go DRAM, SoC froid.</string>
     <string name="profile_preset_balanced_title">⚖️ Équilibré (Recommandé)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, JIT rapide, shaders asynchrones, 6 Go DRAM.</string>
@@ -2137,7 +2137,7 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
 
     <string name="theme_storm_elemental">STORM ELEMENTAL (Feu élémentaire)</string>
     <string name="theme_storm_flagship">STORM (Vaisseau amiral)</string>
-    <string name="auto_opt_dialog_title">CONFIGURATION AUTO STORM FLUID</string>
+    <string name="auto_opt_dialog_title">CONFIGURATION AUTOMATIQUE</string>
     <string name="auto_opt_dialog_subtitle">Profilage matériel intelligent</string>
     <string name="auto_opt_telemetry_title">TÉLÉMÉTRIE MATÉRIELLE</string>
     <string name="auto_opt_profiles_title">PROFILS EN 1 CLIC</string>
@@ -2187,4 +2187,22 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="storm_check_updates_now_desc">Rechercher une nouvelle version sur GitHub et STORM GAMES WORLD et l’installer directement</string>
     <string name="storm_checking_updates">Recherche de mises à jour…</string>
     <string name="storm_up_to_date_fmt">Vous disposez de la dernière version (%1$s)</string>
+
+    <string name="profile_btn_save_current">Enregistrer le profil actuel</string>
+    <string name="profile_active_badge">ACTIF</string>
+    <string name="profile_total_count">Profils au total : %1$d</string>
+    <string name="auto_opt_btn_apply">Appliquer l\'optimisation</string>
+    <string name="auto_opt_btn_reset">Rétablir par défaut</string>
+    <string name="auto_opt_hw_soc_label">Processeur / SoC</string>
+    <string name="auto_opt_hw_gpu_label">Graphismes (GPU)</string>
+    <string name="auto_opt_hw_ram_label">Mémoire (RAM)</string>
+    <string name="auto_opt_hw_tier_label">Classe de performance</string>
+
+    <string name="home_cat_quick_setup">Configuration rapide &amp; Profils</string>
+    <string name="home_cat_performance_graphics">Performances, Graphismes &amp; Pilotes</string>
+    <string name="home_cat_system_input">Système, Commandes &amp; Audio</string>
+    <string name="home_cat_catalog_storage">Catalogue, Dossiers &amp; Stockage</string>
+    <string name="home_cat_diagnostics_about">Diagnostics, Journaux &amp; À propos</string>
+    <string name="per_game_custom_badge">PERSO</string>
+    <string name="vulkan_legacy_driver_warning">Vulkan système %1$s détecté sur %2$s. De nombreux jeux Switch nécessitent Vulkan 1.3. Il est recommandé d\'installer un pilote Mesa Turnip dans Paramètres → Gestionnaire de pilotes GPU.</string>
 </resources>

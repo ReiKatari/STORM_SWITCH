@@ -408,10 +408,10 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mortal Kombat 11",
         "• Разлет полигонов, мерцание геометрии и графические баги шейдеров\n• Искажение динамического освещения и эффектов крови\n• Микрофризы рендеринга",
         "• Exploding vertices, geometry flicker, and shader rendering artifacts\n• Corrupted dynamic lighting and blood particle effects\n• Pipeline micro-stutter",
-        "✓ Точность ГПУ: Обычная (устраняет разлет полигонов и артефакты)\n✓ Быстрое время ГПУ: Отключено\n✓ Синхронизация памяти ГПУ: Отключено (стабильный конвейер)\n✓ Реактивная очистка: Отключено (исправление освещения)\n✓ Barrier Feedback Loops: Включено (исправление частиц)\n✓ Сжатие ASTC: Без сжатия\n✓ Память: 6 ГБ DRAM",
-        "✓ GPU Accuracy: Normal (Fixes exploding vertices and glitches)\n✓ Fast GPU Time: Disabled\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 6GB DRAM",
+        "✓ Точность ГПУ: Высокая (устраняет черные силуэты на Mali, разлет полигонов и артефакты)\n✓ Быстрое время ГПУ: Отключено\n✓ Синхронизация памяти ГПУ: Отключено (стабильный конвейер)\n✓ Реактивная очистка: Отключено (исправление освещения)\n✓ Barrier Feedback Loops: Включено (исправление частиц)\n✓ Сжатие ASTC: Без сжатия\n✓ Память: 6 ГБ DRAM",
+        "✓ GPU Accuracy: High (Fixes Mali black silhouettes, exploding vertices and glitches)\n✓ Fast GPU Time: Disabled\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 6GB DRAM",
         {
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
@@ -431,6 +431,19 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\region_index", "2"}
         },
         {0x0100B1100C4D0000ULL}
+    },
+    {
+        0x01008C3005A32000ULL,
+        "Unravel Two",
+        "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения и искажение шейдеров",
+        "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting rendering artifacts and shader corruption",
+        "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Высокая (устранение графических артефактов)\n✓ Асинхронная эмуляция ГПУ: Включено",
+        "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: High (Fixes lighting artifacts)\n✓ Asynchronous GPU Emulation: Enabled",
+        {
+            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_asynchronous_gpu_emulation", "true"}
+        }
     },
     {
         0x0100EC9010258000ULL,
@@ -716,14 +729,14 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Diablo II: Resurrected",
         "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Пропадание букв и текста интерфейса (глифы шрифтов)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
         "• Character load / continue game crash (memory exhaustion)\n• Missing UI text and font glyphs\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Точность ГПУ: Обычная (восстанавливает все буквы и текст интерфейса)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (устраняет пропуск рендеринга шрифтов)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)\n✓ Реактивный сброс: Включено (синхронизация атласа шрифтов)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет 4 FPS / 200 ms)",
-        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ GPU Accuracy: Normal (Restores UI text and font glyphs)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Prevents font rendering skips)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)\n✓ Reactive Flushing: Enabled (Syncs font atlases)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS / 200 ms)",
+        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Точность ГПУ: Высокая (восстанавливает все буквы и текст интерфейса)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Отключено (устраняет пропуск рендеринга шрифтов)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)\n✓ Реактивный сброс: Включено (синхронизация атласа шрифтов)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет 4 FPS / 200 ms)",
+        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ GPU Accuracy: High (Restores UI text and font glyphs)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Disabled (Prevents font rendering skips)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)\n✓ Reactive Flushing: Enabled (Syncs font atlases)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS / 200 ms)",
         {
             {"Core\\memory_layout_mode", "2"},
             {"System\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\dma_accuracy", "0"},
             {"Cpu\\cpu_accuracy", "0"},

@@ -4,17 +4,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/eden_dialog_background"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="0dp"
-    app:strokeColor="?attr/colorPrimary"
-    app:strokeWidth="1dp">
+    android:background="@drawable/storm_dialog_card_bg"
+    app:cardCornerRadius="22dp"
+    app:cardElevation="8dp"
+    app:strokeColor="#668B5CF6"
+    app:strokeWidth="1.5dp"
+    app:cardBackgroundColor="#141026">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="22dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -23,22 +24,30 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="12dp">
 
-            <ImageView
-                android:id="@+id/image_save_profile_icon"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/ic_folder_open"
-                app:tint="?attr/colorPrimary"
-                android:layout_marginEnd="10dp" />
+            <FrameLayout
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/storm_tile_3d_recessed"
+                android:layout_marginEnd="12dp">
+
+                <ImageView
+                    android:id="@+id/image_save_profile_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_folder_open"
+                    app:tint="#C084FC" />
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/text_save_profile_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/profile_create_title"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:letterSpacing="0.02" />
 
         </LinearLayout>
 
@@ -47,22 +56,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/profile_create_msg"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textColor="#94A3B8"
             android:textSize="13sp"
             android:layout_marginBottom="16dp" />
 
+        <!-- Recessed 3D TextInput Box -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_profile_name"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/profile_name_hint"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusTopStart="14dp"
+            app:boxCornerRadiusTopEnd="14dp"
+            app:boxCornerRadiusBottomStart="14dp"
+            app:boxCornerRadiusBottomEnd="14dp"
+            app:boxStrokeColor="#8B5CF6"
+            app:boxStrokeWidth="1.5dp"
+            app:hintTextColor="#C084FC"
             app:endIconMode="clear_text"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="22dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_profile_name"
@@ -70,10 +83,13 @@
                 android:layout_height="wrap_content"
                 android:inputType="textCapSentences"
                 android:maxLines="1"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#64748B" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- 3D Faceted Convex Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -82,21 +98,22 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_cancel_save_profile"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/StormButton.3D.Secondary"
                 android:layout_width="wrap_content"
-                android:layout_height="44dp"
+                android:layout_height="wrap_content"
+            android:minHeight="44dp"
                 android:text="@android:string/cancel"
                 android:textSize="13sp"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="10dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_confirm_save_profile"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/StormButton.3D.Primary"
                 android:layout_width="wrap_content"
-                android:layout_height="44dp"
+                android:layout_height="wrap_content"
+            android:minHeight="44dp"
                 android:text="@string/save"
-                android:textSize="13sp"
-                app:cornerRadius="12dp" />
+                android:textSize="13sp" />
 
         </LinearLayout>
 

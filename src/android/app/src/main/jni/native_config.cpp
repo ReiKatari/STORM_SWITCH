@@ -39,6 +39,9 @@ static std::string ResolveSettingKey(std::string key) {
 template <typename T>
 Settings::Setting<T>* getSetting(JNIEnv* env, jstring jkey) {
     auto key = ResolveSettingKey(Common::Android::GetJString(env, jkey));
+    if (key == "show_quick_save_load_overlay") {
+        return nullptr;
+    }
     auto basic_setting = Settings::values.linkage.by_key[key];
     if (basic_setting != 0) {
         return static_cast<Settings::Setting<T>*>(basic_setting);
@@ -53,6 +56,9 @@ Settings::Setting<T>* getSetting(JNIEnv* env, jstring jkey) {
 
 static Settings::BasicSetting* getBasicSetting(JNIEnv* env, jstring jkey) {
     auto key = ResolveSettingKey(Common::Android::GetJString(env, jkey));
+    if (key == "show_quick_save_load_overlay") {
+        return nullptr;
+    }
     auto basic_setting = Settings::values.linkage.by_key[key];
     if (basic_setting != 0) {
         return basic_setting;

@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
                     android:ellipsize="end"
-                    android:singleLine="true"
+                    android:maxLines="2"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
                     tools:text="Game Name" />

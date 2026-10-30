@@ -179,7 +179,7 @@
     <string name="multiplayer_joining">Подключение...</string>
     <string name="multiplayer_creating">Создание...</string>
     <string name="multiplayer_room_name">Название комнаты</string>
-    <string name="multiplayer_max_players_value">Макс. игроков: %d</string>
+    <string name="multiplayer_max_players_value">Максимум игроков: %d</string>
     <string name="multiplayer_chat">Окно чата комнаты</string>
     <string name="multiplayer_more_options">Дополнительные настройки</string>
     <string name="chat">Окно чата комнаты</string>
@@ -566,7 +566,7 @@
     <string name="gpu_unswizzle_settings_description">Настройте параметры распаковки текстур на стороне ГПУ либо полностью отключите эту функцию. Изменение этих параметров позволяет найти баланс между производительностью и качеством загрузки текстур.</string>
     <string name="gpu_unswizzle_enable">Включить распаковку текстур (Unswizzle)</string>
     <string name="gpu_unswizzle_disabled">Отключено</string>
-    <string name="gpu_unswizzle_texture_size">Макс. размер текстуры Unswizzle</string>
+    <string name="gpu_unswizzle_texture_size">Максимальный размер текстуры Unswizzle</string>
     <string name="gpu_unswizzle_texture_size_description">Задает максимальный размер (в МБ) текстур для преобразования формата (unswizzle) на ГПУ. Хотя ГПУ быстрее работает со средними и большими текстурами, ЦП может быть эффективнее для очень маленьких. Настройте это значение, чтобы найти баланс между ускорением на ГПУ и нагрузкой на ЦП.</string>
     <string name="gpu_unswizzle_stream_size">Размер потока Unswizzle</string>
     <string name="gpu_unswizzle_stream_size_description">Задает лимит данных на кадр для преобразования крупных текстур (unswizzle). Высокие значения ускоряют загрузку текстур ценой увеличения задержки кадра; низкие значения снижают нагрузку на ГПУ, но могут вызывать заметную постепенную подгрузку текстур.</string>
@@ -751,7 +751,7 @@
     <string name="global">Глобальный</string>
     <string name="custom">Другое</string>
     <string name="import_complete">Импорт завершен</string>
-    <string name="use_global_setting">Исп. глобальные настройки</string>
+    <string name="use_global_setting">Использовать глобальные настройки</string>
     <string name="operation_completed_successfully">Операция выполнена успешно</string>
     <string name="confirm">Подтвердить</string>
     <string name="load">Загрузить</string>
@@ -1092,7 +1092,7 @@
     <string name="renderer_vsync_fifo_relaxed">FIFO Relaxed</string>
 
     <!-- Anti-Aliasing -->
-    <string name="anti_aliasing_none">Выкл.</string>
+    <string name="anti_aliasing_none">Выключено</string>
     <!-- Screen Layouts -->
     <string name="screen_layout_auto">Авто</string>
     <string name="screen_layout_sensor_landscape">Альбомная (сенсор)</string>
@@ -1497,7 +1497,7 @@
     <!-- Профили настроек -->
     <string name="settings_profiles_title">Профили настроек</string>
     <string name="settings_profiles_description">Создание, сохранение, быстрая загрузка, переименование и экспорт профилей настроек</string>
-    <string name="profile_preset_fast_title">⚡ Быстрый (Макс. FPS и низкий нагрев)</string>
+    <string name="profile_preset_fast_title">⚡ Быстрый (Максимум FPS и низкий нагрев)</string>
     <string name="profile_preset_fast_desc">0.75X разрешение, быстрый JIT, асинхронные шейдеры, отключенная реактивная очистка, 6 ГБ DRAM, холодный SoC.</string>
     <string name="profile_preset_balanced_title">⚖️ Сбалансированный (Рекомендуемый)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, быстрый JIT, асинхронные шейдеры, базовая динамика EDS1, 6 ГБ DRAM.</string>
@@ -1789,9 +1789,9 @@
     <string name="storm_sync_toast_all_synced_already">Все сохранения уже полностью синхронизированы!</string>
     <string name="storm_sync_toast_syncing_progress_fmt">Синхронизация (%1$d/%2$d): %3$s...</string>
     <string name="storm_sync_toast_sync_all_done">Синхронизация всех сохранений успешно завершена!</string>
-    <string name="storm_sync_item_local_info_fmt">📱 На этом устройстве: %1$s (%2$s, %3$d файл.)</string>
+    <string name="storm_sync_item_local_info_fmt">📱 На этом устройстве: %1$s (%2$s, %3$d файлов)</string>
     <string name="storm_sync_item_local_missing">📱 На этом устройстве: отсутствует</string>
-    <string name="storm_sync_item_remote_info_fmt">💻 На удалённом: %1$s (%2$s, %3$d файл.)</string>
+    <string name="storm_sync_item_remote_info_fmt">💻 На удалённом: %1$s (%2$s, %3$d файлов)</string>
     <string name="storm_sync_item_remote_missing">💻 На удалённом: отсутствует</string>
     <string name="storm_sync_badge_synced">🟢 Синхронизировано</string>
     <string name="storm_sync_btn_synced">Синхронизировано</string>
@@ -1869,7 +1869,7 @@
     <string name="storm_dl_stats_error_long_fmt">Ошибка загрузки: %1$s</string>
     <string name="storm_dl_completed">✅ Игра успешно скачана!</string>
     <string name="storm_dl_interrupted_resume">Загрузка прервана. Нажмите «Возобновить».</string>
-    <string name="storm_dl_subtext_speed_eta_fmt">%1$s МБ/с • Ост: %2$d мин</string>
+    <string name="storm_dl_subtext_speed_eta_fmt">%1$s МБ/с • Осталось: %2$d мин</string>
     <string name="storm_dl_progress_pct_fmt">Загрузка: %1$d%%</string>
     <string name="storm_dl_game_fallback">Игра</string>
 
@@ -2191,8 +2191,8 @@
     <string name="translator_engine_opt_custom_ai">OpenAI / DeepSeek / Gemini (Умный ИИ с контекстом)</string>
     <string name="log_viewer_filter_all_label">Все</string>
     <string name="log_viewer_filter_errors_label">Ошибки</string>
-    <string name="log_viewer_filter_info_label">Инфо</string>
-    <string name="log_viewer_filter_warnings_label">Предупр.</string>
+    <string name="log_viewer_filter_info_label">Информация</string>
+    <string name="log_viewer_filter_warnings_label">Предупреждения</string>
     <string name="post_processing_shader">Пост-обработка (Шейдеры RetroArch)</string>
     <string name="post_processing_shader_description">Применяет шейдеры пост-обработки RetroArch в реальном времени (ЭЛТ, ЖК, портативки, апскейлеры, резкость, цветокоррекция).</string>
     <string name="post_shader_1">CRT-Royale (Апертурная решётка Sony Trinitron + галация фосфора)</string>
@@ -2274,7 +2274,7 @@
     <string name="menu_quick_save">Быстрое сохранение (Слот 1)</string>
     <string name="menu_quick_load">Быстрая загрузка (Слот 1)</string>
     <string name="menu_save_state_manager">Менеджер быстрых сохранений (Слоты 1–5)</string>
-    <string name="menu_toggle_quick_save_load_overlay">Экранные кнопки Быстрого сохр./загр. (F5/F7)</string>
+    <string name="menu_toggle_quick_save_load_overlay">Экранные кнопки быстрого сохранения и загрузки (F5/F7)</string>
     <string name="save_state_manager_title">МЕНЕДЖЕР БЫСТРЫХ СОХРАНЕНИЙ (SESS v2)</string>
     <string name="save_state_slot_fmt">Слот %1$d</string>
     <string name="save_state_empty">[Слот пуст]</string>
@@ -2318,7 +2318,7 @@
 
     <string name="theme_storm_elemental">STORM ELEMENTAL (Стихийный огонь)</string>
     <string name="theme_storm_flagship">STORM (Флагманский)</string>
-    <string name="auto_opt_dialog_title">АВТО-НАСТРОЙКА STORM FLUID</string>
+    <string name="auto_opt_dialog_title">АВТОМАТИЧЕСКАЯ НАСТРОЙКА</string>
     <string name="auto_opt_dialog_subtitle">Интеллектуальное профилирование оборудования</string>
     <string name="auto_opt_telemetry_title">ТЕЛЕМЕТРИЯ ОБОРУДОВАНИЯ</string>
     <string name="auto_opt_profiles_title">ПРОФИЛИ В 1 КЛИК</string>
@@ -2343,4 +2343,22 @@
     <string name="storm_check_updates_now_desc">Проверить наличие новой версии на GitHub и STORM GAMES WORLD и установить поверх текущей</string>
     <string name="storm_checking_updates">Проверка наличия обновлений…</string>
     <string name="storm_up_to_date_fmt">У вас установлена актуальная версия (%1$s)</string>
+
+    <string name="profile_btn_save_current">Сохранить текущий профиль</string>
+    <string name="profile_active_badge">АКТИВЕН</string>
+    <string name="profile_total_count">Всего профилей: %1$d</string>
+    <string name="auto_opt_btn_apply">Применить оптимизацию</string>
+    <string name="auto_opt_btn_reset">Сбросить по умолчанию</string>
+    <string name="auto_opt_hw_soc_label">Процессор / SoC</string>
+    <string name="auto_opt_hw_gpu_label">Графический чип (GPU)</string>
+    <string name="auto_opt_hw_ram_label">Оперативная память (RAM)</string>
+    <string name="auto_opt_hw_tier_label">Класс устройства</string>
+
+    <string name="home_cat_quick_setup">Быстрая настройка и профили</string>
+    <string name="home_cat_performance_graphics">Производительность, графика и драйверы</string>
+    <string name="home_cat_system_input">Система, управление и звук</string>
+    <string name="home_cat_catalog_storage">Каталог, папки и хранилище</string>
+    <string name="home_cat_diagnostics_about">Данные, диагностика и информация</string>
+    <string name="per_game_custom_badge">СВОЯ</string>
+    <string name="vulkan_legacy_driver_warning">Обнаружен системный драйвер Vulkan %1$s на %2$s. Многим играм Nintendo Switch требуются функции Vulkan 1.3. Рекомендуется установить драйвер Mesa Turnip в Параметры -> Менеджер драйверов GPU.</string>
 </resources>

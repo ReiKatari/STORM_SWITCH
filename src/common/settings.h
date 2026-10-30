@@ -1069,6 +1069,29 @@ struct Values {
                                                         Specialization::Default,
                                                         true,
                                                         true};
+
+    // Shader Pipeline Compiler Worker Threads (0 = Auto / Hardware Concurrency)
+    SwitchableSetting<u32, true> pipeline_worker_threads{linkage,
+                                                         0,
+                                                         0,
+                                                         64,
+                                                         "pipeline_worker_threads",
+                                                         Category::RendererAdvanced,
+                                                         Specialization::Default,
+                                                         true,
+                                                         true};
+
+    // Frame Interpolation (Lossless Scaling / LSFG temporal interpolation)
+    SwitchableSetting<bool> enable_frame_interpolation{linkage,
+                                                       false,
+                                                       "enable_frame_interpolation",
+                                                       Category::RendererAdvanced,
+                                                       Specialization::Default,
+                                                       true,
+                                                       true};
+
+    // Current Program ID for runtime per-game quirks
+    Setting<u64> current_program_id{linkage, 0, "current_program_id", Category::Core};
 };
 
 extern Values values;

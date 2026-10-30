@@ -2030,7 +2030,7 @@
 
     <string name="theme_storm_elemental">STORM ELEMENTAL (元素烈焰)</string>
     <string name="theme_storm_flagship">STORM (旗艦版)</string>
-    <string name="auto_opt_dialog_title">STORM FLUID 自動設定精靈</string>
+    <string name="auto_opt_dialog_title">硬體自動設定最佳化</string>
     <string name="auto_opt_dialog_subtitle">智慧硬體效能分析與最佳化</string>
     <string name="auto_opt_telemetry_title">硬體運作狀態遙測</string>
     <string name="auto_opt_profiles_title">一鍵最佳化設定檔</string>
@@ -2076,4 +2076,22 @@
     <string name="fsr2_quality_ultra_performance">極致效能 (3.0x)</string>
     <string name="mali_driver_info">Mali/Immortalis/Xclipse GPU 使用廠商系統內建的 Vulkan 驅動程式。上游 Mesa PanVK 尚處於實驗階段，尚未完全支援 Switch 所需的 Vulkan 擴充指令集。自訂 .zip 驅動程式安裝仍對測試版本開放，同時已自動過濾 Adreno Turnip 驅動程式以防止當機。</string>
     <string name="mali_turnip_incompatible_warning">警告：Adreno Turnip 驅動程式專為高通驍龍 Adreno GPU 深度自訂。在 Mali、Immortalis 或非 Adreno GPU 上強行安裝此驅動程式可能導致嚴重圖形破圖或應用程式閃退當機。是否仍要繼續安裝？</string>
+
+    <string name="profile_btn_save_current">儲存目前設定檔</string>
+    <string name="profile_active_badge">目前啟用</string>
+    <string name="profile_total_count">設定檔總計：%1$d</string>
+    <string name="auto_opt_btn_apply">套用最佳化設定</string>
+    <string name="auto_opt_btn_reset">還原為預設值</string>
+    <string name="auto_opt_hw_soc_label">處理器 / SoC</string>
+    <string name="auto_opt_hw_gpu_label">圖形核心 (GPU)</string>
+    <string name="auto_opt_hw_ram_label">記憶體 (RAM)</string>
+    <string name="auto_opt_hw_tier_label">裝置效能等級</string>
+
+    <string name="home_cat_quick_setup">快捷设置与配置文件</string>
+    <string name="home_cat_performance_graphics">性能、图形与驱动程序</string>
+    <string name="home_cat_system_input">系统、控制与音频</string>
+    <string name="home_cat_catalog_storage">目录、文件夹与存储</string>
+    <string name="home_cat_diagnostics_about">诊断、日志与关于</string>
+    <string name="per_game_custom_badge">自定义</string>
+    <string name="vulkan_legacy_driver_warning">在 %2$s 上检测到系统 Vulkan %1$s。许多 Switch 游戏需要 Vulkan 1.3 功能。建议在设置 -> GPU 驱动程序管理器中安装 Mesa Turnip 驱动程序。</string>
 </resources>

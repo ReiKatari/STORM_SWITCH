@@ -17,7 +17,7 @@
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="marquee_forever"
         android:requiresFadingEdge="horizontal"
-        android:singleLine="true"
+        android:maxLines="3"
         android:textColor="?attr/colorOnSurface"
         android:textSize="14sp"
         android:visibility="gone" />

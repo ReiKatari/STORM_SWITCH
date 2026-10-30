@@ -910,18 +910,8 @@ void RasterizerVulkan::FlushAndSnapshotForSaveState(
 void RasterizerVulkan::WaitIdleForLoadState() {
     draw_counter = 0;
     scheduler.Finish();
-    std::mutex wait_mutex;
-    std::condition_variable wait_cv;
-    bool wait_done = false;
-    fence_manager.SyncOperation([&]() {
-        std::scoped_lock lk(wait_mutex);
-        wait_done = true;
-        wait_cv.notify_all();
-    });
-    fence_manager.SignalReference();
+    fence_manager.WaitPendingFences(true);
     scheduler.Finish();
-    std::unique_lock lk(wait_mutex);
-    wait_cv.wait(lk, [&]() { return wait_done; });
 }
 
 void RasterizerVulkan::InvalidateForLoadState(
@@ -971,7 +961,8 @@ bool RasterizerVulkan::MustFlushRegion(DAddr addr, u64 size, VideoCommon::CacheT
             return true;
         }
     }
-    if (!Settings::IsGPULevelHigh() && !Settings::values.use_reactive_flushing.GetValue()) {
+    const bool is_d2r = IsDiablo2Resurrected();
+    if (!Settings::IsGPULevelHigh() && !Settings::values.use_reactive_flushing.GetValue() && !is_d2r) {
         return false;
     }
     if (True(which & VideoCommon::CacheType::TextureCache)) {
@@ -1117,7 +1108,7 @@ void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
                                                 VideoCommon::CacheType which) {
     const bool is_high_gpu = Settings::IsGPULevelHigh() || Settings::IsGPULevelExtreme();
     const bool is_reactive = Settings::values.use_reactive_flushing.GetValue();
-    const bool is_d2r_quirk = (current_title_id == 0x0100726014352000ULL);
+    const bool is_d2r_quirk = IsDiablo2Resurrected();
     if (is_high_gpu || is_reactive || (is_d2r_quirk && True(which & VideoCommon::CacheType::TextureCache))) {
         FlushRegion(addr, size, which);
     }

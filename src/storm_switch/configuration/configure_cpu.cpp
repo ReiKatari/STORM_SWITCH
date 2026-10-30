@@ -16,6 +16,7 @@
 #include "ui_configure_cpu.h"
 #include "storm_switch/configuration/configuration_shared.h"
 #include "storm_switch/configuration/configure_cpu.h"
+#include "storm_switch/common/storm_lang.h"
 
 ConfigureCpu::ConfigureCpu(const Core::System& system_,
                            std::shared_ptr<std::vector<ConfigurationShared::Tab*>> group_,
@@ -85,6 +86,9 @@ void ConfigureCpu::Setup(const ConfigurationShared::Builder& builder) {
             // Keep track of cpu_accuracy combobox to display/hide the unsafe settings
             accuracy_layout->addWidget(widget);
             accuracy_combobox = widget->combobox;
+            widget->setToolTip(StormLang(
+                QStringLiteral("Точность эмуляции процессора и модель памяти (в Ryujinx: Safe Memory Manager).\n«Авто/Точно» — строгая эмуляция MMU с защитой страниц памяти.\n«Небезопасно» — прямой доступ JIT без проверок для максимальной скорости."),
+                QStringLiteral("CPU Emulation Accuracy & Memory Model (Ryujinx equivalent: Safe Memory Manager).\n'Auto/Accurate' enforces strict hardware MMU page tables.\n'Unsafe' enables direct JIT memory access for maximum performance.")));
         } else if (setting->Id() == Settings::values.cpu_backend.Id()) {
             backend_layout->addWidget(widget);
             backend_combobox = widget->combobox;

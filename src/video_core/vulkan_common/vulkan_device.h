@@ -1092,6 +1092,12 @@ FN_MAX_LIMIT_LIST
         return properties.driver.driverID == VK_DRIVER_ID_MOLTENVK;
     }
 
+    [[nodiscard]] bool IsMali() const noexcept {
+        return properties.driver.driverID == VK_DRIVER_ID_ARM_PROPRIETARY ||
+               properties.driver.driverID == VK_DRIVER_ID_MESA_PANVK ||
+               properties.properties.vendorID == 0x13B5;
+    }
+
     bool UseGeometryShaders() const noexcept {
         return features.features.geometryShader != VK_FALSE &&
                properties.driver.driverID != VK_DRIVER_ID_QUALCOMM_PROPRIETARY;

@@ -73,7 +73,7 @@ if (MSVC AND NOT CXX_CLANG)
     add_compile_definitions(UNICODE _UNICODE)
 
     # /W4                 - Level 4 warnings
-    # /MP                 - Multi-threaded compilation
+    # /MP1                 - Multi-threaded compilation
     # /Zm                 - Specifies the precompiled header memory allocation limit
     # /Zo                 - Enhanced debug info for optimized builds
     # /permissive-        - Enables stricter C++ standards conformance checks
@@ -86,7 +86,7 @@ if (MSVC AND NOT CXX_CLANG)
     # /Zc:throwingNew     - Let codegen assume `operator new` (without std::nothrow) will never return null
     # /GT                 - Supports fiber safety for data allocated using static thread-local storage
     add_compile_options(
-        /MP
+        /MP1
         /Zm200
         /Zo
         /permissive-
