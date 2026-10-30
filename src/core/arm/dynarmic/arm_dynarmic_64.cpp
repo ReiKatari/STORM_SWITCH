@@ -110,7 +110,11 @@ void DynarmicCallbacks64::InstructionCacheOperationRaised(Dynarmic::A64::Instruc
         static constexpr u64 ICACHE_LINE_SIZE = 64;
         const u64 cache_line_start = value & ~(ICACHE_LINE_SIZE - 1);
         m_parent.InvalidateCacheRange(cache_line_start, ICACHE_LINE_SIZE);
-        break;
+        const u64 pc = m_parent.m_jit->GetPC();
+        if (pc + 4096 >= cache_line_start && pc <= cache_line_start + 4096) {
+            m_parent.m_jit->HaltExecution(Dynarmic::HaltReason::CacheInvalidation);
+        }
+        return;
     }
     case Dynarmic::A64::InstructionCacheOperation::InvalidateAllToPoU:
     case Dynarmic::A64::InstructionCacheOperation::InvalidateAllToPoUInnerSharable:

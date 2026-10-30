@@ -87,9 +87,14 @@ public:
             scheduler.Wait(last_used_tick);
         }
         const auto& dev = device.GetLogical();
-        const VkResult query_result = dev.GetQueryResults(
+        VkResult query_result = dev.GetQueryResults(
             *query_pool, static_cast<u32>(start), static_cast<u32>(size), sizeof(u64) * size,
-            &host_results[start], sizeof(u64), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+            &host_results[start], sizeof(u64), VK_QUERY_RESULT_64_BIT);
+        if (query_result == VK_NOT_READY) {
+            query_result = dev.GetQueryResults(
+                *query_pool, static_cast<u32>(start), static_cast<u32>(size), sizeof(u64) * size,
+                &host_results[start], sizeof(u64), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+        }
         switch (query_result) {
         case VK_SUCCESS:
             return;
@@ -844,7 +849,7 @@ public:
             new_query->flags |= VideoCommon::QueryFlagBits::IsFinalValueSynced;
             return index;
         }
-        
+
         scheduler.RequestOutsideRenderPassOperationContext();
         CloseCounter();
         auto [bank_slot, data_slot] = ProduceCounterBuffer(slot);

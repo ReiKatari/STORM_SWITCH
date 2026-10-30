@@ -328,6 +328,7 @@ CubebSink::~CubebSink() {
 
 SinkStream* CubebSink::AcquireSinkStream(Core::System& system, u32 system_channels_,
                                          const std::string& name, StreamType type) {
+    std::scoped_lock lk{sink_mutex};
     system_channels = system_channels_;
     SinkStreamPtr& stream = sink_streams.emplace_back(std::make_unique<CubebSinkStream>(
         ctx, device_channels, system_channels, output_device, input_device, name, type, system));
@@ -336,20 +337,31 @@ SinkStream* CubebSink::AcquireSinkStream(Core::System& system, u32 system_channe
 }
 
 void CubebSink::CloseStream(SinkStream* stream) {
-    for (size_t i = 0; i < sink_streams.size(); i++) {
-        if (sink_streams[i].get() == stream) {
-            sink_streams[i].reset();
-            sink_streams.erase(sink_streams.begin() + i);
-            break;
+    SinkStreamPtr removed;
+    {
+        std::scoped_lock lk{sink_mutex};
+        for (size_t i = 0; i < sink_streams.size(); i++) {
+            if (sink_streams[i].get() == stream) {
+                removed = std::move(sink_streams[i]);
+                sink_streams.erase(sink_streams.begin() + i);
+                break;
+            }
         }
     }
+    removed.reset();
 }
 
 void CubebSink::CloseStreams() {
-    sink_streams.clear();
+    std::vector<SinkStreamPtr> to_close;
+    {
+        std::scoped_lock lk{sink_mutex};
+        to_close.swap(sink_streams);
+    }
+    to_close.clear();
 }
 
 void CubebSink::ClearStreams() {
+    std::scoped_lock lk{sink_mutex};
     for (auto& stream : sink_streams) {
         if (stream) {
             stream->ClearQueue();

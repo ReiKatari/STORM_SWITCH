@@ -6353,18 +6353,27 @@ object GameFixDatabase {
         return if (profile != null) String.format("%016X", profile.titleId) else ""
     }
 
+    private val profileByIdMap: Map<Long, GameFixProfile> by lazy {
+        HashMap<Long, GameFixProfile>(profiles.size * 2).apply {
+            for (p in profiles) {
+                putIfAbsent(p.titleId, p)
+                putIfAbsent(p.titleId and 0x1FFFL.inv(), p)
+            }
+        }
+    }
+
     fun getFix(programIdStr: String): GameFixProfile? {
         val idLong = parseProgramId(programIdStr)
         if (idLong == 0L) return null
         val baseId = idLong and 0x1FFFL.inv()
-        return profiles.firstOrNull { it.titleId == idLong || (it.titleId and 0x1FFFL.inv()) == baseId }
+        return profileByIdMap[idLong] ?: profileByIdMap[baseId]
     }
 
     fun getSpecificFix(game: Game): GameFixProfile? {
         val idLong = resolveTitleId(game)
         if (idLong != 0L) {
             val baseId = idLong and 0x1FFFL.inv()
-            val byId = profiles.firstOrNull { it.titleId == idLong || (it.titleId and 0x1FFFL.inv()) == baseId }
+            val byId = profileByIdMap[idLong] ?: profileByIdMap[baseId]
             if (byId != null) return byId
         }
 

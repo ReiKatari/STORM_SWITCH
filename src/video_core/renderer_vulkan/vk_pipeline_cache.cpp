@@ -636,7 +636,7 @@ ComputePipeline* PipelineCache::CurrentComputePipeline() {
         .workgroup_size{qmd.block_dim_x, qmd.block_dim_y, qmd.block_dim_z},
     };
     {
-        std::scoped_lock lock{cache_mutex};
+        std::scoped_lock lock{compute_cache_mutex};
         auto it = compute_cache.find(key);
         if (it != compute_cache.end()) {
             return it->second.get();
@@ -648,7 +648,7 @@ ComputePipeline* PipelineCache::CurrentComputePipeline() {
     }
     ComputePipeline* raw_pipeline = pipeline.get();
     {
-        std::scoped_lock lock{cache_mutex};
+        std::scoped_lock lock{compute_cache_mutex};
         auto [it, is_new] = compute_cache.try_emplace(key, std::move(pipeline));
         if (!is_new) {
             raw_pipeline = it->second.get();

@@ -1188,6 +1188,14 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getGpuDriver(JNIEnv* env, jobject 
 }
 
 jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getCpuSummary(JNIEnv* env, jobject /*jobj*/) {
+    static std::string s_cached_cpu_summary;
+    static std::mutex s_cpu_summary_mutex;
+    {
+        std::scoped_lock lk{s_cpu_summary_mutex};
+        if (!s_cached_cpu_summary.empty()) {
+            return Common::Android::ToJString(env, s_cached_cpu_summary);
+        }
+    }
     auto trim = [](std::string& s) {
         const auto start = s.find_first_not_of(" \t\r\n");
         const auto end = s.find_last_not_of(" \t\r\n");
@@ -1296,7 +1304,10 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getCpuSummary(JNIEnv* env, jobject
         }
 
         fmt::format_to(std::back_inserter(result), "\nLLVM CPU: {}", fallback_cpu_detection());
-
+        {
+            std::scoped_lock lk{s_cpu_summary_mutex};
+            s_cached_cpu_summary = result;
+        }
         return Common::Android::ToJString(env, result);
     } catch (...) {
         return Common::Android::ToJString(env, "Unknown");

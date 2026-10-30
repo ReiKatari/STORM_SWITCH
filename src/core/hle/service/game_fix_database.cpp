@@ -6199,6 +6199,31 @@ static GameFixProfile CreateEnrichedProfile(const GameFixProfile& base, u64 targ
 
 static std::mutex s_profile_mutex;
 static std::unordered_map<u64, std::unique_ptr<GameFixProfile>> s_enriched_cache;
+static std::unordered_map<std::string, const GameFixProfile*> s_path_lookup_cache;
+static std::unordered_map<u64, std::vector<const GameFixProfile*>> s_id_to_profiles_index;
+static bool s_index_built = false;
+
+static void EnsureProfileIndexBuilt() {
+    if (s_index_built) {
+        return;
+    }
+    s_id_to_profiles_index.reserve(s_profiles.size() * 2);
+    for (const auto& profile : s_profiles) {
+        s_id_to_profiles_index[profile.title_id].push_back(&profile);
+        const u64 base_id = profile.title_id & ~0x1FFFULL;
+        if (base_id != profile.title_id) {
+            s_id_to_profiles_index[base_id].push_back(&profile);
+        }
+        for (u64 alt : profile.alt_title_ids) {
+            s_id_to_profiles_index[alt].push_back(&profile);
+            const u64 alt_base = alt & ~0x1FFFULL;
+            if (alt_base != alt) {
+                s_id_to_profiles_index[alt_base].push_back(&profile);
+            }
+        }
+    }
+    s_index_built = true;
+}
 
 const GameFixProfile* GameFixDatabase::GetProfile(u64 title_id) {
     if (title_id == 0) return nullptr;
@@ -6216,21 +6241,12 @@ const GameFixProfile* GameFixDatabase::GetProfile(u64 title_id) {
         return it_base->second.get();
     }
 
-    // Check s_profiles - gather all matching profiles (to merge duplicates/incremental fixes)
+    EnsureProfileIndexBuilt();
     std::vector<const GameFixProfile*> matching_profiles;
-    for (const auto& profile : s_profiles) {
-        bool matches = (profile.title_id == title_id || (profile.title_id & ~0x1FFFULL) == base_title_id);
-        if (!matches) {
-            for (u64 alt : profile.alt_title_ids) {
-                if (alt == title_id || (alt & ~0x1FFFULL) == base_title_id) {
-                    matches = true;
-                    break;
-                }
-            }
-        }
-        if (matches) {
-            matching_profiles.push_back(&profile);
-        }
+    if (auto it_idx = s_id_to_profiles_index.find(title_id); it_idx != s_id_to_profiles_index.end()) {
+        matching_profiles = it_idx->second;
+    } else if (auto it_b = s_id_to_profiles_index.find(base_title_id); it_b != s_id_to_profiles_index.end()) {
+        matching_profiles = it_b->second;
     }
 
     if (!matching_profiles.empty()) {
@@ -6283,6 +6299,13 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
     }
 
     if (name_or_path.empty()) return nullptr;
+    {
+        std::lock_guard lock(s_profile_mutex);
+        auto it_p = s_path_lookup_cache.find(name_or_path);
+        if (it_p != s_path_lookup_cache.end()) {
+            return it_p->second;
+        }
+    }
 
     // Check if name_or_path contains a 16-character hex Title ID
     for (size_t i = 0; i + 16 <= name_or_path.size(); ++i) {

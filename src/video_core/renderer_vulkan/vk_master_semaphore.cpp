@@ -63,6 +63,9 @@ void MasterSemaphore::Refresh() {
         // If we don't support timeline semaphores, there's nothing to refresh
         return;
     }
+    if (gpu_tick.load(std::memory_order_acquire) >= current_tick.load(std::memory_order_acquire)) {
+        return;
+    }
 
     u64 this_tick{};
     u64 counter{};

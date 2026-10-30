@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -89,6 +90,7 @@ private:
     /// Cubeb id of the actual hardware input device
     cubeb_devid input_device{};
     /// Vector of streams managed by this sink
+    mutable std::mutex sink_mutex{};
     std::vector<SinkStreamPtr> sink_streams{};
 
 #ifdef _WIN32

@@ -863,6 +863,9 @@ $optionsBuilder
      * Generates and writes the tailored drirc configuration for the active game,
      * returning the File pointing to the active session config.
      */
+    @Volatile
+    private var lastWrittenXml: String? = null
+
     fun generateForGame(programIdHex: String, title: String): File {
         val profileType = detectProfileType(programIdHex, title)
         val xml = generateXmlContent(profileType, programIdHex, title)
@@ -873,12 +876,13 @@ $optionsBuilder
         }
 
         val configFile = File(targetDir, "drirc.xml")
-        configFile.writeText(xml, Charsets.UTF_8)
-        File(targetDir, "00-storm.conf").writeText(xml, Charsets.UTF_8)
-
-        // Write directly to $HOME/.drirc
-        val homeDir = YuzuApplication.appContext.filesDir
-        File(homeDir, ".drirc").writeText(xml, Charsets.UTF_8)
+        if (xml != lastWrittenXml || !configFile.exists()) {
+            configFile.writeText(xml, Charsets.UTF_8)
+            File(targetDir, "00-storm.conf").writeText(xml, Charsets.UTF_8)
+            val homeDir = YuzuApplication.appContext.filesDir
+            File(homeDir, ".drirc").writeText(xml, Charsets.UTF_8)
+            lastWrittenXml = xml
+        }
 
         Log.info("[PerGameDrircGenerator] Generated $profileType drirc profile for $title ($programIdHex)")
         return configFile

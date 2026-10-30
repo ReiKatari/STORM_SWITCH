@@ -347,6 +347,12 @@ GraphicsPipeline::GraphicsPipeline(
 }
 
 void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
+    if (!transition || transitions.size() >= 16) {
+        return;
+    }
+    if (std::find(transitions.begin(), transitions.end(), transition) != transitions.end()) {
+        return;
+    }
     transition_keys.push_back(transition->key);
     transitions.push_back(transition);
 }

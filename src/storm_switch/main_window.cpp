@@ -22788,106 +22788,65 @@ void MainWindow::UpdateStatusBar() {
 
 
 void MainWindow::ApplyDynamicSettingChange() {
-
     Settings::UpdateGPUAccuracy();
-
     Settings::UpdateRescalingInfo();
-
     const bool is_running = QtCommon::system && QtCommon::system->IsPoweredOn();
-
     if (is_running) {
-
         QtCommon::system->ApplySettings();
-
         if (render_window) {
-
             render_window->OnFramebufferSizeChanged();
-
         }
-
     }
-
-    std::string per_game_config_name;
-
-    const bool has_per_game_file =
-
-        GetActivePerGameConfigName(current_game_path, last_filename_booted, per_game_config_name);
-
-    if (has_per_game_file && !Core::GameFixDatabase::AreFixesEnabled()) {
-
-        QtConfig per_game_config(per_game_config_name, Config::ConfigType::PerGameConfig, false);
-
-        per_game_config.SaveAllValues();
-
-    } else if (config) {
-
-        if (m_session_backup.is_active) {
-
-            const bool cur_macro_jit = Settings::values.disable_macro_jit.GetValue();
-
-            const bool cur_auto_stub = Settings::values.use_auto_stub.GetValue();
-
-            const bool cur_web_applet = Settings::values.disable_web_applet.GetValue();
-
-            const bool cur_fma = Settings::values.cpuopt_unsafe_unfuse_fma.GetValue();
-
-            const bool cur_mmu = Settings::values.cpuopt_unsafe_host_mmu.GetValue();
-
-            const bool cur_fp = Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue();
-
-            const bool cur_fpcr = Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue();
-
-
-
-            Settings::values.disable_macro_jit.SetValue(m_session_backup.disable_macro_jit);
-
-            Settings::values.use_auto_stub.SetValue(m_session_backup.use_auto_stub);
-
-            Settings::values.disable_web_applet.SetValue(m_session_backup.disable_web_applet);
-
-            Settings::values.cpuopt_unsafe_unfuse_fma.SetValue(s_extra_session_backup.cpuopt_unsafe_unfuse_fma);
-
-            Settings::values.cpuopt_unsafe_host_mmu.SetValue(s_extra_session_backup.cpuopt_unsafe_host_mmu);
-
-            Settings::values.cpuopt_unsafe_reduce_fp_error.SetValue(s_extra_session_backup.cpuopt_unsafe_reduce_fp_error);
-
-            Settings::values.cpuopt_unsafe_ignore_standard_fpcr.SetValue(s_extra_session_backup.cpuopt_unsafe_ignore_standard_fpcr);
-
-
-
-            config->SaveAllValues();
-
-
-
-            Settings::values.disable_macro_jit.SetValue(cur_macro_jit);
-
-            Settings::values.use_auto_stub.SetValue(cur_auto_stub);
-
-            Settings::values.disable_web_applet.SetValue(cur_web_applet);
-
-            Settings::values.cpuopt_unsafe_unfuse_fma.SetValue(cur_fma);
-
-            Settings::values.cpuopt_unsafe_host_mmu.SetValue(cur_mmu);
-
-            Settings::values.cpuopt_unsafe_reduce_fp_error.SetValue(cur_fp);
-
-            Settings::values.cpuopt_unsafe_ignore_standard_fpcr.SetValue(cur_fpcr);
-
-        } else {
-
-            config->SaveAllValues();
-
-        }
-
-    }
-
     UpdateStatusButtons();
-
     ConfigurationShared::ReloadAllActiveWidgets();
 
+    // Debounce synchronous INI disk writes (350ms) so rapid live HUD/hotkey adjustments have 0ms UI lag
+    static QTimer* s_save_debounce_timer = nullptr;
+    if (!s_save_debounce_timer) {
+        s_save_debounce_timer = new QTimer(this);
+        s_save_debounce_timer->setSingleShot(true);
+        connect(s_save_debounce_timer, &QTimer::timeout, this, [this]() {
+            std::string per_game_config_name;
+            const bool has_per_game_file =
+                GetActivePerGameConfigName(current_game_path, last_filename_booted, per_game_config_name);
+            if (has_per_game_file && !Core::GameFixDatabase::AreFixesEnabled()) {
+                QtConfig per_game_config(per_game_config_name, Config::ConfigType::PerGameConfig, false);
+                per_game_config.SaveAllValues();
+            } else if (config) {
+                if (m_session_backup.is_active) {
+                    const bool cur_macro_jit = Settings::values.disable_macro_jit.GetValue();
+                    const bool cur_auto_stub = Settings::values.use_auto_stub.GetValue();
+                    const bool cur_web_applet = Settings::values.disable_web_applet.GetValue();
+                    const bool cur_fma = Settings::values.cpuopt_unsafe_unfuse_fma.GetValue();
+                    const bool cur_mmu = Settings::values.cpuopt_unsafe_host_mmu.GetValue();
+                    const bool cur_fp = Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue();
+                    const bool cur_fpcr = Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue();
+
+                    Settings::values.disable_macro_jit.SetValue(m_session_backup.disable_macro_jit);
+                    Settings::values.use_auto_stub.SetValue(m_session_backup.use_auto_stub);
+                    Settings::values.disable_web_applet.SetValue(m_session_backup.disable_web_applet);
+                    Settings::values.cpuopt_unsafe_unfuse_fma.SetValue(s_extra_session_backup.cpuopt_unsafe_unfuse_fma);
+                    Settings::values.cpuopt_unsafe_host_mmu.SetValue(s_extra_session_backup.cpuopt_unsafe_host_mmu);
+                    Settings::values.cpuopt_unsafe_reduce_fp_error.SetValue(s_extra_session_backup.cpuopt_unsafe_reduce_fp_error);
+                    Settings::values.cpuopt_unsafe_ignore_standard_fpcr.SetValue(s_extra_session_backup.cpuopt_unsafe_ignore_standard_fpcr);
+
+                    config->SaveAllValues();
+
+                    Settings::values.disable_macro_jit.SetValue(cur_macro_jit);
+                    Settings::values.use_auto_stub.SetValue(cur_auto_stub);
+                    Settings::values.disable_web_applet.SetValue(cur_web_applet);
+                    Settings::values.cpuopt_unsafe_unfuse_fma.SetValue(cur_fma);
+                    Settings::values.cpuopt_unsafe_host_mmu.SetValue(cur_mmu);
+                    Settings::values.cpuopt_unsafe_reduce_fp_error.SetValue(cur_fp);
+                    Settings::values.cpuopt_unsafe_ignore_standard_fpcr.SetValue(cur_fpcr);
+                } else {
+                    config->SaveAllValues();
+                }
+            }
+        });
+    }
+    s_save_debounce_timer->start(350);
 }
-
-
 
 void MainWindow::OnDynamicSettingChangedFromUI() {
 
